@@ -130,6 +130,98 @@ def _routable(goal_var="g"):
     )
 
 
+# --------------------------------------------------------------------------- #
+#  WHICH COLLAPSE THE HANDS FOLLOW — A11's decision, AND IT IS THE RULE'S.
+# --------------------------------------------------------------------------- #
+def _order_n_is_not_live():
+    """`mg_select` never fired on this graph, so there is no order-N selection.
+
+    `Eq(attr, Lit null)` is this tree's ABSENT test, and it is the right
+    predicate here for a reason that is structural rather than stylistic:
+    `mg_sel_agid` is written by `mg_select` (`seeds/arc_magnitude.json`) and by
+    nothing else, so its absence is exactly "the order-N collapse is not on this
+    graph."  It is not a proxy for it.
+    """
+    return EQ(A(V("agenda"), "mg_sel_agid"), L(None))
+
+
+def SEL_AGID():
+    """THE SELECTION THE HANDS FOLLOW.  A11: **order-N when it is live.**
+
+    AG-5 §8.9 measured that this graph carries TWO independent selections and
+    that the hands followed the older one:
+
+      arc_sel_agid  (ag_select,  order-1)          the 42-task blocker, 10.0
+      mg_sel_agid   (mg_select,  order-N + scope)  the RE-MEASUREMENT goal, 7.7
+
+    They disagree because MG2's attrition ladder does what it was built to do:
+    the blocker's 42 tasks of paper inventory discount to 13.64 of order-N
+    headroom, while the re-measurement goal's value is undiscounted because
+    completing it unlocks nothing.  **Order-N picks the one goal this executor
+    can actually run, with no human in the scene** — and the hands could not see
+    it, because `_armed` compared against `arc_sel_agid`.
+
+    A11's justification and its limit, quoted rather than paraphrased: order-1
+    "credits paper inventory at ZERO discount and demonstrably misprices"; the
+    magnitude rung measured 42 -> 13.64 -> ~1.9 expected, which is the arithmetic
+    HS1 ran and which returned **0**.  Order-N is measurably better calibrated
+    AND its attrition factors are read from artifacts.  It is **not** calibrated:
+    the survival law's SHAPE is still authored (magnitude §8.2).
+
+    THE DECISION IS A TERM, NOT A PYTHON BRANCH.  The adapter copies BOTH
+    settled selections across the tick boundary verbatim — four reads, four
+    writes, no comparison — and this `IfThenElse` is where "which one counts" is
+    decided, from graph state.
+
+    WHY A FALLBACK RATHER THAN A HARD DEPENDENCY.  `seeds/arc_magnitude.json` is
+    `self_load_only` and is NOT in this seed's `depends_on`, so an executor may
+    boot without the order-N collapse at all — every EX1-EX6 scene does exactly
+    that.  Naming it a hard dependency would change what those scenes boot and
+    would put an order-N collapse into every graph that wants hands.  A SOFT
+    dependency leaves them byte-identical and lets a graph that holds the better
+    collapse use it.  **The cost is that the fallback is SILENT**, so the order
+    records which collapse it followed (`selected_by`) and both stamps as it saw
+    them — the choice is a countable graph fact, not an inference from prose.
+    """
+    return ITE(_order_n_is_not_live(),
+               A(V("agenda"), "arc_sel_agid"),
+               A(V("agenda"), "mg_sel_agid"))
+
+
+def SEL_VALUE():
+    """The value of whichever selection `SEL_AGID` names — the second half of
+    the two-tick agreement, and it must come from the SAME collapse or the
+    agreement test would straddle two rankings."""
+    return ITE(_order_n_is_not_live(),
+               A(V("agenda"), "arc_sel_value"),
+               A(V("agenda"), "mg_sel_value"))
+
+
+def ARMED_AGID():
+    """The armed copy of whichever selection `SEL_AGID` names."""
+    return ITE(_order_n_is_not_live(),
+               A(V("agenda"), "arc_exec_armed_agid"),
+               A(V("agenda"), "arc_exec_armed_mg_agid"))
+
+
+def ARMED_VALUE():
+    return ITE(_order_n_is_not_live(),
+               A(V("agenda"), "arc_exec_armed_value"),
+               A(V("agenda"), "arc_exec_armed_mg_value"))
+
+
+def COLLAPSE_NAME():
+    """WHICH COLLAPSE THIS ORDER FOLLOWED, stamped on the order itself.
+
+    The fallback above is silent by construction — a graph on which `mg_select`
+    stops firing reverts to the collapse the magnitude rung measured as
+    mispriced, and nothing would say so.  Stamping the name makes it readable
+    off the order after the fact, which is the same move `retired_because` and
+    `refused_because` already make in this seed."""
+    return ITE(_order_n_is_not_live(),
+               L("order_1_ag_select"), L("order_n_mg_select"))
+
+
 def _armed(goal_var="g"):
     """THE TWO-TICK AGREEMENT TEST, AND IT IS NOT A FORMALITY — IT IS A FIX.
 
@@ -146,18 +238,24 @@ def _armed(goal_var="g"):
     wrong thing simply happens.
 
     The fix is an AGREEMENT ACROSS TWO FIXPOINTS.  The adapter copies the
-    settled `arc_sel_agid` / `arc_sel_value` into `arc_exec_armed_*` at the
-    tick boundary — a verbatim copy with no comparison and no branch — and this
-    guard requires the NEXT fixpoint's selection to agree with it on BOTH the
-    winner and its value.  **The comparison is the rule's; the adapter only
-    carries the previous tick's conclusion across the boundary.**  A selection
-    that is still moving cannot satisfy both halves.
+    settled selection into `arc_exec_armed_*` at the tick boundary — a verbatim
+    copy with no comparison and no branch — and this guard requires the NEXT
+    fixpoint's selection to agree with it on BOTH the winner and its value.
+    **The comparison is the rule's; the adapter only carries the previous tick's
+    conclusion across the boundary.**  A selection that is still moving cannot
+    satisfy both halves.
+
+    A11 (WH1): WHICH selection is `SEL_AGID`'s — order-N when the order-N
+    collapse is live, order-1 when it is not.  The agreement test is UNCHANGED
+    in shape; only the pair of stamps it reads moved, and BOTH sides of every
+    comparison move together, so the guard can never straddle two rankings.
+    The order-1 branch is the byte-identical predicate this rung inherited.
     """
     return AND(
-        EQ(A(V("agenda"), "arc_exec_armed_agid"), A(V(goal_var), "agid")),
-        EQ(A(V("agenda"), "arc_exec_armed_agid"), A(V("agenda"), "arc_sel_agid")),
-        EQ(A(V("agenda"), "arc_exec_armed_value"), A(V("agenda"), "arc_sel_value")),
-        NOT(EQ(A(V("agenda"), "arc_exec_armed_agid"), L(None))),
+        EQ(ARMED_AGID(), A(V(goal_var), "agid")),
+        EQ(ARMED_AGID(), SEL_AGID()),
+        EQ(ARMED_VALUE(), SEL_VALUE()),
+        NOT(EQ(ARMED_AGID(), L(None))),
     )
 
 
@@ -256,14 +354,26 @@ def _r_dispatch():
             "The DECISION of what to run is this rule; running it is the "
             "adapter's mechanical I/O.  Three things are load-bearing and each "
             "has a measured reason. "
-            "(1) THE WINNER IS BOUND BY ag_select'S OWN STAMP, never re-ranked "
-            "-- the ag_select_audit / ag_ask precedent -- AND THE STAMP MUST "
-            "HAVE SETTLED.  MEASURED: reading the stamp inside the same "
-            "fixpoint that writes it reads a TRANSIENT, and the first draft of "
-            "this rule ordered the RUNNER-UP on the shipped boot while the "
-            "fixpoint's final winner was a different goal.  `_armed` is the "
+            "(1) THE WINNER IS BOUND BY THE COLLAPSE'S OWN STAMP, never "
+            "re-ranked -- the ag_select_audit / ag_ask precedent -- AND THE "
+            "STAMP MUST HAVE SETTLED.  MEASURED: reading the stamp inside the "
+            "same fixpoint that writes it reads a TRANSIENT, and the first "
+            "draft of this rule ordered the RUNNER-UP on the shipped boot while "
+            "the fixpoint's final winner was a different goal.  `_armed` is the "
             "two-tick agreement test that closes it, on the winner AND its "
             "value. "
+            "(1b) A11/WH1 -- WHICH COLLAPSE.  This graph carries TWO "
+            "selections: ag_select's order-1 arc_sel_agid and mg_select's "
+            "order-N + constraints mg_sel_agid, and AG-5 SS8.9 measured that "
+            "with the tier ladder installed THEY DISAGREE -- order-1 picks the "
+            "42-task blocker (paper inventory at zero discount, no ExecClass, "
+            "unrunnable) and order-N picks the RE-MEASUREMENT goal, the one "
+            "this executor can run, WITH NO HUMAN IN THE SCENE.  The hands now "
+            "follow order-N when it is live and order-1 when it is not (see "
+            "SEL_AGID) -- a SOFT dependency, because arc_magnitude is "
+            "self_load_only and every EX1-EX6 scene boots without it.  The "
+            "fallback is silent, so the order STAMPS which collapse it followed "
+            "and both stamps as it saw them. "
             "(2) CONFINEMENT IS THE EMPTY ARGMIN.  The route is "
             "Argmin(Filter(ExecClass, <the THREE-PART key of _cue_matches plus "
             "_routable's source_rid check>), priority) and ONE ExecClass ships, "
@@ -304,6 +414,16 @@ def _r_dispatch():
                 "evidence_artifact": T(A(V("g"), "evidence_artifact")),
                 "ordered_epoch": T(MEASURE_EPOCH()),
                 "status": "ordered",
+                #  A11/WH1.  WHICH COLLAPSE THESE HANDS FOLLOWED, and what BOTH
+                #  collapses said at the moment the order minted.  The fallback
+                #  in SEL_AGID is silent by construction; this makes the choice
+                #  a COUNTABLE GRAPH FACT rather than an inference from prose,
+                #  and it makes "the executor acted on a goal order-1 did not
+                #  choose" readable off the order itself.
+                "selected_by": T(COLLAPSE_NAME()),
+                "selected_value": T(SEL_VALUE()),
+                "order1_sel_agid": T(A(V("agenda"), "arc_sel_agid")),
+                "orderN_sel_agid": T(A(V("agenda"), "mg_sel_agid")),
                 "_the_decision_lives_here": (
                     "which job to run is this rule's Argmin over the route "
                     "table applied to the collapse's own winner.  The adapter "
@@ -445,8 +565,18 @@ def build():
             "is the LAST thing that should arrive in every agent by a glob.  "
             "Activation is one key and a paired tree-wide sweep."),
         "id": "arc_executor",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "depends_on": ["goal_residuals", "arc_goals"],
+        "_SOFT_DEPENDENCY_ON_arc_magnitude": (
+            "v1.1.0 (A11/WH1) wires ax_dispatch to the ORDER-N collapse "
+            "(mg_sel_agid, seeds/arc_magnitude.json) when that collapse is live "
+            "on the graph, and to the order-1 collapse (arc_sel_agid) when it "
+            "is not.  arc_magnitude is DELIBERATELY NOT in depends_on: it is "
+            "self_load_only, every EX1-EX6 scene boots without it, and making "
+            "it hard would both change what those scenes boot and put an "
+            "order-N collapse into every graph that merely wants hands.  The "
+            "branch is a Term in the rule (SEL_AGID), never a Python "
+            "conditional, and the order records which branch it took."),
         "description": (
             "AG-5 -- THE EXECUTOR AND THE STATUS LIFECYCLE.  Two independent "
             "rungs converged on this as the blocker: the arc-goal rung called "
@@ -457,8 +587,12 @@ def build():
             "ax_dispatch turns the arc-grain collapse's winner into an "
             "ExecOrder, routed by route_pick's own Argmin-over-cues shape, and "
             "is STRUCTURALLY INCAPABLE of ordering a goal whose kind has no "
-            "ExecClass -- on the shipped graph the winner is exactly such a "
-            "goal.  ax_retired_epoch stamps when a goal went terminal.  "
+            "ExecClass.  v1.1.0 (A11/WH1): the collapse it binds is the ORDER-N "
+            "one (mg_sel_agid) whenever that collapse is live, falling back to "
+            "order-1 (arc_sel_agid) when it is not -- because AG-5 SS8.9 "
+            "measured that the two DISAGREE and that order-N picks the one goal "
+            "the executor can run, with no human reply in the scene.  "
+            "ax_retired_epoch stamps when a goal went terminal.  "
             "ax_rearm is the anti-oscillation latch: a retired goal re-enters "
             "the pool only when its source residual is genuinely stale again "
             "AND the measurement epoch has advanced.  ax_close makes a "

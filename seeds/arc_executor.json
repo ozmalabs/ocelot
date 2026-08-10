@@ -4,12 +4,13 @@
   "self_load_only": true,
   "_SELF_LOAD_ONLY_RATIONALE": "substrate/boot_all.py::_read_seeds GLOBS seeds/*.json and installs every match at boot, so a file here is live in EVERY agent in the tree the moment it lands.  seeds/arc_goals.json and seeds/arc_magnitude.json both ship self_load_only for that reason and this seed keeps the gating: an executor that dispatches jobs is the LAST thing that should arrive in every agent by a glob.  Activation is one key and a paired tree-wide sweep.",
   "id": "arc_executor",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "depends_on": [
     "goal_residuals",
     "arc_goals"
   ],
-  "description": "AG-5 -- THE EXECUTOR AND THE STATUS LIFECYCLE.  Two independent rungs converged on this as the blocker: the arc-goal rung called itself 'a planning layer with no hands', and the magnitude rung found decomposition blocked because a parent goal must LEAVE THE POOL and nothing in this tree ever wrote a terminal status.  This seed is the missing seam, and it is four rules. ax_dispatch turns the arc-grain collapse's winner into an ExecOrder, routed by route_pick's own Argmin-over-cues shape, and is STRUCTURALLY INCAPABLE of ordering a goal whose kind has no ExecClass -- on the shipped graph the winner is exactly such a goal.  ax_retired_epoch stamps when a goal went terminal.  ax_rearm is the anti-oscillation latch: a retired goal re-enters the pool only when its source residual is genuinely stale again AND the measurement epoch has advanced.  ax_close makes a completed execution countable. THE EPOCH ITSELF: `arc_measure_epoch` was a counter with no producer, and every expiry mechanism in the two rungs below turns on it.  The adapter bumps it WHEN AND ONLY WHEN a measurement actually ran, so an unconditioned answer's one-epoch life is now measured in measurements.",
+  "_SOFT_DEPENDENCY_ON_arc_magnitude": "v1.1.0 (A11/WH1) wires ax_dispatch to the ORDER-N collapse (mg_sel_agid, seeds/arc_magnitude.json) when that collapse is live on the graph, and to the order-1 collapse (arc_sel_agid) when it is not.  arc_magnitude is DELIBERATELY NOT in depends_on: it is self_load_only, every EX1-EX6 scene boots without it, and making it hard would both change what those scenes boot and put an order-N collapse into every graph that merely wants hands.  The branch is a Term in the rule (SEL_AGID), never a Python conditional, and the order records which branch it took.",
+  "description": "AG-5 -- THE EXECUTOR AND THE STATUS LIFECYCLE.  Two independent rungs converged on this as the blocker: the arc-goal rung called itself 'a planning layer with no hands', and the magnitude rung found decomposition blocked because a parent goal must LEAVE THE POOL and nothing in this tree ever wrote a terminal status.  This seed is the missing seam, and it is four rules. ax_dispatch turns the arc-grain collapse's winner into an ExecOrder, routed by route_pick's own Argmin-over-cues shape, and is STRUCTURALLY INCAPABLE of ordering a goal whose kind has no ExecClass.  v1.1.0 (A11/WH1): the collapse it binds is the ORDER-N one (mg_sel_agid) whenever that collapse is live, falling back to order-1 (arc_sel_agid) when it is not -- because AG-5 SS8.9 measured that the two DISAGREE and that order-N picks the one goal the executor can run, with no human reply in the scene.  ax_retired_epoch stamps when a goal went terminal.  ax_rearm is the anti-oscillation latch: a retired goal re-enters the pool only when its source residual is genuinely stale again AND the measurement epoch has advanced.  ax_close makes a completed execution countable. THE EPOCH ITSELF: `arc_measure_epoch` was a counter with no producer, and every expiry mechanism in the two rungs below turns on it.  The adapter bumps it WHEN AND ONLY WHEN a measurement actually ran, so an unconditioned answer's one-epoch life is now measured in measurements.",
   "microtheory": "arc6_executor",
   "nodes": [
     {
@@ -90,7 +91,7 @@
   "rules": [
     {
       "name": "ax_dispatch",
-      "comment": "AG-5, THE COLLAPSE->ACTION SEAM, AND IT IS route_pick's OWN SHAPE. The DECISION of what to run is this rule; running it is the adapter's mechanical I/O.  Three things are load-bearing and each has a measured reason. (1) THE WINNER IS BOUND BY ag_select'S OWN STAMP, never re-ranked -- the ag_select_audit / ag_ask precedent -- AND THE STAMP MUST HAVE SETTLED.  MEASURED: reading the stamp inside the same fixpoint that writes it reads a TRANSIENT, and the first draft of this rule ordered the RUNNER-UP on the shipped boot while the fixpoint's final winner was a different goal.  `_armed` is the two-tick agreement test that closes it, on the winner AND its value. (2) CONFINEMENT IS THE EMPTY ARGMIN.  The route is Argmin(Filter(ExecClass, <the THREE-PART key of _cue_matches plus _routable's source_rid check>), priority) and ONE ExecClass ships, so a goal that does not match on ALL THREE routes to null and the Exists guard refuses the mint.  kind ALONE IS NOT THE KEY, and that was measured, not foreseen -- see _cue_matches.  On the SHIPPED graph the winner IS unroutable (the 42-task blocker goal), so this branch is exercised by the boot itself, not by a fixture. (3) THE POOL PREDICATE IS RE-ASSERTED ON THE BOUND GOAL.  ag_select writes arc_sel_agid only while the pool is non-empty, so the stamp can outlive its goal's membership; without this the executor could run a goal that had already retired. SERIALISED TWO WAYS: at most one outstanding order globally, and at most one order per (goal, measurement epoch) -- so re-running the fixpoint cannot mint a second order for the same job, and a job may only recur once a NEW MEASUREMENT has happened.",
+      "comment": "AG-5, THE COLLAPSE->ACTION SEAM, AND IT IS route_pick's OWN SHAPE. The DECISION of what to run is this rule; running it is the adapter's mechanical I/O.  Three things are load-bearing and each has a measured reason. (1) THE WINNER IS BOUND BY THE COLLAPSE'S OWN STAMP, never re-ranked -- the ag_select_audit / ag_ask precedent -- AND THE STAMP MUST HAVE SETTLED.  MEASURED: reading the stamp inside the same fixpoint that writes it reads a TRANSIENT, and the first draft of this rule ordered the RUNNER-UP on the shipped boot while the fixpoint's final winner was a different goal.  `_armed` is the two-tick agreement test that closes it, on the winner AND its value. (1b) A11/WH1 -- WHICH COLLAPSE.  This graph carries TWO selections: ag_select's order-1 arc_sel_agid and mg_select's order-N + constraints mg_sel_agid, and AG-5 SS8.9 measured that with the tier ladder installed THEY DISAGREE -- order-1 picks the 42-task blocker (paper inventory at zero discount, no ExecClass, unrunnable) and order-N picks the RE-MEASUREMENT goal, the one this executor can run, WITH NO HUMAN IN THE SCENE.  The hands now follow order-N when it is live and order-1 when it is not (see SEL_AGID) -- a SOFT dependency, because arc_magnitude is self_load_only and every EX1-EX6 scene boots without it.  The fallback is silent, so the order STAMPS which collapse it followed and both stamps as it saw them. (2) CONFINEMENT IS THE EMPTY ARGMIN.  The route is Argmin(Filter(ExecClass, <the THREE-PART key of _cue_matches plus _routable's source_rid check>), priority) and ONE ExecClass ships, so a goal that does not match on ALL THREE routes to null and the Exists guard refuses the mint.  kind ALONE IS NOT THE KEY, and that was measured, not foreseen -- see _cue_matches.  On the SHIPPED graph the winner IS unroutable (the 42-task blocker goal), so this branch is exercised by the boot itself, not by a fixture. (3) THE POOL PREDICATE IS RE-ASSERTED ON THE BOUND GOAL.  ag_select writes arc_sel_agid only while the pool is non-empty, so the stamp can outlive its goal's membership; without this the executor could run a goal that had already retired. SERIALISED TWO WAYS: at most one outstanding order globally, and at most one order per (goal, measurement epoch) -- so re-running the fixpoint cannot mint a second order for the same job, and a job may only recur once a NEW MEASUREMENT has happened.",
       "batch": true,
       "match": [
         [
@@ -113,12 +114,38 @@
               {
                 "type": "Eq",
                 "a": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "agenda"
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "agenda"
+                      },
+                      "key": "mg_sel_agid"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
                   },
-                  "key": "arc_exec_armed_agid"
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "arc_exec_armed_agid"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "arc_exec_armed_mg_agid"
+                  }
                 },
                 "b": {
                   "type": "Attr",
@@ -132,39 +159,143 @@
               {
                 "type": "Eq",
                 "a": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "agenda"
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "agenda"
+                      },
+                      "key": "mg_sel_agid"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
                   },
-                  "key": "arc_exec_armed_agid"
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "arc_exec_armed_agid"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "arc_exec_armed_mg_agid"
+                  }
                 },
                 "b": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "agenda"
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "agenda"
+                      },
+                      "key": "mg_sel_agid"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
                   },
-                  "key": "arc_sel_agid"
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "arc_sel_agid"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "mg_sel_agid"
+                  }
                 }
               },
               {
                 "type": "Eq",
                 "a": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "agenda"
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "agenda"
+                      },
+                      "key": "mg_sel_agid"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
                   },
-                  "key": "arc_exec_armed_value"
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "arc_exec_armed_value"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "arc_exec_armed_mg_value"
+                  }
                 },
                 "b": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "agenda"
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "agenda"
+                      },
+                      "key": "mg_sel_agid"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
                   },
-                  "key": "arc_sel_value"
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "arc_sel_value"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "mg_sel_value"
+                  }
                 }
               },
               {
@@ -172,12 +303,38 @@
                 "arg": {
                   "type": "Eq",
                   "a": {
-                    "type": "Attr",
-                    "node": {
-                      "type": "Var",
-                      "name": "agenda"
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "agenda"
+                        },
+                        "key": "mg_sel_agid"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": null
+                      }
                     },
-                    "key": "arc_exec_armed_agid"
+                    "then": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "agenda"
+                      },
+                      "key": "arc_exec_armed_agid"
+                    },
+                    "other": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "agenda"
+                      },
+                      "key": "arc_exec_armed_mg_agid"
+                    }
                   },
                   "b": {
                     "type": "Lit",
@@ -800,6 +957,90 @@
               }
             },
             "status": "ordered",
+            "selected_by": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "mg_sel_agid"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "order_1_ag_select"
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": "order_n_mg_select"
+                }
+              }
+            },
+            "selected_value": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "mg_sel_agid"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                },
+                "then": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "agenda"
+                  },
+                  "key": "arc_sel_value"
+                },
+                "other": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "agenda"
+                  },
+                  "key": "mg_sel_value"
+                }
+              }
+            },
+            "order1_sel_agid": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "agenda"
+                },
+                "key": "arc_sel_agid"
+              }
+            },
+            "orderN_sel_agid": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "agenda"
+                },
+                "key": "mg_sel_agid"
+              }
+            },
             "_the_decision_lives_here": "which job to run is this rule's Argmin over the route table applied to the collapse's own winner.  The adapter reads `runner` and looks it up in a frozen table; it chooses nothing."
           }
         ],

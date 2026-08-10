@@ -655,19 +655,15 @@ def test_the_armed_stamp_cannot_be_SPOOFED_from_outside():
 
 
 # =========================================================================== #
-#  TWO COLLAPSES — pinned, because it is a finding and not a bar
+#  TWO COLLAPSES — A11 / WH1.  THE HANDS NOW FOLLOW ORDER-N.
+#
+#  This block REPLACES `test_the_hands_follow_ag_select_NOT_the_magnitude_
+#  collapse`, which pinned the pre-A11 wiring and said in its own docstring
+#  that it existed "so that wiring order-N in is a LOUD change rather than a
+#  silent one".  A11 made that change deliberately; the pin has been INVERTED
+#  rather than deleted, so the property is still gated in both directions.
 # =========================================================================== #
-def test_the_hands_follow_ag_select_NOT_the_magnitude_collapse():
-    """`ax_dispatch` binds `arc_sel_agid`.  The magnitude rung's order-N
-    collapse writes a SEPARATE stamp, `mg_sel_agid`, and with its measured tier
-    ladder installed **the two disagree on the shipped graph** — order-N picks
-    exactly the goal this executor can run, with no human reply at all.
-
-    Pinned rather than fixed: which collapse the hands follow is a design
-    decision above this rung's scope, and A10 named `ag_select`'s winner.  This
-    gate is here so that wiring order-N in is a LOUD change rather than a
-    silent one.
-    """
+def _boot_with_magnitude(ladder=True):
     from domains import arc_magnitude_ingest as ami
     s = srs.Substrate()
     ag = s.add_node("Agent", {})
@@ -681,21 +677,169 @@ def test_the_hands_follow_ag_select_NOT_the_magnitude_collapse():
     gri.install_facts(s, gri.probe_facts(s))
     agi.set_measure_epoch(s, 0)
     ami.resolve_attrition_keys(s)
-    ami.install_tier_ladder(s, ami.probe_tier_ladder())
+    if ladder:
+        ami.install_tier_ladder(s, ami.probe_tier_ladder())
+    return s, ag
+
+
+def test_wh1_the_hands_now_follow_the_ORDER_N_collapse():
+    """A11/WH1.  With the measured tier ladder installed the two collapses
+    DISAGREE on the shipped boot — `ag_select` names the 42-task blocker
+    (undiscounted paper inventory, no `ExecClass`) and `mg_select` names the
+    re-measurement goal, the one goal this executor can run.  The hands follow
+    order-N, and they do it **with no human reply anywhere in the scene**.
+
+    Asserted on the ORDER, not on the adapter's return value: the order carries
+    `selected_by` and both collapses' stamps as it saw them, so "acted on a goal
+    order-1 did not choose" is a graph fact."""
+    s, _ = _boot_with_magnitude(ladder=True)
+    s._inner.run_rules()
+    at = s.node([n for n in s.nodes("ArcAgenda")][0])["attrs"]
+    assert at["arc_sel_agid"] != at["mg_sel_agid"], (
+        "the two collapses agree — the divergence WH1 is about is not present")
+    assert at["mg_sel_agid"] == AGID, at["mg_sel_agid"]
+    order1_winner = at["arc_sel_agid"]
+
+    axe.arm(s)
+    s._inner.run_rules()
+    orders = [dict(s.node(n)["attrs"]) for n in s.nodes("ExecOrder")]
+    assert [o["agid"] for o in orders] == [AGID], [o["agid"] for o in orders]
+    o = orders[0]
+    assert o["runner"] == RUNNER
+    assert o["selected_by"] == "order_n_mg_select", o["selected_by"]
+    assert o["order1_sel_agid"] == order1_winner
+    assert o["orderN_sel_agid"] == AGID
+    assert o["agid"] != o["order1_sel_agid"], (
+        "the executor acted on the goal order-1 had already chosen — this "
+        "scene cannot show the swap")
+    #  Nobody was asked and nobody replied.
+    assert all(q.get("answered") != 1.0 for q in agi.questions(s))
+
+
+def test_wh1_CONTROL_without_the_tier_ladder_the_two_collapses_AGREE():
+    """A7: the swap must be shown to be the LADDER's divergence, not a property
+    of loading `arc_magnitude`.  Same seeds, same boot, ladder withheld — the
+    two collapses agree on the blocker and NOTHING dispatches, for the same
+    structural reason as always (the winner has no `ExecClass`)."""
+    s, _ = _boot_with_magnitude(ladder=False)
+    s._inner.run_rules()
+    at = s.node([n for n in s.nodes("ArcAgenda")][0])["attrs"]
+    assert at["arc_sel_agid"] == at["mg_sel_agid"], (
+        "the collapses diverged without the ladder — the control is not a "
+        "control")
+    axe.arm(s)
+    s._inner.run_rules()
+    assert list(s.nodes("ExecOrder")) == []
+
+
+def test_wh3_the_fallback_when_the_order_N_collapse_is_NOT_on_the_graph():
+    """`arc_magnitude` is `self_load_only` and is NOT in this seed's
+    `depends_on`, so the executor must still work on a graph that has never
+    heard of the order-N collapse.  `mg_sel_agid` is absent, `SEL_AGID` takes
+    the order-1 branch, and the shipped boot behaves exactly as it did before
+    A11: armed on the settled (unroutable) winner, nothing mints; after a reply
+    moves the collapse onto the re-measurement goal, an order mints and records
+    that it followed order-1."""
+    s, _ = boot()                       # no arc_magnitude
+    s._inner.run_rules()
+    at = s.node([n for n in s.nodes("ArcAgenda")][0])["attrs"]
+    assert at.get("mg_sel_agid") is None
+    axe.arm(s)
+    s._inner.run_rules()
+    assert list(s.nodes("ExecOrder")) == []
+
+    answer_open_questions(s, conditioned=True)
+    s._inner.run_rules()
+    assert agi.selection(s).get("arc_sel_agid") == AGID
+    axe.arm(s)
+    s._inner.run_rules()
+    orders = [dict(s.node(n)["attrs"]) for n in s.nodes("ExecOrder")]
+    assert [o["agid"] for o in orders] == [AGID]
+    assert orders[0]["selected_by"] == "order_1_ag_select"
+
+
+def test_wh3_arming_on_the_ORDER_1_winner_no_longer_dispatches_under_order_N():
+    """The inverted pin, and the half that makes the swap load-bearing rather
+    than additive: with the order-N collapse live and disagreeing, arming ONLY
+    the order-1 stamps must mint nothing.  Without this the suite would be
+    consistent with a rule that follows whichever stamp happens to be set."""
+    s, _ = _boot_with_magnitude(ladder=True)
     s._inner.run_rules()
     a = [n for n in s.nodes("ArcAgenda")][0]
     at = s.node(a)["attrs"]
-    assert at["arc_sel_agid"] != at["mg_sel_agid"], (
-        "the two collapses now agree — the finding this pins has changed")
-    assert at["mg_sel_agid"] == AGID, at["mg_sel_agid"]
-
-    #  Arming on the ORDER-N winner mints nothing: the guard wants arc_sel.
-    s.set_attr(a, "arc_exec_armed_agid", at["mg_sel_agid"])
-    s.set_attr(a, "arc_exec_armed_value", at["mg_sel_value"])
+    assert at["arc_sel_agid"] != at["mg_sel_agid"]
+    s.set_attr(a, "arc_exec_armed_agid", at["arc_sel_agid"])
+    s.set_attr(a, "arc_exec_armed_value", at["arc_sel_value"])
     s._inner.run_rules()
     assert list(s.nodes("ExecOrder")) == [], (
-        "the executor followed the magnitude collapse — that is a real change "
-        "and needs to be a deliberate one")
+        "the order-1 stamps alone dispatched a job while order-N was live")
+
+
+def test_wh3_the_ORDER_N_stamp_OUTLIVES_the_pool_and_the_pool_guard_catches_it():
+    """`ax_dispatch`'s comment item (3) says the pool predicate is re-asserted on
+    the bound goal because *"ag_select writes arc_sel_agid only while the pool is
+    non-empty, so the stamp can outlive its goal's membership."*  `mg_select`'s
+    guard is the SAME lifted pool `Exists` — `Exists(POOL_AS("mgx"), True)` — so
+    the order-N stamp inherits the identical exposure, and the swap does not
+    weaken the guard because the guard is on the BOUND GOAL and does not care
+    which stamp bound it.
+
+    Both directions, live: the stamp really does outlive membership (a claim
+    about the exposure, not about the guard), and nothing dispatches anyway."""
+    s, _ = _boot_with_magnitude(ladder=True)
+    s._inner.run_rules()
+    a = [n for n in s.nodes("ArcAgenda")][0]
+    assert s.node(a)["attrs"]["mg_sel_agid"] == AGID
+    axe.arm(s)
+    #  Empty the pool entirely, so `mg_select`'s own Exists guard is false and
+    #  it cannot rewrite the stamp.
+    for n in s.nodes("ArcGoal"):
+        s.set_attr(n, "status", "retired")
+    s._inner.run_rules()
+    assert axe.pool(s) == []
+    assert s.node(a)["attrs"]["mg_sel_agid"] == AGID, (
+        "the stamp was cleared — this scene no longer exercises the exposure")
+    assert s.node(a)["attrs"]["arc_exec_armed_mg_agid"] == AGID
+    assert list(s.nodes("ExecOrder")) == [], (
+        "the executor ran a goal that had left the pool")
+
+
+def test_wh1_the_adapter_carry_is_a_CONSTANT_TABLE_not_a_choice():
+    """The adapter must not be where "which collapse" is decided.  `arm` copies
+    a module-level constant of (source, destination) names and never inspects a
+    value; the branch lives in `ax_dispatch`'s `IfThenElse`."""
+    assert dict(axe.ARM_CARRY) == {
+        "arc_sel_agid": "arc_exec_armed_agid",
+        "arc_sel_value": "arc_exec_armed_value",
+        "mg_sel_agid": "arc_exec_armed_mg_agid",
+        "mg_sel_value": "arc_exec_armed_mg_value",
+    }
+    where = _seed_rule("ax_dispatch")["where"]
+    w = json.dumps(where)
+    for stamp in ("mg_sel_agid", "mg_sel_value", "arc_exec_armed_mg_agid",
+                  "arc_exec_armed_mg_value", "arc_sel_agid", "arc_sel_value"):
+        assert stamp in w, stamp
+
+    #  EVERY collapse-selecting branch must pair a stamp with ITS OWN TWIN and
+    #  must be gated on the SAME absence test, or the guard could straddle two
+    #  rankings — e.g. compare order-N's winner against order-1's value.
+    pairs = {("arc_sel_agid", "mg_sel_agid"),
+             ("arc_sel_value", "mg_sel_value"),
+             ("arc_exec_armed_agid", "arc_exec_armed_mg_agid"),
+             ("arc_exec_armed_value", "arc_exec_armed_mg_value")}
+    seen = set()
+    for ite in _walk(where, "IfThenElse"):
+        if ite["then"].get("type") != "Attr":
+            continue                              # the headroom_n coalesce
+        pair = (ite["then"]["key"], ite["other"]["key"])
+        assert pair in pairs, pair
+        assert ite["cond"] == {
+            "type": "Eq",
+            "a": {"type": "Attr", "node": {"type": "Var", "name": "agenda"},
+                  "key": "mg_sel_agid"},
+            "b": {"type": "Lit", "value": None}}, ite["cond"]
+        seen.add(pair)
+    assert seen == pairs, sorted(pairs - seen)
 
 
 # =========================================================================== #

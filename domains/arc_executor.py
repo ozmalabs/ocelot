@@ -147,29 +147,52 @@ def _agenda_node(sub):
     return None
 
 
-def arm(sub) -> dict:
-    """THE TICK BOUNDARY.  Copy the SETTLED selection forward, verbatim.
+#  THE TICK-BOUNDARY CARRY, AS A FIXED TABLE.  Every settled selection stamp on
+#  the agenda, and the armed name it is copied to.  It is a CONSTANT — the copy
+#  below iterates it and never inspects a value, so widening or narrowing what
+#  the hands may follow is a seed change (`SEL_AGID` in
+#  `tools/build_arc_executor_seed.py`), never an adapter one.
+ARM_CARRY = (
+    ("arc_sel_agid", "arc_exec_armed_agid"),      # ag_select   — order-1
+    ("arc_sel_value", "arc_exec_armed_value"),
+    ("mg_sel_agid", "arc_exec_armed_mg_agid"),    # mg_select   — order-N
+    ("mg_sel_value", "arc_exec_armed_mg_value"),
+)
 
-    `run_rules` is a fixpoint with no rule ordering, so `ag_select`'s stamp is
-    a TRANSIENT while `ag_mint_*` is still populating the pool — and a rule
-    that reads it inside the same fixpoint reads whatever it happened to hold.
+
+def arm(sub) -> dict:
+    """THE TICK BOUNDARY.  Copy EVERY settled selection forward, verbatim.
+
+    `run_rules` is a fixpoint with no rule ordering, so a selection stamp is a
+    TRANSIENT while `ag_mint_*` is still populating the pool — and a rule that
+    reads it inside the same fixpoint reads whatever it happened to hold.
     Measured: the first draft of `ax_dispatch` ordered the RUNNER-UP on the
     shipped boot.
 
-    This is the fix's adapter half, and it is a VERBATIM COPY — two reads, two
+    This is the fix's adapter half, and it is a VERBATIM COPY — four reads, four
     writes, no comparison and no branch.  **The agreement test is
     `ax_dispatch`'s own `Eq`**, evaluated in the next fixpoint against these
     values; a selection that is still moving cannot match both.  Carrying a
     settled conclusion across a tick boundary is what a world adapter is for.
+
+    A11/WH1 — WHY BOTH PAIRS, AND WHY THAT IS STILL NOT A DECISION.  The graph
+    carries two collapses (order-1 `arc_sel_*`, order-N `mg_sel_*`) and the
+    hands now follow order-N when it is live.  **Choosing between them is
+    `ax_dispatch`'s `IfThenElse`, in the seed.**  This function got strictly
+    dumber, not smarter: it used to copy one pair, it now copies the table, and
+    it still cannot tell which one the rule will read.  A missing stamp copies
+    as `None` and the rule's own non-null guard refuses it — the adapter does
+    not test for absence, it just carries what is there.
     """
     a = _agenda_node(sub)
     if a is None:
         return {}
     at = sub.node(a)["attrs"]
-    sub.set_attr(a, "arc_exec_armed_agid", at.get("arc_sel_agid"))
-    sub.set_attr(a, "arc_exec_armed_value", at.get("arc_sel_value"))
-    return {"arc_exec_armed_agid": at.get("arc_sel_agid"),
-            "arc_exec_armed_value": at.get("arc_sel_value")}
+    out: Dict[str, Any] = {}
+    for src, dst in ARM_CARRY:
+        sub.set_attr(a, dst, at.get(src))
+        out[dst] = at.get(src)
+    return out
 
 
 # --------------------------------------------------------------------------- #

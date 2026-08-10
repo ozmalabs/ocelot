@@ -688,6 +688,135 @@ is a missing term, not a hazard — do not guard it, add it.
   capability, or terminate honestly. State the trade-off and pick — but do not
   implement it in this rung.
 
+### AMENDMENT A12 (2026-08-11) — WH1–WH4 resolved; the loop closed with nobody in it
+
+**Outcome: WH1 PASS, WH2 PASS, WH3 PASS, WH4 PASS as scoped (designed, not
+built).** Results: `PROGRAM_SYNTHESIS_ARC6_WIRE_HANDS.md`; artifact
+`results/arc6_wire_hands.json`; worktree `/home/matt/arc6-wire-hands` off
+`26ca9ffaa8`.
+
+**A11's registered expectation held, and it held on the first iteration of the
+first boot.** With `ax_dispatch` reading the order-N selection, the shipped boot
+mints an `ExecOrder` for the re-measurement goal (order-N, 7.7) while the
+order-1 collapse still names the 42-task blocker (10.0), and the loop then runs
+a **real 138.6 s measurement**, refreshes the condition, un-stales the residual,
+retires the goal (pool **8 → 7**), bumps the epoch **0 → 1** and closes the
+order — with **`human_replies_sent: 0`**. AG-5's *"the route by which this loop
+could close with nobody in it is sitting one stamp away"* was literally true;
+the change is one `IfThenElse` and a **strictly dumber** adapter.
+
+**Three findings this rung returns, none of them registered in advance.**
+
+1. **The ask fires and is then irrelevant.** `ag_ask` still minted a question at
+   iteration 0 (it reads `arc_sel_*`, margin 2.30). Nobody answered it and it
+   **lapsed at the epoch the executor produced**. So `ag_ask` and `ax_dispatch`
+   now read *different collapses* and, on the shipped boot, name *different
+   goals*: the agent can ask about one goal while acting on another in the same
+   fixpoint. Nothing broke; *"the question and the action are about the same
+   thing"* has quietly stopped being true and nothing asserts it either way.
+   **Registered as a property to decide deliberately, not to discover later.**
+2. **The pool arithmetic is clean for the first time.** AG-5 could only show
+   `8 → 7` under a *conditioned* reply, because an unconditioned one mints a
+   fresh goal from the expired testimony and the net count hides the retirement.
+   With **no reply at all** there is no testimony, so the retirement is visible
+   in the net count directly. The arm AG-5 needed a fixture to isolate is now
+   the default.
+3. **The swap changed who STARTS the loop, not how it ends.** One execution,
+   then it stops. The re-arm deadlock (AG-5 §5) and the missing impotence term
+   are untouched, and the impotence case now reproduces under the new wiring at
+   margins **35.0** (order-1) / **6.64** (order-N) — not a tie under either
+   collapse, so the loop still ends silently holding a pool of 7 it cannot act
+   on.
+
+**WH4's pick, recorded so it is not re-litigated by preference: (c) TERMINATE
+HONESTLY**, as an `AgendaVerdict` graph fact keyed on the pool signature, with
+(a) *ask-a-different-question* and (b) *mint-a-capability-goal* deferred. The
+argument is an asymmetry, not a taste: (a)'s registered risk is a **repricing
+loop with no fixed point**, because AG-5 §8.3 measured that any answer penalises
+the region it is about regardless of content; (b)'s is an **agenda that grows
+monotonically less actionable while reading as activity**, because the goal it
+mints is itself unroutable; and **(c) is the only one that produces the
+measurement that would decide between (a) and (b)** — nobody has counted how
+often this loop ends impotent, nor whether the impotence concentrates on one
+missing `ExecClass` or spreads. **Registered for whoever builds it:** the term
+must quantify over the **pool**, not the winner — the current stop string is
+computed from the winner alone, in a measurement script, and a pool with one
+routable goal ranked second is not impotent.
+
+**A11's WH3 clause on `ag_ask` is satisfied structurally**: `seeds/arc_goals.json`
+is byte-identical to `HEAD`, so `ag_ask`'s transient-Argmax exposure is
+unchanged in every particular. Finding 1 above is a change in what the ask is
+*about*, not in its exposure.
+
+#### A12.1 — a baseline is a LIST, and this rung's baseline had to be re-taken
+
+**Registered as standing practice.** The tree at `26ca9ffaa8` does **not build
+or run out of the box** on the measuring machine: the committed
+`_native.abi3.so` fails to import (`GLIBC_2.43' not found`) and the crate does
+not compile on the available `rustc 1.87` (AVX-512 intrinsics — **29 `E0658`
+errors**). This rung therefore measured on a **freshly built binary**,
+`953b8e3fa647`, and **not** on `8311d4356082`.
+
+Two consequences, both registered rather than absorbed:
+
+- **A1.2's isolation is honoured the strongest way available:** the intervention
+  comparison **never spans two binaries** — arms A and B run in one process on
+  one binary, and the pre-change arm is `HEAD`'s own `seeds/arc_executor.json`
+  loaded out of git into a second substrate. The arms differ by the seed and
+  nothing else. Behavioural equivalence to the arc's usual binary was
+  **measured, not assumed**: 48 pass ids and 95 accepted ids byte-identical, the
+  re-measurement reproducing `newly_accepted [222]` / `collapse-dependent []` /
+  NO-GO, and the blocker's order-N headroom reproducing `42 → 13.637248`.
+- **`test_gr4_the_live_mbpp_pass_ids_are_unchanged` is RED under this
+  condition** — its engine allowlist has three entries and a fresh binary is in
+  none of them. The allowlist was **not widened**, though the measurement that
+  would justify widening it is above. Red before and after the change, same
+  node id.
+
+**And the whole-suite baseline was enumerated, not counted.** Both reds in this
+rung's WH3 table are named by node id and reproduce identically before and
+after: `test_ex1_the_frozen_artifacts_are_STILL_byte_identical` (fails wherever
+`results/` is untracked, because it witnesses via `git show HEAD:results/…`) and
+`test_gr4_…` above. **`test_arc_magnitude_migrated` is 43/43 here where AG-5
+recorded 42/43** — its failing assertion is a `git grep -l has_subgoal_spec`
+over *tracked* files, so the same test at the same commit returns opposite
+verdicts depending only on which artifacts happen to be tracked. That is not the
+pre-existing failure being fixed; it is **an assertion that measures the
+repository's tracking state rather than the property it names**, and it is
+registered here as a gate to repair, not a green to enjoy.
+
+#### A12.2 — A TIMEOUT IS AN ATTACKER: `finally`-based restore is not a guard
+
+**Registered as standing practice, after tripping it.** AG-5 §9.7 named the
+window between the re-measurement runner's `apply` and `revert` as a real risk.
+It fired in this rung — on a **read-only confirmation run**, after all
+measurements were complete and the tree verified clean. A `pytest` invocation
+under a 2-minute timeout pulled in the session-scoped `live_run` fixture (which
+starts the ~140 s re-measurement regardless of `-k`), and the timeout
+**`SIGKILL`ed the runner inside its own `try`**. The `finally` never ran, leaving
+`seeds/program_synthesis.json` patched and `results/arc6_verdict_before.json`
+overwritten — the latter in the **canonical** tree, through this rung's
+symlinked `results/`. Both were restored and sha-verified (the tracked file from
+`git`, the untracked one from the runner's surviving stash, hash-checked against
+the pristine values *before* copying back).
+
+**The rule this registers:** *a `try/finally` save-restore is not a guard
+against any wrapper that can kill the process.* For a measurement that mutates
+the tree, the protection has to be (i) a lock file, and (ii) a **startup**
+reconciliation that restores from any stash it finds on disk — not only a
+shutdown one. Also registered: **never run a suite containing a tree-mutating
+fixture under a timeout shorter than the fixture**, and prefer deselecting it
+outright, because `-k` does not deselect a session-scoped fixture.
+
+**The corollary that made recovery possible, and that should be preserved:** the
+tracked file was recoverable from **git**; the untracked one only from a `/tmp`
+directory that happened to survive *because* the `finally` had not run. A
+measurement whose only restorable copy lives in a temp directory is one
+`tmpwatch` away from unrecoverable — which is a further argument for the
+re-measurement hazard AG-5 §8.7 already named (`arc6_verdict_report.py`
+hard-codes its labels and output path, so a re-measurement *must* disturb
+committed artifacts).
+
 ---
 
 ## 7. What would make this arc a success
