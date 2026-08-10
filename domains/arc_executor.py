@@ -400,3 +400,15 @@ def pool(sub) -> list:
 def statuses(sub) -> dict:
     return {sub.node(n)["attrs"].get("agid"): sub.node(n)["attrs"].get("status")
             for n in sub.nodes("ArcGoal")}
+
+
+def agenda_verdicts(sub, kind: Optional[str] = None) -> List[dict]:
+    """A13/WH4(c).  Read back `AgendaVerdict` nodes — the ONE decision this
+    rung adds (`ax_impotent`, `seeds/arc_executor.json`) is entirely the
+    rule's `where`/effects; this is a pure query over what it already wrote,
+    the same shape as `orders()` / `pool()` / `statuses()` above."""
+    out = [dict(sub.node(n)["attrs"], _id=str(n))
+           for n in sub.nodes("AgendaVerdict")]
+    if kind is not None:
+        out = [a for a in out if a.get("kind") == kind]
+    return out

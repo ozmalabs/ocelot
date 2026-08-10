@@ -4,13 +4,13 @@
   "self_load_only": true,
   "_SELF_LOAD_ONLY_RATIONALE": "substrate/boot_all.py::_read_seeds GLOBS seeds/*.json and installs every match at boot, so a file here is live in EVERY agent in the tree the moment it lands.  seeds/arc_goals.json and seeds/arc_magnitude.json both ship self_load_only for that reason and this seed keeps the gating: an executor that dispatches jobs is the LAST thing that should arrive in every agent by a glob.  Activation is one key and a paired tree-wide sweep.",
   "id": "arc_executor",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "depends_on": [
     "goal_residuals",
     "arc_goals"
   ],
   "_SOFT_DEPENDENCY_ON_arc_magnitude": "v1.1.0 (A11/WH1) wires ax_dispatch to the ORDER-N collapse (mg_sel_agid, seeds/arc_magnitude.json) when that collapse is live on the graph, and to the order-1 collapse (arc_sel_agid) when it is not.  arc_magnitude is DELIBERATELY NOT in depends_on: it is self_load_only, every EX1-EX6 scene boots without it, and making it hard would both change what those scenes boot and put an order-N collapse into every graph that merely wants hands.  The branch is a Term in the rule (SEL_AGID), never a Python conditional, and the order records which branch it took.",
-  "description": "AG-5 -- THE EXECUTOR AND THE STATUS LIFECYCLE.  Two independent rungs converged on this as the blocker: the arc-goal rung called itself 'a planning layer with no hands', and the magnitude rung found decomposition blocked because a parent goal must LEAVE THE POOL and nothing in this tree ever wrote a terminal status.  This seed is the missing seam, and it is four rules. ax_dispatch turns the arc-grain collapse's winner into an ExecOrder, routed by route_pick's own Argmin-over-cues shape, and is STRUCTURALLY INCAPABLE of ordering a goal whose kind has no ExecClass.  v1.1.0 (A11/WH1): the collapse it binds is the ORDER-N one (mg_sel_agid) whenever that collapse is live, falling back to order-1 (arc_sel_agid) when it is not -- because AG-5 SS8.9 measured that the two DISAGREE and that order-N picks the one goal the executor can run, with no human reply in the scene.  ax_retired_epoch stamps when a goal went terminal.  ax_rearm is the anti-oscillation latch: a retired goal re-enters the pool only when its source residual is genuinely stale again AND the measurement epoch has advanced.  ax_close makes a completed execution countable. THE EPOCH ITSELF: `arc_measure_epoch` was a counter with no producer, and every expiry mechanism in the two rungs below turns on it.  The adapter bumps it WHEN AND ONLY WHEN a measurement actually ran, so an unconditioned answer's one-epoch life is now measured in measurements.",
+  "description": "AG-5 -- THE EXECUTOR AND THE STATUS LIFECYCLE.  Two independent rungs converged on this as the blocker: the arc-goal rung called itself 'a planning layer with no hands', and the magnitude rung found decomposition blocked because a parent goal must LEAVE THE POOL and nothing in this tree ever wrote a terminal status.  This seed is the missing seam, and it is four rules. ax_dispatch turns the arc-grain collapse's winner into an ExecOrder, routed by route_pick's own Argmin-over-cues shape, and is STRUCTURALLY INCAPABLE of ordering a goal whose kind has no ExecClass.  v1.1.0 (A11/WH1): the collapse it binds is the ORDER-N one (mg_sel_agid) whenever that collapse is live, falling back to order-1 (arc_sel_agid) when it is not -- because AG-5 SS8.9 measured that the two DISAGREE and that order-N picks the one goal the executor can run, with no human reply in the scene.  ax_retired_epoch stamps when a goal went terminal.  ax_rearm is the anti-oscillation latch: a retired goal re-enters the pool only when its source residual is genuinely stale again AND the measurement epoch has advanced.  ax_close makes a completed execution countable. THE EPOCH ITSELF: `arc_measure_epoch` was a counter with no producer, and every expiry mechanism in the two rungs below turns on it.  The adapter bumps it WHEN AND ONLY WHEN a measurement actually ran, so an unconditioned answer's one-epoch life is now measured in measurements. v1.2.0 (A13/WH4(c)) adds a fifth rule, ax_impotent: `ag_ask` fires on a TIE, and A11/A12 found the case it cannot see -- a non-empty pool in which NOTHING is routable, no tie anywhere, the loop stopping and saying nothing (WH2 SS3.1 iteration 1).  ax_impotent mints AgendaVerdict{kind:'impotent'} QUANTIFIED OVER THE WHOLE POOL (Not(Exists(POOL(), g, dispatchable(g))) -- dispatchable is ax_dispatch's OWN routability test, reused verbatim), never the winner alone, so a pool holding one routable goal ranked below the winner is correctly NOT impotent.  Mint-once is keyed on the pool's own SIGNATURE (its ordered agid list, JSON-encoded) rather than the tick, and the verdict lapses through the EXISTING, UNMODIFIED gr_condition_lapse via a fact_equals(arc_measure_epoch) condition -- zero new mechanism, zero new DSL Term.",
   "microtheory": "arc6_executor",
   "nodes": [
     {
@@ -84,6 +84,30 @@
       "edge_type": "has_exec_order",
       "tgt": {
         "type": "ExecOrder",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:arc_executor:has_agenda_verdict-0",
+      "src": {
+        "type": "ArcAgenda",
+        "var": "s"
+      },
+      "edge_type": "has_agenda_verdict",
+      "tgt": {
+        "type": "AgendaVerdict",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:arc_executor:holds_under-0",
+      "src": {
+        "type": "AgendaVerdict",
+        "var": "s"
+      },
+      "edge_type": "holds_under",
+      "tgt": {
+        "type": "ResidualCondition",
         "var": "t"
       }
     }
@@ -1577,6 +1601,911 @@
           "o",
           "outcome",
           "goal_retired_source_residual_no_longer_stale"
+        ]
+      ]
+    },
+    {
+      "name": "ax_impotent",
+      "comment": "A13/WH4(c) -- TERMINATE HONESTLY, AND IT QUANTIFIES OVER THE WHOLE POOL, NOT THE WINNER.  ag_ask fires on a TIE (margin < threshold under mutual ignorance); this fires on the case it cannot see -- a non-empty pool in which NOTHING is routable, no tie anywhere.  THE GUARD: Not(Exists(POOL(), g, dispatchable(g))) AND the pool is non-empty -- dispatchable is ax_dispatch's OWN routability test (_routable AND Count(mint_source)==1), reused verbatim, so this rule can never disagree with ax_dispatch about what it can run.  A pool with ONE routable member ranked below the winner does NOT fire this -- that is the discriminator against the wrong, winner-only reading (A13 IM2; the SHIPPED BOOT is that scene, unmodified). MINT-ONCE BY POOL SIGNATURE, NOT BY TICK: the guard excludes minting only while a NON-STALE verdict with the SAME pool signature (the ordered agid list, JSON-encoded) already exists, so an unchanged impotent pool never double-mints across repeated run_rules passes, and a GENUINELY different impotent pool (even inside one epoch) mints its own verdict. LAPSES THROUGH THE EXISTING gr_condition_lapse, UNMODIFIED: the verdict carries a holds_under edge to a ResidualCondition with ckind='fact_equals' against arc_measure_epoch, EXACTLY the 'expire at the next measurement' idiom TestimonyPolicy's unconditioned replies already use -- gr_condition_lapse's match (seeds/goal_residuals.json) carries NO type constraint on the node it lapses, so this rides it for free, zero new mechanism. nearest_unroutable_* is DESCRIPTIVE ONLY (SEL_AGID -- whichever collapse is live) and is never read by the firing guard.",
+      "batch": true,
+      "match": [
+        [
+          "agenda",
+          "uses_policy",
+          "pol"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Exists",
+            "source": {
+              "type": "Filter",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agenda"
+                },
+                "edge_type": "has_arc_goal",
+                "any_type": false
+              },
+              "var_name": "g2",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "g2"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "retired"
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "g2"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "settled"
+                      }
+                    }
+                  },
+                  {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "g2"
+                      },
+                      "key": "headroom_n"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  }
+                ]
+              }
+            },
+            "var_name": "gpe",
+            "predicate": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "agenda"
+                  },
+                  "edge_type": "has_arc_goal",
+                  "any_type": false
+                },
+                "var_name": "g2",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "g2"
+                          },
+                          "key": "status"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "retired"
+                        }
+                      }
+                    },
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "g2"
+                          },
+                          "key": "status"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "settled"
+                        }
+                      }
+                    },
+                    {
+                      "type": "Gt",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "g2"
+                        },
+                        "key": "headroom_n"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 0.0
+                      }
+                    }
+                  ]
+                }
+              },
+              "var_name": "gru",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Not",
+                        "arg": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "gru"
+                            },
+                            "key": "evidence_artifact"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": null
+                          }
+                        }
+                      },
+                      {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ExecClass"
+                        },
+                        "var_name": "ec3",
+                        "predicate": {
+                          "type": "And",
+                          "items": [
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "ec3"
+                                },
+                                "key": "name"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "gru"
+                                },
+                                "key": "kind"
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "ec3"
+                                },
+                                "key": "evidence_artifact"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "gru"
+                                },
+                                "key": "evidence_artifact"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Argmin",
+                            "source": {
+                              "type": "Neighbours",
+                              "node": {
+                                "type": "Var",
+                                "name": "gru"
+                              },
+                              "edge_type": "mint_source",
+                              "any_type": false
+                            },
+                            "var_name": "msr",
+                            "value": {
+                              "type": "Lit",
+                              "value": 0
+                            },
+                            "default": null
+                          },
+                          "key": "rid"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Argmin",
+                            "source": {
+                              "type": "Filter",
+                              "source": {
+                                "type": "NodesOfType",
+                                "node_type": "ExecClass"
+                              },
+                              "var_name": "ec",
+                              "predicate": {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "ec"
+                                      },
+                                      "key": "name"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "gru"
+                                      },
+                                      "key": "kind"
+                                    }
+                                  },
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "ec"
+                                      },
+                                      "key": "evidence_artifact"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "gru"
+                                      },
+                                      "key": "evidence_artifact"
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            "var_name": "ec2",
+                            "value": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "ec2"
+                              },
+                              "key": "priority"
+                            },
+                            "default": null
+                          },
+                          "key": "source_rid"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Count",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "gru"
+                        },
+                        "edge_type": "mint_source",
+                        "any_type": false
+                      }
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 1
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "AgendaVerdict"
+              },
+              "var_name": "avq",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "avq"
+                      },
+                      "key": "kind"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "impotent"
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "avq"
+                        },
+                        "key": "stale"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 1.0
+                      }
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "avq"
+                      },
+                      "key": "pool_agids"
+                    },
+                    "b": {
+                      "type": "ToJsonString",
+                      "value": {
+                        "type": "MapList",
+                        "source": {
+                          "type": "Filter",
+                          "source": {
+                            "type": "Neighbours",
+                            "node": {
+                              "type": "Var",
+                              "name": "agenda"
+                            },
+                            "edge_type": "has_arc_goal",
+                            "any_type": false
+                          },
+                          "var_name": "g2",
+                          "predicate": {
+                            "type": "And",
+                            "items": [
+                              {
+                                "type": "Not",
+                                "arg": {
+                                  "type": "Eq",
+                                  "a": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "g2"
+                                    },
+                                    "key": "status"
+                                  },
+                                  "b": {
+                                    "type": "Lit",
+                                    "value": "retired"
+                                  }
+                                }
+                              },
+                              {
+                                "type": "Not",
+                                "arg": {
+                                  "type": "Eq",
+                                  "a": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "g2"
+                                    },
+                                    "key": "status"
+                                  },
+                                  "b": {
+                                    "type": "Lit",
+                                    "value": "settled"
+                                  }
+                                }
+                              },
+                              {
+                                "type": "Gt",
+                                "a": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "g2"
+                                  },
+                                  "key": "headroom_n"
+                                },
+                                "b": {
+                                  "type": "Lit",
+                                  "value": 0.0
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "var_name": "gsig",
+                        "value": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "gsig"
+                          },
+                          "key": "agid"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "av",
+          "AgendaVerdict",
+          {
+            "kind": "impotent",
+            "epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Argmin",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ResidualFact"
+                    },
+                    "var_name": "aef",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "aef"
+                        },
+                        "key": "name"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "arc_measure_epoch"
+                      }
+                    }
+                  },
+                  "var_name": "aef2",
+                  "value": {
+                    "type": "Lit",
+                    "value": 0
+                  },
+                  "default": null
+                },
+                "key": "value"
+              }
+            },
+            "pool_n": {
+              "__term__": {
+                "type": "Count",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "edge_type": "has_arc_goal",
+                    "any_type": false
+                  },
+                  "var_name": "g2",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Not",
+                        "arg": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "g2"
+                            },
+                            "key": "status"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "retired"
+                          }
+                        }
+                      },
+                      {
+                        "type": "Not",
+                        "arg": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "g2"
+                            },
+                            "key": "status"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "settled"
+                          }
+                        }
+                      },
+                      {
+                        "type": "Gt",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "g2"
+                          },
+                          "key": "headroom_n"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0.0
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "pool_agids": {
+              "__term__": {
+                "type": "ToJsonString",
+                "value": {
+                  "type": "MapList",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "agenda"
+                      },
+                      "edge_type": "has_arc_goal",
+                      "any_type": false
+                    },
+                    "var_name": "g2",
+                    "predicate": {
+                      "type": "And",
+                      "items": [
+                        {
+                          "type": "Not",
+                          "arg": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "g2"
+                              },
+                              "key": "status"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "retired"
+                            }
+                          }
+                        },
+                        {
+                          "type": "Not",
+                          "arg": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "g2"
+                              },
+                              "key": "status"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "settled"
+                            }
+                          }
+                        },
+                        {
+                          "type": "Gt",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "g2"
+                            },
+                            "key": "headroom_n"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": 0.0
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "var_name": "gsig",
+                  "value": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "gsig"
+                    },
+                    "key": "agid"
+                  }
+                }
+              }
+            },
+            "exec_classes_held": {
+              "__term__": {
+                "type": "ToJsonString",
+                "value": {
+                  "type": "MapList",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "ExecClass"
+                  },
+                  "var_name": "ecl",
+                  "value": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "ecl"
+                    },
+                    "key": "name"
+                  }
+                }
+              }
+            },
+            "nearest_unroutable_agid": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "mg_sel_agid"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                },
+                "then": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "agenda"
+                  },
+                  "key": "arc_sel_agid"
+                },
+                "other": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "agenda"
+                  },
+                  "key": "mg_sel_agid"
+                }
+              }
+            },
+            "nearest_unroutable_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Argmin",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "agenda"
+                      },
+                      "edge_type": "has_arc_goal",
+                      "any_type": false
+                    },
+                    "var_name": "gnu",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "gnu"
+                        },
+                        "key": "agid"
+                      },
+                      "b": {
+                        "type": "IfThenElse",
+                        "cond": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "agenda"
+                            },
+                            "key": "mg_sel_agid"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": null
+                          }
+                        },
+                        "then": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "agenda"
+                          },
+                          "key": "arc_sel_agid"
+                        },
+                        "other": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "agenda"
+                          },
+                          "key": "mg_sel_agid"
+                        }
+                      }
+                    }
+                  },
+                  "var_name": "gnu2",
+                  "value": {
+                    "type": "Lit",
+                    "value": 0
+                  },
+                  "default": null
+                },
+                "key": "kind"
+              }
+            },
+            "stale": 0.0,
+            "_the_decision_lives_here": "the firing guard is Not(Exists(POOL(), g, dispatchable(g))) -- the adapter never computes this, never decides it and never even reads it except to render it back for a human."
+          }
+        ],
+        [
+          "add_edge",
+          "agenda",
+          "has_agenda_verdict",
+          "av"
+        ],
+        [
+          "add_node",
+          "avc",
+          "ResidualCondition",
+          {
+            "ckind": "fact_equals",
+            "filter_value": "arc_measure_epoch",
+            "expected_str": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Argmin",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ResidualFact"
+                    },
+                    "var_name": "aef",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "aef"
+                        },
+                        "key": "name"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "arc_measure_epoch"
+                      }
+                    }
+                  },
+                  "var_name": "aef2",
+                  "value": {
+                    "type": "Lit",
+                    "value": 0
+                  },
+                  "default": null
+                },
+                "key": "value"
+              }
+            },
+            "why": "this verdict describes the pool AS OF this measurement epoch; a new measurement may move the world, so it must be re-read rather than re-used once one runs -- the SAME expiry idiom TestimonyPolicy's unconditioned replies already carry (default_condition_fact = arc_measure_epoch)."
+          }
+        ],
+        [
+          "add_edge",
+          "av",
+          "holds_under",
+          "avc"
         ]
       ]
     }

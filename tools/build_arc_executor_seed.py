@@ -39,6 +39,20 @@ WHAT THIS SEED IS.  Four rules and a two-node route table.
   ax_close         Closes the order once its goal is terminal, so "an execution
                    that completed" is a countable graph fact rather than a
                    read of the adapter's return value.
+  ax_impotent      A13/WH4(c) -- TERMINATE HONESTLY.  `ag_ask` fires on a TIE;
+                   this fires on the case it cannot see, a non-empty pool in
+                   which NOTHING is routable.  Quantifies over the WHOLE POOL
+                   (`Not(Exists(POOL(), g, dispatchable(g)))`), never the
+                   winner alone -- reuses `_routable`/`ROUTE` VERBATIM, the
+                   same predicate `ax_dispatch` itself gates on.  Mints
+                   `AgendaVerdict{kind:'impotent'}` once per distinct POOL
+                   SIGNATURE (an ordered agid list, JSON-encoded via `MapList`
+                   + `ToJsonString` -- comparable by Eq, no sort needed) and
+                   lapses it through the EXISTING, UNMODIFIED
+                   `gr_condition_lapse` (`seeds/goal_residuals.json`) via a
+                   `fact_equals(arc_measure_epoch)` condition -- the SAME
+                   "expire at the next measurement" idiom the testimony reply
+                   already ships.  No new DSL Term, no new lapse mechanism.
 
 Run:  python tools/build_arc_executor_seed.py         (writes seeds/arc_executor.json)
       python tools/build_arc_executor_seed.py --check (fails if out of date)
@@ -54,7 +68,7 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 from build_arc_goals_seed import (  # noqa: E402
     A, AND, ARGMIN, COUNT, EQ, EXISTS, FILT, GT, HUB, ITE, L, MEASURE_EPOCH,
-    NEIGH, NOT, NOT_, ONE_OF, OR, PLUS, T, V,
+    NEIGH, NOT, NOT_, ONE_OF, OR, PLUS, POOL, STR, T, V,
 )
 
 OUT = os.path.join(ROOT, "seeds", "arc_executor.json")
@@ -278,6 +292,164 @@ def _in_pool(goal_var="g"):
 
 
 # --------------------------------------------------------------------------- #
+#  A13/WH4(c) -- THE IMPOTENCE TERM.  "terminate honestly", quantified over the
+#  WHOLE POOL, never the winner.  Design: PROGRAM_SYNTHESIS_ARC6_WIRE_HANDS.md
+#  SS5; bars: PROGRAM_SYNTHESIS_ARC6_PREREG.md amendment A13 (IM1-IM5).
+# --------------------------------------------------------------------------- #
+def MAPLIST(source, var_name, value):
+    """`{n : n in source}` as an ORDERED LIST (`term.rs::TermNode::MapList`,
+    evaluated by the SAME `evaluate()` the rule engine runs -- confirmed by
+    reading the match arm, not assumed from the synth-only sub-language that
+    also uses the name).  Not exported by `build_arc_goals_seed` (nothing
+    there needs it), so it is a local, mechanical JSON constructor here, the
+    same shape as every other Term builder in that module."""
+    return {"type": "MapList", "source": source, "var_name": var_name,
+            "value": value}
+
+
+def _dispatchable(goal_var="g"):
+    """`ax_dispatch`'s FULL per-goal routability, not just `_routable`'s
+    partial reading.  `ax_dispatch`'s own `where` gates on `_routable(g)` AND
+    a SEPARATE `Eq(Count(mint_source), 1)` clause (a goal with more than one
+    mint-source edge is a shape `_routable`'s `ONE_OF` would silently pick an
+    arbitrary survivor from); folding both in here means "dispatchable"
+    matches EXACTLY what the executor can act on, not an approximation of it.
+    """
+    return AND(
+        _routable(goal_var),
+        EQ(COUNT(NEIGH(V(goal_var), "mint_source")), L(1)),
+    )
+
+
+def _pool_unroutable():
+    """THE POOL-QUANTIFIED TEST, AND IT IS THE WHOLE POINT.
+
+    A12/WH4 SS5.1 named the defect precisely: the current stop string
+    (`no_executable_goal_was_selected`) is computed in a MEASUREMENT SCRIPT
+    from the WINNER ALONE, so a pool holding one routable goal ranked second
+    reads as impotent when it is not.  `Not(Exists(POOL(), g,
+    dispatchable(g)))` is the correct quantifier -- it is FALSE the moment ANY
+    pool member is dispatchable, regardless of rank -- and it costs nothing
+    new: `POOL()` is `ag_select`'s own Filter (imported unchanged, so this
+    inherits its EXACT membership semantics, including its known headroom-null
+    exposure -- the same one `_in_pool` coalesces for the single-goal case;
+    unmodified here on purpose, because "the pool" A13 quantifies over is
+    THIS pool, not a hardened variant of it), and `_dispatchable` is
+    `ax_dispatch`'s own guard, reused verbatim.
+    """
+    return NOT(EXISTS(POOL(), "gru", _dispatchable("gru")))
+
+
+def _pool_nonempty():
+    """A pool of ZERO goals is not impotent, it is DONE -- `Not(Exists(...))`
+    over an empty source is vacuously True, so this guard is required or an
+    agenda that has finished everything would mint a false impotence verdict
+    the moment the last goal retires."""
+    return EXISTS(POOL(), "gpe", L(True))
+
+
+def _pool_sig():
+    """A comparable STRING signature of the pool's CURRENT membership -- the
+    ordered agid list, `MapList`'d then `ToJsonString`'d (the same
+    `Value::List` -> `serde_json::Array` path the engine coherence probe
+    exercises).  Comparable by plain `Eq`, WITH NO SORT: two reads of the SAME
+    graph state walk the SAME underlying `Filter`, so this is a same-run,
+    same-graph signature, not a canonical cross-run one -- exactly what the
+    mint-once guard below needs and no more.  (This tree has no string-
+    ordering primitive to build a canonical cross-run signature --
+    `ArcGoalPolicy.tie_break`'s own residual, `tools/build_arc_goals_seed.py`
+    -- and does not need one here.)
+    """
+    return STR(MAPLIST(POOL(), "gsig", A(V("gsig"), "agid")))
+
+
+def _nearest_unroutable_goal():
+    """PURELY DESCRIPTIVE, never part of the firing guard.  The goal whichever
+    collapse is currently live is armed on (`SEL_AGID` -- order-N when
+    `arc_magnitude` is live, order-1 otherwise), looked up by its own stamped
+    agid so this never re-ranks."""
+    return ONE_OF(FILT(NEIGH(V("agenda"), "has_arc_goal"), "gnu",
+                       EQ(A(V("gnu"), "agid"), SEL_AGID())), "gnu2")
+
+
+def _r_impotent():
+    return {
+        "name": "ax_impotent",
+        "comment": (
+            "A13/WH4(c) -- TERMINATE HONESTLY, AND IT QUANTIFIES OVER THE "
+            "WHOLE POOL, NOT THE WINNER.  ag_ask fires on a TIE (margin < "
+            "threshold under mutual ignorance); this fires on the case it "
+            "cannot see -- a non-empty pool in which NOTHING is routable, no "
+            "tie anywhere.  THE GUARD: Not(Exists(POOL(), g, dispatchable(g))) "
+            "AND the pool is non-empty -- dispatchable is ax_dispatch's OWN "
+            "routability test (_routable AND Count(mint_source)==1), reused "
+            "verbatim, so this rule can never disagree with ax_dispatch about "
+            "what it can run.  A pool with ONE routable member ranked below "
+            "the winner does NOT fire this -- that is the discriminator "
+            "against the wrong, winner-only reading (A13 IM2; the SHIPPED "
+            "BOOT is that scene, unmodified). "
+            "MINT-ONCE BY POOL SIGNATURE, NOT BY TICK: the guard excludes "
+            "minting only while a NON-STALE verdict with the SAME pool "
+            "signature (the ordered agid list, JSON-encoded) already exists, "
+            "so an unchanged impotent pool never double-mints across "
+            "repeated run_rules passes, and a GENUINELY different impotent "
+            "pool (even inside one epoch) mints its own verdict. "
+            "LAPSES THROUGH THE EXISTING gr_condition_lapse, UNMODIFIED: the "
+            "verdict carries a holds_under edge to a ResidualCondition with "
+            "ckind='fact_equals' against arc_measure_epoch, EXACTLY the "
+            "'expire at the next measurement' idiom TestimonyPolicy's "
+            "unconditioned replies already use -- gr_condition_lapse's match "
+            "(seeds/goal_residuals.json) carries NO type constraint on the "
+            "node it lapses, so this rides it for free, zero new mechanism. "
+            "nearest_unroutable_* is DESCRIPTIVE ONLY (SEL_AGID -- whichever "
+            "collapse is live) and is never read by the firing guard."),
+        "batch": True,
+        "match": HUB,
+        "where": AND(
+            _pool_nonempty(),
+            _pool_unroutable(),
+            NOT(EXISTS(NOT_("AgendaVerdict"), "avq",
+                       AND(EQ(A(V("avq"), "kind"), L("impotent")),
+                           NOT(EQ(A(V("avq"), "stale"), L(1.0))),
+                           EQ(A(V("avq"), "pool_agids"), _pool_sig())))),
+        ),
+        "effects": [
+            ["add_node", "av", "AgendaVerdict", {
+                "kind": "impotent",
+                "epoch": T(MEASURE_EPOCH()),
+                "pool_n": T(COUNT(POOL())),
+                "pool_agids": T(_pool_sig()),
+                "exec_classes_held": T(STR(MAPLIST(NOT_("ExecClass"), "ecl",
+                                                    A(V("ecl"), "name")))),
+                "nearest_unroutable_agid": T(SEL_AGID()),
+                "nearest_unroutable_kind": T(A(_nearest_unroutable_goal(),
+                                               "kind")),
+                "stale": 0.0,
+                "_the_decision_lives_here": (
+                    "the firing guard is Not(Exists(POOL(), g, "
+                    "dispatchable(g))) -- the adapter never computes this, "
+                    "never decides it and never even reads it except to "
+                    "render it back for a human."),
+            }],
+            ["add_edge", "agenda", "has_agenda_verdict", "av"],
+            ["add_node", "avc", "ResidualCondition", {
+                "ckind": "fact_equals",
+                "filter_value": "arc_measure_epoch",
+                "expected_str": T(MEASURE_EPOCH()),
+                "why": (
+                    "this verdict describes the pool AS OF this measurement "
+                    "epoch; a new measurement may move the world, so it must "
+                    "be re-read rather than re-used once one runs -- the SAME "
+                    "expiry idiom TestimonyPolicy's unconditioned replies "
+                    "already carry (default_condition_fact = "
+                    "arc_measure_epoch)."),
+            }],
+            ["add_edge", "av", "holds_under", "avc"],
+        ],
+    }
+
+
+# --------------------------------------------------------------------------- #
 #  NODES
 # --------------------------------------------------------------------------- #
 def _nodes():
@@ -340,6 +512,13 @@ def _productions():
         {"provenance": "seed:arc_executor:has_exec_order-2",
          "src": {"type": "ArcAgenda", "var": "s"}, "edge_type": "has_exec_order",
          "tgt": {"type": "ExecOrder", "var": "t"}},
+        #  A13/WH4(c) -- the impotence term.
+        {"provenance": "seed:arc_executor:has_agenda_verdict-0",
+         "src": {"type": "ArcAgenda", "var": "s"}, "edge_type": "has_agenda_verdict",
+         "tgt": {"type": "AgendaVerdict", "var": "t"}},
+        {"provenance": "seed:arc_executor:holds_under-0",
+         "src": {"type": "AgendaVerdict", "var": "s"}, "edge_type": "holds_under",
+         "tgt": {"type": "ResidualCondition", "var": "t"}},
     ]
 
 
@@ -543,7 +722,8 @@ def _r_close():
 
 
 def _rules():
-    return [_r_dispatch(), _r_retired_epoch(), _r_rearm(), _r_close()]
+    return [_r_dispatch(), _r_retired_epoch(), _r_rearm(), _r_close(),
+            _r_impotent()]
 
 
 def build():
@@ -565,7 +745,7 @@ def build():
             "is the LAST thing that should arrive in every agent by a glob.  "
             "Activation is one key and a paired tree-wide sweep."),
         "id": "arc_executor",
-        "version": "1.1.0",
+        "version": "1.2.0",
         "depends_on": ["goal_residuals", "arc_goals"],
         "_SOFT_DEPENDENCY_ON_arc_magnitude": (
             "v1.1.0 (A11/WH1) wires ax_dispatch to the ORDER-N collapse "
@@ -601,7 +781,20 @@ def build():
             "producer, and every expiry mechanism in the two rungs below turns "
             "on it.  The adapter bumps it WHEN AND ONLY WHEN a measurement "
             "actually ran, so an unconditioned answer's one-epoch life is now "
-            "measured in measurements."),
+            "measured in measurements. "
+            "v1.2.0 (A13/WH4(c)) adds a fifth rule, ax_impotent: `ag_ask` fires "
+            "on a TIE, and A11/A12 found the case it cannot see -- a non-empty "
+            "pool in which NOTHING is routable, no tie anywhere, the loop "
+            "stopping and saying nothing (WH2 SS3.1 iteration 1).  ax_impotent "
+            "mints AgendaVerdict{kind:'impotent'} QUANTIFIED OVER THE WHOLE "
+            "POOL (Not(Exists(POOL(), g, dispatchable(g))) -- dispatchable is "
+            "ax_dispatch's OWN routability test, reused verbatim), never the "
+            "winner alone, so a pool holding one routable goal ranked below "
+            "the winner is correctly NOT impotent.  Mint-once is keyed on the "
+            "pool's own SIGNATURE (its ordered agid list, JSON-encoded) rather "
+            "than the tick, and the verdict lapses through the EXISTING, "
+            "UNMODIFIED gr_condition_lapse via a fact_equals(arc_measure_epoch) "
+            "condition -- zero new mechanism, zero new DSL Term."),
         "microtheory": "arc6_executor",
         "nodes": _nodes(),
         "edges": _edges(),

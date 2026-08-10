@@ -843,6 +843,220 @@ def test_wh1_the_adapter_carry_is_a_CONSTANT_TABLE_not_a_choice():
 
 
 # =========================================================================== #
+#  A13/WH4(c) — THE IMPOTENCE TERM.
+#  Bars: `PROGRAM_SYNTHESIS_ARC6_PREREG.md` amendment A13 (IM1–IM5), registered
+#  BEFORE this block.  `_routable`/`ROUTE`/`POOL` are reused verbatim; the only
+#  new rule is `ax_impotent`.
+# =========================================================================== #
+def _leave_pool_without_retiring(s, agid):
+    """Remove one goal from `POOL()` WITHOUT touching `status` — headroom_n
+    to 0 rather than `status: 'retired'`.  Deliberately NOT `sole_survivor`'s
+    retire-everything-else shape: retiring AGID by hand leaves its
+    `retired_epoch` unset, `ax_retired_epoch` stamps it, and because its
+    underlying `GoalResidual` never actually got re-measured (still
+    genuinely stale on THIS engine — the value-layer collapse is real, not a
+    fixture), `ax_rearm`'s latch legitimately brings it back the moment the
+    epoch advances.  That is the anti-oscillation latch working correctly,
+    not a bug in this test — but it would confound an isolated mint/lapse
+    demonstration, so the pool-exit here is via headroom (a path `ax_rearm`
+    never looks at) and the goal is left `status: 'minted'`."""
+    for n in s.nodes("ArcGoal"):
+        if s.node(n)["attrs"].get("agid") == agid:
+            s.set_attr(n, "headroom_n", 0.0)
+            return
+    raise AssertionError("no such goal: " + agid)
+
+
+def test_im1_fires_when_the_WHOLE_POOL_is_unroutable():
+    """IM1, positive case.  AGID (the one routable kind) leaves the pool; the
+    remaining seven goals are `supply_blocker` / `source_claim` kinds with no
+    `ExecClass` match at all, so the pool is collectively unroutable and the
+    verdict mints, carrying the pool it saw."""
+    s, _ = boot()
+    s._inner.run_rules()
+    assert axe.agenda_verdicts(s, "impotent") == [], (
+        "fires before anything left the pool")
+    _leave_pool_without_retiring(s, AGID)
+    s._inner.run_rules()
+    avs = axe.agenda_verdicts(s, "impotent")
+    assert len(avs) == 1, avs
+    av = avs[0]
+    assert av["pool_n"] == 7
+    seen_pool = json.loads(av["pool_agids"])
+    assert AGID not in seen_pool
+    assert sorted(seen_pool) == axe.pool(s)
+    assert av["stale"] == 0.0
+    assert json.loads(av["exec_classes_held"]) == ["re_measure"]
+
+
+def test_im1_does_NOT_fire_while_the_pool_is_healthy():
+    """IM1, negative case.  The shipped, untouched boot: a routable goal
+    (AGID) is present.  No verdict."""
+    s, _ = boot()
+    s._inner.run_rules()
+    assert AGID in axe.pool(s)
+    assert axe.agenda_verdicts(s, "impotent") == []
+
+
+def test_im1_an_EMPTY_pool_is_not_impotent_it_is_DONE():
+    """`Not(Exists(pool, ...))` is vacuously True over an empty pool — the
+    non-emptiness guard is what keeps a finished agenda from reading as a
+    stuck one."""
+    s, _ = boot()
+    s._inner.run_rules()
+    for n in s.nodes("ArcGoal"):
+        s.set_attr(n, "status", "retired")
+    s._inner.run_rules()
+    assert axe.pool(s) == []
+    assert axe.agenda_verdicts(s, "impotent") == []
+
+
+def test_im1_the_REAL_live_run_scene_reaches_impotence_too(live_run):
+    """Not a fixture-only claim: `live_run`'s own post-execution state (a REAL
+    138s remeasurement retired the one routable goal for real, pool 8 -> 7) is
+    independently an impotent pool — no scene construction, reusing the
+    already-paid cost.
+
+    `live_run` is a MODULE-scoped fixture shared with `test_ex4_*`
+    (`latch_cells`), which walks the anti-oscillation latch through a real
+    epoch bump on this SAME graph — correctly minting a second, later verdict
+    while the first goes stale (IM5, live).  So this asserts on the CURRENTLY
+    LIVE (non-stale) subset, which is exactly one regardless of how much of
+    that history has already run when this test executes."""
+    s = live_run["s"]
+    avs = axe.agenda_verdicts(s, "impotent")
+    assert avs, "the real remeasurement's post-execution pool never registered as impotent"
+    live_avs = [a for a in avs if a["stale"] != 1.0]
+    assert len(live_avs) == 1, avs
+    assert AGID not in json.loads(live_avs[0]["pool_agids"])
+    assert live_avs[0]["pool_n"] == len(axe.pool(s))
+
+
+def test_im2_the_discriminator_a_winner_only_reading_would_be_WRONG_here():
+    """IM2.  The shipped boot IS the discriminating scene A12/WH4 SS5.1 named:
+    order-1's own winner is the 42-task blocker, unroutable — a winner-only
+    reading (the CURRENT `_why_no_dispatch` measurement-script shape) would
+    call this impotent.  The pool-quantified term must not, because AGID sits
+    lower in the ranking and IS routable."""
+    s, _ = boot()
+    s._inner.run_rules()
+    at = s.node([n for n in s.nodes("ArcAgenda")][0])["attrs"]
+    winner = at["arc_sel_agid"]
+    assert winner != AGID, (
+        "the winner must be the UNROUTABLE blocker for this scene to "
+        "discriminate anything")
+    assert AGID in axe.pool(s), (
+        "the routable goal must still be IN the pool, merely not winning")
+    assert axe.agenda_verdicts(s, "impotent") == [], (
+        "a winner-only implementation would have fired here; the "
+        "pool-quantified one must not")
+
+
+def test_im4_composes_with_the_order_N_wiring():
+    """IM4.  With `arc_magnitude` loaded and the tier ladder installed, AGID is
+    order-N's OWN pick (WH1) — retiring it makes BOTH `ax_dispatch` armed
+    selections (order-1 AND order-N) name an unroutable goal, and the rest of
+    the pool is unroutable too.  The fact must fire there specifically, and
+    must not fire one step earlier while AGID was still in the pool."""
+    s, _ = _boot_with_magnitude(ladder=True)
+    s._inner.run_rules()
+    at = s.node([n for n in s.nodes("ArcAgenda")][0])["attrs"]
+    assert at["mg_sel_agid"] == AGID, (
+        "order-N must still be picking the routable goal here — see WH1")
+    assert axe.agenda_verdicts(s, "impotent") == [], (
+        "must not fire while the routable goal is still in the pool")
+
+    _leave_pool_without_retiring(s, AGID)
+    s._inner.run_rules()
+    at2 = s.node([n for n in s.nodes("ArcAgenda")][0])["attrs"]
+    assert at2["arc_sel_agid"] == at2["mg_sel_agid"] != AGID, (
+        "both collapses must now agree on an UNROUTABLE goal for this to be "
+        "the composed case IM4 asks for")
+    avs = axe.agenda_verdicts(s, "impotent")
+    assert len(avs) == 1, avs
+    assert AGID not in json.loads(avs[0]["pool_agids"])
+    assert avs[0]["nearest_unroutable_agid"] == at2["mg_sel_agid"], (
+        "descriptive field reads whichever collapse is live (SEL_AGID), "
+        "order-N here")
+
+
+def test_im5_mint_once_by_pool_signature_not_by_tick():
+    """IM5, half 1.  Repeated `run_rules()` passes over an UNCHANGED impotent
+    pool must not double-mint."""
+    s, _ = boot()
+    s._inner.run_rules()
+    _leave_pool_without_retiring(s, AGID)
+    s._inner.run_rules()
+    first = axe.agenda_verdicts(s, "impotent")
+    assert len(first) == 1
+    s._inner.run_rules()
+    s._inner.run_rules()
+    second = axe.agenda_verdicts(s, "impotent")
+    assert len(second) == 1, "an unchanged impotent pool must not double-mint"
+    assert second[0]["_id"] == first[0]["_id"]
+
+
+def test_im5_a_DIFFERENT_impotent_pool_mints_its_OWN_verdict():
+    """IM5, half 2 (the other side of 'keyed on the pool signature, not the
+    tick').  A second, genuinely different impotent pool — reached inside the
+    SAME epoch, no measurement — mints its OWN verdict rather than being
+    silently absorbed by the first."""
+    s, _ = boot()
+    s._inner.run_rules()
+    _leave_pool_without_retiring(s, AGID)
+    s._inner.run_rules()
+    assert len(axe.agenda_verdicts(s, "impotent")) == 1
+    for n in s.nodes("ArcGoal"):
+        if s.node(n)["attrs"].get("agid") == "arc6.claim.tier0_hs1_0_of_10":
+            s.set_attr(n, "headroom_n", 0.0)
+    s._inner.run_rules()
+    avs = axe.agenda_verdicts(s, "impotent")
+    assert len(avs) == 2, avs
+    assert {a["pool_n"] for a in avs} == {7, 6}
+    assert all(a["stale"] == 0.0 for a in avs), (
+        "both are true statements about DIFFERENT historical pool states — "
+        "see the results doc's remaining-uncertainties section")
+
+
+def test_im5_lapses_through_the_UNMODIFIED_gr_condition_lapse():
+    """IM5, half 3.  No new lapse mechanism: bumping `arc_measure_epoch` (the
+    SAME fact `gr_condition_lapse`'s `fact_equals` branch already reads for
+    the testimony precedent) marks the held verdict stale, and because the
+    pool is STILL impotent a fresh verdict mints for the new epoch."""
+    s, _ = boot()
+    s._inner.run_rules()
+    _leave_pool_without_retiring(s, AGID)
+    s._inner.run_rules()
+    before = axe.agenda_verdicts(s, "impotent")
+    assert before and before[0]["stale"] == 0.0
+    before_epoch = before[0]["epoch"]
+
+    agi.bump_measure_epoch(s)
+    s._inner.run_rules()
+    avs = axe.agenda_verdicts(s, "impotent")
+    stale_now = [a for a in avs if a["epoch"] == before_epoch]
+    assert stale_now and stale_now[0]["stale"] == 1.0, (
+        "the held verdict must go stale on a genuinely new measurement epoch")
+    live_now = [a for a in avs if a["stale"] != 1.0]
+    assert len(live_now) == 1 and live_now[0]["epoch"] != before_epoch
+
+
+def test_im5_goal_residuals_seed_is_UNMODIFIED_the_lapse_is_RIDDEN_not_rebuilt():
+    """`gr_condition_lapse` / `gr_condition_hold` (`seeds/goal_residuals.json`)
+    are untouched by this rung — the behavioural claim above rides the
+    EXISTING rule because its `match` carries no type constraint on the node
+    it lapses, not because a new lapse rule was added."""
+    prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
+                            capture_output=True, text=True).stdout.strip()
+    head = subprocess.run(["git", "-C", ROOT, "show",
+                           "HEAD:" + prefix + "seeds/goal_residuals.json"],
+                          capture_output=True, text=True).stdout
+    assert head
+    assert head == open(os.path.join(ROOT, "seeds",
+                                     "goal_residuals.json")).read()
+
+
+# =========================================================================== #
 #  EVERY RULE MUST HAVE MOVED SOMETHING
 # =========================================================================== #
 def test_every_rule_in_this_seed_is_shown_to_FIRE_live(live_run, latch_cells):
@@ -856,6 +1070,7 @@ def test_every_rule_in_this_seed_is_shown_to_FIRE_live(live_run, latch_cells):
     assert g.get("retired_epoch") is not None                # ax_retired_epoch
     assert g.get("rearm_count") == 1.0                       # ax_rearm
     assert orders[0]["status"] == "closed"                   # ax_close
+    assert axe.agenda_verdicts(s, "impotent")                # ax_impotent
 
 
 def test_no_guard_is_an_EMPTY_conjunction():

@@ -819,6 +819,99 @@ committed artifacts).
 
 ---
 
+### AMENDMENT A13 (2026-08-11) — the impotence term, registered before the build
+
+A12/WH4 designed and picked **(c) terminate honestly** — an `AgendaVerdict`
+graph fact — but built nothing. Two things were registered for whoever built
+it: **the term must quantify over the pool, not the winner**, and **it must
+lapse through `gr_condition_lapse` like every other conditioned fact**. This
+amendment registers the bars for building exactly that, scoped to the term
+only — `ag_ask`'s tie logic, MG4/decomposition, and the other named remaining
+uncertainties (silent fallback, `ag_ask`/`ax_dispatch` reading different
+collapses, the re-arm deadlock) are untouched and not re-litigated here.
+
+**The design investigation, done before drafting bars.** `ax_dispatch`'s own
+route (`tools/build_arc_executor_seed.py::_routable`) is already the per-goal
+"can the executor act on this" predicate — three-part key (kind +
+`evidence_artifact` + `source_rid`) against the one shipped `ExecClass`. That
+predicate is reused **verbatim**, lifted to the whole pool via
+`Not(Exists(POOL(), g, _routable(g)))` — `POOL()` is `ag_select`'s own filter,
+imported unchanged from `tools/build_arc_goals_seed.py`. **No new DSL Term is
+needed**; this is exactly the "cheap" reading WH4 §5.1 predicted. The lapse
+requirement is satisfiable **with zero changes to `goal_residuals.json`**:
+`gr_condition_lapse`'s `match` (`[["r","holds_under","c"]]`) carries no type
+constraint on `r`, so any node with a `stale` attr and a `holds_under` edge to
+a `ResidualCondition` is lapsed by the existing rule, unmodified — the same
+mechanism the testimony reply (`ag_reply_mints_testimony_*`) already rides
+verbatim. The condition kind used is `fact_equals` against `arc_measure_epoch`,
+the same "no specific condition to name, so expire at the next measurement"
+idiom `TestimonyPolicy` already ships (Angluin's zero-bits reading, made
+mechanical a second time).
+
+**"Keyed on the pool signature, not the tick" is read literally, not as an
+epoch-only rate bound.** `MapList` (`runners/dsl/src/term.rs`, evaluated in the
+same `term.rs::evaluate` the rule engine already runs, confirmed by reading the
+match arm — not a separate synth-only sub-language) turns the pool's Filter
+into an ordered `Value::List` of agids in one Term; `ToJsonString` of that list
+(the same `Value::List`/`Value::Tuple` → `serde_json::Array` path the coherence
+probe exercises) gives a **comparable string signature with no sort** — the
+mint guard compares this tick's computed signature against every **held,
+non-stale** verdict's stored one by plain string `Eq`, so a genuinely different
+impotent pool (even inside one epoch) mints its own verdict, and an unchanged
+one does not re-mint. This sidesteps the tree's own named residual (**"no
+string ordering primitive; `sorted`-on-strings is unfixed"**, `ArcGoalPolicy`'s
+`tie_break` comment) because equality, not ordering, is all a signature needs
+— registered here so it is not re-derived as a blocker later.
+
+**Bars.**
+
+- **IM1 — fires on POOL-quantified impotence, both directions.** With a
+  non-empty pool where **no member** has a live `ExecClass` route,
+  `AgendaVerdict{kind:"impotent"}` mints. With a non-empty pool where **at
+  least one member** is routable (whether or not it is the current winner),
+  it does not. Demonstrated with one constructed positive scene and one
+  constructed negative scene, both live.
+- **IM2 — the discriminator: does NOT fire on a winner-only misread.** The
+  **shipped, untouched boot** already is this case — order-1's winner is the
+  42-task blocker (unroutable) while the `re_measure` goal sits lower in the
+  ranking and **is** routable. `_why_no_dispatch`'s own winner-only reading
+  (WH4 §5.1) would call this impotent; the pool-quantified term must not. This
+  is the bar the wrong, simpler implementation fails.
+- **IM3 — no regression.** The five existing gate suites
+  (`test_arc_executor_migrated`, `test_arc_goals_migrated`,
+  `test_goal_residual_migrated`, `test_arc6_valuelayer_migrated`,
+  `test_arc_magnitude_migrated`) produce **the same failing-node-id lists**
+  before and after, paired and named, not counted. `seeds/arc_goals.json`,
+  `seeds/goal_residuals.json` and `seeds/arc_magnitude.json` stay
+  byte-identical to `HEAD`. `seeds/arc_executor.json` regenerates
+  byte-identically from its own emitter after the edit. The adapter source
+  audit (no `.evaluate(`, no `run_rules`, no `substrate_rs` import) still
+  passes on any new adapter read-off.
+- **IM4 — composes with the order-N wiring A11/A12 just landed.** With
+  `arc_magnitude` loaded and the tier ladder installed, construct the scene
+  WH2 §3.1's iteration 1 reached live: the sole routable goal has left the
+  pool, so **both** `ax_dispatch`'s order-1 and order-N armed selections name
+  an unroutable goal **and the rest of the pool is unroutable too**. The
+  impotence fact must fire there specifically, and must not fire in the same
+  scene one step earlier, while the routable goal was still in the pool.
+- **IM5 — mint-once by pool signature, lapse via the UNMODIFIED
+  `gr_condition_lapse`.** Two (or more) `run_rules()` passes over an unchanged
+  impotent pool mint exactly one non-stale `AgendaVerdict`, never a duplicate.
+  Bumping `arc_measure_epoch` marks the held verdict `stale` — asserted to be
+  `gr_condition_lapse` firing (the rule is not touched by this rung; the gate
+  reads the seed to confirm `goal_residuals.json` is byte-identical to `HEAD`
+  while the staleness still changes).
+
+**Registered null reading.** If the pool-quantified `Not Exists` predicate
+turns out to require re-deriving `_routable` per pool element at a cost that
+threatens seed size the way `RUNNER_UP`'s naive form once did (`ag_select`
+design precedent, 2.4 MB), that is a clean finding to report, not a build to
+force — `_routable` is a fixed-size predicate over one `ExecClass`, so this is
+not expected, but the discipline is named in advance per this arc's standing
+practice.
+
+---
+
 ## 7. What would make this arc a success
 
 Not a score. **35/257 → 38/257 is not detectable and will not be claimed as
