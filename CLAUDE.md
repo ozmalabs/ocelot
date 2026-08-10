@@ -1,3 +1,37 @@
+# Purpose — a competent man, not a completed task
+
+**This project is not goal-seeking. It is goal-USING.** A task, a benchmark, a
+battery score is a TARGET, in the archery sense — something to aim at so the
+aim can be measured and corrected — not a thing this project exists to
+achieve. Landing a task is evidence a capability works; it is never the point
+of building the capability. If a rung ever optimises the number at the cost of
+the understanding behind it, that rung has the purpose backwards, regardless
+of what the number says.
+
+**The measure of success is Heinlein's competent man** ("a human being should
+be able to change a diaper, plan an invasion, butcher a hog, conn a ship,
+design a building, write a sonnet, balance accounts, build a wall, set a bone,
+comfort the dying, take orders, give orders, cooperate, act alone, solve
+equations, analyze a new problem, pitch manure, program a computer, cook a
+tasty meal, fight efficiently, die gallantly. Specialization is for insects.")
+— an agent whose competence GENERALISES across bodies, domains and problem
+shapes, not one that has been fitted to any single one of them. This is why a
+capability landing in one body and then being *independently re-derived* in
+another (the F-16/humanoid collapse above; the sd loop itself moving from
+vision to audio to ink to flight) counts for more here than the same body
+scoring higher on its own benchmark — the first is evidence of a general
+competence, the second is evidence of a better fit to one target.
+
+**Consequence for how every rung in this file should be read and written:**
+a null that localises the cause and generalises the lesson is a better outcome
+than a pass that does not (this is why nulls are reported as headline findings
+throughout this file, not buried); a benchmark score is always reported next
+to what it does and does not establish about the underlying capability
+(**"synthetic-proven mechanism ≠ benchmark value, report both"**, already a
+standing rule below); and the SHAPES-not-numbers rule above is this same
+principle one level down — a held, transferable shape is competence, a
+fitted number is a score.
+
 # Architecture rule — the agent is Rust
 
 **The agent is a graph, running in Rust. Python is only the world
@@ -872,3 +906,86 @@ while measuring under the second missed by 3.4×.
 status line was reusable as an excuse. The enumerated baseline is
 `results/failure_baseline.json`, gated by `tests/test_failure_baseline_migrated.py`.
 A historical record is never converted; a standing claim always is.
+
+## SHAPES, NOT NUMBERS — new work composes with the sd loop and the admissibility grammar, it does not reinvent them (2026-08-06/07, F-16 + humanoid retrospectives)
+
+**The rule, stated for reuse** (`docs/regime_pareto_frontier_prereg.md`, "The
+session in one line — match SHAPES, not numbers"): *"The tree is a shape
+matcher, and every defect found today was somewhere a number had been put where
+a shape belonged."* This is not a one-off finding — it was measured
+**independently, in two different embodiments, in the same week**, and it
+generalises past both.
+
+**Two generative primitives already exist in the substrate for exactly this.**
+Both are core, not optional, not domain-specific:
+
+1. **The sd loop** (see "DYNAMIC QUANTIZATION IS THE CORE LOOP" above) —
+   `ShapeDecode` / `ShapeSignature` / `sd_recognize` / `sd_mint_quantum`:
+   decode an observation against a held, growable codebook; mint a quantum
+   only when the residual will not fit. This is how the tree represents a
+   *quantity that changes*, including the order-0/order-1/order-N viability
+   ladder (reflex / held-ratio / search) that the F-16 arc built directly
+   inside `shape_decode.rs` rather than as a separate one-off.
+2. **The admissibility grammar (Γ)** — part of the substrate's original
+   `(G, Γ, C)` foundation (`runners/dsl/src/grammar.rs`, `checker.rs`):
+   `Production{src-pattern, edge_type, tgt-pattern, where-clause, weight}`
+   generatively decides what edge is *allowed to exist*; `admissible_moves`
+   returns `(type, attrs, weight)` for selection. This is how the tree
+   represents *what a system may do*, as a generated set, not a filtered one.
+
+**The measured failure mode, three times over, is the same failure mode:** a
+new subsystem invents a scalar knob (a rate, a floor, a threshold, a fixed
+weight) or a rule that writes graph state directly (bypassing `check_edge`)
+instead of decoding against a codebook or generating from a grammar.
+
+- **F-16 (`docs/regime_pareto_frontier_prereg.md`, Blocks CD–CQ).** The
+  learning-rate machinery regressed without terminating: *"1/n asserts
+  stationarity → declare a floor 0.05 → a flat floor costs quiet regimes →
+  declare a surprise factor 2.0 → surprise needs a reference → an EMA → the
+  EMA needs a rate → ... 1/n. Each rate needs a rate."* Measured across the
+  tree: **60 count-divided (`1/n`) learners across 8 embodied seeds, and not
+  one of them inside the sd-loop, shape-codebook, spatial-quanta or
+  conversation faculties** — "the faculties that match shapes never needed a
+  number. The ones that match numbers are where every defect lives." The
+  motor-program's slope collapse had to be **hand-written as a bespoke rule
+  when it is rung 2 of a ladder that already exists** — "everything the sd
+  loop gives shapes for free — recognise, transform, infer, mint — the motor
+  path reimplements or does without."
+- **Humanoid (`HUMANOID_DECOMPOSITION_CONTINUATION.md`).** `HumanoidComposer`
+  sums nine cost terms unconditionally and minimises greedily; the deciding
+  path has **no Γ productions at all**, and rule effects write via
+  `graph.insert_edge` directly, bypassing `check_edge` entirely (the `gated`
+  flag is reserved and unbuilt). *"The entire premise of admissibility grammar
+  is that we don't have to choose a single fixpoint."* This doc names the
+  F-16 finding explicitly as **the same collapse, independently measured, in
+  the other body** — and warns that set-valued selection alone does not fix
+  it if the generated response set itself has holes ("a gate whose middle
+  region is empty is a delay line" — the fix is in what the grammar can
+  *generate*, not in replacing the selector).
+- **Bigville (`BIGVILLE_ADMISSIBILITY_GRAMMAR.md`, design-only, not yet
+  built).** A third independent occurrence: violence is **15 rules across 4
+  seeds**, a full subsystem rivalling the economy in engineering weight, and
+  **none of the four violence seeds declares a single grammar production**
+  (`"productions": []`, measured in all four) — a richly modelled *behaviour*
+  where the substrate's own shape (admissible-by-default conduct;
+  inadmissibility as the rare marked residual) says it should be a
+  **generated absence**, not a bespoke subsystem per transgression.
+
+**The standing design rule, for every new subsystem from here on:** before
+adding a rate, a threshold, a fixed weight, or a rule whose effects write
+graph state directly, ask which of the two primitives the thing actually is —
+*a quantity that changes* (sd loop: decode / recognise / transform / infer /
+mint) or *a set of allowed moves* (Γ: a production, not a filter on one). If
+it is neither, that is worth stating explicitly, because on the measured
+record so far it usually has been one of the two and the number was standing
+in for a shape nobody had looked for yet. **A scalar knob is not a simplification
+of this — it is the unpaid debt**, and per the F-16 regress it does not stay
+paid off: each ad hoc rate eventually needs its own rate.
+
+**Status, honestly:** the sd loop's order ladder is *built* (F-16, live in
+`shape_decode.rs`). The humanoid's Γ-refounding and bigville's
+admissibility-grammar refactor are both **named, not built** — this section
+is a standing rule for new work, not a claim that every existing subsystem
+already complies. Do not read "the rule is stated" as "the rule is enforced
+everywhere"; the enumerated non-compliant sites above are exactly that —
+enumerated, not fixed.
