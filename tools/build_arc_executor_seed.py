@@ -102,6 +102,45 @@ WHAT THIS SEED IS.  Four rules and a two-node route table.
                    measured how fragile it is (margin 32.7 against a 25.0
                    charge) -- this fact is what would catch a future policy
                    edit that breaks it.
+  ax_impotent_pool_lapse /
+  ax_impotent_pool_hold   A21 -- POOL-COMPOSITION DRIFT, CLOSED WITHOUT
+                   TOUCHING `gr_condition_lapse`.  A13 SS8 item 1 / A14 SS9
+                   item 6 named the gap: an `AgendaVerdict{kind:'impotent'}`
+                   lapses (via `gr_condition_lapse`'s `fact_equals(arc_
+                   measure_epoch)`) ONLY on an epoch bump, never merely
+                   because the pool's MEMBERSHIP has since moved under it --
+                   a reader had to compare `pool_agids` against the CURRENT
+                   pool by hand to know which held verdict, if several, is
+                   current.  THE MINT-ONCE GUARD AND `ax_impotent`'S OWN
+                   `where`/`match` DO NOT CHANGE -- a distinct pool
+                   signature still mints its own verdict, exactly as IM5
+                   registered and gated; this only adds a SECOND, ORTHOGONAL
+                   staleness axis to the verdicts already minted.  `stale`
+                   (unmodified `gr_condition_lapse`) answers "has a
+                   measurement happened since this was minted" -- an EPOCH
+                   question.  The new `pool_stale` answers "does this
+                   verdict's `pool_agids` still equal the pool's CURRENT
+                   signature" -- a COMPOSITION question, live, no epoch
+                   involved, exactly the shape A19/A20 already used for
+                   their own non-epoch-shaped liveness questions (order-N
+                   live; the two collapses agreeing) -- applied here
+                   PER-NODE rather than as a global singleton, because IM5's
+                   own design intentionally holds MULTIPLE distinct
+                   `impotent` verdicts at once and a singleton flag would
+                   collapse that history.  `ax_impotent_pool_lapse` sets
+                   `pool_stale:1.0` the instant a verdict's OWN `pool_agids`
+                   no longer equals the live `_pool_sig()`; `ax_impotent_
+                   pool_hold` sets it back to `0.0` the instant they agree
+                   again -- mutually exclusive by construction, the
+                   `gr_condition_lapse`/`gr_condition_hold` SHAPE and NAMING
+                   reused deliberately (this rung concluded the two-flag
+                   idiom transfers; the ResidualCondition INDIRECTION does
+                   not need to, because `_pool_sig()` is already a live,
+                   graph-native Term with no Python probe behind it -- unlike
+                   `fact_equals`, which is keyed to a `ResidualFact` a Python
+                   adapter must stamp).  `gr_condition_lapse`'s closed
+                   `MISMATCH` vocabulary is BYTE-UNCHANGED: `seeds/goal_
+                   residuals.json` is not touched by this rung at all.
 
 Run:  python tools/build_arc_executor_seed.py         (writes seeds/arc_executor.json)
       python tools/build_arc_executor_seed.py --check (fails if out of date)
@@ -468,7 +507,13 @@ def _r_impotent():
             "(seeds/goal_residuals.json) carries NO type constraint on the "
             "node it lapses, so this rides it for free, zero new mechanism. "
             "nearest_unroutable_* is DESCRIPTIVE ONLY (SEL_AGID -- whichever "
-            "collapse is live) and is never read by the firing guard."),
+            "collapse is live) and is never read by the firing guard. "
+            "A21 -- ADDITIVE ONLY: the verdict is now also stamped "
+            "pool_stale:0.0 at mint (true by construction -- its own "
+            "pool_agids trivially equals the CURRENT pool signature the "
+            "instant it mints), read and flipped by ax_impotent_pool_lapse/"
+            "ax_impotent_pool_hold below.  This where/match/mint-once guard "
+            "is BYTE-UNCHANGED by A21."),
         "batch": True,
         "match": HUB,
         "where": AND(
@@ -491,6 +536,7 @@ def _r_impotent():
                 "nearest_unroutable_kind": T(A(_nearest_unroutable_goal(),
                                                "kind")),
                 "stale": 0.0,
+                "pool_stale": 0.0,
                 "_the_decision_lives_here": (
                     "the firing guard is Not(Exists(POOL(), g, "
                     "dispatchable(g))) -- the adapter never computes this, "
@@ -1092,6 +1138,99 @@ def _r_ask_divergence_cleared():
     }
 
 
+# --------------------------------------------------------------------------- #
+#  A21 -- POOL-COMPOSITION DRIFT, CLOSED WITHOUT TOUCHING `gr_condition_
+#  lapse`.  PROGRAM_SYNTHESIS_ARC6_IMPOTENCE_TERM.md SS8 item 1 / PROGRAM_
+#  SYNTHESIS_ARC6_IMPOTENCE_CAMPAIGN.md SS9 item 6: `ax_impotent`'s verdict
+#  lapses (gr_condition_lapse, unmodified) only on an EPOCH bump, never on
+#  the pool's own MEMBERSHIP moving under it within one epoch -- a reader
+#  had to compare pool_agids against the current pool by hand.  These two
+#  rules add a SECOND, ORTHOGONAL staleness axis (`pool_stale`) to each
+#  `impotent` verdict, live, keyed on the SAME `_pool_sig()` Term
+#  `ax_impotent` itself mints against -- so this can never disagree with
+#  ax_impotent about what the pool's signature is, by construction.  NEITHER
+#  rule appears in ax_impotent's own where/match, and ax_impotent's mint-once
+#  guard is byte-unchanged: a genuinely different impotent pool composition
+#  still mints its OWN verdict (IM5's own registered behaviour), and these
+#  two rules only add a currentness marker ON TOP of that, per node, never
+#  collapsing the multi-verdict history into one global flag the way a
+#  literal reuse of A19/A20's SINGLETON shape would have.
+# --------------------------------------------------------------------------- #
+def _r_impotent_pool_lapse():
+    return {
+        "name": "ax_impotent_pool_lapse",
+        "comment": (
+            "A21 -- POOL DRIFT, THE ON DIRECTION.  Fires the instant an "
+            "impotent verdict's OWN pool_agids no longer equals the LIVE "
+            "_pool_sig() -- i.e. the pool's membership has moved since this "
+            "verdict minted, whether or not arc_measure_epoch has advanced. "
+            "Sets pool_stale:1.0.  Deliberately NOT epoch-shaped, the SAME "
+            "reason A19/A20 gave for their own reversible pairs: a goal can "
+            "leave the pool (headroom_n -> 0, a status retirement, a "
+            "further supply/claim resolution) with no epoch bump anywhere "
+            "in the scene, and 'does this verdict still describe the "
+            "CURRENT pool' needs the CURRENT truth of that comparison, not "
+            "a description honest only until the next measurement.  PER-"
+            "NODE, not a singleton EXISTS guard: every impotent verdict on "
+            "the graph is independently compared against the SAME live "
+            "signature, so IM5's multi-verdict history (one verdict per "
+            "distinct pool composition) is preserved, not collapsed.  "
+            "Mutually exclusive with ax_impotent_pool_hold by construction "
+            "(Eq vs Not(Eq) against the same comparison), so the two never "
+            "contend for the same node in one pass -- the gr_condition_"
+            "lapse/gr_condition_hold SHAPE and NAMING, reused deliberately: "
+            "gr_condition_lapse's own ResidualCondition INDIRECTION is not "
+            "needed here because _pool_sig() is already a live, graph-"
+            "native Term evaluated inside ax_impotent itself, with no "
+            "Python probe behind it (unlike fact_equals, which reads a "
+            "ResidualFact a Python adapter must stamp) -- so a fourth "
+            "ckind in gr_condition_lapse's closed MISMATCH vocabulary would "
+            "buy nothing this direct comparison does not already give, at "
+            "the cost of coupling the GENERIC goal_residuals seed to this "
+            "seed's own POOL()/_pool_sig() concept.  seeds/goal_"
+            "residuals.json is BYTE-UNCHANGED by this rule."),
+        "batch": True,
+        "match": HUB + [["agenda", "has_agenda_verdict", "av"]],
+        "where": AND(
+            EQ(A(V("av"), "kind"), L("impotent")),
+            NOT(EQ(A(V("av"), "pool_agids"), _pool_sig())),
+            NOT(EQ(A(V("av"), "pool_stale"), L(1.0))),
+        ),
+        "effects": [
+            ["set_attr", "av", "pool_stale", 1.0],
+            ["set_attr", "av", "pool_stale_epoch", T(MEASURE_EPOCH())],
+        ],
+    }
+
+
+def _r_impotent_pool_hold():
+    return {
+        "name": "ax_impotent_pool_hold",
+        "comment": (
+            "A21 -- POOL DRIFT, THE OFF DIRECTION, and not decoration: a "
+            "one-way lapse would itself be an unrevisable claim -- the "
+            "gr_condition_lapse/gr_condition_hold precedent, applied "
+            "directly.  Fires the instant an impotent verdict's pool_agids "
+            "AGREES with the live _pool_sig() again (true at mint, by "
+            "construction; also true again if the pool's composition ever "
+            "returns to exactly what this verdict recorded -- e.g. a "
+            "re-arm brings a goal back and no further exit has happened) "
+            "while pool_stale is still 1.0, and restores pool_stale to 0.0. "
+            "Mutually exclusive with ax_impotent_pool_lapse by construction."),
+        "batch": True,
+        "match": HUB + [["agenda", "has_agenda_verdict", "av"]],
+        "where": AND(
+            EQ(A(V("av"), "kind"), L("impotent")),
+            EQ(A(V("av"), "pool_agids"), _pool_sig()),
+            EQ(A(V("av"), "pool_stale"), L(1.0)),
+        ),
+        "effects": [
+            ["set_attr", "av", "pool_stale", 0.0],
+            ["set_attr", "av", "pool_held_epoch", T(MEASURE_EPOCH())],
+        ],
+    }
+
+
 def _r_close():
     return {
         "name": "ax_close",
@@ -1122,7 +1261,8 @@ def _rules():
     return [_r_dispatch(), _r_retired_epoch(), _r_rearm(), _r_close(),
             _r_impotent(), _r_world_probe_epoch(), _r_fallback_silent(),
             _r_fallback_cleared(), _r_ask_divergence_active(),
-            _r_ask_divergence_cleared()]
+            _r_ask_divergence_cleared(), _r_impotent_pool_lapse(),
+            _r_impotent_pool_hold()]
 
 
 def build():
@@ -1144,7 +1284,7 @@ def build():
             "is the LAST thing that should arrive in every agent by a glob.  "
             "Activation is one key and a paired tree-wide sweep."),
         "id": "arc_executor",
-        "version": "1.6.0",
+        "version": "1.7.0",
         "depends_on": ["goal_residuals", "arc_goals"],
         "_SOFT_DEPENDENCY_ON_arc_magnitude": (
             "v1.1.0 (A11/WH1) wires ax_dispatch to the ORDER-N collapse "
@@ -1246,7 +1386,35 @@ def build():
             "agenda_verdicts(sub, 'order_n_fallback') is already generic. "
             "ax_dispatch/SEL_AGID/ARMED_AGID/ARMED_VALUE/COLLAPSE_NAME/"
             "_armed/ROUTE/_routable are BYTE-UNCHANGED: this rung only adds "
-            "observability, it does not change when the fallback fires."),
+            "observability, it does not change when the fallback fires. "
+            "v1.6.0 (A20) adds a NINTH and TENTH rule, ax_ask_divergence_"
+            "active and ax_ask_divergence_cleared: the SAME direct-"
+            "reversible-pair shape as A19, applied to a DIFFERENT question "
+            "-- given that the order-N collapse IS live, does it name the "
+            "SAME goal ag_ask asked about.  Mints/clears AgendaVerdict{kind:"
+            "'ask_dispatch_divergence'} by comparing SEL_AGID() against "
+            "arc_sel_agid, both stamps already read/written elsewhere.  ag_"
+            "ask/seeds/arc_goals.json are BYTE-UNCHANGED. "
+            "v1.7.0 (A21) adds an ELEVENTH and TWELFTH rule, ax_impotent_"
+            "pool_lapse and ax_impotent_pool_hold: PROGRAM_SYNTHESIS_ARC6_"
+            "IMPOTENCE_TERM.md SS8 item 1 / PROGRAM_SYNTHESIS_ARC6_"
+            "IMPOTENCE_CAMPAIGN.md SS9 item 6 named the LAST originally-"
+            "named remaining gap in this executor sub-thread -- an "
+            "impotent verdict's condition lapses (gr_condition_lapse, "
+            "unmodified) only on an EPOCH bump, never on the POOL'S OWN "
+            "MEMBERSHIP moving under it within one epoch, so a reader had "
+            "to compare pool_agids against the current pool by hand.  These "
+            "two rules add a SECOND, ORTHOGONAL staleness axis "
+            "(pool_stale) to each impotent verdict, keyed on the SAME "
+            "_pool_sig() Term ax_impotent itself mints against, live, no "
+            "epoch involved -- the A19/A20 direct-reversible-pair pattern, "
+            "applied PER-NODE (not as a global singleton, which would have "
+            "collapsed IM5's own multi-verdict history) rather than the "
+            "epoch-shaped fact_equals idiom.  ax_impotent's OWN where/"
+            "match/mint-once guard is BYTE-UNCHANGED (only its effects gain "
+            "an additive pool_stale:0.0 stamp at mint), and gr_condition_"
+            "lapse's closed MISMATCH vocabulary (seeds/goal_residuals.json) "
+            "is BYTE-UNCHANGED and untouched by this rung."),
         "microtheory": "arc6_executor",
         "nodes": _nodes(),
         "edges": _edges(),
