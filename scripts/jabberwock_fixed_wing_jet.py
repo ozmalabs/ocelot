@@ -170,6 +170,29 @@ _REGIME_DIAGNOSTIC_ATTRS = (
         for field in ("manifold_reach", "goal_gap", "goal_margin",
                       "goal_outside")
     ),
+    # decision_making_spike.md §103 rung: the budget/floor contract
+    # (control_regime_escalation v7.12.0) and the two new leg-specific
+    # measurements (resource-currency sunk cost; the declared threat region).
+    "regime_viability_rung",
+    "regime_rung_high_water",
+    "regime_spend_floor",
+    "regime_info_spend_floor",
+    "regime_budget_exhausted",
+    "regime_info_budget_exhausted",
+    "regime_worth_in_rungs",
+    "regime_info_worth_in_rungs",
+    "regime_resource_spent_in_rungs",
+    "regime_resource_spent_log",
+    "regime_resource_decade",
+    "f16_initial_fuel_kg",
+    "f16_resource_fraction_remaining",
+    "f16_threat_enabled",
+    "f16_threat_initial_range_m",
+    "f16_threat_closing_rate_m_s",
+    "f16_threat_region_actions",
+    "f16_threat_region_inside",
+    "f16_probe_stopped",
+    "f16_probe_stopped_seq",
 )
 
 

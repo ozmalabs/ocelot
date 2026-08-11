@@ -284,6 +284,41 @@ Budget contract (declared by the OPERATOR on the regime):
   every trade across it.  Declaring the decade is what makes the trade
   available and merely expensive.
 
+  regime_resource_spent_log
+                          published by the CONSUMER: a ratchet, monotone
+                          non-decreasing, log-scaled measure of resource
+                          already committed to arrive at the current state
+                          (decision_making_spike.md §96-98 -- "sunk cost,
+                          grounded": not the sunk-cost FALLACY, which
+                          justifies persisting by a forward payoff the past
+                          cannot move, but the STAKE claim -- what has
+                          already been spent is itself part of what is lost
+                          if the current path fails, independent of the
+                          marginal action's own irreversibility).  Two
+                          candidates with identical forward risk are not
+                          equally risky if one arrives at that risk having
+                          spent most of its budget and the other almost none.
+                          **Absent reads 0: no sunk cost priced, byte-identical
+                          to every consumer that does not publish this.**
+  regime_resource_decade  declared by the operator: how many log units of
+                          irreversibility one full decade of resource
+                          expenditure is worth -- exactly parallel to
+                          `regime_rung_decade`, a RATIO and not a threshold,
+                          in the SAME log-irreversibility currency the rest of
+                          this contract already uses.  **Absent or
+                          non-positive reads "price nothing"**, the same safe
+                          degradation every other ratio in this contract uses.
+
+  Sign discipline: `regime_goal_worth_log` LOWERS the floor (a licence to
+  spend); sunk cost does the OPPOSITE and RAISES it (more already committed
+  means less further loss is tolerable), which is also the only sign
+  consistent with the high-water ratchet's own behaviour -- a worse high-water
+  rung raises the effective floor by definition, since the floor is measured
+  FROM it.  So `regime_resource_spent_log / regime_resource_decade` is ADDED
+  to the floor, never subtracted, and never on its own composes into a
+  separately-scaled weight -- it is one more term in the SAME additive
+  log-irreversibility sum `regime_spend_floor` already is.
+
   The loop publishes `regime_spend_floor` -- the lowest rung it is authorised
   to end at -- and never descends below it deliberately.  A goal worth nothing
   authorises nothing; a goal worth the airframe authorises the airframe.
@@ -941,7 +976,9 @@ def publish_spend_authority_rule() -> dict:
     still holds; the operator declares how many rungs the goal is worth; this
     publishes the floor -- the lowest rung the loop is authorised to end at.
 
-      spend floor = viability rung - (goal worth / rung decade), floored at 0
+      spend floor = viability rung - (goal worth / rung decade)
+                                    + (resource spent / resource decade),
+                    floored at 0
 
     The division is the log scale doing the work: each rung is `regime_rung_decade`
     log units more permanent than the one below, so a worth of two decades buys
@@ -951,6 +988,18 @@ def publish_spend_authority_rule() -> dict:
     A goal worth nothing authorises nothing and the loop preserves everything,
     which is what absent reads as and what every consumer does today.  A goal
     worth three rungs authorises spending the body to reach it.
+
+    THE SUNK-COST TERM (decision_making_spike.md §96-98) composes into the SAME
+    additive sum, not as a separately-scaled weight: `regime_resource_spent_log`
+    is a ratchet the consumer publishes (a real, log-scaled measure of resource
+    already committed -- not the sunk-cost FALLACY, which persists a course of
+    action past its forward payoff; this is the STAKE claim, that what is
+    already spent is itself part of what is lost on failure).  It RAISES the
+    floor rather than lowering it -- the opposite sign of the two worth terms,
+    because more already spent tolerates less further loss, which is also the
+    only sign consistent with the high-water ratchet's own behaviour.  Absent
+    or `regime_resource_decade` non-positive, it reads zero and every floor
+    here is byte-identical to the two-term contract that preceded it.
 
     Nothing here decides anything: it publishes an authorisation a selection
     rule may consult.  The distinction matters -- the ladder makes prices
@@ -982,6 +1031,28 @@ def publish_spend_authority_rule() -> dict:
         ),
         L(0.0),
     )
+    # How many rungs of tolerance the sunk resource cost REMOVES, on the same
+    # log scale and the same per-rung unit `worth`/`info_worth` already use --
+    # a separate declared ratio (`regime_resource_decade`), never a shared one,
+    # because a decade of goal worth and a decade of resource commitment are
+    # not asserted to be the same exchange rate.  Absent or non-positive reads
+    # zero, the same safe degradation every ratio in this contract already
+    # uses.
+    resource_decade = P0("regime", "regime_resource_decade")
+    resource_spent = If(
+        Gt(resource_decade, L(0.0)),
+        IDiv(
+            Max(P0("regime", "regime_resource_spent_log"), L(0.0)),
+            resource_decade,
+        ),
+        L(0.0),
+    )
+    spend_floor = Max(
+        Plus(Minus(high_water, worth), resource_spent), L(0.0)
+    )
+    info_spend_floor = Max(
+        Plus(Minus(high_water, info_worth), resource_spent), L(0.0)
+    )
     return {
         "name": "cre_publish_spend_authority",
         "area": "control_regime_escalation",
@@ -994,21 +1065,22 @@ def publish_spend_authority_rule() -> dict:
         "where": Gt(P0("regime", "regime_monitor_enabled"), L(0.5)),
         "effects": [
             ["set_attr", "regime", "regime_rung_high_water", T(high_water)],
-            ["set_attr", "regime", "regime_spend_floor", T(
-                Max(Minus(high_water, worth), L(0.0))
-            )],
+            ["set_attr", "regime", "regime_spend_floor", T(spend_floor)],
             ["set_attr", "regime", "regime_budget_exhausted", T(
-                If(Lt(rung, Max(Minus(high_water, worth), L(0.0))),
-                   L(1.0), L(0.0))
+                If(Lt(rung, spend_floor), L(1.0), L(0.0))
             )],
             # THE INFORMATION ACCOUNT -- the same arithmetic on a separate
             # declaration.  Two budgets, one scale.
             ["set_attr", "regime", "regime_info_spend_floor", T(
-                Max(Minus(high_water, info_worth), L(0.0))
+                info_spend_floor
             )],
             ["set_attr", "regime", "regime_info_budget_exhausted", T(
-                If(Lt(rung, Max(Minus(high_water, info_worth), L(0.0))),
-                   L(1.0), L(0.0))
+                If(Lt(rung, info_spend_floor), L(1.0), L(0.0))
+            )],
+            # The sunk-cost term in rungs, so a trace shows what the resource
+            # ledger actually removed, mirroring `regime_worth_in_rungs` below.
+            ["set_attr", "regime", "regime_resource_spent_in_rungs", T(
+                resource_spent
             )],
             # Is the loop currently authorised to spend anything at all?
             ["set_attr", "regime", "regime_spend_authorised", T(
@@ -2092,7 +2164,7 @@ def close_inadmissible_deliberation_rule() -> dict:
 def manifest() -> dict:
     return {
         "id": "control_regime_escalation",
-        "version": "7.11.0",
+        "version": "7.12.0",
         "depends_on": ["cognitive_pareto"],
         "area": "control_regime_escalation",
         "latency_class": "soft_realtime",

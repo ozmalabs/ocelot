@@ -135,7 +135,7 @@ def _mint_candidate(a, profile, *, ordinal, terminal, priority_value,
 def test_seed_is_general_and_declares_the_contract():
     seed = json.loads(open(SEED_PATH, encoding="utf-8").read())
     assert seed["id"] == "control_regime_escalation"
-    assert seed["version"] == "7.11.0"
+    assert seed["version"] == "7.12.0"
     # v7.8.0: TWO accounts on one scale.  What the goal is worth and what
     # KNOWING is worth are different purchases -- charging both to one account
     # stopped the checklist the moment viability dipped and crashed a scenario
@@ -971,7 +971,7 @@ def test_f16_publishes_on_the_general_channel_contract():
 
 def test_f16_consumer_declares_pareto_regime_candidates():
     seed = json.loads(open(F16_SEED_PATH, encoding="utf-8").read())
-    assert seed["version"] == "8.72.0"
+    assert seed["version"] == "8.73.0"
     # v8.69.0: the margin is PUBLISHED, not just obeyed.  The MinOver that
     # `terrain_clear` compares against a horizon is now also written out as
     # `margin_actions`, because a boolean can only be obeyed and a number can
