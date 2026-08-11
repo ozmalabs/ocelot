@@ -22,6 +22,12 @@ import json
 import random
 import sys
 
+import os as _os
+import sys as _sys
+_TESTS_DIR = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "tests")
+if _TESTS_DIR not in _sys.path:
+    _sys.path.insert(0, _TESTS_DIR)
+
 from substrate.boot_core import boot_core
 from domains import reflective_faculty as rf
 from domains import self_model as sm
@@ -444,6 +450,187 @@ def run_tau_l_2_and_3():
 
 
 # ===========================================================================
+# TAU-RES -- follow-up: a direct, quantitative, side-by-side construction of
+# "where is the residual processed" (object-level vs meta-level promotion),
+# per docs/research/theory_convergence/TAU_HIERARCHY_AXIS_MAP_PREREG.md S7c.
+# Both arms reuse REAL seeded rules and REAL existing test fixtures/scene
+# builders (tests/test_arc_goals_migrated.py, tests/
+# test_dimension_inference_migrated.py) -- imported directly, not
+# reimplemented.
+# ===========================================================================
+
+def run_tau_res_arm1():
+    """Arm 1 -- object-level-only: ax_impotent's cached AgendaVerdict.
+    A hand-controlled, non-drifting pool (arc_goals + arc_executor seeds
+    only -- the full program-synthesis boot() fixture in
+    tests/test_arc_executor_migrated.py was tried FIRST and found to keep
+    minting new ArcGoal nodes under its own seeded rules across repeated
+    run_rules() calls, an honest complication reported here rather than
+    worked around silently) shows the cached nearest_unroutable_* fields
+    freeze at mint and do NOT track a live ranking change under an
+    UNCHANGED pool signature."""
+    print("\n=== TAU-RES Arm 1: object-level-only (ax_impotent) ===")
+    import importlib
+    tag = importlib.import_module("test_arc_goals_migrated")
+    from domains import arc_executor as axe
+    from domains import arc_goal_ingest as agi
+
+    s, ag, agenda = tag._bare(("arc_goals", "arc_executor"))
+    tag._strip_shipped_sources(s)
+    tag._goal(s, agenda, agid="probe.g1", kind="kindA", headroom_n=48.0)
+    tag._goal(s, agenda, agid="probe.g2", kind="kindB", headroom_n=1.0)
+    tag._goal(s, agenda, agid="probe.g3", kind="kindB", headroom_n=1.0)
+    tag._goal(s, agenda, agid="probe.g4", kind="kindB", headroom_n=1.0)
+    s._inner.run_rules()
+
+    avs = axe.agenda_verdicts(s, "impotent")
+    assert len(avs) == 1, f"expected exactly one impotent verdict at mint, got {len(avs)}"
+    frozen = dict(avs[0])
+    pool_sig_before = sorted(json.loads(frozen["pool_agids"]))
+    print(f"minted verdict: nearest_unroutable_agid={frozen['nearest_unroutable_agid']!r} "
+          f"kind={frozen['nearest_unroutable_kind']!r}, pool_agids={pool_sig_before}")
+
+    # Stability control: repeated no-op passes must not re-mint or change it.
+    for _ in range(3):
+        s._inner.run_rules()
+    avs_stable = axe.agenda_verdicts(s, "impotent")
+    stable_ok = len(avs_stable) == 1 and avs_stable[0]["_id"] == frozen["_id"]
+    print(f"stability control (3 no-op passes): still 1 verdict, same id = {stable_ok}")
+
+    # THE PERTURBATION: raise g2's headroom_n far above g1's. All four goals
+    # stay headroom_n > 0 -- pool membership (the mint-once SIGNATURE) is
+    # UNCHANGED -- but the live ag_select ranking winner moves.
+    for n in s.nodes("ArcGoal"):
+        if s.node(n)["attrs"].get("agid") == "probe.g2":
+            s.set_attr(n, "headroom_n", 500.0)
+    s._inner.run_rules()
+
+    avs_after = axe.agenda_verdicts(s, "impotent")
+    pool_sig_after = sorted(json.loads(avs_after[0]["pool_agids"])) if avs_after else None
+    no_remint = len(avs_after) == 1 and avs_after[0]["_id"] == frozen["_id"]
+    sig_unchanged = pool_sig_after == pool_sig_before
+
+    at = s.node(agenda)["attrs"]
+    live_winner = at.get("arc_sel_agid")
+    selection = agi.selection(s)
+    cached_winner = frozen["nearest_unroutable_agid"]
+    diverged = live_winner != cached_winner
+
+    print(f"after perturbation: verdict count={len(avs_after)} (no re-mint = {no_remint}), "
+          f"pool signature unchanged = {sig_unchanged}")
+    print(f"CACHED (frozen at mint): nearest_unroutable_agid={cached_winner!r} "
+          f"kind={frozen['nearest_unroutable_kind']!r}")
+    print(f"LIVE (freshly re-derived by the real ag_select rule): arc_sel_agid={live_winner!r} "
+          f"value={selection.get('arc_sel_value')}, runner_up={selection.get('arc_sel_runner_up_agid')!r} "
+          f"runner_up_value={selection.get('arc_sel_runner_up_value')}, margin={selection.get('arc_sel_margin')}")
+    print(f"CACHED VERDICT IS WRONG relative to live truth = {diverged}")
+
+    passed = no_remint and sig_unchanged and diverged and stable_ok
+    print(f"TAU-RES-1 PASS = {passed}")
+    return dict(cached_agid=cached_winner, cached_kind=frozen["nearest_unroutable_kind"],
+                live_agid=live_winner, live_value=selection.get("arc_sel_value"),
+                cached_value_now=selection.get("arc_sel_runner_up_value"),
+                margin=selection.get("arc_sel_margin"),
+                no_remint=bool(no_remint), pool_signature_unchanged=bool(sig_unchanged),
+                diverged=bool(diverged), stable_control_ok=bool(stable_ok),
+                passed=bool(passed))
+
+
+def run_tau_res_arm2():
+    """Arm 2 -- meta-level promotion: DimInfer / LatentDimension. Two real
+    scenes differing in exactly one variable (dim_types present or absent
+    on the codebook part -- i.e. rung 2 available or structurally
+    unavailable, the seed's own documented graceful-skip path, gated by
+    tests/test_dimension_inference_migrated.py's own test 6). Identical
+    two-observation battery (scale x2 then a genuinely novel scale x4) fed
+    to both."""
+    print("\n=== TAU-RES Arm 2: meta-level promotion (DimInfer/LatentDimension) ===")
+    import importlib
+    tdi = importlib.import_module("test_dimension_inference_migrated")
+
+    DIM_TYPES = tdi.DIM_TYPES
+    TROMINO = tdi.TROMINO
+    SCALED_X2 = tdi.SCALED_X2_TROMINO
+    # k=2 image: tromino {(0,0),(0,1),(1,0)} x4 about its origin -- a
+    # genuinely novel instance of the scale2 family, not in either test
+    # file's existing fixture set, derived the same way the k=1 fixture's
+    # own comment documents (scale about origin).
+    SCALED_X4 = [["cell", 0, 0, "red"], ["cell", 0, 4, "red"], ["cell", 4, 0, "red"]]
+
+    def axes(s):
+        return len(list(s.nodes("CapabilityAxis")))
+
+    def latents(s):
+        return len(list(s.nodes("LatentDimension")))
+
+    # --- Scene M: promotion available (dim_types present) ---
+    s, ag, native = tdi._boot()
+    tdi._add_part(s, "part_scale_meta", TROMINO, dim_types=DIM_TYPES)
+    base_axes_m = axes(s)
+
+    obs1 = tdi._observe_decoded(s, ag, signature=SCALED_X2, key="m_obs1", residual=SCALED_X2,
+                                 decoded_epoch=tdi._epoch(s, ag), dim_types=DIM_TYPES)
+    native.run_rules()
+    at1 = s.node(obs1)["attrs"]
+
+    obs2 = tdi._observe_decoded(s, ag, signature=SCALED_X4, key="m_obs2", residual=SCALED_X4,
+                                 decoded_epoch=tdi._epoch(s, ag), dim_types=DIM_TYPES)
+    native.run_rules()
+    at2 = s.node(obs2)["attrs"]
+    axes_m_total = axes(s) - base_axes_m
+    t2 = None
+    if at2.get("status") == "recognized_transformed":
+        t_node = next(iter(s.neighbours(obs2, "has_transform")), None)
+        if t_node is not None:
+            t2 = dict(s.node(t_node)["attrs"])
+
+    print(f"Scene M (dim_types present): obs1(x2) status={at1.get('status')!r} "
+          f"dim_explained={at1.get('dim_explained')!r}; "
+          f"obs2(x4, NOVEL) status={at2.get('status')!r} dim_explained={at2.get('dim_explained')!r} "
+          f"generator={t2.get('generator') if t2 else None} k={t2.get('k') if t2 else None}; "
+          f"total CapabilityAxis minted across both = {axes_m_total}")
+
+    # --- Scene O: promotion unavailable (no dim_types -- graceful skip) ---
+    s2, ag2, native2 = tdi._boot()
+    tdi._add_part(s2, "part_scale_obj", TROMINO)  # NO dim_types
+    base_axes_o = axes(s2)
+
+    obs1b = tdi._observe_decoded(s2, ag2, signature=SCALED_X2, key="o_obs1", residual=SCALED_X2,
+                                  decoded_epoch=tdi._epoch(s2, ag2))
+    native2.run_rules()
+    at1b = s2.node(obs1b)["attrs"]
+
+    obs2b = tdi._observe_decoded(s2, ag2, signature=SCALED_X4, key="o_obs2", residual=SCALED_X4,
+                                  decoded_epoch=tdi._epoch(s2, ag2))
+    native2.run_rules()
+    at2b = s2.node(obs2b)["attrs"]
+    axes_o_total = axes(s2) - base_axes_o
+
+    print(f"Scene O (dim_types absent, rung 2 unavailable): obs1(x2) status={at1b.get('status')!r} "
+          f"dim_checked={at1b.get('dim_checked')!r} dim_explained={at1b.get('dim_explained')!r}; "
+          f"obs2(x4, SAME NOVEL instance) status={at2b.get('status')!r} "
+          f"dim_checked={at2b.get('dim_checked')!r} dim_explained={at2b.get('dim_explained')!r}; "
+          f"total CapabilityAxis minted across both = {axes_o_total}")
+
+    obs2_recognized_in_M = at2.get("status") == "recognized_transformed" and bool(at2.get("dim_explained"))
+    obs2_minted_in_O = at2b.get("status") == "minted" and not at2b.get("dim_explained")
+    generalization_gap = axes_o_total > axes_m_total
+    passed = obs2_recognized_in_M and obs2_minted_in_O and axes_m_total == 0 and generalization_gap
+
+    print(f"the SAME novel (x4) residual: recognized in Scene M = {obs2_recognized_in_M}, "
+          f"forced to mint fresh capacity in Scene O = {obs2_minted_in_O}")
+    print(f"CapabilityAxis mint count, identical 2-instance battery: Scene M={axes_m_total} "
+          f"vs Scene O={axes_o_total}")
+    print(f"TAU-RES-2 PASS = {passed}")
+    return dict(scene_m_axes_total=axes_m_total, scene_o_axes_total=axes_o_total,
+                obs2_recognized_in_M=bool(obs2_recognized_in_M),
+                obs2_minted_in_O=bool(obs2_minted_in_O),
+                obs2_generator=t2.get("generator") if t2 else None,
+                obs2_k=t2.get("k") if t2 else None,
+                passed=bool(passed))
+
+
+# ===========================================================================
 # TAU-ORTHO -- structural independence
 # ===========================================================================
 
@@ -463,6 +650,8 @@ def main():
     results["tau_c"] = run_tau_c(rng, n=200)
     results["tau_l_1"] = run_tau_l_1()
     results["tau_l_2_3"] = run_tau_l_2_and_3()
+    results["tau_res_arm1"] = run_tau_res_arm1()
+    results["tau_res_arm2"] = run_tau_res_arm2()
 
     # structural orthogonality: re-check the TAU-L graphs for owner="other"
     # content, and the TAU-C graphs for SelfProcess content, freshly.

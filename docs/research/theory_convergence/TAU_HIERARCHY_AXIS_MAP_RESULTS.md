@@ -2,8 +2,11 @@
 
 **Date:** 2026-08-11
 **Prereg:** `TAU_HIERARCHY_AXIS_MAP_PREREG.md`, registered before any bar
-below was read (including an in-flight amendment, §7a of that document,
-made after a dry run surfaced a scoring confound — disclosed there and
+below was read (including two in-flight amendments: §7a, made after a dry
+run surfaced a scoring confound, and §7c, the coordinator-requested
+follow-up registering TAU-RES-1/TAU-RES-2 — the direct, quantitative,
+side-by-side construction of §2a's "where is the residual processed"
+finding — before that measurement was run; both disclosed in place and
 carried through here).
 **Worktree:** `/home/matt/ocelot-tau-hierarchy`, branch `tau-hierarchy-review`,
 base commit `80f353e` (== `main`'s tip verified at task start,
@@ -26,8 +29,13 @@ separate results file — the JSON is small and reproduced inline).
 ## 0. Reading order
 
 If you read nothing else: **§4 (the axis map) is the primary deliverable,
-and §2a is its sharpest single finding** — a real, already-gated,
-unconstructed split in this repo's own code between residual-handling that
+§2a is its sharpest single finding, and §2b is that finding turned into a
+direct, quantitative, controlled measurement** (0 vs. 2 `CapabilityAxis`
+mints on an identical residual for the meta-level-vs-object-level
+contrast; a ~20.6× cached-vs-live value error, reproduced live, for the
+object-level arm alone) rather than two mechanisms merely cited side by
+side. §2a is a real, already-gated, unconstructed split in this repo's own
+code between residual-handling that
 stays local (object-level) and residual-handling that promotes to
 graph-resident, vocabulary-revising data (meta-level), which is the
 precise order parameter τ3 needs and does not currently have. §2/§3 are
@@ -218,6 +226,152 @@ mechanism above is the **real, unconstructed, already-gated instance** of
 the same idea and is the sharper, load-bearing citation; §4's axis map
 leads with it and keeps the R/O framing as a related, coarser corollary
 rather than discarding the measured TAU-L-2/3 work.
+
+---
+
+## 2b. TAU-RES — follow-up rung: making §2a a direct, quantitative,
+side-by-side construction, not two separately-cited findings
+
+**Why this section exists.** §2a's evidence was real but was two citations
+read side by side, not one controlled experiment. The coordinator asked
+for a proper measurement pass before this document lands: reproduce the
+`ax_impotent` staleness live (not just cite the old campaign finding), and
+make the `DimInfer`/`LatentDimension` comparison a genuine
+generalizes-vs-doesn't test on an *identical* residual, not just "it
+minted something." Prereg: `TAU_HIERARCHY_AXIS_MAP_PREREG.md` §7c,
+registered before the confirmatory run below (feasibility was explored
+interactively first — the normal order for finding the right construction
+in this project — but the reported numbers come from the run made after
+registration). Both arms reuse real seeded rules and real, existing test
+scene-builders (`tests/test_arc_goals_migrated.py`,
+`tests/test_dimension_inference_migrated.py`, imported directly), not
+reimplementations — added to `scripts/tau_hierarchy_probe.py`, still
+read-only over `seeds/`, `domains/`, `runners/`.
+
+### Arm 1 (TAU-RES-1) — object-level-only, `ax_impotent`, reproduced live
+
+An honest complication, reported before the result: the full
+program-synthesis `boot()` fixture in `tests/test_arc_executor_migrated.py`
+(the same one `PROGRAM_SYNTHESIS_ARC6_IMPOTENCE_CAMPAIGN.md`'s original
+finding used) was tried first, and its own goal-minting rules kept growing
+the pool across repeated `run_rules()` calls even with nothing external
+touched — three `AgendaVerdict`s minted for three different transient pool
+sizes (5, 6, 7 members) before the pool ever reached a state the ORIGINAL
+docstring's numbers describe, and running that file's own `test_im1`/
+`test_im2`/`test_im5` tests unmodified on this engine shows **5 of 6
+already fail** on this exact box, for reasons unrelated to this rung (a
+pre-existing baseline fact, not something this rung caused or fixed — no
+file in that test module was touched). This means the ORIGINAL campaign
+citation's specific numbers are not exactly reproducible as gated today,
+though the *mechanism* (`nearest_unroutable_kind` computed once at mint,
+frozen by a signature-keyed mint-once guard) is untouched code, unaffected
+by whatever moved the pool-growth behavior.
+
+**So this arm was rebuilt on a hand-controlled scene instead** (`tests/
+test_arc_goals_migrated.py`'s own `_bare(("arc_goals","arc_executor"))` +
+`_strip_shipped_sources` + `_goal(...)` scene builders, reused verbatim —
+no program-synthesis corpus data, so pool membership is fully
+experimenter-controlled and provably stable): four hand-built `ArcGoal`
+nodes (`probe.g1` kind `kindA` headroom 48.0; `probe.g2/g3/g4` kind
+`kindB` headroom 1.0 each), zero `ExecClass` rows matching either kind
+(trivially, uniformly unroutable). `ax_impotent` fires exactly once,
+caching `nearest_unroutable_agid='probe.g1'` / `kind='kindA'` (g1 wins the
+real `ag_select` Argmax on headroom alone, since every other value-formula
+term is zero/equal across all four). **Stability control:** three further
+no-op `run_rules()` passes leave the verdict count at 1, same node id —
+confirmed stable before perturbing anything.
+
+**The perturbation:** `probe.g2`'s `headroom_n` raised from 1.0 to 500.0.
+All four goals stay `headroom_n > 0` — the mint-once guard's signature
+(`pool_agids`, the ordered agid list) is **provably unchanged**
+(`['probe.g1','probe.g2','probe.g3','probe.g4']` before and after,
+checked directly, not assumed). `run_rules()` again:
+
+| | value |
+|---|---|
+| verdict count after perturbation | 1 (no re-mint — the guard suppressed it, exactly as designed) |
+| pool signature unchanged | **True** |
+| **CACHED** `nearest_unroutable_agid` / `kind` (frozen at mint) | `probe.g1` / `kindA` |
+| **LIVE** `arc_sel_agid` (freshly re-derived by the real `ag_select` rule every pass — confirmed non-spoofable by `tests/test_arc_executor_migrated.py::test_the_armed_stamp_cannot_be_SPOOFED_from_outside`) | `probe.g2` |
+| live winner's value / former winner's now-current value / margin | `475.0` / `23.0` / `452.0` |
+
+**PASS.** The cached verdict is wrong relative to live truth, by a large,
+quantified margin (475.0 vs. 23.0 — the live winner's value is ~20.6× the
+stale cached winner's now-current value), and nothing in `ax_impotent`
+detects, flags, or corrects this: `stale` stays `0.0` (the field this
+mechanism uses to mark a verdict as outdated), because the ONLY thing that
+field tracks is a measurement-epoch bump, not a ranking change under a
+constant pool. This is exactly the object-level shape: a residual (cached
+vs. live divergence) genuinely exists, and there is no graph object
+anywhere representing "the ranking might have moved" — only a frozen
+scalar pair, served as current truth until an external epoch bump forces a
+full remint. There is no path by which this mechanism could generalize
+from having been wrong once; it has nothing to generalize FROM.
+
+### Arm 2 (TAU-RES-2) — meta-level promotion, `DimInfer`/`LatentDimension`, a genuine generalization test on an identical residual
+
+Two scenes, differing in **exactly one variable**: whether the codebook
+`ShapeSignature` part carries `dim_types` (rung 2 available) or not (rung
+2 structurally unavailable — the seed's own documented "graceful skip:
+unavailable is treated as tried-and-failed" path, already gated by `tests/
+test_dimension_inference_migrated.py`'s own test 6,
+`test_no_dim_types_gracefully_skips_and_mints`). Both scenes receive the
+**identical** two-observation battery: the tromino scaled ×2
+(`SCALED_X2_TROMINO`, the file's own existing `scale2`-family fixture,
+generator `scale2` k=1), then scaled ×4 (`SCALED_X4_TROMINO` — a genuinely
+**novel** instance of the same family, not present in either file's
+existing fixture set, hand-derived the same way the k=1 fixture's own
+comment documents: the tromino's cell set scaled ×4 about its origin,
+`{(0,0),(0,1),(1,0)} → {(0,0),(0,4),(4,0)}`).
+
+| | Scene M (`dim_types` present — rung 2 available) | Scene O (`dim_types` absent — rung 2 unavailable) |
+|---|---|---|
+| obs1 (×2 scale, k=1) | `status=recognized_transformed`, `dim_explained=True` | `status=minted`, `dim_checked=1`, `dim_explained=False` |
+| obs2 (×4 scale, k=2 — **the identical novel residual in both scenes**) | `status=recognized_transformed`, `dim_explained=True`, `generator=scale2`, `k=2` (correctly inferred) | `status=minted`, `dim_checked=1`, `dim_explained=False` |
+| total `CapabilityAxis` minted across both observations | **0** | **2** (one per observation — disconnected, never generalized) |
+
+**PASS, cleanly — no softening needed.** On the exact same second residual
+(the ×4 scale, never seen by either scene before), Scene M recognizes it
+correctly (right generator, right `k`, zero new hard capacity) precisely
+because the *dimension itself* (`scale2`, a held `DimensionGenerator`) was
+made available as something `DimInfer` can apply fresh to a new instance —
+while Scene O, structurally lacking rung 2, cannot reach that explanation
+at all and is forced to mint a **second, disconnected** `CapabilityAxis`
+for what is, underneath, the exact same regularity it already minted a
+first axis for one observation earlier. The gap is not "Scene M is a bit
+more efficient" — it is 0 vs. 2 on an identical, controlled battery: Scene
+O's hard-capacity cost grows without bound as more instances of the same
+family arrive (it has no way to notice they are a family at all), Scene
+M's does not grow past the first.
+
+**One honest, non-load-bearing complication, reported per the prereg's own
+softening criterion:** `LatentDimension` node COUNT is not deduplicated
+across different `k` values of the same generator in Scene M — obs1 minted
+one `LatentDimension{generator:"scale2",k:1}` and obs2 minted a SECOND,
+separate `LatentDimension{generator:"scale2",k:2}` node (both named
+`"latent:scale2"`, differing only in `k` — checked directly). The seed's
+own "mint exactly once" guard is scoped to *one observation's* `has_transform`
+edge (blocking a re-decode of the SAME observation from re-minting), not
+to "one `LatentDimension` per generator name across all observations." This
+does **not** weaken the primary claim — the quantity that matters for "hard,
+disconnected capacity" is `CapabilityAxis`, which stayed at 0 in Scene M
+across both instances — but it means the `LatentDimension` layer itself has
+room to generalize further than it currently does (a real, separate,
+smaller-grain observation, distinct from this rung's main finding, worth
+naming rather than glossing over).
+
+### TAU-RES verdict
+
+Both arms PASS as registered, cleanly, on real code with a single
+controlled variable each (a ranking-only perturbation under a constant
+pool signature; a `dim_types` presence/absence toggle under an identical
+observation battery). This upgrades §2a from "two citations read side by
+side" to a direct, quantitative, reproducible demonstration of the same
+order parameter: **an identical residual — an unrouted, drifting winner in
+Arm 1; a ×4-scaled tromino in Arm 2 — is silently served wrong forever by
+the object-level mechanism, and correctly generalized by the meta-level
+one, with the difference traceable to a single, named structural fact
+(promotion to graph-resident, Π-operable data) in each case.**
 
 ---
 
@@ -495,7 +649,16 @@ repo outside this rung's write access; matches the pattern already used in
    exactly the distinction this repo's own `ax_impotent` (fails to
    promote, diagnosed as a bug) vs. `DimInfer`/`LatentDimension` (promotes,
    works) pair already demonstrates, unprompted by this rung's own
-   construction. The R/O-split form (§4's table) is worth keeping as a
+   construction, and now **quantitatively measured, not just cited** (§2b,
+   TAU-RES-1/2): the object-level mechanism serves a cached verdict wrong
+   by a ~20.6× value margin under a provably-unchanged pool signature, with
+   no path to notice or correct it; the meta-level mechanism recognizes an
+   identical, previously-unseen residual correctly (right generator, right
+   parameter) at zero additional hard-capacity cost, where the
+   object-level-only counterfactual — same residual, same battery, only
+   `dim_types` toggled off — mints disconnected capacity for it every time,
+   without bound, because it has no representation of the family to
+   generalize from. The R/O-split form (§4's table) is worth keeping as a
    secondary, coarser restatement for content types (like Axis C) where no
    ready-made residual-handling mechanism exists to point at directly.
 4. **Consider naming a fifth quantity explicitly**: whatever content
@@ -545,6 +708,27 @@ repo outside this rung's write access; matches the pattern already used in
    than the MDL ladder is to bound-theorem content** — flagged in the
    prereg and repeated here; Part A is corroborating, not decisive,
    evidence for axis-orthogonality.
+6. **§2b's Arm 1 could not exactly reproduce `PROGRAM_SYNTHESIS_ARC6_
+   IMPOTENCE_CAMPAIGN.md`'s original campaign numbers on this engine** —
+   the full program-synthesis `boot()` fixture in `tests/
+   test_arc_executor_migrated.py` grows its own goal pool across repeated
+   `run_rules()` calls (three transient `AgendaVerdict`s minted at pool
+   sizes 5/6/7 before this rung's own probing stopped calling it further),
+   and that test file's own `test_im1`/`test_im2`/`test_im5` gates are
+   **5 of 6 red on this exact engine/seed state right now**, unmodified by
+   this rung. This is a real, pre-existing fact about the current tree —
+   not caused by, and not fixed by, this rung — reported here because it
+   is directly adjacent to what Arm 1 measures and a reviewer should not
+   be surprised by it. Arm 1's own result does not depend on that fixture
+   at all (it uses a smaller, hand-controlled scene instead, built from
+   `test_arc_goals_migrated.py`'s scene builders) and is unaffected.
+7. **§2b's Arm 2 found a real, smaller-grain, non-load-bearing gap**:
+   `LatentDimension` nodes are not deduplicated by generator name across
+   different `k` values (two separate `latent:scale2` nodes exist after
+   the two-observation battery, one per `k`) — the seed's "mint once"
+   guard is scoped per-observation, not per-generator-family. Named in §2b
+   itself, not hidden; does not affect the `CapabilityAxis` (0 vs. 2)
+   finding the section's verdict rests on.
 
 ---
 

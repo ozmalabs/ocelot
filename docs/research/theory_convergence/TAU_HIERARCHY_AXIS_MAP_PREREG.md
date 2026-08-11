@@ -419,6 +419,83 @@ citation and reasoning, and §4 for how it supersedes the R/O framing as
 the lead definition for Axis L while keeping R/O as a secondary,
 coarser restatement.
 
+## 7c. Follow-up registration — TAU-RES: a direct, quantitative, side-by-side
+construction of §2a's "where is the residual processed" order parameter
+(registered before this specific measurement was run)
+
+§2a cited two real, already-gated mechanisms as evidence for the
+object-level/meta-level split (`ax_impotent`'s cached verdict;
+`DimInfer`/`LatentDimension`'s promotion) but did not construct a live,
+controlled, quantitative comparison — the coordinator asked for one before
+this rung lands. Registered here, before the confirmatory run this
+addendum's numbers are read from (feasibility was explored interactively
+first, per this project's normal practice of finding the right
+construction before registering it — the discipline is that the REPORTED
+numbers below come from a run made after this registration, not that no
+exploration may precede it).
+
+**Arm 1 — TAU-RES-1, object-level-only (`ax_impotent`, real seeded rules,
+reused fixtures).** Boot `arc_goals` + `arc_executor` seeds only (`tests/
+test_arc_goals_migrated.py`'s own `_bare`/`_strip_shipped_sources`/`_goal`
+scene builders, reused verbatim — no program-synthesis corpus data, so pool
+membership is fully hand-controlled and does not drift on its own, unlike
+the full `boot()` fixture in `tests/test_arc_executor_migrated.py`, which
+was tried first and found to drift under its own seeded goal-minting rules
+even across repeated `run_rules()` calls — an honest complication recorded
+in the results document, not hidden). Four hand-built `ArcGoal` nodes, no
+`ExecClass` match for any of their kinds (trivially, uniformly unroutable —
+the whole pool is impotent). `ax_impotent` mints an `AgendaVerdict` caching
+`nearest_unroutable_agid`/`nearest_unroutable_kind` from the CURRENT
+`ag_select` winner. Then: raise ONE goal's `headroom_n` far above the
+others (all four stay `> 0`, so `pool_agids` — the mint-once signature — is
+UNCHANGED) and call `run_rules()` again. **Bar:** PASSES (confirms
+object-level-only handling) if (a) verdict count stays at 1 (no re-mint —
+the signature-keyed guard suppresses it, exactly as designed), (b) the
+LIVE, freshly-recomputed winner (`agenda.arc_sel_agid` — confirmed
+non-spoofable by `test_the_armed_stamp_cannot_be_SPOOFED_from_outside`,
+re-derived by the real `ag_select` rule every pass) now names a DIFFERENT
+goal than the cached `nearest_unroutable_agid`/`kind`, and (c) the value
+gap between them (`agi.selection(s)`'s reported `arc_sel_value` vs.
+runner-up value) is reported as a real number, not asserted qualitatively.
+**Softens to a null** if the verdict turns out to silently re-derive
+(no divergence observed) or if some other mechanism corrects it — report
+that honestly.
+
+**Arm 2 — TAU-RES-2, meta-level promotion (`DimInfer`/`LatentDimension`,
+real seeded rules, reused fixtures from `tests/
+test_dimension_inference_migrated.py`).** Two scenes, differing in EXACTLY
+one variable: whether the codebook `ShapeSignature` part carries
+`dim_types` (rung 2/`DimInfer` available) or not (rung 2 structurally
+unavailable — the seed's own documented "graceful skip: unavailable is
+treated as tried-and-failed" path, already gated by that file's test 6).
+Both scenes receive the IDENTICAL two-observation battery: the tromino
+fixture scaled ×2 (`SCALED_X2_TROMINO`, `dim_infer_tests`'s own fixture,
+generator `scale2` k=1), then scaled ×4 (`SCALED_X4_TROMINO`, k=2 — a
+genuinely NOVEL instance of the same scale family, not in either file's
+existing fixture set, hand-derived the same way the k=1 fixture's own
+comment documents: the tromino's cell set scaled about its origin).
+**Bar:** PASSES (confirms the sharp generalization claim) if, on the
+IDENTICAL second (novel) observation: the promotion-available scene
+recognizes it correctly (`status=="recognized_transformed"`, correct
+generator/k reported, `CapabilityAxis` count unchanged from before either
+observation) while the promotion-unavailable scene mints a FRESH, SEPARATE
+`CapabilityAxis` for it (`status=="minted"`, `dim_explained` false) — i.e.
+the two scenes' total `CapabilityAxis` mint counts across the identical
+two-instance battery diverge (0 vs. 2, or any 0-vs-nonzero split with the
+promotion scene strictly lower), not merely "the promotion scene is a bit
+more efficient." **Softens to a null/complication** if the
+promotion-unavailable scene ALSO manages to generalize by some path not
+accounted for here (would weaken "structurally cannot"), or if
+`LatentDimension` itself turns out to dedupe cleanly across different k
+(a secondary, non-load-bearing detail either way — the primary claim rests
+on `CapabilityAxis`, the "hard capacity" cost, not on `LatentDimension`
+count).
+
+**What this addendum does NOT re-litigate:** §2a's citations stand as
+independent, already-gated evidence; this addendum is a fresh, additional,
+directly-constructed demonstration built for THIS rung, using (but not
+identical to) the cited mechanisms' own existing test fixtures.
+
 ## 8. Process discipline notes
 
 - All measurement code lives in a single, throwaway, read-only probe script
