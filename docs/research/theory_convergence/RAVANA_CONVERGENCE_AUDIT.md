@@ -550,6 +550,38 @@ the scalar approach on the exact failure mode (noisy-TV) the scalar
 approach is vulnerable to — is itself the strongest evidence for declining
 to import RAVANA's free-energy accumulator.
 
+#### 6.3.1 The wider family this disagreement sits in — JEPA and energy-based world models
+
+RAVANA's free-energy framing is not sui generis; it is a specific instance
+of a broader family LeCun's JEPA (Joint Embedding Predictive Architecture)
+also belongs to: predict/compare in a continuous, energy-minimizing
+representation space rather than generating raw output directly, and use
+the energy of a prediction as the signal for both abstention and attention.
+JEPA and RAVANA disagree on plenty of particulars (JEPA predicts in a
+learned embedding space against a self-supervised objective; RAVANA
+accumulates hand-weighted scalar channels over graph-adjacent signals) but
+agree on the load-bearing structural commitment: the *resting
+representation the system predicts, compares, and gates on* is continuous
+and energy-valued.
+
+That is exactly the axis CLAUDE.md's frame/continuum invariant (the
+"BASE-AS-DIMENSION" section, 2026-07-08) already takes a stronger position
+on than either JEPA or RAVANA: *"non-integer math is CROSS-FRAME, never
+IN-frame."* Continuous/energy-valued computation is legitimate in this
+project's own architecture — but only in the MAP between frames (a
+comparator, a rendering, a metric — e.g. the SC+TPS/DTW verdict layer in
+the Omniglot arc, §"RUN 16 RECONCILIATION"), never as the resting state a
+frame's own coordinates occupy. JEPA and RAVANA both keep the resting
+representation itself continuous (an embedding, an accumulated energy
+scalar); OCELOT's frame is integer-typed-graph, full stop, with continuity
+confined to the maps between frames. Same underlying insight — don't
+generate what a comparator can decide instead — one step short of where
+this project's own theory drew the line. Not a citation to add anywhere
+(no claim of connection, direct or indirect, between JEPA and either
+RAVANA or this project); noted here because it sharpens exactly what kind
+of disagreement §6.3 is: a boundary-of-the-frame question, not a
+know-a-different-trick question.
+
 ### 6.4 Distinct gap-kind naming — partially present, worth widening rather than importing wholesale
 
 Per §3.2, OCELOT's `gap_awareness.json` already distinguishes gap kinds as
