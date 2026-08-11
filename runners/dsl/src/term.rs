@@ -939,6 +939,27 @@ pub enum TermNode {
         beam: i64,
         max_steps: i64,
         cand_k: i64,
+        /// GAMMA_SEARCH_COMPLETENESS_FIXES.md Bug 2 — the total-expansion
+        /// BUDGET (fueled-interpreter idiom, `ProgEval`'s `fuel` /
+        /// `SynthEnumerate`'s `max_candidates`) that replaces `beam`'s old
+        /// role as a per-step SURVIVOR-COUNT cap. `beam` is kept on the
+        /// wire (backward compatible, still reported in the output Dict)
+        /// but no longer TRUNCATES the frontier: every non-duplicate
+        /// candidate state survives to the next step, cost-ordered
+        /// (`(coverage DESC, total_fit DESC)`, cheapest/best-first) by the
+        /// unchanged sort, until the total number of state EXPANSIONS
+        /// across the whole search reaches `budget` — at which point the
+        /// search stops honestly (`budget_exhausted: true` in the output)
+        /// rather than silently returning a possibly-incomplete plan
+        /// flagged identically to a certified-complete one. `<= 0` selects
+        /// the documented default (see `shape_decode::DEFAULT_SD_BUDGET`).
+        /// See `eval_shape_decode`'s doc for why a width cap here is label
+        /// -bias-shaped: discarding a lower-ranked-but-necessary state
+        /// after just one step can make an optimal, fully-covering plan
+        /// unreachable even though the SAME resource budget, spent as
+        /// "try more states" rather than "keep fewer states", would have
+        /// found it (`scripts/probe_beam_completeness.py`, live-verified).
+        budget: i64,
         field: Sym,
         wild: Sym,
         wild_objects: bool,
@@ -2577,13 +2598,13 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
             TermNode::Unify { values: copy_subtree(src, dst, values), wild },
         TermNode::StructSim { a, b, wild } =>
             TermNode::StructSim { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b), wild },
-        TermNode::ShapeDecode { goal, codebook_type, exclude, codebook_scope, beam, max_steps, cand_k, field, wild, wild_objects } =>
+        TermNode::ShapeDecode { goal, codebook_type, exclude, codebook_scope, beam, max_steps, cand_k, budget, field, wild, wild_objects } =>
             TermNode::ShapeDecode {
                 goal: copy_subtree(src, dst, goal),
                 codebook_type,
                 exclude: exclude.map(|e| copy_subtree(src, dst, e)),
                 codebook_scope: codebook_scope.map(|e| copy_subtree(src, dst, e)),
-                beam, max_steps, cand_k, field, wild, wild_objects,
+                beam, max_steps, cand_k, budget, field, wild, wild_objects,
             },
         TermNode::MotorCompose { episode, policy, candidate } =>
             TermNode::MotorCompose {
@@ -6395,14 +6416,14 @@ TermNode::MorphHead { text } => {
                 smallvec::smallvec![Value::Str(*wild)]));
             Value::Float(struct_sim_value(&av, &bv, &wild_val))
         }
-        TermNode::ShapeDecode { goal, codebook_type, exclude, codebook_scope, beam, max_steps, cand_k, field, wild, wild_objects } => {
+        TermNode::ShapeDecode { goal, codebook_type, exclude, codebook_scope, beam, max_steps, cand_k, budget, field, wild, wild_objects } => {
             let goal_value = evaluate(arena, *goal, env, ctx);
             let exclude_value = exclude.map(|idx| evaluate(arena, idx, env, ctx)).unwrap_or(Value::None);
             let scope_value = codebook_scope.map(|idx| evaluate(arena, idx, env, ctx)).unwrap_or(Value::None);
             let key = sd_cache_key(
                 1,
                 &[goal_value, exclude_value, scope_value],
-                &[*beam, *max_steps, *cand_k, i64::from(*wild_objects)],
+                &[*beam, *max_steps, *cand_k, *budget, i64::from(*wild_objects)],
                 &[*codebook_type, *wild],
                 ctx.graph,
             );
@@ -6410,7 +6431,7 @@ TermNode::MorphHead { text } => {
                 return crate::shape_decode::select_cached_field(&hit, *field, ctx.interner);
             }
             let full = crate::shape_decode::eval_shape_decode(
-                arena, *goal, *codebook_type, *exclude, *codebook_scope, *beam, *max_steps, *cand_k,
+                arena, *goal, *codebook_type, *exclude, *codebook_scope, *beam, *max_steps, *cand_k, *budget,
                 Sym::default(), *wild, *wild_objects, env, ctx,
             );
             let report = crate::shape_decode::select_cached_field(&full, *field, ctx.interner);

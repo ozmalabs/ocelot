@@ -608,7 +608,7 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
             Child { name: "b", child: *b },
             ScalarSym { name: "wild", value: *wild },
         ]),
-        TermNode::ShapeDecode { goal, codebook_type, exclude, codebook_scope, beam, max_steps, cand_k, field, wild, wild_objects } => ("ShapeDecode", vec![
+        TermNode::ShapeDecode { goal, codebook_type, exclude, codebook_scope, beam, max_steps, cand_k, budget, field, wild, wild_objects } => ("ShapeDecode", vec![
             Child { name: "goal", child: *goal },
             ScalarSym { name: "codebook_type", value: *codebook_type },
             OptChild { name: "exclude", child: *exclude },
@@ -616,6 +616,7 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
             ScalarInt { name: "beam", value: *beam },
             ScalarInt { name: "max_steps", value: *max_steps },
             ScalarInt { name: "cand_k", value: *cand_k },
+            ScalarInt { name: "budget", value: *budget },
             ScalarSym { name: "field", value: *field },
             ScalarSym { name: "wild", value: *wild },
             ScalarBool { name: "wild_objects", value: *wild_objects },
@@ -1463,6 +1464,10 @@ fn reconstruct(
             beam: get_int("beam")?,
             max_steps: get_int("max_steps")?,
             cand_k: get_int("cand_k")?,
+            // `get_int` already reads an absent attr as 0 (see its impl
+            // above), so a subgraph reflected before this field existed
+            // round-trips as `budget: 0` -> the default at eval time.
+            budget: get_int("budget")?,
             field: get_sym("field")?,
             wild: get_sym("wild")?,
             wild_objects: get_bool("wild_objects"),

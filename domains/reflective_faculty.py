@@ -7127,7 +7127,7 @@ def retrieve_and_transfer_mechanism(substrate, goal_signature):
 
 
 def compose_design_for_goal(substrate, goal_signature, *, beam: int = 3, max_steps: int = 8,
-                            cand_k: int = 3, exclude=None):
+                            cand_k: int = 3, exclude=None, budget: int = 0):
     """THE GENERALISED RUNG-2 COMPOSER — a SHAPE-GUIDED BOUNDED BEAM assembler,
     now a THIN SHIM over the Rust `ShapeDecode` Term (the dequantizer — see
     runners/dsl/src/shape_decode.rs). The whole beam-search (state 4-tuple,
@@ -7135,7 +7135,17 @@ def compose_design_for_goal(substrate, goal_signature, *, beam: int = 3, max_ste
     evaluator's; this function only builds the Term JSON, evaluates it ONCE,
     and re-attaches the `provenance` string (the one field the Term omits, by
     design, so the Python caller supplies it — matching the pre-migration
-    return shape field-for-field). NO Python decision over the composition."""
+    return shape field-for-field). NO Python decision over the composition.
+
+    GAMMA_SEARCH_COMPLETENESS_FIXES.md Bug 2: `beam` no longer TRUNCATES the
+    search (kept for back-compat / reporting only — see the Term's own doc);
+    completeness within a declared cost class is now bounded by a total
+    expansion `budget` instead (`<=0`, the default here, selects the Rust
+    side's own default — see `shape_decode::DEFAULT_SD_BUDGET`). Exposed as
+    a plain pass-through kwarg — which class of caller wants a bigger or
+    smaller budget is a caller-side judgment call, not a decision this shim
+    makes; the default (0 -> Rust default) reproduces every existing
+    caller's behaviour unchanged."""
     native = _native_eval2(substrate)
     term: dict[str, Any] = {
         "type": "ShapeDecode",
@@ -7143,6 +7153,7 @@ def compose_design_for_goal(substrate, goal_signature, *, beam: int = 3, max_ste
         "beam": beam,
         "max_steps": max_steps,
         "cand_k": cand_k,
+        "budget": budget,
     }
     if exclude:
         excl = list(exclude) if isinstance(exclude, (list, set, tuple)) else [exclude]

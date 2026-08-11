@@ -1192,12 +1192,77 @@ fn finish(result: Value, field: Sym, interner: &Interner, covered_by: Option<Val
     select_field(&result, interner.resolve(field), covered_by)
 }
 
+/// GAMMA_SEARCH_COMPLETENESS_FIXES.md Bug 2's default total-expansion
+/// budget (the `SynthEnumerate::DEFAULT_MAX_CANDIDATES` / `ProgEval`
+/// `DEFAULT_FUEL` idiom, sized for THIS search: the two production configs
+/// in `seeds/*.json` are `cand_k<=1` (single-step, real-time humanoid/
+/// vision/embodied callers — unaffected either way, see below) and
+/// `cand_k in {2,3}, max_steps=8` (reflective_faculty's composer default
+/// and `seeds/shape_decode_loop.json`/`reflex_net.json`/
+/// `program_synthesis.json`/`meaning_inference.json`). The exhaustive
+/// worst case for the latter (every candidate distinct, dedup never
+/// collapsing anything) is `sum_{k=1..8} cand_k^k` = 510 (`cand_k=2`) or
+/// 9840 (`cand_k=3`) total state expansions — 20_000 gives that
+/// configuration room to run to genuine exhaustion (no budget cutoff) with
+/// slack for a modestly larger `cand_k`, while still bounding a runaway
+/// caller (e.g. a much larger `cand_k`/`max_steps`) to an honest
+/// `budget_exhausted` result instead of an unbounded search.
+pub(crate) const DEFAULT_SD_BUDGET: i64 = 20_000;
+
 /// Evaluate `ShapeDecode` — the dequantizer. See module docs for the
 /// interner constraint this respects, and `term.rs`'s `ShapeDecode`
 /// variant doc for the algorithm summary. Faithful to
 /// `compose_design_for_goal` field-for-field (minus `provenance`, which
 /// the Python shim adds), with an optional `field` selector (see
 /// `select_field`).
+///
+/// GAMMA_SEARCH_COMPLETENESS_FIXES.md Bug 2 — cost-ordered, BUDGETED search
+/// replaces the old fixed-width beam prune. `scripts/probe_beam_completeness.py`
+/// (live-verified, cited in full in the ceiling-probe doc and the fix
+/// writeup) demonstrated the old shape's failure mode directly: a
+/// classic greedy-set-cover adversarial construction where the top-`beam`
+/// SURVIVOR state after step 1 is a locally-better-looking dead end, and
+/// the states that would have reached a fully-covering plan were
+/// discarded — permanently, since a discarded `BeamState` never
+/// re-enters `frontier` — before they got a chance to be expanded on step
+/// 2. `beam=1` returned an INCOMPLETE plan flagged `authored: true`
+/// identically to a genuinely complete one; `beam>=2` found the complete
+/// plan over the exact same codebook and goal.
+///
+/// The fix, following this repo's own `SynthEnumerate` precedent
+/// (`synth_enumerate.rs`, `PROGRAM_SYNTHESIS_P4A_NOTES.md`: "`beam`
+/// (legacy unguided width cap) — NO, dropped — dead weight the guided
+/// path superseded"): stop discarding states by WIDTH. Every
+/// non-duplicate candidate state survives to the next round — the
+/// existing `(coverage DESC, total_fit DESC)` sort + `(residual,
+/// used)`-keyed dedup are UNCHANGED and still order/collapse the
+/// frontier, so expansion still happens cheapest/best-first (the same
+/// Occam-cost-ordering the rest of the sd loop's ladder is built on) —
+/// bounded instead by a single, total, whole-search expansion BUDGET
+/// (`budget`/`DEFAULT_SD_BUDGET`, the fueled-interpreter idiom already
+/// used by `ProgEval`/`SynthEnumerate`). When the budget is exhausted
+/// before the search would have stopped on its own (frontier naturally
+/// empty, or full coverage reached), the result is HONESTLY flagged
+/// (`budget_exhausted: true`) rather than looking identical to a
+/// genuinely-exhausted-within-`max_steps` result — a caller can now tell
+/// "this is the best plan reachable in the declared cost class" from
+/// "the search gave up partway, here is its best partial."
+///
+/// `beam` itself is kept on the wire and in the output Dict (informational
+/// / back-compat only — every existing seed's `"beam": N` still parses and
+/// still reports) but no longer truncates anything. This is a deliberate,
+/// zero-behavioural-difference no-op for every callsite that matters most:
+/// `cand_k<=1` callers (`embodied_motor_bootstrap.json`,
+/// `humanoid_adaptation.json`, `vision_*.json`, `somatomotor_waves.json`,
+/// `embodied_physics_proposal.json`, `embodied_development.json` — all
+/// real-time/hot-loop, all `beam=1, max_steps=1, cand_k=1`) generate AT
+/// MOST one candidate total regardless of pruning (`best` is updated at
+/// candidate-CREATION time, before any pruning ever runs — see below), so
+/// this change cannot alter their output or their cost. For the
+/// `max_steps=8` callers (`reflex_net.json`, `shape_decode_loop.json`,
+/// `program_synthesis.json`, `meaning_inference.json`,
+/// `prog_construction_loop.json`), see `DEFAULT_SD_BUDGET`'s doc for why
+/// the default keeps their exhaustive worst case well inside budget.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn eval_shape_decode(
     arena: &TermArena,
@@ -1208,6 +1273,7 @@ pub(crate) fn eval_shape_decode(
     beam: i64,
     max_steps: i64,
     cand_k: i64,
+    budget: i64,
     field: Sym,
     wild: Sym,
     wild_objects: bool,
@@ -1252,14 +1318,21 @@ pub(crate) fn eval_shape_decode(
         parts.iter().map(|p| p.sig.clone()).collect()
     };
 
-    let beam_w = beam.max(1) as usize;
     let cand_w = cand_k.max(0) as usize;
+    // Bug 2's budget: total state EXPANSIONS across the whole search
+    // (one unit per candidate state created, i.e. per (state, part) pairing
+    // that survives the per-state `cand_w` cap) — see `DEFAULT_SD_BUDGET`'s
+    // doc. `beam` is deliberately NOT read here any more (see
+    // `eval_shape_decode`'s doc): it is preserved on the wire/output only.
+    let sd_budget: u64 = if budget <= 0 { DEFAULT_SD_BUDGET as u64 } else { budget as u64 };
+    let mut expansions: u64 = 0;
+    let mut budget_exhausted = false;
 
     let start = BeamState { plan: Vec::new(), used: std::collections::HashSet::new(), residual: goal.clone(), total_fit: 0 };
     let mut frontier: Vec<BeamState> = vec![start.clone()];
     let mut best: BeamState = start;
 
-    for _ in 0..max_steps.max(0) {
+    'search: for _ in 0..max_steps.max(0) {
         let mut nxt: Vec<BeamState> = Vec::new();
         for state in &frontier {
             if state.residual.is_empty() {
@@ -1280,10 +1353,22 @@ pub(crate) fn eval_shape_decode(
                 scored.push((covered.len(), fit, part, covered));
             }
             // Stable sort by (-ncov, -fit) — `sort_by` is a stable sort in
-            // Rust, matching Python's stable `list.sort`.
+            // Rust, matching Python's stable `list.sort`. This is the
+            // COST-ORDERING (cheapest/best candidate first) that makes the
+            // budget cutoff below spend its remaining expansions on the
+            // most promising continuations first, not an arbitrary subset.
             scored.sort_by(|a, b| b.0.cmp(&a.0).then(b.1.cmp(&a.1)));
 
             for (ncov, fit, part, covered) in scored.into_iter().take(cand_w) {
+                if expansions >= sd_budget {
+                    // Honest partial result: stop generating new candidates.
+                    // Every candidate already generated already had its
+                    // chance to become `best` (below), so nothing already
+                    // found is lost — only further exploration is foregone.
+                    budget_exhausted = true;
+                    break 'search;
+                }
+                expansions += 1;
                 let why = format!(
                     "the held shape-matcher rated '{}' fit {} and its Covers Term accepts {} residual relation(s)",
                     part.name, fit, ncov
@@ -1314,8 +1399,11 @@ pub(crate) fn eval_shape_decode(
         if nxt.is_empty() {
             break;
         }
-        // Prune to top-`beam` by (coverage DESC, total_fit DESC), deduped
-        // on (residual, used-set) — first occurrence (post-sort) wins.
+        // Sort by (coverage DESC, total_fit DESC), dedupe on (residual,
+        // used-set) — UNCHANGED. Bug 2's fix: no width truncation after
+        // this. Every deduped state survives to the next round (still in
+        // cost-order, so a future budget cutoff still explores best-first);
+        // only the total expansion BUDGET above bounds the search now.
         nxt.sort_by(|a, b| {
             let acov = n_goal - a.residual.len();
             let bcov = n_goal - b.residual.len();
@@ -1329,9 +1417,6 @@ pub(crate) fn eval_shape_decode(
                 continue;
             }
             pruned.push(st);
-            if pruned.len() >= beam_w {
-                break;
-            }
         }
         frontier = pruned;
         if frontier.iter().all(|st| st.residual.is_empty()) {
@@ -1364,6 +1449,16 @@ pub(crate) fn eval_shape_decode(
         (surf("covered_count"), Value::Int((n_goal - residual.len()) as i64)),
         (surf("total_fit"), Value::Int(total_fit)),
         (surf("beam"), Value::Int(beam)),
+        // GAMMA_SEARCH_COMPLETENESS_FIXES.md Bug 2 — the honesty signal:
+        // true iff the total-expansion budget was exhausted before the
+        // search would otherwise have stopped on its own (frontier
+        // naturally empty, or full coverage already reached). `authored`
+        // (above) only ever meant "produced at least one step" — it was
+        // never a completeness certificate, before or after this fix — so
+        // this is an ADDITIVE field, not a redefinition: a caller that
+        // wants to distinguish "genuinely as-good-as-this-search-gets" from
+        // "gave up partway, here is its best partial" now can.
+        (surf("budget_exhausted"), Value::Bool(budget_exhausted)),
     ]));
     finish(result, field, ctx.interner, covered_by)
 }
@@ -5513,6 +5608,7 @@ mod tests {
             beam,
             max_steps,
             cand_k,
+            budget: 0,
             field: field_sym,
             wild: ir.intern("·?·"),
             wild_objects,
@@ -5888,6 +5984,156 @@ mod tests {
             };
             assert_eq!(covered_by, Value::None);
         }
+    }
+
+    // --- GAMMA_SEARCH_COMPLETENESS_FIXES.md Bug 2 ------------------------
+    // The discriminating fixture: `scripts/probe_beam_completeness.py`'s
+    // own greedy-set-cover adversarial construction (Johnson 1974 shape),
+    // transplanted verbatim as a native Rust unit test so the fix is
+    // gated at the same layer as the bug. `beam=1` previously discarded
+    // the OPTIMAL step-1 states permanently (never re-entering `frontier`
+    // for step 2); this test proves that no longer happens.
+
+    #[allow(clippy::too_many_arguments)]
+    fn build_decode_term_budgeted(
+        a: &mut TermArena,
+        ir: &mut Interner,
+        goal: Value,
+        codebook_type: Sym,
+        beam: i64,
+        max_steps: i64,
+        cand_k: i64,
+        budget: i64,
+    ) -> TermIdx {
+        let goal_t = a.add(TermNode::Lit { value: goal });
+        a.add(TermNode::ShapeDecode {
+            goal: goal_t,
+            codebook_type,
+            exclude: None,
+            codebook_scope: None,
+            beam,
+            max_steps,
+            cand_k,
+            budget,
+            field: Sym::default(),
+            wild: ir.intern("·?·"),
+            wild_objects: false,
+        })
+    }
+
+    /// The beam trap: `part_A={g1,g2}` + `part_B={g3,g4}` is the OPTIMAL,
+    /// disjoint, fully-covering 2-part plan; `part_C={g1,g3}` TIES on
+    /// coverage at step 1 (covers 2 of 4) and wins the `shape_fit`
+    /// tie-break by construction (position-aligned with `goal[0:2]`), but
+    /// then needs 2 MORE single-relation parts to finish — impossible
+    /// within `max_steps=2`. A width-1 beam that keeps only the
+    /// higher-fit `part_C` survivor after step 1 can never reach the
+    /// optimal plan; a search that does not discard `part_A`/`part_B`'s
+    /// states can.
+    fn build_beam_trap() -> (TypedGraph, Interner, Sym, Value) {
+        let mut ir = Interner::new();
+        let mut g = TypedGraph::new();
+        let t = ir.intern("ShapeSignature");
+        let g1 = rel(&mut ir, &["e", "1"]);
+        let g2 = rel(&mut ir, &["e", "2"]);
+        let g3 = rel(&mut ir, &["e", "3"]);
+        let g4 = rel(&mut ir, &["e", "4"]);
+        add_part(&mut g, &mut ir, t, "part_A", tuple_of(vec![g1.clone(), g2.clone()]));
+        add_part(&mut g, &mut ir, t, "part_B", tuple_of(vec![g3.clone(), g4.clone()]));
+        add_part(&mut g, &mut ir, t, "part_C", tuple_of(vec![g1.clone(), g3.clone()]));
+        add_part(&mut g, &mut ir, t, "part_only2", tuple_of(vec![g2.clone()]));
+        add_part(&mut g, &mut ir, t, "part_only4", tuple_of(vec![g4.clone()]));
+        let goal = tuple_of(vec![g1, g3, g2, g4]);
+        (g, ir, t, goal)
+    }
+
+    /// THE FIX, live: `beam=1` (the exact width that used to lose the
+    /// optimal plan) now finds the complete, 4/4-covering plan — because
+    /// `beam` no longer truncates the frontier; only the (generously
+    /// default-budgeted) total expansion count can, and this fixture is
+    /// nowhere near that budget.
+    #[test]
+    fn beam1_no_longer_loses_the_optimal_plan() {
+        let (g, mut ir, t, goal) = build_beam_trap();
+        let mut a = TermArena::new();
+        let idx = build_decode_term_budgeted(&mut a, &mut ir, goal, t, /*beam*/ 1, /*max_steps*/ 2, /*cand_k*/ 5, /*budget*/ 0);
+        let mut env: Env = Env::new();
+        let result = {
+            let mut ctx = EvalCtx::new(&g, &ir);
+            evaluate(&a, idx, &mut env, &mut ctx)
+        };
+        assert_eq!(dict_get(&result, "authored"), Value::Bool(true));
+        assert_eq!(dict_get(&result, "goal_relations"), Value::Int(4));
+        assert_eq!(dict_get(&result, "covered_count"), Value::Int(4),
+                   "beam=1 must now reach FULL coverage (was 3/4 before the fix — \
+                    scripts/probe_beam_completeness.py's live-verified 'before' number)");
+        assert_eq!(dict_get(&result, "residual"), tuple_of(vec![]));
+        assert_eq!(dict_get(&result, "budget_exhausted"), Value::Bool(false),
+                   "this tiny fixture must complete well inside the default budget");
+        // `beam` is still reported (back-compat) even though it no longer prunes.
+        assert_eq!(dict_get(&result, "beam"), Value::Int(1));
+    }
+
+    /// Sanity twin: `beam=3` (already-complete pre-fix behaviour, per the
+    /// ceiling-probe doc's live-verified table) is UNCHANGED by the fix —
+    /// same fully-covering plan, same shape.
+    #[test]
+    fn beam3_still_finds_the_optimal_plan() {
+        let (g, mut ir, t, goal) = build_beam_trap();
+        let mut a = TermArena::new();
+        let idx = build_decode_term_budgeted(&mut a, &mut ir, goal, t, 3, 2, 5, 0);
+        let mut env: Env = Env::new();
+        let result = {
+            let mut ctx = EvalCtx::new(&g, &ir);
+            evaluate(&a, idx, &mut env, &mut ctx)
+        };
+        assert_eq!(dict_get(&result, "covered_count"), Value::Int(4));
+        assert_eq!(dict_get(&result, "residual"), tuple_of(vec![]));
+    }
+
+    /// THE HONESTY FLAG: an artificially starved budget (1 expansion —
+    /// less than even one step's worth of children on this fixture) must
+    /// still return SOME result (never panic/hang) and must flag
+    /// `budget_exhausted: true` rather than reporting a partial plan
+    /// identically to a genuinely-exhausted-within-`max_steps` one.
+    #[test]
+    fn starved_budget_is_flagged_honestly() {
+        let (g, mut ir, t, goal) = build_beam_trap();
+        let mut a = TermArena::new();
+        let idx = build_decode_term_budgeted(&mut a, &mut ir, goal, t, 1, 2, 5, /*budget*/ 1);
+        let mut env: Env = Env::new();
+        let result = {
+            let mut ctx = EvalCtx::new(&g, &ir);
+            evaluate(&a, idx, &mut env, &mut ctx)
+        };
+        assert_eq!(dict_get(&result, "budget_exhausted"), Value::Bool(true));
+        // Whatever plan it DID find (the single candidate the 1-expansion
+        // budget allowed) is still reported, not thrown away.
+        assert_eq!(dict_get(&result, "authored"), Value::Bool(true));
+    }
+
+    /// A budget generous enough for step 1 (5 candidates: part_A, part_B,
+    /// part_C, each contribute; the fifth+ discarded by `cand_k` not
+    /// budget) but starved before step 2 can complete the optimal plan
+    /// must ALSO flag `budget_exhausted: true` — proving the flag reflects
+    /// genuine exhaustion, not just "budget=1".
+    #[test]
+    fn mid_search_budget_exhaustion_is_flagged() {
+        let (g, mut ir, t, goal) = build_beam_trap();
+        let mut a = TermArena::new();
+        // 3 candidates possible at step 1 (part_A, part_B, part_C each
+        // cover something); budget=3 exhausts exactly after step 1, before
+        // any step-2 child (including the optimal-completing one) exists.
+        let idx = build_decode_term_budgeted(&mut a, &mut ir, goal, t, 1, 2, 5, 3);
+        let mut env: Env = Env::new();
+        let result = {
+            let mut ctx = EvalCtx::new(&g, &ir);
+            evaluate(&a, idx, &mut env, &mut ctx)
+        };
+        assert_eq!(dict_get(&result, "budget_exhausted"), Value::Bool(true));
+        assert_eq!(dict_get(&result, "covered_count"), Value::Int(2),
+                   "budget=3 affords exactly the 3 step-1 candidates, all covering 2/4 -- \
+                    none has had a chance to spawn a step-2 child yet");
     }
 }
 

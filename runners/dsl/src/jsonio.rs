@@ -810,7 +810,7 @@ fn write_fields(
             m.insert("a".into(), child(*a, arena, interner));
             m.insert("b".into(), child(*b, arena, interner));
         }
-        TermNode::ShapeDecode { goal, codebook_type, exclude, codebook_scope, beam, max_steps, cand_k, field, wild_objects, .. } => {
+        TermNode::ShapeDecode { goal, codebook_type, exclude, codebook_scope, beam, max_steps, cand_k, budget, field, wild_objects, .. } => {
             // `wild` is a fixed sentinel re-derived on parse — not emitted.
             m.insert("goal".into(), child(*goal, arena, interner));
             m.insert("codebook_type".into(), sym_str(*codebook_type, interner));
@@ -819,6 +819,7 @@ fn write_fields(
             m.insert("beam".into(), J::Number((*beam).into()));
             m.insert("max_steps".into(), J::Number((*max_steps).into()));
             m.insert("cand_k".into(), J::Number((*cand_k).into()));
+            m.insert("budget".into(), J::Number((*budget).into()));
             m.insert("field".into(), sym_str(*field, interner));
             m.insert("wild_objects".into(), J::Bool(*wild_objects));
         }
@@ -1827,6 +1828,10 @@ fn read_term(
             beam: obj.get("beam").and_then(|v| v.as_i64()).unwrap_or(3),
             max_steps: obj.get("max_steps").and_then(|v| v.as_i64()).unwrap_or(8),
             cand_k: obj.get("cand_k").and_then(|v| v.as_i64()).unwrap_or(3),
+            // <=0 (including absent, the near-universal case in shipped seed
+            // JSON) selects `shape_decode::DEFAULT_SD_BUDGET` at eval time —
+            // see the `budget` field's doc on `TermNode::ShapeDecode`.
+            budget: obj.get("budget").and_then(|v| v.as_i64()).unwrap_or(0),
             field: get_optional_sym("field", interner),
             wild: interner.intern("·?·"),
             wild_objects: obj.get("wild_objects").and_then(|v| v.as_bool()).unwrap_or(false),
