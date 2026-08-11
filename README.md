@@ -1,121 +1,169 @@
-# Γ-substrate
+# Jabberwock — a graph-native agent
 
-The (G, Γ) substrate from Paper I — typed graph + reflective admissibility-grammar — together with a curious autopoietic agent that lives in it. This is the substrate **implementation**, currently pointed at small worlds (chess, Conway).
+**The agent is a graph, running in Rust.** Jabberwock (the "ocelot" repo) is
+an implementation of the (G, Γ, C) substrate — a typed graph plus a
+reflective admissibility grammar — where the agent's entire reasoning,
+knowledge, and behaviour is graph data, executed by a Rust rule-matching
+runtime (`substrate_rs`). Python exists only as a thin **world adapter**
+layer: translating external I/O (text, audio, video, simulator state) into
+graph mutations and back. There is no Python agent loop, no Python decision
+tree over graph state, and no Python-resident "mind" — that architecture
+(the old `domains/curious_agent.py` `CuriousAgent` class) was deleted
+outright in 2026-06-18 (commit `56529c6d`) and is gone from this tree.
 
-**What's here:**
+> **`CLAUDE.md` is the authoritative architecture rule for this repository.**
+> It is longer and more detailed than this README, it is kept current as the
+> project evolves, and if anything here ever conflicts with it, `CLAUDE.md`
+> wins. Read it before writing code here.
 
-- The substrate primitives (`substrate/`): G, Γ, Π, the DSL, reflective Γ ↔ subgraph round-trip (Axiom 3), Γ_meta gating ψ(Γ) operations (Theorem C).
-- The curious agent (`domains/curious_agent.py`): empty Γ_dynamic at construction, grows by compression-pressure, discovers boundary relations from co-occurrence (τ₂), endorses theorems about itself (τ₃), invents new theorems from stable invariants.
-- Worlds the agent inhabits (`domains/`): chess (full agency), Conway (spectator), shared chess (two-agent + message channel).
-- A live FastAPI visualiser that swaps Γ on a running Conway board in milliseconds.
+## The shape of it
 
-The agent's reality is its `mind_graph`. Every policy (saturation threshold, discovery top-K, meta-curiosity weight, theorem hold-threshold) lives as graph data attached to `agent_root` — editable through the same machinery the agent uses for everything else. The agent ships with **meta-skills only** (curiosity, discovery, theorem-checking, reflection); domain skills are external (in the worlds) or learned by living.
+```
+┌─────────────────────────────────────────────────────────┐
+│  RUST AGENT RUNTIME  (substrate_rs, runners/dsl/)        │
+│  • Substrate (G, Γ, C): typed graph + productions        │
+│  • DSL evaluator: Term-trees → values                    │
+│  • Rule engine: match + where + effects, run_rules fixpoint│
+│  • Reflex loop: stimulus → response, tick scheduling      │
+│  • Audio / speech / video / codec / JIT primitives        │
+│  • The agent's reasoning AS GRAPH DATA: Rules, Concepts,  │
+│    Microtheories, Frames, Reflexes, Productions           │
+└─────────────────────────────────────────────────────────┘
+                        ▲
+                        │ ingest / tick() / query
+              ┌─────────┴──────────┐
+              │  world adapters     │  substrate/world_adapter.py,
+              │  (Python, thin)     │  domains/*_world.py, worlds/*.py
+              └─────────────────────┘
+                        ▲
+                        │ external I/O
+                 text · audio · video · simulators
+```
 
-See `SPEC.md` for the original phase-by-phase design.
+A **world adapter** does exactly two mechanical things: **ingest** (turn an
+external event into substrate mutations — `substrate.add_node(...)`,
+`substrate.add_edge(...)`) and **emit** (read graph state back out and
+translate it to an external effect). Between the two it calls
+`substrate.tick()` and lets the Rust engine do the actual reasoning. A world
+adapter contains no `if`/`else` over graph state — any such conditional is a
+Rule, and Rules are graph data, not Python.
 
-## Trajectory so far (all τ-levels operational)
+## Seeds: the agent's knowledge is versioned, dependency-resolved graph data
 
-| Phase | What landed |
-|---|---|
-| τ₀ Operational | substrate primitives, weighted traversal, reflective Term ↔ subgraph |
-| Conway B3/S23 | 4-production Γ, 1000-gen match vs numpy oracle |
-| Live viz | Preset Γ-swaps + JSON Γ editor; perf pass (step cache + production index) |
-| Conway Γ-learner | Derives B3/S23 from observation in ~520 obs |
-| Chess body | 12 piece types, pseudo-legal Γ at 2.9 ms/position vs python-chess (17× under target); full legal-move parity; α–β at depth 3/4 beats random 5/5 |
-| Curious agent | Grows Γ_dynamic by compression-pressure alone; no win signal, no reward; discovers piece taxonomy + invariants by living |
-| τ₁ literal | Γ-edits as graph operations on mind_graph |
-| τ₁ closed | Every Γ-edit gated by Γ_meta |
-| Boundary as relations | Typed edges (senses/models/acts_on), not partition |
-| τ₂ natural emergence | Cross-world life produces disjoint grammar clusters (chess + Conway) without architectural support |
-| First-principles boundary discovery | Agent extends Γ_meta itself with new `rel_N` relations from co-occurrence |
-| Meta-curiosity | Action selection biased by own boundary asymmetry |
-| τ₃ theorems | Term-tree predicates in mind_graph, checked via DSL |
-| Theorem discovery | Stable invariants promoted to new theorems (`thm_N`) |
-| Epistemic state | Attribute nodes with saturation; agent knows what it doesn't know |
-| All policies as graph data | Saturation predicate, discovery thresholds, meta-curiosity weight all `Lit`s the agent can read |
-| History as graph data | Event nodes + `logged` / `involves` edges; Python `_event_log` is now a view |
-| Multi-agent shared world | Two agents inhabit shared chess; AgentMarker + Channel + Message; private minds, public communication |
+The agent doesn't boot with one monolithic mind. A **seed** is a named,
+versioned unit of graph data (`seeds/<id>.json`) — Concepts, Productions,
+Rules, Reflexes, Microtheories, Frames — with explicit `depends_on` edges to
+other seeds. An agent declares which seeds it wants; the loader
+(`substrate/seed_loader.py`) resolves the dependency closure and installs
+seeds in topological order. A text-only chat agent and a Doom-playing agent
+share the same Rust runtime and differ only in which seeds they loaded.
 
-## Run the live demo (single-agent Γ-swap viz)
+When the agent is *taught* something new, it persists through the same
+mechanism (`domains/teach.py`'s `teach()` facility): the fact lands in the
+live graph, gets filed into the seed category the agent's own meta-shape
+classifier assigns it to, and is appended to that seed's manifest — so a
+fresh boot includes it. `seeds/acquired/` (hundreds of thousands of small
+files) is exactly this: an auto-grown grounding cache, not hand-authored
+seed data.
+
+## Dynamic quantization — the core learning mechanism
+
+Every capability in this tree — vision, handwriting, program synthesis,
+spatial navigation, speech recognition — is an instance of one loop: an
+observation is decoded against a held codebook of learned shapes; whatever
+isn't covered is a residual; a residual that recurs mints a new codebook
+entry, growing the codebook for the next decode. The `run_rules` fixpoint
+*is* this decode → grow → re-decode loop; there is no Python iteration
+driving it. See `docs/features/dynamic-quantization.md` for the full
+mechanism (the growth ladder, the frame/continuum invariant that keeps
+in-graph values integer while cross-frame maps may be real-valued) and
+`docs/features/` generally for how it shows up in each subsystem.
+
+## Building
 
 ```bash
-cd research/experiments/gamma-substrate
-python -m viz.server
+cd runners/dsl
+maturin develop --release
 ```
 
-Then open <http://127.0.0.1:8000>. Required packages: `fastapi`, `uvicorn` (both already in the research env).
+This builds the `substrate_rs` Rust extension and installs it into the
+active Python environment. Two things worth knowing before you run a
+`--release` build:
 
-### Demo script
+- **Memory.** `runners/dsl/.cargo/config.toml` caps `jobs = 4`. The release
+  profile uses fat LTO + `codegen-units=1` for benchmark fidelity, which
+  makes each codegen unit large (1–2 GB); at default parallelism a release
+  build can OOM mid-compile (exit 137) on a memory-constrained box. Debug
+  builds are unaffected. If a release build still OOMs, drop further for
+  that one run: `CARGO_BUILD_JOBS=2 cargo build --release`.
+- **Tests don't need `--release`.** `cargo test` (debug) is the
+  memory-safe default; reach for `--release` only for a specific
+  performance-sensitive test.
 
-1. **Run.** Click **Run** — Conway starts on a 48×48 random board (~30 fps, laptop CPU).
-2. **Preset Γ-swap.** Click **HighLife** in the preset row. Active rule, productions, behaviour change on the next step. The headline panel shows `Γ-swap → first post-swap render` in ms.
-3. **Stack swaps.** Click **Day&Night**, then **Seeds**, then **Replicator** — same board persists, only the rule changes.
-4. **Custom Γ.** Expand the **Custom Γ (JSON editor)** at the bottom. Click **Sync from active Γ** to copy the current rule. Edit any production (e.g., add `{"type": "Lit", "value": 6}` to a birth set's `items` to make HighLife). Click **Apply Γ →**. The error span turns green and shows the apply time (typically < 10 ms).
-5. **Reset.** Click **Reset (random)** to start from a fresh random seed under the current rule.
-
-### Learning demo (Phase 1b)
-
-The system can derive Γ from observation alone — Theorem C / §2.1 at toy scale.
-
-1. **Reset learner.** Click **Reset learner** — observation count and edits go to 0.
-2. **Watch.** Click **Watch** (turns purple). The learner now feeds on every transition the substrate produces.
-3. **Run.** Click **Run**. Within ~5 steps on a 48×48 board, **cases covered: 18 / 18** (full Conway lookup table observed). The recent-edits log shows the production refinements as they happen.
-4. **Apply learned Γ.** Click **Apply learned Γ →**. The active rule becomes **Learned**; the substrate is now running the grammar it derived from watching itself. Behaviour is identical to Conway because the learned Γ is functionally equivalent to B3/S23.
-5. **Cross-rule learning.** While **Watch** is on, switch the active preset to **HighLife**, then **Reset learner**. The learner now derives HighLife from observation. Apply when **cases covered** hits 18 / 18.
-
-This makes Theorem C visible: same observation pipeline, any rule the substrate is running, learned in seconds.
-
-What's happening under the hood:
-
-- The (G, Γ) substrate is a Python `Substrate(graph, checker)`. Γ is a list of `Production` dataclasses; each `where` clause is a Term-tree from `substrate.dsl`.
-- A rule swap replaces `substrate.checker.grammar` with a new `Grammar`. That is the entire adaptation — no retrain, no recompile.
-- The substrate doesn't know which rule it's running — it only asks `checker.check_edge` (or the fast `is_edge_admissible` probe) per cell.
-- Each step asks, per cell, "is `transitions_to AliveCell` admissible? `transitions_to DeadCell` admissible?" The Γ answers; the cell's type changes accordingly.
-- Performance: step-local cache (Neighbours, Filter), Γ production-index, NodeID fast-hash. 32×32 ≈ 93 fps · 48×48 ≈ 30 fps · 64×64 ≈ 17 fps.
-
-## Run the tests
+## Testing
 
 ```bash
-python -m pytest tests/ -v
+pytest tests/ -k migrated
 ```
 
-Currently 25 tests, all green. Includes:
+`-k migrated` is this tree's standing convention: `tests/test_*_migrated.py`
+(768 files as of this writing) are the gate for graph-native behaviour —
+the suite that replaced the old Python-vs-graph parity tests once the
+`CuriousAgent` migration completed. The root `conftest.py` pins the Rust
+engine this tree's tests must run against
+(`domains/engine_provenance.py::engine_preamble`) and points dataset-reading
+tests at the gitignored `data/` directory rather than `/tmp`.
 
-- 32×32 board byte-identical round-trip (Phase 0 acceptance)
-- 1000-generation Conway random fill vs numpy oracle
-- HighLife / Seeds vs oracle (proves the substrate is rule-general, not Conway-specific)
-- Mid-run Γ-swap: 20 gens Conway → 20 gens HighLife matches an independent oracle path
-- Term ↔ G-subgraph and Γ ↔ G-subgraph round-trips (Axiom 3)
-- Γ ↔ JSON round-trip (custom Γ editor)
-- Learner reaches ≥99% accuracy on held-out random boards within 5000 observations (actually converges at ~520)
-- Learned Γ runs identically to Conway oracle for 20 generations on a held-out board
+**If you're working inside a nested git worktree** (`.worktrees/...`, common
+for isolated rung development in this project's history), pytest can pick
+up the *parent* repo's `conftest.py` instead of the worktree's own, which
+manifests as every test module failing to collect with `ImportError`. If you
+hit that, pass `--confcutdir=<the worktree root>` and set `COLUMNS=250`.
+This does not affect a normal top-level checkout — only worktrees nested
+inside the canonical repo.
 
-## Layout
+## Finding your way around
 
-```
-substrate/        # (G, Γ, C, Π, weighted walker, reflective DSL, learner, JSON I/O)
-domains/conway.py # Life-like Γ presets + encode / decode / step
-viz/              # FastAPI server + vanilla-JS frontend
-tests/            # substrate + Conway + HighLife + grammar-swap + learner
-SPEC.md           # falsifiable spec; see for phase plan + acceptance criteria
-SCREENCAST.md     # 60-second recording script for the live demo
-```
+- **`CLAUDE.md`** — the architecture rule, authoritative, with a full
+  chronological account of major landings (the CuriousAgent deletion, the
+  composer/driver migration, the dynamic-quantization growth ladder, quanta
+  navigation, transformation-as-dimension-change, the base-as-dimension
+  invariant, the self-repair/gap-awareness machinery). Read this for *why*
+  something is built the way it is.
+- **`docs/CODE_MAP.md`** — what lives in every top-level source directory
+  (`runners/dsl/`, `domains/`, `domains_rs/`, `worlds/`, `substrate/`,
+  `seeds/`, `scripts/`, `tools/`, `tests/`, `web/`), with measured file/line
+  counts, not estimates.
+- **`docs/features/`** — synthesized, current-state summaries of each major
+  subsystem (program synthesis, dynamic quantization, vision, Bigville,
+  flight/vehicle control, humanoid embodiment, audio/speech, LS20 spatial
+  reasoning, psychology/affect, engine/substrate mechanics). Each ends with
+  a pointer into the detailed historical record. Start here if you want the
+  five-minute version of a subsystem before diving into its research
+  archive.
+- **`docs/research/`** — the full historical PREREG → RESULTS record, one
+  subfolder per topic, each with its own `INDEX.md`
+  (`docs/research/INDEX.md` is the top-level map). This is where the
+  primary sources live: every claim in `docs/features/` and `CLAUDE.md` is
+  backed by a document somewhere in here. The dominant convention
+  throughout: a `*_PREREG.md` is committed *before* a measurement, a script
+  performs it, and a `*_RESULTS.md` reports what happened, honestly,
+  including nulls and reverted work — never edited after the fact to fit
+  the result.
+- **`docs/meta/`** — `SPEC.md` (the project's original phase-by-phase design
+  spec, from before the current architecture existed — historical value
+  only), `SCREENCAST.md`, `NOTICES.md`, `JABBERWOCKY.md`.
+- **`VISION_PROTOCOL.md`** (repo root, deliberately not moved into
+  `docs/research/` — see `docs/CODE_MAP.md`) — the live, actively-parsed
+  burned-seed ledger and binding-rules document for the vision research
+  thread specifically.
 
-## What this artefact does and does not show
+## A note on scale
 
-**Shows:**
-
-- A faithful Paper-I (G, Γ) substrate in pure Python, ~800 LOC, laptop CPU.
-- Axiom 3 (Γ representable as G-subgraph) by construction — every Term and every Production round-trips Γ ↔ G-subgraph.
-- Live rule change in ms, no retraining, on the same running board.
-
-**Also shows (Phase 2c — curious agent):**
-
-- An autopoietic loop with no external reward — `domains/curious_agent.py`. The agent starts knowing nothing (Γ_dynamic empty) and grows productions by trying to compress what it observes. Drive = Theorem-A quality measure on its own Γ.
-- After ~20 self-games it has discovered all 12 chess piece types and inferred real chess invariants: `WhitePawn.rank ∈ {1..6}` (never on rank 0, never on rank 7), `BlackPawn.rank ∈ {2..6}` symmetrically, piece-attack edges per type.
-- No win signal anywhere in the code path (AST-verified by `test_no_win_signal_anywhere`).
-- Strong chess play is *not* the deliverable. Chess is the petri dish; the loop is the thing.
-
-**Does not (yet) show:**
-
-- Comparative substrate τ₂ (Phase 3).
+This is a large, long-running research program, not a small demo repo:
+`runners/dsl/src/` alone is ~106k lines of Rust across 84 files;
+`domains/` holds 720 Python world-adapter/seed-emitter files; `seeds/`
+holds 888 hand/tool-authored manifests plus a ~306k-file auto-acquired
+knowledge cache; `docs/research/` holds well over a thousand PREREG/RESULTS
+documents. `docs/CODE_MAP.md` and `docs/research/INDEX.md` exist so a new
+reader doesn't have to discover that scale by `ls`-ing around — start there.

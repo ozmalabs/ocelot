@@ -79,9 +79,19 @@ RECORD_PATH = os.path.join(ROOT, "results", "seed_ledger_measured.json")
 #: The committed grandfather floor for the pre-registration claim gate.
 PREREG_FLOOR_PATH = os.path.join(ROOT, "results", "prereg_claim_floor.json")
 
-#: Pre-registrations live at the tree root as `VISION_*_PREREG.md`.
+#: Pre-registrations are `VISION_*_PREREG.md` documents. They lived at the
+#: tree root until the 2026-08-11 docs reorg moved every VISION_ research
+#: document (this module's own pre-registration included) to
+#: `docs/research/vision/` in one motion -- same files, same bare filenames
+#: (this scanner's output, and therefore `results/prereg_claim_floor.json`,
+#: is keyed on bare filenames and is byte-identical before/after), new
+#: parent directory. `prereg_files`/`write_prereg_floor`/
+#: `preregs_missing_claim` all default their `root` argument to
+#: `PREREG_DIR` below; pass an explicit `root` (tests do, for isolated
+#: fixtures) to scan anywhere else.
 _PREREG_PREFIX = "VISION_"
 _PREREG_SUFFIX = "_PREREG.md"
+PREREG_DIR = os.path.join(ROOT, "docs", "research", "vision")
 
 
 # ---- measured occupancy ----------------------------------------------------
@@ -261,7 +271,7 @@ def record_is_fresh(path: str = RECORD_PATH, *, roots=DEFAULT_ROOTS):
 
 # ---- §11 rec #7: a prereg must record its check_claim output ---------------
 
-def prereg_files(root: str = ROOT) -> list[str]:
+def prereg_files(root: str = PREREG_DIR) -> list[str]:
     return sorted(f for f in os.listdir(root)
                   if f.startswith(_PREREG_PREFIX) and f.endswith(_PREREG_SUFFIX))
 
@@ -322,7 +332,7 @@ def read_prereg_floor(path: str = PREREG_FLOOR_PATH) -> set[str]:
 _GATE_AUTHOR_PREREG = "VISION_INSTRUMENT_SEAMS_PREREG.md"
 
 
-def write_prereg_floor(path: str = PREREG_FLOOR_PATH, root: str = ROOT) -> list[str]:
+def write_prereg_floor(path: str = PREREG_FLOOR_PATH, root: str = PREREG_DIR) -> list[str]:
     files = [f for f in prereg_files(root) if f != _GATE_AUTHOR_PREREG]
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as fh:
@@ -342,7 +352,7 @@ def write_prereg_floor(path: str = PREREG_FLOOR_PATH, root: str = ROOT) -> list[
     return files
 
 
-def preregs_missing_claim(root: str = ROOT, *, floor_path: str = PREREG_FLOOR_PATH):
+def preregs_missing_claim(root: str = PREREG_DIR, *, floor_path: str = PREREG_FLOOR_PATH):
     """Pre-registrations, not grandfathered, that record NO claim verdict."""
     floor = read_prereg_floor(floor_path)
     missing = []
