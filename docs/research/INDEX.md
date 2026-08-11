@@ -17,4 +17,5 @@ The full historical PREREG/RESULTS/plan corpus, grouped by subject. For a synthe
 | [`problem_difficulty/`](problem_difficulty/INDEX.md) | 1 | — |
 | [`program_synthesis/`](program_synthesis/INDEX.md) | 99 | — |
 | [`psychology_affect/`](psychology_affect/INDEX.md) | 39 | — |
+| [`theory_convergence/`](theory_convergence/INDEX.md) | 1 | — |
 | [`vision/`](vision/INDEX.md) | 376 (+20 in subfolders) | `physics_perception/` |
