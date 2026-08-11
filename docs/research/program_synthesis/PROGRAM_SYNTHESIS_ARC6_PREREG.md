@@ -2862,3 +2862,189 @@ ask-dispatch-divergence machinery (A18–A21), and candidate (b)
 and anything under `docs/research/theory_convergence/`, `docs/research/
 adventure_mechanics/`, `docs/research/engine_substrate/
 decision_making_spike.md`, or `docs/research/flight_control/`.
+
+
+---
+
+### AMENDMENT A24 (2026-08-11) — the reply side: what an answer to `ArcImpotenceQuestion` should mint, and why it cannot be `gr_move_penalty` verbatim
+
+A23 shipped the ask (`ax_ask_impotent`/`ax_ask_impotent_reply`) and named its
+own scope boundary explicitly: *"Deliberately mints no `GoalResidual`/
+testimony — candidate (b)'s territory... out of this rule's registered
+scope: this rule only asks a different question, it never reprices
+anything."* A23 §7 closed with three ranked remaining uncertainties; this
+amendment closes the two cheapest — the reply side (§7 item 4) and the
+epoch-advance re-entry test (§7 item 1) — and explicitly declines the third
+(§7 item 2, the naive comparator's full-catalogue sweep), which stays
+named and open.
+
+**The design investigation, done before drafting bars.**
+
+1. **`gr_move_penalty`'s own `MATCH`/`PENALTY` mechanism, read in full**
+   (`tools/build_goal_residual_seed.py:116-146`). `PENALTY(c)` is the
+   `weight` of the strongest non-stale `GoalResidual` whose `MATCH(r, c)`
+   holds; `MATCH` is a conjunction over `SIG_DIMS = (sig_seam, sig_lever,
+   sig_target)` where a residual's unset dimension is a wildcard **but the
+   very first, non-wildcardable conjunct is `Not(Eq(Attr(c,"sig_seam"),
+   Lit(None)))`** — the candidate itself must carry a non-null `sig_seam`,
+   or `MATCH` is `False` regardless of what the residual declares. The
+   module's own comment names this on purpose: *"a candidate with NO
+   `sig_seam` is never matched, so an all-wildcard residual cannot suppress
+   an unsignatured goal."* `seeds/arc_goals.json`'s own AG-2 comment
+   restates the same fact as an escape hatch: *"An ArcGoal with no
+   `sig_seam` cannot be matched by ANY `GoalResidual`... so it escapes."*
+   This is a documented, deliberate design property of the EXISTING
+   mechanism, not an oversight this amendment gets to route around.
+2. **Cross-checked against which goals are actually in the impotent
+   pool.** A23 §2.3 (`AMENDMENT A23` above), quoting `REGION(g)`
+   (`tools/build_arc_goals_seed.py:336-338`): the fallback to `g.agid`
+   fires *"whenever `sig_seam` is unset — true of every
+   `supply_blocker`/`source_claim`/`decomposition_tier` goal this tree
+   has ever minted."* A23 §4.2's own live measurement confirms this is not
+   a corner case: the whole `nearest_unroutable_kind` chain AR23c drove
+   visited exactly `decomposition_tier → supply_blocker → source_claim` —
+   THE THREE KINDS THAT ARE ALWAYS UNSIGNATURED. The population
+   `ax_impotent`'s own pool can ever name as `nearest_unroutable_kind` is,
+   by this arc's own already-measured fact, **exactly the population
+   `MATCH`'s own non-null-`sig_seam` guard was built to exclude.**
+3. **The consequence, stated precisely.** Minting a `GoalResidual` off an
+   `ArcImpotenceQuestion` reply — even with `sig_seam` set to some
+   improvised class token — would not merely be the WRONG GRAIN (a
+   per-goal mechanism reused where a per-class one belongs, the risk
+   the task's own brief anticipated); it would be **inert by
+   construction**: `PENALTY(c)` can never read it back for any candidate
+   `c` this pool has ever contained, because `c.sig_seam` is null for
+   every one of them, and `MATCH`'s first conjunct refuses null
+   unconditionally, before any of the residual's own wildcards are even
+   considered. This is a stronger and more precise finding than the
+   brief's own framing ("per-goal vs. per-class") — the exact mechanism
+   the brief named as the cheap default is not just mis-scoped for this
+   job, it is **structurally unable to do it at all**, for the same
+   reason (A14 finding 1 / A23 §2.3) that made `ag_ask`'s own `REGION`
+   fallback the thing A23 had to route around in the first place.
+4. **What the reply should do instead.** A23's own class dimension —
+   `AgendaVerdict.nearest_unroutable_kind`, copied onto
+   `ArcImpotenceQuestion.region` at ask time — is already the CORRECT
+   class key for this population (it is a plain `kind` string every pool
+   member carries, unlike `sig_seam`, which most of them lack). The
+   reply mechanism this amendment builds is therefore **class-scoped by
+   `kind`, structurally different from `gr_move_penalty`, and does not
+   touch `MATCH`/`PENALTY`/AG-2's `VALUE` formula at all** — extending
+   `MATCH` to accept a `kind`-keyed wildcard path would be a change to a
+   Term three seeds (`program_synthesis.json`'s `ps_move_select`,
+   `arc_goals.json`'s AG-2, and `ag_ask`'s own `EXISTS_MATCH` guard)
+   already depend on for their own, unrelated, already-measured
+   properties — exactly the "new rule-shape change to shared machinery"
+   this arc's cost discipline (A15 EC2/EC3, reaffirmed by A23 AR23b)
+   weighs against a small, additive, seed-data-first alternative.
+5. **A second finding, from `CLAUDE.md`'s own SHAPES-not-numbers standing
+   rule (2026-08-06/07), applied before any weight is authored.** The
+   task's brief speculates the reply should "reweight the pool." Nothing
+   downstream currently reads a class-scoped testimony weight — no rule
+   in this seed or its dependents consumes `nearest_unroutable_kind`
+   testimony today, and wiring one (into AG-2's `VALUE`, or into
+   `ax_ask_impotent`'s own re-entry guard) is a materially bigger design
+   question than "build the reply mechanism": AR23c's own crux property
+   (a genuinely new `AgendaVerdict` always gets its own fresh ask,
+   verified live below, AR24c) would be put directly at risk by any
+   testimony-gated suppression of `ax_ask_impotent`'s firing, which is
+   exactly what AR24c is chartered to confirm still holds. Minting an
+   authored numeric weight with **no reader anywhere in this tree** is
+   the precise anti-pattern the standing rule names — *"a scalar knob is
+   not a simplification of this — it is the unpaid debt."* This
+   amendment therefore mints a **descriptive, lapse-tracked record**
+   (kind, the specific-vs-class scope the reply named, the epoch, an
+   edge back to the question it answers), not a fabricated weight — the
+   honest minimal build the evidence supports, not the number the brief
+   guessed at.
+
+**Bars, registered before any seed or rule is written.**
+
+- **AR24a — investigation bar.** Satisfied by the design investigation
+  above: `gr_move_penalty`'s own `MATCH`/`PENALTY` bodies are read in
+  full (not assumed from `gr_move_penalty`'s name or from A23's own
+  prose), cross-checked against which goals the impotent pool can ever
+  contain (A23 §2.3 / §4.2, already measured), and the conclusion —
+  naive reuse is not merely mis-scoped but structurally inert on its own
+  target population — is reasoned from the actual code, not guessed.
+- **AR24b — build the reply mechanism, minimal, seed-data-first (A15
+  EC2/EC3 precedent).** One new rule (`ax_ask_impotent_testify`, matched
+  on the SAME `[m, responds_to, q]` pattern `ax_ask_impotent_reply`
+  already uses, guarded by `TypeOf(q)=='ArcImpotenceQuestion'` and a
+  self-extinguishing `Not(Exists(Neigh(q, mints_testimony)))` mint-once
+  check — the cheapest guard shape this engine has, the same one
+  `ax_ask_impotent` itself uses for its own re-entry gate); one new node
+  type (`ArcImpotenceTestimony{kind, agid_a, scope, asked_epoch,
+  reply_epoch}` — `scope` is a structured field the reply's `Message`
+  carries, set the SAME way `cond_kind` already is (`ag_reply_mints_
+  testimony_conditioned`'s own design note: *"written by the world
+  adapter as MECHANICAL TRANSLATION of an external form... never parsed
+  from the reply text"*), defaulting to `"unspecified"` when absent);
+  the new node lapses through the EXISTING, type-agnostic
+  `gr_condition_lapse`/`gr_condition_hold` (`seeds/goal_residuals.json`,
+  untouched — its `match` carries no type constraint on the node it
+  lapses, the same free ride `ax_impotent`'s own `AgendaVerdict` already
+  takes), via a `holds_under` edge to a `fact_equals(arc_measure_epoch)`
+  `ResidualCondition`, the SAME "expires at the next measurement" idiom
+  every other testimony in this tree already uses. **No weight field**
+  (§ investigation finding 5). **Zero changes** to `gr_move_penalty`,
+  `MATCH`, `PENALTY`, AG-2's `VALUE`, `ax_ask_impotent`, or
+  `ax_ask_impotent_reply` — the last two stay byte-identical to A23,
+  confirmed by diff, so A23's own "this rule only asks, it does not
+  reprice" statement about `ax_ask_impotent_reply` remains literally
+  true after this rung.
+- **AR24c — the epoch-advance test, live, twin-run deterministic.**
+  Construct a scene (reusing A23's own IM1 pool-exit idiom,
+  `_leave_pool_without_retiring`) where an `AgendaVerdict{kind:
+  'impotent'}` mints, gets asked about (`ArcImpotenceQuestion` q1,
+  `asked_about_verdict → av1`), and is answered; THEN genuinely change
+  the pool's live membership (remove a second, distinct goal from the
+  pool the same way) AND bump the measurement epoch
+  (`agi.bump_measure_epoch`, the SAME mechanical call `run_order`/
+  `world_probe_advance_epoch` already make) so the new impotent state is
+  reached by a real epoch advance, not merely by graph churn inside one
+  epoch (the case A23 already covered). Confirm, live: a SECOND,
+  distinct `AgendaVerdict` (`av2`, different `pool_agids`) mints, and
+  `ax_ask_impotent` fires on it — a SECOND `ArcImpotenceQuestion` (q2)
+  mints, `asked_about_verdict → av2`, distinct from q1 — i.e. the
+  re-entry gate's per-node `InNeighbours` check does not block a
+  genuinely new verdict just because a DIFFERENT, older verdict was
+  already asked about. This is A23 §7 item 1's own charter, discharged
+  rather than merely reasoned about from the guard's construction.
+  Twin-run: the scene is built and measured twice; the mint counts and
+  the `(q, av)` pairing must be identical both times.
+- **AR24d — no regression.** The same six gate suites this arc always
+  checks (`test_arc_executor_migrated`, `test_arc_goals_migrated`,
+  `test_goal_residual_migrated`, `test_arc6_valuelayer_migrated`,
+  `test_arc_magnitude_migrated`, `test_arc_decompose_migrated`), paired
+  failing node-id lists not counts, against a FRESH baseline measured in
+  this worktree before any edit (A22/A23's own standing discipline,
+  reapplied — this rung's own engine build may not match `test_gr4`'s
+  allowlist, exactly as every prior rung since A17 has recorded of its
+  own build).
+
+**Registered null reading, stated in advance.** If AR24a's own
+investigation is wrong and `gr_move_penalty`'s `MATCH`/`PENALTY` DOES
+apply cleanly to the impotent pool's population (e.g. because a future
+seed change signatures `decomposition_tier`/`supply_blocker`/
+`source_claim` goals after all), that is reported as a correction to this
+amendment's own reasoning, not silently absorbed — the class-scoped
+build below stays the shipped mechanism regardless, because AR24a
+finding 5 (no consumer, SHAPES-not-numbers) argues against wiring a
+weight either way. If AR24c's epoch-advance test finds the re-entry gate
+DOES block the new verdict's ask (contradicting the guard's own
+construction, `Not(Exists(InNeighbours(av, asked_about_verdict)))`, which
+is per-node by definition), that is the headline finding of this rung,
+reported in full with the live trace, not patched over.
+
+**Explicitly out of scope.** Item 2 of A23 §7 (the naive comparator's own
+risk swept across A14/A22's full scene catalogue) is NOT attempted here —
+a bigger, separate measurement task, named and left open. `seeds/
+arc_goals.json`, `seeds/program_synthesis.json`, `seeds/goal_residuals.
+json`'s own `gr_move_penalty`/`MATCH`/`PENALTY`/`gr_condition_lapse`
+bodies, `ax_ask_impotent`, `ax_ask_impotent_reply`, `ax_dispatch`,
+`ROUTE`, `_routable`/`_dispatchable` — none of these are edited by this
+rung, only read. `results/arc6_import_impedance.json`/`scripts/
+arc6_import_impedance.py`, and anything under `docs/research/
+theory_convergence/`, `docs/research/adventure_mechanics/`, `docs/
+research/engine_substrate/`, or `docs/research/flight_control/`.

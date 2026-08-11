@@ -2479,24 +2479,23 @@ def test_a21_AR21d_gr_condition_lapse_and_every_sibling_seed_are_still_UNTOUCHED
 #  own confinement-test shape exactly.
 # =========================================================================== #
 def test_a23_AR23b_the_new_rules_are_the_ONLY_addition_to_the_seed():
-    """`seeds/arc_executor.json` regenerates byte-identically from its own
-    (edited, version-bumped) emitter; the new rules are purely additive —
-    every rule through A21 is still present, unedited, by name and in
-    order, with exactly two more appended."""
+    """A24 INVERTS THIS PIN TO A PREFIX CHECK, NOT REMOVES IT — the WH1/A18/
+    A19/A20/A23 precedent applied a sixth time.  A24 appends a FIFTEENTH
+    rule (`ax_ask_impotent_testify`), so the exact-fourteen-name and
+    exact-version assertion this test made through A23 is now false BY
+    CONSTRUCTION.  `test_a24_AR24b_the_new_rule_is_the_ONLY_addition_to_
+    the_seed` below asserts the full, current fifteen-name list and
+    version; this one still proves the ORIGINAL fourteen are an unbroken
+    PREFIX, in order, unedited by name."""
     doc = _seed()
-    assert doc["version"] == "1.8.0"
     names = [r["name"] for r in doc["rules"]]
-    assert names == [
+    assert names[:14] == [
         "ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
         "ax_impotent", "ax_world_probe_epoch",
         "ax_fallback_silent", "ax_fallback_cleared",
         "ax_ask_divergence_active", "ax_ask_divergence_cleared",
         "ax_impotent_pool_lapse", "ax_impotent_pool_hold",
-        "ax_ask_impotent", "ax_ask_impotent_reply"], names
-    r = subprocess.run([sys.executable,
-                        os.path.join(ROOT, "tools", "build_arc_executor_seed.py"),
-                        "--check"], capture_output=True, text=True, cwd=ROOT)
-    assert r.returncode == 0, r.stdout + r.stderr
+        "ax_ask_impotent", "ax_ask_impotent_reply"], names[:14]
 
 
 def test_a23_AR23b_every_prior_rule_body_is_UNCHANGED():
@@ -2633,3 +2632,305 @@ def test_a23_AR23c_native_ask_is_class_scoped_and_reaches_a_fixed_point():
         "nearest_unroutable_agid/kind multiple times on an UNCHANGED pool "
         "-- this is the fixed-point property AR23c measured", native,
         kinds)
+
+
+# =========================================================================== #
+#  A24 (PROGRAM_SYNTHESIS_ARC6_PREREG.md amendment A24) -- THE REPLY SIDE:
+#  ax_ask_impotent_testify, class-scoped by kind, NOT a gr_move_penalty
+#  reuse (the design investigation found that reuse structurally inert on
+#  its own target population -- see the rule's own comment).  Mirrors
+#  A19-A23's own confinement-test shape exactly.
+# =========================================================================== #
+def test_a24_AR24b_the_new_rule_is_the_ONLY_addition_to_the_seed():
+    """`seeds/arc_executor.json` regenerates byte-identically from its own
+    (edited, version-bumped) emitter; the new rule is purely additive —
+    every rule through A23 is still present, unedited, by name and in
+    order, with exactly one more appended."""
+    doc = _seed()
+    assert doc["version"] == "1.9.0"
+    names = [r["name"] for r in doc["rules"]]
+    assert names == [
+        "ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
+        "ax_impotent", "ax_world_probe_epoch",
+        "ax_fallback_silent", "ax_fallback_cleared",
+        "ax_ask_divergence_active", "ax_ask_divergence_cleared",
+        "ax_impotent_pool_lapse", "ax_impotent_pool_hold",
+        "ax_ask_impotent", "ax_ask_impotent_reply",
+        "ax_ask_impotent_testify"], names
+    r = subprocess.run([sys.executable,
+                        os.path.join(ROOT, "tools", "build_arc_executor_seed.py"),
+                        "--check"], capture_output=True, text=True, cwd=ROOT)
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_a24_AR24b_every_prior_rule_body_is_UNCHANGED():
+    """All fourteen prior rule bodies (A11-A23) are byte-identical to
+    `HEAD` — `ax_ask_impotent`/`ax_ask_impotent_reply` in particular, so
+    A23's own 'this rule only asks, it does not reprice' statement stays
+    literally true after this rung: this rung reads `q.region`/`q.agid_a`/
+    `q.asked_epoch` and the `mints_testimony`/`responds_to` edges, it edits
+    neither prior rule."""
+    prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
+                            capture_output=True, text=True).stdout.strip()
+    head_doc = json.loads(subprocess.run(
+        ["git", "-C", ROOT, "show", "HEAD:" + prefix + "seeds/arc_executor.json"],
+        capture_output=True, text=True).stdout)
+    head_rules = {r["name"]: r for r in head_doc["rules"]}
+    cur_rules = {r["name"]: r for r in _seed()["rules"]}
+    for name in ("ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
+                 "ax_impotent", "ax_world_probe_epoch", "ax_fallback_silent",
+                 "ax_fallback_cleared", "ax_ask_divergence_active",
+                 "ax_ask_divergence_cleared", "ax_impotent_pool_lapse",
+                 "ax_impotent_pool_hold", "ax_ask_impotent",
+                 "ax_ask_impotent_reply"):
+        assert cur_rules[name] == head_rules[name], name
+
+
+def test_a24_AR24b_the_new_rule_mints_no_GoalResidual():
+    """STATIC confinement check on the design investigation's own finding:
+    `gr_move_penalty`'s `MATCH` refuses every candidate this pool can ever
+    contain, so a `GoalResidual` minted here would be inert by
+    construction, not merely mis-scoped.  `ax_ask_impotent_testify` must
+    never mint one."""
+    rule = _seed_rule("ax_ask_impotent_testify")
+    for eff in rule["effects"]:
+        if eff[0] == "add_node":
+            assert eff[2] != "GoalResidual", eff
+
+
+def test_a24_AR24b_the_testimony_type_is_DISTINCT_and_carries_no_weight_field():
+    """The testimony node is a NEW, DISTINCT type (`ArcImpotenceTestimony`,
+    not `GoalResidual` and not `ArcImpotenceQuestion`), and — per CLAUDE.md's
+    SHAPES-not-numbers standing rule — carries no `weight`/`residual_penalty`
+    field: nothing downstream reads a class-scoped testimony weight yet, so
+    none is authored."""
+    rule = _seed_rule("ax_ask_impotent_testify")
+    mint = [e for e in rule["effects"]
+            if e[0] == "add_node" and e[1] == "t"][0]
+    assert mint[2] == "ArcImpotenceTestimony"
+    attrs = mint[3]
+    assert "weight" not in attrs
+    assert "residual_penalty" not in attrs
+    assert set(attrs) == {
+        "kind", "agid_a", "scope", "asked_epoch", "reply_epoch",
+        "evidence_kind", "reach_class", "stale", "_no_weight_by_design"}
+
+
+def test_a24_AR24b_gr_move_penalty_MATCH_PENALTY_and_AG2_VALUE_are_UNTOUCHED():
+    """The design investigation's own headline claim, checked by diff, not
+    trusted from prose: `seeds/goal_residuals.json` (`gr_move_penalty`'s
+    `MATCH`/`PENALTY`) and `seeds/arc_goals.json` (AG-2's `VALUE`, `ag_ask`,
+    both reply rules) are byte-identical to `HEAD` — this rung reads
+    neither."""
+    prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
+                            capture_output=True, text=True).stdout.strip()
+    for rel in ("seeds/arc_goals.json", "seeds/goal_residuals.json",
+                "seeds/program_synthesis.json", "domains/arc_goal_ingest.py",
+                "domains/goal_residual_ingest.py",
+                "domains/arc_magnitude_ingest.py", "domains/arc_executor.py"):
+        head = subprocess.run(["git", "-C", ROOT, "show", "HEAD:" + prefix + rel],
+                              capture_output=True, text=True).stdout
+        assert head, rel
+        assert head == open(os.path.join(ROOT, rel)).read(), rel
+
+
+def _a24_scene_step1(s):
+    """Boot, leave the executable AGID out of the pool (A23's own IM1 idiom)
+    so the FIRST impotent verdict (`av1`) mints and gets asked about,
+    return its own question node."""
+    s._inner.run_rules()
+    _leave_pool_without_retiring(s, AGID)
+    s._inner.run_rules()
+    qs = [n for n in s.nodes("ArcImpotenceQuestion")]
+    assert len(qs) == 1, qs
+    return qs[0]
+
+
+def test_a24_AR24b_LIVE_scope_defaults_to_unspecified_the_structured_field_works_and_it_lapses():
+    """LIVE.  Three things in one scene, each a real graph read, none
+    assumed: (1) a reply with no structured `impotence_scope` field mints a
+    testimony whose `scope` reads back `'unspecified'` — the null-coalesce
+    Term, not a Python default; (2) a reply that DOES carry the field
+    (set the SAME way `cond_kind` already is — a structured field on the
+    reply `Message`, mechanical translation, never parsed from text) mints
+    a testimony carrying it verbatim; (3) the testimony LAPSES through the
+    EXISTING, UNMODIFIED `gr_condition_lapse` the instant the measurement
+    epoch advances — zero new lapse mechanism, the SAME 'expires at the
+    next measurement' idiom every other testimony in this tree already
+    uses."""
+    s, _ = boot()
+    q = _a24_scene_step1(s)
+    m = agi.attach_reply(s, q, "not sure, use your judgement")
+    s._inner.run_rules()
+    ts = list(s.nodes("ArcImpotenceTestimony"))
+    assert len(ts) == 1, ts
+    t0 = s.node(ts[0])["attrs"]
+    assert t0["scope"] == "unspecified"
+    assert t0["stale"] == 0.0
+    assert t0["kind"] == s.node(q)["attrs"]["region"]
+
+    #  re-run must NOT double-mint (the self-extinguishing edge-existence
+    #  guard, the same shape ax_ask_impotent's own re-entry gate uses).
+    s._inner.run_rules()
+    assert len(list(s.nodes("ArcImpotenceTestimony"))) == 1
+
+    agi.bump_measure_epoch(s)
+    s._inner.run_rules()
+    t0_after = s.node(ts[0])["attrs"]
+    assert t0_after["stale"] == 1.0, (
+        "the testimony must lapse through the UNMODIFIED gr_condition_lapse "
+        "the instant the epoch it was minted under advances")
+
+
+def test_a24_AR24b_LIVE_the_structured_scope_field_is_carried_verbatim():
+    s, _ = boot()
+    q = _a24_scene_step1(s)
+    m = agi.attach_reply(s, q, "it applies to every supply_blocker goal")
+    s.set_attr(m, "impotence_scope", "class")
+    s._inner.run_rules()
+    ts = list(s.nodes("ArcImpotenceTestimony"))
+    assert len(ts) == 1, ts
+    assert s.node(ts[0])["attrs"]["scope"] == "class"
+
+
+# --------------------------------------------------------------------------- #
+#  AR24c -- THE EPOCH-ADVANCE TEST, LIVE, THE CRUX GATE.
+# --------------------------------------------------------------------------- #
+def _a24_epoch_advance_scene():
+    """A23 §7 item 1's own charter, discharged: mint av1, ask q1 about it,
+    ANSWER q1; THEN genuinely change the pool's live membership (a SECOND
+    goal leaves the pool, A23's own IM1 idiom applied a second time) AND
+    bump the measurement epoch (`agi.bump_measure_epoch`, the SAME
+    mechanical call `run_order`/`world_probe_advance_epoch` already make)
+    — a REAL epoch advance, not graph churn inside one epoch (the case A23
+    already covered live).  Returns the full live state needed to check the
+    crux property: does the genuinely NEW verdict (av2, different
+    pool_agids) get its OWN fresh ask, or does the re-entry gate's
+    per-node `InNeighbours(av, asked_about_verdict)` check wrongly block it
+    because SOME verdict (av1) was already asked about?"""
+    s, _ = boot()
+    q1 = _a24_scene_step1(s)
+    agi.attach_reply(s, q1, "I do not know either.")
+    s._inner.run_rules()
+    assert s.node(q1)["attrs"]["answered"] == 1.0
+
+    _leave_pool_without_retiring(s, _SECOND_AGID)
+    agi.bump_measure_epoch(s)
+    s._inner.run_rules()
+
+    qs = list(s.nodes("ArcImpotenceQuestion"))
+    avs = axe.agenda_verdicts(s, "impotent")
+    #  Map each question to the verdict node id(s) it asks about.
+    q_to_av = {}
+    for q in qs:
+        tgt = s._inner.neighbours(q, "asked_about_verdict")
+        q_to_av[q] = tgt
+    return {
+        "q1": q1, "n_questions": len(qs), "questions": qs,
+        "q_to_av": q_to_av, "avs": avs,
+        "av_stale_by_agids": sorted(
+            (a["pool_agids"], a["stale"], a["pool_n"]) for a in avs),
+    }
+
+
+def test_a24_AR24c_a_genuinely_new_verdict_after_a_real_epoch_bump_gets_its_own_fresh_ask():
+    """LIVE, THE CRUX GATE for AR24c.  A23 §7 item 1 named this precisely
+    as unmeasured: 'does a genuinely NEW impotent pool state (a different
+    AgendaVerdict node, different pool_agids) correctly get its own fresh
+    ask?'  Confirmed here across a REAL measurement-epoch advance, not
+    merely reasoned about from the guard's construction."""
+    r = _a24_epoch_advance_scene()
+
+    #  TWO DISTINCT AgendaVerdicts now exist, with DIFFERENT pool_agids —
+    #  the pool composition genuinely moved, not merely re-weighted.
+    assert len(r["avs"]) == 2, r["avs"]
+    pool_agid_sets = {a["pool_agids"] for a in r["avs"]}
+    assert len(pool_agid_sets) == 2, (
+        "the second verdict must describe a GENUINELY different pool, or "
+        "this test's own premise is not met", pool_agid_sets)
+
+    #  TWO DISTINCT ArcImpotenceQuestions now exist — the second was NOT
+    #  suppressed by the first verdict's own already-asked-about state.
+    assert r["n_questions"] == 2, r["questions"]
+
+    #  Exactly one question targets each verdict (a 1:1 pairing), and the
+    #  OLD question (q1, already answered) still targets the OLD verdict —
+    #  the new question was minted for the NEW verdict, not a re-ask of
+    #  the old one.
+    targets = [tuple(v) for v in r["q_to_av"].values()]
+    assert len(targets) == 2
+    assert len(set(targets)) == 2, (
+        "both questions must target DIFFERENT verdicts", r["q_to_av"])
+    q1_target = r["q_to_av"][r["q1"]]
+    assert q1_target != [], (
+        "q1 must still point at SOME verdict after the epoch advance", q1_target)
+
+
+def test_a24_AR24c_LIVE_full_trace_and_the_old_question_is_untouched():
+    """The same scene, read for the full trace: the OLD verdict is now
+    STALE (`pool_stale`/`stale` — its own `pool_agids` no longer equal the
+    live pool), the NEW verdict is fresh, `q1` (answered under the OLD
+    verdict) is UNCHANGED by the epoch advance, and the NEW question is
+    open and targets the NEW verdict specifically."""
+    s, _ = boot()
+    q1 = _a24_scene_step1(s)
+    agi.attach_reply(s, q1, "I do not know either.")
+    s._inner.run_rules()
+    q1_attrs_before = dict(s.node(q1)["attrs"])
+
+    _leave_pool_without_retiring(s, _SECOND_AGID)
+    agi.bump_measure_epoch(s)
+    s._inner.run_rules()
+
+    #  q1 is byte-unchanged by the epoch advance — this rung never revisits
+    #  an already-answered question.
+    assert s.node(q1)["attrs"] == q1_attrs_before
+
+    qs = list(s.nodes("ArcImpotenceQuestion"))
+    assert len(qs) == 2, qs
+    q2 = [q for q in qs if q != q1][0]
+    assert s.node(q2)["attrs"]["answered"] == 0.0
+    assert s.node(q2)["attrs"]["status"] == "open"
+
+    av1_tgt = s._inner.neighbours(q1, "asked_about_verdict")
+    av2_tgt = s._inner.neighbours(q2, "asked_about_verdict")
+    assert av1_tgt and av2_tgt
+    assert av1_tgt != av2_tgt, "the new question must target a DIFFERENT verdict"
+
+    #  Read the two verdicts back via whichever node q1/q2's own edge
+    #  points at, not by re-deriving them from agenda_verdicts() — the
+    #  same "trust the stamp, not a re-derivation" discipline this arc's
+    #  own RUNNER_UP()/SEL_AGID Terms use.
+    av1_node = av1_tgt[0]
+    av2_node = av2_tgt[0]
+    av1_a = s.node(av1_node)["attrs"]
+    av2_a = s.node(av2_node)["attrs"]
+    assert av1_a["pool_agids"] != av2_a["pool_agids"]
+    assert av1_a["stale"] == 1.0, "the OLD verdict lapses on the epoch bump"
+    assert av2_a["stale"] == 0.0, "the NEW verdict is fresh"
+
+
+def test_a24_AR24c_TWIN_RUN_DETERMINISM():
+    """The same scene, built and measured twice: the mint counts and the
+    (question, verdict) pairing must be identical both times — the IM5/
+    A14/A21/A22/A23 twin-run precedent, applied to the epoch-advance
+    scene."""
+    def run():
+        s, _ = boot()
+        q1 = _a24_scene_step1(s)
+        agi.attach_reply(s, q1, "I do not know either.")
+        s._inner.run_rules()
+        _leave_pool_without_retiring(s, _SECOND_AGID)
+        agi.bump_measure_epoch(s)
+        s._inner.run_rules()
+        qs = list(s.nodes("ArcImpotenceQuestion"))
+        avs = axe.agenda_verdicts(s, "impotent")
+        return {
+            "n_questions": len(qs),
+            "n_verdicts": len(avs),
+            "answered_flags": sorted(s.node(q)["attrs"]["answered"] for q in qs),
+            "pool_agids": sorted(a["pool_agids"] for a in avs),
+            "stale_flags": sorted(a["stale"] for a in avs),
+        }
+    r1, r2 = run(), run()
+    assert r1 == r2 and r1["n_questions"] == 2 and r1["n_verdicts"] == 2, (r1, r2)
