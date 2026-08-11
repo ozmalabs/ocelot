@@ -34,6 +34,15 @@ have a real literature — but its most careful treatments exist mainly to show 
 naive version of the argument is a fallacy, and what it takes to repair it. See §9 for
 the full synthesis and §10 for the honest path forward.
 
+**Post-review addendum — read alongside this verdict, not instead of it.** The verdict
+above turned out to answer only HALF of the creator's question: the half about
+predicting difficulty *before or without* committing to search a specific space. The
+creator pushed back directly on §8's existence-proof hedge and, in doing so, sharpened
+the question into a second, different framing — a bound derived *from* search progress
+over a committed, well-ordered space (A*, branch-and-bound, cost-ordered enumerative
+synthesis) — that is importantly **not** subject to the impossibility results found
+above. See the **CORRECTION** section at the end of this document.
+
 ---
 
 ## 1. Occam learning / PAC-learnability — and why no rate generalizes across classes
@@ -861,3 +870,239 @@ before relying on the specific claims attributed to them here.
 - Zhao, Kapusuzoglu, Balasubramaniam, Sahu, Chakraborty, Winata (2025). "Optimizing
   Reasoning Efficiency through Prompt Difficulty Prediction." NeurIPS 2025 Workshop,
   arXiv:2511.03808.
+
+---
+
+## CORRECTION (post-review, 2026-08-11) — search-progress bounds are a different, non-impossible framing the original §8/§9 missed
+
+**What happened.** The creator read §8 and pushed back directly: *"a hardware resource
+bound says everything about whether the algorithm is findable. it exists. it is
+therefore findable."* The reviewing coordinator's reply distinguished a
+resource-feasibility bound (existence proves the target is not resource-infeasible —
+Carlsmith's own move, §8) from a search-cost/findability bound (a *different* searcher
+finding it in comparable time — the gap Hutter/Levin's "galactic algorithm" caveat, §2,
+is precisely about). The creator then sharpened the point past that distinction
+entirely, into the actual claim this repo's architecture needs:
+
+> "the entire thesis of this project is that gradient descent is a useful intermediary
+> hack, but a poor solution. my posit is not that intelligence is a special algorithm —
+> it is the same algorithm as the universe, because that is the most efficient shape to
+> take. the point with admissibility grammar is that as long as you know the solution
+> is in the search space, knowing how much space is left gives you a general
+> confidence — like a full forward dijkstra."
+
+**Why this is a correction, not a footnote.** §1–§9 of this document are sound *within
+their scope*, but that scope turns out to be narrower than the creator's actual
+question. Every result surveyed above — NFL (§1), the Arrow-style impossibility theorem
+for intelligence measures (§3), SAT/CSP hardness models (§4), ISA (§5), ARC-AGI
+calibration (§6) — answers variants of ONE framing: **predict difficulty *a priori*,
+before or without committing to search any particular structured space.** That framing
+is real, the impossibility results genuinely bind it, and nothing below overturns them.
+But it is not the only framing, and it is not the one "admissibility grammar" and "a
+full forward Dijkstra" describe. There is a second, established, rigorous framing this
+document had not yet covered:
+
+**Framing B — a bound derived FROM search progress over a space you have already
+committed to walking.** This is NOT subject to NFL. NFL's proof is about averaging
+performance over *all* possible objective functions with *no* assumed structure on the
+space — it says nothing about what you can prove once you have committed to a specific,
+well-ordered space and are watching a search frontier move through it. The relevant
+machinery is old, rigorous, and — critically — gives its guarantee as an **algebraic
+invariant of the search procedure**, not a statistical claim averaged over a distribution
+of problems:
+
+1. **A\* with an admissible heuristic.** Hart, P.E., Nilsson, N.J., Raphael, B. (1968).
+   "A Formal Basis for the Heuristic Determination of Minimum Cost Paths." *IEEE
+   Transactions on Systems Science and Cybernetics* 4(2), 100–107. [Verified —
+   foundational, >12,000 citations.] If a heuristic never overestimates true remaining
+   cost, the frontier's `f = g + h` value at every step is a *proven* lower bound on
+   cost-to-goal, and A* is guaranteed complete and optimal. No probability, no averaging
+   over a problem prior — a per-instance theorem.
+2. **Branch-and-bound.** Land, A.H., Doig, A.G. (1960). "An Automatic Method of Solving
+   Discrete Programming Problems." *Econometrica* 28(3), 497–520. [Verified.] The
+   origin of solving hard combinatorial problems by maintaining a certified bound on
+   the best-possible completion of each partial solution, pruning subtrees the bound
+   proves cannot beat the current best. Same shape as A*: a live, tightening
+   certificate on remaining search, not a prediction.
+3. **Cost-ordered / size-ordered enumerative program synthesis — the closest existing
+   body of work to what Γ + the sd loop's own MDL-governed admission already resembles,
+   and the piece this document did not have before this correction:**
+   - Alur, R., Bodík, R., Juniwal, G., Martin, M.M.K., Raghothaman, M., Seshia, S.A.,
+     Singh, R., Solar-Lezama, A., Torlak, E., Udupa, A. (2013). "Syntax-Guided
+     Synthesis." FMCAD 2013. [Verified.] The foundational framing that is the closest
+     external analogue to Γ itself: the search space is a *grammar* (a syntactic
+     template constraining candidate programs), and synthesis is search over that
+     grammar's derivations — exactly "Γ generates the admissible space; something else
+     must order the walk through it."
+   - Feser, J.K., Chaudhuri, S., Dillig, I. (2015). "Synthesizing Data Structure
+     Transformations from Input-Output Examples." PLDI 2015. [Verified.] Bottom-up
+     enumerative search combined with deduction, with an explicit, checkable
+     completeness property: the synthesized program is **guaranteed to be the
+     simplest program in the language that fits the examples** — because search is
+     ordered by size and enumeration at each size is exhaustive before moving to the
+     next. This is the source-code-level version of "if nothing under cost K matches,
+     the true minimal solution costs more than K."
+   - Barke, S., Peleg, H., Polikarpova, N. (2020). "Just-in-Time Learning for
+     Bottom-Up Enumerative Synthesis" (PROBE). *PACMPL* (OOPSLA 2020), 4, Article 227,
+     DOI 10.1145/3428295. [Verified via ACM DL.] Establishes that ordering bottom-up
+     enumeration by *size* (rather than AST height) is what gives the tight
+     completeness/efficiency tradeoff in practice, then generalizes to ordering by
+     decreasing likelihood under a probabilistic context-free grammar — a PCFG-weighted
+     Γ, in this repo's vocabulary.
+   - Ameen, S., Lelis, L.H.S. (2023/2024). "Program Synthesis with Best-First
+     Bottom-Up Search." *JAIR* (also AAAI 2024 abstract reprint), arXiv:2310.04327.
+     [Verified.] Runs bottom-up enumerative synthesis as an explicit **best-first**
+     (i.e., A*-shaped) search over program space ordered by a cost function — the
+     most direct confirmation found that "Dijkstra/A* over program space, cost-ordered
+     by something MDL-like" is a real, current (2023–2024), named technique in program
+     synthesis, not an analogy invented for this correction.
+4. **Anytime algorithms — formalizing "a bound that monotonically tightens as
+   computation proceeds," i.e. the creator's "general confidence" made precise.**
+   Zilberstein, S. (1996). "Using Anytime Algorithms in Intelligent Systems." *AI
+   Magazine* 17(3), 73–83. [Verified.] The survey establishing anytime computation as a
+   formal category: algorithms that produce a valid (if imperfect) answer at any point
+   and provably improve a quality/bound metric monotonically with more time.
+   Likhachev, M., Gordon, G.J., Thrun, S. (2003). "ARA*: Anytime A* with Provable
+   Bounds on Sub-Optimality." NIPS 2003. [Verified.] The concrete instance: an anytime
+   search that maintains a *provable* bound on how far its current best answer can be
+   from optimal, tightening the bound as search continues — literally "how much
+   confidence do we have, updated as a certificate, not a guess."
+
+**Why Framing B escapes the impossibility results in §1 and §3, stated precisely.**
+NFL and the Arrow-style impossibility theorem both prove that no measure can be
+simultaneously (a) fully general across *all* problems/environments and (b)
+non-trivially informative. Framing B never claims (a): it is conditional on having
+*already committed* to a specific, well-ordered, non-negative-cost search space — which
+is exactly the restricted-prior escape hatch §1's own Goldblum et al. (2024) citation
+names as the way real problems dodge NFL. Framing B's guarantee is not "I can tell you
+in advance how hard any problem is"; it is "given that I am walking THIS space in THIS
+order, the frontier's cost value is a certified lower bound on what remains, right now,
+independent of any problem distribution." That is a weaker-sounding but fully rigorous
+claim, and it is exactly the one "known solvable" needs: **"known solvable" in this
+framing does not require an anthropic existence-proof argument at all (the whole
+question §8 answers, about a *different* system in a *different* substrate, becomes
+moot) — it reduces to "is the target expressible as some finite composition within Γ's
+own generative closure," a membership question about a space this repo already owns and
+generates, not a probabilistic claim about a different physical system.**
+
+**The connective tissue this correction makes explicit: this is the same thesis as
+`docs/research/engine_substrate/COGNITION_IS_PHYSICS_LITERATURE.md`, not a new one.**
+The creator's framing — *"intelligence is the same algorithm as the universe, because
+that is the most efficient shape to take"* — is the headline of that document, stated
+again from a different entry point. That document's own honest verdict (§4 there) is
+that "cognition and physics are the same process, differing only by frame" is a
+re-derivation of Geman & Geman (1984), Jaynes (1957), the Free Energy Principle
+(Friston), and the stochastic-thermodynamics-of-prediction literature (Still, Sivak,
+Bell & Crooks 2012) — a relaxation toward a fixed point IS Bayesian inference IS a
+free-energy minimization, on this substrate, in this project's own house style: a
+demonstrated instantiation, not a discovered theorem. Framing B here is the SEARCH-side
+expression of exactly that identity: an A*/branch-and-bound frontier's tightening
+lower-bound is itself a monotonically-decreasing Lyapunov-style certificate over the
+search space, structurally the same shape as the dissipative relaxation that document
+gates on a break-one-breaks-both falsifier. "How much confidence do we have that the
+answer is cheap" and "how far has the system relaxed toward its fixed point" are the
+same question asked in the two frames that document already names. This correction
+should be read as confirming, not merely echoing, that document's own conclusion: the
+project is not proposing a new theory here either — it is asking whether its own
+`(G, Γ)` substrate actually delivers the specific, well-known guarantee this framing
+requires. That is an engineering question, answered below by reading the code, not by
+further literature search.
+
+**The honest verdict, grounded in the actual `(G, Γ)` / sd-loop mechanics — partial,
+with two specific, named caveats, not "yes" and not "no."**
+
+Two files were read to check this against what is actually built, not what is aspired
+to: `runners/dsl/src/grammar.rs` (Γ itself) and `runners/dsl/src/shape_decode.rs` (the
+sd loop's decode/recognize/transform/infer/mint ladder and its composer).
+
+1. **Γ (`grammar.rs`) is the right kind of object to be "the space," but its `weight`
+   is not currently a path-cost.** Γ is a generative index —
+   `(src_type, edge_type, tgt_type) → matching productions` — which is exactly the
+   "space of admissible moves" A*/branch-and-bound need to search over. But the
+   production `weight` field is explicitly documented in the file's own header comment
+   as a **selection preference**: "selection over admitted candidates is `∝ exp(w)`"
+   (Definition 2's softmax-style admission weighting), not a nonnegative, additive
+   path-length. A*/branch-and-bound's guarantee requires a genuine cost function
+   (monotonic, additive along a path, admissible as a heuristic estimate of the
+   remainder); Γ as built does not supply one. The piece that *does* look like a cost —
+   MDL/description-length accounting — lives separately, in the sd loop's own scoring
+   (`shape_decode.rs`'s `fit` scores and rung ordering), not wired into Γ's `weight`
+   field. **The two pieces the guarantee needs — a generative space (Γ has this) and an
+   admissible cost function over it (the sd loop has cost-shaped scoring, but it is not
+   currently unified with Γ's own weight semantics or proven admissible) — both exist
+   in this codebase, but not yet joined with a stated and checked admissibility
+   property.** This is a concrete, buildable next step, not a gap in the theory.
+2. **The sd loop's rung ladder (recognize → transform → infer-dimension → mint,
+   `shape_decode.rs`, per CLAUDE.md's "Transformation = quantum change" section) IS a
+   real instance of cost-class-ordered search, and DOES give an honest certificate —
+   at the rung granularity, and conditional on an audit this correction did not
+   complete.** The ladder tries the cheapest hypothesis class first (exact recognize
+   against the held codebook), escalates to the next class only after the current one
+   is exhausted (transform, then dimension-inference), and mints new structure only
+   after both prior rungs certifiably fail — this is exactly the IDA*/IDDFS shape:
+   *"if cost-class k found nothing, the true minimal-cost explanation costs more than
+   class k."* That certificate is honest **provided each rung's own internal check is
+   itself exhaustive/decidable for its hypothesis class** (e.g. rung 1's codebook
+   lookup is a bounded exact-match scan; rung 3's dimension-inference searches a fixed,
+   enumerable catalog of generators). This document did not independently re-derive a
+   completeness proof for each rung — that audit is a natural, concrete follow-up, not
+   performed here.
+3. **The composer's multi-part search (`shape_decode.rs`, the `BeamState`
+   loop feeding `induce_concern`/wild-object coverage, roughly lines 1240–1340) is a
+   *bounded-width beam search*, and — read plainly — it does NOT currently deliver the
+   A*/branch-and-bound guarantee.** The code prunes the frontier to the top `beam_w`
+   states by `(coverage, total_fit)` at every step (`nxt.sort_by(...); ...
+   pruned.len() >= beam_w`), which means a state that would have led to the true
+   minimal-cost (or the *only*) covering plan can be silently discarded if it is not
+   in the top `beam_w` at some intermediate step — this is exactly the failure mode
+   A*/branch-and-bound are built to rule out (best-first expansion with a certified
+   bound never discards a state that could still be optimal). **"Nothing found within
+   this composer's search" is therefore NOT currently a certified bound the way
+   "nothing found under cost K" is in true cost-ordered enumeration — it is a
+   heuristic search result that can produce false negatives**, unless `beam_w`/`cand_k`
+   are set large enough to be effectively exhaustive for the goal size in question
+   (which trades away the tractability the whole architecture is chasing). Turning
+   this into a certified bound would mean either (a) replacing the fixed-width beam
+   prune with genuine best-first expansion ordered by an admissible cost estimate
+   (Ameen & Lelis's shape, above), so nothing is discarded until it is proven
+   non-optimal, or (b) keeping the beam as a fast heuristic pass but explicitly not
+   claiming its silence is a proof.
+
+**Verdict, stated as sharply as the creator's own framing:** the creator is correct
+that Framing B is real, rigorous, escapes the impossibility results this document
+found, and is the right lens for "admissibility grammar" — the "full forward Dijkstra"
+intuition is not aspirational hand-waving, it names an actual, well-established family
+of algorithms (A*, branch-and-bound, cost-ordered enumerative synthesis, anytime
+search) with decades of formal grounding, several of them (thread 3 above) specifically
+from the program-synthesis literature this project already sits inside. **"Known
+solvable" in this framing collapses to a decidable-in-principle membership question —
+"is the target reachable within Γ's generative closure at some finite cost" — which
+needs no anthropic existence-proof argument and is a categorically easier, better-posed
+question than the one §8 spent its effort on.** But whether THIS repo's `(G, Γ)` +
+sd-loop *currently* delivers the certified version of that bound is **partial**: the
+rung ladder plausibly does (pending a per-rung completeness audit not performed here),
+the composer's beam search currently does not (a named, code-located gap, not a
+theoretical one), and Γ's own `weight` field is not yet the cost function the guarantee
+needs (a wiring gap, not a conceptual one). None of these three caveats is a reason to
+doubt the framing — they are a punch list for making an already-real theoretical
+guarantee actually hold end-to-end on this substrate.
+
+### Correction bibliography (new citations, not in the main list above)
+
+- Ameen, S., Lelis, L.H.S. (2023/2024). "Program Synthesis with Best-First Bottom-Up
+  Search." *JAIR*; AAAI 2024 abstract reprint. arXiv:2310.04327.
+- Alur, Bodík, Juniwal, Martin, Raghothaman, Seshia, Singh, Solar-Lezama, Torlak, Udupa
+  (2013). "Syntax-Guided Synthesis." FMCAD 2013.
+- Barke, S., Peleg, H., Polikarpova, N. (2020). "Just-in-Time Learning for Bottom-Up
+  Enumerative Synthesis." *PACMPL* (OOPSLA) 4, Article 227, DOI 10.1145/3428295.
+- Feser, J.K., Chaudhuri, S., Dillig, I. (2015). "Synthesizing Data Structure
+  Transformations from Input-Output Examples." PLDI 2015.
+- Hart, P.E., Nilsson, N.J., Raphael, B. (1968). "A Formal Basis for the Heuristic
+  Determination of Minimum Cost Paths." *IEEE Trans. Systems Science and Cybernetics*
+  4(2), 100–107.
+- Land, A.H., Doig, A.G. (1960). "An Automatic Method of Solving Discrete Programming
+  Problems." *Econometrica* 28(3), 497–520.
+- Likhachev, M., Gordon, G.J., Thrun, S. (2003). "ARA*: Anytime A* with Provable Bounds
+  on Sub-Optimality." NIPS 2003.
+- Zilberstein, S. (1996). "Using Anytime Algorithms in Intelligent Systems." *AI
+  Magazine* 17(3), 73–83.
