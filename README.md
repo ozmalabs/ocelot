@@ -1,10 +1,17 @@
-# Jabberwock — a graph-native agent
+# OCELOT — a graph-native cognitive engine
 
-**The agent is a graph, running in Rust.** Jabberwock (the "ocelot" repo) is
-an implementation of the (G, Γ, C) substrate — a typed graph plus a
+**OCELOT** (Ozma Cognitive Engine: Logarithmic Objective Tower) is the
+engine — the (G, Γ, C) substrate itself: a typed graph plus a reflective
+admissibility grammar, executed by a Rust rule-matching runtime
+(`substrate_rs`). **Jabberwock is the cognitive entity OCELOT enables** — the
+agent that runs on this engine, not another name for the engine running it.
+This repository is OCELOT: the substrate, not the entity.
+
+**The agent is a graph, running in Rust.** OCELOT's substrate is an
+implementation of the (G, Γ, C) substrate — a typed graph plus a
 reflective admissibility grammar — where the agent's entire reasoning,
-knowledge, and behaviour is graph data, executed by a Rust rule-matching
-runtime (`substrate_rs`). Python exists only as a thin **world adapter**
+knowledge, and behaviour is graph data, executed by this same Rust
+rule-matching runtime. Python exists only as a thin **world adapter**
 layer: translating external I/O (text, audio, video, simulator state) into
 graph mutations and back. There is no Python agent loop, no Python decision
 tree over graph state, and no Python-resident "mind" — that architecture

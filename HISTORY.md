@@ -68,6 +68,39 @@ necessary precondition for a $\psi$ to iterate at all; aperiodicity is the
 separate, sufficient condition that turns iteration into unboundedness
 rather than a reflexive fixed point.
 
+### Naming: the engine and the entity it enables
+
+The working name throughout the internal history was `gamma-substrate`, and
+the standalone GitHub repository is `ocelot`. **OCELOT and Jabberwock are not
+two names for the same thing.** OCELOT is the engine: the $(G, \Gamma)$
+substrate itself — typed graph, admissibility grammar, the Rust runtime that
+matches and fires rules. Jabberwock is the cognitive entity OCELOT enables —
+the agent that runs *on* the engine, not a nickname for the engine running
+it. Every reference elsewhere in this repository's docs to "the jabberwock"
+(lowercase, as a name for the agent doing the reasoning) is this distinction
+in practice; conflating the two — describing this repo as "Jabberwock (the
+ocelot repo)," as an earlier draft of `README.md` did — collapses a
+substrate/entity distinction the project otherwise holds consistently
+throughout (world adapters vs. the agent, Γ vs. what Γ admits, the engine vs.
+what runs on it).
+
+OCELOT is a backronym, confirmed directly by the creator for this document
+and not previously documented anywhere (checked: not in this repo, not in
+`ozmalabs/internal`, not public) — **O**zma **C**ognitive **E**ngine:
+**L**ogarithmic **O**bjective **T**ower. The second half is not incidental
+wordplay layered on top of an unrelated acronym; both words name real,
+load-bearing objects in the theory. *Logarithmic Objective* is Γ's weight
+function, definitionally log-domain ($w \in \mathbb{R}$, selection
+$\propto \exp(w)$, Definition 1 of `paper1.tex`), and the bound theorems
+(X, XI) are log-ratio compression/efficiency bounds against the Γ-relative
+Kolmogorov complexity $K_\Gamma$ — the objective this whole substrate is
+actually shaped around. *Tower* is `infinity_paper.md`'s own named central
+construct, the reflective tower $R_0, R_1, R_2, \ldots$ described two
+paragraphs above. The creator's own qualifier, given alongside the
+confirmation: the L-O-T completion is "really just to make it a catchy
+name" — a real derivation from the theory's own vocabulary, not claimed as
+load-bearing theory in itself.
+
 ## 2. The shape of the development history
 
 **Scale.** 4,002 commits on `research/experiments/gamma-substrate` across
