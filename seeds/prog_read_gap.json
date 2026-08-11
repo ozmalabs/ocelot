@@ -1,13 +1,13 @@
 {
  "id": "prog_read_gap",
- "version": "1.0.0",
+ "version": "1.1.0",
  "depends_on": [
   "gap_awareness"
  ],
  "capability_keys": [
   "prog_read_gap_detection"
  ],
- "description": "P2.5 (PROGRAM_SYNTHESIS_PLAN.md): a BLOCKED PROGRAM READ IS A GAP THE AGENT FILES ON ITSELF -- the gap_awareness.json precedent pointed at the P2 reading frames. When a source upload's read path yields the honest residual {ok:False, blockers:[...]} (rust/lua correspondence walkers, python prog_ir_emit), the ADAPTER (domains/file_ingest._record_read_blocked) only records FACTS on the ingested UploadedDocument / function code-root node: read_blocked=1.0, read_blockers='comma,joined,kinds', frame='rust'|'lua'|'python' -- data, never a decision. THIS rule (note_prog_read_gap) DECIDES that a blocked read is a capability gap: it files SelfConcern{status:'noted', source:'implicit', kind:'prog_read', content:'<frame> read blocked: <blockers>'} -- the SAME node shape every gap_awareness rule mints, so the surfacing reader (reflective_faculty._run_self_gaps) and the human-gated promote spine (jabberwock_daemon.promote_self_concern -> StandingConcern) both find it with zero new plumbing. Content-deduped via the standard Not-Exists guard (the SAME blocked file ingested twice files ONE gap -- the content string is deterministic: frame + sorted blockers) + mint-once via prog_read_gap_noted on the document, exactly like every other gap rule. Match is the received upload Message's has_attachment edge (file_ingest._attach_message wires agent -received-> m -has_attachment-> doc), the single-anchor discipline. Installed idempotently by file_ingest._install_prog_read_gap_seed at source-ingest time (Seed/SeedSummary id check -- a load_all_seeds boot already holds it), so a lean upload-only agent still carries the rule.",
+ "description": "P2.5 (PROGRAM_SYNTHESIS_PLAN.md): a BLOCKED PROGRAM READ IS A GAP THE AGENT FILES ON ITSELF -- the gap_awareness.json precedent pointed at the P2 reading frames. When a source upload's read path yields the honest residual {ok:False, blockers:[...]} (rust/lua correspondence walkers, python prog_ir_emit), the ADAPTER (domains/file_ingest._record_read_blocked) only records FACTS on the ingested UploadedDocument / function code-root node: read_blocked=1.0, read_blockers='comma,joined,kinds', frame='rust'|'lua'|'python' -- data, never a decision. THIS rule (note_prog_read_gap) DECIDES that a blocked read is a capability gap: it files SelfConcern{status:'noted', source:'implicit', kind:'prog_read', content:'<frame> read blocked: <blockers>'} -- the SAME node shape every gap_awareness rule mints, so the surfacing reader (reflective_faculty._run_self_gaps) and the human-gated promote spine (jabberwock_daemon.promote_self_concern -> StandingConcern) both find it with zero new plumbing. Content-deduped via the standard Not-Exists guard (the SAME blocked file ingested twice files ONE gap -- the content string is deterministic: frame + sorted blockers) + mint-once via prog_read_gap_noted on the document, exactly like every other gap rule. Match is the received upload Message's has_attachment edge (file_ingest._attach_message wires agent -received-> m -has_attachment-> doc), the single-anchor discipline. Installed idempotently by file_ingest._install_prog_read_gap_seed at source-ingest time (Seed/SeedSummary id check -- a load_all_seeds boot already holds it), so a lean upload-only agent still carries the rule.\n\nARC6 A25 (v1.1.0) -- THE SELF-IMPROVEMENT-WIRING SEAM: `note_prog_read_composition_exhausted` is the `note_code_write_composition_exhausted` precedent (seeds/code_write_gap.json) pointed at the SYNCHRONOUS prog_read compose path (domains.prog_read_growth.work_on_prog_read_gap runs and returns immediately -- there is no async Experiment to poll). scripts/jabberwock_daemon.py's `_concern_tick` was MEASURED LIVE (A25) to route a promoted prog_read StandingConcern into the generic induce_concern/ground_concern capability-axis machinery, which minted an INERT rule (matched on a literal Mention text 'describe' about a Scene -- structurally unrelated to program reading) and reported success with no record anywhere. `_concern_tick` now routes a promoted prog_read StandingConcern DIRECTLY into `work_on_prog_read_gap` (never the generic machinery) and records the mechanical outcome datum `prog_read_compose_ok`/`prog_read_compose_reason` onto the StandingConcern; THIS rule reads that datum and, on failure (today: always -- closing a prog_read gap for real needs new Rust engine Term/IR-variant coverage, out of scope for a seed/adapter-level amendment), marks `experiments_exhausted`/`exhausted_note` -- the SAME two attrs `reflective_faculty._run_self_improvement_status` already surfaces for every OTHER concern's exhausted trail, so a human sees 'work on the Lambda read gap' honestly report which Rust primitive is missing, through the SAME self-improvement-status readout as every other concern.",
  "nodes": [],
  "edges": [],
  "productions": [],
@@ -183,6 +183,41 @@
      "about_message",
      "m"
     ]
+   ]
+  },
+  {
+   "name": "note_prog_read_composition_exhausted",
+   "match": [
+    ["agent", "has_self_concern", "sc"],
+    ["sc", "promoted_to", "standing"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "prog_read"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "prog_read_compose_ok"},
+      "b": {"type": "Lit", "value": 0.0}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "experiments_exhausted"},
+       "b": {"type": "Lit", "value": true}
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "standing", "experiments_exhausted", true],
+    ["set_attr", "standing", "exhausted_note", {"__term__":
+     {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "prog_read_compose_reason"}}]
    ]
   }
  ]
