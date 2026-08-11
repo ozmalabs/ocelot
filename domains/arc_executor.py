@@ -46,7 +46,27 @@ FOUR JOBS, all translation.
    (an unconditioned answer lives one epoch; an unanswered question lapses at
    the next epoch; the anti-oscillation latch is defined in epochs).  It is
    bumped **when and only when a measurement actually ran**, so the clock
-   counts measurements rather than ticks.
+   counts measurements rather than ticks — until A18 (below), which adds a
+   SECOND, cheaper way for that to become true.
+
+A18 — THE RE-ARM DEADLOCK.  `PROGRAM_SYNTHESIS_ARC6_EXECUTOR.md` SS5 named,
+reported not patched: a RETIRED goal whose condition genuinely re-fails
+cannot re-enter the pool on its own, because the only epoch producer is
+`run_order`, and a retired goal is not in the pool to be run.  This is not
+fixed by widening `ax_rearm`'s own conjunction (that would reintroduce the
+churn EX4 measured it against) — it is fixed by giving the epoch a SECOND,
+INDEPENDENT producer that never runs anything: `refresh_evidence_facts`
+(job 3, above, already existing) now also carries each residual's PRIOR
+`stale` reading across the probe-call boundary (`stale_at_last_probe` — the
+`ARM_CARRY` precedent, applied at the probe grain instead of the tick
+grain), so the RULE `ax_world_probe_epoch` (`seeds/arc_executor.json`) can
+tell "genuinely re-failed on THIS probe, confirmed also re-failed on the
+LAST, separate probe" from "just flipped this instant" — a SINGLE probe
+cannot satisfy it.  `world_probe_advance_epoch` (job 5, below) is the
+adapter's mechanical half: read that rule's own verdict (a pure query, the
+same shape as `pending_orders`) and, if any retired goal carries it, call
+the SAME `bump_measure_epoch` `run_order` already calls.  Decides nothing:
+the rule already decided; this only performs the mechanical act.
 """
 from __future__ import annotations
 
@@ -358,7 +378,18 @@ def refresh_evidence_facts(sub) -> dict:
     disk with the sha it was measured at*.  This re-checks that, in place, and
     re-runs the value-layer probe.  Called once per loop iteration by the
     driver; it decides nothing — `gr_condition_lapse` reads the numbers.
+
+    A18 — carries each residual's CURRENT `stale` reading into
+    `stale_at_last_probe` BEFORE this call overwrites the facts `stale` is
+    computed from.  "The adapter carries what is there" — the `ARM_CARRY`
+    precedent (`arm`, above), applied at the PROBE-CALL boundary instead of
+    the fixpoint-tick boundary, so `ax_world_probe_epoch` can tell a drift
+    confirmed on two SEPARATE, externally-triggered probes from a drift seen
+    on only the most recent one.  A plain read and a plain `set_attr`; it
+    decides nothing — the rule reads what this call leaves behind.
     """
+    for n in sub.nodes("GoalResidual"):
+        sub.set_attr(n, "stale_at_last_probe", sub.node(n)["attrs"].get("stale"))
     out = {}
     for name, value in sorted(gri.probe_facts(sub).items()):
         _put_fact(sub, name, value)
@@ -374,6 +405,37 @@ def refresh_evidence_facts(sub) -> dict:
         _put_fact(sub, name, "1" if ok else "0")
         out[name] = "1" if ok else "0"
     return out
+
+
+def world_drift_confirmed_goals(sub) -> List[str]:
+    """A18 — pure query.  Read `ax_world_probe_epoch`'s own verdict off the
+    graph: retired goals whose source residual has genuinely re-failed on
+    TWO SEPARATE world probes while the epoch has sat still since
+    retirement.  Decides nothing; the rule already decided."""
+    return sorted(
+        sub.node(n)["attrs"].get("agid") for n in sub.nodes("ArcGoal")
+        if sub.node(n)["attrs"].get("status") == "retired"
+        and sub.node(n)["attrs"].get("world_drift_confirmed") == 1.0)
+
+
+def world_probe_advance_epoch(sub) -> Optional[dict]:
+    """A18 — THE SECOND EPOCH PRODUCER, AND IT NEVER RUNS ANYTHING.
+
+    `run_order` bumps the epoch after RUNNING a measurement; this bumps it
+    after the WORLD has shown, on two independent probes, that a retired
+    goal's condition has genuinely moved while the clock sat still — the gap
+    `PROGRAM_SYNTHESIS_ARC6_EXECUTOR.md` SS5 named and did not close.
+    Mechanical: read `ax_world_probe_epoch`'s flag and act — the SAME act
+    `run_order` already performs, via the SAME `arc_goal_ingest.
+    bump_measure_epoch`.  Decides nothing.
+    """
+    confirmed = world_drift_confirmed_goals(sub)
+    if not confirmed:
+        return None
+    before = agi.measure_epoch(sub)
+    agi.bump_measure_epoch(sub)
+    return {"triggered_by": confirmed, "epoch_before": before,
+            "epoch_after": agi.measure_epoch(sub)}
 
 
 # --------------------------------------------------------------------------- #

@@ -868,11 +868,16 @@ def test_a15_the_CONDITION_REANCHORS_and_the_residual_UNSTALES(live_run_structur
 def test_a15_the_seed_added_ZERO_new_rules():
     """EC2/EC3's own headline cost claim, gated rather than left as prose:
     the second ExecClass is a seed DATA addition. Five rules before A15
-    (AG-5's four plus A13's ax_impotent); five rules after."""
-    names = sorted(r["name"] for r in _seed()["rules"])
-    assert names == sorted(
-        ["ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
-         "ax_impotent"]), names
+    (AG-5's four plus A13's ax_impotent); five rules after A15 — asserted
+    below as a SUBSET, not the total, because A18 added a SIXTH rule
+    (`ax_world_probe_epoch`) afterwards. The WH1 precedent: invert a pin
+    with a docstring, never silently remove it — A15's own claim (zero NEW
+    rules, only seed DATA) is still true and still checked; it is just no
+    longer the total rule count, which `test_a18_AR18d_the_new_rule_is_the_
+    ONLY_addition_to_the_seed` now asserts instead."""
+    names = set(r["name"] for r in _seed()["rules"])
+    assert names >= {"ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
+                      "ax_impotent"}, names
 
 
 def test_a15_no_third_party_dependency_in_the_new_runner():
@@ -1510,3 +1515,218 @@ def test_ex6_the_epoch_producer_claim_is_TRUE_of_the_code_not_the_prose():
     fn = [n for n in tree.body
           if isinstance(n, ast.FunctionDef) and n.name == "run_order"][0]
     assert "bump_measure_epoch" in ast.unparse(fn)
+
+
+# =========================================================================== #
+#  A18 — THE RE-ARM DEADLOCK, CLOSED WITHOUT RUNNING ANYTHING.
+#  Bars: PROGRAM_SYNTHESIS_ARC6_PREREG.md amendment A18 (AR18a-AR18d),
+#  registered BEFORE this build.  Results: PROGRAM_SYNTHESIS_ARC6_REARM_
+#  DEADLOCK.md.
+# =========================================================================== #
+def test_a18_AR18a_the_deadlock_REPRODUCED_live_on_the_UNFIXED_graph():
+    """AR18a.  `scripts/arc6_rearm_deadlock_measure.py` was run BEFORE this
+    rung's rule/adapter change existed (registered process discipline: measure
+    before building) and wrote `results/arc6_rearm_deadlock_before_fix.json`.
+    This reads that artifact back: on the CURRENT (post-A17) shipped graph,
+    with a REAL live execution retiring the row-verdict goal and the OTHER
+    ExecClass confirmed not organically stale (zero executable pool members,
+    matching PREREG A18 item 3's own finding), a genuine world change (the
+    artifact removed) leaves the goal stuck retired, epoch unchanged, across
+    SIX repeated probe/fixpoint cycles — not merely one."""
+    doc = json.load(open(os.path.join(
+        ROOT, "results", "arc6_rearm_deadlock_before_fix.json")))
+    assert doc["DEADLOCK_REPRODUCES"] is True, doc
+    assert doc["zero_executable_goals_at_retirement"] is True, doc
+    stuck = [st for st in doc["steps"]
+             if st["tag"].startswith(("2_", "3_", "4_"))]
+    assert len(stuck) >= 6, "not enough repeated cycles to call this 'stuck'"
+    assert all(st["goal_status"] == "retired" and not st["in_pool"]
+               for st in stuck), stuck
+    epochs = {st["epoch"] for st in stuck}
+    assert epochs == {doc["steps"][1]["epoch"]}, (
+        "the epoch must never move across repeated churn/probes alone", epochs)
+
+
+@pytest.fixture(scope="module")
+def world_probe_cells(latch_cells, live_run):
+    """A18 — CONTINUES the SAME live graph `latch_cells` already walked to
+    cell E (retired again, epoch advanced once already, condition holding),
+    and shows the deadlock closing a SECOND time WITHOUT ever running an
+    order: two SEPARATE, externally-triggered `refresh_evidence_facts`
+    probes, `axe.world_probe_advance_epoch` (the mechanical read-and-act
+    half), and nothing else — no subprocess, no `run_order`, no hand-poked
+    `bump_measure_epoch`."""
+    s = live_run["s"]
+    g, r = goal(s), res(s)
+    cells = {}
+
+    def snap(k, advance=None):
+        cells[k] = {"status": s.node(g)["attrs"].get("status"),
+                    "stale": s.node(r)["attrs"].get("stale"),
+                    "epoch": agi.measure_epoch(s),
+                    "in_pool": AGID in axe.pool(s),
+                    "rearm_count": s.node(g)["attrs"].get("rearm_count"),
+                    "world_drift_confirmed": s.node(g)["attrs"].get(
+                        "world_drift_confirmed"),
+                    "advance_call_result": advance}
+
+    snap("F_start_retired_again")
+
+    art = os.path.join(ROOT, s.node(r)["attrs"]["evidence_artifact"])
+    moved = art + ".a18_probe"
+    shutil.move(art, moved)
+    try:
+        axe.refresh_evidence_facts(s)
+        s._inner.run_rules()
+        adv1 = axe.world_probe_advance_epoch(s)
+        snap("G_refailed_FIRST_probe_only", adv1)
+
+        axe.refresh_evidence_facts(s)
+        s._inner.run_rules()
+        adv2 = axe.world_probe_advance_epoch(s)
+        snap("H_refailed_SECOND_separate_probe", adv2)
+
+        s._inner.run_rules()
+        snap("I_after_the_SECOND_producer_fired")
+    finally:
+        shutil.move(moved, art)
+    axe.refresh_evidence_facts(s)
+    s._inner.run_rules()
+    snap("J_world_restored_again")
+    return cells
+
+
+def test_a18_AR18b_a_SINGLE_world_probe_does_NOT_confirm_drift_or_advance_the_epoch(
+        world_probe_cells):
+    """AR18b, half 1.  The discriminator against collapsing EX4's cell C into
+    cell D: ONE probe finding a genuine re-failure must not, by itself, be
+    enough for the second epoch producer to fire — exactly EX4's own
+    direction (a single re-failure alone does not re-mint), now checked
+    against the NEW mechanism specifically, not only against `ax_rearm`."""
+    f = world_probe_cells["F_start_retired_again"]
+    assert f["status"] == "retired" and f["stale"] == 0.0
+    g = world_probe_cells["G_refailed_FIRST_probe_only"]
+    assert g["stale"] == 1.0, "the condition did not actually re-fail"
+    assert g["status"] == "retired"
+    assert g["in_pool"] is False
+    assert g["world_drift_confirmed"] != 1.0, (
+        "a SINGLE probe must not confirm drift")
+    assert g["advance_call_result"] is None, (
+        "the second epoch producer must be a no-op after only one probe")
+    assert g["epoch"] == f["epoch"], "the epoch must not move on one probe"
+
+
+def test_a18_AR18c_TWO_separate_probes_confirm_drift_and_the_SECOND_producer_fires(
+        world_probe_cells):
+    """AR18c, and this is the primary bar.  A SECOND, separate probe — still
+    no subprocess, no `run_order` — confirms the drift and the mechanical
+    adapter call bumps the epoch; the NEXT fixpoint re-arms the goal exactly
+    as EX4's cell D did, but nothing here ever ran a measurement."""
+    h = world_probe_cells["H_refailed_SECOND_separate_probe"]
+    assert h["stale"] == 1.0
+    assert h["world_drift_confirmed"] == 1.0, (
+        "TWO separate probes of a genuine, persisting re-failure must confirm it")
+    adv = h["advance_call_result"]
+    assert adv is not None, "the second epoch producer must fire here"
+    assert int(adv["epoch_after"]) == int(adv["epoch_before"]) + 1
+    assert AGID in adv["triggered_by"]
+
+    i = world_probe_cells["I_after_the_SECOND_producer_fired"]
+    assert i["status"] not in ("retired", "settled"), i
+    assert i["status"] in ("minted", "pursued"), i
+    assert i["in_pool"] is True
+    assert i["rearm_count"] == 2.0, (
+        "the SECOND rearm event on this goal — latch_cells' cell D was the "
+        "first, via the manual epoch bump; this one via the world-probe "
+        "producer, with no order ever run")
+
+
+def test_a18_AR18c_NO_order_was_EVER_run_to_close_this_deadlock(
+        world_probe_cells, live_run):
+    """The headline claim, asserted structurally, on the RIGHT property.
+
+    A re-armed goal is AGAIN the collapse's winner, and `ax_dispatch`'s own
+    two-tick agreement can legitimately be satisfied by a STALE `armed_*`
+    stamp from `live_run`'s ORIGINAL `axe.arm` call (this fixture never calls
+    `axe.arm` again) — EXECUTOR.md's own EX4 §5 already documented exactly
+    this for cell D ("status may read `pursued` rather than `minted`...
+    that is the loop working, not a defect").  So a SECOND `ExecOrder` node
+    CAN legitimately be MINTED (bookkeeping) without anything running it —
+    and, once minted, `ax_dispatch`'s own "at most one OUTSTANDING order
+    globally" guard (status=='ordered') blocks a THIRD, so this world-probe
+    rearm mints no order of its own.  The property this rung's own AR18c
+    claim actually rests on is narrower and correct: no order EVER reached
+    `ran`/`closed` a second time — no subprocess, no measurement, anywhere
+    in this fixture, only in `live_run`'s own single call."""
+    s = live_run["s"]  # the SAME graph object world_probe_cells mutated
+    orders = [dict(s.node(n)["attrs"]) for n in s.nodes("ExecOrder")]
+    ran_or_closed = [o for o in orders if o.get("status") in ("ran", "closed")]
+    assert len(ran_or_closed) == 1, (
+        "closing the deadlock a second time must not have RUN anything", orders)
+    assert ran_or_closed[0]["agid"] == AGID
+    assert ran_or_closed[0]["status"] == "closed"
+    #  Any OTHER order that exists is bookkeeping only — minted, never run —
+    #  the SAME pre-existing "loop working" property EX4's own cell D
+    #  already exercises, not something this rung introduces or must guard.
+    for o in orders:
+        if o is not ran_or_closed[0]:
+            assert o["status"] == "ordered", o
+
+
+def test_a18_AR18c_the_round_trip_CLOSES_again(world_probe_cells):
+    """`terminal -> stuck (1 probe) -> confirmed (2 probes) -> BACK IN THE
+    POOL -> terminal again` — the SAME round-trip shape EX4's cell E closed,
+    now driven entirely by world probes."""
+    j = world_probe_cells["J_world_restored_again"]
+    assert j["stale"] == 0.0
+    assert j["status"] == "retired", (
+        "with its condition holding again the goal must be terminal again")
+    assert j["rearm_count"] == 2.0, "it must not re-arm a third time on its own"
+
+
+def test_a18_AR18d_the_source_audit_still_passes_on_the_EDITED_adapter():
+    """The module-specific source audit, re-run against the file this rung
+    edited — the same allow-list `test_ex6_the_adapter_CANNOT_contain_a_
+    hidden_decision` checks, confirming the new functions
+    (`world_drift_confirmed_goals`, `world_probe_advance_epoch`, and the
+    `refresh_evidence_facts` snapshot) introduce no new substrate call
+    outside the mechanical allow-list."""
+    src = _code_only(os.path.join(ROOT, "domains", "arc_executor.py"))
+    for banned in ("import substrate_rs", ".evaluate(", "run_rules",
+                   "graph_rewrite", "make_rule", "._match", "._apply"):
+        assert banned not in src, banned
+    import re
+    calls = set(re.findall(r"(?:sub|s)\._inner\.(\w+)\(", src)) | \
+        set(re.findall(r"(?:sub|s)\.(\w+)\(", src))
+    allowed = {"add_node", "node", "nodes", "set_attr", "remove_node",
+               "load_seed_manifest", "add_edge_unchecked"}
+    assert calls <= allowed, sorted(calls - allowed)
+
+
+def test_a18_AR18d_the_new_rule_is_the_ONLY_addition_to_the_seed():
+    """`seeds/arc_executor.json` regenerates byte-identically from its own
+    (edited, version-bumped) emitter, and the new rule is additive: every
+    rule this seed shipped before A18 is still present, unedited, by name."""
+    doc = _seed()
+    assert doc["version"] == "1.4.0"
+    names = [r["name"] for r in doc["rules"]]
+    assert names == ["ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
+                      "ax_impotent", "ax_world_probe_epoch"]
+    r = subprocess.run([sys.executable,
+                        os.path.join(ROOT, "tools", "build_arc_executor_seed.py"),
+                        "--check"], capture_output=True, text=True, cwd=ROOT)
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_a18_AR18d_ax_rearms_OWN_body_is_UNCHANGED():
+    """A18 does not touch `ax_rearm` — read its match/where/effects back off
+    the regenerated seed and confirm they are IDENTICAL to the byte-for-byte
+    text EXECUTOR.md SS5 quotes: two conjuncts on the residual (stale==1),
+    three on the goal's own retired_epoch, nothing about a second probe."""
+    r = _seed_rule("ax_rearm")
+    where = json.dumps(r["where"], sort_keys=True)
+    assert '"stale_at_last_probe"' not in where
+    assert '"world_drift_confirmed"' not in where
+    assert r["match"] == [["agenda", "uses_policy", "pol"],
+                          ["agenda", "has_arc_goal", "g"],
+                          ["r", "remeasure_goal", "g"]]

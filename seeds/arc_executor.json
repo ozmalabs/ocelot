@@ -4,13 +4,13 @@
   "self_load_only": true,
   "_SELF_LOAD_ONLY_RATIONALE": "substrate/boot_all.py::_read_seeds GLOBS seeds/*.json and installs every match at boot, so a file here is live in EVERY agent in the tree the moment it lands.  seeds/arc_goals.json and seeds/arc_magnitude.json both ship self_load_only for that reason and this seed keeps the gating: an executor that dispatches jobs is the LAST thing that should arrive in every agent by a glob.  Activation is one key and a paired tree-wide sweep.",
   "id": "arc_executor",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "depends_on": [
     "goal_residuals",
     "arc_goals"
   ],
   "_SOFT_DEPENDENCY_ON_arc_magnitude": "v1.1.0 (A11/WH1) wires ax_dispatch to the ORDER-N collapse (mg_sel_agid, seeds/arc_magnitude.json) when that collapse is live on the graph, and to the order-1 collapse (arc_sel_agid) when it is not.  arc_magnitude is DELIBERATELY NOT in depends_on: it is self_load_only, every EX1-EX6 scene boots without it, and making it hard would both change what those scenes boot and put an order-N collapse into every graph that merely wants hands.  The branch is a Term in the rule (SEL_AGID), never a Python conditional, and the order records which branch it took.",
-  "description": "AG-5 -- THE EXECUTOR AND THE STATUS LIFECYCLE.  Two independent rungs converged on this as the blocker: the arc-goal rung called itself 'a planning layer with no hands', and the magnitude rung found decomposition blocked because a parent goal must LEAVE THE POOL and nothing in this tree ever wrote a terminal status.  This seed is the missing seam, and it is four rules. ax_dispatch turns the arc-grain collapse's winner into an ExecOrder, routed by route_pick's own Argmin-over-cues shape, and is STRUCTURALLY INCAPABLE of ordering a goal whose kind has no ExecClass.  v1.1.0 (A11/WH1): the collapse it binds is the ORDER-N one (mg_sel_agid) whenever that collapse is live, falling back to order-1 (arc_sel_agid) when it is not -- because AG-5 SS8.9 measured that the two DISAGREE and that order-N picks the one goal the executor can run, with no human reply in the scene.  ax_retired_epoch stamps when a goal went terminal.  ax_rearm is the anti-oscillation latch: a retired goal re-enters the pool only when its source residual is genuinely stale again AND the measurement epoch has advanced.  ax_close makes a completed execution countable. THE EPOCH ITSELF: `arc_measure_epoch` was a counter with no producer, and every expiry mechanism in the two rungs below turns on it.  The adapter bumps it WHEN AND ONLY WHEN a measurement actually ran, so an unconditioned answer's one-epoch life is now measured in measurements. v1.2.0 (A13/WH4(c)) adds a fifth rule, ax_impotent: `ag_ask` fires on a TIE, and A11/A12 found the case it cannot see -- a non-empty pool in which NOTHING is routable, no tie anywhere, the loop stopping and saying nothing (WH2 SS3.1 iteration 1).  ax_impotent mints AgendaVerdict{kind:'impotent'} QUANTIFIED OVER THE WHOLE POOL (Not(Exists(POOL(), g, dispatchable(g))) -- dispatchable is ax_dispatch's OWN routability test, reused verbatim), never the winner alone, so a pool holding one routable goal ranked below the winner is correctly NOT impotent.  Mint-once is keyed on the pool's own SIGNATURE (its ordered agid list, JSON-encoded) rather than the tick, and the verdict lapses through the EXISTING, UNMODIFIED gr_condition_lapse via a fact_equals(arc_measure_epoch) condition -- zero new mechanism, zero new DSL Term. v1.3.0 (A15) adds a SECOND ExecClass row (local_id 4011): the structural-ceiling residual (arc6.structural.enum_op_table), re-measured by scripts/arc6_remeasure_structural.py.  ZERO new rules -- ax_dispatch/ROUTE/_routable/_dispatchable already filter over EVERY ExecClass node via the three-part key (kind + evidence_artifact + source_rid), so a second class is SEED DATA, not a rule edit.  This is the ceiling probe on the executor's own reach: A10-A14 each independently measured that reach as exactly ONE ExecClass; this is the second.",
+  "description": "AG-5 -- THE EXECUTOR AND THE STATUS LIFECYCLE.  Two independent rungs converged on this as the blocker: the arc-goal rung called itself 'a planning layer with no hands', and the magnitude rung found decomposition blocked because a parent goal must LEAVE THE POOL and nothing in this tree ever wrote a terminal status.  This seed is the missing seam, and it is four rules. ax_dispatch turns the arc-grain collapse's winner into an ExecOrder, routed by route_pick's own Argmin-over-cues shape, and is STRUCTURALLY INCAPABLE of ordering a goal whose kind has no ExecClass.  v1.1.0 (A11/WH1): the collapse it binds is the ORDER-N one (mg_sel_agid) whenever that collapse is live, falling back to order-1 (arc_sel_agid) when it is not -- because AG-5 SS8.9 measured that the two DISAGREE and that order-N picks the one goal the executor can run, with no human reply in the scene.  ax_retired_epoch stamps when a goal went terminal.  ax_rearm is the anti-oscillation latch: a retired goal re-enters the pool only when its source residual is genuinely stale again AND the measurement epoch has advanced.  ax_close makes a completed execution countable. THE EPOCH ITSELF: `arc_measure_epoch` was a counter with no producer, and every expiry mechanism in the two rungs below turns on it.  The adapter bumps it WHEN AND ONLY WHEN a measurement actually ran, so an unconditioned answer's one-epoch life is now measured in measurements. v1.2.0 (A13/WH4(c)) adds a fifth rule, ax_impotent: `ag_ask` fires on a TIE, and A11/A12 found the case it cannot see -- a non-empty pool in which NOTHING is routable, no tie anywhere, the loop stopping and saying nothing (WH2 SS3.1 iteration 1).  ax_impotent mints AgendaVerdict{kind:'impotent'} QUANTIFIED OVER THE WHOLE POOL (Not(Exists(POOL(), g, dispatchable(g))) -- dispatchable is ax_dispatch's OWN routability test, reused verbatim), never the winner alone, so a pool holding one routable goal ranked below the winner is correctly NOT impotent.  Mint-once is keyed on the pool's own SIGNATURE (its ordered agid list, JSON-encoded) rather than the tick, and the verdict lapses through the EXISTING, UNMODIFIED gr_condition_lapse via a fact_equals(arc_measure_epoch) condition -- zero new mechanism, zero new DSL Term. v1.3.0 (A15) adds a SECOND ExecClass row (local_id 4011): the structural-ceiling residual (arc6.structural.enum_op_table), re-measured by scripts/arc6_remeasure_structural.py.  ZERO new rules -- ax_dispatch/ROUTE/_routable/_dispatchable already filter over EVERY ExecClass node via the three-part key (kind + evidence_artifact + source_rid), so a second class is SEED DATA, not a rule edit.  This is the ceiling probe on the executor's own reach: A10-A14 each independently measured that reach as exactly ONE ExecClass; this is the second. v1.4.0 (A18) adds a SIXTH rule, ax_world_probe_epoch: EXECUTOR.md SS5 named, reported not patched, the re-arm DEADLOCK -- the epoch has exactly one producer (run_order, after RUNNING a measurement) and a retired goal cannot be run, so a genuinely re-failed condition on a retired goal could never bring it back on its own, and A15's own extension probe showed the natural end state of BOTH shipped ExecClasses retiring leaves ZERO executable pool members, not one -- the ordinary case, not a corner case.  ax_world_probe_epoch does not touch ax_rearm or its conjunction; it adds a SECOND, INDEPENDENT epoch producer that never runs anything: a retired goal whose condition is confirmed genuinely re-failed on TWO SEPARATE, externally-triggered probes (the adapter's refresh_evidence_facts, already existing, now carrying its own PRIOR reading across the probe-call boundary as stale_at_last_probe) while the epoch has sat still since its retirement gets `world_drift_confirmed` stamped; the adapter reads that as a pure query and bumps arc_measure_epoch the same mechanical way run_order does.  A SINGLE probe cannot satisfy the guard -- the discriminator against reintroducing the churn EX4 measured ax_rearm's own two-sided latch against.",
   "microtheory": "arc6_executor",
   "nodes": [
     {
@@ -2531,6 +2531,212 @@
           "av",
           "holds_under",
           "avc"
+        ]
+      ]
+    },
+    {
+      "name": "ax_world_probe_epoch",
+      "comment": "A18 -- THE RE-ARM DEADLOCK, CLOSED WITHOUT RUNNING ANYTHING. PROGRAM_SYNTHESIS_ARC6_EXECUTOR.md SS5: 'the executor is the epoch's producer, but it only produces one by RUNNING a goal, and a retired goal is not in the pool to be run.  With exactly one executable goal, a genuinely re-failed condition cannot bring it back on its own.'  MEASURED (PREREG A18 item 3, reusing PROGRAM_SYNTHESIS_ARC6_SECOND_EXECCLASS.md SS6's own live probe): the NATURAL trajectory with BOTH shipped ExecClasses retires both re_measure goals and leaves ZERO executable pool members, not one -- the deadlock's precondition is the ORDINARY end state of this loop, not a corner case. THIS RULE IS NOT A SECOND ax_rearm.  It does not touch that rule, does not read arc_measure_epoch to decide anything about a goal's re-entry, and does not widen ax_rearm's own conjunction.  It decides exactly one, narrower thing: whether a RETIRED goal's source residual has genuinely re-failed on TWO SEPARATE, EXTERNALLY-TRIGGERED world probes (r.stale == 1.0 confirmed against r.stale_at_last_probe -- the adapter's own carry of the PREVIOUS refresh_evidence_facts call's reading, the ARM_CARRY precedent applied at the probe-call boundary instead of the fixpoint-tick boundary) while the clock has been stuck since retirement (retired_epoch == the CURRENT epoch, i.e. nothing else has advanced it yet).  A SINGLE probe cannot satisfy this -- stale_at_last_probe still holds the PRIOR, pre-drift reading on the first sighting -- which is the discriminator against collapsing EX4's cell C into cell D (this rung's own AR18b).  Investigated and REJECTED before this rule was written: coupling the epoch bump directly to the SAME single detection event `stale` is already computed from would do exactly that. The adapter reads the resulting fact (world_drift_confirmed) as a PURE QUERY -- the same shape as pending_orders -- and calls the SAME agi.bump_measure_epoch that run_order already calls, mechanically, OUTSIDE run_rules(), so ax_rearm's own epoch-advance check is satisfied only on the NEXT fixpoint, exactly as EX4's cell D already requires manually.  This rule only widens WHICH real-world events can produce the epoch bump ax_rearm has always read; it never runs a measurement and never touches the latch.",
+      "batch": true,
+      "match": [
+        [
+          "agenda",
+          "uses_policy",
+          "pol"
+        ],
+        [
+          "agenda",
+          "has_arc_goal",
+          "g"
+        ],
+        [
+          "r",
+          "remeasure_goal",
+          "g"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "retired"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "stale"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "stale_at_last_probe"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "retired_epoch"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "retired_epoch"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "__consumed_by_ax_rearm__"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "retired_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "ResidualFact"
+                  },
+                  "var_name": "aef",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "aef"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "arc_measure_epoch"
+                    }
+                  }
+                },
+                "var_name": "aef2",
+                "value": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "default": null
+              },
+              "key": "value"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "g",
+          "world_drift_confirmed",
+          1.0
+        ],
+        [
+          "set_attr",
+          "g",
+          "world_drift_confirmed_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "ResidualFact"
+                  },
+                  "var_name": "aef",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "aef"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "arc_measure_epoch"
+                    }
+                  }
+                },
+                "var_name": "aef2",
+                "value": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "default": null
+              },
+              "key": "value"
+            }
+          }
         ]
       ]
     }
