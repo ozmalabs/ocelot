@@ -4,6 +4,7 @@ The full historical PREREG/RESULTS/plan corpus, grouped by subject. For a synthe
 
 | folder | documents | subfolders |
 |---|---|---|
+| [`adventure_mechanics/`](adventure_mechanics/INDEX.md) | 1 | — |
 | [`agent_loop/`](agent_loop/INDEX.md) | 67 | — |
 | [`audio_speech/`](audio_speech/INDEX.md) | 144 | — |
 | [`bigville/`](bigville/INDEX.md) | 162 | — |
