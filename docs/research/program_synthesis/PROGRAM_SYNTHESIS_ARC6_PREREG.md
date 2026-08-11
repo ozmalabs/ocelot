@@ -2009,3 +2009,207 @@ convergence/` or `docs/research/adventure_mechanics/`. This amendment is
 about OBSERVABILITY of the existing fallback, not about widening what the
 executor can do once it observes it — no `ArcQuestion`, no minted
 capability-acquisition goal, no change to what `ax_dispatch` runs.
+
+---
+
+### AMENDMENT A20 (2026-08-11) — `ag_ask` and `ax_dispatch`, reading different collapses IN GENERAL: characterize it, try to make it bite, then decide
+
+`PROGRAM_SYNTHESIS_ARC6_WIRE_HANDS.md` §8 named this uncertainty FOURTH,
+quoted because it is this amendment's charter: *"`ag_ask` AND THE HANDS NOW
+READ DIFFERENT COLLAPSES. `ag_ask` is frozen and reads `arc_sel_*`;
+`ax_dispatch` reads `mg_sel_*`. On the shipped boot they name DIFFERENT
+goals, so the agent can ask about one goal while acting on another in the
+same fixpoint — measured live at iteration 0 of WH2. Nothing broke, and the
+ask is now mostly irrelevant, but 'the question and the action are about the
+same thing' has quietly stopped being true and nothing asserts it either
+way."* `PROGRAM_SYNTHESIS_ARC6_IMPOTENCE_CAMPAIGN.md` §9 restated the same
+gap as its own uncertainty #3: *"not observed to matter in any scene this
+campaign constructed... but not proven impossible either."* Two rungs, one
+open question, never built against. This amendment is a MEASUREMENT rung
+first (characterize + adversarially probe) and a build only if the
+measurement earns it — the same shape A14 (impotence campaign) used.
+
+**Scope, stated precisely, per the task's own boundary.** This is about
+`ag_ask` vs `ax_dispatch` disagreeing about WHICH GOAL, not about the
+order-N fallback (A19, already observable, a DIFFERENT and narrower
+question — "is order-N live at all," not "do the two collapses, both
+live, name the same winner"). Does not touch `gr_condition_lapse`'s
+vocabulary, `results/arc6_import_impedance.json`/`scripts/
+arc6_import_impedance.py`, or anything under `docs/research/
+theory_convergence/` or `docs/research/adventure_mechanics/`. **Strong
+preference against touching `ag_ask`/`seeds/arc_goals.json` at all** —
+every prior rung in this arc has left it byte-frozen by name (WH3 §4.3,
+A13/A14/A19 confinement tables), and WIRE_HANDS §4.3 recorded the reason:
+*"`ag_ask` was not touched, and is not made worse."* Touching it here would
+require a much higher evidentiary bar than any other change this amendment
+could make.
+
+**The design investigation, done before drafting bars.**
+
+1. **`ag_ask` reads exactly three order-1 stamps and nothing else.**
+   `tools/build_arc_goals_seed.py::_r_ask` binds its two named candidates
+   by `Eq(g.agid, agenda.arc_sel_agid)` / `Eq(h.agid,
+   agenda.arc_sel_runner_up_agid)` and fires on `Lt(agenda.arc_sel_margin,
+   threshold)` — three order-1-only stamps (`ag_select` /
+   `ag_select_runner_up` / `ag_select_margin`, all in
+   `seeds/arc_goals.json`, all upstream of `arc_magnitude` even being
+   loaded). `ax_dispatch` acts on `SEL_AGID()`
+   (`tools/build_arc_executor_seed.py`), which is `mg_sel_agid` whenever
+   `mg_select` has fired. **The two rules literally cannot share a stamp**
+   — `ag_ask` is in a seed (`arc_goals`) that has never heard of
+   `arc_magnitude`, confirmed by `grep -n arc_magnitude
+   tools/build_arc_goals_seed.py` returning nothing.
+2. **Order-1 and order-N can diverge through exactly two channels, both
+   already shipped, and no others.** Reading `VALUE` (`ag_select`'s, order-1)
+   against `VALUE_N` (`mg_select`'s, order-N,
+   `tools/build_arc_magnitude_seed.py::VALUE_N`): they are the SAME term —
+   same `PENALTY`, same policy weights — with exactly two edits: (a)
+   `headroom_n` → `orderN_headroom_n`, and (b) a scope charge
+   `MINUS(..., w_out_of_scope * out_of_scope)` present only in `VALUE_N`.
+   Channel (a): `orderN_headroom_n` differs from `headroom_n` for a goal
+   ONLY while it holds a non-stale tier-ladder projection
+   (`mg_goal_order_n`'s guard, `_has_ladder() AND _live_projection()`);
+   every other goal falls back to `orderN_headroom_n == headroom_n`
+   (`mg_goal_order_n_default`, verbatim). **On the shipped 8-goal pool
+   exactly ONE goal ever carries a ladder** —
+   `arc.supply.arc6.seam_a.import_oracle.missing_structural_primitive`
+   (`STRUCTURAL`/`SB_MSP`) — so channel (a) is a single-goal repricing
+   effect, not a general reshuffling. Channel (b): `out_of_scope` is 1.0
+   for a goal ONLY while a live `ArcConstraint{ckind:'scope'}` names a
+   DIFFERENT `sig_seam` (`mg_scope_charge`'s guard, `_any_scope_held() AND
+   NOT(_in_scope())`); with no scope constraint ever answered, `out_of_scope`
+   is 0.0 for every goal and channel (b) is silent. **On the shipped boot
+   with no constraint reply given, only channel (a) is live** — this is
+   why WIRE_HANDS' own WH1 divergence (§2.1) is exactly the laddered
+   goal's repricing (42 → 13.64) and nothing else. Channel (b) is
+   real but requires an operator answer to fire, exactly the shape A14's
+   own campaign used ("real" vs "hypothetical, reachable via a real
+   mechanism") — this amendment will exercise it explicitly rather than
+   leave it a claim.
+3. **`ag_ask`'s reply can cross-affect `PENALTY`, and therefore CAN move
+   order-N's ranking too — but only for a goal sharing the asked region's
+   signature.** `PENALTY` is the one term `VALUE` and `VALUE_N` share
+   unedited, and a testimony reply mints a `GoalResidual` keyed on the
+   ASKED goal's `sig_seam`/`sig_lever`/`sig_target`
+   (`_testimony_residual`, `region_seam`/`region_lever`/`region_target`
+   read off the `ArcQuestion`, itself read off the winner `g` at ask
+   time). `gr_move_penalty`'s wildcards mean this residual can charge ANY
+   goal matching that region, not only the one asked about — AG-5 §8.3's
+   own finding, `"an unconditioned answer penalises the region it is
+   about, by weight, regardless of content."`  So a reply to `ag_ask`
+   *can* move `mg_sel_agid`'s ranking, but only through the accident of
+   two goals sharing a signature region — never through any direct
+   channel, and never through anything but `PENALTY`. This is the
+   mechanism the adversarial scene (AR20b) is built to stress: a scene
+   where the order-N winner's region does NOT match either of `ag_ask`'s
+   two named candidates isolates the case where a reply is provably inert
+   on what actually dispatches.
+4. **Neither collapse ever mints or executes anything on its own** — only
+   `ax_dispatch` mints an `ExecOrder`, and only the adapter's `run_order`
+   executes one, both already gated by `_armed`'s two-tick agreement and
+   `_routable`/`_dispatchable`. So the WORST a divergence can do is: (i)
+   waste a human's answer on a question naming a goal that was never
+   going to be acted on regardless of the answer (an honesty/legibility
+   defect in what `ag_ask` implies, not a graph-correctness defect), or
+   (ii) via channel 3, reprice a goal the reply did not name, in a
+   direction the replier did not intend — a SIDE EFFECT `ag_ask` already
+   has today, independent of order-N, and not new here. Neither can cause
+   `ax_dispatch` to mint an order for a "stale/wrong" goal beyond what
+   `_armed`'s existing two-tick agreement already guards, because
+   `ax_dispatch` never reads anything `ag_ask` or a reply writes except
+   through the shared `PENALTY` term.
+5. **The A19 precedent is directly reusable for the cheap fix, if one is
+   warranted.** `AgendaVerdict` + `has_agenda_verdict` are already
+   declared productions; a divergence fact is a THIRD pair in the same
+   mint/clear shape (`ax_impotent`'s mint-once idiom, `ax_fallback_silent`/
+   `ax_fallback_cleared`'s direct-reversible-pair idiom for a
+   non-epoch-shaped liveness question) — no new DSL Term (`Eq` and
+   `SEL_AGID()` both already exist and are already imported into
+   `tools/build_arc_executor_seed.py`), no new node type, no new edge
+   type, and — the point of this whole rung — **no edit to `ag_ask` or
+   `seeds/arc_goals.json`**, because the fact only needs to compare a
+   stamp `ag_ask` already reads (`arc_sel_agid`) against a stamp
+   `ax_dispatch` already reads (`SEL_AGID()`), both on the SAME
+   `ArcAgenda` node, from the executor seed alone.
+
+**Bars, registered before any scene is constructed or any code is
+written.**
+
+- **AR20a — characterize divergence on constructed scenes, as a TABLE, not
+  a bare claim.** At minimum: the WH1 shipped-boot scene (reproduced, not
+  re-argued); a depletion sweep over the 8-goal pool (A14's own
+  `_leave_pool` mechanism, one goal removed at a time) with and without the
+  tier ladder, recording `arc_sel_agid`, `mg_sel_agid`, and whether they
+  agree, at every step; and a scope-constraint scene exercising channel
+  (b) via a REAL `attach_constraint_reply`. The table must let a reader
+  answer, without re-deriving it: does divergence concentrate on the
+  laddered goal specifically, or does it spread — and is the answer
+  "concentrates," "spreads," or "does not occur under X"? A registered
+  null reading: if fewer than 2 genuinely distinct divergent states are
+  reachable by real/constructible mechanisms (echoing A14 IC2's own
+  underpowered-n reading), that is reported as a small-n honest result,
+  not stretched into a claim.
+- **AR20b — an ADVERSARIAL scene, designed (not discovered) to make
+  divergence bite, and report what actually happens.** Construct a pool
+  where (i) `ag_ask` fires a genuine tie question naming two goals A/B
+  under order-1 mutual ignorance, and (ii) the order-N winner is a THIRD
+  goal C, distinct from both A and B, with a signature region that does
+  NOT match either — isolating the case design item 3 names as the sharp
+  one. A human replies to `ag_ask`'s literal rendered question. Measure,
+  before and after the reply: does `mg_sel_agid` change; does the
+  `ExecOrder` `ax_dispatch` would mint (or has minted) change; is there
+  ANY causal path from the reply to what executes. Report the verdict
+  honestly whichever way it comes out — "the reply is provably inert on
+  what dispatches" is exactly as valid a finding here as "the reply moved
+  the dispatched goal," and either is reported with the trace, not
+  argued from the mechanism alone.
+- **AR20c — a GO/NO-GO criterion for an observability fix, registered
+  NOW, before AR20a/AR20b are run.** GO if AND ONLY IF: (i) AR20a/AR20b
+  together show divergence is REAL (occurs on at least one constructed,
+  non-contrived scene — already true per WH1 §2.1, so this is expected to
+  be met) — divergence being rare or benign is NOT by itself a reason for
+  NO-GO, because A19's own fallback fact was built for a condition no
+  rung had ever observed causing harm; AND (ii) the fix is buildable in
+  the SAME shape as A19's — a THIRD `AgendaVerdict` mint/clear pair, zero
+  new DSL Term, zero new node/edge type, zero edit to `ag_ask`/
+  `seeds/arc_goals.json`, zero change to `ax_dispatch`'s own dispatch
+  decision (mirroring AR19c's own bar, re-verified here by re-running the
+  EXISTING WH1/WH3/A19 live-scene tests unmodified). NO-GO if EITHER
+  condition fails — in particular, NO-GO (not a weaker build) if the only
+  buildable fix requires touching `ag_ask` itself, per this amendment's
+  own stated preference against that, UNLESS the adversarial scene (AR20b)
+  finds a genuinely bad, not merely observationally-absent, outcome that
+  an `AgendaVerdict` fact could not adequately surface — a bar this
+  amendment expects NOT to be met, stated before knowing whether it is.
+- **AR20d — no regression, and `ag_ask`/`seeds/arc_goals.json` frozen
+  unless overridden with strong, stated evidence.** The six existing gate
+  suites (`test_arc_executor_migrated`, `test_arc_goals_migrated`,
+  `test_goal_residual_migrated`, `test_arc6_valuelayer_migrated`,
+  `test_arc_magnitude_migrated`, `test_arc_decompose_migrated`) produce
+  the same failing-node-id lists before and after, paired and named.
+  `seeds/arc_goals.json` and every rule body in
+  `tools/build_arc_goals_seed.py` stay byte-identical to `HEAD` UNLESS
+  this amendment's own investigation produces well-evidenced grounds to
+  touch them — treated as requiring a materially higher bar than any
+  other file this rung might edit, per the task's explicit instruction.
+  If a build happens, every pre-existing rule body in
+  `seeds/arc_executor.json` (`ax_dispatch`, `ax_retired_epoch`,
+  `ax_rearm`, `ax_close`, `ax_impotent`, `ax_world_probe_epoch`,
+  `ax_fallback_silent`, `ax_fallback_cleared`) stays byte-identical to
+  `HEAD`'s own emitted copy.
+
+**Registered null reading.** If AR20a/AR20b together show divergence is
+either unreachable on any constructed scene beyond WH1's own (i.e. this
+amendment adds no new evidence) or, having been reached and stressed
+adversarially, provably causes no outcome an `AgendaVerdict` fact would be
+worth minting for, the honest result is: characterized, adversarially
+tested, confirmed benign, **nothing built** — exactly the shape this arc's
+own culture already names as complete (M0's ceiling probes, A14's own
+NO-GO). This is not a failure condition and is not to be forced into a
+build to have something to show.
+
+**Explicitly out of scope, unchanged from A13–A19's shared boundary:**
+`gr_condition_lapse`'s closed vocabulary, `results/
+arc6_import_impedance.json`/`scripts/arc6_import_impedance.py`, and
+anything under `docs/research/theory_convergence/` or `docs/research/
+adventure_mechanics/`.

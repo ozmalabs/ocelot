@@ -1909,20 +1909,20 @@ def test_a19_AR19c_the_guard_TERM_is_IDENTICAL_to_SEL_AGIDs_own_absence_test():
 
 
 def test_a19_AR19d_the_new_rules_are_the_ONLY_addition_to_the_seed():
-    """`seeds/arc_executor.json` regenerates byte-identically from its own
-    (edited, version-bumped) emitter, and the two new rules are purely
-    additive: every rule this seed shipped through A18 is still present,
-    unedited, by name and in order, with exactly two more appended."""
+    """A20 INVERTS THIS PIN TO A PREFIX CHECK, NOT REMOVES IT — the WH1/A18
+    precedent ('the old pin had to be deleted to land the change, which is
+    the pin working, not a regression') applied a third time.  A20 appends a
+    NINTH and TENTH rule (`ax_ask_divergence_active`/`_cleared`), so the
+    exact-eight-name assertion this test made through A19 is now false BY
+    CONSTRUCTION.  `test_a20_AR20d_the_new_rules_are_the_ONLY_addition_to_
+    the_seed` below asserts the full, current ten-name list and version; this
+    one still proves the ORIGINAL eight are an unbroken PREFIX, in order,
+    unedited by name."""
     doc = _seed()
-    assert doc["version"] == "1.5.0"
     names = [r["name"] for r in doc["rules"]]
-    assert names == ["ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
-                      "ax_impotent", "ax_world_probe_epoch",
-                      "ax_fallback_silent", "ax_fallback_cleared"]
-    r = subprocess.run([sys.executable,
-                        os.path.join(ROOT, "tools", "build_arc_executor_seed.py"),
-                        "--check"], capture_output=True, text=True, cwd=ROOT)
-    assert r.returncode == 0, r.stdout + r.stderr
+    assert names[:8] == ["ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
+                         "ax_impotent", "ax_world_probe_epoch",
+                         "ax_fallback_silent", "ax_fallback_cleared"], names[:8]
 
 
 def test_a19_AR19d_ax_dispatch_and_every_prior_rule_body_is_UNCHANGED():
@@ -1973,5 +1973,240 @@ def test_a19_AR19d_the_seeds_below_this_rung_are_still_UNTOUCHED():
 
     r = subprocess.run([sys.executable, os.path.join(
         ROOT, "tools", "build_arc_magnitude_seed.py"), "--check"],
+        capture_output=True, text=True, cwd=ROOT)
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+# =========================================================================== #
+#  A20 — `ag_ask` VS `ax_dispatch`, READING DIFFERENT COLLAPSES, MADE
+#  OBSERVABLE.  `PROGRAM_SYNTHESIS_ARC6_PREREG.md` amendment A20 (AR20a—d),
+#  registered before this build.  The A19 pattern (a standing, queryable
+#  AgendaVerdict, mint-once ON / reversible-pair OFF) applied to a DIFFERENT
+#  comparison: not "is order-N live," but "given that it is, does it name
+#  the SAME goal `ag_ask` asked about."  `ag_ask`/`seeds/arc_goals.json` are
+#  UNTOUCHED throughout — see `test_a20_AR20d_the_seeds_below_this_rung_
+#  including_arc_goals_are_still_UNTOUCHED`.
+# =========================================================================== #
+SB_MSP = "arc.supply.arc6.seam_a.import_oracle.missing_structural_primitive"
+
+
+def test_a20_AR20a_the_divergence_fact_mints_on_the_shipped_boot():
+    """AR20a.  The WH1 shipped-boot scene: order-N live, tier ladder
+    installed — `ag_ask`'s winner (`arc_sel_agid`, the 42-task blocker) and
+    `ax_dispatch`'s target (`SEL_AGID()`, the re-measurement goal) genuinely
+    disagree, exactly as WIRE_HANDS SS2.1 measured.  The standing fact must
+    mint, naming both stamps plus the descriptive runner-up check."""
+    s, _ = _boot_with_magnitude(ladder=True)
+    s._inner.run_rules()
+    at = s.node([n for n in s.nodes("ArcAgenda")][0])["attrs"]
+    assert at["arc_sel_agid"] == SB_MSP
+    assert at["mg_sel_agid"] == AGID
+    assert at["arc_sel_agid"] != at["mg_sel_agid"], "must genuinely disagree"
+
+    div = axe.agenda_verdicts(s, "ask_dispatch_divergence")
+    assert len(div) == 1, div
+    assert div[0]["active"] == 1.0
+    assert div[0]["asked_about_agid"] == SB_MSP
+    assert div[0]["dispatch_target_agid"] == AGID
+    assert div[0]["asked_about_runner_up_agid"] == AGID, (
+        "on the shipped boot the dispatch target IS ag_ask's OTHER "
+        "candidate — the structural-bound finding, descriptive here")
+    assert div[0]["dispatch_matches_runner_up"] == 1.0
+    assert div[0]["reason"] == (
+        "ax_dispatch_is_acting_on_a_goal_ag_ask_did_not_name_as_its_winner")
+
+
+def test_a20_AR20a_CONTROL_no_fact_when_order_N_is_absent():
+    """Order-1 only (no `arc_magnitude`): `SEL_AGID()` falls back to
+    `arc_sel_agid` by construction (A11's own ITE), so the two stamps this
+    fact compares are IDENTICAL by definition and it must never mint —
+    exactly as A19's own fallback fact does not mint here, for the same
+    structural reason, checked independently for THIS fact."""
+    s, _ = boot()                       # no arc_magnitude
+    s._inner.run_rules()
+    at = s.node([n for n in s.nodes("ArcAgenda")][0])["attrs"]
+    assert at.get("mg_sel_agid") is None
+    assert axe.agenda_verdicts(s, "ask_dispatch_divergence") == []
+
+
+def test_a20_AR20a_CONTROL_without_the_tier_ladder_the_two_collapses_AGREE():
+    """WH1-CONTROL-C, re-run for this rung's own claim: order-N live but the
+    ladder withheld makes the two collapses AGREE on the same winner — the
+    fact must not mint, discriminating against a wrong implementation that
+    mistook 'order-N is live' for 'order-N disagrees with order-1'."""
+    s, _ = _boot_with_magnitude(ladder=False)
+    s._inner.run_rules()
+    at = s.node([n for n in s.nodes("ArcAgenda")][0])["attrs"]
+    assert at["arc_sel_agid"] == at["mg_sel_agid"] is not None
+    assert axe.agenda_verdicts(s, "ask_dispatch_divergence") == []
+
+
+def test_a20_AR20a_mint_once_repeated_passes_do_not_double_mint():
+    s, _ = _boot_with_magnitude(ladder=True)
+    s._inner.run_rules()
+    first = axe.agenda_verdicts(s, "ask_dispatch_divergence")
+    assert len(first) == 1
+    s._inner.run_rules()
+    s._inner.run_rules()
+    second = axe.agenda_verdicts(s, "ask_dispatch_divergence")
+    assert len(second) == 1, "an unchanged divergent graph must not double-mint"
+    assert second[0]["_id"] == first[0]["_id"]
+
+
+def test_a20_AR20a_the_fact_CLEARS_when_the_collapses_AGREE_no_epoch_bump():
+    """The transition, mirroring A19's own AR19b(ii): start from the
+    divergent scene (fact active), remove the ONE goal responsible for the
+    divergence (`SB_MSP`, via the validated `headroom_n -> 0` pool-exit —
+    A13 SS7.1, NEVER `status -> 'retired'`) so the two collapses converge on
+    the SAME winner, and show the SAME node flips `active` to 0.0 with no
+    epoch bump anywhere in the scene."""
+    s, _ = _boot_with_magnitude(ladder=True)
+    s._inner.run_rules()
+    before = axe.agenda_verdicts(s, "ask_dispatch_divergence")
+    assert len(before) == 1 and before[0]["active"] == 1.0
+    epoch_before = agi.measure_epoch(s)
+
+    for n in s.nodes("ArcGoal"):
+        if s.node(n)["attrs"].get("agid") == SB_MSP:
+            s.set_attr(n, "headroom_n", 0.0)
+    s._inner.run_rules()
+
+    at = s.node([n for n in s.nodes("ArcAgenda")][0])["attrs"]
+    assert at["arc_sel_agid"] == at["mg_sel_agid"] == AGID, (
+        "removing the one laddered goal must make the collapses converge")
+    assert agi.measure_epoch(s) == epoch_before, (
+        "the clearing must NOT depend on an epoch bump — none happened here")
+
+    after = axe.agenda_verdicts(s, "ask_dispatch_divergence")
+    assert len(after) == 1, after
+    assert after[0]["_id"] == before[0]["_id"], "the SAME node, not a fresh mint"
+    assert after[0]["active"] == 0.0
+    assert after[0].get("cleared_epoch") == str(epoch_before)
+
+
+def test_a20_AR20c_dispatch_behaviour_is_UNCHANGED_WH1_scene():
+    """AR20c / the GO criterion's own condition (ii): re-run WH1's exact
+    live scene with the two new rules installed and show the SAME order
+    mints, byte-identical `selected_by`/`agid` — the new rules only ever
+    add/edit `AgendaVerdict` nodes, never anything `ax_dispatch` reads."""
+    s, _ = _boot_with_magnitude(ladder=True)
+    s._inner.run_rules()
+    axe.arm(s)
+    s._inner.run_rules()
+    orders = [dict(s.node(n)["attrs"]) for n in s.nodes("ExecOrder")]
+    assert [o["agid"] for o in orders] == [AGID], [o["agid"] for o in orders]
+    assert orders[0]["selected_by"] == "order_n_mg_select"
+    #  the divergence fact persists alongside dispatch, undisturbed
+    assert axe.agenda_verdicts(s, "ask_dispatch_divergence")[0]["active"] == 1.0
+
+
+def test_a20_AR20c_dispatch_behaviour_is_UNCHANGED_WH3_scene():
+    """The mirror case: order-1 fallback, unroutable winner, no order — the
+    new rules must not perturb this either.  `test_wh3_the_fallback_when_
+    the_order_N_collapse_is_NOT_on_the_graph`'s own scene, unmodified."""
+    s, _ = boot()                       # no arc_magnitude
+    s._inner.run_rules()
+    axe.arm(s)
+    s._inner.run_rules()
+    assert list(s.nodes("ExecOrder")) == []
+    answer_open_questions(s, conditioned=True)
+    s._inner.run_rules()
+    assert agi.selection(s).get("arc_sel_agid") == AGID
+    axe.arm(s)
+    s._inner.run_rules()
+    orders = [dict(s.node(n)["attrs"]) for n in s.nodes("ExecOrder")]
+    assert [o["agid"] for o in orders] == [AGID]
+    assert orders[0]["selected_by"] == "order_1_ag_select"
+    #  order-N was never on this graph, so the divergence fact never applies
+    assert axe.agenda_verdicts(s, "ask_dispatch_divergence") == []
+
+
+def test_a20_AR20c_the_guard_TERM_reuses_arc_sel_agid_and_SEL_AGID_VERBATIM():
+    """Structural proof: the new rules cannot drift from `ax_dispatch`'s own
+    notion of 'what the dispatch target is', because `SEL_AGID()` is the
+    IDENTICAL Term (same ITE tree) `ax_dispatch`'s `where` embeds four times
+    over (`SEL_AGID`/`SEL_VALUE`/`ARMED_AGID`/`ARMED_VALUE` all branch on the
+    SAME `_order_n_is_not_live()`).  Extracted here by walking for the exact
+    `Attr(agenda, 'arc_sel_agid')` subterm and confirming it appears, un-
+    re-derived, inside both new rules' own `where`."""
+    arc_sel_agid_attr = {
+        "type": "Attr", "node": {"type": "Var", "name": "agenda"},
+        "key": "arc_sel_agid"}
+    dispatch_where = _seed_rule("ax_dispatch")["where"]
+    assert arc_sel_agid_attr in list(_walk(dispatch_where, "Attr")), (
+        "the reference term itself must appear in ax_dispatch's own where "
+        "(via SEL_AGID's ITE)")
+
+    active_where = _seed_rule("ax_ask_divergence_active")["where"]
+    assert arc_sel_agid_attr in list(_walk(active_where, "Attr"))
+
+    cleared_where = _seed_rule("ax_ask_divergence_cleared")["where"]
+    assert arc_sel_agid_attr in list(_walk(cleared_where, "Attr"))
+
+
+def test_a20_AR20d_the_new_rules_are_the_ONLY_addition_to_the_seed():
+    """`seeds/arc_executor.json` regenerates byte-identically from its own
+    (edited, version-bumped) emitter; the new rules are purely additive —
+    every rule through A19 is still present, unedited, by name and in
+    order, with exactly two more appended."""
+    doc = _seed()
+    assert doc["version"] == "1.6.0"
+    names = [r["name"] for r in doc["rules"]]
+    assert names == ["ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
+                      "ax_impotent", "ax_world_probe_epoch",
+                      "ax_fallback_silent", "ax_fallback_cleared",
+                      "ax_ask_divergence_active", "ax_ask_divergence_cleared"]
+    r = subprocess.run([sys.executable,
+                        os.path.join(ROOT, "tools", "build_arc_executor_seed.py"),
+                        "--check"], capture_output=True, text=True, cwd=ROOT)
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_a20_AR20d_every_prior_rule_body_is_UNCHANGED():
+    """The eight rule bodies A20 must not touch, read back off the
+    regenerated seed and diffed against `HEAD`'s own emitted copy."""
+    prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
+                            capture_output=True, text=True).stdout.strip()
+    head_doc = json.loads(subprocess.run(
+        ["git", "-C", ROOT, "show", "HEAD:" + prefix + "seeds/arc_executor.json"],
+        capture_output=True, text=True).stdout)
+    head_rules = {r["name"]: r for r in head_doc["rules"]}
+    cur_rules = {r["name"]: r for r in _seed()["rules"]}
+    for name in ("ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
+                 "ax_impotent", "ax_world_probe_epoch",
+                 "ax_fallback_silent", "ax_fallback_cleared"):
+        assert cur_rules[name] == head_rules[name], name
+
+
+def test_a20_AR20d_the_adapter_is_BYTE_IDENTICAL_to_HEAD():
+    """No adapter edit was needed: `agenda_verdicts(sub, kind=...)` was
+    already generic (A19's own finding, reused here verbatim)."""
+    prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
+                            capture_output=True, text=True).stdout.strip()
+    head = subprocess.run(["git", "-C", ROOT, "show",
+                           "HEAD:" + prefix + "domains/arc_executor.py"],
+                          capture_output=True, text=True).stdout
+    assert head
+    assert head == open(os.path.join(ROOT, "domains", "arc_executor.py")).read()
+
+
+def test_a20_AR20d_the_seeds_below_this_rung_including_arc_goals_are_still_UNTOUCHED():
+    """THE HIGH-BAR CONFINEMENT CHECK THIS RUNG REGISTERED (A20's own AR20d):
+    `seeds/arc_goals.json` — i.e. `ag_ask` itself — stays byte-identical to
+    `HEAD`, same as every prior rung in this arc has held it, plus the usual
+    sibling seeds/adapters this rung does not touch."""
+    prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
+                            capture_output=True, text=True).stdout.strip()
+    for rel in ("seeds/arc_goals.json", "seeds/goal_residuals.json",
+                "seeds/program_synthesis.json", "seeds/arc_magnitude.json",
+                "seeds/arc_decompose.json", "domains/arc_goal_ingest.py",
+                "domains/goal_residual_ingest.py", "domains/arc_magnitude_ingest.py"):
+        head = subprocess.run(["git", "-C", ROOT, "show", "HEAD:" + prefix + rel],
+                              capture_output=True, text=True).stdout
+        assert head, rel
+        assert head == open(os.path.join(ROOT, rel)).read(), rel
+
+    r = subprocess.run([sys.executable, os.path.join(
+        ROOT, "tools", "build_arc_goals_seed.py"), "--check"],
         capture_output=True, text=True, cwd=ROOT)
     assert r.returncode == 0, r.stdout + r.stderr

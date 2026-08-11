@@ -4,7 +4,7 @@
   "self_load_only": true,
   "_SELF_LOAD_ONLY_RATIONALE": "substrate/boot_all.py::_read_seeds GLOBS seeds/*.json and installs every match at boot, so a file here is live in EVERY agent in the tree the moment it lands.  seeds/arc_goals.json and seeds/arc_magnitude.json both ship self_load_only for that reason and this seed keeps the gating: an executor that dispatches jobs is the LAST thing that should arrive in every agent by a glob.  Activation is one key and a paired tree-wide sweep.",
   "id": "arc_executor",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "depends_on": [
     "goal_residuals",
     "arc_goals"
@@ -2954,6 +2954,565 @@
         [
           "set_attr",
           "avf",
+          "cleared_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "ResidualFact"
+                  },
+                  "var_name": "aef",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "aef"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "arc_measure_epoch"
+                    }
+                  }
+                },
+                "var_name": "aef2",
+                "value": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "default": null
+              },
+              "key": "value"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "ax_ask_divergence_active",
+      "comment": "A20 -- `ag_ask` VS `ax_dispatch`, MADE OBSERVABLE (the ON direction).  WIRE_HANDS SS8 item 4: 'the agent can ask about one goal while acting on another in the same fixpoint... nothing asserts it either way.'  Fires the instant ax_dispatch's OWN target (SEL_AGID()) disagrees with ag_ask's WINNER candidate (arc_sel_agid) AND no currently-active verdict of this kind already exists (mint-once, ax_impotent's /ax_fallback_silent's own shape).  Mints AgendaVerdict{kind:'ask_dispatch_divergence', active:1.0} off the SAME agenda hub ax_impotent/ax_fallback_silent use -- a standing, queryable graph fact a self-monitoring agent (or a human, or a future rung) can check PROACTIVELY, instead of comparing an ArcQuestion's agid_a against an ExecOrder's agid order by order after the fact.  Also stamps whether the dispatch target at least matches ag_ask's OTHER candidate (arc_sel_runner_up_agid) -- descriptive only, never read by any guard -- because A20's own design investigation proved this is true on every scene this seed's shipped policy can reach (the structural bound), and a future policy edit breaking it is precisely the thing this fact exists to catch.",
+      "batch": true,
+      "match": [
+        [
+          "agenda",
+          "uses_policy",
+          "pol"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "agenda"
+                        },
+                        "key": "mg_sel_agid"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": null
+                      }
+                    },
+                    "then": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "agenda"
+                      },
+                      "key": "arc_sel_agid"
+                    },
+                    "other": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "agenda"
+                      },
+                      "key": "mg_sel_agid"
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "arc_sel_agid"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "agenda"
+                        },
+                        "key": "mg_sel_agid"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": null
+                      }
+                    },
+                    "then": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "agenda"
+                      },
+                      "key": "arc_sel_agid"
+                    },
+                    "other": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "agenda"
+                      },
+                      "key": "mg_sel_agid"
+                    }
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "arc_sel_agid"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "AgendaVerdict"
+              },
+              "var_name": "avd",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "avd"
+                      },
+                      "key": "kind"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "ask_dispatch_divergence"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "avd"
+                      },
+                      "key": "active"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 1.0
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "avd",
+          "AgendaVerdict",
+          {
+            "kind": "ask_dispatch_divergence",
+            "active": 1.0,
+            "epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Argmin",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ResidualFact"
+                    },
+                    "var_name": "aef",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "aef"
+                        },
+                        "key": "name"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "arc_measure_epoch"
+                      }
+                    }
+                  },
+                  "var_name": "aef2",
+                  "value": {
+                    "type": "Lit",
+                    "value": 0
+                  },
+                  "default": null
+                },
+                "key": "value"
+              }
+            },
+            "asked_about_agid": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "agenda"
+                },
+                "key": "arc_sel_agid"
+              }
+            },
+            "asked_about_runner_up_agid": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "agenda"
+                },
+                "key": "arc_sel_runner_up_agid"
+              }
+            },
+            "dispatch_target_agid": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "mg_sel_agid"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                },
+                "then": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "agenda"
+                  },
+                  "key": "arc_sel_agid"
+                },
+                "other": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "agenda"
+                  },
+                  "key": "mg_sel_agid"
+                }
+              }
+            },
+            "dispatch_matches_runner_up": {
+              "__term__": {
+                "type": "Eq",
+                "a": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "agenda"
+                      },
+                      "key": "mg_sel_agid"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "arc_sel_agid"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "agenda"
+                    },
+                    "key": "mg_sel_agid"
+                  }
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "agenda"
+                  },
+                  "key": "arc_sel_runner_up_agid"
+                }
+              }
+            },
+            "reason": "ax_dispatch_is_acting_on_a_goal_ag_ask_did_not_name_as_its_winner",
+            "_the_decision_lives_here": "the firing guard compares SEL_AGID() -- the IDENTICAL Term ax_dispatch's where branches on -- against arc_sel_agid; the adapter never computes this and never decides it, and ag_ask is not read, only its OWN stamp is."
+          }
+        ],
+        [
+          "add_edge",
+          "agenda",
+          "has_agenda_verdict",
+          "avd"
+        ]
+      ]
+    },
+    {
+      "name": "ax_ask_divergence_cleared",
+      "comment": "A20 -- THE OFF DIRECTION, and not decoration: a one-way mint would itself be a claim that cannot be revised -- the gr_condition_lapse/gr_condition_hold precedent, A19's own citation of it, applied a third time.  Fires the instant the two stamps AGREE (or either goes null) while a previously-minted verdict is still marked active, and flips `active` to 0.0.  DELIBERATELY NOT epoch-shaped, same reason as A19's ax_fallback_cleared: a scope or testimony reply can move arc_sel_agid or SEL_AGID() with no epoch bump anywhere in the scene, so a self-monitoring agent's 'do they agree RIGHT NOW' question needs the CURRENT truth of the comparison, not a description valid only until the next measurement.  Mutually exclusive with ax_ask_divergence_active by construction.",
+      "batch": true,
+      "match": [
+        [
+          "agenda",
+          "uses_policy",
+          "pol"
+        ],
+        [
+          "agenda",
+          "has_agenda_verdict",
+          "avd"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "agenda"
+                          },
+                          "key": "mg_sel_agid"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": null
+                        }
+                      },
+                      "then": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "agenda"
+                        },
+                        "key": "arc_sel_agid"
+                      },
+                      "other": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "agenda"
+                        },
+                        "key": "mg_sel_agid"
+                      }
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  }
+                },
+                {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "agenda"
+                      },
+                      "key": "arc_sel_agid"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  }
+                },
+                {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "agenda"
+                          },
+                          "key": "mg_sel_agid"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": null
+                        }
+                      },
+                      "then": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "agenda"
+                        },
+                        "key": "arc_sel_agid"
+                      },
+                      "other": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "agenda"
+                        },
+                        "key": "mg_sel_agid"
+                      }
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "agenda"
+                      },
+                      "key": "arc_sel_agid"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "avd"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ask_dispatch_divergence"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "avd"
+              },
+              "key": "active"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "avd",
+          "active",
+          0.0
+        ],
+        [
+          "set_attr",
+          "avd",
           "cleared_epoch",
           {
             "__term__": {

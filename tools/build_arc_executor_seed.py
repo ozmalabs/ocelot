@@ -80,6 +80,28 @@ WHAT THIS SEED IS.  Four rules and a two-node route table.
                    no new node type, no new edge type, no new adapter
                    function -- `agenda_verdicts(sub, "order_n_fallback")` is
                    already generic.
+  ax_ask_divergence_active /
+  ax_ask_divergence_cleared   A20 -- `ag_ask` VS `ax_dispatch`, READING
+                   DIFFERENT COLLAPSES, MADE OBSERVABLE.  `ag_ask` is frozen
+                   and asks about `arc_sel_agid` (order-1); `ax_dispatch`
+                   acts on `SEL_AGID()` (order-N when live).  THE ASK ITSELF
+                   IS UNTOUCHED -- `seeds/arc_goals.json` is byte-identical
+                   to `HEAD` -- these two rules only compare two stamps both
+                   `ag_ask` and `ax_dispatch` already read/write and mint/
+                   clear a standing AgendaVerdict, the SAME direct-
+                   reversible-pair shape A19 used for the order-N-fallback
+                   question.  `ax_ask_divergence_active` mints
+                   `AgendaVerdict{kind:'ask_dispatch_divergence',
+                   active:1.0}` the instant the two stamps disagree;
+                   `ax_ask_divergence_cleared` flips `active` to `0.0` the
+                   instant they agree again.  `PROGRAM_SYNTHESIS_ARC6_
+                   PREREG.md` amendment A20's own investigation proved a
+                   STRUCTURAL BOUND on this seed's shipped policy (the
+                   dispatch target can only ever be `ag_ask`'s winner or its
+                   named runner-up, never an undisclosed third goal) and
+                   measured how fragile it is (margin 32.7 against a 25.0
+                   charge) -- this fact is what would catch a future policy
+                   edit that breaks it.
 
 Run:  python tools/build_arc_executor_seed.py         (writes seeds/arc_executor.json)
       python tools/build_arc_executor_seed.py --check (fails if out of date)
@@ -932,6 +954,144 @@ def _r_fallback_cleared():
     }
 
 
+# --------------------------------------------------------------------------- #
+#  A20 -- `ag_ask` vs `ax_dispatch`, MADE OBSERVABLE (the A19 pattern, applied
+#  to a DIFFERENT question).  A19 asked "is the order-N collapse live at
+#  all"; this asks "given that it IS live, does it name the SAME goal
+#  `ag_ask` asked about."  `PROGRAM_SYNTHESIS_ARC6_PREREG.md` amendment A20's
+#  own design investigation (item 2) proved a STRUCTURAL BOUND on this
+#  seed's shipped policy weights -- the dispatch target can only ever be
+#  `arc_sel_agid` (A, ag_ask's WINNER candidate) or `arc_sel_runner_up_agid`
+#  (B, ag_ask's OTHER candidate), never a third goal neither was asked about
+#  -- and AR20b's adversarial scope-charge probe measured how FRAGILE that
+#  bound is (a single scope declaration comes within 7.7 of breaking it: the
+#  measured AGID-over-SB_BUDGET dominance margin is 32.7, the scope charge
+#  weight is 25.0).  A bound that holds today but is not asserted anywhere
+#  and could flip on a future policy-weight edit is exactly the case for a
+#  STANDING FACT rather than a comment: `ax_ask_divergence_active` mints the
+#  instant `ax_dispatch`'s target differs from `ag_ask`'s named WINNER,
+#  `ax_ask_divergence_cleared` flips it off the instant they agree again --
+#  the SAME direct-reversible-pair shape A19 used for the SAME reason (this
+#  question is not epoch-shaped either: a scope reply or a testimony reply
+#  can move `arc_sel_agid` or `SEL_AGID()` with no epoch bump anywhere in
+#  the scene, exactly as arc_magnitude loading did for A19).
+#
+#  `ag_ask` IS NOT TOUCHED.  Both rules read stamps `ag_ask`/`ax_dispatch`
+#  ALREADY read (`arc_sel_agid`, `arc_sel_runner_up_agid`, `SEL_AGID()`) --
+#  zero new DSL Term, zero new node type, zero new edge type, zero new
+#  adapter function (`agenda_verdicts(sub, kind=...)` is already generic,
+#  A19's own finding, unchanged here), zero edit to `seeds/arc_goals.json`.
+# --------------------------------------------------------------------------- #
+def _dispatch_differs_from_ask_winner():
+    """TRUE iff `ax_dispatch`'s own target (`SEL_AGID()`, order-N when live,
+    order-1 otherwise -- the IDENTICAL Term `ax_dispatch`'s `where` branches
+    on) is not null, `ag_ask`'s WINNER candidate (`arc_sel_agid`) is not
+    null, and the two disagree.  Reading `SEL_AGID()` here can never drift
+    from what `ax_dispatch` itself acts on, by construction -- the same
+    guarantee `_order_n_is_not_live()` gives A19's pair."""
+    return AND(
+        NOT(EQ(SEL_AGID(), L(None))),
+        NOT(EQ(A(V("agenda"), "arc_sel_agid"), L(None))),
+        NOT(EQ(SEL_AGID(), A(V("agenda"), "arc_sel_agid"))),
+    )
+
+
+def _ask_divergence_verdict_active():
+    """Whether a currently-ACTIVE AgendaVerdict{kind:'ask_dispatch_
+    divergence'} already exists -- ax_impotent's / A19's own mint-once-while-
+    active guard, the same single-signature simplification A19 uses (the
+    divergence is either live or it is not)."""
+    return EXISTS(NOT_("AgendaVerdict"), "avd",
+                  AND(EQ(A(V("avd"), "kind"), L("ask_dispatch_divergence")),
+                      EQ(A(V("avd"), "active"), L(1.0))))
+
+
+def _r_ask_divergence_active():
+    return {
+        "name": "ax_ask_divergence_active",
+        "comment": (
+            "A20 -- `ag_ask` VS `ax_dispatch`, MADE OBSERVABLE (the ON "
+            "direction).  WIRE_HANDS SS8 item 4: 'the agent can ask about "
+            "one goal while acting on another in the same fixpoint... "
+            "nothing asserts it either way.'  Fires the instant "
+            "ax_dispatch's OWN target (SEL_AGID()) disagrees with ag_ask's "
+            "WINNER candidate (arc_sel_agid) AND no currently-active "
+            "verdict of this kind already exists (mint-once, ax_impotent's "
+            "/ax_fallback_silent's own shape).  Mints AgendaVerdict{kind:"
+            "'ask_dispatch_divergence', active:1.0} off the SAME agenda hub "
+            "ax_impotent/ax_fallback_silent use -- a standing, queryable "
+            "graph fact a self-monitoring agent (or a human, or a future "
+            "rung) can check PROACTIVELY, instead of comparing an "
+            "ArcQuestion's agid_a against an ExecOrder's agid order by "
+            "order after the fact.  Also stamps whether the dispatch "
+            "target at least matches ag_ask's OTHER candidate "
+            "(arc_sel_runner_up_agid) -- descriptive only, never read by "
+            "any guard -- because A20's own design investigation proved "
+            "this is true on every scene this seed's shipped policy can "
+            "reach (the structural bound), and a future policy edit "
+            "breaking it is precisely the thing this fact exists to catch."),
+        "batch": True,
+        "match": HUB,
+        "where": AND(
+            _dispatch_differs_from_ask_winner(),
+            NOT(_ask_divergence_verdict_active()),
+        ),
+        "effects": [
+            ["add_node", "avd", "AgendaVerdict", {
+                "kind": "ask_dispatch_divergence",
+                "active": 1.0,
+                "epoch": T(MEASURE_EPOCH()),
+                "asked_about_agid": T(A(V("agenda"), "arc_sel_agid")),
+                "asked_about_runner_up_agid":
+                    T(A(V("agenda"), "arc_sel_runner_up_agid")),
+                "dispatch_target_agid": T(SEL_AGID()),
+                "dispatch_matches_runner_up":
+                    T(EQ(SEL_AGID(), A(V("agenda"), "arc_sel_runner_up_agid"))),
+                "reason": "ax_dispatch_is_acting_on_a_goal_ag_ask_did_not_"
+                          "name_as_its_winner",
+                "_the_decision_lives_here": (
+                    "the firing guard compares SEL_AGID() -- the IDENTICAL "
+                    "Term ax_dispatch's where branches on -- against "
+                    "arc_sel_agid; the adapter never computes this and "
+                    "never decides it, and ag_ask is not read, only its "
+                    "OWN stamp is."),
+            }],
+            ["add_edge", "agenda", "has_agenda_verdict", "avd"],
+        ],
+    }
+
+
+def _r_ask_divergence_cleared():
+    return {
+        "name": "ax_ask_divergence_cleared",
+        "comment": (
+            "A20 -- THE OFF DIRECTION, and not decoration: a one-way mint "
+            "would itself be a claim that cannot be revised -- the "
+            "gr_condition_lapse/gr_condition_hold precedent, A19's own "
+            "citation of it, applied a third time.  Fires the instant the "
+            "two stamps AGREE (or either goes null) while a previously-"
+            "minted verdict is still marked active, and flips `active` to "
+            "0.0.  DELIBERATELY NOT epoch-shaped, same reason as A19's "
+            "ax_fallback_cleared: a scope or testimony reply can move "
+            "arc_sel_agid or SEL_AGID() with no epoch bump anywhere in the "
+            "scene, so a self-monitoring agent's 'do they agree RIGHT NOW' "
+            "question needs the CURRENT truth of the comparison, not a "
+            "description valid only until the next measurement.  Mutually "
+            "exclusive with ax_ask_divergence_active by construction."),
+        "batch": True,
+        "match": HUB + [["agenda", "has_agenda_verdict", "avd"]],
+        "where": AND(
+            NOT(_dispatch_differs_from_ask_winner()),
+            EQ(A(V("avd"), "kind"), L("ask_dispatch_divergence")),
+            EQ(A(V("avd"), "active"), L(1.0)),
+        ),
+        "effects": [
+            ["set_attr", "avd", "active", 0.0],
+            ["set_attr", "avd", "cleared_epoch", T(MEASURE_EPOCH())],
+        ],
+    }
+
+
 def _r_close():
     return {
         "name": "ax_close",
@@ -961,7 +1121,8 @@ def _r_close():
 def _rules():
     return [_r_dispatch(), _r_retired_epoch(), _r_rearm(), _r_close(),
             _r_impotent(), _r_world_probe_epoch(), _r_fallback_silent(),
-            _r_fallback_cleared()]
+            _r_fallback_cleared(), _r_ask_divergence_active(),
+            _r_ask_divergence_cleared()]
 
 
 def build():
@@ -983,7 +1144,7 @@ def build():
             "is the LAST thing that should arrive in every agent by a glob.  "
             "Activation is one key and a paired tree-wide sweep."),
         "id": "arc_executor",
-        "version": "1.5.0",
+        "version": "1.6.0",
         "depends_on": ["goal_residuals", "arc_goals"],
         "_SOFT_DEPENDENCY_ON_arc_magnitude": (
             "v1.1.0 (A11/WH1) wires ax_dispatch to the ORDER-N collapse "
