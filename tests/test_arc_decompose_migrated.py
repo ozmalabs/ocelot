@@ -184,10 +184,16 @@ def test_engine_coherent_probe_passes():
     s, _ = _boot()
 
 
-def test_arc_decompose_seed_loads_and_carries_three_rules():
+def test_arc_decompose_seed_loads_and_carries_FOUR_rules():
+    """INVERTED, not removed, per the WH1/A15/A16 precedent: A17 added
+    `mg_tier_retire` (v1.0.0 -> v1.1.0) — a THIRD, independent retirement
+    mechanism for a `decomposition_tier` child, at the same low cost
+    (seed data + one adapter fact-probe + one rule, zero new Rust, zero
+    touch to `ax_dispatch`). See PROGRAM_SYNTHESIS_ARC6_RETIRE_BLOCKER.md."""
     d = _seed()
     names = {r["name"] for r in d["rules"]}
-    assert names == {"mg_decompose", "mg_decompose_retire", "mg_child_order_n"}
+    assert names == {"mg_decompose", "mg_decompose_retire", "mg_child_order_n",
+                     "mg_tier_retire"}
 
 
 # =========================================================================== #
@@ -474,3 +480,225 @@ def test_mg4d_no_dependency_on_arc_executor():
     assert "arc_executor" not in _seed()["depends_on"]
     assert _seed()["depends_on"] == ["goal_residuals", "arc_goals",
                                       "arc_magnitude"]
+
+
+# =========================================================================== #
+#  A17 — RETIRING A supply_blocker-DESCENDED POOL MEMBER.
+#  `PROGRAM_SYNTHESIS_ARC6_PREREG.md` amendment A17.
+#  `PROGRAM_SYNTHESIS_ARC6_RETIRE_BLOCKER.md`.
+# =========================================================================== #
+STRUCTURAL_LADDER_KEY = "missing_structural_primitive"
+
+
+def test_ar17_the_seed_version_bumped_and_carries_mg_tier_retire():
+    d = _seed()
+    assert d["version"] == "1.1.0"
+    assert any(r["name"] == "mg_tier_retire" for r in d["rules"])
+
+
+def test_ar17_probe_reads_the_REAL_committed_artifact_HONESTLY():
+    """AR17b(ii)'s own bar: the mechanism must be shown to correctly DECLINE
+    on the real, currently-reachable state.  On the artifact this rung's own
+    base commit ships (`results/arc6_structural_ceiling.json`,
+    `strict_reach.witness_and_in_budget_ids ==
+    [75, 98, 106, 161, 257, 290]`), tier 1's own 10-id increment is NOT
+    fully covered -- `18` and `310` were never witness-verified there at
+    all, and `424`/`450` are only covered after a LIVE re-measurement (see
+    the live test below), not on the frozen committed artifact.  A check
+    that cannot fail is not a check (A7's standing rule); this one does,
+    honestly, on real data, with no mutation of the artifact."""
+    recs = adi.probe_tier_witness_coverage()
+    assert recs, "the ladder must resolve against the shipped artifacts"
+    by_order = {r["tier_order"]: r for r in recs}
+    assert set(by_order) == {1.0, 2.0, 3.0, 4.0}
+    tier1 = by_order[1.0]
+    assert tier1["ladder_key"] == STRUCTURAL_LADDER_KEY
+    assert tier1["increment_ids"] == [18, 75, 98, 106, 161, 257, 290, 310,
+                                      424, 450]
+    assert tier1["all_ids_covered"] == 0.0
+    assert set(tier1["missing_ids"]) >= {18, 310}, tier1["missing_ids"]
+    # every tier is honestly unresolved on the committed artifact -- tiers
+    # 2-4 need capability this tree does not have at all (new Term
+    # variants, the string-order fix, Recurse), so their gap is far wider.
+    assert all(r["all_ids_covered"] == 0.0 for r in recs)
+
+
+def test_ar17_a_LIVE_stash_protected_remeasurement_shows_REAL_partial_progress():
+    """A real subprocess re-run of the UNMODIFIED
+    `scripts/arc6_structural_ceiling.py` (the same script A15's second
+    `ExecClass` already wires), stash-protected and sha-verified before and
+    after, exactly A15 SS1 item 7 / SS2's own discipline.  Demonstrates the
+    mechanism's fact-probe reads REAL drift (not a fixture): witness
+    coverage genuinely GROWS (+424, +450, the identical delta A15 found on
+    a different engine) but tier 1 STILL does not reach full coverage (`18`
+    and `310` remain missing) -- the honest natural-state finding this
+    rung's own design investigation names, reproduced live here rather than
+    merely quoted."""
+    import hashlib
+    import shutil
+    import subprocess
+    import tempfile
+
+    art = os.path.join(ROOT, "results", "arc6_structural_ceiling.json")
+    before_sha = hashlib.sha256(open(art, "rb").read()).hexdigest()
+    stash_dir = tempfile.mkdtemp(prefix="ar17_structural_stash_")
+    stash_path = os.path.join(stash_dir, "arc6_structural_ceiling.json")
+    shutil.copy2(art, stash_path)
+    try:
+        r = subprocess.run(
+            [sys.executable, os.path.join(ROOT, "scripts",
+                                          "arc6_structural_ceiling.py")],
+            capture_output=True, text=True, cwd=ROOT,
+            env=dict(os.environ, OZMA_NO_LLM="1",
+                     PYTHONPATH=os.pathsep.join(
+                         [os.path.join(ROOT, "runners", "dsl", "python"),
+                          ROOT])),
+            timeout=120)
+        assert r.returncode == 0, r.stdout[-2000:] + r.stderr[-2000:]
+
+        recs = adi.probe_tier_witness_coverage()
+        tier1 = next(x for x in recs if x["tier_order"] == 1.0)
+        # the live delta: 424/450 now covered, 18/310 still not.
+        assert set(tier1["missing_ids"]) == {18, 310}, tier1["missing_ids"]
+        assert tier1["all_ids_covered"] == 0.0
+        with open(art) as fh:
+            fresh = json.load(fh)
+        witness = set(fresh["strict_reach"]["witness_and_in_budget_ids"])
+        assert {424, 450} <= witness
+        assert not ({18, 310} & witness)
+    finally:
+        after_sha_before_restore = hashlib.sha256(open(art, "rb").read()).hexdigest()
+        shutil.copy2(stash_path, art)
+        restored_sha = hashlib.sha256(open(art, "rb").read()).hexdigest()
+        assert restored_sha == before_sha, (
+            "protected artifact restore FAILED to reproduce the pristine "
+            "sha — before=%s after_live_run=%s restored=%s" %
+            (before_sha, after_sha_before_restore, restored_sha))
+        shutil.rmtree(stash_dir, ignore_errors=True)
+
+
+def _scene_with_children(s=None, horizon=5.0):
+    if s is None:
+        s, _ = _boot()
+    _drive_natural_decompose(s, horizon)
+    return s
+
+
+def test_ar17_a_CONSTRUCTED_witness_fact_retires_ONLY_the_matching_tier():
+    """THE POSITIVE SCENE, constructed exactly as A13 SS7.1 / A15 SS4.2
+    constructed theirs: the retirement condition's NATURAL trigger (full
+    live witness coverage) is not cheaply reachable on this engine (the
+    live test above shows it genuinely short by 2 ids), so this scene
+    installs the fact a real, completed re-measurement WOULD produce and
+    demonstrates the RULE fires correctly on it — the same "synthetic
+    trigger, real rule" separation A15 SS4.2 named explicitly. Only tier 1's
+    OWN child resolves; tiers 2-4 are untouched by a fact naming tier 1."""
+    s = _scene_with_children()
+    children_before = _children(s, STRUCTURAL)
+    assert len(children_before) == 4
+    assert all(c.get("status") != "resolved" for c in children_before)
+
+    adi.install_tier_witness_facts(s, [{
+        "ladder_key": STRUCTURAL_LADDER_KEY, "tier_order": 1.0,
+        "all_ids_covered": 1.0, "increment_ids": list(range(10)),
+        "missing_ids": [], "evidence_artifact": "results/TEST_CONSTRUCTED",
+    }])
+    s._inner.run_rules()
+
+    children = {c["tier_order"]: c for c in _children(s, STRUCTURAL)}
+    assert children[1.0]["status"] == "resolved"
+    assert children[1.0]["headroom_n"] == 0.0
+    assert children[1.0]["orderN_headroom_n"] == 0.0
+    assert children[1.0]["resolved_because"] == "tier_units_witness_verified_live"
+    for order in (2.0, 3.0, 4.0):
+        assert children[order]["status"] != "resolved", order
+        assert children[order]["headroom_n"] > 0.0, order
+
+
+def test_ar17_a_witness_fact_naming_a_DIFFERENT_tier_leaves_tier1_UNRESOLVED():
+    """Negative control, both halves: (a) a `covered=1.0` fact for tier 2
+    resolves tier 2 and ONLY tier 2 — tier 1 is untouched by a fact that
+    does not name it; (b) an `all_ids_covered=0.0` fact for tier 1 itself
+    does NOT resolve it — the guard reads the fact's VALUE, not merely its
+    existence for that (ladder_key, tier_order) pair."""
+    s = _scene_with_children()
+    adi.install_tier_witness_facts(s, [
+        {"ladder_key": STRUCTURAL_LADDER_KEY, "tier_order": 2.0,
+         "all_ids_covered": 1.0, "increment_ids": [], "missing_ids": [],
+         "evidence_artifact": "results/TEST"},
+        {"ladder_key": STRUCTURAL_LADDER_KEY, "tier_order": 1.0,
+         "all_ids_covered": 0.0, "increment_ids": [18], "missing_ids": [18],
+         "evidence_artifact": "results/TEST"},
+    ])
+    s._inner.run_rules()
+    children = {c["tier_order"]: c for c in _children(s, STRUCTURAL)}
+    assert children[1.0]["status"] != "resolved"
+    assert children[1.0]["headroom_n"] > 0.0
+    assert children[2.0]["status"] == "resolved"
+    assert children[2.0]["headroom_n"] == 0.0
+    for order in (3.0, 4.0):
+        assert children[order]["status"] != "resolved", order
+        assert children[order]["headroom_n"] > 0.0, order
+
+
+def test_ar17_the_resolved_tier_is_STRUCTURALLY_excluded_from_BOTH_pools():
+    """Mirrors MG4c exactly, one grain down: once tier 1's `headroom_n` is
+    zeroed, it is absent from `POOL()` under BOTH `ag_select` (order-1) and
+    `mg_select` (order-N, the same shared `Filter`), read via
+    `adi.pool_agids` — the same predicate `POOL()` encodes, never a
+    hand-rolled variant."""
+    s = _scene_with_children()
+    adi.install_tier_witness_facts(s, [{
+        "ladder_key": STRUCTURAL_LADDER_KEY, "tier_order": 1.0,
+        "all_ids_covered": 1.0, "increment_ids": [], "missing_ids": [],
+        "evidence_artifact": "results/TEST",
+    }])
+    s._inner.run_rules()
+    tier1_agid = next(c["agid"] for c in _children(s, STRUCTURAL)
+                      if c["tier_order"] == 1.0)
+    pool = adi.pool_agids(s)
+    assert tier1_agid not in pool
+    other_children = [c["agid"] for c in _children(s, STRUCTURAL)
+                      if c["tier_order"] != 1.0]
+    assert set(other_children) <= set(pool), (other_children, pool)
+
+
+def test_ar17_the_fixpoint_TERMINATES_a_second_pass_moves_nothing():
+    s = _scene_with_children()
+    adi.install_tier_witness_facts(s, [{
+        "ladder_key": STRUCTURAL_LADDER_KEY, "tier_order": 1.0,
+        "all_ids_covered": 1.0, "increment_ids": [], "missing_ids": [],
+        "evidence_artifact": "results/TEST",
+    }])
+    s._inner.run_rules()
+    before = sorted((c["agid"], c["status"], c["headroom_n"])
+                    for c in _children(s, STRUCTURAL))
+    s._inner.run_rules()
+    s._inner.run_rules()
+    after = sorted((c["agid"], c["status"], c["headroom_n"])
+                   for c in _children(s, STRUCTURAL))
+    assert before == after
+
+
+def test_ar17_no_new_rust_and_ax_dispatch_UNTOUCHED():
+    """AR17b(iii)'s own cost bar: no new Rust, no change to
+    `ax_dispatch`/`ROUTE`/`_routable`.  Byte-identical to `HEAD`, asserted,
+    not promised."""
+    for rel in ("domains/arc_executor.py", "tools/build_arc_executor_seed.py",
+                "seeds/arc_goals.json", "seeds/goal_residuals.json",
+                "seeds/arc_magnitude.json", "seeds/program_synthesis.json"):
+        r = subprocess.run(["git", "diff", "--exit-code", "HEAD", "--", rel],
+                           capture_output=True, text=True, cwd=ROOT)
+        assert r.returncode == 0, (rel, r.stdout[:400])
+    diff = subprocess.run(
+        ["git", "diff", "HEAD", "--", "runners/dsl/src/"],
+        capture_output=True, text=True, cwd=ROOT)
+    assert diff.stdout.strip() == "", "no new Rust for A17"
+
+
+def test_ar17_the_seed_regenerates_byte_identically():
+    r = subprocess.run(
+        [sys.executable, os.path.join(ROOT, "tools",
+                                      "build_arc_decompose_seed.py"), "--check"],
+        capture_output=True, text=True, cwd=ROOT)
+    assert r.returncode == 0, r.stderr
