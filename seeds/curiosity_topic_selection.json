@@ -1,0 +1,87 @@
+{
+ "id": "curiosity_topic_selection",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "learning_progress_curiosity",
+  "gap_awareness"
+ ],
+ "capability_keys": [
+  "proactive_topic_selection"
+ ],
+ "description": "PROACTIVE topic-selection trigger for gap-awareness, consuming learning_progress_curiosity's already-proven two-timescale (Oudeyer/Schmidhuber) learning-progress differential instead of raw surprise -- specifically because a raw-surprise signal is the textbook noisy-TV trap (measured in VISION_LEARNING_PROGRESS_RESULTS.md G1/G1c). gap_awareness.json's five existing rules are all REACTIVE: they file a SelfConcern only after a conversational turn has already failed. This seed adds ONE rule, lp_mint_topic_gap, that is PROACTIVE: among several candidate topics co-present as AttentionItems on the agent's CuriosityHub (each fed a real obs signal -- domains/curiosity_topic_ingest.py's unknown_word_count sensor, reusing WorldAdapter.taught_signs() -- by a mechanical adapter, never a Python decision), the one whose learning progress is SUSTAINED (attended==1.0, computed entirely by the pre-existing lp_* rules) gets flagged as worth pursuing NEXT -- mints the IDENTICAL SelfConcern{status:'noted', source:'implicit', kind:'knowledge', content:<topic>} shape note_unresolved_topic_gap already mints, through the SAME content-dedup guard and the SAME human-gated promote_self_concern spine. A topic that is already fully known (nothing left to learn) or one that is persistently unresolvable (the noisy-TV analogue: unknown_word_count stays high-variance and never converges, e.g. a shifting pool of ungroundable tokens) both correctly get NO gap minted -- the same 'leave the unresolved, chase only the progressing' shape G2 proved. Default-OFF: self_load_only, excluded from load_all_seeds (substrate/boot_all.py), and every lp_* upstream rule is itself inert without an enabled HeldCuriosityParams -- so a fresh/resumed agent that never opts in is byte-identical, exactly like learning_progress_curiosity.json's own G4b guarantee. No new Rust, no new Term, no new node type (SelfConcern / CuriosityHub / AttentionItem / HeldCuriosityParams all pre-exist).",
+ "microtheory": {
+  "name": "curiosity_topic_selection",
+  "description": "The agent decides WHAT TO LEARN NEXT by learning-progress, not raw surprise or reactive failure -- the proactive sibling of gap_awareness's reactive gap-filing, sharing its output shape and its human-gated spine."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "lp_mint_topic_gap",
+   "comment": "PROACTIVE trigger (RAVANA_CONVERGENCE_AUDIT.md #6.2, near-verbatim): an AttentionItem the agent has SUSTAINED attention on (attended==1.0, decided entirely by learning_progress_curiosity's lp_attend rule from the two-timescale learning-progress differential -- never a raw-surprise read) and that carries a topic label with no existing SelfConcern about it yet becomes a proactively-filed knowledge gap. The last_boost_epoch>0 guard excludes the initial-decay transient every fresh AttentionItem starts in (interest inits at interest_c0 and only DECAYS until real progress first boosts it -- lp_gate only advances last_boost_epoch off its ITEM_INIT sentinel 0.0 when learning_progress clears progress_floor): without it EVERY item, learnable or not, would read attended==1.0 on tick 1 purely from the unspent initial charge, before progress has had any chance to discriminate. This reuses lp_gate's own existing state (no new attr, no new rule, no invented threshold) to require 'progress was actually detected at least once', not merely 'the initial decay has not finished yet'. Mint-once per item (topic_gap_noted guard) + content-deduped against EVERY existing SelfConcern (implicit, explicit_report, AND reactive) via the identical Not(Exists(...)) shape gap_awareness.json's own five rules use -- so a topic already reactively gapped by a failed conversational turn is never double-filed, and a topic this rule files first is never re-filed reactively either (both read the same NodesOfType(SelfConcern) set).",
+   "match": [
+    ["agent", "has_curiosity_hub", "hub"],
+    ["hub", "has_attention_item", "item"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "attended"},
+      "b": {"type": "Lit", "value": 1.0}
+     },
+     {
+      "type": "Gt",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "last_boost_epoch"},
+      "b": {"type": "Lit", "value": 0.0}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "topic"},
+       "b": {"type": "Lit", "value": null}
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "topic_gap_noted"},
+       "b": {"type": "Lit", "value": 1.0}
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {"type": "NodesOfType", "node_type": "SelfConcern"},
+       "var_name": "sc2",
+       "predicate": {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "sc2"}, "key": "content"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "topic"}
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "item", "topic_gap_noted", 1.0],
+    ["add_node", "sc", "SelfConcern",
+     {
+      "status": "noted",
+      "source": "implicit",
+      "kind": "knowledge",
+      "content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "item"}, "key": "topic"}}
+     }
+    ],
+    ["add_edge", "agent", "has_self_concern", "sc"],
+    ["add_edge", "sc", "about_attention_item", "item"]
+   ]
+  }
+ ]
+}
