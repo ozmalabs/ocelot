@@ -1,6 +1,6 @@
 {
  "id": "control_regime_escalation",
- "version": "7.11.0",
+ "version": "7.12.0",
  "depends_on": [
   "cognitive_pareto"
  ],
@@ -485,178 +485,7 @@
        "type": "Max",
        "items": [
         {
-         "type": "Minus",
-         "a": {
-          "type": "Max",
-          "items": [
-           {
-            "type": "Max",
-            "items": [
-             {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "regime"
-                },
-                "key": "regime_viability_rung"
-               },
-               {
-                "type": "Lit",
-                "value": 0.0
-               }
-              ]
-             },
-             {
-              "type": "Lit",
-              "value": 0.0
-             }
-            ]
-           },
-           {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "regime"
-              },
-              "key": "regime_rung_high_water"
-             },
-             {
-              "type": "Lit",
-              "value": 0.0
-             }
-            ]
-           }
-          ]
-         },
-         "b": {
-          "type": "IfThenElse",
-          "cond": {
-           "type": "Gt",
-           "a": {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "regime"
-              },
-              "key": "regime_rung_decade"
-             },
-             {
-              "type": "Lit",
-              "value": 0.0
-             }
-            ]
-           },
-           "b": {
-            "type": "Lit",
-            "value": 0.0
-           }
-          },
-          "then": {
-           "type": "IDiv",
-           "a": {
-            "type": "Max",
-            "items": [
-             {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "regime"
-                },
-                "key": "regime_goal_worth_log"
-               },
-               {
-                "type": "Lit",
-                "value": 0.0
-               }
-              ]
-             },
-             {
-              "type": "Lit",
-              "value": 0.0
-             }
-            ]
-           },
-           "b": {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "regime"
-              },
-              "key": "regime_rung_decade"
-             },
-             {
-              "type": "Lit",
-              "value": 0.0
-             }
-            ]
-           }
-          },
-          "other": {
-           "type": "Lit",
-           "value": 0.0
-          }
-         }
-        },
-        {
-         "type": "Lit",
-         "value": 0.0
-        }
-       ]
-      }
-     }
-    ],
-    [
-     "set_attr",
-     "regime",
-     "regime_budget_exhausted",
-     {
-      "__term__": {
-       "type": "IfThenElse",
-       "cond": {
-        "type": "Lt",
-        "a": {
-         "type": "Max",
-         "items": [
-          {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "regime"
-             },
-             "key": "regime_viability_rung"
-            },
-            {
-             "type": "Lit",
-             "value": 0.0
-            }
-           ]
-          },
-          {
-           "type": "Lit",
-           "value": 0.0
-          }
-         ]
-        },
-        "b": {
-         "type": "Max",
+         "type": "Plus",
          "items": [
           {
            "type": "Minus",
@@ -787,158 +616,83 @@
            }
           },
           {
-           "type": "Lit",
-           "value": 0.0
-          }
-         ]
-        }
-       },
-       "then": {
-        "type": "Lit",
-        "value": 1.0
-       },
-       "other": {
-        "type": "Lit",
-        "value": 0.0
-       }
-      }
-     }
-    ],
-    [
-     "set_attr",
-     "regime",
-     "regime_info_spend_floor",
-     {
-      "__term__": {
-       "type": "Max",
-       "items": [
-        {
-         "type": "Minus",
-         "a": {
-          "type": "Max",
-          "items": [
-           {
-            "type": "Max",
-            "items": [
-             {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "regime"
-                },
-                "key": "regime_viability_rung"
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "regime"
                },
-               {
-                "type": "Lit",
-                "value": 0.0
-               }
-              ]
-             },
-             {
-              "type": "Lit",
-              "value": 0.0
-             }
-            ]
-           },
-           {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "regime"
+               "key": "regime_resource_decade"
               },
-              "key": "regime_rung_high_water"
-             },
-             {
-              "type": "Lit",
-              "value": 0.0
-             }
-            ]
-           }
-          ]
-         },
-         "b": {
-          "type": "IfThenElse",
-          "cond": {
-           "type": "Gt",
-           "a": {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "regime"
-              },
-              "key": "regime_rung_decade"
-             },
-             {
-              "type": "Lit",
-              "value": 0.0
-             }
-            ]
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.0
+            }
            },
-           "b": {
+           "then": {
+            "type": "IDiv",
+            "a": {
+             "type": "Max",
+             "items": [
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "regime"
+                 },
+                 "key": "regime_resource_spent_log"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "regime"
+               },
+               "key": "regime_resource_decade"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            }
+           },
+           "other": {
             "type": "Lit",
             "value": 0.0
            }
-          },
-          "then": {
-           "type": "IDiv",
-           "a": {
-            "type": "Max",
-            "items": [
-             {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "regime"
-                },
-                "key": "regime_information_worth_log"
-               },
-               {
-                "type": "Lit",
-                "value": 0.0
-               }
-              ]
-             },
-             {
-              "type": "Lit",
-              "value": 0.0
-             }
-            ]
-           },
-           "b": {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "regime"
-              },
-              "key": "regime_rung_decade"
-             },
-             {
-              "type": "Lit",
-              "value": 0.0
-             }
-            ]
-           }
-          },
-          "other": {
-           "type": "Lit",
-           "value": 0.0
           }
-         }
+         ]
         },
         {
          "type": "Lit",
@@ -951,7 +705,7 @@
     [
      "set_attr",
      "regime",
-     "regime_info_budget_exhausted",
+     "regime_budget_exhausted",
      {
       "__term__": {
        "type": "IfThenElse",
@@ -985,6 +739,245 @@
         },
         "b": {
          "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Max",
+              "items": [
+               {
+                "type": "Max",
+                "items": [
+                 {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "regime"
+                    },
+                    "key": "regime_viability_rung"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "regime"
+                  },
+                  "key": "regime_rung_high_water"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              ]
+             },
+             "b": {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Gt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "regime"
+                  },
+                  "key": "regime_rung_decade"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              },
+              "then": {
+               "type": "IDiv",
+               "a": {
+                "type": "Max",
+                "items": [
+                 {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "regime"
+                    },
+                    "key": "regime_goal_worth_log"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "regime"
+                  },
+                  "key": "regime_rung_decade"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              },
+              "other": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            },
+            {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "regime"
+                 },
+                 "key": "regime_resource_decade"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             "then": {
+              "type": "IDiv",
+              "a": {
+               "type": "Max",
+               "items": [
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "regime"
+                   },
+                   "key": "regime_resource_spent_log"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0.0
+                  }
+                 ]
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "regime"
+                 },
+                 "key": "regime_resource_decade"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              }
+             },
+             "other": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_info_spend_floor",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Plus",
          "items": [
           {
            "type": "Minus",
@@ -1115,6 +1108,341 @@
            }
           },
           {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "regime"
+               },
+               "key": "regime_resource_decade"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           },
+           "then": {
+            "type": "IDiv",
+            "a": {
+             "type": "Max",
+             "items": [
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "regime"
+                 },
+                 "key": "regime_resource_spent_log"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "regime"
+               },
+               "key": "regime_resource_decade"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            }
+           },
+           "other": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_info_budget_exhausted",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Lt",
+        "a": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "regime"
+             },
+             "key": "regime_viability_rung"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Max",
+              "items": [
+               {
+                "type": "Max",
+                "items": [
+                 {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "regime"
+                    },
+                    "key": "regime_viability_rung"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "regime"
+                  },
+                  "key": "regime_rung_high_water"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              ]
+             },
+             "b": {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Gt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "regime"
+                  },
+                  "key": "regime_rung_decade"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              },
+              "then": {
+               "type": "IDiv",
+               "a": {
+                "type": "Max",
+                "items": [
+                 {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "regime"
+                    },
+                    "key": "regime_information_worth_log"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  ]
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "regime"
+                  },
+                  "key": "regime_rung_decade"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              },
+              "other": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            },
+            {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "regime"
+                 },
+                 "key": "regime_resource_decade"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             "then": {
+              "type": "IDiv",
+              "a": {
+               "type": "Max",
+               "items": [
+                {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "regime"
+                   },
+                   "key": "regime_resource_spent_log"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0.0
+                  }
+                 ]
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "regime"
+                 },
+                 "key": "regime_resource_decade"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              }
+             },
+             "other": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           ]
+          },
+          {
            "type": "Lit",
            "value": 0.0
           }
@@ -1124,6 +1452,90 @@
        "then": {
         "type": "Lit",
         "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "regime",
+     "regime_resource_spent_in_rungs",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_resource_decade"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "then": {
+        "type": "IDiv",
+        "a": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "regime"
+             },
+             "key": "regime_resource_spent_log"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "regime"
+           },
+           "key": "regime_resource_decade"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
        },
        "other": {
         "type": "Lit",
