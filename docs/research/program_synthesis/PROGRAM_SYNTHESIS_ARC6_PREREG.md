@@ -2443,3 +2443,170 @@ and anything under `docs/research/theory_convergence/`, `docs/research/
 adventure_mechanics/`, or `docs/research/engine_substrate/
 decision_making_spike.md` (the last actively being extended by a concurrent,
 unrelated agent).
+
+---
+
+### AMENDMENT A22 (2026-08-11) — the impotence RE-SWEEP: does the current tree's full capability grow A14's real-only n past 2?
+
+Three prior rungs each named this exact next measurement without taking it.
+A14 measured real-only `n=2` (`AMENDMENT A14` above, IC2), underpowered for
+its own `n≥5` bar, and read NO-GO for both candidate (a) and candidate (b)
+purely on power. A15 added a second `ExecClass` and *explicitly checked*
+whether it grows real-only `n` — it does not (§6 of
+`PROGRAM_SYNTHESIS_ARC6_SECOND_EXECCLASS.md`: driving both classes to
+completion produces a real, never-before-reachable 9-goal intermediate pool,
+but the FINAL impotent composition is identical to A14's own state 1). A17
+built `mg_tier_retire`, a real retirement mechanism for a *fifth* `ArcGoal`
+kind (`decomposition_tier` — distinct from `supply_blocker`/`source_claim`/
+`re_measure`/`reported`), and named, but explicitly declined to measure
+(`PROGRAM_SYNTHESIS_ARC6_RETIRE_BLOCKER.md` §7 uncertainty #3, quoted
+because it is this amendment's charter): *"Whether this actually grows
+A14's real-only impotent-state count is NOT measured here… A17's own
+reasoning for why it COULD, if tier 1 ever naturally resolves:
+`decomposition_tier` is a genuinely NEW kind value… so its retirement is
+exactly the shape A15 §6 named as necessary… but this is a reasoned
+argument, not a measurement."* A17 §7 uncertainty #1 additionally left the
+mechanism's own natural reach unresolved: even a live remeasurement on
+A17's own engine left tier 1 two ids short (`18`, `310`) of the coverage
+`mg_tier_retire` needs to fire naturally. This amendment registers the
+bars for taking that measurement, on the CURRENT tree (A17–A21 all landed
+since), before running anything.
+
+**The design investigation, done before drafting bars.**
+
+1. **The capability set has grown since A14 in ways that matter to this
+   question, and in ways that provably do not.** Since A14's own base
+   commit (`e48e117`): A15 added a second `ExecClass` (structural,
+   already checked null for this question, above); A16 added MG4
+   decomposition, minting the `decomposition_tier` kind; A17 added
+   `mg_tier_retire`, a real (if not-yet-naturally-firing) retirement path
+   for that kind; A18 closed the re-arm deadlock with a second epoch
+   producer that requires running nothing (`PROGRAM_SYNTHESIS_ARC6_
+   REARM_DEADLOCK.md`); A19 made the silent order-N fallback observable
+   (a NEW `AgendaVerdict{kind:'order_n_fallback'}`); A20 made `ag_ask`/
+   `ax_dispatch` collapse divergence observable (a NEW
+   `AgendaVerdict{kind:'ask_dispatch_divergence'}`); A21 added a
+   per-node `pool_stale` marker to `impotent` verdicts. **A19–A21 are
+   ruled OUT as relevant to this question by A21's own AR21a survey**,
+   already on record: `order_n_fallback` and `ask_dispatch_divergence`
+   each carry a scalar/two-goal comparison, not a `pool_agids`-shaped
+   field — neither is a candidate for growing the *pool-composition*
+   statistic IC2 reads, and `pool_stale` is a currentness marker on an
+   EXISTING `impotent` verdict, not a new pool exit — it cannot, by
+   construction, create a pool composition A14's own methodology did not
+   already reach. This is stated here rather than re-measured, because it
+   follows directly from AR21a's own already-registered, already-gated
+   finding, not from a fresh claim.
+2. **A17's own mechanism is therefore the only *candidate* capability
+   added since A15 that could grow real-only `n`, and whether it does
+   turns entirely on one already-named, already-quantified fact: has the
+   `18`/`310` gap in tier 1's witness coverage closed since A17's own
+   live remeasurement?** This is directly re-checkable the same way A17
+   checked it the first time — a real, stash-protected, sha-verified live
+   re-run of the SAME unmodified `scripts/arc6_structural_ceiling.py` A15
+   already wired as the second `ExecClass`'s own runner — and is exactly
+   the "genuine attempt to reach `mg_tier_retire`'s firing condition" this
+   amendment's task charter asks for. The committed
+   `results/arc6_structural_ceiling.json` on this tree (checked before
+   registering these bars) still reads the PRE-A17 6-id
+   `witness_and_in_budget_ids` (engine `5c1b472fe674…`, a different,
+   older engine than this rung's own) — i.e. nobody has re-run and
+   recommitted this artifact since A17's own live 8-id finding, so this
+   amendment's own live re-run is the first fresh look since A17.
+3. **A14's own IC1 methodology is the one this rung must reuse exactly,
+   not redesign** — every scene a REAL live execution or the SAME
+   validated `headroom_n → 0` synthetic pool-exit poke, applied only to
+   ALREADY-reachable kinds; never a hand-faked `AgendaVerdict`, never
+   `status → 'retired'`, never an edited `ArcGoalPolicy` weight, never an
+   invented `ArcGoal.kind`. For the `decomposition_tier` mechanism
+   specifically, "real" means installing a `TierWitnessFact` via the
+   existing mechanical adapter pair
+   (`probe_tier_witness_coverage`/`install_tier_witness_facts`,
+   `domains/arc_decompose_ingest.py`, A17) fed by the actual measured
+   coverage — NOT a hand-constructed `TierWitnessFact` with a chosen
+   `all_ids_covered` value (that would be exactly the "documented
+   construction" A17 §4.2 already reported once, honestly labelled as
+   not-natural; this rung's job is to check whether the same construction
+   is now reachable NATURALLY).
+
+**Bars, registered before the sweep is run.**
+
+- **IR1 — re-derive the current real-only distinct impotent-state count,
+  reusing A14's own IC1 methodology and formulas verbatim.** Drive the
+  tree's current full capability to completion in one boot/worktree: both
+  `ExecClass`es (row-verdict, structural — A15) to real completion, exactly
+  mirroring A15 §6's own extension-probe shape; AND a real, stash-protected,
+  sha-verified live re-run of `scripts/arc6_structural_ceiling.py` on this
+  rung's own engine to check whether the `18`/`310` gap named in A17 §4.1
+  has closed. If it has closed (tier 1's `all_ids_covered` reads `1.0` on
+  the live artifact), install the resulting `TierWitnessFact` via the real
+  adapter path and let `mg_tier_retire` fire NATURALLY (no synthetic
+  `all_ids_covered` construction) and report the resulting pool composition.
+  If it has not closed, report the exact honest shortfall (which ids, how
+  many), exactly as A17 §4.1 did, and do NOT construct a synthetic
+  `TierWitnessFact` to force a fire — a forced fire would not be a REAL
+  state under IC1's own methodology and must not be counted toward
+  real-only `n`. Report whether the resulting real-only pool-state set
+  (deduplicated by `pool_agids` signature, per A14's own registered unit)
+  is GENUINELY DISTINCT from A14's own state 1
+  (`supply_blocker`/`missing_structural_primitive`) and state 2
+  (`source_claim`/`seam_b`) — distinct meaning a different `pool_agids`
+  signature and, ideally, a different live-computed `nearest_unroutable_kind`
+  (A14 §8's corrected reading, not the possibly-frozen stored one). State
+  the resulting real-only `n` plainly.
+- **IR2 — IF IR1 finds real-only `n ≥ 5`: run IC2 (concentration/spread) and
+  IC3 (the compound GO/NO-GO test) exactly as A14 registered them, quoting
+  A14's own formulas rather than re-deriving new ones** ("CONCENTRATED if
+  *f* ≥ 0.75. SPREAD if *f* ≤ 0.50… AMBIGUOUS in between, or if `|S| < 5`",
+  and IC3's compound conditions (i)-(iii) for each of GO-for-(a)/GO-for-(b),
+  quoted verbatim from `AMENDMENT A14` above). Report which candidate, if
+  either, now reads GO. **Do NOT build candidate (a) or (b) in this rung
+  even if IC3 reads GO** — name it explicitly as the next rung's charter
+  instead, matching this arc's own standing discipline of measuring before
+  building the next thing (A14→A15, A15→A17, this amendment's own charter).
+- **IR3 — IF IR1 finds real-only `n < 5`: report the honest null**, exactly
+  as A14/A15 did, and characterize PRECISELY what capability would be
+  needed to grow it further. A17 §7 already named two candidates it
+  explicitly declined to build: (a) the `source_claim` gap (inventing a
+  condition-and-lapse apparatus for `ArcSourceClaim` from nothing — A17 §2,
+  §2.1, §7 uncertainty #4) and (b) the `budget`/`missing_dimension` gap
+  (`budget` has no natural bounded termination by its own definition;
+  `missing_dimension` needs a genuinely new Value dimension for its 4 ids —
+  A17 §2, §7 uncertainty #5). State clearly, based on this rung's own
+  investigation (not re-quoted from A17), whether either is now a
+  well-scoped next candidate or still too underspecified, and why.
+- **IR4 — no regression.** The same six gate suites this arc has checked
+  since A17 (`test_arc_executor_migrated`, `test_arc_goals_migrated`,
+  `test_goal_residual_migrated`, `test_arc6_valuelayer_migrated`,
+  `test_arc_magnitude_migrated`, `test_arc_decompose_migrated`) produce the
+  same failing-node-id lists before and after this rung, paired and named,
+  not counted, against the CURRENT tree's own known baseline (the two
+  standing, environment-conditional reds `test_ex1_the_frozen_artifacts_
+  are_STILL_byte_identical` / `test_gr4_the_live_mbpp_pass_ids_are_
+  unchanged`, unless this rung's own fresh baseline run finds otherwise —
+  measured, not assumed). If this rung builds nothing beyond the sweep
+  script and its artifact (the registered null path for IR1 alone, without
+  IR2), IR4 reduces to "the sweep script and its artifact are the only new
+  files, and every existing seed/adapter is byte-identical to `HEAD`" —
+  asserted, not assumed, exactly A14's own IC4 reduction.
+
+**Registered null reading, stated in advance.** If IR1 finds real-only
+`n` still `< 5` (including the case where the `18`/`310` gap has not
+closed, so `mg_tier_retire` still cannot fire naturally), this rung builds
+NOTHING beyond the measuring script and its artifact, and IR3's
+characterization of the next-needed capability is the complete, valuable
+result — exactly A14/A15's own registered null-reading shape, one rung
+further down the same question. If IR1 finds `n ≥ 5` but IC3 (IR2) reads
+NO-GO for both candidates, the same applies: nothing is built beyond the
+sweep, and the concentration/spread read is reported as the complete
+result. A clean null on either bar is not a failure to find something to
+build — it is this arc's own standing, expected, and valuable outcome
+(A14, A15 §6, M0).
+
+**Explicitly out of scope, unchanged from A13–A21's shared boundary:**
+`results/arc6_import_impedance.json`/`scripts/arc6_import_impedance.py`,
+and anything under `docs/research/theory_convergence/`, `docs/research/
+adventure_mechanics/`, or `docs/research/engine_substrate/
+decision_making_spike.md` (the last actively being extended by a
+concurrent, unrelated agent). Candidate (a) or (b) themselves, even if IC3
+reads GO — this rung is scoped to the measurement only.
