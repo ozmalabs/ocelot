@@ -4,13 +4,13 @@
   "self_load_only": true,
   "_SELF_LOAD_ONLY_RATIONALE": "substrate/boot_all.py::_read_seeds GLOBS seeds/*.json and installs every match at boot, so a file here is live in EVERY agent in the tree the moment it lands.  seeds/arc_goals.json and seeds/arc_magnitude.json both ship self_load_only for that reason and this seed keeps the gating: an executor that dispatches jobs is the LAST thing that should arrive in every agent by a glob.  Activation is one key and a paired tree-wide sweep.",
   "id": "arc_executor",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "depends_on": [
     "goal_residuals",
     "arc_goals"
   ],
   "_SOFT_DEPENDENCY_ON_arc_magnitude": "v1.1.0 (A11/WH1) wires ax_dispatch to the ORDER-N collapse (mg_sel_agid, seeds/arc_magnitude.json) when that collapse is live on the graph, and to the order-1 collapse (arc_sel_agid) when it is not.  arc_magnitude is DELIBERATELY NOT in depends_on: it is self_load_only, every EX1-EX6 scene boots without it, and making it hard would both change what those scenes boot and put an order-N collapse into every graph that merely wants hands.  The branch is a Term in the rule (SEL_AGID), never a Python conditional, and the order records which branch it took.",
-  "description": "AG-5 -- THE EXECUTOR AND THE STATUS LIFECYCLE.  Two independent rungs converged on this as the blocker: the arc-goal rung called itself 'a planning layer with no hands', and the magnitude rung found decomposition blocked because a parent goal must LEAVE THE POOL and nothing in this tree ever wrote a terminal status.  This seed is the missing seam, and it is four rules. ax_dispatch turns the arc-grain collapse's winner into an ExecOrder, routed by route_pick's own Argmin-over-cues shape, and is STRUCTURALLY INCAPABLE of ordering a goal whose kind has no ExecClass.  v1.1.0 (A11/WH1): the collapse it binds is the ORDER-N one (mg_sel_agid) whenever that collapse is live, falling back to order-1 (arc_sel_agid) when it is not -- because AG-5 SS8.9 measured that the two DISAGREE and that order-N picks the one goal the executor can run, with no human reply in the scene.  ax_retired_epoch stamps when a goal went terminal.  ax_rearm is the anti-oscillation latch: a retired goal re-enters the pool only when its source residual is genuinely stale again AND the measurement epoch has advanced.  ax_close makes a completed execution countable. THE EPOCH ITSELF: `arc_measure_epoch` was a counter with no producer, and every expiry mechanism in the two rungs below turns on it.  The adapter bumps it WHEN AND ONLY WHEN a measurement actually ran, so an unconditioned answer's one-epoch life is now measured in measurements. v1.2.0 (A13/WH4(c)) adds a fifth rule, ax_impotent: `ag_ask` fires on a TIE, and A11/A12 found the case it cannot see -- a non-empty pool in which NOTHING is routable, no tie anywhere, the loop stopping and saying nothing (WH2 SS3.1 iteration 1).  ax_impotent mints AgendaVerdict{kind:'impotent'} QUANTIFIED OVER THE WHOLE POOL (Not(Exists(POOL(), g, dispatchable(g))) -- dispatchable is ax_dispatch's OWN routability test, reused verbatim), never the winner alone, so a pool holding one routable goal ranked below the winner is correctly NOT impotent.  Mint-once is keyed on the pool's own SIGNATURE (its ordered agid list, JSON-encoded) rather than the tick, and the verdict lapses through the EXISTING, UNMODIFIED gr_condition_lapse via a fact_equals(arc_measure_epoch) condition -- zero new mechanism, zero new DSL Term. v1.3.0 (A15) adds a SECOND ExecClass row (local_id 4011): the structural-ceiling residual (arc6.structural.enum_op_table), re-measured by scripts/arc6_remeasure_structural.py.  ZERO new rules -- ax_dispatch/ROUTE/_routable/_dispatchable already filter over EVERY ExecClass node via the three-part key (kind + evidence_artifact + source_rid), so a second class is SEED DATA, not a rule edit.  This is the ceiling probe on the executor's own reach: A10-A14 each independently measured that reach as exactly ONE ExecClass; this is the second. v1.4.0 (A18) adds a SIXTH rule, ax_world_probe_epoch: EXECUTOR.md SS5 named, reported not patched, the re-arm DEADLOCK -- the epoch has exactly one producer (run_order, after RUNNING a measurement) and a retired goal cannot be run, so a genuinely re-failed condition on a retired goal could never bring it back on its own, and A15's own extension probe showed the natural end state of BOTH shipped ExecClasses retiring leaves ZERO executable pool members, not one -- the ordinary case, not a corner case.  ax_world_probe_epoch does not touch ax_rearm or its conjunction; it adds a SECOND, INDEPENDENT epoch producer that never runs anything: a retired goal whose condition is confirmed genuinely re-failed on TWO SEPARATE, externally-triggered probes (the adapter's refresh_evidence_facts, already existing, now carrying its own PRIOR reading across the probe-call boundary as stale_at_last_probe) while the epoch has sat still since its retirement gets `world_drift_confirmed` stamped; the adapter reads that as a pure query and bumps arc_measure_epoch the same mechanical way run_order does.  A SINGLE probe cannot satisfy the guard -- the discriminator against reintroducing the churn EX4 measured ax_rearm's own two-sided latch against.",
+  "description": "AG-5 -- THE EXECUTOR AND THE STATUS LIFECYCLE.  Two independent rungs converged on this as the blocker: the arc-goal rung called itself 'a planning layer with no hands', and the magnitude rung found decomposition blocked because a parent goal must LEAVE THE POOL and nothing in this tree ever wrote a terminal status.  This seed is the missing seam, and it is four rules. ax_dispatch turns the arc-grain collapse's winner into an ExecOrder, routed by route_pick's own Argmin-over-cues shape, and is STRUCTURALLY INCAPABLE of ordering a goal whose kind has no ExecClass.  v1.1.0 (A11/WH1): the collapse it binds is the ORDER-N one (mg_sel_agid) whenever that collapse is live, falling back to order-1 (arc_sel_agid) when it is not -- because AG-5 SS8.9 measured that the two DISAGREE and that order-N picks the one goal the executor can run, with no human reply in the scene.  ax_retired_epoch stamps when a goal went terminal.  ax_rearm is the anti-oscillation latch: a retired goal re-enters the pool only when its source residual is genuinely stale again AND the measurement epoch has advanced.  ax_close makes a completed execution countable. THE EPOCH ITSELF: `arc_measure_epoch` was a counter with no producer, and every expiry mechanism in the two rungs below turns on it.  The adapter bumps it WHEN AND ONLY WHEN a measurement actually ran, so an unconditioned answer's one-epoch life is now measured in measurements. v1.2.0 (A13/WH4(c)) adds a fifth rule, ax_impotent: `ag_ask` fires on a TIE, and A11/A12 found the case it cannot see -- a non-empty pool in which NOTHING is routable, no tie anywhere, the loop stopping and saying nothing (WH2 SS3.1 iteration 1).  ax_impotent mints AgendaVerdict{kind:'impotent'} QUANTIFIED OVER THE WHOLE POOL (Not(Exists(POOL(), g, dispatchable(g))) -- dispatchable is ax_dispatch's OWN routability test, reused verbatim), never the winner alone, so a pool holding one routable goal ranked below the winner is correctly NOT impotent.  Mint-once is keyed on the pool's own SIGNATURE (its ordered agid list, JSON-encoded) rather than the tick, and the verdict lapses through the EXISTING, UNMODIFIED gr_condition_lapse via a fact_equals(arc_measure_epoch) condition -- zero new mechanism, zero new DSL Term. v1.3.0 (A15) adds a SECOND ExecClass row (local_id 4011): the structural-ceiling residual (arc6.structural.enum_op_table), re-measured by scripts/arc6_remeasure_structural.py.  ZERO new rules -- ax_dispatch/ROUTE/_routable/_dispatchable already filter over EVERY ExecClass node via the three-part key (kind + evidence_artifact + source_rid), so a second class is SEED DATA, not a rule edit.  This is the ceiling probe on the executor's own reach: A10-A14 each independently measured that reach as exactly ONE ExecClass; this is the second. v1.4.0 (A18) adds a SIXTH rule, ax_world_probe_epoch: EXECUTOR.md SS5 named, reported not patched, the re-arm DEADLOCK -- the epoch has exactly one producer (run_order, after RUNNING a measurement) and a retired goal cannot be run, so a genuinely re-failed condition on a retired goal could never bring it back on its own, and A15's own extension probe showed the natural end state of BOTH shipped ExecClasses retiring leaves ZERO executable pool members, not one -- the ordinary case, not a corner case.  ax_world_probe_epoch does not touch ax_rearm or its conjunction; it adds a SECOND, INDEPENDENT epoch producer that never runs anything: a retired goal whose condition is confirmed genuinely re-failed on TWO SEPARATE, externally-triggered probes (the adapter's refresh_evidence_facts, already existing, now carrying its own PRIOR reading across the probe-call boundary as stale_at_last_probe) while the epoch has sat still since its retirement gets `world_drift_confirmed` stamped; the adapter reads that as a pure query and bumps arc_measure_epoch the same mechanical way run_order does.  A SINGLE probe cannot satisfy the guard -- the discriminator against reintroducing the churn EX4 measured ax_rearm's own two-sided latch against. v1.5.0 (A19) adds a SEVENTH and EIGHTH rule, ax_fallback_silent and ax_fallback_cleared: WIRE_HANDS SS8.1 named, first on its own damage-ordered list, THE SILENT ORDER-N FALLBACK -- SEL_AGID reverting to order-1 when mg_sel_agid is absent is a deliberate, measured design (SS1.2, untouched by this rung), but nothing on the graph said so beyond a per-order breadcrumb (selected_by). THE FALLBACK ITSELF DOES NOT CHANGE.  ax_fallback_silent mints AgendaVerdict{kind:'order_n_fallback', active:1.0} the instant _order_n_is_not_live() holds -- the SAME Term SEL_AGID itself branches on, imported verbatim, never re-derived -- and no currently-active verdict of this kind already exists (ax_impotent's own mint-once shape).  ax_fallback_cleared flips `active` to 0.0 the instant order-N IS live: a DIRECT REVERSIBLE PAIR, the gr_condition_lapse/gr_condition_hold SHAPE, but keyed on the live Term rather than an epoch, because arc_magnitude can be loaded onto an ALREADY-RUNNING graph with no epoch bump anywhere in the scene (test_wh3_* vs test_wh1_* differ by exactly this).  Zero new DSL Term, zero new node type, zero new edge type (AgendaVerdict/has_agenda_verdict are already-declared productions), zero new adapter function -- agenda_verdicts(sub, 'order_n_fallback') is already generic. ax_dispatch/SEL_AGID/ARMED_AGID/ARMED_VALUE/COLLAPSE_NAME/_armed/ROUTE/_routable are BYTE-UNCHANGED: this rung only adds observability, it does not change when the fallback fires.",
   "microtheory": "arc6_executor",
   "nodes": [
     {
@@ -2699,6 +2699,262 @@
           "set_attr",
           "g",
           "world_drift_confirmed_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "ResidualFact"
+                  },
+                  "var_name": "aef",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "aef"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "arc_measure_epoch"
+                    }
+                  }
+                },
+                "var_name": "aef2",
+                "value": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "default": null
+              },
+              "key": "value"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "ax_fallback_silent",
+      "comment": "A19 -- THE FALLBACK, MADE OBSERVABLE (the ON direction).  WIRE_HANDS SS8.1: 'the fallback is silent... nothing raises an alarm.'  Fires the instant the order-N collapse is not producing a stamp (_order_n_is_not_live(), the SAME Term SEL_AGID itself branches on -- this rule can never disagree with ax_dispatch about which collapse is live, by construction) AND no currently-active verdict of this kind already exists (mint-once, ax_impotent's own shape).  Mints AgendaVerdict{kind:'order_n_fallback', active:1.0} off the SAME agenda hub ax_impotent uses -- a standing, queryable graph fact a self-monitoring agent (or a human, or a future rung) can check PROACTIVELY, rather than inferring the fallback's state order by order from `selected_by`.  Mutually exclusive with ax_fallback_cleared by construction: one reads the Term true, the other reads it false.",
+      "batch": true,
+      "match": [
+        [
+          "agenda",
+          "uses_policy",
+          "pol"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "agenda"
+              },
+              "key": "mg_sel_agid"
+            },
+            "b": {
+              "type": "Lit",
+              "value": null
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "NodesOfType",
+                "node_type": "AgendaVerdict"
+              },
+              "var_name": "avfa",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "avfa"
+                      },
+                      "key": "kind"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "order_n_fallback"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "avfa"
+                      },
+                      "key": "active"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 1.0
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "avf",
+          "AgendaVerdict",
+          {
+            "kind": "order_n_fallback",
+            "active": 1.0,
+            "epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Argmin",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ResidualFact"
+                    },
+                    "var_name": "aef",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "aef"
+                        },
+                        "key": "name"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "arc_measure_epoch"
+                      }
+                    }
+                  },
+                  "var_name": "aef2",
+                  "value": {
+                    "type": "Lit",
+                    "value": 0
+                  },
+                  "default": null
+                },
+                "key": "value"
+              }
+            },
+            "reason": "mg_sel_agid_absent_order_n_collapse_not_producing_a_stamp",
+            "_the_decision_lives_here": "the firing guard is _order_n_is_not_live(), the SAME Term SEL_AGID reads to pick which collapse the hands follow -- the adapter never computes this and never decides it."
+          }
+        ],
+        [
+          "add_edge",
+          "agenda",
+          "has_agenda_verdict",
+          "avf"
+        ]
+      ]
+    },
+    {
+      "name": "ax_fallback_cleared",
+      "comment": "A19 -- THE FALLBACK, MADE OBSERVABLE (the OFF direction, and it is not decoration: a one-way mint would itself be a claim that cannot be revised -- the gr_condition_lapse/gr_condition_hold precedent, quoted almost verbatim).  Fires the instant order-N IS live (Not(_order_n_is_not_live())) while a previously-minted verdict is still marked active, and flips `active` to 0.0.  DELIBERATELY NOT the epoch-shaped fact_equals(arc_measure_epoch) idiom ax_impotent uses: arc_magnitude can be loaded onto an ALREADY-RUNNING graph with no epoch bump anywhere in the scene (exactly how test_wh3_* vs test_wh1_* differ -- one boots without it, one with), so a self-monitoring agent's 'is the fallback active RIGHT NOW' question needs the CURRENT truth of the Term, not a description that stays valid only until the next measurement.  Mutually exclusive with ax_fallback_silent by construction, so the two never contend for the same node in one pass.",
+      "batch": true,
+      "match": [
+        [
+          "agenda",
+          "uses_policy",
+          "pol"
+        ],
+        [
+          "agenda",
+          "has_agenda_verdict",
+          "avf"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "agenda"
+                },
+                "key": "mg_sel_agid"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "avf"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "order_n_fallback"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "avf"
+              },
+              "key": "active"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "avf",
+          "active",
+          0.0
+        ],
+        [
+          "set_attr",
+          "avf",
+          "cleared_epoch",
           {
             "__term__": {
               "type": "Attr",

@@ -53,6 +53,33 @@ WHAT THIS SEED IS.  Four rules and a two-node route table.
                    `fact_equals(arc_measure_epoch)` condition -- the SAME
                    "expire at the next measurement" idiom the testimony reply
                    already ships.  No new DSL Term, no new lapse mechanism.
+  ax_world_probe_epoch  A18 -- a SECOND, narrower epoch producer that never
+                   runs anything; see its own docstring below.
+  ax_fallback_silent /
+  ax_fallback_cleared   A19 -- THE SILENT ORDER-N FALLBACK, MADE OBSERVABLE.
+                   WIRE_HANDS SS8.1 named it and did not build it: `SEL_AGID`'s
+                   fallback to order-1 when `mg_sel_agid` is absent is silent
+                   BY DESIGN (SS1.2 -- a hard dependency on `arc_magnitude`
+                   would change every EX1-EX6 scene's boot), and nothing on
+                   the graph said so except a per-order breadcrumb
+                   (`selected_by`).  THE FALLBACK ITSELF IS UNTOUCHED -- these
+                   two rules add a STANDING, QUERYABLE fact and read
+                   `_order_n_is_not_live()` VERBATIM, the same Term `SEL_AGID`
+                   itself branches on, so they can never disagree with
+                   `ax_dispatch` about which collapse is live.
+                   `ax_fallback_silent` mints `AgendaVerdict{kind:
+                   'order_n_fallback', active:1.0}` (mint-once while active,
+                   `ax_impotent`'s own idiom) the instant order-N is not
+                   producing a stamp; `ax_fallback_cleared` flips `active` to
+                   `0.0` the instant it is -- a DIRECT REVERSIBLE PAIR, the
+                   same SHAPE as `gr_condition_lapse`/`gr_condition_hold`, but
+                   keyed on the live Term rather than an epoch, because
+                   `arc_magnitude` can be loaded onto an already-running
+                   graph with no epoch bump anywhere in the scene (WH3 vs
+                   WH1's own boots differ by exactly this).  No new DSL Term,
+                   no new node type, no new edge type, no new adapter
+                   function -- `agenda_verdicts(sub, "order_n_fallback")` is
+                   already generic.
 
 Run:  python tools/build_arc_executor_seed.py         (writes seeds/arc_executor.json)
       python tools/build_arc_executor_seed.py --check (fails if out of date)
@@ -806,6 +833,105 @@ def _r_world_probe_epoch():
     }
 
 
+# --------------------------------------------------------------------------- #
+#  A19 -- THE SILENT ORDER-N FALLBACK, MADE OBSERVABLE.
+#  Design: PROGRAM_SYNTHESIS_ARC6_WIRE_HANDS.md SS8.1; bars:
+#  PROGRAM_SYNTHESIS_ARC6_PREREG.md amendment A19 (AR19a-AR19d).
+#  THE FALLBACK ITSELF (SEL_AGID reverting to order-1 when mg_sel_agid is
+#  absent) IS UNTOUCHED -- these two rules only read _order_n_is_not_live()
+#  (the SAME Term SEL_AGID branches on, imported verbatim, never re-derived)
+#  and mint/clear a standing AgendaVerdict.  Neither rule appears in
+#  ax_dispatch's own where, and ax_dispatch's where is byte-unchanged.
+# --------------------------------------------------------------------------- #
+def _fallback_verdict_active():
+    """Whether a currently-ACTIVE AgendaVerdict{kind:'order_n_fallback'}
+    already exists.  Mirrors ax_impotent's own mint-once-by-signature guard,
+    simplified: there is only ONE possible "signature" here (the fallback is
+    either live or it is not), so the guard is `active`, not a pool-shaped
+    string comparison."""
+    return EXISTS(NOT_("AgendaVerdict"), "avfa",
+                  AND(EQ(A(V("avfa"), "kind"), L("order_n_fallback")),
+                      EQ(A(V("avfa"), "active"), L(1.0))))
+
+
+def _r_fallback_silent():
+    return {
+        "name": "ax_fallback_silent",
+        "comment": (
+            "A19 -- THE FALLBACK, MADE OBSERVABLE (the ON direction).  "
+            "WIRE_HANDS SS8.1: 'the fallback is silent... nothing raises an "
+            "alarm.'  Fires the instant the order-N collapse is not "
+            "producing a stamp (_order_n_is_not_live(), the SAME Term "
+            "SEL_AGID itself branches on -- this rule can never disagree "
+            "with ax_dispatch about which collapse is live, by "
+            "construction) AND no currently-active verdict of this kind "
+            "already exists (mint-once, ax_impotent's own shape).  Mints "
+            "AgendaVerdict{kind:'order_n_fallback', active:1.0} off the "
+            "SAME agenda hub ax_impotent uses -- a standing, queryable "
+            "graph fact a self-monitoring agent (or a human, or a future "
+            "rung) can check PROACTIVELY, rather than inferring the "
+            "fallback's state order by order from `selected_by`.  Mutually "
+            "exclusive with ax_fallback_cleared by construction: one reads "
+            "the Term true, the other reads it false."),
+        "batch": True,
+        "match": HUB,
+        "where": AND(
+            _order_n_is_not_live(),
+            NOT(_fallback_verdict_active()),
+        ),
+        "effects": [
+            ["add_node", "avf", "AgendaVerdict", {
+                "kind": "order_n_fallback",
+                "active": 1.0,
+                "epoch": T(MEASURE_EPOCH()),
+                "reason": "mg_sel_agid_absent_order_n_collapse_not_"
+                          "producing_a_stamp",
+                "_the_decision_lives_here": (
+                    "the firing guard is _order_n_is_not_live(), the SAME "
+                    "Term SEL_AGID reads to pick which collapse the hands "
+                    "follow -- the adapter never computes this and never "
+                    "decides it."),
+            }],
+            ["add_edge", "agenda", "has_agenda_verdict", "avf"],
+        ],
+    }
+
+
+def _r_fallback_cleared():
+    return {
+        "name": "ax_fallback_cleared",
+        "comment": (
+            "A19 -- THE FALLBACK, MADE OBSERVABLE (the OFF direction, and "
+            "it is not decoration: a one-way mint would itself be a claim "
+            "that cannot be revised -- the gr_condition_lapse/gr_condition_"
+            "hold precedent, quoted almost verbatim).  Fires the instant "
+            "order-N IS live (Not(_order_n_is_not_live())) while a "
+            "previously-minted verdict is still marked active, and flips "
+            "`active` to 0.0.  DELIBERATELY NOT the epoch-shaped "
+            "fact_equals(arc_measure_epoch) idiom ax_impotent uses: "
+            "arc_magnitude can be loaded onto an ALREADY-RUNNING graph "
+            "with no epoch bump anywhere in the scene (exactly how "
+            "test_wh3_* vs test_wh1_* differ -- one boots without it, one "
+            "with), so a self-monitoring agent's 'is the fallback active "
+            "RIGHT NOW' question needs the CURRENT truth of the Term, not "
+            "a description that stays valid only until the next "
+            "measurement.  Mutually exclusive with ax_fallback_silent by "
+            "construction, so the two never contend for the same node in "
+            "one pass."),
+        "batch": True,
+        "match": HUB + [["agenda", "has_agenda_verdict", "avf"]],
+        "where": AND(
+            NOT(_order_n_is_not_live()),
+            EQ(A(V("avf"), "kind"), L("order_n_fallback")),
+            EQ(A(V("avf"), "active"), L(1.0)),
+        ),
+        "effects": [
+            ["set_attr", "avf", "active", 0.0],
+            ["set_attr", "avf", "cleared_epoch", T(MEASURE_EPOCH())],
+        ],
+    }
+
+
 def _r_close():
     return {
         "name": "ax_close",
@@ -834,7 +960,8 @@ def _r_close():
 
 def _rules():
     return [_r_dispatch(), _r_retired_epoch(), _r_rearm(), _r_close(),
-            _r_impotent(), _r_world_probe_epoch()]
+            _r_impotent(), _r_world_probe_epoch(), _r_fallback_silent(),
+            _r_fallback_cleared()]
 
 
 def build():
@@ -856,7 +983,7 @@ def build():
             "is the LAST thing that should arrive in every agent by a glob.  "
             "Activation is one key and a paired tree-wide sweep."),
         "id": "arc_executor",
-        "version": "1.4.0",
+        "version": "1.5.0",
         "depends_on": ["goal_residuals", "arc_goals"],
         "_SOFT_DEPENDENCY_ON_arc_magnitude": (
             "v1.1.0 (A11/WH1) wires ax_dispatch to the ORDER-N collapse "
@@ -934,7 +1061,31 @@ def build():
             "reads that as a pure query and bumps arc_measure_epoch the same "
             "mechanical way run_order does.  A SINGLE probe cannot satisfy "
             "the guard -- the discriminator against reintroducing the churn "
-            "EX4 measured ax_rearm's own two-sided latch against."),
+            "EX4 measured ax_rearm's own two-sided latch against. "
+            "v1.5.0 (A19) adds a SEVENTH and EIGHTH rule, ax_fallback_silent "
+            "and ax_fallback_cleared: WIRE_HANDS SS8.1 named, first on its "
+            "own damage-ordered list, THE SILENT ORDER-N FALLBACK -- SEL_AGID "
+            "reverting to order-1 when mg_sel_agid is absent is a deliberate, "
+            "measured design (SS1.2, untouched by this rung), but nothing on "
+            "the graph said so beyond a per-order breadcrumb (selected_by). "
+            "THE FALLBACK ITSELF DOES NOT CHANGE.  ax_fallback_silent mints "
+            "AgendaVerdict{kind:'order_n_fallback', active:1.0} the instant "
+            "_order_n_is_not_live() holds -- the SAME Term SEL_AGID itself "
+            "branches on, imported verbatim, never re-derived -- and no "
+            "currently-active verdict of this kind already exists "
+            "(ax_impotent's own mint-once shape).  ax_fallback_cleared flips "
+            "`active` to 0.0 the instant order-N IS live: a DIRECT "
+            "REVERSIBLE PAIR, the gr_condition_lapse/gr_condition_hold "
+            "SHAPE, but keyed on the live Term rather than an epoch, because "
+            "arc_magnitude can be loaded onto an ALREADY-RUNNING graph with "
+            "no epoch bump anywhere in the scene (test_wh3_* vs test_wh1_* "
+            "differ by exactly this).  Zero new DSL Term, zero new node "
+            "type, zero new edge type (AgendaVerdict/has_agenda_verdict are "
+            "already-declared productions), zero new adapter function -- "
+            "agenda_verdicts(sub, 'order_n_fallback') is already generic. "
+            "ax_dispatch/SEL_AGID/ARMED_AGID/ARMED_VALUE/COLLAPSE_NAME/"
+            "_armed/ROUTE/_routable are BYTE-UNCHANGED: this rung only adds "
+            "observability, it does not change when the fallback fires."),
         "microtheory": "arc6_executor",
         "nodes": _nodes(),
         "edges": _edges(),

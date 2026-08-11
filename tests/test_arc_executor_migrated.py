@@ -1390,6 +1390,13 @@ def test_every_rule_in_this_seed_is_shown_to_FIRE_live(live_run, latch_cells):
     assert g.get("rearm_count") == 1.0                       # ax_rearm
     assert orders[0]["status"] == "closed"                   # ax_close
     assert axe.agenda_verdicts(s, "impotent")                # ax_impotent
+    #  A19 -- `live_run` boots WITHOUT arc_magnitude (`boot()`, no order-N
+    #  collapse ever on this graph), so the fallback is live from tick 0.
+    fb = axe.agenda_verdicts(s, "order_n_fallback")
+    assert fb and any(a["active"] == 1.0 for a in fb)        # ax_fallback_silent
+    #  ax_fallback_cleared is shown to fire in its own dedicated scene below
+    #  (test_ar19b_the_fact_CLEARS...) -- it structurally cannot fire on
+    #  this fixture, which never loads arc_magnitude.
 
 
 def test_no_guard_is_an_EMPTY_conjunction():
@@ -1704,18 +1711,18 @@ def test_a18_AR18d_the_source_audit_still_passes_on_the_EDITED_adapter():
 
 
 def test_a18_AR18d_the_new_rule_is_the_ONLY_addition_to_the_seed():
-    """`seeds/arc_executor.json` regenerates byte-identically from its own
-    (edited, version-bumped) emitter, and the new rule is additive: every
-    rule this seed shipped before A18 is still present, unedited, by name."""
+    """A18's OWN cost bar, about THAT rung, not a standing invariant — the
+    WH1 precedent (invert a pin with a docstring, never silently remove it),
+    applied a second time: A19 adds two MORE rules afterwards, so the exact
+    post-A18 list is no longer the seed's total.  A18's own claim (`ax_
+    world_probe_epoch` is additive, every prior rule present unedited by
+    name) is still true and still checked, as a PREFIX of the current list;
+    `test_a19_AR19d_the_new_rules_are_the_ONLY_addition_to_the_seed` now
+    asserts the total."""
     doc = _seed()
-    assert doc["version"] == "1.4.0"
     names = [r["name"] for r in doc["rules"]]
-    assert names == ["ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
-                      "ax_impotent", "ax_world_probe_epoch"]
-    r = subprocess.run([sys.executable,
-                        os.path.join(ROOT, "tools", "build_arc_executor_seed.py"),
-                        "--check"], capture_output=True, text=True, cwd=ROOT)
-    assert r.returncode == 0, r.stdout + r.stderr
+    assert names[:6] == ["ax_dispatch", "ax_retired_epoch", "ax_rearm",
+                         "ax_close", "ax_impotent", "ax_world_probe_epoch"]
 
 
 def test_a18_AR18d_ax_rearms_OWN_body_is_UNCHANGED():
@@ -1730,3 +1737,241 @@ def test_a18_AR18d_ax_rearms_OWN_body_is_UNCHANGED():
     assert r["match"] == [["agenda", "uses_policy", "pol"],
                           ["agenda", "has_arc_goal", "g"],
                           ["r", "remeasure_goal", "g"]]
+
+
+# =========================================================================== #
+#  A19 — THE SILENT ORDER-N FALLBACK, MADE OBSERVABLE.
+#  Bars: `PROGRAM_SYNTHESIS_ARC6_PREREG.md` amendment A19 (AR19a–AR19d),
+#  registered BEFORE this block.  `_order_n_is_not_live()` is reused verbatim
+#  by the new rules — the same Term `SEL_AGID` itself branches on.
+# =========================================================================== #
+def test_a19_AR19a_the_fallback_is_a_STANDING_FACT_the_instant_order_N_is_absent():
+    """AR19a, positive case.  A boot with NO `arc_magnitude` on the graph at
+    all — the real shape WIRE_HANDS SS8.1 names ('a boot without arc_
+    magnitude') — is exactly the scene where `mg_select` never fires.  Before
+    the first `run_rules()` the fact does not exist (nothing has run yet);
+    after it, `AgendaVerdict{kind:'order_n_fallback', active:1.0}` is present
+    and readable through the existing, unmodified `agenda_verdicts`."""
+    s, _ = boot()                       # no arc_magnitude
+    assert axe.agenda_verdicts(s, "order_n_fallback") == [], (
+        "fires before anything has run")
+    s._inner.run_rules()
+    at = s.node([n for n in s.nodes("ArcAgenda")][0])["attrs"]
+    assert at.get("mg_sel_agid") is None, (
+        "order-N must be genuinely absent for this to be AR19a's scene")
+    fb = axe.agenda_verdicts(s, "order_n_fallback")
+    assert len(fb) == 1, fb
+    assert fb[0]["active"] == 1.0
+    assert fb[0]["reason"] == (
+        "mg_sel_agid_absent_order_n_collapse_not_producing_a_stamp")
+    assert fb[0]["epoch"] == "0"
+
+
+def test_a19_AR19a_mint_once_repeated_passes_do_not_double_mint():
+    """The `ax_impotent`-precedent mint-once guard, checked the same way
+    `test_im5_mint_once_by_pool_signature_not_by_tick` checks it: repeated
+    `run_rules()` over an UNCHANGED absent-order-N graph must not spawn a
+    second active verdict."""
+    s, _ = boot()
+    s._inner.run_rules()
+    first = axe.agenda_verdicts(s, "order_n_fallback")
+    assert len(first) == 1
+    s._inner.run_rules()
+    s._inner.run_rules()
+    second = axe.agenda_verdicts(s, "order_n_fallback")
+    assert len(second) == 1, "an unchanged absent-order-N graph must not double-mint"
+    assert second[0]["_id"] == first[0]["_id"]
+
+
+def test_a19_AR19b_CONTROL_the_fact_never_mints_when_order_N_is_live_from_the_start():
+    """AR19b, negative control (i).  The WH1 scene: `arc_magnitude` loaded and
+    the tier ladder installed FROM THE FIRST `run_rules()` call — order-N is
+    live throughout the whole scene, so the fallback verdict must never
+    mint, not even transiently."""
+    s, _ = _boot_with_magnitude(ladder=True)
+    s._inner.run_rules()
+    at = s.node([n for n in s.nodes("ArcAgenda")][0])["attrs"]
+    assert at.get("mg_sel_agid") is not None, (
+        "order-N must be live for this to be the control")
+    assert axe.agenda_verdicts(s, "order_n_fallback") == [], (
+        "the fallback verdict minted while order-N was live from the start")
+
+    #  A19c, folded in here rather than duplicated: the new rules add NOTHING
+    #  to ax_dispatch's own outcome on this exact scene — same assertions
+    #  WIRE_HANDS' own WH1 recorded.
+    axe.arm(s)
+    s._inner.run_rules()
+    orders = [dict(s.node(n)["attrs"]) for n in s.nodes("ExecOrder")]
+    assert [o["agid"] for o in orders] == [AGID], [o["agid"] for o in orders]
+    assert orders[0]["selected_by"] == "order_n_mg_select"
+    assert axe.agenda_verdicts(s, "order_n_fallback") == [], (
+        "still nothing minted after dispatch — the two rule pairs are inert "
+        "on this scene, exactly as they must be")
+
+
+def test_a19_AR19b_CONTROL_without_the_tier_ladder_STILL_no_fallback():
+    """The WH1-CONTROL-C precedent, re-run for THIS rung's own claim: `arc_
+    magnitude` loaded but the ladder withheld still makes the two collapses
+    AGREE (`mg_select` fires — it just agrees with order-1), so `mg_sel_agid`
+    is NOT absent and the fallback fact must not mint here either.  This is
+    the discriminator against a wrong implementation that mistook 'the two
+    collapses agree' for 'order-N is not live'."""
+    s, _ = _boot_with_magnitude(ladder=False)
+    s._inner.run_rules()
+    at = s.node([n for n in s.nodes("ArcAgenda")][0])["attrs"]
+    assert at["arc_sel_agid"] == at["mg_sel_agid"] is not None, (
+        "mg_select must have fired and merely agreed, not be absent")
+    assert axe.agenda_verdicts(s, "order_n_fallback") == []
+
+
+def test_a19_AR19b_the_fact_CLEARS_when_order_N_becomes_live_mid_graph_no_epoch_bump():
+    """AR19b, transition (ii) — the strongest demonstration, and the reason
+    the mechanism is a direct reversible pair rather than an epoch-lapse:
+    start from AR19a's exact scene (fact active), load `arc_magnitude` onto
+    the SAME live graph (`test_wh3_*` vs `test_wh1_*`'s own difference — no
+    epoch bump anywhere in that transition), and show the held verdict's
+    `active` flips to 0.0 on the very next `run_rules()` pass."""
+    from domains import arc_magnitude_ingest as ami
+    s, ag = boot()                      # no arc_magnitude yet
+    s._inner.run_rules()
+    before = axe.agenda_verdicts(s, "order_n_fallback")
+    assert len(before) == 1 and before[0]["active"] == 1.0
+    epoch_before = agi.measure_epoch(s)
+
+    #  Order-N becomes live ON THE SAME GRAPH — no re-boot, no epoch bump.
+    s._inner.load_seed_manifest(manifest_for("arc_magnitude"), ag)
+    ami.resolve_attrition_keys(s)
+    ami.install_tier_ladder(s, ami.probe_tier_ladder())
+    s._inner.run_rules()
+
+    at = s.node([n for n in s.nodes("ArcAgenda")][0])["attrs"]
+    assert at.get("mg_sel_agid") is not None, (
+        "order-N must have actually gone live for this to be the transition")
+    assert agi.measure_epoch(s) == epoch_before, (
+        "the clearing must NOT depend on an epoch bump — none happened here")
+
+    after = axe.agenda_verdicts(s, "order_n_fallback")
+    assert len(after) == 1, after
+    assert after[0]["_id"] == before[0]["_id"], (
+        "the SAME node must be cleared, not a fresh one minted")
+    assert after[0]["active"] == 0.0, "the fact must CLEAR once order-N is live"
+    assert after[0].get("cleared_epoch") == str(epoch_before)
+
+
+def test_a19_AR19c_order_1_dispatch_still_works_ALONGSIDE_the_new_standing_fact():
+    """AR19c, on the order-1 (fallback-live) side.  `test_wh3_the_fallback_
+    when_the_order_N_collapse_is_NOT_on_the_graph`'s own scene, unmodified,
+    reproduces byte-identically WITH the two new rules installed and the
+    fact minted alongside it — the fallback still fires exactly as before,
+    only now with a standing fact sitting next to it."""
+    s, _ = boot()                       # no arc_magnitude
+    s._inner.run_rules()
+    assert axe.agenda_verdicts(s, "order_n_fallback"), (
+        "the fact must be present here")
+    axe.arm(s)
+    s._inner.run_rules()
+    assert list(s.nodes("ExecOrder")) == [], (
+        "dispatch behaviour changed — the unroutable order-1 winner must "
+        "still mint nothing")
+
+    answer_open_questions(s, conditioned=True)
+    s._inner.run_rules()
+    assert agi.selection(s).get("arc_sel_agid") == AGID
+    axe.arm(s)
+    s._inner.run_rules()
+    orders = [dict(s.node(n)["attrs"]) for n in s.nodes("ExecOrder")]
+    assert [o["agid"] for o in orders] == [AGID]
+    assert orders[0]["selected_by"] == "order_1_ag_select", (
+        "dispatch must still follow order-1 exactly as WIRE_HANDS recorded")
+
+
+def test_a19_AR19c_the_guard_TERM_is_IDENTICAL_to_SEL_AGIDs_own_absence_test():
+    """Structural proof, not merely behavioural: the new rules cannot drift
+    from `ax_dispatch`'s own notion of 'order-N is not live', because they
+    read the IDENTICAL Eq(mg_sel_agid, null) subterm — same shape as `test_
+    wh1_the_adapter_carry_is_a_CONSTANT_TABLE_not_a_choice`'s own structural
+    check on `ax_dispatch`."""
+    absence_test = {
+        "type": "Eq",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "agenda"},
+              "key": "mg_sel_agid"},
+        "b": {"type": "Lit", "value": None}}
+    dispatch_where = _seed_rule("ax_dispatch")["where"]
+    seen_in_dispatch = list(_walk(dispatch_where, "Eq"))
+    assert absence_test in seen_in_dispatch, (
+        "the reference term itself must appear in ax_dispatch's own where")
+
+    silent = _seed_rule("ax_fallback_silent")["where"]
+    assert silent["items"][0] == absence_test
+
+    cleared = _seed_rule("ax_fallback_cleared")["where"]
+    assert cleared["items"][0] == {"type": "Not", "arg": absence_test}
+
+
+def test_a19_AR19d_the_new_rules_are_the_ONLY_addition_to_the_seed():
+    """`seeds/arc_executor.json` regenerates byte-identically from its own
+    (edited, version-bumped) emitter, and the two new rules are purely
+    additive: every rule this seed shipped through A18 is still present,
+    unedited, by name and in order, with exactly two more appended."""
+    doc = _seed()
+    assert doc["version"] == "1.5.0"
+    names = [r["name"] for r in doc["rules"]]
+    assert names == ["ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
+                      "ax_impotent", "ax_world_probe_epoch",
+                      "ax_fallback_silent", "ax_fallback_cleared"]
+    r = subprocess.run([sys.executable,
+                        os.path.join(ROOT, "tools", "build_arc_executor_seed.py"),
+                        "--check"], capture_output=True, text=True, cwd=ROOT)
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_a19_AR19d_ax_dispatch_and_every_prior_rule_body_is_UNCHANGED():
+    """The five rule bodies A19 must not touch, read back off the regenerated
+    seed and diffed against `HEAD`'s own emitted copy — the same 'no new Rust,
+    no new adapter decision' confinement standard every prior rung in this
+    arc has been held to, at the rule-body grain."""
+    prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
+                            capture_output=True, text=True).stdout.strip()
+    head_doc = json.loads(subprocess.run(
+        ["git", "-C", ROOT, "show", "HEAD:" + prefix + "seeds/arc_executor.json"],
+        capture_output=True, text=True).stdout)
+    head_rules = {r["name"]: r for r in head_doc["rules"]}
+    cur_rules = {r["name"]: r for r in _seed()["rules"]}
+    for name in ("ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
+                 "ax_impotent", "ax_world_probe_epoch"):
+        assert cur_rules[name] == head_rules[name], name
+
+
+def test_a19_AR19d_the_adapter_is_BYTE_IDENTICAL_to_HEAD():
+    """A19's design investigation (item 5) predicted `domains/arc_executor.py`
+    needs no edit at all: `agenda_verdicts(sub, kind=None)` is already
+    generic over `kind`, so the whole mechanism lives in the seed.  Checked
+    here rather than merely claimed — a STRONGER bar than the module-specific
+    source audit, which only proves no NEW banned call was added."""
+    prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
+                            capture_output=True, text=True).stdout.strip()
+    head = subprocess.run(["git", "-C", ROOT, "show",
+                           "HEAD:" + prefix + "domains/arc_executor.py"],
+                          capture_output=True, text=True).stdout
+    assert head
+    assert head == open(os.path.join(ROOT, "domains", "arc_executor.py")).read()
+
+
+def test_a19_AR19d_the_seeds_below_this_rung_are_still_UNTOUCHED():
+    """Same confinement `test_ex6_the_seeds_below_this_rung_are_UNTOUCHED`
+    checks, re-run for A19: this rung edits only `seeds/arc_executor.json`
+    and its own emitter."""
+    prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
+                            capture_output=True, text=True).stdout.strip()
+    for rel in ("seeds/arc_goals.json", "seeds/goal_residuals.json",
+                "seeds/program_synthesis.json", "domains/arc_goal_ingest.py",
+                "domains/goal_residual_ingest.py", "domains/arc_magnitude_ingest.py"):
+        head = subprocess.run(["git", "-C", ROOT, "show", "HEAD:" + prefix + rel],
+                              capture_output=True, text=True).stdout
+        assert head, rel
+        assert head == open(os.path.join(ROOT, rel)).read(), rel
+
+    r = subprocess.run([sys.executable, os.path.join(
+        ROOT, "tools", "build_arc_magnitude_seed.py"), "--check"],
+        capture_output=True, text=True, cwd=ROOT)
+    assert r.returncode == 0, r.stdout + r.stderr
