@@ -2395,6 +2395,17 @@ def test_a21_AR21d_every_prior_rule_body_is_UNCHANGED_EXCEPT_ax_impotents_ADDITI
         assert cur_rules[name] == head_rules[name], name
 
 
+#  A21 landed on 45eab90 (main's tip when this rung started).  This ONE test
+#  is INHERENTLY a diff against the PRE-rung state (it asserts pool_stale is
+#  an ADDITION), so it must anchor to that FIXED commit rather than `HEAD` —
+#  the GR4 §10.3 precedent ("not an engine issue... committing the rung made
+#  HEAD contain the change... re-pointed to a fixed pre-rung commit") applied
+#  here before it could bite, not after.  Every OTHER confinement test in
+#  this file diffs against `HEAD` correctly, because what THEY check is
+#  UNCHANGED by this rung's own commit either way.
+_A21_PRE_RUNG_COMMIT = "45eab90"
+
+
 def test_a21_AR21d_ax_impotents_where_and_match_and_mint_once_guard_are_UNCHANGED():
     """The one rule this rung's mechanism reads from (`ax_impotent`) must
     keep its FIRING behaviour byte-for-byte identical — this rung only adds
@@ -2402,7 +2413,8 @@ def test_a21_AR21d_ax_impotents_where_and_match_and_mint_once_guard_are_UNCHANGE
     prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
                             capture_output=True, text=True).stdout.strip()
     head_doc = json.loads(subprocess.run(
-        ["git", "-C", ROOT, "show", "HEAD:" + prefix + "seeds/arc_executor.json"],
+        ["git", "-C", ROOT, "show",
+         _A21_PRE_RUNG_COMMIT + ":" + prefix + "seeds/arc_executor.json"],
         capture_output=True, text=True).stdout)
     head_impotent = [r for r in head_doc["rules"] if r["name"] == "ax_impotent"][0]
     cur_impotent = _seed_rule("ax_impotent")

@@ -426,7 +426,30 @@ once_guard_are_UNCHANGED` indexed the `add_node` effect list as
 attribute 'get'` on the first run caught it immediately, fixed by reading
 `h[2]`/`h[3]` correctly rather than `h[2]` alone.
 
-### 6.4 Nothing else broke
+### 6.4 A `HEAD`-self-nullification bug, caught by a POST-COMMIT re-run — the GR4 §10.3 precedent, applied before it could bite twice
+
+After committing this rung's own changes, a routine re-run of the full
+`test_arc_executor_migrated.py` suite (done to confirm the COMMITTED state,
+not just the working tree, is what was measured) turned up a second red:
+`test_a21_AR21d_ax_impotents_where_and_match_and_mint_once_guard_are_
+UNCHANGED` — the gate asserting `pool_stale` is an ADDITION relative to
+`HEAD` — started failing the moment this rung's own commit BECAME `HEAD`,
+because `git show HEAD:seeds/arc_executor.json` now returns the NEW file,
+which already contains `pool_stale`. This is exactly `PROGRAM_SYNTHESIS_
+ARC6_GOAL_RESIDUALS.md` §10.3's own precedent (*"not an engine issue. It
+diffs the working tree against `HEAD`; committing the rung made `HEAD`
+contain the change... re-pointed to a fixed pre-rung commit"*), and it is
+now a general property of any confinement test that is INHERENTLY a diff
+against the pre-rung state (as opposed to a diff against something the rung
+does not touch, which stays valid either way). Fixed by anchoring that one
+test to the fixed pre-rung commit (`45eab90`, `main`'s tip when this rung
+started) rather than `HEAD` — every OTHER confinement test in this file was
+checked and left pointing at `HEAD`, correctly, because what they each
+assert is UNCHANGED by this rung's own commit regardless of which side of
+it `HEAD` sits on. Re-verified: **100 passed, 1 failed** (the same
+pre-existing red), on the COMMITTED tree, in a second commit.
+
+### 6.5 Nothing else broke
 
 No engine rebuild was needed, no seed this rung does not own needed
 touching, and the emitter's `--check` passed on the first regeneration
