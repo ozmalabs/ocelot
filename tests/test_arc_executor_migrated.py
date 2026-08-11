@@ -1397,6 +1397,10 @@ def test_every_rule_in_this_seed_is_shown_to_FIRE_live(live_run, latch_cells):
     #  ax_fallback_cleared is shown to fire in its own dedicated scene below
     #  (test_ar19b_the_fact_CLEARS...) -- it structurally cannot fire on
     #  this fixture, which never loads arc_magnitude.
+    #  ax_impotent_pool_lapse/ax_impotent_pool_hold (A21) are shown to fire in
+    #  their own dedicated scenes below (test_a21_AR21c_*) -- this fixture
+    #  only ever retires ONE goal via a single real remeasurement, so the
+    #  pool's composition never drifts a SECOND time within one epoch here.
 
 
 def test_no_guard_is_an_EMPTY_conjunction():
@@ -1929,7 +1933,14 @@ def test_a19_AR19d_ax_dispatch_and_every_prior_rule_body_is_UNCHANGED():
     """The five rule bodies A19 must not touch, read back off the regenerated
     seed and diffed against `HEAD`'s own emitted copy — the same 'no new Rust,
     no new adapter decision' confinement standard every prior rung in this
-    arc has been held to, at the rule-body grain."""
+    arc has been held to, at the rule-body grain.
+
+    A21 NARROWS `ax_impotent` OUT OF THIS SET, NOT SILENTLY — it is the one
+    rule A21 is registered to touch (additively: one new `pool_stale:0.0`
+    stamp in its effects, `where`/`match`/mint-once guard byte-unchanged).
+    `test_a21_AR21d_ax_impotents_where_and_match_and_mint_once_guard_are_
+    UNCHANGED` covers it at the FIRING-behaviour grain, which is the
+    property this test's own name is actually about."""
     prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
                             capture_output=True, text=True).stdout.strip()
     head_doc = json.loads(subprocess.run(
@@ -1938,7 +1949,7 @@ def test_a19_AR19d_ax_dispatch_and_every_prior_rule_body_is_UNCHANGED():
     head_rules = {r["name"]: r for r in head_doc["rules"]}
     cur_rules = {r["name"]: r for r in _seed()["rules"]}
     for name in ("ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
-                 "ax_impotent", "ax_world_probe_epoch"):
+                 "ax_world_probe_epoch"):
         assert cur_rules[name] == head_rules[name], name
 
 
@@ -2145,26 +2156,30 @@ def test_a20_AR20c_the_guard_TERM_reuses_arc_sel_agid_and_SEL_AGID_VERBATIM():
 
 
 def test_a20_AR20d_the_new_rules_are_the_ONLY_addition_to_the_seed():
-    """`seeds/arc_executor.json` regenerates byte-identically from its own
-    (edited, version-bumped) emitter; the new rules are purely additive —
-    every rule through A19 is still present, unedited, by name and in
-    order, with exactly two more appended."""
+    """A21 INVERTS THIS PIN TO A PREFIX CHECK, NOT REMOVES IT — the WH1/A18/
+    A19 precedent applied a fourth time.  A21 appends an ELEVENTH and
+    TWELFTH rule (`ax_impotent_pool_lapse`/`_hold`), so the exact-ten-name
+    assertion this test made through A20 is now false BY CONSTRUCTION.
+    `test_a21_AR21d_the_new_rules_are_the_ONLY_addition_to_the_seed` below
+    asserts the full, current twelve-name list and version; this one still
+    proves the ORIGINAL ten are an unbroken PREFIX, in order, unedited by
+    name."""
     doc = _seed()
-    assert doc["version"] == "1.6.0"
     names = [r["name"] for r in doc["rules"]]
-    assert names == ["ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
-                      "ax_impotent", "ax_world_probe_epoch",
-                      "ax_fallback_silent", "ax_fallback_cleared",
-                      "ax_ask_divergence_active", "ax_ask_divergence_cleared"]
-    r = subprocess.run([sys.executable,
-                        os.path.join(ROOT, "tools", "build_arc_executor_seed.py"),
-                        "--check"], capture_output=True, text=True, cwd=ROOT)
-    assert r.returncode == 0, r.stdout + r.stderr
+    assert names[:10] == [
+        "ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
+        "ax_impotent", "ax_world_probe_epoch",
+        "ax_fallback_silent", "ax_fallback_cleared",
+        "ax_ask_divergence_active", "ax_ask_divergence_cleared"], names[:10]
 
 
 def test_a20_AR20d_every_prior_rule_body_is_UNCHANGED():
     """The eight rule bodies A20 must not touch, read back off the
-    regenerated seed and diffed against `HEAD`'s own emitted copy."""
+    regenerated seed and diffed against `HEAD`'s own emitted copy.
+
+    A21 NARROWS `ax_impotent` OUT OF THIS SET — see the dated note on
+    `test_a19_AR19d_ax_dispatch_and_every_prior_rule_body_is_UNCHANGED`
+    above; the same reasoning applies here unchanged."""
     prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
                             capture_output=True, text=True).stdout.strip()
     head_doc = json.loads(subprocess.run(
@@ -2173,7 +2188,7 @@ def test_a20_AR20d_every_prior_rule_body_is_UNCHANGED():
     head_rules = {r["name"]: r for r in head_doc["rules"]}
     cur_rules = {r["name"]: r for r in _seed()["rules"]}
     for name in ("ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
-                 "ax_impotent", "ax_world_probe_epoch",
+                 "ax_world_probe_epoch",
                  "ax_fallback_silent", "ax_fallback_cleared"):
         assert cur_rules[name] == head_rules[name], name
 
@@ -2208,5 +2223,240 @@ def test_a20_AR20d_the_seeds_below_this_rung_including_arc_goals_are_still_UNTOU
 
     r = subprocess.run([sys.executable, os.path.join(
         ROOT, "tools", "build_arc_goals_seed.py"), "--check"],
+        capture_output=True, text=True, cwd=ROOT)
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+# =========================================================================== #
+#  A21 — POOL-COMPOSITION DRIFT, CLOSED WITHOUT TOUCHING `gr_condition_lapse`.
+#  Bars: `PROGRAM_SYNTHESIS_ARC6_PREREG.md` amendment A21 (AR21a–AR21d),
+#  registered BEFORE this block.  `ax_impotent`'s own `where`/`match`/
+#  mint-once guard are UNCHANGED — only its effects gain an additive
+#  `pool_stale:0.0` stamp at mint, read and flipped by two new rules.
+#  `gr_condition_lapse`/`seeds/goal_residuals.json` are UNTOUCHED throughout.
+# =========================================================================== #
+_SECOND_AGID = "arc6.claim.tier0_hs1_0_of_10"
+
+
+def test_a21_AR21c_fires_on_pool_composition_drift_with_NO_epoch_bump():
+    """AR21c, direction (i).  A verdict mints for the 7-goal pool
+    (pool_stale:0.0).  A SECOND goal then leaves the pool — composition
+    drift — with NO epoch bump anywhere in the scene.  Within the SAME
+    run_rules() fixpoint: a fresh verdict mints for the new 6-goal pool
+    (IM5's own mint-once-by-signature behaviour, unmodified) AND the FIRST
+    verdict's pool_stale flips to 1.0, while its epoch-keyed `stale` stays
+    0.0 — no measurement has happened, only the pool moved."""
+    s, _ = boot()
+    s._inner.run_rules()
+    _leave_pool_without_retiring(s, AGID)
+    s._inner.run_rules()
+    first = axe.agenda_verdicts(s, "impotent")
+    assert len(first) == 1, first
+    assert first[0]["pool_stale"] == 0.0
+    assert first[0]["stale"] == 0.0
+    first_id = first[0]["_id"]
+
+    _leave_pool_without_retiring(s, _SECOND_AGID)
+    s._inner.run_rules()
+    after = axe.agenda_verdicts(s, "impotent")
+    by_id = {a["_id"]: a for a in after}
+    assert set(by_id) >= {first_id}, "the first verdict must still be held"
+    assert by_id[first_id]["pool_stale"] == 1.0, (
+        "the superseded verdict's pool composition marker must flip the "
+        "instant the pool it described has moved")
+    assert by_id[first_id]["stale"] == 0.0, (
+        "no measurement happened — the EPOCH-keyed flag must be untouched "
+        "by pool drift, the two axes are orthogonal")
+    fresh = [a for a in after if a["_id"] != first_id]
+    assert len(fresh) == 1, after
+    assert fresh[0]["pool_n"] == 6
+    assert fresh[0]["pool_stale"] == 0.0
+    assert AGID not in json.loads(fresh[0]["pool_agids"])
+    assert _SECOND_AGID not in json.loads(fresh[0]["pool_agids"])
+
+
+def test_a21_AR21c_does_NOT_fire_across_a_genuine_epoch_bump_WITHOUT_drift():
+    """AR21c, direction (ii).  Reproduce IM5's own 'bump arc_measure_epoch,
+    pool composition UNCHANGED' scene: `pool_stale` must NOT flip on either
+    the superseded or the fresh verdict — this mechanism must be provably
+    orthogonal to the epoch-shaped `gr_condition_lapse` one, not a duplicate
+    trigger for it."""
+    s, _ = boot()
+    s._inner.run_rules()
+    _leave_pool_without_retiring(s, AGID)
+    s._inner.run_rules()
+    before = axe.agenda_verdicts(s, "impotent")
+    assert len(before) == 1
+    assert before[0]["stale"] == 0.0 and before[0]["pool_stale"] == 0.0
+
+    agi.bump_measure_epoch(s)
+    s._inner.run_rules()
+    after = axe.agenda_verdicts(s, "impotent")
+    assert len(after) == 2, (
+        "IM5's own behaviour: the old verdict goes epoch-stale, a fresh one "
+        "mints for the SAME (unchanged) pool signature")
+    assert all(a["pool_stale"] == 0.0 for a in after), (
+        "the pool never moved — pool_stale must stay 0.0 on EVERY held "
+        "verdict, including the one gr_condition_lapse just marked "
+        "epoch-stale")
+    assert sorted({a["stale"] for a in after}) == [0.0, 1.0], (
+        "the epoch-keyed flag must still show the SAME split IM5 measured "
+        "— this rung does not change gr_condition_lapse's own behaviour")
+
+
+def test_a21_AR21c_the_reverse_direction_pool_hold_is_TWO_SIDED():
+    """The gr_condition_lapse/gr_condition_hold precedent is two-sided by
+    construction, and so is this: restoring the pool to EXACTLY the
+    composition the first verdict recorded must restore pool_stale to 0.0,
+    not leave it permanently latched at 1.0."""
+    s, _ = boot()
+    s._inner.run_rules()
+    _leave_pool_without_retiring(s, AGID)
+    s._inner.run_rules()
+    first = axe.agenda_verdicts(s, "impotent")[0]
+    first_id = first["_id"]
+    assert first["pool_stale"] == 0.0
+
+    orig_headroom = None
+    for n in s.nodes("ArcGoal"):
+        if s.node(n)["attrs"].get("agid") == _SECOND_AGID:
+            orig_headroom = s.node(n)["attrs"].get("headroom_n")
+    assert orig_headroom is not None
+    _leave_pool_without_retiring(s, _SECOND_AGID)
+    s._inner.run_rules()
+    drifted = [a for a in axe.agenda_verdicts(s, "impotent")
+               if a["_id"] == first_id][0]
+    assert drifted["pool_stale"] == 1.0
+
+    for n in s.nodes("ArcGoal"):
+        if s.node(n)["attrs"].get("agid") == _SECOND_AGID:
+            s.set_attr(n, "headroom_n", orig_headroom)
+    s._inner.run_rules()
+    restored = [a for a in axe.agenda_verdicts(s, "impotent")
+                if a["_id"] == first_id][0]
+    assert restored["pool_stale"] == 0.0, (
+        "a one-way lapse would itself be an unrevisable claim — the "
+        "gr_condition_lapse/gr_condition_hold precedent this rule reuses")
+
+
+def test_a21_AR21c_twin_run_determinism():
+    def scene():
+        s, _ = boot()
+        s._inner.run_rules()
+        _leave_pool_without_retiring(s, AGID)
+        s._inner.run_rules()
+        _leave_pool_without_retiring(s, _SECOND_AGID)
+        s._inner.run_rules()
+        avs = axe.agenda_verdicts(s, "impotent")
+        return sorted(
+            [{k: v for k, v in a.items() if k != "_id"} for a in avs],
+            key=lambda a: (a["pool_n"], a["pool_stale"]))
+    r1, r2 = scene(), scene()
+    assert r1 == r2 and r1
+
+
+def test_a21_AR21d_the_new_rules_are_the_ONLY_addition_to_the_seed():
+    """`seeds/arc_executor.json` regenerates byte-identically from its own
+    (edited, version-bumped) emitter; the new rules are purely additive —
+    every rule through A20 is still present, unedited, by name and in
+    order, with exactly two more appended."""
+    doc = _seed()
+    assert doc["version"] == "1.7.0"
+    names = [r["name"] for r in doc["rules"]]
+    assert names == [
+        "ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
+        "ax_impotent", "ax_world_probe_epoch",
+        "ax_fallback_silent", "ax_fallback_cleared",
+        "ax_ask_divergence_active", "ax_ask_divergence_cleared",
+        "ax_impotent_pool_lapse", "ax_impotent_pool_hold"], names
+    r = subprocess.run([sys.executable,
+                        os.path.join(ROOT, "tools", "build_arc_executor_seed.py"),
+                        "--check"], capture_output=True, text=True, cwd=ROOT)
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_a21_AR21d_every_prior_rule_body_is_UNCHANGED_EXCEPT_ax_impotents_ADDITIVE_stamp():
+    """Nine of the ten prior rule bodies are byte-identical to `HEAD`.  The
+    tenth, `ax_impotent`, is DELIBERATELY not in that set — its `effects`
+    gained one additive key (`pool_stale: 0.0` at mint) — so it is checked
+    separately below, at the `where`/`match` grain, which must be
+    byte-identical (the mint-once guard this rung must not touch)."""
+    prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
+                            capture_output=True, text=True).stdout.strip()
+    head_doc = json.loads(subprocess.run(
+        ["git", "-C", ROOT, "show", "HEAD:" + prefix + "seeds/arc_executor.json"],
+        capture_output=True, text=True).stdout)
+    head_rules = {r["name"]: r for r in head_doc["rules"]}
+    cur_rules = {r["name"]: r for r in _seed()["rules"]}
+    for name in ("ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
+                 "ax_world_probe_epoch", "ax_fallback_silent",
+                 "ax_fallback_cleared", "ax_ask_divergence_active",
+                 "ax_ask_divergence_cleared"):
+        assert cur_rules[name] == head_rules[name], name
+
+
+def test_a21_AR21d_ax_impotents_where_and_match_and_mint_once_guard_are_UNCHANGED():
+    """The one rule this rung's mechanism reads from (`ax_impotent`) must
+    keep its FIRING behaviour byte-for-byte identical — this rung only adds
+    a stamp on top of what it already mints, never changes when it mints."""
+    prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
+                            capture_output=True, text=True).stdout.strip()
+    head_doc = json.loads(subprocess.run(
+        ["git", "-C", ROOT, "show", "HEAD:" + prefix + "seeds/arc_executor.json"],
+        capture_output=True, text=True).stdout)
+    head_impotent = [r for r in head_doc["rules"] if r["name"] == "ax_impotent"][0]
+    cur_impotent = _seed_rule("ax_impotent")
+    assert cur_impotent["match"] == head_impotent["match"]
+    assert cur_impotent["where"] == head_impotent["where"]
+    assert cur_impotent["batch"] == head_impotent["batch"]
+    #  The effects diff is EXACTLY the one additive stamp — nothing removed,
+    #  nothing else added, nothing else edited.
+    head_effects = head_impotent["effects"]
+    cur_effects = cur_impotent["effects"]
+    assert len(cur_effects) == len(head_effects), "no effect added or removed"
+    for h, c in zip(head_effects, cur_effects):
+        assert h[0] == c[0] and h[1] == c[1] and h[2] == c[2], (h, c)
+        if h[0] == "add_node" and h[2] == "AgendaVerdict":
+            head_attrs, cur_attrs = h[3], c[3]
+            assert head_attrs.get("kind") == "impotent"
+            assert "pool_stale" not in head_attrs
+            assert cur_attrs.get("pool_stale") == 0.0
+            #  every OTHER attr on the AgendaVerdict node is untouched
+            for k in head_attrs:
+                assert cur_attrs[k] == head_attrs[k], k
+            assert set(cur_attrs) - set(head_attrs) == {"pool_stale"}
+
+
+def test_a21_AR21d_the_adapter_is_BYTE_IDENTICAL_to_HEAD():
+    """No adapter edit was needed: `agenda_verdicts(sub, kind=...)` was
+    already generic (A19's own finding, reused here verbatim a third time)."""
+    prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
+                            capture_output=True, text=True).stdout.strip()
+    head = subprocess.run(["git", "-C", ROOT, "show",
+                           "HEAD:" + prefix + "domains/arc_executor.py"],
+                          capture_output=True, text=True).stdout
+    assert head
+    assert head == open(os.path.join(ROOT, "domains", "arc_executor.py")).read()
+
+
+def test_a21_AR21d_gr_condition_lapse_and_every_sibling_seed_are_still_UNTOUCHED():
+    """THE HEADLINE CONFINEMENT CHECK THIS RUNG REGISTERED (A21's own AR21b/
+    AR21d): `seeds/goal_residuals.json` — i.e. `gr_condition_lapse`'s closed
+    `MISMATCH` vocabulary — stays byte-identical to `HEAD`, same as every
+    prior rung in this arc has held it, plus the usual sibling seeds/
+    adapters this rung does not touch."""
+    prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
+                            capture_output=True, text=True).stdout.strip()
+    for rel in ("seeds/arc_goals.json", "seeds/goal_residuals.json",
+                "seeds/program_synthesis.json", "seeds/arc_magnitude.json",
+                "seeds/arc_decompose.json", "domains/arc_goal_ingest.py",
+                "domains/goal_residual_ingest.py", "domains/arc_magnitude_ingest.py"):
+        head = subprocess.run(["git", "-C", ROOT, "show", "HEAD:" + prefix + rel],
+                              capture_output=True, text=True).stdout
+        assert head, rel
+        assert head == open(os.path.join(ROOT, rel)).read(), rel
+
+    r = subprocess.run([sys.executable, os.path.join(
+        ROOT, "tools", "build_goal_residual_seed.py"), "--check"],
         capture_output=True, text=True, cwd=ROOT)
     assert r.returncode == 0, r.stdout + r.stderr

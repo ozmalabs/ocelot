@@ -2213,3 +2213,233 @@ build to have something to show.
 arc6_import_impedance.json`/`scripts/arc6_import_impedance.py`, and
 anything under `docs/research/theory_convergence/` or `docs/research/
 adventure_mechanics/`.
+
+---
+
+### AMENDMENT A21 (2026-08-11) — `gr_condition_lapse`'s closed vocabulary vs. pool-composition drift: close the LAST originally-named remaining item, or prove it should stay closed
+
+`PROGRAM_SYNTHESIS_ARC6_IMPOTENCE_TERM.md` §8 named this uncertainty FIRST,
+quoted because it is this amendment's charter: *"A VERDICT'S CONDITION
+LAPSES ON EPOCH ADVANCE ONLY, NOT ON POOL COMPOSITION DRIFT... a reader must
+compare `pool_agids` against the CURRENT pool to know which one is current —
+a second, pool-signature-keyed condition kind would need a change to
+`gr_condition_lapse`'s closed `MISMATCH` vocabulary (`seeds/
+goal_residuals.json`), which this rung's scope explicitly excludes
+touching."* `PROGRAM_SYNTHESIS_ARC6_IMPOTENCE_CAMPAIGN.md` §9 item 6 carried
+it forward, sharpened: the stored `nearest_unroutable_kind` can drift out of
+sync with the live collapse on **no** composition change and **no** epoch
+advance at all, only a reply — named, not built against, in both rungs. This
+is the last of the six originally-named "remains to build" items in this
+executor sub-thread (re-arm deadlock — A18; silent fallback — A19;
+ask/dispatch safety — A20; MG4 decomposition and supply-blocker retirement —
+already landed under their own docs).
+
+**Scope, stated precisely, per the task's own boundary.** This is about
+whether an `AgendaVerdict{kind:'impotent'}`'s recorded `pool_agids` can be
+told apart, live and without waiting for an epoch bump, from the CURRENT
+pool composition. It is explicitly **open both ways**: extend
+`gr_condition_lapse`'s closed `MISMATCH` vocabulary (`shape_count`/
+`payload_count`/`fact_equals`) with a fourth kind, OR apply A19/A20's own
+reversible mint/clear pattern directly to `ax_impotent` in `seeds/
+arc_executor.json` and leave `gr_condition_lapse` untouched, OR — if neither
+is well-evidenced as worth its cost — build nothing and report a clean null,
+per this arc's own standing culture (M0, A14). Does not touch `results/
+arc6_import_impedance.json`/`scripts/arc6_import_impedance.py`, or anything
+under `docs/research/theory_convergence/`, `docs/research/
+adventure_mechanics/`, or `docs/research/engine_substrate/
+decision_making_spike.md`.
+
+**The design investigation, done before drafting bars.**
+
+1. **Exactly one shipped `AgendaVerdict` kind carries a pool-signature-
+   shaped field at all.** `grep -n '"pool_agids"' tools/build_arc_executor_
+   seed.py` returns hits only inside `_r_impotent`'s own guard and effects
+   (`_pool_sig()`, `MAPLIST(POOL(), ...)` JSON-encoded). The other two kinds
+   this arc has minted (`order_n_fallback` — A19; `ask_dispatch_divergence`
+   — A20) carry no pool-shaped field: the first is a single Term's truth
+   value (`_order_n_is_not_live()`), the second is a two-goal comparison
+   (`SEL_AGID()` vs `arc_sel_agid`) — neither has a "which of several
+   possible states am I describing" axis, only an on/off one. So the drift
+   problem named by A13/A14 is narrower than "any `AgendaVerdict`" — it is
+   specific to the one kind whose identity is a SET (the pool), not a
+   scalar.
+2. **`gr_condition_lapse`'s three `ckind`s are each keyed to a MECHANICALLY
+   PROBED fact, not a graph-native Term — and that is a real, load-bearing
+   asymmetry, not an accident.** `shape_count`/`payload_count`
+   (`tools/build_goal_residual_seed.py::_shape_count`) read `ShapeSignature`
+   nodes directly, live, inside the rule — no Python between the condition
+   and the count. `fact_equals` is different in kind: it compares against a
+   `ResidualFact{name,value}` node, and EVERY existing `ResidualFact` on this
+   graph is written by `domains/goal_residual_ingest.py::probe_facts`/
+   `install_facts` — Python code that reads an external world (a file's
+   presence/sha, a live value-layer probe) and stamps the answer as mechanical
+   I/O, explicitly called, not continuously re-derived inside `run_rules()`.
+   `arc_measure_epoch` (the ONE `fact_equals` condition `ax_impotent` itself
+   already uses) is the one exception that proves the rule: it is a plain
+   counter with a producer already living in the executor's own rules
+   (`ax_dispatch`'s `run_order`/epoch-bump path), so comparing against it
+   needs no new Python probe. **The pool's live signature (`_pool_sig()`) is
+   ALREADY a pure, existing DSL Term, evaluated inside `ax_impotent` itself
+   — it needs no Python probe of any kind.** Wiring a pool-drift condition
+   through `fact_equals` would mean inventing a Python step that probes the
+   graph's OWN pool and writes it back as a `ResidualFact` — exactly the kind
+   of "push a graph-native computation out into Python" move `CLAUDE.md`
+   forbids, for a quantity the graph can already compute itself, live, in
+   the same rule that would consume it.
+3. **A fourth `ckind` computed natively (no Python probe) would still couple
+   the GENERIC residual seed to one DOMAIN's concept.** `seeds/goal_
+   residuals.json` is shared infrastructure — `ps_move_select`
+   (`seeds/program_synthesis.json`) and every arc-4/5/6 `GoalResidual` ride
+   the same `MISMATCH`/`gr_condition_lapse`/`gr_condition_hold` pair. `POOL()`
+   and `_pool_sig()` are `ArcAgenda`-shaped Terms defined in `tools/build_
+   arc_goals_seed.py`/`build_arc_executor_seed.py`, seeds `goal_residuals`
+   has never imported and does not depend on
+   (`grep -n 'import.*arc_goals\|import.*arc_executor' tools/build_goal_
+   residual_seed.py` — no hits). A `pool_sig_equals` `ckind` hard-coding
+   `_pool_sig()`'s Term shape into `MISMATCH` would be the FIRST domain-
+   specific concept the generic vocabulary has ever carried — a real
+   modularity cost, not a hypothetical one, weighed against the fact that
+   `gr_condition_lapse`'s `match` already has no type constraint on the node
+   it lapses (A13's own reason it could ride an `AgendaVerdict` for free in
+   the first place) — riding it costs nothing at the RULE level; the cost is
+   entirely at the VOCABULARY-COUPLING level.
+4. **A19/A20 already solved a closely analogous problem, twice, WITHOUT
+   touching `gr_condition_lapse`, and the reasoning transfers almost
+   verbatim.** A19's design item 4 (quoted above, this file) rejected the
+   epoch-shaped `fact_equals` idiom for the SAME structural reason pool
+   drift has: the fact in question ("is X true right now") can change with
+   NO epoch bump in the scene, so a description that is honest only until
+   the next measurement is the wrong shape — instead A19/A20 each added a
+   direct reversible pair (`ax_fallback_silent`/`ax_fallback_cleared`,
+   `ax_ask_divergence_active`/`ax_ask_divergence_cleared`) keyed on a LIVE
+   Term comparison, entirely inside `seeds/arc_executor.json`. The one
+   respect in which pool drift is NOT identical to either precedent: A19/A20
+   are both SINGLETON facts (the fallback is either live or not; the two
+   collapses either agree or not — `EXISTS` an `active`-flagged node of that
+   kind is the whole state). `ax_impotent`, by IM5's own registered design
+   (A13 §6), intentionally allows MULTIPLE `AgendaVerdict{kind:'impotent'}`
+   nodes to coexist — one per distinct pool signature, a deliberate
+   historical record, gated live
+   (`test_im5_a_DIFFERENT_impotent_pool_mints_its_OWN_verdict`). A literal
+   A19-shaped singleton `active` flag (one global boolean, mutually
+   exclusive on/off) would COLLAPSE that history the first time the pool
+   drifts while remaining impotent — worse than the status quo, not better.
+   The candidate design this investigation surfaces (to be judged live, not
+   assumed) is A19/A20's REVERSIBLE-PAIR SHAPE applied PER-NODE — an `active`
+   attr on EACH `AgendaVerdict{kind:'impotent'}`, flipped by comparing that
+   NODE's own `pool_agids` against the CURRENT `_pool_sig()` (not a
+   singleton `EXISTS` guard) — preserving IM5's multi-verdict history while
+   adding the missing "which one is current" marker, entirely inside `seeds/
+   arc_executor.json`, zero touch to `gr_condition_lapse`.
+5. **The epoch-keyed `stale` flag (unmodified `gr_condition_lapse`) and a
+   pool-keyed `active` flag would be answering two DIFFERENT, both
+   legitimate questions, not competing for the same bit.** `stale` says "a
+   measurement has happened since this was minted, so treat it as possibly
+   outdated until re-verified." A pool-keyed `active` would say "the pool
+   this verdict describes IS/IS NOT the one that exists right now,
+   regardless of epoch." A verdict can be `stale:1.0, active:1.0`
+   (superseded by a later measurement, but still describing today's actual
+   pool) or `stale:0.0, active:0.0` (current epoch, but the pool has since
+   moved under it without a re-measurement) — genuinely different facts,
+   both worth holding, neither redundant with the other. This is itself
+   evidence for keeping them as two separate, orthogonal mechanisms rather
+   than trying to fold pool-drift into the epoch-shaped one.
+
+**Bars, registered before any seed or adapter code is written or any GO/
+NO-GO decision is made.**
+
+- **AR21a — characterize exactly which shipped verdict kinds carry a
+  pool-signature-style (set-valued, not scalar) field, as a table, not a
+  bare claim.** Read `tools/build_arc_executor_seed.py` in full for every
+  `AgendaVerdict` kind this seed mints (`impotent` — A13; `order_n_fallback`
+  — A19; `ask_dispatch_divergence` — A20; any landed since, e.g. under
+  MG4/supply-blocker-retirement) and record, per kind: does it carry a
+  `pool_agids`-shaped (ordered-list/set) field; is its identity a scalar
+  Term comparison or a set comparison; would pool-composition drift (as
+  opposed to a single Term flipping) even apply to it. Confirms or refutes
+  design item 1's claim that exactly one kind (`impotent`) is in scope.
+- **AR21b — a GO/NO-GO criterion for vocabulary-extension vs.
+  reversible-pair-applied-to-`ax_impotent` vs. neither, registered NOW,
+  before either is built.** Extend `gr_condition_lapse`'s `MISMATCH`
+  vocabulary (a fourth `ckind`) ONLY IF: (i) it can be computed with NO new
+  Python probe (a pure graph-native Term, matching `shape_count`/
+  `payload_count`'s existing shape, NOT `fact_equals`'s Python-mediated
+  shape) — per design item 2, this is expected to fail for a naive
+  `fact_equals`-shaped implementation and is registered as a hard
+  disqualifier if it does; AND (ii) the domain-specific Term it needs
+  (`POOL()`/`_pool_sig()`) is judged, on inspection, cheap and safe to
+  import into the generic `goal_residuals` seed without creating a
+  circular or one-off dependency a future non-ARC-6 residual would have to
+  route around. Apply the A19/A20 reversible-pair pattern DIRECTLY to
+  `ax_impotent` (entirely inside `seeds/arc_executor.json`, zero edit to
+  `seeds/goal_residuals.json`) INSTEAD IF: (iii) it can be built PER-NODE
+  (not as a A19/A20-shaped global singleton) so IM5's multi-verdict history
+  is preserved, not collapsed — this is registered as the load-bearing
+  discriminator against a lazy reuse of the A19 shape verbatim; AND
+  (iv) it costs strictly less (fewer new productions/node-types/rules, no
+  cross-seed coupling) than the vocabulary extension, per design items 3–4.
+  If BOTH approaches clear their own conditions, prefer the reversible pair
+  (cheaper, lower-risk, and does not touch shared infrastructure other
+  threads depend on) — registered now, before knowing whether both, either,
+  or neither clears. NO-GO on BOTH (build nothing, report a clean null) if
+  neither clears its conditions, or if live measurement shows pool-drift-
+  while-impotent is never actually reachable by any real or realistically
+  constructible mechanism this tree has (echoing A14 IC2/IC3's own
+  underpowered-null path) such that the fix would have nothing to
+  demonstrate itself against.
+- **AR21c — if built, demonstrate live, BOTH directions, matching IM5's own
+  "mint-once by pool signature, lapse via gr_condition_lapse" discipline —
+  now actually closing the gap that discipline left open.** (i) FIRES ON
+  DRIFT: construct a scene where the pool is impotent, let a verdict mint,
+  then change pool COMPOSITION (not epoch) while remaining impotent (the
+  same `headroom_n → 0` pool-exit technique A13 §7.1 validated, applied a
+  second time) — the mechanism must, within the SAME `run_rules()` fixpoint
+  and with NO epoch bump anywhere in the scene, mark the superseded
+  verdict's currentness correctly and produce (or already have produced,
+  per IM5) a fresh verdict/marker for the new composition. (ii) DOES NOT
+  FIRE WITHOUT DRIFT, INCLUDING ACROSS A GENUINE EPOCH-ADVANCING
+  REMEASUREMENT: reproduce IM5's own "bump `arc_measure_epoch`, pool
+  composition UNCHANGED" scene and show the pool-drift marker does NOT flip
+  on the unchanged-composition verdict(s) — the new mechanism must be
+  provably orthogonal to the epoch-shaped one, not a duplicate trigger for
+  it. Both directions measured live, on a fresh boot, not asserted from the
+  mechanism's shape alone.
+- **AR21d — no regression, node-id lists not counts.** The six existing gate
+  suites (`test_arc_executor_migrated`, `test_arc_goals_migrated`, `test_
+  goal_residual_migrated`, `test_arc6_valuelayer_migrated`, `test_arc_
+  magnitude_migrated`, `test_arc_decompose_migrated`) produce the same
+  failing-node-id lists before and after, paired and named. `seeds/arc_
+  goals.json` and every existing rule body in `tools/build_arc_executor_
+  seed.py` (`ax_dispatch`, `ax_retired_epoch`, `ax_rearm`, `ax_close`, `ax_
+  impotent`, `ax_world_probe_epoch`, `ax_fallback_silent`, `ax_fallback_
+  cleared`, `ax_ask_divergence_active`, `ax_ask_divergence_cleared`) stay
+  byte-identical to `HEAD` UNLESS this amendment's own investigation
+  produces well-evidenced grounds to touch one (in particular, `ax_impotent`
+  itself may gain an ADDITIVE `active:1.0` stamp at mint time — an
+  ADDITION, not a behavioural edit to its `match`/`where`/mint-once guard,
+  which must stay byte-identical). If `gr_condition_lapse`'s vocabulary is
+  extended instead, `gr_condition_hold` and every OTHER residual's
+  conditions stay byte-identical and every existing `test_gr2_*`/`test_gr1_*`
+  gate keeps passing unmodified. `seeds/arc_executor.json` (and/or `seeds/
+  goal_residuals.json`, if that path is taken) regenerates byte-identically
+  from its own edited, version-bumped emitter.
+
+**Registered null reading.** If AR21b's GO/NO-GO reads NO-GO for both
+approaches — because the vocabulary extension fails its no-Python-probe/
+no-harmful-coupling test AND the reversible-pair pattern cannot be built
+per-node without cost disproportionate to the benefit, or because live
+measurement shows the gap is not reachable by any real/constructible
+mechanism — the honest result is: investigated, a concrete design
+identified and costed, **nothing built**, and `gr_condition_lapse`'s
+vocabulary reported as correctly staying closed with the A19/A20 idiom
+named as the preferred pattern for this class of problem going forward —
+exactly the shape this arc's own culture already treats as a complete
+result (M0, A14). This is not a failure condition and is not to be forced
+into a build to have something to show.
+
+**Explicitly out of scope, unchanged from A13–A20's shared boundary:**
+`results/arc6_import_impedance.json`/`scripts/arc6_import_impedance.py`,
+and anything under `docs/research/theory_convergence/`, `docs/research/
+adventure_mechanics/`, or `docs/research/engine_substrate/
+decision_making_spike.md` (the last actively being extended by a concurrent,
+unrelated agent).
