@@ -703,6 +703,24 @@ def _productions():
         {"provenance": "seed:arc_executor:responds_to-0",
          "src": {"type": "Message", "var": "s"}, "edge_type": "responds_to",
          "tgt": {"type": "ArcImpotenceQuestion", "var": "t"}},
+        #  A24 -- the reply side.  ax_ask_impotent_testify's own mint-once
+        #  guard reads this edge (Neigh(q, mints_testimony)); the target
+        #  type is DISTINCT from GoalResidual on purpose (design
+        #  investigation: gr_move_penalty's own MATCH refuses every
+        #  candidate this pool can ever contain, so a GoalResidual here
+        #  would be inert by construction, not a reuse).
+        {"provenance": "seed:arc_executor:mints_testimony-0",
+         "src": {"type": "ArcImpotenceQuestion", "var": "s"},
+         "edge_type": "mints_testimony",
+         "tgt": {"type": "ArcImpotenceTestimony", "var": "t"}},
+        #  holds_under already exists as an edge TYPE (AgendaVerdict ->
+        #  ResidualCondition, above) -- this is a NEW production triple for
+        #  the SAME edge type off a new src type, riding gr_condition_lapse's
+        #  own type-agnostic match for free (zero new lapse mechanism).
+        {"provenance": "seed:arc_executor:holds_under-1",
+         "src": {"type": "ArcImpotenceTestimony", "var": "s"},
+         "edge_type": "holds_under",
+         "tgt": {"type": "ResidualCondition", "var": "t"}},
     ]
 
 
@@ -1437,12 +1455,103 @@ def _r_ask_impotent_reply():
     }
 
 
+def _r_ask_impotent_testify():
+    return {
+        "name": "ax_ask_impotent_testify",
+        "comment": (
+            "A24 -- THE REPLY SIDE, AND IT IS CLASS-SCOPED BY kind, NOT A "
+            "gr_move_penalty REUSE (PROGRAM_SYNTHESIS_ARC6_PREREG.md amendment "
+            "A24's own design investigation).  gr_move_penalty's own MATCH "
+            "(tools/build_goal_residual_seed.py) refuses any candidate with a "
+            "null sig_seam UNCONDITIONALLY, before any of a residual's own "
+            "wildcards are even read -- and every goal this pool has EVER "
+            "named nearest_unroutable_kind (decomposition_tier/supply_blocker/"
+            "source_claim, A23 SS2.3/SS4.2, already measured) is exactly the "
+            "population that guard exists to exclude (A14 finding 1).  A "
+            "GoalResidual minted here would be inert by construction, not "
+            "merely mis-scoped, for every candidate this pool can ever "
+            "contain -- so this rule mints a DIFFERENT, DISTINCT node type, "
+            "ArcImpotenceTestimony, keyed by kind (the SAME class dimension "
+            "ax_ask_impotent already copied onto ArcImpotenceQuestion.region "
+            "at ask time), and touches NEITHER gr_move_penalty/MATCH/PENALTY "
+            "NOR AG-2's VALUE formula -- zero changes to any Term three "
+            "seeds already depend on for unrelated, already-measured "
+            "properties. "
+            "NO WEIGHT FIELD, ON PURPOSE (CLAUDE.md's SHAPES-not-numbers "
+            "standing rule, 2026-08-06/07): nothing downstream reads a "
+            "class-scoped testimony weight today, and authoring one anyway "
+            "would be the exact 'scalar knob with no reader' anti-pattern "
+            "that rule names.  The record is DESCRIPTIVE -- kind, which "
+            "specific goal was nearest-ranked at ask time (agid_a), and the "
+            "scope the reply itself named (scope, a structured field the "
+            "reply's own Message carries, set the SAME way cond_kind already "
+            "is on ag_reply_mints_testimony_conditioned -- mechanical "
+            "translation of an external form, never parsed from the reply "
+            "text; defaults to 'unspecified' when the field is absent). "
+            "LAPSES THROUGH THE EXISTING, TYPE-AGNOSTIC gr_condition_lapse/"
+            "gr_condition_hold, UNMODIFIED: a holds_under edge to a "
+            "fact_equals(arc_measure_epoch) ResidualCondition, the SAME "
+            "'expires at the next measurement' idiom every other testimony "
+            "in this tree already uses -- zero new lapse mechanism. "
+            "MINT-ONCE PER QUESTION, the cheapest guard this engine has: "
+            "Not(Exists(Neigh(q, mints_testimony))), self-extinguishing, the "
+            "SAME shape ax_ask_impotent's own re-entry gate uses one level "
+            "up.  Matched by TYPE (ArcImpotenceQuestion) AND by the base "
+            "reply guard ax_ask_impotent_reply already uses, so this rule "
+            "cannot fire on an ordinary ag_ask value-tie question's reply. "
+            "ax_ask_impotent_reply ITSELF IS BYTE-UNCHANGED by this rule -- "
+            "it still only marks the question answered; this is a SEPARATE, "
+            "additive rule reading the SAME reply edge, not an edit to A23's "
+            "own rule, so A23's own 'this rule only asks, it does not "
+            "reprice' statement about ax_ask_impotent_reply stays literally "
+            "true."),
+        "batch": True,
+        "match": [["m", "responds_to", "q"]],
+        "where": AND(
+            EQ({"type": "TypeOf", "node": V("q")}, L("ArcImpotenceQuestion")),
+            NOT(EQ(A(V("m"), "from"), L("agent"))),
+            NOT(EXISTS(NEIGH(V("q"), "mints_testimony"), "qtx", L(True))),
+        ),
+        "effects": [
+            ["add_node", "t", "ArcImpotenceTestimony", {
+                "kind": T(A(V("q"), "region")),
+                "agid_a": T(A(V("q"), "agid_a")),
+                "scope": T(ITE(EQ(A(V("m"), "impotence_scope"), L(None)),
+                               L("unspecified"),
+                               A(V("m"), "impotence_scope"))),
+                "asked_epoch": T(A(V("q"), "asked_epoch")),
+                "reply_epoch": T(MEASURE_EPOCH()),
+                "evidence_kind": "utterance",
+                "reach_class": "testimony",
+                "stale": 0.0,
+                "_no_weight_by_design": (
+                    "SHAPES-not-numbers (CLAUDE.md 2026-08-06/07): no rule in "
+                    "this tree reads a class-scoped testimony weight yet, so "
+                    "none is authored here -- a future consumer can add one "
+                    "when it exists to read it."),
+            }],
+            ["add_edge", "q", "mints_testimony", "t"],
+            ["add_node", "cond", "ResidualCondition", {
+                "rid": T(SCAT(L("arc.impotence_testimony."), A(V("q"), "region"))),
+                "ckind": "fact_equals",
+                "filter_value": "arc_measure_epoch",
+                "expected_str": T(MEASURE_EPOCH()),
+                "why": ("expires at the next measurement -- the SAME "
+                        "'unconditioned testimony' idiom ag_reply_mints_"
+                        "testimony_unconditioned already ships."),
+            }],
+            ["add_edge", "t", "holds_under", "cond"],
+        ],
+    }
+
+
 def _rules():
     return [_r_dispatch(), _r_retired_epoch(), _r_rearm(), _r_close(),
             _r_impotent(), _r_world_probe_epoch(), _r_fallback_silent(),
             _r_fallback_cleared(), _r_ask_divergence_active(),
             _r_ask_divergence_cleared(), _r_impotent_pool_lapse(),
-            _r_impotent_pool_hold(), _r_ask_impotent(), _r_ask_impotent_reply()]
+            _r_impotent_pool_hold(), _r_ask_impotent(), _r_ask_impotent_reply(),
+            _r_ask_impotent_testify()]
 
 
 def build():
@@ -1464,7 +1573,7 @@ def build():
             "is the LAST thing that should arrive in every agent by a glob.  "
             "Activation is one key and a paired tree-wide sweep."),
         "id": "arc_executor",
-        "version": "1.8.0",
+        "version": "1.9.0",
         "depends_on": ["goal_residuals", "arc_goals"],
         "_SOFT_DEPENDENCY_ON_arc_magnitude": (
             "v1.1.0 (A11/WH1) wires ax_dispatch to the ORDER-N collapse "
@@ -1617,7 +1726,24 @@ def build():
             "existing AgendaVerdict, it does not change when one mints. "
             "Mints no GoalResidual/testimony (candidate (b) territory, "
             "already NO-GO'd by A22) -- ax_ask_impotent_reply only marks the "
-            "question answered."),
+            "question answered. "
+            "v1.9.0 (A24) adds a FIFTEENTH rule, ax_ask_impotent_testify: "
+            "the reply side.  A design investigation (PROGRAM_SYNTHESIS_"
+            "ARC6_PREREG.md amendment A24) found gr_move_penalty's own MATCH "
+            "guard refuses every candidate with a null sig_seam "
+            "unconditionally -- and every kind this pool has ever named "
+            "nearest_unroutable_kind is exactly that unsignatured "
+            "population (A23 SS2.3/SS4.2), so a GoalResidual minted here "
+            "would be inert by construction, not merely the wrong grain.  "
+            "ax_ask_impotent_testify therefore mints a DISTINCT node type, "
+            "ArcImpotenceTestimony, class-scoped by kind (the SAME class "
+            "dimension ax_ask_impotent already copies onto "
+            "ArcImpotenceQuestion.region), with NO weight field (SHAPES-"
+            "not-numbers, CLAUDE.md 2026-08-06/07 -- nothing downstream "
+            "reads one yet), lapsing through the EXISTING, UNMODIFIED "
+            "gr_condition_lapse.  gr_move_penalty/MATCH/PENALTY, AG-2's "
+            "VALUE, ax_ask_impotent, and ax_ask_impotent_reply are ALL "
+            "BYTE-UNCHANGED by this rule."),
         "microtheory": "arc6_executor",
         "nodes": _nodes(),
         "edges": _edges(),
