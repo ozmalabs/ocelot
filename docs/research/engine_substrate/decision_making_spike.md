@@ -4451,3 +4451,622 @@ confirm (`14763.77`, crash True).
 **A cleanup that lives in the same command as a long-running measurement is not
 a cleanup.** It should be a separate step, or the measurement should write to a
 copy.
+
+---
+
+## §95 — Locating the gap precisely: the ladder prices the marginal action, not the path that reached it
+
+Owner's framing, given directly and quoted rather than paraphrased: *"the
+standard risk gating is only by thermodynamic reversibility - but it also
+needs to include sunk cost and ticks."* Before touching literature I want to
+state precisely what §89-93 built, so the gap is located rather than gestured
+at.
+
+The ladder as it stands prices exactly one thing: **what THIS candidate action,
+taken from THIS state, would cost if it goes wrong** — read off
+`regime_viability_rung` (§86), converted to a spend against `regime_spend_floor`
+/ `regime_info_spend_floor` (§88, §93), denominated in log-irreversibility
+(§90-91). Every input to that arithmetic is FORWARD-looking and MARGINAL: the
+rung the candidate would land on, the worth the operator declared for the goal
+or for knowing. Nothing in it reads how the aircraft got to the state it is
+evaluating from — not the rung history further back than the single high-water
+mark, not the fuel already spent, not how many actions have already been
+taken.
+
+That is not a vague complaint about "context." It is two SEPARATE, precisely
+different omissions, and the owner's own phrasing keeps them apart on purpose
+— I am going to hold them apart too, because §92 is a documented example of
+exactly this line conflating two different accounts (goal spend and
+information spend) and paying for it with a regression before separating them
+again. Collapsing sunk cost and ticks into one "the past matters too" term
+would be the same mistake a third time.
+
+- **Sunk cost**: what has already been committed — resources, foreclosed
+  alternatives — changes how much further loss is tolerable, HOLDING THE
+  MARGINAL ACTION'S OWN IRREVERSIBILITY FIXED. Two candidates with identical
+  forward risk are not equally risky if one arrives at that risk having spent
+  most of its budget and the other has spent almost none.
+- **Ticks**: the passage of time itself, independent of any state change, has
+  a cost — because a tick is the substrate's own fundamental unit of anything
+  happening at all, and because a tick spent not acting is a tick a threat,
+  competitor, or expanding rival got to spend advancing, whether or not this
+  consumer has declared that rival as a region.
+
+Both connect to material this document already has and did not wire in: §3.4's
+Dixit & Pindyck citation (real options, read again below in more depth) and
+§79's "both risk terms are already measured in this tree" — which turns out to
+undersell how much is already there, once I went looking specifically for
+these two.
+
+## §96 — Sunk cost, grounded: a real quantity with the same name as a bias
+
+The phrase "sunk cost" is contaminated by its own most famous finding, and the
+owner's framing is explicit that this is NOT that finding: *"not the sunk-cost
+fallacy... the opposite: what has ALREADY been spent... is itself part of what
+is at stake if the current path fails, independent of whether the marginal
+next action is reversible."* Worth verifying the fallacy precisely so the
+distinction is not asserted against a strawman.
+
+**The fallacy, as the literature actually states it.** Arkes & Blumer, "The
+Psychology of Sunk Cost," *Organizational Behavior and Human Decision
+Processes* 35(1), 124-140 (1985) — the source paper for the term in behavioural
+economics. Their finding: people persist with a chosen course of action IN
+PROPORTION TO how much they have already invested in it, even when the
+marginal, forward-looking expected value of continuing is lower than an
+alternative — because abandoning feels wasteful. Staw, "Knee-Deep in the Big
+Muddy: A Study of Escalating Commitment to a Chosen Course of Action,"
+*Organizational Behavior and Human Performance* 16(1), 27-44 (1976) is the
+earlier, related finding — escalation of commitment is worse when the person
+continuing is personally responsible for the original decision. **The
+fallacy's shape: past cost is used to justify a decision whose FUTURE PAYOFF
+it cannot affect.** That is irrational because bygones are bygones for the
+forward calculation — the $10 already spent on a bad ticket does not change
+whether the show tonight is worth attending.
+
+**What the owner is pointing at is a different mathematical object, and it
+survives the "bygones are bygones" objection because it isn't making the
+mistake the objection is aimed at.** It is not claiming the past changes the
+FORWARD PAYOFF of the marginal action. It is claiming the past changes the
+STAKE — what is lost, GIVEN failure — which is a fact about the state the
+agent is IN, not a reason to keep acting a certain way. Two claims that look
+similar and are not: "keep going because of what I've spent" (the fallacy,
+comparing sunk cost against a decision whose payoff it cannot move) versus
+"weigh this loss more heavily because of what I've spent" (a claim about the
+MAGNITUDE of the stake, not about whether to persist). The ladder already has
+exactly the right shape to hold the second claim without smuggling in the
+first: it never asks "should I persist," only "how much room is left before
+the floor," and adding a term to the floor cannot produce escalating
+commitment because the floor governs REFUSAL, not continuation.
+
+**Dixit & Pindyck, *Investment under Uncertainty* (Princeton, 1994) — read
+again, in context, as the brief asked.** Already cited in this document at
+§3.4 for its headline (irreversible commitment carries an option value naive
+NPV misses). Read specifically for the sunk-cost treatment: their own
+vocabulary makes "sunk" and "irreversible" close to synonymous from the start
+— a cost is sunk precisely when it cannot be recovered, which is their
+definition of investment irreversibility, and the book's central formal move
+is that the OPPORTUNITY COST OF INVESTING NOW — the value of the option to
+wait, which is destroyed the moment the sunk cost is paid — must be added to
+the price of investing, not treated as a separate soft consideration.
+`[unverified in depth]`: I read this through search-returned excerpts and a
+public PDF of the book rather than the full text end to end, so I am not
+claiming to have verified every derivation; the headline claims (sunk =
+irrecoverable; the lost option value is a real cost, not a sentiment) are
+corroborated by multiple independent secondary sources and match the book's
+stated framework.
+
+**What this buys, precisely stated:** in Dixit & Pindyck's own terms, the
+existing ladder's `irreversibility` axis (§89-91) is ALREADY a real-options
+sunk-cost price — for the MARGINAL action being scored. What their framework
+does NOT already give this document is a treatment of ACCUMULATED prior
+sunk-ness — the cost of the option ALREADY exercised, sitting behind the
+current decision point, as opposed to the option about to be exercised. That
+is the genuine gap, and it is narrower than "the past matters," which is why
+I want a precise formal statement rather than a vague weight (§98).
+
+**A third, adjacent citation that sharpens WHY stake size should matter
+independent of the marginal odds:** Kelly, "A New Interpretation of
+Information Rate," *Bell System Technical Journal* 35(4), 917-926 (1956).
+Not sunk cost — bet sizing. Kelly's result is that maximizing the EXPECTED
+LOG of wealth, not expected wealth, is the correct criterion when the same
+favourable bet is repeated and RUIN (losing the whole bankroll) is
+irreversible; the optimal stake is a FRACTION of what remains, which shrinks
+automatically as the bankroll shrinks. That is the same reasoning the owner is
+asking for, independently derived in a completely different literature: the
+size of the remaining stake changes how much of it should be risked on an
+otherwise-identical bet, and the natural currency for that reasoning is
+log-scaled — which is exactly the currency §90-91 already adopted for a
+different reason (avoiding lexicographic infinities). That the two literatures
+converge on log-scaling for unrelated reasons is a point in favour of adding
+sunk cost to the EXISTING log-irreversibility ledger rather than inventing a
+new currency for it.
+
+## §97 — Sunk cost is already half-built: two ratchets and a sibling gate's own vocabulary
+
+Before proposing anything new, the brief's own instruction: check whether this
+is already implicitly present. It is, twice, and there is a third precedent
+adjacent to it that never made it into this ladder.
+
+**1. The high-water rung ratchet (§92-93) IS a sunk-cost account, in the
+SAME currency the rest of the ladder uses, just not named that.**
+`regime_spend_floor = high_water_rung − (goal_worth / decade)` (§93) reads
+from the WORST rung reached so far, not the current one — quoting §92
+directly: *"the floor was corrected to measure from the HIGH-WATER rung rather
+than the current one — rung - worth tracks the descent and can never be
+violated, which is a ratchet, not a budget."* That is precisely the owner's
+claim, already built, for one specific kind of sunk cost: viability already
+lost cannot be un-lost, and the floor reflects that permanently rather than
+recovering when the aircraft temporarily regains a rung. This is a genuine,
+already-measured, already-shipped instance of "what has already happened
+constrains what is authorised now, independent of the current state" — it
+just only covers loss denominated in the SAME currency as the thing being
+protected (viability rungs), which is why it does not yet cover the owner's
+example (identical marginal risk, different prior resource spend, no rung
+loss at all yet).
+
+**2. The two-column energy ledger has its own ratchet, named in this
+document and never wired to the floor.** §"Standing rule minted" (line ~459):
+*"the ledger is monotone under change rather than constant, the reserve
+ratchets rather than resets."* And derivation item 10, quoted at §29:
+*"surrendering altitude liquidates the reserve every future decision draws
+on."* This is the SAME shape as the high-water rung — a quantity that only
+gets worse, never recovers, tracking commitment already made — applied to
+RESOURCE currency instead of viability currency. §79 and §82 both say the
+ledger is "measured, and never consulted by a decision." That is exactly the
+missing wire: the pattern this line already uses for sunk-cost accounting
+(a ratchet feeding a floor) exists twice in this document and has been
+connected to the selection arithmetic exactly once.
+
+**3. A sibling gate already has vocabulary for the "foreclosed alternatives"
+half of the owner's claim.** `domains/information_commitment.py` (the
+thermodynamic-commitment / wait-refine-commit gate summarised in
+`ASYNC_COGNITIVE_CORE_RESULTS.md`, *"Thermodynamic commitment... scoring also
+accounts for epistemic gain, goal work, option loss, uncertainty, resources,
+delay, and opportunity"*) scores `CommitOption` candidates with a `_METRICS`
+tuple (`domains/information_commitment.py:10-14`) that includes
+`option_volume_lost`, `resource_cost`, `delay_cost`, and `opportunity_cost` by
+name, consumed in `ic_score_commit`
+(`seeds/information_commitment.json`) as a plain ADDITIVE subtraction from
+`net_value`. `option_volume_lost` is this substrate's own name, already
+shipped in a sibling gate, for "whatever the resource could have bought
+elsewhere is gone" — the exact foreclosed-alternative half of the owner's
+example. Two things about it, both important: it corroborates that the
+CONCEPT is native vocabulary here, not an import; and its FORM is the wrong
+one to copy verbatim into the F-16 ladder — it is a linear weighted sum,
+which is precisely the shape §90 retired ("a total ordering with no
+arithmetic is LEXICOGRAPHIC... nothing is infinitely valuable... the correct
+model is logarithmic"). Reusing the name and translating it into log form is
+right; reusing the arithmetic is not.
+
+**Conclusion before formalising:** sunk cost is not a new concept for this
+codebase. It is an unwired, resource-currency instance of a ratchet pattern
+already used once (rungs) and named once more (the reserve, the
+`option_volume_lost` sibling), never generalised across currencies and never
+connected to `regime_spend_floor`. The genuinely new material in §98 is
+small on purpose: one declared ratio and one sign correction, reusing the
+ratchet mechanism rather than replacing it.
+
+## §98 — Sunk cost, formalised: one declared ratio, added to the floor, never subtracted
+
+**Sign discipline first, because it is easy to get backwards.**
+`regime_goal_worth_log` LOWERS the floor — it is a licence to spend, so more
+worth means more risk tolerated (§93: `spend_floor = high_water − worth /
+decade`). Sunk cost must do the OPPOSITE: more already spent should make the
+operator LESS willing to risk further loss, because failing now forecloses
+both the investment and whatever it would have bought elsewhere (§96). That
+means sunk cost is ADDED to the floor, raising it — more conservative, not
+less — which is also the only sign consistent with the high-water ratchet's
+own behaviour (§97.1): a worse high-water rung raises the effective floor by
+definition, since the floor is measured FROM it.
+
+**The proposed contract, following the exact shape of §88 and §93, adding
+nothing to the arithmetic's TYPE — only new declared and published fields
+of the same two kinds already there:**
+
+```
+regime_resource_spent_log   published by the CONSUMER -- a ratchet, monotone
+                            non-decreasing, log-scaled measure of resource
+                            already committed (the two-column ledger's own
+                            "reserve" (line ~459), read in log units instead
+                            of linear fuel fraction)
+regime_resource_decade      declared by the OPERATOR -- how many log units of
+                            irreversibility one full decade of resource
+                            expenditure is worth, exactly parallel to
+                            regime_rung_decade
+regime_spend_floor          high_water_rung
+                              − (goal_worth_log  / rung_decade)
+                              + (resource_spent_log / resource_decade)
+regime_info_spend_floor     high_water_rung
+                              − (info_worth_log  / rung_decade)
+                              + (resource_spent_log / resource_decade)
+```
+
+Absence degrades exactly the way `regime_goal_worth_log` already does
+(§91's *"declaring nothing is not... priceless — it is worth = 0"*): no
+`regime_resource_spent_log` published, or `regime_resource_decade` left
+undeclared, and the added term reads zero — both floors are byte-identical
+to §93's contract. That is deliberate and load-bearing: a consumer that never
+opts in must be provably unchanged, the same absence-safety §85 verified for
+the region contract (*"no consumer declares a region yet, so the rule never
+fires and all three scenarios are unchanged"*).
+
+**Why one ratio and not two.** The owner's example names "resources, ticks,
+and foreclosed alternatives" together. §3.4's own reading of the ledger —
+*"more energy is more options"*; *"the two-column ledger is a domain-specific
+empowerment measure"* — already collapses "resource spent" and "options
+foreclosed" into ONE quantity under the empowerment interpretation this
+document adopted early and never contradicted (Klyubin, Polani & Nehaniv,
+"All Else Being Equal Be Empowered," ECAL 2005, `[unverified]` on venue, cited
+at §3.4). If spent resource already reads as foreclosed reachable-state
+volume, pricing `regime_resource_spent_log` prices both halves of the owner's
+example at once — a second "foreclosed alternatives" term would very likely
+double-count the same commitment, not add independent information. I am
+NOT fully certain of this — it depends on the ledger's empowerment reading
+being accurate rather than aspirational, which §3.4 itself flags as this
+line's own derivation, not an external verification — so I record it as the
+working assumption rather than a settled fact, and flag it as the first thing
+a measurement should check (§103).
+
+**The log-ordering discipline (§90) is preserved, not bent.** Both new fields
+are declared ratios, stable per mission, exactly like `regime_rung_decade`
+and the two worth terms — not a per-episode tuned weight. `regime_resource_
+spent_log` is a MEASUREMENT (published, not declared), exactly like
+`regime_viability_rung` — the operator declares only the exchange rate
+between currencies, never the magnitude of the state.
+
+## §99 — Worked example: two aircraft, identical marginal risk, different floors
+
+**Not measured — illustrative arithmetic on the declared contract, exactly
+the discipline this document's own status line requires (no runs).** Numbers
+are chosen to separate the two cases cleanly, not read off any engine.
+
+Two aircraft, both at `high_water_rung = 3` (fully controllable, no viability
+loss yet at all — this is the case the CURRENT two-term ladder cannot
+distinguish, because both have identical rung history). Both are considering
+the SAME probe, one whose worst case would drop them to rung 1. Declared,
+identically for both (illustrative, not the real f16 v8.62.0/v8.63.0 values,
+chosen here to leave headroom for the example): `rung_decade = 1.0`,
+`goal_worth_log = 0.0`, `information_worth_log = 2.5`, `resource_decade =
+1.0`.
+
+**Baseline (§93's contract, no sunk term):**
+
+`info_spend_floor = 3 − 2.5/1.0 = 0.5`. A drop to rung 1 (1 ≥ 0.5) is
+AUTHORISED for both aircraft — identically, because nothing in the current
+contract can see how they differ.
+
+**With `regime_resource_spent_log` priced**, using
+`resource_spent_log = log10(1 / fuel_remaining_fraction)`:
+
+| aircraft | fuel remaining | resource_spent_log | info_spend_floor | probe to rung 1 |
+|---|---|---|---|---|
+| B, fresh | 95% | log10(1/0.95) ≈ 0.022 | 0.5 + 0.022 = 0.522 | **still authorised** (1 ≥ 0.522) |
+| A, depleted | 10% | log10(1/0.10) = 1.000 | 0.5 + 1.000 = 1.500 | **now refused** (1 < 1.500) |
+
+**The point of the example is the row that does NOT change between the two
+tables as much as the one that does.** B's floor barely moves — a fresh
+aircraft's sunk cost is close to zero, so pricing it changes almost nothing,
+exactly the absence-safety property §98 requires. A's floor moves past the
+candidate rung entirely, on the same marginal action, same declared worths,
+same rung history. That is the owner's claim made checkable: **identical
+forward-looking marginal irreversibility, different real risk, because of
+what has already been spent to arrive at the decision** — and the current
+two-term ladder is provably blind to it, since neither `high_water_rung` nor
+either `worth_log` differs between A and B in this example.
+
+A second, equivalent way to read the same numbers, closer to how an operator
+would actually use the contract: **how much information-worth would need to
+be declared to still authorise the SAME probe, before and after sunk cost is
+priced.** Solving `floor ≤ 1` for `information_worth_log`: baseline requires
+worth ≥ 2.0 for either aircraft (matches — 2.5 was chosen with headroom).
+With sunk cost priced, B still only needs ≥ 2.022 (a 1.1% increase); A needs
+≥ 3.0 (a 50% increase). The sunk cost has not changed whether probing is
+POSSIBLE — it has changed what the operator must be willing to pay, in the
+same currency, to keep doing it, which is exactly the "the number still
+exists, refusing to name it does not remove it" discipline §91 already
+established for goal worth, now applied one layer up.
+
+## §100 — Ticks, grounded: three literatures, and one document in this repo checked and found not to apply
+
+The owner's ticks claim has two parts and I want to keep them apart the way
+§95 kept sunk cost and ticks apart: (a) a tick is the fundamental unit at
+which anything can happen in this substrate, so time spent NOT acting is not
+free; (b) a tick spent is a tick a competing or expanding process may have
+kept advancing during ("relative regression"), which is a claim about
+exposure to something OUTSIDE the agent, not about the agent's own clock.
+
+**(a) is grounded directly in this repo's own literature situating, and I
+want to quote it precisely rather than paraphrase, per the brief's
+instruction.** `docs/research/engine_substrate/COGNITION_IS_PHYSICS_LITERATURE.md`
+(piece 2, "Decay = the second law," and piece 3, "The integer / frame
+ontology"): *"Holding structure against this decay = spending negentropy
+(Landauer). The substrate is therefore a dissipative structure / free-energy
+minimiser: it persists by continually paying to resist its own relaxation to
+the uniform state"* and, on the clock itself, *"The 'global clock' is
+rejected: ticks are async and per-frame; determinism is in-frame; apparent
+randomness is cross-frame misalignment."* Landauer's principle (erasure of
+one bit costs at least `kT ln 2`, the standard citation being Landauer,
+"Irreversibility and Heat Generation in the Computing Process," *IBM J. Res.
+Dev.* 5(3), 1961) is already the grounding piece 2 leans on there, per that
+document's own §2.6 ("thermodynamics of computation"). **This is real,
+already-landed grounding for "a tick is not free," but it prices something
+narrower than the owner's example** — the thermodynamic cost of PERSISTING
+structure against decay, which is an ALWAYS-ON background rate, not
+specifically the cost of an aircraft's deliberation loop. I did not find, in
+this document or `CLAUDE.md`, a claim that the `run_rules` fixpoint's own
+cycle count is priced anywhere currently — only that it is async and
+per-frame, which is a claim about determinism and scheduling, not about cost.
+
+**I checked `TAU_HIERARCHY_AXIS_MAP_RESULTS.md` per the brief's specific
+suggestion, and it does not ground this.** Its "per-frame" material (§5,
+TAU-ORTHO) is about STRUCTURAL INDEPENDENCE of two capability axes — whether
+crossing one threshold (Axis C) is separable from crossing another (Axis L)
+— not about pricing elapsed ticks. Reported honestly rather than silently
+dropped: I looked where the brief said to look, and what is there is a
+different, unrelated finding sharing only the word "threshold."
+
+**(b), relative regression, is the harder case, and I want to be exact about
+its status rather than borrow more certainty than exists.** The owner's own
+phrasing — "stasis in an expanding environment is functionally equivalent to
+regression" — is, almost verbatim, `paper1.tex`'s own S6 signature
+("island flightlessness / self-imposed Type-1 preclusion," per
+`docs/research/theory_convergence/THEORY_CONVERGENCE_AUDIT.md:100`). **That
+audit's own finding, quoted precisely, is a clean, reported null**:
+*"S6, relative regression / island flightlessness... Despite dedicated
+searches across [ten named domain folders]: zero independent instances,
+anywhere... This is one of the paper's sharpest, most quotable claims, and it
+is the one this audit found the least independent trace of"*
+(`THEORY_CONVERGENCE_AUDIT.md:271-283`). I am not re-deriving that audit —
+it is out of scope to touch (constraint: `docs/research/theory_convergence/`
+is another thread) and I have no reason to doubt a systematic, cited search.
+**What this means for grounding: I should not cite this repo's own prior
+work as evidence for the "expanding environment" intuition, because the one
+place that looked for it here found nothing.** I looked outside instead, for
+an independently-established version of the same idea:
+
+**Van Valen, "A New Evolutionary Law," *Evolutionary Theory* 1, 1-30 (1973)**
+— the origin of the Red Queen hypothesis, verified via search rather than
+recalled. Van Valen's actual finding, from real fossil extinction-rate data:
+the probability of extinction within a taxonomic group is roughly CONSTANT
+over time, which he explained as a zero-sum consequence of co-evolving
+competitors — every lineage must keep adapting merely to hold its current
+relative fitness, because the others are adapting too. **This is the
+independently-established, real-literature version of exactly the owner's
+claim**: standing still is not neutral when the environment (here,
+competing lineages) is itself moving, and the felt "regression" is relative,
+not absolute. It is a different field (evolutionary biology, not decision
+theory) making a structurally identical point to what the paper's S6 claims
+and this repo's own search could not corroborate internally — which is a
+reasonable, cite-worthy substitute, not a claim that Van Valen and `paper1.tex`
+are making the same formal argument.
+
+**A time-scaled risk literature for the "how much does mere duration cost"
+question, verified via search:** Longerstaey & Spencer, *RiskMetrics —
+Technical Document*, 4th ed. (J.P. Morgan/Reuters, 1996) — the square-root-
+of-time scaling rule, which extrapolates a risk measure over a longer horizon
+as `√(horizon ratio)` times the one-period measure, under an i.i.d.
+zero-mean-return assumption. **Important caveat, also verified via search
+rather than assumed:** the rule is contested at long horizons — Danielsson
+et al., "On Time-Scaling of Risk and the Square-Root-of-Time Rule" (LSE
+working paper, also widely cross-published) report the i.i.d.-normal
+assumption breaks down empirically for real asset returns, so the rule
+over- or under-states long-horizon risk depending on the return process's
+actual autocorrelation. The useful transferable content is not the exact
+exponent — it is the STRUCTURAL claim that risk exposure is a function of
+HORIZON LENGTH, formalisable, and known to need an explicit assumption about
+how risk compounds tick-to-tick, which this document does not yet have and
+should not invent without naming the assumption the way RiskMetrics has to.
+
+**Reliability engineering, for the "exposure-time" framing specifically:**
+Barlow & Proschan, *Mathematical Theory of Reliability* (Wiley, 1965) —
+the standard text formalising the cumulative hazard function
+`H(t) = ∫₀ᵗ λ(s) ds`, i.e. risk accrued is the hazard rate INTEGRATED OVER
+TIME AT RISK, not evaluated once at a single instant. This is the cleanest
+formal analogue of "ticks accrue exposure" available, and it is a much
+better structural fit than the square-root-of-time rule for a system whose
+own clock is discrete and per-frame (§ above): a cumulative hazard is a SUM
+over discrete ticks in exactly the shape the substrate already computes
+things in, where the square-root rule assumes continuous, i.i.d.-normal
+compounding this substrate has no reason to assume.
+
+## §101 — Ticks decompose: the declared-threat clock is already built; the background rate is correctly silent by default
+
+Putting §100's three literatures against the F-16 material already in this
+document (§55-94, as instructed) produces a split I did not expect going in:
+**most of "ticks" is either already built or should NOT be priced by
+default, and the genuinely missing piece is small.**
+
+**Declared-threat exposure is already priced, and it is the cumulative-hazard
+shape from Barlow & Proschan almost exactly.** §85's region contract already
+publishes, per declared region, `region_actions` — *"integer actions until
+the gap closes at the measured rate... the horizon when it is not closing,
+since a region you are not approaching is on no clock."* §84 already reads a
+threat the same way a goal is read, `region_sense = −1`: *"reaching a goal
+and being reached BY a threat are the same closure... the arithmetic is
+gap/rate either way."* §86 already FEEDS this into the rung ladder for one
+declared region (terrain, `TERRAIN CLEAR`). This IS ticks-as-cost, for the
+case the owner's "competing/expanding frame" example is actually about — an
+incoming missile, closing terrain, anything that has a measured gap and a
+measured closing rate. **Nothing new is needed here conceptually.** What is
+missing is generalisation-in-fact, not generalisation-in-principle: §86 wires
+exactly one region (terrain) into exactly one rung; a genuinely ticks-priced
+ladder would read `region_actions` for EVERY declared avoid-sense region the
+same way, feeding the SAME log-irreversibility floor arithmetic §98
+extended for sunk cost — `region_actions` shrinking toward the decision
+horizon is itself a fact about the state, convertible to a rung exactly the
+way structural margin or terrain already are. This is a wiring extension of
+already-built machinery, not a new mechanism, and I am recording it as a
+near-clean-null on purpose: the owner asked whether ticks are priced, and for
+the declared-threat case the honest answer is "yes, partially, already, just
+not read generally yet."
+
+**Background, undeclared exposure — the Red Queen half — should NOT be
+priced unconditionally, and this document's own prior lessons say so
+directly.** The tempting move is a flat per-tick cost applied always, on the
+theory that SOME competitor might be advancing even if none is declared.
+That is precisely the failure shape §80 and §83 both already diagnosed and
+retired: an unconditional cost with no state to key off is exactly the
+"absolute bound" §80 showed paralyses ("choose among the options that
+aren't bad... which has no answer... exactly what was needed"), and it
+would fail the absence-safety discipline §85 and §91 both insist on
+(*"absence-safe and verified"*; *"declaring nothing is not... priceless — it
+is worth = 0"*). It would also be exactly the failure mode §89/91's closing
+argument names FOR THE OPPOSITE CASE — inventing a number nobody examined —
+just pointed the other direction: assuming a competitive rate no one has
+perceived is as unexamined as assuming none exists. **Axiom 0 — no
+frame-independent truth, "no view from nowhere"
+(`docs/research/theory_convergence/THEORY_CONVERGENCE_AUDIT.md:94`, S1) —
+cuts here precisely**: the agent has no frame-independent access to whether
+an undeclared rival is advancing; asserting a default rate would be
+smuggling in exactly the privileged, unearned frame Axiom 0 forbids.
+
+So the background term must be DECLARED, defaulting to zero, exactly parallel
+to `regime_goal_worth_log`'s own default (§91): a consumer that declares
+nothing gets today's behaviour, byte-identical, and a consumer that HAS a
+reason to believe it is in a competitive/expanding environment (a real Red
+Queen setting — multi-agent, adversarial, or genuinely time-limited) declares
+a rate and gets it priced. This keeps the Van Valen grounding (§100) honest:
+Van Valen's result held because competing lineages really were adapting; a
+declared rate encodes "I have reason to believe something else is moving,"
+which is a fact about the mission, not a universal constant this substrate
+can derive from nowhere.
+
+**One more piece the Landauer material (§100a) DOES license as always-on,
+and it is worth keeping separate from the Red Queen piece because it needs
+no declaration of a rival at all:** merely persisting costs real negentropy
+per tick (COGNITION_IS_PHYSICS_LITERATURE.md piece 2), independent of
+whether anything competitive exists. For an airframe at F-16 timescales
+against fuel-burn-per-maneuver, this is almost certainly negligible — the
+two-column ledger's fuel terms dwarf any Landauer-scale idle cost by many
+orders of magnitude, so pricing it for THIS consumer would be true but
+irrelevant, exactly the "the plant is a fixed effector, the frame differs"
+lesson (§55) applied to cost terms instead of control terms. It matters for
+a DIFFERENT class of consumer this same general seed serves — a long-running
+autonomous agent making many thousands of cheap decisions, where idle
+per-tick cost is not dwarfed by anything — and belongs in the general seed
+as a THIRD declared rate, defaulting to zero for the same reason, rather than
+being hand-waved as universally negligible.
+
+## §102 — Ticks, formalised, and a second worked example: a closing missile against an open-ended loiter
+
+**The proposed contract**, following exactly the same shape as §98 —
+published measurement, declared ratio, added to the floor:
+
+```
+regime_tick_spent_log       published, ratchet, monotone non-decreasing --
+                             for a declared avoid-sense region, derived
+                             directly from region_actions (§85): the closer
+                             the horizon, the higher this reads; for the
+                             idle/Landauer term, a flat per-tick accumulator
+regime_tick_decade          declared by the OPERATOR -- log-irreversibility
+                             units per decade of tick-exposure, defaulting
+                             absent (reads 0, exactly like goal_worth_log)
+regime_spend_floor          [§98's formula] + (tick_spent_log / tick_decade)
+regime_info_spend_floor     [§98's formula] + (tick_spent_log / tick_decade)
+```
+
+**Vignette 1 — the missile (§84), where ticks are already priced and adding
+this term changes nothing new.** A missile closes at a measured rate;
+`region_actions` (sense = −1) shrinks every tick whether or not the aircraft
+probes or commits. Read as `tick_spent_log`, this already flows into the SAME
+floor the rung ladder uses (§86 already does this for terrain) — the
+`regime_tick_decade` declaration is almost redundant here because §85-86
+already give a rung-compatible reading of the SAME quantity. This is the
+clean-null half of the claim, stated as a worked case rather than an
+assertion: nothing changes for a consumer that has already declared its
+threat as a region, because ticks were already being spent against it.
+
+**Vignette 2 — the open-ended loiter, where the current TWO-term ladder is
+silent forever, and that silence is correct until an operator says
+otherwise.** A reference-tracking mission, `goal_worth_log = 0.0`
+(the actual f16 v8.62.0 value, §91), no threat declared, running for an
+arbitrarily large number of ticks — 100, 5,000, 500,000, no difference.
+Illustrative, not measured: `regime_spend_floor` stays exactly at
+`high_water_rung` forever, `authorised` stays exactly `0.0` forever, matching
+§91's own measured finding verbatim (*"spend_floor equals the rung on every
+action of every scenario... authorised 0.0"*) — because nothing in the
+contract, with or without the ticks term as proposed, responds to elapsed
+ticks UNLESS `regime_tick_decade` is declared. **This is not a bug this
+proposal introduces — it is the correct behaviour for a mission that really
+has no competing process**, and the F-16 reference-tracking benchmark is
+exactly that: nothing else is racing it. Declaring a nonzero
+`regime_tick_decade` for THIS consumer, with no threat and no competitor,
+would be manufacturing exactly the unexamined number §101 argues against.
+
+**The honest conclusion the two vignettes together support:** for the F-16
+material this spike has actually built and measured, "ticks" turns out to be
+substantially a CLEAN NULL once decomposed correctly — the declared-threat
+case is already covered by existing machinery, and the background case is
+correctly zero for a non-competitive benchmark. The owner's intuition is not
+wrong; it is aimed at a domain feature (genuine competitors, genuine
+elapsed-time cost) that this specific spike's F-16 scenarios do not happen to
+have. The contract in this section exists so that a DIFFERENT consumer — one
+that does have a competitor, or a genuine per-tick persistence cost at its
+own scale — can declare it and get it priced through the identical
+mechanism, without a second selection rule ever being written.
+
+## §103 — What is genuinely new, what is a clean null, and the next measured rung this spike does not take
+
+**Summary, against the brief's own question — separate terms, or
+re-expressions of what already exists:**
+
+| | status | what's new |
+|---|---|---|
+| sunk cost (rung currency) | **already built** (§92-93's high-water ratchet) | nothing |
+| sunk cost (resource currency) | **genuinely missing, narrow fix** | one declared ratio (`regime_resource_decade`), one sign-corrected addition to the floor, reusing the ledger's own existing "reserve ratchet" (line ~459) |
+| ticks (declared threat) | **already built**, under-generalised | wiring only — read `region_actions` for every avoid-sense region into the rung ladder the way §86 already does for terrain |
+| ticks (background/Red Queen) | **correctly absent by default** | a declared rate (`regime_tick_decade`), defaulting to zero, for consumers that DO have a competitor to declare |
+| ticks (idle/Landauer persistence) | **real, negligible at F-16 scale** | a third declared rate, relevant to a different class of consumer, not this one |
+
+Both of the owner's additions turn out to be smaller than "the ladder needs a
+third and fourth term" — mostly they are NAMING and WIRING exercises over
+machinery already in this document (§92-93's ratchet, §84-86's region
+contract), plus exactly one place each (resource-currency sunk cost;
+declared background exposure) where something is genuinely absent and needs
+one new declared ratio apiece, in the same log-irreversibility currency,
+under the same absence-safety discipline as every existing term. That is the
+shape §89's closing paragraph already argued for generally — *"every value
+that held this session was a declared ratio; every value that failed was a
+rule inferring what should have been declared"* — applied to two more
+quantities rather than contradicted by them.
+
+**What would falsify the "mostly already covered" reading, named in
+advance:** if a live measurement on `damaged_wing` or `jammed_rudder` showed
+`regime_resource_spent_log`, once actually derived from the real two-column
+ledger rather than the illustrative fuel-fraction arithmetic in §99, does NOT
+move the floor enough to change any selection across the existing scenario
+set — that would mean the resource ledger's dynamic range is too small
+relative to `regime_rung_decade` at the currently-declared ratios for this
+term to matter in practice, which would be a legitimate, reportable null of
+its own (distinct from "the concept doesn't apply" — it would mean "the
+concept applies but this scenario set never exercises it," the same
+distinction §92 had to draw for damaged_tail).
+
+**A composition question left open on purpose, not resolved here:** §98's
+floor sums THREE subtracted/added log terms (goal worth, resource sunk cost,
+now tick sunk cost) as if they compose additively. That mirrors how
+`regime_spend_floor` and `regime_info_spend_floor` already compose (two
+separate additive accounts, §93), but it is an assumption, not a derivation
+— an alternative is that the three should combine by TAKING THE WORST
+(a max/least-worst read, echoing §80's *"risk is relative... never the
+acceptable one"* one level up, applied to which ACCOUNT dominates rather than
+which candidate wins). I do not have a principled reason to prefer one over
+the other from the desk, and forcing a choice here would be exactly the kind
+of unmeasured selection-rule invention §80, §83 and §92 each had to revert.
+Flagged, not resolved.
+
+**The concretely-scoped next step, named and NOT taken here** (this document
+stays a spike; no code, no seeds, no runs, per its own status line): a
+prereg-then-measure rung, following the block-H/J protocol already used
+throughout §7 onward, that (1) derives `regime_resource_spent_log` from the
+REAL two-column ledger rather than an illustrative fuel fraction, (2)
+declares `regime_resource_decade` and re-runs the existing damaged_wing /
+jammed_rudder / nominal scenario set to check whether any selection changes,
+predicted per §99's worked arithmetic, and (3) as a second, independent leg,
+generalises §86's terrain-only rung wiring to read `region_actions` for an
+explicitly declared threat region (a second aircraft, or a closing-terrain
+variant sharper than the existing gentle descent) and checks whether the
+ladder discriminates it the way §86 already showed it discriminates
+controllability, survivability and terrain loss. Both legs are falsifiable
+in the same way every measured section of §79-94 was: a predicted crash-rate
+or floor-crossing delta, committed before the run, checked after it.
