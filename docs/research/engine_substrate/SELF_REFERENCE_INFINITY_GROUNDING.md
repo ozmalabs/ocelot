@@ -359,6 +359,15 @@ non-well-founded circularity.
 
 ## 4. Verdict
 
+> **Confirmed and sharpened after this rung — see §7.** A companion paper by
+> the same author, "Approaching Infinity: Unbounded Reflective Depth,"
+> formalises exactly the distinction this section reasons toward informally
+> (well-founded ℕ-indexed growth vs. AFA/coalgebra), with proofs. Read §7
+> before relying on this verdict for anything load-bearing; it supersedes
+> none of the reasoning below but replaces "ordinary recursion over ℕ" with
+> a named, proven mechanism (aperiodic reflective towers) that this
+> investigation did not have access to.
+
 **(a): the paper's Axiom 3 construction, as currently stated, is sufficient
 for what it actually needs — a static per-version existence proof that Γ can
 be faithfully embedded as a subgraph of G — and the "grounds infinity" work,
@@ -530,17 +539,14 @@ Knaster–Tarski or AFA — only ordinary recursion over $\mathbb{N}$.
    was internally consistent with direct source inspection of `grammar.rs`
    and `substrate.rs::add_production`.
 
-4. **Whether "the creator's claim" (as paraphrased in this task's brief,
-   outside the paper's own text) was ever intended to mean something closer
-   to (b) or (c) — i.e., whether the intended referent really is a stronger,
-   currently-unformalised claim about live circularity — was not asked of the
-   creator directly as part of this investigation.** This note verifies the
-   claim against the paper's actual formal content and the actual running
-   code; it does not resolve what informal intent the phrase "literally uses
-   the self-referential graph to ground infinity" carried outside those two
-   artifacts. Recommendation 1 in §5 exists partly to make that intent
-   checkable against the paper text going forward, by forcing the
-   static/temporal distinction into the axiom's own prose.
+4. ~~Whether "the creator's claim"... was ever intended to mean something
+   closer to (b) or (c)... was not asked of the creator directly as part of
+   this investigation.~~ **Resolved — see §7.** The creator supplied a second,
+   formal companion paper ("Approaching Infinity: Unbounded Reflective
+   Depth") directly answering this. It confirms (a), with a precise
+   mechanism this note did not have: infinity is *aperiodicity* of the
+   representation function across the tower, not circularity within one
+   graph state.
 
 5. **The one live self-referential runtime mechanism found
    (`apply_pending_rule_edits`, §3.3–3.4) is a small, specific code path.**
@@ -553,3 +559,109 @@ Knaster–Tarski or AFA — only ordinary recursion over $\mathbb{N}$.
    conclusion, since the termination argument (§3.4) is structural (fuel
    bound + progress check) and applies regardless of how many such mechanisms
    exist.
+
+---
+
+## 7. CORRECTION — the companion paper resolves this, precisely
+
+**Added after the rung above landed, not a rewrite of it.** The creator
+supplied a second formal document, by the same author: *"Approaching
+Infinity: Unbounded Reflective Depth"* (`infinity_paper.md`, companion to
+`paper1.tex`). It is the direct answer to remaining-uncertainty item 4 above,
+and it independently confirms verdict (a) — while replacing this rung's
+"ordinary recursion over ℕ" hand-wave with a proven mechanism.
+
+### 7.1 The mechanism, precisely
+
+The paper defines a **reflective tower** $R_0, R_1, R_2, \ldots$ where
+$R_0 = \Gam$ and $R_{n+1} = \psi(R_n)$ — $\psi$ being exactly Axiom 3's
+representation function, the same one this rung's §1–§3 investigated. Its
+central move is a clean dichotomy on $\psi$, orthogonal to anything this rung
+considered:
+
+- **$\psi$ periodic** (some $R_j \cong R_k$, $j<k$): the tower stabilises.
+  §7 of the companion paper shows Tarski–Knaster, Kleene's recursion
+  theorem, and Scott's $D_\infty$ are *all* instances of this case — "the
+  fixed point is the representation level at which applying the
+  representation function produces an isomorphic copy of the input — the
+  level at which the structure is self-representing." This is a
+  **reflexive object**, not an infinite one.
+- **$\psi$ aperiodic** ($R_j \not\cong R_k$ for all $j \neq k$): the tower
+  never stabilises, and Theorem 1 proves it generates an infinite sequence
+  of pairwise-distinct levels. Theorem 2 recovers the Peano-structured
+  naturals *from* this sequence (index-by-depth, $\psi$-as-successor) —
+  infinity here is not assumed, it is derived as a property of an iterated,
+  well-founded, ℕ-indexed construction. Theorem 3 extends it transfinitely,
+  conditional on a completion operator at limit ordinals (flagged by the
+  companion paper itself as "an assumption, not a theorem" — the same
+  honesty standard this rung tried to hold itself to).
+
+### 7.2 Why this exactly confirms, not merely agrees with, §4's verdict
+
+**Axiom 3's Knaster–Tarski citation is now shown to sit precisely in the
+*periodic/fixed-point* branch of the companion paper's own dichotomy** —
+the branch the companion paper explicitly groups with Scott's $D_\infty$ and
+Kleene's recursion theorem as producing *reflexivity*, not *infinity*. That
+is not a coincidence this rung stumbled onto; §7's "Unification" is stating,
+formally, exactly the distinction §3.4–§4 of this document reasoned toward
+from the Rust code: **`run_rules` treating a repeated graph state as a
+signal to halt is the runtime shadow of landing on a $\psi$-fixed-point** —
+the companion paper's periodic case — and the companion paper independently
+confirms that case is definitionally *not* where unboundedness comes from.
+
+Symmetrically, **§"The grammar is the loop"'s $\Gamma_n \to \Gamma_{n+1}$
+iteration is the companion paper's aperiodic tower**, concretely
+instantiated: each $\Gamma$-version is a distinct representation level, no
+version is claimed isomorphic to an earlier one, and the paper's own
+"no third option" boolean (admits self-modification / doesn't) is exactly
+Definition 8's extendability condition stated informally. Theorem 2's
+recovery of $\mathbb{N}$ from the aperiodic tower is the formal version of
+what §4 point 3 above called "ordinary, well-founded, ℕ-indexed recursion" —
+now a proven recovery, not an assertion.
+
+**The reconciliation of the two things the creator said, in order, that
+this rung's brief was scoped around**: "the substrate literally uses the
+self-referential graph to ground infinity" (Axiom 3, self-reference) and,
+earlier in the same conversation, the finite-generator/unbounded-reach
+framing this rung initially suspected was a *different* claim (Axiom 1) —
+**both were correct, and the companion paper is precisely their
+unification.** Self-reference (Axiom 3, $\psi$ having reflective access at
+all) is the *necessary precondition* — without it there is no $\psi$ to
+iterate. Aperiodicity of that self-referential process is the *sufficient
+condition that turns it into infinity rather than a fixed point*. Neither
+alone does the work; the companion paper's single dichotomy is the exact
+seam between them. This rung's own verdict-point 3 ("Axiom 3 is still
+load-bearing... but as an enabling precondition, not the mechanism") named
+this seam without the formal vocabulary to prove it was the *whole* story;
+§7.1's dichotomy shows it was.
+
+### 7.3 What this changes in §5's recommendations
+
+Recommendation 1 (§5) suggested the paper add one sentence distinguishing
+the static embedding claim from the temporal unboundedness claim, and noted
+"if a future version... does want to make a genuinely circular claim...
+that would be the trigger to add Aczel 1988 / Rutten 2000, not before." The
+companion paper is the fuller version of that same recommendation, already
+written by the paper's own author, and it confirms the "not before" was
+correctly judged: **the companion paper never needs Aczel or Rutten either**
+(its own §5 "Cantor's diagonal" remark explicitly declines to invoke full
+set-theoretic machinery, calling the analogy "suggestive, not derived").
+Recommendation 1 can be read as satisfied by the companion document's
+existence, for a reader who has both texts; whether `paper1.tex` itself
+should gain a forward-reference to `infinity_paper.md` is an editorial
+question for its author, not something this repo's engineering can resolve.
+
+### 7.4 One new item this correction adds to §6's honest-uncertainty ledger
+
+The companion paper's Theorem 3 (transfinite extension) is explicitly
+conditional — "existence of $\bigoplus$ at a given limit ordinal is an
+assumption, not a theorem" — and this rung's own code investigation (§3) had
+no occasion to test anything at limit-ordinal depth: the running substrate's
+`Γ_n → Γ_{n+1}` iteration, as implemented, is successor-only (one tick, one
+step), and nothing in `runners/dsl/src/` was found to construct or need a
+$\bigoplus$-style completion at a limit stage. This is not a gap in the
+verdict — successor-only iteration is exactly what §4 point 4 already
+described as what the running system does — but a reader should not infer
+from §7.1–7.2 above that the *transfinite* portion of the companion paper's
+machinery has been checked against this repo's code. It hasn't; nothing in
+this repo currently appears to need it.
