@@ -1,6 +1,6 @@
 # engine_substrate — index
 
-71 documents.
+72 documents.
 
 ## Documents
 
@@ -34,6 +34,7 @@
 | [`READER_PARSER_MIGRATION.md`](READER_PARSER_MIGRATION.md) | Reading-parser graph-native migration (plan) |
 | [`REFLEX_NET_DESIGN.md`](REFLEX_NET_DESIGN.md) | The primal layer — reflex nets as self-editable graph data |
 | [`SELF_DIRECTED_LEARNING_PLAN_RESULTS.md`](SELF_DIRECTED_LEARNING_PLAN_RESULTS.md) | Self-directed learning-plan result |
+| [`SELF_REFERENCE_INFINITY_GROUNDING.md`](SELF_REFERENCE_INFINITY_GROUNDING.md) | Self-reference and infinity-grounding — does Axiom 3 need Knaster–Tarski, or Aczel? |
 | [`SUBSTRATE_DISORDER_MAP.md`](SUBSTRATE_DISORDER_MAP.md) | THE SUBSTRATE DISORDER MAP — one (G,Γ) engine, many disorders as failure modes of shared operations |
 | [`SUBSTRATE_RS_MIGRATION.md`](SUBSTRATE_RS_MIGRATION.md) | Python `substrate/` → Rust `substrate_rs` migration map |
 | [`autonomous_curation.md`](autonomous_curation.md) | Autonomous failure-curation — the agent banks its own lessons |
