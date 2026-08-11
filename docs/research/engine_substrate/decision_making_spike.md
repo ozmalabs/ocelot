@@ -5070,3 +5070,216 @@ ladder discriminates it the way §86 already showed it discriminates
 controllability, survivability and terrain loss. Both legs are falsifiable
 in the same way every measured section of §79-94 was: a predicted crash-rate
 or floor-crossing delta, committed before the run, checked after it.
+
+**§95-103 have since been measured and built** (`docs/research/flight_control/
+risk_ladder_sunk_cost_ticks_results.md`) — both legs above landed, confirming
+§99's worked arithmetic and §102's Vignette 1 respectively, plus one honestly
+unpredicted finding (a zero-gap recovery edge case in the general region
+contract, named for a future rung, not fixed). The composition question
+flagged in this section stayed open — neither measured leg exercised two
+non-zero sunk-cost-shaped terms simultaneously, so it could not be resolved
+either way by that rung.
+
+---
+
+## §104 — A fourth candidate, owner's framing: pre-action posture, from Libet, and "system 1 only"
+
+Owner's framing, given directly across two turns and quoted rather than
+paraphrased: *"i think one of the things i am missing is pre action -
+reducing future potential cost, from libet"*, then, sharpening it
+unprompted: *"my intuition is that it is system 1 only."* Before touching
+literature I want to do what §95 did for the first two candidates: locate
+the gap precisely against what §89-103 already built, so this is not a
+fourth term bolted on by analogy.
+
+**What Libet's own result actually is, checked rather than assumed** — Libet,
+Gleason, Wright & Pearl, "Time of conscious intention to act in relation to
+onset of cerebral activity (readiness-potential): the unconscious initiation
+of a freely voluntary act," *Brain* 106(3), 623-642 (1983): measured
+"readiness potential" (RP), a slow negative EEG shift over supplementary
+motor area, begins roughly 350-550ms BEFORE a subject's reported moment of
+conscious intention to move a finger, which itself precedes the movement by
+roughly 200ms. Soon, Brass, Heinze & Haynes, "Unconscious determinants of
+free decisions in the human brain," *Nature Neuroscience* 11(5), 543-545
+(2008) — the fMRI extension, `[unverified in depth, corroborated via
+multiple independent secondary summaries rather than the primary paper's
+full method section]`: decoded which of two buttons a subject would press up
+to 7-10 seconds before the subject reported deciding, from activity in
+frontopolar and parietal cortex.
+
+**The usual reading of this result is a free-will debate, and that reading
+is NOT what the owner is pointing at.** Both papers, and every citation of
+them since (including, honestly, the Villanueva paper this conversation was
+just reading — Libet appears in its own bibliography, ref. 5, aimed at
+exactly the "is the conscious decision the real cause" question), treat RP
+as evidence ABOUT THE TIMING OF AWARENESS relative to the act — precisely
+the framing §75's own instrument-selection material and Villanueva's paper
+share the same flaw on, each for a different reason. **The owner's
+reframing is structural, not a claim about consciousness at all**: RP being
+measurable BEFORE the discrete "decision" is registered means the system
+is not computing the action fresh, on demand, at the trigger — it is
+already running a standing, continuous preparatory process, and what gets
+reported as "the decision" is that process crossing a threshold, not the
+process starting. Read this way, Libet's finding is evidence about
+COMPUTATIONAL ARCHITECTURE (is action selection event-triggered or
+continuously prepared) wearing a free-will costume, not evidence for or
+against free will wearing a computational costume.
+
+**Why this is a fourth, distinct thing, not a restatement of sunk cost or
+ticks.** All three existing terms (§89-91 irreversibility, §96-99 sunk
+cost, §100-103 ticks) are COSTS: each either prices the candidate action
+itself, prices what is already at stake, or prices the passage of time.
+None of them represents anything GAINED by preparing ahead of a trigger.
+Sunk cost's own careful distinction (§96, "weigh this loss more heavily"
+vs. "keep going because of what I've spent") is about the MAGNITUDE of a
+stake already fixed; this candidate is about the MAGNITUDE OF THE STAKE
+ITSELF being smaller, at the moment the marginal action is finally priced,
+because something was done in advance to make it smaller. It is the mirror
+image of sunk cost in the precise sense Dixit & Pindyck's own framework
+(already cited, §96) makes available without a new citation: their central
+object is the OPTION VALUE of NOT yet committing — sunk cost is that option
+value already destroyed; this is that option value being actively
+PRESERVED OR EXTENDED by standing readiness, before any commitment is made
+at all. Same book, opposite sign, not yet used.
+
+## §105 — "System 1 only": why this changes the proposed SHAPE, not just the citation
+
+The owner's second framing is the one that stops this from being a naive
+fourth declared ratio, and it deserves to be taken as seriously as the
+Libet citation itself.
+
+**Kahneman, *Thinking, Fast and Slow* (Farrar, Straus and Giroux, 2011)** —
+also, incidentally, ref. 23 in the Villanueva paper's bibliography, cited
+there for "dual-process decision frameworks" and left otherwise unused by
+that paper's own BALSAMIC/META apparatus, which is worth naming honestly
+rather than silently: two independent conversations this session have now
+reached for Kahneman at the same point in an argument, for the same
+structural reason, without either citing the other. System 1: fast,
+automatic, effortless, always running, no deliberate control. System 2:
+slow, effortful, deliberate, invoked. **Owner's claim, read precisely: the
+Libet-shaped pre-action process is System-1-shaped — it is not a costed,
+deliberate precomputation an operator declares and pays for, the way
+`regime_resource_decade` or `regime_tick_decade` are; it is a standing,
+cheap, always-on process that runs whether or not anything is about to
+happen.**
+
+**This directly changes the proposed formal shape, and CLAUDE.md's own
+"SHAPES, NOT NUMBERS" section (already the standing rule for every new
+subsystem in this repo) says precisely why.** §98 and §102 both added a
+NEW DECLARED RATIO to the floor's additive sum — correct for sunk cost and
+ticks, because both are genuinely deliberate, operator-declared costs
+(System-2-shaped: someone decided this mission has a competitor, or a
+resource budget, and said so). A fifth declared ratio for "readiness"
+would be exactly the pattern CLAUDE.md's retrospective names as the
+recurring failure: *"a new subsystem invents a scalar knob... instead of
+decoding against a codebook or generating from a grammar."* If pre-action
+posture is System-1-shaped, it should not be a number an operator declares
+and the floor sums — it should be a STANDING PROCESS, always running, that
+changes the STATE the EXISTING §89-91 irreversibility calculation reads
+FROM, not a new term added alongside it. This repo already has the right
+primitive for exactly that shape and has had it the whole time: the
+**Reflex** — CLAUDE.md's own description, *"stimulus → response, tick
+scheduling"*, seed-resident graph data, distinct from the deliberate
+`run_rules` fixpoint the rest of this ladder's selection logic runs on.
+A Reflex is cheap, always-on, and requires no operator declaration to
+exist — precisely System 1's profile against System 2's.
+
+## §106 — The proposed shape: a Reflex that maintains posture, read by the existing floor, not a new term in it
+
+**The concrete claim, stated so it can be measured or refused later, not
+built here:** an aircraft (or any consumer of this ladder) that maintains
+posture — energy margin, control-surface trim near neutral, altitude
+buffer above the terrain-clear threshold §86 already reads — arrives at
+ANY given trigger with a LOWER `regime_viability_rung` cost for the SAME
+candidate action than one that does not, because §86's rung computation
+already reads from exactly this kind of state (structural margin, terrain
+clearance — §82's table). **Nothing new needs to be added to the floor
+arithmetic for this to work — §89-91's existing irreversibility pricing
+already prices posture correctly, IF posture is actually being maintained.**
+What is missing is not a cost term; it is the STANDING PROCESS that keeps
+posture maintained BETWEEN decision points, so that the state §89-91 reads
+from, when a trigger finally arrives, is the well-prepared one rather than
+whatever the last deliberate action happened to leave behind.
+
+**Worked vignette, illustrative, not measured — mirroring §102's own
+format.** Two aircraft face an identical, suddenly-declared threat region
+(§85's contract) at an identical range and closing rate. Aircraft A has
+been running a posture-maintaining Reflex the whole prior flight — energy
+margin kept near maximum, trim near neutral, no unnecessary rung-3
+excursions taken merely because they were locally cheap. Aircraft B has
+been flown by the deliberate rule-engine alone, taking whatever locally-
+optimal action each tick's `run_rules` fixpoint selected, with nothing
+maintaining margin between decisions. At the moment the threat is
+declared, §86's SAME unmodified rung computation reads a LOWER-cost
+escape action for A than for B — not because A's floor arithmetic is
+different, but because A's STATE is different. The prediction this
+vignette makes, falsifiably, for a future measured rung: **holding the
+declared-threat scenario identical, a posture-maintaining Reflex run
+upstream of the existing ladder should shift the measured crash rate or
+floor-crossing point in `jammed_rudder`/`damaged_wing`-class scenarios,
+with ZERO change to `tools/gen_f16_flight_path_control_seed.py`'s existing
+rung-selection rules** — the Reflex changes what state those rules see,
+never what the rules themselves compute. If a measured rung found no such
+shift, that would mean either the Reflex is not actually altering the
+state variables §86 reads (a wiring failure) or those state variables are
+already saturated in the existing scenario set (a scenario-power finding,
+the same shape §92 had to draw for `damaged_tail`) — distinguishable, not
+a single undifferentiated null.
+
+**What this is NOT, stated to head off the obvious over-reach.** This is
+not a claim that deliberation (System 2, the `run_rules` fixpoint itself)
+should be replaced or bypassed — Libet's own most-cited caveat, which this
+section is not independently re-verifying but is worth naming so the
+citation is not overclaimed, is that a conscious "veto" window remains even
+after RP onset; System 2 still gets the final, discrete say at the trigger.
+The Reflex proposed here does not decide anything — it maintains the
+STATE the deliberate ladder decides FROM. This is also why it is
+NOT a rival to `regime_tick_decade`'s background/Red-Queen term (§101):
+that term prices EXPOSURE from a declared external rival; this section
+proposes no cost at all, only a standing internal process, and — per
+Axiom 0 (§101's own citation) — needs no declared adversary to justify
+existing, because maintaining one's own posture is not a claim about
+anything outside the frame.
+
+## §107 — What this section does not establish, named honestly
+
+This is a same-session sketch, not a researched rung — it does not carry
+§95-103's own weight of independent literature verification, and should
+not be read as though it does. Specifically NOT done here: (1) the Libet
+and Soon citations above were checked against known secondary summaries in
+this pass, not re-read primary-source in full, same caveat §96 and §100
+already flagged for Dixit & Pindyck and RiskMetrics respectively; (2) no
+check was made for whether a posture-maintaining Reflex already exists
+somewhere in this tree's F-16 seed data under a different name (§97's own
+discipline — check what's half-built before proposing anything — was not
+applied here and should be the FIRST step of any future rung on this,
+before any new Reflex is authored); (3) the worked vignette's prediction
+(A beats B on identical declared threats) is illustrative reasoning, not a
+measured or even fully-specified scenario — which two state variables the
+Reflex should maintain, and at what cost to normal operation (a posture-
+maintaining Reflex that avoids ALL locally-cheap rung-3 excursions is not
+free — it may itself be more conservative than optimal on the axis §80
+already warned about, "choose among the options that aren't bad," this
+time self-imposed rather than declared), is unresolved; (4) whether "System
+1 only" implies the Reflex must be UNCONDITIONAL (always running,
+un-declared, the true System-1 profile) or merely CHEAP-AND-DEFAULT-ON
+(declared once, at boot, never per-decision) was not disambiguated — the
+owner's framing supports either reading and they have different
+absence-safety consequences (§85, §91's discipline: an unconditional
+Reflex with no operator declaration at all would be the one place in this
+whole ladder where something prices state without an explicit declared
+default, which needs its own argument, not an inherited one, before it is
+built this way).
+
+**The concretely-scoped next step, named and NOT taken here:** a
+prereg-then-measure rung that (1) checks §107 item (2) first — a search
+for an existing posture-maintaining mechanism in the F-16 seed tree before
+authoring a new Reflex, per this arc's own "measure the ceiling before
+building" house rule; (2) if genuinely absent, specifies exactly which
+state variables (from §82's already-instrumented limits table) the Reflex
+would maintain and at what tick cadence; (3) runs the §106 vignette for
+real — same declared threat, Reflex-on vs Reflex-off, paired crash-rate or
+floor-crossing deltas, predicted before the run; and (4) resolves §107
+item (4) — unconditional vs. declared-default-on — as its own registered
+bar, before writing a line of seed data, per the absence-safety discipline
+every other term on this ladder was held to.
