@@ -3048,3 +3048,256 @@ rung, only read. `results/arc6_import_impedance.json`/`scripts/
 arc6_import_impedance.py`, and anything under `docs/research/
 theory_convergence/`, `docs/research/adventure_mechanics/`, `docs/
 research/engine_substrate/`, or `docs/research/flight_control/`.
+
+---
+
+### AMENDMENT A25 (2026-08-11/12) — `prog_read`'s self-improvement wiring: measured, not predicted, and one routing bug it uncovered
+
+**Scope note, up front (this amendment is SELF-IMPROVEMENT WIRING, not
+ARC6's own goal-pool machinery).** `docs/research/program_synthesis/
+PROGRAM_SYNTHESIS_SELF_IMPROVEMENT_WIRING_INVESTIGATION.md` (a read-only
+investigation, no build) traced whether program synthesis's capability
+gaps reach the agent's REAL self-improvement spine (`SelfConcern` →
+`promote_self_concern` → `StandingConcern` → close) or whether
+`docs/features/program-synthesis.md`'s claim is aspirational. Its
+headline finding: `code_write` gaps are fully, live-provenly wired —
+`_promote_relations_for_concern`/`_concern_tick`
+(`scripts/jabberwock_daemon.py`) route a promoted `code_write`
+`StandingConcern` DIRECTLY into `domains.code_write_growth.
+work_on_code_write_gap`, bypassing the generic `induce_concern`/
+`ground_concern` composer entirely, gated live in
+`tests/test_prog_synthesis_selfimprove_migrated.py::
+test_gap_promote_teach_accept_full_circle`. The sibling gap kind,
+`prog_read` (a blocked source read — Lambda, varargs, ... —
+`seeds/prog_read_gap.json`'s `note_prog_read_gap`), mints and surfaces
+correctly but had **never once been promoted in any test** — the
+investigation's own §2/§4 REASONED (from reading
+`_promote_relations_for_concern`'s control flow, not from running it)
+that it would fall through to the generic `comprehend_first` default and
+produce "something structurally mismatched," explicitly naming this a
+prediction, not a measurement (§"Remaining uncertainty" item 2).
+
+This amendment is scoped EXACTLY to that residual, per the investigation's
+own smallest-first recommendation (§"Scoped recommendations" item 2): (1)
+measure what `promote_self_concern` actually does with a `prog_read`
+concern, live; (2) GO/NO-GO on closing it, based on the measurement, not
+the prediction; (3) if GO, build the dedicated-routing mirror of
+`code_write`'s own pipeline, minimal. Explicitly NOT this amendment's
+territory: `ArcGoal`/`ax_impotent`/`ArcImpotenceQuestion`/
+`ArcImpotenceTestimony` (A9-A24's own goal-pool-impotence machinery,
+confirmed a genuinely different mechanism by the investigation's §5 — a
+dispatch/scheduling question over a structured goal pool, never reading or
+writing `SelfConcern`); `seeds/arc_executor.json`, `seeds/arc_goals.json`,
+`seeds/arc_magnitude.json`, `seeds/arc_decompose.json`,
+`seeds/goal_residuals.json`, `tools/build_arc_*.py` — untouched, per the
+task's own constraint list, matching A23/A24's own scope discipline.
+
+**AR25a — the live measurement, done first, before any fix.** A scene
+mirroring `test_gap_promote_teach_accept_full_circle` exactly
+(`substrate.world_adapter.WorldAdapter`, real `load_all_seeds`, real
+`run_rules` fixpoints, no mocks): ingest a two-function Python source
+whose second function uses a `lambda` (the SAME fixture
+`tests/test_prog_read_gap_migrated.py` already uses) → `note_prog_read_gap`
+fires → `SelfConcern{kind:'prog_read', content:'python read blocked:
+Lambda'}` → `jd.promote_self_concern` → `StandingConcern{kind:'prog_read',
+pipeline:'comprehend_first', relations:[["comprehend","DIRECTIVE","mint",
+"GOAL"],["python","TARGET","of","SELF"],["read","TARGET","of","SELF"],
+["blocked","TARGET","of","SELF"],["lambda","TARGET","of","SELF"]]}` (the
+investigation's §2 prediction confirmed exactly, byte-for-byte) → manually
+replicated `_concern_tick`'s generic branch, capturing BOTH
+`induce_concern`'s and `ground_concern`'s return dicts directly (the
+things `_concern_tick` itself discards for every kind but `code_write`).
+
+**The measured result is WORSE than the investigation's own "plausible…
+degrades gracefully" possibility (§"Remaining uncertainty" item 2) — it is
+a confirmed, actively wrong outcome, not a graceful null.**
+`induce_concern` mints an `Observation`/`CapabilityAxis` (residual =
+all 5 relations, `covered_count:0` — no held shape covers it, correctly).
+`ground_concern` then does NOT wall — it reports `{"grounded": true,
+"served_by": "graph", "path": "compose_comprehension_rule", ...}` and
+INSTALLS A LIVE RULE:
+
+```
+name: comprehend_describe_directive_promoted_self_concern_<id>
+match: [[m, has_mention, mention], [m, about, scene]]
+where: mention.text == 'describe'  AND  NOT Exists(scene -described_by-> _)
+effects: mint Goal{kind:'describe_scene'}, g -describes-> scene, scene -described_by-> g
+```
+
+— a rule matched on a LITERAL Mention text `'describe'` about a `Scene`
+node (vision-domain vocabulary), permanently installed into the live rule
+set under a name that quotes our concern's own tag, and reported as a
+SUCCESS. Root cause, read from `_compose_comprehension_rule`
+(`domains/reflective_faculty.py:~1905`): `ground_concern`'s PATH 1
+(`_residual_relations`) grounds only the `comprehend` head of our five
+relations (`python`/`read`/`blocked`/`lambda` ground to nothing in the
+held `RelationCue` lexicon), so the composer dispatch sees only
+`{"comprehend"}` and falls to this builder's UNCONDITIONAL, hard-coded
+terminal branch — the SAME "describe a scene" rule shape for ANY
+unmatched `comprehend`-headed concern, regardless of what word actually
+followed "comprehend." This rule can never fire for anything prog_read-
+related (no prog_read turn ever produces a Mention `'describe'` about a
+`Scene`) — permanent, silently-installed dead cruft, and — because
+`_concern_tick` discards `ground_concern`'s return value for every kind
+but `code_write` — **nothing records that this happened**: the
+`StandingConcern` just flips to `status:'processed'` with no outcome
+trail at all, unlike `code_write`'s own honest `code_write_compose_ok`/
+`_reason` pair.
+
+**AR25b — GO/NO-GO, decided from the measurement, not the prediction —
+split findings, both honestly reported.**
+
+- **NO-GO on making a `prog_read` gap actually RESOLVE** (the
+  `resolve_code_write_gap` precedent, mirrored fully). A prog_read
+  blocker names an AST construct `domains/prog_ir_emit.py`'s fixed
+  correspondence table has NO case for. Unlike `code_write`'s
+  predication family (an ENGLISH request maps onto Terms the engine
+  ALREADY evaluates — `Times`/`Plus`), closing a read blocker needs a
+  genuinely NEW Rust `Term`/IR-variant — confirmed by grep: **zero**
+  `Lambda` hits (and zero for `Yield`/`Match`/`ClassDef`/`With`/...)
+  anywhere in `runners/dsl/src/*.rs`. There is no "compose from held
+  vocabulary" move available for READING an unsupported construct the
+  way there is for WRITING one — this is Rust-engine-level work, named
+  precisely per blocker (see `domains/prog_read_growth.
+  _BLOCKER_RUST_NEED`: e.g. `Lambda` needs "a closure Term carrying a
+  captured environment"; `KwargsCall` needs "a keyword-argument binding
+  Term"; `RecvMethod:*` needs "a mutating-call lvalue write-back path
+  the engine structurally refuses"), out of scope for this amendment
+  per the task's own explicit instruction.
+- **GO on fixing the WIRING itself.** The measured bug (a wrong,
+  hard-coded, permanently-installed dead rule, reported as success, with
+  no record) is real, closeable at the seed/adapter grain, and mirrors
+  `code_write`'s OWN shape exactly: give `prog_read` its own dedicated
+  routing branch, bypassing the generic composer entirely, and record an
+  honest, per-blocker outcome. This is not "closing the capability gap"
+  (that stays NO-GO, per above) — it is closing the SAME kind of gap
+  `code_write`'s pipeline ALSO mostly closes only honestly, not
+  successfully: `compose_write_shape_from_predication` itself exhausts
+  for every request outside its own tiny multiplier/offset family, and
+  that honest exhaustion — never a crash, never silent, always a named
+  reason a human can read via `_run_self_improvement_status` — is the
+  ALREADY-accepted shape of a working `code_write`-style pipeline. A
+  `prog_read` pipeline that always exhausts today, honestly, naming the
+  missing Rust primitive per blocker, is that SAME shape, not a lesser
+  one.
+
+**AR25c — build, minimal, mirroring `code_write`'s exact pattern (per the
+investigation's own §"Scoped recommendations" item 2 sizing: one new
+daemon branch, one new domain function, one new seed rule).** No seed
+change was needed for the ROUTING (`_promote_relations_for_concern`/
+`_concern_tick` are pure Python dispatch, same status as `code_write`'s
+own routing) but one WAS needed for the honest-exhaustion DECISION
+(`code_write`'s own `note_code_write_composition_exhausted` is a seed
+rule, not a Python status write — mirrored exactly, not skipped).
+
+1. **`domains/prog_read_growth.py`** (new, ~190 lines) — the
+   `code_write_growth.py` sibling. `work_on_prog_read_gap(agent,
+   about_text)` mechanically reverses `note_prog_read_gap`'s own
+   StringConcat (`'<frame> read blocked: <blockers>'` → `(frame,
+   blockers)`, a fixed split, the `code_write_growth._stem` precedent's
+   status exactly) and looks each blocker up in `_BLOCKER_RUST_NEED` (a
+   FIXED correspondence table — the `prog_ir_emit.py` `NATIVE_ORACLES`/
+   `_BINOP_AB` precedent's status, never a decision) plus three
+   classified prefixes (`RecvMethod:`/`OpExt:`/`GraphRepr:`) and a
+   generic fallback for anything unnamed. ALWAYS returns `{ok: False,
+   reason: ..., needs: {<blocker>: <named Rust primitive>, ...}}` today —
+   by measured construction (module docstring), not a stub.
+   `pending_prog_read_gaps` mirrors `pending_code_write_gaps`, kind-swapped.
+2. **`scripts/jabberwock_daemon.py`** — `_promote_relations_for_concern`
+   gained an `if kind == "prog_read":` branch (mirroring the `code_write`
+   branch immediately above it) returning
+   `[["extend","FRAME","from","BLOCKER"], ...]` / pipeline `"prog_read"`
+   (so the StandingConcern's own record is self-describing, instead of
+   silently reusing `"comprehend_first"`). `_process_prog_read_standing`
+   (new, mirrors `_process_code_write_standing` line for line) calls
+   `prg.work_on_prog_read_gap` and records `prog_read_compose_ok`/
+   `prog_read_compose_reason` on the `StandingConcern` — a MECHANICAL
+   outcome datum, never a decision. `_concern_tick` gained one
+   `if at.get("kind") == "prog_read":` branch, mirroring the `code_write`
+   branch immediately above it, BEFORE the generic fallback — this is the
+   line that stops the wrong composer from ever running on a `prog_read`
+   concern again.
+3. **`seeds/prog_read_gap.json` v1.0.0 → v1.1.0** — one new rule,
+   `note_prog_read_composition_exhausted`, `note_code_write_
+   composition_exhausted` copied verbatim and kind/attr-name-swapped
+   (`standing.kind=='prog_read'`, reads `prog_read_compose_ok`/
+   `_reason`, sets `experiments_exhausted`/`exhausted_note` on the
+   `StandingConcern`). No `resolve_prog_read_gap` rule was added — per
+   AR25b's NO-GO, nothing can make a `prog_read` gap resolve today, so a
+   resolve rule would be dead code that can never fire; naming that
+   absence honestly here rather than adding speculative graph data no
+   engine-capability change yet justifies.
+
+**Confirmed live** (`tests/test_prog_read_selfimprove_migrated.py`, 7/7):
+the SAME Lambda-blocked scene now — `promote_self_concern` returns
+`pipeline:'prog_read'` (not `comprehend_first`); `_concern_tick` mints
+**zero** `Experiment`/`CapabilityAxis`/`Observation` nodes tagged with the
+concern's own key (the dead-rule mint is GONE); the `StandingConcern`
+carries `prog_read_compose_ok:0.0`,
+`prog_read_compose_reason:"extending the python reading frame past Lambda
+is Rust-engine-level work, not a seed/adapter-level close: Lambda needs a
+closure Term carrying a captured environment..."`; a further `run_rules`
+pass flips `experiments_exhausted:true` with the same precise note on
+`exhausted_note` — a human asking "what happened to that gap" now gets an
+honest, specific answer instead of the prior silent, wrong
+`"grounded": true`. Additional unit gates: multi-blocker requests name
+EVERY blocker (`"KwargsCall,Lambda"` → both reasons present); the
+`RecvMethod:`/`OpExt:` classified-prefix paths; the generic fallback for
+an unnamed blocker; `pending_prog_read_gaps`.
+
+**AR25d — no regression, fresh baseline, this worktree, before any edit.**
+A first baseline attempt (`test_program_synthesis_migrated.py` +
+`test_prog_synthesis_selfimprove_migrated.py` + `test_gap_awareness_
+migrated.py` + `test_self_concern_promote_migrated.py` +
+`test_prog_read_gap_migrated.py`) surfaced 24 failures — traced to a
+FRESH worktree lacking the untracked, gitignored `results`/`data`
+directories those tests read from disk (`results/
+prog_construction_scan.json`, etc.) — the SAME "`data`/`results` are
+untracked symlinks into the canonical tree" hazard A22/A23's own
+discipline names (`PROGRAM_SYNTHESIS_ARC6_RETIRE_BLOCKER.md §"Everything
+that broke"`, `PROGRAM_SYNTHESIS_ARC6_WIRE_HANDS.md §7.4`). Symlinked
+both; re-measured. The TRUE fresh baseline for those five suites: **1
+failed** (`tests/test_gap_awareness_migrated.py::
+test_resolved_topic_files_no_gap` — a moon-grounding outcome assertion,
+untouched by this amendment, unrelated to program synthesis), 39 passed,
+2 skipped.
+
+| suite | before (fresh) | after (this amendment) |
+|---|---|---|
+| the 5 gate suites above + `test_prog_read_selfimprove_migrated.py` (new) | 1 failed / 39 passed / 2 skipped | **same 1 failed** (identical node id) / 46 passed (39 + 7 new) / 2 skipped |
+| `test_prog_chunks/constructions/descent/ir/moves/property/read_llvm/read_python/read_rust_lua/repair_migrated.py` | (not separately re-baselined — zero overlap with edited files) | 267 passed, 2 skipped |
+| `test_prog_synthesis_battery_migrated.py` | — | 21 passed |
+| `test_mbpp_arc3_endgame/contamination/endgame_migrated.py` | — | 77 passed |
+| `test_mbpp_baseline/diet/histogram/spec_migrated.py` | — | 1 failed (`test_mbpp_baseline_migrated.py::test_three_runnable_tasks_reverify_live`, a `range_sum_spine`/`sum_of_two` construction-name drift, PRE-EXISTING — reproduced byte-identically with this amendment's two edited files `git stash`ed out, i.e. on vanilla `a62668d`), 146 passed |
+
+**No new failing node id anywhere.** The single new failure surfaced by
+the mbpp sweep was cross-checked live (stash the two edited files,
+re-run, same assertion, same values, same task) and confirmed
+pre-existing, unrelated to program synthesis's self-improvement wiring —
+recorded here as a paired node id, not folded into a count, per this
+arc's own standing baseline discipline (`CLAUDE.md`, "A BASELINE MUST BE
+A LIST OF NODE IDS, NEVER A COUNT").
+
+**Registered null reading, stated for the record (AR25b was decided from
+a measurement already in hand by the time this amendment was drafted, not
+before it — named honestly, unlike A24's genuinely-prospective register).**
+If a future engine change lands ANY of the named Rust primitives (a
+closure Term, a variadic-binding Term, ...), `work_on_prog_read_gap`
+should gain a real close for that ONE blocker (widening
+`_BLOCKER_RUST_NEED`'s entry into an actual composition, not just a
+message) — and, symmetrically, a `resolve_prog_read_gap` rule becomes
+buildable at that point, not before. This amendment does not attempt to
+predict which primitive lands first; it names the boundary precisely so
+that decision is legible later.
+
+**Explicitly out of scope, matching the task's own constraints.**
+`seeds/arc_executor.json`, `seeds/arc_goals.json`,
+`seeds/arc_magnitude.json`, `seeds/arc_decompose.json`,
+`seeds/goal_residuals.json`, `tools/build_arc_*.py`,
+`results/arc6_import_impedance.json`, `scripts/arc6_import_impedance.py`,
+anything under `docs/research/theory_convergence/`, `docs/research/
+adventure_mechanics/`, `docs/research/engine_substrate/`, `docs/research/
+flight_control/`, or `runners/dsl/src/` — none touched, none needed to be.
+`domains/prog_ir_emit.py` and `runners/dsl/src/` are READ (to establish
+AR25b's NO-GO precisely) but not edited — the Rust engine widening AR25b
+names is a separate, larger, correctly-deferred build.

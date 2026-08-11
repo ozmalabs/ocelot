@@ -2089,6 +2089,25 @@ def _promote_relations_for_concern(kind: str, content_words: list, tag: str) -> 
         for w in content_words[:4]:
             relations.append([w, "TARGET", "of", "WRITE"])
         return relations, "code_write"
+    if kind == "prog_read":
+        # ARC6 A25 (measured live): a prog_read concern fell through to the
+        # comprehend_first default below, whose generic induce_concern/
+        # ground_concern composer minted an INERT, misleadingly-named rule
+        # (comprehend_describe_directive_<tag>, matched on a literal Mention
+        # text 'describe' about a Scene -- structurally unrelated to
+        # extending a program-reading frame) and reported it as "grounded:
+        # true" with no record anywhere. _concern_tick now routes a
+        # StandingConcern of this kind DIRECTLY into
+        # domains.prog_read_growth.work_on_prog_read_gap (see
+        # _process_prog_read_standing below), the code_write precedent
+        # applied to the sibling gap kind. These relations are descriptive
+        # graph data only (never read by induce_concern for this kind any
+        # more), kept in the same relation-cue shape as every other pipeline
+        # for uniformity of the StandingConcern record.
+        relations = [["extend", "FRAME", "from", "BLOCKER"]]
+        for w in content_words[:4]:
+            relations.append([w, "TARGET", "of", "READ"])
+        return relations, "prog_read"
     want_experiment = (kind in ("self_improvement", "instruction", "performance", "comprehension")
                        or _content_suggests_experiment(content_words))
     if want_experiment:
@@ -2506,6 +2525,48 @@ def _process_code_write_standing(adapter: WorldAdapter, standing_node, at: dict)
     adapter.s.set_attr(standing_node, "code_write_compose_reason", reason)
 
 
+def _process_prog_read_standing(adapter: WorldAdapter, standing_node, at: dict) -> None:
+    """ARC6 A25 -- the `_process_code_write_standing` precedent, applied to
+    the sibling `prog_read` gap kind (measured LIVE to fall through to the
+    generic induce_concern/ground_concern composer and mint an inert,
+    misleadingly-named rule -- see the `_promote_relations_for_concern`
+    comment above and PROGRAM_SYNTHESIS_ARC6_PROGREAD_SELFIMPROVE.md).
+
+    A promoted `prog_read` StandingConcern grounds DIRECTLY into
+    `domains.prog_read_growth.work_on_prog_read_gap` instead of the generic
+    machinery. `about` is the original SelfConcern's own content text
+    ('<frame> read blocked: <blockers>', copied verbatim at promotion time).
+
+    Records a MECHANICAL outcome datum (`prog_read_compose_ok` / `_reason`)
+    onto the StandingConcern -- never a decision here. The seeded
+    `note_prog_read_composition_exhausted` rule (seeds/prog_read_gap.json)
+    DECIDES an unsuccessful compose is exhausted and marks
+    `experiments_exhausted`/`exhausted_note` -- the
+    note_code_write_composition_exhausted precedent, pointed at this
+    synchronous path. Every call exhausts honestly today (module docstring,
+    domains/prog_read_growth.py): closing a prog_read gap for real needs new
+    Rust engine Term/IR-variant coverage (named per-blocker in the reason),
+    out of scope for a seed/adapter-level amendment -- this function's job is
+    only to STOP the wrong generic composer from firing and to leave an
+    honest, specific record in its place."""
+    try:
+        import domains.prog_read_growth as prg
+    except ImportError as e:  # noqa: BLE001 -- never let a bad concern kill the tick loop
+        adapter.s.set_attr(standing_node, "prog_read_compose_ok", 0.0)
+        adapter.s.set_attr(standing_node, "prog_read_compose_reason",
+                           "prog_read_growth unavailable: %s" % e)
+        return
+    about = str(at.get("about") or "")
+    try:
+        result = prg.work_on_prog_read_gap(adapter, about)
+    except Exception as e:  # noqa: BLE001 -- never let a bad concern kill the tick loop
+        result = {"ok": False, "reason": "%s: %s" % (type(e).__name__, e)}
+    ok = bool(result.get("ok"))
+    reason = str(result.get("reason") or ("extended frame %r" % result.get("frame")))
+    adapter.s.set_attr(standing_node, "prog_read_compose_ok", 1.0 if ok else 0.0)
+    adapter.s.set_attr(standing_node, "prog_read_compose_reason", reason)
+
+
 def _concern_tick(adapter: WorldAdapter) -> None:
     try:
         import domains.reflective_faculty as rf
@@ -2525,6 +2586,10 @@ def _concern_tick(adapter: WorldAdapter) -> None:
         try:
             if at.get("kind") == "code_write":
                 _process_code_write_standing(adapter, n, at)
+                s.set_attr(n, "status", "processed")
+                continue
+            if at.get("kind") == "prog_read":
+                _process_prog_read_standing(adapter, n, at)
                 s.set_attr(n, "status", "processed")
                 continue
             relations = at.get("relations") or []
