@@ -1,0 +1,696 @@
+{
+  "_GENERATED_BY": "tools/build_arc_decompose_seed.py",
+  "_REGENERATION_IS_GATED_BYTE_IDENTICAL": "tests/test_arc_decompose_migrated.py::test_mg4d_the_seed_regenerates_byte_identically re-runs this builder and diffs. The Term idioms (_tiers_of, _has_ladder, _is_decomposition_child, MEASURE_EPOCH, NUM, ...) are IMPORTED from tools/build_arc_magnitude_seed.py, so if that builder's idioms change this seed goes out of date LOUDLY.",
+  "self_load_only": true,
+  "_SELF_LOAD_ONLY_RATIONALE": "substrate/boot_all.py::_read_seeds GLOBS seeds/*.json and installs every match at boot, so a file here is live in EVERY agent in the tree the moment it lands. seeds/arc_goals.json and seeds/arc_magnitude.json both ship self_load_only for that reason and this seed DEPENDS ON THE LATTER, so shipping this one globbed would activate a chain whose base is deliberately gated. Activation is one key and the paired sweep A5 requires.",
+  "id": "arc_decompose",
+  "version": "1.0.0",
+  "depends_on": [
+    "goal_residuals",
+    "arc_goals",
+    "arc_magnitude"
+  ],
+  "_NO_DEPENDENCY_ON_arc_executor": "A16's own design investigation: decomposition needs no ExecClass, no dispatch, no re-arm -- it is graph arithmetic over ArcGoal/ArcTier. Depending on arc_magnitude (and, through it, arc_goals) is sufficient. This keeps MG4 addable/removable independent of the executor line and out of the re-arm/dispatch scope A13-A16 all exclude.",
+  "description": "MG4 -- ORDER-N DECOMPOSITION (A16). mg_rung (seeds/arc_magnitude.json) computes decompose_required and names the measured ladder a split would use; nothing consumed it. This seed is the consumer: mg_decompose mints one child ArcGoal per un-materialised tier of the ladder -- EVERY tier, not only the ones affordable under the CURRENT horizon (a first draft gated on in_horizon and was corrected before shipping: decompose_required==1.0 and in_horizon(any tier) are mutually exclusive by construction on this ladder's monotonic cost, which would have made the gated rule permanently dead under its own trigger -- see this builder's docstring) -- each child carrying its tier's raw increment_n as headroom_n and the tier's own survival factor alongside it, then individually re-priced by the UNCHANGED mg_rung against the same horizon (6.3's own point: a cheap tier can become actionable even when the whole ladder was not). mg_decompose_retire moves the parent to a DESCRIPTIVE terminal status ('decomposed') and, load-bearingly, zeroes its headroom_n -- which is what actually excludes it from ag_select's AND mg_select's pool, via POOL()'s own pre-existing Gt(headroom_n, 0.0) clause, with ZERO edits to seeds/arc_goals.json. Retirement fires only once EVERY tier has been materialised as a child and at least one child exists, never on the flag alone. mg_child_order_n gives each child its own discounted order-N headroom (headroom_n * tier_survival), which seeds/arc_magnitude.json v1.1.0's ONE additive guard on mg_goal_order_n_default protects from being silently overwritten -- otherwise the SAME inflation trap decision 2 guards against on the mint side would re-appear on the pricing side every fixpoint pass. FOLD-UP IS NOT TWINNED and NO ExecClass IS ADDED -- named out of scope in A16, not silently dropped. THE HONEST CONSEQUENCE OF DECISION 2's CORRECTION: the registered arithmetic identity (Sum(children.headroom_n*tier_survival)==parent.orderN_headroom_n) holds on a CONSTRUCTED scene (decompose_required forced with no horizon truncating the parent's own reading) but NOT on the natural push_back trigger, where the parent's own orderN_headroom_n is horizon-truncated to 0 while the children correctly sum to the ladder's full projected value -- measured and reported, not hidden, in PROGRAM_SYNTHESIS_ARC6_MG4_DECOMPOSE.md.",
+  "microtheory": {
+    "name": "arc_goal_decomposition",
+    "description": "A huge goal is not one atomic unit with one discounted headroom -- it is a measured tier ladder, already graph data, already keyed by a measured population join. Decomposition is the projection of that existing object into goals, each re-priced INDEPENDENTLY against the same horizon the parent could not fit \u2014 so a cheap tier can become individually actionable even when the whole ladder was not."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "seed:arc_decompose:has_subgoal-0",
+      "src": {
+        "type": "ArcGoal",
+        "var": "s"
+      },
+      "edge_type": "has_subgoal",
+      "tgt": {
+        "type": "ArcGoal",
+        "var": "t"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "mg_decompose",
+      "comment": "MG4/A16. THE SPLIT. MAGNITUDE.md 6.1's rule, built: mints ONE child ArcGoal per un-materialised tier of the parent's own measured ladder -- EVERY tier, not only in-horizon ones (decision 2, CORRECTED during build -- see this file's module docstring: gating on in_horizon would make this rule permanently unreachable under its own decompose_required trigger, and would contradict 6.3's own point that children get individually re-priced). One child per fixpoint pass (the pcon_mint / ag_mint_blocker Argmin-ONE_OF serializer: effects apply against PRE-EFFECT reads, so minting every un-materialised tier of one goal in a single pass would let two tiers both mint before either's dedup saw the other). THE CHILD DOES NOT CARRY proposed_seam (6.2(1)): it carries parent_ladder_key instead, so _has_ladder(child) is FALSE and this rule cannot re-fire on its own output -- no rule ordering on this engine, so the guard chain IS the confinement. headroom_n is the tier's RAW increment_n and tier_survival is carried alongside it (not multiplied in here) so the registered arithmetic identity (MG4a) can read both factors independently off the child, exactly as MAGNITUDE.md 6.1 lists them. cost_bits mirrors magnitude_cost_units (a decision beyond 6.1's literal attr list): without it, mg_rung's OWN cost fallback for a ladder-less goal (_cost_total's ITE) reads 0 for a childless-ladder goal and would misprice every child as trivially 'absorb' regardless of its own tier's real cost -- WITH it, mg_rung (unchanged, matches every ArcGoal) prices each child on its OWN cost against the SAME horizon, which is exactly the independent-re-pricing 6.3 describes. sig_seam/sig_lever/sig_target are inherited from the parent verbatim, per 6.1.",
+      "batch": true,
+      "match": [
+        [
+          "agenda",
+          "has_arc_goal",
+          "g"
+        ],
+        [
+          "lad",
+          "has_tier",
+          "t"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "decompose_required"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "ladder_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "proposed_seam"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "edge_type": "has_subgoal",
+                "any_type": false
+              },
+              "var_name": "chx",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "chx"
+                  },
+                  "key": "tier_order"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "order"
+                }
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "t"
+            },
+            "b": {
+              "type": "Argmin",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "ArcTier"
+                  },
+                  "var_name": "tsel",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "tsel"
+                      },
+                      "key": "ladder_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "key": "proposed_seam"
+                    }
+                  }
+                },
+                "var_name": "tsel",
+                "predicate": {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "edge_type": "has_subgoal",
+                      "any_type": false
+                    },
+                    "var_name": "chx",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "chx"
+                        },
+                        "key": "tier_order"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "tsel"
+                        },
+                        "key": "order"
+                      }
+                    }
+                  }
+                }
+              },
+              "var_name": "tsel",
+              "value": {
+                "type": "Lit",
+                "value": 0
+              },
+              "default": null
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "child",
+          "ArcGoal",
+          {
+            "agid": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "key": "agid"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ".tier"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "order"
+                    }
+                  }
+                ]
+              }
+            },
+            "parent_agid": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "agid"
+              }
+            },
+            "parent_ladder_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "proposed_seam"
+              }
+            },
+            "tier_order": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "order"
+              }
+            },
+            "headroom_n": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "increment_n"
+              }
+            },
+            "tier_survival": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "survival"
+              }
+            },
+            "magnitude_cost_units": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "cum_cost_units"
+              }
+            },
+            "cost_bits": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "cum_cost_units"
+              }
+            },
+            "sig_seam": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "sig_seam"
+              }
+            },
+            "sig_lever": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "sig_lever"
+              }
+            },
+            "sig_target": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "sig_target"
+              }
+            },
+            "reach_class_factor": 1.0,
+            "novelty_bits": 0.0,
+            "status": "minted",
+            "kind": "decomposition_tier",
+            "source_kind": "decomposition_tier",
+            "_the_decision_lives_here": "which tiers become goals is mg_rung's decompose_required (seeds/arc_magnitude.json) alone; the adapter never chooses a tier."
+          }
+        ],
+        [
+          "add_edge",
+          "g",
+          "has_subgoal",
+          "child"
+        ],
+        [
+          "add_edge",
+          "agenda",
+          "has_arc_goal",
+          "child"
+        ]
+      ]
+    },
+    {
+      "name": "mg_decompose_retire",
+      "comment": "MG4/A16, decision 3. THE PARENT LEAVES THE POOL -- decision 1 (module docstring): stamps headroom_n=0.0, which POOL()'s OWN pre-existing Gt(headroom_n, 0.0) clause already excludes, removing the parent from BOTH ag_select's and mg_select's pool with ZERO edits to seeds/arc_goals.json. status='decomposed' is DESCRIPTIVE, exactly parallel to ax_retired_epoch's 'retired', never itself the exclusion mechanism. FIRES ONLY ONCE DECOMPOSITION IS ACTUALLY COMPLETE: decompose_required==1.0 AND at least one child already exists AND no undecomposed tier remains (decision 2, corrected: ALL tiers, not only in-horizon ones).",
+      "batch": true,
+      "match": [
+        [
+          "agenda",
+          "has_arc_goal",
+          "g"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "decompose_required"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "status"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "decomposed"
+              }
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "edge_type": "has_subgoal",
+              "any_type": false
+            },
+            "var_name": "chr",
+            "predicate": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "ArcTier"
+                  },
+                  "var_name": "tud2",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "tud2"
+                      },
+                      "key": "ladder_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "key": "proposed_seam"
+                    }
+                  }
+                },
+                "var_name": "tud2",
+                "predicate": {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "edge_type": "has_subgoal",
+                      "any_type": false
+                    },
+                    "var_name": "chx",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "chx"
+                        },
+                        "key": "tier_order"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "tud2"
+                        },
+                        "key": "order"
+                      }
+                    }
+                  }
+                }
+              },
+              "var_name": "tud2",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "g",
+          "status",
+          "decomposed"
+        ],
+        [
+          "set_attr",
+          "g",
+          "decomposed_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "NodesOfType",
+                    "node_type": "ResidualFact"
+                  },
+                  "var_name": "mef",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "mef"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "arc_measure_epoch"
+                    }
+                  }
+                },
+                "var_name": "mef2",
+                "value": {
+                  "type": "Lit",
+                  "value": 0
+                },
+                "default": null
+              },
+              "key": "value"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "g",
+          "decomposed_because",
+          "all_tiers_of_the_measured_ladder_materialized_as_children"
+        ],
+        [
+          "set_attr",
+          "g",
+          "headroom_n",
+          0.0
+        ],
+        [
+          "set_attr",
+          "g",
+          "orderN_headroom_n",
+          0.0
+        ]
+      ]
+    },
+    {
+      "name": "mg_child_order_n",
+      "comment": "MG4/A16. A decomposition child's OWN order-N headroom is its tier's discounted value -- headroom_n * tier_survival, the SAME product the registered arithmetic identity (MG4a) sums. This is what mg_goal_order_n_default's new parent_agid exclusion (seeds/arc_magnitude.json v1.1.0) makes room for: without both halves, the generic order-N fallback would silently overwrite this back to the undiscounted headroom_n every fixpoint pass -- precisely the order-1-credit inflation trap MAGNITUDE.md 6.2(4) names as 'the single most likely way for this to go wrong'.",
+      "batch": true,
+      "match": [
+        [
+          "agenda",
+          "has_arc_goal",
+          "g"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "g"
+            },
+            "key": "parent_agid"
+          },
+          "b": {
+            "type": "Lit",
+            "value": null
+          }
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "g",
+          "orderN_headroom_n",
+          {
+            "__term__": {
+              "type": "Times",
+              "items": [
+                {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "key": "headroom_n"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": 0.0
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "key": "headroom_n"
+                  }
+                },
+                {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "key": "tier_survival"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": 0.0
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "key": "tier_survival"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "g",
+          "order_n_basis",
+          "decomposition_child_tier_survival"
+        ],
+        [
+          "set_attr",
+          "g",
+          "order_n_orders_counted",
+          1.0
+        ]
+      ]
+    }
+  ]
+}

@@ -1256,3 +1256,202 @@ A13/A14:** the re-arm deadlock (AG-5 §5), the silent order-N fallback
 touched by this rung even if a fix would make the chosen candidate's
 condition more behaviourally accurate (per finding #6/#7 above) — repairing
 `probe_facts`'s sha-check is named as a follow-up, not built here.
+
+---
+
+### AMENDMENT A16 (2026-08-11) — MG4: order-N decomposition, the piece A9 designed and A9/A10/A11 all declined to build
+
+The magnitude rung (`PROGRAM_SYNTHESIS_ARC6_MAGNITUDE.md` §6) designed
+decomposition in full — `mg_decompose`, the child-mint shape, the registered
+arithmetic identity — and built none of it, because the parent could not
+leave the pool without a terminal status and nothing in the tree wrote one.
+The executor rung (A10) built the status lifecycle (`ax_retired_epoch`,
+`ax_rearm`) for a DIFFERENT goal kind (`re_measure`) and, in its own §10,
+reported wanting to build MG4 anyway, declining only because *"this rung's
+own mechanism has a reach of one node, and adding a second mechanism on top
+of a one-node demonstration is how a measured result becomes a story."* That
+reach concern is weaker now than when it was written: the executor has since
+gained a SECOND `ExecClass` (A15, seed data not a rule change) and four more
+rungs of regression history to build against. Decomposition is a THIRD,
+independent mechanism from either — it operates on `ArcGoal`/`ArcTier` data
+alone and needs no `ExecClass`/dispatch machinery of its own — so this
+amendment does not inherit A10's reach objection by association; it states
+its own bars.
+
+**The design investigation, done before drafting bars — three decisions the
+design underspecifies, made here and named, not discovered mid-build.**
+
+1. **The parent's pool-exit does NOT edit `seeds/arc_goals.json`.** The
+   design's own §6.2(2) considered adding a `"decomposed"` status to
+   `POOL()`'s filter and declined because it requires editing the
+   byte-frozen `arc_goals.json`. It still does, if the exclusion is written
+   as a literal third status disjunct there. **This rung does not do that.**
+   `POOL()` already excludes on `Gt(headroom_n, 0.0)` — the SAME clause A13
+   §7.1 and A15 §4.2 already validated as a safe, narrow pool-exit technique
+   (`headroom_n → 0`) for constructing scenes. Setting the parent's own
+   `headroom_n` to `0.0` at decomposition time removes it from `POOL()` —
+   and therefore from BOTH `ag_select`'s order-1 pool and `mg_select`'s
+   order-N pool, since `mg_select`'s pool is `ag_select`'s own `Filter`,
+   machine-lifted verbatim — with **zero edits to `arc_goals.json`,
+   zero change to its pinned margin, zero risk to the byte-identical gates
+   every rung since MG1 has carried.** `status: "decomposed"` is still
+   written, exactly parallel to `"retired"`, but as a **descriptive,
+   readable terminal token** for a human or a later rung to query — the
+   mechanical exclusion is the existing headroom clause, not the string.
+2. **Decomposition respects the SAME horizon truncation the parent's own
+   order-N value already respects.** `mg_decompose` mints a child only for a
+   tier that is `in_horizon` (the same flag `mg_goal_order_n`'s own sum
+   already filters on) — not for every tier on the ladder unconditionally.
+   This is not in the §6.1 pseudocode literally, and it is added here for a
+   measured reason: without it, the registered arithmetic identity
+   (`Sum(children.headroom_n × children.tier_survival) ==
+   parent.orderN_headroom_n`) is **false** the instant a horizon is bound
+   tightly enough to trigger `decompose_required` at all — because
+   `decompose_required` is set exactly when even the smallest tier's
+   cumulative cost exceeds the horizon (`magnitude_ratio_first_tier > 1`),
+   which by the ladder's own monotonic cumulative cost means **every** tier
+   exceeds it, so the parent's `orderN_headroom_n` reads `0` at that exact
+   moment (`PROGRAM_SYNTHESIS_ARC6_MAGNITUDE.md` §4.2's own horizon=5 row).
+   Minting children with their full, untruncated increments in that state
+   would sum to the ladder's full projected value while the parent reads
+   `0` — a mismatch, not a rounding difference. Gating each child's mint on
+   `in_horizon` makes the identity hold **by construction** in every scene,
+   not only a cherry-picked one, and it has a named, reportable consequence:
+   **at a horizon so tight not even the cheapest tier fits, decomposition
+   mints nothing.** This is stated as a deliberate property (declining to
+   propose children promising work nobody has budget for) rather than
+   patched around, and it means the existing pinned scene
+   (`test_mg3_push_back_marks_DECOMPOSE_REQUIRED_and_names_its_MEASURED_ladder`,
+   horizon=5) is expected to still show **zero** children and **zero**
+   `parent_agid`-bearing goals after this rung lands, unchanged — the
+   mechanism is demonstrated on a wider, constructed horizon instead (MG4a).
+> **CORRECTION, MADE DURING BUILD, BEFORE ANY GATE WAS WRITTEN.** Decision 2
+> as registered above is **wrong**, and the reason is arithmetic rather than
+> a matter of taste: `decompose_required == 1.0` requires
+> `magnitude_ratio_first_tier > 1`, i.e. `cost_first > horizon_net`, where
+> `cost_first` **is** the cheapest tier's own `cum_cost_units` (the exact
+> field `in_horizon` compares against `horizon_net`). Because tier cost is
+> cumulative and therefore monotonic, `cost_first > horizon_net` implies
+> `cum_cost_units(t) > horizon_net` — i.e. `NOT in_horizon(t)` — for **every**
+> tier `t`, not only the cheapest. So `decompose_required == 1.0` and
+> `EXISTS t, in_horizon(t)` are **mutually exclusive, for any ladder,
+> always** — gating the mint on `in_horizon` does not make decomposition
+> decline gracefully under a tight horizon, it makes `mg_decompose`
+> **permanently unreachable under its own natural trigger**: resident and
+> structurally dead, exactly the failure mode §1/JOB 0 found for
+> `qd_decompose` and named as *worse* than merely unreached. It also
+> contradicts §6.3's own stated point — children are meant to be
+> **independently** re-priced against the horizon so a cheap tier (B0, 8
+> units) can become individually actionable even when the full ladder (28
+> units) was not, which requires minting the whole ladder, not a
+> horizon-pre-filtered slice of it. **Corrected: `mg_decompose` mints every
+> un-materialised tier unconditionally, gated only on `decompose_required`
+> and dedup — no `in_horizon` check.** Each child is then priced
+> individually by the existing, unmodified `mg_rung` (it matches every
+> `ArcGoal`) via `cost_bits`, which is why the child now also carries
+> `cost_bits: t.cum_cost_units` (a decision beyond §6.1's literal attr list,
+> needed for exactly this). **The honest consequence, not hidden:** the
+> registered arithmetic identity now holds on a **constructed** scene
+> (`decompose_required` forced true while no horizon truncates the parent's
+> own `orderN_headroom_n` reading) but does **not** hold, as literally
+> stated, on the **natural** push_back trigger — there, the parent's own
+> `orderN_headroom_n` is horizon-truncated to `0` (nothing fits, by the same
+> mathematical fact above) while the children correctly sum to the ladder's
+> full, untruncated projected value. Both scenes are measured and reported
+> in `PROGRAM_SYNTHESIS_ARC6_MG4_DECOMPOSE.md` rather than only the one that
+> passes; MG4a is registered (below) against the constructed scene, matching
+> its own text, and the mismatch on the natural-trigger scene is named as a
+> genuine tension in the ORIGINAL bar wording for whoever revisits it, not
+> patched into invisibility.
+
+3. **The parent moves to `"decomposed"` only once decomposition of the
+   FULL tier set is complete (every tier of the ladder, per the correction
+   above — not only a horizon-affordable subset) AND at least one child
+   exists** — never on the flag alone. The "at least one child" guard is a
+   defensive no-op today (a real ladder always has tiers), kept because it
+   documents the invariant for free.
+
+**What is explicitly NOT built, named rather than silently dropped:**
+
+- **Fold-up is not twinned.** §6.2(3) calls for lifting
+  `qd_compound_resolve`/`qd_compound_wall` onto `ArcGoal`. Nothing in this
+  tree resolves a decomposition child's status — no `ExecClass` targets a
+  structural-primitive tier — so a twinned fold-up rule would be dead code
+  with nothing to trigger it, the same shape JOB 0 already found for
+  `qd_decompose` itself. MG4 is, again, *"a BUILD for the split and a HOOK
+  for the fold-up"* — the child shape is legible to a future fold-up rule
+  (`parent_agid`, `tier_order` are exactly what `Count`-over-neighbours
+  needs), but wiring it here would be untestable construction.
+- **No new seed dependency on `arc_executor`.** Decomposition needs no
+  `ExecClass`, no dispatch, no re-arm — it is graph arithmetic over
+  `ArcGoal`/`ArcTier`. The new seed depends on `arc_magnitude` (for
+  `ArcTier`/`decompose_required`) and, through it, `arc_goals` — not on
+  `arc_executor`. This keeps decomposition addable/removable independent of
+  the executor line, and keeps it out of the re-arm/dispatch scope this
+  task explicitly excludes.
+- **A new, additive-only seed**, `seeds/arc_decompose.json`
+  (`tools/build_arc_decompose_seed.py`), rather than growing
+  `seeds/arc_magnitude.json`'s own rule list — MG5's own precedent ("this
+  rung adds a second seed rather than editing the first"), so MG1-3/5's
+  existing 43 gates load a graph that has not changed under them. The one
+  exception is a single, additive, purely-inert-on-every-existing-scene
+  guard added to `arc_magnitude.json`'s `mg_goal_order_n_default` (excluding
+  nodes carrying `parent_agid`) — required because that rule otherwise
+  unconditionally recomputes ANY laddered-orphan goal's `orderN_headroom_n`
+  from its raw `headroom_n` every fixpoint pass, which would silently
+  overwrite a decomposition child's own order-N value back to its
+  undiscounted order-1 figure — precisely the inflation §6.2(4) warns
+  against. A new `mg_child_order_n` rule (in the new seed) computes the
+  child's own `orderN_headroom_n = headroom_n × tier_survival`.
+
+**Bars, registered before the build.**
+
+- **MG4a — the registered arithmetic identity, both directions.**
+  `Sum(children.headroom_n × children.tier_survival) ==
+  parent.orderN_headroom_n`, on a constructed decomposition scene (wide or
+  unheld horizon, so every tier is in-horizon and the sum is non-trivial —
+  not the degenerate horizon=5 scene where it is `0 == 0`). Both
+  directions: the identity holds on the correctly-built scene, AND a
+  negative control (a child's `tier_survival` corrupted/dropped) is shown
+  to break the same check — a check that cannot fail is not a check.
+- **MG4b — a decomposed parent leaves the pool, reported as a paired list.**
+  Before/after pool membership (agid sets), not a bare delta: the pool
+  loses exactly the one parent agid and gains exactly the N child agids for
+  N tiers on the ladder (per decision 2's correction: every tier mints,
+  unconditionally — the horizon determines which of the N children are
+  individually `absorb`-able afterward, not how many mint). Demonstrated on
+  at least two horizons (e.g. the natural push_back trigger, horizon=5, and
+  a wider constructed one) so each child's OWN `magnitude_rung` is shown to
+  vary with the horizon even though N itself (fixed by the ladder, 4 on the
+  shipped graph) does not — the horizon-dependence decision 2's correction
+  actually buys is per-child affordability, not mint count.
+- **MG4c — no double-counting, demonstrated live.** The parent is never
+  simultaneously present in `POOL()` alongside its children: read `POOL()`
+  (both the order-1 and, with `arc_magnitude` live, the order-N pool) at
+  the tick the parent's `headroom_n` is stamped to `0.0` and assert the
+  parent is absent while any already-minted children are present. Also:
+  the parent's own `VALUE`/`VALUE_N` contribution is unreachable once
+  excluded (`MaxOver` over `POOL()` cannot read a filtered-out element),
+  asserted structurally rather than merely by absence from a printed rank.
+- **MG4d — no regression, node-id lists not counts.** The five existing
+  gate suites (`test_arc_executor_migrated`, `test_arc_goals_migrated`,
+  `test_goal_residual_migrated`, `test_arc6_valuelayer_migrated`,
+  `test_arc_magnitude_migrated`) produce the same failing-node-id lists
+  before and after, paired and named. `seeds/arc_goals.json`,
+  `seeds/goal_residuals.json` stay byte-identical to `HEAD`.
+  `seeds/arc_magnitude.json` regenerates byte-identically from its OWN
+  (edited, version-bumped) emitter, and the ONE new guard clause in
+  `mg_goal_order_n_default` is shown inert on every existing MG1/2/3/5
+  scene (same values before/after on the 43 pre-existing magnitude gates).
+  `seeds/arc_decompose.json` regenerates byte-identically from its own
+  emitter. The adapter source audit (no `.evaluate(`, no `run_rules`, no
+  raw `substrate_rs` import) passes on any new adapter code, mirroring the
+  existing `arc_magnitude_ingest`/`arc_executor` module-specific audits.
+
+**Explicitly out of scope, unchanged from A13/A14/A15's own boundary:** the
+re-arm deadlock, the silent order-N fallback, `ag_ask`/`ax_dispatch`
+collapse-agreement in general, and `gr_condition_lapse`'s closed vocabulary.
+Also out of scope, named here rather than assumed: fold-up (decision above),
+and any `ExecClass` for a decomposition-tier goal (there is no runner that
+could execute "supply a structural primitive" — that remains genuine outside
+work, same as it was for the undecomposed parent).

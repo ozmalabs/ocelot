@@ -1458,16 +1458,34 @@ def test_ex6_the_seed_is_NOT_globbed_into_every_agent_in_the_tree():
 def test_ex6_the_seeds_below_this_rung_are_UNTOUCHED():
     """Confinement asserted against `HEAD`, not promised.  `arc_goals` and
     `arc_magnitude` are byte-frozen and gated by their own suites; this rung
-    ADDS rules, it does not edit theirs."""
+    ADDS rules, it does not edit theirs.
+
+    A16/MG4 EXCEPTION, NAMED — the WH1 precedent (invert a pin with a
+    docstring, never silently remove it).  `seeds/arc_magnitude.json` is no
+    longer on this list: A16 (order-N decomposition) added ONE additive
+    guard to `mg_goal_order_n_default` (excluding a node carrying
+    `parent_agid`, absent on every goal this suite's own scenes mint) and
+    bumped the seed to v1.1.0.  This executor rung's OWN gates never load
+    `arc_decompose` and never mint a `parent_agid`-bearing goal, so the
+    guard is INERT here by the same construction `test_arc_magnitude_
+    migrated`'s own 43 gates already confirm it inert on — checked below by
+    regenerating `arc_magnitude`'s OWN current emitter and diffing against
+    it (still byte-frozen, just no longer frozen to a stale `HEAD`), rather
+    than by widening this rung's own scope to review A16's build."""
     prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
                             capture_output=True, text=True).stdout.strip()
-    for rel in ("seeds/arc_goals.json", "seeds/arc_magnitude.json",
-                "seeds/goal_residuals.json", "seeds/program_synthesis.json",
-                "domains/arc_goal_ingest.py", "domains/goal_residual_ingest.py"):
+    for rel in ("seeds/arc_goals.json", "seeds/goal_residuals.json",
+                "seeds/program_synthesis.json", "domains/arc_goal_ingest.py",
+                "domains/goal_residual_ingest.py"):
         head = subprocess.run(["git", "-C", ROOT, "show", "HEAD:" + prefix + rel],
                               capture_output=True, text=True).stdout
         assert head, rel
         assert head == open(os.path.join(ROOT, rel)).read(), rel
+
+    r = subprocess.run([sys.executable, os.path.join(
+        ROOT, "tools", "build_arc_magnitude_seed.py"), "--check"],
+        capture_output=True, text=True, cwd=ROOT)
+    assert r.returncode == 0, r.stdout + r.stderr
 
 
 def test_ex6_the_seed_REGENERATES_byte_identically():

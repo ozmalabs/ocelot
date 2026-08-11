@@ -4,12 +4,12 @@
   "self_load_only": true,
   "_SELF_LOAD_ONLY_RATIONALE": "substrate/boot_all.py::_read_seeds GLOBS seeds/*.json and installs every match at boot, so a file here is live in EVERY agent in the tree the moment it lands. seeds/arc_goals.json ships self_load_only for that reason and this seed DEPENDS ON IT, so shipping this one globbed would activate a chain whose base is deliberately gated. REMOVING THIS KEY IS THE TREE-WIDE ACTIVATION and needs the paired sweep A5 requires.",
   "id": "arc_magnitude",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "depends_on": [
     "goal_residuals",
     "arc_goals"
   ],
-  "description": "CONSTRAINTS, ORDER-N PROJECTED VALUE, AND THE MAGNITUDE LADDER (MG1-MG3). seeds/arc_goals.json ranks arc goals by ABSOLUTE HEADROOM IN TASKS -- a SPOT valuation, priced in a vacuum. Three terms were missing and A9 registers all three as missing INPUTS rather than hazards needing guards. (1) CONSTRAINTS: horizon, scope and competing requirements land as ArcConstraint nodes with holds_under -> ResidualCondition, so gr_condition_lapse / gr_condition_hold lapse and restore them VERBATIM -- zero new lapse machinery -- and the ask requests them under T2 IGNORANCE. (2) ORDER-N VALUE: a goal carrying a MEASURED TIER LADDER is worth the horizon-truncated sum of its per-order increments, each discounted by attrition factors READ FROM RESULTS ARTIFACTS at named dotted paths -- there is NO attrition number in this file. A projection with no measured basis carries a fact_equals(arc_measure_epoch) condition and EXPIRES at the next epoch. (3) THE LADDER: small absorb / medium balance / huge push back, routed by RATIOS against the measured horizon with no authored cutoff anywhere. DECOMPOSITION IS DESIGNED, NOT BUILT: mg_rung sets decompose_required and names the measured ladder it would split on, and nothing splits it.",
+  "description": "CONSTRAINTS, ORDER-N PROJECTED VALUE, AND THE MAGNITUDE LADDER (MG1-MG3). seeds/arc_goals.json ranks arc goals by ABSOLUTE HEADROOM IN TASKS -- a SPOT valuation, priced in a vacuum. Three terms were missing and A9 registers all three as missing INPUTS rather than hazards needing guards. (1) CONSTRAINTS: horizon, scope and competing requirements land as ArcConstraint nodes with holds_under -> ResidualCondition, so gr_condition_lapse / gr_condition_hold lapse and restore them VERBATIM -- zero new lapse machinery -- and the ask requests them under T2 IGNORANCE. (2) ORDER-N VALUE: a goal carrying a MEASURED TIER LADDER is worth the horizon-truncated sum of its per-order increments, each discounted by attrition factors READ FROM RESULTS ARTIFACTS at named dotted paths -- there is NO attrition number in this file. A projection with no measured basis carries a fact_equals(arc_measure_epoch) condition and EXPIRES at the next epoch. (3) THE LADDER: small absorb / medium balance / huge push back, routed by RATIOS against the measured horizon with no authored cutoff anywhere. v1.1.0 (A16/MG4): mg_goal_order_n_default gains ONE additive exclusion (a goal carrying parent_agid -- a decomposition child, seeds/arc_decompose.json) so the generic order-N fallback cannot silently overwrite a child's own discounted orderN_headroom_n back to its undiscounted headroom_n. INERT ON EVERY EXISTING SCENE: no goal on the shipped graph carries parent_agid. Decomposition ITSELF (mg_decompose, the child mint, the terminal status) lives in the SEPARATE seeds/arc_decompose.json, not here -- this seed still only sets decompose_required and names the measured ladder a split would use.",
   "microtheory": {
     "name": "arc_goal_magnitude",
     "description": "A goal is not expensive in the abstract -- it is correct at twelve months and wrong at two weeks. A horizon is a conditioned fact that lapses like any other measurement; a projection beyond order 1 is a claim that must name the artifact it rests on or expire; and how big something is is a RATIO against a measured budget, never a number someone chose."
@@ -3703,7 +3703,7 @@
     },
     {
       "name": "mg_goal_order_n_default",
-      "comment": "A9, VERBATIM: *'Re-measurement's order-1 value IS its total value (completing it unlocks nothing).'* A goal with no measured ladder -- or whose projection has EXPIRED -- has no orders above 1, so its order-N headroom IS its order-1 headroom. This is not a fallback for missing data; it is the correct answer for a goal that unlocks nothing, and it is why order-N reprices SOME goals and not others rather than rescaling all of them uniformly. Guard is mg_goal_order_n's with the ladder/projection items negated, so exactly one of the pair fires.",
+      "comment": "A9, VERBATIM: *'Re-measurement's order-1 value IS its total value (completing it unlocks nothing).'* A goal with no measured ladder -- or whose projection has EXPIRED -- has no orders above 1, so its order-N headroom IS its order-1 headroom. This is not a fallback for missing data; it is the correct answer for a goal that unlocks nothing, and it is why order-N reprices SOME goals and not others rather than rescaling all of them uniformly. Guard is mg_goal_order_n's with the ladder/projection items negated, so exactly one of the pair fires.\nA16/MG4 ADDITION, ADDITIVE AND INERT ON EVERY EXISTING SCENE: this rule is ALSO excluded for a decomposition CHILD (parent_agid set). Without the exclusion, this rule would unconditionally recompute ANY laddered-orphan goal's orderN_headroom_n FROM ITS RAW headroom_n every fixpoint pass -- a decomposition child has no proposed_seam (deliberately, MG4 6.2(1)), so _has_ladder(child) is False and this rule's ORIGINAL guard alone would match it, silently overwriting mg_child_order_n's discounted headroom_n*tier_survival back to the undiscounted headroom_n -- precisely the order-1-credit inflation trap MG4 6.2(4) names. No goal on the shipped graph carries parent_agid, so this exclusion is False (inert) on every scene MG1-3/5 already measured.",
       "batch": true,
       "match": [
         [
@@ -3713,99 +3713,125 @@
         ]
       ],
       "where": {
-        "type": "Or",
+        "type": "And",
         "items": [
           {
-            "type": "Not",
-            "arg": {
-              "type": "And",
-              "items": [
-                {
-                  "type": "Not",
-                  "arg": {
-                    "type": "Eq",
-                    "a": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "g"
-                      },
-                      "key": "proposed_seam"
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "g"
+                          },
+                          "key": "proposed_seam"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": null
+                        }
+                      }
                     },
-                    "b": {
-                      "type": "Lit",
-                      "value": null
+                    {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Filter",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ArcTier"
+                        },
+                        "var_name": "t3",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "t3"
+                            },
+                            "key": "ladder_key"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "g"
+                            },
+                            "key": "proposed_seam"
+                          }
+                        }
+                      },
+                      "var_name": "t3",
+                      "predicate": {
+                        "type": "Lit",
+                        "value": true
+                      }
                     }
-                  }
-                },
-                {
+                  ]
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
                   "type": "Exists",
                   "source": {
-                    "type": "Filter",
-                    "source": {
-                      "type": "NodesOfType",
-                      "node_type": "ArcTier"
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
                     },
-                    "var_name": "t3",
-                    "predicate": {
+                    "edge_type": "has_projection",
+                    "any_type": false
+                  },
+                  "var_name": "pr2",
+                  "predicate": {
+                    "type": "Not",
+                    "arg": {
                       "type": "Eq",
                       "a": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "t3"
+                          "name": "pr2"
                         },
-                        "key": "ladder_key"
+                        "key": "stale"
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "g"
-                        },
-                        "key": "proposed_seam"
+                        "type": "Lit",
+                        "value": 1.0
                       }
                     }
-                  },
-                  "var_name": "t3",
-                  "predicate": {
-                    "type": "Lit",
-                    "value": true
                   }
                 }
-              ]
-            }
+              }
+            ]
           },
           {
             "type": "Not",
             "arg": {
-              "type": "Exists",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "g"
-                },
-                "edge_type": "has_projection",
-                "any_type": false
-              },
-              "var_name": "pr2",
-              "predicate": {
-                "type": "Not",
-                "arg": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "Attr",
-                    "node": {
-                      "type": "Var",
-                      "name": "pr2"
-                    },
-                    "key": "stale"
+              "type": "Not",
+              "arg": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
                   },
-                  "b": {
-                    "type": "Lit",
-                    "value": 1.0
-                  }
+                  "key": "parent_agid"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
                 }
               }
             }

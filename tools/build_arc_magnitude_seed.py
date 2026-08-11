@@ -805,6 +805,16 @@ def _r_goal_order_n():
     }
 
 
+def _is_decomposition_child(gvar="g"):
+    """A16/MG4. TRUE for a goal minted BY decomposition (`mg_decompose`,
+    `seeds/arc_decompose.json`), which stamps `parent_agid` on every child it
+    mints and on NOTHING else in this tree. ADDITIVE AND INERT ON EVERY
+    EXISTING SCENE: no goal on the shipped graph carries `parent_agid`, so
+    this predicate is False everywhere MG1-3/5 already measured, and the
+    guard below changes NOTHING there."""
+    return NOT(EQ(A(V(gvar), "parent_agid"), L(None)))
+
+
 def _r_goal_order_n_default():
     return {
         "name": "mg_goal_order_n_default",
@@ -817,10 +827,23 @@ def _r_goal_order_n_default():
             "that unlocks nothing, and it is why order-N reprices SOME goals "
             "and not others rather than rescaling all of them uniformly. Guard "
             "is mg_goal_order_n's with the ladder/projection items negated, so "
-            "exactly one of the pair fires."),
+            "exactly one of the pair fires.\n"
+            "A16/MG4 ADDITION, ADDITIVE AND INERT ON EVERY EXISTING SCENE: this "
+            "rule is ALSO excluded for a decomposition CHILD (parent_agid set). "
+            "Without the exclusion, this rule would unconditionally recompute "
+            "ANY laddered-orphan goal's orderN_headroom_n FROM ITS RAW "
+            "headroom_n every fixpoint pass -- a decomposition child has no "
+            "proposed_seam (deliberately, MG4 6.2(1)), so _has_ladder(child) is "
+            "False and this rule's ORIGINAL guard alone would match it, "
+            "silently overwriting mg_child_order_n's discounted "
+            "headroom_n*tier_survival back to the undiscounted headroom_n -- "
+            "precisely the order-1-credit inflation trap MG4 6.2(4) names. No "
+            "goal on the shipped graph carries parent_agid, so this exclusion "
+            "is False (inert) on every scene MG1-3/5 already measured."),
         "batch": True,
         "match": [["agenda", "has_arc_goal", "g"]],
-        "where": OR(NOT(_has_ladder()), NOT(_live_projection())),
+        "where": AND(OR(NOT(_has_ladder()), NOT(_live_projection())),
+                     NOT(_is_decomposition_child())),
         "effects": [
             ["set_attr", "g", "orderN_headroom_n",
              T(NUM(A(V("g"), "headroom_n"), 0.0))],
@@ -1278,7 +1301,7 @@ def build():
             "deliberately gated. REMOVING THIS KEY IS THE TREE-WIDE ACTIVATION "
             "and needs the paired sweep A5 requires."),
         "id": "arc_magnitude",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "depends_on": ["goal_residuals", "arc_goals"],
         "description": (
             "CONSTRAINTS, ORDER-N PROJECTED VALUE, AND THE MAGNITUDE LADDER "
@@ -1298,9 +1321,17 @@ def build():
             "arc_measure_epoch) condition and EXPIRES at the next epoch. "
             "(3) THE LADDER: small absorb / medium balance / huge push back, "
             "routed by RATIOS against the measured horizon with no authored "
-            "cutoff anywhere. DECOMPOSITION IS DESIGNED, NOT BUILT: mg_rung "
-            "sets decompose_required and names the measured ladder it would "
-            "split on, and nothing splits it."),
+            "cutoff anywhere. "
+            "v1.1.0 (A16/MG4): mg_goal_order_n_default gains ONE additive "
+            "exclusion (a goal carrying parent_agid -- a decomposition child, "
+            "seeds/arc_decompose.json) so the generic order-N fallback cannot "
+            "silently overwrite a child's own discounted orderN_headroom_n "
+            "back to its undiscounted headroom_n. INERT ON EVERY EXISTING "
+            "SCENE: no goal on the shipped graph carries parent_agid. "
+            "Decomposition ITSELF (mg_decompose, the child mint, the terminal "
+            "status) lives in the SEPARATE seeds/arc_decompose.json, not here "
+            "-- this seed still only sets decompose_required and names the "
+            "measured ladder a split would use."),
         "microtheory": {
             "name": "arc_goal_magnitude",
             "description": (
