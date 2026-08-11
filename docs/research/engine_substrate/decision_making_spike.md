@@ -5283,3 +5283,51 @@ floor-crossing deltas, predicted before the run; and (4) resolves §107
 item (4) — unconditional vs. declared-default-on — as its own registered
 bar, before writing a line of seed data, per the absence-safety discipline
 every other term on this ladder was held to.
+
+## §108 — Once prediction-ahead-of-trigger is the default architecture, Libet stops being mysterious
+
+Owner's closing observation, quoted rather than paraphrased: *"given that
+we have established that predicting the future is a core principle, it
+demystifies libet entirely."* Worth one section rather than a parenthetical,
+because it retroactively sharpens §106's own hedge instead of merely
+restating it.
+
+**§106 hedged with Libet's most-cited caveat — that a conscious "veto"
+window survives RP onset, so System 2 still gets a final say — as if that
+caveat were needed to keep the free-will question at bay.** It is not
+needed, and reaching for it conceded more than this document's own
+position requires. The question the caveat is answering — "does the
+readiness potential or the conscious report constitute the REAL decision"
+— only has bite if decision-making is assumed to be a single event, and
+one of the two candidates must be crowned as having caused it. **Once
+prediction-ahead-of-trigger is the default architecture — which this
+document's own material independently establishes on every axis it
+touches: the sd loop decodes against a codebook before recognising
+(CLAUDE.md's dynamic-quantization section), the risk ladder itself prices
+"what this candidate action WOULD cost" before it is taken (§95's own
+framing, forward-looking by construction), §104's own reframing of RP as a
+standing preparatory process — decision-making is not a single event to
+begin with.** It is a continuous, cheap, always-on process (System 1,
+§105) producing a running forward state, coupled to a discrete, costed
+readout that samples it (System 2). Asking which one is "the real
+decision" is asking which of two different KINDS of thing is more real —
+exactly the shape of question Axiom 0 and this repo's own frame/continuum
+invariant (§91's citation, *"in-frame is integer, ratios are cross-frame"*)
+already dissolve one level down: the continuous predictive process is not
+IN a frame at all, it is the computation that PRODUCES frames; the
+discrete "moment of decision" is the in-frame, sampled event. There is no
+competition between a continuous generating process and one of its own
+discrete samples for which is "really" in charge, any more than there is a
+competition between a rendering function and one rendered frame.
+
+**What this replaces, precisely:** §106's veto-window hedge is not wrong,
+but it answers a question this document does not need to ask. The
+corrected position: Libet and Soon's data is exactly what continuous
+prediction predicts you would find — a measurable forward trace preceding
+a discrete threshold-crossing — under BOTH the "free will is real" and
+"free will is illusory" readings equally, which is the tell that the free-
+will framing was never the load-bearing variable. The load-bearing
+variable, the one this document's own §104-107 material actually needs, is
+architectural: is action-selection event-triggered-from-scratch, or
+continuously-prepared-then-sampled? The RP data answers exactly that
+question, cleanly, and says nothing under-determined about the other one.
