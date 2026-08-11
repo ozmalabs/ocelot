@@ -1816,3 +1816,196 @@ arc6_import_impedance.py`. Also out of scope: a third `ExecClass` (seam
 B/C/D) — this amendment is about the epoch's PRODUCERS, not the executor's
 reach, and A15 §8 item 3 already found that a third `ExecClass` would not,
 by itself, change this deadlock's shape.
+
+---
+
+### AMENDMENT A19 (2026-08-11) — the silent order-N fallback: make it observable, without touching when it fires
+
+`PROGRAM_SYNTHESIS_ARC6_WIRE_HANDS.md` §8 named, ordered FIRST by damage,
+exactly one uncertainty, quoted because it is this amendment's charter:
+*"THE FALLBACK IS SILENT, AND IT FAILS TOWARD THE COLLAPSE THE ARC MEASURED
+AS MISPRICED. If `mg_select` ever stops firing — a boot without
+`arc_magnitude`, an empty pool at the wrong moment, a future edit to its
+guard — `SEL_AGID` reverts to order-1 and nothing raises an alarm. This is
+mitigated after the fact (`selected_by` on the order) and NOT PREVENTED."*
+Six rungs have landed since (A12–A18) without touching it; none of them
+changed `_order_n_is_not_live()`, `mg_select`, or anything upstream of it —
+confirmed below, not assumed, because A18 itself changed the epoch's
+producers and had to be checked for interaction.
+
+**Scope, stated precisely, per the task's own boundary.** The fallback
+itself — `SEL_AGID` reverting to `arc_sel_agid`/order-1 when `mg_sel_agid`/
+order-N is absent — is A11's own deliberate, measured design (WIRE_HANDS
+§1.2: a HARD dependency on `arc_magnitude` would change what every EX1–EX6
+scene boots and would put an order-N collapse into every graph that merely
+wants hands). **This amendment does not remove it, does not widen it, and
+does not touch `ax_dispatch`, `SEL_AGID`, `ARMED_AGID`, `_armed`, `ROUTE`, or
+`_routable`.** The gap is narrower than the fallback: there is no standing,
+queryable GRAPH FACT that says "the order-N collapse is not currently
+producing a stamp" — only a per-order breadcrumb (`selected_by`) that a
+human or a future rung would have to go looking for, order by order, after
+the fact. `ag_ask`/`ax_dispatch`'s general collapse-agreement question (the
+standing list's item 5) and `gr_condition_lapse`'s vocabulary (item 6) are
+untouched, per the task's explicit boundary — this amendment does not
+re-litigate either.
+
+**The design investigation, done before drafting bars.**
+
+1. **`mg_sel_agid` has exactly ONE writer anywhere in the tree, and it is a
+   single `set_attr`.** `grep -n mg_sel_agid tools/build_arc_magnitude_seed.py`
+   returns one write site (`mg_select`'s own effect) and three reads (`mg_
+   select_audit`'s guard, `mg_select_runner_up`'s exclusion, `mg_select_
+   margin`'s non-null guard) — confirmed by reading the file, not assumed
+   from WIRE_HANDS' own prose. So "`mg_sel_agid` is absent" is exactly and
+   only "`mg_select` has not fired on this graph" — never a proxy for
+   anything else — which is precisely the primitive `tools/build_arc_
+   executor_seed.py::_order_n_is_not_live()` already tests
+   (`Eq(agenda.mg_sel_agid, null)`), reused verbatim by `SEL_AGID`/`ARMED_
+   AGID`/`ARMED_VALUE`/`COLLAPSE_NAME`. **The fact this amendment needs to
+   make standing is a direct re-read of a Term that already exists and is
+   already load-bearing** — no new primitive, no new DSL Term.
+2. **None of A12–A18 touched `mg_select`'s liveness, confirmed per rung, not
+   inferred from silence.** A15 (second `ExecClass`) and A17 (`mg_tier_
+   retire`) both changed what a goal can be routed to or how it can leave
+   the pool — neither writes or reads `mg_sel_agid`
+   (`PROGRAM_SYNTHESIS_ARC6_SECOND_EXECCLASS.md` §8 item 5, `PROGRAM_
+   SYNTHESIS_ARC6_RETIRE_BLOCKER.md`'s own confinement table, both name
+   `seeds/arc_magnitude.json` as UNCHANGED and byte-frozen). A16 (MG4
+   decomposition) added one additive guard to `mg_goal_order_n_default`
+   inside `arc_magnitude.json` itself but did not touch `mg_select`'s own
+   rule body (`PROGRAM_SYNTHESIS_ARC6_MG4_DECOMPOSE.md` §"what changed").
+   A18 (the re-arm deadlock) added a SECOND epoch producer but its own
+   `test_a18_AR18d_ax_rearms_OWN_body_is_UNCHANGED`-style confinement
+   asserts `seeds/arc_magnitude.json` byte-identical to `HEAD` throughout.
+   **So the fallback's actual firing behaviour has not shifted as a side
+   effect of any rung since WIRE_HANDS** — this amendment is building
+   against the same primitive WIRE_HANDS described, not a moved target.
+3. **The right home is `seeds/arc_executor.json`, not `seeds/arc_
+   magnitude.json`.** `tools/build_arc_magnitude_seed.py` has no knowledge
+   of `arc_executor` (it is loaded first, `arc_executor` depends on it
+   SOFTLY) — a fact about "the order-N collapse is not currently informing
+   dispatch" is a fact about DISPATCH, and the executor seed already ships
+   the exact vocabulary for a standing dispatch-grain fact:
+   `AgendaVerdict` + `has_agenda_verdict` (A13/WH4(c)'s `ax_impotent`,
+   quantifying over the pool the same way this amendment quantifies over
+   one Term). The node type and edge are already declared as productions
+   in `tools/build_arc_executor_seed.py::_productions()` — **zero new
+   productions, zero new node type, zero new edge type.**
+4. **The existing lapse idiom (`gr_condition_lapse`'s `fact_equals`
+   against `arc_measure_epoch`, A13's own choice for `ax_impotent`) is the
+   WRONG shape here, and this was checked before writing any rule.**
+   `ax_impotent`'s verdict describes a POOL STATE as of one epoch and is
+   *meant* to go stale only when a new measurement might have moved the
+   world. The fallback's liveness is not epoch-shaped: `arc_magnitude` can
+   be loaded onto an already-running graph (exactly how `test_wh1_*` vs
+   `test_wh3_*` differ — one boots with it, one without) with no epoch
+   bump at all, and a self-monitoring agent asking "is the fallback active
+   RIGHT NOW" wants the CURRENT truth of `_order_n_is_not_live()`, not a
+   description that is honest only until the next remeasurement. So the
+   mechanism is a DIRECT REVERSIBLE PAIR — the same SHAPE as
+   `gr_condition_lapse`/`gr_condition_hold` (mutually exclusive by
+   construction, one node's `stale`/`active`-style attr flipped in either
+   direction) — but keyed on `_order_n_is_not_live()` directly rather than
+   through the `ckind` sub-language, because that sub-language's three
+   `ckind`s (`shape_count`/`payload_count`/`fact_equals`) are all built for
+   a DIFFERENT question (does a counted/matched artifact still match) and
+   none of them expresses "is this Term currently true," which is exactly
+   what `_order_n_is_not_live()` already answers directly.
+5. **`agenda_verdicts(sub, kind=None)` (`domains/arc_executor.py`) is
+   already the correct, generic read-off — no adapter change is needed at
+   all.** Every existing caller already passes an explicit `kind` filter
+   (`grep -rn agenda_verdicts scripts/ tests/` — six call sites, all
+   `kind="impotent"`), so a second `kind` value is additive by construction
+   and the adapter needs no new function, no new branch, and no edit to
+   its module-specific source audit's allow-list.
+
+**The design, stated before the build.** TWO new rules in `seeds/arc_
+executor.json`, mirroring `ax_impotent`'s mint-once idiom for the ON
+direction and `gr_condition_lapse`/`gr_condition_hold`'s reversible-pair
+shape for the OFF direction — no new DSL Term, no new node type, no new
+edge type, no new adapter function, `ax_dispatch`/`SEL_AGID`/`ARMED_AGID`/
+`_armed`/`ROUTE`/`_routable` byte-unchanged.
+
+- `ax_fallback_silent` — fires when `_order_n_is_not_live()` holds AND no
+  currently-`active` `AgendaVerdict{kind:'order_n_fallback'}` already
+  exists (the mint-once guard, `ax_impotent`'s own shape). Mints
+  `AgendaVerdict{kind:'order_n_fallback', active:1.0, epoch:<current>,
+  reason:'mg_sel_agid_absent_order_n_collapse_not_producing_a_stamp'}`,
+  edged from the agenda hub exactly like `ax_impotent`'s verdict.
+- `ax_fallback_cleared` — fires when `_order_n_is_not_live()` does NOT
+  hold (order-N is live) AND an `active` verdict of this kind exists.
+  Flips `active` to `0.0` and stamps `cleared_epoch`. Mutually exclusive
+  with `ax_fallback_silent` by construction (one reads the Term true, the
+  other reads it false), the same "the two never contend for the same
+  node in one pass" property `gr_condition_lapse`/`gr_condition_hold`
+  already have.
+
+Both rules read `_order_n_is_not_live()` **verbatim**, imported unchanged
+from the same module `SEL_AGID` itself calls it from — so this amendment
+can never disagree with `ax_dispatch` about which collapse is live, by
+construction, the same guarantee `ax_impotent` has via `_routable`/`ROUTE`.
+
+**Bars, registered before any seed or adapter code is written.**
+
+- **AR19a — a standing, inspectable fact exists and is minted when the
+  order-N collapse is absent/not producing a stamp.** Demonstrated live on
+  a constructed scene (boot without `arc_magnitude`, or with it loaded but
+  `mg_select` never having fired): `AgendaVerdict{kind:'order_n_fallback',
+  active:1.0}` is present and readable via the existing, unmodified
+  `agenda_verdicts(sub, "order_n_fallback")`.
+- **AR19b — the SAME fact does NOT appear (or clears) when order-N is
+  live.** Two demonstrations, both live: (i) a NEGATIVE CONTROL — boot
+  WITH `arc_magnitude` and the tier ladder installed from the start (the
+  `test_wh1_*` scene) and show no `active` verdict of this kind ever
+  mints; (ii) a TRANSITION — start from AR19a's exact scene (the fact
+  active), load `arc_magnitude` onto the SAME live graph so `mg_select`
+  fires for the first time, and show the held verdict's `active` flips to
+  `0.0` on the very next `run_rules()` pass, with no epoch bump anywhere
+  in the scene (the epoch-shaped lapse idiom is deliberately NOT what
+  clears this fact — see design item 4).
+- **AR19c — the fix does not change dispatch BEHAVIOR at all.** The
+  fallback still fires exactly as before, and this rung only makes it
+  observable. Verified by re-running the EXISTING WH1/WH3/second-
+  ExecClass live-scene tests (`test_wh1_the_hands_now_follow_the_ORDER_N_
+  collapse`, `test_wh1_CONTROL_without_the_tier_ladder_the_two_collapses_
+  AGREE`, `test_wh3_the_fallback_when_the_order_N_collapse_is_NOT_on_the_
+  graph`, `test_wh3_arming_on_the_ORDER_1_winner_no_longer_dispatches_
+  under_order_N`, `test_wh3_the_ORDER_N_stamp_OUTLIVES_the_pool_and_the_
+  pool_guard_catches_it`) UNMODIFIED and showing the exact same
+  `ExecOrder`/`selected_by`/`order1_sel_agid`/`orderN_sel_agid` outcomes as
+  WIRE_HANDS recorded — the new rules only ever add or edit `AgendaVerdict`
+  nodes, never anything `ax_dispatch` reads.
+- **AR19d — no regression, node-id lists not counts.** The six existing
+  gate suites (`test_arc_executor_migrated`, `test_arc_goals_migrated`,
+  `test_goal_residual_migrated`, `test_arc6_valuelayer_migrated`,
+  `test_arc_magnitude_migrated`, `test_arc_decompose_migrated`) produce the
+  same failing-node-id lists before and after, paired and named.
+  `seeds/arc_goals.json`, `seeds/goal_residuals.json`, `seeds/arc_
+  magnitude.json`, `seeds/arc_decompose.json`, `seeds/program_
+  synthesis.json`, and every existing rule body in `tools/build_arc_
+  executor_seed.py` (`ax_dispatch`, `ax_retired_epoch`, `ax_rearm`, `ax_
+  close`, `ax_impotent`, `ax_world_probe_epoch`) stay byte-identical to
+  `HEAD`. `seeds/arc_executor.json` regenerates byte-identically from its
+  own (edited, version-bumped) emitter. The adapter source audit (no
+  `.evaluate(`, no `run_rules`, no raw `substrate_rs` import) passes on
+  `domains/arc_executor.py` — expected to need NO edit at all beyond,
+  possibly, documentation prose (design item 5).
+
+**Registered null reading.** If, during the build, `_order_n_is_not_live()`
+turns out not to be safely reusable as a rule guard outside `ax_dispatch`
+(for instance, if the engine's fixpoint semantics make a SECOND rule
+reading the same Term race the first in some scene this investigation did
+not anticipate), that is reported as a clean, well-evidenced null — this
+arc's own standing culture — rather than forced through with a weaker
+mechanism. Likewise, if live measurement finds the fallback structurally
+unobservable at low cost (it does not, per design item 5, but the
+possibility is named per the task's own instruction), the same applies.
+
+**Explicitly out of scope, unchanged from A13–A18's shared boundary:**
+`ag_ask`/`ax_dispatch` collapse-agreement in general, `gr_condition_
+lapse`'s closed vocabulary, `results/arc6_import_impedance.json`/`scripts/
+arc6_import_impedance.py`, and anything under `docs/research/theory_
+convergence/` or `docs/research/adventure_mechanics/`. This amendment is
+about OBSERVABILITY of the existing fallback, not about widening what the
+executor can do once it observes it — no `ArcQuestion`, no minted
+capability-acquisition goal, no change to what `ax_dispatch` runs.
