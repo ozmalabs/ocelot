@@ -4,13 +4,13 @@
   "self_load_only": true,
   "_SELF_LOAD_ONLY_RATIONALE": "substrate/boot_all.py::_read_seeds GLOBS seeds/*.json and installs every match at boot, so a file here is live in EVERY agent in the tree the moment it lands.  seeds/arc_goals.json and seeds/arc_magnitude.json both ship self_load_only for that reason and this seed keeps the gating: an executor that dispatches jobs is the LAST thing that should arrive in every agent by a glob.  Activation is one key and a paired tree-wide sweep.",
   "id": "arc_executor",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "depends_on": [
     "goal_residuals",
     "arc_goals"
   ],
   "_SOFT_DEPENDENCY_ON_arc_magnitude": "v1.1.0 (A11/WH1) wires ax_dispatch to the ORDER-N collapse (mg_sel_agid, seeds/arc_magnitude.json) when that collapse is live on the graph, and to the order-1 collapse (arc_sel_agid) when it is not.  arc_magnitude is DELIBERATELY NOT in depends_on: it is self_load_only, every EX1-EX6 scene boots without it, and making it hard would both change what those scenes boot and put an order-N collapse into every graph that merely wants hands.  The branch is a Term in the rule (SEL_AGID), never a Python conditional, and the order records which branch it took.",
-  "description": "AG-5 -- THE EXECUTOR AND THE STATUS LIFECYCLE.  Two independent rungs converged on this as the blocker: the arc-goal rung called itself 'a planning layer with no hands', and the magnitude rung found decomposition blocked because a parent goal must LEAVE THE POOL and nothing in this tree ever wrote a terminal status.  This seed is the missing seam, and it is four rules. ax_dispatch turns the arc-grain collapse's winner into an ExecOrder, routed by route_pick's own Argmin-over-cues shape, and is STRUCTURALLY INCAPABLE of ordering a goal whose kind has no ExecClass.  v1.1.0 (A11/WH1): the collapse it binds is the ORDER-N one (mg_sel_agid) whenever that collapse is live, falling back to order-1 (arc_sel_agid) when it is not -- because AG-5 SS8.9 measured that the two DISAGREE and that order-N picks the one goal the executor can run, with no human reply in the scene.  ax_retired_epoch stamps when a goal went terminal.  ax_rearm is the anti-oscillation latch: a retired goal re-enters the pool only when its source residual is genuinely stale again AND the measurement epoch has advanced.  ax_close makes a completed execution countable. THE EPOCH ITSELF: `arc_measure_epoch` was a counter with no producer, and every expiry mechanism in the two rungs below turns on it.  The adapter bumps it WHEN AND ONLY WHEN a measurement actually ran, so an unconditioned answer's one-epoch life is now measured in measurements. v1.2.0 (A13/WH4(c)) adds a fifth rule, ax_impotent: `ag_ask` fires on a TIE, and A11/A12 found the case it cannot see -- a non-empty pool in which NOTHING is routable, no tie anywhere, the loop stopping and saying nothing (WH2 SS3.1 iteration 1).  ax_impotent mints AgendaVerdict{kind:'impotent'} QUANTIFIED OVER THE WHOLE POOL (Not(Exists(POOL(), g, dispatchable(g))) -- dispatchable is ax_dispatch's OWN routability test, reused verbatim), never the winner alone, so a pool holding one routable goal ranked below the winner is correctly NOT impotent.  Mint-once is keyed on the pool's own SIGNATURE (its ordered agid list, JSON-encoded) rather than the tick, and the verdict lapses through the EXISTING, UNMODIFIED gr_condition_lapse via a fact_equals(arc_measure_epoch) condition -- zero new mechanism, zero new DSL Term. v1.3.0 (A15) adds a SECOND ExecClass row (local_id 4011): the structural-ceiling residual (arc6.structural.enum_op_table), re-measured by scripts/arc6_remeasure_structural.py.  ZERO new rules -- ax_dispatch/ROUTE/_routable/_dispatchable already filter over EVERY ExecClass node via the three-part key (kind + evidence_artifact + source_rid), so a second class is SEED DATA, not a rule edit.  This is the ceiling probe on the executor's own reach: A10-A14 each independently measured that reach as exactly ONE ExecClass; this is the second. v1.4.0 (A18) adds a SIXTH rule, ax_world_probe_epoch: EXECUTOR.md SS5 named, reported not patched, the re-arm DEADLOCK -- the epoch has exactly one producer (run_order, after RUNNING a measurement) and a retired goal cannot be run, so a genuinely re-failed condition on a retired goal could never bring it back on its own, and A15's own extension probe showed the natural end state of BOTH shipped ExecClasses retiring leaves ZERO executable pool members, not one -- the ordinary case, not a corner case.  ax_world_probe_epoch does not touch ax_rearm or its conjunction; it adds a SECOND, INDEPENDENT epoch producer that never runs anything: a retired goal whose condition is confirmed genuinely re-failed on TWO SEPARATE, externally-triggered probes (the adapter's refresh_evidence_facts, already existing, now carrying its own PRIOR reading across the probe-call boundary as stale_at_last_probe) while the epoch has sat still since its retirement gets `world_drift_confirmed` stamped; the adapter reads that as a pure query and bumps arc_measure_epoch the same mechanical way run_order does.  A SINGLE probe cannot satisfy the guard -- the discriminator against reintroducing the churn EX4 measured ax_rearm's own two-sided latch against. v1.5.0 (A19) adds a SEVENTH and EIGHTH rule, ax_fallback_silent and ax_fallback_cleared: WIRE_HANDS SS8.1 named, first on its own damage-ordered list, THE SILENT ORDER-N FALLBACK -- SEL_AGID reverting to order-1 when mg_sel_agid is absent is a deliberate, measured design (SS1.2, untouched by this rung), but nothing on the graph said so beyond a per-order breadcrumb (selected_by). THE FALLBACK ITSELF DOES NOT CHANGE.  ax_fallback_silent mints AgendaVerdict{kind:'order_n_fallback', active:1.0} the instant _order_n_is_not_live() holds -- the SAME Term SEL_AGID itself branches on, imported verbatim, never re-derived -- and no currently-active verdict of this kind already exists (ax_impotent's own mint-once shape).  ax_fallback_cleared flips `active` to 0.0 the instant order-N IS live: a DIRECT REVERSIBLE PAIR, the gr_condition_lapse/gr_condition_hold SHAPE, but keyed on the live Term rather than an epoch, because arc_magnitude can be loaded onto an ALREADY-RUNNING graph with no epoch bump anywhere in the scene (test_wh3_* vs test_wh1_* differ by exactly this).  Zero new DSL Term, zero new node type, zero new edge type (AgendaVerdict/has_agenda_verdict are already-declared productions), zero new adapter function -- agenda_verdicts(sub, 'order_n_fallback') is already generic. ax_dispatch/SEL_AGID/ARMED_AGID/ARMED_VALUE/COLLAPSE_NAME/_armed/ROUTE/_routable are BYTE-UNCHANGED: this rung only adds observability, it does not change when the fallback fires. v1.6.0 (A20) adds a NINTH and TENTH rule, ax_ask_divergence_active and ax_ask_divergence_cleared: the SAME direct-reversible-pair shape as A19, applied to a DIFFERENT question -- given that the order-N collapse IS live, does it name the SAME goal ag_ask asked about.  Mints/clears AgendaVerdict{kind:'ask_dispatch_divergence'} by comparing SEL_AGID() against arc_sel_agid, both stamps already read/written elsewhere.  ag_ask/seeds/arc_goals.json are BYTE-UNCHANGED. v1.7.0 (A21) adds an ELEVENTH and TWELFTH rule, ax_impotent_pool_lapse and ax_impotent_pool_hold: PROGRAM_SYNTHESIS_ARC6_IMPOTENCE_TERM.md SS8 item 1 / PROGRAM_SYNTHESIS_ARC6_IMPOTENCE_CAMPAIGN.md SS9 item 6 named the LAST originally-named remaining gap in this executor sub-thread -- an impotent verdict's condition lapses (gr_condition_lapse, unmodified) only on an EPOCH bump, never on the POOL'S OWN MEMBERSHIP moving under it within one epoch, so a reader had to compare pool_agids against the current pool by hand.  These two rules add a SECOND, ORTHOGONAL staleness axis (pool_stale) to each impotent verdict, keyed on the SAME _pool_sig() Term ax_impotent itself mints against, live, no epoch involved -- the A19/A20 direct-reversible-pair pattern, applied PER-NODE (not as a global singleton, which would have collapsed IM5's own multi-verdict history) rather than the epoch-shaped fact_equals idiom.  ax_impotent's OWN where/match/mint-once guard is BYTE-UNCHANGED (only its effects gain an additive pool_stale:0.0 stamp at mint), and gr_condition_lapse's closed MISMATCH vocabulary (seeds/goal_residuals.json) is BYTE-UNCHANGED and untouched by this rung.",
+  "description": "AG-5 -- THE EXECUTOR AND THE STATUS LIFECYCLE.  Two independent rungs converged on this as the blocker: the arc-goal rung called itself 'a planning layer with no hands', and the magnitude rung found decomposition blocked because a parent goal must LEAVE THE POOL and nothing in this tree ever wrote a terminal status.  This seed is the missing seam, and it is four rules. ax_dispatch turns the arc-grain collapse's winner into an ExecOrder, routed by route_pick's own Argmin-over-cues shape, and is STRUCTURALLY INCAPABLE of ordering a goal whose kind has no ExecClass.  v1.1.0 (A11/WH1): the collapse it binds is the ORDER-N one (mg_sel_agid) whenever that collapse is live, falling back to order-1 (arc_sel_agid) when it is not -- because AG-5 SS8.9 measured that the two DISAGREE and that order-N picks the one goal the executor can run, with no human reply in the scene.  ax_retired_epoch stamps when a goal went terminal.  ax_rearm is the anti-oscillation latch: a retired goal re-enters the pool only when its source residual is genuinely stale again AND the measurement epoch has advanced.  ax_close makes a completed execution countable. THE EPOCH ITSELF: `arc_measure_epoch` was a counter with no producer, and every expiry mechanism in the two rungs below turns on it.  The adapter bumps it WHEN AND ONLY WHEN a measurement actually ran, so an unconditioned answer's one-epoch life is now measured in measurements. v1.2.0 (A13/WH4(c)) adds a fifth rule, ax_impotent: `ag_ask` fires on a TIE, and A11/A12 found the case it cannot see -- a non-empty pool in which NOTHING is routable, no tie anywhere, the loop stopping and saying nothing (WH2 SS3.1 iteration 1).  ax_impotent mints AgendaVerdict{kind:'impotent'} QUANTIFIED OVER THE WHOLE POOL (Not(Exists(POOL(), g, dispatchable(g))) -- dispatchable is ax_dispatch's OWN routability test, reused verbatim), never the winner alone, so a pool holding one routable goal ranked below the winner is correctly NOT impotent.  Mint-once is keyed on the pool's own SIGNATURE (its ordered agid list, JSON-encoded) rather than the tick, and the verdict lapses through the EXISTING, UNMODIFIED gr_condition_lapse via a fact_equals(arc_measure_epoch) condition -- zero new mechanism, zero new DSL Term. v1.3.0 (A15) adds a SECOND ExecClass row (local_id 4011): the structural-ceiling residual (arc6.structural.enum_op_table), re-measured by scripts/arc6_remeasure_structural.py.  ZERO new rules -- ax_dispatch/ROUTE/_routable/_dispatchable already filter over EVERY ExecClass node via the three-part key (kind + evidence_artifact + source_rid), so a second class is SEED DATA, not a rule edit.  This is the ceiling probe on the executor's own reach: A10-A14 each independently measured that reach as exactly ONE ExecClass; this is the second. v1.4.0 (A18) adds a SIXTH rule, ax_world_probe_epoch: EXECUTOR.md SS5 named, reported not patched, the re-arm DEADLOCK -- the epoch has exactly one producer (run_order, after RUNNING a measurement) and a retired goal cannot be run, so a genuinely re-failed condition on a retired goal could never bring it back on its own, and A15's own extension probe showed the natural end state of BOTH shipped ExecClasses retiring leaves ZERO executable pool members, not one -- the ordinary case, not a corner case.  ax_world_probe_epoch does not touch ax_rearm or its conjunction; it adds a SECOND, INDEPENDENT epoch producer that never runs anything: a retired goal whose condition is confirmed genuinely re-failed on TWO SEPARATE, externally-triggered probes (the adapter's refresh_evidence_facts, already existing, now carrying its own PRIOR reading across the probe-call boundary as stale_at_last_probe) while the epoch has sat still since its retirement gets `world_drift_confirmed` stamped; the adapter reads that as a pure query and bumps arc_measure_epoch the same mechanical way run_order does.  A SINGLE probe cannot satisfy the guard -- the discriminator against reintroducing the churn EX4 measured ax_rearm's own two-sided latch against. v1.5.0 (A19) adds a SEVENTH and EIGHTH rule, ax_fallback_silent and ax_fallback_cleared: WIRE_HANDS SS8.1 named, first on its own damage-ordered list, THE SILENT ORDER-N FALLBACK -- SEL_AGID reverting to order-1 when mg_sel_agid is absent is a deliberate, measured design (SS1.2, untouched by this rung), but nothing on the graph said so beyond a per-order breadcrumb (selected_by). THE FALLBACK ITSELF DOES NOT CHANGE.  ax_fallback_silent mints AgendaVerdict{kind:'order_n_fallback', active:1.0} the instant _order_n_is_not_live() holds -- the SAME Term SEL_AGID itself branches on, imported verbatim, never re-derived -- and no currently-active verdict of this kind already exists (ax_impotent's own mint-once shape).  ax_fallback_cleared flips `active` to 0.0 the instant order-N IS live: a DIRECT REVERSIBLE PAIR, the gr_condition_lapse/gr_condition_hold SHAPE, but keyed on the live Term rather than an epoch, because arc_magnitude can be loaded onto an ALREADY-RUNNING graph with no epoch bump anywhere in the scene (test_wh3_* vs test_wh1_* differ by exactly this).  Zero new DSL Term, zero new node type, zero new edge type (AgendaVerdict/has_agenda_verdict are already-declared productions), zero new adapter function -- agenda_verdicts(sub, 'order_n_fallback') is already generic. ax_dispatch/SEL_AGID/ARMED_AGID/ARMED_VALUE/COLLAPSE_NAME/_armed/ROUTE/_routable are BYTE-UNCHANGED: this rung only adds observability, it does not change when the fallback fires. v1.6.0 (A20) adds a NINTH and TENTH rule, ax_ask_divergence_active and ax_ask_divergence_cleared: the SAME direct-reversible-pair shape as A19, applied to a DIFFERENT question -- given that the order-N collapse IS live, does it name the SAME goal ag_ask asked about.  Mints/clears AgendaVerdict{kind:'ask_dispatch_divergence'} by comparing SEL_AGID() against arc_sel_agid, both stamps already read/written elsewhere.  ag_ask/seeds/arc_goals.json are BYTE-UNCHANGED. v1.7.0 (A21) adds an ELEVENTH and TWELFTH rule, ax_impotent_pool_lapse and ax_impotent_pool_hold: PROGRAM_SYNTHESIS_ARC6_IMPOTENCE_TERM.md SS8 item 1 / PROGRAM_SYNTHESIS_ARC6_IMPOTENCE_CAMPAIGN.md SS9 item 6 named the LAST originally-named remaining gap in this executor sub-thread -- an impotent verdict's condition lapses (gr_condition_lapse, unmodified) only on an EPOCH bump, never on the POOL'S OWN MEMBERSHIP moving under it within one epoch, so a reader had to compare pool_agids against the current pool by hand.  These two rules add a SECOND, ORTHOGONAL staleness axis (pool_stale) to each impotent verdict, keyed on the SAME _pool_sig() Term ax_impotent itself mints against, live, no epoch involved -- the A19/A20 direct-reversible-pair pattern, applied PER-NODE (not as a global singleton, which would have collapsed IM5's own multi-verdict history) rather than the epoch-shaped fact_equals idiom.  ax_impotent's OWN where/match/mint-once guard is BYTE-UNCHANGED (only its effects gain an additive pool_stale:0.0 stamp at mint), and gr_condition_lapse's closed MISMATCH vocabulary (seeds/goal_residuals.json) is BYTE-UNCHANGED and untouched by this rung. v1.8.0 (A23) adds a THIRTEENTH and FOURTEENTH rule, ax_ask_impotent and ax_ask_impotent_reply: candidate (a) (PROGRAM_SYNTHESIS_ARC6_IMPOTENCE_CAMPAIGN.md), built NATIVE, not as a naive reuse of ag_ask's own REGION-fallback re-entry gate (A22 SS6 named this the risk; A23's own design investigation confirms question_driver.py's gap-guard/contrast rules do not transfer to this data shape and costs more than the native alternative).  ax_ask_impotent asks a class-scoped question the instant a non-stale AgendaVerdict{kind:'impotent'} exists with no ArcQuestion asked about it yet -- mint-once by the VERDICT's own node identity (an InNeighbours edge-existence guard), the SAME shape ax_impotent itself already uses (pool-signature mint-once) and gap_awareness.json's content-dedup guard uses one seed over -- so a testimony chain that drifts nearest_unroutable_agid across several kinds within one epoch (A22 SS3, already measured) is still asked about EXACTLY ONCE, because it is still the SAME pool state throughout (A14's own headline finding).  ax_impotent/ag_ask/ROUTE/_routable/_dispatchable are BYTE-UNCHANGED: this rule only reads an existing AgendaVerdict, it does not change when one mints. Mints no GoalResidual/testimony (candidate (b) territory, already NO-GO'd by A22) -- ax_ask_impotent_reply only marks the question answered.",
   "microtheory": "arc6_executor",
   "nodes": [
     {
@@ -133,6 +133,42 @@
       "edge_type": "holds_under",
       "tgt": {
         "type": "ResidualCondition",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:arc_executor:asked_about_verdict-0",
+      "src": {
+        "type": "ArcImpotenceQuestion",
+        "var": "s"
+      },
+      "edge_type": "asked_about_verdict",
+      "tgt": {
+        "type": "AgendaVerdict",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:arc_executor:answered_by-0",
+      "src": {
+        "type": "ArcImpotenceQuestion",
+        "var": "s"
+      },
+      "edge_type": "answered_by",
+      "tgt": {
+        "type": "Message",
+        "var": "t"
+      }
+    },
+    {
+      "provenance": "seed:arc_executor:responds_to-0",
+      "src": {
+        "type": "Message",
+        "var": "s"
+      },
+      "edge_type": "responds_to",
+      "tgt": {
+        "type": "ArcImpotenceQuestion",
         "var": "t"
       }
     }
@@ -3955,6 +3991,366 @@
               "key": "value"
             }
           }
+        ]
+      ]
+    },
+    {
+      "name": "ax_ask_impotent",
+      "comment": "A23 -- CANDIDATE (a), NATIVE FORM (PROGRAM_SYNTHESIS_ARC6_PREREG.md amendment A23).  `ag_ask` (AG-4) only fires on a VALUE tie; `ax_impotent` fires on the case it cannot see -- a non-empty pool in which NOTHING is routable, no tie required.  Until this rule, an impotent pool went unasked-about entirely: the loop terminated honestly (mints AgendaVerdict{kind:'impotent'}) but said nothing to a human who could name a checkable reason. THE GUARD IS CLASS-SCOPED, NOT GOAL-SCOPED -- this is the whole point of this rule and the reason it is not a copy of ag_ask's own guard.  Keyed to the AgendaVerdict's OWN node identity (Not(Exists(InNeighbours(av, asked_about_verdict), qi, True))), the SAME mint-once-by-signature shape ax_impotent itself already uses for the SAME pool (av mints once per DISTINCT pool_agids, A13/WH4(c)), and the same SHAPE gap_awareness.json's content-dedup guard uses one seed over (note_unresolved_topic_gap/note_reported_gap: file once per distinct content, not once per triggering utterance).  A NAIVE reuse of ag_ask's own re-entry gate -- Not(Exists(ArcQuestion, region==REGION(g), asked_epoch==MEASURE_EPOCH())) -- is keyed PER GOAL, because REGION(g) falls back to g.agid whenever sig_seam is unset, true of every supply_blocker/source_claim/decomposition_tier goal this tree has ever minted (A14 design investigation finding 3), and would therefore re-fire every time testimony drifts nearest_unroutable_agid to a goal not yet asked about BY THAT AGID -- A22 SS3's own measured testimony chain drifts the live winner THREE times inside ONE measurement epoch, on the SAME unchanged 10-goal pool (PROGRAM_SYNTHESIS_ARC6_IMPOTENCE_RESWEEP.md SS3).  Keying to av's own identity instead means the WHOLE CHAIN -- however many times the winner drifts under testimony -- is still describing the SAME impotent state (A14's own headline finding: testimony reweights the pool WITHOUT changing its membership), so it is asked about EXACTLY ONCE.  AR23c measures this live, against a throwaway naive comparator built only in the measurement script (never shipped here). THE QUESTION NAMES THE PRESUPPOSITION EXPLICITLY (design investigation item 3, not a bare testimony request about one goal's content): whether the blocker belongs to the ONE nearest-ranked goal specifically, or to the WHOLE CLASS sharing its kind. DELIBERATELY MINTS NO GoalResidual/testimony -- candidate (b)'s territory (mint-a-capability-goal-adjacent), already NO-GO'd by A22, and out of THIS rule's scope by design: this rule only asks a different question, it does not reprice anything, which is also what keeps AR23c's fixed-point test honest (the ask stopping is never confounded with the pool changing). MINTS A DISTINCT NODE TYPE, ArcImpotenceQuestion, NOT ArcQuestion -- CAUGHT LIVE DURING AR23c's OWN MEASUREMENT, not designed in up front: an ArcQuestion-typed node here would ALSO match ag_reply_mints_testimony_conditioned/unconditioned's own TypeOf(q)=='ArcQuestion' guard (seeds/goal_residuals.json is untouched, but arc_goals.json's two reply rules are generic over EVERY ArcQuestion), so a REPLY to this question would SILENTLY mint testimony too -- exactly candidate (b)'s territory, by accident, defeating the whole 'this rule only asks, it does not reprice' design intent. A distinct type is the SAME cost as the `evidence_artifact`/`source_rid` three-part-key discriminator A15 finding 5 already relies on to keep two ExecClasses from colliding on a shared route: TYPE is the cheapest discriminator this engine has, and it costs zero new rules.",
+      "batch": true,
+      "match": [
+        [
+          "agenda",
+          "uses_policy",
+          "pol"
+        ],
+        [
+          "agenda",
+          "has_agenda_verdict",
+          "av"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "av"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "impotent"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "av"
+                },
+                "key": "stale"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "InNeighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "av"
+                },
+                "edge_type": "asked_about_verdict",
+                "any_type": false
+              },
+              "var_name": "qi",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "q",
+          "ArcImpotenceQuestion",
+          {
+            "kind": "impotence",
+            "region": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "av"
+                },
+                "key": "nearest_unroutable_kind"
+              }
+            },
+            "agid_a": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "av"
+                },
+                "key": "nearest_unroutable_agid"
+              }
+            },
+            "pool_n": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "av"
+                },
+                "key": "pool_n"
+              }
+            },
+            "asked_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Argmin",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ResidualFact"
+                    },
+                    "var_name": "aef",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "aef"
+                        },
+                        "key": "name"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "arc_measure_epoch"
+                      }
+                    }
+                  },
+                  "var_name": "aef2",
+                  "value": {
+                    "type": "Lit",
+                    "value": 0
+                  },
+                  "default": null
+                },
+                "key": "value"
+              }
+            },
+            "answered": 0.0,
+            "status": "open"
+          }
+        ],
+        [
+          "add_edge",
+          "q",
+          "asked_about_verdict",
+          "av"
+        ],
+        [
+          "add_node",
+          "reply",
+          "Message",
+          {
+            "from": "agent",
+            "kind": "arc_impotence_question",
+            "text": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "I hold "
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "av"
+                      },
+                      "key": "pool_n"
+                    }
+                  },
+                  {
+                    "type": "Lit",
+                    "value": " goals and NONE of them are currently routable. The nearest candidate by rank is "
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "av"
+                    },
+                    "key": "nearest_unroutable_agid"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": " (kind "
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "av"
+                    },
+                    "key": "nearest_unroutable_kind"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": "), but that ranking is over the WHOLE POOL, not a property of that one goal alone -- other goals of the same kind may or may not share this gap. Is the blocker specific to "
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "av"
+                    },
+                    "key": "nearest_unroutable_agid"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ", or does it apply to every "
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "av"
+                    },
+                    "key": "nearest_unroutable_kind"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": " goal in this pool? Answering either way lets me stop re-asking about whichever goal happens to rank first without re-litigating the whole class each time it drifts."
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agenda",
+          "sent",
+          "reply"
+        ],
+        [
+          "add_edge",
+          "q",
+          "answered_by",
+          "reply"
+        ]
+      ]
+    },
+    {
+      "name": "ax_ask_impotent_reply",
+      "comment": "A23 -- closes `ax_ask_impotent`'s own open ArcQuestion when an interlocutor Message responds to it.  Deliberately does NOT mint a GoalResidual/testimony (candidate (a) only, not (b) -- AR23b): this rule only marks the class-scoped question answered, so `ax_ask_impotent`'s own mint-once guard (keyed to the SAME av node) has a stable, observable 'already asked' fact regardless of whether the reply itself ever changes VALUE ranking -- it never will, by this rule's own design.  Matched by TYPE (ArcImpotenceQuestion, not ArcQuestion -- see ax_ask_impotent's own comment for why the type is distinct) AND by the SAME edge its guard reads (asked_about_verdict), so an ordinary ag_ask value-tie question's reply is untouched by this rule, and this rule cannot fire on anything ag_ask minted.",
+      "batch": true,
+      "match": [
+        [
+          "m",
+          "responds_to",
+          "q"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "TypeOf",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ArcImpotenceQuestion"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "m"
+                },
+                "key": "from"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "agent"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "answered"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "edge_type": "asked_about_verdict",
+              "any_type": false
+            },
+            "var_name": "avx",
+            "predicate": {
+              "type": "Lit",
+              "value": true
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "q",
+          "answered",
+          1.0
+        ],
+        [
+          "set_attr",
+          "q",
+          "status",
+          "answered"
+        ],
+        [
+          "add_edge",
+          "q",
+          "answered_by",
+          "m"
         ]
       ]
     }
