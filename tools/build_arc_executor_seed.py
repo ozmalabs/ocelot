@@ -746,6 +746,66 @@ def _r_rearm():
     }
 
 
+def _r_world_probe_epoch():
+    return {
+        "name": "ax_world_probe_epoch",
+        "comment": (
+            "A18 -- THE RE-ARM DEADLOCK, CLOSED WITHOUT RUNNING ANYTHING. "
+            "PROGRAM_SYNTHESIS_ARC6_EXECUTOR.md SS5: 'the executor is the "
+            "epoch's producer, but it only produces one by RUNNING a goal, "
+            "and a retired goal is not in the pool to be run.  With exactly "
+            "one executable goal, a genuinely re-failed condition cannot "
+            "bring it back on its own.'  MEASURED (PREREG A18 item 3, "
+            "reusing PROGRAM_SYNTHESIS_ARC6_SECOND_EXECCLASS.md SS6's own "
+            "live probe): the NATURAL trajectory with BOTH shipped "
+            "ExecClasses retires both re_measure goals and leaves ZERO "
+            "executable pool members, not one -- the deadlock's precondition "
+            "is the ORDINARY end state of this loop, not a corner case. "
+            "THIS RULE IS NOT A SECOND ax_rearm.  It does not touch that "
+            "rule, does not read arc_measure_epoch to decide anything about "
+            "a goal's re-entry, and does not widen ax_rearm's own "
+            "conjunction.  It decides exactly one, narrower thing: whether a "
+            "RETIRED goal's source residual has genuinely re-failed on TWO "
+            "SEPARATE, EXTERNALLY-TRIGGERED world probes (r.stale == 1.0 "
+            "confirmed against r.stale_at_last_probe -- the adapter's own "
+            "carry of the PREVIOUS refresh_evidence_facts call's reading, "
+            "the ARM_CARRY precedent applied at the probe-call boundary "
+            "instead of the fixpoint-tick boundary) while the clock has been "
+            "stuck since retirement (retired_epoch == the CURRENT epoch, "
+            "i.e. nothing else has advanced it yet).  A SINGLE probe cannot "
+            "satisfy this -- stale_at_last_probe still holds the PRIOR, "
+            "pre-drift reading on the first sighting -- which is the "
+            "discriminator against collapsing EX4's cell C into cell D "
+            "(this rung's own AR18b).  Investigated and REJECTED before "
+            "this rule was written: coupling the epoch bump directly to the "
+            "SAME single detection event `stale` is already computed from "
+            "would do exactly that. "
+            "The adapter reads the resulting fact (world_drift_confirmed) as "
+            "a PURE QUERY -- the same shape as pending_orders -- and calls "
+            "the SAME agi.bump_measure_epoch that run_order already calls, "
+            "mechanically, OUTSIDE run_rules(), so ax_rearm's own "
+            "epoch-advance check is satisfied only on the NEXT fixpoint, "
+            "exactly as EX4's cell D already requires manually.  This rule "
+            "only widens WHICH real-world events can produce the epoch bump "
+            "ax_rearm has always read; it never runs a measurement and never "
+            "touches the latch."),
+        "batch": True,
+        "match": HUB + [["agenda", "has_arc_goal", "g"], ["r", "remeasure_goal", "g"]],
+        "where": AND(
+            EQ(A(V("g"), "status"), L("retired")),
+            EQ(A(V("r"), "stale"), L(1.0)),
+            EQ(A(V("r"), "stale_at_last_probe"), L(1.0)),
+            NOT(EQ(A(V("g"), "retired_epoch"), L(None))),
+            NOT(EQ(A(V("g"), "retired_epoch"), L(CONSUMED))),
+            EQ(A(V("g"), "retired_epoch"), MEASURE_EPOCH()),
+        ),
+        "effects": [
+            ["set_attr", "g", "world_drift_confirmed", 1.0],
+            ["set_attr", "g", "world_drift_confirmed_epoch", T(MEASURE_EPOCH())],
+        ],
+    }
+
+
 def _r_close():
     return {
         "name": "ax_close",
@@ -774,7 +834,7 @@ def _r_close():
 
 def _rules():
     return [_r_dispatch(), _r_retired_epoch(), _r_rearm(), _r_close(),
-            _r_impotent()]
+            _r_impotent(), _r_world_probe_epoch()]
 
 
 def build():
@@ -796,7 +856,7 @@ def build():
             "is the LAST thing that should arrive in every agent by a glob.  "
             "Activation is one key and a paired tree-wide sweep."),
         "id": "arc_executor",
-        "version": "1.3.0",
+        "version": "1.4.0",
         "depends_on": ["goal_residuals", "arc_goals"],
         "_SOFT_DEPENDENCY_ON_arc_magnitude": (
             "v1.1.0 (A11/WH1) wires ax_dispatch to the ORDER-N collapse "
@@ -854,7 +914,27 @@ def build():
             "evidence_artifact + source_rid), so a second class is SEED DATA, "
             "not a rule edit.  This is the ceiling probe on the executor's own "
             "reach: A10-A14 each independently measured that reach as exactly "
-            "ONE ExecClass; this is the second."),
+            "ONE ExecClass; this is the second. "
+            "v1.4.0 (A18) adds a SIXTH rule, ax_world_probe_epoch: EXECUTOR.md "
+            "SS5 named, reported not patched, the re-arm DEADLOCK -- the epoch "
+            "has exactly one producer (run_order, after RUNNING a measurement) "
+            "and a retired goal cannot be run, so a genuinely re-failed "
+            "condition on a retired goal could never bring it back on its "
+            "own, and A15's own extension probe showed the natural end state "
+            "of BOTH shipped ExecClasses retiring leaves ZERO executable pool "
+            "members, not one -- the ordinary case, not a corner case.  "
+            "ax_world_probe_epoch does not touch ax_rearm or its conjunction; "
+            "it adds a SECOND, INDEPENDENT epoch producer that never runs "
+            "anything: a retired goal whose condition is confirmed genuinely "
+            "re-failed on TWO SEPARATE, externally-triggered probes (the "
+            "adapter's refresh_evidence_facts, already existing, now carrying "
+            "its own PRIOR reading across the probe-call boundary as "
+            "stale_at_last_probe) while the epoch has sat still since its "
+            "retirement gets `world_drift_confirmed` stamped; the adapter "
+            "reads that as a pure query and bumps arc_measure_epoch the same "
+            "mechanical way run_order does.  A SINGLE probe cannot satisfy "
+            "the guard -- the discriminator against reintroducing the churn "
+            "EX4 measured ax_rearm's own two-sided latch against."),
         "microtheory": "arc6_executor",
         "nodes": _nodes(),
         "edges": _edges(),

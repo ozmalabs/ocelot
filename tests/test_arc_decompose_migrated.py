@@ -682,10 +682,23 @@ def test_ar17_the_fixpoint_TERMINATES_a_second_pass_moves_nothing():
 
 def test_ar17_no_new_rust_and_ax_dispatch_UNTOUCHED():
     """AR17b(iii)'s own cost bar: no new Rust, no change to
-    `ax_dispatch`/`ROUTE`/`_routable`.  Byte-identical to `HEAD`, asserted,
-    not promised."""
-    for rel in ("domains/arc_executor.py", "tools/build_arc_executor_seed.py",
-                "seeds/arc_goals.json", "seeds/goal_residuals.json",
+    `ax_dispatch`/`ROUTE`/`_routable`.
+
+    A18 EXCEPTION, NAMED — the WH1 precedent this same suite already uses
+    once (`test_mg4d_...`): invert a pin with a docstring, never silently
+    remove it.  `domains/arc_executor.py` and `tools/build_arc_executor_
+    seed.py` are no longer whole-file byte-identical to `HEAD` — A18 (the
+    re-arm deadlock) legitimately ADDS a sixth rule (`ax_world_probe_epoch`)
+    and a new adapter function pair to those two files.  AR17's own claim
+    was narrower than the whole file even at the time it was written (its
+    OWN docstring names `ax_dispatch`/`ROUTE`/`_routable`), so this asserts
+    THAT claim directly — the specific route-matching Term builders A18's
+    own PREREG amendment (AR18d) registered as untouched, read back by name
+    via `ast` and compared against `HEAD`'s own source for the SAME
+    functions — rather than the whole-file diff, which is what AR17
+    actually had available to it before A18 existed and is no longer the
+    right instrument."""
+    for rel in ("seeds/arc_goals.json", "seeds/goal_residuals.json",
                 "seeds/arc_magnitude.json", "seeds/program_synthesis.json"):
         r = subprocess.run(["git", "diff", "--exit-code", "HEAD", "--", rel],
                            capture_output=True, text=True, cwd=ROOT)
@@ -693,7 +706,40 @@ def test_ar17_no_new_rust_and_ax_dispatch_UNTOUCHED():
     diff = subprocess.run(
         ["git", "diff", "HEAD", "--", "runners/dsl/src/"],
         capture_output=True, text=True, cwd=ROOT)
-    assert diff.stdout.strip() == "", "no new Rust for A17"
+    assert diff.stdout.strip() == "", "no new Rust for A17/A18"
+
+    import ast
+
+    def _fn_src(path, name):
+        tree = ast.parse(open(path).read())
+        for n in tree.body:
+            if isinstance(n, ast.FunctionDef) and n.name == name:
+                return ast.unparse(n)
+        raise AssertionError("no such function: %s in %s" % (name, path))
+
+    def _fn_src_at_head(rel, name):
+        prefix = subprocess.run(["git", "-C", ROOT, "rev-parse",
+                                 "--show-prefix"], capture_output=True,
+                                text=True).stdout.strip()
+        text = subprocess.run(["git", "-C", ROOT, "show",
+                               "HEAD:" + prefix + rel],
+                              capture_output=True, text=True).stdout
+        tree = ast.parse(text)
+        for n in tree.body:
+            if isinstance(n, ast.FunctionDef) and n.name == name:
+                return ast.unparse(n)
+        raise AssertionError("no such function at HEAD: %s in %s" % (name, rel))
+
+    builder = os.path.join(ROOT, "tools", "build_arc_executor_seed.py")
+    for fn in ("ROUTE", "_routable", "_dispatchable", "_cue_matches",
+               "_r_dispatch", "_r_rearm", "_armed", "_in_pool"):
+        assert _fn_src(builder, fn) == _fn_src_at_head(
+            "tools/build_arc_executor_seed.py", fn), fn
+
+    adapter = os.path.join(ROOT, "domains", "arc_executor.py")
+    for fn in ("run_order", "arm", "reingest_evidence"):
+        assert _fn_src(adapter, fn) == _fn_src_at_head(
+            "domains/arc_executor.py", fn), fn
 
 
 def test_ar17_the_seed_regenerates_byte_identically():

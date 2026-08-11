@@ -1625,3 +1625,194 @@ scope exactly as A15 named it for a second `ExecClass`). If AR17b's cost
 threshold is not met by a full-sweep re-run of A14's own impotence
 campaign, that re-run is named as a possible follow-up, not performed here,
 per the task's own instruction that it need not be repeated unless cheap.
+
+---
+
+### AMENDMENT A18 (2026-08-11) — the re-arm deadlock: does it still reproduce, and if so, an epoch producer that does not require running anything
+
+`PROGRAM_SYNTHESIS_ARC6_EXECUTOR.md` §5 named, reported not patched, exactly
+one gap: *"Cell D needed an epoch bump from OUTSIDE this loop. The executor
+is the epoch's producer, but it only produces one by RUNNING a goal, and a
+retired goal is not in the pool to be run. With exactly one executable goal,
+a genuinely re-failed condition cannot bring it back on its own."* Five
+rungs have landed since (A11–A17) without touching it; two of them (A15, A17)
+changed the shape of the graph this deadlock lives on. This amendment tests
+the deadlock against the CURRENT shipped graph rather than inheriting
+EXECUTOR.md's own characterisation of it, per the task's own instruction to
+find out honestly rather than assume either way.
+
+**The design investigation, done before drafting bars.**
+
+1. **`arc_measure_epoch` has exactly ONE producer anywhere in the tree, and
+   it is unconditional on WHICH order ran.** `domains/arc_executor.py::
+   run_order` calls `agi.bump_measure_epoch(sub)` once, unconditionally,
+   after ANY successful run — confirmed by reading the function, not the
+   docstring. `agi.bump_measure_epoch` (`domains/arc_goal_ingest.py`) is
+   itself the ONLY caller of `set_measure_epoch` that increments rather than
+   sets a literal, and `grep -rn bump_measure_epoch domains/*.py` returns
+   exactly this one call site. **A15's second `ExecClass` does not add a
+   second epoch producer** — it adds a second thing `run_order` can be asked
+   to run, and both routes bump the SAME counter through the SAME function.
+2. **A17's `mg_tier_retire` is a THIRD retirement mechanism and NOT an epoch
+   producer.** `domains/arc_decompose_ingest.py` (`probe_tier_witness_
+   coverage` / `install_tier_witness_facts`) never calls `bump_measure_epoch`
+   and never calls `run_order` — confirmed by grep, zero hits in that file.
+   It retires a `decomposition_tier` child via the SAME `headroom_n -> 0`
+   pool-exit `ax_rearm` never inspects (A13 §7.1 / A15 §4.2 / A16 decision 1
+   precedent), entirely outside the executor/dispatch machinery. So A17
+   widens WHO can leave the pool without ever widening WHAT can advance the
+   clock the re-arm latch reads.
+3. **A15's own "bonus extension probe" (§6 of `PROGRAM_SYNTHESIS_ARC6_
+   SECOND_EXECCLASS.md`) already measured, live, that the NATURAL trajectory
+   with BOTH `ExecClass`es reaches a state with ZERO executable goals, not
+   one.** Quoted because it is this amendment's central fact: driving both
+   `re_measure` residuals to real completion in one boot left *"the FINAL
+   steady-state composition, once both retire, composition-identical to
+   A14's own already-measured 'state 1' — pool_n=7 ... Once a re_measure
+   goal retires it leaves no permanent trace on POOL()."* EXECUTOR.md's own
+   §5 was written when the graph had exactly one `ExecClass`; on the
+   CURRENT graph the natural end state after both classes have run and
+   retired is **zero** executable pool members, which is the deadlock's
+   precondition made WORSE, not defused — there is no longer even a
+   *candidate* second executable goal sitting in reserve once the ordinary
+   course of execution has run to completion.
+4. **The two-tick-agreement precedent (`ax_dispatch`'s own fix, EXECUTOR.md
+   §8 item 1) is the shape of a producer that would NOT reintroduce churn.**
+   Coupling a NEW epoch-advance directly to the SAME single detection event
+   that already computes a retired goal's `stale` flag (i.e. "bump the
+   epoch the instant a probe finds the condition re-failed") was
+   investigated and REJECTED before writing bars: it would collapse EX4's
+   own cell C into cell D — cell C's existing gate (`test_ex4_the_EPOCH_
+   half_of_the_latch_is_load_bearing`) already calls `axe.
+   refresh_evidence_facts(s)` once, right after moving the row-verdict
+   artifact off disk, specifically to prove that a SINGLE genuine
+   re-failure does not, by itself, re-mint — so any design that makes a
+   single probe both detect AND grant would directly violate a bar this
+   task's own AR18b requires to still hold. The fix therefore needs a
+   producer with an INDEPENDENT temporal gap from the detection it reads —
+   the same shape `ax_dispatch`'s own two-tick fix already uses at the
+   fixpoint-tick grain, reused here at the PROBE-CALL grain: a genuine
+   world-drift is trusted only once it is seen on TWO SEPARATE, externally
+   -triggered probes, not two iterations of one `run_rules()` fixpoint.
+5. **The adapter already ships the exact primitive this needs, unused for
+   this purpose.** `domains/arc_executor.py::refresh_evidence_facts` is a
+   CHEAP, non-subprocess, real re-probe of the same facts `goal_residual_
+   ingest.probe_facts` measures (file presence/sha, the value-layer probe)
+   — already called once per loop iteration by the existing measurement
+   drivers (`scripts/arc6_executor_measure.py` et al.), and already proven,
+   by EX4's own cell C, to detect a genuine re-failure without running
+   anything. What it does not currently do is persist its OWN prior reading
+   anywhere a rule can compare against — every call overwrites `stale` with
+   no memory of what the last call found.
+
+**The design, stated before the build.** ONE new rule
+(`ax_world_probe_epoch`, `seeds/arc_executor.json`) and a small,
+purely-mechanical addition to `refresh_evidence_facts`:
+
+- The adapter, at the START of every `refresh_evidence_facts` call and
+  BEFORE it overwrites any fact, copies each `GoalResidual`'s CURRENT
+  `stale` reading into a new attr `stale_at_last_probe` — "the adapter
+  carries what is there," the `ARM_CARRY` precedent, applied at the
+  probe-call boundary instead of the tick boundary. This is a plain read
+  and a plain `set_attr`; it decides nothing.
+- The new rule matches exactly `ax_rearm`'s own pattern (`HUB + [["agenda",
+  "has_arc_goal", "g"], ["r", "remeasure_goal", "g"]]`) and fires only when
+  `g.status == "retired"`, `r.stale == 1.0` AND `r.stale_at_last_probe ==
+  1.0` (the SAME genuine re-failure confirmed on two SEPARATE probes) AND
+  `g.retired_epoch == arc_measure_epoch` (the clock has not moved since
+  retirement — i.e. this is exactly the stuck case, and the rule declines
+  to act once anything else has already advanced the epoch). It writes ONE
+  descriptive fact, `g.world_drift_confirmed = 1.0`. It does not touch
+  `ax_rearm`, `arc_measure_epoch`, or any existing rule's `where` clause.
+- The adapter reads that fact (a pure query, the same shape as `pending_
+  orders`) and, if any retired goal carries it, calls the SAME `agi.bump_
+  measure_epoch` `run_order` already calls — mechanically, outside
+  `run_rules()`, so `ax_rearm`'s own epoch-advance check is satisfied only
+  on the NEXT fixpoint, exactly as cell D already requires manually.
+
+**The tradeoff, named explicitly, per the task's own instruction not to
+loosen anti-oscillation without saying so.** `arc_measure_epoch`'s
+documented meaning is *"a measurement happened"* (`domains/arc_goal_
+ingest.py`'s own docstring: *"a measurement happening is a fact about the
+world... the adapter records it, the rules decide what it means"*). This
+rung widens WHICH real-world events count as a measurement: a full
+remeasurement subprocess (unchanged) OR a confirmed, twice-observed,
+genuine drift in a retired goal's own condition (new). Both are real
+events probed from the world, never authored — but it means every OTHER
+epoch-gated mechanism (the testimony reply's one-epoch life, the unanswered
+question's lapse, `ax_impotent`'s own lapse) now also expires slightly
+MORE readily than before, on an event that is cheaper than a full
+remeasurement. This is the honest cost, and AR18b below is the check that
+it does not go further than that — a bare, single detection must still not
+be sufficient, in this design or any other.
+
+**Bars, registered before any seed or adapter code is written.**
+
+- **AR18a — does the deadlock, as literally described in EXECUTOR.md §5,
+  still reproduce live on the CURRENT (post-A17) shipped graph, tested
+  directly, BEFORE any fix is written?** Construct the exact scene: retire
+  one `re_measure` goal via a real live execution (the existing `live_run`
+  fixture), confirm the OTHER `ExecClass`'s residual is not organically
+  stale on this engine (so the pool genuinely holds zero executable
+  members, matching finding 3 above), move the retired goal's evidence
+  artifact off disk (a real world change, EX4's own cell-C technique), and
+  show that on the UNMODIFIED graph, repeated `run_rules()` passes and
+  repeated `refresh_evidence_facts()` probes leave the goal stuck retired
+  with the epoch unchanged, indefinitely — i.e. nothing internal to the
+  current tree ever unsticks it. Report the honest answer either way: if
+  some OTHER mechanism is found to already close it, that is a complete,
+  valuable null result and no fix is built (per the task's own registered
+  candidate 1).
+- **AR18b — the fix must not weaken anti-oscillation.** Re-run EXECUTOR.md
+  §5's own four-cell `latch_cells` scene (churn does not re-mint; a SINGLE
+  genuinely re-failed probe, alone, does not re-mint; re-failed AND the
+  clock having independently advanced DOES re-mint; the world restoring
+  returns the goal to terminal with a fresh `retired_epoch` and `rearm_
+  count` unchanged) and confirm all five cells hold BYTE-IDENTICALLY to
+  EXECUTOR.md's own recorded shape, with the new mechanism installed and
+  live on the graph — not merely not re-run, but shown incapable of
+  collapsing cell C into cell D on a SINGLE probe.
+- **AR18c — the fix closes the deadlock, demonstrated live, in the same
+  style as EX4's cell D, but WITHOUT ever running an executable order.**
+  Starting from AR18a's exact stuck scene (zero executable goals, epoch
+  unchanged since retirement, condition genuinely re-failed), show that TWO
+  SEPARATE, externally-triggered `refresh_evidence_facts` probes — no
+  subprocess, no `run_order`, no hand-poked `bump_measure_epoch` — are
+  sufficient for the goal to re-enter the pool (non-terminal, `rearm_count`
+  incremented), and that ONE such probe is not.
+- **AR18d — no regression, node-id lists not counts.** The six existing
+  gate suites (`test_arc_executor_migrated`, `test_arc_goals_migrated`,
+  `test_goal_residual_migrated`, `test_arc6_valuelayer_migrated`,
+  `test_arc_magnitude_migrated`, `test_arc_decompose_migrated`) produce the
+  same failing-node-id lists before and after, paired and named.
+  `seeds/arc_goals.json`, `seeds/goal_residuals.json`,
+  `seeds/arc_magnitude.json`, `seeds/arc_decompose.json`,
+  `seeds/program_synthesis.json`, `domains/arc_goal_ingest.py`,
+  `domains/arc_decompose_ingest.py`, `domains/arc_magnitude_ingest.py`, and
+  `tools/build_arc_executor_seed.py`'s EXISTING route/dispatch/impotence
+  Term builders (`ROUTE`, `_routable`, `_dispatchable`, `_r_dispatch`,
+  `_r_rearm`, `_r_impotent`) stay byte-identical to `HEAD`.
+  `seeds/arc_executor.json` regenerates byte-identically from its own
+  (edited, version-bumped) emitter. The adapter source audit (no
+  `.evaluate(`, no `run_rules`, no raw `substrate_rs` import) passes on the
+  edited `domains/arc_executor.py`.
+
+**Registered null reading.** If AR18a finds the deadlock already closed by
+some mechanism this investigation missed, this rung builds NOTHING beyond
+the demonstration script and reports that as the complete result — matching
+this arc's own standing culture of clean nulls. If AR18a confirms the
+deadlock but the smallest defensible fix (per the design above) is found,
+during the build, to require a LARGER change to `ax_rearm`'s own
+conjunction or to `gr_condition_lapse`'s vocabulary than the design here
+anticipates, that is reported as a scoped, not-taken recommendation
+(matching WIRE_HANDS's WH4 precedent) rather than forced through.
+
+**Explicitly out of scope, unchanged from A13–A17's shared boundary:** the
+silent order-N fallback, `ag_ask`/`ax_dispatch` collapse-agreement in
+general, `gr_condition_lapse`'s closed vocabulary, fold-up, any `ExecClass`
+for a `decomposition_tier` goal, `source_claim`'s structural
+unresolvability, and `results/arc6_import_impedance.json`/`scripts/
+arc6_import_impedance.py`. Also out of scope: a third `ExecClass` (seam
+B/C/D) — this amendment is about the epoch's PRODUCERS, not the executor's
+reach, and A15 §8 item 3 already found that a third `ExecClass` would not,
+by itself, change this deadlock's shape.
