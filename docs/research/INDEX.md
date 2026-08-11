@@ -9,7 +9,7 @@ The full historical PREREG/RESULTS/plan corpus, grouped by subject. For a synthe
 | [`audio_speech/`](audio_speech/INDEX.md) | 144 | — |
 | [`bigville/`](bigville/INDEX.md) | 162 | — |
 | [`doom/`](doom/INDEX.md) | 11 | — |
-| [`engine_substrate/`](engine_substrate/INDEX.md) | 70 | — |
+| [`engine_substrate/`](engine_substrate/INDEX.md) | 71 | — |
 | [`flight_control/`](flight_control/INDEX.md) | 19 | — |
 | [`humanoid/`](humanoid/INDEX.md) | 54 | — |
 | [`ls20/`](ls20/INDEX.md) | 36 | — |

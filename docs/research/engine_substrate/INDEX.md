@@ -1,6 +1,6 @@
 # engine_substrate — index
 
-70 documents.
+71 documents.
 
 ## Documents
 
@@ -21,6 +21,7 @@
 | [`ENGINE_WINNER_VALUE_PREREG.md`](ENGINE_WINNER_VALUE_PREREG.md) | ENGINE INSTRUMENTATION — THE WINNER'S OWN VALUE — PRE-REGISTRATION |
 | [`ENGINE_WINNER_VALUE_RESULTS.md`](ENGINE_WINNER_VALUE_RESULTS.md) | ENGINE INSTRUMENTATION — THE WINNER'S OWN VALUE — RESULTS |
 | [`GAMMA_SEARCH_COMPLETENESS_CEILING.md`](GAMMA_SEARCH_COMPLETENESS_CEILING.md) | Γ search-completeness ceiling — three probes on the sd loop, Γ's weight, and the composer's beam |
+| [`GAMMA_SEARCH_COMPLETENESS_FIXES.md`](GAMMA_SEARCH_COMPLETENESS_FIXES.md) | Γ search-completeness fixes — Bug 1 (label bias) and Bug 2 (beam completeness) |
 | [`GENERIC_ORDER_N_PREREG.md`](GENERIC_ORDER_N_PREREG.md) | DIMENSION-GENERIC ORDER-N — pre-registration |
 | [`GENERIC_ORDER_N_RESULTS.md`](GENERIC_ORDER_N_RESULTS.md) | DIMENSION-GENERIC ORDER-N — results |
 | [`GRAPH_INTERROGATE.md`](GRAPH_INTERROGATE.md) | graph_interrogate — the "ASK" counterpart to the graph visualiser's "LOOK" |
