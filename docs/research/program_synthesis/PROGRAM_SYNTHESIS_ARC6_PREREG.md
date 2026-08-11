@@ -912,7 +912,144 @@ practice.
 
 ---
 
-## 7. What would make this arc a success
+### AMENDMENT A14 (2026-08-11) — the impotence CAMPAIGN: measure (a) vs (b), before building either
+
+A13 built `ax_impotent` and named, unbuilt, exactly the gap this amendment
+registers bars for (its §8 item 3, quoted in full because it is this rung's
+charter): *"THE OTHER TWO CANDIDATES ((a) ask-a-different-question, (b)
+mint-a-capability-goal) ARE NOW MEASURABLE, AND STILL NOT BUILT…
+`AgendaVerdict.nearest_unroutable_kind` / `.exec_classes_held` are exactly
+that count's raw material, but no sweep across scenes has been run to
+actually decide (a) vs (b) — this rung built the measuring instrument, not the
+measurement campaign."* This amendment registers the campaign's bars, before
+running it, per this arc's own §3 house rule ("measure the ceiling before
+building, every time").
+
+**The design investigation, done before drafting bars.** Two things were
+established by reading the shipped seeds rather than assumed:
+
+1. **The goal-kind space is small and closed.** `tools/build_arc_goals_seed.py`
+   mints exactly four `ArcGoal.kind` values on this graph:
+   `re_measure` (the ONE routable kind — `residual_stale` source),
+   `supply_blocker` (`residual_blocker` source — three shipped instances,
+   `missing_structural_primitive` / `budget` / `missing_dimension`),
+   `source_claim` (`not_ingested` source — four shipped instances, each
+   `headroom_n=1.0`, UNSIGNATURED so each pays `w_unsignatured=25.0`), and
+   `reported` (`self_concern` source — zero shipped instances; requires a
+   `SelfConcern` node reachable only through the separate gap-awareness
+   pipeline this seed set does not load). A sweep must draw its scenes from
+   exactly this space — inventing a fifth kind would not be evidence about
+   this system.
+2. **The pool has exactly one internally-reachable exit.** A goal leaves
+   `POOL()` only by (i) `ag_remeasure_retire` (real execution — and the ONE
+   `ExecClass` can only ever retire a `re_measure` goal) or (ii) the
+   `headroom_n → 0` synthetic path A13 §7.1 already validated as safe
+   (`ax_rearm` never inspects it, unlike `status → 'retired'`, which walked
+   straight into the anti-oscillation latch). **Nothing in this tree can
+   currently retire a `supply_blocker` or `source_claim` goal on its own** —
+   doing so requires an external actor (a human supplying budget, building a
+   structural primitive, etc.), which is exactly the capability gap this
+   campaign is measuring the shape of. This means the loop's OWN naturally
+   reachable impotent state is a SINGLE state (up to which goal testimony
+   happens to have penalised) — concentration on the natural trajectory is
+   TRIVIAL, a fact about capability COUNT, not about the underlying kind
+   distribution. The kind-distribution question A12/WH4 actually asked
+   therefore needs a wider sweep than the loop's own current reach — built
+   HONESTLY, as (b) itself would be, per the general legal path
+   `ArcGoalPolicy` already documents (weights are authored graph data): the
+   same `headroom_n → 0` technique, applied to *other* kinds, is used to
+   explore what the impotence verdict would say about hypothetical pool
+   states this system does not yet have the hands to reach on its own —
+   every such scene is labelled HYPOTHETICAL in the artifact and never
+   conflated with the one REAL, currently-reachable trajectory.
+3. **Testimony (`ag_ask` → reply → `gr_move_penalty`) is a REAL, already-built
+   mechanism that reweights the remaining pool without changing its
+   membership** — AG-5 EX5 arm 2 already measured this shifting the winner
+   from `supply.budget` to `claim.seam_b` under repeated replies. Because
+   `REGION(g)` falls back to `g.agid` whenever `sig_seam` is unset (true of
+   every `supply_blocker` and `source_claim` goal on this graph), a reply
+   penalises the SPECIFIC asked-about goal, not a class of goals — so
+   chaining replies through an already-impotent 7-goal pool is a second,
+   REAL (not hypothetical) axis of variation for `nearest_unroutable_kind`,
+   using only the adapter's existing `attach_reply` translation, zero new
+   mechanism.
+
+**Bars, registered before the sweep is run.**
+
+- **IC1 — the sweep's own methodology is sound and reproducible.** Every scene
+  is a legitimately reachable graph state: either a REAL live execution (the
+  `live_run`-equivalent, order-1 and order-N, at most one live remeasurement
+  per collapse — this campaign does not need a second one, because A13 IM4
+  and this campaign's own group 1 already establish the synthetic
+  `headroom_n → 0` path reproduces what a real execution reaches), or the
+  SAME narrow `headroom_n → 0` attribute poke A13 §7.1 validated, or a real
+  `attach_reply` (never a hand-faked `AgendaVerdict`, never a `status →
+  'retired'` bypass, never an edited `ArcGoalPolicy` weight, never an
+  invented `ArcGoal.kind`). Every HYPOTHETICAL scene (group 3/4 below,
+  reachable only by depleting goals this system cannot currently retire
+  unaided) is labelled as such in the artifact and reported separately from
+  the REAL/natural-trajectory scenes. At least one twin-run determinism
+  check (the `IM5` precedent). No Python decision in the sweep script beyond
+  which scene to construct next — every verdict read is `axe.agenda_verdicts`,
+  the same pure read-off the adapter already ships.
+- **IC2 — a concrete, falsifiable concentration/spread threshold, fixed before
+  looking at the data.** Over the SWEEP SET S = every DISTINCT impotent pool
+  signature (`pool_agids`) reached across groups 1–4 (real, testimony-shifted,
+  and hypothetical-depletion scenes together — deduplicated by signature, so
+  a scene reached two ways counts once): let the modal `nearest_unroutable_kind`
+  value account for fraction *f* of |S|.
+  **CONCENTRATED if *f* ≥ 0.75. SPREAD if *f* ≤ 0.50 (i.e. at least half of
+  S's distinct impotent states name a DIFFERENT kind than the mode). AMBIGUOUS
+  in between, or if |S| < 5** (too few distinct signatures to read a
+  distribution) — either counts as a clean null on this bar, not a tie-break
+  in either direction. Reported SEPARATELY: the same statistic computed over
+  the REAL-only subset (groups 1–2), since that is the currently-decision-
+  relevant population, with the trivial-concentration reading of finding 2
+  above stated explicitly rather than let it pass as if it were evidence
+  about the kind space.
+- **IC3 — the GO/NO-GO criterion for building (a) or (b), stated as a
+  COMPOUND test, because A12/WH4 §5.2 already registered a decisive,
+  frequency-INDEPENDENT objection to each candidate and a concentration
+  number cannot by itself discharge either:**
+  - **GO for (b)** (mint a capability-acquisition goal, e.g. for
+    `supply_blocker`) requires ALL of: (i) IC2 reads CONCENTRATED on the
+    REAL-only subset; (ii) the hypothetical extended sweep does not
+    contradict that concentration at scenes near the CURRENT pool
+    composition (i.e. the dominance is not an artifact of removing exactly
+    one goal); AND (iii) A12/WH4's registered objection — the minted goal is
+    itself unroutable, so each impotence event grows the pool
+    monotonically less actionable — has been independently resolved or
+    shown not to apply (e.g. a concrete, cheap, ALREADY-EXISTING runner this
+    campaign finds that could discharge the named capability, not assumed).
+    Condition (iii) is a check to actually perform, not a foregone
+    conclusion either way.
+  - **GO for (a)** (ask a different, impotence-specific question) requires
+    ALL of: (i) IC2 reads SPREAD on the REAL-only subset; (ii) A12/WH4's
+    registered objection — ANY reply penalises the region it is about
+    regardless of content, so an impotence-ask risks a repricing loop with
+    no fixed point — is measured NOT to apply in this campaign's own group-2
+    testimony-chain scenes (i.e. the chain reaches a fixed point rather than
+    cycling).
+  - **If neither compound condition is met, NO-GO for both.** The
+    concentration/spread read is still reported as the honest answer to the
+    measurement question; a NO-GO here is a complete, valuable result under
+    this arc's own standing culture of clean nulls (M0's four ceiling
+    probes, the D-seam leave-one-out), not a failure to find something to
+    build.
+- **IC4 — no regression.** The five existing gate suites
+  (`test_arc_executor_migrated`, `test_arc_goals_migrated`,
+  `test_goal_residual_migrated`, `test_arc6_valuelayer_migrated`,
+  `test_arc_magnitude_migrated`) produce the same failing-node-id lists
+  before and after this rung, paired and named, not counted. If this rung
+  builds nothing (the registered null path), IC4 reduces to "the sweep script
+  and its artifact are the only new files, and every existing seed / adapter
+  is byte-identical to `HEAD`" — asserted, not assumed.
+
+**Registered null reading, stated in advance.** If IC2 reads AMBIGUOUS, or if
+IC3's compound test is not met for either candidate, this rung builds
+NOTHING beyond the measuring campaign itself (the sweep script and its
+artifact) and reports the concentration/spread read as the complete result —
+exactly the shape A13 §7's own null-reading discipline names, one rung up.
 
 Not a score. **35/257 → 38/257 is not detectable and will not be claimed as
 detection.**

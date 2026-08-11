@@ -13,6 +13,6 @@ The full historical PREREG/RESULTS/plan corpus, grouped by subject. For a synthe
 | [`humanoid/`](humanoid/INDEX.md) | 54 | — |
 | [`ls20/`](ls20/INDEX.md) | 36 | — |
 | [`misc/`](misc/INDEX.md) | 7 | — |
-| [`program_synthesis/`](program_synthesis/INDEX.md) | 97 | — |
+| [`program_synthesis/`](program_synthesis/INDEX.md) | 98 | — |
 | [`psychology_affect/`](psychology_affect/INDEX.md) | 39 | — |
 | [`vision/`](vision/INDEX.md) | 376 (+20 in subfolders) | `physics_perception/` |
