@@ -1455,3 +1455,173 @@ Also out of scope, named here rather than assumed: fold-up (decision above),
 and any `ExecClass` for a decomposition-tier goal (there is no runner that
 could execute "supply a structural primitive" — that remains genuine outside
 work, same as it was for the undecomposed parent).
+
+---
+
+### AMENDMENT A17 (2026-08-11) — retiring a `supply_blocker`/`source_claim` pool member: the gap A15 named, closed at the grain A16 minted
+
+A15 §6 named the exact gap this amendment closes, quoted verbatim because it
+is this rung's charter: *"What WOULD grow A14's real-only n... a capability
+whose retirement changes WHICH `nearest_unroutable_kind` the final pool
+settles on... unless the newly-reachable pool member is itself a
+`supply_blocker`/`source_claim` (which no currently-known mechanism can
+retire)."* A16 (MG4/decomposition) landed since and, in its own module
+docstring, asserted without a dedicated investigation that *"there is no
+runner that could execute 'supply a structural primitive'; that remains
+genuine outside work, same as it was for the undecomposed parent."* This
+amendment tests that assertion rather than inheriting it, per the task's own
+instruction to find out honestly rather than assume either way.
+
+**The design investigation, done before drafting bars.**
+
+1. **The goal-kind space is now FIVE, not four, and A16 minted the fifth
+   one without naming it as a new kind.** `tools/build_arc_decompose_seed.py::
+   _r_decompose`'s own `add_node` effects stamp `"kind": "decomposition_tier"`
+   on every child — read directly from the source, not inferred from prose.
+   This is a DIFFERENT value from `supply_blocker`/`source_claim`/
+   `re_measure`/`reported`, confirmed by grep across every seed builder in
+   the tree. A16's own uncertainty #6 ("none of the shipped classes route a
+   `decomposition_tier` kind") is the same fact read from the other side.
+2. **A `decomposition_tier` child does NOT carry the graph shape
+   `ax_dispatch`/`_routable` requires.** `_routable` (`tools/
+   build_arc_executor_seed.py`) requires a `mint_source` edge to a node
+   carrying `rid` (the three-part key's third component, AG-5 §8 item 2);
+   `mg_decompose`'s effects add only `has_subgoal` (from the parent) and
+   `has_arc_goal` (from the agenda) — **no `mint_source` edge at all**. A
+   `decomposition_tier` goal is therefore structurally unroutable by the
+   EXISTING `ax_dispatch` machinery without EITHER growing `mg_decompose`
+   to mint a `mint_source` edge to some new residual-shaped node (a bigger,
+   riskier change to the mint rule the arc's own A16 rung just finished
+   correcting once already) OR relaxing `_dispatchable`'s `Eq(Count(
+   mint_source), 1)` guard (a change to `ax_dispatch`'s core routing
+   invariant, explicitly out of scope per A13-A16's shared boundary). This
+   rung does neither: it does not touch `arc_executor` at all, matching
+   A16's own design choice to keep decomposition independent of the
+   executor line.
+3. **Tier 1 of the shipped ladder (`B0_zero_new_termnode`) is not
+   hypothetical outside work — it is ALREADY BUILT, verified by reading the
+   shipped Rust source, not by trusting a docstring.** All eight of its
+   named units (`op:TupleOf`, `op:ProdList`, `op:ConcatList`,
+   `op:ArgMaxLenOver`, `tmpl:item_in_listvar`, `tmpl:len_item_vs_var`,
+   `tmpl:nested_reduction`, `fix:StringAsSequence`) are live, load-bearing
+   code in `runners/dsl/src/synth_enumerate.rs` and `term.rs` on this
+   rung's own engine (`c5e50801d48a…`) — confirmed by grep AND by a live
+   re-run of the unmodified `scripts/arc6_structural_ceiling.py` (below,
+   item 5), not by string-matching alone (A1.3's own rule). This is the
+   concrete difference between tier 1 and the whole 42-task
+   `missing_structural_primitive` claim, and it is the reason this rung
+   targets the CHILD, not the PARENT: the parent's own claim ("supply a
+   primitive for all 42 tasks") is genuinely open-ended (tiers 2-4 need ten
+   new `Term` variants, a cross-cutting string-order fix with an unpriced
+   fixture-migration cost, a `Lit`-boundary fix, and a `Recurse` capability
+   decision — none of which exist yet); tier 1's own claim ("supply the
+   8-unit, zero-new-`TermNode` bundle") is bounded and, per this item,
+   already true.
+4. **The `source_claim` goals remain structurally unresolvable, confirmed
+   independently rather than re-quoted from A15.** `_r_mint_source_claim`
+   (`tools/build_arc_goals_seed.py`) mints unconditionally from a static
+   `ArcSourceClaim` node carrying no `holds_under` edge and no `stale`
+   attr; `ArcSourceClaim` appears in no rule's `match` clause anywhere in
+   the tree except the one-shot mint. Making any of the four re-measurable
+   would mean inventing an entire condition-and-lapse apparatus for a node
+   type that currently has none — confirmed by reading every rule in
+   `seeds/arc_goals.json`, not assumed from A15's own finding. One of the
+   four (`arc6.claim.tier0_hs1_0_of_10`, "HS1 failed 0 of 10 converted") is
+   independently interesting: item 3 above shows its own claim is now
+   STALE (tier 0's bundle is built and partially witness-verified) — yet
+   nothing in the tree could ever notice, because the node it is stamped
+   on has no mechanism to be told. Recorded as a second, independent
+   illustration of the same structural gap, not claimed as a target.
+5. **A live re-run, stash-protected and sha-verified before and after,
+   shows genuine — but PARTIAL — drift on tier 1's own claim.** With
+   `results/arc6_structural_ceiling.json` stashed first
+   (`5af750cd4dcc…`) and restored after (byte-identical, confirmed),
+   `scripts/arc6_structural_ceiling.py` was re-run on this rung's engine.
+   `strict_reach.witness_and_in_budget_ids` grew from the committed
+   `[75, 98, 106, 161, 257, 290]` (6) to `[75, 98, 106, 161, 257, 290, 424,
+   450]` (8) — the identical `+424, +450` delta A15 §1 item 7 found on a
+   different engine, reproduced independently here. Tier 1's own increment
+   (`[18, 75, 98, 106, 161, 257, 290, 310, 424, 450]`, 10 ids) is **still
+   not fully covered** — `18` and `310` remain outside the witness set even
+   after a real re-measurement on this engine. **This is the honest
+   finding that shapes AR17b below**: the natural, currently-reachable
+   state does not retire tier 1 either — the mechanism this rung builds
+   must be measured to correctly decline in that real state, and shown
+   separately (by a documented, narrow construction, mirroring A13 §7.1 /
+   A15 §4.2's own precedent) to fire when coverage is genuinely complete.
+6. **The retirement condition is expressible with zero new Rust and zero
+   new `arc_executor` machinery.** `results/arc6_structural_ceiling.json`
+   already carries, per tier bundle, a CUMULATIVE `unlocked_ids` list (so a
+   tier's own increment is a plain set difference, the exact arithmetic
+   `arc_magnitude_ingest.probe_tier_ladder` already performs for
+   `increment_n`) and, at the top level, `strict_reach.
+   witness_and_in_budget_ids` (freshly re-measured by the ALREADY-WIRED
+   second `ExecClass`, A15). A mechanical adapter function — read two
+   dotted paths, one set difference, one set-containment check, structured
+   exactly like `goal_residual_ingest.probe_facts`/`install_facts`'s own
+   "measure, then install as graph data" shape — can write a
+   `TierWitnessFact{ladder_key, tier_order, all_ids_covered}` node per
+   tier, and ONE new rule can retire a `decomposition_tier` child whose own
+   `(parent_ladder_key, tier_order)` matches a fact reading
+   `all_ids_covered==1.0`, using the SAME `headroom_n → 0` pool-exit
+   already validated three times over (A13 §7.1, A15 §4.2, A16 decision 1)
+   — zero edits to `seeds/arc_goals.json`, zero new `ExecClass`, zero
+   changes to `ax_dispatch`.
+
+**Bars, registered before any seed/adapter code is written.**
+
+- **AR17a — the survey.** Every `supply_blocker`/`source_claim` goal kind
+  on the shipped graph, PLUS the `decomposition_tier` kind MG4 mints,
+  classified as genuinely-resolvable / decomposable-into-a-resolvable-
+  sub-claim / genuinely-open, each classification backed by a reading of
+  the actual rule/seed code (not by re-quoting a prior rung's prose),
+  reported as a table. Satisfied by §"survey" in the results doc, mirroring
+  this amendment's own investigation.
+- **AR17b — the GO/NO-GO criterion, registered before building anything.**
+  **GO** iff a real, live, falsifiable mechanism can be built that:
+  (i) retires at least one `supply_blocker`/`source_claim`-descended pool
+  member (a decomposition child counts, per the task's own framing:
+  *"a goal that gets NARROWED/decomposed... into a bounded sub-claim that
+  CAN be resolved, even if the parent's full scope can't be"*);
+  (ii) the retirement condition is grounded in a REAL, existing measurement
+  (no invented capability, no fabricated artifact) and is demonstrated able
+  to correctly DECLINE on the real, currently-reachable state as well as
+  FIRE on a documented construction (a check that cannot fail is not a
+  check, A7's own standing rule); and (iii) the cost stays small: **no new
+  Rust, no changes to `ax_dispatch`/`ROUTE`/`_routable`, ≤1 new adapter
+  function pair (probe + install, mirroring `goal_residual_ingest`'s own
+  shape), ≤1 new rule.** **NO-GO** — report the survey as a clean, honest
+  null (mirroring M0's four ceiling probes and A14's own NO-GO) and build
+  nothing — if AR17a finds every kind genuinely open with no bounded
+  sub-claim, or if the cheapest real mechanism found exceeds the AR17b(iii)
+  threshold.
+- **AR17c — no regression, node-id lists not counts.** The six existing
+  gate suites (`test_arc_executor_migrated`, `test_arc_goals_migrated`,
+  `test_goal_residual_migrated`, `test_arc6_valuelayer_migrated`,
+  `test_arc_magnitude_migrated`, `test_arc_decompose_migrated`) produce the
+  same failing-node-id lists before and after, paired and named.
+  `seeds/arc_goals.json`, `seeds/goal_residuals.json`,
+  `seeds/arc_magnitude.json`, `seeds/program_synthesis.json`,
+  `domains/arc_goal_ingest.py`, `domains/arc_magnitude_ingest.py`'s
+  EXISTING functions, `domains/arc_executor.py`, and
+  `tools/build_arc_executor_seed.py` stay byte-identical to `HEAD`.
+  `seeds/arc_decompose.json` regenerates byte-identically from its own
+  (edited, version-bumped) emitter. The adapter source audit (no
+  `.evaluate(`, no `run_rules`, no raw `substrate_rs` import) passes on any
+  new adapter code.
+
+**Explicitly out of scope, unchanged from A13-A16's shared boundary:** the
+re-arm deadlock, the silent order-N fallback, `ag_ask`/`ax_dispatch`
+collapse-agreement in general, `gr_condition_lapse`'s closed vocabulary, and
+`results/arc6_import_impedance.json`/`scripts/arc6_import_impedance.py`
+(named repeatedly across this arc as a separate thread). Also out of scope:
+a general re-verification mechanism for tiers 2-4 of the same ladder (each
+needs capability this tree does not yet have — new `Term` variants, the
+string-order fix, the `Lit` boundary fix — building any of them is a
+separate, much larger rung) and any change to `source_claim`'s own
+structural unresolvability (item 4 above; closing it would mean inventing a
+condition-and-lapse apparatus for `ArcSourceClaim`, out of this rung's
+scope exactly as A15 named it for a second `ExecClass`). If AR17b's cost
+threshold is not met by a full-sweep re-run of A14's own impotence
+campaign, that re-run is named as a possible follow-up, not performed here,
+per the task's own instruction that it need not be repeated unless cheap.

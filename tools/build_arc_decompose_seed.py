@@ -108,6 +108,33 @@ WHAT IS NOT BUILT, NAMED RATHER THAN SILENTLY DROPPED (A16):
     could execute "supply a structural primitive"; that remains genuine
     outside work, same as it was for the undecomposed parent.
 
+A17 (2026-08-11) — `mg_tier_retire`, v1.0.0 -> v1.1.0.  A16's OWN "no
+`ExecClass`" claim above was investigated rather than inherited
+(`PROGRAM_SYNTHESIS_ARC6_PREREG.md` amendment A17,
+`PROGRAM_SYNTHESIS_ARC6_RETIRE_BLOCKER.md`).  Finding: a `decomposition_tier`
+child cannot be routed by the EXISTING `ax_dispatch`/`_routable` machinery
+at all (it carries no `mint_source` edge — `_routable`'s three-part key has
+nothing to bind), so this is NOT "add a third `ExecClass`" — it is a THIRD,
+INDEPENDENT retirement mechanism, at the SAME low cost and in the SAME
+"self-contained seed, mechanical adapter, pure Rule" shape A16 already used,
+never touching `arc_executor` at all.  `mg_tier_retire` retires a
+`decomposition_tier` child via the SAME `headroom_n -> 0` pool-exit A13
+§7.1 / A15 §4.2 / A16 decision 1 already validated, gated on a
+`TierWitnessFact` node (`domains/arc_decompose_ingest.
+probe_tier_witness_coverage`/`install_tier_witness_facts`, the
+`goal_residual_ingest.probe_facts`/`install_facts` shape) that reports
+whether THIS tier's own increment of task ids is now fully covered by
+`results/arc6_structural_ceiling.json::strict_reach.
+witness_and_in_budget_ids` — freshly re-measurable by the ALREADY-WIRED
+second `ExecClass` (A15's `scripts/arc6_remeasure_structural.py`).  Zero new
+Rust, zero new runner script, zero change to `ax_dispatch`.  Measured
+honestly: on the REAL, currently-reachable state (including after a live
+re-measurement on this rung's own engine) tier 1's own claim is NOT fully
+covered — 8 of its 10 ids are witness-verified, not 10 — so the mechanism is
+demonstrated with a documented CONSTRUCTED positive scene (the same
+methodology A13/A15 already used for a natural trigger that is not cheaply
+reachable live) alongside the honest real-state negative.
+
 Run:  python tools/build_arc_decompose_seed.py         (writes the seed)
       python tools/build_arc_decompose_seed.py --check (fails if out of date)
 """
@@ -121,8 +148,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 from build_arc_magnitude_seed import (  # noqa: E402
-    A, AND, EQ, EXISTS, FILT, L, MEASURE_EPOCH, NEIGH, NOT, NUM, ONE_OF,
-    SCAT, STR, T, TIMES, V, _is_decomposition_child, _tiers_of,
+    A, AND, EQ, EXISTS, FILT, L, MEASURE_EPOCH, NEIGH, NOT, NOT_, NUM,
+    ONE_OF, SCAT, STR, T, TIMES, V, _is_decomposition_child, _tiers_of,
 )
 
 OUT = os.path.join(ROOT, "seeds", "arc_decompose.json")
@@ -288,8 +315,55 @@ def _r_child_order_n():
     }
 
 
+def _r_tier_retire():
+    return {
+        "name": "mg_tier_retire",
+        "comment": (
+            "A17. A decomposition_tier child retires when a TierWitnessFact "
+            "(domains/arc_decompose_ingest.probe_tier_witness_coverage / "
+            "install_tier_witness_facts -- pure measurement over "
+            "results/arc6_structural_ceiling.json, the SAME artifact the "
+            "ladder itself is read from) reports this tier's own increment "
+            "of task ids is now FULLY covered by a freshly re-measured "
+            "strict_reach.witness_and_in_budget_ids. THE FACT IS NOT "
+            "AUTHORED BY THIS RULE -- it is written by the mechanical "
+            "adapter from a real artifact, exactly the goal_residual_ingest."
+            "probe_facts/install_facts shape; this rule only reads it and "
+            "decides, which is the whole of what a Rule is allowed to do. "
+            "Uses the SAME headroom_n -> 0 pool-exit A13 SS7.1 / A15 SS4.2 / "
+            "A16 decision 1 already validated -- POOL()'s own pre-existing "
+            "Gt(headroom_n, 0.0) clause excludes the child from BOTH "
+            "ag_select's and mg_select's pool with ZERO edits to "
+            "arc_goals.json. status='resolved' is a DISTINCT terminal token "
+            "from the parent's 'decomposed' -- a tier that is individually "
+            "witness-verified is a different fact from a parent whose whole "
+            "ladder has been split -- and, like every other terminal status "
+            "in this seed family, is descriptive only; the exclusion "
+            "mechanism is the headroom clause."),
+        "batch": True,
+        "match": [["agenda", "has_arc_goal", "ch"]],
+        "where": AND(
+            EQ(A(V("ch"), "kind"), L("decomposition_tier")),
+            NOT(EQ(A(V("ch"), "status"), L("resolved"))),
+            EXISTS(NOT_("TierWitnessFact"), "twf",
+                   AND(EQ(A(V("twf"), "ladder_key"),
+                          A(V("ch"), "parent_ladder_key")),
+                       EQ(A(V("twf"), "tier_order"), A(V("ch"), "tier_order")),
+                       EQ(A(V("twf"), "all_ids_covered"), L(1.0)))),
+        ),
+        "effects": [
+            ["set_attr", "ch", "status", "resolved"],
+            ["set_attr", "ch", "headroom_n", 0.0],
+            ["set_attr", "ch", "orderN_headroom_n", 0.0],
+            ["set_attr", "ch", "resolved_because",
+             "tier_units_witness_verified_live"],
+        ],
+    }
+
+
 def _rules():
-    return [_r_decompose(), _r_decompose_retire(), _r_child_order_n()]
+    return [_r_decompose(), _r_decompose_retire(), _r_child_order_n(),
+            _r_tier_retire()]
 
 
 def _productions():
@@ -320,7 +394,7 @@ def build():
             "one globbed would activate a chain whose base is deliberately "
             "gated. Activation is one key and the paired sweep A5 requires."),
         "id": "arc_decompose",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "depends_on": ["goal_residuals", "arc_goals", "arc_magnitude"],
         "_NO_DEPENDENCY_ON_arc_executor": (
             "A16's own design investigation: decomposition needs no "
@@ -370,7 +444,14 @@ def build():
             "own orderN_headroom_n is horizon-truncated to 0 while the "
             "children correctly sum to the ladder's full projected value -- "
             "measured and reported, not hidden, in "
-            "PROGRAM_SYNTHESIS_ARC6_MG4_DECOMPOSE.md."),
+            "PROGRAM_SYNTHESIS_ARC6_MG4_DECOMPOSE.md. "
+            "A17 (v1.1.0): mg_tier_retire retires a decomposition_tier "
+            "child when a TierWitnessFact reports its own tier's increment "
+            "of task ids is FULLY covered by a freshly re-measured "
+            "strict_reach.witness_and_in_budget_ids -- a THIRD, independent "
+            "retirement mechanism (no ExecClass, no ax_dispatch touch) at "
+            "the SAME headroom_n->0 pool-exit already validated three times "
+            "over. See PROGRAM_SYNTHESIS_ARC6_RETIRE_BLOCKER.md."),
         "microtheory": {
             "name": "arc_goal_decomposition",
             "description": (
