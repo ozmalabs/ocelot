@@ -156,8 +156,20 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 from build_arc_goals_seed import (  # noqa: E402
     A, AND, ARGMIN, COUNT, EQ, EXISTS, FILT, GT, HUB, ITE, L, MEASURE_EPOCH,
-    NEIGH, NOT, NOT_, ONE_OF, OR, PLUS, POOL, STR, T, V,
+    NEIGH, NOT, NOT_, ONE_OF, OR, PLUS, POOL, SCAT, STR, T, V,
 )
+
+
+def IN_(node, edge_type):
+    """`InNeighbours` -- the direction `Neighbours` doesn't reach: edges whose
+    TARGET is `node`.  Needed once, by `ax_ask_impotent`'s own mint-once
+    guard (A23): `ArcQuestion -asked_about_verdict-> AgendaVerdict` points
+    FROM the question TO the verdict, so "has ANY question already asked
+    about THIS verdict" is an in-edge existence check, not an out-edge one.
+    Not defined in `build_arc_goals_seed.py` because nothing there needed it
+    before this rung."""
+    return {"type": "InNeighbours", "node": node, "edge_type": edge_type,
+            "any_type": False}
 
 OUT = os.path.join(ROOT, "seeds", "arc_executor.json")
 
@@ -665,6 +677,32 @@ def _productions():
         {"provenance": "seed:arc_executor:holds_under-0",
          "src": {"type": "AgendaVerdict", "var": "s"}, "edge_type": "holds_under",
          "tgt": {"type": "ResidualCondition", "var": "t"}},
+        #  A23 -- candidate (a), native form: the impotence-ask's own
+        #  mint-once guard reads this edge (InNeighbours(av,
+        #  asked_about_verdict)), the class-scoped twin of the already-
+        #  declared ArcQuestion -asked_about-> ArcGoal production above.
+        #  ArcImpotenceQuestion, NOT ArcQuestion -- a DISTINCT node type
+        #  (caught live during AR23c, see ax_ask_impotent's own comment):
+        #  reusing ArcQuestion would make this question answerable by the
+        #  EXISTING, unmodified ag_reply_mints_testimony_conditioned/
+        #  unconditioned rules (generic over TypeOf(q)=='ArcQuestion'),
+        #  silently minting testimony -- candidate (b)'s territory -- by
+        #  accident on every reply.
+        {"provenance": "seed:arc_executor:asked_about_verdict-0",
+         "src": {"type": "ArcImpotenceQuestion", "var": "s"},
+         "edge_type": "asked_about_verdict",
+         "tgt": {"type": "AgendaVerdict", "var": "t"}},
+        #  ("ArcAgenda", "sent", "Message") is ALREADY admissible via
+        #  arc_goals.json's own production (this seed depends_on arc_goals;
+        #  the grammar is cumulative over the loaded seed set) -- not
+        #  redeclared here.
+        {"provenance": "seed:arc_executor:answered_by-0",
+         "src": {"type": "ArcImpotenceQuestion", "var": "s"},
+         "edge_type": "answered_by",
+         "tgt": {"type": "Message", "var": "t"}},
+        {"provenance": "seed:arc_executor:responds_to-0",
+         "src": {"type": "Message", "var": "s"}, "edge_type": "responds_to",
+         "tgt": {"type": "ArcImpotenceQuestion", "var": "t"}},
     ]
 
 
@@ -1257,12 +1295,154 @@ def _r_close():
     }
 
 
+def _r_ask_impotent():
+    return {
+        "name": "ax_ask_impotent",
+        "comment": (
+            "A23 -- CANDIDATE (a), NATIVE FORM (PROGRAM_SYNTHESIS_ARC6_PREREG."
+            "md amendment A23).  `ag_ask` (AG-4) only fires on a VALUE tie; "
+            "`ax_impotent` fires on the case it cannot see -- a non-empty pool "
+            "in which NOTHING is routable, no tie required.  Until this rule, "
+            "an impotent pool went unasked-about entirely: the loop terminated "
+            "honestly (mints AgendaVerdict{kind:'impotent'}) but said nothing "
+            "to a human who could name a checkable reason. "
+            "THE GUARD IS CLASS-SCOPED, NOT GOAL-SCOPED -- this is the whole "
+            "point of this rule and the reason it is not a copy of ag_ask's "
+            "own guard.  Keyed to the AgendaVerdict's OWN node identity "
+            "(Not(Exists(InNeighbours(av, asked_about_verdict), qi, True))), "
+            "the SAME mint-once-by-signature shape ax_impotent itself already "
+            "uses for the SAME pool (av mints once per DISTINCT pool_agids, "
+            "A13/WH4(c)), and the same SHAPE gap_awareness.json's content-dedup "
+            "guard uses one seed over (note_unresolved_topic_gap/note_reported_"
+            "gap: file once per distinct content, not once per triggering "
+            "utterance).  A NAIVE reuse of ag_ask's own re-entry gate -- "
+            "Not(Exists(ArcQuestion, region==REGION(g), asked_epoch=="
+            "MEASURE_EPOCH())) -- is keyed PER GOAL, because REGION(g) falls "
+            "back to g.agid whenever sig_seam is unset, true of every "
+            "supply_blocker/source_claim/decomposition_tier goal this tree "
+            "has ever minted (A14 design investigation finding 3), and would "
+            "therefore re-fire every time testimony drifts nearest_unroutable_"
+            "agid to a goal not yet asked about BY THAT AGID -- A22 SS3's own "
+            "measured testimony chain drifts the live winner THREE times "
+            "inside ONE measurement epoch, on the SAME unchanged 10-goal "
+            "pool (PROGRAM_SYNTHESIS_ARC6_IMPOTENCE_RESWEEP.md SS3).  Keying "
+            "to av's own identity instead means the WHOLE CHAIN -- however "
+            "many times the winner drifts under testimony -- is still "
+            "describing the SAME impotent state (A14's own headline finding: "
+            "testimony reweights the pool WITHOUT changing its membership), "
+            "so it is asked about EXACTLY ONCE.  AR23c measures this live, "
+            "against a throwaway naive comparator built only in the "
+            "measurement script (never shipped here). "
+            "THE QUESTION NAMES THE PRESUPPOSITION EXPLICITLY (design "
+            "investigation item 3, not a bare testimony request about one "
+            "goal's content): whether the blocker belongs to the ONE "
+            "nearest-ranked goal specifically, or to the WHOLE CLASS sharing "
+            "its kind. "
+            "DELIBERATELY MINTS NO GoalResidual/testimony -- candidate (b)'s "
+            "territory (mint-a-capability-goal-adjacent), already NO-GO'd by "
+            "A22, and out of THIS rule's scope by design: this rule only asks "
+            "a different question, it does not reprice anything, which is "
+            "also what keeps AR23c's fixed-point test honest (the ask "
+            "stopping is never confounded with the pool changing). "
+            "MINTS A DISTINCT NODE TYPE, ArcImpotenceQuestion, NOT ArcQuestion "
+            "-- CAUGHT LIVE DURING AR23c's OWN MEASUREMENT, not designed in "
+            "up front: an ArcQuestion-typed node here would ALSO match "
+            "ag_reply_mints_testimony_conditioned/unconditioned's own "
+            "TypeOf(q)=='ArcQuestion' guard (seeds/goal_residuals.json is "
+            "untouched, but arc_goals.json's two reply rules are generic "
+            "over EVERY ArcQuestion), so a REPLY to this question would "
+            "SILENTLY mint testimony too -- exactly candidate (b)'s territory, "
+            "by accident, defeating the whole 'this rule only asks, it does "
+            "not reprice' design intent. A distinct type is the SAME cost as "
+            "the `evidence_artifact`/`source_rid` three-part-key discriminator "
+            "A15 finding 5 already relies on to keep two ExecClasses from "
+            "colliding on a shared route: TYPE is the cheapest discriminator "
+            "this engine has, and it costs zero new rules."),
+        "batch": True,
+        "match": HUB + [["agenda", "has_agenda_verdict", "av"]],
+        "where": AND(
+            EQ(A(V("av"), "kind"), L("impotent")),
+            NOT(EQ(A(V("av"), "stale"), L(1.0))),
+            NOT(EXISTS(IN_(V("av"), "asked_about_verdict"), "qi", L(True))),
+        ),
+        "effects": [
+            ["add_node", "q", "ArcImpotenceQuestion", {
+                "kind": "impotence",
+                "region": T(A(V("av"), "nearest_unroutable_kind")),
+                "agid_a": T(A(V("av"), "nearest_unroutable_agid")),
+                "pool_n": T(A(V("av"), "pool_n")),
+                "asked_epoch": T(MEASURE_EPOCH()),
+                "answered": 0.0,
+                "status": "open",
+            }],
+            ["add_edge", "q", "asked_about_verdict", "av"],
+            ["add_node", "reply", "Message", {
+                "from": "agent",
+                "kind": "arc_impotence_question",
+                "text": T(SCAT(
+                    L("I hold "), STR(A(V("av"), "pool_n")),
+                    L(" goals and NONE of them are currently routable. The "
+                      "nearest candidate by rank is "),
+                    A(V("av"), "nearest_unroutable_agid"),
+                    L(" (kind "), A(V("av"), "nearest_unroutable_kind"),
+                    L("), but that ranking is over the WHOLE POOL, not a "
+                      "property of that one goal alone -- other goals of "
+                      "the same kind may or may not share this gap. Is the "
+                      "blocker specific to "),
+                    A(V("av"), "nearest_unroutable_agid"),
+                    L(", or does it apply to every "),
+                    A(V("av"), "nearest_unroutable_kind"),
+                    L(" goal in this pool? Answering either way lets me "
+                      "stop re-asking about whichever goal happens to rank "
+                      "first without re-litigating the whole class each "
+                      "time it drifts."),
+                )),
+            }],
+            ["add_edge", "agenda", "sent", "reply"],
+            ["add_edge", "q", "answered_by", "reply"],
+        ],
+    }
+
+
+def _r_ask_impotent_reply():
+    return {
+        "name": "ax_ask_impotent_reply",
+        "comment": (
+            "A23 -- closes `ax_ask_impotent`'s own open ArcQuestion when an "
+            "interlocutor Message responds to it.  Deliberately does NOT mint "
+            "a GoalResidual/testimony (candidate (a) only, not (b) -- AR23b): "
+            "this rule only marks the class-scoped question answered, so "
+            "`ax_ask_impotent`'s own mint-once guard (keyed to the SAME av "
+            "node) has a stable, observable 'already asked' fact regardless "
+            "of whether the reply itself ever changes VALUE ranking -- it "
+            "never will, by this rule's own design.  Matched by TYPE "
+            "(ArcImpotenceQuestion, not ArcQuestion -- see ax_ask_impotent's "
+            "own comment for why the type is distinct) AND by the SAME edge "
+            "its guard reads (asked_about_verdict), so an ordinary ag_ask "
+            "value-tie question's reply is untouched by this rule, and this "
+            "rule cannot fire on anything ag_ask minted."),
+        "batch": True,
+        "match": [["m", "responds_to", "q"]],
+        "where": AND(
+            EQ({"type": "TypeOf", "node": V("q")}, L("ArcImpotenceQuestion")),
+            NOT(EQ(A(V("m"), "from"), L("agent"))),
+            NOT(EQ(A(V("q"), "answered"), L(1.0))),
+            EXISTS(NEIGH(V("q"), "asked_about_verdict"), "avx", L(True)),
+        ),
+        "effects": [
+            ["set_attr", "q", "answered", 1.0],
+            ["set_attr", "q", "status", "answered"],
+            ["add_edge", "q", "answered_by", "m"],
+        ],
+    }
+
+
 def _rules():
     return [_r_dispatch(), _r_retired_epoch(), _r_rearm(), _r_close(),
             _r_impotent(), _r_world_probe_epoch(), _r_fallback_silent(),
             _r_fallback_cleared(), _r_ask_divergence_active(),
             _r_ask_divergence_cleared(), _r_impotent_pool_lapse(),
-            _r_impotent_pool_hold()]
+            _r_impotent_pool_hold(), _r_ask_impotent(), _r_ask_impotent_reply()]
 
 
 def build():
@@ -1284,7 +1464,7 @@ def build():
             "is the LAST thing that should arrive in every agent by a glob.  "
             "Activation is one key and a paired tree-wide sweep."),
         "id": "arc_executor",
-        "version": "1.7.0",
+        "version": "1.8.0",
         "depends_on": ["goal_residuals", "arc_goals"],
         "_SOFT_DEPENDENCY_ON_arc_magnitude": (
             "v1.1.0 (A11/WH1) wires ax_dispatch to the ORDER-N collapse "
@@ -1414,7 +1594,30 @@ def build():
             "match/mint-once guard is BYTE-UNCHANGED (only its effects gain "
             "an additive pool_stale:0.0 stamp at mint), and gr_condition_"
             "lapse's closed MISMATCH vocabulary (seeds/goal_residuals.json) "
-            "is BYTE-UNCHANGED and untouched by this rung."),
+            "is BYTE-UNCHANGED and untouched by this rung. "
+            "v1.8.0 (A23) adds a THIRTEENTH and FOURTEENTH rule, "
+            "ax_ask_impotent and ax_ask_impotent_reply: candidate (a) "
+            "(PROGRAM_SYNTHESIS_ARC6_IMPOTENCE_CAMPAIGN.md), built NATIVE, "
+            "not as a naive reuse of ag_ask's own REGION-fallback re-entry "
+            "gate (A22 SS6 named this the risk; A23's own design "
+            "investigation confirms question_driver.py's gap-guard/contrast "
+            "rules do not transfer to this data shape and costs more than "
+            "the native alternative).  ax_ask_impotent asks a class-scoped "
+            "question the instant a non-stale AgendaVerdict{kind:'impotent'} "
+            "exists with no ArcQuestion asked about it yet -- mint-once by "
+            "the VERDICT's own node identity (an InNeighbours edge-existence "
+            "guard), the SAME shape ax_impotent itself already uses "
+            "(pool-signature mint-once) and gap_awareness.json's content-"
+            "dedup guard uses one seed over -- so a testimony chain that "
+            "drifts nearest_unroutable_agid across several kinds within one "
+            "epoch (A22 SS3, already measured) is still asked about EXACTLY "
+            "ONCE, because it is still the SAME pool state throughout (A14's "
+            "own headline finding).  ax_impotent/ag_ask/ROUTE/_routable/"
+            "_dispatchable are BYTE-UNCHANGED: this rule only reads an "
+            "existing AgendaVerdict, it does not change when one mints. "
+            "Mints no GoalResidual/testimony (candidate (b) territory, "
+            "already NO-GO'd by A22) -- ax_ask_impotent_reply only marks the "
+            "question answered."),
         "microtheory": "arc6_executor",
         "nodes": _nodes(),
         "edges": _edges(),

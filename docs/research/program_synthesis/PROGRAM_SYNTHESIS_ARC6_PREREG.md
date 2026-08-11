@@ -2610,3 +2610,255 @@ adventure_mechanics/`, or `docs/research/engine_substrate/
 decision_making_spike.md` (the last actively being extended by a
 concurrent, unrelated agent). Candidate (a) or (b) themselves, even if IC3
 reads GO — this rung is scoped to the measurement only.
+
+---
+
+### AMENDMENT A23 (2026-08-11/12) — candidate (a), NOT as a naive `ag_ask`/`REGION` reuse: routing the impotence question through the mechanism that actually gives it a fixed point
+
+A22 §6 named the next charter precisely, and precisely warned against
+misreading it: IC3 reads GO for candidate (a) (`PROGRAM_SYNTHESIS_ARC6_
+IMPOTENCE_RESWEEP.md`), but A14's own finding 3 (`AMENDMENT A14` above)
+already identified *why* a naive reuse of `ag_ask`'s own mechanism would
+inherit its registered repricing-loop risk: `REGION(g)` (`tools/
+build_arc_goals_seed.py:336-338`) falls back to `g.agid` whenever
+`sig_seam` is unset — true of every `supply_blocker`/`source_claim`/
+`decomposition_tier` goal this tree has ever minted — so `ag_ask`'s
+existing testimony question is keyed to ONE goal specifically, not a
+class of goals. A22 §6 named `question_driver.py`'s gap-guard/contrast
+machinery as "machinery ALREADY BUILT in this tree for exactly the class
+of problem `REGION`'s fallback creates." This amendment's own design
+investigation (below, done before drafting bars, per this arc's own
+house rule) is the first rung to actually read that machinery's rule
+bodies rather than its name — and the reading does not confirm A22 §6's
+own characterization. The bars below are written to survive being wrong
+in either direction: build the literal reuse if it holds up, name the
+honest substitute if it doesn't.
+
+**The design investigation, done before drafting bars.**
+
+1. **`question_driver.py` / `seeds/question_driving.json`, read in full.**
+   The kind-dispatch JOIN (`qd_bind_resolver`: a pending leaf `Goal`
+   binds to whichever `Resolver` shares its `kind`, both hanging off the
+   same `Agent` hub) is real and does generalise — it is a clean,
+   reusable SHAPE for "route a thing to its handler by a shared key,"
+   the same JOIN idiom `ax_dispatch`'s own `ROUTE()` already uses natively
+   (A15 finding 5) inside `arc_executor`. But the two specific rules A22
+   §6 named — "gap-guard" and "contrast" — turn out, read from their
+   actual `where`/`effects` bodies (`seeds/question_driving.json`), to be
+   NEITHER a presupposition detector nor a re-ask deduplicator:
+   - **`qd_gap_guard`** mints ONE `"What is <X>?"` KNOW subgoal per
+     `GapSpec` while `goal.gap_depth < 1`, guarded by
+     `GapSpec.materialized` (mint-once PER SPEC, within ONE gap frame).
+     It is a RECURSION-DEPTH BOUND on grounding an NL comprehension gap
+     (replacing the pre-migration `self._gap_depth` Python counter) — it
+     stops a SINGLE question's "what does this word mean" chase from
+     recursing past depth 1. It has no notion of "has this presupposition
+     already been surfaced," no persistence across separate measurement
+     epochs, and no way to compare two DIFFERENT questions' content —
+     its guard is local to one `Goal` tree's own `gap_depth` attr.
+   - **`qd_contrast_compare`** compares the `genus` attr of two already-
+     GROUNDED `know`-kind children (via `know_ground`'s wiki-lookup
+     resolver) and writes `"same"`/`"different"`. It is a SAME/DIFFERENT
+     comparator over two concepts' held property, not a presupposition
+     surfacer — it reports whether two ALREADY-RESOLVED things match; it
+     never inspects a QUESTION for what it assumes before asking it.
+   
+   **Confirmed empirically, not assumed from the names: neither rule, as
+   shipped, prevents re-asking about the same presupposition, and
+   neither surfaces which assumption a question is making.** A22 §6's
+   own prose ("machinery ALREADY BUILT... for surfacing what a question
+   presupposes before asking it") over-read the two rule names; this is
+   corrected here, per this task's own explicit instruction to verify
+   against the rule bodies rather than the prose that named them.
+2. **The actual mechanism this codebase already has for "don't re-file
+   the same thing twice" is a DIFFERENT, already-shipped idiom, in a
+   DIFFERENT seed:** `seeds/gap_awareness.json`'s content-dedup `where`
+   guard (`note_unresolved_topic_gap`/`note_reported_gap`, both keyed by
+   `Not(Exists(...))` over `SelfConcern.content` equality) — filing a gap
+   only if no EQUAL-CONTENT gap already exists, regardless of which
+   specific utterance triggered it. And `ax_impotent` itself (`tools/
+   build_arc_executor_seed.py`) already ships the CLASS-scoped twin of
+   this idiom, natively, for exactly this pool: it mint-once-guards not
+   by which goal is `nearest_unroutable_agid` (a property that visibly
+   DRIFTS under testimony, A14 §8) but by `pool_agids` — the pool's own
+   SIGNATURE. A repeated `attach_reply` chain that reweights the pool
+   without changing its membership (A14 group 2, A22 §3) never causes a
+   second `AgendaVerdict{kind:'impotent'}` to mint, precisely because the
+   guard is keyed to the STABLE identity (the pool state), not to
+   whichever goal currently happens to rank first.
+3. **Cross-referenced against `ag_ask`'s own re-entry gate**
+   (`tools/build_arc_goals_seed.py:1198-1202`): its guard is `Not(Exists(
+   ArcQuestion, region==REGION(g), asked_epoch==MEASURE_EPOCH()))` — "one
+   open question per REGION per epoch." Because `REGION(g)` is `g.agid`
+   for every unsignatured goal, this re-entry gate is scoped PER GOAL,
+   not per pool-state or per capability class. A22 §3's own measured
+   testimony chain (`missing_structural_primitive` → `budget` →
+   `arc6.claim.seam_b…`, three distinct live winners inside ONE
+   measurement epoch, on ONE unchanged 10-goal pool) is the live
+   demonstration that `nearest_unroutable_agid` — and therefore
+   `REGION(nearest_unroutable_goal)` — drifts freely WITHIN a single
+   epoch as testimony reprices the pool. A naive impotence-ask keyed the
+   same way `ag_ask` is keyed (per-`REGION`) would therefore have a fresh,
+   never-before-asked `region` to fire on at EVERY step of that exact
+   already-measured chain — three (or more) impotence-specific questions
+   about what is, by A14's own headline finding, the SAME unchanged pool
+   state. This is finding 3's repricing-loop risk, made concrete and
+   reproducible on data this arc has already collected, not a new worry.
+4. **The idiom that generalises correctly is therefore `ax_impotent`'s
+   OWN mint-once-by-class shape, not `question_driver.py`'s literal
+   rule bodies** — this is exactly this arc's own SHAPES-not-numbers
+   standing rule (`CLAUDE.md`, 2026-08-06/07): the reusable primitive
+   here is "guard re-entry by the STABLE thing (a pool signature / an
+   `AgendaVerdict` node's own identity), never by whichever specific
+   goal currently wins a drifting rank" — a shape this tree already
+   has, natively, in the seed this rung is editing. Importing
+   `question_driver.py`'s Goal/Resolver apparatus to get the SAME shape
+   would mean: minting a SECOND, disjoint `Goal` node type (question_
+   driving's `Goal`, distinct from `ArcGoal`) bridged across two
+   currently-independent seed dependency closures (`question_driving`'s
+   own chain — `math_capability_shapes`/`self_design_axis`/
+   `shape_decode_loop`/`composer_dispatch` — has never depended on, and
+   is never depended on by, `arc_goals`/`arc_executor`), a new Python
+   resolver callable to read `ArcGoal`/`AgendaVerdict` state into that
+   foreign `Goal` shape (real new logic, not mechanical translation),
+   and inventing a translation for `qd_contrast_compare`'s `genus`-typed
+   comparison to apply to `sig_seam`/`pool_agids`-typed data it was never
+   built to read — for a benefit (the re-entry guard) this seed already
+   provides more cheaply, natively, in its own idiom.
+
+**Bars, registered before any seed or rule is written.**
+
+- **AR23a — investigation bar.** Satisfied by the design investigation
+  above: `question_driver`'s gap-guard/contrast mechanism is
+  characterized from its actual `where`/`effects` bodies (not restated
+  from A22 §6's prose or from this task's own brief), and `ag_ask`'s
+  `REGION`/`sig_seam` fallback's exact smuggled presupposition is named
+  with the precise re-entry-gate consequence it has (finding 3 above) —
+  both grounded in code read in this rung, both already done above. This
+  bar is met by what is written above; nothing further to build for it.
+- **AR23b — GO/NO-GO on the wiring cost, mirroring A15's EC2/EC3
+  discipline.** Two candidates are costed, not one, because the
+  investigation surfaced a THIRD option the task's own brief did not
+  anticipate:
+  - **Candidate (a-literal)** — route through `question_driver.py`'s
+    `qd_bind_resolver`/`qd_gap_guard`/`qd_contrast_compare` bodies,
+    verbatim or lightly adapted. **NO-GO.** Cost: a new cross-seed
+    dependency edge (`arc_goals`/`arc_executor` would have to load
+    `question_driving`'s Resolver/Agent-hub apparatus, or vice versa —
+    a first for either seed chain), a new `Goal` node type parallel to
+    the existing `ArcGoal`, a new non-mechanical Python resolver
+    (reads `ArcGoal`/`AgendaVerdict` state and decides what to write —
+    not I/O translation), and a repurposing of `qd_contrast_compare`'s
+    `genus`-comparison shape to a domain (`sig_seam` equality) it was
+    never built to read. This clears none of A15 EC3's own thresholds
+    (`≤2 new seed rules, ≤1 new runner script, no route-matching Term
+    change`) — it is a materially bigger, different-shaped build than
+    "wire a second resolver," and per finding 1 above it would not even
+    supply the fixed-point property it was named for (the rule bodies
+    that transfer literally do not solve this problem).
+  - **Candidate (a-native)** — build the impotence-ask keyed to
+    `AgendaVerdict`'s own node identity (equivalently: `pool_agids` +
+    `kind`), the SAME mint-once-by-signature shape `ax_impotent` already
+    uses for the SAME pool, and the same shape `gap_awareness.json`'s
+    content-dedup guard already uses one seed over. **GO.** Cost,
+    counted the way EC2 counted it: **2 new rules** (`ag_ask_impotent` —
+    mint the class-scoped `ArcQuestion` off a non-stale
+    `AgendaVerdict{kind:'impotent'}`, guarded by `Not(Exists(ArcQuestion
+    asking about THIS av))`; `ag_reply_answers_impotence_question` — mark
+    it answered), **1 new edge type**
+    (`ArcQuestion -asked_about_verdict-> AgendaVerdict`, mirroring the
+    already-shipped `ArcQuestion -asked_about-> ArcGoal`), **zero** new
+    node types, **zero** changes to `ax_dispatch`/`ROUTE()`/`ax_impotent`'s
+    own route-matching or firing-guard Terms (`ax_impotent` is read, not
+    edited — its `AgendaVerdict` is the thing being asked about, not a
+    rule this amendment touches). This clears an EC3-shaped bar even
+    though it is not literally EC2/EC3 (no `ExecClass` involved) — the
+    same "seed data / small rule count over new mechanism" test A15
+    registered. **Deliberately scoped OUT of this build**: the reply
+    does NOT mint a `GoalResidual`/testimony that feeds `gr_move_penalty`
+    — giving the impotence-ask's answer teeth over `VALUE` ranking is
+    candidate (b)'s territory (mint-a-capability-goal-adjacent,
+    already NO-GO'd by A22), and conflating the two would make a clean
+    fixed-point test (AR23c) unable to tell "the ask stopped repeating"
+    apart from "the ask stopped repeating because the pool changed."
+  - **The task's own brief named only "literal question_driver reuse"
+    vs. "naive `ag_ask` reuse."** This amendment's finding is that
+    NEITHER is the right target: naive reuse inherits the repricing-loop
+    risk (finding 3); literal question_driver reuse doesn't discharge it
+    either (finding 1) and costs more than the native alternative
+    (finding 4). Candidate (a-native) is what gets built, and this
+    deviation from the brief's literal framing is registered here, before
+    building, exactly as the brief's own constraints section asks for
+    ("a clean, honest null is a complete and valuable result... rather
+    than forcing a build that doesn't hold up") — applied to the LITERAL
+    reading, not to candidate (a) as a whole, which does clear.
+- **AR23c — the repricing-loop test, done properly this time.** Build,
+  live, on a real boot (reusing A22 §3's own already-validated cheap
+  construction: decompose via a real constraint reply, both `re_measure`
+  goals via the SAME validated `headroom_n → 0` synthetic exit, reaching
+  the SAME 10-goal impotent pool A22 measured) two variants of an
+  impotence-ask rule over the SAME testimony-chain scene (A14 group-2's
+  own mechanism: repeated unconditioned `attach_reply` against `ag_ask`'s
+  own already-open questions, which is what drives `nearest_unroutable_
+  agid` to drift across `supply_blocker`/`source_claim`/`decomposition_
+  tier` candidates within ONE measurement epoch, exactly as A22 §3
+  measured):
+  - **NAIVE** (a throwaway rule object, constructed only inside the
+    measurement script, never shipped to a seed — mirroring how A14/A22
+    never shipped a "bad" alternative either): keyed exactly like `ag_ask`
+    itself, `Not(Exists(ArcQuestion, region==REGION(nearest_unroutable_
+    goal), asked_epoch==MEASURE_EPOCH()))`. Prediction, stated before
+    running: fires AGAIN each time the chain's own testimony drifts
+    `nearest_unroutable_agid` to a goal it has not asked about by REGION
+    before — i.e. it does NOT reach a fixed point inside the one-epoch
+    chain, because A22 §3 already measured 3 distinct live winners in
+    that exact chain, each a distinct `REGION`.
+  - **NATIVE (candidate (a-native), the one this amendment ships)**:
+    keyed to the `AgendaVerdict` node's own identity, per AR23b. Prediction,
+    stated before running: fires EXACTLY ONCE for the whole chain,
+    because the `av` node backing every step of the chain is the SAME
+    node throughout (A14's own headline finding — testimony reweights
+    without changing pool membership, so `pool_agids` and therefore the
+    mint-once-guarded `av` never changes) — a genuine fixed point, not a
+    relabelling of the same risk.
+  Report the actual ask counts for both variants on the SAME scene,
+  twin-run for determinism (the `IM5`/A14/A22 precedent), and state
+  plainly whether the native design's fixed point is a MEASURED property
+  of this scene or merely an assumed one. If the native variant ALSO
+  fails to reach a fixed point (an outcome this amendment does not
+  predict but must report honestly if it happens), that is exactly the
+  kind of clean null this arc's own culture treats as a complete result,
+  not a failure to force past.
+- **AR23d — no regression.** The same six gate suites this arc always
+  checks (`test_arc_executor_migrated`, `test_arc_goals_migrated`,
+  `test_goal_residual_migrated`, `test_arc6_valuelayer_migrated`,
+  `test_arc_magnitude_migrated`, `test_arc_decompose_migrated`), paired
+  failing node-id lists not counts, against a FRESH baseline measured in
+  this worktree before any edit (not assumed from A22's own numbers —
+  this rung's own engine build may differ in ways `test_gr4`'s allowlist
+  cares about, exactly as A22 §7 already flags for its own engine sha).
+  Plus `tests/test_composer_driver_migrated.py` — the closest thing to a
+  dedicated `question_driver` gate this tree ships (no
+  `tests/test_question_driver*.py` exists; confirmed by search before
+  registering this bar) — run the same way, before and after, node-id
+  list not count.
+
+**Registered null reading, stated in advance.** If AR23b finds BOTH
+candidates cost-prohibitive (an outcome this amendment's own investigation
+above already argues against for candidate (a-native), but which AR23b
+must still confirm by an actual count, not by this prose), this rung
+builds nothing beyond the investigation and reports the cost table as the
+complete result. If AR23c's native variant does not reach a fixed point
+on the measured scene, that is reported as the headline finding — the
+mechanism is relabelled, not fixed — and the rule, if already written,
+stays in the worktree as a measured, honestly-null artifact, not
+retracted or hidden.
+
+**Explicitly out of scope, unchanged from A13–A22's shared boundary:**
+`gr_condition_lapse`'s own vocabulary, the re-arm/silent-fallback/
+ask-dispatch-divergence machinery (A18–A21), and candidate (b)
+(mint-a-capability-goal) — already NO-GO'd by A22 and not reopened here.
+`results/arc6_import_impedance.json`/`scripts/arc6_import_impedance.py`,
+and anything under `docs/research/theory_convergence/`, `docs/research/
+adventure_mechanics/`, `docs/research/engine_substrate/
+decision_making_spike.md`, or `docs/research/flight_control/`.

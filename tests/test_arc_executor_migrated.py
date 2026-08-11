@@ -2356,23 +2356,22 @@ def test_a21_AR21c_twin_run_determinism():
 
 
 def test_a21_AR21d_the_new_rules_are_the_ONLY_addition_to_the_seed():
-    """`seeds/arc_executor.json` regenerates byte-identically from its own
-    (edited, version-bumped) emitter; the new rules are purely additive —
-    every rule through A20 is still present, unedited, by name and in
-    order, with exactly two more appended."""
+    """A23 INVERTS THIS PIN TO A PREFIX CHECK, NOT REMOVES IT — the WH1/A18/
+    A19/A20 precedent applied a fifth time.  A23 appends a THIRTEENTH and
+    FOURTEENTH rule (`ax_ask_impotent`/`_reply`), so the exact-twelve-name
+    and exact-version assertion this test made through A21 is now false BY
+    CONSTRUCTION.  `test_a23_AR23b_the_new_rules_are_the_ONLY_addition_to_
+    the_seed` below asserts the full, current fourteen-name list and
+    version; this one still proves the ORIGINAL twelve are an unbroken
+    PREFIX, in order, unedited by name."""
     doc = _seed()
-    assert doc["version"] == "1.7.0"
     names = [r["name"] for r in doc["rules"]]
-    assert names == [
+    assert names[:12] == [
         "ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
         "ax_impotent", "ax_world_probe_epoch",
         "ax_fallback_silent", "ax_fallback_cleared",
         "ax_ask_divergence_active", "ax_ask_divergence_cleared",
-        "ax_impotent_pool_lapse", "ax_impotent_pool_hold"], names
-    r = subprocess.run([sys.executable,
-                        os.path.join(ROOT, "tools", "build_arc_executor_seed.py"),
-                        "--check"], capture_output=True, text=True, cwd=ROOT)
-    assert r.returncode == 0, r.stdout + r.stderr
+        "ax_impotent_pool_lapse", "ax_impotent_pool_hold"], names[:12]
 
 
 def test_a21_AR21d_every_prior_rule_body_is_UNCHANGED_EXCEPT_ax_impotents_ADDITIVE_stamp():
@@ -2472,3 +2471,165 @@ def test_a21_AR21d_gr_condition_lapse_and_every_sibling_seed_are_still_UNTOUCHED
         ROOT, "tools", "build_goal_residual_seed.py"), "--check"],
         capture_output=True, text=True, cwd=ROOT)
     assert r.returncode == 0, r.stdout + r.stderr
+
+
+# =========================================================================== #
+#  A23 (PROGRAM_SYNTHESIS_ARC6_PREREG.md amendment A23) -- candidate (a),
+#  NATIVE FORM: ax_ask_impotent / ax_ask_impotent_reply.  Mirrors A19-A21's
+#  own confinement-test shape exactly.
+# =========================================================================== #
+def test_a23_AR23b_the_new_rules_are_the_ONLY_addition_to_the_seed():
+    """`seeds/arc_executor.json` regenerates byte-identically from its own
+    (edited, version-bumped) emitter; the new rules are purely additive —
+    every rule through A21 is still present, unedited, by name and in
+    order, with exactly two more appended."""
+    doc = _seed()
+    assert doc["version"] == "1.8.0"
+    names = [r["name"] for r in doc["rules"]]
+    assert names == [
+        "ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
+        "ax_impotent", "ax_world_probe_epoch",
+        "ax_fallback_silent", "ax_fallback_cleared",
+        "ax_ask_divergence_active", "ax_ask_divergence_cleared",
+        "ax_impotent_pool_lapse", "ax_impotent_pool_hold",
+        "ax_ask_impotent", "ax_ask_impotent_reply"], names
+    r = subprocess.run([sys.executable,
+                        os.path.join(ROOT, "tools", "build_arc_executor_seed.py"),
+                        "--check"], capture_output=True, text=True, cwd=ROOT)
+    assert r.returncode == 0, r.stdout + r.stderr
+
+
+def test_a23_AR23b_every_prior_rule_body_is_UNCHANGED():
+    """All twelve prior rule bodies (A11-A21) are byte-identical to `HEAD` —
+    this rung reads `ax_impotent`'s effects (`nearest_unroutable_kind`/
+    `nearest_unroutable_agid`/`pool_n`) and `av`'s own mint-once identity; it
+    edits none of them."""
+    prefix = subprocess.run(["git", "-C", ROOT, "rev-parse", "--show-prefix"],
+                            capture_output=True, text=True).stdout.strip()
+    head_doc = json.loads(subprocess.run(
+        ["git", "-C", ROOT, "show", "HEAD:" + prefix + "seeds/arc_executor.json"],
+        capture_output=True, text=True).stdout)
+    head_rules = {r["name"]: r for r in head_doc["rules"]}
+    cur_rules = {r["name"]: r for r in _seed()["rules"]}
+    for name in ("ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
+                 "ax_impotent", "ax_world_probe_epoch", "ax_fallback_silent",
+                 "ax_fallback_cleared", "ax_ask_divergence_active",
+                 "ax_ask_divergence_cleared", "ax_impotent_pool_lapse",
+                 "ax_impotent_pool_hold"):
+        assert cur_rules[name] == head_rules[name], name
+
+
+def test_a23_AR23b_the_new_rules_mint_no_GoalResidual_or_testimony():
+    """STATIC confinement check on AR23b's own registered scope boundary:
+    candidate (a) only asks a different question, it never mints a
+    GoalResidual/testimony (candidate (b) territory, already NO-GO'd by
+    A22).  Scans both new rules' effects for any `add_node ... GoalResidual`
+    — none may appear."""
+    for name in ("ax_ask_impotent", "ax_ask_impotent_reply"):
+        rule = _seed_rule(name)
+        for eff in rule["effects"]:
+            if eff[0] == "add_node":
+                assert eff[2] != "GoalResidual", (name, eff)
+
+
+def test_a23_AR23b_the_new_question_type_is_DISTINCT_from_ArcQuestion():
+    """CAUGHT LIVE during this rung's own AR23c measurement (see
+    `ax_ask_impotent`'s comment): an `ArcQuestion`-typed node here would
+    ALSO match `ag_reply_mints_testimony_conditioned`/`_unconditioned`'s own
+    `TypeOf(q)=='ArcQuestion'` guard (`seeds/arc_goals.json`, untouched by
+    this rung), silently minting testimony on every reply — candidate (b)'s
+    territory, by accident.  `ax_ask_impotent` must mint a type ag_ask's own
+    reply rules cannot see."""
+    rule = _seed_rule("ax_ask_impotent")
+    mint = [e for e in rule["effects"]
+            if e[0] == "add_node" and e[1] == "q"][0]
+    assert mint[2] == "ArcImpotenceQuestion"
+    assert mint[2] != "ArcQuestion"
+    reply_rule = _seed_rule("ax_ask_impotent_reply")
+    type_check = reply_rule["where"]["items"][0]
+    assert type_check["b"]["value"] == "ArcImpotenceQuestion"
+
+    #  Cross-checked against arc_goals.json's own reply rules, read fresh —
+    #  they are generic over EVERY ArcQuestion, confirming the risk this
+    #  rung's type choice avoids is real, not hypothetical.
+    with open(os.path.join(ROOT, "seeds", "arc_goals.json")) as fh:
+        goals_doc = json.load(fh)
+    for name in ("ag_reply_mints_testimony_conditioned",
+                 "ag_reply_mints_testimony_unconditioned"):
+        r = [x for x in goals_doc["rules"] if x["name"] == name][0]
+        items = r["where"]["items"]
+        typeof_checks = [it for it in items
+                         if it.get("a", {}).get("type") == "TypeOf"]
+        assert typeof_checks and typeof_checks[0]["b"]["value"] == "ArcQuestion"
+
+
+def test_a23_AR23c_native_ask_is_class_scoped_and_reaches_a_fixed_point():
+    """LIVE, THE CRUX GATE.  On the SAME multi-drift testimony chain AR23c
+    measured (A22's own decompose + synthetic-exit construction for BOTH
+    `re_measure` goals, A14 group-2's own unconditioned reply-chain
+    mechanism, which drives `nearest_unroutable_agid`/`kind` to drift across
+    KINDS within ONE measurement epoch on an UNCHANGED pool — reproduced
+    live here, not assumed from the one-off script's own committed
+    artifact): `ax_ask_impotent` mints EXACTLY ONE `ArcImpotenceQuestion`
+    for the WHOLE chain, even though this test's own premise requires the
+    live winner to visit at least THREE distinct kinds (at least two real
+    drifts) for the check to be meaningful at all.  This IS the fixed-point
+    property AR23c's design investigation predicted and
+    `results/arc6_question_driver_impotence_ask.json` measured
+    quantitatively (twin-run byte-identical, native=1 / naive=3 there); this
+    test is the standing regression gate for the SAME live property, so a
+    future rung cannot silently regress it back to a per-goal guard."""
+    sys.path.insert(0, os.path.join(ROOT, "scripts"))
+    import arc6_impotence_resweep_measure as rw  # noqa: E402  (imported for reuse)
+
+    s, ag = rw.boot()
+    rw.drive_decompose(s, 5.0)
+    s._inner.run_rules()
+    #  The structural re_measure ArcGoal does not exist until its own
+    #  residual actually goes stale (A22 SS8.3's own finding) — force
+    #  staleness first, the SAME narrow poke A13 SS7.1/A15 SS4.2 validated.
+    axe._put_fact(s, "arc6_structural_ceiling_present", "0")
+    s._inner.run_rules()
+    for agid in (rw.AGID_ROW, rw.AGID_STRUCT):
+        found = False
+        for n in s.nodes("ArcGoal"):
+            if s.node(n)["attrs"].get("agid") == agid:
+                s.set_attr(n, "headroom_n", 0.0)
+                found = True
+        assert found, agid
+    s._inner.run_rules()
+
+    kinds = []
+    pool_sigs = set()
+    for _ in range(8):
+        at = rw._agenda_attrs(s)
+        sel = at.get("arc_sel_agid") if at.get("mg_sel_agid") is None else at.get("mg_sel_agid")
+        kinds.append(rw._goal_kind(s, sel) if sel else None)
+        pool_sigs.add(tuple(sorted(axe.pool(s))))
+        sent = 0
+        for n in s.nodes("ArcQuestion"):
+            a = s.node(n)["attrs"]
+            if a.get("answered") == 1.0 or a.get("status") != "open":
+                continue
+            agi.attach_reply(s, n, "I do not know either; use your judgement.")
+            sent += 1
+        s._inner.run_rules()
+        if sent == 0:
+            break
+
+    assert len(pool_sigs) == 1, (
+        "this test's premise (testimony reweights WITHOUT changing "
+        "membership, A14's own headline finding) must hold for the fixed-"
+        "point property to mean anything: %r" % pool_sigs)
+    n_distinct_kinds = len(set(kinds))
+    assert n_distinct_kinds >= 3, (
+        "this test needs at least 2 real drifts (3 distinct kinds) to be a "
+        "meaningful fixed-point check on THIS engine/seed combination: %r"
+        % kinds)
+
+    native = list(s.nodes("ArcImpotenceQuestion"))
+    assert len(native) == 1, (
+        "ax_ask_impotent must mint EXACTLY ONCE across a chain that drifts "
+        "nearest_unroutable_agid/kind multiple times on an UNCHANGED pool "
+        "-- this is the fixed-point property AR23c measured", native,
+        kinds)
