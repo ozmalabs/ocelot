@@ -94,8 +94,8 @@ rather than split off by subject domain.
 
 Read the numbered `docs/research/agent_loop/agent_loop_iteration*.md`
 series in order for the live research process, or
-`docs/speech_development_note.md` (now `docs/research/audio_speech/`) for
-the synthesized progress note this section draws from. The full corpus
+`docs/research/audio_speech/speech_development_note.md` for the
+synthesized progress note this section draws from. The full corpus
 (LOSO experiment logs, stage-by-stage curriculum documents, the Whisper/
 Parakeet teardown-as-data studies, the cipher-recovery credibility ladder
 that shares this arc's structure-recovery machinery) is indexed at
