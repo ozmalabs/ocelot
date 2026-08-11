@@ -58,6 +58,12 @@ AGID = "arc.remeasure." + RID
 RUNNER = "arc6_remeasure_row_verdict"
 ARTIFACT = "results/arc6_verdict_pricing.json"
 
+#  A15 -- the second ExecClass (the ceiling probe on the executor's reach).
+RID_2 = "arc6.structural.enum_op_table"
+AGID_2 = "arc.remeasure." + RID_2
+RUNNER_2 = "arc6_remeasure_structural"
+ARTIFACT_2 = "results/arc6_structural_ceiling.json"
+
 
 # =========================================================================== #
 #  PRECONDITION — assert the engine, do not merely record it.
@@ -577,16 +583,36 @@ def test_confinement_the_route_key_has_THREE_parts_and_each_is_asserted():
     for k in ("kind", "evidence_artifact", "rid", "source_rid"):
         assert k in keys, (k, sorted(keys))
     cls = [n for n in _seed()["nodes"] if n["type"] == "ExecClass"]
-    assert len(cls) == 1, "more than one executable class shipped"
-    assert cls[0]["attrs"]["runner"] == RUNNER
-    assert cls[0]["attrs"]["evidence_artifact"] == ARTIFACT
-    assert cls[0]["attrs"]["source_rid"] == RID
+    assert len(cls) == 2, (
+        "A15 -- the ceiling probe on the executor's reach.  This PIN is "
+        "INVERTED, not removed (the WH1 precedent): AG-5/A11/A12/A13/A14 "
+        "each measured the executor's reach as exactly one ExecClass, and "
+        "this asserted it structurally.  A15 wired a genuine second "
+        "residual (arc6.structural.enum_op_table) behind ZERO rule changes "
+        "-- ax_dispatch/ROUTE/_routable already filter over every "
+        "ExecClass node -- so the count changing from one to two, with the "
+        "three-part-key assertion above UNCHANGED, is the confinement "
+        "still holding on a wider table, not a weakened guard.")
+    by_runner = {c["attrs"]["runner"]: c["attrs"] for c in cls}
+    assert sorted(by_runner) == sorted([RUNNER, RUNNER_2])
+    assert by_runner[RUNNER]["evidence_artifact"] == ARTIFACT
+    assert by_runner[RUNNER]["source_rid"] == RID
+    assert by_runner[RUNNER_2]["evidence_artifact"] == ARTIFACT_2
+    assert by_runner[RUNNER_2]["source_rid"] == RID_2
+    #  The two classes disagree on BOTH keys, never just one -- if they ever
+    #  shared an evidence_artifact or a source_rid, `_routable`'s Argmin
+    #  could bind a goal to the wrong runner (WH4's own measured hazard for
+    #  a kind-only key, one level down for a partially-shared key).
+    assert by_runner[RUNNER]["evidence_artifact"] != by_runner[RUNNER_2]["evidence_artifact"]
+    assert by_runner[RUNNER]["source_rid"] != by_runner[RUNNER_2]["source_rid"]
 
 
 def test_confinement_the_capability_TABLE_refuses_an_unknown_runner():
     """The adapter half.  A `runner` name with no table entry is recorded and
     refused; it is never a path, never an argv word and never reaches a shell."""
-    assert sorted(axe.RUNNERS) == [RUNNER]
+    assert sorted(axe.RUNNERS) == sorted([RUNNER, RUNNER_2]), (
+        "A15 -- inverted, not removed, same reason as the ExecClass count "
+        "pin above: the capability table now names TWO permitted runners.")
     s, _ = boot()
     s._inner.run_rules()
     a = [n for n in s.nodes("ArcAgenda")][0]
@@ -597,6 +623,283 @@ def test_confinement_the_capability_TABLE_refuses_an_unknown_runner():
     assert rec["status"] == "refused"
     assert s.node(o)["attrs"]["refused_because"] == \
         "runner_name_not_in_the_capability_table"
+
+
+# =========================================================================== #
+#  A15 — THE SECOND ExecClass (the ceiling probe on the executor's reach)
+#
+#  PROGRAM_SYNTHESIS_ARC6_PREREG.md amendment A15.  Four consecutive rungs
+#  (A10/A11/A12/A13/A14) each independently measured the executor's reach as
+#  EXACTLY ONE ExecClass.  This wires a genuine second one — the structural-
+#  ceiling residual (`arc6.structural.enum_op_table`) — behind ZERO new
+#  rules: `ax_dispatch`/`ROUTE`/`_routable`/`_dispatchable` already filter
+#  over every `ExecClass` node via the three-part key, so this is SEED DATA,
+#  not a rule edit.  See PROGRAM_SYNTHESIS_ARC6_SECOND_EXECCLASS.md.
+#
+#  THE STALENESS TRIGGER IS SYNTHETIC; THE MEASUREMENT IS NOT.  A15's own
+#  design investigation found that `probe_facts`'s `expected_shas` argument —
+#  the thing that would make `arc6_structural_ceiling_present` track CONTENT
+#  drift, not just file presence — is never wired by any caller in this
+#  tree, so the condition cannot organically detect that a re-run produces
+#  different content (it was measured to: witness_ids grew 7 -> 9 on this
+#  engine vs the committed evidence).  Every scene below therefore forces
+#  eligibility with a `_put_fact` POKE — the SAME "narrow attribute poke"
+#  methodology A13 SS7.1 validated for `headroom_n -> 0` (not a file
+#  deletion: the real, committed artifact stays on disk and untouched, which
+#  matters because the runner's own stash step assumes it is present) — but
+#  the RE-MEASUREMENT ITSELF, once ordered, is a REAL subprocess invocation
+#  of the unmodified `scripts/arc6_structural_ceiling.py` on this engine.
+# =========================================================================== #
+def test_a15_the_structural_residual_is_UNWIRED_by_default():
+    """Adding the second ExecClass changed NOTHING about the shipped boot's
+    default pool composition — the structural residual's condition still
+    organically holds (only file-PRESENCE is checked, and the committed
+    artifact is present), so no second `re_measure` goal exists until forced.
+    This is the confinement AG-5's own boot-time free exercise, one level up:
+    a wider capability table does not by itself create new work."""
+    s, _ = boot()
+    s._inner.run_rules()
+    agids = sorted(s.node(n)["attrs"]["agid"] for n in s.nodes("ArcGoal"))
+    assert len(agids) == 8, agids
+    assert AGID in agids
+    assert AGID_2 not in agids, (
+        "the structural residual must NOT be stale on the untouched boot")
+
+
+def _force_structural_stale(s):
+    """The narrow poke (A13 SS7.1 precedent): write the ResidualFact the
+    condition reads directly, WITHOUT touching the real, committed file."""
+    axe._put_fact(s, "arc6_structural_ceiling_present", "0")
+
+
+def test_a15_forcing_staleness_MINTS_the_second_remeasure_goal_and_it_ROUTES():
+    """The bar: a genuinely SECOND `re_measure` goal, routed to its OWN
+    runner via the three-part key, with zero cross-talk to the first class."""
+    s, ag = boot()
+    s._inner.run_rules()
+    _force_structural_stale(s)
+    s._inner.run_rules()
+    born = [dict(s.node(n)["attrs"]) for n in s.nodes("ArcGoal")
+            if s.node(n)["attrs"].get("agid") == AGID_2]
+    assert born, "the structural residual did not mint a re-measure goal"
+    assert born[0]["kind"] == "re_measure"
+    assert born[0]["evidence_artifact"] == ARTIFACT_2
+
+    sole_survivor(s, AGID_2)
+    s._inner.run_rules()
+    axe.arm(s)
+    s._inner.run_rules()
+    pending = axe.pending_orders(s)
+    assert len(pending) == 1, pending
+    o = s.node(pending[0])["attrs"]
+    assert o["runner"] == RUNNER_2
+    assert o["exec_class"] == "re_measure"
+    assert o["evidence_artifact"] == ARTIFACT_2
+
+
+def test_a15_the_two_classes_NEVER_cross_route():
+    """Both directions, per this suite's own standing discipline (A7): the
+    row-verdict goal must never be handed the structural runner, and the
+    structural goal must never be handed the row-verdict runner."""
+    #  Direction 1: row-verdict alone (structural NOT stale) -> RUNNER.
+    s, ag = boot()
+    s._inner.run_rules()
+    sole_survivor(s, AGID)
+    s._inner.run_rules()
+    axe.arm(s)
+    s._inner.run_rules()
+    pending = axe.pending_orders(s)
+    assert len(pending) == 1
+    assert s.node(pending[0])["attrs"]["runner"] == RUNNER
+
+    #  Direction 2: structural alone (forced stale, row-verdict retired) ->
+    #  RUNNER_2, never RUNNER.
+    s2, ag2 = boot()
+    s2._inner.run_rules()
+    _force_structural_stale(s2)
+    s2._inner.run_rules()
+    sole_survivor(s2, AGID_2)
+    s2._inner.run_rules()
+    axe.arm(s2)
+    s2._inner.run_rules()
+    pending2 = axe.pending_orders(s2)
+    assert len(pending2) == 1
+    assert s2.node(pending2[0])["attrs"]["runner"] == RUNNER_2
+    assert s2.node(pending2[0])["attrs"]["runner"] != RUNNER
+
+
+def test_a15_TWO_simultaneously_routable_goals_still_SERIALIZE_to_ONE_order():
+    """A15's own motivating scenario, never exercised by any prior rung
+    because there was only ever one executable goal: with the second
+    ExecClass wired, this engine's shipped boot ALREADY has one organically
+    stale residual (row-verdict — `value_layer_list_eq_tuple == '0'` on this
+    engine) and can now ALSO carry a second, forced-stale one (structural)
+    in the SAME pool at once.  `ax_dispatch`'s own comment claims 'at most
+    one outstanding order globally' via a `Not(Exists(ExecOrder,
+    status='ordered'))` guard — this is the first LIVE test of that guard
+    under real multi-candidate contention, not just a read of the rule."""
+    s, ag = boot()
+    s._inner.run_rules()
+    _force_structural_stale(s)
+    s._inner.run_rules()
+    agids = set(s.node(n)["attrs"]["agid"] for n in s.nodes("ArcGoal"))
+    assert AGID in agids and AGID_2 in agids, (
+        "both residuals must be simultaneously stale for this scene", agids)
+    axe.arm(s)
+    s._inner.run_rules()
+    orders = [dict(s.node(n)["attrs"]) for n in s.nodes("ExecOrder")]
+    assert len(orders) == 1, (
+        "two simultaneously routable goals minted more than one order in "
+        "one fixpoint — the serialization guard is not load-bearing", orders)
+    assert orders[0]["agid"] in (AGID, AGID_2)
+    assert orders[0]["runner"] in (RUNNER, RUNNER_2)
+
+
+# =========================================================================== #
+#  A15 — THE LIVE RUN.  A real subprocess invocation of
+#  scripts/arc6_structural_ceiling.py, on THIS engine, protected-file
+#  stash/restore around it (never run without a stash — A15's own design
+#  investigation tripped exactly this hazard once and recorded the
+#  recovery in the results doc).
+# =========================================================================== #
+def _sole_survivor_no_retire(s, agid):
+    """Like `sole_survivor`, but leaves every OTHER goal's pool membership
+    via `headroom_n -> 0` rather than `status: 'retired'` — the SAME
+    distinction `_leave_pool_without_retiring` documents below, for the
+    identical reason, found live while building this fixture: `sole_survivor`
+    followed by a REAL run that bumps the measurement epoch (this fixture
+    calls `axe.run_order`, unlike every other scene that uses
+    `sole_survivor`) lets `ax_rearm` legitimately re-admit a goal whose
+    underlying residual is STILL genuinely stale on this engine (true of the
+    row-verdict goal here) — that is the anti-oscillation latch working
+    correctly, not a bug, but it silently reintroduces AGID into the pool
+    between `before` and `after` and confounds the pool-shrinks-by-one
+    reading.  `headroom_n -> 0` never sets `status`, so `ax_rearm`'s
+    `status=='retired'` guard never matches and this cannot happen."""
+    for n in s.nodes("ArcGoal"):
+        if s.node(n)["attrs"].get("agid") != agid:
+            s.set_attr(n, "headroom_n", 0.0)
+
+
+@pytest.fixture(scope="module")
+def live_run_structural():
+    s, ag = boot()
+    s._inner.run_rules()
+    before_sha = axe._sha256(os.path.join(ROOT, ARTIFACT_2))
+    _force_structural_stale(s)
+    s._inner.run_rules()
+    _sole_survivor_no_retire(s, AGID_2)
+    s._inner.run_rules()
+    axe.arm(s)
+    s._inner.run_rules()
+    pending = axe.pending_orders(s)
+    assert len(pending) == 1, "expected exactly one ExecOrder, got %d" % len(pending)
+
+    before = {"pool": axe.pool(s),
+              "stale": s.node(res(s, RID_2))["attrs"].get("stale"),
+              "status": s.node(goal(s, AGID_2))["attrs"].get("status")}
+    rec = axe.run_order(s, pending[0], tag="a15gate")
+    axe.refresh_evidence_facts(s)
+    s._inner.run_rules()
+    after = {"pool": axe.pool(s),
+             "stale": s.node(res(s, RID_2))["attrs"].get("stale"),
+             "status": s.node(goal(s, AGID_2))["attrs"].get("status"),
+             "retired_because": s.node(goal(s, AGID_2))["attrs"].get("retired_because")}
+    return {"s": s, "rec": rec, "before": before, "after": after,
+            "before_sha": before_sha}
+
+
+def test_a15_it_actually_RUNS_the_structural_remeasurement_LIVE(live_run_structural):
+    """Not a fixture: a real subprocess invocation of the unmodified
+    measurement script, on this engine."""
+    rec = live_run_structural["rec"]
+    assert rec["status"] == "ran", rec
+    assert rec["runner"] == RUNNER_2
+    assert os.path.exists(os.path.join(ROOT, rec["artifact"]))
+    from domains.engine_provenance import provenance_stamp
+    assert rec["engine_sha256"] == provenance_stamp()["sha256"]
+
+
+def test_a15_the_frozen_structural_artifact_is_STILL_byte_identical(live_run_structural):
+    """The runner must save the one committed artifact and restore it
+    byte-for-byte in a `finally` — asserted against a sha taken BEFORE the
+    run (this checkout's `results/` is gitignored, so `git show HEAD:...`
+    is not a usable witness here — see the pre-existing, environment-
+    conditional red on the row-verdict version of this same assertion)."""
+    assert live_run_structural["rec"]["protected_files_restored_byte_identical"] is True
+    after_sha = axe._sha256(os.path.join(ROOT, ARTIFACT_2))
+    assert after_sha == live_run_structural["before_sha"], (
+        "the committed structural-ceiling artifact was NOT restored")
+
+
+def test_a15_the_fresh_measurement_genuinely_DIFFERS_from_committed_evidence(live_run_structural):
+    """The load-bearing finding this candidate was picked FOR (A15's design
+    investigation item 7): re-running this residual's measurement on this
+    engine is not a no-op — it finds MORE witnesses than the committed
+    evidence (measured on an older engine), which the current condition
+    mechanism cannot see on its own (item 6) but which a live re-run does."""
+    ri = live_run_structural["rec"]["reingest"]
+    assert ri["reingested"] is True
+    fresh = json.load(open(os.path.join(ROOT, live_run_structural["rec"]["artifact"])))
+    committed = json.load(open(os.path.join(ROOT, ARTIFACT_2)))
+    fresh_witnesses = set(fresh.get("witness_ids") or [])
+    committed_witnesses = set(committed.get("witness_ids") or [])
+    assert fresh_witnesses != committed_witnesses, (
+        "a re-measurement that changed nothing is not a re-measurement",
+        sorted(fresh_witnesses), sorted(committed_witnesses))
+    assert ri["residual_after"] != ri["residual_before"]
+
+
+def test_a15_the_CONDITION_REANCHORS_and_the_residual_UNSTALES(live_run_structural):
+    """Mirrors EX1's own bar for the first ExecClass: the condition is
+    re-anchored to the world as probed AT re-measurement time (here, the
+    committed file's real presence, restored by the runner's own `finally`
+    before this re-ingest runs), and un-stales through the EXISTING,
+    UNMODIFIED `gr_condition_hold` — the adapter never writes `stale`."""
+    b, a = live_run_structural["before"], live_run_structural["after"]
+    assert b["stale"] == 1.0
+    assert a["stale"] == 0.0
+    assert a["status"] == "retired"
+    assert a["retired_because"] == "source_residual_no_longer_stale"
+    assert len(b["pool"]) - len(a["pool"]) == 1
+    assert sorted(set(b["pool"]) - set(a["pool"])) == [AGID_2]
+
+
+def test_a15_the_seed_added_ZERO_new_rules():
+    """EC2/EC3's own headline cost claim, gated rather than left as prose:
+    the second ExecClass is a seed DATA addition. Five rules before A15
+    (AG-5's four plus A13's ax_impotent); five rules after."""
+    names = sorted(r["name"] for r in _seed()["rules"])
+    assert names == sorted(
+        ["ax_dispatch", "ax_retired_epoch", "ax_rearm", "ax_close",
+         "ax_impotent"]), names
+
+
+def test_a15_no_third_party_dependency_in_the_new_runner():
+    """The cost-comparison finding that RULED OUT seam A (`sympy`, not
+    importable under this tree's default `python3` — A15 item 8): the
+    chosen runner imports nothing beyond the stdlib."""
+    import ast
+    tree = ast.parse(open(os.path.join(
+        ROOT, "scripts", "arc6_remeasure_structural.py")).read())
+    STDLIB = {"__future__", "hashlib", "json", "os", "shutil", "subprocess",
+              "sys", "tempfile", "time"}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                assert alias.name.split(".")[0] in STDLIB, alias.name
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            assert node.module.split(".")[0] in STDLIB, node.module
+
+
+def test_a15_the_new_runner_makes_no_decision_either():
+    """Mirrors `test_ex6_the_runner_makes_no_decision_either` for the second
+    runner: it never touches the substrate at all."""
+    src = _code_only(os.path.join(ROOT, "scripts",
+                                  "arc6_remeasure_structural.py"))
+    for banned in ("import substrate_rs", "substrate_rs", ".evaluate(",
+                   "run_rules", "ArcGoal", "GoalResidual"):
+        assert banned not in src, banned
 
 
 # =========================================================================== #
@@ -886,7 +1189,18 @@ def test_im1_fires_when_the_WHOLE_POOL_is_unroutable():
     assert AGID not in seen_pool
     assert sorted(seen_pool) == axe.pool(s)
     assert av["stale"] == 0.0
-    assert json.loads(av["exec_classes_held"]) == ["re_measure"]
+    #  A15 -- inverted, not removed (the WH1 precedent).  `exec_classes_held`
+    #  is a RAW MapList over every ExecClass node's `name` attr, never
+    #  deduplicated (`_r_impotent`, untouched by A15 — editing it would be a
+    #  rule edit this rung's own registered threshold avoids).  With TWO
+    #  ExecClass nodes sharing the semantic name "re_measure" (by design —
+    #  the name is the KIND label, not a per-class identity; A15's own
+    #  Second-ExecClass results doc §"what broke" names this explicitly),
+    #  the list legitimately grows a duplicate entry.  A14 §3 already
+    #  established this field "carries ZERO information about concentration
+    #  vs spread" because it is a property of the SEED, not the pool — that
+    #  finding is unaffected; only the raw count changed.
+    assert json.loads(av["exec_classes_held"]) == ["re_measure", "re_measure"]
 
 
 def test_im1_does_NOT_fire_while_the_pool_is_healthy():

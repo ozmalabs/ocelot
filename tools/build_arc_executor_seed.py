@@ -78,6 +78,23 @@ EXECUTABLE_KIND = "re_measure"
 ARTIFACT = "results/arc6_verdict_pricing.json"
 SOURCE_RID = "arc6.verdict.row_verdict_seed_only"
 
+#  A15 -- THE SECOND ExecClass.  Same kind, different evidence_artifact and
+#  source_rid, exactly the three-part key `_cue_matches`/`_routable` already
+#  discriminate on -- ADDING THIS ROW REQUIRED ZERO CHANGES TO ANY RULE.
+#  `ax_dispatch`, `ROUTE`, `_routable` and `_dispatchable` all filter over
+#  EVERY `ExecClass` node, not a hard-coded one (confirmed by reading them,
+#  PROGRAM_SYNTHESIS_ARC6_PREREG.md amendment A15's design investigation
+#  item 5), so a second class is SEED DATA, not a rule edit.  Candidate
+#  picked over the other four unwired residuals (seam A/B/C/D) because its
+#  runner has no third-party dependency (unlike seam A's `sympy`, which is
+#  not importable under this tree's default `python3` -- A15 item 8) and its
+#  artifact is not shared with a sibling residual (unlike seam B/C, which
+#  share `arc6_bc_ceiling.json`) -- see
+#  PROGRAM_SYNTHESIS_ARC6_SECOND_EXECCLASS.md for the full candidate survey.
+RUNNER_2 = "arc6_remeasure_structural"
+ARTIFACT_2 = "results/arc6_structural_ceiling.json"
+SOURCE_RID_2 = "arc6.structural.enum_op_table"
+
 #  This engine has NO `unset_attr` and writing a null through an effect is not
 #  a shipped idiom, so "the retirement stamp has been consumed" is carried by a
 #  SENTINEL STRING rather than by absence.  `ax_retired_epoch` treats it
@@ -459,9 +476,11 @@ def _nodes():
             "priority": 1,
             "_confinement_is_STRUCTURAL_not_promised": (
                 "The executor can act on exactly the goal kinds for which an "
-                "ExecClass cue exists.  There is ONE, and the dispatch route is "
-                "an Argmin over the cues matching the goal's kind -- so a "
-                "supply_blocker / source_claim / self_concern winner routes to "
+                "ExecClass cue exists.  There are TWO (A15), and the dispatch "
+                "route is an Argmin over the cues matching the goal's THREE-"
+                "PART key (kind + evidence_artifact + source_rid) -- so a "
+                "supply_blocker / source_claim / self_concern winner, or a "
+                "re_measure goal naming neither wired artifact, routes to "
                 "NOTHING and mints no order.  Adding a class is a seed edit, "
                 "visible in a diff; it is not something a rule can do."),
         }},
@@ -479,25 +498,57 @@ def _nodes():
                 "kind:'re_measure' and NO evidence_artifact, and a kind-only "
                 "route would have handed that to this runner."),
             "description": (
-                "THE ONE EXECUTABLE CLASS.  A re-measurement goal names an "
-                "artifact, a condition and a denominator, and the measurement "
-                "it asks for ALREADY EXISTS AS A SCRIPT -- so executing it is "
+                "THE FIRST EXECUTABLE CLASS -- re-measures the row-verdict "
+                "residual.  A re-measurement goal names an artifact, a "
+                "condition and a denominator, and the measurement it asks "
+                "for ALREADY EXISTS AS A SCRIPT -- so executing it is "
                 "re-running that script on the current binary, which is "
-                "mechanical I/O.  The other seven goals on the shipped agenda "
-                "come from seam A's measured blocker split and from claims "
-                "with no artifact: they require BUILDING something, and "
-                "nothing here can do that."),
+                "mechanical I/O."),
             "_runner_is_a_NAME_not_a_command": (
                 "The adapter resolves this name against a frozen capability "
                 "table.  A name with no table entry is REFUSED and recorded; "
                 "the string is never a path, never an argv and never a shell "
                 "word."),
         }},
+        {"local_id": 4011, "type": "ExecClass", "attrs": {
+            "name": EXECUTABLE_KIND,
+            "runner": RUNNER_2,
+            "priority": 1,
+            "evidence_artifact": ARTIFACT_2,
+            "source_rid": SOURCE_RID_2,
+            "denominator_unit": "mbpp_tasks",
+            "_the_route_key_is_THREE_PART": (
+                "IDENTICAL shape to the first ExecClass -- same three-part "
+                "key, disambiguated from it by evidence_artifact and "
+                "source_rid, which is exactly what lets TWO ExecClass rows "
+                "coexist with ZERO change to _cue_matches/ROUTE/_routable."),
+            "description": (
+                "THE SECOND EXECUTABLE CLASS (A15) -- re-measures the "
+                "structural-ceiling residual (`arc6.structural."
+                "enum_op_table`).  Picked over the other three unwired "
+                "residuals (seam A/B/C/D) because its runner "
+                "(`scripts/arc6_structural_ceiling.py`) has NO third-party "
+                "dependency and its evidence artifact is not shared with a "
+                "sibling residual -- see "
+                "PROGRAM_SYNTHESIS_ARC6_SECOND_EXECCLASS.md.  Confirmed "
+                "live: re-running it on this rung's engine produced "
+                "GENUINELY DIFFERENT content from the committed evidence "
+                "(witness_ids grew 7 -> 9), the same 'this is not a "
+                "tautology, it can move' standard AG-5 SS2.2 applies to the "
+                "row-verdict residual's own condition."),
+            "_runner_is_a_NAME_not_a_command": (
+                "Same capability-table permission boundary as the first "
+                "class -- a name with no table entry is REFUSED and "
+                "recorded; the string is never a path, never an argv and "
+                "never a shell word."),
+        }},
     ]
 
 
 def _edges():
     return [{"src": {"local": 4000}, "tgt": {"local": 4010},
+             "type": "has_exec_class", "attrs": {}},
+            {"src": {"local": 4000}, "tgt": {"local": 4011},
              "type": "has_exec_class", "attrs": {}}]
 
 
@@ -745,7 +796,7 @@ def build():
             "is the LAST thing that should arrive in every agent by a glob.  "
             "Activation is one key and a paired tree-wide sweep."),
         "id": "arc_executor",
-        "version": "1.2.0",
+        "version": "1.3.0",
         "depends_on": ["goal_residuals", "arc_goals"],
         "_SOFT_DEPENDENCY_ON_arc_magnitude": (
             "v1.1.0 (A11/WH1) wires ax_dispatch to the ORDER-N collapse "
@@ -794,7 +845,16 @@ def build():
             "pool's own SIGNATURE (its ordered agid list, JSON-encoded) rather "
             "than the tick, and the verdict lapses through the EXISTING, "
             "UNMODIFIED gr_condition_lapse via a fact_equals(arc_measure_epoch) "
-            "condition -- zero new mechanism, zero new DSL Term."),
+            "condition -- zero new mechanism, zero new DSL Term. "
+            "v1.3.0 (A15) adds a SECOND ExecClass row (local_id 4011): the "
+            "structural-ceiling residual (arc6.structural.enum_op_table), "
+            "re-measured by scripts/arc6_remeasure_structural.py.  ZERO new "
+            "rules -- ax_dispatch/ROUTE/_routable/_dispatchable already filter "
+            "over EVERY ExecClass node via the three-part key (kind + "
+            "evidence_artifact + source_rid), so a second class is SEED DATA, "
+            "not a rule edit.  This is the ceiling probe on the executor's own "
+            "reach: A10-A14 each independently measured that reach as exactly "
+            "ONE ExecClass; this is the second."),
         "microtheory": "arc6_executor",
         "nodes": _nodes(),
         "edges": _edges(),

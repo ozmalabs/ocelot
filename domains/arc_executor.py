@@ -65,9 +65,12 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 #  THE CAPABILITY TABLE.  A `runner` name the graph produced is looked up here
 #  and nowhere else: it is never a path, never an argv word and never reaches a
-#  shell.  Exactly one entry, matching the one `ExecClass` the seed ships.
+#  shell.  Two entries, matching the two `ExecClass` nodes the seed ships
+#  (A15 -- the second-`ExecClass` ceiling probe: adding a table row is the
+#  adapter's half of "seed data, not a rule edit").
 RUNNERS: Dict[str, str] = {
     "arc6_remeasure_row_verdict": "scripts.arc6_remeasure_row_verdict",
+    "arc6_remeasure_structural": "scripts.arc6_remeasure_structural",
 }
 
 EVIDENCE_FACT_PREFIX = "remeasured_evidence_present."

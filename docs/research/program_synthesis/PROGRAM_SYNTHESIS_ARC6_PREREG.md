@@ -1063,3 +1063,196 @@ could not propose.
 
 **The measured claim to settle:** *can the enumerator propose what the
 evaluator can already run, and does that convert?*
+
+---
+
+### AMENDMENT A15 (2026-08-11) — the second `ExecClass`: a ceiling probe on the executor's reach
+
+Four consecutive rungs (A10/AG-5, A11/A12/WH1-4, A13, A14) have independently
+named the same standing gap: `ax_dispatch` has been built, wired to the
+better collapse, extended with an impotence term, and swept for a
+concentration/spread verdict — but its entire demonstrated reach is **exactly
+one `ExecClass`**, one goal `kind`, one runner
+(`scripts/arc6_remeasure_row_verdict.py`). A14 §9.2 names this explicitly as
+the reason its own real-only bar cannot be powered further: *"only new
+capability (an execution route for a second `ExecClass`) or further
+hypothetical depletion can [add a third distinct composition] ... the
+campaign cannot power its own real-only bar without partially pre-empting
+the question it is asking."* This amendment registers bars for a ceiling
+probe on that reach, in the same spirit as M0 and A-ceiling: **measure
+before building**, and report an import-list-style answer even if the
+answer is a clean NO-GO.
+
+**The design investigation, done before drafting bars.** Read before any bar
+was written, mirroring A13/A14's own practice of investigating first and
+letting the investigation justify the bars:
+
+1. **The full residual set is six, not one.** `domains/goal_residual_ingest.py`'s
+   `SPEC` carries **six** entries, each a `GoalResidual` with a `holds_under`
+   edge to a `ResidualCondition`, each eligible for `ag_mint_remeasure`
+   (`seeds/arc_goals.json`, byte-frozen) to mint an
+   `ArcGoal{kind:'re_measure'}` the moment its condition lapses:
+   `arc6.seam_a.import_oracle`, `arc6.seam_b.ir_retarget`,
+   `arc6.seam_c.shape_codebook`, `arc6.seam_d.property_atom`,
+   `arc6.structural.enum_op_table`, and `arc6.verdict.row_verdict_seed_only`
+   (the ONE wired one). All six carry the identical structural shape —
+   confirmed by reading `seeds/goal_residuals.json` directly, not assumed:
+   every one is a `GoalResidual` node with a `rid`, a `stale` attr and a
+   `holds_under -> ResidualCondition` edge.
+2. **The four `arc6.claim.*` goals (`ax_dispatch`'s other pool members) are a
+   DIFFERENT, weaker shape and are NOT re-measurable in this sense.**
+   `tools/build_arc_goals_seed.py`'s `claims` tuple mints them as
+   `ArcSourceClaim` nodes — `denominator_n: 1.0`, `headroom_n: 1.0`, a
+   verbatim-quoted prose string, **no `ResidualCondition`, no `stale` attr,
+   no lapse mechanism of any kind**. `ag_mint_source_claim` mints their
+   `ArcGoal{kind:'source_claim'}` unconditionally, once, from the static
+   node — there is nothing here that could ever re-trigger without
+   inventing an entirely new condition-and-lapse apparatus for
+   `ArcSourceClaim`, which is a materially bigger and different build than
+   "wire a second `ExecClass`." **Ruled out as candidates for this rung's
+   cheap-wiring question**, answering the task's own §1 question directly:
+   no, they are not re-measurable in the row-verdict sense.
+3. **Every one of the five unwired residuals already has a standalone
+   measurement script that writes its evidence artifact**, in the identical
+   shape `arc6_verdict_report.py` has for row-verdict (a fixed, hard-coded
+   `OUT` path, no argv needed): `scripts/arc6_a_ceiling.py` (seam A),
+   `scripts/arc6_bc_ceiling.py` (seam B **and** seam C — one script, one
+   shared artifact, two `rid`s), `scripts/arc6_d_loo.py` (seam D),
+   `scripts/arc6_structural_ceiling.py` (the structural residual). None of
+   this rung's investigation needed to write a new measurement — only a
+   thin runner wrapper, mirroring `arc6_remeasure_row_verdict.py`'s
+   stash/subprocess/restore shape.
+4. **`reingest_evidence` (`domains/arc_executor.py`) is ALREADY generic over
+   `rid`.** It looks up the matching entry in `gri.SPEC` by `rid` and reads
+   the SAME dotted paths (`honest_ids_path`, `denominator_path`,
+   `mechanism_path`, `engine_sha_path`) the original ingest used — read in
+   full, confirmed there is no row-verdict-specific logic in this function
+   at all. Wiring a second residual therefore needs **zero changes** to
+   `goal_residual_ingest.py` or to the re-ingest half of
+   `domains/arc_executor.py`.
+5. **`ax_dispatch` / `ROUTE` / `_routable` / `_dispatchable`
+   (`tools/build_arc_executor_seed.py`) are ALREADY generic over the
+   `ExecClass` table, confirmed by reading the Term builders, not assumed
+   from the prose comments.** `ROUTE()` is
+   `Argmin(Filter(NOT_("ExecClass"), ec, _cue_matches(ec, goal)), priority)`
+   — a filter over **every** `ExecClass` node, not a single hard-coded one.
+   Adding a second `ExecClass{name:'re_measure', runner:<new>,
+   evidence_artifact:<new>, source_rid:<new>}` node requires **zero new
+   rules**: the existing `ax_dispatch`, `ax_impotent`'s `_dispatchable`, and
+   `_routable`'s three-part key (kind + evidence_artifact + source_rid,
+   AG-5 §8 item 2's own measured reason for the three-part key) all
+   discriminate the new class from the old one automatically, because the
+   key already includes `evidence_artifact` and `source_rid` and the two
+   residuals have different artifacts and different rids. This is the
+   single most load-bearing fact in this investigation: **the cost of a
+   second `ExecClass` is a SEED DATA addition, not a rule change.**
+6. **Live-probed, not assumed: the five unwired residuals' conditions are
+   currently WEAKER than row-verdict's.** `grep`'d across every caller in
+   the tree (`domains/`, `scripts/`, `tests/`): `goal_residual_ingest.
+   probe_facts`'s `expected_shas` parameter — the thing that would make an
+   `<artifact>_present` fact check CONTENT (sha), not just existence — is
+   **never populated by any call site**. So today, the only way any of the
+   five `<artifact>_present`-conditioned residuals can lapse is outright
+   **file deletion**, never content drift, unlike row-verdict's
+   genuinely behavioural `value_layer_list_eq_tuple` engine probe. Named as
+   a real, load-bearing asymmetry between the wired residual and the
+   candidates — not a disqualifier, but the honest shape of what "genuinely
+   re-measurable" means for each.
+7. **And yet: a live re-run shows the asymmetry in #6 is hiding REAL drift.**
+   With `results/arc6_structural_ceiling.json` stashed first and restored
+   after (byte-identical, sha-verified both before and after — the
+   protected-file discipline A12.2/A14 §7.2 register as mandatory for any
+   tree-touching probe), `scripts/arc6_structural_ceiling.py` was re-run on
+   this rung's engine (`953b8e3fa647`). It completed in **0.13 s** (`/usr/bin/
+   time -v`, exit 0) and produced a **genuinely different** result from the
+   committed evidence (measured on `engine_provenance.sha256 ==
+   5c1b472fe674…`, an older engine): `witness_ids` grew from **7 to 9**,
+   gaining tasks **424 and 450**. This is real engine drift the current
+   condition mechanism cannot see (per #6, only file-presence is checked) —
+   an honest, additional, **unregistered-but-found** residual of the
+   pipeline, reported here and not repaired (repairing `probe_facts`'s
+   sha-check is a bigger, separate lift than "wire a second `ExecClass`"
+   and is out of this rung's scope).
+8. **One candidate carries a real environmental cost the others do not.**
+   `scripts/arc6_a_ceiling.py` requires `sympy`; on this measuring machine
+   `sympy` is importable under `/usr/bin/python3` (3.12) but **not** under
+   the `python3` resolved first on `PATH` (Homebrew 3.13, the interpreter
+   `substrate_rs` and every other measurement in this rung ran under).
+   `scripts/arc6_bc_ceiling.py`, `scripts/arc6_d_loo.py` and
+   `scripts/arc6_structural_ceiling.py` have **no** third-party dependency
+   beyond `substrate_rs` and in-repo `domains/*` modules — confirmed by
+   reading their import blocks. **Incident, recorded in full because the
+   process is the result (A11/A12/A13/A14's own standing practice):** the
+   first attempt to probe seam A's cost tripped exactly this gap —
+   `arc6_a_ceiling.py`'s `main()` caught the `ImportError` internally and
+   wrote a **partial** artifact to its hard-coded `OUT` path before
+   returning 1, silently corrupting the canonical, symlinked
+   `results/arc6_a_ceiling.json` (sha `c65bfc0e…` → `e95078cd…`). A stash
+   had been taken before the probe per this rung's own registered
+   discipline (§ above), so recovery was immediate and sha-verified
+   (restored to `c65bfc0e…`, confirmed byte-identical); `git status
+   --porcelain` in the canonical tree was re-checked clean throughout,
+   since `results/` is gitignored and the corruption would not otherwise
+   have shown as a tracked diff. **The rule this adds to A12.2's own
+   registered practice:** stash the protected file(s) BEFORE running ANY
+   measurement script directly, even a fast one with no known
+   tree-mutation hazard — the hazard here was not a timeout, it was a
+   script's own internal error-handling path writing a partial result to
+   its hard-coded output on FIRST TOUCH, with no `finally` to catch it.
+9. **Runtime, measured or self-reported, is cheap across the board** — far
+   below row-verdict's ~140 s: `arc6_bc_ceiling.json` self-reports
+   `elapsed_seconds: 1.6`; `arc6_d_loo.json` self-reports `elapsed_seconds:
+   8.37`; `arc6_structural_ceiling.py` measured live at **0.13 s** (#7).
+   `arc6_a_ceiling.py`'s own runtime was not measured this rung (blocked by
+   #8 under the default interpreter; not re-attempted under `/usr/bin/
+   python3` to avoid a second live touch of a residual not chosen as the
+   candidate).
+
+**Bars, registered before any seed, adapter or runner change is written.**
+
+- **EC1 — at least one genuinely re-measurable second candidate exists on
+  the graph, MEASURED, not assumed.** Satisfied if: (i) `goal_residual_ingest.
+  SPEC` is enumerated in full and every entry's structural shape
+  (`GoalResidual` + `ResidualCondition` + `ag_mint_remeasure` eligibility) is
+  confirmed by reading the seed, not the docstring; (ii) an existing runner
+  script is identified for the chosen candidate; (iii) AT LEAST ONE candidate
+  is shown, by a real (stash-protected, sha-verified) live re-run, to produce
+  content that genuinely differs from its committed evidence on this rung's
+  engine — the same "it can re-fail, not just hold" standard A13/EX1's own
+  gate applies to a condition (AG-5 §2.2 / A13 IM-precedent), applied here to
+  the CONTENT rather than only the presence-condition.
+- **EC2 — a concrete cost estimate for wiring the top candidate, in files and
+  rule count, produced by reading the ACTUAL generality of `ax_dispatch` /
+  `ROUTE` / `_routable` / `_dispatchable` and `reingest_evidence`, not
+  estimated in the abstract.** Satisfied by a table of exactly which files
+  change, how many new rules (a number, not a range), and confirmation
+  (by reading, not by assumption) of whether `ax_dispatch`'s own
+  route-matching Terms need to change shape at all or only receive a second
+  data row.
+- **EC3 — the GO/NO-GO threshold, named before looking at the cost number.**
+  **GO** iff a candidate clears EC1 AND its EC2 cost is **≤ 2 new seed
+  rules, ≤ 1 new runner script, and no change to `ax_dispatch`'s own
+  route-matching Term structure** (only new `ExecClass` seed DATA). If GO:
+  build exactly that candidate — one `ExecClass` node + edge, one runner
+  script mirroring `arc6_remeasure_row_verdict.py`'s stash/run/restore
+  shape sized to the candidate, one `RUNNERS` table entry — gate it with
+  live scenes in the same shape EX1/WH1/IM1 used (it actually runs, live,
+  not a fixture; the route confinement still holds in both directions;
+  no regression on the five existing suites, node-id list not count), and
+  if time and the registered null-reading discipline allow, re-run a
+  SCOPED slice of A14's own sweep to see whether the new capability
+  produces a genuinely distinct real pool state — not to re-litigate A14's
+  own IC2/IC3 verdict, which stands as measured, but to report whether the
+  ceiling this rung raises actually moves what A14 §9.2 named as the
+  blocker. **NO-GO** — report the ceiling as a clean, named import-list
+  (mirroring M0's four ceiling probes and the D-seam leave-one-out) and
+  build nothing — if EC1 fails (no candidate shows real re-measurable
+  drift) or every candidate's EC2 cost exceeds the threshold above.
+
+**Explicitly out of scope, per the task's own boundary, unchanged from
+A13/A14:** the re-arm deadlock (AG-5 §5), the silent order-N fallback
+(WIRE_HANDS §8.1), and `gr_condition_lapse`'s closed `MISMATCH` vocabulary
+(A13 uncertainty #1 / A14 §8's own discovered finding) are NOT to be
+touched by this rung even if a fix would make the chosen candidate's
+condition more behaviourally accurate (per finding #6/#7 above) — repairing
+`probe_facts`'s sha-check is named as a follow-up, not built here.
