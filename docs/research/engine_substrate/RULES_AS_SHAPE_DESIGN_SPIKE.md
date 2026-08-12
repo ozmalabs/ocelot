@@ -1552,3 +1552,136 @@ recogniser (`Covers`, upward via `AntiUnify`) and `effects` is a constructor
 genuinely resists set-semantics matching — so the honest design gives them
 separate codebooks, accepts strict order-sensitive matching on the effects side,
 and keeps the whole reference layer a *mirror* that the hot matcher never reads.
+
+---
+
+## 15. Addendum (2026-08-12) — two external papers, and the correction to what this document was optimising for
+
+The creator's own framing, given after this document landed: *"dedupe isn't the
+win (I mean it is, but that is an also ran) - it's the shape math. Analogical
+thinking is the key."* §10.2 reported the design as "net line-count negative"
+and led with that; §3's compression numbers were ranked, honestly, but still
+occupied real space. That ordering was wrong. This addendum corrects it and adds
+two independently-published, SMT-grounded papers the creator supplied, neither
+read before this document was written, both bearing directly on Part 3.
+
+### 15.1 The connection this document already had and undersold
+
+§4.2 is the load-bearing section, and it says the actual thing plainly: the
+agent's own `analogical_thinking.find_analogies` faculty was diagnosed in June
+2026 with a MAC/FAC defect (`order_n_shape_matching_grounding.md`) — cheap
+content-vector matching treated as the verdict, no structural-alignment
+escalation. §4.2's own sentence, quoted again because it is the actual thesis
+of this whole document and §14 buried it under the compression framing: *"The
+defect the creator diagnosed for concept-analogy in June is, verbatim, the
+defect the rule layer has today, and nobody appears to have noticed it is the
+same defect — presumably because it does not look like an analogy problem, it
+looks like a 'which rule do I edit' problem."* Giving rules (and, per §9.3,
+Γ productions) a shape is not a data-structure improvement with a side benefit
+for analogy. It is closing the SAME gap `find_analogies` has, at every site
+that has the identical shape without presenting as one. §3's SHAPE_AUDIT.md
+(landed after this document, confirming the same defect at six further sites
+plus inside the meta-shape recogniser itself) is further evidence of exactly
+this — not a separate finding.
+
+### 15.2 DeepGAR (Ling et al., ICDM 2022, arXiv:2211.10821) — the search-cost answer this document did not need yet but will
+
+Structure-Mapping Theory, explicit: base/target as relational DAGs, analogical
+correspondence = an isomorphic subgraph, which is NP-Complete. DeepGAR's method:
+train a GNN embedding space where subgraph containment becomes a checkable
+GEOMETRIC relation — `h_A − h_C ⪰ 0` (component-wise) iff `G_A ⊆ G_C` — via a
+max-margin loss over positive (true subgraph) and negative pairs (their eq. 2-3).
+Correspondence search then compares ROOT-NODE EMBEDDINGS directly instead of
+enumerating local structure. Validated, not merely proposed: +15% F1 over prior
+methods (AMN, NeuroMatch) averaged across four datasets, and — the more
+load-bearing number for this document's own concerns — **13x lower training
+runtime than the next-best baseline** (Table III: DeepGAR 1435.71s vs. AMN
+18655.31s).
+
+**What this is, precisely, in this document's own vocabulary:** a MAC stage
+that is cheap AND geometrically honest about what it approximates, unlike raw
+`text.contains`/keyword-`Argmax` (§2.5, and every site SHAPE_AUDIT.md's
+pattern A found). It does not replace the FAC stage — `AntiUnify`/`Covers`
+would still be the exact verdict — it makes the PROPOSAL step that decides
+which codebook entries are worth an exact check scale past the point where
+"compare against every entry" stops being free. §10.4 sized this document's
+own object-identity risk (`add_rule` allocating nodes) but never asked what
+happens to SEARCH cost once the codebook this document proposes is not 24 or
+46 entries but thousands. This is the answer, already validated on real data,
+not proposed here: **not needed at today's scale (§11.2's own slice tested
+against 46 rules; SHAPE_AUDIT.md's meta-shape codebook is 24 entries) — named
+as the standing answer for when scale stops being negligible,** the same
+"bins propose, continuous decides" shape the Omniglot arc already measured
+(`CLAUDE.md`, AbS finding, 2026-07-02) and the same shape the frame/continuum
+invariant already requires (continuous math belongs in the MAP between frames
+— here, the map from exact graph structure to an approximate geometric
+proposal — never as the resting representation a frame's own coordinates
+occupy). `[unverified]`: read from the paper's own reported numbers and
+method description; DeepGAR's training/eval code was not run against this
+repo's own codebooks.
+
+### 15.3 MarT / MARS (Zhang et al., ICLR 2023, arXiv:2210.00312) — the operation, formalised independently, plus an external cross-modal test
+
+Also explicitly SMT-grounded (Gentner 1983, cited directly), and independently
+adopts a three-step process from Minnameier (2010) — **Abduction → Mapping →
+Induction** — as the literal pipeline for their baseline methods (Fig. 3a):
+Abduction infers the relation `r` connecting `(e_h, e_t)` (a relation-
+classification task); Mapping projects that structure onto entity candidates
+in the new domain; Induction applies `r` to `e_q` to predict `e_a` (a
+link-prediction task). **This is the same operation `shape_math_grounding.md`'s
+own Cluster 1 names via the arrow-view analogy model — `b = T(a)`, then
+`x = T(c)`** — decomposed into three named steps instead of two. In this
+document's own vocabulary: Abduction is `AntiUnifyWitness` (extract σ, the
+diff between a known pair); Induction is `Substitute` (re-apply σ elsewhere).
+Two independent literatures (the creator's own private grounding spike,
+2026-06-27; this published ICLR paper) converge on the identical decomposition
+of "extract the transform, re-apply it" without citing each other. Worth
+recording as convergence, not as new content — the algebra `term.rs` already
+holds is the SAME algebra this paper's baseline pipeline implements by hand,
+per relation, without a shared codebook.
+
+**The part of this paper that is a genuine, not-yet-available capability, not
+a confirmation:** the task is formalised as `(e_h, e_t) : (e_q, ?)` link
+prediction with NO explicit relation given, over a real multimodal knowledge
+graph (MarKG: 11,292 entities, 192 relations, 76,424 images, built from
+Wikidata + Laion-5B, not synthetic) — and a "Blended Analogical Reasoning"
+split where `e_h`/`e_q` are one modality (e.g. image) while `e_t`/`e_a` are
+another (text). This directly tests whether relational structure transfers
+independent of the modality it arrived in — which is exactly the claim
+CLAUDE.md's own architecture makes by construction (world adapters translate
+external modality into graph-resident structure; reasoning runs on the
+structure, not the modality) but which nothing in this repo has been
+externally checked against. MARS is a real, independently-built benchmark for
+precisely that claim, if this substrate's own multimodal ingestion (vision,
+speech, ink) and the rule/Γ/meta-shape reference layer this document proposes
+were ever connected and evaluated together. **Not proposed as a build here —
+named as the concrete external validation target this whole thread has been
+missing, for whenever cross-modal shape transfer is actually tested rather
+than assumed.**
+
+### 15.4 One more independent confirmation, found while reading DeepGAR closely
+
+DeepGAR's own SMT constraint set (§II, "Tiered Identicality") states: relations
+in a correspondence must match identically, but function-typed expressions
+need NOT match identically if their correspondence still supports parallel
+connectivity. This is, independently, the same constraint CLAUDE.md's own
+landed transformation-as-dimension-change work already measured and enforced
+(2026-07-02, "TransformDecode's dimension pooling... symbolic substitution
+stays a GLOBAL rename check": one uniform delta per transformed dimension, the
+predicate slot never transformable). Cognitive-science literature (Gentner
+1983, formalised again in DeepGAR 2022) and this repo's own empirical rung
+(landed the same week as `shape_math_grounding.md`) arrived at the identical
+rule from different directions. Recorded here because it is exactly the kind
+of independent convergence CLAUDE.md's own "SHAPES, NOT NUMBERS" section
+treats as stronger evidence than either finding alone.
+
+### 15.5 What §10-14 above should be read as saying, corrected
+
+Not: "this design is worth building because it saves ~2,000 lines of Python
+and deduplicates 18x-repeated Term subgraphs." Correctly: **this design closes
+the same MAC/FAC gap `find_analogies` already has, at every site that shares
+its shape without presenting as an analogy problem — dedup is what a
+reference layer gets for free once it exists, not the reason to build one.**
+§9.2's own ranking already had this roughly right (self-repair correctness
+ranked ahead of compression); this addendum states it as the document's actual
+thesis rather than leaving it inferable from section order.
