@@ -19,6 +19,11 @@ from substrate.world_adapter import WorldAdapter
 from substrate.boot_all import load_all_seeds
 from domains.experiment_dispatch import mint_experiment, scan_and_dispatch, _INFLIGHT
 
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'cv2' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
+
 pytestmark = pytest.mark.slow
 
 TIMEOUT_S = 90
@@ -120,6 +125,7 @@ def test_trivial_delta_end_to_end(tmp_path):
         assert "action" in a and "reasoning" in a and "self_report" in a and "score" in a
 
 
+@_requires_optional('cv2')
 def test_seed_delta_skip_seeds_forces_fresh_boot(tmp_path):
     """skip_seeds non-empty -> FRESH+SKIP boot mode (documented: a snapshot can't unload a
     seed). Skips an unrelated seed (astronomy_foundation) so the episode itself is

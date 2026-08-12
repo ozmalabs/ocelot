@@ -33,6 +33,11 @@ from substrate.seed_loader import manifest_for
 import domains.reflective_faculty as rf
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'cv2' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
 _CONCLUSIONS_SEED = os.path.join(ROOT, "seeds", "experiment_conclusions.json")
 
 
@@ -313,6 +318,7 @@ def test_close_experiment_loop_names_the_varied_acting_rule():
 #     doesn't reuse Part A's snapshot path) produces a MEASURABLE behavioural
 #     difference in the two children's action streams.
 # ---------------------------------------------------------------------------
+@_requires_optional('cv2')
 @pytest.mark.slow
 def test_full_acting_variant_loop_offline(tmp_path):
     from substrate.world_adapter import WorldAdapter

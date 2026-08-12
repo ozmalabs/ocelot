@@ -23,6 +23,11 @@ os.environ.setdefault("OZMA_SEED_PERSIST_DISABLED", "1")
 
 import scripts.jabberwock_wordread_run61 as wr
 
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'scipy' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
+
 # The real-ink tests need the DigiLeTs raw corpus on disk (environment-bound
 # dataset; absent on machines without data/handwriting populated).
 try:
@@ -121,6 +126,7 @@ def test_char_bigram_decode_computes():
     assert len(out) == 3 and out == "the"   # emission dominates under uniform transition
 
 
+@_requires_optional('scipy')
 def test_homoglyph_groups_match_run48():
     """The homoglyph groups are reproduced verbatim from run 48."""
     import scripts.jabberwock_omniglot_run48_digilets as run48

@@ -29,6 +29,11 @@ srs = pytest.importorskip("substrate_rs")
 
 from substrate.world_adapter import WorldAdapter
 
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'cv2' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
+
 
 @pytest.fixture
 def wa():
@@ -56,6 +61,7 @@ def test_vision_lazy_no_engagement_no_substrate(wa):
     assert wa.vision_kernels() == {}
 
 
+@_requires_optional('cv2')
 def test_vision_built_on_first_frame(wa, screen):
     """First frame builds the photon retina and its receptor populations."""
     wa.update_vision(screen=screen)
@@ -72,6 +78,7 @@ def test_vision_built_on_first_frame(wa, screen):
 
 # --- graph-resident receptor introspection via the DSL ------------------
 
+@_requires_optional('cv2')
 def test_kernels_introspectable_via_dsl(wa, screen):
     wa.update_vision(screen=screen)
     vs = wa.vision_substrate()
@@ -81,6 +88,7 @@ def test_kernels_introspectable_via_dsl(wa, screen):
     assert vs.evaluate(srs.Attr(srs.Lit(l_cone), "sensitivity_center_nm")) == 564.0
 
 
+@_requires_optional('cv2')
 def test_count_receptors_by_class(wa, screen):
     wa.update_vision(screen=screen)
     vs = wa.vision_substrate()
@@ -91,6 +99,7 @@ def test_count_receptors_by_class(wa, screen):
     assert by_class == {cls: wa._eye.n_az for cls in ("rod", "l", "m", "s")}
 
 
+@_requires_optional('cv2')
 def test_inspect_receptor_spectral_and_adaptation_state(wa, screen):
     wa.update_vision(screen=screen)
     receptor = wa.vision_kernels()["m"][0]
@@ -102,6 +111,7 @@ def test_inspect_receptor_spectral_and_adaptation_state(wa, screen):
 
 # --- preserved behaviour ------------------------------------------------
 
+@_requires_optional('cv2')
 def test_vision_projection_nodes_match_n_azimuth(wa, screen):
     """N VisionPercept nodes mirror the cortex's per-azimuth output on the main
     substrate, each perceived by the agent."""
@@ -114,6 +124,7 @@ def test_vision_projection_nodes_match_n_azimuth(wa, screen):
     assert set(wa._vision_projection) <= perceived
 
 
+@_requires_optional('cv2')
 def test_vision_pipeline_drives_attention(wa, screen):
     """Salience-driven attention: a bright pop-out stripe sets attention_x/y +
     a >0 SNR attention_salience on the agent root. (The cortex runs on its own

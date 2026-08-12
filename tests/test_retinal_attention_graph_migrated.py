@@ -14,6 +14,11 @@ from domains import reflective_faculty as rf  # noqa: E402
 from substrate.boot_core import boot_core  # noqa: E402
 from substrate.seed_loader import SEED_DIR, manifest_for  # noqa: E402
 
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'cv2' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
+
 
 def _boot(epoch: int = 7, my_angle: float = 90.0):
     """Mechanical minimal boot: the decisions are the two loaded seed rules."""
@@ -225,6 +230,7 @@ def test_stale_candidates_retire_and_new_epoch_replaces_attention_attrs():
     assert attrs["attention_y"] == pytest.approx(math.sin(math.radians(25.0)))
 
 
+@_requires_optional('cv2')
 def test_world_adapter_photon_projection_drives_attention_in_live_gaze_units():
     """Actual GraphEye projection -> main graph -> master cycle -> motor attrs."""
     from substrate.world_adapter import WorldAdapter

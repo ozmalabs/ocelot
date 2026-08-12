@@ -7,6 +7,11 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'pybullet' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
 SEED = ROOT / "seeds" / "helicopter_autorotation.json"
 RUNNER = ROOT / "scripts" / "jabberwock_helicopter_autorotation_3d.py"
 WORLD = ROOT / "domains" / "pybullet_helicopter_world.py"
@@ -17,6 +22,7 @@ def _rule(seed: dict, name: str) -> dict:
     return next(rule for rule in seed["rules"] if rule["name"] == name)
 
 
+@_requires_optional('pybullet')
 def test_six_dof_world_exposes_combined_opaque_authority_and_hidden_failure():
     from domains.pybullet_helicopter_world import PyBulletHelicopterWorld
     from domains.traditional_helicopter_world import EngineFailureCondition
@@ -120,6 +126,7 @@ def test_3d_runtime_is_transduction_not_python_flight_policy():
         assert forbidden not in source
 
 
+@_requires_optional('pybullet')
 def test_graph_autorotates_in_six_dof_across_crosswind_transfer():
     from scripts.jabberwock_helicopter_autorotation_3d import (
         run_autorotation_3d_experiment,

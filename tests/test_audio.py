@@ -22,6 +22,11 @@ import tempfile
 import numpy as np
 import pytest
 
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'av' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
+
 
 srs = pytest.importorskip("substrate_rs")
 a = pytest.importorskip("substrate_rs.audio")
@@ -292,6 +297,7 @@ def mp3_path():
     os.unlink(f.name)
 
 
+@_requires_optional('av')
 def test_open_audio_container(s, mp3_path):
     cnid = a.open_container(s, mp3_path)
     node = s.node(cnid)
@@ -300,6 +306,7 @@ def test_open_audio_container(s, mp3_path):
     assert node["attrs"]["n_streams"] >= 1
 
 
+@_requires_optional('av')
 def test_add_audio_stream_carries_codec_info(s, mp3_path):
     cnid = a.open_container(s, mp3_path)
     snid = a.add_stream(s, cnid)
@@ -310,6 +317,7 @@ def test_add_audio_stream_carries_codec_info(s, mp3_path):
     assert snid in s.neighbours(cnid, a.HAS_STREAM)
 
 
+@_requires_optional('av')
 def test_parse_audio_stream_mints_frames(s, mp3_path):
     cnid = a.open_container(s, mp3_path)
     snid = a.add_stream(s, cnid)
@@ -326,6 +334,7 @@ def test_parse_audio_stream_mints_frames(s, mp3_path):
         last_pts = pts
 
 
+@_requires_optional('av')
 def test_decode_audio_frame_returns_audio_buffer(s, mp3_path):
     """The explicit 'render this audio frame to samples' path."""
     cnid = a.open_container(s, mp3_path)
@@ -340,6 +349,7 @@ def test_decode_audio_frame_returns_audio_buffer(s, mp3_path):
     assert samples.size > 0
 
 
+@_requires_optional('av')
 def test_decoded_audio_chains_into_cochlea(s, mp3_path):
     """End-to-end bridge: decode a real MP3 frame → feed to the
     cochlear bank → response set. Bitstream parser + audio
@@ -356,6 +366,7 @@ def test_decoded_audio_chains_into_cochlea(s, mp3_path):
     assert len(responses) == 4
 
 
+@_requires_optional('av')
 def test_bitrate_profile_summarises_stream(s, mp3_path):
     cnid = a.open_container(s, mp3_path)
     snid = a.add_stream(s, cnid)

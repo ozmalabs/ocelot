@@ -19,6 +19,11 @@ import substrate_rs as srs
 
 from domains import exemplar_expand as ee
 
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'scipy' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
+
 RNG_SEED = 20260705
 
 
@@ -233,6 +238,7 @@ def test_variant_key_never_collides_with_a_real_path():
 # <= the original's own score (this is the gate script's own held-Term machinery, not a Python
 # min() -- import it directly and evaluate the SAME MinOver Term the run's ARM X uses).
 # ===================================================================================================
+@_requires_optional('scipy')
 def test_min_over_set_never_exceeds_original_score():
     import scripts.jabberwock_omniglot_run43_expand as run43x
 
@@ -247,6 +253,7 @@ def test_min_over_set_never_exceeds_original_score():
         assert abs(min_score - min(orig_score, *variant_scores)) < 1e-9
 
 
+@_requires_optional('scipy')
 def test_argmin_pairs_term_picks_the_true_minimum():
     import scripts.jabberwock_omniglot_run43_expand as run43x
 
@@ -257,6 +264,7 @@ def test_argmin_pairs_term_picks_the_true_minimum():
     assert winner[1] in (1, 3)
 
 
+@_requires_optional('scipy')
 def test_min_over_set_structural_property_holds_for_variant_grid_size():
     """The SAME structural guarantee, but built the way the gate script actually builds it:
     tag 0 is always the original, tags 1..K are `ee.VARIANT_GRID`'s own K variants -- confirms

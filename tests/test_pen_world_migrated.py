@@ -27,6 +27,11 @@ import pytest
 
 from domains import pen_world as pw
 
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'scipy' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
+
 
 # =============================================================================================
 #  QUICKDRAW: ndjson round-trip on a synthetic file.
@@ -333,6 +338,7 @@ def test_digilets_writer_split_deterministic():
 #  REAL-DATA SMOKE (skipped if /tmp/pendata is absent — never a hard failure on shared/
 #  downloaded corpora, per this arc's own convention for real-file-dependent tests).
 # =============================================================================================
+@_requires_optional('scipy')
 @pytest.mark.skipif(not os.path.exists(pw.UCI_MAT_DEFAULT), reason="real UCI download absent")
 def test_uci_real_loader_round_trip_sane():
     samples = pw.load_uci_samples()

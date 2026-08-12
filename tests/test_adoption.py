@@ -42,6 +42,11 @@ from substrate.seed_loader import manifest_for
 import domains.reflective_faculty as rf
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'cv2' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
 _CONCLUSIONS_SEED = os.path.join(ROOT, "seeds", "experiment_conclusions.json")
 
 
@@ -397,6 +402,7 @@ def test_revert_adoption_on_unknown_node_is_honest():
 #     diverges before vs. after adoption) — see
 #     scripts/jabberwock_improves_itself.py for the full narrative version.
 # ---------------------------------------------------------------------------
+@_requires_optional('cv2')
 @pytest.mark.slow
 def test_full_adoption_loop_offline(tmp_path):
     from substrate.world_adapter import WorldAdapter

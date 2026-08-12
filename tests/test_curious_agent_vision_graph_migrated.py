@@ -62,6 +62,11 @@ srs = pytest.importorskip("substrate_rs")
 
 from substrate.world_adapter import WorldAdapter
 
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'cv2' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
+
 
 @pytest.fixture
 def wa():
@@ -93,6 +98,7 @@ def test_vision_lazy_no_engagement_no_substrate(wa):
     assert wa.vision_substrate() is None
 
 
+@_requires_optional('cv2')
 def test_vision_built_on_first_frame(wa, screen):
     """Engagement: as soon as update_vision receives a screen, the cortex
     builds its adapting rod/cone populations on the vision substrate.
@@ -111,6 +117,7 @@ def test_vision_built_on_first_frame(wa, screen):
 # --- Graph-resident photoreceptor introspection -------------------------
 
 
+@_requires_optional('cv2')
 def test_agent_can_introspect_receptive_fields_via_dsl(wa, screen):
     """The whole point of the migration: the agent's perceptual primitives
     are graph data, queryable via the standard DSL (Attr(Lit(nid), key)) --
@@ -125,6 +132,7 @@ def test_agent_can_introspect_receptive_fields_via_dsl(wa, screen):
         srs.Attr(srs.Lit(receptor), "sensitivity_center_nm")) == 564.0
 
 
+@_requires_optional('cv2')
 def test_agent_can_count_its_visual_receptors_by_class(wa, screen):
     """Same pattern the agent uses to count any other graph-resident set --
     walk Kernel nodes, filter on role.
@@ -138,6 +146,7 @@ def test_agent_can_count_its_visual_receptors_by_class(wa, screen):
     assert by_class == {cls: wa._eye.n_az for cls in ("rod", "l", "m", "s")}
 
 
+@_requires_optional('cv2')
 def test_agent_can_inspect_receptor_spectral_state(wa, screen):
     """Spectral sensitivity and adaptation are graph state.
     Original: test_agent_can_inspect_receptive_field_weights"""
@@ -151,6 +160,7 @@ def test_agent_can_inspect_receptor_spectral_state(wa, screen):
 # --- Preserved behaviour ------------------------------------------------
 
 
+@_requires_optional('cv2')
 def test_existing_vision_pipeline_still_drives_attention(wa, screen):
     """Salience-driven attention: a frame with a bright stripe should set
     attention_x / attention_y on the agent root. Two engages so the cortex
@@ -167,6 +177,7 @@ def test_existing_vision_pipeline_still_drives_attention(wa, screen):
     assert float(ar.get("attention_salience", 0.0)) > 0.0
 
 
+@_requires_optional('cv2')
 def test_vision_projection_nodes_match_n_azimuth(wa, screen):
     """N VisionPercept nodes mirror the cortex's per-azimuth output in the
     main substrate -- unchanged from the pre-migration layout.
@@ -180,6 +191,7 @@ def test_vision_projection_nodes_match_n_azimuth(wa, screen):
 # --- Persist exclusion ------------------------------------------------
 
 
+@_requires_optional('cv2')
 def test_vision_substrate_excluded_from_persistence(wa, screen):
     """The CuriousAgent._PERSIST_EXCLUDE class-level frozenset is specific to
     the Python CuriousAgent class and retires with it. The equivalent WorldAdapter
