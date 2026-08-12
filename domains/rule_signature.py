@@ -2,6 +2,19 @@
 docs/research/engine_substrate/RULES_AS_SHAPE_DESIGN_SPIKE.md §11.2 and
 docs/research/engine_substrate/RULE_SIGNATURE_SLICE_PREREG.md (AR3).
 
+CHANGED 2026-08-13 (`RULE_SIGNATURE_TO_RUST_RESULTS.md`): the signature
+computation is no longer performed by this module's Python. `rule_signature`
+below is retained as the **differential-test ORACLE**; production goes
+through `where_signature(sub, where_clause)`, which executes the
+graph-resident Program IR (`domains/rule_signature_program.py`, installed as
+a Term subgraph and read back out of the graph) on the Rust `ProgEval`
+interpreter. Everything the original docstring says about this module NOT
+being agent decision logic still holds — the added functions are mechanical
+install / evaluate / read-back host I/O with no conditional over graph
+state. The one behavioural note: `ensure_where_signature` now mints its attr
+from the graph-resident computation, and SKIPS (rather than guesses) any
+rule the program traps on.
+
 MEASUREMENT / INVESTIGATION CODE, not agent decision logic (CLAUDE.md's
 architecture rule is explicit that a world adapter is mechanical I/O and an
 agent decision is a Rule; this module is neither — it is offline research
@@ -198,6 +211,110 @@ def _rows_from_jsonable(rows_json: str | None) -> frozenset:
 
 
 # ---------------------------------------------------------------------------
+# THE GRAPH-RESIDENT COMPUTATION (RULE_SIGNATURE_TO_RUST_RESULTS.md)
+#
+# `rule_signature` above is NO LONGER on the production path. It is now the
+# differential-test ORACLE the graph-resident computation is measured
+# byte-identical against (`scripts/rule_signature_program_gate.py`). What
+# production runs is `domains/rule_signature_program.py::where_signature_rows`
+# emitted to hub Program IR (`domains/prog_ir_emit.py`), INSTALLED IN THE
+# GRAPH as a Term subgraph (`add_term_subgraph`), READ BACK OUT of the graph
+# (`term_subgraph_json`), and executed by the Rust `ProgEval` interpreter.
+#
+# Why that, and not a new Rust Term: a Rust body is exactly as unreachable to
+# the agent's Experiment→judge→adopt machinery as a Python body is. §10.1's
+# actual payoff ("un-self-repairable") needs the computation to be GRAPH
+# DATA, which this is — the same Prog-IR the prog_read / prog_repair
+# faculties already match, decode, render and repair.
+#
+# Everything below is mechanical host I/O (install graph data / evaluate a
+# Term / read the result back). There is no conditional over graph state.
+# ---------------------------------------------------------------------------
+
+SIGNATURE_PROGRAM_TYPE = "SignatureProgram"
+SIGNATURE_PROGRAM_NAME = "where_signature_rows"
+# Ceiling, not a tuning knob: the largest `where` clause in the whole seed
+# corpus (`embodied_motor_program.json:emp_abs_expand_factorized_groups_in_
+# parallel`, 83881 signature rows) costs 4,885,392 steps — measured. This is
+# ~40x that, so fuel exhaustion means a pathological input, not a tight
+# budget; the median rule costs ~2k steps.
+SIGNATURE_PROGRAM_FUEL = 200_000_000
+
+# id(inner) -> (ir, oracles). A pure performance cache over graph data the
+# substrate remains the source of truth for (CLAUDE.md: "Python may cache
+# for performance, but the substrate is the source of truth") — the IR is
+# re-read from the graph for every fresh substrate handle.
+_PROGRAM_CACHE: dict = {}
+
+
+class SignatureProgramTrap(RuntimeError):
+    """The graph-resident program trapped or ran out of fuel on an input.
+    Raised rather than silently falling back to a second implementation."""
+
+
+def _inner_of(sub):
+    return getattr(sub, "_inner", sub)
+
+
+def signature_program(sub):
+    """Find-or-install the graph-resident signature program. Returns
+    `(ir, oracles)` where `ir` is READ BACK from the installed Term
+    subgraph — so what executes is what the graph holds, not what Python
+    happened to emit. Idempotent: a second call finds the held node."""
+    inner = _inner_of(sub)
+    hit = _PROGRAM_CACHE.get(id(inner))
+    if hit is not None:
+        return hit
+
+    root = None
+    oracles = None
+    for n in sub.nodes(SIGNATURE_PROGRAM_TYPE):
+        at = sub.node(n)["attrs"]
+        if at.get("name") == SIGNATURE_PROGRAM_NAME and at.get("program_root") is not None:
+            root = at["program_root"]
+            oracles = [w for w in (at.get("oracles_text") or "").split(",") if w]
+            break
+
+    if root is None:
+        import inspect as _inspect
+
+        from domains.prog_ir_emit import emit_prog_ir
+        from domains.rule_signature_program import where_signature_rows
+        emitted = emit_prog_ir(_inspect.getsource(where_signature_rows))
+        if not emitted.get("ok"):
+            raise SignatureProgramTrap(
+                f"where_signature_rows is not emittable: {emitted.get('blockers')}")
+        root = inner.add_term_subgraph(emitted["ir"])
+        oracles = list(emitted["native_oracles"])
+        sub.add_node(SIGNATURE_PROGRAM_TYPE,
+                     {"name": SIGNATURE_PROGRAM_NAME,
+                      "program_root": root,
+                      "oracles_text": ",".join(oracles)})
+
+    back = inner.term_subgraph_json(root)
+    ir = json.loads(back) if isinstance(back, str) else back
+    _PROGRAM_CACHE[id(inner)] = (ir, oracles)
+    return ir, oracles
+
+
+def where_signature(sub, where_clause) -> frozenset:
+    """The production signature computation: the held Program IR, executed
+    by `ProgEval` over `where_clause`. Byte-identical to `rule_signature`
+    on all 2930 gated cases (2917 real seed `where` clauses + 13
+    synthetics) — see `scripts/rule_signature_program_gate.py`."""
+    ir, oracles = signature_program(sub)
+    term = {"type": "ProgEval", "prog": ir,
+            "env": {"type": "Lit", "value": {"where_clause": where_clause}},
+            "oracles": {"type": "Lit", "value": {n: "builtin" for n in oracles}},
+            "fuel": SIGNATURE_PROGRAM_FUEL, "field": ""}
+    out = _inner_of(sub).evaluate(term, {})
+    if out.get("trap") is not None or not out.get("halted"):
+        raise SignatureProgramTrap(
+            f"trap={out.get('trap')} halted={out.get('halted')} steps={out.get('steps')}")
+    return frozenset(out.get("result") or ())
+
+
+# ---------------------------------------------------------------------------
 # ensure_where_signature — one additive attr on the EXISTING RuleSummary pop
 # ---------------------------------------------------------------------------
 
@@ -214,7 +331,15 @@ def ensure_where_signature(sub) -> int:
     on a second call — idempotent, and safe to call before either of the
     two production provenance functions, or interleaved with them, since
     it only ever reads a `rule_json` that is already present and writes a
-    field neither of them reads)."""
+    field neither of them reads).
+
+    The signature itself is now computed by the GRAPH-RESIDENT program
+    (`where_signature` above), not by this module's Python. A rule whose
+    clause makes that program trap or exhaust fuel is SKIPPED (its attr is
+    left unset, which the production `Argmax` reads as an abstain — the
+    pre-wiring behaviour for that rule) rather than being given a value
+    from a second, divergent implementation. Measured on the whole seed
+    corpus: zero such rules."""
     touched = 0
     for n in sub.nodes("RuleSummary"):
         at = sub.node(n)["attrs"]
@@ -224,7 +349,10 @@ def ensure_where_signature(sub) -> int:
             rule = json.loads(at.get("rule_json") or "{}")
         except Exception:
             rule = {}
-        sig = rule_signature(rule.get("where"))
+        try:
+            sig = where_signature(sub, rule.get("where"))
+        except SignatureProgramTrap:
+            continue
         sub.set_attr(n, "where_signature_json", json.dumps(_rows_to_jsonable(sig)))
         touched += 1
     return touched
