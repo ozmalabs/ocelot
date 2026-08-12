@@ -2567,6 +2567,104 @@ def _process_prog_read_standing(adapter: WorldAdapter, standing_node, at: dict) 
     adapter.s.set_attr(standing_node, "prog_read_compose_reason", reason)
 
 
+# --- GROUND_CONCERN SIX KINDS (Path 2, GROUND_CONCERN_SIX_KINDS_PREREG.md) --
+# The honesty investigation's own §5 Path 2: give every concern kind that
+# falls through to the generic comprehend_first/ground_concern fallback its
+# own dedicated routing check BEFORE it reaches the shared composer -- the
+# SAME shape code_write/prog_read already have above. A live measurement
+# (the PREREG's §0) established the population precisely: knowledge and
+# self_account ALWAYS fall through (comprehend_first, or for self_account
+# also the equally-wrong ARC bundle); reply_fix falls through ONLY on its
+# comprehend_first sub-case (its experiment sub-case is ALREADY correctly
+# wired and must be left alone); instruction/performance/comprehension
+# NEVER fall through (unconditional kind-membership in
+# _promote_relations_for_concern already routes them to the genuine
+# conversation-experiment composer) -- no interception needed or added for
+# those three.
+
+def _process_knowledge_standing(adapter: WorldAdapter, standing_node, at: dict) -> None:
+    """Re-attempts the EXISTING self-heal chain (CLAUDE.md's "Knowledge gaps
+    self-heal": WorldAdapter.answer_about / ground_unknowns) instead of the
+    generic induce_concern/ground_concern composer, which was MEASURED (this
+    rung) to mint the SAME inert comprehend_describe_directive_<tag> rule
+    A25 found for prog_read. Records a MECHANICAL outcome datum
+    (knowledge_compose_ok / _reason) onto the StandingConcern -- never a
+    decision here; seeds/knowledge_gap_resolve.json's rules read it."""
+    try:
+        import domains.knowledge_growth as kng
+    except ImportError as e:  # noqa: BLE001 -- never let a bad concern kill the tick loop
+        adapter.s.set_attr(standing_node, "knowledge_compose_ok", 0.0)
+        adapter.s.set_attr(standing_node, "knowledge_compose_reason",
+                           "knowledge_growth unavailable: %s" % e)
+        return
+    about = str(at.get("about") or "")
+    try:
+        result = kng.work_on_knowledge_gap(adapter, about)
+    except Exception as e:  # noqa: BLE001
+        result = {"ok": False, "reason": "%s: %s" % (type(e).__name__, e)}
+    ok = bool(result.get("ok"))
+    reason = str(result.get("reason") or ("grounded topic %r" % result.get("topic")))
+    adapter.s.set_attr(standing_node, "knowledge_compose_ok", 1.0 if ok else 0.0)
+    adapter.s.set_attr(standing_node, "knowledge_compose_reason", reason)
+
+
+def _process_self_account_standing(adapter: WorldAdapter, standing_node, at: dict) -> None:
+    """Re-checks the EXISTING SelfProcess account lookup (CLAUDE.md's
+    "self_processes": domains.self_model.find_self_process) instead of the
+    generic composer -- self_account has NO safe existing pipeline value to
+    defer to (measured, PREREG §0: both comprehend_first and the rare
+    content-triggered ARC bundle are equally mismatched), so this
+    interception is unconditional. Records a MECHANICAL outcome datum
+    (self_account_compose_ok / _reason) -- never auto-authors a SelfProcess
+    account (that would fabricate a self-account, forbidden by
+    run_self_process's own docstring)."""
+    try:
+        import domains.self_account_growth as sag
+    except ImportError as e:  # noqa: BLE001
+        adapter.s.set_attr(standing_node, "self_account_compose_ok", 0.0)
+        adapter.s.set_attr(standing_node, "self_account_compose_reason",
+                           "self_account_growth unavailable: %s" % e)
+        return
+    about = str(at.get("about") or "")
+    try:
+        result = sag.work_on_self_account_gap(adapter, about)
+    except Exception as e:  # noqa: BLE001
+        result = {"ok": False, "reason": "%s: %s" % (type(e).__name__, e)}
+    ok = bool(result.get("ok"))
+    reason = str(result.get("reason") or ("held account for %r" % result.get("topic")))
+    adapter.s.set_attr(standing_node, "self_account_compose_ok", 1.0 if ok else 0.0)
+    adapter.s.set_attr(standing_node, "self_account_compose_reason", reason)
+
+
+def _process_reply_fix_standing(adapter: WorldAdapter, standing_node, at: dict) -> None:
+    """ONLY called for a reply_fix StandingConcern whose OWN stored
+    `pipeline` attr is `comprehend_first` (_concern_tick's own guard below)
+    -- an `experiment`-pipelined reply_fix concern (content names acting/
+    seed/ablation vocabulary) is ALREADY correctly routed by the untouched
+    generic branch and must never reach this function. Looks the concern's
+    fixed content tag up in domains.reply_fix_growth's correspondence table
+    instead of the generic composer, which was MEASURED (this rung) to mint
+    the same inert rule for both known tags (upload_attachment_reply /
+    upload_vision_wiring). Records a MECHANICAL outcome datum
+    (reply_fix_compose_ok / _reason) -- never a decision here."""
+    try:
+        import domains.reply_fix_growth as rfg
+    except ImportError as e:  # noqa: BLE001
+        adapter.s.set_attr(standing_node, "reply_fix_compose_ok", 0.0)
+        adapter.s.set_attr(standing_node, "reply_fix_compose_reason",
+                           "reply_fix_growth unavailable: %s" % e)
+        return
+    about = str(at.get("about") or "")
+    try:
+        result = rfg.work_on_reply_fix_gap(adapter, about)
+    except Exception as e:  # noqa: BLE001
+        result = {"ok": False, "reason": "%s: %s" % (type(e).__name__, e)}
+    ok = bool(result.get("ok"))
+    reason = str(result.get("reason") or ("closed tag %r" % result.get("tag")))
+    adapter.s.set_attr(standing_node, "reply_fix_compose_ok", 1.0 if ok else 0.0)
+    adapter.s.set_attr(standing_node, "reply_fix_compose_reason", reason)
+
+
 def _concern_tick(adapter: WorldAdapter) -> None:
     try:
         import domains.reflective_faculty as rf
@@ -2590,6 +2688,18 @@ def _concern_tick(adapter: WorldAdapter) -> None:
                 continue
             if at.get("kind") == "prog_read":
                 _process_prog_read_standing(adapter, n, at)
+                s.set_attr(n, "status", "processed")
+                continue
+            if at.get("kind") == "knowledge" and at.get("pipeline") != "experiment":
+                _process_knowledge_standing(adapter, n, at)
+                s.set_attr(n, "status", "processed")
+                continue
+            if at.get("kind") == "self_account":
+                _process_self_account_standing(adapter, n, at)
+                s.set_attr(n, "status", "processed")
+                continue
+            if at.get("kind") == "reply_fix" and at.get("pipeline") != "experiment":
+                _process_reply_fix_standing(adapter, n, at)
                 s.set_attr(n, "status", "processed")
                 continue
             relations = at.get("relations") or []

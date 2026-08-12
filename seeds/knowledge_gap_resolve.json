@@ -1,0 +1,83 @@
+{
+ "id": "knowledge_gap_resolve",
+ "version": "1.0.0",
+ "depends_on": ["gap_awareness"],
+ "capability_keys": ["knowledge_gap_resolve"],
+ "description": "GROUND_CONCERN SIX KINDS, Path 2 (GROUND_CONCERN_SIX_KINDS_PREREG.md, GROUND_CONCERN_SIX_KINDS_RESULTS.md): a promoted `knowledge` StandingConcern was MEASURED to fall through jabberwock_daemon._concern_tick's generic induce_concern/ground_concern fallback into the SAME inert comprehend_describe_directive_<tag> rule A25 found for prog_read (reported grounded:true, no record anywhere). `_concern_tick` now routes a StandingConcern of this kind (whenever its own `pipeline` attr is NOT 'experiment' -- the experiment sub-case was already correctly wired via _promote_relations_for_concern's existing knowledge-eligible conversation bundle and is left untouched) DIRECTLY into domains.knowledge_growth.work_on_knowledge_gap, which re-attempts the EXISTING self-heal chain (WorldAdapter.answer_about / ground_unknowns, CLAUDE.md's own 'Knowledge gaps self-heal' section) instead of inventing a new mechanism. `_process_knowledge_standing` records a MECHANICAL outcome datum (knowledge_compose_ok / knowledge_compose_reason) onto the StandingConcern -- never a decision there. THIS seed's two rules read that datum: `resolve_knowledge_gap` (the resolve_code_write_gap precedent) marks the original SelfConcern resolved when the re-attempt genuinely grounded the topic; `note_knowledge_composition_exhausted` (the note_prog_read_composition_exhausted precedent) marks the StandingConcern experiments_exhausted with the honest, specific re-attempt-failure reason when it did not. No emitter tool exists for this file (confirmed by grep across tools/*.py) -- hand-authored, the same status code_write_gap.json/prog_read_gap.json already have.",
+ "microtheory": {
+  "name": "knowledge_gap_resolve",
+  "description": "a promoted knowledge SelfConcern resolves via a re-attempted self-heal, or honestly exhausts naming why the re-attempt failed"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "resolve_knowledge_gap",
+   "match": [
+    ["agent", "has_self_concern", "sc"],
+    ["sc", "promoted_to", "standing"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "knowledge"}
+     },
+     {
+      "type": "Or",
+      "items": [
+       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "status"}, "b": {"type": "Lit", "value": "noted"}},
+       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "status"}, "b": {"type": "Lit", "value": "promoted"}}
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "knowledge_compose_ok"},
+      "b": {"type": "Lit", "value": 1.0}
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "sc", "status", "resolved"]
+   ]
+  },
+  {
+   "name": "note_knowledge_composition_exhausted",
+   "match": [
+    ["agent", "has_self_concern", "sc"],
+    ["sc", "promoted_to", "standing"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "knowledge"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "knowledge_compose_ok"},
+      "b": {"type": "Lit", "value": 0.0}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "experiments_exhausted"},
+       "b": {"type": "Lit", "value": true}
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "standing", "experiments_exhausted", true],
+    ["set_attr", "standing", "exhausted_note", {"__term__":
+     {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "knowledge_compose_reason"}}]
+   ]
+  }
+ ]
+}

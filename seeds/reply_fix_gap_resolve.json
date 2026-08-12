@@ -1,0 +1,83 @@
+{
+ "id": "reply_fix_gap_resolve",
+ "version": "1.0.0",
+ "depends_on": ["gap_awareness"],
+ "capability_keys": ["reply_fix_gap_resolve"],
+ "description": "GROUND_CONCERN SIX KINDS, Path 2 (GROUND_CONCERN_SIX_KINDS_PREREG.md, GROUND_CONCERN_SIX_KINDS_RESULTS.md): a promoted `reply_fix` StandingConcern whose OWN `pipeline` attr is 'comprehend_first' (both real mint-site content tags -- upload_attachment_reply / upload_vision_wiring -- never trip _content_suggests_experiment) was MEASURED to fall through jabberwock_daemon._concern_tick's generic induce_concern/ground_concern fallback into the SAME inert comprehend_describe_directive_<tag> rule A25 found for prog_read. The `experiment`-pipelined sub-case (content names acting/seed/ablation vocabulary) is ALREADY correctly routed by the untouched generic branch to the genuine conversation-experiment composer and this seed does not touch it (tests/test_self_improvement_visibility_migrated.py gates that untouched behaviour). `_concern_tick` now routes a StandingConcern of this kind, ONLY on its comprehend_first sub-case, DIRECTLY into domains.reply_fix_growth.work_on_reply_fix_gap, a fixed per-tag correspondence table (the prog_read_growth._BLOCKER_RUST_NEED precedent): upload_attachment_reply closes by loading the two named seeds (conversation_attachment_route / conversation_attachment_reply) if missing -- a real, mechanical, idempotent fix, live-demonstrated in GROUND_CONCERN_SIX_KINDS_RESULTS.md; upload_vision_wiring and any other tag honestly exhaust, naming the reason precisely. `_process_reply_fix_standing` records a MECHANICAL outcome datum (reply_fix_compose_ok / reply_fix_compose_reason) onto the StandingConcern -- never a decision there. THIS seed's two rules read that datum: `resolve_reply_fix_gap` (the resolve_code_write_gap precedent) marks the original SelfConcern resolved on a genuine close; `note_reply_fix_composition_exhausted` (the note_prog_read_composition_exhausted precedent) marks the StandingConcern experiments_exhausted with the honest, specific reason otherwise. No emitter tool exists for this file (confirmed by grep across tools/*.py) -- hand-authored, the same status code_write_gap.json/prog_read_gap.json already have.",
+ "microtheory": {
+  "name": "reply_fix_gap_resolve",
+  "description": "a promoted comprehend_first-pipelined reply_fix SelfConcern resolves via a fixed per-tag correspondence close, or honestly exhausts naming why the tag can't close"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "resolve_reply_fix_gap",
+   "match": [
+    ["agent", "has_self_concern", "sc"],
+    ["sc", "promoted_to", "standing"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "reply_fix"}
+     },
+     {
+      "type": "Or",
+      "items": [
+       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "status"}, "b": {"type": "Lit", "value": "noted"}},
+       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "status"}, "b": {"type": "Lit", "value": "promoted"}}
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "reply_fix_compose_ok"},
+      "b": {"type": "Lit", "value": 1.0}
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "sc", "status", "resolved"]
+   ]
+  },
+  {
+   "name": "note_reply_fix_composition_exhausted",
+   "match": [
+    ["agent", "has_self_concern", "sc"],
+    ["sc", "promoted_to", "standing"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "reply_fix"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "reply_fix_compose_ok"},
+      "b": {"type": "Lit", "value": 0.0}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "experiments_exhausted"},
+       "b": {"type": "Lit", "value": true}
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "standing", "experiments_exhausted", true],
+    ["set_attr", "standing", "exhausted_note", {"__term__":
+     {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "reply_fix_compose_reason"}}]
+   ]
+  }
+ ]
+}
