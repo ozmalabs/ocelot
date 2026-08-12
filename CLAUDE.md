@@ -989,3 +989,150 @@ is a standing rule for new work, not a claim that every existing subsystem
 already complies. Do not read "the rule is stated" as "the rule is enforced
 everywhere"; the enumerated non-compliant sites above are exactly that —
 enumerated, not fixed.
+
+## SHAPE IS ACQUISITION, RULE IS EXECUTION (2026-08-12) — the analogical-transfer arc, landed
+
+**The governing statement, the creator's own, stated directly and confirmed
+by every rung below rather than argued for in the abstract:** *"Shape is how
+the substrate learns and expands. Rule is how it runs."* Not two candidate
+primitives competing for the same job — two axes. Rule (match/where/effects,
+the `run_rules` fixpoint) is how the substrate acts on what it already knows.
+Shape (decode against a codebook, recognise / transform / infer / mint, the
+sd loop) is how the substrate decides something is genuinely new and adds it
+to what it knows. A Rule with no shape can execute but cannot *grow itself* —
+it can only be grown by a human or a Python builder deciding, by hand, that
+this case is worth a new rule. This is why the arc below starts with Rules
+specifically: not because Rules were the most broken thing found, but because
+**a substrate whose own execution layer has no shape cannot expand its own
+execution layer**, which is a sharper, more specific claim than "rules should
+be prettier."
+
+**The diagnosis, landed first
+(`docs/research/engine_substrate/RULES_AS_SHAPE_DESIGN_SPIKE.md`).** The
+agent selects which of its own rules to self-modify by counting substring
+matches against the rule's *name* (`RuleSummary.keywords_text`,
+`domains/reflective_faculty.py`) — the rule body is opaque JSON to that
+selection. This is, **verbatim**, the "MAC stage treated as the verdict, with
+no FAC stage" defect already diagnosed for the agent's own
+`analogical_thinking.find_analogies` faculty in June 2026 — undetected in the
+self-improvement path because it doesn't present as an analogy problem, it
+presents as "which rule do I edit." The algebra to fix it — `AntiUnifyWitness`
+(anti-unification with the witness/residue retained, not discarded),
+`Substitute` (re-apply a witness elsewhere), `Unify`, `StructSim`,
+`Covers` — was already in `term.rs`, built the same month the defect was
+named and never connected to a rule body. **The missing piece was never the
+shape math. It was an addressable object for the shape math to operate on.**
+
+**Empirically confirmed, not just argued
+(`docs/research/engine_substrate/RULE_SIGNATURE_SLICE_RESULTS.md`).** A
+pure, zero-graph-write structural signature over a rule's `where` clause,
+compared observationally against the existing name-keyword selector on a
+hand-verified, powered oracle (N=40, margins of 11 and 12 against a
+pre-registered floor of 5): structural and name-keyword selection **differ,
+in exactly the predicted direction on both sides of the split** — 11/12 vs
+0/12 one way, 12/12 vs 0/12 the other. Neither subsumes the other. Both carry
+real, non-redundant information the other one misses.
+
+**Sized, and the sizing questions actually answered, not re-estimated
+(`docs/research/engine_substrate/RULE_REFERENCE_LAYER_SIZING_RESULTS.md`).**
+Zero new Rust Term variants needed — `AntiUnifyWitness` alone returns
+coverage, residual, and bindings in one call. Unconditional mirroring on
+every `add_rule` is a measured NO-GO: 190 at-risk files, up to 51,769 mirror
+nodes for one rule, +2,557 nodes per checkpoint-reload cycle with no
+convergence — the exact unbounded-growth defect the Γ reflection thread hit
+and fixed for Γ productions (below), at roughly 10× the rate, with no
+rule-side fix yet. Lazy mirroring is sufficient — and the right existing
+primitive is `add_term_subgraph`, not `ShapeCache` (`ShapeCache` writes no
+graph nodes; it was the wrong precedent, corrected during the rung itself).
+**And the actual point, live**: three real corpus rules form a 2×2
+parallelogram over two independent dimensions; one `AntiUnifyWitness` call
+over two corners derives the transform, `Substitute` applies it to the third
+corner, and the result is a rule **absent from all 2,851 corpus recognisers**
+that, installed, fires correctly on the missing grid cell. 318 such
+parallelograms exist in the corpus; 200/200 sampled transfers are
+algebraically lossless, well-defined, and novel. Zero new Terms, zero graph
+mirror, zero engine change to demonstrate this — dedup was never the reason
+to build any of it, and the sizing document says so explicitly after
+initially leading with the compression numbers (`RULES_AS_SHAPE_DESIGN_SPIKE.md`
+§15, a same-day self-correction, left in the record rather than silently
+edited out).
+
+**The same defect swept across the whole tree, verified not merely grepped
+(`docs/research/engine_substrate/SHAPE_AUDIT.md`).** 40 confirmed sites
+(~150 candidates examined; two sweep-reported findings were checked and
+found *wrong*, kept in the record as the method's own error rate).
+Headline: `recognise_meta_shape` — the function whose entire job is
+detecting shape — scored by raw `text.contains` over discarded attribute
+keys and broke ties **alphabetically by the shape's own name**. Also: the
+meta-shape codebook (11 `MetaShape` + 13 `ShapePrinciple` nodes, feeding
+`analogical_thinking` order-4 and `TransferDecode` directly) had **no mint
+path at all** — a grain with recognition but no growth. Also found: a real,
+live, silently-corrupting bug (`CapabilityAxis` identity is a truncated,
+order-dependent string join that can misroute a novel observation as a
+duplicate — a growth failure presenting as successful recognition), two
+unfixed siblings of the Γ checkpoint-reload bug, and 159/634 rule-carrying
+seeds minting edges through zero Γ productions (bigville's own finding, at
+corpus scale).
+
+**The recognizer and the growth path both closed, for the grain that feeds
+analogical thinking directly
+(`docs/research/engine_substrate/META_SHAPE_FIRST_CLASS_RESULTS.md`).**
+Measured exhaustively across all 55 pairs of the agent's eleven meta-shapes:
+**44 are ties, and the old scorer decided 44/44 of them by the alphabet** —
+80% of every contest the agent's own knowledge-filing faculty runs. Fixed:
+score the item's own signature, rank by evidence tiers, and — the load-bearing
+change — **delete the tiebreak**. A recognizer that always answers can never
+produce a residual, and a grain with no residual can never grow; fixing the
+scorer is what made the mint reachable at all. The mint path wires the FULL
+four-rung sd-loop ladder (recognise → transform-in-basis → infer-dimension →
+mint), not a coarse recognise-then-mint shortcut, because `shape_decode.rs`'s
+own codebook loader turned out to already be grain-agnostic — confirmed by
+reading it, not assumed. The loop closes live: residual → recurrence →
+exactly one mint → epoch bump → re-decode → recognised, including a
+never-seen near-variant. The rung caught two of its own bugs via its own
+negative control and reported both rather than quietly fixing them and
+moving on.
+
+**Independent, external convergence — four papers, one repo's own prior
+work, arriving at pieces of the same architecture from outside it, checked
+against primary sources not taken on abstract alone
+(`RULES_AS_SHAPE_DESIGN_SPIKE.md` §15-16,
+`docs/research/engine_substrate/BAICS_WORKSHOP_HARVEST.md`).** DeepGAR
+(Ling et al., ICDM 2022) validates a geometric-embedding answer to the
+search-cost question this arc hasn't hit yet at today's scale (24-46 entry
+codebooks) but will. MarT/MARS (Zhang et al., ICLR 2023) independently
+formalises Abduction→Mapping→Induction as the same "extract the transform,
+re-apply it" operation this project's own private research
+(`shape_math_grounding.md`, 2026-06-27) named via the arrow-view analogy
+model, and hands over a real external cross-modal benchmark nothing in this
+repo has been checked against. A third BAICS-workshop paper (Relaxed Graph
+Matching for Analogical Reasoning, Segert et al.) reaches the identical
+operation a third way — continuous relaxation of exact graph matching,
+solved per-query by gradient descent, no training required. SEER (Cheng et
+al., ASPLOS 2024) names, independently, why chunk-equivalence's own single
+provably-safe rewrite found zero payoff: the real leverage in an e-graph
+comes from one rewrite's discovery unlocking a *different* representation's
+opportunity, never from one rewrite tested alone — and its own justification
+for holding multiple representations open turns out to be **the same named
+mechanism this repo's own vision domain already built, tested, and corrected
+twice** (`VISION_FIGADJ_NESTING_PREREG.md`, `VISION_BLINK_RESULTS.md`):
+"hold open" is right only when there is genuinely no fact of the matter yet
+decidable, and wrong — for two different reasons, found independently in two
+different vision rungs — otherwise. This project's own prior, unrelated work
+had already derived the discriminating criterion the compiler-optimization
+literature needed a new e-graph library to arrive at.
+
+**Status, honestly:** the diagnosis, the empirical confirmation, the sizing,
+the codebase-wide audit, and one full grain's recognizer-plus-growth fix are
+all *landed*. What is *named, not built*: `import_rules_no_mirror` (the
+Rule-side analogue of the Γ checkpoint-reload fix, needed before
+unconditional rule mirroring is safe); whether chunk-mining or rule-mining's
+own commit-immediately design should become e-graph-shaped, per the
+hold-open criterion above (an empirical question per corpus, not resolved);
+38 of `SHAPE_AUDIT.md`'s 40 confirmed sites, including the live
+`CapabilityAxis` corruption bug; and the MARS cross-modal benchmark as an
+external validation target for this substrate's own multimodal ingestion,
+never connected to it. Do not read this section as "shape is now everywhere
+in this codebase" — it is the arc that established the primitive works, on
+real data, in the one place (meta-shape) that most directly gates
+`analogical_thinking`, and named everywhere else it still doesn't reach.
