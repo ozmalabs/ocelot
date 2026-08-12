@@ -42,9 +42,24 @@ from typing import Any
 # editing this file.
 
 
+#: The wild marker the shape-math Terms use. It is WRAPPED in a 1-element
+#: sequence inside a pattern (`["y", ["·?·"]]`) — verified against the live
+#: engine, which returns witnesses in exactly that form and refuses `Covers`
+#: on a bare marker.
+WILD = "·?·"
+
+
 def _tokens(text: str) -> set[str]:
     """Tokenize text + name. Strip casing + non-letters."""
     return set(re.findall(r"[a-z]{3,}", text.lower()))
+
+
+def _is_wild(v) -> bool:
+    """Is this witness leaf the wild marker (bare or in its wrapped form)?
+    Pure form test on a held Term's own output — no judgement."""
+    if v == WILD:
+        return True
+    return (isinstance(v, (list, tuple)) and len(v) == 1 and v[0] == WILD)
 
 
 def _concept_text(substrate, concept_node) -> tuple[str, str, str]:
@@ -69,30 +84,75 @@ def _native_eval(substrate):
     return getattr(s, "_inner", s)
 
 
-def _kw_hit_term(text: str) -> dict:
-    """Term: does the `keywords` list of the node bound to Var 'v' contain a
-    substring of `text`? (StringIndexOf >= 0 over each keyword.)"""
+_TOKEN_START = re.compile(r"(?:^|(?<=[^a-z0-9]))[a-z0-9]")
+
+
+def _token_starts(text: str) -> list[str]:
+    """Every suffix of `text` that begins at a TOKEN START. Purely mechanical
+    string destructuring — no decision, no graph read.
+
+    This is the argument change that anchors the vocabulary match. The keyword
+    test below is `StringIndexOf(h, kw) == 0` over these suffixes, so a keyword
+    matches only where a WORD begins:
+
+      * `"io"` no longer matches `"operat|io|n"` (index 6 in the only suffix
+        that contains it) — 39.6% of every vocabulary hit in the booted graph
+        (`ANALOGICAL_THINKING_SHAPE_MATH_PREREG.md` §2.2);
+      * `"gate"` no longer matches `"ag|gregate|s"`;
+      * stems still work — `"regulat"` matches `"regulation"`, `"communicat"`
+        matches `"communicates"` — because the test is a PREFIX test, which is
+        what a stem keyword means;
+      * multi-word keywords (`"align by role"`, `"anti-unif"`) still work,
+        because a suffix runs to the end of the text.
+
+    No new Rust: this is a different ARGUMENT to `StringIndexOf`, not a new
+    Term. `_` is a separator, so `typographic_hierarchy` matches `hierarch`.
+    """
+    text = (text or "").lower()
+    return [text[m.start():] for m in _TOKEN_START.finditer(text)]
+
+
+def _kw_hit_term(haystacks: list) -> dict:
+    """Term: does ANY keyword of the node bound to Var 'v' begin ANY of
+    `haystacks`? Two nested `Exists` over one `Eq(StringIndexOf(...), 0)`.
+
+    The decision ("does this vocabulary entry apply to this text") is made by
+    the Rust evaluator, exactly as before; only the anchoring changed.
+    """
     V = lambda n: {"type": "Var", "name": n}
     L = lambda x: {"type": "Lit", "value": x}
     return {"type": "Exists",
             "source": {"type": "Attr", "node": V("v"), "key": "keywords"},
             "var_name": "kw",
-            "predicate": {"type": "Gte",
-                          "a": {"type": "StringIndexOf", "haystack": L(text), "needle": V("kw")},
-                          "b": L(0)}}
+            "predicate": {"type": "Exists",
+                          "source": L(list(haystacks)),
+                          "var_name": "h",
+                          "predicate": {"type": "Eq",
+                                        "a": {"type": "StringIndexOf",
+                                              "haystack": V("h"), "needle": V("kw")},
+                                        "b": L(0)}}}
+
+
+def _vocab_nodes(substrate, voc_type: str) -> list:
+    sub = getattr(substrate, "s", substrate)
+    try:
+        return list(sub.nodes(voc_type))
+    except Exception:
+        return []
 
 
 def _vocab_hits(substrate, voc_type: str, text: str) -> set[str]:
-    """Names of vocabulary nodes of `voc_type` whose keywords hit `text`."""
+    """Names of vocabulary nodes of `voc_type` whose keywords hit `text`.
+
+    Unchanged interface, unchanged flat-set return. The MATCH is now anchored
+    at token starts (`_token_starts`) — the same Term shape, a different
+    haystack.
+    """
     sub = getattr(substrate, "s", substrate)
     native = _native_eval(substrate)
-    term = _kw_hit_term(text)
+    term = _kw_hit_term(_token_starts(text))
     hits = set()
-    try:
-        nodes = list(sub.nodes(voc_type))
-    except Exception:
-        return hits
-    for n in nodes:
+    for n in _vocab_nodes(substrate, voc_type):
         if native.evaluate(term, {"v": n}):
             nm = sub.node(n)["attrs"].get("name")
             if nm:
@@ -100,34 +160,97 @@ def _vocab_hits(substrate, voc_type: str, text: str) -> set[str]:
     return hits
 
 
+def _vocab_hits_by_slot(substrate, voc_type: str, slots: dict) -> dict:
+    """`{vocabulary name -> frozenset(slot names it was hit in)}`.
+
+    The information `SHAPE_AUDIT.md` §2.5 found destroyed one grain up and
+    `META_SHAPE_FIRST_CLASS_RESULTS.md` §2 restored there: WHICH TYPED SLOT the
+    evidence came from. A concept NAMED `gate` and a concept whose definition
+    happens to mention gating are not the same evidence, and the flat
+    `name + " " + definition` concatenation could not tell them apart.
+
+    Mechanical: run the same held Term once per slot, collect.
+    """
+    sub = getattr(substrate, "s", substrate)
+    native = _native_eval(substrate)
+    out: dict = {}
+    nodes = _vocab_nodes(substrate, voc_type)
+    for slot, text in slots.items():
+        if not text:
+            continue
+        term = _kw_hit_term(_token_starts(text))
+        for n in nodes:
+            if native.evaluate(term, {"v": n}):
+                nm = sub.node(n)["attrs"].get("name")
+                if nm:
+                    out.setdefault(nm, set()).add(slot)
+    return {k: frozenset(v) for k, v in out.items()}
+
+
+#: Per-concept memo of the slot-addressed vocabulary reading. A pure
+#: performance cache over an unchanging read (CLAUDE.md permits caching; the
+#: substrate stays the source of truth). Keyed by (graph identity, node).
+_CONCEPT_READING_CACHE: dict = {}
+
+
+def _concept_slots(substrate, concept_node) -> dict:
+    """The concept's TYPED SLOTS, kept apart instead of concatenated."""
+    name, _, defn = _concept_text(substrate, concept_node)
+    return {"name": name, "definition": defn}
+
+
+def _concept_reading(substrate, concept_node) -> dict:
+    """`{"role": {..}, "principle": {..}, "shape": {..}}`, each mapping a
+    vocabulary name to the frozenset of slots that evidenced it."""
+    sub = getattr(substrate, "s", substrate)
+    key = (id(sub), concept_node)
+    cached = _CONCEPT_READING_CACHE.get(key)
+    if cached is not None:
+        return cached
+    slots = _concept_slots(substrate, concept_node)
+    roles = _vocab_hits_by_slot(substrate, "FunctionalRole", slots)
+    prins = _vocab_hits_by_slot(substrate, "ShapePrinciple", slots)
+    shapes: dict = {}
+    if prins:
+        for sh in _vocab_nodes(substrate, "MetaShape"):
+            nm = sub.node(sh)["attrs"].get("name")
+            if not nm:
+                continue
+            ev: set = set()
+            for p in sub.neighbours(sh, "has_principle"):
+                pn = sub.node(p)["attrs"].get("name")
+                if pn in prins:
+                    ev |= set(prins[pn])
+            if ev:
+                shapes[nm] = frozenset(ev)
+    out = {"role": roles, "principle": prins, "shape": shapes}
+    _CONCEPT_READING_CACHE[key] = out
+    return out
+
+
 def _concept_functional_roles(substrate, concept_node) -> set[str]:
     """Order-2 abstraction: which functional roles does this concept
     play? Vocabulary + keyword-match are graph data / a Term in Rust."""
-    name, _, defn = _concept_text(substrate, concept_node)
-    return _vocab_hits(substrate, "FunctionalRole", name + " " + defn)
+    return set(_concept_reading(substrate, concept_node)["role"])
 
 
 def _concept_abstract_principles(substrate, concept_node) -> set[str]:
     """Order-3 abstraction: which abstract principles does this concept
     embody? Read off the seeded ShapePrinciple vocabulary via a Term."""
-    name, _, defn = _concept_text(substrate, concept_node)
-    return _vocab_hits(substrate, "ShapePrinciple", name + " " + defn)
+    return set(_concept_reading(substrate, concept_node)["principle"])
 
 
 def _concept_meta_shapes(substrate, concept_node) -> set[str]:
     """Order-4 abstraction: meta-shapes of operation. A MetaShape is hit when
     any of its has_principle neighbours is among the concept's principles —
-    membership read from the graph (has_principle edges), not a Python dict."""
-    principles = _concept_abstract_principles(substrate, concept_node)
-    if not principles:
-        return set()
-    sub = getattr(substrate, "s", substrate)
-    shapes = set()
-    for sh in sub.nodes("MetaShape"):
-        prins = {sub.node(p)["attrs"].get("name") for p in sub.neighbours(sh, "has_principle")}
-        if principles & prins:
-            shapes.add(sub.node(sh)["attrs"].get("name"))
-    return shapes
+    membership read from the graph (has_principle edges), not a Python dict.
+
+    (The 1-of-N disjunction is UNCHANGED and deliberately so: it is
+    `shape_hits`' documented MAC-recall-set semantics, and narrowing it was not
+    registered by this rung's prereg. Recorded in §2.3 of the prereg as a
+    separate finding, not repaired here.)
+    """
+    return set(_concept_reading(substrate, concept_node)["shape"])
 
 
 def _list_concepts(substrate, mt_node) -> list:
@@ -194,6 +317,195 @@ def metashape_realisation_counts(substrate) -> dict[str, int]:
     return tally
 
 
+# ---------------------------------------------------------------------------
+# THE FAC STAGE — structural alignment by HELD shape-math Terms.
+#
+# `RULES_AS_SHAPE_DESIGN_SPIKE.md` §4.2 imports the creator's June 2026
+# diagnosis of THIS faculty: "the agent's bucket IS the MAC stage treated as
+# the verdict — with no FAC stage", prescription "make the bucket a FILTER, not
+# a verdict — escalate every surface survivor into an explicit
+# structural-alignment pass". Everything above this line is the MAC stage.
+# Everything below is the FAC stage, and every judgement in it is made by a
+# Rust Term (`AntiUnifyWitness`, `FixedCount`, `Covers`), never by Python.
+#
+# WHAT IS AND IS NOT COMPUTABLE ON THIS POPULATION — measured, not assumed
+# (`ANALOGICAL_THINKING_SHAPE_MATH_PREREG.md` §2.1, §3.3):
+#
+#   * A `Concept` here has essentially NO relational edges — 114 of 10,775
+#     carry any outgoing edge at all. Relational alignment, the thing
+#     structure-mapping is normally about, HAS NO INPUT here. Saying so is the
+#     honest result; building it would be a no-op dressed as a fix.
+#   * `AntiUnifyWitness` over a SINGLE pair's signature adds nothing over the
+#     set intersection already present: aligning two concept signatures by
+#     predicate makes the predicate correspondence the identity map, so the
+#     template's fixed leaves are exactly "the attributes that are equal".
+#     Registered as a NO-GO before building.
+#   * What the operator uniquely provides is the WITNESS — the difference. Two
+#     pairs whose witnesses AGREE realise the same transform, and are therefore
+#     the two corner-pairs of one parallelogram. That is
+#     `RULE_REFERENCE_LAYER_SIZING_RESULTS.md` §4's operation at the concept
+#     grain, it is Gentner's systematicity computed rather than asserted, and
+#     it needs no concept edges.
+# ---------------------------------------------------------------------------
+#: Marker for "this vocabulary entry is not evidenced in this concept". Shared
+#: ABSENCE is not shared structure, so a leaf fixed at this marker is projected
+#: out of the template before the structure is counted.
+_ABSENT = "-"
+
+_VOCAB_KEYS_CACHE: dict = {}
+
+
+def _lit(x) -> dict:
+    return {"type": "Lit", "value": x}
+
+
+def _vocabulary_keys(substrate) -> list:
+    """The canonical, sorted axis list every concept vector is laid out on.
+
+    Fixed arity and fixed position is what makes `AntiUnifyWitness` applicable
+    at all: it generalises element-wise over EQUAL-LENGTH tuples. Two concepts
+    laid out on the same axes are positionally aligned by construction.
+    """
+    sub = getattr(substrate, "s", substrate)
+    key = (id(sub), sum(len(_vocab_nodes(substrate, t))
+                        for t in ("FunctionalRole", "ShapePrinciple", "MetaShape")))
+    cached = _VOCAB_KEYS_CACHE.get(key)
+    if cached is not None:
+        return cached
+    keys = []
+    for axis, voc_type in (("role", "FunctionalRole"),
+                           ("principle", "ShapePrinciple"),
+                           ("shape", "MetaShape")):
+        for n in _vocab_nodes(substrate, voc_type):
+            nm = sub.node(n)["attrs"].get("name")
+            if nm:
+                keys.append((axis, str(nm)))
+    keys.sort()
+    _VOCAB_KEYS_CACHE[key] = keys
+    return keys
+
+
+def _concept_shape_vector(substrate, concept_node) -> list:
+    """A concept as a fixed-arity relation vector over the held vocabulary.
+
+    `[[axis:name, slots-or-absent], ..., ["category", cat-or-absent]]`, sorted
+    and identical in length and position for every concept in the graph. Each
+    relation is EXACTLY TWO elements for the reason `domains/meta_shape.py`
+    documents: `anti_unify_values` generalises element-wise over equal-length
+    tuples, so a 2-element relation keeps the PREDICATE fixed and wilds only
+    the value.
+
+    The value is the sorted slot list the evidence came from — so two concepts
+    are structurally aligned on an axis only when they are evidenced THE SAME
+    WAY, not merely when a set intersection is non-empty. Mechanical
+    destructuring; nothing here judges.
+    """
+    reading = _concept_reading(substrate, concept_node)
+    _, cat, _ = _concept_text(substrate, concept_node)
+    vec = []
+    for axis, nm in _vocabulary_keys(substrate):
+        slots = reading.get(axis, {}).get(nm)
+        vec.append(["%s:%s" % (axis, nm),
+                    "|".join(sorted(slots)) if slots else _ABSENT])
+    vec.append(["category", cat or _ABSENT])
+    return vec
+
+
+def _pair_witness(substrate, vec_a: list, vec_b: list) -> dict:
+    """The held `AntiUnifyWitness` + `FixedCount` over one candidate pair.
+
+    Returns `{shared, name_shared, fixed_count, transform}` where
+
+      * `shared`   — the axes the TEMPLATE fixes at real evidence (shared
+                     absence projected out: absence is not structure);
+      * `name_shared` — how many of those were evidenced in the concept's own
+                     NAME slot. The `pred_principles` tier
+                     `META_SHAPE_FIRST_CLASS_RESULTS.md` §2 landed one grain
+                     up: an item whose slot IS the shape beats an item that
+                     merely talks about it. A COUNT, not a weight.
+      * `transform` — the canonicalised WITNESS pair: the residue
+                     `AntiUnify` discards. Two pairs with equal `transform`
+                     realise the same delta — the parallelogram.
+
+    Every judgement (what generalises, what stays fixed, how many leaves are
+    fixed) is made by the Rust evaluator. This function assembles arguments and
+    destructures results.
+    """
+    native = _native_eval(substrate)
+    out = {"shared": [], "name_shared": 0, "fixed_count": 0, "transform": ()}
+    if not vec_a or len(vec_a) != len(vec_b):
+        return out
+    try:
+        template, sigmas = native.evaluate(
+            {"type": "AntiUnifyWitness", "values": _lit([vec_a, vec_b]), "wild": WILD}, {})
+        fixed = native.evaluate(
+            {"type": "FixedCount", "pattern": _lit(list(template)), "wild": WILD}, {})
+    except Exception:
+        return out
+    shared = []
+    for rel in template:
+        if not isinstance(rel, (list, tuple)) or len(rel) != 2:
+            continue
+        pred, val = rel[0], rel[1]
+        if _is_wild(pred) or _is_wild(val) or val == _ABSENT:
+            continue
+        shared.append((str(pred), str(val)))
+    try:
+        fixed = int(fixed)
+    except Exception:
+        fixed = 0
+    out["shared"] = shared
+    out["name_shared"] = sum(1 for _, v in shared if "name" in v.split("|"))
+    out["fixed_count"] = fixed
+    out["transform"] = _canon_transform(sigmas)
+    return out
+
+
+def _canon_transform(sigmas) -> tuple:
+    """The witness pair, canonicalised into a hashable key. Pure form.
+
+    `AntiUnifyWitness` returns per-instance sigmas as dicts keyed by a PATH
+    tuple. Two candidate pairs whose canonicalised sigmas are identical differ
+    from one another in exactly the same places, by exactly the same amounts —
+    the concept-grain reading of `RULE_REFERENCE_LAYER_SIZING_RESULTS.md` §4's
+    `P (a->b)` path set.
+    """
+    try:
+        return tuple(tuple(sorted((tuple(p), str(v)) for p, v in dict(sig).items()))
+                     for sig in sigmas)
+    except Exception:
+        return ()
+
+
+def _covered_shapes(substrate, vec: list) -> set:
+    """Order 4's STRUCTURAL path: `MetaShape`s whose held `signature` COVERS
+    this concept's vector, decided by the Rust `Covers` Term.
+
+    `META_SHAPE_FIRST_CLASS_RESULTS.md` §3 made a minted `MetaShape` carry a
+    real anti-unified lgg pattern; the eleven SEEDED shapes carry none, so on a
+    stock boot this path is DORMANT by construction — wired for the same reason
+    that rung wired its own rung 3, and reported as dormant rather than as a
+    win.
+    """
+    sub = getattr(substrate, "s", substrate)
+    native = _native_eval(substrate)
+    out = set()
+    for sh in _vocab_nodes(substrate, "MetaShape"):
+        a = sub.node(sh)["attrs"]
+        sig = a.get("signature")
+        if not sig:
+            continue
+        try:
+            if native.evaluate({"type": "Covers", "pattern": _lit(list(sig)),
+                                "instance": _lit(list(vec)), "wild": WILD}, {}):
+                nm = a.get("name")
+                if nm:
+                    out.add(nm)
+        except Exception:
+            continue
+    return out
+
+
 def find_analogies(substrate, source_mt_name: str,
                     target_mt_names: list[str], order_n: int = 2,
                     min_score: int = 1) -> list[dict]:
@@ -237,16 +549,87 @@ def find_analogies(substrate, source_mt_name: str,
     if not target_mts:
         return []
 
-    results = []
+    # PASS 1 — MAC: every surface survivor, with its held structural witness
+    # attached. Nothing is a verdict yet.
+    raw = []
     for sc in _list_concepts(substrate, source_mt):
         for tgt_mt_name, tgt_mt in target_mts:
             for tc in _list_concepts(substrate, tgt_mt):
-                analogy = _compute_analogy(
+                rec = _compute_analogy(
                     substrate, sc, tc, order_n,
                     source_mt_name, tgt_mt_name)
-                if analogy and analogy["features_total"] >= min_score:
-                    results.append(analogy)
+                if rec is not None:
+                    raw.append(rec)
+
+    # PASS 2 — FAC: SYSTEMATICITY. Two candidate pairs whose held witnesses are
+    # identical differ in exactly the same places by exactly the same amounts:
+    # they are the two corner-pairs of one parallelogram, and each corroborates
+    # the other. This is the only quantity here that no per-pair scorer, however
+    # sharp, can produce — and it needs no concept edges, which this population
+    # does not have (prereg §2.1).
+    by_transform: dict = {}
+    for rec in raw:
+        t = rec["_transform"]
+        if t:
+            by_transform.setdefault(t, []).append(rec)
+
+    # PASS 3 — the verdict, and the honest non-answer.
+    results = []
+    for rec in raw:
+        corr = len(by_transform.get(rec["_transform"], ())) - 1
+        final = _finalise_analogy(rec, max(corr, 0))
+        if final and final["features_total"] >= min_score:
+            results.append(final)
     return results
+
+
+def _finalise_analogy(rec: dict, corroboration: int) -> dict | None:
+    """MAC → FAC: an ABSTRACT-order claim is retained only if the structural
+    stage supports it. Otherwise the pair falls back to the surface orders it
+    genuinely has, and if it has none, the answer is **`None`**.
+
+    This is the prescription in `RULES_AS_SHAPE_DESIGN_SPIKE.md` §4.2 —
+    *"make the bucket a FILTER, not a verdict"* — applied literally. Orders 0
+    and 1 are honestly-labelled surface similarity and are always kept. Orders
+    2, 3 and 4 assert something stronger (*"shared functional role"*, *"shared
+    meta-shape"*), so they must be either
+
+      * ALIGNED — the held `AntiUnifyWitness` template fixes at least one axis
+        at real, identically-evidenced structure, or
+      * CORROBORATED — another pair in the same bridge realises the same
+        transform,
+
+    and a claim that is neither is a surface coincidence being reported as an
+    abstraction. `META_SHAPE_FIRST_CLASS_RESULTS.md`'s load-bearing lesson,
+    one grain over: a verdict that always answers can never produce a residual.
+    """
+    aligned = rec["_aligned_orders"]
+    per_order = {k: v for k, v in rec["_per_order"].items()
+                 if k < 2 or k in aligned or corroboration > 0}
+    filtered = sorted(set(rec["_per_order"]) - set(per_order))
+    if not per_order:
+        return None
+    top_order = max(per_order)
+    out = dict(rec["_public"])
+    out["order_n"] = top_order
+    out["feature_count"] = per_order[top_order]
+    out["features_total"] = sum(per_order.values())
+    out["corroboration"] = corroboration
+    out["struct_shared"] = rec["_struct_shared"]
+    out["name_shared"] = rec["_name_shared"]
+    parts = [p for k, p in rec["_rationale"] if k in per_order]
+    if rec["_struct_shared"]:
+        parts.append("structurally aligned on %d axis/axes (%d in the name slot)"
+                     % (rec["_struct_shared"], rec["_name_shared"]))
+    if corroboration:
+        parts.append("corroborated by %d pair(s) realising the same transform"
+                     % corroboration)
+    if filtered:
+        parts.append("WITHHELD at order(s) %s: surface overlap with no aligned "
+                     "structure and no corroboration"
+                     % ", ".join(str(k) for k in filtered))
+    out["rationale"] = "; ".join(parts)
+    return out
 
 
 def _compute_analogy(substrate, sc, tc, order_n: int,
@@ -270,6 +653,11 @@ def _compute_analogy(substrate, sc, tc, order_n: int,
 
     `features_total` (sum of shared features over all orders) is kept only
     as the match/no-match floor for `find_analogies`' `min_score`.
+
+    **This function is now the MAC stage only.** It returns an UNFINALISED
+    record carrying the per-order surface counts AND the held structural
+    witness; `find_analogies` computes corroboration across the whole bridge
+    and `_finalise_analogy` turns the record into a verdict — or into `None`.
     """
     sn, scat, sdef = _concept_text(substrate, sc)
     tn, tcat, tdef = _concept_text(substrate, tc)
@@ -279,7 +667,14 @@ def _compute_analogy(substrate, sc, tc, order_n: int,
 
     # per_order[k] = number of features the pair shares at order k.
     per_order: dict[int, int] = {}
-    rationale_parts = []
+    rationale_parts: list = []
+
+    def _say(k: int, text: str) -> None:
+        """Record a rationale fragment AGAINST the order that earned it, so a
+        withheld order's justification is withheld with it. The old code
+        appended to one flat list, which is why a filtered claim could not have
+        been retracted from the rationale even if it had been filtered."""
+        rationale_parts.append((k, text))
 
     if order_n >= 0:
         # n=0: name token overlap
@@ -288,22 +683,20 @@ def _compute_analogy(substrate, sc, tc, order_n: int,
         overlap = st & tt
         if overlap:
             per_order[0] = len(overlap)
-            rationale_parts.append(
-                f"shared name tokens: {sorted(overlap)[:3]}")
+            _say(0, f"shared name tokens: {sorted(overlap)[:3]}")
 
     if order_n >= 1:
         # n=1: category overlap + definition keyword overlap
         n1 = 0
         if scat and scat == tcat:
             n1 += 1
-            rationale_parts.append(f"shared category '{scat}'")
+            _say(1, f"shared category '{scat}'")
         sdt = _tokens(sdef)
         tdt = _tokens(tdef)
         common = sdt & tdt
         if len(common) >= 3:
             n1 += len(common)
-            rationale_parts.append(
-                f"definition overlap ({len(common)} tokens)")
+            _say(1, f"definition overlap ({len(common)} tokens)")
         if n1:
             per_order[1] = n1
 
@@ -314,9 +707,7 @@ def _compute_analogy(substrate, sc, tc, order_n: int,
         shared_roles = sroles & troles
         if shared_roles:
             per_order[2] = len(shared_roles)
-            rationale_parts.append(
-                f"shared functional role: "
-                f"{', '.join(sorted(shared_roles))}")
+            _say(2, "shared functional role: %s" % ", ".join(sorted(shared_roles)))
 
     if order_n >= 3:
         # n=3: shared abstract principles
@@ -325,39 +716,62 @@ def _compute_analogy(substrate, sc, tc, order_n: int,
         shared_p = sp & tp
         if shared_p:
             per_order[3] = len(shared_p)
-            rationale_parts.append(
-                f"shared abstract principle: "
-                f"{', '.join(sorted(shared_p))}")
+            _say(3, "shared abstract principle: %s" % ", ".join(sorted(shared_p)))
+
+    vec_s = vec_t = None
+    if order_n >= 4 or any(k >= 2 for k in per_order):
+        vec_s = _concept_shape_vector(substrate, sc)
+        vec_t = _concept_shape_vector(substrate, tc)
 
     if order_n >= 4:
-        # n=4: shared meta-shapes
-        sm = _concept_meta_shapes(substrate, sc)
-        tm = _concept_meta_shapes(substrate, tc)
+        # n=4: shared meta-shapes. The keyword reading (the `has_principle`
+        # disjunction) is the BOOTSTRAP; a MetaShape carrying a real
+        # anti-unified `signature` — the ones `seeds/meta_shape_growth.json`
+        # mints — is additionally read STRUCTURALLY via the held `Covers`.
+        # On a stock boot no seeded shape carries one, so this half is dormant
+        # by construction and reported as dormant, not as a win.
+        sm = _concept_meta_shapes(substrate, sc) | _covered_shapes(substrate, vec_s)
+        tm = _concept_meta_shapes(substrate, tc) | _covered_shapes(substrate, vec_t)
         shared_m = sm & tm
         if shared_m:
             per_order[4] = len(shared_m)
-            rationale_parts.append(
-                f"shared meta-shape: "
-                f"{', '.join(sorted(shared_m))}")
+            _say(4, "shared meta-shape: %s" % ", ".join(sorted(shared_m)))
 
     if not per_order:
         return None
 
-    top_order = max(per_order)                 # POSITION on the axis
-    feature_count = per_order[top_order]        # relative within-axis count
-    features_total = sum(per_order.values())    # match/no-match floor only
+    # ---- FAC: the held structural witness over the two concepts' vectors ----
+    # Only ever consulted for the abstract orders (2/3/4); orders 0 and 1 do not
+    # claim structure and are not asked to prove any.
+    witness = {"shared": [], "name_shared": 0, "transform": ()}
+    if any(k >= 2 for k in per_order):
+        if vec_s is None:
+            vec_s = _concept_shape_vector(substrate, sc)
+            vec_t = _concept_shape_vector(substrate, tc)
+        witness = _pair_witness(substrate, vec_s, vec_t)
+    # An order is ALIGNED when the template fixes at least one axis of that
+    # order at real, identically-evidenced structure. Reading the axis prefix
+    # off a held Term's output is destructuring, not a decision.
+    axis_order = {"role": 2, "principle": 3, "shape": 4}
+    aligned_orders = {axis_order[p.split(":", 1)[0]]
+                      for p, _ in witness["shared"]
+                      if p.split(":", 1)[0] in axis_order}
 
     return {
-        "source_concept": sn,
-        "target_concept": tn,
-        "source_mt": src_mt_name,
-        "target_mt": tgt_mt_name,
-        "source_node": sc,
-        "target_node": tc,
-        "order_n": top_order,
-        "feature_count": feature_count,
-        "features_total": features_total,
-        "rationale": "; ".join(rationale_parts),
+        "_public": {
+            "source_concept": sn,
+            "target_concept": tn,
+            "source_mt": src_mt_name,
+            "target_mt": tgt_mt_name,
+            "source_node": sc,
+            "target_node": tc,
+        },
+        "_per_order": per_order,
+        "_rationale": rationale_parts,
+        "_aligned_orders": aligned_orders,
+        "_struct_shared": len(witness["shared"]),
+        "_name_shared": witness["name_shared"],
+        "_transform": witness["transform"],
     }
 
 
@@ -374,12 +788,26 @@ def emit_analogy_as_graph(substrate, analogy: dict) -> Any | None:
             "order_n": int(analogy["order_n"]),
             "feature_count": int(analogy["feature_count"]),
             "features_total": int(analogy["features_total"]),
+            # The STRUCTURAL evidence, stored so the assertion below is
+            # inspectable in the graph rather than implied by an ordinal.
+            "struct_shared": int(analogy.get("struct_shared") or 0),
+            "name_shared": int(analogy.get("name_shared") or 0),
+            "corroboration": int(analogy.get("corroboration") or 0),
             "rationale": analogy["rationale"],
         })
-        # Also add implements edge if the abstraction is high enough
-        # (n >= 2). Lower-n matches are coincidence; n >= 2 indicates
-        # genuine structural correspondence.
-        if analogy["order_n"] >= 2:
+        # The `implements` edge asserts STRUCTURAL CORRESPONDENCE, so it is now
+        # written only when structural correspondence was actually COMPUTED and
+        # is positive.
+        #
+        # It used to be written on `order_n >= 2` with the comment "Lower-n
+        # matches are coincidence; n >= 2 indicates genuine structural
+        # correspondence" — a hand-set ordinal asserting a structure nothing had
+        # computed (`SHAPE_AUDIT.md` §2.4, verbatim). Under the anchored matcher
+        # that ordinal was reachable by, among other things, the substring `io`
+        # inside the word `operation`.
+        if (analogy["order_n"] >= 2
+                and (int(analogy.get("struct_shared") or 0) > 0
+                     or int(analogy.get("corroboration") or 0) > 0)):
             try:
                 substrate.add_edge(analogy["source_node"], "implements",
                                    analogy["target_node"], {})
@@ -388,6 +816,24 @@ def emit_analogy_as_graph(substrate, analogy: dict) -> Any | None:
         return node
     except Exception:
         return None
+
+
+#: Ranking is TIERS, never a weighted sum.
+#:   1. `order_n`       — position on the abstraction axis. PRIMARY, unchanged:
+#:                        that is the previous rung's registered and gated
+#:                        finding (`tests/test_analogical_relative_ranking.py`)
+#:                        and this rung does not relitigate it.
+#:   2. `corroboration` — how many other pairs realise the same transform. The
+#:                        WITHIN-order discriminator, which is exactly where
+#:                        MAC/FAC puts structure.
+#:   3. `name_shared`   — shared axes evidenced in the concept's own NAME slot,
+#:                        not in prose (`META_SHAPE_FIRST_CLASS_RESULTS.md` §2's
+#:                        `pred_principles` tier, one grain over).
+#:   4. `struct_shared` — total structurally aligned axes.
+#:   5/6. the surface counts, unchanged.
+RANK_KEY = (lambda a: (-a["order_n"], -a.get("corroboration", 0),
+                       -a.get("name_shared", 0), -a.get("struct_shared", 0),
+                       -a["feature_count"], -a["features_total"]))
 
 
 def think_harder(substrate, source_mt_name: str,
@@ -408,13 +854,8 @@ def think_harder(substrate, source_mt_name: str,
             substrate, source_mt_name, target_mt_names, order_n=n)
         if len(analogies) >= want_at_least:
             # Emit the highest-placed analogies as graph data. Ranking is
-            # RELATIVE: primary key = order_n (axis position — a higher-order
-            # match outranks a lower-order one), tiebreaker = feature_count
-            # (shared features at that order), then features_total. No fixed
-            # cross-order multiplier decides the order.
-            top = sorted(analogies,
-                         key=lambda a: (-a["order_n"], -a["feature_count"],
-                                        -a["features_total"]))
+            # RELATIVE and TIERED — see RANK_KEY.
+            top = sorted(analogies, key=RANK_KEY)
             n_emitted = 0
             seen = set()
             for a in top[:50]:
@@ -455,5 +896,5 @@ def think_harder(substrate, source_mt_name: str,
 
 __all__ = [
     "find_analogies", "emit_analogy_as_graph", "think_harder",
-    "metashape_realisation_counts",
+    "metashape_realisation_counts", "shape_hits", "RANK_KEY",
 ]
