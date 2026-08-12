@@ -7,11 +7,29 @@
 //! `child.<field_name>` (with an `index` attr on tuple-shaped children
 //! so order is preserved).
 //!
-//! This is the load-bearing piece of the substrate: because Γ itself
-//! is built from Productions whose where-clause / weight are Terms,
-//! reflection makes Γ a subgraph of G — so the same Π machinery that
-//! mutates G also mutates Γ. Self-modification falls out of one
-//! mechanism rather than two.
+//! This is the load-bearing piece of the substrate: because a Production's
+//! where-clause / weight are Terms, this generic mechanism is what lets
+//! `grammar_reflect.rs` mirror `Substrate::add_production`'s admitted
+//! productions into the graph as real `Term.*` subgraphs rather than an
+//! opaque blob (`GAMMA_REFLECTION_WIRING_RESULTS.md`, recommendation 2(ii)
+//! of `SELF_REFERENCE_INFINITY_GROUNDING.md` §5).
+//!
+//! **Precise scope, corrected here per that verification note's §3.2/§4.5
+//! finding that this comment previously overclaimed:** this does NOT make
+//! `ConsistencyChecker.grammar` itself a subgraph of G. That struct (the
+//! object `check_edge` actually reads) remains a plain Rust value, for
+//! performance — `check_edge` never traverses the graph. What IS true, as
+//! of `grammar_reflect.rs`: every `Production` added through the Rust
+//! inherent `Substrate::add_production` gets an independently-reconstructable
+//! `GammaProduction` graph mirror (content-equal to the struct, proven by
+//! `substrate::tests::graph_mirror_is_content_equal_to_checker_grammar`),
+//! wired from a `GammaGrammar` root. The PyO3-exposed `add_production`
+//! binding — the path essentially all real Γ growth currently takes —
+//! bypasses the Rust inherent method entirely and is therefore NOT covered;
+//! see that results doc §2 for the full, named boundary. Self-modification
+//! of the graph-resident REWRITE-RULE population (a separate, formally
+//! distinct object from Γ — see `graph_rules.rs`) genuinely does fall out of
+//! this one mechanism with no such caveat.
 
 use crate::graph::{NodeID, TypedGraph};
 use crate::sym::{Interner, Sym};
