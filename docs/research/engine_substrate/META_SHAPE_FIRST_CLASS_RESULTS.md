@@ -517,16 +517,17 @@ for this rung, and named here as the honest limit of AR5's coverage.
 
 ## 10. Reproduce
 
-**THE COMMITTED `.so` IS NOT THIS BRANCH'S ENGINE.**
-`runners/dsl/python/substrate_rs/_native.abi3.so` is **tracked** in this repo
-(contrary to `domains/engine_provenance.py`'s doc comment, which says it is
-gitignored — recorded as a discrepancy). The committed copy is `ae38fe7`'s
-8.6 MB *release* build; a 140 MB debug build was deliberately **not** committed.
-So a fresh checkout of `meta-shape-first-class` carries Rust source that its
-binary does not implement, and **every probe below will silently measure the OLD
-recognizer until you rebuild.** The working worktree at
-`/home/matt/ocelot-meta-shape-first-class` has been left with a matching debug
-engine in place (so `git status` shows that one file dirty, deliberately).
+**SUPERSEDED (2026-08-12, commit `ddf39ec`):** at the time this rung's own
+branch was written, the committed `.so` was stale — `ae38fe7`'s pre-fix
+8.6 MB release build, while a 140 MB debug build was deliberately left
+uncommitted, so a fresh checkout of `meta-shape-first-class` carried Rust
+source its own binary did not implement. This was caught and fixed before
+merge: a proper `--release` engine was rebuilt from this exact source and
+committed (`ddf39ec`), verified against the coherence probe and this rung's
+own gate suite, before `meta-shape-first-class` was merged to `main`.
+**On `main` today, the committed `.so` IS the engine this source describes.**
+The original warning is left below, historical, for anyone reproducing this
+exact branch state rather than `main`.
 
 ```bash
 git worktree add --detach /tmp/msfc-baseline ae38fe7
