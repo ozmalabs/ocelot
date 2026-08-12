@@ -1282,9 +1282,18 @@ def induce_concern(agent, observation, *, name_hint=None) -> dict[str, Any]:
 
     # the capability-key: named from the observation's OWN predicates (mechanical —
     # the same naming `induce_concern` used pre-migration), not from the residual
-    # (which is not yet known — the decode hasn't run).
+    # (which is not yet known — the decode hasn't run). CANONICAL form (2026-08-12,
+    # SHAPE_AUDIT.md §3.1 fix): sorted, not truncated — matching the convention
+    # every OTHER comparison in this pipeline already uses (`build_candidate`
+    # canonically sorts both sides before comparing; `ShapeDecode`/`AntiUnify`/
+    # `FixedCount` all score over relation SETS, not ordered/truncated sequences).
+    # Sorting (not deduping) fixes order-dependence while keeping the full
+    # multiset — a repeated predicate head is real information the join should
+    # not discard. Truncation carried no offsetting benefit: every read site of
+    # `capability_keys`/`obs.key` treats it as an opaque equality-tested string,
+    # never sliced or length-assumed.
     preds = [st[0] for st in obs if isinstance(st, list) and st and isinstance(st[0], str)]
-    key = name_hint or (("induced_" + "_".join(preds[:3])) if preds else "induced_concern")
+    key = name_hint or (("induced_" + "_".join(sorted(preds))) if preds else "induced_concern")
 
     obs_node = sub.add_node("Observation", {"signature": obs, "key": [key], "status": "pending"})
     if ag_node is not None:
