@@ -7134,17 +7134,79 @@ def author_signature(substrate, concept_name: str):
     return (sig if sig else None), defn, cname
 
 
+_RELATION_CUE_INDEX_CACHE: dict = {}
+
+
+def _relation_cue_index(substrate) -> dict:
+    """The RelationCue vocabulary's reverse index: {tuple(relation): cue_name}, the
+    AXIS a relation-tuple row belongs to. Every consumer of the RelationCue lexicon
+    (author_signature's keyword scan, the hand-authored seeds/math_capability_shapes.json
+    rows) emits relation tuples copied verbatim from a RelationCue.relation, so this
+    index is how `_shared_shape` recognises WHICH axis a row is, independent of the
+    row's position in whatever list it arrived in. Cached like
+    `analogical_thinking._vocabulary_keys` (same pattern, own cache — no cross-import)."""
+    sub = getattr(substrate, "s", substrate)
+    cues = _load_relation_cues(substrate)
+    key = (id(sub), len(cues))
+    cached = _RELATION_CUE_INDEX_CACHE.get(key)
+    if cached is not None:
+        return cached
+    idx = {}
+    for n in sub.nodes("RelationCue") if hasattr(sub, "nodes") else []:
+        at = sub.node(n)["attrs"]
+        nm, rel = at.get("name"), at.get("relation")
+        if not nm or not rel:
+            continue
+        try:
+            import json as _json
+            rel = _json.loads(rel) if isinstance(rel, str) else rel
+        except Exception:
+            continue
+        idx[tuple(rel)] = nm
+    _RELATION_CUE_INDEX_CACHE[key] = idx
+    return idx
+
+
 def _shared_shape(substrate, sig_a, sig_b):
     """Run the HELD shape-matcher over two signatures: AntiUnify -> the shared
     structural skeleton; FixedCount -> how many leaf positions they SHARE (the
-    connection strength). Pure read-out of the matcher's Rust output."""
+    connection strength). Pure read-out of the matcher's Rust output.
+
+    AXIS-ANCHORED, not positional: a row from sig_a is paired with a row from sig_b
+    only when BOTH are byte-identical to the SAME held RelationCue's relation tuple
+    (`_relation_cue_index`) -- i.e. the same NAMED cue fired for both signatures.
+    Two signatures' rows are never compared merely because they share a list index.
+    This is the same discipline `analogical_thinking._concept_shape_vector` applies
+    over its own vocabulary (fixed axis identity, not position-in-whatever-fired);
+    here the axis identity is looked up by content (the relation tuple IS the cue's
+    key) rather than carried as a separate label, because both operand types this
+    function ever receives (an author_signature() output, a CapabilityAxis-residual
+    `[[p], ...]` list, or a seeded `math_capability_shapes.json` signature) are, by
+    construction, lists of raw relation tuples with no separate axis label attached.
+    A row that matches no held cue (e.g. a CapabilityAxis residual's bare predicate,
+    or the rare hand-authored seed row that isn't an exact cue-template copy) simply
+    contributes no axis and is excluded from the comparison, honestly -- not force-
+    aligned by position the way the old code did."""
     sub = getattr(substrate, "s", substrate)
     native = getattr(sub, "_inner", sub)
-    n = min(len(sig_a), len(sig_b))
-    if n == 0:
+    if not sig_a or not sig_b:
         return None, 0
-    a = [list(x) for x in sig_a[:n]]
-    b = [list(x) for x in sig_b[:n]]
+    cue_of = _relation_cue_index(substrate)
+    by_name_a: dict = {}
+    for row in sig_a:
+        nm = cue_of.get(tuple(row))
+        if nm and nm not in by_name_a:
+            by_name_a[nm] = list(row)
+    by_name_b: dict = {}
+    for row in sig_b:
+        nm = cue_of.get(tuple(row))
+        if nm and nm not in by_name_b:
+            by_name_b[nm] = list(row)
+    shared_names = sorted(set(by_name_a) & set(by_name_b))
+    if not shared_names:
+        return None, 0
+    a = [by_name_a[nm] for nm in shared_names]
+    b = [by_name_b[nm] for nm in shared_names]
     res = native.evaluate({"type": "AntiUnify", "values": {"type": "Lit", "value": [a, b]}, "wild": "·?·"}, {})
     fixed = native.evaluate({"type": "FixedCount", "pattern": {"type": "Lit", "value": res}, "wild": "·?·"}, {})
     try:
