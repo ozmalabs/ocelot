@@ -26,7 +26,13 @@ use std::sync::Arc;
 
 /// Surface kind — text or raw bytes. Kept narrow so `Surface` doesn't
 /// inflate the Value enum's size on the stack.
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+///
+/// `PartialOrd`/`Ord` are derived (declaration order: `Text` < `Bytes`)
+/// solely so `cmp_value`'s `(Surface, Surface)` arm can order the kind
+/// tag before the payload. Two surfaces with identical bytes but
+/// different kinds are `!=` under `PartialEq`, so they must not be
+/// `Equal` under the total order either — see `cmp_value`.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum SurfaceKind {
     Text,
     Bytes,
@@ -394,6 +400,30 @@ pub fn cmp_value(a: &Value, b: &Value) -> Ordering {
                 }
                 Ordering::Equal
             })
+        }
+        // LOAD-BEARING, and it was a real, measured data-loss bug before it
+        // existed (RULE_SIGNATURE_TO_RUST_RESULTS.md §5.1 named it;
+        // CMP_VALUE_SURFACE_FIX_RESULTS.md fixed it). Without this arm two
+        // `Surface` values fall through to `_ => tag(a).cmp(&tag(b))` — 10
+        // vs 10 — and read `Equal`, so EVERY RUNTIME-BUILT STRING COMPARES
+        // EQUAL TO EVERY OTHER. `PartialEq` and `Hash` both get it right
+        // (kind + payload, see above), so this was an Ord/Eq INCONSISTENCY,
+        // not a missing feature: `make_set`/`make_frozenset` dedup by
+        // `cmp_value(a,b) == Equal`, `Value::Dict` is a cmp-sorted pair vec
+        // and `prog_eval`'s dict item-assign hits the first slot whose key
+        // compares Equal — so a set of computed strings collapsed to ONE
+        // element and `d[computed] = v` overwrote an unrelated key.
+        // Measured before the fix: `{"a"+str(i) for i in range(3)}` →
+        // `{'a0'}`; `d["a"+str(i)] = i` → `{'a0': 2}`.
+        //
+        // Kind first, then payload bytes: a Text and a Bytes surface with
+        // identical payloads are `!=` under `PartialEq`, so they must not
+        // be `Equal` here either. `[u8]`'s own `Ord` is lexicographic, so
+        // for `SurfaceKind::Text` this IS byte-lexicographic string order —
+        // note that `(Str, Str)` next door is NOT (it compares interner
+        // symbol IDs), which is a separate, still-open defect.
+        (Value::Surface(ka, ba), Value::Surface(kb, bb)) => {
+            ka.cmp(kb).then_with(|| ba.as_ref().cmp(bb.as_ref()))
         }
         (Value::Dict(xa), Value::Dict(ya)) => {
             xa.len().cmp(&ya.len()).then_with(|| {
@@ -787,5 +817,117 @@ mod tests {
         assert_eq!(cmp_value(&Value::Rational(1, 3), &Value::Rational(1, 2)), Ordering::Less);
         assert_eq!(cmp_value(&Value::Rational(2, 1), &Value::Int(2)), Ordering::Equal);
         assert_eq!(cmp_value(&Value::Int(1), &Value::Rational(1, 2)), Ordering::Greater);
+    }
+
+    // ---------------------------------------------------------------
+    // (Surface, Surface) — CMP_VALUE_SURFACE_FIX_RESULTS.md AR3.
+    // Every one of these was RED before the arm existed: `cmp_value`
+    // read `Equal` for any two Surfaces, so a set of runtime-built
+    // strings collapsed to one element.
+    // ---------------------------------------------------------------
+    fn text(s: &str) -> Value {
+        Value::Surface(SurfaceKind::Text, Arc::from(s.as_bytes().to_vec()))
+    }
+    fn bytes(s: &[u8]) -> Value {
+        Value::Surface(SurfaceKind::Bytes, Arc::from(s.to_vec()))
+    }
+
+    #[test]
+    fn cmp_value_distinguishes_two_computed_surfaces() {
+        use std::cmp::Ordering;
+        // THE HEADLINE: this read `Equal` before the arm existed.
+        assert_eq!(cmp_value(&text("a0"), &text("a1")), Ordering::Less);
+        assert_eq!(cmp_value(&text("a1"), &text("a0")), Ordering::Greater);
+        assert_eq!(cmp_value(&text("a0"), &text("a0")), Ordering::Equal);
+    }
+
+    #[test]
+    fn surface_set_does_not_collapse() {
+        // `{f"a{i}" for i in range(3)}` -> ONE element before the fix.
+        let s = Value::make_set(vec![text("a0"), text("a1"), text("a2")]);
+        assert_eq!(s.len(), 3);
+        let f = Value::make_frozenset(vec![text("a0"), text("a1"), text("a2"), text("a0")]);
+        assert_eq!(f.len(), 3, "a genuine duplicate must still dedup");
+    }
+
+    #[test]
+    fn surface_set_of_tuples_does_not_collapse() {
+        // Nesting did not save you before the fix: the Tuple arm recurses
+        // straight back into the missing Surface arm.
+        let mk = |i: &str| Value::Tuple(seq(vec![Value::Str(Sym(1)), text(i)]));
+        let s = Value::make_set(vec![mk("a0"), mk("a1"), mk("a2")]);
+        assert_eq!(s.len(), 3);
+    }
+
+    #[test]
+    fn surface_ord_agrees_with_eq_in_both_directions() {
+        use std::cmp::Ordering;
+        // THE CONTRACT the missing arm broke: Ord and Eq must agree.
+        let vals = [text(""), text("a"), text("a0"), text("a1"), text("b"),
+                    bytes(b""), bytes(b"a"), bytes(b"a0")];
+        for a in vals.iter() {
+            for b in vals.iter() {
+                assert_eq!(
+                    cmp_value(a, b) == Ordering::Equal,
+                    a == b,
+                    "Ord/Eq disagree for {:?} vs {:?}", a, b);
+            }
+        }
+    }
+
+    #[test]
+    fn surface_ord_is_antisymmetric_and_total() {
+        let vals = [text(""), text("a"), text("a0"), text("ab"), bytes(b"a"), bytes(b"b")];
+        for a in vals.iter() {
+            for b in vals.iter() {
+                assert_eq!(cmp_value(a, b), cmp_value(b, a).reverse(),
+                           "antisymmetry broken for {:?} vs {:?}", a, b);
+            }
+        }
+    }
+
+    #[test]
+    fn surface_ord_is_transitive_on_a_ladder() {
+        use std::cmp::Ordering;
+        let (a, b, c) = (text("a"), text("b"), text("c"));
+        assert_eq!(cmp_value(&a, &b), Ordering::Less);
+        assert_eq!(cmp_value(&b, &c), Ordering::Less);
+        assert_eq!(cmp_value(&a, &c), Ordering::Less);
+    }
+
+    #[test]
+    fn surface_kind_is_part_of_the_order() {
+        use std::cmp::Ordering;
+        // Same payload, different kind: `!=` under PartialEq, so it must
+        // not be `Equal` under the total order either.
+        assert_ne!(text("ab"), bytes(b"ab"));
+        assert_ne!(cmp_value(&text("ab"), &bytes(b"ab")), Ordering::Equal);
+        // Text sorts before Bytes (declaration order), and the kind tag
+        // dominates the payload.
+        assert_eq!(cmp_value(&text("zz"), &bytes(b"aa")), Ordering::Less);
+        let s = Value::make_set(vec![text("ab"), bytes(b"ab")]);
+        assert_eq!(s.len(), 2);
+    }
+
+    #[test]
+    fn surface_text_order_is_byte_lexicographic() {
+        use std::cmp::Ordering;
+        // The half of §5.2 this fix DOES deliver: Surface(Text) compares
+        // by payload bytes, so it is genuinely lexicographic. `(Str, Str)`
+        // next door still compares interner symbol IDs — separate defect,
+        // deliberately untouched here.
+        let mut v = vec![text("where"), text("source"), text("var_name"),
+                         text("a_zzz"), text("b")];
+        v.sort_by(cmp_value);
+        let rendered: Vec<String> = v
+            .iter()
+            .map(|x| match x {
+                Value::Surface(_, b) => String::from_utf8_lossy(b).into_owned(),
+                _ => unreachable!(),
+            })
+            .collect();
+        assert_eq!(rendered, vec!["a_zzz", "b", "source", "var_name", "where"]);
+        assert_eq!(cmp_value(&text("a"), &text("ab")), Ordering::Less,
+                   "prefix sorts before its extension, as CPython does");
     }
 }
