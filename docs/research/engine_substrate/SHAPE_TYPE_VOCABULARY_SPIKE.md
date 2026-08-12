@@ -411,6 +411,41 @@ serve, and the tree serves it both ways with nothing saying which to use when. T
 `SHAPE_AUDIT.md`'s sixth pattern (*"the same enumeration written twice, with nothing
 deriving one from the other"*) applied to the codebook's own partition.
 
+> **CORRECTED IN PLACE, 2026-08-12 — the counts above stand; the sentence
+> *"it is the **same need** `kind` exists to serve"* is WRONG, and the conclusion
+> inverts.** (`CODEBOOK_PARTITION_CONSOLIDATION_RESULTS.md`, which investigated this
+> paragraph as its whole charter.) Measured by reading
+> `shape_decode.rs::load_parts` and confirmed live: **`kind` does not partition a
+> decode pool and never has.** `load_parts` reads it into `Part.kind_val` (`:260`,
+> `:313`) and `eval_shape_decode` copies it into the plan step (`:1380`); nothing
+> filters on it. The only two candidate filters `ShapeDecode` accepts —
+> `codebook_scope` and `exclude` — are both keyed on the part's **name**, and a
+> `kind` term key is silently dropped by the wire parser. So the **node type is the
+> only mechanism that partitions a pool**, and `kind` is a pass-through label; they
+> are not two ways of serving one need, they are one mechanism and one label that
+> reads like it.
+>
+> The consequence is that the implied fix — collapse the types into
+> `ShapeSignature{kind:…}` — would **delete** the only working isolation and replace
+> it with the emergent property that the pools happen to use disjoint predicates
+> today. That is measurably unsafe: merging the four stroke grains changes **261 of
+> 502** held-signature decodes, and merging `ShapeSignatureCoherence` misroutes a
+> marked conditional (`[["IF"]]` → `condition_if` becomes `conditional`, the
+> clause-construction part — the exact competition the seed's own comment refuses,
+> and `coherence_relations` `depends_on` `reading_constructions`, so the two are
+> always co-loaded). **NO-GO on all fifteen**, gated by
+> `tests/test_codebook_partition_migrated.py`.
+>
+> The sixth pattern **is** present here, but it is the other copy: **ten** of the
+> fourteen subtypes carry a `kind` attr that merely RESTATES the type name
+> (`ShapeSignatureCoherence{kind:'coherence_relation'}`, …) and that nothing filters
+> on; two carry a genuine sub-classifier (`Meter{kind:'foot'}`,
+> `Throughline{kind:'character'|'pattern'|'payoff'}`) and two carry none.
+> The duplicate enumeration is those ten inert `kind` values, not the type. The correct rule the
+> tree already follows in its best-behaved corner (`register_source` /
+> `format_channel` / `metrical_reading`) is **type = pool, kind = label within a
+> pool.**
+
 **(b) A `LatentDimension` is dedup'd by a guard designed for a `Transform`.**
 `SHAPE_AUDIT.md` §4.4 states the distinction exactly right and I want to promote it,
 because it is the general discriminator §8 needs: *"A `Transform` genuinely is
