@@ -144,6 +144,10 @@ def test_ls20_frustration_absent_from_full_boot():
             dd = json.load(open(f))
         except Exception:
             continue
+        # a LIST-rooted file in seeds/ (`_recovered_f16_rules.json`) declares no
+        # depends_on at all — the same guard the seed loader itself applies.
+        if not isinstance(dd, dict):
+            continue
         assert "ls20_frustration" not in (dd.get("depends_on") or [])
 
 

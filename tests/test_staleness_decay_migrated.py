@@ -19,6 +19,12 @@ import importlib
 
 import pytest
 
+# OPTIONAL DEPENDENCY (red-test triage 2026-08-12): absent 'matplotlib' is a SKIP with a
+# named reason, never a red. See tests/optional_deps.py.
+from optional_deps import importorskip as _optional_importorskip  # noqa: E402
+_optional_importorskip('matplotlib')
+
+
 M = importlib.import_module("scripts.staleness_decay_measure")
 
 

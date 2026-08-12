@@ -38,5 +38,16 @@ cp --remove-destination target/release/libsubstrate_rs.so \
 
 echo "== installed: $(realpath python/substrate_rs/_native.abi3.so)"
 cd "$ROOT"
+
+# THE BUILD RECORD — the content of the Rust source this artifact was just
+# built from, written beside it. `engine_provenance.build_is_stale` answers
+# "did the source move since the build?" from THIS, by content. It used to
+# answer from mtimes, which a `git checkout` rewrites in arbitrary order —
+# 85 false "STALE" accusations in a freshly created worktree, refusing to
+# measure in 88 test files on an engine that was exactly the committed one.
+python -c "import sys; sys.path.insert(0, '.'); \
+from domains.engine_provenance import record_build; \
+print('== build record:', record_build())"
+
 python domains/engine_provenance.py
 echo "== verify:  python -m pytest tests/test_engine_provenance_migrated.py -q"

@@ -93,7 +93,9 @@ PROTOCOL: `VISION_PROTOCOL.md` §10 (engine on every result) + §11
 from __future__ import annotations
 
 import hashlib
+import json
 import os
+import subprocess
 import sys
 
 _NATIVE_REL = os.path.join("substrate_rs", "_native.abi3.so")
@@ -104,6 +106,10 @@ _NATIVE_REL = os.path.join("substrate_rs", "_native.abi3.so")
 _ENGINE_REL = os.path.join("runners", "dsl", "python", _NATIVE_REL)
 _RUST_SRC_REL = os.path.join("runners", "dsl", "src")
 _CARGO_REL = os.path.join("runners", "dsl", "Cargo.toml")
+# The BUILD RECORD sits beside the artifact: the content of the Rust source
+# the artifact was built from. `build_is_stale` reads it; nothing else may.
+_BUILD_RECORD_REL = os.path.join("runners", "dsl", "python", "substrate_rs",
+                                 "_native.build.json")
 
 # This module lives at `<tree>/domains/engine_provenance.py`.
 THIS_TREE = os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -356,20 +362,14 @@ def rust_source_fingerprint(tree: str = THIS_TREE) -> str | None:
     return h.hexdigest()
 
 
-def build_is_stale(tree: str) -> list[str]:
-    """`.rs` files NEWER than the built artifact, within the tree that
-    BUILT it. Catches "edited Rust, forgot to rebuild" — the failure the
-    source fingerprint alone cannot see, because it compares this tree to
-    the engine's tree and both can be equally un-rebuilt.
+def rust_source_hashes(tree: str = THIS_TREE) -> dict:
+    """`{repo-relative path: sha256}` for every `.rs` under
+    `runners/dsl/src` plus `runners/dsl/Cargo.toml`.
 
-    mtime is meaningful here and only here: this is the working tree where
-    the build actually ran.
-    """
-    native = os.path.join(tree, _ENGINE_REL)
-    if not os.path.isfile(native):
-        return []
-    built = os.path.getmtime(native)
-    newer: list[str] = []
+    The per-file form of `rust_source_fingerprint` — same content, kept
+    itemised so a staleness verdict can NAME the files that moved instead
+    of only saying that something did."""
+    out: dict = {}
     src = os.path.join(tree, _RUST_SRC_REL)
     for dirpath, dirnames, filenames in os.walk(src):
         dirnames.sort()
@@ -377,9 +377,121 @@ def build_is_stale(tree: str) -> list[str]:
             if not name.endswith(".rs"):
                 continue
             path = os.path.join(dirpath, name)
-            if os.path.getmtime(path) > built:
-                newer.append(os.path.relpath(path, tree))
-    return newer
+            out[os.path.relpath(path, tree)] = sha256_of(path)
+    cargo = os.path.join(tree, _CARGO_REL)
+    if os.path.isfile(cargo):
+        out[os.path.relpath(cargo, tree)] = sha256_of(cargo)
+    return out
+
+
+def record_build(tree: str = THIS_TREE) -> str | None:
+    """Write the BUILD RECORD beside the artifact: the content hashes of the
+    Rust source the engine in this tree was JUST built from.
+
+    Mechanical I/O, called by `scripts/engine_build.sh` immediately after
+    the artifact is installed. It is what makes staleness answerable by
+    CONTENT — see `build_is_stale`. Returns the record path, or None when
+    there is no artifact to describe.
+    """
+    native = os.path.join(tree, _ENGINE_REL)
+    if not os.path.isfile(native):
+        return None
+    rec = {
+        "_README": "The Rust source THIS tree's engine artifact was built "
+                   "from, by content. Written by scripts/engine_build.sh. "
+                   "Read by domains.engine_provenance.build_is_stale — never "
+                   "compare mtimes, a checkout rewrites them all.",
+        "engine_sha256": sha256_of(native),
+        "source_fingerprint": rust_source_fingerprint(tree),
+        "files": rust_source_hashes(tree),
+    }
+    path = os.path.join(tree, _BUILD_RECORD_REL)
+    with open(path, "w") as fh:
+        json.dump(rec, fh, indent=1, sort_keys=True)
+    return path
+
+
+def _git_dirty(tree: str, paths: list) -> set | None:
+    """Repo-relative paths under `paths` that DIFFER from HEAD (worktree or
+    index). `None` when the question cannot be answered — no git, not a work
+    tree, anything. Mechanical I/O; never guesses."""
+    try:
+        r = subprocess.run(["git", "-C", tree, "status", "--porcelain", "-z", "--"] + paths,
+                           capture_output=True, text=True, timeout=60)
+    except Exception:                                   # noqa: BLE001 — unanswerable
+        return None
+    if r.returncode != 0:
+        return None
+    out: set = set()
+    for rec in r.stdout.split("\0"):
+        if len(rec) > 3:
+            out.add(rec[3:])
+    return out
+
+
+def build_is_stale(tree: str) -> list[str]:
+    """Rust source that has MOVED SINCE THE BINARY WAS BUILT, in the tree
+    that built it. Catches "edited Rust, forgot to rebuild" — the failure the
+    source fingerprint alone cannot see, because it compares this tree to the
+    engine's tree and both can be equally un-rebuilt.
+
+    CONTENT, NEVER MTIME (fixed 2026-08-12, red-test triage). This function
+    used to compare `os.path.getmtime`, on the reasoning that "mtime is
+    meaningful here and only here: this is the working tree where the build
+    actually ran." **That premise is false for a tree git wrote.** `git
+    worktree add` / `git checkout` stamps every file it writes with the
+    checkout time in whatever order it happens to write them, so a fresh
+    worktree gets `.rs` files microseconds NEWER than a `.so` neither of them
+    built. Measured at `d239b7c`: 85 `.rs` files 2 MILLISECONDS newer than the
+    artifact in a just-created worktree, and 5 in the canonical tree — which
+    made `assert_measuring_engine` refuse to measure in **88 test files**, on
+    an engine that was in fact exactly the committed one. The module already
+    knew the general form of this ("a git checkout rewrites every mtime, so
+    mtimes are meaningless ACROSS trees", `rust_source_fingerprint`); the
+    exception carved out here did not survive the artifact becoming tracked.
+
+    Three answerable states, in order — and NONE of them manufactures a red
+    from an absence:
+
+      1. a BUILD RECORD is present (`record_build`, written by
+         `scripts/engine_build.sh`) — stale is exactly the set of source
+         files whose content differs from the content that was built;
+      2. no record, but git can answer — a `.rs`/`Cargo.toml` that DIFFERS
+         FROM HEAD while the committed artifact does NOT is a forgotten
+         rebuild, by content. Both clean means the pair is exactly what was
+         committed, which is the committer's business and not evidence of
+         anything here;
+      3. neither — UNKNOWN, and unknown returns `[]`. An unanswerable
+         question is not a failure; inventing one is how a gate becomes
+         something agents route around (the risk `assert_measuring_engine`'s
+         own docstring names).
+    """
+    native = os.path.join(tree, _ENGINE_REL)
+    if not os.path.isfile(native):
+        return []
+
+    record_path = os.path.join(tree, _BUILD_RECORD_REL)
+    if os.path.isfile(record_path):
+        try:
+            with open(record_path) as fh:
+                built_from = json.load(fh).get("files") or {}
+        except Exception:                               # noqa: BLE001 — unreadable == unknown
+            built_from = None
+        if built_from:
+            now = rust_source_hashes(tree)
+            moved = [rel for rel, sha in sorted(now.items()) if built_from.get(rel) != sha]
+            moved += [rel for rel in sorted(built_from) if rel not in now]
+            return moved
+
+    dirty = _git_dirty(tree, [_RUST_SRC_REL, _CARGO_REL, _ENGINE_REL])
+    if dirty is None:
+        return []                                       # unanswerable, not stale
+    if os.path.relpath(native, tree) in dirty or _ENGINE_REL in dirty:
+        # The artifact itself was rebuilt/replaced without leaving a record.
+        # Which source it came from is UNKNOWN, and unknown is not stale.
+        return []
+    return sorted(p for p in dirty
+                  if p.endswith(".rs") or p.endswith("Cargo.toml"))
 
 
 def sha256_of(path: str) -> str:

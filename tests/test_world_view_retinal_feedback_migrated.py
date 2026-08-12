@@ -9,6 +9,12 @@ pytest.importorskip("substrate_rs")
 from domains import doom_photon_world as dpw
 from substrate.world_adapter import WorldAdapter
 
+# OPTIONAL DEPENDENCY (red-test triage 2026-08-12): absent 'cv2' is a SKIP with a
+# named reason, never a red. See tests/optional_deps.py.
+from optional_deps import importorskip as _optional_importorskip  # noqa: E402
+_optional_importorskip('cv2')
+
+
 
 def test_agent_held_surface_prior_is_rendered_before_bottom_up_evidence():
     adapter = WorldAdapter(seeds=())

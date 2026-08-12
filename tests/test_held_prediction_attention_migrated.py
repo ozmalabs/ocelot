@@ -16,6 +16,11 @@ from substrate.boot_core import boot_core
 from substrate.seed_loader import manifest_for
 from substrate.world_adapter import WorldAdapter
 
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'cv2' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
+
 
 ATTENTION_SEEDS = (
     "fovea_salience_bridge",
@@ -174,6 +179,7 @@ def test_zero_field_and_exact_tie_refuse_without_stale_direction(residuals):
     assert attrs["attention_salience"] == 0.0
 
 
+@_requires_optional('cv2')
 def test_20x15_projection_is_complete_epoch_bounded_and_behavioral():
     calibration = {
         "retina_2d": True,

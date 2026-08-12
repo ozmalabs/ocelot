@@ -25,6 +25,11 @@ SCRIPTS = os.path.join(ROOT, "scripts")
 if SCRIPTS not in sys.path:
     sys.path.insert(0, SCRIPTS)
 
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'vizdoom' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
+
 
 def _boot(*, epoch=7, translation=4.0, rotation=0.0,
           pose=(100.0, 50.0, 0.0), focal=10.0, source_delta=1):
@@ -193,6 +198,7 @@ def test_bearing_uses_real_pose_angle_plus_retinal_radians():
         wa.close()
 
 
+@_requires_optional('vizdoom')
 def test_packet_ingress_calibrates_focal_length_and_source_gap_mechanically():
     import doom_world as dw
 

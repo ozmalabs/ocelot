@@ -28,6 +28,11 @@ from substrate.boot_core import boot_core
 from substrate.seed_loader import manifest_for
 import domains.reflective_faculty as rf
 
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'cv2' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
+
 
 # ---------------------------------------------------------------------------
 # Minimal duck-typed agent wrapper for induce_concern/ground_concern (identical
@@ -236,6 +241,7 @@ def test_analysis_rule_does_not_fire_on_unfinished_run():
 pytestmark_slow = pytest.mark.slow
 
 
+@_requires_optional('cv2')
 @pytest.mark.slow
 def test_full_self_experiment_loop_offline(tmp_path):
     from substrate.world_adapter import WorldAdapter

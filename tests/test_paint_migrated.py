@@ -40,6 +40,12 @@ from domains import paint_world as pw  # noqa: E402
 sys.path.insert(0, os.path.join(HERE, "scripts"))
 import paint_measure as pm  # noqa: E402
 
+# A provenance pin THIS REPOSITORY CANNOT RESOLVE is a SKIP, not a red: the claim
+# is unverifiable here, not false, and the gate re-arms unchanged against a repo
+# that has the range (tests/provenance_pins.py, red-test triage 2026-08-12).
+from provenance_pins import skip_if_unresolvable as _skip_unresolvable_pin  # noqa: E402
+
+
 # §12.3 — BOTH ENDPOINTS FIXED. `a67afe4f` is the base `main` HEAD this rung
 # branched from; `368d0528` is this rung's final mechanism commit. Neither is
 # HEAD, so the claim cannot rot by anyone else doing work afterwards. DECLARED
@@ -353,6 +359,7 @@ def test_the_adapter_makes_NO_DECISION_over_graph_state():
             assert "plum" not in seg and "papp" not in seg, seg
 
 
+@_skip_unresolvable_pin(BASE_SHA, RUNG_END_SHA)
 def test_this_rung_adds_NO_Rust():
     changed = _rung_diff_names()
     assert changed, "expected a non-empty rung diff"
@@ -360,6 +367,7 @@ def test_this_rung_adds_NO_Rust():
     assert rs == [], f"this rung claims NO new Rust but touched: {rs}"
 
 
+@_skip_unresolvable_pin(BASE_SHA, RUNG_END_SHA)
 def test_this_rung_edits_NO_OTHER_RUNGS_SEED_OR_ADAPTER():
     """§11 rule 4. The only shared file touched is the seed REGISTRY, and only
     to register this rung's own seed."""

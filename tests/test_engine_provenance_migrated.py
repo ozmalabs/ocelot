@@ -79,6 +79,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
+from domains import engine_provenance as ep  # noqa: E402
 from domains.engine_provenance import (  # noqa: E402
     distinct_native_artifacts,
     engine_preamble,
@@ -381,3 +382,81 @@ def test_provenance_record_is_reportable():
             "reported ambiguous but named no other engine — a provenance "
             "record that cannot be reconciled later")
         assert "shared" in provenance_line() or p["source_match"] == "own"
+
+
+# --------------------------------------------------------------------------- #
+#  STALENESS IS CONTENT, NOT MTIME (added 2026-08-12, red-test triage)
+#
+#  `build_is_stale` compared `os.path.getmtime`, documented as "meaningful here
+#  and only here: this is the working tree where the build actually ran." The
+#  premise is false for a tree GIT wrote: `git worktree add` stamps every file
+#  with the checkout time in whatever order it writes them, so a brand-new
+#  worktree gets `.rs` files microseconds newer than a `.so` neither of them
+#  built. MEASURED at d239b7c: 85 false "STALE" `.rs` in a fresh worktree
+#  (2 ms apart), 5 in the canonical tree — and because `assert_measuring_engine`
+#  refuses on `stale_rust`, that FALSE ACCUSATION was the single largest red
+#  class in the tree: 117 node ids across 88 files, on an engine that was
+#  exactly the committed one.
+#
+#  Positive-controlled in BOTH directions, per protocol 12.3 — a gate you have
+#  only ever seen pass is not a gate you have tested.
+# --------------------------------------------------------------------------- #
+def test_a_freshly_checked_out_tree_is_NOT_stale():
+    """The regression this fix exists to prevent. THIS tree is a git checkout
+    whose Rust source is clean at HEAD — whatever its mtimes say, no source has
+    moved since the artifact was committed, so nothing is stale."""
+    import subprocess
+    dirty = subprocess.run(
+        ["git", "-C", ROOT, "status", "--porcelain", "--",
+         "runners/dsl/src", "runners/dsl/Cargo.toml"],
+        capture_output=True, text=True).stdout.strip()
+    if dirty:
+        pytest.skip(f"this tree has uncommitted Rust source: {dirty.splitlines()[:3]}")
+    assert ep.build_is_stale(ROOT) == [], (
+        "a clean checkout was reported STALE — the mtime regression is back. "
+        f"{ep.build_is_stale(ROOT)[:5]}")
+
+
+def test_the_staleness_check_BITES_edited_rust(tmp_path):
+    """...and it must still catch the real failure it was written for: source
+    edited after the build. Content, so it bites through git, with no record."""
+    import shutil
+    tree = tmp_path / "tree"
+    (tree / "runners" / "dsl" / "src").mkdir(parents=True)
+    (tree / "runners" / "dsl" / "python" / "substrate_rs").mkdir(parents=True)
+    (tree / "runners" / "dsl" / "src" / "a.rs").write_text("fn a() {}\n")
+    (tree / "runners" / "dsl" / "Cargo.toml").write_text("[package]\n")
+    (tree / "runners" / "dsl" / "python" / "substrate_rs"
+     / "_native.abi3.so").write_bytes(b"\x7fELF-not-really")
+
+    assert ep.build_is_stale(str(tree)) == [], \
+        "no record and no git — UNKNOWN must return [], never a manufactured red"
+
+    ep.record_build(str(tree))
+    assert ep.build_is_stale(str(tree)) == [], "just-recorded build reported stale"
+
+    (tree / "runners" / "dsl" / "src" / "a.rs").write_text("fn a() { 1; }\n")
+    assert ep.build_is_stale(str(tree)) == [os.path.join("runners", "dsl", "src", "a.rs")], \
+        "edited Rust after a recorded build was NOT caught — the real failure " \
+        "this check exists for has been lost"
+
+    # A source file DELETED since the build is equally a moved source.
+    (tree / "runners" / "dsl" / "src" / "a.rs").unlink()
+    assert ep.build_is_stale(str(tree)) == [os.path.join("runners", "dsl", "src", "a.rs")]
+    shutil.rmtree(tree)
+
+
+def test_the_staleness_check_IGNORES_mtime_alone(tmp_path):
+    """The exact shape of the false accusation: source NEWER by mtime, identical
+    by content. A checkout is nothing but this."""
+    tree = tmp_path / "t2"
+    (tree / "runners" / "dsl" / "src").mkdir(parents=True)
+    (tree / "runners" / "dsl" / "python" / "substrate_rs").mkdir(parents=True)
+    (tree / "runners" / "dsl" / "src" / "a.rs").write_text("fn a() {}\n")
+    so = tree / "runners" / "dsl" / "python" / "substrate_rs" / "_native.abi3.so"
+    so.write_bytes(b"\x7fELF-not-really")
+    ep.record_build(str(tree))
+    os.utime(tree / "runners" / "dsl" / "src" / "a.rs", (2 ** 31, 2 ** 31))
+    assert ep.build_is_stale(str(tree)) == [], \
+        "a source file merely TOUCHED (content unchanged) was reported stale — " \
+        "the check is reading mtime again"

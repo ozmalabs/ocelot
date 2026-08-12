@@ -36,6 +36,11 @@ from substrate.seed_loader import manifest_for
 import domains.reflective_faculty as rf
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'cv2' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
 _CONCLUSIONS_SEED = os.path.join(ROOT, "seeds", "experiment_conclusions.json")
 
 
@@ -174,6 +179,7 @@ def test_seed_provenance_present(full_agent):
 #     DIFFERENT seeds, each genuinely naming that topic (real Argmax pick,
 #     not a coincidence) — over the SAME installed mint rule.
 # ---------------------------------------------------------------------------
+@_requires_optional('cv2')
 def test_skip_seeds_pick_is_discriminative(full_agent):
     from worlds.arc import ArcWorld
     from arc3_env import NavigateEnv
@@ -259,6 +265,7 @@ def test_close_experiment_loop_teaches_and_is_idempotent():
 #     skip_seeds (the ablated seed genuinely withheld from the child's boot),
 #     a real embedded variant, judged, and taught.
 # ---------------------------------------------------------------------------
+@_requires_optional('cv2')
 @pytest.mark.slow
 def test_full_self_delta_loop_offline(full_agent, tmp_path):
     from domains.experiment_dispatch import scan_and_dispatch, _INFLIGHT

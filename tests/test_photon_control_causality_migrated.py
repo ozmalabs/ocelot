@@ -13,6 +13,11 @@ from domains.control_bundle import ControlBundleAdapter  # noqa: E402
 from substrate.seed_loader import manifest_for  # noqa: E402
 from substrate.world_adapter import WorldAdapter  # noqa: E402
 
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'cv2' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
+
 
 MOTION_CALIBRATION = {
     "retina_2d": True,
@@ -132,6 +137,7 @@ def _motion_arm(residual_columns):
     ("columns", "expected"),
     [((2,), ("turn_left",)), ((9,), ("turn_right",))],
 )
+@_requires_optional('cv2')
 def test_photon_residual_side_changes_the_enacted_motor_action(columns, expected):
     attention, action, game = _motion_arm(columns)
     assert attention["attention_refused"] == 0.0
@@ -141,6 +147,7 @@ def test_photon_residual_side_changes_the_enacted_motor_action(columns, expected
     assert game["attention_control_epoch"] == 12
 
 
+@_requires_optional('cv2')
 @pytest.mark.parametrize("columns", [(), (2, 9)])
 def test_zero_and_tied_photon_fields_refuse_the_attention_control_route(columns):
     attention, action, game = _motion_arm(columns)
@@ -188,6 +195,7 @@ def _held_arm(changed_columns):
     ("columns", "expected"),
     [((3,), ("turn_left",)), ((16,), ("turn_right",))],
 )
+@_requires_optional('cv2')
 def test_held_photon_prediction_side_changes_the_enacted_action(columns, expected):
     attention, action, game = _held_arm(columns)
     assert attention["attention_refused"] == 0.0
@@ -197,6 +205,7 @@ def test_held_photon_prediction_side_changes_the_enacted_action(columns, expecte
     assert game["chosen_source"] == "retinal_attention"
 
 
+@_requires_optional('cv2')
 @pytest.mark.parametrize("columns", [(), (3, 16)])
 def test_zero_and_tied_held_prediction_refuse_attention_control(columns):
     attention, action, game = _held_arm(columns)

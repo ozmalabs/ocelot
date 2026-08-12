@@ -9,6 +9,11 @@ from domains import doom_photon_world as dpw
 from substrate.boot_core import load_seeds_into
 from substrate.world_adapter import WorldAdapter
 
+# OPTIONAL DEPENDENCIES (red-test triage 2026-08-12): absent 'cv2' is a SKIP with a
+# named reason on the tests that need it, never a red. See tests/optional_deps.py.
+from optional_deps import requires as _requires_optional  # noqa: E402
+
+
 
 def _adapter():
     adapter = WorldAdapter(seeds=())
@@ -168,6 +173,7 @@ def test_foveal_only_brightness_change_is_explicitly_refused():
         adapter.close()
 
 
+@_requires_optional('cv2')
 def test_split_eye_publishes_bounded_observed_evidence_only_when_enabled():
     adapter = _adapter()
     calibration = {

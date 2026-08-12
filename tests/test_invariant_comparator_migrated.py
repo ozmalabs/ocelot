@@ -448,10 +448,19 @@ def _git(*args):
                           text=True, check=True).stdout
 
 
-_UNPINNED = RUNG_SHA.startswith("RUNG_SHA")
+# A provenance pin THIS REPOSITORY CANNOT RESOLVE is a SKIP, not a red: the
+# claim is unverifiable here, not false, and the gate re-arms unchanged
+# against a repo that has the range (tests/provenance_pins.py).
+from provenance_pins import reason as _pins_reason  # noqa: E402
+from provenance_pins import unresolvable as _pins_unresolvable  # noqa: E402
+
+_NOT_YET_PINNED = RUNG_SHA.startswith("RUNG_SHA")
+_UNPINNED = _NOT_YET_PINNED or _pins_unresolvable(BASE_SHA, RUNG_SHA)
+_UNPINNED_REASON = ("RUNG_SHA not yet pinned" if _NOT_YET_PINNED
+                    else _pins_reason(BASE_SHA, RUNG_SHA))
 
 
-@pytest.mark.skipif(_UNPINNED, reason="RUNG_SHA not yet pinned")
+@pytest.mark.skipif(_UNPINNED, reason=_UNPINNED_REASON)
 def test_this_rung_adds_NO_rust():
     """Pinned to this rung's OWN commit range — never to the live tree, never to
     HEAD. The claim is about what THIS rung did, so the diff must be the one the
@@ -462,14 +471,14 @@ def test_this_rung_adds_NO_rust():
     assert rust == [], f"this rung claims no Rust but touched: {rust}"
 
 
-@pytest.mark.skipif(_UNPINNED, reason="RUNG_SHA not yet pinned")
+@pytest.mark.skipif(_UNPINNED, reason=_UNPINNED_REASON)
 def test_this_rung_touches_only_files_it_OWNS():
     files = set(_git("diff", "--name-only", BASE_SHA, RUNG_SHA,
                      "--", ":/").split())
     assert files <= OWNED, f"this rung touched files it does not own: {files - OWNED}"
 
 
-@pytest.mark.skipif(_UNPINNED, reason="RUNG_SHA not yet pinned")
+@pytest.mark.skipif(_UNPINNED, reason=_UNPINNED_REASON)
 def test_this_rung_edits_no_other_rungs_seed():
     files = _git("diff", "--name-only", BASE_SHA, RUNG_SHA, "--", ":/").split()
     seeds = [f for f in files if "/seeds/" in f]
@@ -478,7 +487,7 @@ def test_this_rung_edits_no_other_rungs_seed():
         f"this rung edited a seed it does not own: {seeds}"
 
 
-@pytest.mark.skipif(_UNPINNED, reason="RUNG_SHA not yet pinned")
+@pytest.mark.skipif(_UNPINNED, reason=_UNPINNED_REASON)
 def test_the_pinned_shas_are_reachable():
     """A reachability question — and reachability, unlike a diff range,
     correctly resolves against the moving branch."""

@@ -144,6 +144,15 @@ def scan_seeds(seed_dir: Path | None = None) -> list[dict]:
             manifest = json.loads(path.read_text(encoding="utf-8"))
         except Exception:  # noqa: BLE001 -- a malformed seed is not this gate's business
             continue
+        # `seeds/` holds one git-tracked file whose JSON root is a bare LIST of
+        # rule objects, not a manifest (`_recovered_f16_rules.json`). The seed
+        # LOADER guards for it (`boot_all._read_seeds`); this scan did not.
+        # MATCH THE LOADER: the agent never boots with it, so it ships nothing
+        # and there is nothing here for a seed gate to find.
+        if not isinstance(manifest, list) and not isinstance(manifest, dict):
+            continue
+        if isinstance(manifest, list):
+            continue
         for rule in manifest.get("rules") or []:
             if not isinstance(rule, dict) or "match" not in rule:
                 continue

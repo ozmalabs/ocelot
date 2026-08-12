@@ -55,6 +55,11 @@ def corpus_morpheme_code() -> tuple[dict[str, float], set[str]]:
             d = json.load(open(f))
         except Exception:
             continue
+        # `_recovered_f16_rules.json` is a bare LIST, not a manifest, and
+        # `boot_all._read_seeds` SKIPS it — the agent never holds it, so it is
+        # not part of the agent's own corpus. Match the loader.
+        if not isinstance(d, dict):
+            continue
         for r in (d.get("rules") or []):
             if not isinstance(r, dict):
                 continue

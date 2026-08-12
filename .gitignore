@@ -22,7 +22,16 @@ naming_corpus/
 pronunciation_corpus/
 
 # --- experiment outputs / run artifacts (regenerable, huge) ---
-results/
+results/*
+# ...EXCEPT the enumerated red-test baseline and the sweeps it derives from.
+# A BASELINE THAT LIVES IN ONE TREE IS NOT A BASELINE. results/ is gitignored,
+# so results/failure_baseline.json existed ONLY in the canonical tree, and
+# tests/test_failure_baseline_migrated.py SKIPS when it is absent -- meaning the
+# gate that exists to stop a baseline from silently drifting was itself silently
+# inert in every worktree every rung has ever created. Negated, deliberately.
+!results/failure_baseline.json
+!results/failure_baseline_sweep_BEFORE_triage.json
+!results/failure_baseline_sweep_AFTER_triage.json
 runs/
 var/
 

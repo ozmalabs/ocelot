@@ -14,6 +14,12 @@ sys.path.insert(0, ROOT)
 from substrate.world_adapter import WorldAdapter
 from substrate.boot_all import load_all_seeds
 
+# OPTIONAL DEPENDENCY (red-test triage 2026-08-12): absent 'cv2' is a SKIP with a
+# named reason, never a red. See tests/optional_deps.py.
+from optional_deps import importorskip as _optional_importorskip  # noqa: E402
+_optional_importorskip('cv2')
+
+
 
 @pytest.fixture()
 def agent():

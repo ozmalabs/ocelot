@@ -191,6 +191,14 @@ def _no_shipped_conflicting_goals_rule():
             m = json.loads(p.read_text())
         except Exception:
             continue
+        # `seeds/` holds one git-tracked file whose JSON root is a bare LIST of
+        # rule objects, not a manifest (`_recovered_f16_rules.json`), and
+        # `boot_all._read_seeds` SKIPS it (`if not isinstance(d, dict): continue`)
+        # — so the agent never boots with it and it ships nothing. This scan did
+        # not guard, and raised `'list' object has no attribute 'get'`. MATCH THE
+        # LOADER: what a gate over seeds/ means is what the loader loads.
+        if not isinstance(m, dict):
+            continue
         for r in m.get("rules", []) or []:
             for eff in r.get("effects", []) or []:
                 if isinstance(eff, list) and len(eff) >= 3 and \
