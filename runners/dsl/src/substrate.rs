@@ -129,6 +129,10 @@ pub struct Substrate {
     /// They mutate data; rule + production additions mutate the
     /// rule store. Only the latter is a Γ change per Paper 1.
     gamma_epoch: crate::l2_adaptive::Epoch,
+    /// The `GammaGrammar` root `add_production`'s graph mirror hangs off
+    /// (recommendation 2(ii)); lazily created on first mirrored call.
+    /// See `grammar_reflect.rs` and `gamma_graph_root()`.
+    gamma_graph_root: Option<crate::graph::NodeID>,
 
     /// `cached_shape` from the function_shape Mt. Per-term Shape
     /// cache — keyed by TermIdx because the arena's indices are
@@ -503,6 +507,7 @@ impl Substrate {
             rule_cursors: Vec::new(),
             edge_delete_version: 0,
             gamma_epoch: crate::l2_adaptive::Epoch::new(),
+            gamma_graph_root: None,
             shape_cache: crate::shape::ShapeCache::new(),
             active_shape_target: None,
             shape_pruned_count: 0,
@@ -795,6 +800,13 @@ impl Substrate {
         self.gamma_epoch.clone()
     }
 
+    /// The `GammaGrammar` root node `add_production`'s graph mirror hangs
+    /// off (see `grammar_reflect.rs`), if one has been created yet. `None`
+    /// until the first mirrored `add_production` call.
+    pub fn gamma_graph_root(&self) -> Option<crate::graph::NodeID> {
+        self.gamma_graph_root
+    }
+
     /// JIT self-modification the agent can PERCEIVE: how many of its rule where-clauses
     /// currently run as JIT-compiled native (`CompiledWhere`), out of how many rules, plus
     /// the Γ epoch (bumps on every grammar change → recompiles). This is live binary
@@ -805,11 +817,41 @@ impl Substrate {
     }
 
     /// Add a Γ production. Wraps `checker.grammar.add` with an
-    /// epoch bump so installed L2 dispatchers see the change.
+    /// epoch bump so installed L2 dispatchers see the change, AND mirrors
+    /// the production into the graph as a real `GammaProduction` node
+    /// (recommendation 2(ii), `GAMMA_REFLECTION_WIRING_PREREG.md` §1.1):
+    /// `where_`/`weight` are routed through `reflect::term_to_subgraph`,
+    /// so they become literal `Term.*` subgraphs, not an opaque blob.
+    ///
+    /// `checker.grammar` (mutated below via `.add`) remains the sole
+    /// struct `check_edge` reads — this does not touch that hot path.
+    /// The mirror is written from the SAME call, so it cannot drift from
+    /// what `checker.grammar` holds for anything added through this one
+    /// method (see `grammar_reflect.rs`'s module doc for the honest
+    /// boundary: this is a mirror, not yet a single source of truth).
     pub fn add_production(
         &mut self,
         p: crate::grammar::Production,
     ) -> crate::grammar::ProdIdx {
+        let root = match self.gamma_graph_root {
+            Some(r) => r,
+            None => {
+                let type_sym = self.interner.intern(crate::grammar_reflect::GAMMA_GRAMMAR_NODE);
+                let r = self.graph.insert_node(type_sym, rustc_hash::FxHashMap::default());
+                self.gamma_graph_root = Some(r);
+                r
+            }
+        };
+        let production_edge = self.interner.intern("production");
+        let index = self.graph.out_edges_idx(root, Some(production_edge)).len() as i64;
+        crate::grammar_reflect::production_to_subgraph(
+            root,
+            index,
+            &p,
+            &mut self.graph,
+            &self.terms,
+            &mut self.interner,
+        );
         let idx = self.checker.grammar.add(p);
         self.gamma_epoch.bump();
         idx
@@ -5291,6 +5333,85 @@ mod tests {
         assert_eq!(s.gamma_epoch().current(), start + 1);
     }
 
+    /// GAMMA_REFLECTION_WIRING_PREREG.md §1.3 bar 5, end-to-end through the
+    /// REAL `Substrate::add_production` path (not just the isolated
+    /// `grammar_reflect` unit tests): after adding productions the normal
+    /// way, `grammar_from_graph` on `gamma_graph_root()` reconstructs a
+    /// `Grammar` that is content-equal to `checker.grammar` itself — the
+    /// live proof that the graph mirror and the Rust-side struct are the
+    /// SAME data for everything added through this one call site, not two
+    /// copies that can (yet) drift. Compares via `jsonio::grammar_to_json`
+    /// so the check exercises the SAME wire format bar 3 protects.
+    #[test]
+    fn graph_mirror_is_content_equal_to_checker_grammar() {
+        // `empty_substrate()`, not `build_alive_grammar()` — the latter
+        // seeds one production via `s.checker.grammar.add(...)` DIRECTLY
+        // (bypassing `add_production`, same pre-existing pattern as the
+        // PyO3 binding, PREREG §0.3/§2 point 4's named desync boundary),
+        // which would make `checker.grammar.len()` legitimately exceed the
+        // mirror's count for a reason unrelated to what this test checks.
+        let mut s = empty_substrate();
+        let alive = s.interner.intern("AliveCell");
+        let w1 = Grammar::default_weight(&mut s.terms);
+        let (v_a, v_b, et1, prov1) = (
+            s.interner.intern("a"), s.interner.intern("b"),
+            s.interner.intern("mirror_check_1"), s.interner.intern("test:mirror_1"),
+        );
+        s.add_production(Production {
+            src: NodePattern { type_: alive, var: v_a },
+            edge_type: et1,
+            tgt: NodePattern { type_: alive, var: v_b },
+            where_: None,
+            weight: w1,
+            provenance: prov1,
+        });
+        let v_c = s.interner.intern("c");
+        let lhs = s.terms.add(TermNode::Var { name: v_c });
+        let rhs = s.terms.add(TermNode::Lit { value: Value::Int(3) });
+        let where2 = s.terms.add(TermNode::Gt { a: lhs, b: rhs });
+        let w2 = Grammar::default_weight(&mut s.terms);
+        let (v_d, et2, prov2) = (
+            s.interner.intern("d"),
+            s.interner.intern("mirror_check_2"), s.interner.intern("test:mirror_2"),
+        );
+        s.add_production(Production {
+            src: NodePattern { type_: alive, var: v_c },
+            edge_type: et2,
+            tgt: NodePattern { type_: alive, var: v_d },
+            where_: Some(where2),
+            weight: w2,
+            provenance: prov2,
+        });
+
+        let root = s.gamma_graph_root().expect("mirror root should exist after add_production");
+        let mut mirror_arena = TermArena::new();
+        let rebuilt = crate::grammar_reflect::grammar_from_graph(&s.graph, root, &mut mirror_arena, &s.interner)
+            .expect("grammar_from_graph should reconstruct the mirror written by add_production");
+
+        assert_eq!(rebuilt.productions.len(), s.checker.grammar.productions.len());
+        for (from_struct, from_graph) in s.checker.grammar.productions.iter().zip(rebuilt.productions.iter()) {
+            assert_eq!(s.interner.resolve(from_struct.src.type_), s.interner.resolve(from_graph.src.type_));
+            assert_eq!(s.interner.resolve(from_struct.src.var), s.interner.resolve(from_graph.src.var));
+            assert_eq!(s.interner.resolve(from_struct.edge_type), s.interner.resolve(from_graph.edge_type));
+            assert_eq!(s.interner.resolve(from_struct.tgt.type_), s.interner.resolve(from_graph.tgt.type_));
+            assert_eq!(s.interner.resolve(from_struct.tgt.var), s.interner.resolve(from_graph.tgt.var));
+            assert_eq!(s.interner.resolve(from_struct.provenance), s.interner.resolve(from_graph.provenance));
+            let struct_where = from_struct.where_.map(|w| crate::jsonio::term_to_json(&s.terms, w, &s.interner));
+            let graph_where = from_graph.where_.map(|w| crate::jsonio::term_to_json(&mirror_arena, w, &s.interner));
+            assert_eq!(struct_where, graph_where);
+            let struct_weight = crate::jsonio::term_to_json(&s.terms, from_struct.weight, &s.interner);
+            let graph_weight = crate::jsonio::term_to_json(&mirror_arena, from_graph.weight, &s.interner);
+            assert_eq!(struct_weight, graph_weight);
+        }
+
+        // §1.3 bar 3's own arbiter: grammar_to_json on the struct is
+        // untouched by any of this — the wire format this test's own
+        // comparisons above are keyed on is exactly what seed persistence
+        // reads/writes, unmodified by the mirror's existence.
+        let wire = crate::jsonio::grammar_to_json(&s.checker.grammar, &s.terms, &s.interner);
+        assert_eq!(wire["productions"].as_array().unwrap().len(), 2);
+    }
+
     /// G mutations (add_node, add_edge) MUST NOT bump the Γ
     /// epoch. Adding/removing data isn't a rule-store change;
     /// JIT'd code for unchanged Γ remains valid.
@@ -6204,7 +6325,7 @@ mod tests {
     /// design does NOT clear its cursor) — and reads Attr(go), which only
     /// `open_gate` writes. `open_gate` fires in the SAME pass, AFTER churn has
     /// already set consume's dirty bit.
-    fn settle_repro(pre_open_gate: bool) -> (Substrate, Sym) {
+    fn settle_repro(pre_open_gate: bool) -> (Substrate, Sym, crate::graph::NodeID) {
         let mut s = empty_substrate();
         let node_t = s.interner.intern("N");
         let marker_t = s.interner.intern("Marker");
@@ -6314,7 +6435,7 @@ mod tests {
             ..Default::default()
         });
 
-        (s, marker_t)
+        (s, marker_t, n1)
     }
 
     /// **THE DEFECT.** `run_rules` returns reporting a fixed point while
@@ -6338,9 +6459,16 @@ mod tests {
     /// `dirty_by_writeset` mitigation was written to close.
     #[test]
     fn run_rules_returns_over_unsettled_state_when_attr_write_follows_structural_dirty() {
-        let (mut s, marker_t) = settle_repro(false);
+        // n1 comes back from `settle_repro` rather than a hard-coded
+        // `NodeID(3)` literal: `add_production` (called inside
+        // `settle_repro`, before n1 is created) now also mirrors the
+        // production into the graph (`grammar_reflect.rs`), which
+        // allocates its own NodeIDs first and shifts every
+        // insertion-order-derived ID that follows. The FIXPOINT-SETTLE
+        // behaviour this test is actually about is unaffected — only
+        // the ID literal was ever load-bearing on insertion order.
+        let (mut s, marker_t, n1) = settle_repro(false);
         let k_go = s.interner.intern("go");
-        let n1 = crate::graph::NodeID(3); // 4th inserted node
 
         let steps = s.run_rules(1000);
 
@@ -6370,7 +6498,7 @@ mod tests {
     /// the where-clause, or the graph shape — all three are held constant.
     #[test]
     fn settle_repro_settles_when_the_attribute_is_present_before_the_first_pass() {
-        let (mut s, marker_t) = settle_repro(true);
+        let (mut s, marker_t, _n1) = settle_repro(true);
         let _ = s.run_rules(1000);
         assert_eq!(s.graph.nodes_of_type(marker_t).len(), 1,
                    "control: with go=1 present up front, consume MUST fire");
