@@ -719,6 +719,9 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
         TermNode::RecogniseShape { text } => ("RecogniseShape", vec![
             Child { name: "text", child: *text },
         ]),
+        TermNode::MetaShapeMint { observation, .. } => ("MetaShapeMint", vec![
+            Child { name: "observation", child: *observation },
+        ]),
         TermNode::StrokeQuantize {
             points, segments, turn_bins, len_bins, grid, scale_bins, invariant_only, canonical_pose,
             turn_edges, len_edges, emit_residual,
@@ -1564,6 +1567,13 @@ fn reconstruct(
         },
         "RecogniseShape" => TermNode::RecogniseShape {
             text: take_child!("text"),
+        },
+        "MetaShapeMint" => TermNode::MetaShapeMint {
+            observation: take_child!("observation"),
+            obs_type: get_sym("obs_type")?,
+            status_value: get_sym("status_value")?,
+            wild: get_sym("wild")?,
+            field: get_sym("field")?,
         },
         "StrokeQuantize" => TermNode::StrokeQuantize {
             points: take_child!("points"),

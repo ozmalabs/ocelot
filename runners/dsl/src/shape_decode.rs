@@ -5336,25 +5336,107 @@ fn codebook_type_from_registry(ctx: &EvalCtx) -> Option<Sym> {
 /// used them. Returns `None` when `text` is empty, no `MetaShape` nodes are
 /// held, or no shape scores > 0 — matching `categorise_by_shape`'s
 /// `if not text: return None` / empty-`scored` fallthrough.
-fn recognise_meta_shape(ctx: &EvalCtx, text: &str) -> Option<Value> {
-    if text.is_empty() {
-        return None;
+/// ONE relation of an observation's shape signature, split into the PREDICATE
+/// (element 0) and its ARGUMENTS (the rest). `predicate: None` is a bare,
+/// predicate-less blob — which is exactly what the LEGACY flat-text path is,
+/// expressed in the structural vocabulary, so one scorer serves both inputs.
+struct MsRel {
+    predicate: Option<String>,
+    args: Vec<String>,
+}
+
+/// The evidence a MetaShape accumulates for one observation. THREE separate
+/// counts, ranked LEXICOGRAPHICALLY (descending on each) — deliberately NOT
+/// summed and NOT weighted, because a weight here would be exactly the scalar
+/// SHAPE_AUDIT §6 reports and CLAUDE.md's "SHAPES, NOT NUMBERS" rule refuses.
+#[derive(Default, Clone, Copy, PartialEq, Eq)]
+struct MsEvidence {
+    /// Distinct principles matched against a relation's PREDICATE — i.e. the
+    /// item's own TYPED SLOT NAME (or its `is_a` type) names the principle.
+    /// STRUCTURAL evidence, and therefore the first ranking key: an item whose
+    /// slots ARE the shape beats an item that merely mentions the shape in prose.
+    pred_principles: i64,
+    /// Distinct principles matched anywhere (predicate OR argument). THIS IS
+    /// THE LEGACY SCORE, preserved as the second key so the new ranking is a
+    /// strict refinement of the old one and never a reversal of it.
+    principles: i64,
+    /// Distinct KEYWORDS matched anywhere. The finer evidence count that the
+    /// old principle-granular score threw away — two independent keyword hits
+    /// for one shape used to score identically to one.
+    keywords: i64,
+}
+
+impl MsEvidence {
+    #[inline]
+    fn key(&self) -> (i64, i64, i64) {
+        (self.pred_principles, self.principles, self.keywords)
     }
-    let metashape_sym = ctx.interner.lookup("MetaShape")?;
+}
+
+/// Decompose a signature `Value` into `MsRel`s. A collection of relations
+/// (each itself a collection: `[predicate, arg, ...]`) decomposes structurally;
+/// anything else degenerates to ONE predicate-less relation carrying the whole
+/// thing as its single argument — the legacy text path, unchanged.
+///
+/// NOTHING is lowercased here: the caller supplies final-form text (the
+/// contract `recognise_meta_shape` has always had), so `categorise_by_shape`'s
+/// Python `str.lower()` and `eval_transfer_decode`'s `to_lowercase()` stay the
+/// single normalisation point.
+fn ms_relations(v: &Value, interner: &Interner) -> Vec<MsRel> {
+    let items: Vec<Value> = match v {
+        Value::Tuple(t) | Value::List(t) => t.to_vec(),
+        Value::Set(s) | Value::FrozenSet(s) => s.to_vec(),
+        other => {
+            return match td_val_to_string(other, interner) {
+                Some(s) => vec![MsRel { predicate: None, args: vec![s] }],
+                None => Vec::new(),
+            }
+        }
+    };
+    let mut out: Vec<MsRel> = Vec::with_capacity(items.len());
+    for it in items {
+        match &it {
+            Value::Tuple(parts) | Value::List(parts) => {
+                let mut predicate: Option<String> = None;
+                let mut args: Vec<String> = Vec::new();
+                for (i, p) in parts.iter().enumerate() {
+                    let s = td_val_to_string(p, interner);
+                    if i == 0 {
+                        predicate = s;
+                    } else if let Some(s) = s {
+                        args.push(s);
+                    }
+                }
+                out.push(MsRel { predicate, args });
+            }
+            other => {
+                if let Some(s) = td_val_to_string(other, interner) {
+                    out.push(MsRel { predicate: None, args: vec![s] });
+                }
+            }
+        }
+    }
+    out
+}
+
+/// Score every held `MetaShape` against a decomposed observation. Returns
+/// `(evidence, name_str, name_val)` for every shape with `principles > 0`,
+/// gathered in graph insertion order (so a later stable sort keeps arrival
+/// order for genuinely equal keys, exactly as the Python original did).
+fn ms_score_shapes(ctx: &EvalCtx, rels: &[MsRel]) -> Vec<(MsEvidence, String, Value)> {
+    let mut scored: Vec<(MsEvidence, String, Value)> = Vec::new();
+    let Some(metashape_sym) = ctx.interner.lookup("MetaShape") else { return scored };
     // If `has_principle` / `keywords` / `name` were never interned, no positive
-    // score is possible (nothing to walk / read) — the honest None.
+    // score is possible (nothing to walk / read) — the honest empty.
     let (has_principle, keywords_key, name_key) = match (
         ctx.interner.lookup("has_principle"),
         ctx.interner.lookup("keywords"),
         ctx.interner.lookup("name"),
     ) {
         (Some(hp), Some(kw), Some(nm)) => (hp, kw, nm),
-        _ => return None,
+        _ => return scored,
     };
 
-    // (score, name_str, name_val) per positively-scoring MetaShape, gathered in
-    // graph insertion order so the stable sort mirrors Python's stable sort.
-    let mut scored: Vec<(i64, String, Value)> = Vec::new();
     for shape_id in ctx.graph.nodes_of_type(metashape_sym) {
         // A MetaShape with no truthy `name` is skipped (Python `if name:`).
         let name_val = match ctx.graph.node(shape_id).attrs.get(&name_key) {
@@ -5365,42 +5447,111 @@ fn recognise_meta_shape(ctx: &EvalCtx, text: &str) -> Option<Value> {
             Some(s) if !s.is_empty() => s,
             _ => continue,
         };
-        // score = # of has_principle neighbours with a matching keyword.
-        let mut score: i64 = 0;
+        let mut ev = MsEvidence::default();
+        let mut kw_seen: std::collections::BTreeSet<String> = Default::default();
         for p_id in ctx.graph.neighbours(shape_id, Some(has_principle)) {
             let kws = match ctx.graph.node(p_id).attrs.get(&keywords_key) {
                 Some(Value::Tuple(items) | Value::List(items)) => items,
                 _ => continue,
             };
-            let hit = kws.iter().any(|kw| {
-                td_val_to_string(kw, ctx.interner)
-                    .map(|k| text.contains(&k))
-                    .unwrap_or(false)
-            });
-            if hit {
-                score += 1;
+            let mut hit_any = false;
+            let mut hit_pred = false;
+            for kw in kws.iter() {
+                let Some(k) = td_val_to_string(kw, ctx.interner) else { continue };
+                if k.is_empty() {
+                    continue;
+                }
+                let in_pred = rels.iter().any(|r| {
+                    r.predicate.as_deref().map_or(false, |p| p.contains(&k))
+                });
+                let in_arg = rels.iter().any(|r| r.args.iter().any(|a| a.contains(&k)));
+                if in_pred {
+                    hit_pred = true;
+                }
+                if in_pred || in_arg {
+                    hit_any = true;
+                    kw_seen.insert(k);
+                }
+            }
+            if hit_pred {
+                ev.pred_principles += 1;
+            }
+            if hit_any {
+                ev.principles += 1;
             }
         }
-        if score > 0 {
-            scored.push((score, name_str, name_val));
+        ev.keywords = kw_seen.len() as i64;
+        if ev.principles > 0 {
+            scored.push((ev, name_str, name_val));
         }
     }
+    scored
+}
+
+/// Pick the winner — or REFUSE. Ranks by `MsEvidence::key()` descending and
+/// returns the top shape's `name` Value.
+///
+/// **THE ALPHABETICAL TIEBREAK IS GONE** (`SHAPE_AUDIT.md` §2.5's third stacked
+/// defect: `then_with(|| a.1.cmp(&b.1))` let `associative_recall` beat a rival
+/// "for no reason but the letter `a`"). When the top two candidates share the
+/// FULL evidence key the contest is genuinely undecided, and this returns
+/// `None` — the honest RESIDUAL, which is what the sd loop does everywhere else
+/// (`sd_mint_quantum` fires "only after BOTH rungs fail"; it does not guess).
+/// A residual is a mint candidate; a fabricated winner is not.
+fn ms_pick(mut scored: Vec<(MsEvidence, String, Value)>) -> Option<Value> {
     if scored.is_empty() {
         return None;
     }
-    // argmax: most overlap first, then `name` ascending (Python
-    // `sort(key=(-score, name))`). `sort_by` is stable, so equal keys keep
-    // graph insertion order — matching Python's stable sort.
-    scored.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| a.1.cmp(&b.1)));
+    scored.sort_by(|a, b| b.0.key().cmp(&a.0.key()));
+    if scored.len() > 1 && scored[0].0.key() == scored[1].0.key() {
+        return None; // genuinely tied ⇒ a residual, not an answer
+    }
     Some(scored[0].2.clone())
 }
 
-/// Evaluate `RecogniseShape` — the Term wrapper over the shared
-/// `recognise_meta_shape` scorer. `text` evaluates to a String (interned `Str`
-/// or `Surface(Text)`); the result is the winning MetaShape `name` `Value`
-/// (a `Str`) or `Value::None`. The Term does NOT lowercase — the caller
-/// supplies the final text (see `recognise_meta_shape`'s contract), which is
-/// what keeps `categorise_by_shape`'s Python `str.lower()` byte-identical.
+/// SHARED meta-shape recognition — the SINGLE graph-native scorer used by BOTH
+/// the `RecogniseShape` Term (the agent's `categorise_by_shape` faculty) and
+/// `eval_transfer_decode` (which derives its own goal shape).
+///
+/// **This is the KEYWORD PRIOR rung of the meta-shape ladder, not the whole
+/// ladder.** Structural recognition proper (`ShapeDecode` / `TransformDecode` /
+/// `DimInfer` pointed at `codebook_type: "MetaShape"`, which `load_parts` reads
+/// grain-agnostically off any node carrying `name` + `signature`) sits ABOVE it
+/// in `seeds/meta_shape_growth.json`. This rung exists because the eleven
+/// SEEDED `MetaShape` nodes carry NO signature and never will until something
+/// files under them — so keywords are the honest bootstrap, and they run LAST,
+/// just before the mint, exactly where the weakest evidence belongs.
+///
+/// Fixed here, against `SHAPE_AUDIT.md` §2.5's three stacked defects:
+/// 1. the item's typed structure is no longer destroyed — `rels` carries the
+///    attribute KEYS as relation PREDICATES, and a keyword matching a predicate
+///    is ranked ABOVE any amount of prose evidence (`pred_principles`);
+/// 2. the score is no longer principle-granular only — distinct KEYWORD hits
+///    are a third, finer ranking key;
+/// 3. ties no longer break alphabetically — they return `None`.
+///
+/// `text` is assumed to be in its FINAL form — this scorer does NOT lowercase.
+fn recognise_meta_shape(ctx: &EvalCtx, text: &str) -> Option<Value> {
+    if text.is_empty() {
+        return None;
+    }
+    let rels = vec![MsRel { predicate: None, args: vec![text.to_string()] }];
+    ms_pick(ms_score_shapes(ctx, &rels))
+}
+
+/// Evaluate `RecogniseShape` — the Term wrapper over the shared scorer, now
+/// INPUT-POLYMORPHIC on the evaluated value:
+///
+/// * a **string** (interned `Str` / `Surface(Text)`) takes the legacy flat-text
+///   path — one predicate-less relation, so `pred_principles` is 0 for every
+///   candidate and the ranking reduces to (legacy score, keyword count).
+///   `TransferDecode` still reaches the scorer this way.
+/// * a **collection** takes the STRUCTURAL path: each member is a relation
+///   `[predicate, arg, ...]`, so an item's attribute KEYS and node TYPE — which
+///   `domains/teach.py:93` used to discard wholesale — are scored as predicates.
+///
+/// The result is the winning MetaShape's `name` `Value`, or `Value::None` when
+/// nothing scores or the contest is tied (the honest residual).
 pub(crate) fn eval_recognise_shape(
     arena: &TermArena,
     text_idx: TermIdx,
@@ -5408,11 +5559,228 @@ pub(crate) fn eval_recognise_shape(
     ctx: &mut EvalCtx,
 ) -> Value {
     let text_val = evaluate(arena, text_idx, env, ctx);
-    let text = match td_val_to_string(&text_val, ctx.interner) {
-        Some(s) => s,
-        None => return Value::None,
+    match &text_val {
+        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => {
+            let rels = ms_relations(&text_val, ctx.interner);
+            if rels.is_empty() {
+                return Value::None;
+            }
+            ms_pick(ms_score_shapes(ctx, &rels)).unwrap_or(Value::None)
+        }
+        _ => {
+            let text = match td_val_to_string(&text_val, ctx.interner) {
+                Some(s) => s,
+                None => return Value::None,
+            };
+            recognise_meta_shape(ctx, &text).unwrap_or(Value::None)
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+//  META-SHAPE MINT — rung 4 of the meta-shape grain's growth ladder.
+//
+//  `SHAPE_AUDIT.md` finding #1: `seeds/shape_vocabulary.json` holds 11
+//  `MetaShape` + 13 `ShapePrinciple` nodes and NOTHING in the tree mints one at
+//  runtime — "the sd loop's fourth rung is not wired to the faculty named
+//  'shape'." This Term is that fourth rung.
+//
+//  WHAT COUNTS AS RECURRENCE (the support discipline, registered in
+//  META_SHAPE_FIRST_CLASS_PREREG.md §3.2 before this was built):
+//
+//  * Residual observations are grouped by their PREDICATE SET — the sorted,
+//    de-duplicated set of relation predicates (the item's typed-slot skeleton).
+//    SORTED and SET-valued deliberately: `SHAPE_AUDIT.md` §3.1 documents the
+//    `CapabilityAxis` key as "order-dependent and truncated at three" and both
+//    of its failure directions; this key is neither.
+//  * Support = the group's size. A group mints at size >= 2 and not before.
+//    TWO is not a swept knob — it is the smallest cardinality at which "recurs"
+//    is DEFINED. A distribution-derived quantile (P7-C's precedent) needs a
+//    distribution this 24-entry codebook does not have; a similarity threshold
+//    is exactly the `stroke_codebook.py:82` Pattern E defect and is refused.
+//  * The minted SIGNATURE is the anti-unified lgg over the whole group — so the
+//    slots the group agrees on stay FIXED and the slots it disagrees on become
+//    WILD. That is precisely the pattern `ShapeDecode` (rung 1) needs in order
+//    to recognise the NEXT member of the family without minting again.
+//  * Non-triviality is STRUCTURAL, not numeric: the key must be non-empty and
+//    the lgg must fix at least one leaf (`fixed_count > 0`). Two unrelated items
+//    anti-unify to all-WILD and mint nothing.
+//  * `leader` designates ONE minter per group (the lowest node id) so a group of
+//    N residuals mints ONCE within a single `run_rules` pass rather than N
+//    times. This is a CANONICAL-REPRESENTATIVE pick, the same shape
+//    `retire_duplicate_gap`'s `Argmin` uses and which `SHAPE_AUDIT.md` §2.7
+//    explicitly rejects as Pattern A — not a similarity ranking.
+// ---------------------------------------------------------------------------
+
+/// The sorted, de-duplicated set of relation PREDICATES of a signature —
+/// an observation's typed-slot skeleton, and the meta-shape grain's group key.
+fn ms_predicate_key(sig: &Value, interner: &Interner) -> Vec<String> {
+    let mut keys: std::collections::BTreeSet<String> = Default::default();
+    for r in ms_relations(sig, interner) {
+        if let Some(p) = r.predicate {
+            if !p.is_empty() {
+                keys.insert(p);
+            }
+        }
+    }
+    keys.into_iter().collect()
+}
+
+/// Evaluate `MetaShapeMint` — decides whether the residual bound to
+/// `observation` has RECURRED, and if so hands the rule everything it needs to
+/// mint the new codebook entry. Output Dict:
+///
+/// | field | meaning |
+/// |---|---|
+/// | `name` | the minted MetaShape's name — `ms_` + the sorted predicate key, joined. CONTENT-derived and order-independent. |
+/// | `keys` | the sorted predicate key itself → the minted ShapePrinciple's `keywords`. |
+/// | `signature` | the anti-unified lgg over the group → the minted MetaShape's `signature`, which rungs 1-3 then read via `load_parts`. |
+/// | `support` | the group's size. |
+/// | `fixed` | `fixed_count` of the lgg (0 ⇒ the group shares no leaf ⇒ nothing worth minting). |
+/// | `leader` | 1 iff this observation is the group's canonical minter. |
+/// | `mintable` | 1 iff `support >= 2 && !keys.is_empty() && fixed > 0 && leader`. |
+///
+/// `field` selects one key, exactly as `TransformDecode` / `DimInfer` do.
+pub(crate) fn eval_meta_shape_mint(
+    arena: &TermArena,
+    obs_idx: TermIdx,
+    obs_type: Sym,
+    status_value: Sym,
+    wild: Sym,
+    field: Sym,
+    env: &mut Env,
+    ctx: &mut EvalCtx,
+) -> Value {
+    let obs_val = evaluate(arena, obs_idx, env, ctx);
+    let empty = |ctx: &EvalCtx| -> Value {
+        let d = Value::Dict(Arc::from(vec![
+            (surf("name"), Value::None),
+            (surf("keys"), Value::Tuple(Arc::new(SmallVec::new()))),
+            (surf("signature"), Value::None),
+            (surf("support"), Value::Int(0)),
+            (surf("fixed"), Value::Int(0)),
+            (surf("leader"), Value::Int(0)),
+            (surf("mintable"), Value::Int(0)),
+        ]));
+        ms_field(d, field, ctx.interner)
     };
-    recognise_meta_shape(ctx, &text).unwrap_or(Value::None)
+    let Value::Node(obs_id) = obs_val else { return empty(ctx) };
+
+    let (Some(sig_key), Some(status_key)) =
+        (ctx.interner.lookup("signature"), ctx.interner.lookup("status"))
+    else {
+        return empty(ctx);
+    };
+    let Some(my_sig) = ctx.graph.node(obs_id).attrs.get(&sig_key).cloned() else {
+        return empty(ctx);
+    };
+    let key = ms_predicate_key(&my_sig, ctx.interner);
+    if key.is_empty() {
+        return empty(ctx);
+    }
+
+    // THE GROUP: every observation of the same type, still `status_value`
+    // (residual), whose predicate key is IDENTICAL. Order-independent by
+    // construction — the key is a sorted set, never a positional prefix.
+    let mut group_sigs: Vec<Value> = Vec::new();
+    let mut leader = true;
+    for nid in ctx.graph.nodes_of_type(obs_type) {
+        let node = ctx.graph.node(nid);
+        let ok_status = node
+            .attrs
+            .get(&status_key)
+            .map(|v| matches!(v, Value::Str(s) if *s == status_value))
+            .unwrap_or(false);
+        if !ok_status {
+            continue;
+        }
+        let Some(sig) = node.attrs.get(&sig_key) else { continue };
+        if ms_predicate_key(sig, ctx.interner) != key {
+            continue;
+        }
+        if nid < obs_id {
+            leader = false;
+        }
+        group_sigs.push(sig.clone());
+    }
+
+    let support = group_sigs.len() as i64;
+    let wild_val = wild_value(wild);
+    let core = anti_unify_values(&group_sigs, &wild_val);
+    let fixed = fixed_count_value(&core, &wild_val);
+    let mintable = support >= 2 && fixed > 0 && leader;
+
+    // THE KEYWORD SET IS THE DISCRIMINATIVE PART OF THE KEY, NOT ALL OF IT.
+    //
+    // Measured, not anticipated: the first working mint emitted `is_a` among
+    // the minted principle's `keywords`, and because EVERY observation carries
+    // an `is_a` relation by construction, the minted shape then scored a
+    // predicate hit on literally every subsequent item and won the keyword
+    // prior against the correct answer. (Live: the `"gate the layer by policy"`
+    // negative control came back as the minted trade-record shape instead of
+    // `selective_gating`.)
+    //
+    // The fix is derived, not a name-list: a predicate present in EVERY held
+    // observation carries zero discriminative information, so it is dropped
+    // from the keywords. This is a boolean information test over the observed
+    // population — NOT a tuned frequency threshold, and NOT a hardcoded
+    // stop-list of predicate names (which would be exactly the Pattern A defect
+    // this whole rung exists to remove).
+    //
+    // The group KEY — the shape's identity and name — still uses the FULL
+    // predicate set. Only what the keyword PRIOR can see is narrowed. A shape
+    // whose every predicate is universal ends up with no keywords at all, which
+    // is the honest outcome: it is unreachable by the weak keyword rung and
+    // still perfectly reachable by rung 1's structural `Covers`.
+    let mut all_obs = 0usize;
+    let mut pred_doc_count: std::collections::BTreeMap<String, usize> = Default::default();
+    for nid in ctx.graph.nodes_of_type(obs_type) {
+        let Some(sig) = ctx.graph.node(nid).attrs.get(&sig_key) else { continue };
+        all_obs += 1;
+        for p in ms_predicate_key(sig, ctx.interner) {
+            *pred_doc_count.entry(p).or_insert(0) += 1;
+        }
+    }
+    let discriminative: Vec<&String> = key
+        .iter()
+        .filter(|k| pred_doc_count.get(*k).copied().unwrap_or(0) < all_obs)
+        .collect();
+
+    let name = format!("ms_{}", key.join("_"));
+    let keys_val = Value::Tuple(Arc::new(
+        discriminative.iter().map(|k| surf(k)).collect::<SmallVec<[Value; 4]>>(),
+    ));
+    let out = Value::Dict(Arc::from(vec![
+        (surf("name"), surf_string(name)),
+        (surf("keys"), keys_val),
+        (surf("signature"), core),
+        (surf("support"), Value::Int(support)),
+        (surf("fixed"), Value::Int(fixed)),
+        (surf("leader"), Value::Int(if leader { 1 } else { 0 })),
+        (surf("mintable"), Value::Int(if mintable { 1 } else { 0 })),
+    ]));
+    ms_field(out, field, ctx.interner)
+}
+
+/// `field` selection, mirroring `TransformDecode` / `DimInfer`: an empty or
+/// absent `field` returns the whole Dict; otherwise the named key's value
+/// (`Value::None` when the key is unknown).
+fn ms_field(d: Value, field: Sym, interner: &Interner) -> Value {
+    // `Sym::default()` is what `jsonio::get_optional_sym` yields for an ABSENT
+    // `field` — compare the Sym, not its resolved text (the idiom
+    // `select_cached_field` already uses; `resolve(Sym::default())` is not
+    // guaranteed to be the empty string).
+    if field == Sym::default() {
+        return d;
+    }
+    let f = interner.resolve(field);
+    if f.is_empty() {
+        return d;
+    }
+    match &d {
+        Value::Dict(pairs) => td_dict_get(pairs, f, interner).cloned().unwrap_or(Value::None),
+        _ => Value::None,
+    }
 }
 
 /// Evaluate `TransferDecode` — retrieve-and-transfer, faithful to
@@ -8089,5 +8457,259 @@ mod motion_energy_tests {
         assert_eq!(get(&motion_energy_spectrum(&[], 6, 24, 0), "opponent"), 0.0);
         let one = vec![frame(6, 24, Some(0))];
         assert_eq!(get(&motion_energy_spectrum(&one, 6, 24, 1), "total_ac"), 0.0);
+    }
+}
+
+// ===========================================================================
+//  META-SHAPE AS A FIRST-CLASS GRAIN — unit gates
+//  (docs/research/engine_substrate/META_SHAPE_FIRST_CLASS_RESULTS.md)
+// ===========================================================================
+#[cfg(test)]
+mod meta_shape_first_class_tests {
+    use super::*;
+    use crate::graph::TypedGraph;
+    use crate::term::TermNode;
+
+    fn s(x: &str, ir: &mut Interner) -> Value {
+        Value::Str(ir.intern(x))
+    }
+    fn tup(items: Vec<Value>) -> Value {
+        Value::Tuple(Arc::new(items.into_iter().collect()))
+    }
+
+    /// `MetaShape{name}` -has_principle-> `Principle{name, keywords}`.
+    fn add_shape(g: &mut TypedGraph, ir: &mut Interner, name: &str, keywords: &[&str]) {
+        let kws: Value = tup(keywords.iter().map(|k| s(k, ir)).collect());
+        let ms_t = ir.intern("MetaShape");
+        let mut ms_attrs: FxHashMap<Sym, Value> = FxHashMap::default();
+        ms_attrs.insert(ir.intern("name"), s(name, ir));
+        let shape_id = g.insert_node(ms_t, ms_attrs);
+        let p_t = ir.intern("Principle");
+        let mut p_attrs: FxHashMap<Sym, Value> = FxHashMap::default();
+        p_attrs.insert(ir.intern("name"), s(&format!("{name}_principle"), ir));
+        p_attrs.insert(ir.intern("keywords"), kws);
+        let p_id = g.insert_node(p_t, p_attrs);
+        let hp = ir.intern("has_principle");
+        g.insert_edge(shape_id, hp, p_id, FxHashMap::<Sym, Value>::default())
+            .expect("has_principle edge");
+    }
+
+    /// A `[predicate, value]` relation set, the shape `domains/meta_shape.py::
+    /// item_signature` emits (sorted by predicate).
+    fn sig(rels: &[(&str, &str)], ir: &mut Interner) -> Value {
+        let mut r: Vec<(String, String)> =
+            rels.iter().map(|(p, v)| (p.to_string(), v.to_string())).collect();
+        r.sort();
+        tup(r.iter().map(|(p, v)| tup(vec![s(p, ir), s(v, ir)])).collect())
+    }
+
+    fn recognise(ir: &mut Interner, g: &TypedGraph, input: Value) -> Value {
+        let mut a = TermArena::new();
+        let t = a.add(TermNode::Lit { value: input });
+        let idx = a.add(TermNode::RecogniseShape { text: t });
+        let mut env: Env = Env::new();
+        let mut ctx = EvalCtx::new(g, ir);
+        evaluate(&a, idx, &mut env, &mut ctx)
+    }
+
+    fn name_of(v: &Value, ir: &Interner) -> Option<String> {
+        td_val_to_string(v, ir).filter(|s| !s.is_empty())
+    }
+
+    // ---------------------------------------------------------------- AR1 --
+
+    /// THE ALPHABETICAL TIEBREAK IS GONE. Two shapes, one keyword each, both
+    /// present: the old scorer returned the alphabetically-first
+    /// (`aardvark_shape`). A genuine tie is now a RESIDUAL, not an answer —
+    /// which is what makes it a mint candidate.
+    #[test]
+    fn a_genuine_tie_is_a_residual_not_the_alphabetically_first_shape() {
+        let mut ir = Interner::new();
+        let mut g = TypedGraph::new();
+        add_shape(&mut g, &mut ir, "aardvark_shape", &["alpha"]);
+        add_shape(&mut g, &mut ir, "zebra_shape", &["omega"]);
+        let text = s("alpha and omega", &mut ir);
+        assert_eq!(recognise(&mut ir, &g, text), Value::None);
+    }
+
+    /// …and an UNTIED contest still resolves, exactly as before: the scorer
+    /// refuses only what it genuinely cannot decide.
+    #[test]
+    fn an_untied_contest_still_resolves() {
+        let mut ir = Interner::new();
+        let mut g = TypedGraph::new();
+        add_shape(&mut g, &mut ir, "aardvark_shape", &["alpha"]);
+        add_shape(&mut g, &mut ir, "zebra_shape", &["omega"]);
+        let text = s("only omega here", &mut ir);
+        assert_eq!(name_of(&recognise(&mut ir, &g, text), &ir),
+                   Some("zebra_shape".to_string()));
+    }
+
+    /// DISTINCT KEYWORD HITS BREAK WHAT USED TO BREAK ALPHABETICALLY. Both
+    /// shapes score ONE principle (the old score), so the old scorer tied and
+    /// took `aardvark_shape`; `zebra_shape` matched TWO of its keywords and now
+    /// wins on evidence. This is the `"gate the layer by policy"` case,
+    /// minimised.
+    #[test]
+    fn more_keyword_evidence_beats_less_at_equal_principle_count() {
+        let mut ir = Interner::new();
+        let mut g = TypedGraph::new();
+        add_shape(&mut g, &mut ir, "aardvark_shape", &["layer"]);
+        add_shape(&mut g, &mut ir, "zebra_shape", &["gate", "policy"]);
+        let text = s("gate the layer by policy", &mut ir);
+        assert_eq!(name_of(&recognise(&mut ir, &g, text), &ir),
+                   Some("zebra_shape".to_string()));
+    }
+
+    /// A TYPED SLOT OUTRANKS PROSE. `predict` appears as a relation PREDICATE
+    /// for one shape and only inside another relation's VALUE for the other.
+    /// The old scorer could not see the predicate at all (`teach.py:93`
+    /// discarded every attribute key), so this observation scored only the
+    /// prose shape.
+    #[test]
+    fn a_predicate_hit_outranks_a_prose_hit() {
+        let mut ir = Interner::new();
+        let mut g = TypedGraph::new();
+        add_shape(&mut g, &mut ir, "prose_shape", &["frame"]);
+        add_shape(&mut g, &mut ir, "slot_shape", &["predict"]);
+        let obs = sig(&[("predict", "the next frame"), ("is_a", "belief")], &mut ir);
+        assert_eq!(name_of(&recognise(&mut ir, &g, obs), &ir),
+                   Some("slot_shape".to_string()));
+    }
+
+    /// The legacy FLAT-TEXT path is still reachable and still scores — the Term
+    /// is input-polymorphic, not switched over. `TransferDecode` depends on it.
+    #[test]
+    fn the_flat_text_path_still_scores() {
+        let mut ir = Interner::new();
+        let mut g = TypedGraph::new();
+        add_shape(&mut g, &mut ir, "feedback_control", &["feedback"]);
+        let text = s("regulate by feedback toward the budget", &mut ir);
+        assert_eq!(name_of(&recognise(&mut ir, &g, text), &ir),
+                   Some("feedback_control".to_string()));
+    }
+
+    // ---------------------------------------------------------------- AR3 --
+
+    fn add_obs(g: &mut TypedGraph, ir: &mut Interner, status: &str, sg: Value) {
+        let t = ir.intern("ShapeObservation");
+        let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
+        attrs.insert(ir.intern("signature"), sg);
+        attrs.insert(ir.intern("status"), s(status, ir));
+        g.insert_node(t, attrs);
+    }
+
+    fn mint_field(ir: &mut Interner, g: &TypedGraph, obs_idx: usize, field: &str) -> Value {
+        let ids = g.nodes_of_type(ir.lookup("ShapeObservation").unwrap());
+        let obs = ids[obs_idx];
+        let obs_type = ir.intern("ShapeObservation");
+        let status_value = ir.intern("residual");
+        let wild = ir.intern("·?·");
+        let f = ir.intern(field);
+        let mut a = TermArena::new();
+        let ot = a.add(TermNode::Lit { value: Value::Node(obs) });
+        let idx = a.add(TermNode::MetaShapeMint {
+            observation: ot, obs_type, status_value, wild, field: f });
+        let mut env: Env = Env::new();
+        let mut ctx = EvalCtx::new(g, ir);
+        evaluate(&a, idx, &mut env, &mut ctx)
+    }
+
+    /// ONE OCCURRENCE IS NOT RECURRENCE. Support 1 ⇒ not mintable. This is the
+    /// whole support discipline: two is the smallest cardinality at which
+    /// "recurs" is defined, and it is a definitional boundary, not a knob.
+    #[test]
+    fn a_single_observation_does_not_mint() {
+        let mut ir = Interner::new();
+        let mut g = TypedGraph::new();
+        let a1 = sig(&[("buyer", "alice"), ("lot", "7")], &mut ir);
+        add_obs(&mut g, &mut ir, "residual", a1);
+        assert_eq!(mint_field(&mut ir, &g, 0, "support"), Value::Int(1));
+        assert_eq!(mint_field(&mut ir, &g, 0, "mintable"), Value::Int(0));
+    }
+
+    /// RECURRENCE MINTS — and the core is the anti-unified lgg: the predicates
+    /// the group agrees on stay FIXED, the values it disagrees on become WILD.
+    /// That pattern is exactly what rung 1's `Covers` needs to recognise the
+    /// NEXT member of the family without minting again.
+    #[test]
+    fn a_recurring_slot_skeleton_is_mintable_with_a_wild_bearing_core() {
+        let mut ir = Interner::new();
+        let mut g = TypedGraph::new();
+        let a1 = sig(&[("buyer", "alice"), ("lot", "7")], &mut ir);
+        let a2 = sig(&[("buyer", "carol"), ("lot", "9")], &mut ir);
+        add_obs(&mut g, &mut ir, "residual", a1);
+        add_obs(&mut g, &mut ir, "residual", a2);
+        assert_eq!(mint_field(&mut ir, &g, 0, "support"), Value::Int(2));
+        assert_eq!(mint_field(&mut ir, &g, 0, "mintable"), Value::Int(1));
+        // the name is CONTENT-derived from the SORTED predicate set — never
+        // positional, never truncated (contrast SHAPE_AUDIT.md §3.1).
+        assert_eq!(td_val_to_string(&mint_field(&mut ir, &g, 0, "name"), &ir),
+                   Some("ms_buyer_lot".to_string()));
+        // and the core still covers a NEVER-SEEN variant of the same skeleton.
+        let core = mint_field(&mut ir, &g, 0, "signature");
+        let variant = sig(&[("buyer", "erin"), ("lot", "11")], &mut ir);
+        let wild = wild_value(ir.intern("·?·"));
+        assert!(covers_value(&core, &variant, &wild));
+    }
+
+    /// EXACTLY ONE MINTER PER GROUP PER PASS. Both members report the same name
+    /// and the same core, but only the canonical representative (lowest node
+    /// id) is `mintable` — so a group of N mints once, not N times.
+    #[test]
+    fn only_the_group_leader_mints() {
+        let mut ir = Interner::new();
+        let mut g = TypedGraph::new();
+        let a1 = sig(&[("buyer", "alice"), ("lot", "7")], &mut ir);
+        let a2 = sig(&[("buyer", "carol"), ("lot", "9")], &mut ir);
+        add_obs(&mut g, &mut ir, "residual", a1);
+        add_obs(&mut g, &mut ir, "residual", a2);
+        assert_eq!(mint_field(&mut ir, &g, 0, "leader"), Value::Int(1));
+        assert_eq!(mint_field(&mut ir, &g, 1, "leader"), Value::Int(0));
+        assert_eq!(mint_field(&mut ir, &g, 1, "mintable"), Value::Int(0));
+    }
+
+    /// TWO UNRELATED RESIDUALS ARE NOT A FAMILY. Different predicate sets ⇒
+    /// different groups ⇒ support 1 each ⇒ no mint. Grouping is structural.
+    #[test]
+    fn unrelated_residuals_do_not_group() {
+        let mut ir = Interner::new();
+        let mut g = TypedGraph::new();
+        let a1 = sig(&[("buyer", "alice"), ("lot", "7")], &mut ir);
+        let a2 = sig(&[("marker", "however"), ("role", "contrast")], &mut ir);
+        add_obs(&mut g, &mut ir, "residual", a1);
+        add_obs(&mut g, &mut ir, "residual", a2);
+        assert_eq!(mint_field(&mut ir, &g, 0, "support"), Value::Int(1));
+        assert_eq!(mint_field(&mut ir, &g, 1, "support"), Value::Int(1));
+        assert_eq!(mint_field(&mut ir, &g, 0, "mintable"), Value::Int(0));
+    }
+
+    /// A UNIVERSAL PREDICATE CARRIES NO INFORMATION AND IS DROPPED FROM THE
+    /// MINTED KEYWORDS. `is_a` is in every observation by construction; left in,
+    /// the minted shape scored a predicate hit on literally everything and won
+    /// the keyword prior against the correct answer (measured live, §4.2). The
+    /// group KEY still uses the full predicate set — only the weak keyword rung
+    /// is narrowed.
+    #[test]
+    fn a_universal_predicate_is_dropped_from_the_minted_keywords() {
+        let mut ir = Interner::new();
+        let mut g = TypedGraph::new();
+        let a1 = sig(&[("is_a", "trade"), ("buyer", "alice"), ("lot", "7")], &mut ir);
+        let a2 = sig(&[("is_a", "trade"), ("buyer", "carol"), ("lot", "9")], &mut ir);
+        let other = sig(&[("is_a", "note"), ("text", "unrelated")], &mut ir);
+        add_obs(&mut g, &mut ir, "residual", a1);
+        add_obs(&mut g, &mut ir, "residual", a2);
+        add_obs(&mut g, &mut ir, "recognized", other);   // outside the group
+        // identity keeps every predicate...
+        assert_eq!(td_val_to_string(&mint_field(&mut ir, &g, 0, "name"), &ir),
+                   Some("ms_buyer_is_a_lot".to_string()));
+        // ...the keywords keep only the discriminative ones.
+        let keys = mint_field(&mut ir, &g, 0, "keys");
+        let got: Vec<String> = match &keys {
+            Value::Tuple(items) | Value::List(items) =>
+                items.iter().filter_map(|v| td_val_to_string(v, &ir)).collect(),
+            _ => Vec::new(),
+        };
+        assert_eq!(got, vec!["buyer".to_string(), "lot".to_string()]);
     }
 }

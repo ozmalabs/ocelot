@@ -328,6 +328,7 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::MotionEnergy { .. } => "MotionEnergy",
         TermNode::TransferDecode { .. } => "TransferDecode",
         TermNode::RecogniseShape { .. } => "RecogniseShape",
+        TermNode::MetaShapeMint { .. } => "MetaShapeMint",
         TermNode::StrokeQuantize { .. } => "StrokeQuantize",
         TermNode::StrokeRender { .. } => "StrokeRender",
         TermNode::SigmaLognormalGenerate { .. } => "SigmaLognormalGenerate",
@@ -906,6 +907,13 @@ fn write_fields(
         }
         TermNode::RecogniseShape { text } => {
             m.insert("text".into(), child(*text, arena, interner));
+        }
+        TermNode::MetaShapeMint { observation, obs_type, status_value, wild, field } => {
+            m.insert("observation".into(), child(*observation, arena, interner));
+            m.insert("obs_type".into(), sym_str(*obs_type, interner));
+            m.insert("status_value".into(), sym_str(*status_value, interner));
+            m.insert("wild".into(), sym_str(*wild, interner));
+            m.insert("field".into(), sym_str(*field, interner));
         }
         TermNode::StrokeQuantize {
             points, segments, turn_bins, len_bins, grid, scale_bins, invariant_only, canonical_pose,
@@ -1936,6 +1944,17 @@ fn read_term(
         },
         "RecogniseShape" => TermNode::RecogniseShape {
             text: child_of("text", obj, arena, interner, variant)?,
+        },
+        "MetaShapeMint" => TermNode::MetaShapeMint {
+            observation: child_of("observation", obj, arena, interner, variant)?,
+            obs_type: interner.intern(
+                obj.get("obs_type").and_then(|v| v.as_str()).unwrap_or("ShapeObservation"),
+            ),
+            status_value: interner.intern(
+                obj.get("status_value").and_then(|v| v.as_str()).unwrap_or("residual"),
+            ),
+            wild: interner.intern(obj.get("wild").and_then(|v| v.as_str()).unwrap_or("\u{b7}?\u{b7}")),
+            field: get_optional_sym("field", interner),
         },
         "StrokeQuantize" => TermNode::StrokeQuantize {
             points: child_of("points", obj, arena, interner, variant)?,

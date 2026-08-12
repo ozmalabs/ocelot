@@ -86,17 +86,29 @@ def categorise_by_shape(agent, type_: str, attrs: dict) -> Optional[str]:
     None if it matches no shape (then teach() falls back to its domain/topic). This
     is the agent's call, in its own terms: the shape it sees the thing as.
 
-    The text build (`" ".join(...).lower()`) is preserved verbatim so the Term
-    receives byte-for-byte what the old per-shape scorer did; the Term does NOT
-    re-lowercase (its scorer takes the caller's final text), so recognition is
-    identical to before."""
-    text = " ".join(str(v) for v in attrs.values() if isinstance(v, str)).lower()
-    if not text:
+    STRUCTURE, NOT A NAME-BAG (SHAPE_AUDIT.md §2.5, fixed 2026-08-12). This
+    used to hand the Term
+    `" ".join(str(v) for v in attrs.values() if isinstance(v, str)).lower()` —
+    every attribute KEY discarded, every non-string VALUE discarded, the node
+    TYPE discarded. It now hands the Term the item's SIGNATURE
+    (`domains.meta_shape.item_signature`: the type as an `is_a` relation, every
+    attribute as a `[key, value]` relation, sorted by key). `RecogniseShape` is
+    input-polymorphic — a collection takes the structural path, where a keyword
+    matching a relation PREDICATE outranks any amount of prose evidence, and a
+    genuine tie returns None (the honest residual) instead of the shape whose
+    name happens to sort first.
+
+    Python here is still mechanical glue: build the signature, hand it to the
+    Term. The whole scoring decision remains in ONE Rust helper shared with
+    `TransferDecode`."""
+    from domains.meta_shape import item_signature
+    sig = item_signature(type_, attrs)
+    if not sig:
         return None
     native = _native(agent)
     try:
         return native.evaluate(
-            {"type": "RecogniseShape", "text": {"type": "Lit", "value": text}}, {})
+            {"type": "RecogniseShape", "text": {"type": "Lit", "value": sig}}, {})
     except Exception:
         return None
 
@@ -140,6 +152,15 @@ def teach(agent, type_: str, attrs: dict, *,
     # else a caller-supplied hook; else the jabberwock files it under one of ITS
     # OWN shapes (categorise_by_shape — teaching and self-categorising in one
     # motion); else the item's own domain/topic; else 'taught'.
+    # 2a) OBSERVE — mechanical ingest of the item's shape observation so the
+    # meta-shape grain's own growth ladder (seeds/meta_shape_growth.json) can
+    # decode it, and mint a new MetaShape when a residual RECURS. Before this,
+    # a taught item that matched no shape simply fell through to the
+    # domain/topic fallback below and the codebook never grew — SHAPE_AUDIT.md
+    # finding #1. Inert (a node nobody matches) when the seed is not loaded.
+    from domains.meta_shape import observe as _observe_shape
+    _observe_shape(agent, type_, attrs)
+
     cat = category
     if cat is None and categorise is not None:
         cat = categorise(type_, attrs)
