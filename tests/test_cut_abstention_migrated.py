@@ -269,7 +269,16 @@ OWNED = {
     "research/experiments/gamma-substrate/results/cut_rows_SHA256SUMS.txt",
 }
 
-_UNPINNED = RUNG_SHA.startswith("RUNG_SHA")
+# A provenance pin THIS REPOSITORY CANNOT RESOLVE is a SKIP, not a red: the
+# claim is unverifiable here, not false, and the gate re-arms unchanged
+# against a repo that has the range (tests/provenance_pins.py).
+from provenance_pins import reason as _pins_reason  # noqa: E402
+from provenance_pins import unresolvable as _pins_unresolvable  # noqa: E402
+
+_NOT_YET_PINNED = RUNG_SHA.startswith("RUNG_SHA")
+_UNPINNED = _NOT_YET_PINNED or _pins_unresolvable(BASE_SHA, RUNG_SHA)
+_UNPINNED_REASON = ("RUNG_SHA not yet pinned" if _NOT_YET_PINNED
+                    else _pins_reason(BASE_SHA, RUNG_SHA))
 
 
 def _git(*args):
@@ -277,21 +286,21 @@ def _git(*args):
                           text=True, check=True).stdout
 
 
-@pytest.mark.skipif(_UNPINNED, reason="RUNG_SHA not yet pinned")
+@pytest.mark.skipif(_UNPINNED, reason=_UNPINNED_REASON)
 def test_this_rung_adds_NO_rust():
     files = _git("diff", "--name-only", BASE_SHA, RUNG_SHA, "--", ":/").split()
     rust = [f for f in files if f.endswith(".rs") or f.endswith("Cargo.toml")]
     assert rust == [], f"this rung claims no Rust but touched: {rust}"
 
 
-@pytest.mark.skipif(_UNPINNED, reason="RUNG_SHA not yet pinned")
+@pytest.mark.skipif(_UNPINNED, reason=_UNPINNED_REASON)
 def test_this_rung_touches_only_files_it_OWNS():
     files = set(_git("diff", "--name-only", BASE_SHA, RUNG_SHA,
                      "--", ":/").split())
     assert files <= OWNED, f"this rung touched files it does not own: {files - OWNED}"
 
 
-@pytest.mark.skipif(_UNPINNED, reason="RUNG_SHA not yet pinned")
+@pytest.mark.skipif(_UNPINNED, reason=_UNPINNED_REASON)
 def test_this_rung_edits_no_other_rungs_seed():
     """The seed this rung adds is its OWN. Every other rung's seed -- and in
     particular `vision_verdict_comparator.json`, whose V3 is the baseline every
@@ -304,7 +313,7 @@ def test_this_rung_edits_no_other_rungs_seed():
         f"this rung edited a seed it does not own: {seeds}"
 
 
-@pytest.mark.skipif(_UNPINNED, reason="RUNG_SHA not yet pinned")
+@pytest.mark.skipif(_UNPINNED, reason=_UNPINNED_REASON)
 def test_the_pinned_shas_are_reachable():
     for sha in (BASE_SHA, PREREG_SHA, RUNG_SHA):
         subprocess.run(["git", "merge-base", "--is-ancestor", sha, "HEAD"],

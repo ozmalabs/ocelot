@@ -52,6 +52,19 @@ for _p in (ROOT, os.path.join(ROOT, "runners", "dsl", "python"),
 os.environ.setdefault("OZMA_NO_LLM", "1")
 os.environ.setdefault("OZMA_SEED_PERSIST_DISABLED", "1")
 
+# THE DRIVER READS PRE-EXPORT GIT BLOBS AT IMPORT TIME
+# (`arc4_endgame_battery._build_ablation_manifests` -> `git show 95f96520e0:...`),
+# so importing it in a repository whose history begins at 26ca9ff raises before a
+# single test runs — one collection ERROR standing in for the whole file. That is a
+# pin this repository cannot resolve, not a defect: SKIP with the reason named
+# (tests/provenance_pins.py, red-test triage 2026-08-12).
+from provenance_pins import reason as _pins_reason  # noqa: E402
+from provenance_pins import unresolvable as _pins_unresolvable  # noqa: E402
+
+_ABLATION_REVS = ("95f96520e0", "773fc3f122")
+if _pins_unresolvable(*_ABLATION_REVS):
+    pytest.skip(_pins_reason(*_ABLATION_REVS), allow_module_level=True)
+
 import arc4_endgame_battery as aeb  # noqa: E402  (the driver, read-only)
 from domains import mbpp_spec as ms  # noqa: E402
 
