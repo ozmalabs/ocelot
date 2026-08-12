@@ -318,8 +318,18 @@ def test_cue_variant_abstains_honestly(light_agent):
     r = rf._compose_cue_variant(a, ["k_zero"], "t3")
     assert r["built"] is False and "abstained" in r["wall"]
 
-    # 4. and the genuine case builds a Concept whose route is pooled
-    _wire_concern(a, "k_real", "instruction", "condense")
+    # 4. and the genuine case builds a Concept whose route is pooled.
+    # RULE_SIGNATURE_PRODUCTION_WIRING v1.4.0: cue_route_pick's own scoring
+    # moved from per-CHARACTER overlap to per-BIGRAM overlap (SHAPE_AUDIT.md
+    # §2.2's "worst instance" fix — the old scoring made anagram-shaped verbs
+    # like 'drop'/'prod' score byte-identically against every candidate).
+    # 'condense' shared zero bigrams with this test's tiny 2-route pool
+    # (it happened to share individual LETTERS with 'read', which is exactly
+    # the coincidental-membership matching the fix removes) — 'running'
+    # genuinely shares the bigrams 'ru'/'un' with the pooled 'run', so this
+    # probe now exercises a real bigram match instead of a letter-bag
+    # coincidence, preserving the test's own intent (a genuine case builds).
+    _wire_concern(a, "k_real", "instruction", "running")
     r = rf._compose_cue_variant(a, ["k_real"], "t4")
-    assert r["built"] is True and r["concept"]["attrs"]["name"] == "condense"
+    assert r["built"] is True and r["concept"]["attrs"]["name"] == "running"
     assert r["route"] in ("world_action", "comprehend_text")

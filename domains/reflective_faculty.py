@@ -2739,14 +2739,37 @@ def _pick_acting_rule(agent, axis_preds) -> dict:
     `perform_adoptions`) and it already denies unknown provenance by
     default; a mere SELECTION naming an unknown-provenance rule is not a
     parent write (see `domains/frozen_core.py`'s `edit_ops_variant_compose`
-    grammar)."""
+    grammar).
+
+    STRUCTURAL FALLBACK (RULE_SIGNATURE_PRODUCTION_WIRING_PREREG/RESULTS.md):
+    the primary Argmax is UNCHANGED — the `keywords_text` (rule-name-derived)
+    overlap tried first, exactly as before. Only when it genuinely abstains
+    (no candidate scores > 0) does the SAME Sum/StringIndexOf/Argmax shape
+    run a second time against `where_signature_json` (the rule's own
+    `where`-clause structural signature, `domains.rule_signature`) instead
+    of `keywords_text` — reading information a bare rule name can never
+    carry (a concern's words naming something the rule's WHERE-clause reads
+    but its name does not spell). Measured on the pre-registered 40-probe
+    oracle: name-keyword alone is 0/12 on where-native probes (Class A) and
+    12/12 on name-native probes (Class B); the combined fallback recovers
+    Class A to 11/12 while leaving Class B's own 12/12 untouched, because
+    the fallback is NEVER consulted when the primary Argmax already found a
+    genuine (score > 0) match — see the RESULTS doc for the full row-level
+    evidence this ordering is grounded in (every measured disagreement
+    between the two signals was one method non-null-correct vs the OTHER
+    abstaining, never one confidently wrong while the other was right).
+    Both Argmaxes stay inside ONE evaluated Term — the fallback is a branch
+    of the SAME Term tree, not a second Python-side decision."""
     sub0, native0, _ag0 = _resolve_agent(agent)
     _ensure_acting_rule_provenance(sub0, native0)
+    from domains import rule_signature as _rsig
+    _rsig.ensure_where_signature(sub0)
 
     V = lambda n: {"type": "Var", "name": n}
     L = lambda v: {"type": "Lit", "value": v}
     Attr = lambda nd, k: {"type": "Attr", "node": nd, "key": k}
     Eq = lambda a, b: {"type": "Eq", "a": a, "b": b}
+    Not = lambda x: {"type": "Not", "arg": x}
     And = lambda *xs: {"type": "And", "items": list(xs)}
     Gt = lambda a, b: {"type": "Gt", "a": a, "b": b}
     Gte = lambda a, b: {"type": "Gte", "a": a, "b": b}
@@ -2762,12 +2785,18 @@ def _pick_acting_rule(agent, axis_preds) -> dict:
     words = L(list(axis_preds))
     overlap = lambda node_t: Sum(words, "w",
         Ite(Gte(StrIdx(Attr(node_t, "keywords_text"), V("w")), L(0)), L(1), L(0)))
+    struct_overlap = lambda node_t: Sum(words, "w",
+        Ite(Gte(StrIdx(Attr(node_t, "where_signature_json"), V("w")), L(0)), L(1), L(0)))
     candidates = Filter(NodesOfType("RuleSummary"), "s",
         And(Eq(Attr(V("s"), "writes_chosen_action"), L(1.0)), Eq(Attr(V("s"), "skippable"), L(1.0))))
     best = Argmax(candidates, "s", overlap(V("s")), None)
+    struct_best = Argmax(candidates, "s2", struct_overlap(V("s2")), None)
+    struct_fallback = LetT("sbest", struct_best,
+        Ite(And(Not(Eq(V("sbest"), L(None))), Gt(struct_overlap(V("sbest")), L(0.0))),
+            V("sbest"), L(None)))
     pick_expr = LetT("best", best,
-        Ite(Eq(V("best"), L(None)), L(None),
-            Ite(Gt(overlap(V("best")), L(0.0)), V("best"), L(None))))
+        Ite(And(Not(Eq(V("best"), L(None))), Gt(overlap(V("best")), L(0.0))),
+            V("best"), struct_fallback))
     try:
         picked = native0.evaluate(pick_expr, {})
     except Exception:
@@ -2977,14 +3006,23 @@ def _pick_reply_rule(agent, axis_preds) -> dict:
     stays selectable here and is denied at the adoption gate — mirrored
     semantics, see `_pick_acting_rule`'s docstring). Honest abstain
     (`picked: None`) when no reply-rule summary genuinely overlaps the
-    axis's residual predicates."""
+    axis's residual predicates.
+
+    STRUCTURAL FALLBACK — the SAME mechanism `_pick_acting_rule` now carries
+    (see its docstring for the measured grounding): the primary
+    `keywords_text` Argmax is unchanged and tried first; only on its own
+    abstain does a second Argmax of the identical shape run against
+    `where_signature_json`, inside the SAME evaluated Term."""
     sub0, native0, _ag0 = _resolve_agent(agent)
     _ensure_reply_rule_provenance(sub0, native0)
+    from domains import rule_signature as _rsig
+    _rsig.ensure_where_signature(sub0)
 
     V = lambda n: {"type": "Var", "name": n}
     L = lambda v: {"type": "Lit", "value": v}
     Attr = lambda nd, k: {"type": "Attr", "node": nd, "key": k}
     Eq = lambda a, b: {"type": "Eq", "a": a, "b": b}
+    Not = lambda x: {"type": "Not", "arg": x}
     And = lambda *xs: {"type": "And", "items": list(xs)}
     Gt = lambda a, b: {"type": "Gt", "a": a, "b": b}
     Gte = lambda a, b: {"type": "Gte", "a": a, "b": b}
@@ -3000,12 +3038,18 @@ def _pick_reply_rule(agent, axis_preds) -> dict:
     words = L(list(axis_preds))
     overlap = lambda node_t: Sum(words, "w",
         Ite(Gte(StrIdx(Attr(node_t, "keywords_text"), V("w")), L(0)), L(1), L(0)))
+    struct_overlap = lambda node_t: Sum(words, "w",
+        Ite(Gte(StrIdx(Attr(node_t, "where_signature_json"), V("w")), L(0)), L(1), L(0)))
     candidates = Filter(NodesOfType("RuleSummary"), "s",
         And(Eq(Attr(V("s"), "writes_reply"), L(1.0)), Eq(Attr(V("s"), "skippable"), L(1.0))))
     best = Argmax(candidates, "s", overlap(V("s")), None)
+    struct_best = Argmax(candidates, "s2", struct_overlap(V("s2")), None)
+    struct_fallback = LetT("sbest", struct_best,
+        Ite(And(Not(Eq(V("sbest"), L(None))), Gt(struct_overlap(V("sbest")), L(0.0))),
+            V("sbest"), L(None)))
     pick_expr = LetT("best", best,
-        Ite(Eq(V("best"), L(None)), L(None),
-            Ite(Gt(overlap(V("best")), L(0.0)), V("best"), L(None))))
+        Ite(And(Not(Eq(V("best"), L(None))), Gt(overlap(V("best")), L(0.0))),
+            V("best"), struct_fallback))
     try:
         picked = native0.evaluate(pick_expr, {})
     except Exception:
@@ -3092,6 +3136,30 @@ def _pick_variation_op(agent, heads, key: str):
     return val if isinstance(val, str) and val else None
 
 
+def _char_bigrams(s: str) -> list[str]:
+    """Mechanical string->list translation (no decision): the overlapping
+    2-character windows of `s` (`"drop"` -> `["dr","ro","op"]`), falling back
+    to the bare single-character list for a degenerate <2-char input (an
+    empty bigram list would make `cue_route_pick` abstain on every 1-char
+    verb, which is not this fix's target). RULE_SIGNATURE_PRODUCTION_WIRING_
+    RESULTS.md's own measurement is why this replaces the old unigram
+    `list(verb)` at this call site: SHAPE_AUDIT.md §2.2 names `chars:
+    list(verb)` — a per-CHARACTER membership Sum — as "the worst instance
+    found anywhere" because it scores by SET overlap, not sequence: `"drop"`
+    and `"prod"` (anagrams) score byte-IDENTICAL against every candidate
+    (verified live, see the RESULTS doc). A bigram is the cheapest unit that
+    is sensitive to ADJACENCY, not just membership — `cue_route_pick`'s own
+    held Program (seeds/variation_ops.json) does not change at all: it
+    already sums `StringIndexOf(candidate.name, item) >= 0` over whatever
+    list `chars` holds, so handing it bigrams instead of unigrams is a
+    strictly more informative INPUT to the SAME graph-resident ranking, not
+    a new decision — the ranking itself is still the agent's own held Term,
+    never a Python if/elif."""
+    if len(s) < 2:
+        return list(s)
+    return [s[i:i + 2] for i in range(len(s) - 1)]
+
+
 def _compose_cue_variant(agent, keys, tag: str) -> dict[str, Any]:
     """THE CUE-SET-EDIT VARIATION FAMILY (Wave 5) — the genuinely-new-behaviour
     constructor. Wave 1b/2 made instruction verbs graph data (`Concept{name,
@@ -3108,13 +3176,15 @@ def _compose_cue_variant(agent, keys, tag: str) -> dict[str, Any]:
     `cue_route_pick` Program (seeds/variation_ops.json): candidates are the
     route-carrying Concepts whose route is in the cue_set_edit VariationOp's
     own `route_pool` (agent-editable data: the routes whose seed rules claim
-    any verb+content generically), scored by character overlap with the gap
-    verb — a v1 held similarity, DOCUMENTED honestly: the score only orders
-    proposals; the dispatched EXPERIMENT is the real validator of the pick
-    (a wrong route replays as unchanged/regressed and judges inconclusive/
-    refuted, never adopted). The Program abstains (None) when the verb is
-    already routed (nothing to construct) or nothing scores — an honest null,
-    never a fabricated cue."""
+    any verb+content generically), scored by character-BIGRAM overlap with
+    the gap verb (`_char_bigrams` — SEQUENCE-sensitive, unlike the old plain
+    per-character overlap it replaces; see `_char_bigrams`'s own docstring
+    for why) — a v1 held similarity, DOCUMENTED honestly: the score only
+    orders proposals; the dispatched EXPERIMENT is the real validator of the
+    pick (a wrong route replays as unchanged/regressed and judges
+    inconclusive/refuted, never adopted). The Program abstains (None) when
+    the verb is already routed (nothing to construct) or nothing scores —
+    an honest null, never a fabricated cue."""
     sub0, native0, ag0 = _resolve_agent(agent)
     key = str(keys[0]) if keys else ""
     standing = None
@@ -3154,7 +3224,7 @@ def _compose_cue_variant(agent, keys, tag: str) -> dict[str, Any]:
     if prog is None:
         return {"built": False, "wall": "the cue_route_pick Program is not held"}
     try:
-        route = native0.evaluate(prog, {"verb": verb, "chars": list(verb)})
+        route = native0.evaluate(prog, {"verb": verb, "chars": _char_bigrams(verb)})
     except Exception as e:
         return {"built": False, "wall": f"route pick failed: {type(e).__name__}: {e}"}
     if not isinstance(route, str) or not route:
