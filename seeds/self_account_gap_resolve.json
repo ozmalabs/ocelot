@@ -1,0 +1,83 @@
+{
+ "id": "self_account_gap_resolve",
+ "version": "1.0.0",
+ "depends_on": ["gap_awareness"],
+ "capability_keys": ["self_account_gap_resolve"],
+ "description": "GROUND_CONCERN SIX KINDS, Path 2 (GROUND_CONCERN_SIX_KINDS_PREREG.md, GROUND_CONCERN_SIX_KINDS_RESULTS.md): a promoted `self_account` StandingConcern was MEASURED to fall through jabberwock_daemon._concern_tick's generic induce_concern/ground_concern fallback into the SAME inert comprehend_describe_directive_<tag> rule A25 found for prog_read (or, on the rare content-triggered case, the equally-mismatched ARC vary/gradient self-improvement bundle -- self_account is not in _promote_relations_for_concern's conversation-experiment kind list, so it has NO safe existing pipeline value to defer to). `_concern_tick` now routes EVERY StandingConcern of this kind (unconditionally -- unlike knowledge/reply_fix there is no safe pipeline value to spare) DIRECTLY into domains.self_account_growth.work_on_self_account_gap, which re-checks the EXISTING SelfProcess account lookup (domains.self_model.find_self_process, CLAUDE.md's own 'self_processes' section) instead of inventing or fabricating a mechanism. `_process_self_account_standing` records a MECHANICAL outcome datum (self_account_compose_ok / self_account_compose_reason) onto the StandingConcern -- never a decision there. THIS seed's two rules read that datum: `resolve_self_account_gap` (the resolve_code_write_gap precedent) marks the original SelfConcern resolved when a held SelfProcess account for the topic now exists; `note_self_account_composition_exhausted` (the note_prog_read_composition_exhausted precedent) marks the StandingConcern experiments_exhausted with the honest, specific reason (no held account, authoring one is an architecture-documentation task -- never auto-fabricated) when it does not. No emitter tool exists for this file (confirmed by grep across tools/*.py) -- hand-authored, the same status code_write_gap.json/prog_read_gap.json already have.",
+ "microtheory": {
+  "name": "self_account_gap_resolve",
+  "description": "a promoted self_account SelfConcern resolves when a held SelfProcess account now exists, or honestly exhausts naming that none does"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "resolve_self_account_gap",
+   "match": [
+    ["agent", "has_self_concern", "sc"],
+    ["sc", "promoted_to", "standing"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "self_account"}
+     },
+     {
+      "type": "Or",
+      "items": [
+       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "status"}, "b": {"type": "Lit", "value": "noted"}},
+       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "status"}, "b": {"type": "Lit", "value": "promoted"}}
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "self_account_compose_ok"},
+      "b": {"type": "Lit", "value": 1.0}
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "sc", "status", "resolved"]
+   ]
+  },
+  {
+   "name": "note_self_account_composition_exhausted",
+   "match": [
+    ["agent", "has_self_concern", "sc"],
+    ["sc", "promoted_to", "standing"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "self_account"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "self_account_compose_ok"},
+      "b": {"type": "Lit", "value": 0.0}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "experiments_exhausted"},
+       "b": {"type": "Lit", "value": true}
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "standing", "experiments_exhausted", true],
+    ["set_attr", "standing", "exhausted_note", {"__term__":
+     {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "self_account_compose_reason"}}]
+   ]
+  }
+ ]
+}

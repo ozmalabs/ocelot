@@ -1,11 +1,15 @@
 # program_synthesis — index
 
-110 documents.
+114 documents.
 
 ## Documents
 
 | file | title |
 |---|---|
+| [`GROUND_CONCERN_COMPREHENSION_HONESTY_PREREG.md`](GROUND_CONCERN_COMPREHENSION_HONESTY_PREREG.md) | `ground_concern`'s comprehension composer — PREREGISTRATION |
+| [`GROUND_CONCERN_COMPREHENSION_HONESTY_RESULTS.md`](GROUND_CONCERN_COMPREHENSION_HONESTY_RESULTS.md) | `ground_concern`'s comprehension composer — RESULTS: NO-GO, precisely characterized, with live evidence in both directions |
+| [`GROUND_CONCERN_SIX_KINDS_PREREG.md`](GROUND_CONCERN_SIX_KINDS_PREREG.md) | `ground_concern`'s comprehension composer, Path 2 — PREREGISTRATION for the six remaining concern kinds |
+| [`GROUND_CONCERN_SIX_KINDS_RESULTS.md`](GROUND_CONCERN_SIX_KINDS_RESULTS.md) | `ground_concern`'s comprehension composer, Path 2 — RESULTS: three kinds fixed, three already safe, live-verified |
 | [`HLE_KEY_AUDIT.md`](HLE_KEY_AUDIT.md) | HLE Key Audit — provably-false answer keys on Humanity's Last Exam |
 | [`LLVM_LEARNING.md`](LLVM_LEARNING.md) | LLVM ingestion — design notes |
 | [`PROGRAM_SYNTHESIS_ARC2_PLAN.md`](PROGRAM_SYNTHESIS_ARC2_PLAN.md) | PROGRAM SYNTHESIS ARC 2 — FEED THE PROPOSER, FACE THE BENCHMARK |
