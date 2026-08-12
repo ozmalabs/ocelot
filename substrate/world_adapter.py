@@ -6184,6 +6184,28 @@ class WorldAdapter:
         wa.s = s
         wa.inner = s._inner
         if "rules" in blob:
+            # Investigated (IMPORT_RULES_NO_MIRROR_RESULTS.md): unlike the
+            # Γ-production replay just above, this call does NOT need a
+            # `_no_mirror` sibling today. `import_rules` (py.rs) and the
+            # live-authoring PyO3 `add_rule` binding both call the SAME
+            # Rust-inherent `Substrate::add_rule` (substrate.rs) — read in
+            # full, it never writes a graph node (no `add_term_subgraph`,
+            # no `rule_reflect.rs`; `declare_attr_index` is an in-memory
+            # bookkeeping structure, not a graph mutation) — so replaying it
+            # once per rule on every load is graph-inert, confirmed live
+            # (flat node/edge/rule counts across 6 save/load cycles).
+            # CONTRACT FOR ANY FUTURE RULE-MIRRORING BUILD: because
+            # `import_rules` and the general `add_rule` binding share ONE
+            # Rust-inherent function (not two layers, unlike Γ's
+            # `add_production` / `Substrate::add_production` split before
+            # its own fix), a mirror added directly inside
+            # `Substrate::add_rule` would make checkpoint replay mirror too,
+            # by construction, with no way to opt out short of re-splitting
+            # the two callers apart. Any future rule-mirroring mechanism
+            # MUST route through a mirror-free variant here (an
+            # `import_rules_no_mirror`-shaped method), exactly as
+            # `add_production_no_mirror` does three lines above — do not
+            # let this call regress to mirroring silently.
             wa.inner.import_rules(blob["rules"])
         else:
             logging.getLogger(__name__).warning(
