@@ -1023,22 +1023,183 @@ struct BeamState {
     total_fit: i64,
 }
 
-/// `shape_fit` — `FixedCount(AntiUnify([residual[..n], psig[..n]]))`,
-/// position-aligned over the first `n = min(len)` relations of each side
-/// (NOT predicate-matched — this mirrors `_shared_shape` exactly, which
-/// anti-unifies the two truncated relation-LISTS as a single pair, so the
-/// generalization recurses element-wise by POSITION).
-fn shape_fit(residual: &[Value], psig: &[Value], wild: &Value) -> i64 {
-    let n = residual.len().min(psig.len());
-    if n == 0 {
+/// The `RelationCue` axis index — `{relation-tuple (as owned strings) -> cue
+/// name}` — the Rust twin of `domains/reflective_faculty.py::
+/// _relation_cue_index`. Read once per `ShapeDecode` eval (RELATION_CUE_TOKEN_
+/// COLLISION_RESULTS.md, Q1/Q4c): 52 held cues, cheap relative to the
+/// O(residual x parts) search this feeds. Every consumer of the RelationCue
+/// lexicon (`author_signature`'s scan, hand-authored `math_capability_shapes.json`
+/// rows) emits relation tuples copied VERBATIM from a `RelationCue.relation`, so
+/// this index is how `shape_fit` recognises WHICH axis a row belongs to,
+/// independent of its position in whatever list it arrived in — mirrors the
+/// discipline `_shared_shape` already applies at the Python layer. Empty when
+/// the graph holds no `RelationCue` nodes (e.g. a minimal test graph): `shape_fit`
+/// then degrades to zero shared axes for every part, never to the old
+/// un-anchored positional zip.
+fn load_relation_cue_index(ctx: &EvalCtx) -> FxHashMap<Vec<String>, String> {
+    let mut idx = FxHashMap::default();
+    let Some(cue_type) = ctx.interner.lookup("RelationCue") else { return idx };
+    for nid in ctx.graph.nodes_of_type(cue_type) {
+        let node = ctx.graph.node(nid);
+        let mut name: Option<String> = None;
+        let mut rel: Option<Value> = None;
+        for (k, v) in node.attrs.iter() {
+            match ctx.interner.resolve(*k) {
+                "name" => name = td_val_to_string(v, ctx.interner),
+                "relation" => rel = Some(v.clone()),
+                _ => {}
+            }
+        }
+        let (Some(name), Some(rel_val)) = (name, rel) else { continue };
+        // `relation` is seeded as a JSON string (`relation_vocabulary.json`
+        // stores it `json.dumps`'d); accept a native Tuple/List too, the same
+        // native-or-JSON-string duality `load_parts` already accepts for
+        // `signature`.
+        let row: Vec<String> = match &rel_val {
+            Value::Tuple(t) | Value::List(t) => {
+                t.iter().filter_map(|v| td_val_to_string(v, ctx.interner)).collect()
+            }
+            other => {
+                let Some(text) = td_val_to_string(other, ctx.interner) else { continue };
+                match serde_json::from_str::<serde_json::Value>(&text) {
+                    Ok(serde_json::Value::Array(items)) => items
+                        .iter()
+                        .filter_map(|it| it.as_str().map(|s| s.to_string()))
+                        .collect(),
+                    _ => continue,
+                }
+            }
+        };
+        if row.is_empty() {
+            continue;
+        }
+        idx.insert(row, name);
+    }
+    idx
+}
+
+/// PANIC-SAFE string resolution for a relation-row leaf — the SAME "index out
+/// of bounds" hazard `resolve_scoped_output` (below) already closes for
+/// `TransformDecode`'s output path, now needed here too: a held part's parsed
+/// `signature` (`json_to_value_scoped`/`local_sym`) may contain a LOCALLY
+/// fabricated placeholder `Sym` for a string novel to this graph, and
+/// `Interner::resolve` panics on a Sym it never issued. Check `extra_rev`
+/// FIRST (the placeholder's own text), THEN fall back to a real interner
+/// resolve — mirrors `resolve_scoped_output`'s own order exactly.
+fn shape_decode_val_to_string(v: &Value, interner: &Interner, extra_rev: &FxHashMap<Sym, String>) -> Option<String> {
+    match v {
+        Value::Str(s) => match extra_rev.get(s) {
+            Some(text) => Some(text.clone()),
+            None => Some(interner.resolve(*s).to_string()),
+        },
+        Value::Surface(SurfaceKind::Text, bytes) => std::str::from_utf8(bytes).ok().map(|s| s.to_string()),
+        _ => None,
+    }
+}
+
+/// A relation-row `Value` (a Tuple/List of Str/Surface leaves) as an owned
+/// `Vec<String>` key, for lookup against `load_relation_cue_index`'s index.
+/// `None` for a non-tuple row or a row with a non-string leaf (defensive;
+/// relation-systems are always flat string tuples in practice).
+fn shape_decode_row_key(row: &Value, interner: &Interner, extra_rev: &FxHashMap<Sym, String>) -> Option<Vec<String>> {
+    let (Value::Tuple(t) | Value::List(t)) = row else { return None };
+    let mut out = Vec::with_capacity(t.len());
+    for v in t.iter() {
+        out.push(shape_decode_val_to_string(v, interner, extra_rev)?);
+    }
+    Some(out)
+}
+
+/// `shape_fit` — `FixedCount(AntiUnify(...))`, AXIS-ANCHORED
+/// (RELATION_CUE_TOKEN_COLLISION_RESULTS.md, Q1/Q4c) WHEN the RelationCue
+/// vocabulary is actually in play, positional (UNCHANGED) otherwise.
+///
+/// `ShapeDecode`'s codebook is a SHARED pool (`codebook_type` defaults to the
+/// one node type `ShapeSignature` for every domain — the math/faculty
+/// cognitive-shape pool, the ink stroke/substroke pool, and others all live in
+/// it together, distinguished only by their own `kind` attr, never by node
+/// type; `test_codebook_partition_migrated.py` names this explicitly). Only
+/// the cognitive-shape domain's rows are ever copied verbatim from a held
+/// `RelationCue.relation` (`author_signature`, `math_capability_shapes.json`);
+/// a stroke/substroke signature's rows are `seg`/`pose_*` relations that were
+/// NEVER meant to address the `RelationCue` lexicon at all and match NO cue,
+/// ever — for that domain the OLD position-aligned comparison is not the
+/// collision bug, it is the ONLY signal `shape_fit` has, and axis-anchoring
+/// unconditionally would zero it out (measured regression: FIRST-FIX ATTEMPT
+/// silently broke `test_substroke_arity_disjointness_is_the_only_thing_
+/// separating_it_from_stroke` and 4 composer/codebook tests this way — see
+/// RELATION_CUE_TOKEN_COLLISION_RESULTS.md §7 for the honest record).
+///
+/// The discriminator: if NEITHER side has even ONE row that maps to a held
+/// `RelationCue` (`by_name_a` and `by_name_b` both empty), this pair is
+/// outside the cue vocabulary entirely — fall back to the exact pre-fix
+/// positional `AntiUnify([residual[..n], psig[..n]])`, byte-identical. The
+/// moment EITHER side has a cue-matched row, this pair is inside the
+/// cognitive-shape domain the collision bug lives in, and pairing switches to
+/// cue-identity: a row from `residual` is paired with a row from `psig` only
+/// when BOTH are byte-identical to the SAME held `RelationCue`'s relation
+/// tuple (`cue_of`, looked up via `shape_decode_row_key`) — i.e. the same
+/// NAMED cue fired for both, never merely because two rows share a list
+/// index (mirrors `domains/reflective_faculty.py::_shared_shape`'s fix,
+/// AUTHOR_SIGNATURE_AXIS_ANCHOR_RESULTS.md, at the Rust layer this time —
+/// confirmed live via `scripts/shape_decode_shape_fit_collision_probe.py`:
+/// two parts with IDENTICAL real coverage got DIFFERENT `shape_fit` scores
+/// from an accidental cross-cue token collision in an uncovered, unrelated
+/// row, eliminated by this fix). A row that matches no held cue even inside
+/// a cue-anchored comparison (a `CapabilityAxis`-residual bare predicate, or
+/// a rare hand-authored seed row that isn't an exact cue-template copy)
+/// contributes no axis and is excluded, honestly — never force-aligned by
+/// position.
+fn shape_fit(residual: &[Value], psig: &[Value], wild: &Value,
+             cue_of: &FxHashMap<Vec<String>, String>, interner: &Interner,
+             extra_rev: &FxHashMap<Sym, String>) -> i64 {
+    use std::collections::BTreeMap;
+    let mut by_name_a: BTreeMap<&str, &Value> = BTreeMap::new();
+    for row in residual {
+        if let Some(key) = shape_decode_row_key(row, interner, extra_rev) {
+            if let Some(nm) = cue_of.get(&key) {
+                by_name_a.entry(nm.as_str()).or_insert(row);
+            }
+        }
+    }
+    let mut by_name_b: BTreeMap<&str, &Value> = BTreeMap::new();
+    for row in psig {
+        if let Some(key) = shape_decode_row_key(row, interner, extra_rev) {
+            if let Some(nm) = cue_of.get(&key) {
+                by_name_b.entry(nm.as_str()).or_insert(row);
+            }
+        }
+    }
+    if by_name_a.is_empty() && by_name_b.is_empty() {
+        // OUTSIDE the RelationCue vocabulary entirely — the pre-fix
+        // positional comparison, untouched (see doc above).
+        let n = residual.len().min(psig.len());
+        if n == 0 {
+            return 0;
+        }
+        crate::scale_audit::term_units(n as u64);
+        let a: SmallVec<[Value; 4]> = residual[..n].iter().cloned().collect();
+        let b: SmallVec<[Value; 4]> = psig[..n].iter().cloned().collect();
+        let insts = [Value::Tuple(Arc::new(a)), Value::Tuple(Arc::new(b))];
+        let anti = anti_unify_values(&insts, wild);
+        return fixed_count_value(&anti, wild);
+    }
+    let a: SmallVec<[Value; 4]> = by_name_a.iter()
+        .filter(|(nm, _)| by_name_b.contains_key(*nm))
+        .map(|(_, v)| (*v).clone())
+        .collect();
+    if a.is_empty() {
         return 0;
     }
+    let b: SmallVec<[Value; 4]> = by_name_b.iter()
+        .filter(|(nm, _)| by_name_a.contains_key(*nm))
+        .map(|(_, v)| (*v).clone())
+        .collect();
     // SCALE AUDIT — interior comparison units (`scale_audit.rs`, T section).
-    // `n` relation positions are anti-unified. Charged ONCE with the count, not
-    // per position: an atomic per iteration would dominate the work it measures.
-    crate::scale_audit::term_units(n as u64);
-    let a: SmallVec<[Value; 4]> = residual[..n].iter().cloned().collect();
-    let b: SmallVec<[Value; 4]> = psig[..n].iter().cloned().collect();
+    // `a.len()` shared-axis rows are anti-unified. Charged ONCE with the
+    // count, not per position: an atomic per iteration would dominate the
+    // work it measures.
+    crate::scale_audit::term_units(a.len() as u64);
     let insts = [Value::Tuple(Arc::new(a)), Value::Tuple(Arc::new(b))];
     let anti = anti_unify_values(&insts, wild);
     fixed_count_value(&anti, wild)
@@ -1103,8 +1264,10 @@ fn covers_relation(part_sig: &[Value], goal_relation: &Value, wild: &Value, wild
 /// `Covers` pattern/instance role inside `covers_relation` (see its doc)
 /// — `shape_fit`'s `AntiUnify` is symmetric, so the pre-transformed
 /// `psig` alone is enough there.
-fn score_part_for_residual(residual: &[Value], psig: &[Value], wild: &Value, wild_objects: bool) -> (i64, Vec<Value>) {
-    let fit = shape_fit(residual, psig, wild);
+fn score_part_for_residual(residual: &[Value], psig: &[Value], wild: &Value, wild_objects: bool,
+                            cue_of: &FxHashMap<Vec<String>, String>, interner: &Interner,
+                            extra_rev: &FxHashMap<Sym, String>) -> (i64, Vec<Value>) {
+    let fit = shape_fit(residual, psig, wild, cue_of, interner, extra_rev);
     let covered: Vec<Value> = residual.iter()
         .filter(|rel| covers_relation(psig, rel, wild, wild_objects))
         .cloned()
@@ -1318,6 +1481,19 @@ pub(crate) fn eval_shape_decode(
         parts.iter().map(|p| p.sig.clone()).collect()
     };
 
+    // RELATION_CUE_TOKEN_COLLISION_RESULTS.md Q1/Q4c: the axis-anchor index
+    // `shape_fit` needs, read once (52 held cues; the graph doesn't change
+    // across beam steps). Built AFTER `apply_exclude`/`apply_scope` (which need
+    // `ctx` mutably) — `ctx` is only read immutably from here on.
+    let cue_of = load_relation_cue_index(ctx);
+    // `extra_rev`: the same "resolve a locally-fabricated placeholder Sym back
+    // to its own text" map every other Term in this file builds after
+    // `load_parts` (see `resolve_scoped_output`'s doc) — needed so `shape_fit`
+    // can safely stringify a `psig` row's tokens (parsed via
+    // `json_to_value_scoped`/`local_sym`, which may carry placeholder Syms the
+    // real interner never issued) without panicking.
+    let extra_rev: FxHashMap<Sym, String> = extra.iter().map(|(k, v)| (*v, k.clone())).collect();
+
     let cand_w = cand_k.max(0) as usize;
     // Bug 2's budget: total state EXPANSIONS across the whole search
     // (one unit per candidate state created, i.e. per (state, part) pairing
@@ -1346,7 +1522,8 @@ pub(crate) fn eval_shape_decode(
                 if state.used.contains(&part.name) {
                     continue;
                 }
-                let (fit, covered) = score_part_for_residual(&state.residual, sig, &wild_val, wild_objects);
+                let (fit, covered) = score_part_for_residual(&state.residual, sig, &wild_val, wild_objects,
+                                                               &cue_of, ctx.interner, &extra_rev);
                 if covered.is_empty() {
                     continue;
                 }
