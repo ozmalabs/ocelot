@@ -112,7 +112,8 @@ _ANNOTATIONS = {
 }
 
 
-def build(raw_path: str, out_path: Path, messages_from: str | None = None) -> int:
+def build(raw_path: str, out_path: Path, messages_from: str | None = None,
+          condition: str | None = None) -> int:
     raw = json.loads(Path(raw_path).read_text())
 
     # The FIRST full sweep captured correct node ids but truncated messages at column 80
@@ -171,7 +172,12 @@ def build(raw_path: str, out_path: Path, messages_from: str | None = None) -> in
                    "author it, and never quote it in place of the list.",
         "head": raw["head"],
         "engine": _engine_line(),
-        "condition": "no data/ symlink; own engine build; per-file subprocess",
+        # THE CONDITION IS PART OF THE NUMBER. CLAUDE.md measures this same tree at
+        # 144-145 red node ids with data/ symlinked and 565 without — a 3.9x spread
+        # on one engine at one commit — so a baseline whose condition is hard-coded
+        # to the condition of the FIRST sweep that ever ran is a rumour the moment
+        # anyone measures under another one. Passed in, never assumed.
+        "condition": condition or "no data/ symlink; own engine build; per-file subprocess",
         "measured_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "loadavg_start": raw["loadavg_start"],
         "loadavg_end": raw["loadavg_end"],
@@ -264,6 +270,9 @@ def main() -> int:
     b.add_argument("--raw", default="results/failure_baseline_sweep_raw.json")
     b.add_argument("--out", default=str(LIST_PATH))
     b.add_argument("--messages-from", default=None)
+    b.add_argument("--condition", default=None,
+                   help="the measurement condition, stamped into the artifact "
+                        "(data/ symlink? optional deps? engine?) — protocol 10/12")
     v = sub.add_parser("verify")
     v.add_argument("--list", default=str(LIST_PATH))
     v.add_argument("--only-fast", type=float, default=None,
@@ -271,7 +280,7 @@ def main() -> int:
     v.add_argument("--limit", type=int, default=None)
     a = ap.parse_args()
     if a.cmd == "build":
-        return build(a.raw, Path(a.out), a.messages_from)
+        return build(a.raw, Path(a.out), a.messages_from, a.condition)
     return verify(Path(a.list), a.only_fast, a.limit)
 
 
