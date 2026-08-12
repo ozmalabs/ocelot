@@ -1265,6 +1265,45 @@ def _ensure_shape_decode_loop(sub, native, ag_node):
             sub.set_attr(ag_node, "codebook_epoch", 0.0)
 
 
+def _key_component(pred: str) -> str:
+    """Make one predicate SAFE to `_`-join into a `CapabilityAxis` key.
+
+    THE DEFECT THIS CLOSES (`SHAPE_TYPE_VOCABULARY_SPIKE.md` §7.2, reported
+    `[derived, not run]` and reproduced arithmetically before this fix).
+    `SHAPE_AUDIT_PATTERN_C_FIXES_RESULTS.md` §1 made the key
+    `"induced_" + "_".join(sorted(preds))` — sorted and untruncated, which
+    closed both of that audit's failure directions. But `_` is used BOTH as the
+    join separator BETWEEN predicates AND as the word separator INSIDE them
+    (predicates here are snake_case relation heads), so the encoding is lossy:
+
+        sorted(["a_b", "c"])  ->  "induced_a_b_c"
+        sorted(["a", "b_c"])  ->  "induced_a_b_c"     # equal — a real collision
+
+    A collision routes a genuinely novel observation to `sd_dedup_existing`,
+    whose only effect is `status = "recognized_duplicate"` — the dangerous
+    direction (novelty silently recorded as recognised).
+
+    THE FIX, and why THIS one. A derived string key is a lossy encoding of a
+    structural key, and every lossy encoding needs an escape the payload cannot
+    contain. Percent-escaping the two characters that carry structure — the
+    separator `_` and the escape introducer `%` — makes the encoding injective
+    (the standard argument: escaped components contain no bare `_`, so the
+    split is unambiguous, and `%` is escaped so no component can forge an
+    escape sequence). Doubling `_` was considered and REJECTED: it is NOT
+    injective (`["a_", "b"]` and `["a", "_b"]` both give a run of three).
+
+    VALUE-PRESERVING BY CONSTRUCTION, which is why it is admissible here at all
+    (the brief's own constraint: nothing that reads a key as a literal string
+    may silently change). A predicate containing neither `_` nor `%` is
+    returned UNCHANGED, so every key the tree currently produces is
+    byte-identical — measured, not assumed: across all 92 `induce_concern` call
+    sites with a source-literal observation, the predicate vocabulary is 61
+    strings of which exactly ONE (`for_each`) contains `_`, and that one occurs
+    only at `name_hint`-supplied sites, where this join never runs.
+    """
+    return pred.replace("%", "%25").replace("_", "%5f")
+
+
 def induce_concern(agent, observation, *, name_hint=None) -> dict[str, Any]:
     """Observe one structured item via the tick-driven DEQUANTIZE/DYNAMIC-QUANTIZE
     loop (seeds/shape_decode_loop.json): ingest an Observation node carrying the
@@ -1293,7 +1332,8 @@ def induce_concern(agent, observation, *, name_hint=None) -> dict[str, Any]:
     # `capability_keys`/`obs.key` treats it as an opaque equality-tested string,
     # never sliced or length-assumed.
     preds = [st[0] for st in obs if isinstance(st, list) and st and isinstance(st[0], str)]
-    key = name_hint or (("induced_" + "_".join(sorted(preds))) if preds else "induced_concern")
+    key = name_hint or (("induced_" + "_".join(_key_component(p) for p in sorted(preds)))
+                        if preds else "induced_concern")
 
     obs_node = sub.add_node("Observation", {"signature": obs, "key": [key], "status": "pending"})
     if ag_node is not None:

@@ -821,6 +821,22 @@ pub enum TermNode {
     /// for a win-rule, whether the condition the score follows now holds).
     Covers { pattern: TermIdx, instance: TermIdx, wild: Sym },
 
+    /// `Covers` with the OUTER container read as a relation SET — the pattern's
+    /// relations must ALL be covered by DISTINCT relations of the instance, and
+    /// the instance may carry extra relations the pattern says nothing about.
+    /// Element comparison is `covers_value` UNCHANGED, so a relation stays
+    /// positional (`["buyer", WILD]` does not match `["alice", "buyer"]`) and
+    /// WILD still matches anything.
+    ///
+    /// This is the subsumption question — *does this held generalisation APPLY
+    /// to this item* — as distinct from `Covers`' whole-shape identity question
+    /// at list grain, which requires equal arity (`term.rs`'s `covers_value`,
+    /// `pt.len() == it.len()`). `Covers` is untouched and every existing caller
+    /// keeps its exact semantics; see `covers_open_value` for why the split is
+    /// per-LEVEL rather than per-container, and for the engine precedent
+    /// (`shape_decode::covers_relation`) it restores consistency with.
+    CoversOpen { pattern: TermIdx, instance: TermIdx, wild: Sym },
+
     /// Anti-unification that RETAINS its WITNESSES — the lattice-MEET that also
     /// emits the DIFFERENCE. Evaluates `values` (a collection of structured
     /// Values) and returns a 2-Tuple `(template, sigmas)`: `template` is exactly
@@ -2611,6 +2627,9 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
         TermNode::Covers { pattern, instance, wild } =>
             TermNode::Covers { pattern: copy_subtree(src, dst, pattern),
                                instance: copy_subtree(src, dst, instance), wild },
+        TermNode::CoversOpen { pattern, instance, wild } =>
+            TermNode::CoversOpen { pattern: copy_subtree(src, dst, pattern),
+                                   instance: copy_subtree(src, dst, instance), wild },
         TermNode::AntiUnifyWitness { values, wild } =>
             TermNode::AntiUnifyWitness { values: copy_subtree(src, dst, values), wild },
         TermNode::Substitute { template, sigma, wild } =>
@@ -3762,6 +3781,117 @@ pub(crate) fn covers_value(pat: &Value, inst: &Value, wild: &Value) -> bool {
             ps.iter().all(|m| is.iter().any(|x| x == m))
         }
         _ => pat == inst,
+    }
+}
+
+/// OPEN-ARITY coverage — `covers_value` with the OUTER container read as a
+/// relation SET rather than a positional tuple, and every element compared by
+/// `covers_value` UNCHANGED.
+///
+/// WHY THIS EXISTS, and why it is not a weakening of `Covers`
+/// ---------------------------------------------------------
+/// `SHAPE_TYPE_VOCABULARY_SPIKE.md` §3.3 states a genuine three-way trade over
+/// `covers_value`'s three container arms: `Set` gives residual capture and open
+/// arity but cannot carry a WILD; `Dict` gives WILD and open arity but loses
+/// the residual; `Tuple`/`List` gives WILD and residual and buys them by
+/// FIXING THE ARITY (`pt.len() == it.len()`, immediately above).
+///
+/// That trade is real **per level**, and only bites when one container is asked
+/// to serve both levels at once. A shape signature in this tree is not one
+/// container — it is a **SET of POSITIONAL relations**: the outer level wants
+/// set semantics (a held generalisation applies to an item that carries extra,
+/// unrelated relations), the inner level wants tuple semantics (`[predicate,
+/// value]` is positional, and `["buyer", WILD]` must NOT match
+/// `["alice", "buyer"]`). Splitting the levels gets WILD *and* residual *and*
+/// open arity, without changing what any existing caller sees.
+///
+/// The engine already reads relation SETS this way one layer down:
+/// `shape_decode.rs::covers_relation` asks whether SOME relation of a part's
+/// signature covers a given goal relation, and leaves the uncovered ones as the
+/// residual — it never requires the two signatures to be the same length. The
+/// whole-signature `Covers` guard at the meta-shape grain was the outlier.
+///
+/// SEMANTICS, stated precisely
+/// ---------------------------
+/// * pattern WILD ⇒ true (as `covers_value`).
+/// * pattern and instance both list-like ⇒ true iff there is an INJECTIVE map
+///   from pattern elements to instance elements under which every pattern
+///   element `covers_value`s its image. Superset-tolerant, never
+///   subset-tolerant: a pattern relation with no partner fails.
+/// * anything else ⇒ delegate to `covers_value` verbatim. Dict / Set / scalar
+///   semantics are untouched, and so is EVERY existing `Covers` caller: this is
+///   a separate function reached only from `TermNode::CoversOpen`.
+///
+/// The map is required to be injective (a maximum-bipartite-matching, Kuhn's
+/// algorithm) rather than a per-element existential, so two pattern relations
+/// can never be satisfied by ONE instance relation. At this grain a signature's
+/// predicates are distinct by construction, so the two readings agree on real
+/// data; the matching is here so the semantics is honest independently of that
+/// contingent fact, not because a case was observed.
+pub(crate) fn covers_open_value(pat: &Value, inst: &Value, wild: &Value) -> bool {
+    if is_wild(pat, wild) {
+        return true;
+    }
+    match (pat, inst) {
+        (
+            Value::Tuple(pt) | Value::List(pt),
+            Value::Tuple(it) | Value::List(it),
+        ) => {
+            if pt.len() > it.len() {
+                return false;
+            }
+            // Adjacency: which instance elements each pattern element covers.
+            // SCALE AUDIT — the O(P x I) compare core, charged like
+            // `shape_decode::covers_relation` charges its own scan.
+            let mut adj: Vec<Vec<usize>> = Vec::with_capacity(pt.len());
+            let mut scanned: u64 = 0;
+            for p in pt.iter() {
+                let mut row = Vec::new();
+                for (j, i) in it.iter().enumerate() {
+                    scanned += 1;
+                    if covers_value(p, i, wild) {
+                        row.push(j);
+                    }
+                }
+                if row.is_empty() {
+                    crate::scale_audit::term_units(scanned);
+                    return false;
+                }
+                adj.push(row);
+            }
+            crate::scale_audit::term_units(scanned);
+            // Kuhn's augmenting-path matching: every pattern element must be
+            // matched to a DISTINCT instance element.
+            let mut matched: Vec<Option<usize>> = vec![None; it.len()];
+            fn augment(
+                u: usize, adj: &[Vec<usize>], seen: &mut [bool],
+                matched: &mut [Option<usize>],
+            ) -> bool {
+                for &v in &adj[u] {
+                    if seen[v] {
+                        continue;
+                    }
+                    seen[v] = true;
+                    let free = match matched[v] {
+                        None => true,
+                        Some(w) => augment(w, adj, seen, matched),
+                    };
+                    if free {
+                        matched[v] = Some(u);
+                        return true;
+                    }
+                }
+                false
+            }
+            for u in 0..adj.len() {
+                let mut seen = vec![false; it.len()];
+                if !augment(u, &adj, &mut seen, &mut matched) {
+                    return false;
+                }
+            }
+            true
+        }
+        _ => covers_value(pat, inst, wild),
     }
 }
 
@@ -6389,6 +6519,13 @@ TermNode::MorphHead { text } => {
             let wild_val = Value::Tuple(std::sync::Arc::new(
                 smallvec::smallvec![Value::Str(*wild)]));
             Value::Bool(covers_value(&p, &i, &wild_val))
+        }
+        TermNode::CoversOpen { pattern, instance, wild } => {
+            let p = evaluate(arena, *pattern, env, ctx);
+            let i = evaluate(arena, *instance, env, ctx);
+            let wild_val = Value::Tuple(std::sync::Arc::new(
+                smallvec::smallvec![Value::Str(*wild)]));
+            Value::Bool(covers_open_value(&p, &i, &wild_val))
         }
         TermNode::AntiUnifyWitness { values, wild } => {
             let v = evaluate(arena, *values, env, ctx);
@@ -9712,6 +9849,7 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         TermNode::AttrByName { node, name } => { out.push(*node); out.push(*name); }
         TermNode::FixedCount { pattern, .. } => out.push(*pattern),
         TermNode::Covers { pattern, instance, .. } => { out.push(*pattern); out.push(*instance); }
+        TermNode::CoversOpen { pattern, instance, .. } => { out.push(*pattern); out.push(*instance); }
         TermNode::AntiUnifyWitness { values, .. } => out.push(*values),
         TermNode::Substitute { template, sigma, .. } => { out.push(*template); out.push(*sigma); }
         TermNode::Unify { values, .. } => out.push(*values),
@@ -9908,6 +10046,197 @@ mod tests {
         let mut env: Env = SmallVec::new();
         let mut ctx = EvalCtx::new(&g, &ir);
         assert_eq!(evaluate(&a, i, &mut env, &mut ctx), Value::Int(7));
+    }
+
+    // ------------------------------------------------------------------
+    // `CoversOpen` / `covers_open_value` — open-arity relation-SET coverage.
+    // Gates META_SHAPE_ARITY_AND_KEY_SEPARATOR_FIXES: a held k-relation
+    // MetaShape must cover a (k+n)-relation observation (superset-tolerant)
+    // and must NOT cover a (k-1)-relation one (never subset-tolerant), while
+    // `Covers` itself keeps its exact equal-arity semantics.
+    // ------------------------------------------------------------------
+
+    /// The WILD marker, as `evaluate` builds it for every shape-math Term.
+    fn co_wild(ir: &mut Interner) -> Value {
+        Value::Tuple(std::sync::Arc::new(smallvec::smallvec![Value::Str(
+            ir.intern("·?·")
+        )]))
+    }
+
+    /// A signature: a LIST of `[predicate, value]` relations, exactly the
+    /// shape `domains/meta_shape.py::item_signature` writes. `None` in the
+    /// value slot is the WILD an anti-unified codebook entry carries.
+    fn co_sig(ir: &mut Interner, rels: &[(&str, Option<&str>)]) -> Value {
+        let wild = co_wild(ir);
+        let mut out: smallvec::SmallVec<[Value; 4]> = smallvec::SmallVec::new();
+        for (p, v) in rels {
+            let val = match v {
+                Some(s) => Value::Str(ir.intern(s)),
+                None => wild.clone(),
+            };
+            let pv = Value::Str(ir.intern(p));
+            out.push(Value::List(std::sync::Arc::new(smallvec::smallvec![pv, val])));
+        }
+        Value::List(std::sync::Arc::new(out))
+    }
+
+    /// The held 4-relation pattern, exactly as `MetaShapeMint` anti-unifies it
+    /// live from two `TradeRecord` observations: predicates fixed, differing
+    /// values WILD.
+    const CO_HELD: &[(&str, Option<&str>)] = &[
+        ("buyer", None),
+        ("is_a", Some("traderecord")),
+        ("lot", None),
+        ("seller", None),
+    ];
+
+    #[test]
+    fn covers_open_accepts_a_superset_instance() {
+        let mut ir = Interner::new();
+        let wild = co_wild(&mut ir);
+        let pattern = co_sig(&mut ir, CO_HELD);
+        // The k+1 observation: the same four relations plus one extra attr.
+        let inst = co_sig(&mut ir, &[
+            ("buyer", Some("gary")),
+            ("is_a", Some("traderecord")),
+            ("lot", Some("13")),
+            ("note", Some("anything")),
+            ("seller", Some("hank")),
+        ]);
+        assert!(covers_open_value(&pattern, &inst, &wild));
+        // ... and the SHARED primitive is unchanged: `Covers` still refuses it.
+        assert!(!covers_value(&pattern, &inst, &wild));
+    }
+
+    #[test]
+    fn covers_open_still_accepts_an_exact_arity_instance() {
+        let mut ir = Interner::new();
+        let wild = co_wild(&mut ir);
+        let pattern = co_sig(&mut ir, CO_HELD);
+        let inst = co_sig(&mut ir, &[
+            ("buyer", Some("alice")),
+            ("is_a", Some("traderecord")),
+            ("lot", Some("7")),
+            ("seller", Some("bob")),
+        ]);
+        assert!(covers_open_value(&pattern, &inst, &wild));
+        assert!(covers_value(&pattern, &inst, &wild));
+    }
+
+    #[test]
+    fn covers_open_refuses_a_subset_instance() {
+        let mut ir = Interner::new();
+        let wild = co_wild(&mut ir);
+        let pattern = co_sig(&mut ir, CO_HELD);
+        // `seller` absent — a strict SUBSET. Open arity must be
+        // superset-tolerant only; this is the bar separating a fix from a
+        // weakening.
+        let inst = co_sig(&mut ir, &[
+            ("buyer", Some("alice")),
+            ("is_a", Some("traderecord")),
+            ("lot", Some("7")),
+        ]);
+        assert!(!covers_open_value(&pattern, &inst, &wild));
+    }
+
+    #[test]
+    fn covers_open_refuses_a_disjoint_instance() {
+        let mut ir = Interner::new();
+        let wild = co_wild(&mut ir);
+        let pattern = co_sig(&mut ir, CO_HELD);
+        let inst = co_sig(&mut ir, &[
+            ("definition", Some("a held generalisation")),
+            ("domain", Some("engine")),
+            ("is_a", Some("concept")),
+            ("name", Some("shape")),
+            ("source", Some("seed")),
+        ]);
+        assert!(!covers_open_value(&pattern, &inst, &wild));
+    }
+
+    #[test]
+    fn covers_open_keeps_relations_positional() {
+        let mut ir = Interner::new();
+        let wild = co_wild(&mut ir);
+        let pattern = co_sig(&mut ir, &[("buyer", None)]);
+        // Same two atoms, swapped slots. A SET reading of the inner relation
+        // would accept this; the inner comparison is `covers_value`, so it
+        // must not.
+        let swapped = co_sig(&mut ir, &[("alice", Some("buyer"))]);
+        assert!(!covers_open_value(&pattern, &swapped, &wild));
+        let right_way = co_sig(&mut ir, &[("buyer", Some("alice"))]);
+        assert!(covers_open_value(&pattern, &right_way, &wild));
+    }
+
+    #[test]
+    fn covers_open_matching_is_injective() {
+        let mut ir = Interner::new();
+        let wild = co_wild(&mut ir);
+        // Two IDENTICAL pattern relations against ONE matching instance
+        // relation: a per-element existential would accept; an injective
+        // matching refuses.
+        let pattern = co_sig(&mut ir, &[
+            ("buyer", Some("alice")),
+            ("buyer", Some("alice")),
+        ]);
+        let one = co_sig(&mut ir, &[
+            ("buyer", Some("alice")),
+            ("is_a", Some("traderecord")),
+        ]);
+        assert!(!covers_open_value(&pattern, &one, &wild));
+        let two = co_sig(&mut ir, &[
+            ("buyer", Some("alice")),
+            ("buyer", Some("alice")),
+            ("is_a", Some("traderecord")),
+        ]);
+        assert!(covers_open_value(&pattern, &two, &wild));
+    }
+
+    #[test]
+    fn covers_open_delegates_non_list_containers_verbatim() {
+        let mut ir = Interner::new();
+        let wild = co_wild(&mut ir);
+        // Dict, Set and scalar arms must be byte-identical to `covers_value` —
+        // this Term changes ONE arm, at ONE level.
+        let k = Value::Str(ir.intern("k"));
+        let extra = Value::Str(ir.intern("extra"));
+        let pd = Value::Dict(std::sync::Arc::from(vec![(k.clone(), Value::Int(1))]));
+        let id = Value::Dict(std::sync::Arc::from(vec![
+            (extra, Value::Int(2)),
+            (k, Value::Int(1)),
+        ]));
+        assert_eq!(
+            covers_open_value(&pd, &id, &wild),
+            covers_value(&pd, &id, &wild)
+        );
+        let ps = Value::Set(std::sync::Arc::from(vec![Value::Int(1)]));
+        let is = Value::Set(std::sync::Arc::from(vec![Value::Int(1), Value::Int(2)]));
+        assert_eq!(
+            covers_open_value(&ps, &is, &wild),
+            covers_value(&ps, &is, &wild)
+        );
+        assert_eq!(
+            covers_open_value(&Value::Int(3), &Value::Int(4), &wild),
+            covers_value(&Value::Int(3), &Value::Int(4), &wild)
+        );
+        // A WILD pattern still covers anything.
+        assert!(covers_open_value(&wild, &is, &wild));
+    }
+
+    #[test]
+    fn covers_open_term_round_trips_through_json() {
+        let mut a = TermArena::new();
+        let mut ir = Interner::new();
+        let p = a.add(TermNode::Lit { value: Value::Int(1) });
+        let i = a.add(TermNode::Lit { value: Value::Int(1) });
+        let w = ir.intern("·?·");
+        let t = a.add(TermNode::CoversOpen { pattern: p, instance: i, wild: w });
+        let json = crate::jsonio::term_to_json(&a, t, &ir);
+        assert_eq!(json["type"], serde_json::json!("CoversOpen"));
+        let mut b = TermArena::new();
+        let back = crate::jsonio::term_from_json(&json, &mut b, &mut ir)
+            .expect("CoversOpen must parse back from its own JSON");
+        assert!(matches!(b.get(back), TermNode::CoversOpen { .. }));
     }
 
     // ------------------------------------------------------------------

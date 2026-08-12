@@ -608,6 +608,11 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
             Child { name: "instance", child: *instance },
             ScalarSym { name: "wild", value: *wild },
         ]),
+        TermNode::CoversOpen { pattern, instance, wild } => ("CoversOpen", vec![
+            Child { name: "pattern", child: *pattern },
+            Child { name: "instance", child: *instance },
+            ScalarSym { name: "wild", value: *wild },
+        ]),
         TermNode::AntiUnifyWitness { values, wild } => ("AntiUnifyWitness", vec![
             Child { name: "values", child: *values },
             ScalarSym { name: "wild", value: *wild },
@@ -1455,6 +1460,11 @@ fn reconstruct(
             wild: get_sym("wild")?,
         },
         "Covers" => TermNode::Covers {
+            pattern: take_child!("pattern"),
+            instance: take_child!("instance"),
+            wild: get_sym("wild")?,
+        },
+        "CoversOpen" => TermNode::CoversOpen {
             pattern: take_child!("pattern"),
             instance: take_child!("instance"),
             wild: get_sym("wild")?,

@@ -148,11 +148,33 @@ NOT_MINTED = eq(count(nbrs("obs", "minted_shape")), lit(0))
 #
 # `FixedCount(pattern) > 0` is REQUIRED, not decoration: an all-WILD pattern
 # covers every observation, so a degenerate entry would swallow the whole grain.
+#
+# OPEN ARITY, and why the Term is `CoversOpen` rather than `Covers`
+# (META_SHAPE_ARITY_AND_KEY_SEPARATOR_FIXES, 2026-08-12; the defect
+# `SHAPE_TYPE_VOCABULARY_SPIKE.md` §3.3.1 predicted from source and this rung
+# reproduced live). `Covers` lands on `covers_value`'s `Tuple | List` arm,
+# which requires `pt.len() == it.len()` — so a minted k-relation MetaShape
+# could only ever cover an observation with EXACTLY k relations, and the same
+# item carrying one extra attribute fell through every rung to `residual`.
+#
+# The question this guard asks is SUBSUMPTION — does this held generalisation
+# APPLY to this item — and subsumption is superset-tolerant by definition
+# (`covers_value`'s own `Dict` arm already says so: "instance may carry extra
+# keys"). The list encoding was chosen for `AntiUnify`'s sake (a relation is a
+# POSITIONAL `[predicate, value]` pair), not because arity-exactness was
+# wanted. `CoversOpen` splits the two levels: relation SET outside, positional
+# tuple inside — which is also what `shape_decode::covers_relation` has always
+# done one layer down, so this restores consistency rather than inventing
+# semantics.
+#
+# `FixedCount(pattern) > 0` is REQUIRED, not decoration: an all-WILD pattern
+# covers every observation, so a degenerate entry would swallow the whole
+# grain. It matters MORE under open arity, not less.
 def _covers(shape_var):
     return and_({"type": "Gt",
                  "a": {"type": "FixedCount", "pattern": attr(shape_var, "signature")},
                  "b": lit(0)},
-                {"type": "Covers",
+                {"type": "CoversOpen",
                  "pattern": attr(shape_var, "signature"),
                  "instance": attr("obs", "signature")})
 
@@ -408,7 +430,7 @@ RULES = [
 
 MANIFEST = {
     "id": "meta_shape_growth",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "depends_on": ["shape_vocabulary"],
     "description": (
         "THE META-SHAPE GRAIN'S GROWTH LADDER. SHAPE_AUDIT.md finding #1: the "
