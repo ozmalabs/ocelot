@@ -1,0 +1,1690 @@
+{
+ "id": "meta_shape_growth",
+ "version": "1.0.0",
+ "depends_on": [
+  "shape_vocabulary"
+ ],
+ "description": "THE META-SHAPE GRAIN'S GROWTH LADDER. SHAPE_AUDIT.md finding #1: the agent's meta-shape vocabulary is a closed, hand-authored 11-entry table with no mint path anywhere in the tree \u2014 'the sd loop's fourth rung is not wired to the faculty named shape'. This seed wires the whole four-rung Occam ladder at that grain by pointing the UNCHANGED ShapeDecode / TransformDecode / DimInfer Terms at codebook_type='MetaShape' (load_parts is grain-agnostic), with the FIXED keyword scorer as the bootstrap rung below them and a new MetaShapeMint Term as rung 4. Emitted by tools/build_meta_shape_growth_seed.py.",
+ "microtheory": {
+  "name": "meta_shape_growth",
+  "description": "the meta-shape codebook grows on residual"
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "meta_shape_growth:observed_shape",
+   "src": {
+    "type": "Agent",
+    "var": "ag"
+   },
+   "edge_type": "observed_shape",
+   "tgt": {
+    "type": "ShapeObservation",
+    "var": "obs"
+   }
+  },
+  {
+   "provenance": "meta_shape_growth:minted_shape",
+   "src": {
+    "type": "ShapeObservation",
+    "var": "obs"
+   },
+   "edge_type": "minted_shape",
+   "tgt": {
+    "type": "MetaShape",
+    "var": "ms"
+   }
+  },
+  {
+   "provenance": "meta_shape_growth:has_principle",
+   "src": {
+    "type": "MetaShape",
+    "var": "ms"
+   },
+   "edge_type": "has_principle",
+   "tgt": {
+    "type": "ShapePrinciple",
+    "var": "pr"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "msg_decode",
+   "comment": "RUNG 1, DEQUANTIZE at the META-SHAPE grain: a pending ShapeObservation is decoded against the held MetaShape codebook via the UNCHANGED ShapeDecode Term, pointed at codebook_type='MetaShape'. This works with zero new Rust because shape_decode.rs::load_parts is grain-agnostic \u2014 it reads any codebook_type-typed node carrying `name` + `signature`. The eleven SEEDED MetaShapes carry no signature and are simply skipped by load_parts, which is why the keyword prior (msg_recognize_prior) still exists below.",
+   "match_type": "ShapeObservation",
+   "match": [
+    [
+     "ag",
+     "observed_shape",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "obs"
+     },
+     "key": "status"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "pending"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "decode",
+     {
+      "__term__": {
+       "type": "ShapeDecode",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "codebook_type": "MetaShape",
+       "beam": 3,
+       "max_steps": 8,
+       "cand_k": 3,
+       "wild_objects": false
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "residual",
+     {
+      "__term__": {
+       "type": "ShapeDecode",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "codebook_type": "MetaShape",
+       "beam": 3,
+       "max_steps": 8,
+       "cand_k": 3,
+       "wild_objects": false,
+       "field": "residual"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "covered_count",
+     {
+      "__term__": {
+       "type": "ShapeDecode",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "codebook_type": "MetaShape",
+       "beam": 3,
+       "max_steps": 8,
+       "cand_k": 3,
+       "wild_objects": false,
+       "field": "covered_count"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "decoded_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "meta_codebook_epoch"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "decoded"
+    ]
+   ]
+  },
+  {
+   "name": "msg_recognize",
+   "comment": "RUNG 1 HIT: an empty residual means the held meta-shape codebook fully explains this observation \u2014 recognised, no graph growth. covered_by is recovered by the SAME FixedCount(AntiUnify(...)) specificity metric sd_recognize uses, over MetaShape instead of ShapeSignature \u2014 a DERIVED specificity, never an asserted ordinal (contrast SHAPE_AUDIT.md \u00a72.3).",
+   "match_type": "ShapeObservation",
+   "match": [
+    [
+     "ag",
+     "observed_shape",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "MetaShape"
+      },
+      "var_name": "cms",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Gt",
+         "a": {
+          "type": "FixedCount",
+          "pattern": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cms"
+           },
+           "key": "signature"
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        {
+         "type": "Covers",
+         "pattern": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cms"
+          },
+          "key": "signature"
+         },
+         "instance": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "signature"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "recognized"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "covered_by",
+     {
+      "__term__": {
+       "type": "Attr",
+       "key": "name",
+       "node": {
+        "type": "Argmax",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "MetaShape"
+         },
+         "var_name": "cms",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Gt",
+            "a": {
+             "type": "FixedCount",
+             "pattern": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "cms"
+              },
+              "key": "signature"
+             }
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Covers",
+            "pattern": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "cms"
+             },
+             "key": "signature"
+            },
+            "instance": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "obs"
+             },
+             "key": "signature"
+            }
+           }
+          ]
+         }
+        },
+        "var_name": "cms",
+        "value": {
+         "type": "FixedCount",
+         "pattern": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cms"
+          },
+          "key": "signature"
+         }
+        },
+        "default": null
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "msg_transform_decode",
+   "comment": "RUNG 2 at the meta-shape grain: before minting a 25th entry, ask whether the residual is an ALREADY-HELD meta-shape stepping by ONE uniform per-dimension delta. At this grain a relation is [predicate, value] and the predicate slot is never transformable, so what rung 2 catches here is a held shape whose VALUE slots are consistently substituted \u2014 the same shape re-instantiated, which is recognition, not novelty. Same TransformDecode Term, codebook_type='MetaShape'.",
+   "match_type": "ShapeObservation",
+   "match": [
+    [
+     "ag",
+     "observed_shape",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "MetaShape"
+       },
+       "var_name": "cms",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "FixedCount",
+           "pattern": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cms"
+            },
+            "key": "signature"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Covers",
+          "pattern": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cms"
+           },
+           "key": "signature"
+          },
+          "instance": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "signature"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "transform_checked"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "transform",
+     {
+      "__term__": {
+       "type": "TransformDecode",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "codebook_type": "MetaShape",
+       "max_dims": 2
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "transform_explained",
+     {
+      "__term__": {
+       "type": "TransformDecode",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "codebook_type": "MetaShape",
+       "max_dims": 2,
+       "field": "explained"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "transform_checked",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "msg_recognize_transformed",
+   "comment": "RUNG 2 HIT \u2014 recognised under transformation, not minted.",
+   "match_type": "ShapeObservation",
+   "match": [
+    [
+     "ag",
+     "observed_shape",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "transform_explained"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "minted_shape"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "recognized_transformed"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "covered_by",
+     {
+      "__term__": {
+       "type": "TransformDecode",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "codebook_type": "MetaShape",
+       "max_dims": 2,
+       "field": "base"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "msg_infer_dimension",
+   "comment": "RUNG 3 at the meta-shape grain: a residual rung 2 could not explain gets ONE look at a missing dimension through the held DimensionGenerator codebook, via the UNCHANGED DimInfer Term. HONEST EXPECTATION, registered: a meta-shape signature's slots are STRINGS, not integer coordinates, so DimInfer's generators (rotation90 / reflections / scale2 / modular \u2014 all coordinate maps) have nothing to act on and this rung is a GRACEFUL NO-OP at this grain today. It is wired anyway because the ladder's shape is the point and because a future meta-shape signature carrying ordered/numeric slots would light it up for free.",
+   "match_type": "ShapeObservation",
+   "match": [
+    [
+     "ag",
+     "observed_shape",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "MetaShape"
+       },
+       "var_name": "cms",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "FixedCount",
+           "pattern": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cms"
+            },
+            "key": "signature"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Covers",
+          "pattern": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cms"
+           },
+           "key": "signature"
+          },
+          "instance": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "signature"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "transform_checked"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "transform_explained"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "dim_checked"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "dim_infer",
+     {
+      "__term__": {
+       "type": "DimInfer",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "codebook_type": "MetaShape",
+       "max_dims": 2
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "dim_explained",
+     {
+      "__term__": {
+       "type": "DimInfer",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "codebook_type": "MetaShape",
+       "max_dims": 2,
+       "field": "explained"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "dim_checked",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "msg_recognize_dim",
+   "comment": "RUNG 3 HIT \u2014 a missing dimension explains the residual.",
+   "match_type": "ShapeObservation",
+   "match": [
+    [
+     "ag",
+     "observed_shape",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "dim_explained"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "minted_shape"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "recognized_dim"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "covered_by",
+     {
+      "__term__": {
+       "type": "DimInfer",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "codebook_type": "MetaShape",
+       "max_dims": 2,
+       "field": "base"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "msg_recognize_prior",
+   "comment": "THE KEYWORD PRIOR \u2014 the bootstrap rung, reached only after rungs 1-3 have all failed, because it is the WEAKEST evidence in the ladder and the only one that can reach the eleven seeded, signature-less MetaShapes. It runs the FIXED RecogniseShape scorer over the observation's own STRUCTURAL signature: attribute keys are scored as relation PREDICATES and outrank prose, distinct keyword hits break what used to be broken alphabetically, and a genuine tie returns None (SHAPE_AUDIT.md \u00a72.5's three stacked defects). No verdict \u21d2 no MetaShape has that name \u21d2 this rule cannot fire and msg_residual does.",
+   "match_type": "ShapeObservation",
+   "match": [
+    [
+     "ag",
+     "observed_shape",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "MetaShape"
+       },
+       "var_name": "cms",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "FixedCount",
+           "pattern": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cms"
+            },
+            "key": "signature"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Covers",
+          "pattern": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cms"
+           },
+           "key": "signature"
+          },
+          "instance": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "signature"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "transform_checked"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "transform_explained"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "dim_checked"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "dim_explained"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "MetaShape"
+      },
+      "var_name": "pms",
+      "predicate": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pms"
+        },
+        "key": "name"
+       },
+       "b": {
+        "type": "RecogniseShape",
+        "text": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "signature"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "recognized_prior"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "covered_by",
+     {
+      "__term__": {
+       "type": "RecogniseShape",
+       "text": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "msg_residual",
+   "comment": "THE RESIDUAL: every rung failed and the keyword prior returned no verdict (either nothing scored, or the contest was genuinely tied \u2014 which the fixed scorer now reports honestly instead of resolving alphabetically). This is where the gap USED to die: teach.py fell back to the item's own domain/topic string and the codebook never grew. It is now a mint candidate.",
+   "match_type": "ShapeObservation",
+   "match": [
+    [
+     "ag",
+     "observed_shape",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decoded"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "MetaShape"
+       },
+       "var_name": "cms",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "FixedCount",
+           "pattern": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "cms"
+            },
+            "key": "signature"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Covers",
+          "pattern": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cms"
+           },
+           "key": "signature"
+          },
+          "instance": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "signature"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "transform_checked"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "transform_explained"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "dim_checked"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "dim_explained"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "MetaShape"
+       },
+       "var_name": "pms",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pms"
+         },
+         "key": "name"
+        },
+        "b": {
+         "type": "RecogniseShape",
+         "text": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "signature"
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "residual"
+    ]
+   ]
+  },
+  {
+   "name": "msg_mint_shape",
+   "comment": "RUNG 4 \u2014 DYNAMIC QUANTIZATION AT THE META-SHAPE GRAIN, the mint SHAPE_AUDIT.md finding #1 reports is absent from the whole tree. Fires only when MetaShapeMint reports `mintable`, which requires ALL of: the residual's predicate-set key has RECURRED across >= 2 residual observations (recurrence is the definition of idiom \u2014 two is the smallest cardinality at which 'recurs' is defined, not a swept knob); the anti-unified core fixes at least one leaf (structural non-triviality, not a coverage fraction); and this observation is the group's canonical minter (lowest node id \u2014 the same Argmin canonical pick SHAPE_AUDIT.md \u00a72.7 explicitly rejects as Pattern A), so a group of N mints ONCE per pass, not N times. Mint-once across passes is the name guard, and the name is derived from the SORTED predicate set \u2014 order-independent and untruncated, unlike the CapabilityAxis key \u00a73.1 documents. The minted ShapePrinciple carries the shared predicates as `keywords` so every existing reader (analogical_thinking._vocab_hits / shape_hits / metashape_realisation_counts / the reflective self-shape faculty) sees the new entry through the interface it already uses. Bumping meta_codebook_epoch re-arms msg_redecode.",
+   "match_type": "ShapeObservation",
+   "match": [
+    [
+     "ag",
+     "observed_shape",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "residual"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "minted_shape"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "MetaShapeMint",
+       "observation": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "obs_type": "ShapeObservation",
+       "status_value": "residual",
+       "field": "mintable"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "MetaShape"
+       },
+       "var_name": "ems",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ems"
+         },
+         "key": "name"
+        },
+        "b": {
+         "type": "MetaShapeMint",
+         "observation": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "obs_type": "ShapeObservation",
+         "status_value": "residual",
+         "field": "name"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "ms",
+     "MetaShape",
+     {
+      "name": {
+       "__term__": {
+        "type": "MetaShapeMint",
+        "observation": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "obs_type": "ShapeObservation",
+        "status_value": "residual",
+        "field": "name"
+       }
+      },
+      "signature": {
+       "__term__": {
+        "type": "MetaShapeMint",
+        "observation": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "obs_type": "ShapeObservation",
+        "status_value": "residual",
+        "field": "signature"
+       }
+      },
+      "support": {
+       "__term__": {
+        "type": "MetaShapeMint",
+        "observation": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "obs_type": "ShapeObservation",
+        "status_value": "residual",
+        "field": "support"
+       }
+      },
+      "minted": 1,
+      "source": "meta_shape_growth"
+     }
+    ],
+    [
+     "add_node",
+     "pr",
+     "ShapePrinciple",
+     {
+      "name": {
+       "__term__": {
+        "type": "MetaShapeMint",
+        "observation": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "obs_type": "ShapeObservation",
+        "status_value": "residual",
+        "field": "name"
+       }
+      },
+      "keywords": {
+       "__term__": {
+        "type": "MetaShapeMint",
+        "observation": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "obs_type": "ShapeObservation",
+        "status_value": "residual",
+        "field": "keys"
+       }
+      },
+      "minted": 1,
+      "source": "meta_shape_growth"
+     }
+    ],
+    [
+     "add_edge",
+     "ms",
+     "has_principle",
+     "pr"
+    ],
+    [
+     "add_edge",
+     "obs",
+     "minted_shape",
+     "ms"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "minted"
+    ],
+    [
+     "set_attr",
+     "ag",
+     "meta_codebook_epoch",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ag"
+         },
+         "key": "meta_codebook_epoch"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "msg_redecode",
+   "comment": "CODEBOOK GROWTH CLOSES THE LOOP: any observation last decoded under an older meta_codebook_epoch re-arms to 'pending', so msg_decode re-runs it against the GROWN codebook \u2014 mint \u2192 re-decode \u2192 recognize, driven by the run_rules fixpoint, with no Python iteration anywhere. The rung flags are cleared back to 0 (there is no unset_attr op; 0 is falsy for the Not(Eq(_,1)) guards and distinct from the 1 they test for) so each rung gets a fresh look at the NEW residual instead of reading stale flags.",
+   "match_type": "ShapeObservation",
+   "match": [
+    [
+     "ag",
+     "observed_shape",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "recognized"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "recognized_transformed"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "recognized_dim"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "recognized_prior"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "residual"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "minted"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "decoded_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "meta_codebook_epoch"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "pending"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "decoded_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ag"
+       },
+       "key": "meta_codebook_epoch"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "transform_checked",
+     0
+    ],
+    [
+     "set_attr",
+     "obs",
+     "transform_explained",
+     0
+    ],
+    [
+     "set_attr",
+     "obs",
+     "dim_checked",
+     0
+    ],
+    [
+     "set_attr",
+     "obs",
+     "dim_explained",
+     0
+    ]
+   ]
+  }
+ ]
+}

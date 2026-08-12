@@ -1312,6 +1312,28 @@ pub enum TermNode {
         text: TermIdx,
     },
 
+    /// `MetaShapeMint` — RUNG 4 of the meta-shape grain's growth ladder, the
+    /// mint `SHAPE_AUDIT.md` finding #1 reports is missing ("the sd loop's
+    /// fourth rung is not wired to the faculty named 'shape'").
+    ///
+    /// `observation` evaluates to a `Value::Node` — a residual shape
+    /// observation. The Term groups every `obs_type`-typed node whose `status`
+    /// is `status_value` by its PREDICATE SET (the sorted, de-duplicated set of
+    /// its signature's relation predicates — order-independent and untruncated,
+    /// unlike the `CapabilityAxis` key `SHAPE_AUDIT.md` §3.1 documents), and
+    /// reports whether that group has RECURRED (support >= 2) with a
+    /// non-trivial anti-unified core. See `shape_decode::eval_meta_shape_mint`.
+    ///
+    /// Output Dict: `name` / `keys` / `signature` / `support` / `fixed` /
+    /// `leader` / `mintable`; `field` selects one key, as in `TransformDecode`.
+    MetaShapeMint {
+        observation: TermIdx,
+        obs_type: Sym,
+        status_value: Sym,
+        wild: Sym,
+        field: Sym,
+    },
+
     /// `StrokeQuantize` — the handwriting instance of "shape matching IS
     /// dequantization; a transform IS a quantum delta on ONE dimension"
     /// (`HANDWRITING_DESIGN.md`): quantizes raw stroke GEOMETRY into a
@@ -2680,6 +2702,11 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
         TermNode::RecogniseShape { text } =>
             TermNode::RecogniseShape {
                 text: copy_subtree(src, dst, text),
+            },
+        TermNode::MetaShapeMint { observation, obs_type, status_value, wild, field } =>
+            TermNode::MetaShapeMint {
+                observation: copy_subtree(src, dst, observation),
+                obs_type, status_value, wild, field,
             },
         TermNode::StrokeQuantize {
             points, segments, turn_bins, len_bins, grid, scale_bins, invariant_only, canonical_pose,
@@ -6546,6 +6573,11 @@ TermNode::MorphHead { text } => {
                 arena, *text, env, ctx,
             )
         }
+        TermNode::MetaShapeMint { observation, obs_type, status_value, wild, field } => {
+            crate::shape_decode::eval_meta_shape_mint(
+                arena, *observation, *obs_type, *status_value, *wild, *field, env, ctx,
+            )
+        }
         TermNode::StrokeQuantize {
             points, segments, turn_bins, len_bins, grid, scale_bins, invariant_only, canonical_pose,
             turn_edges, len_edges, emit_residual,
@@ -9736,6 +9768,9 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         }
         TermNode::RecogniseShape { text, .. } => {
             out.push(*text);
+        }
+        TermNode::MetaShapeMint { observation, .. } => {
+            out.push(*observation);
         }
         TermNode::StrokeQuantize { points, turn_edges, len_edges, bounds, .. } => {
             out.push(*points);
