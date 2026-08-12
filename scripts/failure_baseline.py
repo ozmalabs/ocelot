@@ -135,7 +135,7 @@ def build(raw_path: str, out_path: Path, messages_from: str | None = None,
             "only_in_first": sorted(first - set(overlay))[:20],
             "only_in_re_run": sorted(set(overlay) - first)[:20],
         }
-    entries, not_established, nonzero = [], [], []
+    entries, not_established, nonzero, all_skipped = [], [], [], []
     green_files = 0
     for r in raw["results"]:
         if r["status"] == "NOT_ESTABLISHED":
@@ -144,6 +144,12 @@ def build(raw_path: str, out_path: Path, messages_from: str | None = None,
             continue
         if r["status"] == "GREEN":
             green_files += 1
+            continue
+        if r["status"] == "ALL_SKIPPED":
+            # every test guarded (absent optional dep / unresolvable pin) — not a
+            # red, and NOT silently green either: recorded, so a reader can see how
+            # much of the tree was guarded rather than measured.
+            all_skipped.append(r["file"])
             continue
         if r["status"] == "NONZERO_NO_NODES":
             nonzero.append({"file": r["file"], "returncode": r["returncode"],
@@ -192,6 +198,7 @@ def build(raw_path: str, out_path: Path, messages_from: str | None = None,
             "files_swept": raw["files"],
             "NOT_ESTABLISHED": not_established,     # never green, never red
             "NONZERO_NO_NODES": nonzero,
+            "ALL_SKIPPED": all_skipped,          # guarded, not measured, not red
         },
         "entries": entries,
     }

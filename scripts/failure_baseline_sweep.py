@@ -30,7 +30,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 # pytest short-summary lines: "FAILED tests/x.py::test_y - AssertionError: ..."
-_SUMMARY = re.compile(r"^(FAILED|ERROR)\s+(\S+)(?:\s+-\s+(.*))?$")
+#
+# `(\S+)` FOR THE NODE ID SILENTLY DROPPED REDS, and it is the instrument
+# mis-recording the thing it exists to record (the same disease as the COLUMNS=80
+# truncation below). A PARAMETRIZED TEST ID CAN CONTAIN A SPACE —
+# `test_tracked[OLD SULTAN-leads0]` is real, in tests/test_deep_comprehension.py —
+# and `\S+` stops at that space, after which the ` - ` alternation no longer
+# matches, so the WHOLE LINE was discarded and the file was filed
+# NONZERO_NO_NODES: exit 1, no node ids, a red that a LIST cannot enumerate. The
+# node id is therefore everything up to the FIRST ` - `, which is where pytest
+# puts the separator.
+_SUMMARY = re.compile(r"^(FAILED|ERROR)\s+(.+?)(?:\s+-\s+(.*))?$")
 
 
 def sweep_one(path: str, timeout: int) -> dict:
@@ -62,11 +72,20 @@ def sweep_one(path: str, timeout: int) -> dict:
         if m:
             nodes.append({"node": m.group(2), "kind": m.group(1),
                           "message": (m.group(3) or "").strip()[:400]})
-    status = "GREEN" if not nodes and r.returncode == 0 else (
-        "RED" if nodes else "NONZERO_NO_NODES")
+    # EXIT 5 IS "no tests ran", and a file whose every test SKIPPED exits 5. That
+    # is not a red and not an unexplained nonzero — it is the CORRECT outcome of an
+    # honest guard (an absent optional dependency, an unresolvable provenance pin),
+    # and filing it as NONZERO_NO_NODES makes the (b)-class fix look like a new
+    # anomaly. Named as its own status so a reader can see how much of the tree is
+    # guarded rather than measured.
+    all_skipped = (not nodes and r.returncode == 5
+                   and re.search(r"\d+ skipped", out) is not None)
+    status = "ALL_SKIPPED" if all_skipped else (
+        "GREEN" if not nodes and r.returncode == 0 else (
+            "RED" if nodes else "NONZERO_NO_NODES"))
     return {"file": path, "status": status, "returncode": r.returncode,
             "seconds": round(time.time() - t0, 1), "nodes": nodes,
-            "tail": "" if status == "GREEN" else out.strip()[-600:]}
+            "tail": "" if status in ("GREEN", "ALL_SKIPPED") else out.strip()[-600:]}
 
 
 def main() -> int:

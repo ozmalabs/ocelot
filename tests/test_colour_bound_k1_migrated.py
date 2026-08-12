@@ -28,10 +28,17 @@ RUNG_SHA = "bb548ac3"          # this rung's own commit — BASE_SHA..RUNG_SHA i
                                # merges on top afterwards (§12.3)
 
 from scripts.colour_bound_k1_measure import (  # noqa: E402
+
     arm_A, arm_MONO, arm_NONLOCAL, arm_UNDEF, arm_EXTENT, arm_NOREG,
     arm_DISAGREE, arm_FLOOR, delta_on_flipped, _r3_bound, _r4_gap,
     _seed_default_bound, SEEDS_DISAGREE, SEEDS_FLOOR,
 )
+
+# A provenance pin THIS REPOSITORY CANNOT RESOLVE is a SKIP, not a red: the claim
+# is unverifiable here, not false, and the gate re-arms unchanged against a repo
+# that has the range (tests/provenance_pins.py, red-test triage 2026-08-12).
+from provenance_pins import skip_if_unresolvable as _skip_unresolvable_pin  # noqa: E402
+
 
 
 # --- PART A: the derivation ----------------------------------------------------
@@ -265,6 +272,7 @@ def _rung_diff_names():
     return sorted({ln for ln in out.splitlines() if ln.strip()})
 
 
+@_skip_unresolvable_pin(BASE_SHA, RUNG_SHA)
 def test_this_rung_adds_NO_Rust():
     changed = _rung_diff_names()
     assert changed, "expected a non-empty rung diff"
@@ -272,6 +280,7 @@ def test_this_rung_adds_NO_Rust():
     assert rs == [], f"this rung claims NO new Rust but touched: {rs}"
 
 
+@_skip_unresolvable_pin(BASE_SHA, RUNG_SHA)
 def test_this_rung_adds_NO_new_RULE_and_changes_no_rule_body():
     """PART A is a NEGATIVE, so there is nothing to build: the ONLY seed change is
     the default attribute. Every rule's `match`, `where` and `effects` is BYTE-EQUAL

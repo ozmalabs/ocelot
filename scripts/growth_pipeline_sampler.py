@@ -47,6 +47,15 @@ def known_node_types(seed_dir=None):
             manifest = json.loads(path.read_text(encoding="utf-8"))
         except Exception:  # noqa: BLE001 -- a malformed seed is not our business
             continue
+        # `seeds/` holds one git-tracked file whose JSON root is a bare LIST of
+        # rule objects, not a manifest (`_recovered_f16_rules.json`). The seed
+        # LOADER guards for it (`boot_all._read_seeds`); this scan did not.
+        # MATCH THE LOADER: the agent never boots with it, so it ships nothing
+        # and there is nothing here for a seed gate to find.
+        if not isinstance(manifest, list) and not isinstance(manifest, dict):
+            continue
+        if isinstance(manifest, list):
+            continue
         for node in manifest.get("nodes") or []:
             if isinstance(node, dict) and isinstance(node.get("type"), str):
                 types.add(node["type"])
