@@ -62,6 +62,28 @@ _CLASSES = {
     # 10.3-proposed: `results/*_checkpoints/` is the THIRD gitignored class, red in every
     # worktree and green in canonical, with nothing announcing it.
     "GITIGNORED_RESULTS_ARTIFACT_ABSENT": ("results/run", "_checkpoints"),
+    # ----------------------------------------------------------------------- #
+    # THE FIVE CLASSES THE RED-TEST TRIAGE RUNG CLOSED (2026-08-12). Every one
+    # is EXPECTED TO BE ZERO at this HEAD -- they are kept, exactly like
+    # PROVENANCE_FALSE_ACCUSATION above, so a RE-INTRODUCTION IS NAMED ON SIGHT
+    # rather than re-diagnosed from scratch by the next twenty rungs. A count
+    # cannot do that; a class on a listed node id can.
+    # ----------------------------------------------------------------------- #
+    # `build_is_stale` compared mtimes, and `git worktree add` writes .rs files
+    # milliseconds after the .so -- 117 node ids / 88 files refusing to measure on
+    # the correct committed engine. Fixed: staleness is CONTENT.
+    "ENGINE_FALSE_STALE_REFUSAL": ("REFUSING TO MEASURE", "EngineProvenanceError"),
+    # a DECLARED-optional dependency (see tests/optional_deps.OPTIONAL) with no
+    # guard on the tests that need it -- a skip wearing a red's clothes.
+    "OPTIONAL_DEP_UNGUARDED": ("No module named", "pybullet and numpy are required"),
+    # a section-12.3 rung-provenance pin whose commits are not in THIS repository
+    # (history re-exported; root commit 26ca9ff). See tests/provenance_pins.py.
+    "PROVENANCE_PIN_UNRESOLVABLE": ("returned non-zero exit status 128",
+                                    "unknown revision or path not in the working tree",
+                                    "Not a valid object name"),
+    # a seeds/*.json scan that did not guard for the one LIST-rooted file the
+    # seed LOADER itself skips (`_recovered_f16_rules.json`).
+    "LIST_ROOTED_SEED_UNGUARDED": ("'list' object has no attribute 'get'",),
 }
 
 
@@ -73,6 +95,14 @@ def classify(message: str) -> str:
             return "GITIGNORED_RESULTS_ARTIFACT_ABSENT"
         if "/data/" in message:
             return "GITIGNORED_DATA_ABSENT"
+    # The 2026-08-12 triage classes are tested FIRST: each is a SPECIFIC, closed
+    # cause, and the generic ENVIRONMENTAL_ENGINE_OR_IMPORT bucket would otherwise
+    # swallow two of them and hand the reader back the vague answer the class was
+    # created to replace.
+    for cls in ("ENGINE_FALSE_STALE_REFUSAL", "OPTIONAL_DEP_UNGUARDED",
+                "PROVENANCE_PIN_UNRESOLVABLE", "LIST_ROOTED_SEED_UNGUARDED"):
+        if any(n in message for n in _CLASSES[cls]):
+            return cls
     for cls, needles in _CLASSES.items():
         if cls.startswith("GITIGNORED"):
             continue
@@ -90,9 +120,96 @@ def classify(message: str) -> str:
 # of an old tree against today's engine (the confound that cost the Scope B peer two
 # headline durations).
 _ANNOTATIONS = {
+    # ----------------------------------------------------------------------- #
+    #  DIAGNOSED BY THE RED-TEST TRIAGE RUNG (2026-08-12/13). Every one of these
+    #  was READ, not guessed; each says what a reader has to do differently.
+    #  See docs/research/engine_substrate/RED_TEST_TRIAGE_RESULTS.md.
+    # ----------------------------------------------------------------------- #
+    "tests/test_seed_claim_migrated.py": {
+        "class": "GATE_KILLED_BY_ITS_OWN_FIX",
+        "last_green_commit": "UNKNOWN (pre-export history; root commit is 26ca9ff)",
+        "diagnosis":
+            "The gate SAYS SO ITSELF, verbatim in its own failure messages: '38000-38099 "
+            "is now DECLARED at [(38000, 38099)]. The ledger-blindness this gate documents "
+            "has been FIXED' and 'baseline entries no longer measured (runner deleted, or a "
+            "section-11 row was added)'. This is the exact specimen "
+            "tests/test_failure_baseline_migrated.py's own docstring names -- a gate killed "
+            "by the fix it asked for, reporting that success as a failure ever since. NOT "
+            "retired here: the action is to re-read the VISION_PROTOCOL section-11 ledger "
+            "rows and update the gate's baseline, which is a judgement about the seed ledger, "
+            "not a triage call.",
+    },
+    "tests/test_prog_moves_migrated.py": {
+        "class": "NEW_AT_THIS_HEAD_NOT_CAUSED_BY_THE_TRIAGE_RUNG",
+        "last_green_commit": "GREEN in this rung's own BEFORE sweep at the same commit",
+        "diagnosis":
+            "test_named_regression_sweep_only_known_pins_drift spawns a NESTED multi-file "
+            "pytest run and fails on test_reject_informs_repair_migrated.py::"
+            "test_no_wrong_accept_regression_vs_v1_7_0_baseline, which is GREEN when run "
+            "alone -- i.e. cross-file state leakage inside the nested sweep, not a defect in "
+            "either file's own subject. CONTROLLED: the only change of this rung plausibly in "
+            "its path (domains/morpheme_decomposition.py) was reverted and the failure "
+            "reproduced unchanged, twice.",
+    },
+    "tests/test_rust_engine_ext_7b.py": {
+        "class": "PERF_THRESHOLD_AT_THE_BOUNDARY",
+        "last_green_commit": "GREEN in this rung's own BEFORE sweep at the same commit",
+        "diagnosis":
+            "test_attr_index_perf_beats_linear asserts a >=3x speedup and measures 2.7-2.8x "
+            "(linear 0.027-0.028ms vs indexed 0.010-0.011ms), reproducibly, at LOW load as "
+            "well as high. A hard-coded ratio sitting ~7% from its own boundary is a scalar "
+            "knob where a shape belongs (CLAUDE.md, SHAPES NOT NUMBERS) -- it will flip on "
+            "any machine, either way, forever. NOT relaxed here: choosing the bar is the "
+            "creator's call, and moving it to make a number green is the thing this tree "
+            "forbids.",
+    },
+    "tests/test_arc_magnitude_migrated.py": {
+        "class": "SWEEP_SELF_CONTAMINATION_TRACKED_FILE_MUTATED_BY_THE_RUN",
+        "last_green_commit": "GREEN on a clean tree, verified after the sweep",
+        "diagnosis":
+            "test_mg5_the_EXISTING_seeds_are_BYTE_IDENTICAL_to_HEAD fails on a git diff of "
+            "seeds/program_synthesis.json. RUNNING THE TEST SUITE MUTATES GIT-TRACKED FILES: "
+            "after every full sweep, `git status` showed seeds/metonymy_patterns.json and "
+            "tests/fixtures/comprehension_divergence/divergence.json modified. tests/"
+            "conftest.py's session-wide OZMA_SEED_PERSIST_DISABLED guard does not cover "
+            "these writers. Re-run on a restored tree: PASSES. A byte-identity gate in a "
+            "suite that mutates tracked files is measuring the run, not the tree.",
+    },
+    "tests/test_guard_coalesce_lint_migrated.py": {
+        "class": "LINT_BASELINE_DRIFT",
+        "last_green_commit": "UNKNOWN (masked by the engine false-stale refusal before this rung)",
+        "diagnosis":
+            "509 NEW coalesced guard reads vs results/guard_coalesce_baseline, and 6 baseline "
+            "entries that no longer exist. CONFIRMED NOT the LIST-rooted seed file: the count "
+            "is unchanged when that file is skipped. The lint's recorded debt has simply "
+            "drifted from the tree. Action is to re-baseline the lint, deliberately, which is "
+            "a decision about accepted debt.",
+    },
+    "tests/test_graph_rewrite.py": {
+        "class": "AMBIGUOUS_NEEDS_THE_CREATOR",
+        "last_green_commit": "UNKNOWN (pre-export history)",
+        "diagnosis":
+            "Two tests build a TypedGraph() and hand it to domains.linear_algebra.make_matrix, "
+            "which calls graph.add_node -- TypedGraph has no public add_node (mutation is "
+            "_insert_node; the public path is the Rust Substrate). The sibling "
+            "tests/test_linear_algebra.py is GREEN because it uses la.new_graph() (a native "
+            "Substrate). The genuinely open question, which only the creator can answer: is "
+            "test_graph_rewrite's coverage of the PYTHON search layer (gr.search_count) still "
+            "wanted now that linear_algebra runs native, or is that layer itself retired? "
+            "NOT fixed and NOT retired on a triage rung's judgement.",
+    },
     "tests/test_codec_graph_resident.py": {
-        "class": "REAL_REGRESSION_ROOT_CAUSED",
+        "class": "HEVC_GRAMMAR_INCOMPLETE_SECOND_CAUSE",
         "last_green_commit": "f23849f5 (STATIC, not a behavioural re-run)",
+        "re_read_2026_08_13":
+            "STILL 8 nodes, and the CAUSE BELOW IS THE OLD ONE. The dead-install bug it "
+            "describes was fixed in rung 121000-121999; what remains is the SECOND cause that "
+            "fix unmasked -- an incomplete HEVC / fixed-arity-array grammar. Today's messages "
+            "are `TypeError: cannot convert NoneType object to bytes` (x4), `assert 0 == 1`, "
+            "`assert 4 == 128`, `assert [(0, 0)] == []`, and a loop-count literal -- none of "
+            "them the 'expected 10 rule firings, got 0' signature below. The paragraph is kept "
+            "verbatim as the historical record it is (a historical record is never converted); "
+            "the ACTIONABLE diagnosis is this line.",
         "diagnosis":
             "runners/dsl/src/codec.rs::install_field_grammar_rules does "
             "`substrate.rules.push(rule)`, bypassing Substrate::add_rule -- the function "
