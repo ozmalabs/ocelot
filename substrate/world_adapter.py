@@ -6135,6 +6135,11 @@ class WorldAdapter:
             "instances": [[t, wid, n.value]
                           for (t, wid), n in self._instances.items()],
             "concepts": [[name, n.value] for name, n in self._concepts.items()],
+            # (SHAPE_AUDIT.md §4.2 fix) `_recursive_concepts` is a lazily-created
+            # session index (see `learn_recursive_concept`) — `getattr(..., {})`
+            # so a WorldAdapter that never taught a recursive concept still saves.
+            "recursive_concepts": [[name, n.value] for name, n in
+                                   getattr(self, "_recursive_concepts", {}).items()],
             "body_types": [[t, n.value] for t, n in self._body_types.items()],
             "mirrored_edge_types": sorted(self._mirrored_edge_types),
             "sensed_types": sorted(self._sensed_types),
@@ -6219,6 +6224,13 @@ class WorldAdapter:
         wa._instances = {(t, wid): srs.NodeID(v)
                          for t, wid, v in blob.get("instances", [])}
         wa._concepts = {name: srs.NodeID(v) for name, v in blob.get("concepts", [])}
+        # (SHAPE_AUDIT.md §4.2 fix) restore the recursive-concept index the same
+        # way `_concepts` is restored above — `.get(..., [])` so an OLD
+        # checkpoint (saved before this fix, with no "recursive_concepts" key)
+        # still loads cleanly (empty index; `learn_recursive_concept`'s
+        # `_concept_by_name` fallback covers that case going forward).
+        wa._recursive_concepts = {name: srs.NodeID(v)
+                                  for name, v in blob.get("recursive_concepts", [])}
         wa._body_types = {t: srs.NodeID(v) for t, v in blob.get("body_types", [])}
         wa._mirrored_edge_types = set(blob.get("mirrored_edge_types", []))
         wa._sensed_types = set(blob.get("sensed_types", []))
@@ -10010,9 +10022,27 @@ class WorldAdapter:
         """Ground a taught word: materialise its definition Term as a graph
         subgraph and attach it to a named `Concept` node by a `definition`
         edge. Mechanical ingest of a taught definition into the agent's graph —
-        the reasoning is the Term, which the agent owns and evaluates."""
+        the reasoning is the Term, which the agent owns and evaluates.
+
+        Find-or-create by `name` (2026-08-12, SHAPE_AUDIT.md §4.3 fix):
+        `self._concepts` IS already persisted/restored across save/load
+        (unlike `_recursive_concepts` before its own §4.2 fix), but this
+        function never consulted it before minting — re-teaching an
+        already-known word minted a second `Concept` + a second definition
+        subgraph every time. Falls back to `_concept_by_name` too, same
+        "graph is the source of truth" reasoning `_ensure_concept`/
+        `learn_recursive_concept` already use, so a Concept minted by some
+        OTHER path under this name is found rather than shadowed."""
+        cid = self._concepts.get(name)
+        if cid is None:
+            cid = self._concept_by_name(name)
+        if cid is not None:
+            for tgt in list(self.inner.neighbours(cid, "definition")):
+                self.inner.remove_edge_unchecked(cid, "definition", tgt)
+                self.inner.remove_node(tgt)
+        else:
+            cid = self.s.add_node("Concept", {"name": name})
         root = self.inner.add_term_subgraph(definition_term_json)
-        cid = self.s.add_node("Concept", {"name": name})
         self.inner.add_edge_unchecked(cid, "definition", root)
         self._concepts[name] = cid
         return cid
@@ -10134,17 +10164,30 @@ class WorldAdapter:
 
     def learn_recursive_concept(self, name: str, definition_term_json: dict):
         """Ground a recursive concept: store its self-referential definition as a
-        Concept node's `definition` subgraph (+ JSON for direct main-arena eval)."""
+        Concept node's `definition` subgraph (+ JSON for direct main-arena eval).
+
+        Find-or-create by `name` (2026-08-12, SHAPE_AUDIT.md §4.2 fix): the
+        session index `_recursive_concepts` is now persisted/restored across
+        save/load (`save`/`load` below) like `_concepts` already was, but a
+        checkpoint saved BEFORE this fix (or any other route that minted this
+        Concept) would still miss the index — so the lookup falls back to
+        `_concept_by_name`, the same "graph is the source of truth, Python may
+        cache" pattern `_ensure_concept` already establishes. Re-teaching an
+        already-known name now REPLACES its definition subgraph instead of
+        minting a duplicate `Concept` node."""
         import json
         index = getattr(self, "_recursive_concepts", None)
         if index is None:
             index = {}
             self._recursive_concepts = index
         cid = index.get(name)
+        if cid is None:
+            cid = self._concept_by_name(name)
         if cid is not None:
             for tgt in list(self.inner.neighbours(cid, "definition")):
                 self.inner.remove_edge_unchecked(cid, "definition", tgt)
                 self.inner.remove_node(tgt)
+            index[name] = cid
         else:
             cid = self.s.add_node("Concept", {"name": name})
             index[name] = cid
