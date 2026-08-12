@@ -149,9 +149,9 @@ def build():
             "discovered map) and bump codebook_epoch so sd_redecode re-arms the "
             "observation; it re-decodes THROUGH the minted generator "
             "(recognized_transformed, NOT a quantum) — the orbit collapses to "
-            "one generator. Dedup: one linear generator per boot (a fuller "
-            "matrix-keyed dedup for multiple coexisting discovered generators "
-            "is a documented scope limit)."),
+            "one generator. Dedup (v1.9.0): CONTENT-KEYED via "
+            "add_node_if_absent + a matrix-derived name; see the seed's own "
+            "rule comment and DEDUP_ADOPTION_SWEEP_RESULTS.md."),
         "match_type": "Observation",
         "match": [["ag", "observed", "obs"]],
         "where": {"type": "And", "items": [
@@ -161,15 +161,13 @@ def build():
             eq("dim_checked", 1), neq("dim_explained", 1),
             eq("gen_infer_enabled", 1, node="ag"),
             eq("gen_checked", 1), eq("gen_explained", 1),
-            {"type": "Not", "arg": {
-                "type": "Exists",
-                "source": {"type": "NodesOfType", "node_type": "DimensionGenerator"},
-                "var_name": "g", "predicate": eq("kind", "linear", node="g")}},
+            neighbours_count0("gen_minted"),
         ]},
         "effects": [
-            ["add_node", "g", "DimensionGenerator", {
+            ["add_node_if_absent", "g", "DimensionGenerator", {
                 "name": {"__term__": {"type": "StringConcat", "parts": [
-                    {"type": "Lit", "value": "genlin_"}, geninfer("base")]}},
+                    {"type": "Lit", "value": "genlin_"},
+                    {"type": "ToJsonString", "value": geninfer("matrix")}]}},
                 "kind": {"__term__": {"type": "Lit", "value": "linear"}},
                 "coord_dims": {"__term__": geninfer("coord_dims")},
                 "matrix": {"__term__": geninfer("matrix")},
@@ -198,6 +196,13 @@ def build():
         if r.get("name") == "sd_dim_check_mark":
             out.extend([mark, check, mint])
     d["rules"] = out
+    # STALE-BUILDER WARNING (2026-08-12): this one-off authoring script has NOT
+    # tracked seeds/shape_decode_loop.json since v1.7.0 — v1.8.0's AgnosiaParams
+    # guards on sd_recognize/sd_recognize_transformed/sd_recognize_dim are not
+    # reproduced here, so RE-RUNNING THIS SCRIPT WOULD DELETE THEM. The three
+    # gen_* rules below were kept in sync with the seed's v1.9.0 dedup fix
+    # (DEDUP_ADOPTION_SWEEP_RESULTS.md) so the divergence does not grow, but the
+    # seed — not this script — is the source of truth.
     d["version"] = "1.7.0"
     json.dump(d, open(SD, "w"), indent=1)
     print(f"wrote {SD} (version {d['version']}, {len(d['rules'])} rules)")

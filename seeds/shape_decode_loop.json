@@ -1,6 +1,6 @@
 {
  "id": "shape_decode_loop",
- "version": "1.8.0",
+ "version": "1.9.0",
  "depends_on": [
   "math_capability_shapes",
   "self_design_axis"
@@ -1134,7 +1134,7 @@
   },
   {
    "name": "sd_mint_generator",
-   "comment": "MINT A NEW GENERATOR FROM THE ORBIT (flag ON) \u2014 the operation the arc's negative said the sd loop lacks ('composes what it holds; does not discover what it lacks'). On gen_explained==1 (GenInfer found a NEW integer-linear map no held generator explains) and no linear generator minted yet, add DimensionGenerator{kind:'linear', matrix, coord_dims} carrying GenInfer's inferred matrix as GRAPH DATA (apply_linear_once reads it \u2014 no new Rust dispatch arm per discovered map) and bump codebook_epoch so sd_redecode re-arms the observation; it re-decodes THROUGH the minted generator (recognized_transformed, NOT a quantum) \u2014 the orbit collapses to one generator. Dedup: one linear generator per boot (a fuller matrix-keyed dedup for multiple coexisting discovered generators is a documented scope limit).",
+   "comment": "MINT A NEW GENERATOR FROM THE ORBIT (flag ON) \u2014 the operation the arc's negative said the sd loop lacks ('composes what it holds; does not discover what it lacks'). On gen_explained==1 (GenInfer found a NEW integer-linear map no held generator explains) and no linear generator minted yet, add DimensionGenerator{kind:'linear', matrix, coord_dims} carrying GenInfer's inferred matrix as GRAPH DATA (apply_linear_once reads it \u2014 no new Rust dispatch arm per discovered map) and bump codebook_epoch so sd_redecode re-arms the observation; it re-decodes THROUGH the minted generator (recognized_transformed, NOT a quantum) \u2014 the orbit collapses to one generator. Dedup (v1.9.0, DEDUP_ADOPTION_SWEEP_RESULTS.md): CONTENT-KEYED via `add_node_if_absent`, whose author-attrs (name/kind/coord_dims/matrix/params) ARE the dedup key. This REPLACES the old `Not Exists a DimensionGenerator with kind=='linear'` guard, which was a TYPE-COARSE stand-in for a CONTENT key: it capped the whole graph at one discovered linear generator for its entire life, and because sd_mint_quantum and sd_dedup_existing both require `Not gen_explained==1`, a SECOND novel orbit reached neither a generator nor a quantum -- it terminated at status=='decoded' and was silently dropped (measured live: three orbits in one graph, only the first resolved). Content-keying dedups a byte-identical re-discovery while letting a genuinely different matrix mint, which is the sd loop's own discipline (mint only what the held codebook cannot explain) rather than a cap. Growth stays bounded because sd_gen_check only runs when DimInfer has already FAILED against the held codebook, so an already-held map never reaches this rule. Known residual: `name` (genlin_<base>) is part of the key, so the SAME matrix discovered from two DIFFERENT base shapes still mints twice.",
    "match_type": "Observation",
    "match": [
     [
@@ -1309,36 +1309,28 @@
       }
      },
      {
-      "type": "Not",
-      "arg": {
-       "type": "Exists",
+      "type": "Eq",
+      "a": {
+       "type": "Count",
        "source": {
-        "type": "NodesOfType",
-        "node_type": "DimensionGenerator"
-       },
-       "var_name": "g",
-       "predicate": {
-        "type": "Eq",
-        "a": {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "g"
-         },
-         "key": "kind"
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
         },
-        "b": {
-         "type": "Lit",
-         "value": "linear"
-        }
+        "edge_type": "gen_minted"
        }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
       }
      }
     ]
    },
    "effects": [
     [
-     "add_node",
+     "add_node_if_absent",
      "g",
      "DimensionGenerator",
      {
@@ -1351,17 +1343,20 @@
           "value": "genlin_"
          },
          {
-          "type": "GenInfer",
-          "goal": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "obs"
+          "type": "ToJsonString",
+          "value": {
+           "type": "GenInfer",
+           "goal": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "signature"
            },
-           "key": "signature"
-          },
-          "max_dims": 2,
-          "field": "base"
+           "max_dims": 2,
+           "field": "matrix"
+          }
          }
         ]
        }
@@ -1786,7 +1781,7 @@
   },
   {
    "name": "sd_recognize_dim",
-   "comment": "RUNG 2: a decoded Observation whose DimInfer check EXPLAINED the residual via a known generator (dim_explained==1) is recognized-under-transformation exactly like sd_recognize_transformed -- a MISSING DIMENSION (rotation/reflection) plus, composed, any leftover per-dimension delta explains the residual on an ALREADY-held shape, which is recognition, not new structure. DELIBERATE REUSE (design note, 'no other guard changes'): also SETS transform_explained=1 -- this does not cause sd_recognize_transformed to double-fire, because within the SAME fixpoint pass that sets it, sd_recognize_transformed's own guard (transform_explained==1 AND no has_transform edge yet) reads the PRE-effect value (still unset) and cannot match; on the NEXT pass the has_transform edge this rule's own effects just added (atomically, same rule firing) already blocks sd_recognize_transformed's re-mint guard. Sets covered_by to the winning base shape (Computed field 'base', same convenience-form sd_recognize_transformed uses) and mints a Transform node carrying the SAME shape sd_recognize_transformed's Transform node has (dims/deltas/transforms/base, the ordinary residual per-dimension detail left AFTER the generator is applied) PLUS the generator-specific singular dim/delta pair the design calls for ('Transform node with dim label latent:<generator>, delta k') -- dim is a STRING label (a generator step is not a numeric slot index), delta is k. Also mints a graph-resident LatentDimension{name, generator, k} node (has_latent_dimension edge) -- the missing dimension itself becomes graph data, per the design's 'MINT the dimension as graph data'. Guarded against re-mint by 'no has_transform edge yet', the same fixpoint-safety idiom sd_recognize_transformed uses. Depends on the same not-yet-landed DimInfer Term as sd_infer_dimension (expected to fail to parse/install until Part A lands); uses no other new Terms besides the existing StringConcat.",
+   "comment": "RUNG 2: a decoded Observation whose DimInfer check EXPLAINED the residual via a known generator (dim_explained==1) is recognized-under-transformation exactly like sd_recognize_transformed -- a MISSING DIMENSION (rotation/reflection) plus, composed, any leftover per-dimension delta explains the residual on an ALREADY-held shape, which is recognition, not new structure. DELIBERATE REUSE (design note, 'no other guard changes'): also SETS transform_explained=1 -- this does not cause sd_recognize_transformed to double-fire, because within the SAME fixpoint pass that sets it, sd_recognize_transformed's own guard (transform_explained==1 AND no has_transform edge yet) reads the PRE-effect value (still unset) and cannot match; on the NEXT pass the has_transform edge this rule's own effects just added (atomically, same rule firing) already blocks sd_recognize_transformed's re-mint guard. Sets covered_by to the winning base shape (Computed field 'base', same convenience-form sd_recognize_transformed uses) and mints a Transform node carrying the SAME shape sd_recognize_transformed's Transform node has (dims/deltas/transforms/base, the ordinary residual per-dimension detail left AFTER the generator is applied) PLUS the generator-specific singular dim/delta pair the design calls for ('Transform node with dim label latent:<generator>, delta k') -- dim is a STRING label (a generator step is not a numeric slot index), delta is k. Also mints a graph-resident LatentDimension{name, generator, k} node (has_latent_dimension edge) -- the missing dimension itself becomes graph data, per the design's 'MINT the dimension as graph data'. Guarded against re-mint by 'no has_transform edge yet', the same fixpoint-safety idiom sd_recognize_transformed uses. v1.9.0 (DEDUP_ADOPTION_SWEEP_RESULTS.md): the LatentDimension mint is `add_node_if_absent`, NOT `add_node`. The has_transform-edge guard is a PER-OBSERVATION fixpoint-termination guard, and SHAPE_AUDIT.md 4.4 named using it as a dedup the canonical SCOPE error: a Transform genuinely IS per-observation data, but a LatentDimension is a WORLD-MODEL FACT -- 'latent:rotation90' is the same dimension whichever observation revealed it -- so N observations of the same rotated shape minted N byte-identical nodes (measured live: 3 observations, 3 nodes, 1 distinct attr-set). add_node_if_absent's author-attrs (name/generator/k/generators/ks/source) ARE the dedup key, so the second observation binds `ld` to the EXISTING node and still gets its own has_latent_dimension edge. The Transform mint one effect above stays `add_node` DELIBERATELY: it is the observation-scoped half of the same pair, and deduping it would be the opposite error. Known residual: `k`/`ks` are part of the key, so the same generator at a DIFFERENT k still mints a second node -- the k belongs on the Transform (where it already is), not on the dimension, but moving it off the LatentDimension would break readers that assert ld.k and is its own rung. Depends on the same not-yet-landed DimInfer Term as sd_infer_dimension (expected to fail to parse/install until Part A lands); uses no other new Terms besides the existing StringConcat.",
    "match_type": "Observation",
    "match": [
     [
@@ -2058,7 +2053,7 @@
      "t"
     ],
     [
-     "add_node",
+     "add_node_if_absent",
      "ld",
      "LatentDimension",
      {
