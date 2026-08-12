@@ -6168,7 +6168,17 @@ class WorldAdapter:
         s.graph_from_dict(blob["graph"])
         for p in blob["grammar"]["productions"]:
             try:
-                s._inner.add_production(p)
+                # Mirror-free replay: `graph_from_dict` above already
+                # restored any Γ-mirror nodes a prior `save()` dumped as
+                # part of the graph. This loop's only job is to repopulate
+                # `checker.grammar` (a separate Rust struct `graph_from_dict`
+                # never touches) from the SEPARATE `grammar_to_json` snapshot
+                # `save()` also wrote. Using the general (possibly
+                # mirror-writing) `add_production` here would re-mint a
+                # second mirror subgraph on every single load — unbounded
+                # compounding growth, see GAMMA_PYO3_REROUTE_RESULTS.md §2.5
+                # and GAMMA_LOAD_GROWTH_FIX_RESULTS.md.
+                s._inner.add_production_no_mirror(p)
             except Exception:
                 pass
         wa.s = s

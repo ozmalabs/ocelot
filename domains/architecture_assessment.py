@@ -475,6 +475,24 @@ def score_all_qualities(substrate, subject_nid: int) -> list[dict]:
 # Smell detectors — pattern matches against structural shapes.
 # ---------------------------------------------------------------------------
 
+# Γ-admissibility bookkeeping node types (`runners/dsl/src/grammar_reflect.rs`
+# + the Term-tree reflection machinery `where`/`weight` route through). These
+# are graph-machinery/administrative nodes, never emitters of the `common`
+# structural vocabulary below, and their POPULATION SIZE is an artefact of how
+# many productions/rules happen to have been declared — not a signal about
+# any agent-facing node's structural role. Same exclusion convention this
+# codebase already uses for `Term.*` (see `substrate/world_adapter.py`, e.g.
+# "Term.* are graph machinery, never instanced (no id)"), extended to the Γ
+# mirror node types so an outlier detector's population isn't corrupted by
+# however many productions happen to be mirrored (see
+# GAMMA_LOAD_GROWTH_FIX_RESULTS.md §2 for the measured regression this fixes).
+_GAMMA_MIRROR_TYPES = ("GammaGrammar", "GammaProduction", "GammaNodePattern")
+
+
+def _is_graph_machinery_type(t: str) -> bool:
+    return t in _GAMMA_MIRROR_TYPES or (t is not None and t.startswith("Term."))
+
+
 def detect_god_object(substrate, subject_nid: int, spec: dict) -> list[dict]:
     """Flag a node whose outgoing edge-type DIVERSITY is a positive OUTLIER in
     the DISTRIBUTION of that diversity across the whole graph — not a node that
@@ -496,8 +514,12 @@ def detect_god_object(substrate, subject_nid: int, spec: dict) -> list[dict]:
     def diversity(n) -> int:
         return sum(1 for et in common if substrate.neighbours(n, et))
 
-    # The graph's own distribution of edge-type diversity.
-    all_nodes = list(substrate.nodes())
+    # The graph's own distribution of edge-type diversity — excluding Γ
+    # mirror / Term.* graph-machinery nodes, which are never structural
+    # participants in this vocabulary and would otherwise dilute the
+    # population with zero-diversity administrative bookkeeping.
+    all_nodes = [n for n in substrate.nodes()
+                 if not _is_graph_machinery_type(substrate.node(n)["type"])]
     if not all_nodes:
         return []
     divs = [diversity(n) for n in all_nodes]
