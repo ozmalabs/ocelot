@@ -7819,6 +7819,44 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         Ok(())
     }
 
+    /// `checker.grammar`-only variant of `add_production`: adds a production
+    /// to `ConsistencyChecker.grammar` (so `check_edge` gates on it) WITHOUT
+    /// writing a `GammaGrammar`/`GammaProduction` graph mirror. Structurally
+    /// identical to `add_production`'s own body (this crate's Rust-inherent
+    /// `Substrate::add_production` — `substrate.rs` — is the one that mints
+    /// the mirror; this method deliberately never calls it).
+    ///
+    /// Exists for exactly one caller: `WorldAdapter.load()`'s Γ-replay-on-load
+    /// step (`substrate/world_adapter.py`). `load()` restores the graph via
+    /// `graph_from_dict` FIRST — which already brings back any mirror nodes a
+    /// prior `save()` dumped as part of the graph — then replays
+    /// `blob["grammar"]["productions"]` (a SEPARATE, `jsonio.rs`-serialised
+    /// snapshot of `checker.grammar` itself, independent of the graph dump;
+    /// `graph_from_dict` never touches `checker`) purely to repopulate
+    /// `checker.grammar`, the plain Rust struct `check_edge` reads. If that
+    /// replay went through the (possibly mirroring) general `add_production`
+    /// binding, every load would mint a SECOND mirror subgraph on top of the
+    /// one `graph_from_dict` just restored — unbounded, compounding growth on
+    /// every save/load cycle (measured in `GAMMA_PYO3_REROUTE_RESULTS.md`
+    /// §2.5: +261 nodes/cycle, no convergence across 5 cycles). Routing the
+    /// replay through this mirror-free method instead makes `load()`'s
+    /// behaviour independent of whatever the general `add_production`
+    /// binding does — today or after any future reroute of it.
+    fn add_production_no_mirror(&mut self, py: Python<'_>, production_json: &Bound<'_, PyAny>) -> PyResult<()> {
+        let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
+        let inner = &mut *__substrate_guard;
+        let mut json = pyobj_to_json(py, production_json)?;
+        if !json.is_object() || !json.as_object().unwrap().contains_key("productions") {
+            json = serde_json::json!({"productions": [json]});
+        }
+        let parsed = grammar_from_json(&json, &mut inner.terms, &mut inner.interner)
+            .map_err(|e| PyValueError::new_err(format!("bad production JSON: {:?}", e)))?;
+        for p in parsed.productions {
+            inner.checker.grammar.add(p);
+        }
+        Ok(())
+    }
+
     fn grammar_to_json<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
