@@ -1,0 +1,39 @@
+==============================================================================
+RR4 — analogical transfer on real corpus rules
+==============================================================================
+  pd_decide          seeds/bigville_action_decide.json
+  po_observe         seeds/bigville_action_decide.json
+  af_choose_action   seeds/bigville_affect_decide.json
+
+1. AntiUnifyWitness([a,b,c]) -> template + 3 witnesses
+   WILD paths in the template (= where the three differ): 5
+     match.0.0                    a='town'             b='town'             c='m'
+     match.0.1                    a='has_actor'        b='has_actor'        c='is_at'
+     match.0.2                    a='maker'            b='maker'            c='cur'
+     where.a.items.0.key          a='decide_armed'     b='observe_armed'    c='decide_armed'
+     where.a.items.0.node.name    a='maker'            b='maker'            c='m'
+
+2. round trip Substitute(template, sigma_i) == i, for each real rule
+     a: True
+     b: True
+     c: True
+
+3. T := the a->b difference
+     P (a->b) = ['where.a.items.0.key']
+     Q (a->c) = ['match.0.0', 'match.0.1', 'match.0.2', 'where.a.items.0.node.name']
+     disjoint : True  <- required for the parallelogram to be defined
+
+4. x := Substitute(template, sigma_c (+) T)
+     x.match = [["m", "is_at", "cur"]]
+     x.where = {"a": {"items": [{"key": "observe_armed", "node": {"name": "m", "type": "Var"}, "type": "Attr"}, {"type": "Lit", "value": 0.0}], "type": "Plus"}, "type": "Eq", "b": {"type": "Lit", "value": 1.0}}
+     x != a : True   x != b : True   x != c : True
+     x is ABSENT from the whole seed corpus (2851 distinct match|where recognisers): True
+
+5. install x as a real rule and run the full 2x2 grid
+     OK   has_actor  x decide_armed   -> fired=['a']  expected=['a']
+     OK   has_actor  x observe_armed  -> fired=['b']  expected=['b']
+     OK   is_at      x decide_armed   -> fired=['c']  expected=['c']
+     OK   is_at      x observe_armed  -> fired=['x']  expected=['x']  <-- THE MISSING CORNER
+
+   ==> every cell fires exactly the rule the analogy predicts: True
+   ==> x is a REAL rule, absent from the corpus, derived only by AntiUnifyWitness + Substitute over three held rules

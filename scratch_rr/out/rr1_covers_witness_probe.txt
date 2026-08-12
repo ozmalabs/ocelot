@@ -1,0 +1,42 @@
+==============================================================================
+RR1 — Covers-with-witness necessity probe
+==============================================================================
+  corpus rule 'note_reported_gap' from seeds/gap_awareness.json: 82 signature rows
+  corpus rule 'note_self_account_gap' from seeds/gap_awareness.json: 30 signature rows
+  corpus rule 'note_unresolved_topic_gap' from seeds/gap_awareness.json: 37 signature rows
+
+------------------------------------------------------------------------------
+ENCODING A — FrozenSet of concrete rows, slot = absent row
+------------------------------------------------------------------------------
+  observation rows      : 82
+  held entry rows       : 80  (slot rows omitted: 2)
+  A1 Covers(entry, obs)                = True
+  A2 Covers(obs, entry)  [expect False]= False
+  A3 AntiUnifyWitness template rows    = 80  (== entry: True)
+  A4 sigma[entry] (pattern-side extra) = 0 path-entries -> EMPTY == covers: True
+  A5 sigma[obs]   (the RESIDUAL)       = 1 path-entries
+       residual member count           = 2  (== the 2 omitted slot rows: True)
+  A6 Substitute(template, sigma_obs) == obs : True
+  A7 NEGATIVE control with 'abandon_goal_on_no_movement': Covers=False, sigma[pattern] non-empty=True  (agreement Covers<->empty-sigma: True)
+
+------------------------------------------------------------------------------
+ENCODING B — FrozenSet with the spike's literal marked-SLOT row
+------------------------------------------------------------------------------
+  B1 Covers(entry_B, obs)  [spike assumes True] = False
+  B2 sigma[entry_B] non-empty (pattern leaks)   = True
+       pattern-side extras                     = 2 (the SLOT rows themselves — read as pattern NOISE, not as holes)
+  B3 Covers(entry_B_wild, obs) [in-row WILD]    = False
+
+------------------------------------------------------------------------------
+ENCODING C — Dict of path -> atom, WILD as the slot marker
+------------------------------------------------------------------------------
+  C0 marker sanity: Covers(WILDV, 'anything')      = True
+  C1 Covers(entry_D, obs_D) [WILD-aware Dict arm] = True
+  C2 template keys=82  sigma[entry]=2  sigma[obs]=2
+  C3 entry_D2 OMITS 2 keys (obs-only keys = the residual):
+       Covers(entry_D2, obs_D)          = True
+       template keys                    = 80 (obs has 82)
+       sigma[obs] captures residual?    = 0 entries -> RESIDUAL LOST: True
+  C4 Substitute(template, sigma_obs) == obs_D : False (round-trip LOSSY — cannot rebuild the observation)
+
+==============================================================================

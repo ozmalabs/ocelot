@@ -1,0 +1,9 @@
+corpus: 2800 seed rules with a non-null `where` and 4..400 signature rows
+
+POSITIVE pairs (entry is a real sub-signature of obs), n=300
+  I1  Covers  <->  sigma[entry] empty          : 300/300
+  I2  sigma[obs] == obs \ entry (the residual)  : 300/300
+  I3  Substitute(template, sigma_obs) == obs   : 300/300
+
+NEGATIVE pairs (unrelated rules), n=150
+  I1  Covers  <->  sigma[entry] empty          : 150/150
