@@ -1685,3 +1685,132 @@ reference layer gets for free once it exists, not the reason to build one.**
 §9.2's own ranking already had this roughly right (self-repair correctness
 ranked ahead of compression); this addendum states it as the document's actual
 thesis rather than leaving it inferable from section order.
+
+---
+
+## 16. Addendum (2026-08-12) — SEER, and "hold open" is a term this repo already owns
+
+A third external paper, supplied after §15: **SEER: Super-Optimization
+Explorer for High-Level Synthesis using E-graph Rewriting** (Cheng, Coward,
+Chelini, Barbalho, Drane — Intel Corporation / Imperial College London,
+ASPLOS 2024, `jianyicheng.github.io/assets/pdf/ChengASPLOS24.pdf`). Read in
+full (8 pages). Different problem domain from §15's three papers (hardware
+synthesis, not analogical reasoning) and a different mechanism (e-graphs via
+`egg` — the same library underlying babble/E-Stitch, §15's own family) — but
+it names, precisely and by a different route, something this repo had
+already independently discovered and partially mis-applied before correcting
+itself. That correction is the actual content of this section.
+
+### 16.1 What SEER does, grounded in the paper's own method
+
+HLS (High-Level Synthesis: C/C++ → hardware) suffers the classic **phase-
+ordering problem** — the order optimization passes are applied changes the
+final design, and no fixed order is best for every input program (§2, §3.1).
+SEER's fix: build an **e-graph** that holds every equivalent program
+representation reached so far SIMULTANEOUSLY, rather than committing early to
+one, and grow it via two rewrite sources — internal algebraic rewrites
+expressed directly in `egg`, and **external rewrites**: call an existing
+MLIR compiler pass as an opaque black box, check whether the result actually
+differs, and union it into the e-graph if so (§4.3, "external rules ...
+reduce the engineering effort required"). No requirement to re-express a
+pass's internal logic symbolically — only a validity check and an
+equivalence check. Results, validated not merely proposed: up to 38x
+performance within 1.4x area across open-source benchmarks, and an
+Intel-provided case study where SEER outperformed hand-optimized designs by
+hardware experts (Abstract, §5).
+
+**§4.5, "Deeper Optimization Opportunities," is the load-bearing section for
+this repo specifically.** SEER's own finding: the payoff is not from any one
+rewrite evaluated in isolation — it is from a representation DISCOVERED by
+one rewrite unlocking an optimization opportunity in a completely different,
+independently-reachable representation. Their worked example (Fig. 9-10): a
+data-path rewrite discovers that a non-affine-looking memory index
+`(i<<1)+i` is equivalent to the affine form `3*i`; a static analyzer that
+cannot reason about the non-affine form CAN reason about the affine one,
+which then unlocks a loop fusion that was unreachable from the original
+representation under any single pass ordering. **This is very likely the
+precise reason `PROGRAM_SYNTHESIS_CHUNK_EQUIVALENCE_RESULTS.md` found zero
+payoff for its one provably-safe rewrite (dead-temp elimination, 0.18%
+corpus prevalence, zero coincidence with any held chunk or codebook entry):
+that rung tested one rewrite, once, in isolation, hashed the result, and
+checked for a coincidental match** — exactly the shape SEER's own §4.5
+identifies as unable to find this class of payoff. The fix implied is not
+"a better single rewrite" — it is "keep multiple equivalent forms alive and
+let them cross-pollinate," which an e-graph does by construction and which
+canonicalize-then-hash (chunk-equivalence's own investigated mechanism,
+§10.3 of that document) structurally cannot.
+
+### 16.2 "Hold open" — already a named, tested, sometimes-WRONG mechanism in this repo, with a real discriminating criterion
+
+The creator's own framing, verbatim: *"That is literally 'hold open'."*
+Checked, not assumed — `grep -rn "hold open" docs/` returns real hits, and
+they are not casual. This repo's vision domain independently built and then
+CORRECTED exactly this mechanism twice, in two different directions, and the
+two corrections together are a real, already-validated decision procedure
+for exactly the question §16.1 raises (should chunk/rule mining hold
+multiple representations open, e-graph-style, or commit early).
+
+**Where hold-open was CORRECT** — `VISION_FIGADJ_NESTING_PREREG.md:90`
+(quoted in the same document, referring back to an earlier rung, v1.2.0):
+*"v1.2.0 HELD OPEN because there was no fact of the matter to read."* A
+genuine competition tie, underdetermined by any evidence available at
+decision time.
+
+**Where hold-open was WRONG, for two DIFFERENT reasons, in the same vision
+thread:**
+
+1. `VISION_FIGADJ_NESTING_PREREG.md:88-91` — a LATER rung (Zhou's
+   border-ownership finding) supplied a fact the earlier rung didn't have: a
+   hole's border belongs to the hole, so the contained rival was never a
+   genuine rival at all. *"So the contained rival is removed from the
+   competition, not held open. A hold-open here would be the third possible
+   treatment and would be chosen for its output, not derived; it is
+   refused."* Wrong because a decidable fact existed and wasn't yet read —
+   not because holding-open is wrong in general.
+2. `VISION_BLINK_RESULTS.md:22-27` — a completely different reason. *"My
+   first cut had the blink REFUSE / hold open when ungrounded. **Wrong.**
+   'Confabulation is the DEFAULT… if cognition doesn't know, it takes wild
+   guesses.'"* Wrong because the SYSTEM BEING MODELED (perception itself)
+   provably does not suspend judgment — it always produces a best-guess
+   continuation immediately, with confidence tracking grounding quality, not
+   a genuine pause. Hold-open assumed a deliberative pause that the target
+   phenomenon never has.
+
+**The discriminating criterion, stated once and reusable, is exactly what
+these two corrections isolate: hold multiple representations open only when
+the correct resolution genuinely depends on information not yet available at
+decision time, AND the thing being modeled is not itself something that
+provably commits immediately.** SEER's own e-graph is justified by precisely
+the FIGADJ-v1.2.0 case — a program's globally optimal transformation
+sequence genuinely depends on downstream context (later passes, hardware
+cost) not evaluated yet, which is real underdetermination, not laziness.
+Chunk-mining and rule-mining, AS CURRENTLY BUILT (canonicalize-or-not, then
+hash once, per §16.1), never hold anything open — they commit at mint time
+to one syntactic form and never revisit it in light of what a LATER mint
+discovers. Whether that is correct (a decidable fact really is available at
+mint time — the BLINK case) or a missed opportunity (the right chunk
+identity genuinely depends on what other chunks later get mined against the
+same corpus — the FIGADJ case) **is not established by this addendum** — it
+is exactly the question a future rung would need to answer, empirically, per
+corpus/grain, before proposing an e-graph-shaped chunk or rule miner. Named,
+not resolved.
+
+### 16.3 What this changes about §10's own sizing, if anything — honestly, probably nothing yet
+
+SEER's "external rewrite as e-graph rule" pattern (§16.1) is a second,
+independently-arrived-at answer to a question §10.3 already resolved a
+different way: this document's own reference layer needs no new Rust Term
+because `AntiUnifyWitness`/`Substitute`/`Covers` already exist and
+`RULE_REFERENCE_LAYER_SIZING_RESULTS.md` confirmed this live (§4, the 2×2
+parallelogram, zero new Terms). SEER's validity-check-plus-equivalence-check
+pattern would matter if some future rule or Γ transformation genuinely
+CANNOT be expressed in `AntiUnifyWitness`/`Substitute` terms at all (an
+opaque, complex builder whose logic resists symbolic representation) — for
+THAT case, "treat it as an external rewrite, check validity and equivalence,
+don't require it to be symbolic" is a real, reusable escape hatch, not yet
+needed because nothing found so far has hit it. Recorded here so it does not
+need to be re-derived if that case shows up.
+
+**Not built, not sized as a rung, in this addendum** — this section is a
+citation and a discriminating criterion, matching §15's own discipline of
+naming external validation targets rather than proposing builds from them.
