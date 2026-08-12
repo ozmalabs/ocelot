@@ -55,7 +55,8 @@ import retrieval_oracle_ceiling as roc  # noqa: E402
 from mbpp_zero_shot_baseline import split_tasks as q0_split_tasks  # noqa: E402
 
 ARTIFACT_PATH = os.path.join(ROOT, "results", "retrieval_oracle_ceiling.json")
-PREREG_PATH = os.path.join(ROOT, "PROGRAM_SYNTHESIS_ARC3_PREREG.md")
+PREREG_PATH = os.path.join(ROOT, "docs", "research", "program_synthesis",
+                           "PROGRAM_SYNTHESIS_ARC3_PREREG.md")
 SCRIPT_PATH = os.path.join(ROOT, "scripts", "retrieval_oracle_ceiling.py")
 
 
@@ -297,7 +298,8 @@ def test_prereg_doc_exists_and_is_nonempty():
 
 
 def test_r0_notes_doc_exists_and_is_nonempty():
-    path = os.path.join(ROOT, "PROGRAM_SYNTHESIS_ARC3_R0_NOTES.md")
+    path = os.path.join(ROOT, "docs", "research", "program_synthesis",
+                        "PROGRAM_SYNTHESIS_ARC3_R0_NOTES.md")
     assert os.path.exists(path)
     with open(path) as f:
         assert len(f.read()) > 500

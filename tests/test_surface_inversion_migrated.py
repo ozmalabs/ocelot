@@ -200,7 +200,14 @@ def _no_shipped_surface_inversion_rule():
             m = json.loads(p.read_text())
         except Exception:
             continue
-        for r in m.get("rules", []) or []:
+        # `seeds/` holds one git-tracked file whose JSON root is a LIST, not a
+        # manifest (`_recovered_f16_rules.json`, 12 bare rule objects). The seed
+        # LOADER already guards for it (`boot_all._read_seeds`: `if not
+        # isinstance(d, dict): continue`); this scan did not, and raised
+        # `'list' object has no attribute 'get'` — 13 node ids across 8 files.
+        # Read the bare list AS rules rather than skipping it, so the gate KEEPS
+        # its coverage instead of gaining a blind spot.
+        for r in (m if isinstance(m, list) else m.get("rules", []) or []):
             for eff in r.get("effects", []) or []:
                 if isinstance(eff, list) and len(eff) >= 3 and \
                         eff[0] == "add_node" and eff[2] == "SurfaceInversionReading":

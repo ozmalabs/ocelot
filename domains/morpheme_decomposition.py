@@ -55,7 +55,13 @@ def corpus_morpheme_code() -> tuple[dict[str, float], set[str]]:
             d = json.load(open(f))
         except Exception:
             continue
-        for r in (d.get("rules") or []):
+        # `seeds/` holds one git-tracked file whose JSON root is a LIST rather than
+        # a manifest (`_recovered_f16_rules.json`). The seed LOADER already guards
+        # for it (`boot_all._read_seeds`: `if not isinstance(d, dict): continue`);
+        # this corpus read did not, and raised `'list' object has no attribute
+        # 'get'` on every call. Read the bare list AS rules — the corpus statistic
+        # should see that prose too, not skip it.
+        for r in (d if isinstance(d, list) else (d.get("rules") or [])):
             if not isinstance(r, dict):
                 continue
             txt = " ".join(str(r.get(k, "")) for k in ("head", "body", "if", "then", "why"))
