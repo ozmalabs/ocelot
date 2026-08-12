@@ -309,6 +309,7 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::AntiUnify { .. } => "AntiUnify",
         TermNode::FixedCount { .. } => "FixedCount",
         TermNode::Covers { .. } => "Covers",
+        TermNode::CoversOpen { .. } => "CoversOpen",
         TermNode::AntiUnifyWitness { .. } => "AntiUnifyWitness",
         TermNode::Substitute { .. } => "Substitute",
         TermNode::Unify { .. } => "Unify",
@@ -792,6 +793,10 @@ fn write_fields(
             m.insert("pattern".into(), child(*pattern, arena, interner));
         }
         TermNode::Covers { pattern, instance, .. } => {
+            m.insert("pattern".into(), child(*pattern, arena, interner));
+            m.insert("instance".into(), child(*instance, arena, interner));
+        }
+        TermNode::CoversOpen { pattern, instance, .. } => {
             m.insert("pattern".into(), child(*pattern, arena, interner));
             m.insert("instance".into(), child(*instance, arena, interner));
         }
@@ -1804,6 +1809,11 @@ fn read_term(
             wild: interner.intern("·?·"),
         },
         "Covers" => TermNode::Covers {
+            pattern: child_of("pattern", obj, arena, interner, variant)?,
+            instance: child_of("instance", obj, arena, interner, variant)?,
+            wild: interner.intern("·?·"),
+        },
+        "CoversOpen" => TermNode::CoversOpen {
             pattern: child_of("pattern", obj, arena, interner, variant)?,
             instance: child_of("instance", obj, arena, interner, variant)?,
             wild: interner.intern("·?·"),
