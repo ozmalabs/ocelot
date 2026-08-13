@@ -1,6 +1,6 @@
 {
  "id": "causal_attitude_networks",
- "version": "0.1.0",
+ "version": "0.2.0",
  "depends_on": [
   "compiler_theory",
   "philosophy",
@@ -726,7 +726,44 @@
     "nodes with high state uncertainty (near 0) are highest info gain"
    ],
    "why": "Curiosity drive formalised. Ambivalent nodes (no clean basin yet) provide most info. Substrate's existing 'investigate impasse' aligns.",
-   "soundness_category": "cost_equivalence"
+   "soundness_category": "cost_equivalence",
+   "comment": "WIRED 2026-08-13 (CAN_BELIEF_QUANTIZATION_RESULTS.md) -- the RECOGNIZE half of this rule, using ONLY existing DSL Terms (Attr/Abs/Lt/Not/Eq), no new Rust. Presupposes a Concept's `state` attr already reflects the current equilibrium (mt_relax_to_marginal or mt_mean_field_marginal + a write-back has already run this tick -- this rule does not itself compute the mean field, it only classifies an ALREADY-COMPUTED state, exactly as node_local_frustration's own docstring requires of its caller). Flags any has_concept member whose |state| < 0.05 as is_ambivalent=1, idempotent (guarded so it does not refire once flagged). A Concept with no `state` attr at all defaults (via the DSL Attr term's Value::None -> as_f64() = 0.0 fallback) to counting as ambivalent too -- consistent with this project's own documented 'Unknown = zero vector' convention (can_ops.rs distance_to_target docstring), not a bug. This is deliberately the RECOGNIZE half only: the UPDATE/RELAX half (mean-field relaxation, Hebbian J update, energy/frustration) has NO DSL Term surface at all today (can_ops.rs is reachable only via direct PyO3 Python calls, never from inside a Rule's own effects) -- see CAN_BELIEF_QUANTIZATION_RESULTS.md Q4 for why the other 14 rules stay undecided rather than force-wired.",
+   "match_type": "Concept",
+   "match": [
+    ["mt", "has_concept", "c"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Abs",
+       "arg": {
+        "type": "Attr",
+        "node": {"type": "Var", "name": "c"},
+        "key": "state"
+       }
+      },
+      "b": {"type": "Lit", "value": 0.05}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {"type": "Var", "name": "c"},
+        "key": "is_ambivalent"
+       },
+       "b": {"type": "Lit", "value": 1}
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "c", "is_ambivalent", 1]
+   ]
   },
   {
    "name": "CAN_is_substrate_grounding_mechanism",
