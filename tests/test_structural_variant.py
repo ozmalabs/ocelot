@@ -228,6 +228,20 @@ def test_structural_variant_pick_is_discriminative(cue_word, expected_kind):
 
 
 def test_structural_variant_drop_is_honestly_inert_on_hop_descend_gradient():
+    """MAC_FAC_A8_PREREG.md/RESULTS.md: this residual used to make `epick`
+    (the graph-resident EditOp Argmax) pick `drop_match_edge` anyway (score 1,
+    the sole nonzero-scoring kind against the UNFILTERED candidate set) and
+    only THEN discover, post-hoc, that it is structurally inert on
+    hop_descend_gradient (1 match edge) -- a wasted, guaranteed-null attempt.
+    A8's applicability-gate precompute (`_ensure_editop_applicability`,
+    stamping `applicable_<kind>` flags onto the picked RuleSummary) now
+    filters `drop_match_edge` OUT of `epick`'s candidates before scoring, so
+    the pick never happens: the three remaining applicable kinds
+    (flip_comparison/swap_term_leaf/add_match_guard) all score 0 against this
+    residual (none of their keywords_text blurbs contain "drop"), so `epick`
+    abstains honestly -- a strictly more honest outcome, mirroring
+    EDIT_OP_APPLICABILITY_GATE_RESULTS.md's own accepted "drop alone"
+    behavior change for the Python twin (A4)."""
     ag = _agent_with_grid_navigation()
     ag.s.add_node("CapabilityAxis", {
         "is_axis": 1.0, "capability_keys": ["sv_drop"], "induced": 1.0,
@@ -238,8 +252,9 @@ def test_structural_variant_drop_is_honestly_inert_on_hop_descend_gradient():
     sv = res.get("structural_variant")
     assert sv is not None
     assert sv.get("built") is False
-    assert sv.get("kind") == "drop_match_edge"
-    assert "INERT" in sv.get("wall", "")
+    assert sv.get("kind") is None   # never named as a candidate -- filtered before scoring, not picked then failed
+    assert "abstained" in sv.get("wall", "")
+    assert "drop_match_edge" not in sv.get("wall", "")
 
 
 def test_structural_variant_abstains_without_genuine_rule_overlap():

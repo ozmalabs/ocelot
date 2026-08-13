@@ -887,6 +887,13 @@ def test_structure_variant_drop_matches_edit_ops_oracle_on_a_multi_edge_rule():
 
 
 def test_structure_variant_drop_is_honestly_inert_via_router():
+    """MAC_FAC_A8_PREREG.md/RESULTS.md: A8's applicability-gate precompute
+    (`_ensure_editop_applicability`) now filters `drop_match_edge` out of
+    `epick`'s candidates for hop_descend_gradient (1 match edge) BEFORE
+    scoring, so the router never picks it and then discovers it inert --
+    it abstains honestly instead (no remaining applicable kind scores > 0
+    against this residual). See `test_structural_variant.py`'s twin test for
+    the same fix through a different axis-construction path."""
     tag = "struct_drop_inert"
     ag = _grid_agent_with_edit_ops()
     _axis(ag, tag, ["test", "send", "judge", "structure", "gradient", "drop"])
@@ -894,8 +901,9 @@ def test_structure_variant_drop_is_honestly_inert_via_router():
     assert res.get("served_by") == "graph"
     sv = res.get("structural_variant")
     assert sv is not None and sv.get("built") is False
-    assert sv.get("kind") == "drop_match_edge"
-    assert "INERT" in sv.get("wall", "")
+    assert sv.get("kind") is None   # never named as a candidate -- filtered before scoring, not picked then failed
+    assert "abstained" in sv.get("wall", "")
+    assert "drop_match_edge" not in sv.get("wall", "")
 
     mint = next(r for r in res["rules"] if r["name"] == "author_experiment_from_residual_" + tag)
     delta = mint["effects"][1][3]

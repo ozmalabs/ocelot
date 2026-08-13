@@ -4218,6 +4218,71 @@ def _editop_applicable_kinds(rule_json: dict, eo) -> list:
     return out
 
 
+# One `applicable_<kind>` RuleSummary attr per `_EDIT_OPS` kind -- the FULL
+# kind string, not an abbreviation (see MAC_FAC_A8_PREREG.md §1 for why).
+_APPLICABLE_ATTR = {
+    "flip_comparison": "applicable_flip_comparison",
+    "swap_term_leaf": "applicable_swap_term_leaf",
+    "drop_match_edge": "applicable_drop_match_edge",
+    "add_match_guard": "applicable_add_match_guard",
+}
+
+
+def _ensure_editop_applicability(sub) -> None:
+    """A8 PRECOMPUTE (`MAC_FAC_A8_PREREG.md`/`MAC_FAC_A8_RESULTS.md`, closing
+    `MAC_FAC_A7_A9_RESULTS.md` §5's sized follow-on): stamps the SAME four
+    structural-applicability predicates `_editop_applicable_kinds` already
+    computes for the A4 (Python) fix as PLAIN FLOAT ATTRS on each
+    `RuleSummary` node, so the GRAPH-RESIDENT `epick` Argmax
+    (`seeds/composer_experiment_graph.json`'s `compose_experiment_mint_
+    parametric` meta-rule) can read them via an ordinary `Attr` — a Term
+    cannot call `_editop_applicable_kinds`/`domains.edit_ops.find_
+    comparison_nodes` (those are live Python functions, not Term
+    primitives), so the verdict has to be computed here, once, and relayed
+    onto the graph as data, exactly the way `axis_preds` becomes a Term
+    literal in `_compose_structural_variant` itself.
+
+    Calls `_editop_applicable_kinds` DIRECTLY -- reused, not reimplemented
+    -- so there remains exactly ONE place these four predicates are
+    defined; this function only relays that function's already-computed
+    verdict onto the graph.
+
+    Mirrors `_ensure_reply_rule_provenance`'s UPGRADE-IN-PLACE discipline
+    (not `_ensure_acting_rule_provenance`'s mint-only one): the target
+    `RuleSummary` nodes already exist (minted earlier, by `_ensure_acting_
+    rule_provenance`, possibly on an earlier call) -- this function only
+    ADDS four attrs onto an EXISTING node via `sub.set_attr`, the same
+    upgrade-in-place shape `_ensure_reply_rule_provenance` uses to add
+    `writes_reply`/`skippable`/`from_seed` onto a `RuleSummary` it did not
+    itself mint. Idempotent (a stamped node — `applicable_flip_comparison`
+    already present — is a cheap no-op skip); safe on an empty `RuleSummary`
+    population (the loop body never runs); safe on an absent or unparseable
+    `rule_json` (falls back to all-four `0.0`, the same honest 'not
+    applicable' default `_editop_applicable_kinds` itself returns on a
+    degenerate rule). No agent decision here -- every branch either copies
+    an already-computed Python value onto the graph or safely no-ops."""
+    from domains import edit_ops as _eo
+    import json as _json
+    for n in sub.nodes("RuleSummary"):
+        attrs = sub.node(n)["attrs"]
+        if attrs.get("applicable_flip_comparison") is not None:
+            continue   # already stamped -- idempotent skip
+        rule_json_str = attrs.get("rule_json")
+        try:
+            rule_json = _json.loads(rule_json_str) if rule_json_str else {}
+        except Exception:
+            rule_json = {}
+        try:
+            kinds = _editop_applicable_kinds(rule_json, _eo) if rule_json else []
+        except Exception:
+            kinds = []
+        try:
+            for kind, attr_name in _APPLICABLE_ATTR.items():
+                sub.set_attr(n, attr_name, 1.0 if kind in kinds else 0.0)
+        except Exception:
+            continue
+
+
 def _compose_structural_variant(agent, keys, tag: str) -> dict[str, Any]:
     """THE STRUCTURAL TWIN of `_compose_acting_variant`: picks WHICH candidate
     chosen_action-writing rule the axis's residual names (the SAME shared
@@ -6243,6 +6308,16 @@ def _route_experiment_composer(agent, keys, rels, rp: set) -> Optional[dict]:
     if want_structure:
         try:
             _ensure_edit_ops(sub0)
+        except Exception:
+            pass
+        try:
+            # A8 precompute (MAC_FAC_A8_PREREG.md/RESULTS.md): stamps the
+            # four applicable_<kind> flags onto every RuleSummary so the
+            # graph-native `epick` Argmax can gate its candidates on them --
+            # the SAME call site A7's own where_signature_json priming
+            # already runs from, unconditionally, before
+            # compose_experiment_mint_parametric ever fires.
+            _ensure_editop_applicability(sub0)
         except Exception:
             pass
 
