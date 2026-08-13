@@ -1,12 +1,12 @@
 {
  "id": "can_native_reimplementation",
- "version": "1.1.0",
+ "version": "1.2.0",
  "depends_on": [
   "causal_attitude_networks",
   "shape_decode_loop"
  ],
  "self_load_only": true,
- "description": "Native re-derivation of CAN's concept (CAN_CONCEPT_REIMPLEMENTATION_SPIKE.md, merged main@325c064, verdict: replace) as sd-loop/Gamma-native graph rules -- NO continuous relaxation, NO Boltzmann ensemble, NO iterative mean-field fixed point. Item 3 (evidence propagation): a discrete, asynchronous, Hopfield-style threshold update expressed as ordinary Rules, using run_rules()'s own cold-path fixpoint (one progressing binding per rule per pass, committed immediately) as the asynchrony -- this carries a real Lyapunov convergence guarantee (2-state: textbook; 3-state: empirically checked, no known proof) the OLD synchronous mean-field update (can_ops.rs::mt_mean_field_marginal, even damped) does not structurally have. Items 1-2 (basin/frustration): basin CLASSIFICATION is sd_recognize-shaped decode against a held ShapeSignature codebook of basin configurations (relation tuples ['state', concept, sign]) via the EXISTING ShapeDecode Term; COHERENCE/FRUSTRATION reads the SAME decode's residual size (no basin explains the state) and ordered_parts count (explained only by DRAWING ON MULTIPLE conflicting basins -- torn between them). Item 4 (Hebbian): mint-on-recurrence (edge-CREATION half), the SAME shape blob-edge minting already uses at real scale (BLOB_EDGE_ANALOGY_EXTENSION_RESULTS.md); v1.1.0 (LOGODDS_GENERATOR_RESULTS.md) UNBLOCKS and completes the graded-REWEIGHTING half, confirmed blocked at v1.0.0 on the still-unbuilt logodds mechanism (CAUSAL_LINKAGE_DIMENSION_RESEARCH.md): can_native_note_coactivation now initialises evidence_confirm/evidence_disconfirm/evidence_tick on the Coactivation node it mints; can_native_hebbian_mint additionally bumps evidence_confirm+evidence_tick on the SAME recurrence that mints the edge; a new consolidated rule can_native_hebbian_reweight (ONE rule, not a confirm/disconfirm sibling pair -- deliberately reusing this seed's own Sec3 starvation-fix lesson) bumps whichever counter applies on every strictly-later tick once the edge already exists. The counters are plain in-frame integers (edges cannot carry live-updated attrs in this engine -- confirmed, no set_edge_attr effect exists -- so the existing Coactivation node is the evidence ledger); the cross-frame log-odds RENDER (Laplace-smoothed empirical log-odds from the two counts) is evaluated live via Substrate.evaluate and never stored on any node. Decay still has no native analog proposed anywhere in this arc. Zero new Rust Terms anywhere in this seed, including v1.1.0 -- Sum/Edges/EdgeAttr/Nth/Attr/Gt/Lt/Gte/Lte/Eq/Not/And/Exists/IfThenElse/Plus/Times/ShapeDecode/Log/Div all pre-existed and are reused as-is. See CAN_NATIVE_REIMPLEMENTATION_PREREG.md / _RESULTS.md for items 1-3 and the v1.0.0 Hebbian edge-creation half; LOGODDS_GENERATOR_PREREG.md / _RESULTS.md for the v1.1.0 reweighting completion and the log-odds render.",
+ "description": "Native re-derivation of CAN's concept (CAN_CONCEPT_REIMPLEMENTATION_SPIKE.md, merged main@325c064, verdict: replace) as sd-loop/Gamma-native graph rules -- NO continuous relaxation, NO Boltzmann ensemble, NO iterative mean-field fixed point. Item 3 (evidence propagation): a discrete, asynchronous, Hopfield-style threshold update expressed as ordinary Rules, using run_rules()'s own cold-path fixpoint (one progressing binding per rule per pass, committed immediately) as the asynchrony -- this carries a real Lyapunov convergence guarantee (2-state: textbook; 3-state: empirically checked, no known proof) the OLD synchronous mean-field update (can_ops.rs::mt_mean_field_marginal, even damped) does not structurally have. Items 1-2 (basin/frustration): basin CLASSIFICATION is sd_recognize-shaped decode against a held ShapeSignature codebook of basin configurations (relation tuples ['state', concept, sign]) via the EXISTING ShapeDecode Term; COHERENCE/FRUSTRATION reads the SAME decode's residual size (no basin explains the state) and ordered_parts count (explained only by DRAWING ON MULTIPLE conflicting basins -- torn between them). Item 4 (Hebbian): mint-on-recurrence (edge-CREATION half), the SAME shape blob-edge minting already uses at real scale (BLOB_EDGE_ANALOGY_EXTENSION_RESULTS.md); v1.1.0 (LOGODDS_GENERATOR_RESULTS.md) UNBLOCKS and completes the graded-REWEIGHTING half, confirmed blocked at v1.0.0 on the still-unbuilt logodds mechanism (CAUSAL_LINKAGE_DIMENSION_RESEARCH.md): can_native_note_coactivation now initialises evidence_confirm/evidence_disconfirm/evidence_tick on the Coactivation node it mints; can_native_hebbian_mint additionally bumps evidence_confirm+evidence_tick on the SAME recurrence that mints the edge; a new consolidated rule can_native_hebbian_reweight (ONE rule, not a confirm/disconfirm sibling pair -- deliberately reusing this seed's own Sec3 starvation-fix lesson) bumps whichever counter applies on every strictly-later tick once the edge already exists. The counters are plain in-frame integers (edges cannot carry live-updated attrs in this engine -- confirmed, no set_edge_attr effect exists -- so the existing Coactivation node is the evidence ledger); the cross-frame log-odds RENDER (Laplace-smoothed empirical log-odds from the two counts) is evaluated live via Substrate.evaluate and never stored on any node. Decay still has no native analog proposed anywhere in this arc. Zero new Rust Terms anywhere in this seed, including v1.1.0 -- Sum/Edges/EdgeAttr/Nth/Attr/Gt/Lt/Gte/Lte/Eq/Not/And/Exists/IfThenElse/Plus/Times/ShapeDecode/Log/Div all pre-existed and are reused as-is. See CAN_NATIVE_REIMPLEMENTATION_PREREG.md / _RESULTS.md for items 1-3 and the v1.0.0 Hebbian edge-creation half; LOGODDS_GENERATOR_PREREG.md / _RESULTS.md for the v1.1.0 reweighting completion and the log-odds render. v1.2.0 (CAN_HEBBIAN_MATERIALIZATION_RESULTS.md) adds the Blocker-B POLICY GATE to can_native_hebbian_mint/can_native_hebbian_reweight: both now defer to an Or(mt_allows-equivalent-three-way-switch, plasticity_override>0) predicate before minting/reweighting, mirroring self_improvement_loop.py's mt_allows(\"allow_Hebbian_J\")+plasticity_override transient path exactly, with ONE registered divergence: an Mt carrying NO update_policy attr at all is treated as allowed (legacy/opt-in, preserving the pre-gate unconditional behaviour the existing regression file's Hebbian tests depend on) rather than mt_allows' own conservative frozen-default. can_native_note_coactivation is NOT gated -- it is pure observation/bookkeeping (mints a Coactivation ledger record, no causal_influence edge, no evidence-count mutation), matching self_improvement_loop.py's own relax()-is-never-policy-gated precedent (\"Reading equilibrium isn't policy-gated; only J/h mutations are\"). Zero new Rust, zero new Term kinds -- Eq/IfThenElse/Or/Gt/Not/Attr all pre-exist. ALSO fixes a genuine, pre-existing (confirmed present on an untouched v1.1.0 checkout, not introduced by this patch) dedup-guard defect in can_native_note_coactivation: its \"already noted\" guard compared a coactivated_with edge's target (a Coactivation node) directly against the Concept b -- a type mismatch that was always false, so a pair could get a SECOND, independent Coactivation ledger minted on the tick its edge was minted, silently inflating subsequent evidence counts. Replaced with the correct two-hop existence check (a-coactivated_with->co-coactivation_of->b), matching can_native_hebbian_mint's own match pattern -- zero new Rust, zero new Term kinds (nested Exists/Edges/Nth/Eq, all pre-existing).",
  "nodes": [],
  "edges": [],
  "productions": [
@@ -951,18 +951,34 @@
        },
        "var_name": "e2",
        "predicate": {
-        "type": "Eq",
-        "a": {
-         "type": "Nth",
-         "items": {
-          "type": "Var",
-          "name": "e2"
+        "type": "Exists",
+        "source": {
+         "type": "Edges",
+         "node": {
+          "type": "Nth",
+          "items": {
+           "type": "Var",
+           "name": "e2"
+          },
+          "index": 2
          },
-         "index": 2
+         "edge_type": "coactivation_of"
         },
-        "b": {
-         "type": "Var",
-         "name": "b"
+        "var_name": "e3",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Nth",
+          "items": {
+           "type": "Var",
+           "name": "e3"
+          },
+          "index": 2
+         },
+         "b": {
+          "type": "Var",
+          "name": "b"
+         }
         }
        }
       }
@@ -1129,6 +1145,110 @@
         }
        }
       }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "mt"
+          },
+          "key": "update_policy"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "frozen"
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": false
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mt"
+           },
+           "key": "update_policy"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "adaptive"
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": true
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mt"
+            },
+            "key": "update_policy"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "hybrid"
+           }
+          },
+          "then": {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "mt"
+             },
+             "key": "allow_Hebbian_J"
+            },
+            "b": {
+             "type": "Lit",
+             "value": false
+            }
+           }
+          },
+          "other": {
+           "type": "Lit",
+           "value": true
+          }
+         }
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "mt"
+         },
+         "key": "plasticity_override"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      ]
      }
     ]
    },
@@ -1307,6 +1427,110 @@
         "name": "b"
        }
       }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "mt"
+          },
+          "key": "update_policy"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "frozen"
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": false
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mt"
+           },
+           "key": "update_policy"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "adaptive"
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": true
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mt"
+            },
+            "key": "update_policy"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "hybrid"
+           }
+          },
+          "then": {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "mt"
+             },
+             "key": "allow_Hebbian_J"
+            },
+            "b": {
+             "type": "Lit",
+             "value": false
+            }
+           }
+          },
+          "other": {
+           "type": "Lit",
+           "value": true
+          }
+         }
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "mt"
+         },
+         "key": "plasticity_override"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      ]
      }
     ]
    },
