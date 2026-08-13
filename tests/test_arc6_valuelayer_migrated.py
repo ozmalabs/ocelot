@@ -384,17 +384,27 @@ def test_hv4_the_foldup_lane_records_a_non_scalar_too():
 # 4) what this rung did NOT fix — pinned so it cannot be quietly inherited
 # ---------------------------------------------------------------------------
 def test_out_of_scope_defects_are_still_present_and_named():
-    """`sorted`-on-strings (prereg §4) and `Eq(0.0, False)` (A3) are
-    REGISTERED as separate defects that this rung must not absorb.  If one
-    of them is fixed later, this test fails and the write-up's "what
+    """`Eq(0.0, False)` (A3) is REGISTERED as a defect this rung must not
+    absorb. If it is fixed later, this test fails and the write-up's "what
     remains unfixed" section has to be updated with it — which is the
-    point."""
+    point.
+
+    `sorted`-on-strings (prereg §4 here) is UPDATED
+    (CMP_VALUE_LEXICOGRAPHIC_FOLLOWON_RESULTS.md): `sorted()`'s "extern"
+    (`prog_eval.rs`) was named a REPORTED-ORDER site and switched to the
+    interner-aware `cmp_value_lex` comparator — real byte-lexicographic
+    order regardless of process-history intern order. `cmp_value`'s own
+    `(Str, Str)` arm is UNCHANGED (still Sym-id order — canonicalisation
+    call sites, e.g. `Dict`/`Set` construction, keep using it unmodified),
+    so this is a narrower, scoped fix, not the rejected project-wide
+    interner-threading refactor. See PROGRAM_SYNTHESIS_ARC6_VALUELAYER.md
+    §9.3 for the update note."""
     s = srs.Substrate()
     # `Eq(0.0, False)`: False in the substrate, True in Python. Named, not bundled.
     assert bool(s._inner.evaluate({"type": "Eq", "a": _lit(0.0), "b": _lit(False)}, {})) is False
     assert (0.0 == False) is True  # noqa: E712 — the divergence IS the assertion
-    # `cmp_value` still orders `Str` by interner symbol id, so string order
-    # depends on process history. Two substrates, opposite interning order.
+    # `sorted()` is now real lexicographic order, independent of which
+    # substrate interned "pear"/"apple"/"fig" in which order.
     src = "def f(a):\n    return sorted(a)\n"
 
     def sorted_on(words, prime):
@@ -410,6 +420,6 @@ def test_out_of_scope_defects_are_still_present_and_named():
     words = ["pear", "apple", "fig"]
     fwd = sorted_on(words, ["apple", "fig", "pear"])
     rev = sorted_on(words, ["pear", "fig", "apple"])
-    assert fwd != rev or fwd != sorted(words), (
-        "the sorted-on-strings defect appears to be FIXED — update "
-        "PROGRAM_SYNTHESIS_ARC6_VALUELAYER.md's 'what remains unfixed'")
+    assert fwd == rev == sorted(words), (
+        "sorted-on-strings should now be lexicographic regardless of intern "
+        "order; got fwd=%r rev=%r" % (fwd, rev))

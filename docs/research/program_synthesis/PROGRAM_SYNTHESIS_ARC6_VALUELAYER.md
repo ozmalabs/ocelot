@@ -599,17 +599,32 @@ Related, and unchanged: **`Lit` still refuses a Python `set`** — the term
 dict goes through `json.dumps`, which raises — while a set comes *out* of
 `ProgEval` perfectly well. Pre-existing asymmetry, named, not fixed.
 
-### 9.3 `sorted`-on-strings — OUT OF SCOPE, and verified still present
+### 9.3 `sorted`-on-strings — OUT OF SCOPE here, UPDATED by a later rung
 
+**UPDATE (CMP_VALUE_LEXICOGRAPHIC_FOLLOWON_RESULTS.md):** `sorted()`'s
+extern (`prog_eval.rs`) is fixed — it is a REPORTED-ORDER site (the sorted
+list IS the caller-visible output) and now goes through a separate,
+interner-aware `cmp_value_lex` comparator instead of raw `cmp_value`.
+`cmp_value` ITSELF is unchanged (its `(Str, Str)` arm still compares Sym
+ids), so this was NOT the project-wide interner-threading refactor this
+section originally registered as out of scope — it is a narrower, later,
+separately-scoped fix at the specific call sites where sorted order is
+reported to a caller (`sorted`/`min`/`max`, `Lt`/`Gt`/`Lte`/`Gte`, and the
+native `ArgMin`/`ArgMax`/`MinOver`/`MaxOver`/`ArgminOver`/`ArgmaxOver`
+family). `test_out_of_scope_defects_are_still_present_and_named` was
+updated accordingly (its `Eq(0.0, False)` half is unaffected and still
+registers that defect as open).
+
+**Original text, kept for the record of what this rung actually shipped:**
 `cmp_value`'s `(Str, Str)` arm still compares **interner symbol ids**, so
 string ordering depends on process history. Prereg §4 registers it as not
 an arc-6 deliverable and says a later build must not quietly inherit it.
 It was not touched: the `sorted` implementation carries a comment saying
-so, and
-`test_out_of_scope_defects_are_still_present_and_named` FAILS if it is
-ever fixed, forcing this section to be updated. Two of the six coincidental
-fits (`393`, `457`) are the string-order-sensitive ones the verdict
-document already named.
+so. Two of the six coincidental fits (`393`, `457`) are the
+string-order-sensitive ones the verdict document already named — those
+remain a property of THIS rung's own measurement, unaffected by the later
+fix (canonicalisation-only Dict/Set construction, which those coincidental
+fits ran through, was not touched by the follow-on either).
 
 ### 9.4 `Eq(0.0, False)` — a separate registered defect, named, not bundled
 

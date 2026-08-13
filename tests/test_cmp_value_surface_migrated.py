@@ -180,21 +180,21 @@ def f():
     assert list(got) == ["a_zzz", "b", "source", "var_name", "where"]
 
 
-def test_str_literals_are_deliberately_NOT_fixed_here(ev):
-    """HONEST BOUNDARY, asserted so it cannot rot into an unexamined claim:
-    `cmp_value`'s `(Str, Str)` arm still compares INTERNER SYMBOL IDs, so
-    `sorted` over string LITERALS is boot-history order, not lexicographic.
-    That is a separate, still-open defect (RESULTS §4) — this test pins the
-    fact that this rung did not change it. If a later rung fixes `(Str, Str)`,
-    THIS test is the one that should go red and be updated deliberately."""
+def test_str_literals_are_now_lexicographic_too(ev):
+    """UPDATED by CMP_VALUE_LEXICOGRAPHIC_FOLLOWON_RESULTS.md, exactly as this
+    test's own prior docstring said it should be: this rung named `sorted()`
+    (`prog_eval.rs`'s "sorted" extern) as a REPORTED-ORDER site and switched
+    it to the interner-aware `cmp_value_lex` comparator — `cmp_value`'s own
+    `(Str, Str)` arm is UNCHANGED (still boot-history Sym-id order; that is
+    what canonicalisation call sites keep using). `sorted()` over string
+    LITERALS is therefore now real byte-lexicographic order, matching the
+    `sorted()`-over-COMPUTED-strings behaviour the surface-fix rung already
+    established two tests above (`test_sorted_over_computed_strings_is_lexicographic`)."""
     got = list(run_src(ev, '''
 def f():
     return sorted(["where", "source", "var_name", "a_zzz", "b"])
 '''))
-    lexicographic = ["a_zzz", "b", "source", "var_name", "where"]
-    assert got != lexicographic, (
-        "(Str, Str) now appears lexicographic — if that was intended, update "
-        "this test and RESULTS §4 together; got %r" % (got,))
+    assert got == ["a_zzz", "b", "source", "var_name", "where"]
 
 
 def test_a_literal_and_an_identical_computed_string_stay_distinct(ev):

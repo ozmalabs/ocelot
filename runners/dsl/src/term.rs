@@ -7795,7 +7795,11 @@ fn cmp_bool(
 ) -> Value {
     let av = evaluate(arena, a, env, ctx);
     let bv = evaluate(arena, b, env, ctx);
-    let ord = cmp_value(&av, &bv);
+    // REPORTED-ORDER site (Lt/Lte/Gt/Gte): the boolean truth this returns is
+    // exactly what a caller/rule observes, so string comparisons must be
+    // real lexicographic order, not `cmp_value`'s boot-history Sym-id order.
+    // See CMP_VALUE_LEXICOGRAPHIC_FOLLOWON_RESULTS.md.
+    let ord = crate::value::cmp_value_lex(&av, &bv, ctx.interner);
     let ok = if allow_equal {
         ord == target || ord == std::cmp::Ordering::Equal
     } else {
@@ -7962,8 +7966,11 @@ fn numeric_argmin(arena: &TermArena, items: &[TermIdx],
     let mut best: Option<(usize, Value)> = None;
     for (i, c) in items.iter().enumerate() {
         let v = evaluate(arena, *c, env, ctx);
+        // REPORTED-ORDER site (`ArgMin`): the winning INDEX this returns is
+        // decided by this comparison — must be real lexicographic order for
+        // string-valued items, not `cmp_value`'s boot-order.
         let take = match &best { None => true, Some((_, cur)) =>
-            matches!(cmp_value(&v, cur), std::cmp::Ordering::Less) };
+            matches!(crate::value::cmp_value_lex(&v, cur, ctx.interner), std::cmp::Ordering::Less) };
         if take { best = Some((i, v)); }
     }
     if auditing {
@@ -7984,7 +7991,9 @@ fn numeric_minmax(
         best = Some(match best {
             None => v,
             Some(cur) => {
-                let take_new = match cmp_value(&v, &cur) {
+                // REPORTED-ORDER site (`Min`/`Max`): the returned VALUE is
+                // decided here — see `numeric_argmin`.
+                let take_new = match crate::value::cmp_value_lex(&v, &cur, ctx.interner) {
                     std::cmp::Ordering::Less => want_min,
                     std::cmp::Ordering::Greater => !want_min,
                     _ => false,
@@ -8015,9 +8024,13 @@ fn numeric_argmax(
     let mut best: Option<(usize, Value)> = None;
     for (i, c) in items.iter().enumerate() {
         let v = evaluate(arena, *c, env, ctx);
+        // REPORTED-ORDER site (`ArgMax`) — see `numeric_argmin`.
         let take = match &best {
             None => true,
-            Some((_, cur)) => matches!(cmp_value(&v, cur), std::cmp::Ordering::Greater),
+            Some((_, cur)) => matches!(
+                crate::value::cmp_value_lex(&v, cur, ctx.interner),
+                std::cmp::Ordering::Greater
+            ),
         };
         if take {
             best = Some((i, v));
@@ -9272,9 +9285,10 @@ fn min_or_max_over(
                 first_value = Some(v.clone());
             }
         }
+        // REPORTED-ORDER site (`MinOver`/`MaxOver`) — see `numeric_argmin`.
         let take_new = match &best {
             None => true,
-            Some(cur) => match cmp_value(&v, cur) {
+            Some(cur) => match crate::value::cmp_value_lex(&v, cur, ctx.interner) {
                 std::cmp::Ordering::Less => want_min,
                 std::cmp::Ordering::Greater => !want_min,
                 _ => false,
@@ -9433,10 +9447,14 @@ fn argmin_or_argmax_over(
                 first_elem = Some(it.clone());
             }
         }
+        // REPORTED-ORDER site (`ArgminOver`/`ArgmaxOver`/`ArgminUnique`) —
+        // the tie count decides refusal and the `best` match decides the
+        // returned ELEMENT; both are string-order-sensitive — see
+        // `numeric_argmin`.
         if tie_tracking {
             match &best {
                 None => n_at_best = 1,
-                Some((cur_v, _)) => match cmp_value(&v, cur_v) {
+                Some((cur_v, _)) => match crate::value::cmp_value_lex(&v, cur_v, ctx.interner) {
                     std::cmp::Ordering::Equal => n_at_best += 1,
                     std::cmp::Ordering::Less => {
                         if want_min { n_at_best = 1; }
@@ -9450,7 +9468,7 @@ fn argmin_or_argmax_over(
         best = Some(match best {
             None => (v, it),
             Some((cur_v, cur_e)) => {
-                let take_new = match cmp_value(&v, &cur_v) {
+                let take_new = match crate::value::cmp_value_lex(&v, &cur_v, ctx.interner) {
                     std::cmp::Ordering::Less => want_min,
                     std::cmp::Ordering::Greater => !want_min,
                     _ => false,

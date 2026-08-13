@@ -440,6 +440,108 @@ pub fn cmp_value(a: &Value, b: &Value) -> Ordering {
     }
 }
 
+/// Interner-aware companion to `cmp_value`, for REPORTED-ORDER call sites
+/// only — `sorted`/`min`/`max`, `Lt`/`Gt`/`Lte`/`Gte`, and the native
+/// `ArgMin`/`ArgMax`/`MinOver`/`MaxOver`/`ArgminOver`/`ArgmaxOver` selector
+/// family (see `CMP_VALUE_LEXICOGRAPHIC_FOLLOWON_RESULTS.md`). `cmp_value`
+/// itself is UNCHANGED — this is a SEPARATE function, not a signature
+/// change, so every canonicalisation-only call site (Set/Dict construction,
+/// persistence, `shape_decode`'s frame correspondence) keeps its existing,
+/// boot-order-consistent behaviour byte-for-byte.
+///
+/// Structurally mirrors `cmp_value`'s match arm-for-arm — recursing into
+/// Tuple/List/Set/FrozenSet/Dict via ITSELF, not `cmp_value`, so a nested
+/// string (e.g. inside a tuple being sorted) also compares lexicographically
+/// rather than only the top-level case. The ONLY behavioural difference from
+/// `cmp_value` is `(Str, Str)`: instead of comparing the two `Sym`s' raw
+/// `u32` ids (boot-history order — whichever string got interned first
+/// sorts first), it resolves both through `interner` and compares the
+/// underlying `&str` — real byte-lexicographic order, matching Rust's (and
+/// Python's) default string `Ord`.
+pub fn cmp_value_lex(a: &Value, b: &Value, interner: &crate::sym::Interner) -> Ordering {
+    fn tag(v: &Value) -> u8 {
+        match v {
+            Value::None => 0,
+            Value::Bool(_) => 1,
+            Value::Int(_) => 2,
+            Value::Float(_) => 3,
+            Value::Str(_) => 4,
+            Value::Node(_) => 5,
+            Value::Tuple(_) => 6,
+            Value::Set(_) => 7,
+            Value::FrozenSet(_) => 8,
+            Value::Dict(_) => 9,
+            Value::Surface(_, _) => 10,
+            Value::Rational(_, _) => 11,
+            Value::List(_) => 12,
+        }
+    }
+    match (a, b) {
+        (Value::Int(x), Value::Int(y)) => x.cmp(y),
+        (Value::Float(x), Value::Float(y)) => x.partial_cmp(y).unwrap_or(Ordering::Equal),
+        (Value::Int(x), Value::Float(y)) => (*x as f64).partial_cmp(y).unwrap_or(Ordering::Equal),
+        (Value::Float(x), Value::Int(y)) => x.partial_cmp(&(*y as f64)).unwrap_or(Ordering::Equal),
+        (Value::Rational(n1, d1), Value::Rational(n2, d2)) => {
+            (*n1 as i128 * *d2 as i128).cmp(&(*n2 as i128 * *d1 as i128))
+        }
+        (Value::Rational(n, d), Value::Int(y)) => (*n as i128).cmp(&(*y as i128 * *d as i128)),
+        (Value::Int(x), Value::Rational(n, d)) => (*x as i128 * *d as i128).cmp(&(*n as i128)),
+        (Value::Rational(n, d), Value::Float(y)) => {
+            (*n as f64 / *d as f64).partial_cmp(y).unwrap_or(Ordering::Equal)
+        }
+        (Value::Float(x), Value::Rational(n, d)) => {
+            x.partial_cmp(&(*n as f64 / *d as f64)).unwrap_or(Ordering::Equal)
+        }
+        // THE FIX: resolve both Syms through the interner and compare the
+        // underlying bytes, instead of `cmp_value`'s `x.0.cmp(&y.0)` (Sym-id
+        // / boot-order compare).
+        (Value::Str(x), Value::Str(y)) => interner.resolve(*x).cmp(interner.resolve(*y)),
+        (Value::Node(x), Value::Node(y)) => x.cmp(y),
+        (Value::Bool(x), Value::Bool(y)) => x.cmp(y),
+        (Value::Tuple(xa), Value::Tuple(ya)) | (Value::List(xa), Value::List(ya)) => {
+            xa.len().cmp(&ya.len()).then_with(|| {
+                for (x, y) in xa.iter().zip(ya.iter()) {
+                    let c = cmp_value_lex(x, y, interner);
+                    if c != Ordering::Equal {
+                        return c;
+                    }
+                }
+                Ordering::Equal
+            })
+        }
+        (Value::Set(xa), Value::Set(ya))
+        | (Value::FrozenSet(xa), Value::FrozenSet(ya))
+        | (Value::Set(xa), Value::FrozenSet(ya))
+        | (Value::FrozenSet(xa), Value::Set(ya)) => {
+            xa.len().cmp(&ya.len()).then_with(|| {
+                for (x, y) in xa.iter().zip(ya.iter()) {
+                    let c = cmp_value_lex(x, y, interner);
+                    if c != Ordering::Equal {
+                        return c;
+                    }
+                }
+                Ordering::Equal
+            })
+        }
+        (Value::Surface(ka, ba), Value::Surface(kb, bb)) => {
+            ka.cmp(kb).then_with(|| ba.as_ref().cmp(bb.as_ref()))
+        }
+        (Value::Dict(xa), Value::Dict(ya)) => {
+            xa.len().cmp(&ya.len()).then_with(|| {
+                for ((kx, vx), (ky, vy)) in xa.iter().zip(ya.iter()) {
+                    let c = cmp_value_lex(kx, ky, interner)
+                        .then_with(|| cmp_value_lex(vx, vy, interner));
+                    if c != Ordering::Equal {
+                        return c;
+                    }
+                }
+                Ordering::Equal
+            })
+        }
+        _ => tag(a).cmp(&tag(b)),
+    }
+}
+
 // Hash by element-tag + payload. Two equal Values hash to the same
 // bucket because PartialEq is by canonical contents.
 impl std::hash::Hash for Value {
@@ -929,5 +1031,106 @@ mod tests {
         assert_eq!(rendered, vec!["a_zzz", "b", "source", "var_name", "where"]);
         assert_eq!(cmp_value(&text("a"), &text("ab")), Ordering::Less,
                    "prefix sorts before its extension, as CPython does");
+    }
+
+    // --- cmp_value_lex: the (Str,Str) follow-on
+    // (CMP_VALUE_LEXICOGRAPHIC_FOLLOWON_RESULTS.md) ---------------------
+
+    /// Intern strings in an order CHOSEN so boot order and alphabetical
+    /// order disagree, so a test that merely happened to intern
+    /// alphabetically could not pass by accident.
+    fn interner_with_reverse_boot_order() -> (crate::sym::Interner, Vec<Sym>) {
+        let mut interner = crate::sym::Interner::new();
+        // Intern "zebra" first (gets a LOW Sym id) and "apple" last (gets a
+        // HIGH Sym id) — the opposite of alphabetical.
+        let names = ["zebra", "mango", "banana", "apple"];
+        let syms: Vec<Sym> = names.iter().map(|n| interner.intern(n)).collect();
+        (interner, syms)
+    }
+
+    #[test]
+    fn cmp_value_is_still_boot_order_not_lexicographic() {
+        // Pins that this rung did NOT touch `cmp_value`'s own (Str,Str)
+        // arm — the regression guard the prior rung's own test named as
+        // "the test to update when (Str,Str) is fixed". It is NOT fixed
+        // globally here; `cmp_value` must stay exactly as it was.
+        let (_interner, syms) = interner_with_reverse_boot_order();
+        // Boot order: zebra(0) < mango(1) < banana(2) < apple(3) as Syms,
+        // so cmp_value must say zebra < apple (wrong alphabetically).
+        let zebra = Value::Str(syms[0]);
+        let apple = Value::Str(syms[3]);
+        assert_eq!(cmp_value(&zebra, &apple), Ordering::Less,
+                   "cmp_value must remain Sym-id (boot-history) order, untouched by this rung");
+    }
+
+    #[test]
+    fn cmp_value_lex_is_byte_lexicographic_regardless_of_boot_order() {
+        // THE live before/after case: same interner, same two Values,
+        // opposite verdicts from cmp_value vs cmp_value_lex.
+        let (interner, syms) = interner_with_reverse_boot_order();
+        let zebra = Value::Str(syms[0]);
+        let apple = Value::Str(syms[3]);
+        assert_eq!(cmp_value(&zebra, &apple), Ordering::Less, "boot order: zebra before apple");
+        assert_eq!(cmp_value_lex(&zebra, &apple, &interner), Ordering::Greater,
+                   "lex order: apple before zebra — cmp_value_lex inverts cmp_value's verdict here");
+        // A full sort by each comparator, on the SAME four strings, gives
+        // two different orders — that IS the defect and the fix, live.
+        let mut boot_order: Vec<Value> = syms.iter().map(|&s| Value::Str(s)).collect();
+        boot_order.sort_by(cmp_value);
+        let render = |vs: &[Value]| -> Vec<&str> {
+            vs.iter().map(|v| match v {
+                Value::Str(s) => interner.resolve(*s),
+                _ => unreachable!(),
+            }).collect()
+        };
+        assert_eq!(render(&boot_order), vec!["zebra", "mango", "banana", "apple"],
+                   "cmp_value: unchanged boot-history order");
+        let mut lex_order: Vec<Value> = syms.iter().map(|&s| Value::Str(s)).collect();
+        lex_order.sort_by(|a, b| cmp_value_lex(a, b, &interner));
+        assert_eq!(render(&lex_order), vec!["apple", "banana", "mango", "zebra"],
+                   "cmp_value_lex: real alphabetical order");
+    }
+
+    #[test]
+    fn cmp_value_lex_recurses_into_tuples_so_nested_strings_are_lex_too() {
+        let (interner, syms) = interner_with_reverse_boot_order();
+        let zebra = Value::Str(syms[0]);
+        let apple = Value::Str(syms[3]);
+        let tup_a = Value::Tuple(Arc::new(SmallVec::from_vec(vec![Value::Int(1), zebra.clone()])));
+        let tup_b = Value::Tuple(Arc::new(SmallVec::from_vec(vec![Value::Int(1), apple.clone()])));
+        // Same length, same first slot -> decided by the nested string.
+        assert_eq!(cmp_value(&tup_a, &tup_b), Ordering::Less, "cmp_value: boot order nested");
+        assert_eq!(cmp_value_lex(&tup_a, &tup_b, &interner), Ordering::Greater,
+                   "cmp_value_lex: lex order nested — 'apple' < 'zebra'");
+    }
+
+    #[test]
+    fn cmp_value_lex_agrees_with_cmp_value_on_every_non_string_arm() {
+        let interner = crate::sym::Interner::new();
+        let pairs: Vec<(Value, Value)> = vec![
+            (Value::Int(3), Value::Int(7)),
+            (Value::Int(3), Value::Float(3.5)),
+            (Value::Float(2.0), Value::Int(2)),
+            (Value::Bool(true), Value::Bool(false)),
+            (Value::Node(NodeID(1)), Value::Node(NodeID(2))),
+            (Value::None, Value::Int(0)),
+            (Value::Rational(1, 2), Value::Rational(2, 3)),
+        ];
+        for (a, b) in pairs {
+            assert_eq!(cmp_value(&a, &b), cmp_value_lex(&a, &b, &interner),
+                       "cmp_value_lex must match cmp_value outside (Str,Str): {a:?} vs {b:?}");
+        }
+    }
+
+    #[test]
+    fn cmp_value_lex_leaves_surface_text_byte_lexicographic_unchanged() {
+        // Surface(Text) was already byte-lexicographic (the prior rung's
+        // fix) — cmp_value_lex must agree with cmp_value here, not
+        // reintroduce a difference.
+        let interner = crate::sym::Interner::new();
+        let a = text("apple");
+        let b = text("zebra");
+        assert_eq!(cmp_value(&a, &b), cmp_value_lex(&a, &b, &interner));
+        assert_eq!(cmp_value_lex(&a, &b, &interner), Ordering::Less);
     }
 }
