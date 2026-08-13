@@ -3689,7 +3689,31 @@ def _compose_rule_literal_variant(agent, keys, tag: str) -> dict[str, Any]:
     (this family's own VariationOp attrs, agent-editable) scored against the
     SAME content words — 'fires too rarely/never' -> increase_fires (lower
     a floor / raise a ceiling); 'fires too eagerly/often' -> decrease_fires
-    (the opposite). A tied or zero-zero score abstains (no random polarity)."""
+    (the opposite). A tied or zero-zero score abstains (no random polarity).
+
+    STRUCTURAL FALLBACK (MAC_FAC_A5_A6_PREREG/RESULTS.md, A6): the primary
+    scorer above is already a structural read in ONE sense (Attr keys /
+    NodesOfType names / Lit strings, not a name-derived prose blurb) — but it
+    is scoped to exactly the ONE `_find_where_lits` candidate node being
+    tried, and never sees that rule's OTHER, sibling `And`-items (a rule
+    routinely carries non-numeric-literal `Eq`/`Not`/`Exists` guard
+    conditions alongside its numeric threshold(s) — e.g.
+    `escalate_narrative_shape`'s `spine_stage`/`reading_report` guards,
+    reachable from NEITHER of its two where-lit candidates). `RuleSummary.
+    where_signature_json` (`domains.rule_signature`, minted for this SAME
+    `writes_where_literal` pool — `ensure_where_signature` keys only on
+    `rule_json` being present, not on `writes_chosen_action`/`writes_reply`,
+    so no new signature machinery is needed) covers the WHOLE `where` clause,
+    siblings included. The primary is UNCHANGED and tried first; only when it
+    genuinely abstains SYSTEM-WIDE (no (rule, candidate) pair anywhere scores
+    >= 2) does a two-tier fallback run: (1) score each CANDIDATE RULE by
+    substring overlap between the content words and its own
+    `where_signature_json` blob (the SAME >=2-word floor, the SAME substring
+    semantics A1/A2's own `where_signature_json` fallback uses); (2) within
+    the structurally-picked rule, choose WHICH `_find_where_lits` candidate
+    via the SAME local vocab scorer, WITHOUT the 2-word floor (already
+    discharged at the rule level) — ties broken by first discovery order,
+    matching the primary's own tie convention."""
     sub0, native0, ag0 = _resolve_agent(agent)
     key = str(keys[0]) if keys else ""
     standing = None
@@ -3723,6 +3747,7 @@ def _compose_rule_literal_variant(agent, keys, tag: str) -> dict[str, Any]:
 
     import json as _json
     _ensure_where_literal_rule_provenance(sub0, native0)
+    candidate_rows = []   # [(rule_name, rule_json)] -- the pool, gathered once
     best = None   # (overlap, rule_name, rule_json, cand_index, cand_node)
     for n in sub0.nodes("RuleSummary"):
         at = sub0.node(n)["attrs"]
@@ -3732,6 +3757,7 @@ def _compose_rule_literal_variant(agent, keys, tag: str) -> dict[str, Any]:
             rule_json = _json.loads(at.get("rule_json") or "{}")
         except Exception:
             continue
+        candidate_rows.append((at.get("name"), rule_json))
         cands = _find_where_lits(rule_json.get("where"))
         for i, cand in enumerate(cands):
             vocab = _collect_vocab_tokens(cand)
@@ -3740,10 +3766,50 @@ def _compose_rule_literal_variant(agent, keys, tag: str) -> dict[str, Any]:
                 continue
             if best is None or overlap > best[0]:
                 best = (overlap, at.get("name"), rule_json, i, cand)
+    fallback_used = False
+    if best is None:
+        # STRUCTURAL FALLBACK (see docstring): only reached when the LOCAL
+        # per-candidate vocab scorer genuinely abstains system-wide. Tier 1:
+        # pick the RULE whose FULL where-clause signature is genuinely named.
+        from domains import rule_signature as _rsig
+        _rsig.ensure_where_signature(sub0)
+        # where_signature_json may have just been minted -- re-read fresh.
+        sig_by_name = {}
+        for n in sub0.nodes("RuleSummary"):
+            at = sub0.node(n)["attrs"]
+            if at.get("writes_where_literal") == 1.0 and at.get("skippable") == 1.0:
+                sig_by_name[at.get("name")] = at.get("where_signature_json") or ""
+        struct_best = None   # (overlap, rule_name, rule_json)
+        for rule_name0, rule_json0 in candidate_rows:
+            sig_json = (sig_by_name.get(rule_name0) or "").lower()
+            if not sig_json:
+                continue
+            overlap = sum(1 for w in words if w in sig_json)
+            if overlap < 2:
+                continue
+            if struct_best is None or overlap > struct_best[0]:
+                struct_best = (overlap, rule_name0, rule_json0)
+        if struct_best is not None:
+            _s_overlap, s_rule_name, s_rule_json = struct_best
+            # Tier 2: within the structurally-picked rule, choose WHICH
+            # where-lit candidate by the SAME local vocab scorer, no floor
+            # (the floor's job was already discharged at the rule level).
+            cands = _find_where_lits(s_rule_json.get("where"))
+            local_best = None   # (overlap, cand_index, cand_node)
+            for i, cand in enumerate(cands):
+                vocab = _collect_vocab_tokens(cand)
+                overlap = sum(1 for w in words if w in vocab)
+                if local_best is None or overlap > local_best[0]:
+                    local_best = (overlap, i, cand)
+            if local_best is not None:
+                _l_overlap, l_idx, l_cand = local_best
+                best = (_s_overlap, s_rule_name, s_rule_json, l_idx, l_cand)
+                fallback_used = True
     if best is None:
         return {"built": False, "wall": (f"no held rule's where-clause literal is genuinely "
                 f"named by the content words ({words!r}) — fewer than 2 words of any candidate's "
-                "own comparison vocabulary match; honest abstain, not a random pick")}
+                "own comparison vocabulary OR any rule's own full where-signature match; honest "
+                "abstain, not a random pick")}
     _overlap, rule_name, rule_json, cand_idx, cand_node = best
 
     more_words = set(str(w).lower() for w in ((op_at or {}).get("direction_lexicon_more") or []))
@@ -3762,11 +3828,13 @@ def _compose_rule_literal_variant(agent, keys, tag: str) -> dict[str, Any]:
         return {"built": False, "wall": "literal shift failed structurally (candidate index stale)"}
     new_value = _find_where_lits(variant.get("where"))[cand_idx]["b"]["value"]
     witness = _rule_effect_witness(rule_json)
+    pick_desc = ("its FULL where-signature (the local per-literal vocabulary abstained system-wide)"
+                 if fallback_used else "comparison-subtree vocabulary overlap")
     return {"built": True, "rule": variant, "removed_rule": rule_name,
             "old_value": old_value, "new_value": new_value, "direction": direction,
-            "witness": witness,
+            "witness": witness, "fallback_used": fallback_used,
             "how": (f"I read the promoted concern's own content words {words!r}, Argmaxed over every "
-                    f"held rule's where-clause literal by comparison-subtree vocabulary overlap: "
+                    f"held rule's where-clause literal by {pick_desc}: "
                     f"{rule_name!r}'s literal genuinely wins, and the direction lexicon reads "
                     f"{direction!r}. My held VariationOp.literal_step ({step}) sets the shift: "
                     f"{old_value} -> {new_value}, carried on the dispatched copy via remove_rules="
@@ -3800,6 +3868,22 @@ def _compose_datum_feedback_rule(agent, keys, tag: str) -> dict[str, Any]:
     `world_adapter._record_interlocutor_correction`) and a BELIEF attr (a
     held, revisable belief — `self_report_reliability`) on the SAME node
     type.
+
+    STRUCTURAL FALLBACK (MAC_FAC_A5_A6_PREREG/RESULTS.md, A5): `keywords_text`
+    is a hand-authored DESCRIPTIVE blurb — the row's MAC layer, exactly like
+    A1/A2's rule-name-derived bag. Each row also carries its own real
+    operational identity (FAC): `node_type`/`datum_attr`/`belief_attr`, the
+    literal graph node-type and attribute names the authored rule actually
+    reads/writes. The primary Argmax is UNCHANGED and tried first; only when
+    it genuinely abstains (no row scores >= 2) does the SAME Sum-of-membership
+    shape run a second time against `" ".join([node_type, datum_attr,
+    belief_attr]).replace("_", " ")` instead of `keywords_text` — recovering
+    a concern that names the attribute directly (e.g. 'count') rather than
+    the prose blurb that was hand-picked to evoke it. Honest scope limit
+    (registered before this was built, not discovered after): the real table
+    holds exactly ONE row today, so this fallback is measured to close a real
+    false-abstain gap, not to discriminate correctly among competing rows —
+    see the RESULTS doc's own honest-limits section.
 
     THE AUTHORED RULE: matches every party the agent models (`agent
     -has_interlocutor-> party`, the boundary edge
@@ -3864,9 +3948,28 @@ def _compose_datum_feedback_rule(agent, keys, tag: str) -> dict[str, Any]:
             continue
         if best is None or overlap > best[0]:
             best = (overlap, row)
+    fallback_used = False
+    if best is None:
+        # STRUCTURAL FALLBACK (see docstring): only reached when the prose
+        # blurb genuinely abstains. Scores each row by its own real
+        # operational identity (node_type/datum_attr/belief_attr) instead of
+        # the hand-authored keywords_text bag.
+        struct_best = None   # (overlap, row)
+        for row in _DATUM_FEEDBACK_CANDIDATES:
+            struct_words = (row["node_type"] + " " + row["datum_attr"] + " "
+                            + row["belief_attr"]).replace("_", " ").lower().split()
+            overlap = sum(1 for w in words if w in struct_words)
+            if overlap < 2:
+                continue
+            if struct_best is None or overlap > struct_best[0]:
+                struct_best = (overlap, row)
+        if struct_best is not None:
+            best = struct_best
+            fallback_used = True
     if best is None:
         return {"built": False, "wall": (f"no held datum/belief pair genuinely named by the content "
-                f"words ({words!r}) — fewer than 2 words of any candidate row match; honest abstain, "
+                f"words ({words!r}) — fewer than 2 words of any candidate row's own keywords_text OR "
+                "its structural (node_type/datum_attr/belief_attr) identity match; honest abstain, "
                 "not a random pick")}
     _overlap, row = best
     node_type = row["node_type"]
@@ -3904,15 +4007,18 @@ def _compose_datum_feedback_rule(agent, keys, tag: str) -> dict[str, Any]:
             ["set_attr", "party", applied_marker, {"__term__": Attr(V("party"), datum_attr)}],
         ],
     }
+    pick_desc = ("its own STRUCTURAL identity (node_type/datum_attr/belief_attr) — the prose "
+                 "keywords_text abstained" if fallback_used else "its own keywords_text prose")
     return {"built": True, "rule": rule, "node_type": node_type, "datum_attr": datum_attr,
             "belief_attr": belief_attr, "step": step, "floor": floor, "ceil": ceil,
+            "fallback_used": fallback_used,
             "how": (f"I read the promoted concern's own content words {words!r} and Argmaxed over the "
-                    f"held datum/belief table: ({datum_attr!r}, {belief_attr!r}) on {node_type} genuinely "
-                    f"names them. I authored a NEW rule that matches every {node_type} I model, fires "
-                    f"once per genuine change of {datum_attr!r} (an epoch marker, not a boolean flag), "
-                    f"and moves {belief_attr!r} down by my held VariationOp.datum_step ({step}), clamped "
-                    f"to [{floor}, {ceil}] — carried on the dispatched copy via add_rules, tried on the "
-                    "VARIANT before ever touching myself.")}
+                    f"held datum/belief table by {pick_desc}: ({datum_attr!r}, {belief_attr!r}) on "
+                    f"{node_type} genuinely names them. I authored a NEW rule that matches every "
+                    f"{node_type} I model, fires once per genuine change of {datum_attr!r} (an epoch "
+                    f"marker, not a boolean flag), and moves {belief_attr!r} down by my held "
+                    f"VariationOp.datum_step ({step}), clamped to [{floor}, {ceil}] — carried on the "
+                    "dispatched copy via add_rules, tried on the VARIANT before ever touching myself.")}
 
 
 _SHAPE_MINT_DIMS = ("register", "cadence", "style", "affect")
