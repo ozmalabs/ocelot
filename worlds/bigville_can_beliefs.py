@@ -177,7 +177,21 @@ def build_resident_can_mt(s, resident: dict, res_gain: float = 1.0,
     for a, b, base_j, nuance_key in STRUCTURAL_EDGES:
         true_j = true_edge_j(p, base_j, nuance_key)
         q_j = quantize_j(true_j, eff_bins)
+        # Symmetric pair (CAN_NATIVE_REIMPLEMENTATION_RESULTS.md sec7's
+        # named, verified-backward-compatible fix): the native discrete-
+        # async rule's local-field Sum(Edges(c,"causal_influence")) reads
+        # OUT-edges only, so a Concept whose only coupling was an IN-edge
+        # (e.g. claim_credible's edge FROM trust_mayor) was invisible to
+        # it. Minting both directions with the SAME weight makes every
+        # coupling visible as an out-edge from EITHER endpoint. This is
+        # additive-risk-only for the existing continuous mechanism --
+        # build_couplings's in-edge de-dup (can_ops.rs:180-191) and
+        # enumerate_couplings's undirected-pair de-dup (can_ops.rs:293-322)
+        # both already skip a neighbour already found via the other
+        # direction, so mt_mean_field_marginal/audit_basin's own
+        # coupling_count/energy/frustration arithmetic is unchanged.
         s.add_edge(concepts[a], "causal_influence", concepts[b], {"weight": q_j})
+        s.add_edge(concepts[b], "causal_influence", concepts[a], {"weight": q_j})
         edges.append({"a": a, "b": b, "true_j": true_j, "quantized_j": q_j})
 
     return {
