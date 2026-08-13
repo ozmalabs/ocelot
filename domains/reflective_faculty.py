@@ -7216,6 +7216,123 @@ def _shared_shape(substrate, sig_a, sig_b):
     return res, fixed
 
 
+# ---------------------------------------------------------------------------
+# BLOB-EDGE CORRESPONDENCE MINTING (BLOB_EDGE_SD_LOOP_PREREG.md / _RESULTS.md)
+# -- the sd loop's recognize/mint duality reapplied to CORRESPONDENCE
+# persistence. `_shared_shape` (above, UNCHANGED by this block) already
+# collapses two signatures onto shared HELD structure -- the RelationCue
+# axes both sides independently anchor onto (I_A -> S + r_A, I_B -> S + r_B).
+# That collapse is the "recognize" event one level up; this records it as a
+# graph-native Correspondence -> BlobEdge fact via
+# seeds/blob_edge_correspondence.json's `blob_mint`/`blob_recognize`/
+# `blob_no_collapse` rules, which mirror `sd_mint_quantum`/`sd_dedup_existing`
+# byte-for-byte in shape (add_node+add_edge on the FIRST occurrence of a NEW
+# transform_key; a bare status flag, no new edge, on a RECOGNIZED one -- the
+# same add_edge-needs-a-match-bound-var engine constraint `sd_dedup_existing`
+# already documents). Python does not decide recognize-vs-mint -- it writes
+# the Correspondence node (mechanical ingest, `domains/meta_shape.py::observe`'s
+# exact pattern) and reads back the rule's verdict.
+# ---------------------------------------------------------------------------
+
+def _agent_node_id(substrate):
+    """The single Agent hub node, found by scan -- no assumed adapter attr."""
+    sub = getattr(substrate, "s", substrate)
+    try:
+        nodes = sub.nodes("Agent")
+    except Exception:
+        return None
+    return nodes[0] if nodes else None
+
+
+def _shape_signature_node_id(substrate, name: str):
+    """Mechanical lookup: the real `ShapeSignature` node id for a held name --
+    the SAME name `_load_shape_signatures` already keys its dict by."""
+    sub = getattr(substrate, "s", substrate)
+    try:
+        for n in sub.nodes("ShapeSignature"):
+            if sub.node(n)["attrs"].get("name") == name:
+                return n
+    except Exception:
+        pass
+    return None
+
+
+def _canon_shared_shape(res) -> str:
+    """Canonicalise `_shared_shape`'s AntiUnify template into a stable string
+    key -- the recognition identity a recurring correspondence is matched by.
+    Pure serialisation (row order is already canonical: `_shared_shape` builds
+    both operand lists from `sorted(set(by_name_a) & set(by_name_b))`), no
+    decision. `res` is `None` when `_shared_shape` found no shared axis at
+    all -- serialised as the same stable empty-string key every such call
+    produces (never matched by `blob_mint`/`blob_recognize`'s `shared_count>0`
+    guard, so its exact value is inert; kept stable only for readability)."""
+    import json as _json
+    if res is None:
+        return ""
+    try:
+        return _json.dumps(res)
+    except Exception:
+        return ""
+
+
+def record_correspondence(substrate, node_a, sig_a, node_b, sig_b):
+    """MECHANICAL INGEST (exactly `domains/meta_shape.py::observe`'s pattern):
+    run `_shared_shape` (UNCHANGED, not touched by this function) over the two
+    signatures, write the result as a `Correspondence` node with `about_a`/
+    `about_b` edges to the two REAL `ShapeSignature` nodes, and hand off to
+    `seeds/blob_edge_correspondence.json`'s rules -- which decide (never
+    Python) whether this is a NEW structural pattern (`blob_mint`, mirrors
+    `sd_mint_quantum`), an ALREADY-HELD one (`blob_recognize`, mirrors
+    `sd_dedup_existing`), or no collapse at all (`blob_no_collapse`).
+
+    Returns `{shared, fixed, persisted, ...}`. `persisted` is `False` (with
+    `shared`/`fixed` still populated, exactly `_shared_shape`'s own honest
+    values) when there is no live graph or no real node id for either side --
+    the correspondence is still computed, just not written, matching
+    `_shared_shape`'s own honest-non-match shape rather than raising."""
+    shared, fixed = _shared_shape(substrate, sig_a, sig_b)
+    out = {"shared": shared, "fixed": fixed, "persisted": False}
+    sub = getattr(substrate, "s", substrate)
+    if node_a is None or node_b is None or not hasattr(sub, "add_node"):
+        return out
+    key = _canon_shared_shape(shared)
+    try:
+        cid = sub.add_node("Correspondence", {
+            "status": "pending",
+            "shared_count": int(fixed),
+            "transform_key": key,
+        })
+        sub.add_edge(cid, "about_a", node_a)
+        sub.add_edge(cid, "about_b", node_b)
+        ag = _agent_node_id(substrate)
+        if ag is not None:
+            sub.add_edge(ag, "observed_correspondence", cid)
+        native = getattr(sub, "_inner", sub)
+        native.run_rules()
+        status = sub.node(cid)["attrs"].get("status")
+        out.update({"persisted": True, "node": cid, "transform_key": key, "status": status})
+    except Exception as exc:
+        out["error"] = str(exc)
+    return out
+
+
+def _resolve_blob_edge(substrate, transform_key: str):
+    """Mechanical read-back: the held `BlobEdge` node carrying this
+    `transform_key`, if any -- the SAME equality-scan pattern `induce_concern`
+    already uses to re-resolve a `CapabilityAxis` by `capability_keys` after
+    `sd_dedup_existing` leaves it un-edged (see that rule's own comment).
+    Never a decision -- the rule already decided `status`; this only finds
+    the node the rule's `Exists` check already confirmed exists."""
+    sub = getattr(substrate, "s", substrate)
+    try:
+        for n in sub.nodes("BlobEdge"):
+            if sub.node(n)["attrs"].get("transform_key") == transform_key:
+                return n
+    except Exception:
+        pass
+    return None
+
+
 _COMPOSE_PROVENANCE = (
     "the plan is the AGENT'S: each step's part was selected by the held "
     "shape-matcher (AntiUnify+FixedCount fit, Covers coverage — Rust Terms) "
@@ -7517,10 +7634,19 @@ def _run_math_bridge(substrate, meta_arg: Optional[str]) -> dict[str, Any]:
     per_math = {}
     for mn in math_names:
         m_sig = maths[mn][1]
+        m_node = _shape_signature_node_id(substrate, mn)
         # the best faculty for this math = argmax shared-shape (read-out of the matcher)
         mb = None
         for fn, (_, f_sig, _) in facs.items():
-            shared, fixed = _shared_shape(substrate, m_sig, f_sig)
+            # BLOB_EDGE_SD_LOOP: record_correspondence wraps `_shared_shape`
+            # UNCHANGED (same shared/fixed values) and additionally persists
+            # the collapse as a Correspondence -> BlobEdge graph fact when
+            # both operands are real ShapeSignature nodes (degrades to the
+            # bare `_shared_shape` computation, `persisted=False`, otherwise
+            # -- e.g. a self-authored `mn` with no held ShapeSignature node).
+            f_node = _shape_signature_node_id(substrate, fn)
+            corr = record_correspondence(substrate, m_node, m_sig, f_node, f_sig)
+            shared, fixed = corr["shared"], corr["fixed"]
             if mb is None or fixed > mb[0]:
                 mb = (fixed, fn, shared)
         per_math[mn] = {"faculty": mb[1], "shared_leaves": mb[0]}
