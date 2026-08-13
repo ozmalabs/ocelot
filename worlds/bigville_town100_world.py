@@ -109,6 +109,47 @@ _PARAM_SPEC = {
     "arousal":            (0.40, 0.20, 0.0, 1.0),
 }
 
+# ---- trait-level causal-belief RESOLUTION (bin COUNT), MIXTURE draw -------
+# Grounded in docs/research/engine_substrate/
+# CAUSAL_GRANULARITY_POPULATION_DISTRIBUTION_RESEARCH.md sec7 point 4 + sec8:
+# "do not expect, or design around, a single unimodal population curve" --
+# the real CRT literature (Frederick 2005 combined N=3428; Stieger & Reips
+# 2016 N=2137) shows a real population is a MIXTURE of a floor-heavy/naive
+# subgroup and a ceiling-heavy/exposed subgroup, not one bell curve. Draw is
+# a two-component Normal mixture in CONTINUOUS space (the cross-frame
+# generative map, CLAUDE.md "BASE-AS-DIMENSION" frame/continuum invariant),
+# then ROUNDED AND CLAMPED to an integer bin count (the in-frame stored
+# datum -- the draw is a map, the storage is a lattice value, never a raw
+# float). See BIGVILLE_CAN_INTEGRATION_PREREG.md sec3 for the full citation
+# chain behind every constant below.
+_RES_FLOOR_MEAN, _RES_FLOOR_SD = 3.0, 1.0   # anchors CRT floor / CAN's own
+                                             # already-tested "coarse" (3 J
+                                             # values) condition
+_RES_CEIL_MEAN, _RES_CEIL_SD = 7.5, 2.0     # anchors Miller(1956)/Preston &
+                                             # Colman(2000)'s convergent
+                                             # optimum (7), reaching toward
+                                             # the deliberately-past-ceiling
+                                             # 9-12 band
+_RES_CEIL_WEIGHT = 0.35                     # inside Frederick's 17% (combined
+                                             # sample perfect-score rate) and
+                                             # Stieger & Reips' ~33%
+                                             # (educated/exposed subgroup
+                                             # perfect-score rate) bracket
+_RES_LO, _RES_HI = 2, 12                    # research doc sec8 point1's full
+                                             # registered crossover-test range
+
+
+def _draw_resolution_bins(rng):
+    """One resident's trait-level causal-belief resolution (bin COUNT,
+    integer -- the in-frame stored datum). The draw is a two-component
+    mixture in continuous space (the cross-frame generative map); rounding
+    and clamping is the map back onto the in-frame integer lattice."""
+    if rng.random() < _RES_CEIL_WEIGHT:
+        z = rng.normal(_RES_CEIL_MEAN, _RES_CEIL_SD)
+    else:
+        z = rng.normal(_RES_FLOOR_MEAN, _RES_FLOOR_SD)
+    return int(min(_RES_HI, max(_RES_LO, round(z))))
+
 # key roles keep their canonical register identity (coherence with the drama/econ).
 _ANCHOR_NAMES = {"mayor": "John", "pastor": "Mary",
                  "baker": "Marjorie Dough", "fishmonger": "Doreen Ferrety",
@@ -314,6 +355,14 @@ def generate_cast100(layout, seed=SEED_DEFAULT):
     """100 distinct residents as records. Deterministic in `seed`."""
     rng = np.random.default_rng(seed)
     nrng = np.random.default_rng(seed + 7)     # separate stream for names
+    rrng = np.random.default_rng(seed + 13)    # separate stream for the
+                                                # resolution_bins trait --
+                                                # keeps the existing 12
+                                                # _PARAM_SPEC draws (and
+                                                # every downstream resident's
+                                                # values) byte-unchanged on
+                                                # regeneration, same isolation
+                                                # discipline as nrng above
 
     # reserve anchor names; fill the rest from the generated pool
     reserved = set(_ANCHOR_NAMES.values())
@@ -348,6 +397,11 @@ def generate_cast100(layout, seed=SEED_DEFAULT):
             # drawn personality/emotion params
             params = {k: _draw_clip(rng, m, s, lo, hi)
                       for k, (m, s, lo, hi) in _PARAM_SPEC.items()}
+            # trait-level causal-belief resolution (bin count) -- a 13th,
+            # MIXTURE-drawn param, drawn from its OWN rng stream (rrng, like
+            # nrng for names above) so every existing param's value is
+            # byte-unchanged on regeneration.
+            params["resolution_bins"] = _draw_resolution_bins(rrng)
             # workplace cell
             if wkind == "farm":
                 work = farms[farm_cursor % len(farms)]
