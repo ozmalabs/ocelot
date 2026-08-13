@@ -153,15 +153,30 @@ def detect_insight(
 def consolidate_insight(substrate, mt, eta: float = INSIGHT_CONSOLIDATION_ETA) -> int:
     """Elevated Hebbian update on the newly-discovered basin.
 
-    Reads each Concept's current state (which `mt_relax_to_marginal`
-    just wrote) and strengthens couplings between co-active nodes. The
-    new basin becomes structurally deeper, so subsequent perturbations
-    don't undo the insight.
+    Reads each Concept's current state (which `mt_relax_to_marginal` /
+    the native scoped fixpoint just wrote) and strengthens couplings
+    between co-active nodes. The new basin becomes structurally deeper,
+    so subsequent perturbations don't undo the insight.
 
     Skips frozen Mts — their basins are foundational and not subject to
-    Hebbian reinforcement. Returns the number of edges consolidated."""
+    Hebbian reinforcement. Returns the number of edges consolidated
+    (continuous) or the scoped fixpoint's progressing step count
+    (native).
+
+    Native branch (CAN_MT_SCOPED_RULES_RESULTS.md): STAYS BLOCKED per
+    `CAN_FINAL_MIGRATION_RESULTS.md`'s own root-cause finding is now
+    RESOLVED — `run_rules_scoped(mt)` lets `can_native_hebbian_mint`/
+    `_reweight` fire for THIS Mt only, isolated from every other
+    Microtheory in the graph (the exact hazard that blocked this
+    function before). The native mechanism has no continuous `eta` knob
+    (mint/reweight are threshold/counter-based); the native return value
+    is the scoped fixpoint's own progressing-step count, a genuine
+    simplification reported honestly rather than eta-scaled."""
     # Local import to avoid circular dependency at module load.
-    from domains.self_improvement_loop import mt_allows
+    from domains.self_improvement_loop import _is_native, mt_allows
+    if _is_native(substrate, mt):
+        from domains.can_native_orchestration import scoped_settle
+        return scoped_settle(substrate, mt)
     if not mt_allows(substrate, mt, "allow_Hebbian_J"):
         return 0
     return substrate.mt_hebbian_update_J(mt, eta)

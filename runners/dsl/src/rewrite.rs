@@ -2227,6 +2227,168 @@ pub fn run_rules_opts(
     steps
 }
 
+// --- per-Mt SCOPED fixpoint runner (CAN_MT_SCOPED_RULES_PREREG/RESULTS.md) -
+//
+// ADDITIVE ONLY. Nothing above this point in the file is touched by this
+// section, and nothing below it (`batch_apply_rule` and everything after)
+// is touched either. `run_rules`/`run_rules_opts` above remain byte-for-byte
+// what every existing caller has always seen.
+
+/// The set of nodes considered "owned" by a Microtheory for the purposes of
+/// `run_rules_opts_scoped`'s per-Mt binding filter: `mt` itself, plus every
+/// node one `has_concept` hop away. This is literally
+/// `can_ops.rs::mt_concepts`'s own membership definition
+/// (`g.neighbours(mt_id, Some(has_concept))`) — reused, not reinvented, per
+/// the task's own directive. `mt` itself is included so a binding that only
+/// references the Mt node (no concept var) still counts as in-scope.
+pub fn mt_owned_nodes(
+    graph: &TypedGraph,
+    mt: NodeID,
+    has_concept: Sym,
+) -> rustc_hash::FxHashSet<NodeID> {
+    let mut out: rustc_hash::FxHashSet<NodeID> = Default::default();
+    out.insert(mt);
+    for c in graph.neighbours(mt, Some(has_concept)) {
+        out.insert(c);
+    }
+    out
+}
+
+/// A binding "touches" the scope iff AT LEAST ONE of its bound NodeIDs is a
+/// member of `owned`. POST-match filter (see PREREG §1 for the pre- vs.
+/// post-match decision and its justification) — safe regardless of which
+/// pattern variable carries the Mt reference, at the cost of not pruning
+/// the match search itself. Every real CAN rule today binds a single `mt`
+/// var consistently across the whole pattern, so in practice this reduces
+/// to an exact `binding["mt"] == target` check; the more general "touches
+/// ANY" form is a documented, deliberate generalisation, not an untested
+/// guess (see PREREG §1's named limitation: "touches ANY", not "touches
+/// ONLY" — a hypothetical cross-Mt-spanning pattern would fire when scoped
+/// to either Mt; no rule in either CAN seed does this today).
+fn binding_touches_scope(binding: &Binding, owned: &rustc_hash::FxHashSet<NodeID>) -> bool {
+    binding.values().any(|nid| owned.contains(nid))
+}
+
+/// SCOPED twin of `run_rules_opts`. Reached ONLY via
+/// `Substrate::run_rules_scoped(..., Some(mt))` — that method's `None` arm
+/// calls the EXISTING, UNCHANGED `run_rules_opts` directly (never this
+/// function), so this code cannot alter behaviour for any pre-existing
+/// caller by construction, not merely by intent.
+///
+/// Deliberately reimplements (rather than calls) the cold-path and
+/// batch-path binding collection: `batch_apply_rule`'s type-driver / rayon
+/// fast paths apply their bindings immediately with no seam to insert a
+/// scope filter between collection and application, so this function
+/// always full-matches via `match_rule_each`, then filters the resulting
+/// binding SET with `binding_touches_scope` before applying. This is an
+/// unoptimised, opt-in code path: no incremental cursor reuse (that
+/// machinery lives in `Substrate::attempt_one_rule` and is keyed on
+/// per-rule state with no per-Mt dimension — retrofitting one is out of
+/// scope for this rung, see PREREG §0's blast-radius framing), no JIT
+/// where-clause, no rayon parallel collection. Correct, not fast — the
+/// right tradeoff for a handful of per-Mt CAN consumer call sites, not a
+/// scheduler-level feature.
+pub fn run_rules_opts_scoped(
+    rules: &[&RewriteRule],
+    arena: &mut TermArena,
+    graph: &mut TypedGraph,
+    interner: &mut Interner,
+    mut concepts: Option<&mut ConceptResolver>,
+    framebuffers: Option<&crate::framebuffer::FbRegistry>,
+    mut cache: Option<&mut crate::term::EvalCache>,
+    max_steps: usize,
+    detect_cycles: bool,
+    owned: &rustc_hash::FxHashSet<NodeID>,
+) -> usize {
+    let mut seen: Option<rustc_hash::FxHashSet<u64>> =
+        if detect_cycles { Some(Default::default()) } else { None };
+    if let Some(s) = seen.as_mut() {
+        s.insert(graph.state_fingerprint());
+    }
+    let mut steps = 0;
+    while steps < max_steps {
+        let mut any_progress = false;
+        for rule in rules.iter().copied() {
+            if rule.batch {
+                // Batch-safe: collect every binding via a full match,
+                // filter to scope, apply each distinct surviving binding
+                // exactly once (dedup by canonical key) — the same
+                // batch-safety semantics `batch_apply_rule` implements,
+                // reproduced here because it needs a filter seam between
+                // collect and apply that the shared function doesn't have.
+                let mut bindings: Vec<Binding> = Vec::new();
+                match_rule_each(
+                    rule, arena, graph, interner,
+                    concepts.as_deref(), framebuffers, cache.as_deref_mut(), None,
+                    |b| { bindings.push(b.clone()); true },
+                );
+                bindings.retain(|b| binding_touches_scope(b, owned));
+                let mut seen_b: rustc_hash::FxHashSet<smallvec::SmallVec<[(Sym, NodeID); 8]>> =
+                    Default::default();
+                let mut progressed_any = false;
+                for b in bindings {
+                    let mut canon: smallvec::SmallVec<[(Sym, NodeID); 8]> =
+                        b.iter().map(|(s, n)| (*s, *n)).collect();
+                    canon.sort_by_key(|(s, _)| *s);
+                    if !seen_b.insert(canon) {
+                        continue;
+                    }
+                    let outcome = apply_rule_full(
+                        rule, &b, arena, graph, interner,
+                        concepts.as_deref_mut(), framebuffers, None, false,
+                    );
+                    if outcome.progressed {
+                        progressed_any = true;
+                    }
+                }
+                if progressed_any {
+                    steps += 1;
+                    any_progress = true;
+                }
+                continue;
+            }
+            // Cold path: full match, filter to scope, apply the first
+            // scoped binding that actually progresses (probe + undo on
+            // no-op bindings), same semantics as `run_rules_opts`'s own
+            // cold path, scoped.
+            let mut bindings: Vec<Binding> = Vec::new();
+            match_rule_each(
+                rule, arena, graph, interner,
+                concepts.as_deref(), framebuffers, cache.as_deref_mut(), None,
+                |b| { bindings.push(b.clone()); true },
+            );
+            bindings.retain(|b| binding_touches_scope(b, owned));
+            let mut found_progressing = false;
+            for b in bindings {
+                let outcome = apply_rule_full(
+                    rule, &b, arena, graph, interner,
+                    concepts.as_deref_mut(), framebuffers, cache.as_deref_mut(), true,
+                );
+                if outcome.progressed {
+                    found_progressing = true;
+                    break;
+                } else {
+                    undo_apply(outcome.undo, graph);
+                }
+            }
+            if found_progressing {
+                steps += 1;
+                any_progress = true;
+                break;
+            }
+        }
+        if !any_progress {
+            return steps;
+        }
+        if let Some(s) = seen.as_mut() {
+            if !s.insert(graph.state_fingerprint()) {
+                return steps;
+            }
+        }
+    }
+    steps
+}
+
 /// Apply EVERY currently-matching binding of one batch-safe rule in a
 /// single pass, with `record_undo = false` — no clone, no undo vec, no
 /// per-binding probe-then-rollback. Returns whether any binding was

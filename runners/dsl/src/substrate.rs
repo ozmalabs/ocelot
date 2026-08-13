@@ -4325,6 +4325,71 @@ impl Substrate {
         steps
     }
 
+    /// PER-MT SCOPED fixpoint (CAN_MT_SCOPED_RULES_PREREG/RESULTS.md).
+    /// **ADDITIVE ONLY — nothing above this method in the file is touched
+    /// by this rung.**
+    ///
+    /// `scope_mt = None` calls the EXISTING `run_rules_opts` directly — the
+    /// SAME call `run_rules`/`run_rules_opts` callers have always made, so
+    /// this arm cannot diverge from committed behaviour by construction
+    /// (not merely "should match": it IS the same code path). This is the
+    /// single most important correctness property this method has to hold,
+    /// per the task's own framing, and it holds trivially here because
+    /// there is no new code on this path at all.
+    ///
+    /// `scope_mt = Some(mt)` restricts the fixpoint to bindings that TOUCH
+    /// `mt`'s owned nodes (`mt` itself + every node one `has_concept` hop
+    /// away — `can_ops.rs::mt_concepts`'s own membership definition,
+    /// reused). This calls `rewrite::run_rules_opts_scoped`, a SEPARATE,
+    /// freshly-written loop that does NOT reuse `attempt_one_rule`'s
+    /// incremental-cursor / predicate-retraction / projection-cold-path
+    /// machinery (see PREREG §0 for why: that machinery is keyed on
+    /// per-rule state with no per-Mt dimension today, and retrofitting one
+    /// is out of scope for this rung's blast-radius discipline). Every rule
+    /// is fully re-matched every pass — slower than the incremental engine,
+    /// but correct, and it shares zero mutable state with the existing
+    /// dirty-bit scheduler, so it cannot desynchronise it either.
+    ///
+    /// Active rules only (tombstoned rules are excluded, matching
+    /// `run_rules_opts_filtered`'s own `self.rules[i].active` guard).
+    /// Rules are CLONED into a local owned Vec before the call — the same
+    /// idiom `attempt_one_rule`'s own cold path already uses
+    /// (`let rule = self.rules[rule_idx].clone();`) to avoid borrowing
+    /// `self.rules` across the mutable borrows of `self.graph`/`self.terms`/
+    /// etc. the scoped runner also needs.
+    pub fn run_rules_scoped(
+        &mut self,
+        max_steps: usize,
+        detect_cycles: bool,
+        scope_mt: Option<NodeID>,
+    ) -> usize {
+        let mt = match scope_mt {
+            None => return self.run_rules_opts(max_steps, detect_cycles),
+            Some(mt) => mt,
+        };
+        let has_concept = self.interner.intern("has_concept");
+        let owned = crate::rewrite::mt_owned_nodes(&self.graph, mt, has_concept);
+        let cloned_rules: Vec<crate::rewrite::RewriteRule> = self
+            .rules
+            .iter()
+            .filter(|r| r.active)
+            .cloned()
+            .collect();
+        let rule_refs: Vec<&crate::rewrite::RewriteRule> = cloned_rules.iter().collect();
+        crate::rewrite::run_rules_opts_scoped(
+            &rule_refs,
+            &mut self.terms,
+            &mut self.graph,
+            &mut self.interner,
+            Some(&mut self.concepts),
+            Some(&self.framebuffers),
+            Some(&mut self.eval_cache),
+            max_steps,
+            detect_cycles,
+            &owned,
+        )
+    }
+
     // --- native EYE: segmentation + cross-frame identity tracking ------
     //
     // Factored out of the old `py.rs::segment` PyO3 method body (byte-

@@ -3387,6 +3387,33 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         })
     }
 
+    /// PER-MT SCOPED fixpoint (CAN_MT_SCOPED_RULES_PREREG/RESULTS.md).
+    /// ADDITIVE — `run_rules`/`run_rules_settle` above are unchanged.
+    /// `scope_mt=None` (the default) is byte-for-byte `run_rules`: the
+    /// underlying `Substrate::run_rules_scoped` calls the existing
+    /// `run_rules_opts` directly on this arm, not a re-implementation.
+    /// `scope_mt=Some(mt)` restricts the fixpoint to bindings that touch
+    /// `mt`'s owned nodes (`mt` itself + its `has_concept` neighbours),
+    /// so a caller can safely drive one Microtheory's native CAN rules
+    /// (e.g. `can_native_update_3state`, `can_native_hebbian_mint`)
+    /// without mutating an unrelated Microtheory's state as a side effect.
+    #[pyo3(signature = (max_steps=100_000, detect_cycles=false, scope_mt=None))]
+    fn run_rules_scoped(
+        &mut self,
+        py: Python<'_>,
+        max_steps: usize,
+        detect_cycles: bool,
+        scope_mt: Option<PyRef<'_, PyNodeID>>,
+    ) -> usize {
+        crate::scale_audit::ffi(1, 0);
+        crate::scale_audit::begin_epoch();
+        let scope_node = scope_mt.as_ref().map(|r| r.to_node());
+        py.allow_threads(|| {
+            let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+            guard.run_rules_scoped(max_steps, detect_cycles, scope_node)
+        })
+    }
+
     /// PER-AREA ASYNC SETTLEMENT (block 186000). **DEFAULT OFF and built
     /// ALONGSIDE the global fixpoint** — `run_rules` above is unchanged and
     /// remains both the default and the correctness oracle. Nothing in the

@@ -85,7 +85,7 @@ def propagate_insight(
         name_insight,
         record_insight,
     )
-    from domains.self_improvement_loop import _stash_post_state
+    from domains.self_improvement_loop import _audit_basin, _stash_post_state, relax
 
     flipped_node_ids = {
         int(f["node"]) for f in insight_event.get("flipped_nodes", [])
@@ -105,8 +105,16 @@ def propagate_insight(
         # Relax with the now-updated shared Concept σ. The Concepts'
         # state attrs were already written by source_mt's relax —
         # this Mt's relax now incorporates them.
-        substrate.mt_relax_to_marginal(other_mt)
-        new_audit = substrate.mt_audit_basin(other_mt)
+        #
+        # Native branch (CAN_MT_SCOPED_RULES_RESULTS.md): STAYS BLOCKED
+        # per CAN_FINAL_MIGRATION_RESULTS.md is now RESOLVED the same way
+        # as consolidate_insight -- `relax`/`_audit_basin` (both already
+        # discrete_mode-gated in self_improvement_loop.py) call
+        # `run_rules_scoped(other_mt)` / read `state` directly, isolated
+        # to `other_mt` only, never touching `source_mt` or any other
+        # Microtheory sharing this tick.
+        relax(substrate, other_mt)
+        new_audit = _audit_basin(substrate, other_mt)
 
         # ΔF for this Mt via the substrate's Term-tree evaluator.
         delta_f = None
@@ -128,8 +136,8 @@ def propagate_insight(
             # Consolidate, name, record.
             consolidation = consolidate_insight(substrate, other_mt)
             if consolidation:
-                substrate.mt_relax_to_marginal(other_mt)
-                new_audit = substrate.mt_audit_basin(other_mt)
+                relax(substrate, other_mt)
+                new_audit = _audit_basin(substrate, other_mt)
             cascade_event["consolidation_edges"] = consolidation
             name_lookup = build_name_lookup(substrate, other_mt)
             cascade_event["names"] = name_insight(cascade_event, name_lookup)

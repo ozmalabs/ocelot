@@ -60,11 +60,44 @@ def mt_allows(substrate, mt, axis: str) -> bool:
 # Per-Mt mutation: respects policy.
 # ----------------------------------------------------------------------
 
+def _is_native(substrate, mt) -> bool:
+    """Gate condition reused by every gated operation below — the SAME
+    `discrete_mode` check `insight_seeking.py::seek_insights` already uses
+    (CAN_FINAL_MIGRATION_RESULTS.md Sec2.2)."""
+    return substrate.node(mt)["attrs"].get("discrete_mode") in ("2state", "3state")
+
+
+def _audit_basin(substrate, mt) -> dict[str, Any]:
+    """Gated basin audit — native branch reads `state` directly (pure,
+    no relax call) via `can_native_orchestration.native_audit_basin`;
+    continuous branch is the unmodified `substrate.mt_audit_basin` call.
+    See `relax`'s own docstring for why this composes correctly with the
+    "one shared fixpoint" native architecture."""
+    if _is_native(substrate, mt):
+        from domains.can_native_orchestration import native_audit_basin
+        return native_audit_basin(substrate, mt)
+    return substrate.mt_audit_basin(mt)
+
+
 def maybe_hebbian(substrate, mt, eta: float = 0.01) -> int:
     """Apply Hebbian J update iff Mt's policy allows OR a transient
     plasticity_override is in effect (set by correction_raise_plasticity
     in response to a detected frozen_should_adapt event). Returns
-    edges updated."""
+    edges updated (continuous) or the scoped fixpoint's own progressing
+    step count (native — see the native branch's own docstring note below).
+
+    Native branch (CAN_MT_SCOPED_RULES_RESULTS.md): calls
+    `run_rules_scoped(mt)` via `can_native_orchestration.scoped_settle`,
+    isolated to THIS Mt. `can_native_hebbian_mint`/`_reweight` already carry
+    their OWN `mt_allows`-equivalent policy gate + `plasticity_override`
+    check inside the rule's `where`-clause (CAN_HEBBIAN_MATERIALIZATION_
+    RESULTS.md, confirmed by direct read) — this function does not
+    duplicate that gate for the native path; `eta` has no native analog
+    (mint/reweight are threshold/counter-based, not eta-scaled) and is
+    silently unused there, a genuine simplification, not an oversight."""
+    if _is_native(substrate, mt):
+        from domains.can_native_orchestration import scoped_settle
+        return scoped_settle(substrate, mt)
     if mt_allows(substrate, mt, "allow_Hebbian_J"):
         return substrate.mt_hebbian_update_J(mt, eta)
     # Plasticity override path — frozen Mt being temporarily allowed
@@ -78,14 +111,41 @@ def maybe_hebbian(substrate, mt, eta: float = 0.01) -> int:
 
 
 def maybe_decay_J(substrate, mt, decay_rate: float = 0.001) -> int:
-    """Apply J decay iff Mt's policy allows."""
+    """Apply J decay iff Mt's policy allows.
+
+    Native branch (CAN_MT_SCOPED_RULES_RESULTS.md): `can_decay_identity.
+    json`'s `can_native_evidence_decay` decays the Hebbian
+    `evidence_confirm`/`evidence_disconfirm` COUNTERS on each pair's
+    Coactivation ledger, not a `causal_influence` edge weight directly —
+    native CAN has no graded J to decay (edges are discrete mint/no-mint).
+    This is the closest real native analog ("evidence loses weight over
+    time unless reinforced", the SAME role `can_ops.rs:829-834`'s own
+    docstring gives continuous h-decay), reported honestly as a
+    re-targeted quantity, not claimed equivalent. `decay_rate` has no
+    native analog (the native decay is a fixed 1-quantum linear
+    decrement, CAN_DECAY_IDENTITY_RESULTS.md Sec1) and is silently unused
+    on this branch."""
+    if _is_native(substrate, mt):
+        from domains.can_native_orchestration import scoped_settle
+        return scoped_settle(substrate, mt)
     if not mt_allows(substrate, mt, "allow_Hebbian_J"):
         return 0
     return substrate.mt_decay_J(mt, decay_rate)
 
 
 def maybe_decay_h(substrate, mt, decay_rate: float = 0.0001) -> int:
-    """Apply h decay iff Mt's policy allows h drift."""
+    """Apply h decay iff Mt's policy allows h drift.
+
+    STAYS BLOCKED for native Mts (CAN_MT_SCOPED_RULES_RESULTS.md) — this is
+    NOT the run_rules()-orchestration hazard scoping fixes; it is a genuine
+    semantic gap, confirmed by direct read of both native CAN seeds
+    (`can_native_reimplementation.json`, `can_decay_identity.json`): no
+    rule anywhere decays `external_field`. `can_native_evidence_decay`
+    targets Hebbian evidence counters (wired to `maybe_decay_J` above,
+    reported as a re-targeted quantity); the identity-evidence rules
+    target `identity_evidence_confirm`/`_disconfirm`, a different ledger
+    again. There is no native quantity that plays h's role. Continuous
+    path is unconditional and unchanged."""
     if not mt_allows(substrate, mt, "allow_h_drift"):
         return 0
     return substrate.mt_decay_h(mt, decay_rate)
@@ -93,7 +153,27 @@ def maybe_decay_h(substrate, mt, decay_rate: float = 0.0001) -> int:
 
 def relax(substrate, mt) -> int:
     """Always-allowed: relax network to equilibrium under Mt's H.
-    Reading equilibrium isn't policy-gated; only J/h mutations are."""
+    Reading equilibrium isn't policy-gated; only J/h mutations are.
+
+    Native branch (CAN_MT_SCOPED_RULES_RESULTS.md): a discrete_mode Mt
+    settles via its OWN scoped rule fixpoint (`can_native_update_3state`/
+    `_2state`), isolated from every other Mt by `run_rules_scoped` — the
+    orchestration hazard `CAN_FINAL_MIGRATION_RESULTS.md` Sec0 confirmed
+    live is exactly why this was never wired before this rung. Continuous
+    branch (`mt_relax_to_marginal`) is byte-unchanged.
+
+    MEASURED, NOT ASSUMED (see RESULTS doc): because `run_rules_scoped`
+    always runs its Mt's rules to a FULL fixpoint (every gated-open native
+    rule, not just the discrete update), a native Mt's `relax()` call this
+    tick can ALSO advance Hebbian mint/reweight and evidence decay in the
+    same call — the later `maybe_hebbian`/`maybe_decay_J` calls this
+    module makes are then idempotent no-ops (0 steps) for the same
+    `can_tick` unless something changes between calls. This is a real
+    architectural difference from the continuous path (four separate
+    formula calls) and is reported, not smoothed over."""
+    if _is_native(substrate, mt):
+        from domains.can_native_orchestration import scoped_settle
+        return scoped_settle(substrate, mt)
     return substrate.mt_relax_to_marginal(mt)
 
 
@@ -158,7 +238,18 @@ def _stash_post_state(substrate, mt, post_audit) -> None:
     substrate.set_attr(mt, "previous_previous_frustration", f_prev)
     substrate.set_attr(mt, "previous_frustration", f_current)
     # Distance-to-target magnitude — drives frozen_should_adapt detection.
-    distance = substrate.mt_distance_to_target(mt)
+    # Native branch (CAN_MT_SCOPED_RULES_RESULTS.md): reads `state`
+    # directly instead of relaxing (mt_distance_to_target's continuous
+    # path calls mt_mean_field_marginal internally) — the small,
+    # representation-agnostic composition CAN_FINAL_MIGRATION_RESULTS.md
+    # Sec0 named as buildable and did not build, now safe because
+    # `native_distance_to_target` never calls run_rules() at all (it is a
+    # pure read of already-settled state).
+    if _is_native(substrate, mt):
+        from domains.can_native_orchestration import native_distance_to_target
+        distance = native_distance_to_target(substrate, mt)
+    else:
+        distance = substrate.mt_distance_to_target(mt)
     substrate.set_attr(mt, "distance_to_target_magnitude",
                        float(distance["magnitude"]))
     # Coverage — drives sparse_Mt detection.
@@ -182,7 +273,21 @@ def maybe_update_identity(
 ) -> int:
     """Slow identity dynamics: h_id ← h_id + α·σ - β·h_id per Concept.
     Skips frozen Mts. Adaptive: identity emerges from sustained σ;
-    flips average to zero → identity decays."""
+    flips average to zero → identity decays.
+
+    STAYS BLOCKED for native Mts (CAN_MT_SCOPED_RULES_RESULTS.md,
+    investigating the task's point 4). This is NOT the orchestration
+    hazard scoping fixes — it is the SEPARATE, still-unbuilt
+    identity-feedback gap `CAN_DECAY_IDENTITY_RESULTS.md` Sec2 named:
+    `can_native_identity_evidence_sample`/`_decay` maintain a graded
+    READING (evidence counters + an on-demand log-odds render, never
+    written back), but no native rule anywhere WRITES `identity_field`
+    from that reading — confirmed again by direct read of both seeds
+    for this rung. `identity_field` is READ by
+    `can_native_update_3state`'s own local-field sum but never SET by any
+    rule. Continuous path is unconditional and unchanged; wiring the
+    native path here would require building the feedback half itself,
+    explicitly out of this rung's scope per the task."""
     if not mt_allows(substrate, mt, "allow_h_drift"):
         return 0
     return substrate.mt_update_identity_dynamics(mt, alpha, beta)
@@ -196,7 +301,16 @@ def nudge_identity_on_flipped(
     flipped node toward the new σ. Recurrence boosts α — substrate
     'recognises' returning to the same basin and commits more.
 
-    Skips frozen Mts. Returns count of nudges applied."""
+    Skips frozen Mts. Returns count of nudges applied.
+
+    STAYS BLOCKED for native Mts, same reason as `maybe_update_identity`
+    above: `concept_nudge_identity` writes `identity_field` directly, and
+    the native identity-feedback half (writing FROM the evidence ledger
+    INTO `identity_field`) is the same confirmed-unbuilt gap — a
+    Python-level nudge would still work mechanically (it's a direct
+    `set_attr`-style write, not a relax/decay call), but wiring it
+    correctly needs a design decision about how it interacts with the
+    unbuilt feedback path, which is out of this rung's scope."""
     if not mt_allows(substrate, mt, "allow_h_drift"):
         return 0
     if not insight or "flipped_nodes" not in insight:
@@ -263,7 +377,7 @@ def self_improvement_step(
         prev_frust, prev_state = read_previous_state(substrate, mt)
 
         relax(substrate, mt)
-        pre = substrate.mt_audit_basin(mt)
+        pre = _audit_basin(substrate, mt)
 
         # Detect insight from previous step's frustration vs current.
         # ΔF computed via substrate's native evaluator on a Term-tree
@@ -283,7 +397,7 @@ def self_improvement_step(
                 consolidation_edges = consolidate_insight(substrate, mt)
                 if consolidation_edges:
                     relax(substrate, mt)
-                    pre = substrate.mt_audit_basin(mt)
+                    pre = _audit_basin(substrate, mt)
                 # Name + record the insight as a graph node so the
                 # substrate accumulates a queryable history of its own
                 # realisations.
@@ -329,7 +443,7 @@ def self_improvement_step(
 
         if edges_hebbian or edges_decayed or fields_decayed or identity_updated:
             relax(substrate, mt)
-        post = substrate.mt_audit_basin(mt)
+        post = _audit_basin(substrate, mt)
 
         # Anticipation reflex: order-2-time of F suggests an insight
         # is brewing even though we haven't crossed the detection
