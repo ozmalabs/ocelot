@@ -3474,6 +3474,16 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         json_to_pyobj(py, &serde_json::json!(rows))
     }
 
+    // --- GAMMA_COLLAPSE_ALGORITHM spike ---
+
+    /// **DEFAULT OFF.** Capture Type-1 `Γ` rejections as graph-resident
+    /// `GammaResidual` nodes instead of discarding the rejected triple (see
+    /// `Substrate::gamma_residual_capture`). Off ⇒ `add_edge`'s
+    /// `Type1NoProduction` arm is byte-unchanged.
+    fn set_gamma_residual_capture(&mut self, on: bool) {
+        self.inner.lock().expect("substrate mutex poisoned").set_gamma_residual_capture(on);
+    }
+
     // --- DIRTY-PROPAGATION PRECISION (block 187000) ---
 
     /// **DEFAULT OFF.** Turn on the key-precise + value-level external dirty
