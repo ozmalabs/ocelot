@@ -75,6 +75,41 @@ def test_boot_backfills_declared_seed_capkeys(agent):
     assert len(names) == len(set(names)), "CapKey nodes must be interned by name"
 
 
+def test_wire_self_extension_is_genuinely_idempotent():
+    """SHAPE_AUDIT.md §4.6 fix: wire_self_extension() used to call
+    load_seed_manifest with no marker check at all -- load_seed_manifest
+    mints every manifest rule via an unconditional add_rule (no per-rule
+    dedup), so a second call on the same agent minted a SECOND copy of all
+    11 self_extension.json rules. This is the genuine double-call proof
+    the pre-existing suite never ran (its one call site,
+    test_compose_join_sees_keys_from_outside_self_extension, comments
+    "(idempotent)" but only ever calls it once). A FRESH, MINIMAL agent
+    (core seeds only, no load_all_seeds) -- a fully-booted agent already
+    carries a SeedSummary{seed_id:"self_extension"} marker from the
+    standard boot path, so the guard correctly no-ops on the very first
+    call there; this test needs an agent where self_extension is
+    genuinely absent going in, matching test_reconcile_capkeys_is_
+    idempotent_on_a_minimal_agent's "checkpoint-shaped agent" precedent."""
+    a = WorldAdapter()
+
+    def rule_names():
+        return sorted(r["name"] for r in a.inner.export_rules())
+
+    a.wire_self_extension()
+    seed_markers_1 = [n for n in a.s.nodes("Seed")
+                       if a.s.node(n)["attrs"].get("id") == "self_extension"]
+    rules_1 = rule_names()
+    assert len(seed_markers_1) == 1, "exactly one Seed{id:self_extension} marker after the first call"
+    assert "compose_from_held_primitives" in rules_1
+
+    a.wire_self_extension()          # second call -- must be a no-op
+    seed_markers_2 = [n for n in a.s.nodes("Seed")
+                       if a.s.node(n)["attrs"].get("id") == "self_extension"]
+    rules_2 = rule_names()
+    assert len(seed_markers_2) == 1, "a second call must not mint a second Seed marker"
+    assert rules_2 == rules_1, "a second call must not mint duplicate self_extension rules"
+
+
 def test_compose_join_sees_keys_from_outside_self_extension(agent):
     """The spec's gate: a needs_tool impasse whose axis requires a key one of
     the SESSION seeds provides composes from that provider — the join works on
