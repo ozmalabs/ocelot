@@ -1,0 +1,1995 @@
+{
+ "id": "argument_role_vocabulary",
+ "version": "1.0.0",
+ "depends_on": [
+  "relation_vocabulary"
+ ],
+ "description": "ARGUMENT_ROLE_VOCABULARY_PREREG.md / _RESULTS.md: promotes the uppercase role placeholders inside RelationCue.relation (\"[\\\"reduce\\\",\\\"UNCERTAINTY\\\",\\\"given\\\",\\\"PRIOR\\\"]\") to a first-class, held ArgumentRole{name, gloss} node type -- the direct structural analogue of FunctionalRole (seeds/shape_vocabulary.json) one level down: FunctionalRole names system FUNCTIONS, ArgumentRole names argument SLOTS. RelationCue.relation itself is UNCHANGED (every downstream consumer -- _load_relation_cues, _relation_cue_index, _shared_shape, Rust shape_fit -- keeps reading the bare string, byte-identical); each RelationCue additionally carries real uses_role edges to the ArgumentRole(s) its relation tuple's uppercase tokens name, wired here STATICALLY from RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own human-verified \u00a73 classification (18 shared-intentional + 2 ambiguous + the 2 renamed-pair tokens + 2 fresh renamed-pair tokens + every unique-to-one-cue token, 65 ArgumentRoles total for the 52 RelationCues' full uppercase-token census). Two occurrences (attention_watch's NEW, source_recognition's CONTENT -- the vocabulary's own two AMBIGUOUS, never-confidently-classified tokens) are deliberately left UNWIRED here and wired instead by replaying them live through the mint-time guard below, as the real (not synthetic) disambiguation-needed demonstration. The MINT-TIME GUARD (RoleUseCheck productions + 3 rules) is the sd-loop-shaped recognize/mint/flag triad for any NEW RelationCue authored at runtime (domains/reflective_faculty.py::ground_predicate's teach() cue-minting path, or any future hand-authored teach(agent,'RelationCue',...) call): role_recognize_exact fires when the new cue's relation tuple is BYTE-IDENTICAL to an already-wired existing cue's (a pure keyword-synonym addition -- ground_predicate's own, only, current behaviour -- always safe, wired without friction); role_mint_fresh_token fires when an uppercase token has never been seen before (no ArgumentRole of that name exists yet -- safe by construction, mints a new ArgumentRole and wires it, mirroring seeds/blob_edge_correspondence.json's blob_mint exactly); role_flag_collision fires when the new cue reuses an EXISTING token under a STRUCTURALLY-DIFFERENT relation tuple -- the exact shape of the POSITION/PRIOR accident -- and files a SelfConcern{kind:'argument_role_collision'} instead of silently wiring the edge, mirroring seeds/gap_awareness.json's note_* gap-filing rules. 'add_edge targets must be match-bound vars in this engine' (sd_dedup_existing's own documented constraint, reused here rather than reinvented): role_recognize_exact only sets RoleUseCheck.status -- the ArgumentRole it recognizes is Term-found, not match-bound, so Python (check_new_relation_cue_roles, reflective_faculty.py, mirroring _resolve_blob_edge's exact pattern) re-resolves it by name and wires the uses_role edge AFTER run_rules(), executing the rule's own decision, never making one.",
+ "microtheory": {
+  "name": "argument_role_vocabulary",
+  "description": "argument-role placeholders as a first-class, held, deduped vocabulary; a cue reusing a role token is recognized (identical relation, safe), minted (brand-new token, safe), or flagged (existing token, new structural context -- needs disambiguation) at authoring time, never silently merged."
+ },
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "ACTING",
+    "gloss": "the agent's own acting/behaviour rule being varied (structural_edit_variant, vary_acting_gradient)"
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "AFFORDANCE",
+    "gloss": "role token in relevance_match's relation ['match', 'AFFORDANCE', 'to', 'GOAL'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); relevance_match's own keywords: match, matches, matching"
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "ALLOGRAPH",
+    "gloss": "role token in allograph_select's relation ['select', 'ALLOGRAPH', 'of', 'IDENTITY'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); allograph_select's own keywords: allograph, case, style variant"
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "ARGMAX",
+    "gloss": "role token in expected_utility_decision's relation ['utility', 'ARGMAX', 'over', 'CANDIDATE'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); expected_utility_decision's own keywords: expected utility, best utility, utility"
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "AUDIENCE",
+    "gloss": "the party being communicated to -- tightly coupled with UTTERANCE (audience_produce, communicate_action)"
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "BY",
+    "gloss": "role token in move_toward's relation ['advance', 'BY', 'TURN'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); move_toward's own keywords: move, direction, adjust"
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "CANDIDATE",
+    "gloss": "an option under consideration -- the generic decision-candidate role (expected_utility_decision, self_correct_action)"
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "CAPABILITY",
+    "gloss": "role token in distill_into_structure's relation ['distill', 'CAPABILITY', 'into', 'STRUCTURE'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); distill_into_structure's own keywords: distill into structure, distill the capability, earn the structure"
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "COLLAPSE",
+    "gloss": "the agent's own collapse/decision event -- predicted, distrusted, or imagined, but the same event class (collapse_watch, grounding_escalate, imagine_counterfactual)"
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "CONSTRAINT",
+    "gloss": "role token in constrain_target_directive's relation ['constrain', 'CONSTRAINT', 'near', 'TARGET'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); constrain_target_directive's own keywords: constrain, constrained by, near"
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "CONTACT",
+    "gloss": "a detected structural touch between parts; type_invariant is a direct extension (\"the TYPE of a detected CONTACT is invariant\") of detect_contact's same referent"
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "CONTENT",
+    "gloss": "AMBIGUOUS (RELATION_CUE_TOKEN_COLLISION_RESULTS.md \u00a73, left unrenamed): source_recognition and find_target_directive both plausibly mean \"a body of material something is drawn from / searched in\" -- a weak but plausible shared sense, not confidently accidental. source_recognition's own use is deliberately left UNWIRED here (see the mint-time guard live demonstration)."
+   }
+  },
+  {
+   "local_id": 13,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "COORD",
+    "gloss": "a continuous spatial/attentional coordinate (spatial_gradient: \"weight COORD by GRADIENT\"). Renamed from the formerly-colliding POSITION token (RELATION_CUE_TOKEN_COLLISION_RESULTS.md \u00a74) -- now a distinct, non-colliding role."
+   }
+  },
+  {
+   "local_id": 14,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "DELTA",
+    "gloss": "role token in vary_self's relation ['vary', 'SELF', 'by', 'DELTA'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); vary_self's own keywords: vary, variant, modify"
+   }
+  },
+  {
+   "local_id": 15,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "DIRECTIVE",
+    "gloss": "role token in comprehend_directive's relation ['comprehend', 'DIRECTIVE', 'mint', 'GOAL'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); comprehend_directive's own keywords: hear, heard, comprehend"
+   }
+  },
+  {
+   "local_id": 16,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "DIVERGENCE",
+    "gloss": "the gap between predicted and actual collapse -- one predicts it (collapse_watch), the other corrects it (self_correct_action); same referent"
+   }
+  },
+  {
+   "local_id": 17,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "EVIDENCE",
+    "gloss": "a Bayesian prior/evidence distribution (reduce_uncertainty: \"reduce UNCERTAINTY given EVIDENCE\"). Renamed from the formerly-colliding PRIOR token (RELATION_CUE_TOKEN_COLLISION_RESULTS.md \u00a74) -- now a distinct, non-colliding role."
+   }
+  },
+  {
+   "local_id": 18,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "FORM",
+    "gloss": "role token in identity_to_form's relation ['realise', 'IDENTITY', 'as', 'FORM'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); identity_to_form's own keywords: identity to the form, identity to form, abstract to concrete"
+   }
+  },
+  {
+   "local_id": 19,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "FRAME",
+    "gloss": "role token in attention_watch's relation ['watch', 'FRAME', 'when', 'NEW'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); attention_watch's own keywords: watch, observe, look"
+   }
+  },
+  {
+   "local_id": 20,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "GOAL",
+    "gloss": "a Goal node in the standard sense (comprehend_directive, decompose_subgoal, relevance_match)"
+   }
+  },
+  {
+   "local_id": 21,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "GRADIENT",
+    "gloss": "role token in spatial_gradient's relation ['weight', 'COORD', 'by', 'GRADIENT'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); spatial_gradient's own keywords: spatial gradient, attention gradient, attention weight"
+   }
+  },
+  {
+   "local_id": 22,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "GROUP",
+    "gloss": "role token in cross_group_competition's relation ['compete', 'GROUP', 'with', 'GROUP'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); cross_group_competition's own keywords: competition, compete, flanker"
+   }
+  },
+  {
+   "local_id": 23,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "HEADING",
+    "gloss": "role token in accumulate's relation ['accumulate', 'TURN', 'into', 'HEADING'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); accumulate's own keywords: accumulate, integrated, integral"
+   }
+  },
+  {
+   "local_id": 24,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "HYPOTHESIS",
+    "gloss": "role token in hypothesis_test's relation ['test', 'HYPOTHESIS', 'by', 'TRIAL'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); hypothesis_test's own keywords: test, hypothesis, hypotheses"
+   }
+  },
+  {
+   "local_id": 25,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "IDENTITY",
+    "gloss": "the same abstract character identity in the handwriting domain (allograph_select, identity_to_form)"
+   }
+  },
+  {
+   "local_id": 26,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "IMPASSE",
+    "gloss": "role token in imagine_counterfactual's relation ['imagine', 'COLLAPSE', 'from', 'IMPASSE'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); imagine_counterfactual's own keywords: imagine, imagination, counterfactual"
+   }
+  },
+  {
+   "local_id": 27,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "INVARIANT",
+    "gloss": "role token in type_invariant's relation ['type', 'CONTACT', 'is', 'INVARIANT'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); type_invariant's own keywords: type, topolog, invariant property"
+   }
+  },
+  {
+   "local_id": 28,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "ITEM",
+    "gloss": "a generic item / element (bind_to_slot, iterate_each). NOTE (residual, out of scope, see SELF's note above): seeds/composer_faculty_pipeline.json also reuses ITEM (pipeline_classify_stage, pipeline_route_stage) outside the audited census."
+   }
+  },
+  {
+   "local_id": 29,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "LIBRARY",
+    "gloss": "role token in grow_library's relation ['grow', 'LIBRARY', 'with', 'PART'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); grow_library's own keywords: grow the library, extend the library, library of abstractions"
+   }
+  },
+  {
+   "local_id": 30,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "LONGER",
+    "gloss": "role token in gap_select's relation ['select', 'SHORTER', 'over', 'LONGER'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); gap_select's own keywords: minimum description, mdl, compress"
+   }
+  },
+  {
+   "local_id": 31,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "NEW",
+    "gloss": "AMBIGUOUS (RELATION_CUE_TOKEN_COLLISION_RESULTS.md \u00a73, left unrenamed): self_reference/build_from_prior share a sense (\"the newly-computed value in a recurrence\"); attention_watch's NEW (\"a new frame arriving\") is arguably the same generic latest/updated-instance notion, arguably a different one (perceptual-event novelty vs. recurrence-state identity) -- genuinely unclear, not confidently disambiguated. attention_watch's own use is deliberately left UNWIRED here (see the mint-time guard live demonstration)."
+   }
+  },
+  {
+   "local_id": 32,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "OTHER",
+    "gloss": "role token in system_model's relation ['regard', 'OTHER', 'SYSTEM'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); system_model's own keywords: regard, regard other, model another"
+   }
+  },
+  {
+   "local_id": 33,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "OVER",
+    "gloss": "role token in iterate_each's relation ['iterate', 'OVER', 'each', 'ITEM'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); iterate_each's own keywords: for_each, for each, each"
+   }
+  },
+  {
+   "local_id": 34,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "PART",
+    "gloss": "a structural piece / sub-unit of a whole -- symmetry pieces, mapped elements, repeated tiles, sequence items, buffered items, library parts (RELATION_CUE_TOKEN_COLLISION_RESULTS.md \u00a73)"
+   }
+  },
+  {
+   "local_id": 35,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "PARTS",
+    "gloss": "the pieces / sub-elements of a perceptual scene (compose_whole_object, detect_contact, pairwise)"
+   }
+  },
+  {
+   "local_id": 36,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "POSITION",
+    "gloss": "a discrete sequence/buffer memory-slot INDEX (position_buffer: \"hold PART at POSITION\"). Formerly collided with spatial_gradient's continuous coordinate sense; that sense was renamed to COORD (RELATION_CUE_TOKEN_COLLISION_RESULTS.md \u00a74)."
+   }
+  },
+  {
+   "local_id": 37,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "PRIOR",
+    "gloss": "a recurrence's previous-timestep value (build_from_prior: \"build NEW from PRIOR\"). Formerly collided with reduce_uncertainty's Bayesian-evidence sense; that sense was renamed to EVIDENCE (RELATION_CUE_TOKEN_COLLISION_RESULTS.md \u00a74)."
+   }
+  },
+  {
+   "local_id": 38,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "RECOGNITION",
+    "gloss": "role token in source_recognition's relation ['source', 'CONTENT', 'from', 'RECOGNITION'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); source_recognition's own keywords: recognition, from recognition, from what i recognise"
+   }
+  },
+  {
+   "local_id": 39,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "REFINEMENT",
+    "gloss": "role token in cost_worth_escalate's relation ['worth', 'REFINEMENT', 'by', 'RESIDUAL_MINUS_COST'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); cost_worth_escalate's own keywords: worth, worth refining, worth the cost"
+   }
+  },
+  {
+   "local_id": 40,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "RESIDUAL_MINUS_COST",
+    "gloss": "role token in cost_worth_escalate's relation ['worth', 'REFINEMENT', 'by', 'RESIDUAL_MINUS_COST'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); cost_worth_escalate's own keywords: worth, worth refining, worth the cost"
+   }
+  },
+  {
+   "local_id": 41,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "RESULT",
+    "gloss": "role token in judge_outcome's relation ['judge', 'TRIAL', 'by', 'RESULT'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); judge_outcome's own keywords: judge, verdict, outcome"
+   }
+  },
+  {
+   "local_id": 42,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "RULE",
+    "gloss": "role token in embed_variant's relation ['embed', 'VARIANT', 'as', 'RULE'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); embed_variant's own keywords: embed, embed the variant, carry the variant"
+   }
+  },
+  {
+   "local_id": 43,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "SELF",
+    "gloss": "the agent's own identity / referent -- the same referent throughout every cue that uses it (adopt_winner, bounded, control_agency, self_reference, vary_self). NOTE (found incidentally while booting the full agent for this rung, NOT chased further -- out of scope per the charter): seeds/variation_ops.json ALSO reuses SELF in two more RelationCue nodes (rule_literal_floor, datum_feedback_signal) outside relation_vocabulary.json's audited census -- named as a residual, not reconciled here."
+   }
+  },
+  {
+   "local_id": 44,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "SHORTER",
+    "gloss": "role token in gap_select's relation ['select', 'SHORTER', 'over', 'LONGER'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); gap_select's own keywords: minimum description, mdl, compress"
+   }
+  },
+  {
+   "local_id": 45,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "SIDE",
+    "gloss": "role token in side_threshold's relation ['drop', 'SIDE', 'below', 'THRESHOLD'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); side_threshold's own keywords: side, one side, lateralized"
+   }
+  },
+  {
+   "local_id": 46,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "SLOT",
+    "gloss": "role token in bind_to_slot's relation ['bind', 'ITEM', 'to', 'SLOT'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); bind_to_slot's own keywords: bind, binding, bind to the slot"
+   }
+  },
+  {
+   "local_id": 47,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "STOP",
+    "gloss": "role token in base_case's relation ['base', 'STOP'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); base_case's own keywords: base case, terminate, termination"
+   }
+  },
+  {
+   "local_id": 48,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "STRUCTURE",
+    "gloss": "role token in distill_into_structure's relation ['distill', 'CAPABILITY', 'into', 'STRUCTURE'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); distill_into_structure's own keywords: distill into structure, distill the capability, earn the structure"
+   }
+  },
+  {
+   "local_id": 49,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "STUDENT",
+    "gloss": "role token in teacher_proposes's relation ['propose', 'TEACHER', 'to', 'STUDENT'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); teacher_proposes's own keywords: the teacher proposes, teacher proposes, recognition prior"
+   }
+  },
+  {
+   "local_id": 50,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "SUBGOAL",
+    "gloss": "role token in decompose_subgoal's relation ['decompose', 'GOAL', 'into', 'SUBGOAL'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); decompose_subgoal's own keywords: subgoal, sub-goal, sub goal"
+   }
+  },
+  {
+   "local_id": 51,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "SYSTEM",
+    "gloss": "role token in system_model's relation ['regard', 'OTHER', 'SYSTEM'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); system_model's own keywords: regard, regard other, model another"
+   }
+  },
+  {
+   "local_id": 52,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "TARGET",
+    "gloss": "the directive's aim -- find + constrain are explicitly paired grounding in reflective_faculty.py's structured-directive composer (constrain_target_directive, find_target_directive)"
+   }
+  },
+  {
+   "local_id": 53,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "TEACHER",
+    "gloss": "role token in teacher_proposes's relation ['propose', 'TEACHER', 'to', 'STUDENT'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); teacher_proposes's own keywords: the teacher proposes, teacher proposes, recognition prior"
+   }
+  },
+  {
+   "local_id": 54,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "THRESHOLD",
+    "gloss": "role token in side_threshold's relation ['drop', 'SIDE', 'below', 'THRESHOLD'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); side_threshold's own keywords: side, one side, lateralized"
+   }
+  },
+  {
+   "local_id": 55,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "TRANSFORM",
+    "gloss": "role token in invariant_under's relation ['invariant', 'PART', 'under', 'TRANSFORM'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); invariant_under's own keywords: invariant, mirror, symmetric"
+   }
+  },
+  {
+   "local_id": 56,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "TRIAL",
+    "gloss": "one trial of a hypothesis -- one tests it (hypothesis_test), the other judges it (judge_outcome); same trial"
+   }
+  },
+  {
+   "local_id": 57,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "TURN",
+    "gloss": "a heading increment -- move_toward produces it, accumulate sums it into a HEADING; same referent"
+   }
+  },
+  {
+   "local_id": 58,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "UNCERTAINTY",
+    "gloss": "role token in reduce_uncertainty's relation ['reduce', 'UNCERTAINTY', 'given', 'EVIDENCE'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); reduce_uncertainty's own keywords: information, uncertainty, entropy"
+   }
+  },
+  {
+   "local_id": 59,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "UNGROUNDED",
+    "gloss": "role token in grounding_escalate's relation ['escalate', 'COLLAPSE', 'when', 'UNGROUNDED'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); grounding_escalate's own keywords: escalate, escalate to active cognition, confident but ungrounded"
+   }
+  },
+  {
+   "local_id": 60,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "UNIT",
+    "gloss": "role token in bounded's relation ['bound', 'SELF', 'by', 'UNIT'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); bounded's own keywords: bound, bounded, unit bound"
+   }
+  },
+  {
+   "local_id": 61,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "UTTERANCE",
+    "gloss": "the utterance produced for an AUDIENCE (communicate_action, audience_produce)"
+   }
+  },
+  {
+   "local_id": 62,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "VARIANT",
+    "gloss": "a self-modification candidate -- a variant of the agent's own rule/behaviour (dispatch_variant, embed_variant, structural_edit_variant, vary_acting_gradient)"
+   }
+  },
+  {
+   "local_id": 63,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "WHOLE",
+    "gloss": "a unified whole object/body -- controlled (control_agency) vs. composed (compose_whole_object)"
+   }
+  },
+  {
+   "local_id": 64,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "WINNER",
+    "gloss": "role token in adopt_winner's relation ['adopt', 'WINNER', 'as', 'SELF'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); adopt_winner's own keywords: adopt, adopt the winner, adopt into myself"
+   }
+  },
+  {
+   "local_id": 65,
+   "type": "ArgumentRole",
+   "attrs": {
+    "name": "WORLD",
+    "gloss": "role token in dispatch_variant's relation ['send', 'VARIANT', 'to', 'WORLD'] -- unique to one cue WITHIN seeds/relation_vocabulary.json's own 52-cue census (this rung's scope, matching RELATION_CUE_TOKEN_COLLISION_RESULTS.md's own audited scope); NOT verified against RelationCue nodes in other seed files (a scoped, named residual -- see ARGUMENT_ROLE_VOCABULARY_RESULTS.md); dispatch_variant's own keywords: send, dispatch, delegate"
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "self_reference"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 31
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "self_reference"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 43
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "build_from_prior"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 31
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "build_from_prior"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 37
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "bounded"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 43
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "bounded"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 60
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "base_case"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 47
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "move_toward"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 6
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "move_toward"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 57
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "accumulate"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 23
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "accumulate"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 57
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "invariant_under"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 34
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "invariant_under"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 55
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "map_part_to_part"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 34
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "repeat"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 34
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "detect_contact"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 11
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "detect_contact"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 35
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "type_invariant"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 11
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "type_invariant"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 27
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "pairwise"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 35
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "reduce_uncertainty"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 17
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "reduce_uncertainty"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 58
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "gap_select"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 30
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "gap_select"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 44
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "sequence_order"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 34
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "position_buffer"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 34
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "position_buffer"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 36
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "identity_to_form"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 18
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "identity_to_form"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 25
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "allograph_select"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 3
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "allograph_select"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 25
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "bind_to_slot"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 28
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "bind_to_slot"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 46
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "cross_group_competition"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 22
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "spatial_gradient"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 13
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "spatial_gradient"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 21
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "side_threshold"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 45
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "side_threshold"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 54
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "teacher_proposes"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 49
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "teacher_proposes"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 53
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "distill_into_structure"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 8
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "distill_into_structure"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 48
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "grow_library"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 29
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "grow_library"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 34
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "communicate_action"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 5
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "communicate_action"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 61
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "iterate_each"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 28
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "iterate_each"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 33
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "decompose_subgoal"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 20
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "decompose_subgoal"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 50
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "source_recognition"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 38
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "comprehend_directive"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 15
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "comprehend_directive"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 20
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "expected_utility_decision"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 4
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "expected_utility_decision"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 7
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "control_agency"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 43
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "control_agency"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 63
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "compose_whole_object"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 35
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "compose_whole_object"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 63
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "hypothesis_test"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 24
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "hypothesis_test"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 56
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "vary_self"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 14
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "vary_self"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 43
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "dispatch_variant"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 62
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "dispatch_variant"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 65
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "judge_outcome"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 41
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "judge_outcome"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 56
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "find_target_directive"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 12
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "find_target_directive"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 52
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "relevance_match"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 2
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "relevance_match"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 20
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "embed_variant"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 42
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "embed_variant"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 62
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "attention_watch"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 19
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "vary_acting_gradient"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "vary_acting_gradient"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 62
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "constrain_target_directive"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 10
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "constrain_target_directive"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 52
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "adopt_winner"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 43
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "adopt_winner"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 64
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "structural_edit_variant"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "structural_edit_variant"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 62
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "grounding_escalate"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 9
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "grounding_escalate"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 59
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "cost_worth_escalate"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 39
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "cost_worth_escalate"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 40
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "imagine_counterfactual"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 9
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "imagine_counterfactual"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 26
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "collapse_watch"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 9
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "collapse_watch"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 16
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "self_correct_action"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 7
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "self_correct_action"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 16
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "system_model"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 32
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "system_model"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 51
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "audience_produce"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 5
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "type": "RelationCue",
+    "name": "audience_produce"
+   },
+   "type": "uses_role",
+   "tgt": {
+    "local": 61
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [
+  {
+   "provenance": "seed:argument_role_vocabulary:uses_role-0",
+   "src": {
+    "type": "RelationCue",
+    "var": "s"
+   },
+   "edge_type": "uses_role",
+   "tgt": {
+    "type": "ArgumentRole",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:argument_role_vocabulary:has_role_use-1",
+   "src": {
+    "type": "RelationCue",
+    "var": "s"
+   },
+   "edge_type": "has_role_use",
+   "tgt": {
+    "type": "RoleUseCheck",
+    "var": "t"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "role_recognize_exact",
+   "comment": "RECOGNIZE, sd-loop rung-1 shape: a pending RoleUseCheck (one per uppercase role token in a freshly-taught RelationCue's relation tuple -- written by domains/reflective_faculty.py::check_new_relation_cue_roles, the mechanical ingest step mirroring record_correspondence/blob_edge_correspondence.json's own pattern) whose owning cue's relation tuple is BYTE-IDENTICAL to an ALREADY-HELD other RelationCue's relation tuple is a pure keyword-synonym addition -- exactly ground_predicate's own, only, current live minting behaviour (it only ever reuses relation tuples already held verbatim). This is the ONE case the guard can be CONFIDENT is safe without any semantic judgement: identical structure, not merely an identical bare token. 'add_edge targets must be match-bound vars in this engine' (sd_dedup_existing's own documented constraint, reused rather than reinvented): the ArgumentRole this recognizes is Term-found (via the other cue's already-wired uses_role edges), not match-bound, so this rule sets STATUS ONLY -- Python (check_new_relation_cue_roles) re-resolves the ArgumentRole by name and wires RelationCue-uses_role->ArgumentRole AFTER run_rules(), executing the rule's own decision, never making one.",
+   "match_type": "RoleUseCheck",
+   "match": [
+    [
+     "cue",
+     "has_role_use",
+     "rc"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "rc"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pending"
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "RelationCue"
+      },
+      "var_name": "other",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Var",
+           "name": "other"
+          },
+          "b": {
+           "type": "Var",
+           "name": "cue"
+          }
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "other"
+          },
+          "key": "relation"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "cue"
+          },
+          "key": "relation"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "rc",
+     "status",
+     "recognized_exact"
+    ]
+   ]
+  },
+  {
+   "name": "role_mint_fresh_token",
+   "comment": "MINT, sd-loop rung-4 shape, mirroring seeds/blob_edge_correspondence.json's blob_mint exactly: a pending RoleUseCheck whose owning cue's relation tuple is NOT identical to any already-held cue (role_recognize_exact does not apply) AND whose token names NO existing ArgumentRole is a genuinely NEW role -- safe by construction, since there is nothing yet to collide with. Mints the ArgumentRole (a fresh node created in THIS rule's own effects, hence match-bound for the add_edge that follows -- the same 'blob' pattern blob_mint uses) and wires cue-uses_role->role directly, no Python re-resolve needed for this branch.",
+   "match_type": "RoleUseCheck",
+   "match": [
+    [
+     "cue",
+     "has_role_use",
+     "rc"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "rc"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pending"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RelationCue"
+       },
+       "var_name": "other",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Var",
+            "name": "other"
+           },
+           "b": {
+            "type": "Var",
+            "name": "cue"
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "other"
+           },
+           "key": "relation"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cue"
+           },
+           "key": "relation"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ArgumentRole"
+       },
+       "var_name": "existing_role",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "existing_role"
+         },
+         "key": "name"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "rc"
+         },
+         "key": "token"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "role",
+     "ArgumentRole",
+     {
+      "name": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rc"
+        },
+        "key": "token"
+       }
+      },
+      "gloss": "(auto-minted at mint time by role_mint_fresh_token -- a genuinely new role token, no prior collision possible; no held gloss authored yet, needs human/agent review)"
+     }
+    ],
+    [
+     "add_edge",
+     "cue",
+     "uses_role",
+     "role"
+    ],
+    [
+     "set_attr",
+     "rc",
+     "status",
+     "minted"
+    ]
+   ]
+  },
+  {
+   "name": "role_flag_collision",
+   "comment": "FLAG, the honest residual terminal (mirrors seeds/gap_awareness.json's note_* gap-filing shape, and seeds/blob_edge_correspondence.json's blob_no_collapse terminal-status discipline): a pending RoleUseCheck whose owning cue's relation tuple is NOT identical to any already-held cue AND whose token DOES already name an existing ArgumentRole -- the token is being asked to do double duty in a structurally NEW context that has never been verified as the SAME sense (the exact shape of the confirmed POSITION/PRIOR accident: RELATION_CUE_TOKEN_COLLISION_RESULTS.md found this was NOT mechanically recoverable from structure alone -- genuinely-shared tokens like SELF also share almost no structure beyond the bare token). Rather than guessing, this files a SelfConcern (findable, human/agent-promotable, the SAME node shape gap_awareness's own rules mint) and leaves the uses_role edge UNWIRED -- 'flag it, don't silently install a second meaning under one name,' verbatim from the charter.",
+   "match_type": "RoleUseCheck",
+   "match": [
+    [
+     "cue",
+     "has_role_use",
+     "rc"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "rc"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pending"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "RelationCue"
+       },
+       "var_name": "other",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Var",
+            "name": "other"
+           },
+           "b": {
+            "type": "Var",
+            "name": "cue"
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "other"
+           },
+           "key": "relation"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "cue"
+           },
+           "key": "relation"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "NodesOfType",
+       "node_type": "ArgumentRole"
+      },
+      "var_name": "existing_role2",
+      "predicate": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "existing_role2"
+        },
+        "key": "name"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rc"
+        },
+        "key": "token"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "sc",
+     "SelfConcern",
+     {
+      "status": "noted",
+      "source": "implicit",
+      "kind": "argument_role_collision",
+      "content": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "rc"
+        },
+        "key": "token"
+       }
+      },
+      "cue_name": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cue"
+        },
+        "key": "name"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "rc",
+     "status",
+     "flagged"
+    ]
+   ]
+  }
+ ]
+}
