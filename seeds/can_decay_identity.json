@@ -1,11 +1,11 @@
 {
  "id": "can_decay_identity",
- "version": "1.2.0",
+ "version": "1.3.0",
  "depends_on": [
   "can_native_reimplementation"
  ],
  "self_load_only": true,
- "description": "Native decay + identity dynamics, closing two of consumer 6's three named blockers (CAN_CONSUMER_MIGRATION_RESULTS.md Sec1 row 6: 'decay ... no native analog proposed anywhere'; 'identity dynamics ... no native design exists at all'; Blocker B (Hebbian materialization) is a SIBLING rung's exact scope, not touched here). DECAY: the continuous mt_decay_h/mt_decay_J (can_ops.rs) are multiplicative (h <- (1-gamma)*h) -- a category error applied to an in-frame integer count (0.999*7 is not an integer). The integrality-preserving native analog is a fixed-quantum LINEAR decrement toward zero, exactly translate's own v -> v + offset[j] step (shape_decode.rs::apply_translate_once, offset=-1) PLUS an absorbing floor at 0 that plain translate does not have (registered explicitly as a deviation, not silently added) -- applied to the ONE in-frame integer quantity the native Hebbian mechanism already holds, evidence_confirm/evidence_disconfirm on a Coactivation ledger (seeds/can_native_reimplementation.json v1.1.0). IDENTITY: a Concept's per-tick sigma reading is a confirm/disconfirm-shaped evidence stream about its OWN typical state, tracked on the SAME evidence-ledger idiom the Hebbian causal-strength axis already uses (own counters, own strictly-later-tick epoch gate, own non-materializing log-odds render) -- the READING half. v1.2.0 (CAN_IDENTITY_FEEDBACK_PREREG.md/_RESULTS.md) closes the FEEDBACK half: can_native_identity_field_feedback writes identity_field FROM that render (fixed 1-quantum step toward the render's sign; neutral/flip-flop decays toward zero via the SAME Max/Min clamp can_native_external_field_decay uses), so can_native_update_3state/_2state's own local-field sum -- which reads identity_field but until v1.2.0 was written by no rule anywhere -- actually feels the identity-evidence axis. Convergence of the discrete-async update WITH this feedback active is measured, not assumed: see CAN_IDENTITY_FEEDBACK_RESULTS.md Sec3 for the real non-convergence count across a real multi-tick draw sample. Both new rules re-express mt_allows(mt, 'allow_h_drift') (self_improvement_loop.py) as a Term (a graph decision, not a Python one) rather than relying on a Python policy check the way the continuous wrappers do. Zero new Rust anywhere in this seed -- Attr/EdgeAttr/Eq/Not/And/Or/Gt/Lt/Plus/Minus/Max/Min/IfThenElse/Log/Div all pre-existed and are reused as-is. See CAN_DECAY_IDENTITY_PREREG.md / _RESULTS.md. v1.1.0 (CAN_EXTERNAL_FIELD_DECAY_PREREG.md/_RESULTS.md) added can_native_external_field_decay, closing CAN_MT_SCOPED_RULES_RESULTS.md Sec4c's remaining maybe_decay_h blocker: external_field is read six times by can_native_update_3state/_2state's own local-field formula but written by no rule anywhere -- that rule was the first writer. Unlike the two rules above, external_field is a SIGNED float with no native accumulation rule (set exogenously, not grown +1 per tick by any rule this arc built), so the existing one-sided integer-floor body (Gt(x,0) then x-1) does not transfer verbatim -- it is generalised (not redesigned) to a symmetric clamp-toward-zero via Max/Min (pre-existing Rust Terms, already used declaratively elsewhere in this tree, e.g. seeds/arousal_window_coreg.json), registered as that rung's one explicit deviation, mirroring how the floor-at-0 deviation from bare translate was registered explicitly in v1.0.0. No same-tick-race guard was needed there (unlike can_native_evidence_decay's own fix): confirmed by direct grep that no native rule, and no Python module including can_counterfactual.py, ever writes external_field -- decay is the ONLY writer that attr ever gets, so there is no reinforcement event to race against. v1.2.0's own same-tick-race check (PREREG Sec3) found the identical structural situation for identity_field -- zero pre-existing writers, so no race guard is needed there either.",
+ "description": "Native decay + identity dynamics, closing two of consumer 6's three named blockers (CAN_CONSUMER_MIGRATION_RESULTS.md Sec1 row 6: 'decay ... no native analog proposed anywhere'; 'identity dynamics ... no native design exists at all'; Blocker B (Hebbian materialization) is a SIBLING rung's exact scope, not touched here). DECAY: the continuous mt_decay_h/mt_decay_J (can_ops.rs) are multiplicative (h <- (1-gamma)*h) -- a category error applied to an in-frame integer count (0.999*7 is not an integer). The integrality-preserving native analog is a fixed-quantum LINEAR decrement toward zero, exactly translate's own v -> v + offset[j] step (shape_decode.rs::apply_translate_once, offset=-1) PLUS an absorbing floor at 0 that plain translate does not have (registered explicitly as a deviation, not silently added) -- applied to the ONE in-frame integer quantity the native Hebbian mechanism already holds, evidence_confirm/evidence_disconfirm on a Coactivation ledger (seeds/can_native_reimplementation.json v1.1.0). IDENTITY: a Concept's per-tick sigma reading is a confirm/disconfirm-shaped evidence stream about its OWN typical state, tracked on the SAME evidence-ledger idiom the Hebbian causal-strength axis already uses (own counters, own strictly-later-tick epoch gate, own non-materializing log-odds render) -- the READING half. v1.2.0 (CAN_IDENTITY_FEEDBACK_PREREG.md/_RESULTS.md) closes the FEEDBACK half: can_native_identity_field_feedback writes identity_field FROM that render (fixed 1-quantum step toward the render's sign; neutral/flip-flop decays toward zero via the SAME Max/Min clamp can_native_external_field_decay uses), so can_native_update_3state/_2state's own local-field sum -- which reads identity_field but until v1.2.0 was written by no rule anywhere -- actually feels the identity-evidence axis. Convergence of the discrete-async update WITH this feedback active is measured, not assumed: see CAN_IDENTITY_FEEDBACK_RESULTS.md Sec3 for the real non-convergence count across a real multi-tick draw sample. Both new rules re-express mt_allows(mt, 'allow_h_drift') (self_improvement_loop.py) as a Term (a graph decision, not a Python one) rather than relying on a Python policy check the way the continuous wrappers do. Zero new Rust anywhere in this seed -- Attr/EdgeAttr/Eq/Not/And/Or/Gt/Lt/Plus/Minus/Max/Min/IfThenElse/Log/Div all pre-existed and are reused as-is. See CAN_DECAY_IDENTITY_PREREG.md / _RESULTS.md. v1.1.0 (CAN_EXTERNAL_FIELD_DECAY_PREREG.md/_RESULTS.md) added can_native_external_field_decay, closing CAN_MT_SCOPED_RULES_RESULTS.md Sec4c's remaining maybe_decay_h blocker: external_field is read six times by can_native_update_3state/_2state's own local-field formula but written by no rule anywhere -- that rule was the first writer. Unlike the two rules above, external_field is a SIGNED float with no native accumulation rule (set exogenously, not grown +1 per tick by any rule this arc built), so the existing one-sided integer-floor body (Gt(x,0) then x-1) does not transfer verbatim -- it is generalised (not redesigned) to a symmetric clamp-toward-zero via Max/Min (pre-existing Rust Terms, already used declaratively elsewhere in this tree, e.g. seeds/arousal_window_coreg.json), registered as that rung's one explicit deviation, mirroring how the floor-at-0 deviation from bare translate was registered explicitly in v1.0.0. No same-tick-race guard was needed there (unlike can_native_evidence_decay's own fix): confirmed by direct grep that no native rule, and no Python module including can_counterfactual.py, ever writes external_field -- decay is the ONLY writer that attr ever gets, so there is no reinforcement event to race against. v1.2.0's own same-tick-race check (PREREG Sec3) found the identical structural situation for identity_field -- zero pre-existing writers, so no race guard is needed there either. v1.3.0 (CAN_IDENTITY_NUDGE_FINAL_PREREG.md/_RESULTS.md) closes the LAST of self_improvement_loop.py's seven operations: nudge_identity_on_flipped, the EVENT-triggered (not ambient) identity nudge fired on insight consolidation. can_native_identity_nudge_on_flip is the sibling rule that gives the ambient v1.2.0 mechanism's shape an event input surface (a specific target node set, an injected target_sigma, a bounded two-tier recurrence step) it structurally cannot have as a per-tick ambient sampler -- registered and rejected as a bolt-on to the ambient rule itself in CAN_IDENTITY_FEEDBACK_RESULTS.md Sec6.2. Zero new Rust; three brand-new per-Concept marker attrs written only by nudge_identity_on_flipped's own native branch (mechanical translation of detect_insight's already-substrate-agnostic dict) and read only by this one rule.",
  "nodes": [
   {
    "local_id": 1,
@@ -89,6 +89,24 @@
     ],
     "_note": "v1.2.0 (CAN_IDENTITY_FEEDBACK_PREREG/_RESULTS.md). Documents the SAME translate-by-1 SHAPE local_id 1/2/4 already declare, applied to identity_field -- with the sign of the step chosen by the current identity log-odds render, not fixed to a single direction (offset=[1] documents the QUANTUM magnitude only; the actual rule flips the sign via IfThenElse on the render, and falls back to local_id 4's own Max/Min clamp-toward-zero body in the neutral/flip-flop case). Declarative only, never literally invoked at runtime -- matching local_id 1/2/4's own convention."
    }
+  },
+  {
+   "local_id": 6,
+   "type": "DimensionGenerator",
+   "attrs": {
+    "name": "identity_nudge_on_flip",
+    "kind": "translate",
+    "coord_dims": [
+     0
+    ],
+    "params": [
+     1
+    ],
+    "offset": [
+     1
+    ],
+    "_note": "v1.3.0 (CAN_IDENTITY_NUDGE_FINAL_PREREG/_RESULTS.md). Documents the SAME translate-by-1 SHAPE local_id 1/2/4/5 already declare, applied to identity_field a SECOND time via a different trigger (event, not ambient tick) -- with TWO registered generalisations local_id 5 does not have: (a) the step MAGNITUDE itself is two-valued (1 or 2, offset=[1] documents the BASE quantum only; the actual rule doubles it via IfThenElse on a recurrence flag), and (b) the sign is chosen by an INJECTED target_sigma (an event's own payload) rather than an ambient render. Declarative only, never literally invoked at runtime -- matching local_id 1/2/4/5's own convention."
+   }
   }
  ],
  "edges": [],
@@ -102,7 +120,7 @@
   {
    "name": "can_native_identity_as_evidence_axis",
    "definition": "A Concept's per-tick sigma reading is a confirm/disconfirm-shaped evidence stream about its OWN typical state, tracked on the SAME evidence-ledger idiom the Hebbian causal-strength axis already uses (own counters, own strictly-later-tick epoch gate, own non-materializing log-odds render) -- the READING half of identity dynamics reuses the already-built mechanism with zero new machinery.",
-   "why": "Closes CAN_CONSUMER_MIGRATION_RESULTS.md row 6 blocker (c), BOTH halves as of v1.2.0. The READING half reuses the SAME evidence-ledger idiom the Hebbian causal-strength axis already uses (own counters, own strictly-later-tick epoch gate, own non-materializing log-odds render) with zero new machinery. The FEEDBACK half -- materializing the reading back into identity_field so it participates in can_native_update_3state's own local-field sum, the way the continuous h_id does -- is now BUILT (can_native_identity_field_feedback, CAN_IDENTITY_FEEDBACK_PREREG.md/_RESULTS.md): a fixed 1-quantum step toward the render's sign, its own epoch gate, the SAME policy gate every other rule in this seed uses. Convergence of the discrete-async update with this feedback loop active was measured directly (not assumed) against a real multi-tick draw sample -- see CAN_IDENTITY_FEEDBACK_RESULTS.md Sec3 for the real numbers and verdict."
+   "why": "Closes CAN_CONSUMER_MIGRATION_RESULTS.md row 6 blocker (c), BOTH halves as of v1.2.0. The READING half reuses the SAME evidence-ledger idiom the Hebbian causal-strength axis already uses (own counters, own strictly-later-tick epoch gate, own non-materializing log-odds render) with zero new machinery. The FEEDBACK half -- materializing the reading back into identity_field so it participates in can_native_update_3state's own local-field sum, the way the continuous h_id does -- is now BUILT (can_native_identity_field_feedback, CAN_IDENTITY_FEEDBACK_PREREG.md/_RESULTS.md): a fixed 1-quantum step toward the render's sign, its own epoch gate, the SAME policy gate every other rule in this seed uses. Convergence of the discrete-async update with this feedback loop active was measured directly (not assumed) against a real multi-tick draw sample -- see CAN_IDENTITY_FEEDBACK_RESULTS.md Sec3 for the real numbers and verdict. v1.3.0 additionally closes the EVENT half self_improvement_loop.py's nudge_identity_on_flipped needed and the ambient v1.2.0 rule structurally could not provide (CAN_IDENTITY_FEEDBACK_RESULTS.md Sec6.2): can_native_identity_nudge_on_flip, a sibling rule triggered by a graph-resident event marker rather than the ambient per-tick epoch, preserving the event's own target_sigma direction and a BOUNDED (binary, 1.0/2.0) recurrence-scaled step -- never the continuous path's unbounded log(recurrence) growth. See CAN_IDENTITY_NUDGE_FINAL_PREREG.md / _RESULTS.md for the convergence validation with both native identity rules live alongside real synthesized flip events."
   },
   {
    "name": "can_native_external_field_decay",
@@ -113,6 +131,11 @@
    "name": "can_native_identity_field_feedback",
    "definition": "v1.2.0. A native writer of identity_field, closing the identity-feedback gap can_native_identity_as_evidence_axis's own v1.1.0 'why' field named as unresolved: a fixed 1-quantum step toward the SIGN of the current identity_evidence log-odds render each strictly-later external tick (neutral/flip-flop reading decays identity_field toward zero via the same Max/Min clamp can_native_external_field_decay uses), gated by the SAME allow_h_drift policy axis every rule in this seed checks.",
    "why": "identity_field is read by can_native_update_3state/_2state's own local-field sum but was written by no rule anywhere before v1.2.0 (confirmed by direct grep, CAN_IDENTITY_FEEDBACK_PREREG.md Sec3 -- the SAME class of check CAN_EXTERNAL_FIELD_DECAY_RESULTS.md Sec0 ran for external_field). A magnitude/recurrence-scaled step was investigated and rejected on stability grounds (a growing per-tick bias perturbation threatens the discrete-async update's own Lyapunov convergence argument); a fixed quantum matches every other rule in this seed and was validated against a real convergence sweep before being adopted (CAN_IDENTITY_FEEDBACK_RESULTS.md Sec3)."
+  },
+  {
+   "name": "can_native_identity_nudge_on_flip",
+   "definition": "v1.3.0. A native, EVENT-triggered writer of identity_field -- the sibling of can_native_identity_field_feedback (ambient, per-tick) that closes self_improvement_loop.py's LAST unmigrated operation, nudge_identity_on_flipped. Fires once per insight-consolidation event on the SPECIFIC flipped Concepts named by that event, nudging identity_field toward the event's own injected target_sigma by a BOUNDED, binary two-tier step (1.0 first occurrence, 2.0 recurring via the event's own recurrence_count, itself already graph-resident on the InsightEvent node record_insight writes).",
+   "why": "nudge_identity_on_flipped (domains/self_improvement_loop.py) is EVENT-triggered with an injected target_sigma + recurrence signal the ambient can_native_identity_field_feedback rule structurally cannot read (it only samples AMBIENT sigma, whole-Mt, per tick) -- CAN_IDENTITY_FEEDBACK_RESULTS.md Sec6.2 investigated routing this function through the ambient rule and rejected it as a silent no-op-in-practice that discards the event's own signal. This rule is the genuinely different mechanism that rung named as the remaining, real work: a graph-resident event marker (three new per-Concept attrs, written only by this function's own native branch) plus a rule whose OWN IfThenElse decides sign (from target_sigma) and a BOUNDED step (from recurrence, binary not log-scaled) -- preserving the real signal the ambient rule alone would have discarded, without reintroducing the unbounded-growth shape CAN_IDENTITY_FEEDBACK_PREREG.md Sec2.2/2.3 rejected for the ambient rule. Validated against a real convergence sweep with both native identity rules live alongside real synthesized flip events -- see CAN_IDENTITY_NUDGE_FINAL_RESULTS.md Sec3."
   }
  ],
  "exclusions": [],
@@ -1392,6 +1415,247 @@
         "name": "mt"
        },
        "key": "can_tick"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "can_native_identity_nudge_on_flip",
+   "comment": "v1.3.0 (CAN_IDENTITY_NUDGE_FINAL_PREREG.md/_RESULTS.md). The EVENT-TRIGGERED sibling of can_native_identity_field_feedback (v1.2.0) -- closes the LAST of self_improvement_loop.py's seven operations, nudge_identity_on_flipped, left explicitly unmigrated by CAN_IDENTITY_FEEDBACK_RESULTS.md Sec6.2 ('this function's whole point is an IMMEDIATE, LARGER nudge on insight consolidation ... the ambient rule has no input surface for a specific target node set, an injected target sigma, or a recurrence count'). This rule gives it that input surface via THREE per-Concept marker attrs (pending_identity_nudge_target_sigma, pending_identity_nudge_recurrence, pending_identity_nudge_epoch) written ONLY by nudge_identity_on_flipped's own native branch -- mechanical translation of the already-computed, substrate-agnostic `insight` dict (detect_insight, confirmed unmodified and confirmed substrate-agnostic, PREREG Sec0) into graph attrs, never a Python decision. The DECISION -- sign from target_sigma, bounded step from recurrence -- lives entirely in this rule's own IfThenElse effects, mirroring can_native_identity_field_feedback's own fixed-quantum-toward-sign shape exactly, with ONE registered generalisation: the step is BINARY two-tier (1.0 first occurrence, 2.0 recurring via Gt(pending_identity_nudge_recurrence, 1)) instead of a single fixed quantum -- preserving SOME distinct recurrence response while staying strictly bounded (never the rejected unbounded base_alpha*(1+ln(recurrence)) shape the continuous path uses). target_sigma==0 fires no directional change (mirrors can_native_identity_evidence_sample's own state==0 'no evidence' guard). Own epoch attr (identity_nudge_applied_epoch), EQUALITY-gated against the Python-written pending_identity_nudge_epoch (not the Gt-per-tick pattern the ambient rules use -- this event is sparse and externally sequenced, not monotonically advancing every tick), consumed by writing it back so the rule fires exactly once per event. No same-tick race: all three pending_* attrs plus identity_nudge_applied_epoch are BRAND NEW names with zero pre-existing writers or readers anywhere (confirmed by grep, PREREG Sec2.4) -- only this rule and nudge_identity_on_flipped's native branch ever touch them. Policy-gated: mt_allows(mt, 'allow_h_drift'), the SAME axis every rule in this seed uses. Convergence WITH this rule live alongside the ambient feedback rule AND the discrete update, across real synthesized flip events (not just ambient ticks), is measured directly -- see CAN_IDENTITY_NUDGE_FINAL_RESULTS.md Sec3 for the real non-convergence count. See CAN_IDENTITY_NUDGE_FINAL_PREREG.md / _RESULTS.md.",
+   "match_type": "Concept",
+   "match": [
+    [
+     "mt",
+     "has_concept",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "pending_identity_nudge_epoch"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "identity_nudge_applied_epoch"
+       }
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "mt"
+         },
+         "key": "update_policy"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "adaptive"
+        }
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mt"
+           },
+           "key": "update_policy"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "hybrid"
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mt"
+            },
+            "key": "allow_h_drift"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "identity_field",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "pending_identity_nudge_target_sigma"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "identity_field"
+         },
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "pending_identity_nudge_recurrence"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": 2.0
+          },
+          "other": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         }
+        ]
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Lt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "pending_identity_nudge_target_sigma"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Minus",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "identity_field"
+         },
+         "b": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "pending_identity_nudge_recurrence"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": 2.0
+          },
+          "other": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         }
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "identity_field"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "identity_nudge_applied_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "pending_identity_nudge_epoch"
       }
      }
     ]
