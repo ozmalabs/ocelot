@@ -1,0 +1,35 @@
+{
+  "id": "inference_logical",
+  "version": "1.0.0",
+  "depends_on": ["inference_knowledge"],
+  "description": "GENERAL PROPOSITIONAL DEDUCTION through the inference_generation collapse pipeline (DEDUCTION_GENERALIZATION_PREREG.md / DEDUCTION_GENERALIZATION_RESULTS.md). seeds/inference_knowledge.json already supplies 5 kinds of world-knowledge schema (knowledge_enabling/elaborative/partwhole/goal/causal) the gap-driven inference generator (domains/inference_generation.py) decodes gaps against, via the SAME ShapeDecode collapse reading_collapse.py uses for construction recognition. This seed adds a SIXTH kind, 'knowledge_logical': a HELD IMPLICATION (an antecedent held-predicate over an object => a consequent value) represented as graph data, mirroring the antecedent/consequent separation domains/ground_reductions.py's ImplicationClause/GroundedReduction ALREADY proves works for propositional deduction (real, executing modus ponens over group-theory theorems) -- reused here as the MODEL for the semantics, not the implementation (ground_reductions.py itself is untouched; its Python-callable antecedents are domain-bound to free-product structure and cannot read arbitrary graph facts). A knowledge_logical schema's `signature` is the antecedent fact pattern `[[\"holds\", <antecedent_attr>]]` (the SAME structural-pattern-match discipline every other knowledge_* schema already uses, decoded via Covers, not executed as a callable); its `supplies` is the consequent, in the BYTE-IDENTICAL `{\"relation\": \"is_a\", \"attr\": ...}` shape knowledge_enabling schemas already use, so the mint reuses situation_model_reader.ingest_predication UNCHANGED (the exact call resolve_precondition_gap already makes). Node type stays ShapeSignature (per SHAPE_TYPE_VOCABULARY_SPIKE.md's corrected finding: node TYPE partitions a decode pool, kind is a label within it -- a new kind is an ADDITION to the existing pool, not a new mechanism). HONEST SCOPE: single-antecedent-attribute implications only (no conjunctive antecedents, no quantifiers, no negation/modus-tollens) -- propositional modus-ponens-shaped inference, one antecedent fact => one consequent fact, exactly the class of theorem-implication ground_reductions.py already proves executable, generalized past group theory. The KNOWLEDGE below is finite and hand-seeded (the same discipline seeds/inference_knowledge.json's own description states for its 8 schemas: 'the KNOWLEDGE is finite and seeded; the MECHANISM is general'); domains/propositional_deduction.py additionally lets the agent MINT a schema of this same shape from ordinary conditional prose ('if X is a bird, X can fly') at runtime, via a small independent construction-grammar parser (NOT comprehend_theorem.py, which stays untouched and group-theory-scoped).",
+  "microtheory": {
+    "name": "inference_logical",
+    "description": "held propositional implications (antecedent fact => consequent fact) a logical gap collapses against"
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Concept",
+      "attrs": {
+        "name": "inference_logical",
+        "description": "The sentinel concept guarding idempotent load of this seed (domains.propositional_deduction.ensure_logical_seeds)."
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "ShapeSignature",
+      "attrs": {
+        "name": "logical_bird_can_fly",
+        "kind": "knowledge_logical",
+        "coherence": "blocking",
+        "signature": "[[\"holds\", \"bird\"]]",
+        "supplies": "{\"relation\": \"is_a\", \"attr\": \"can_fly\"}",
+        "statement": "if X is a bird, X can fly",
+        "chain": "PARSE 'if X is a bird, X can fly' -> ANTECEDENT is_a(X,bird) => CONSEQUENT is_a(X,can_fly) [propositional, held, hand-seeded]"
+      }
+    }
+  ],
+  "edges": [],
+  "rules": []
+}

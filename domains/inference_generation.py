@@ -87,6 +87,7 @@ from domains.reference_resolution import _PRONOUNS
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _SEED = os.path.join(_ROOT, "seeds", "inference_knowledge.json")
 _EVENT_REASONING_SEED = os.path.join(_ROOT, "seeds", "event_reasoning.json")
+_LOGICAL_SEED = os.path.join(_ROOT, "seeds", "inference_logical.json")
 
 
 # --------------------------------------------------------------------------- #
@@ -126,6 +127,27 @@ def ensure_seeds(agent) -> None:
         _ensure_trust_lexicon(agent)     # additive; safe on an already-loaded graph
         return
     with open(_SEED) as f:
+        manifest = json.load(f)
+    for nd in manifest.get("nodes", []):
+        sub.add_node(nd["type"], dict(nd.get("attrs", {})))
+
+
+def ensure_logical_seeds(agent) -> None:
+    """Idempotently install seeds/inference_logical.json (the
+    'knowledge_logical' codebook -- held propositional implications, DEDUCTION_
+    GENERALIZATION_PREREG.md/_RESULTS.md), depending on ensure_seeds
+    (inference_knowledge + event_reasoning). Guard is the sentinel Concept
+    'inference_logical', the SAME idiom ensure_seeds uses for
+    'inference_knowledge'. ADDITIVE ONLY: seeds/inference_knowledge.json itself
+    is never read or written here -- this installs a SEPARATE seed file into
+    the SAME ShapeSignature codebook pool (a new `kind`, not a new node type;
+    see SHAPE_TYPE_VOCABULARY_SPIKE.md's corrected finding that node TYPE, not
+    `kind`, partitions a decode pool)."""
+    ensure_seeds(agent)
+    sub, _, _ = _resolve(agent)
+    if _has_concept(sub, "inference_logical"):
+        return
+    with open(_LOGICAL_SEED) as f:
         manifest = json.load(f)
     for nd in manifest.get("nodes", []):
         sub.add_node(nd["type"], dict(nd.get("attrs", {})))
@@ -886,6 +908,86 @@ def detect_elaborative_candidates(agent, unit=None) -> list:
 
 
 # --------------------------------------------------------------------------- #
+#  LOGICAL / PROPOSITIONAL-DEDUCTION GAP — genuine modus ponens: an entity
+#  ALREADY carries a fully-stated antecedent fact (attr==1) whose held
+#  `knowledge_logical` implication's consequent has not yet been drawn. See
+#  docs/research/engine_substrate/DEDUCTION_GENERALIZATION_PREREG.md §3 for why
+#  this is NOT `detect_precondition_gaps`'s "exactly one conjunct away from N"
+#  shape: a single-antecedent implication has no PARTIAL state — the
+#  antecedent is either fully stated or not — so there is nothing to be "one
+#  conjunct short" of. Instead this mirrors `detect_goal_gaps`'s BREADTH-OFFER
+#  discipline (its own docstring: "this scan never hardcodes which attr NAME
+#  counts as a need-state... the codebook is what actually recognises one"):
+#  every resident attr==1 fact is offered as a candidate ANTECEDENT, and the
+#  DECODE (not this scan) decides which ones a held `knowledge_logical`
+#  ShapeSignature actually covers. domains/propositional_deduction.py mints
+#  those schemas (from prose or hand-seeded in seeds/inference_logical.json);
+#  this module never inspects a schema's content, only its decode outcome.
+# --------------------------------------------------------------------------- #
+def detect_implication_gaps(agent, unit=None) -> list:
+    """Every resident, non-nested SmEntity's stated fact (any attr==1,
+    excluding coref bookkeeping / goal / name — the SAME `_NON_CANDIDATE_*`
+    exclusion `detect_goal_gaps` uses) offered as a candidate ANTECEDENT for a
+    held propositional implication. Returns [{entity, node,
+    antecedent_attr}]."""
+    ensure_logical_seeds(agent)
+    sub, _, _ = _resolve(agent)
+    gaps = []
+    for n in sub.nodes("SmEntity"):
+        at = sub.node(n)["attrs"]
+        name = at.get("name")
+        if unit is not None and at.get("unit") != unit:
+            continue
+        if not name or at.get("nested"):
+            continue
+        for k, v in at.items():
+            if v != 1 or k in _NON_CANDIDATE_KEYS or k.startswith(_NON_CANDIDATE_PREFIXES):
+                continue
+            gaps.append({"entity": name, "node": n, "antecedent_attr": k})
+    return gaps
+
+
+def resolve_implication_gap(agent, gap: dict, *, t: int = 0, unit=None) -> dict:
+    """Resolve ONE logical/propositional-deduction gap: decode `[["holds",
+    antecedent_attr]]` against the codebook (the SAME pool, the SAME
+    `decode_gap` -> `ShapeDecode` -> `reading_collapse._winner` collapse every
+    other gap kind uses — REUSING the general pipeline's best-fit selection
+    rather than reimplementing `ground_reductions.GroundedReduction.compute`'s
+    bespoke ordered-clause loop, per DEDUCTION_GENERALIZATION_PREREG.md §4).
+    The winning `knowledge_logical` schema's `supplies`
+    (`{"relation": "is_a", "attr": ...}`) — BYTE-IDENTICAL in shape to
+    `knowledge_enabling`'s `supplies` — is minted via `situation_model_reader.
+    ingest_predication`, the IDENTICAL call `resolve_precondition_gap` already
+    makes: UNCHANGED, reused as-is, so a derived consequent that itself
+    completes ANOTHER stalled rule cascades through the SAME fixpoint with no
+    new code. Idempotent (mirrors `resolve_elaborative_candidate`'s own
+    already-holds check): a consequent already held is not re-derived. No
+    covering schema -> honest null, nothing fabricated."""
+    dec = decode_gap(agent, [["holds", gap["antecedent_attr"]]])
+    if dec["name"] is None or dec["fit"] <= 0:
+        return {"minted": False, "gap": gap, "schema": None,
+                "reason": ("no knowledge_logical schema holds an implication for "
+                           "%r -- honest null, nothing fabricated") % gap["antecedent_attr"]}
+    sub, _, _ = _resolve(agent)
+    coherence = _coherence_of(sub, dec["name"])
+    if coherence == "elaborative" and not _is_deep(agent):
+        return {"minted": False, "gap": gap, "schema": dec["name"],
+                "reason": "elaborative schema, standard_of_coherence is shallow -- not fired"}
+    supplies = _supplies_of(sub, dec["name"])
+    if supplies.get("relation") == "is_a" and supplies.get("attr"):
+        ent = smr._entity(agent, gap["entity"], unit=unit)
+        if sub.node(ent)["attrs"].get(supplies["attr"]) == 1:
+            return {"minted": False, "gap": gap, "schema": dec["name"],
+                    "reason": "already holds -- idempotent, no re-mint"}
+        ing = smr.ingest_predication(agent, ["is_a", gap["entity"], supplies["attr"]],
+                                     t=t, unit=unit)
+        return {"minted": True, "gap": gap, "schema": dec["name"], "supplies": supplies,
+                "ingest": ing}
+    return {"minted": False, "gap": gap, "schema": dec["name"],
+            "reason": "winning schema supplies an unrecognised relation %r" % (supplies,)}
+
+
+# --------------------------------------------------------------------------- #
 #  DECODE — the collapse. Goal -> ShapeDecode -> the winning schema.
 # --------------------------------------------------------------------------- #
 def _schema_node(sub, name: str):
@@ -1091,20 +1193,27 @@ def read_and_infer(agent, text: str, *, max_sentences: int = 40) -> dict:
     # never an OpenGoal/Ambiguity and never a leak onto the real addressee — so
     # the detached hold-open (task 101) is byte-identical.
     embedded = [resolve_warning_embedded(agent, g) for g in warning_gaps]
+    # GENUINE MODUS PONENS: every stated fact offered as a candidate antecedent
+    # for a held knowledge_logical implication (DEDUCTION_GENERALIZATION_
+    # PREREG.md/_RESULTS.md). Runs AFTER the other passes so a fact minted by
+    # an earlier pass (fragile/goal/...) is ALSO available as an antecedent —
+    # additive: `logical` is a NEW dict key, nothing above depends on it.
+    logical = [resolve_implication_gap(agent, g, t=980 + i)
+               for i, g in enumerate(detect_implication_gaps(agent))]
 
     return {"text": text, "textbase": spine["textbase"], "before_situation_model": before,
             "blocking": blocking, "bridging": bridging, "goal": goal, "warning": warning,
-            "embedded": embedded,
+            "embedded": embedded, "logical": logical,
             "elaborative": elaborative, "situation_model": _situation_model(sub)}
 
 
 __all__ = [
-    "ensure_seeds", "coherence_depth", "set_coherence_depth",
+    "ensure_seeds", "ensure_logical_seeds", "coherence_depth", "set_coherence_depth",
     "detect_precondition_gaps", "detect_bridging_gaps", "detect_goal_gaps",
-    "detect_causal_gaps", "detect_elaborative_candidates",
+    "detect_causal_gaps", "detect_elaborative_candidates", "detect_implication_gaps",
     "detect_warning_gaps", "warning_membership", "resolve_warning_gap",
     "trust_membership", "resolve_warning_embedded",
     "decode_gap", "resolve_precondition_gap", "resolve_bridging_gap", "resolve_goal_gap",
-    "resolve_causal_gap", "resolve_elaborative_candidate", "read_and_infer",
-    "read_and_infer_causal",
+    "resolve_causal_gap", "resolve_elaborative_candidate", "resolve_implication_gap",
+    "read_and_infer", "read_and_infer_causal",
 ]
