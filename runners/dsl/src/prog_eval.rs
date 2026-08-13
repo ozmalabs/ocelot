@@ -1384,7 +1384,11 @@ fn call_native_oracle(
             }
             let mut best = items[0].clone();
             for it in &items[1..] {
-                let ord = cmp_value(it, &best);
+                // REPORTED-ORDER site (Python `min()`/`max()`): the returned
+                // VALUE is decided here, so string comparisons must be real
+                // lexicographic order — see
+                // CMP_VALUE_LEXICOGRAPHIC_FOLLOWON_RESULTS.md.
+                let ord = crate::value::cmp_value_lex(it, &best, interner);
                 let take = if name == "min" {
                     ord == std::cmp::Ordering::Less
                 } else {
@@ -1526,13 +1530,13 @@ fn call_native_oracle(
         "bool" => Ok(Value::Bool(one(args)?.truthy())),
         "sorted" => {
             let mut items = iter_items(&one(args)?, interner)?;
-            // NOTE: `cmp_value`'s (Str, Str) arm orders by INTERNER SYMBOL
-            // ID -- the registered `sorted`-on-strings defect (prereg §4).
-            // DELIBERATELY UNTOUCHED here: it is a separate semantics
-            // change and folding it in would make this measurement
-            // unreadable. Re-measured in the results doc, not inherited
-            // silently.
-            items.sort_by(cmp_value);
+            // FIXED (CMP_VALUE_LEXICOGRAPHIC_FOLLOWON_RESULTS.md): this was
+            // `cmp_value`'s (Str, Str) arm, ordering by INTERNER SYMBOL ID —
+            // boot-history order, not alphabetical (the registered
+            // `sorted`-on-strings defect, CMP_VALUE_SURFACE_FIX_RESULTS.md
+            // §4). `sorted()`'s output IS the reported order, so it now uses
+            // the interner-aware lexicographic comparator instead.
+            items.sort_by(|a, b| crate::value::cmp_value_lex(a, b, interner));
             Ok(Value::List(Arc::new(items.into_iter().collect())))
         }
 
