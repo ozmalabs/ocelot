@@ -89,6 +89,17 @@ HTTP API (fixed contract — a companion web UI is built against this exactly):
     GET  /api/self_improvement -> {"ok", "items": [...], "has_world", "experiment_count"} —
                                   mechanical pipeline read for promoted concerns (standing
                                   concern status, CapabilityAxis, author rule, Experiment).
+    POST /api/standing_concerns/<id>/adopt_gamma_production -> {"ok", "standing_concern",
+                                  "triple", "reason"} — HUMAN-GATED: the ONLY path anywhere
+                                  that may install a real Grammar `Production` (Theorem XII,
+                                  reference-monitor containment). Requires the StandingConcern
+                                  be kind="gamma_production" and already judged
+                                  gamma_production_judge_status="ready_for_adopt" by
+                                  _concern_tick (see domains/gamma_production_growth.py).
+                                  Re-verifies the recorded triple is still inadmissible
+                                  immediately before calling add_production. Idempotent: an
+                                  already-adopted StandingConcern is rejected. Never
+                                  auto-invoked.
     GET  /api/events          -> SSE stream: chat / status / session_update / enrolled /
                                   proposal_update / auto_approve_update events (a `chat`
                                   event carries `heard`: the list of Concept names the
@@ -2567,6 +2578,117 @@ def _process_prog_read_standing(adapter: WorldAdapter, standing_node, at: dict) 
     adapter.s.set_attr(standing_node, "prog_read_compose_reason", reason)
 
 
+def _process_gamma_production_standing(adapter: WorldAdapter, standing_node, at: dict) -> None:
+    """GAMMA_PRODUCTION_ADOPT_HANDLER -- the `_process_prog_read_standing`
+    precedent, applied to the `gamma_production` gap kind
+    (GAMMA_COLLAPSE_ALGORITHM_RESULTS.md Q2's named, out-of-scope gap: "no
+    gamma_production handler exists ... falls through to the generic
+    comprehend_first default").
+
+    UNLIKE every other kind this dispatch ladder routes, a `gamma_production`
+    StandingConcern can NEVER be synchronously CLOSED here -- doing so would
+    mean this Python path deciding, unsupervised, that a Production should
+    become live, which is exactly what Theorem XII (reference-monitor
+    containment, checker.rs:1-3) forbids. This function only calls
+    `domains.gamma_production_growth.judge_gamma_production_gap` -- a
+    READ-ONLY probe (`is_edge_admissible`, never `add_production`) -- and
+    records the mechanical outcome (`gamma_production_judge_status` /
+    `_reason` / `_candidate`, a JSON string of the candidate Production when
+    one was built) onto the StandingConcern. `seeds/gamma_production_adopt.
+    json`'s three rules read that datum and DECIDE what it means
+    (awaiting_adopt / resolved-already / experiments_exhausted) -- never a
+    decision here. Making the candidate LIVE is a SEPARATE, explicit,
+    human-gated call: `adopt_gamma_production_standing` below, never invoked
+    from this function or from _concern_tick."""
+    try:
+        import domains.gamma_production_growth as gpg
+    except ImportError as e:  # noqa: BLE001 -- never let a bad concern kill the tick loop
+        adapter.s.set_attr(standing_node, "gamma_production_judge_status", "unresolvable")
+        adapter.s.set_attr(standing_node, "gamma_production_judge_reason",
+                           "gamma_production_growth unavailable: %s" % e)
+        return
+    about = str(at.get("about") or "")
+    try:
+        result = gpg.judge_gamma_production_gap(adapter, about)
+    except Exception as e:  # noqa: BLE001 -- never let a bad concern kill the tick loop
+        result = {"status": "unresolvable",
+                 "reason": "%s: %s" % (type(e).__name__, e)}
+    status = str(result.get("status") or "unresolvable")
+    reason = str(result.get("reason") or "")
+    adapter.s.set_attr(standing_node, "gamma_production_judge_status", status)
+    adapter.s.set_attr(standing_node, "gamma_production_judge_reason", reason)
+    candidate = result.get("candidate_production")
+    if candidate is not None:
+        adapter.s.set_attr(standing_node, "gamma_production_candidate", json.dumps(candidate))
+
+
+def adopt_gamma_production_standing(adapter: WorldAdapter, id_str: str) -> dict:
+    """HUMAN-GATED adopt: the `promote_self_concern` precedent, for the ONE
+    step in this whole rung that may call `add_production`. Reachable only
+    by an explicit external call (a human action, or its stand-in in a
+    test/demo) -- NEVER from `_concern_tick`, NEVER from a rule. Looks up
+    the StandingConcern by id, requires it to be judged `ready_for_adopt`
+    (a human/experiment decision the judge step already surfaced, never
+    guessed here), reconstructs the candidate Production from the
+    StandingConcern's OWN recorded JSON (never re-derived from scratch, so
+    what gets adopted is exactly what was judged), and calls
+    `domains.gamma_production_growth.adopt_gamma_production` -- which itself
+    RE-VERIFIES the triple is still inadmissible immediately before calling
+    `add_production` (judging on stale data would be a bug, not a shortcut).
+    On success: marks the StandingConcern `status='adopted'` and the
+    ORIGINAL SelfConcern `status='resolved'` (found via the `promoted_to`
+    edge's reverse, `adapter.inner.in_neighbours`) -- mechanical bookkeeping
+    of a fact THIS function itself just made true, the same status
+    `promote_self_concern` sets `sc.status='promoted'` directly rather than
+    via a rule. Idempotent: an already-adopted StandingConcern is rejected,
+    not re-run."""
+    try:
+        import domains.gamma_production_growth as gpg
+    except ImportError as e:  # noqa: BLE001
+        return {"ok": False, "error": "gamma_production_growth unavailable: %s" % e}
+    try:
+        standing = srs.NodeID(int(id_str))
+    except (ValueError, TypeError):
+        return {"ok": False, "error": "bad id"}
+    with AGENT_LOCK:
+        if not adapter.s.has_node(standing) or adapter.s.node(standing).get("type") != "StandingConcern":
+            return {"ok": False, "error": "not found"}
+        at = adapter.s.node(standing)["attrs"]
+        if at.get("kind") != "gamma_production":
+            return {"ok": False, "error": "not a gamma_production concern"}
+        if at.get("status") == "adopted":
+            return {"ok": False, "error": "already adopted"}
+        if at.get("gamma_production_judge_status") != "ready_for_adopt":
+            return {"ok": False, "error": "not ready for adopt (judge_status=%r) -- "
+                                          "the judge step must mark this "
+                                          "ready_for_adopt first"
+                                          % at.get("gamma_production_judge_status")}
+        raw_candidate = at.get("gamma_production_candidate")
+        if not raw_candidate:
+            return {"ok": False, "error": "no candidate production recorded on this concern"}
+        try:
+            candidate = json.loads(raw_candidate)
+        except (TypeError, ValueError) as e:
+            return {"ok": False, "error": "malformed candidate JSON: %s: %s" % (type(e).__name__, e)}
+        # No separate `expected_triple` to cross-check here: `candidate` IS the
+        # StandingConcern's own recorded JSON (never re-derived), so there is
+        # nothing independent to compare it against -- the real safety check
+        # is `adopt_gamma_production`'s own immediate pre-adopt re-probe.
+        result = gpg.adopt_gamma_production(adapter, candidate, expected_triple=None)
+        if not result.get("ok"):
+            return {"ok": False, "error": result.get("reason") or "adopt failed", "detail": result}
+        adapter.s.set_attr(standing, "status", "adopted")
+        adapter.s.set_attr(standing, "adopted_triple", " -> ".join(str(x) for x in result.get("triple", ())))
+        try:
+            for sc in adapter.inner.in_neighbours(standing, "promoted_to"):
+                if adapter.s.has_node(sc) and adapter.s.node(sc).get("type") == "SelfConcern":
+                    adapter.s.set_attr(sc, "status", "resolved")
+        except Exception:  # noqa: BLE001
+            pass
+    return {"ok": True, "standing_concern": _nid_value(standing),
+           "triple": result.get("triple"), "reason": result.get("reason")}
+
+
 # --- GROUND_CONCERN SIX KINDS (Path 2, GROUND_CONCERN_SIX_KINDS_PREREG.md) --
 # The honesty investigation's own §5 Path 2: give every concern kind that
 # falls through to the generic comprehend_first/ground_concern fallback its
@@ -2700,6 +2822,10 @@ def _concern_tick(adapter: WorldAdapter) -> None:
                 continue
             if at.get("kind") == "reply_fix" and at.get("pipeline") != "experiment":
                 _process_reply_fix_standing(adapter, n, at)
+                s.set_attr(n, "status", "processed")
+                continue
+            if at.get("kind") == "gamma_production":
+                _process_gamma_production_standing(adapter, n, at)
                 s.set_attr(n, "status", "processed")
                 continue
             relations = at.get("relations") or []
@@ -3647,6 +3773,22 @@ class Handler(BaseHTTPRequestHandler):
                                      "status": "promoted",
                                      "standing_concern": result.get("standing_concern"),
                                      "repromoted": True})
+                try:
+                    state.publish_event({"type": "self_improvement_update",
+                                         **list_self_improvement(state.adapter)})
+                except Exception:  # noqa: BLE001
+                    pass
+            return self._json(result, 200 if result.get("ok") else 400)
+        if path.startswith("/api/standing_concerns/") and path.endswith("/adopt_gamma_production"):
+            sid = path[len("/api/standing_concerns/"):-len("/adopt_gamma_production")]
+            try:
+                result = adopt_gamma_production_standing(state.adapter, sid)
+            except Exception as e:  # noqa: BLE001
+                return self._json({"ok": False, "error": f"{type(e).__name__}: {e}"}, 500)
+            if result.get("ok"):
+                state.dirty.set()
+                state.publish_event({"type": "standing_concern_update", "id": sid,
+                                     "status": "adopted", "triple": result.get("triple")})
                 try:
                     state.publish_event({"type": "self_improvement_update",
                                          **list_self_improvement(state.adapter)})

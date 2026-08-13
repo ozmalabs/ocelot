@@ -467,6 +467,12 @@ def _run_self_improvement_status(substrate, meta_arg: Optional[str] = None) -> d
                 # reason below.
                 "exhausted": bool(a.get("experiments_exhausted")),
                 "exhausted_note": str(a.get("exhausted_note") or ""),
+                # GAMMA_PRODUCTION_ADOPT_HANDLER: a `gamma_production` concern
+                # judged still-inadmissible (seeds/gamma_production_adopt.json's
+                # note_gamma_production_awaiting_adopt) is READY for a human
+                # decision but not yet closed — a pure readback of a fact that
+                # rule already decided, same status as `exhausted` above.
+                "awaiting_adopt": bool(a.get("awaiting_adopt")),
                 # WHO ASKED (Wave: interlocutor-as-modeled-participant, task 2):
                 # a mechanical readback of `requested_by`, written once at
                 # promotion time (scripts/jabberwock_daemon.py::
@@ -520,6 +526,8 @@ def _run_self_improvement_status(substrate, meta_arg: Optional[str] = None) -> d
                 bit += f" — requested by {c['requested_by']}"
             if c.get("exhausted"):
                 bit += " — experiments exhausted" + (f" ({c['exhausted_note']})" if c["exhausted_note"] else "")
+            if c.get("awaiting_adopt"):
+                bit += " — awaiting human adopt (gamma_production)"
             parts.append(bit)
     exp_by: dict[str, int] = {}
     exp_bits = []
