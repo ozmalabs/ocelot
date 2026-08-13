@@ -1,0 +1,325 @@
+{
+ "id": "entity_concept_correspondence",
+ "version": "1.0.0",
+ "depends_on": [
+  "core"
+ ],
+ "description": "THE GENERAL SmEntity<->Microtheory identity-correspondence mechanism (ENTITY_RESOLUTION_PREREG.md/_RESULTS.md), replacing domains/reasoning_can_bridge.py's old f'{entity}_beliefs' string-format coincidence. Two rungs, Occam-ordered: (1) exact name equality -- the old convention's case, now an explicit denotes edge minted by a Rule instead of a Python string format; (2) name-TOKEN containment (the native Covers Set/FrozenSet subset test over a precomputed name_tokens frozenset attr, mirroring domains/name_variant_merge.py's already-shipped SmEntity<->SmEntity alias-containment relation, applied cross-type) -- fires only when (1) does not apply, and refuses to mint when more than one Resident candidate token-matches (the no-over-merge discipline; a genuine ambiguity is a null, never a guess). name_tokens is mechanically precomputed by domains/reasoning_can_bridge.py (reusing name_variant_merge._name_tokens, no new tokenizer) before these rules run; the DECISION stays entirely in the Covers/Not(Exists) Term tree each Rule evaluates -- CLAUDE.md's rule/shape split, execution over held name structure, not acquisition (no codebook grows).",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "Concept",
+   "attrs": {
+    "name": "entity_concept_correspondence",
+    "description": "sentinel: entity_concept_correspondence seed loaded (ensure_seeds idempotency guard, the ensure_seeds sentinel-Concept idiom domains/inference_generation.py already uses)"
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "src": {
+    "type": "SmEntity",
+    "var": "src"
+   },
+   "edge_type": "denotes",
+   "tgt": {
+    "type": "Microtheory",
+    "var": "tgt"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "entity_concept_correspondence"
+  }
+ ],
+ "rules": [
+  {
+   "name": "sm_entity_denotes_believer_exact",
+   "match": [
+    [
+     "e",
+     "is_entity",
+     "e"
+    ],
+    [
+     "r",
+     "has_belief_mt",
+     "mt"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "e"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "r"
+       },
+       "key": "name"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "e"
+        },
+        "edge_type": "denotes"
+       },
+       "var_name": "_ex",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "e",
+     "denotes",
+     "mt"
+    ]
+   ]
+  },
+  {
+   "name": "sm_entity_denotes_believer_by_name_tokens",
+   "match": [
+    [
+     "e",
+     "is_entity",
+     "e"
+    ],
+    [
+     "r",
+     "has_belief_mt",
+     "mt"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "e"
+        },
+        "key": "name"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "r"
+        },
+        "key": "name"
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "FixedCount",
+       "pattern": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "e"
+        },
+        "key": "name_tokens"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Covers",
+        "pattern": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "e"
+         },
+         "key": "name_tokens"
+        },
+        "instance": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "r"
+         },
+         "key": "name_tokens"
+        }
+       },
+       {
+        "type": "Covers",
+        "pattern": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "r"
+         },
+         "key": "name_tokens"
+        },
+        "instance": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "e"
+         },
+         "key": "name_tokens"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "e"
+        },
+        "edge_type": "denotes"
+       },
+       "var_name": "_ex",
+       "predicate": {
+        "type": "Lit",
+        "value": true
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "Resident"
+       },
+       "var_name": "r2",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Var",
+            "name": "r2"
+           },
+           "b": {
+            "type": "Var",
+            "name": "r"
+           }
+          }
+         },
+         {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "r2"
+           },
+           "edge_type": "has_belief_mt"
+          },
+          "var_name": "_mt2",
+          "predicate": {
+           "type": "Lit",
+           "value": true
+          }
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Covers",
+            "pattern": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "e"
+             },
+             "key": "name_tokens"
+            },
+            "instance": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "r2"
+             },
+             "key": "name_tokens"
+            }
+           },
+           {
+            "type": "Covers",
+            "pattern": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "r2"
+             },
+             "key": "name_tokens"
+            },
+            "instance": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "e"
+             },
+             "key": "name_tokens"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "e",
+     "denotes",
+     "mt"
+    ]
+   ]
+  }
+ ]
+}
