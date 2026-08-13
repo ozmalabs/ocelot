@@ -4081,23 +4081,69 @@ def _ensure_edit_ops(sub) -> None:
         have.add(op["kind"])
 
 
+def _editop_applicable_kinds(rule_json: dict, eo) -> list:
+    """APPLICABILITY, as data, computed BEFORE the EditOp Argmax runs — the
+    fix for the MAC/FAC gap `SHAPE_AUDIT.md` §2.1 names for A4
+    (`RULES_AS_SHAPE_DESIGN_SPIKE.md` §4.2): 'the structural machinery is
+    right there, and it runs only AFTER the name-keyword Argmax has already
+    decided which operator to use.' These are the EXACT SAME predicates
+    `_compose_structural_variant`'s own per-kind branches already use to
+    decide 'inert' AFTER the pick (`eo.find_comparison_nodes` /
+    `eo.find_attr_keys` / `len(match)`) — reused here as an INPUT to the
+    pick instead of only an execution-time bookkeeping check. Pure,
+    mechanical, no graph I/O: `rule_json` is a plain Python dict already
+    resolved off `RuleSummary.rule_json` by `_pick_acting_rule` before this
+    is ever called — the same kind of already-resolved Python value
+    `axis_preds` already is when it becomes a Term literal below. Returns
+    the list of `_EDIT_OPS` kind strings genuinely applicable to this rule
+    (possibly empty, if some future rule shape is inert for all four —
+    handled honestly by the caller, not assumed impossible)."""
+    effects = rule_json.get("effects")
+    match = rule_json.get("match") or []
+    out = []
+    if eo.find_comparison_nodes(effects):
+        out.append("flip_comparison")
+    if len(eo.find_attr_keys(effects)) >= 2:
+        out.append("swap_term_leaf")
+    if len(match) > 1:
+        out.append("drop_match_edge")
+    if match and isinstance(match[0], list) and len(match[0]) >= 1:
+        out.append("add_match_guard")
+    return out
+
+
 def _compose_structural_variant(agent, keys, tag: str) -> dict[str, Any]:
     """THE STRUCTURAL TWIN of `_compose_acting_variant`: picks WHICH candidate
     chosen_action-writing rule the axis's residual names (the SAME shared
     `_pick_acting_rule` Argmax), THEN picks WHICH EditOp (flip_comparison /
     swap_term_leaf / drop_match_edge / add_match_guard) the SAME axis's
-    residual predicates genuinely name (a second held Argmax, over `EditOp`
-    provenance — same StringIndexOf-Sum overlap shape), and applies it via
-    `domains.edit_ops`'s mechanical applier. `domains/edit_ops.py`'s appliers
-    are the PRIMITIVE (mechanical, op+target -> new rule JSON); this function
-    is the COMPOSITION (which op, on which rule, at which site) — the agent's
-    decision, per CLAUDE.md.
+    residual predicates genuinely name — a second held Argmax, over `EditOp`
+    provenance (same StringIndexOf-Sum overlap shape), but the Argmax
+    CANDIDATES are first restricted (a `Filter`, matching `_pick_acting_rule`'s
+    own `skippable`-restriction precedent) to the EditOp kinds
+    `_editop_applicable_kinds` finds structurally APPLICABLE to the picked
+    rule — never letting the keyword score alone pick an op that is a
+    guaranteed null on THIS rule's shape (e.g. `drop_match_edge` when the
+    rule has only one match edge) while a genuinely applicable, lower-scoring
+    op goes unconsidered. This closes the MAC/FAC gap `SHAPE_AUDIT.md` §2.1
+    names for this exact site: applicability used to be checked only AFTER
+    the pick (execution-time bookkeeping); it is now a genuine INPUT to the
+    pick. The keyword-overlap signal itself is UNCHANGED — this restricts
+    the candidate set, it does not replace or re-weight the relevance score.
+    Applied via `domains.edit_ops`'s mechanical applier: `domains/edit_ops.py`'s
+    appliers are the PRIMITIVE (mechanical, op+target -> new rule JSON); this
+    function is the COMPOSITION (which op, on which rule, at which site) —
+    the agent's decision, per CLAUDE.md.
 
-    Returns `{'built': False, 'wall': ...}` — an honest null — when either
-    Argmax abstains (no genuine overlap) or the picked (op, rule) pairing is
-    structurally INERT for this rule (e.g. drop_match_edge on a rule with
-    only one match edge; swap_term_leaf on a rule with fewer than two
-    distinct Attr keys to swap between) — never a fabricated edit."""
+    Returns `{'built': False, 'wall': ...}` — an honest null — when: no
+    RuleSummary Argmax overlap (unchanged); no EditOp kind is structurally
+    applicable to the picked rule AT ALL (new, checked before any Argmax
+    runs); or the (now pre-filtered) EditOp Argmax still abstains because no
+    APPLICABLE op scores > 0 on this residual. The per-kind apply branches
+    below are kept as a defensive, unchanged safety net (they should no
+    longer normally return None for a kind this function already filtered
+    in as applicable — the SAME predicates gate both places — but the honest
+    null path stays reachable rather than assumed unreachable)."""
     from domains import edit_ops as _eo
     sub0, native0, _ag0 = _resolve_agent(agent)
     axis_preds = []
@@ -4113,11 +4159,19 @@ def _compose_structural_variant(agent, keys, tag: str) -> dict[str, Any]:
     rule_json = pick["rule_json"]
     rule_name = pick["name"]
 
+    applicable_kinds = _editop_applicable_kinds(rule_json, _eo)
+    if not applicable_kinds:
+        return {"built": False, "wall": (f"no EditOp is structurally applicable to the picked rule "
+                f"{rule_name!r} at all (flip_comparison/swap_term_leaf/drop_match_edge/add_match_guard "
+                "are all inert on this rule's match+effects shape) — an honest null found BEFORE any "
+                "Argmax ran, not a wasted pick")}
+
     _ensure_edit_ops(sub0)
     V = lambda n: {"type": "Var", "name": n}
     L = lambda v: {"type": "Lit", "value": v}
     Attr = lambda nd, k: {"type": "Attr", "node": nd, "key": k}
     Eq = lambda a, b: {"type": "Eq", "a": a, "b": b}
+    Or = lambda *xs: {"type": "Or", "items": list(xs)}
     Gt = lambda a, b: {"type": "Gt", "a": a, "b": b}
     Gte = lambda a, b: {"type": "Gte", "a": a, "b": b}
     Ite = lambda c, t, o: {"type": "IfThenElse", "cond": c, "then": t, "other": o}
@@ -4132,7 +4186,13 @@ def _compose_structural_variant(agent, keys, tag: str) -> dict[str, Any]:
     words = L(list(axis_preds))
     overlap = lambda node_t: Sum(words, "w",
         Ite(Gte(StrIdx(Attr(node_t, "keywords_text"), V("w")), L(0)), L(1), L(0)))
-    op_candidates = NodesOfType("EditOp")
+    # APPLICABILITY GATE: restrict Argmax candidates to the EditOp kinds
+    # `_editop_applicable_kinds` found structurally possible on THIS rule —
+    # a Filter, mirroring `_pick_acting_rule`'s own `skippable`-restriction
+    # precedent, evaluated inside the SAME Term as the keyword Argmax below
+    # (no Python-side re-pick, no second decision point).
+    is_applicable = Or(*[Eq(Attr(V("s"), "kind"), L(k)) for k in applicable_kinds])
+    op_candidates = Filter(NodesOfType("EditOp"), "s", is_applicable)
     op_best = Argmax(op_candidates, "s", overlap(V("s")), None)
     op_pick_expr = LetT("best", op_best,
         Ite(Eq(V("best"), L(None)), L(None),
@@ -4142,8 +4202,9 @@ def _compose_structural_variant(agent, keys, tag: str) -> dict[str, Any]:
     except Exception as e:
         return {"built": False, "wall": f"edit-op pick failed: {type(e).__name__}: {e}"}
     if op_node is None or not sub0.has_node(op_node):
-        return {"built": False, "wall": ("no EditOp genuinely overlaps this axis's residual predicates "
-                "(abstained — not a random pick)")}
+        return {"built": False, "wall": (f"no APPLICABLE EditOp genuinely overlaps this axis's residual "
+                f"predicates (candidates restricted to {applicable_kinds!r} by structural applicability; "
+                "abstained — not a random pick)")}
     kind = sub0.node(op_node)["attrs"].get("kind")
     new_name = rule_name + "_structvariant_" + tag
 
