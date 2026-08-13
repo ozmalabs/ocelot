@@ -575,12 +575,36 @@ def effective_reliability(agent, party) -> dict:
     decoded = decode_shape(agent, party)
     prior = decoded["prior"]
     n = int(at.get("self_report_count", 0) or 0)
-    k = decoded.get("decay_k", 5.0)
+    # `decay_k` is ALWAYS present on `decoded` (every decode_shape return path
+    # sets it), so `.get(..., 5.0)` was a dead fallback that could never fire
+    # -- read it directly (2026-08-14, SHAPE_AUDIT.md §6.1 fix).
+    k = decoded["decay_k"]
     contradictions = int(at.get("self_report_contradiction_count", 0) or 0)
-    individual = (1.0 - (contradictions / n)) if n > 0 else prior
+    # Krichevsky-Trofimov (add-1/2) smoothed individual success rate -- the
+    # textbook parameter-free Bernoulli-rate estimator, not a swept/tuned
+    # constant. UNCONDITIONAL (no more `if n > 0 else prior` special case):
+    # at n=0, w below is EXACTLY 0 (n/(n+k) with n=0), so `individual`'s
+    # value is multiplied out regardless and `value == prior` exactly,
+    # byte-identical to the old special case.
+    #
+    # SHAPE_AUDIT.md §6.1 (F-16 regress, "1/n asserts stationarity -> declare
+    # a floor 0.05 ... each rate needs a rate") named the old code here
+    # verbatim: `individual = 1 - contradictions/n` (a raw MLE that CAN hit
+    # exactly 0.0 or 1.0 at small n) plus an unrelated flat
+    # `max(0.05, min(0.95, value))` clamp bolted on to hide it. The root
+    # cause was the MLE, not the blended output -- KT-smoothing keeps
+    # `individual` strictly inside the open interval (0, 1) for every finite
+    # n, and since `prior` is itself always inside (0, 1) (every seeded
+    # InterlocutorShape and every Python default here is), their convex
+    # combination `value` is ALREADY strictly inside (0, 1) with no output
+    # clamp needed -- the floor is derived from the estimator, not asserted
+    # on the estimate. (Residual, stated honestly: this relies on `prior`
+    # never being authored as exactly 0.0 or 1.0; no shape in
+    # seeds/interlocutor_shapes.json does, and nothing here defends against
+    # a future one that would -- an explicit assumption, not a silent one.)
+    individual = (n - contradictions + 0.5) / (n + 1.0)
     w = (n / (n + k)) if (n + k) > 0 else 0.0
     value = prior * (1 - w) + individual * w
-    value = max(0.05, min(0.95, value))
     return {"value": value, "source": ("shape_prior" if n == 0 else "shape_prior+track_record"),
             "interval": decoded["interval"], "shape_name": decoded["name"],
             "fit": decoded["fit"], "n": n}
