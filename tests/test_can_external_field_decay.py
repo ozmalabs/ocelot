@@ -181,13 +181,31 @@ def test_external_field_decay_composes_with_local_field_formula_and_flips_state(
     decision -- proving the decayed value is READ by the SAME formula that
     already consumes external_field, not just changed in isolation.
 
-    Single Concept, no causal_influence edges (local field = external_field
-    + identity_field(=0) + 0), temperature=1.0, threshold=atanh(0.5)~=0.549.
-    external_field=3.5 starts well above threshold -> state=+1. As
-    can_native_external_field_decay and can_native_update_3state BOTH run
-    inside the SAME run_rules_scoped/run_rules fixpoint each tick, the
-    state decision must track the POST-decay field once it crosses below
-    the threshold: 2.5->+1, 1.5->+1, 0.5->0 (FLIP), 0.0->0."""
+    UPDATED HONESTLY (CAN_IDENTITY_FEEDBACK_RESULTS.md) -- this is exactly
+    the kind of genuine behaviour change the task's own regression
+    instructions anticipated, not a silent edit. Loading
+    seeds/can_decay_identity.json v1.2.0 now ALSO runs
+    can_native_identity_field_feedback and its sibling
+    can_native_identity_evidence_sample in the SAME run_rules fixpoint --
+    both fire unconditionally on ANY Concept with a nonzero `state` under an
+    adaptive Mt (they always did; v1.1.0-and-earlier's identity_evidence_*
+    ledger simply had no reader, so it was invisible to this test). Once
+    `state` commits to +1 on tick 0 (external_field=3.5 clears threshold),
+    every subsequent tick ALSO samples sigma=+1 as identity evidence and
+    steps identity_field by +1 -- so as external_field decays by exactly -1/
+    tick (floored at 0), identity_field grows by exactly +1/tick (no
+    ceiling), and the two exactly offset in this scenario's matched unit
+    steps. The local field (external_field + identity_field) therefore
+    never drops back below threshold, and state never flips -- this is a
+    real, structural consequence of identity-feedback (CAN_IDENTITY_
+    FEEDBACK_PREREG.md Sec2), not a bug: a Concept's own sustained
+    commitment increasingly self-sustains through the identity axis even as
+    the ORIGINAL external evidence that first caused it fades, exactly
+    matching can_ops.rs's own documented continuous intent ("identity
+    emerges from sustained sigma... with reinforcement, it strengthens").
+    The companion test below demonstrates decay STILL flips state when
+    identity does NOT offset it (disconfirming evidence pins identity
+    negative)."""
     s = _loaded_substrate()
     inner = s._inner
     mt = inner.add_node("Microtheory", {
@@ -203,20 +221,81 @@ def test_external_field_decay_composes_with_local_field_formula_and_flips_state(
 
     field_trajectory = []
     state_trajectory = []
+    identity_trajectory = []
     for tick in range(5):
         inner.set_attr(mt, "can_tick", tick)
         inner.run_rules(1000)
         attrs = inner.node(c)["attrs"]
         field_trajectory.append(attrs["external_field"])
         state_trajectory.append(attrs["state"])
+        identity_trajectory.append(attrs.get("identity_field"))
     print(f"field trajectory: {field_trajectory}")
+    print(f"identity trajectory: {identity_trajectory}")
+    print(f"state trajectory: {state_trajectory}")
+
+    assert field_trajectory == [2.5, 1.5, 0.5, 0.0, 0.0], (
+        "external_field's OWN decay trajectory must be byte-unchanged by "
+        "identity-feedback's addition -- the two rules write disjoint attrs"
+    )
+    assert identity_trajectory == [1.0, 2.0, 3.0, 4.0, 5.0], (
+        "identity_field must grow by exactly +1/tick once state commits to "
+        "+1 -- the identity-feedback rule sampling this SAME Concept's own "
+        "sustained sigma"
+    )
+    assert state_trajectory == [1.0, 1.0, 1.0, 1.0, 1.0], (
+        "with identity-feedback active, state must NOT flip -- identity_"
+        "field's unbounded growth exactly offsets external_field's "
+        f"floored decay in this scenario's matched unit steps; got {state_trajectory}"
+    )
+
+
+def test_external_field_decay_still_flips_state_when_identity_does_not_offset_it():
+    """Companion to the test above: proves the decayed-field-flips-state
+    composition (the ORIGINAL claim of this rule) still holds when identity
+    does not offset it. Same scenario, but the identity ledger is
+    pre-seeded with heavy DISCONFIRMING evidence (mirrors a Concept that
+    has a long history of NOT holding this state) so identity_field is
+    pulled negative instead of positive -- accelerating, not blocking, the
+    flip once external_field's decay brings the local field below
+    threshold."""
+    s = _loaded_substrate()
+    inner = s._inner
+    mt = inner.add_node("Microtheory", {
+        "temperature": 1.0, "discrete_mode": "3state", "can_tick": 0,
+        "update_policy": "adaptive",
+    })
+    c = inner.add_node("Concept", {
+        "name": "c", "state": 0.0,
+        "external_field": 3.5, "identity_field": 0.0,
+        "external_field_decay_tick": -1,
+        "identity_evidence_confirm": 0, "identity_evidence_disconfirm": 50,
+        "identity_evidence_tick": -1, "identity_decay_tick": -1,
+        "identity_field_tick": -1,
+    })
+    inner.add_edge(mt, "has_concept", c, {})
+
+    field_trajectory = []
+    state_trajectory = []
+    identity_trajectory = []
+    for tick in range(5):
+        inner.set_attr(mt, "can_tick", tick)
+        inner.run_rules(1000)
+        attrs = inner.node(c)["attrs"]
+        field_trajectory.append(attrs["external_field"])
+        state_trajectory.append(attrs["state"])
+        identity_trajectory.append(attrs.get("identity_field"))
+    print(f"field trajectory (disconfirm-pinned identity): {field_trajectory}")
+    print(f"identity trajectory: {identity_trajectory}")
     print(f"state trajectory: {state_trajectory}")
 
     assert field_trajectory == [2.5, 1.5, 0.5, 0.0, 0.0]
-    assert state_trajectory == [1.0, 1.0, 0.0, 0.0, 0.0], (
-        "the discrete update must FLIP away from +1 once the decayed field "
-        f"can no longer clear the atanh(0.5)={ATANH_HALF:.4f} threshold "
-        f"(scaled by temperature=1.0); got {state_trajectory}"
+    assert all(v < 0 for v in identity_trajectory), (
+        "heavy pre-seeded disconfirming evidence must pull identity_field "
+        "negative every tick, never offsetting external_field's decay"
+    )
+    assert 0.0 in state_trajectory, (
+        "state must flip away from +1 once the (now doubly-negative-biased) "
+        f"local field can no longer clear threshold; got {state_trajectory}"
     )
 
 

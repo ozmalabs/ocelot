@@ -287,19 +287,31 @@ def maybe_update_identity(
     Skips frozen Mts. Adaptive: identity emerges from sustained σ;
     flips average to zero → identity decays.
 
-    STAYS BLOCKED for native Mts (CAN_MT_SCOPED_RULES_RESULTS.md,
-    investigating the task's point 4). This is NOT the orchestration
-    hazard scoping fixes — it is the SEPARATE, still-unbuilt
-    identity-feedback gap `CAN_DECAY_IDENTITY_RESULTS.md` Sec2 named:
-    `can_native_identity_evidence_sample`/`_decay` maintain a graded
-    READING (evidence counters + an on-demand log-odds render, never
-    written back), but no native rule anywhere WRITES `identity_field`
-    from that reading — confirmed again by direct read of both seeds
-    for this rung. `identity_field` is READ by
-    `can_native_update_3state`'s own local-field sum but never SET by any
-    rule. Continuous path is unconditional and unchanged; wiring the
-    native path here would require building the feedback half itself,
-    explicitly out of this rung's scope per the task."""
+    MIGRATED for native Mts (CAN_IDENTITY_FEEDBACK_RESULTS.md — closes the
+    identity-feedback gap `CAN_DECAY_IDENTITY_RESULTS.md` §2/
+    `CAN_MT_SCOPED_RULES_RESULTS.md` §5/`CAN_EXTERNAL_FIELD_DECAY_RESULTS.md`
+    §6 all named and explicitly declined to build). Native branch:
+    `seeds/can_decay_identity.json` v1.2.0's `can_native_identity_field_
+    feedback` writes `identity_field` FROM `can_native_identity_evidence_
+    sample`'s own log-odds render — a fixed 1-quantum step toward the
+    render's sign each strictly-later external tick (neutral/flip-flop
+    reading decays `identity_field` toward zero via the same `Max`/`Min`
+    clamp `can_native_external_field_decay` already uses), the SAME
+    `allow_h_drift` policy axis every rule in this seed checks. A
+    magnitude/recurrence-scaled step was investigated and REJECTED on
+    stability grounds — a per-tick jump that grows in size threatens the
+    discrete-async update's own Lyapunov convergence argument; a fixed
+    quantum was chosen and validated against a real 60-draw (3-state) +
+    60-draw (2-state) convergence sweep with the feedback loop active
+    (`CAN_IDENTITY_FEEDBACK_RESULTS.md` §3: 0 non-convergent draws either
+    mode). `alpha`/`beta` have no native analog (fixed 1-quantum step, same
+    precedent as every other native decay rule in this seed) and are
+    silently unused on this branch. Continuous path (`mt_allows` check +
+    `substrate.mt_update_identity_dynamics`) is unconditional and
+    byte-unchanged."""
+    if _is_native(substrate, mt):
+        from domains.can_native_orchestration import scoped_settle
+        return scoped_settle(substrate, mt)
     if not mt_allows(substrate, mt, "allow_h_drift"):
         return 0
     return substrate.mt_update_identity_dynamics(mt, alpha, beta)
@@ -315,14 +327,29 @@ def nudge_identity_on_flipped(
 
     Skips frozen Mts. Returns count of nudges applied.
 
-    STAYS BLOCKED for native Mts, same reason as `maybe_update_identity`
-    above: `concept_nudge_identity` writes `identity_field` directly, and
-    the native identity-feedback half (writing FROM the evidence ledger
-    INTO `identity_field`) is the same confirmed-unbuilt gap — a
-    Python-level nudge would still work mechanically (it's a direct
-    `set_attr`-style write, not a relax/decay call), but wiring it
-    correctly needs a design decision about how it interacts with the
-    unbuilt feedback path, which is out of this rung's scope."""
+    STAYS on the continuous path for native Mts — investigated during
+    `CAN_IDENTITY_FEEDBACK_RESULTS.md` (the identity-feedback gap
+    `maybe_update_identity` closed, §above, is NOT the reason this one
+    stays blocked; the reason is genuinely different, found by direct
+    investigation, not copy-pasted). `can_native_identity_field_feedback`
+    (`seeds/can_decay_identity.json` v1.2.0) is a per-tick, epoch-gated,
+    whole-Mt sample step driven by the AMBIENT observed σ each Concept
+    already has — it has no input surface for this function's own EVENT
+    shape: a SPECIFIC set of flipped node ids, an injected `target_sigma`
+    per node (the insight's own new σ, not necessarily what `state`
+    already reads), and a `recurrence_count`-scaled `alpha_eff`. A
+    magnitude/recurrence-scaled per-tick step was investigated for
+    `maybe_update_identity` and REJECTED on stability grounds (a growing
+    per-tick jump threatens the discrete-async Lyapunov convergence
+    argument, `CAN_IDENTITY_FEEDBACK_PREREG.md` §2.2/§2.3) — the SAME
+    rejection applies here even more directly, since this function's whole
+    point is an IMMEDIATE, LARGER nudge on insight consolidation, which is
+    exactly the unbounded-step shape the convergence sweep was built to
+    guard against. Wiring this function onto the fixed-quantum per-tick
+    rule would silently discard the event's own target_sigma/recurrence
+    signal and just let the ambient tick-based rule do whatever it would
+    have done anyway — not a real migration of this function's contract,
+    reported honestly rather than forced through to claim a round 7/7."""
     if not mt_allows(substrate, mt, "allow_h_drift"):
         return 0
     if not insight or "flipped_nodes" not in insight:
