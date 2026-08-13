@@ -79,6 +79,7 @@ from typing import Any, Optional
 from domains import comprehend_text as ct
 from domains import discourse_coherence as dc
 from domains import instruction_reading as ir
+from domains import propositional_deduction as pd
 from domains import reading_collapse as rc
 from domains import reflective_faculty as rf
 from domains import situation_model_reader as smr
@@ -146,11 +147,26 @@ def ensure_logical_seeds(agent) -> None:
     ensure_seeds(agent)
     sub, _, _ = _resolve(agent)
     if _has_concept(sub, "inference_logical"):
+        _ensure_contrapositives(agent)   # additive; safe on an already-loaded graph
         return
     with open(_LOGICAL_SEED) as f:
         manifest = json.load(f)
     for nd in manifest.get("nodes", []):
         sub.add_node(nd["type"], dict(nd.get("attrs", {})))
+    _ensure_contrapositives(agent)
+
+
+def _ensure_contrapositives(agent) -> None:
+    """MODUS TOLLENS: additive, idempotent post-load install of the
+    MECHANICALLY DERIVED contrapositive companion of every resident
+    `knowledge_logical` schema (`propositional_deduction.ensure_
+    contrapositives` -- P=>Q entails ~Q=>~P, classical logic, not a new
+    interpretive schema). The SAME belt-and-braces idiom `_ensure_warning_
+    lexicon`/`_ensure_trust_lexicon` already use. Once installed, the
+    EXISTING, UNCHANGED `detect_implication_gaps`/`resolve_implication_gap`/
+    `decode_gap` below run modus tollens with ZERO new gap-detection code --
+    see DEDUCTION_EXTENSION_RESULTS.md Sec2 for the measurement."""
+    pd.ensure_contrapositives(agent)
 
 
 def _ensure_warning_lexicon(agent) -> None:
@@ -988,6 +1004,161 @@ def resolve_implication_gap(agent, gap: dict, *, t: int = 0, unit=None) -> dict:
 
 
 # --------------------------------------------------------------------------- #
+#  CONJUNCTIVE-ANTECEDENT GAP — "if X is wet and X is cold, X is frozen":
+#  a held `knowledge_logical` schema whose `signature` names TWO OR MORE
+#  antecedent facts that must ALL be jointly stated before the consequent is
+#  licensed. See docs/research/engine_substrate/DEDUCTION_EXTENSION_PREREG.md
+#  Sec3 for the measurement this is built from: ShapeDecode's `Covers` matcher
+#  ALREADY handles a multi-item goal against a multi-item signature correctly
+#  when FULLY covered (a throwaway 2-conjunct probe schema decoded a 2-fact
+#  goal with `covered_count == 2`, matching the whole signature) — so the
+#  SCHEMA SHAPE needs zero change (`signature` of length >= 2 is already
+#  fully expressible in the SAME knowledge_logical pool). But `Covers` does
+#  NOT require full coverage before "authoring": offering only ONE of the two
+#  needed facts to the SAME schema still returned `authored: True, fit: 2` —
+#  a genuine false-positive risk `resolve_implication_gap`'s existing
+#  `fit <= 0` guard would NOT catch. Two small, genuinely NEW pieces close
+#  that gap, kept entirely separate from `detect_implication_gaps`/
+#  `resolve_implication_gap` (which stay byte-unchanged) so the proven
+#  single-antecedent MP/MT pipeline carries zero regression risk:
+#
+#    1. `detect_conjunctive_gaps` offers ONE joint candidate per entity — its
+#       WHOLE currently-true, admissible fact set at once (not one attr at a
+#       time) — so ShapeDecode can jointly match however many conjuncts a
+#       held schema needs.
+#    2. `resolve_conjunctive_gap` adds a FULL-COVERAGE GATE after decode: the
+#       winning schema's OWN `signature` length (a plain post-decode
+#       attribute read, the SAME idiom `_coherence_of`/`_supplies_of` already
+#       use to read a fact off the winner ShapeDecode already chose) must
+#       equal the decode's own `covered_count` before minting — a
+#       CONSISTENCY CHECK on an already-made decision, not a new decision
+#       about WHICH schema wins (mirrors the module's own `coherence ==
+#       "elaborative" and not deep` gate: "the gate decides WHETHER a pass
+#       runs, never WHICH schema wins").
+#
+#  A THIRD thing was found by RUNNING this, not assumed, and is the reason
+#  the goal/signature relation label below is `"holds_all"`, NOT `"holds"`:
+#  simply ADDING a >=2-conjunct schema to the SAME `knowledge_logical` pool
+#  using the relation label `"holds"` (the label `detect_implication_gaps`/
+#  `resolve_implication_gap` already use) makes THAT EXISTING, UNCHANGED
+#  pipeline ALSO a candidate decoder for it — measured live: offering just
+#  `[["holds","wet"]]` (MP's own one-attr-at-a-time goal) to a schema whose
+#  signature was `[["holds","wet"],["holds","cold"]]` returned `authored:
+#  True` and MP's existing `fit <= 0` guard did not catch it, so the OLD
+#  path minted `frozen` from `wet` ALONE — a genuine false positive, and one
+#  this rung must not ship (nor may it fix by editing
+#  `resolve_implication_gap`, which must stay byte-unchanged for
+#  regression). The fix is DATA-LEVEL, and it is the SAME convention this
+#  file's OWN existing gap kinds already use: EVERY established gap kind
+#  (`needs`/`needs_whole`/`needs_goal`/`physical_effect`/`elaborate`/
+#  `holds`) has its OWN relation label, which is what naturally partitions
+#  `ShapeDecode`'s shared pool per gap kind WITHOUT a `kind`-attr filter
+#  (`kind` is a label within the pool, not a partition —
+#  SHAPE_TYPE_VOCABULARY_SPIKE.md's finding, quoted throughout this file).
+#  A CONJUNCTIVE antecedent is structurally a DIFFERENT gap kind from a
+#  single antecedent (MT's contrapositive correctly keeps `"holds"` because
+#  it IS still single-antecedent-shaped and correctly handled by the SAME
+#  MP mechanism) — so it gets its OWN label, `"holds_all"`, matching this
+#  file's own established idiom rather than inventing a new one. With
+#  `"holds_all"` in the conjunctive schema's `signature` (and in the ONLY
+#  goal this new pair ever constructs), `detect_implication_gaps`/
+#  `resolve_implication_gap`/`decode_gap` never see it as a candidate at
+#  all (a `"holds"`-labelled goal cannot structurally match a
+#  `"holds_all"`-labelled signature) — confirmed live, see the RESULTS doc.
+#
+#  Scoped to schemas with signature length >= 2 (a single-antecedent winner
+#  is MP's job, left untouched here) purely to keep the two pipelines' own
+#  reporting/testing crisp — nothing would break if a 1-antecedent schema
+#  won here too (the idempotent mint would just no-op against MP's own
+#  earlier mint of the same fact).
+# --------------------------------------------------------------------------- #
+def detect_conjunctive_gaps(agent, unit=None) -> list:
+    """Every resident, non-nested SmEntity's WHOLE currently-true fact set
+    (every admissible attr==1, the SAME `_NON_CANDIDATE_*` exclusion
+    `detect_implication_gaps` uses), offered as ONE joint candidate
+    antecedent-set — not one candidate per attr. Returns [{entity, node,
+    antecedent_attrs}] (antecedent_attrs a list, possibly length 1; the
+    full-coverage gate in `resolve_conjunctive_gap` is what actually
+    requires >= 2 for a genuinely conjunctive schema to fire). NOTE: this
+    offers the SAME facts `detect_implication_gaps` does — the two never
+    collide because `resolve_conjunctive_gap` decodes with the
+    `"holds_all"` relation label, not `"holds"` (see the module docstring
+    above for why that separation is required, measured not assumed)."""
+    ensure_logical_seeds(agent)
+    sub, _, _ = _resolve(agent)
+    gaps = []
+    for n in sub.nodes("SmEntity"):
+        at = sub.node(n)["attrs"]
+        name = at.get("name")
+        if unit is not None and at.get("unit") != unit:
+            continue
+        if not name or at.get("nested"):
+            continue
+        attrs = [k for k, v in at.items()
+                 if v == 1 and k not in _NON_CANDIDATE_KEYS
+                 and not k.startswith(_NON_CANDIDATE_PREFIXES)]
+        if attrs:
+            gaps.append({"entity": name, "node": n, "antecedent_attrs": attrs})
+    return gaps
+
+
+def resolve_conjunctive_gap(agent, gap: dict, *, t: int = 0, unit=None) -> dict:
+    """Resolve ONE conjunctive-antecedent gap: decode the entity's WHOLE
+    joint fact-set (`[["holds_all", a] for a in gap["antecedent_attrs"]]`
+    — `"holds_all"`, NOT `"holds"`: see the module docstring above for why
+    a distinct relation label is required to keep this pass from ever being
+    a candidate decoder for MP's own single-antecedent goals, and
+    vice versa) against the codebook (the SAME `decode_gap` -> `ShapeDecode`
+    -> `reading_collapse._winner` collapse every other gap kind uses,
+    UNCHANGED). Fires ONLY when (a) the winning schema is genuinely
+    conjunctive (`len(signature) >= 2` — belt-and-braces; with the
+    `holds_all` label this is already guaranteed by construction, since no
+    single-antecedent MP/MT schema uses that label, but the check is kept
+    as a second, cheap consistency guard) AND (b) the decode's own
+    `covered_count` equals that FULL signature length — i.e. every
+    antecedent conjunct the schema needs was jointly stated, no partial
+    credit (see module docstring above for why this second check is
+    necessary: `Covers` alone accepts partial coverage as a valid, lower-fit
+    match). No covering schema, or a genuinely partial match -> honest null,
+    nothing fabricated."""
+    goal = [["holds_all", a] for a in gap["antecedent_attrs"]]
+    dec = decode_gap(agent, goal)
+    if dec["name"] is None or dec["fit"] <= 0:
+        return {"minted": False, "gap": gap, "schema": None,
+                "reason": ("no knowledge_logical schema covers the joint fact-set "
+                           "%r -- honest null, nothing fabricated") % (gap["antecedent_attrs"],)}
+    sub, _, _ = _resolve(agent)
+    schema_sig = _schema_signature_len(sub, dec["name"])
+    if schema_sig is None or schema_sig < 2:
+        return {"minted": False, "gap": gap, "schema": dec["name"],
+                "reason": ("winning schema %r has signature length %r -- not "
+                           "genuinely conjunctive, left to resolve_implication_gap"
+                           ) % (dec["name"], schema_sig)}
+    covered = dec["result"].get("covered_count") if isinstance(dec["result"], dict) else None
+    if covered != schema_sig:
+        return {"minted": False, "gap": gap, "schema": dec["name"],
+                "reason": ("PARTIAL MATCH: schema %r needs %d antecedent(s), only %r "
+                           "jointly covered -- no partial credit, nothing fabricated"
+                           ) % (dec["name"], schema_sig, covered)}
+    coherence = _coherence_of(sub, dec["name"])
+    if coherence == "elaborative" and not _is_deep(agent):
+        return {"minted": False, "gap": gap, "schema": dec["name"],
+                "reason": "elaborative schema, standard_of_coherence is shallow -- not fired"}
+    supplies = _supplies_of(sub, dec["name"])
+    if supplies.get("relation") == "is_a" and supplies.get("attr"):
+        ent = smr._entity(agent, gap["entity"], unit=unit)
+        if sub.node(ent)["attrs"].get(supplies["attr"]) == 1:
+            return {"minted": False, "gap": gap, "schema": dec["name"],
+                    "reason": "already holds -- idempotent, no re-mint"}
+        ing = smr.ingest_predication(agent, ["is_a", gap["entity"], supplies["attr"]],
+                                     t=t, unit=unit)
+        return {"minted": True, "gap": gap, "schema": dec["name"], "supplies": supplies,
+                "ingest": ing}
+    return {"minted": False, "gap": gap, "schema": dec["name"],
+            "reason": "winning schema supplies an unrecognised relation %r" % (supplies,)}
+
+
+# --------------------------------------------------------------------------- #
 #  DECODE — the collapse. Goal -> ShapeDecode -> the winning schema.
 # --------------------------------------------------------------------------- #
 def _schema_node(sub, name: str):
@@ -1022,6 +1193,22 @@ def _supplies_of(sub, schema_name: str) -> dict:
         return json.loads(sub.node(node)["attrs"].get("supplies") or "{}")
     except Exception:
         return {}
+
+
+def _schema_signature_len(sub, schema_name: str) -> Optional[int]:
+    """Plain post-decode attribute read: how many antecedent conjuncts does
+    the WINNING schema's own `signature` declare? Used only by
+    `resolve_conjunctive_gap`'s full-coverage gate — a consistency check on
+    a decision `decode_gap`/ShapeDecode already made, never a filter on
+    WHICH schema wins."""
+    node = _schema_node(sub, schema_name)
+    if node is None:
+        return None
+    try:
+        sig = json.loads(sub.node(node)["attrs"].get("signature") or "null")
+        return len(sig) if isinstance(sig, list) else None
+    except Exception:
+        return None
 
 
 def _coherence_of(sub, schema_name: str) -> str:
@@ -1200,10 +1387,18 @@ def read_and_infer(agent, text: str, *, max_sentences: int = 40) -> dict:
     # additive: `logical` is a NEW dict key, nothing above depends on it.
     logical = [resolve_implication_gap(agent, g, t=980 + i)
                for i, g in enumerate(detect_implication_gaps(agent))]
+    # CONJUNCTIVE ANTECEDENTS ("if X is wet and X is cold, X is frozen") —
+    # DEDUCTION_EXTENSION_PREREG.md/_RESULTS.md. Runs AFTER `logical` so a
+    # fact `logical` itself just derived (MP or MT) is ALSO available as one
+    # of the jointly-offered antecedents — additive: `conjunctive` is a NEW
+    # dict key, nothing above depends on it, and `detect_implication_gaps`/
+    # `resolve_implication_gap` above are byte-unchanged by this pass.
+    conjunctive = [resolve_conjunctive_gap(agent, g, t=990 + i)
+                   for i, g in enumerate(detect_conjunctive_gaps(agent))]
 
     return {"text": text, "textbase": spine["textbase"], "before_situation_model": before,
             "blocking": blocking, "bridging": bridging, "goal": goal, "warning": warning,
-            "embedded": embedded, "logical": logical,
+            "embedded": embedded, "logical": logical, "conjunctive": conjunctive,
             "elaborative": elaborative, "situation_model": _situation_model(sub)}
 
 
@@ -1211,9 +1406,10 @@ __all__ = [
     "ensure_seeds", "ensure_logical_seeds", "coherence_depth", "set_coherence_depth",
     "detect_precondition_gaps", "detect_bridging_gaps", "detect_goal_gaps",
     "detect_causal_gaps", "detect_elaborative_candidates", "detect_implication_gaps",
-    "detect_warning_gaps", "warning_membership", "resolve_warning_gap",
+    "detect_conjunctive_gaps", "detect_warning_gaps", "warning_membership", "resolve_warning_gap",
     "trust_membership", "resolve_warning_embedded",
     "decode_gap", "resolve_precondition_gap", "resolve_bridging_gap", "resolve_goal_gap",
     "resolve_causal_gap", "resolve_elaborative_candidate", "resolve_implication_gap",
+    "resolve_conjunctive_gap",
     "read_and_infer", "read_and_infer_causal",
 ]

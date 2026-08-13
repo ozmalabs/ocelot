@@ -284,7 +284,136 @@ def mint_logical_schema(agent, statement: str, *, name: Optional[str] = None) ->
         "chain": parsed["chain"],
     }
     node = sub.add_node("ShapeSignature", attrs)
+    derive_contrapositive(agent, nm)
     return {"minted": True, "name": nm, "node": node, "parsed": parsed}
 
 
-__all__ = ["parse_conditional", "mint_logical_schema"]
+# --------------------------------------------------------------------------- #
+#  (3) MODUS TOLLENS — the contrapositive is MECHANICALLY DERIVED from the
+#  SAME held implication, not a second interpretive schema kind. P=>Q entails
+#  (classical logic, not a new decision) ~Q=>~P. Reusing the SAME `not_`
+#  name-prefix regularity the general reader's OWN complement-span joining
+#  already produces for a negated copular statement (`domains/reading_
+#  collapse.py`'s glue-join step; confirmed live: "the ground is not wet" ->
+#  is_a(ground, not_wet) -- see DEDUCTION_EXTENSION_PREREG.md Sec1/RESULTS
+#  Sec1 for the measurement), the contrapositive companion is a SECOND
+#  `ShapeSignature{kind:"knowledge_logical"}` node in the SAME codebook pool
+#  (no new kind, no new node type) whose `signature` is the NEGATED
+#  consequent and whose `supplies` is the NEGATED antecedent. Once installed,
+#  `inference_generation.py`'s EXISTING, UNCHANGED `detect_implication_gaps`
+#  -> `decode_gap` -> `resolve_implication_gap` pipeline runs modus tollens
+#  with ZERO new gap-detection code: a stated `not_wet==1` fact is already
+#  offered as a breadth candidate exactly like `bird==1` is, and `Covers`
+#  matches it against the contrapositive's `signature` exactly like any
+#  other antecedent (measured live, not assumed -- see the RESULTS doc).
+# --------------------------------------------------------------------------- #
+def _negate_attr(attr: str) -> str:
+    """Negate a held attr NAME using the SAME `not_`/`can_` prefix convention
+    this module's OWN `parse_conditional`/`_relation_and_attr` already use
+    (`can_fly` for a capability consequent, the bare tail for a property
+    one) -- reading this module's OWN naming convention back out, not a new
+    decision about text. A capability-shaped attr (`can_X`) negates to
+    `not_X` (matching what the general reader's event-construction actually
+    produces for "cannot X" -- `can(subj, not_X)`, measured live); any other
+    attr (an antecedent, always a bare `is_a` tail, or a property
+    consequent) negates to the plain `not_` prefix (matching what the
+    general reader's definitional construction produces for "is not X" ->
+    `is_a(subj, not_X)`, also measured live). Double-negation is not
+    attempted (an attr already prefixed `not_` is left as-is by every
+    caller here -- `ensure_contrapositives` never re-derives FROM a
+    contrapositive, see its own guard)."""
+    s = str(attr)
+    if s.startswith("can_"):
+        return "not_" + s[len("can_"):]
+    return "not_" + s
+
+
+def _schema_signature(sub, node) -> Optional[list]:
+    try:
+        return json.loads(sub.node(node)["attrs"].get("signature") or "null")
+    except Exception:
+        return None
+
+
+def _schema_supplies(sub, node) -> Optional[dict]:
+    try:
+        return json.loads(sub.node(node)["attrs"].get("supplies") or "null")
+    except Exception:
+        return None
+
+
+def derive_contrapositive(agent, schema_name: str) -> dict:
+    """Mechanically derive and install the CONTRAPOSITIVE companion of ONE
+    held `knowledge_logical` schema (by name): P=>Q becomes ~Q=>~P. Scoped to
+    the single-antecedent shape this whole arc supports (`signature` of
+    length exactly 1, `supplies.relation == "is_a"`) -- a schema outside that
+    shape (e.g. an already-derived contrapositive, or -- forward-looking --
+    a conjunctive schema, whose contrapositive is a DISJUNCTION this rung
+    does not represent) is an honest no-op, never a wrong answer. Idempotent
+    by name (`<name>_contrapositive`, find-or-create). Returns {derived:
+    bool, name, node|None, reason}."""
+    sub, _, _ = _resolve(agent)
+    node = _schema_by_name(sub, schema_name)
+    if node is None:
+        return {"derived": False, "reason": "no such schema %r" % schema_name}
+    at = sub.node(node)["attrs"]
+    if at.get("contrapositive_of"):
+        return {"derived": False, "reason": "schema %r is itself a derived "
+                "contrapositive -- not re-derived (no double-negation)" % schema_name}
+    sig = _schema_signature(sub, node)
+    supplies = _schema_supplies(sub, node)
+    if not sig or len(sig) != 1 or not isinstance(sig[0], (list, tuple)) \
+            or len(sig[0]) < 2 or sig[0][0] != "holds":
+        return {"derived": False, "reason": "signature %r is not the single-"
+                "antecedent ['holds', attr] shape -- contrapositive not "
+                "derived (out of this rung's scope)" % (sig,)}
+    if not supplies or supplies.get("relation") != "is_a" or not supplies.get("attr"):
+        return {"derived": False, "reason": "supplies %r is not the plain "
+                "is_a shape -- contrapositive not derived" % (supplies,)}
+    antecedent_attr = str(sig[0][1])
+    consequent_attr = str(supplies["attr"])
+    cp_name = schema_name + "_contrapositive"
+    existing = _schema_by_name(sub, cp_name)
+    if existing is not None:
+        return {"derived": False, "already": True, "name": cp_name, "node": existing}
+    attrs = {
+        "name": cp_name,
+        "kind": "knowledge_logical",
+        "coherence": at.get("coherence") or "blocking",
+        "signature": json.dumps([["holds", _negate_attr(consequent_attr)]]),
+        "supplies": json.dumps({"relation": "is_a",
+                                "attr": _negate_attr(antecedent_attr)}),
+        "statement": at.get("statement"),
+        "chain": ("CONTRAPOSITIVE of %r: held P=>Q (%s => %s) entails "
+                   "~Q=>~P (%s => %s) [classical logic, mechanically derived, "
+                   "not a new interpretive schema]"
+                   % (schema_name, antecedent_attr, consequent_attr,
+                      _negate_attr(consequent_attr), _negate_attr(antecedent_attr))),
+        "contrapositive_of": schema_name,
+    }
+    cp_node = sub.add_node("ShapeSignature", attrs)
+    return {"derived": True, "name": cp_name, "node": cp_node}
+
+
+def ensure_contrapositives(agent) -> list:
+    """Batch form: derive the contrapositive companion for EVERY resident
+    `knowledge_logical` schema that does not already have one and is not
+    itself a derived contrapositive. Additive, idempotent, safe on an
+    already-loaded graph -- the SAME idiom `inference_generation._ensure_
+    warning_lexicon`/`_ensure_trust_lexicon` already use for a belt-and-
+    braces post-load install. Returns the list of `derive_contrapositive`
+    results (including no-ops), for callers/tests that want to inspect
+    what happened."""
+    sub, _, _ = _resolve(agent)
+    names = []
+    for n in sub.nodes("ShapeSignature"):
+        at = sub.node(n)["attrs"]
+        if at.get("kind") == "knowledge_logical" and not at.get("contrapositive_of"):
+            nm = at.get("name")
+            if nm:
+                names.append(nm)
+    return [derive_contrapositive(agent, nm) for nm in names]
+
+
+__all__ = ["parse_conditional", "mint_logical_schema",
+           "derive_contrapositive", "ensure_contrapositives"]
