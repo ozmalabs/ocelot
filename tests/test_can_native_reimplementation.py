@@ -343,6 +343,206 @@ def test_hebbian_mint_on_recurrence_not_on_first_sight():
 
 
 # ---------------------------------------------------------------------
+# Item 4, v1.1.0 -- Hebbian GRADED REWEIGHTING (LOGODDS_GENERATOR_
+# PREREG.md/_RESULTS.md), unblocking the graded-reweighting half the v1.0.0
+# rung above left explicitly blocked (Sec5's own "grep -rn logodds finds it
+# named only in the two research docs" finding).
+# ---------------------------------------------------------------------
+
+def _coact_between(inner, a, b):
+    """Find the Coactivation node anchoring the a->b evidence ledger (the
+    SAME a-coactivated_with->coact-coactivation_of->b traversal
+    can_native_hebbian_mint/can_native_hebbian_reweight's own match uses) --
+    a query over already-decoded graph facts, not a decision."""
+    for c in inner.neighbours(a, "coactivated_with"):
+        if b in inner.neighbours(c, "coactivation_of"):
+            return c
+    return None
+
+
+def _log_odds_term():
+    """The cross-frame log-odds RENDER, built once and reused across every
+    demonstration below: Log(Div(Plus(evidence_confirm,1),
+    Plus(evidence_disconfirm,1))) -- zero new Rust, Log/Div/Plus all
+    pre-existed (term.rs). Evaluated live via Substrate.evaluate (a pure
+    read, no graph mutation -- the same idiom
+    test_polarization_via_max_steps_sweep already uses for ShapeDecode, and
+    the same "pure comparator kept separate from canonical storage" shape as
+    can_ops.rs::mt_mean_field_marginal's own cross-check in this file's item-3
+    demonstration above)."""
+    from substrate_rs import Term
+    return Term(
+        "Log",
+        arg=Term(
+            "Div",
+            a=Term("Plus", items=[
+                Term("Attr", node=Term("Var", name="coact"), key="evidence_confirm"),
+                Term("Lit", value=1),
+            ]),
+            b=Term("Plus", items=[
+                Term("Attr", node=Term("Var", name="coact"), key="evidence_disconfirm"),
+                Term("Lit", value=1),
+            ]),
+        ),
+    )
+
+
+def _isolated_pair(inner):
+    """discrete_mode='static' so item-3's relaxation rules never interfere
+    (the SAME isolation discipline test_hebbian_mint_on_recurrence_not_on_
+    first_sight already uses, and for the SAME documented reason: on an
+    isolated pair with zero field/coupling, can_native_update_zero would
+    otherwise neutralize both concepts to state=0 before the Hebbian rules
+    ever see their committed state)."""
+    mt = inner.add_node("Microtheory", {"temperature": 1.0, "discrete_mode": "static", "can_tick": 0})
+    a = inner.add_node("Concept", {"name": "a", "state": 1.0, "external_field": 0.0, "identity_field": 0.0})
+    b = inner.add_node("Concept", {"name": "b", "state": 1.0, "external_field": 0.0, "identity_field": 0.0})
+    inner.add_edge(mt, "has_concept", a, {})
+    inner.add_edge(mt, "has_concept", b, {})
+    return mt, a, b
+
+
+def test_evidence_counters_are_real_integers_stepping_across_ticks():
+    """PREREG Sec4(a): in-frame stepping. Drives can_tick through 5 ticks --
+    first sight (note only) -> recurrence (mint, +1 confirm) -> two more
+    confirming ticks -> one disconfirming tick (b flips sign) -- and checks
+    the counters are real Python ints, never floats, strictly frozen or
+    incrementing by exactly 1 per tick, matching the condition that tick."""
+    s = _loaded_substrate()
+    inner = s._inner
+    mt, a, b = _isolated_pair(inner)
+
+    inner.run_rules(1000)  # tick 0: first sight, note only
+    coact = _coact_between(inner, a, b)
+    assert coact is not None, "note_coactivation must mint the ledger on first sight"
+    attrs = inner.node(coact)["attrs"]
+    assert (attrs["evidence_confirm"], attrs["evidence_disconfirm"]) == (0, 0)
+    assert not (b in inner.neighbours(a, "causal_influence")), "must not mint the edge on first sight"
+
+    expected = [(1, 1, 0), (2, 2, 0), (3, 3, 0)]  # (tick, confirm, disconfirm) for ticks 1-3, still same-sign
+    for tick, exp_confirm, exp_disconfirm in expected:
+        inner.set_attr(mt, "can_tick", tick)
+        inner.run_rules(1000)
+        attrs = inner.node(coact)["attrs"]
+        confirm, disconfirm = attrs["evidence_confirm"], attrs["evidence_disconfirm"]
+        assert isinstance(confirm, int) and isinstance(disconfirm, int), (
+            f"tick {tick}: evidence counters must be real ints, got {type(confirm)}/{type(disconfirm)}"
+        )
+        assert (confirm, disconfirm) == (exp_confirm, exp_disconfirm), (
+            f"tick {tick}: expected confirm={exp_confirm} disconfirm={exp_disconfirm}, "
+            f"got confirm={confirm} disconfirm={disconfirm}"
+        )
+    assert b in inner.neighbours(a, "causal_influence"), "recurrence (tick 1) must have minted the edge"
+
+    # tick 4: b flips sign -- a genuine disconfirming observation.
+    inner.set_attr(b, "state", -1.0)
+    inner.set_attr(mt, "can_tick", 4)
+    inner.run_rules(1000)
+    attrs = inner.node(coact)["attrs"]
+    assert (attrs["evidence_confirm"], attrs["evidence_disconfirm"]) == (3, 1), (
+        f"disconfirming tick must bump evidence_disconfirm only, got {attrs}"
+    )
+    print("evidence trajectory: tick0=(0,0) tick1..3=(1,0)(2,0)(3,0) tick4=(3,1) -- all real ints")
+
+
+def test_log_odds_render_ranks_evidence_and_never_writes_back():
+    """PREREG Sec4(b): cross-frame log-odds render. Three synthetic
+    Coactivation-shaped ledgers (heavily confirmed / rarely confirmed /
+    neutral), rendered live via the SAME Term _log_odds_term() builds --
+    confirms the ranking direction AND confirms the render is never written
+    back onto the node (frame/continuum invariant: the counts are IN-frame,
+    the render is BETWEEN frames)."""
+    s = _loaded_substrate()
+    inner = s._inner
+
+    heavy = inner.add_node("Coactivation", {"evidence_confirm": 8, "evidence_disconfirm": 0, "evidence_tick": 0, "noted_tick": 0})
+    rare = inner.add_node("Coactivation", {"evidence_confirm": 1, "evidence_disconfirm": 0, "evidence_tick": 0, "noted_tick": 0})
+    neutral = inner.add_node("Coactivation", {"evidence_confirm": 0, "evidence_disconfirm": 0, "evidence_tick": 0, "noted_tick": 0})
+    mixed = inner.add_node("Coactivation", {"evidence_confirm": 3, "evidence_disconfirm": 5, "evidence_tick": 0, "noted_tick": 0})
+
+    term = _log_odds_term()
+    before = {n: dict(inner.node(n)["attrs"]) for n in (heavy, rare, neutral, mixed)}
+
+    r_heavy = s.evaluate(term, {"coact": heavy})
+    r_rare = s.evaluate(term, {"coact": rare})
+    r_neutral = s.evaluate(term, {"coact": neutral})
+    r_mixed = s.evaluate(term, {"coact": mixed})
+    print(f"log_odds: heavy(8,0)={r_heavy:.4f} rare(1,0)={r_rare:.4f} "
+          f"neutral(0,0)={r_neutral:.4f} mixed(3,5)={r_mixed:.4f}")
+
+    assert r_heavy > r_rare > 0, "heavily-confirmed must rank strictly above rarely-confirmed, both above neutral"
+    assert r_neutral == 0.0, "zero evidence either way must render exactly neutral"
+    assert r_mixed < 0.0, "more disconfirming than confirming evidence must render negative"
+
+    for n in (heavy, rare, neutral, mixed):
+        after = inner.node(n)["attrs"]
+        assert dict(after) == before[n], (
+            f"node {n}: attrs changed after a pure render evaluate() -- the render leaked into "
+            f"graph state, violating the frame/continuum invariant. before={before[n]} after={dict(after)}"
+        )
+        assert "log_odds" not in after and "render" not in after, (
+            "no rendered key was written back onto the node at all"
+        )
+
+
+def test_hebbian_reweight_end_to_end_unblocks_v1_graded_reweighting():
+    """PREREG Sec4(c): item 4 end-to-end, THE exact scenario
+    CAN_NATIVE_REIMPLEMENTATION_RESULTS.md Sec5/Sec9 left blocked ('graded
+    reweighting of an ALREADY-minted edge is out of scope for this rung,
+    named as blocked on [the still-unbuilt logodds generator], not
+    attempted'). Drives an edge from mint through three more confirming
+    ticks to one disconfirming tick, and shows the log-odds render moves
+    DOWN when the disconfirming observation lands -- graded reweighting,
+    genuinely working, not merely 'the generator exists in isolation'."""
+    s = _loaded_substrate()
+    inner = s._inner
+    mt, a, b = _isolated_pair(inner)
+    term = _log_odds_term()
+
+    inner.run_rules(1000)  # tick 0: note
+    coact = _coact_between(inner, a, b)
+
+    inner.set_attr(mt, "can_tick", 1)  # tick 1: recurrence -- mints the edge
+    inner.run_rules(1000)
+    assert b in inner.neighbours(a, "causal_influence"), "must mint on recurrence (v1.0.0 behaviour, unchanged)"
+    assert a in inner.neighbours(b, "causal_influence"), "symmetric mint (v1.0.0 behaviour, unchanged)"
+
+    for tick in (2, 3, 4):  # three more confirming observations of the SAME already-minted edge
+        inner.set_attr(mt, "can_tick", tick)
+        inner.run_rules(1000)
+
+    attrs = inner.node(coact)["attrs"]
+    assert (attrs["evidence_confirm"], attrs["evidence_disconfirm"]) == (4, 0), (
+        f"expected 4 confirms (1 at mint + 3 reinforcements), 0 disconfirms on an ALREADY-minted "
+        f"edge -- this is the exact graded-reweighting-of-an-already-minted-edge scenario the v1.0.0 "
+        f"rung left blocked; got {attrs}"
+    )
+    render_before = s.evaluate(term, {"coact": coact})
+    assert render_before > 0.0, "purely confirming evidence must render strictly positive"
+
+    # tick 5: ONE disconfirming observation on the SAME already-minted edge.
+    inner.set_attr(b, "state", -1.0)
+    inner.set_attr(mt, "can_tick", 5)
+    inner.run_rules(1000)
+    attrs = inner.node(coact)["attrs"]
+    assert (attrs["evidence_confirm"], attrs["evidence_disconfirm"]) == (4, 1), attrs
+    render_after = s.evaluate(term, {"coact": coact})
+
+    print(f"item-4 reweighting: confirm=4 disconfirm=0 -> log_odds={render_before:.4f}; "
+          f"one disconfirm -> confirm=4 disconfirm=1 -> log_odds={render_after:.4f}")
+    assert render_after < render_before, (
+        "one genuine disconfirming observation must measurably move the log-odds render DOWN -- "
+        "graded reweighting is not just present, it must actually MOVE the render"
+    )
+    assert render_after > 0.0, "4-vs-1 evidence should still lean confirming overall"
+
+    # the edge itself is never re-minted or removed by reweighting -- only the
+    # evidence ledger changes.
+    edges_after = len(inner.neighbours(a, "causal_influence"))
+    assert edges_after == 1, "reweighting must not touch edge cardinality, only the evidence ledger"
+
+
+# ---------------------------------------------------------------------
 # Item 5 -- polarization re-test via max_steps (attempt-if-cheap).
 # ---------------------------------------------------------------------
 

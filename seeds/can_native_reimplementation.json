@@ -1,12 +1,12 @@
 {
  "id": "can_native_reimplementation",
- "version": "1.0.0",
+ "version": "1.1.0",
  "depends_on": [
   "causal_attitude_networks",
   "shape_decode_loop"
  ],
  "self_load_only": true,
- "description": "Native re-derivation of CAN's concept (CAN_CONCEPT_REIMPLEMENTATION_SPIKE.md, merged main@325c064, verdict: replace) as sd-loop/Gamma-native graph rules -- NO continuous relaxation, NO Boltzmann ensemble, NO iterative mean-field fixed point. Item 3 (evidence propagation): a discrete, asynchronous, Hopfield-style threshold update expressed as ordinary Rules, using run_rules()'s own cold-path fixpoint (one progressing binding per rule per pass, committed immediately) as the asynchrony -- this carries a real Lyapunov convergence guarantee (2-state: textbook; 3-state: empirically checked, no known proof) the OLD synchronous mean-field update (can_ops.rs::mt_mean_field_marginal, even damped) does not structurally have. Items 1-2 (basin/frustration): basin CLASSIFICATION is sd_recognize-shaped decode against a held ShapeSignature codebook of basin configurations (relation tuples ['state', concept, sign]) via the EXISTING ShapeDecode Term; COHERENCE/FRUSTRATION reads the SAME decode's residual size (no basin explains the state) and ordered_parts count (explained only by DRAWING ON MULTIPLE conflicting basins -- torn between them). Item 4 (Hebbian, edge-CREATION half only): mint-on-recurrence, the SAME shape blob-edge minting already uses at real scale (BLOB_EDGE_ANALOGY_EXTENSION_RESULTS.md) -- graded reweighting of an ALREADY-minted edge is explicitly NOT built here (needs the still-unbuilt logodds DimensionGenerator, CAUSAL_LINKAGE_DIMENSION_RESEARCH.md); decay has no native analog proposed anywhere in this arc. Zero new Rust Terms anywhere in this seed -- Sum/Edges/EdgeAttr/Nth/Attr/Gt/Lt/Gte/Lte/Eq/Not/And/Exists/ShapeDecode all pre-existed and are reused as-is. See CAN_NATIVE_REIMPLEMENTATION_PREREG.md / _RESULTS.md for the full design, the live-engine demonstrations, and the Bigville migration-decision assessment.",
+ "description": "Native re-derivation of CAN's concept (CAN_CONCEPT_REIMPLEMENTATION_SPIKE.md, merged main@325c064, verdict: replace) as sd-loop/Gamma-native graph rules -- NO continuous relaxation, NO Boltzmann ensemble, NO iterative mean-field fixed point. Item 3 (evidence propagation): a discrete, asynchronous, Hopfield-style threshold update expressed as ordinary Rules, using run_rules()'s own cold-path fixpoint (one progressing binding per rule per pass, committed immediately) as the asynchrony -- this carries a real Lyapunov convergence guarantee (2-state: textbook; 3-state: empirically checked, no known proof) the OLD synchronous mean-field update (can_ops.rs::mt_mean_field_marginal, even damped) does not structurally have. Items 1-2 (basin/frustration): basin CLASSIFICATION is sd_recognize-shaped decode against a held ShapeSignature codebook of basin configurations (relation tuples ['state', concept, sign]) via the EXISTING ShapeDecode Term; COHERENCE/FRUSTRATION reads the SAME decode's residual size (no basin explains the state) and ordered_parts count (explained only by DRAWING ON MULTIPLE conflicting basins -- torn between them). Item 4 (Hebbian): mint-on-recurrence (edge-CREATION half), the SAME shape blob-edge minting already uses at real scale (BLOB_EDGE_ANALOGY_EXTENSION_RESULTS.md); v1.1.0 (LOGODDS_GENERATOR_RESULTS.md) UNBLOCKS and completes the graded-REWEIGHTING half, confirmed blocked at v1.0.0 on the still-unbuilt logodds mechanism (CAUSAL_LINKAGE_DIMENSION_RESEARCH.md): can_native_note_coactivation now initialises evidence_confirm/evidence_disconfirm/evidence_tick on the Coactivation node it mints; can_native_hebbian_mint additionally bumps evidence_confirm+evidence_tick on the SAME recurrence that mints the edge; a new consolidated rule can_native_hebbian_reweight (ONE rule, not a confirm/disconfirm sibling pair -- deliberately reusing this seed's own Sec3 starvation-fix lesson) bumps whichever counter applies on every strictly-later tick once the edge already exists. The counters are plain in-frame integers (edges cannot carry live-updated attrs in this engine -- confirmed, no set_edge_attr effect exists -- so the existing Coactivation node is the evidence ledger); the cross-frame log-odds RENDER (Laplace-smoothed empirical log-odds from the two counts) is evaluated live via Substrate.evaluate and never stored on any node. Decay still has no native analog proposed anywhere in this arc. Zero new Rust Terms anywhere in this seed, including v1.1.0 -- Sum/Edges/EdgeAttr/Nth/Attr/Gt/Lt/Gte/Lte/Eq/Not/And/Exists/IfThenElse/Plus/Times/ShapeDecode/Log/Div all pre-existed and are reused as-is. See CAN_NATIVE_REIMPLEMENTATION_PREREG.md / _RESULTS.md for items 1-3 and the v1.0.0 Hebbian edge-creation half; LOGODDS_GENERATOR_PREREG.md / _RESULTS.md for the v1.1.0 reweighting completion and the log-odds render.",
  "nodes": [],
  "edges": [],
  "productions": [
@@ -984,6 +984,18 @@
         },
         "key": "can_tick"
        }
+      },
+      "evidence_confirm": 0,
+      "evidence_disconfirm": 0,
+      "evidence_tick": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mt"
+        },
+        "key": "can_tick"
+       }
       }
      }
     ],
@@ -1128,6 +1140,316 @@
      "b",
      {
       "weight": 1.0
+     }
+    ],
+    [
+     "set_attr",
+     "coact",
+     "evidence_confirm",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "coact"
+         },
+         "key": "evidence_confirm"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "coact",
+     "evidence_tick",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "mt"
+       },
+       "key": "can_tick"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "can_native_hebbian_reweight",
+   "comment": "Item 4, GRADED REWEIGHTING (unblocked, LOGODDS_GENERATOR_RESULTS.md): once a causal_influence edge already exists between a and b (minted by can_native_hebbian_mint above), each STRICTLY LATER external tick (can_tick > coact.evidence_tick, the same epoch-gate idiom noted_tick/hebbian_mint already use) that finds a and b both committed nonzero is a fresh evidence OBSERVATION -- same value (confirm) or opposite sign (disconfirm) -- and bumps exactly ONE of coact.evidence_confirm/evidence_disconfirm by 1, both plain in-frame integer attrs on the ALREADY-bound Coactivation node (edges cannot carry live-updated attrs in this engine -- there is no set_edge_attr rule effect, confirmed by grep, LOGODDS_GENERATOR_PREREG.md Sec3 -- so the existing Coactivation node, already bound via the SAME a-coactivated_with->coact-coactivation_of->b traversal hebbian_mint uses, is reused as the evidence ledger). ONE rule, not a confirm/disconfirm sibling pair, computing which counter to bump via IfThenElse on Times(a.state,b.state) -- deliberately reusing CAN_NATIVE_REIMPLEMENTATION_RESULTS.md Sec3's own already-proven starvation fix (can_native_update_3state's plus/minus/zero consolidation): a confirm/disconfirm sibling pair would be the EXACT starvation shape that finding warned about (two rules racing to update the SAME kind of node), so this rule is written consolidated from the start rather than found broken and fixed later. The stepping itself is ordinary Plus/IfThenElse Term arithmetic (matching the can_tick/codebook_epoch mechanically-bumped-counter idiom), NOT a call into the shape_decode.rs generator dispatch -- confirmed by reading shape_decode.rs before writing this rule that apply_generator_once/apply_translate_once are private, invoked only from inside ShapeDecode/TransformDecode/DimInfer/TimeInfer's own eval bodies, never from a plain graph Rule effect (LOGODDS_GENERATOR_PREREG.md Sec1). The declared DimensionGenerator{kind:'translate'} (seeds/inference_knowledge.json local_id 13) documents WHICH shape this stepping already matches (translate's existing unbounded/no-wrap/no-origin-normalization semantics); it is not literally invoked here. The CROSS-FRAME log-odds RENDER (Log(Div(Plus(evidence_confirm,1),Plus(evidence_disconfirm,1)))) is deliberately NOT computed or stored by any rule in this seed -- it is evaluated live, on demand, via Substrate.evaluate, exactly like can_ops.rs::mt_mean_field_marginal's own pure-read cross-check, and is never written back into evidence_confirm/evidence_disconfirm/evidence_tick or any other node attr (frame/continuum invariant: the render is BETWEEN frames, the counts are IN-frame).",
+   "match_type": "Concept",
+   "match": [
+    [
+     "mt",
+     "has_concept",
+     "a"
+    ],
+    [
+     "mt",
+     "has_concept",
+     "b"
+    ],
+    [
+     "a",
+     "coactivated_with",
+     "coact"
+    ],
+    [
+     "coact",
+     "coactivation_of",
+     "b"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Var",
+        "name": "a"
+       },
+       "b": {
+        "type": "Var",
+        "name": "b"
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "a"
+        },
+        "key": "state"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "b"
+        },
+        "key": "state"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "mt"
+       },
+       "key": "can_tick"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "coact"
+       },
+       "key": "evidence_tick"
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Edges",
+       "node": {
+        "type": "Var",
+        "name": "a"
+       },
+       "edge_type": "causal_influence"
+      },
+      "var_name": "e4",
+      "predicate": {
+       "type": "Eq",
+       "a": {
+        "type": "Nth",
+        "items": {
+         "type": "Var",
+         "name": "e4"
+        },
+        "index": 2
+       },
+       "b": {
+        "type": "Var",
+        "name": "b"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "coact",
+     "evidence_confirm",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "a"
+           },
+           "key": "state"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "b"
+           },
+           "key": "state"
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "coact"
+          },
+          "key": "evidence_confirm"
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         }
+        ]
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "coact"
+        },
+        "key": "evidence_confirm"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "coact",
+     "evidence_disconfirm",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Lt",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "a"
+           },
+           "key": "state"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "b"
+           },
+           "key": "state"
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "coact"
+          },
+          "key": "evidence_disconfirm"
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         }
+        ]
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "coact"
+        },
+        "key": "evidence_disconfirm"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "coact",
+     "evidence_tick",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "mt"
+       },
+       "key": "can_tick"
+      }
      }
     ]
    ]
