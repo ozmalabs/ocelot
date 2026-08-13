@@ -26,6 +26,20 @@ use crate::sym::Sym;
 use crate::value::Value;
 use rustc_hash::FxHashMap;
 
+/// Default damping factor λ for the mean-field relaxation's update rule
+/// (`new_sigma = (1-λ)·old_sigma + λ·tanh(β·local)`). λ=0.5 is a
+/// literature-common default for damped fixed-point/loopy-BP iteration
+/// (Murphy, Weiss & Jordan 1999 and the broader damped-BP literature;
+/// see CAN_SYNCHRONOUS_UPDATE_FIX_PREREG.md §2 — reported at
+/// search-synthesis confidence, not independently re-derived from primary
+/// text). Used by every internal call site that does not expose damping
+/// as a caller-facing parameter (`audit_basin`, `mt_conflicting_nodes`,
+/// `mt_pairwise_similarity`), so the fix applies by default wherever these
+/// diagnostics are read, not only where a caller opts in. λ=1.0 recovers
+/// the OLD fully-synchronous (Jacobi) update rule exactly:
+/// `(1-1.0)·old + 1.0·raw == raw`.
+pub const DEFAULT_DAMPING: f32 = 0.5;
+
 /// Bundle of interned Sym keys + edge types this module reads. Built
 /// once by the caller from the live interner and passed in to every op.
 #[derive(Clone, Debug)]
@@ -183,21 +197,33 @@ fn build_couplings(
 
 /// Mean-field marginal ⟨σ⟩ under Mt's Hamiltonian.
 ///
-/// Iterates the self-consistency equation
-///   σ_i = tanh(β (Σ_j J_ij σ_j + h_i))
+/// Iterates the DAMPED self-consistency equation
+///   σ_i ← (1-λ)·σ_i + λ·tanh(β (Σ_j J_ij σ_j + h_i))
 /// until either max_iter is reached or the largest single-node change
-/// falls below `tol`.
+/// falls below `tol`. The sweep itself is still synchronous (every node's
+/// update in one sweep reads the PREVIOUS sweep's full state) — damping
+/// does not change that — but blending each step with the prior value is
+/// the standard, literature-established fix for the persistent period-2
+/// limit cycle a fully synchronous (λ=1.0) fixed-point iteration is prone
+/// to on frustrated/loopy networks (Murphy, Weiss & Jordan 1999; see
+/// CAN_SYNCHRONOUS_UPDATE_FIX_PREREG.md/_RESULTS.md). Damping cannot move
+/// or remove a genuine fixed point (at a fixed point old==raw_new, so the
+/// blend is a no-op there for any λ) — it only changes the trajectory used
+/// to reach one.
 ///
 /// β is read from the Mt's `temperature_attr` (default 1.0).
 /// h_i is read from each Concept's `external_field_attr` (default 0.0).
 /// J_ij is read from `causal_influence` edges' `weight_attr` (default 1.0).
 /// Initial σ_i is read from each Concept's `state_attr` (default 0.0).
+/// `damping` (λ) ∈ (0.0, 1.0]; λ=1.0 recovers the old undamped update
+/// exactly. See `DEFAULT_DAMPING`.
 pub fn mt_mean_field_marginal(
     g: &TypedGraph,
     mt_id: NodeID,
     keys: &CanKeys,
     max_iter: usize,
     tol: f32,
+    damping: f32,
 ) -> FxHashMap<NodeID, f32> {
     let concepts = mt_concepts(g, mt_id, keys.has_concept_edge);
     if concepts.is_empty() {
@@ -236,8 +262,9 @@ pub fn mt_mean_field_marginal(
                     local += w * sj;
                 }
             }
-            let new_sigma = (beta * local).tanh();
+            let raw_sigma = (beta * local).tanh();
             let old_sigma = state.get(&c).copied().unwrap_or(0.0);
+            let new_sigma = (1.0 - damping) * old_sigma + damping * raw_sigma;
             let change = (new_sigma - old_sigma).abs();
             if change > max_change {
                 max_change = change;
@@ -407,7 +434,7 @@ pub fn audit_basin(g: &TypedGraph, mt_id: NodeID, keys: &CanKeys) -> BasinReport
     let couplings = enumerate_couplings(g, &concepts, keys);
     let coupling_count = couplings.len();
 
-    let marginal = mt_mean_field_marginal(g, mt_id, keys, 200, 1e-4);
+    let marginal = mt_mean_field_marginal(g, mt_id, keys, 200, 1e-4, DEFAULT_DAMPING);
     let energy = mt_energy(g, mt_id, keys, &marginal);
     let coverage = marginal.values().filter(|v| v.abs() > 0.05).count();
 
@@ -457,6 +484,7 @@ pub fn mt_mean_field_with_h_override(
     override_h: f32,
     max_iter: usize,
     tol: f32,
+    damping: f32,
 ) -> FxHashMap<NodeID, f32> {
     let concepts = mt_concepts(g, mt_id, keys.has_concept_edge);
     if concepts.is_empty() {
@@ -498,8 +526,9 @@ pub fn mt_mean_field_with_h_override(
                     local += w * sj;
                 }
             }
-            let new_sigma = (beta * local).tanh();
+            let raw_sigma = (beta * local).tanh();
             let old_sigma = state.get(&c).copied().unwrap_or(0.0);
+            let new_sigma = (1.0 - damping) * old_sigma + damping * raw_sigma;
             let change = (new_sigma - old_sigma).abs();
             if change > max_change {
                 max_change = change;
@@ -572,8 +601,8 @@ pub fn mt_conflicting_nodes(
     keys: &CanKeys,
     magnitude_threshold: f32,
 ) -> Vec<(NodeID, f32, f32)> {
-    let marginal_a = mt_mean_field_marginal(g, mt_a, keys, 200, 1e-4);
-    let marginal_b = mt_mean_field_marginal(g, mt_b, keys, 200, 1e-4);
+    let marginal_a = mt_mean_field_marginal(g, mt_a, keys, 200, 1e-4, DEFAULT_DAMPING);
+    let marginal_b = mt_mean_field_marginal(g, mt_b, keys, 200, 1e-4, DEFAULT_DAMPING);
 
     let mut conflicts: Vec<(NodeID, f32, f32)> = Vec::new();
     for (c, &sigma_a) in marginal_a.iter() {
@@ -604,8 +633,8 @@ pub fn mt_pairwise_similarity(
     mt_b: NodeID,
     keys: &CanKeys,
 ) -> (f32, usize) {
-    let marginal_a = mt_mean_field_marginal(g, mt_a, keys, 200, 1e-4);
-    let marginal_b = mt_mean_field_marginal(g, mt_b, keys, 200, 1e-4);
+    let marginal_a = mt_mean_field_marginal(g, mt_a, keys, 200, 1e-4, DEFAULT_DAMPING);
+    let marginal_b = mt_mean_field_marginal(g, mt_b, keys, 200, 1e-4, DEFAULT_DAMPING);
 
     let mut dot: f32 = 0.0;
     let mut norm_a_sq: f32 = 0.0;
@@ -851,8 +880,9 @@ pub fn relax_to_marginal(
     keys: &CanKeys,
     max_iter: usize,
     tol: f32,
+    damping: f32,
 ) -> usize {
-    let marginal = mt_mean_field_marginal(g, mt_id, keys, max_iter, tol);
+    let marginal = mt_mean_field_marginal(g, mt_id, keys, max_iter, tol, damping);
     let count = marginal.len();
     for (nid, sigma) in marginal {
         set_node_float_attr(g, nid, keys.state_attr, sigma);

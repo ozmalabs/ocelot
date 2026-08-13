@@ -2257,12 +2257,20 @@ impl PySubstrate {
     /// (read from mt's `temperature` attr). Default J = 1.0 (read from
     /// each causal_influence edge's `weight` attr). Default h = 0.0
     /// (read from each Concept's `external_field` attr).
-    #[pyo3(signature = (mt, max_iter=200, tol=1e-4))]
+    ///
+    /// `damping` (λ) blends each sweep's freshly-computed σ with the prior
+    /// value: `(1-λ)·old + λ·new`. Default 0.5 — the fix for the
+    /// persistent period-2 limit cycle a fully synchronous (λ=1.0) update
+    /// is prone to on frustrated/loopy networks (see
+    /// CAN_SYNCHRONOUS_UPDATE_FIX_RESULTS.md). Pass `damping=1.0` to
+    /// recover the old undamped update rule exactly.
+    #[pyo3(signature = (mt, max_iter=200, tol=1e-4, damping=0.5))]
     fn mt_mean_field_marginal(
         &self,
         mt: PyRef<'_, PyNodeID>,
         max_iter: usize,
         tol: f32,
+        damping: f32,
     ) -> std::collections::HashMap<u32, f32> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
@@ -2270,8 +2278,9 @@ impl PySubstrate {
             Some(k) => k,
             None => return std::collections::HashMap::new(),
         };
-        let result =
-            crate::can_ops::mt_mean_field_marginal(&inner.graph, mt.to_node(), &keys, max_iter, tol);
+        let result = crate::can_ops::mt_mean_field_marginal(
+            &inner.graph, mt.to_node(), &keys, max_iter, tol, damping,
+        );
         result.into_iter().map(|(n, v)| (n.0, v)).collect()
     }
 
@@ -2335,7 +2344,9 @@ impl PySubstrate {
             }
         };
         let current =
-            crate::can_ops::mt_mean_field_marginal(&inner.graph, mt.to_node(), &keys, 200, 1e-4);
+            crate::can_ops::mt_mean_field_marginal(
+                &inner.graph, mt.to_node(), &keys, 200, 1e-4, crate::can_ops::DEFAULT_DAMPING,
+            );
         let target = crate::can_ops::mt_target(&inner.graph, mt.to_node(), &keys);
         let disp = crate::can_ops::distance_to_target(&current, &target);
 
@@ -2360,7 +2371,7 @@ impl PySubstrate {
     /// WITHOUT modifying the graph. Returns the marginal that would
     /// result from setting node_id's h to override_h and relaxing.
     /// Used by predictive insight-seeking.
-    #[pyo3(signature = (mt, override_node, override_h, max_iter=200, tol=1e-4))]
+    #[pyo3(signature = (mt, override_node, override_h, max_iter=200, tol=1e-4, damping=0.5))]
     fn mt_mean_field_with_h_override(
         &self,
         mt: PyRef<'_, PyNodeID>,
@@ -2368,6 +2379,7 @@ impl PySubstrate {
         override_h: f32,
         max_iter: usize,
         tol: f32,
+        damping: f32,
     ) -> std::collections::HashMap<u32, f32> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
@@ -2383,6 +2395,7 @@ impl PySubstrate {
             override_h,
             max_iter,
             tol,
+            damping,
         );
         result.into_iter().map(|(n, v)| (n.0, v)).collect()
     }
@@ -2605,12 +2618,13 @@ impl PySubstrate {
     /// to each Concept's state attr. After this, σ on the graph IS the
     /// equilibrium under Mt's Hamiltonian. Returns the number of
     /// Concepts updated.
-    #[pyo3(signature = (mt, max_iter=200, tol=1e-4))]
+    #[pyo3(signature = (mt, max_iter=200, tol=1e-4, damping=0.5))]
     fn mt_relax_to_marginal(
         &mut self,
         mt: PyRef<'_, PyNodeID>,
         max_iter: usize,
         tol: f32,
+        damping: f32,
     ) -> usize {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
@@ -2618,7 +2632,9 @@ impl PySubstrate {
             Some(k) => k,
             None => return 0,
         };
-        crate::can_ops::relax_to_marginal(&mut inner.graph, mt.to_node(), &keys, max_iter, tol)
+        crate::can_ops::relax_to_marginal(
+            &mut inner.graph, mt.to_node(), &keys, max_iter, tol, damping,
+        )
     }
 
     /// Basin topology audit: returns a dict with concept_count,
