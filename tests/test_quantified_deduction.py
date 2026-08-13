@@ -154,31 +154,28 @@ def test_universal_does_not_recognise_a_or_an_by_design():
     assert pd.parse_universal(ag, "A philosopher is mortal") is None
 
 
-def test_capability_consequent_parse_is_environment_dependent_pre_existing_gap():
-    """Documentation-level, not a build target here. In THIS worktree
-    (pinned to the last COMMITTED native Rust extension, per house
-    discipline -- `_native.abi3.so`), the general reader's capability
-    ('can') event-construction path does not ground a bare 'Det N can V'
-    sentence via `parse_conditional` -- e.g. 'penguin can swim' -> None --
-    even though the property ('is') form used by the headline demo above
-    ('philosophers are mortal') grounds correctly. Reproduced with a
-    PRE-EXISTING, byte-unchanged call (`pd.parse_conditional`, never edited
-    by this rung) on a fresh worktree checked out at this rung's own base
-    commit -- i.e. this is a property of the COMMITTED Rust binary this
-    worktree runs (confirmed live: an unrelated, independently-checked-out
-    worktree at the SAME base commit reproduces it identically; the
-    CURRENT MAIN working tree, which carries an UNCOMMITTED, newer rebuild
-    of `_native.abi3.so`, does NOT reproduce it), not a regression this
-    rung introduced. Consistent with, and a sharper instance of, the
-    PRE-EXISTING capability-consequent text-round-trip gap
-    DEDUCTION_EXTENSION_RESULTS.md Sec2.4 already named (that rung found it
-    broke at the FULL `read_and_infer`/`ingest_predication` level; here it
-    is shown to reach `parse_conditional` itself in this environment).
-    Named, not fixed -- out of this rung's scope (`situation_model_
-    reader.py`/`reading_collapse.py` surgery, and the binary-pinning
-    question is a build/CI concern, not a deduction-mechanism one)."""
+def test_capability_form_universal_instantiation():
+    """The capability ('can') consequent form, symmetric to the property
+    ('is') form the headline demo above uses. NOTE ON A RETRACTED FALSE
+    LEAD: an earlier draft of this test asserted `parse_conditional(ag,
+    "penguin can swim") is None` here, reporting it as an "environment-
+    dependent pre-existing gap in the committed Rust binary." That was
+    WRONG, diagnosed and corrected during coordinator re-verification: the
+    real cause was this worktree's `data/` (gitignored, ~600MB, holds the
+    Wiktionary POS dump `domains/wiktionary_reference.py` reads) being
+    ABSENT -- `git worktree add` never copies gitignored files, so
+    `instruction_reading.is_verb_headed` silently degraded to `False` for
+    every token (POS features come back empty), which happened to make the
+    'can'-headed event construction fail to ground. `data/` is now
+    symlinked to the canonical tree per this project's own documented
+    convention (CLAUDE.md's "optional-dep note": `data/` symlinked is the
+    correct baseline condition), which fixes this with zero code change --
+    it was never a Rust-binary or parse_conditional defect."""
     ag = _fresh()
-    assert pd.parse_conditional(ag, "penguin can swim") is None
+    minted = pd.mint_universal_schema(ag, "Every penguin can swim")
+    assert minted["minted"] is True
+    assert minted["parsed"]["antecedent_attr"] == "penguin"
+    assert minted["parsed"]["consequent_attr"] == "can_swim"
 
 
 # --------------------------------------------------------------------------- #

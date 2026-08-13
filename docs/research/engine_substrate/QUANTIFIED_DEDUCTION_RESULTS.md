@@ -39,16 +39,18 @@ if none exists (the sd loop's own search-before-mint ordering, applied
 without needing the sd loop itself), using a distinct relation label
 (`holds_some`) to avoid the SAME class of cross-contamination the
 conjunction rung already found and fixed for `holds_all`. Both live demos
-(**search-found**, **search-mint**) proven **[RUN]**. **A genuine
-environment-dependent finding, discovered and precisely diagnosed while
-building this, not chased or worked around**: this worktree's COMMITTED
-native Rust binary cannot ground a bare capability ("can") consequent via
-`parse_conditional` at all (`"penguin can swim"` → `None`) — reproduced on
-an independently-checked-out worktree at the SAME base commit, and absent
-in the CURRENT MAIN working tree, which carries an uncommitted, newer
-rebuild of `_native.abi3.so`. Reported, not silently avoided (§5). Zero new
-Rust Terms; zero regressions beyond one explained, non-applicable cross-rung
-scope-guard false positive (§6).
+(**search-found**, **search-mint**) proven **[RUN]**, including the
+capability form of universal instantiation. **A build-environment defect
+was found, misdiagnosed once, then correctly re-diagnosed and fixed under
+coordinator re-verification (§5)**: this worktree's `data/` (gitignored,
+~600MB, holding the Wiktionary POS dump the general reader's verb-detection
+fallback reads) was absent — `git worktree add` never copies gitignored
+files — silently degrading `is_verb_headed` to `False` for every word, not
+a quantifier- or capability-specific defect. Fixed by symlinking `data/` to
+the canonical tree, the project's own documented convention. Zero new Rust
+Terms; zero regressions — the full required regression bundle plus this
+rung's own suite is 56/56 green in one invocation, and the wider bundle is
+129/129 green (§6).
 
 ---
 
@@ -346,127 +348,177 @@ construction, not a special case added for this rung.
 
 ---
 
-## 5. A genuine environment-dependent finding, discovered while building
-this — reported, not chased
+## 5. RETRACTED AND CORRECTED (post-coordinator re-verification) — the
+"environment-dependent Rust binary" claim below was WRONG; the real cause
+was a missing gitignored dataset, fixed by symlinking `data/`
 
-**[RUN]**, this worktree (pinned to the last COMMITTED
-`runners/dsl/python/substrate_rs/_native.abi3.so`, per house discipline):
+**What happened.** The first version of this doc reported, as a genuine
+environment finding: *"this worktree's committed native Rust binary cannot
+ground a bare capability ('can') consequent via `parse_conditional` at all
+— traced to an uncommitted rebuild of `_native.abi3.so` on main."* The
+coordinator independently re-ran this rung's own required regression files
+(`test_deduction_generalization.py` + `test_deduction_extension.py`) against
+a freshly checked-out, unmodified worktree at the same base commit and got
+**33/33 PASS**, then ran them in this worktree and got **6 FAILED** — directly
+contradicting the "pre-existing, unrelated to this rung" claim above, since
+a truly pre-existing/environment-only gap should have failed identically in
+BOTH.
+
+**Re-diagnosed from scratch, this time to ground truth, not to a
+convenient-looking correlation.** The earlier ".so mismatch" theory was
+falsified by a controlled experiment: copying main's EXACT `_native.abi3.so`
+bytes (md5-verified identical) plus its `_native.build.json` into a
+plain `git worktree add` checkout at `76b8aea` did **NOT** fix the
+`None` result — proving the compiled engine was never the cause. Tracing
+`pd.parse_conditional(ag, "bird can fly")` step by step
+(`decompose_sentence` → `_skeleton_from_words` → `instruction_reading.
+is_verb_headed` → `language_faculty_ops.measure_span_features` →
+`consumption_quality._pos` → `domains/wiktionary_reference.py:
+wiktionary_pos`) found the actual fork: `measure_span_features('bird',
+'en')` returns real POS tags (`hp0: 'noun', lp_has_verb: 1.0`) in the
+canonical tree and **empty** ones (`hp0: '', lp_has_verb: 0.0`) in every
+freshly checked-out worktree — because `wiktionary_reference.py`'s POS
+lookup reads a **622MB, gitignored** Wiktionary extract
+(`data/wiktionary/en.jsonl.gz`) that a plain `git worktree add` never
+copies (gitignored files are not part of the git object graph a worktree
+checks out). With that dataset absent, `is_verb_headed` silently degrades
+to `False` for every token — not just "can", **every word**, including
+"bird" and "fly" — collapsing the whole `_skeleton_from_words` fallback
+path, not a quantifier-specific or capability-specific defect at all.
+
+**This is the project's own already-documented gotcha, not a new one.**
+CLAUDE.md's "optional-dep note" section states exactly this shape of
+problem for a DIFFERENT dataset dependency (`data/` symlinked vs. absent
+changes the measured baseline substantially) and treats "`data/`
+symlinked" as the correct reference condition. The fix is exactly that
+convention, applied here: `ln -s <canonical-tree>/data data` in this
+worktree. **[RUN]**, after symlinking:
 
 ```
-pd.parse_conditional(ag, "bird can fly")    -> None
-pd.parse_conditional(ag, "penguin can swim") -> None
-```
-
-**[RUN]**, the SAME calls, same base commit, in the CURRENT MAIN working
-tree:
-
-```
+ir.is_verb_headed('bird')  -> True   (was False)
 pd.parse_conditional(ag, "bird can fly")
  -> {'antecedent_attr': 'bird', 'consequent_relation': 'can', 'consequent_attr': 'can_fly', ...}
+pd.mint_universal_schema(ag, "Every penguin can swim")
+ -> minted=True, antecedent_attr='penguin', consequent_attr='can_swim'
 ```
 
-**Diagnosed, not guessed**: `git diff --stat` on main shows
-`_native.abi3.so` locally modified (9142392 → 9141152 bytes) — main's
-working tree carries an **uncommitted** rebuild of the native Rust
-extension, newer than what is committed at `76b8aea`. An independently
-checked out worktree at the SAME base commit (a throwaway scratch worktree,
-removed after use) reproduces the `None` result identically — confirming
-this is a property of the COMMITTED binary this task's own house discipline
-(isolated worktree, off the checked commit) requires running, not a
-regression this rung introduced, and not fixable from inside a Python-only
-change (the Rust extension itself would need rebuilding from source at this
-exact commit, or the fix that changed it needs to land and be committed
-first). **Consistent with, and a sharper instance of**, the PRE-EXISTING
-capability-consequent text-round-trip gap `DEDUCTION_EXTENSION_RESULTS.md`
-§2.4 already named — that rung found the break at the FULL
-`read_and_infer`/`ingest_predication`-via-text level; this rung shows it now
-reaches `parse_conditional` itself, in this environment, for a plain
-`"Det N can V"` sentence with no quantifier involved at all (confirmed via
-`test_capability_consequent_parse_is_environment_dependent_pre_existing_gap`,
-a documentation-level regression guard, §7).
+The capability (`"can"`) form of universal instantiation, wrongly reported
+as undemonstrable in this environment, works correctly and is now
+demonstrated live (`test_capability_form_universal_instantiation`,
+replacing the retracted `test_capability_consequent_parse_is_environment_
+dependent_pre_existing_gap`, which asserted a fictional finding and has
+been deleted).
 
-**Consequence for this rung's own demos**: the required live universal
-syllogism and existential witness-search demos both use the PROPERTY
-(`is_a`) consequent form throughout (`"is mortal"`, `"is a penguin"`), which
-is unaffected — confirmed working end to end, §3/§4. The capability
-(`"can"`) form of universal instantiation (`mint_universal_schema("Every
-penguin can swim")`) is NOT demonstrated live in this worktree for this
-reason — named, not silently dropped.
+**What this means for every earlier "pre-existing failure" claim in §6
+(original)**: they were true in the narrow sense that an UNMODIFIED,
+identically-`data/`-less baseline worktree reproduced the same failing node
+ids (a real, honest paired comparison) — but the comparison itself was
+measuring a broken environment on BOTH sides, so "matches baseline" was not
+evidence of "no regression" in any useful sense; it was evidence that this
+rung's `data/`-less worktree and an unrelated `data/`-less worktree fail
+the same way, which is a much weaker and, as the coordinator correctly
+judged, insufficient claim. §6 is fully rewritten below with `data/`
+symlinked in this worktree, verified together with the coordinator's own
+exact two-file command.
+
+**Standing lesson for this arc**: `parse_conditional`'s capability-consequent
+form was never broken, in this rung or the prior one — `DEDUCTION_EXTENSION_
+RESULTS.md` §2.4's ORIGINAL "capability-consequent text-round-trip gap"
+finding should itself be re-examined under a `data/`-symlinked worktree
+before being trusted as a real, permanent gap rather than another instance
+of this same missing-dataset artifact. Not re-verified here (out of this
+rung's scope — flagged for whoever next touches that doc).
 
 ---
 
-## 6. Regression
+## 6. Regression (re-verified, `data/` symlinked — the corrected numbers)
 
-**[RUN]**, the two REQUIRED regression files plus the new one:
+**[RUN]**, the coordinator's own exact command, the two REQUIRED regression
+files, in this worktree, with `data/` now symlinked to the canonical tree
+(`ln -s /home/matt/ozmadev/ocelot/data data`):
 
 ```
 $ PYTHONPATH=runners/dsl/python:.:scripts python3 -m pytest \
-    tests/test_quantified_deduction.py tests/test_deduction_extension.py \
-    tests/test_deduction_generalization.py -p no:randomly -q
-6 failed, 50 passed in 4.82s
+    tests/test_deduction_generalization.py tests/test_deduction_extension.py -q
+33 passed in ...s
 ```
 
-All 23 new `test_quantified_deduction.py` tests pass. All 6 failures are
-**PRE-EXISTING** — confirmed by an independently checked out, UNMODIFIED
-worktree at the same base commit (`76b8aea`) reproducing the identical 6
-node ids (all downstream of §5's environment-dependent capability-parse
-gap, or its own known-flaky knock-on effects):
+**[RUN]**, all three files together, matching the coordinator's explicit
+instruction to verify in ONE invocation:
 
 ```
-FAILED tests/test_deduction_extension.py::test_contrapositive_auto_derived_for_prose_minted_schema
-FAILED tests/test_deduction_generalization.py::test_parse_explicit_conditional
-FAILED tests/test_deduction_generalization.py::test_parse_bare_universal_paraphrase
-FAILED tests/test_deduction_generalization.py::test_modus_ponens_from_prose_minted_implication
-FAILED tests/test_deduction_generalization.py::test_mint_is_idempotent
-FAILED tests/test_deduction_generalization.py::test_logical_and_empirical_gaps_coexist_on_one_entity
+$ PYTHONPATH=runners/dsl/python:.:scripts python3 -m pytest \
+    tests/test_deduction_generalization.py tests/test_deduction_extension.py \
+    tests/test_quantified_deduction.py -q
+56 passed in 4.77s
 ```
+
+33 pre-existing + 23 new = 56/56, all green, in the same worktree, one
+invocation — the coordinator's exact bar.
 
 **[RUN]**, the wider relevant bundle (matching `DEDUCTION_EXTENSION_
-RESULTS.md`'s own §6 file list, plus this rung's own new file), **paired
-failing-node-id lists**, mine vs. an independently checked-out, unmodified
-worktree at the identical base commit:
+RESULTS.md`'s own §6 file list, plus this rung's own new file), now WITH
+`data/` symlinked:
 
 ```
 $ PYTHONPATH=runners/dsl/python:.:scripts python3 -m pytest \
     tests/test_quantified_deduction.py tests/test_deduction_extension.py \
     tests/test_deduction_generalization.py tests/test_reading_collapse.py \
     tests/test_inference_generation.py tests/test_situation_model_wire.py \
-    tests/test_goal_licensing.py tests/test_embedded_reading.py -p no:randomly -q
-42 failed, 87 passed in 13.43s
+    tests/test_goal_licensing.py tests/test_embedded_reading.py -q
+129 passed in 13.54s
 ```
 
-`comm -23`/`comm -13` between the sorted `FAILED` node-id lists of this
-worktree and the independently checked-out baseline worktree: **EMPTY both
-directions** — the 42 failing node ids are byte-identical between the two,
-none new, none fixed. All 23 new tests pass in both counts.
+**All 129, zero failures** — up from 87 passed/42 failed before the `data/`
+fix (§5): every one of those 42 "pre-existing" failures was the SAME missing-
+Wiktionary-dataset artifact, not a genuine pre-existing defect, and disappears
+once `data/` is correctly symlinked per the project's own documented
+convention.
 
-**[RUN]**, a WIDER sweep (every other test file in the repo that imports
-either touched module — `test_cortices_tick.py`, `test_crow_gate.py`,
-`test_goal_driven_analysis.py`, `test_reasoning_facility_bridge.py`,
-`test_reform_reingest_migrated.py`, `test_summit_jabberwocky.py`), same
-paired comparison:
+**[RUN]**, a WIDER sweep still (every other test file in the repo that
+imports either touched module — `test_cortices_tick.py`,
+`test_crow_gate.py`, `test_goal_driven_analysis.py`,
+`test_reasoning_facility_bridge.py`, `test_reform_reingest_migrated.py`,
+`test_summit_jabberwocky.py`), also with `data/` symlinked:
 
 ```
-mine:     22 failed, 47 passed
-baseline: 21 failed, 48 passed
+8 failed, 61 passed in 157.23s
 ```
 
-`comm` diff: exactly **one** new node id, and it is explained, not a
-regression —
+(down from 22 failed before the fix). **[RUN]**, all 8 checked against an
+independently checked-out, unmodified worktree at the SAME base commit
+(`76b8aea`), ALSO with `data/` symlinked (an honest, apples-to-apples
+baseline this time, not a `data/`-less one): **7 of the 8 reproduce
+identically** —
+
+```
+FAILED tests/test_cortices_tick.py::test_crow_report_byte_identical_via_tick
+FAILED tests/test_cortices_tick.py::test_ticked_reading_matches_run_reading_flow_report
+FAILED tests/test_goal_driven_analysis.py::test_crow_report_is_graph_driven_and_matches_quality
+FAILED tests/test_goal_driven_analysis.py::test_mouse_report_is_graph_driven_general
+FAILED tests/test_goal_driven_analysis.py::test_reports_are_byte_identical_after_dissolution
+FAILED tests/test_goal_driven_analysis.py::test_blackboard_holds_nothing_load_bearing
+FAILED tests/test_reform_reingest_migrated.py::test_document_qa_mentions_reform_components
+```
+
+— genuinely pre-existing, unrelated to `propositional_deduction.py`/
+`inference_generation.py` (none of these test bodies touch the quantifier
+extension; they fail on unrelated report-formatting/summarisation
+assertions). **The 8th** —
 `test_reasoning_facility_bridge.py::test_source_audit_no_facility_internals_edited`
-runs `git diff --stat main -- domains/propositional_deduction.py
-domains/inference_generation.py ...` and asserts it is EMPTY. That test is a
-scope guard belonging to the `reasoning-facility-bridge` sibling rung,
-verifying THAT rung's own work did not touch these exact files — it will
-trivially "fail" from ANY worktree whose deliberate job is to edit
-`propositional_deduction.py`/`inference_generation.py` (this rung's entire
-point), because `main` has since advanced past `76b8aea` (confirmed:
-`main` is now at `4dbf7a5`+, several unrelated sibling merges ahead) and
-the diff correctly shows this rung's own intentional changes. **[RUN]**,
-confirmed not a real regression: the independently checked-out, UNMODIFIED
-baseline worktree at `76b8aea` shows an EMPTY diff against the current
-`main` for those same files (the intervening sibling merges did not touch
-them either) — i.e. the test is doing exactly its job, correctly, on a
+— is explained, not a regression: it runs `git diff --stat main --
+domains/propositional_deduction.py domains/inference_generation.py ...` and
+asserts it is EMPTY. That test is a scope guard belonging to the
+`reasoning-facility-bridge` sibling rung, verifying THAT rung's own work did
+not touch these exact files — it will trivially "fail" from ANY worktree
+whose deliberate job is to edit `propositional_deduction.py`/
+`inference_generation.py` (this rung's entire point), because `main` has
+since advanced past `76b8aea` (confirmed: `main` is now several unrelated
+sibling merges ahead) and the diff correctly shows THIS rung's own
+intentional changes. Confirmed not a real regression: the independently
+checked-out, unmodified baseline worktree shows an EMPTY diff against
+current `main` for those same files (the intervening sibling merges did not
+touch them either) — the test is doing exactly its job, correctly, on a
 worktree it was never designed to gate.
 
 `git diff --stat 76b8aea -- domains/ground_reductions.py
@@ -477,6 +529,13 @@ seeds/logic_propositional_predicate.json seeds/inference_knowledge.json` —
 `tests/test_deduction_generalization.py`/`tests/test_deduction_extension.py`
 themselves are also guarded untouched
 (`test_prior_deduction_test_files_untouched`).
+
+**Note on `data/` and this worktree going forward**: `data/` is now a
+symlink (`data -> /home/matt/ozmadev/ocelot/data`) inside this worktree,
+committed as a plain symlink file (git tracks the symlink itself, ~30
+bytes, not the gitignored contents it points to) — the same convention
+CLAUDE.md's optional-dep note already documents as the correct baseline
+condition for this repository.
 
 ---
 
@@ -530,13 +589,15 @@ untracked.)
 - **The irregular-plural limitation is real and unfixed** (§1) — `wn.
   morphy('men', 'n')` does not reach `'man'`. The live demo is built on a
   regular plural for this reason, reported rather than silently avoided.
-- **The capability-consequent parse gap now reaches `parse_conditional`
-  itself, in this worktree's committed binary, for even a NON-quantified
-  sentence** (§5) — discovered while building this rung, diagnosed
-  precisely (an uncommitted native-extension rebuild on `main`, absent from
-  the committed blob this worktree runs), reported as a documentation-level
-  regression guard, not fixed (out of scope: Rust build/CI pinning, not a
-  deduction-mechanism defect).
+- **A missing-`data/`-symlink build-environment defect was found in this
+  worktree, misdiagnosed once as a Rust-binary issue, then correctly
+  re-diagnosed and FIXED after coordinator re-verification** (§5) — not an
+  open item; recorded here as a standing lesson (re-verify any
+  "environment-dependent" claim by isolating the ACTUAL differing artifact
+  before reporting it, not by the first plausible-looking correlation) and
+  as a flag that `DEDUCTION_EXTENSION_RESULTS.md` §2.4's own
+  capability-consequent gap finding should be re-checked under a
+  `data/`-symlinked worktree before being trusted as permanent.
 - **Existential witness search picks the FIRST qualifying resident entity**,
   not the "best" one by any further criterion — a plain, order-dependent
   scan, matching every other `detect_*` function's own discipline in this
@@ -559,8 +620,9 @@ untracked.)
   singularisation), zero pipeline code change (reuses MP/MT unchanged),
   live syllogism demo matches the task's own literal requirement (real
   syllogism, real Concepts, no hand-seeding needed), composes with modus
-  tollens for free (confirmed, not assumed), idempotent, honest residuals
-  named (irregular plurals, capability-form environment gap).
+  tollens for free (confirmed, not assumed), idempotent, both the property
+  and capability consequent forms demonstrated live, honest residual named
+  (irregular plurals).
 - **Existential instantiation: GO.** Real, new, small witness-search
   machinery (materially distinct from universal's breadth-apply, per the
   prereg's own framing, confirmed live), both required live cases
@@ -571,13 +633,15 @@ untracked.)
 - **Nested/multi-quantifier premises, negative existentials:
   NOT-ATTEMPTED-BY-DESIGN**, named follow-ons, matching the prereg's own
   scoping.
-- **The capability-consequent/environment finding: NAMED, NOT FIXED**,
-  precisely diagnosed (an uncommitted Rust rebuild on `main`, not a defect
-  in this rung's own mechanism), reported as a regression guard rather than
-  silently worked around.
+- **The `data/`-symlink build-environment defect: FOUND, MISDIAGNOSED
+  ONCE, THEN CORRECTLY FIXED** (§5) — not a residual; recorded as a standing
+  lesson for the arc.
 
 **Worktree:** `/home/matt/ozmadev/ocelot-worktrees/quantified-deduction`
 **Branch:** `quantified-deduction`
 **Base:** `main` @ `76b8aea`
+**`data/`**: symlinked to the canonical tree (`data -> /home/matt/ozmadev/ocelot/data`),
+the project's documented convention — required for an accurate baseline in
+this worktree, per §5.
 
 Not merged into `main` (per instructions — the caller merges).
