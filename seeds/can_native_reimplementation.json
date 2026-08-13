@@ -1,0 +1,1136 @@
+{
+ "id": "can_native_reimplementation",
+ "version": "1.0.0",
+ "depends_on": [
+  "causal_attitude_networks",
+  "shape_decode_loop"
+ ],
+ "self_load_only": true,
+ "description": "Native re-derivation of CAN's concept (CAN_CONCEPT_REIMPLEMENTATION_SPIKE.md, merged main@325c064, verdict: replace) as sd-loop/Gamma-native graph rules -- NO continuous relaxation, NO Boltzmann ensemble, NO iterative mean-field fixed point. Item 3 (evidence propagation): a discrete, asynchronous, Hopfield-style threshold update expressed as ordinary Rules, using run_rules()'s own cold-path fixpoint (one progressing binding per rule per pass, committed immediately) as the asynchrony -- this carries a real Lyapunov convergence guarantee (2-state: textbook; 3-state: empirically checked, no known proof) the OLD synchronous mean-field update (can_ops.rs::mt_mean_field_marginal, even damped) does not structurally have. Items 1-2 (basin/frustration): basin CLASSIFICATION is sd_recognize-shaped decode against a held ShapeSignature codebook of basin configurations (relation tuples ['state', concept, sign]) via the EXISTING ShapeDecode Term; COHERENCE/FRUSTRATION reads the SAME decode's residual size (no basin explains the state) and ordered_parts count (explained only by DRAWING ON MULTIPLE conflicting basins -- torn between them). Item 4 (Hebbian, edge-CREATION half only): mint-on-recurrence, the SAME shape blob-edge minting already uses at real scale (BLOB_EDGE_ANALOGY_EXTENSION_RESULTS.md) -- graded reweighting of an ALREADY-minted edge is explicitly NOT built here (needs the still-unbuilt logodds DimensionGenerator, CAUSAL_LINKAGE_DIMENSION_RESEARCH.md); decay has no native analog proposed anywhere in this arc. Zero new Rust Terms anywhere in this seed -- Sum/Edges/EdgeAttr/Nth/Attr/Gt/Lt/Gte/Lte/Eq/Not/And/Exists/ShapeDecode all pre-existed and are reused as-is. See CAN_NATIVE_REIMPLEMENTATION_PREREG.md / _RESULTS.md for the full design, the live-engine demonstrations, and the Bigville migration-decision assessment.",
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "src": {
+    "type": "Microtheory",
+    "var": "mt"
+   },
+   "edge_type": "has_concept",
+   "tgt": {
+    "type": "Concept",
+    "var": "c"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "can_native_reimplementation"
+  },
+  {
+   "src": {
+    "type": "Concept",
+    "var": "a"
+   },
+   "edge_type": "causal_influence",
+   "tgt": {
+    "type": "Concept",
+    "var": "b"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "can_native_reimplementation"
+  },
+  {
+   "src": {
+    "type": "Concept",
+    "var": "a"
+   },
+   "edge_type": "coactivated_with",
+   "tgt": {
+    "type": "Coactivation",
+    "var": "co"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "can_native_reimplementation"
+  },
+  {
+   "src": {
+    "type": "Coactivation",
+    "var": "co"
+   },
+   "edge_type": "coactivation_of",
+   "tgt": {
+    "type": "Concept",
+    "var": "b"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "can_native_reimplementation"
+  }
+ ],
+ "concepts": [
+  {
+   "name": "can_native_discrete_async_update",
+   "definition": "Evidence propagation as a discrete, asynchronous, Hopfield-style threshold update over Concept.state, expressed as ordinary graph Rules (can_native_update_plus/minus/zero for the native 3-state vocabulary; _2state siblings for the classical 2-state Lyapunov-guaranteed comparison).",
+   "why": "Replaces can_ops.rs's synchronous (even damped) mean-field relaxation for the propagation half of CAN -- see CAN_CONCEPT_REIMPLEMENTATION_SPIKE.md Sec3.4/Sec4.2 and this seed's RESULTS sibling for the live convergence comparison."
+  },
+  {
+   "name": "can_native_basin_classification",
+   "definition": "A held basin configuration is a ShapeSignature codebook entry (relation tuples ['state', concept, sign]); the CURRENT state is decoded via ShapeDecode, SCOPED to one candidate basin at a time (codebook_scope), against each held configuration independently. Full coverage (residual empty) against exactly one candidate = clean recognition; the covered_count read across all candidates is the distance-to-nearest-attractor / frustration reading.",
+   "why": "Replaces can_ops.rs::audit_basin's single mean-field call + eyeballed report for the CLASSIFICATION half of basin/frustration (CAN_CONCEPT_REIMPLEMENTATION_SPIKE.md Sec3.1/Sec3.2). Basin ENUMERATION is explicitly NOT covered (per the spike's own Sec3.1/Sec6 finding: unexercised by anything this project has built)."
+  },
+  {
+   "name": "can_native_hebbian_mint",
+   "definition": "Persistent same-sign co-activation of two uncoupled Concepts, observed across >=2 distinct ticks (can_tick epoch-gated), mints ONE causal_influence edge -- mint-on-recurrence, the edge-CREATION half of Hebbian learning only.",
+   "why": "Graded reweighting of an ALREADY-minted edge needs the logodds DimensionGenerator (CAUSAL_LINKAGE_DIMENSION_RESEARCH.md), confirmed still unbuilt this rung -- named as the blocker, not built. Decay has no native analog proposed."
+  }
+ ],
+ "exclusions": [],
+ "rules": [
+  {
+   "name": "can_native_update_3state",
+   "comment": "3-state (native CAN vocabulary, sigma in {-1,0,+1}) discrete-asynchronous Hopfield-style threshold update, ONE rule computing the committed target via IfThenElse (see this seed's own module comment above for why the earlier plus/minus/zero SIBLING-rule split was replaced -- a real starvation finding, not a style choice). Fires under run_rules()'s own cold-path fixpoint (one progressing Concept binding per pass, immediately committed, re-matching against the just-updated graph next turn) -- genuinely asynchronous, zero new Rust. Guarded to Mt.discrete_mode=='3state'. See CAN_NATIVE_REIMPLEMENTATION_PREREG.md Sec1/RESULTS.",
+   "match_type": "Concept",
+   "match": [
+    [
+     "mt",
+     "has_concept",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "mt"
+       },
+       "key": "discrete_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "3state"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "state"
+       },
+       "b": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "external_field"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "identity_field"
+             },
+             {
+              "type": "Sum",
+              "source": {
+               "type": "Edges",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "edge_type": "causal_influence"
+              },
+              "var_name": "e",
+              "value": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "EdgeAttr",
+                 "edge": {
+                  "type": "Var",
+                  "name": "e"
+                 },
+                 "key": "weight"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Nth",
+                  "items": {
+                   "type": "Var",
+                   "name": "e"
+                  },
+                  "index": 2
+                 },
+                 "key": "state"
+                }
+               ]
+              }
+             }
+            ]
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mt"
+            },
+            "key": "temperature"
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5493061443340548
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "external_field"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "key": "identity_field"
+              },
+              {
+               "type": "Sum",
+               "source": {
+                "type": "Edges",
+                "node": {
+                 "type": "Var",
+                 "name": "c"
+                },
+                "edge_type": "causal_influence"
+               },
+               "var_name": "e",
+               "value": {
+                "type": "Times",
+                "items": [
+                 {
+                  "type": "EdgeAttr",
+                  "edge": {
+                   "type": "Var",
+                   "name": "e"
+                  },
+                  "key": "weight"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Nth",
+                   "items": {
+                    "type": "Var",
+                    "name": "e"
+                   },
+                   "index": 2
+                  },
+                  "key": "state"
+                 }
+                ]
+               }
+              }
+             ]
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "mt"
+             },
+             "key": "temperature"
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": -0.5493061443340548
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": -1
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "state",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "external_field"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "identity_field"
+            },
+            {
+             "type": "Sum",
+             "source": {
+              "type": "Edges",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "edge_type": "causal_influence"
+             },
+             "var_name": "e",
+             "value": {
+              "type": "Times",
+              "items": [
+               {
+                "type": "EdgeAttr",
+                "edge": {
+                 "type": "Var",
+                 "name": "e"
+                },
+                "key": "weight"
+               },
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Nth",
+                 "items": {
+                  "type": "Var",
+                  "name": "e"
+                 },
+                 "index": 2
+                },
+                "key": "state"
+               }
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mt"
+           },
+           "key": "temperature"
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5493061443340548
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Lt",
+         "a": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "external_field"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "c"
+              },
+              "key": "identity_field"
+             },
+             {
+              "type": "Sum",
+              "source": {
+               "type": "Edges",
+               "node": {
+                "type": "Var",
+                "name": "c"
+               },
+               "edge_type": "causal_influence"
+              },
+              "var_name": "e",
+              "value": {
+               "type": "Times",
+               "items": [
+                {
+                 "type": "EdgeAttr",
+                 "edge": {
+                  "type": "Var",
+                  "name": "e"
+                 },
+                 "key": "weight"
+                },
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Nth",
+                  "items": {
+                   "type": "Var",
+                   "name": "e"
+                  },
+                  "index": 2
+                 },
+                 "key": "state"
+                }
+               ]
+              }
+             }
+            ]
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mt"
+            },
+            "key": "temperature"
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": -0.5493061443340548
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": -1
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "can_native_update_2state",
+   "comment": "2-state (classical Hopfield, no deadzone) discrete-asynchronous update, ONE rule -- built for the convergence-guarantee COMPARISON against the 3-state variant (CAN_CONCEPT_REIMPLEMENTATION_SPIKE.md Sec5.1's registered theoretical distinction). Guarded to Mt.discrete_mode=='2state'.",
+   "match_type": "Concept",
+   "match": [
+    [
+     "mt",
+     "has_concept",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "mt"
+       },
+       "key": "discrete_mode"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "2state"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "c"
+        },
+        "key": "state"
+       },
+       "b": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gte",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "external_field"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "key": "identity_field"
+           },
+           {
+            "type": "Sum",
+            "source": {
+             "type": "Edges",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "edge_type": "causal_influence"
+            },
+            "var_name": "e",
+            "value": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "EdgeAttr",
+               "edge": {
+                "type": "Var",
+                "name": "e"
+               },
+               "key": "weight"
+              },
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Nth",
+                "items": {
+                 "type": "Var",
+                 "name": "e"
+                },
+                "index": 2
+               },
+               "key": "state"
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1
+        },
+        "other": {
+         "type": "Lit",
+         "value": -1
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "state",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gte",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "external_field"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "identity_field"
+          },
+          {
+           "type": "Sum",
+           "source": {
+            "type": "Edges",
+            "node": {
+             "type": "Var",
+             "name": "c"
+            },
+            "edge_type": "causal_influence"
+           },
+           "var_name": "e",
+           "value": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "EdgeAttr",
+              "edge": {
+               "type": "Var",
+               "name": "e"
+              },
+              "key": "weight"
+             },
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Nth",
+               "items": {
+                "type": "Var",
+                "name": "e"
+               },
+               "index": 2
+              },
+              "key": "state"
+             }
+            ]
+           }
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1
+       },
+       "other": {
+        "type": "Lit",
+        "value": -1
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "can_native_basin_decode",
+   "comment": "Basin CLASSIFICATION (item 1) + residual-count as the COHERENCE/FRUSTRATION signal (item 2), via the existing ShapeDecode Term, scoped (codebook_scope) to ONE held basin at a time -- classification against each held configuration independently, not a composite multi-basin explanation (see this seed's own module description for why: an UNSCOPED decode against >=2 overlapping basins lets the beam search's additive fit scoring prefer a redundant multi-part composite over a single basin's own clean exact match -- a real, pre-existing ShapeDecode property, worked around here by scoping, not patched in Rust). One Observation per (state, candidate-basin) pair, decode_kind=='can_basin_probe', scope_name names the ONE basin under test. residual_count==0 (covered_count==goal_relations) => this state matches THAT basin cleanly. The demo/test reads back covered_count across the probe set (the SAME multi-start-diagnostic reporting shape CAN_BELIEF_QUANTIZATION_RESULTS.md's own _basin_sweep helper already uses) to report which basin(s), if any, match cleanly, and how close the nearest is otherwise (the distance-to-nearest-attractor / frustration reading). See CAN_NATIVE_REIMPLEMENTATION_PREREG.md Sec2/RESULTS.",
+   "match_type": "Observation",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "decode_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "can_basin_probe"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pending"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "residual",
+     {
+      "__term__": {
+       "type": "ShapeDecode",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "codebook_type": "ShapeSignature",
+       "beam": 3,
+       "max_steps": 8,
+       "cand_k": 3,
+       "wild_objects": false,
+       "codebook_scope": {
+        "type": "SetT",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "scope_name"
+         }
+        ]
+       },
+       "field": "residual"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "covered_count",
+     {
+      "__term__": {
+       "type": "ShapeDecode",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       },
+       "codebook_type": "ShapeSignature",
+       "beam": 3,
+       "max_steps": 8,
+       "cand_k": 3,
+       "wild_objects": false,
+       "codebook_scope": {
+        "type": "SetT",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "scope_name"
+         }
+        ]
+       },
+       "field": "covered_count"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "decoded"
+    ]
+   ]
+  },
+  {
+   "name": "can_native_note_coactivation",
+   "comment": "Item 4 (Hebbian, edge-CREATION half only -- CAN_CONCEPT_REIMPLEMENTATION_SPIKE.md Sec3.5). Two Concepts under the same Mt, no causal_influence edge yet, no Coactivation record yet, both committed to the SAME nonzero sign: mints a Coactivation{noted_tick} record -- FIRST OCCURRENCE, does NOT yet mint the edge (mint-on-RECURRENCE, not first sight, matching the sd loop's own recognize-vs-mint shape one level up). noted_tick reads Mt.can_tick, an externally-bumped epoch (the SAME mechanical epoch-counter idiom shape_decode_loop.json's own codebook_epoch/decoded_epoch already uses -- Python bumps it between ticks, a rule never decides to bump it).",
+   "match_type": "Concept",
+   "match": [
+    [
+     "mt",
+     "has_concept",
+     "a"
+    ],
+    [
+     "mt",
+     "has_concept",
+     "b"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Var",
+        "name": "a"
+       },
+       "b": {
+        "type": "Var",
+        "name": "b"
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "a"
+        },
+        "key": "state"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "a"
+       },
+       "key": "state"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "b"
+       },
+       "key": "state"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Edges",
+        "node": {
+         "type": "Var",
+         "name": "a"
+        },
+        "edge_type": "causal_influence"
+       },
+       "var_name": "e1",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Nth",
+         "items": {
+          "type": "Var",
+          "name": "e1"
+         },
+         "index": 2
+        },
+        "b": {
+         "type": "Var",
+         "name": "b"
+        }
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Edges",
+        "node": {
+         "type": "Var",
+         "name": "a"
+        },
+        "edge_type": "coactivated_with"
+       },
+       "var_name": "e2",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Nth",
+         "items": {
+          "type": "Var",
+          "name": "e2"
+         },
+         "index": 2
+        },
+        "b": {
+         "type": "Var",
+         "name": "b"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "coact",
+     "Coactivation",
+     {
+      "noted_tick": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mt"
+        },
+        "key": "can_tick"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "a",
+     "coactivated_with",
+     "coact",
+     {}
+    ],
+    [
+     "add_edge",
+     "coact",
+     "coactivation_of",
+     "b",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "can_native_hebbian_mint",
+   "comment": "Item 4, second half: a pair with an EXISTING Coactivation record (noted on a STRICTLY EARLIER can_tick -- genuine cross-tick RECURRENCE, not an artifact of firing twice inside one run_rules() fixpoint), still co-activated same-sign, still no causal_influence edge -- mints ONE causal_influence edge, weight +1 (same-sign persistent co-activation => positive coupling, the Hebbian 'fire together wire together' reading). Mints both a->b and b->a independently (Coactivation records exist for both orderings) -- SYMMETRIC by construction, matching this rung's own edge-population convention (PREREG Sec0 Probe1) rather than requiring can_ops.rs's build_couplings-style runtime symmetrization.",
+   "match_type": "Concept",
+   "match": [
+    [
+     "mt",
+     "has_concept",
+     "a"
+    ],
+    [
+     "mt",
+     "has_concept",
+     "b"
+    ],
+    [
+     "a",
+     "coactivated_with",
+     "coact"
+    ],
+    [
+     "coact",
+     "coactivation_of",
+     "b"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "a"
+        },
+        "key": "state"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "a"
+       },
+       "key": "state"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "b"
+       },
+       "key": "state"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "mt"
+       },
+       "key": "can_tick"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "coact"
+       },
+       "key": "noted_tick"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Edges",
+        "node": {
+         "type": "Var",
+         "name": "a"
+        },
+        "edge_type": "causal_influence"
+       },
+       "var_name": "e3",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Nth",
+         "items": {
+          "type": "Var",
+          "name": "e3"
+         },
+         "index": 2
+        },
+        "b": {
+         "type": "Var",
+         "name": "b"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "a",
+     "causal_influence",
+     "b",
+     {
+      "weight": 1.0
+     }
+    ]
+   ]
+  }
+ ]
+}
