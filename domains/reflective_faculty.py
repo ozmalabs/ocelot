@@ -1771,12 +1771,30 @@ def ground_predicate(agent, predicate_label, trajectory) -> dict[str, Any]:
         from domains.teach import teach
         import json as _json
         minted = []
+        role_checks: dict[str, Any] = {}
         for rel in matched:
-            teach(agent, "RelationCue",
-                  {"keywords": [str(predicate_label).lower()], "relation": _json.dumps(rel),
-                   "grounded_from": "observation", "source": "predicate_grounding"},
-                  category="relation_vocabulary")
+            # compact separators (no spaces) -- matches seeds/relation_vocabulary.json's own
+            # serialization convention EXACTLY (real bug found building the guard below: the
+            # default json.dumps separator (", ") made every freshly-taught relation string
+            # byte-DIFFERENT from the seed's compact form even when semantically identical,
+            # so a byte-equality check across the two could never recognize a real match —
+            # this is a pre-existing formatting inconsistency in ground_predicate's own code,
+            # invisible until now because every other consumer re-parses via json.loads
+            # rather than comparing the raw string).
+            taught = teach(agent, "RelationCue",
+                            {"keywords": [str(predicate_label).lower()],
+                             "relation": _json.dumps(rel, separators=(",", ":")),
+                             "grounded_from": "observation", "source": "predicate_grounding"},
+                            category="relation_vocabulary")
             minted.append(rel)
+            # ARGUMENT-ROLE MINT-TIME GUARD (see the block above _load_relation_cues):
+            # every freshly-taught RelationCue is checked, live, against the held
+            # ArgumentRole vocabulary — recognize (identical relation, safe), mint
+            # (brand-new token, safe), or flag (existing token, new context — needs
+            # disambiguation). ground_predicate only ever mints relations already held
+            # verbatim (the `matched` filter above), so this is predicted to always
+            # RECOGNIZE here — reported, not assumed (see role_checks in the return).
+            role_checks[_json.dumps(rel)] = check_new_relation_cue_roles(agent, taught.get("node"))
         # magnitudes from the observed trajectory. restoring k ~ omega^2 from the
         # period (closed-form, exact). decay c: the log-decrement gives an APPROXIMATE
         # seed; the graph-native fit_magnitudes recurrence then REFINES it to the exact
@@ -1793,6 +1811,7 @@ def ground_predicate(agent, predicate_label, trajectory) -> dict[str, Any]:
         c = fit["decay_c"] if fit.get("fitted") else c_seed
         return {"grounded": True, "path": "grow_lexicon", "predicate": predicate_label,
                 "structure": structure, "minted_relations": minted,
+                "role_checks": role_checks,
                 "measured_magnitudes": {"restoring_k": k, "decay_c": c},
                 "fit": {"c_seed": c_seed, "c_fitted": c,
                         "sse_before": fit.get("sse_before"), "sse_after": fit.get("sse_after"),
@@ -7086,6 +7105,110 @@ def _concept_definition(substrate, name: str):
         if target and target.replace(" ", "_") in nm.lower():
             return (at.get("definition") or at.get("description") or ""), nm
     return None, None
+
+
+# ---------------------------------------------------------------------------
+# ARGUMENT-ROLE MINT-TIME GUARD (ARGUMENT_ROLE_VOCABULARY_PREREG.md / _RESULTS.md)
+# -- the sd loop's recognize/mint duality reapplied to RelationCue's own uppercase
+# role-token placeholders. RELATION_CUE_TOKEN_COLLISION_RESULTS.md §6 found the
+# representation itself unenforced: two cues reusing "SELF" are (correctly) not
+# distinguished from two cues reusing "POSITION" by accident -- nothing in the
+# graph HOLDS the role as a first-class, named, deduped thing. seeds/
+# argument_role_vocabulary.json promotes it: ArgumentRole{name, gloss} is the
+# direct structural analogue of FunctionalRole, one level down (FunctionalRole
+# names system FUNCTIONS; ArgumentRole names argument SLOTS). RelationCue.relation
+# itself is UNCHANGED (every real consumer -- _load_relation_cues,
+# _relation_cue_index, _shared_shape, Rust shape_fit -- keeps reading the bare
+# string, byte-identical); RelationCue additionally carries real uses_role edges.
+#
+# The mint-time guard is the seed's role_recognize_exact / role_mint_fresh_token /
+# role_flag_collision rules (mirroring seeds/blob_edge_correspondence.json's
+# blob_mint/blob_recognize and seeds/gap_awareness.json's gap-filing shape, not a
+# fourth invented mechanism): a freshly-taught RelationCue's relation tuple, if
+# BYTE-IDENTICAL to an already-held cue's, recognizes with confidence (a pure
+# keyword-synonym addition -- ground_predicate's own, only, current live minting
+# behaviour); an uppercase token never seen before mints a fresh ArgumentRole
+# (safe by construction); any OTHER reuse of an existing token under a
+# structurally different tuple is FLAGGED (a SelfConcern is filed, the edge is
+# deliberately left unwired) rather than silently guessed at -- the prior rung's
+# own census shows SAME-vs-DIFFERENT is not mechanically recoverable from
+# structure alone (genuinely-shared tokens like SELF share no more structure
+# across their cues than the confirmed-accidental POSITION/PRIOR pair did), so
+# the guard's honest job is to make every non-identical reuse VISIBLE, not to
+# guess. Python does mechanical ingest + read-back only (mirrors
+# record_correspondence exactly): write one pending RoleUseCheck per uppercase
+# token, run_rules(), read back the verdict, and for the ONE case the engine
+# cannot wire from inside the rule (recognized_exact -- the matching ArgumentRole
+# is Term-found, not match-bound; "add_edge targets must be match-bound vars in
+# this engine", sd_dedup_existing's own documented constraint, reused rather than
+# reinvented) re-resolve it by name and wire the edge the rule already decided.
+# ---------------------------------------------------------------------------
+
+def _load_argument_role_index(substrate) -> dict:
+    """Mechanical graph read: {ArgumentRole.name -> node_id} -- the held vocabulary
+    check_new_relation_cue_roles re-resolves a rule's RECOGNIZED verdict against."""
+    sub = getattr(substrate, "s", substrate)
+    idx: dict = {}
+    try:
+        for n in sub.nodes("ArgumentRole"):
+            nm = sub.node(n)["attrs"].get("name")
+            if nm:
+                idx[nm] = n
+    except Exception:
+        pass
+    return idx
+
+
+def check_new_relation_cue_roles(substrate, cue_node_id) -> dict[str, Any]:
+    """MECHANICAL INGEST (record_correspondence's exact pattern), run on every
+    freshly-taught RelationCue: write ONE pending RoleUseCheck per distinct
+    uppercase role token in the cue's `relation` tuple, hand off to
+    seeds/argument_role_vocabulary.json's guard rules -- which DECIDE (never
+    Python) whether each token-use RECOGNIZES an identical held relation (safe,
+    wired), MINTS a genuinely new ArgumentRole (safe by construction, wired by
+    the rule itself), or is FLAGGED (an existing token reused under a new
+    structural shape -- a SelfConcern is filed, the edge is deliberately left
+    unwired, per the charter's own words: 'flag it, don't silently install a
+    second meaning under one name'). Returns {'checked': bool, 'tokens':
+    {token: verdict}} -- verdict in {'recognized_exact','minted','flagged'} (or
+    absent if the cue has no live graph / no uppercase tokens at all)."""
+    import json as _json
+    sub = getattr(substrate, "s", substrate)
+    out: dict[str, Any] = {"checked": False, "tokens": {}}
+    if cue_node_id is None or not hasattr(sub, "add_node"):
+        return out
+    try:
+        rel = _json.loads(sub.node(cue_node_id)["attrs"].get("relation") or "[]")
+    except Exception:
+        return out
+    tokens = sorted({t for t in rel if isinstance(t, str) and t.isupper()})
+    if not tokens:
+        return out
+    native = getattr(sub, "_inner", sub)
+    checks: dict = {}
+    try:
+        for tok in tokens:
+            rc = sub.add_node("RoleUseCheck", {"status": "pending", "token": tok})
+            sub.add_edge(cue_node_id, "has_role_use", rc)
+            checks[tok] = rc
+        native.run_rules()
+    except Exception as exc:
+        out["error"] = str(exc)
+        return out
+    role_index = _load_argument_role_index(substrate)
+    verdicts: dict = {}
+    for tok, rc in checks.items():
+        status = sub.node(rc)["attrs"].get("status")
+        verdicts[tok] = status
+        if status == "recognized_exact":
+            role = role_index.get(tok)
+            if role is not None:
+                try:
+                    sub.add_edge(cue_node_id, "uses_role", role)
+                except Exception:
+                    pass
+    out.update({"checked": True, "tokens": verdicts})
+    return out
 
 
 def _load_relation_cues(substrate) -> list:
