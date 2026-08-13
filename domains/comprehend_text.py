@@ -224,33 +224,13 @@ def _detect_reflexive_rule(substrate: Any, gaps: list[dict]) -> Optional[str]:
     return None
 
 
-def _score_meta_entry(entry: dict, words: set[str]) -> int:
-    """The SAME AND-of-bag semantics `comprehend_meta`'s `_all_present` uses
-    (every `match` fragment must appear SOMEWHERE in the words, order-free —
-    that already tolerates insertions/reordering) — but scored, not boolean,
-    so the BEST-covered entry wins instead of the FIRST-listed one, and any
-    `any`-group hit breaks ties toward a more specific reading. An entry whose
-    `match` fragments are not ALL present scores 0 (never a partial-keyword
-    guess on a single stray word)."""
-    frags = [_cq._norm(f) for f in entry.get("match", [])]
-    if frags and not all(f in words for f in frags):
-        return 0
-    score = len(frags)
-    for grp in entry.get("any") or []:
-        if any(_cq._norm(a) in words for a in grp):
-            score += 1
-    return score
-
-
-def _best_meta_entry(lex: list[dict], words: set[str], has_cue: bool):
-    best, best_score = None, 0
-    for entry in lex:
-        if not has_cue and not entry.get("self_cue_optional"):
-            continue
-        score = _score_meta_entry(entry, words)
-        if score > best_score:
-            best, best_score = entry, score
-    return best, best_score
+# MOVED to domains/comprehend_question.py (2026-08-14, SHAPE_AUDIT.md §7
+# finding #10 / instance 3: this was a byte-for-byte duplicate of lexicon-
+# matching logic that belongs with the lexicon it scores). Thin re-exports so
+# this module's one call site (below) and any external caller by this name
+# keep working unchanged.
+_score_meta_entry = _cq._score_meta_entry
+_best_meta_entry = _cq._best_meta_entry
 
 
 def _capture_meta_arg(entry: dict, text: str) -> Optional[str]:
