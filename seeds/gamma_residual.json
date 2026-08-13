@@ -1,0 +1,351 @@
+{
+ "id": "gamma_residual",
+ "version": "1.0.0",
+ "depends_on": [],
+ "capability_keys": [
+  "gamma_production_gap_detection"
+ ],
+ "description": "GAMMA_COLLAPSE_ALGORITHM spike (GAMMA_COLLAPSE_ALGORITHM_PREREG.md / _RESULTS.md). Rung 4 (mint-on-recurrence) of the SAME collapse-mint algorithm the sd loop (shape_decode.rs) and MetaShapeMint already realise, applied to Type-1 Gamma rejections instead of shape-decode residuals. Rung 1 (recognize) is `check_edge` itself, UNCHANGED -- an admitted edge never reaches this seed at all. When Rust's `Substrate::add_edge` hits `CheckOutcome::Type1NoProduction` with `gamma_residual_capture` on (default OFF, see substrate.rs field doc), it mints ONE `GammaResidual{src_type,edge_type,tgt_type,hit_count,proposed}` node per rejection -- mechanical event logging, no Rust-side dedup or counting decision, anchored under a lazily-created `GammaResidualRoot` via an UNCHECKED `gamma_residual` edge (engine-internal bookkeeping, the same category as `add_production`'s own GammaProduction mirror). Every decision from there is this ONE rule, using ONLY existing Count/Filter/Argmin/StringConcat Terms: `note_gamma_production_gap` groups GammaResidual nodes by their exact (src_type,edge_type,tgt_type) attrs (already canonical -- a fixed 3-tuple, neither order-dependent nor truncated, unlike the CapabilityAxis bug SHAPE_AUDIT.md Section 3.1 documents), applies shape_decode.rs's OWN support discipline verbatim (support >= 2 mints, support 1 does not -- TWO is not a swept knob, it is the smallest cardinality at which 'recurs' is defined, shape_decode.rs:8795-8797), picks ONE canonical leader per group via the retire_duplicate_gap Argmin-over-node-identity idiom (gap_awareness.json, so a group of N residuals mints ONCE per run_rules fixpoint rather than N times), and mints a `SelfConcern{status:'noted', source:'implicit', kind:'gamma_production', content:<the triple, human-readable>}` -- the EXACT SAME node shape gap_awareness.json's two mint rules already produce, so the existing human-gated `promote_self_concern` (scripts/jabberwock_daemon.py) and the existing surfacing reader (`domains.reflective_faculty._run_self_gaps`, which unions a full SelfConcern scan as a fallback so no `has_self_concern` edge is required for discovery -- deliberately omitted here, since there is no reliable single-Agent anchor at this grain and forcing one would repeat the ['agent','is_a','Agent'] over-firing anti-pattern CLAUDE.md's gap_awareness section explicitly rejects) both discover and can promote it with ZERO code changes. Content-deduped (Not Exists a SelfConcern with the same content, the gap_awareness.json idiom verbatim) and mint-once via a `proposed` guard on the leader residual, exactly like `gap_noted`/`comprehended` elsewhere. WHAT THIS SEED DOES NOT DO, STATED HONESTLY: it never calls `add_production` and never makes a rejected triple admissible -- Theorem XII (reference-monitor containment) is untouched by this seed; making a proposal live is an explicit, out-of-band, human/experiment-equivalent action outside any rule, demonstrated manually in GAMMA_COLLAPSE_ALGORITHM_RESULTS.md. It also does not add a `gamma_production`-specific StandingConcern pipeline handler (the code_write/prog_read precedent in `_promote_relations_for_concern`) -- a promoted concern of this kind falls through to the generic comprehend_first default, which is a named, honest, out-of-scope residual, not a silent gap.",
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "note_gamma_production_gap",
+   "batch": false,
+   "match": [
+    [
+     "root",
+     "gamma_residual",
+     "residual"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "residual"
+        },
+        "key": "proposed"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "residual"
+      },
+      "b": {
+       "type": "Argmin",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "GammaResidual"
+        },
+        "var_name": "r2",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "r2"
+            },
+            "key": "src_type"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "residual"
+            },
+            "key": "src_type"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "r2"
+            },
+            "key": "edge_type"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "residual"
+            },
+            "key": "edge_type"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "r2"
+            },
+            "key": "tgt_type"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "residual"
+            },
+            "key": "tgt_type"
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "z",
+       "value": {
+        "type": "Var",
+        "name": "z"
+       }
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "GammaResidual"
+        },
+        "var_name": "r3",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "r3"
+            },
+            "key": "src_type"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "residual"
+            },
+            "key": "src_type"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "r3"
+            },
+            "key": "edge_type"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "residual"
+            },
+            "key": "edge_type"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "r3"
+            },
+            "key": "tgt_type"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "residual"
+            },
+            "key": "tgt_type"
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 2
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SelfConcern"
+       },
+       "var_name": "sc",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc"
+         },
+         "key": "content"
+        },
+        "b": {
+         "type": "StringConcat",
+         "parts": [
+          {
+           "type": "Lit",
+           "value": "Gamma repeatedly rejects ("
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "residual"
+           },
+           "key": "src_type"
+          },
+          {
+           "type": "Lit",
+           "value": ") -["
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "residual"
+           },
+           "key": "edge_type"
+          },
+          {
+           "type": "Lit",
+           "value": "]-> ("
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "residual"
+           },
+           "key": "tgt_type"
+          },
+          {
+           "type": "Lit",
+           "value": ") -- no admissibility production covers it"
+          }
+         ]
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "residual",
+     "proposed",
+     1.0
+    ],
+    [
+     "add_node",
+     "sc",
+     "SelfConcern",
+     {
+      "status": "noted",
+      "source": "implicit",
+      "kind": "gamma_production",
+      "content": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "Gamma repeatedly rejects ("
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "residual"
+          },
+          "key": "src_type"
+         },
+         {
+          "type": "Lit",
+          "value": ") -["
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "residual"
+          },
+          "key": "edge_type"
+         },
+         {
+          "type": "Lit",
+          "value": "]-> ("
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "residual"
+          },
+          "key": "tgt_type"
+         },
+         {
+          "type": "Lit",
+          "value": ") -- no admissibility production covers it"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "residual",
+     "gamma_gap",
+     "sc"
+    ]
+   ]
+  }
+ ]
+}

@@ -292,6 +292,30 @@ pub struct Substrate {
     /// add-only effects, non-repeated edge types, not `reads_external`, k≥1.
     /// Computed once in `add_rule`. Parallel to `rule_cursors`.
     pub(crate) rule_pred_retract_ok: Vec<bool>,
+
+    /// GAMMA RESIDUAL CAPTURE (GAMMA_COLLAPSE_ALGORITHM spike), **DEFAULT
+    /// FALSE**. Mirrors the `precise_dirty` / `dirty_telemetry` opt-in
+    /// pattern above exactly: OFF ⇒ `add_edge`'s `Type1NoProduction` arm is
+    /// byte-unchanged (nothing new executes, nothing new is written). ON ⇒
+    /// every Type-1 rejection additionally mints ONE `GammaResidual` node
+    /// (mechanical event logging — Rust decides nothing about whether the
+    /// triple "recurs"; that decision is left entirely to the seed rule
+    /// `note_gamma_production_gap` in `seeds/gamma_residual.json`, which
+    /// groups by the triple and applies the `shape_decode.rs` support
+    /// discipline: support >= 2 mints, support 1 does not — TWO is not a
+    /// swept knob, it is the smallest cardinality at which "recurs" is
+    /// defined). This is the collapse-without-residual-capture gap named in
+    /// `GAMMA_COLLAPSE_ALGORITHM_PREREG.md` §1: the triple was already a
+    /// real, fully-computed Rust value at this point in `add_edge` and was
+    /// previously thrown away the instant the `Err` was constructed.
+    pub(crate) gamma_residual_capture: bool,
+    /// Lazily created once, on first Type-1 rejection with capture on.
+    /// Deliberately SEPARATE from `gamma_graph_root` (which anchors live,
+    /// admitted `GammaProduction` mirrors written by `add_production`) even
+    /// though both live under the same `GammaGrammar`-family vocabulary —
+    /// a residual is explicitly NOT a production and must never be
+    /// confusable with one by graph shape alone.
+    pub(crate) gamma_residual_root: Option<NodeID>,
     /// Next id `fb_attach` will hand out. Monotonic — ids are not
     /// reused after `fb_detach`, so a stale Python-side `fb_id` fails
     /// loudly (KeyError-shaped) instead of silently reattaching to an
@@ -528,6 +552,8 @@ impl Substrate {
             predicate_retraction_unsound: false,
             rule_dirty_nodes: Vec::new(),
             rule_pred_retract_ok: Vec::new(),
+            gamma_residual_capture: false,
+            gamma_residual_root: None,
         }
     }
 
@@ -857,6 +883,73 @@ impl Substrate {
         idx
     }
 
+    /// GAMMA_COLLAPSE_ALGORITHM spike: mint ONE `GammaResidual` node
+    /// recording a Type-1 rejection triple. Called ONLY from `add_edge`'s
+    /// `Type1NoProduction` arm, ONLY when `gamma_residual_capture` is on
+    /// (see the field doc — default off, byte-identical when off).
+    ///
+    /// Mechanical event logging, deliberately undecided: this method does
+    /// NOT check whether the triple has been seen before, does NOT count
+    /// occurrences, and does NOT decide anything about recurrence. That
+    /// decision belongs to the seed rule `note_gamma_production_gap`
+    /// (`seeds/gamma_residual.json`), which groups `GammaResidual` nodes by
+    /// their triple attrs via existing `Count`/`Filter`/`Argmin` Terms and
+    /// applies the `shape_decode.rs` support discipline (mint at support
+    /// >= 2). Rust's only job here is "this happened, and here is what
+    /// happened" — the same division of labour `_answer_topic_reply`
+    /// already uses for `outcome='resolved'|'unresolved'` (a datum, not a
+    /// decision) at the Python/graph boundary; here it is Rust/graph, one
+    /// layer further down, for the identical reason: the DSL's own Count/
+    /// Filter/Argmin already exist and are the right place for the "does
+    /// this recur" decision, not a second, parallel counting mechanism.
+    ///
+    /// Node insertion goes through `self.add_node` (not a raw
+    /// `graph.insert_node`) specifically so the engine's own dirty-tracking
+    /// runs (`mark_node_mutation` / `mark_external_write`) — a raw insert
+    /// left the new `GammaResidual` invisible to `run_rules()` until some
+    /// LATER, unrelated write happened to trigger a full rescan (caught live
+    /// by the demonstration script in GAMMA_COLLAPSE_ALGORITHM_RESULTS.md
+    /// §5: five same-triple rejections in a row minted nothing, and the
+    /// mint only appeared after an unrelated `add_node` elsewhere forced the
+    /// blanket dirty path). The anchoring edge is still UNCHECKED
+    /// `graph.insert_edge` (never `self.add_edge`) — this is engine-internal
+    /// bookkeeping data, not agent-authored semantic graph content, the same
+    /// category `add_production`'s own `GammaProduction` mirror already
+    /// writes unchecked via `production_to_subgraph` — but its edge TYPE is
+    /// explicitly marked dirty afterward via `mark_edge_type_dirty`, the
+    /// exact call the checked `add_edge` path makes for an admitted edge
+    /// (`substrate.rs`, `CheckOutcome::Admitted` arm), so a rule matching on
+    /// that edge type is woken the same way either path would wake it.
+    fn record_gamma_residual(&mut self, src_type: Sym, edge_type: Sym, tgt_type: Sym) {
+        let root = match self.gamma_residual_root {
+            Some(r) => r,
+            None => {
+                let type_sym = self.interner.intern("GammaResidualRoot");
+                let r = self.add_node(type_sym, rustc_hash::FxHashMap::default());
+                self.gamma_residual_root = Some(r);
+                r
+            }
+        };
+        let residual_type = self.interner.intern("GammaResidual");
+        let src_key = self.interner.intern("src_type");
+        let edge_key = self.interner.intern("edge_type");
+        let tgt_key = self.interner.intern("tgt_type");
+        let hit_key = self.interner.intern("hit_count");
+        let proposed_key = self.interner.intern("proposed");
+        let mut attrs = FxHashMap::default();
+        attrs.insert(src_key, Value::Str(src_type));
+        attrs.insert(edge_key, Value::Str(edge_type));
+        attrs.insert(tgt_key, Value::Str(tgt_type));
+        attrs.insert(hit_key, Value::Float(1.0));
+        attrs.insert(proposed_key, Value::Float(0.0));
+        let residual_id = self.add_node(residual_type, attrs);
+        let residual_edge = self.interner.intern("gamma_residual");
+        self.graph
+            .insert_edge(root, residual_edge, residual_id, FxHashMap::default())
+            .expect("freshly-inserted GammaResidual node always connects");
+        self.mark_edge_type_dirty(residual_edge);
+    }
+
     /// Mark every rule whose read set includes `edge_type` as dirty.
     /// Uses the inverse RuleKey index while retaining stable RuleIdx order.
     #[inline]
@@ -1006,6 +1099,9 @@ impl Substrate {
             }
         }
     }
+
+    /// GAMMA_COLLAPSE_ALGORITHM spike control. DEFAULT FALSE — see the field doc.
+    pub fn set_gamma_residual_capture(&mut self, on: bool) { self.gamma_residual_capture = on; }
 
     /// Block 187000 controls. `precise_dirty` DEFAULT FALSE — see the field doc.
     pub fn set_precise_dirty(&mut self, on: bool) { self.precise_dirty = on; }
@@ -1474,6 +1570,15 @@ impl Substrate {
                 // Type-1 — vocabulary present but no admission).
                 for pi in self.checker.grammar.candidates(src_type, edge_type, tgt_type) {
                     self.counters.on_production_reject(*pi);
+                }
+                // GAMMA_COLLAPSE_ALGORITHM spike (see field doc on
+                // `gamma_residual_capture`): DEFAULT FALSE, byte-identical
+                // to the committed path when off. On, this is the ONE
+                // place the previously-discarded rejection triple is
+                // captured as graph data instead of being thrown away the
+                // instant this `Err` is constructed.
+                if self.gamma_residual_capture {
+                    self.record_gamma_residual(src_type, edge_type, tgt_type);
                 }
                 Err(InadmissibleEdge::Type1NoProduction {
                     src_type,
@@ -5540,6 +5645,155 @@ mod tests {
             }
             other => panic!("expected Type-1 for known-vocab/no-production; got {:?}", other),
         }
+    }
+
+    // -------- GAMMA_COLLAPSE_ALGORITHM spike: residual capture --------
+
+    /// **THE SAFETY-CRITICAL TEST.** `gamma_residual_capture` DEFAULT FALSE
+    /// must leave `add_edge`'s `Type1NoProduction` arm byte-unchanged: same
+    /// `Err` value, same counters, and — the part a naive re-read of the
+    /// counters wouldn't catch — NO new node minted anywhere in the graph.
+    #[test]
+    fn gamma_residual_capture_off_leaves_graph_unchanged() {
+        let mut s = build_alive_grammar();
+        let alive = s.interner.lookup("AliveCell").unwrap();
+        let dead = s.interner.intern("DeadCell");
+        let adj = s.interner.lookup("adjacent_to").unwrap();
+        let src_var = s.interner.intern("src2");
+        let tgt_var = s.interner.intern("tgt2");
+        let prov = s.interner.intern("test:dead_only2");
+        let w = Grammar::default_weight(&mut s.terms);
+        s.checker.grammar.add(Production {
+            src: NodePattern { type_: dead, var: src_var },
+            edge_type: adj,
+            tgt: NodePattern { type_: dead, var: tgt_var },
+            where_: None,
+            weight: w,
+            provenance: prov,
+        });
+        let a = s.add_node(alive, FxHashMap::default());
+        let b = s.add_node(dead, FxHashMap::default());
+        let nodes_before = s.graph.node_count();
+        assert!(!s.gamma_residual_capture, "must default to false");
+        match s.add_edge(a, adj, b, FxHashMap::default()) {
+            Err(InadmissibleEdge::Type1NoProduction { src_type, edge_type, tgt_type }) => {
+                assert_eq!(src_type, alive);
+                assert_eq!(edge_type, adj);
+                assert_eq!(tgt_type, dead);
+            }
+            other => panic!("expected Type-1; got {:?}", other),
+        }
+        assert_eq!(
+            s.graph.node_count(), nodes_before,
+            "capture off must mint NOTHING — the committed default path is byte-unchanged"
+        );
+        assert!(s.gamma_residual_root.is_none(), "root must not be lazily created when capture is off");
+    }
+
+    /// Capture ON: two rejections of the SAME triple mint two `GammaResidual`
+    /// nodes (Rust does event logging only — the recurrence DECISION is the
+    /// seed rule's job, not Rust's; see `seeds/gamma_residual.json`), both
+    /// carrying the correct triple attrs, anchored under one shared root via
+    /// the `gamma_residual` edge type.
+    #[test]
+    fn gamma_residual_capture_on_logs_one_node_per_rejection() {
+        let mut s = build_alive_grammar();
+        let alive = s.interner.lookup("AliveCell").unwrap();
+        let dead = s.interner.intern("DeadCell");
+        let adj = s.interner.lookup("adjacent_to").unwrap();
+        let src_var = s.interner.intern("src3");
+        let tgt_var = s.interner.intern("tgt3");
+        let prov = s.interner.intern("test:dead_only3");
+        let w = Grammar::default_weight(&mut s.terms);
+        s.checker.grammar.add(Production {
+            src: NodePattern { type_: dead, var: src_var },
+            edge_type: adj,
+            tgt: NodePattern { type_: dead, var: tgt_var },
+            where_: None,
+            weight: w,
+            provenance: prov,
+        });
+        s.set_gamma_residual_capture(true);
+        let a = s.add_node(alive, FxHashMap::default());
+        let b1 = s.add_node(dead, FxHashMap::default());
+        let b2 = s.add_node(dead, FxHashMap::default());
+        assert!(s.add_edge(a, adj, b1, FxHashMap::default()).is_err());
+        assert!(s.add_edge(a, adj, b2, FxHashMap::default()).is_err());
+
+        let residual_type = s.interner.lookup("GammaResidual").unwrap();
+        let residuals = s.graph.nodes_of_type(residual_type);
+        assert_eq!(residuals.len(), 2, "one GammaResidual node per rejection, no Rust-side dedup");
+
+        let src_key = s.interner.lookup("src_type").unwrap();
+        let edge_key = s.interner.lookup("edge_type").unwrap();
+        let tgt_key = s.interner.lookup("tgt_type").unwrap();
+        for r in &residuals {
+            let attrs = &s.graph.node(*r).attrs;
+            assert_eq!(attrs.get(&src_key), Some(&Value::Str(alive)));
+            assert_eq!(attrs.get(&edge_key), Some(&Value::Str(adj)));
+            assert_eq!(attrs.get(&tgt_key), Some(&Value::Str(dead)));
+        }
+
+        // Both anchored under the SAME lazily-created root.
+        let root = s.gamma_residual_root.expect("root must be created once capture is on");
+        let residual_edge = s.interner.lookup("gamma_residual").unwrap();
+        let anchored = s.graph.out_edges_idx(root, Some(residual_edge));
+        assert_eq!(anchored.len(), 2);
+    }
+
+    /// Two DIFFERENT triples produce two residual nodes with DIFFERING
+    /// attrs — a regression guard against a grouping-key bug (the exact
+    /// failure class `SHAPE_AUDIT.md` §3.1 documents for `CapabilityAxis`'s
+    /// truncated identity: here there is no truncation to get wrong, but a
+    /// copy-paste of the wrong Sym into the wrong attr key would silently
+    /// conflate two distinct triples).
+    #[test]
+    fn gamma_residual_capture_distinguishes_different_triples() {
+        let mut s = build_alive_grammar();
+        let alive = s.interner.lookup("AliveCell").unwrap();
+        let dead = s.interner.intern("DeadCell");
+        let adj = s.interner.lookup("adjacent_to").unwrap();
+        let far = s.interner.intern("far_edge");
+        let src_var = s.interner.intern("src4");
+        let tgt_var = s.interner.intern("tgt4");
+        let w1 = Grammar::default_weight(&mut s.terms);
+        s.checker.grammar.add(Production {
+            src: NodePattern { type_: dead, var: src_var },
+            edge_type: adj,
+            tgt: NodePattern { type_: dead, var: tgt_var },
+            where_: None,
+            weight: w1,
+            provenance: s.interner.intern("test:dead_only4"),
+        });
+        let w2 = Grammar::default_weight(&mut s.terms);
+        s.checker.grammar.add(Production {
+            src: NodePattern { type_: dead, var: src_var },
+            edge_type: far,
+            tgt: NodePattern { type_: dead, var: tgt_var },
+            where_: None,
+            weight: w2,
+            provenance: s.interner.intern("test:dead_only5"),
+        });
+        s.set_gamma_residual_capture(true);
+        let a = s.add_node(alive, FxHashMap::default());
+        let b1 = s.add_node(dead, FxHashMap::default());
+        let b2 = s.add_node(dead, FxHashMap::default());
+        assert!(s.add_edge(a, adj, b1, FxHashMap::default()).is_err());
+        assert!(s.add_edge(a, far, b2, FxHashMap::default()).is_err());
+
+        let residual_type = s.interner.lookup("GammaResidual").unwrap();
+        let residuals = s.graph.nodes_of_type(residual_type);
+        assert_eq!(residuals.len(), 2);
+        let edge_key = s.interner.lookup("edge_type").unwrap();
+        let edges_seen: std::collections::HashSet<Sym> = residuals
+            .iter()
+            .filter_map(|r| match s.graph.node(*r).attrs.get(&edge_key) {
+                Some(Value::Str(sym)) => Some(*sym),
+                _ => None,
+            })
+            .collect();
+        assert!(edges_seen.contains(&adj));
+        assert!(edges_seen.contains(&far));
     }
 
     #[test]
