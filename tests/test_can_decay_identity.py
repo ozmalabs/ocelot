@@ -152,18 +152,26 @@ def test_evidence_decay_blocked_when_frozen():
     """PREREG Sec1, FROZEN case: the SAME setup, but the Mt's update_policy
     is 'frozen' -- mt_allows(mt,'allow_h_drift') is False unconditionally in
     the continuous mechanism, and this rule's own Term re-expression must
-    agree. Mint/reweight themselves are NOT policy-gated in seeds/
-    can_native_reimplementation.json (a pre-existing fact this rung does not
-    touch), so reinforcement still accrues evidence -- but once reinforcement
-    stops, decay must leave the counters completely UNCHANGED across many
-    ticks, unlike the adaptive case above."""
+    agree.
+
+    UPDATED (post-merge with CAN_HEBBIAN_MATERIALIZATION_RESULTS.md, commit
+    f24e359): can_native_hebbian_mint/reweight are now themselves policy-
+    gated (Or(policy-switch, plasticity_override>0)), so under a FROZEN Mt
+    with no override, reinforcement never accrues in the first place --
+    evidence_confirm/disconfirm stay (0,0) from mint through the end of the
+    run. This is a stricter, more coherent invariant than the one originally
+    registered here (frozen means frozen for BOTH halves of the ledger, not
+    just decay), not a weakening of it -- confirmed live, not assumed."""
     s = _loaded_substrate()
     inner = s._inner
     mt, a, b = _isolated_pair(inner, policy="frozen")
     _reinforce_hebbian_pair(inner, mt, a, b, through_tick=4)
     coact = _coact_between(inner, a, b)
     before = dict(inner.node(coact)["attrs"])
-    assert (before["evidence_confirm"], before["evidence_disconfirm"]) == (4, 0)
+    assert (before["evidence_confirm"], before["evidence_disconfirm"]) == (0, 0), (
+        "a FROZEN Mt with no plasticity_override must block reinforcement "
+        f"itself (Hebbian policy gate), not just decay; got {before}"
+    )
 
     inner.set_attr(a, "state", 0.0)
     for tick in range(5, 12):
@@ -172,8 +180,8 @@ def test_evidence_decay_blocked_when_frozen():
     after = inner.node(coact)["attrs"]
     print(f"frozen, unreinforced through tick 11: confirm={after['evidence_confirm']} disconfirm={after['evidence_disconfirm']} "
           f"decay_tick={after.get('decay_tick')}")
-    assert (after["evidence_confirm"], after["evidence_disconfirm"]) == (4, 0), (
-        f"a FROZEN Mt must never decay -- expected unchanged (4,0), got "
+    assert (after["evidence_confirm"], after["evidence_disconfirm"]) == (0, 0), (
+        f"a FROZEN Mt must never decay OR reinforce -- expected unchanged (0,0), got "
         f"({after['evidence_confirm']}, {after['evidence_disconfirm']})"
     )
     assert after.get("decay_tick") is None, "decay_tick must never be written when the policy blocks decay entirely"
