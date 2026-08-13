@@ -415,5 +415,263 @@ def ensure_contrapositives(agent) -> list:
     return [derive_contrapositive(agent, nm) for nm in names]
 
 
+# --------------------------------------------------------------------------- #
+#  (4) QUANTIFIED PREMISES — universal + existential instantiation.
+#  See docs/research/engine_substrate/QUANTIFIED_DEDUCTION_PREREG.md/_RESULTS.md
+#  for the full design record. Summary:
+#
+#  UNIVERSAL ("All X are Y" / "Every X can Y"): the quantifier word is
+#  STRIPPED FROM THE RAW STATEMENT STRING before decompose_sentence/
+#  read_clause ever see it (measured live: the whole-clause bare_universal
+#  path does NOT strip "all"/"some"/"every" from the subject the way the
+#  isolated-span primitives _arg_head/_clean_head already do -- a narrow,
+#  pre-existing inconsistency in the general reader, NOT fixed here, see the
+#  PREREG doc Sec1), then the REMAINDER is handed to the EXISTING, UNCHANGED
+#  parse_conditional -- a thin adapter over its own output, the SAME idiom
+#  parse_conditional itself already uses for the conditional-split form. The
+#  resulting schema is STRUCTURALLY IDENTICAL to any other single-antecedent
+#  knowledge_logical schema, so inference_generation.py's EXISTING detect_
+#  implication_gaps/resolve_implication_gap/decode_gap run universal
+#  instantiation with ZERO new gap-detection code -- the SAME finding the
+#  modus-tollens rung already made for the contrapositive extension.
+#
+#  EXISTENTIAL ("Some X is Y"): the SAME quantifier-strip + delegate-to-
+#  parse_conditional adapter, but the resulting (antecedent, consequent) pair
+#  is installed as a DIFFERENT kind ("knowledge_existential") with a
+#  DISTINCT relation label ("holds_some", not "holds"/"holds_all") in its
+#  `signature` -- consumed by a NEW detect/resolve pair in
+#  inference_generation.py that performs a genuine WITNESS SEARCH (find one
+#  qualifying entity, or mint a fresh witness constant if none exists) rather
+#  than the "apply to every qualifying entity" breadth MP already does --
+#  see inference_generation.py's own module comment on detect_existential_
+#  gaps/resolve_existential_gap for why this is a materially different
+#  operation, not a copy of the MP breadth-scan under a new name.
+# --------------------------------------------------------------------------- #
+def _singular_attr(attr: str) -> str:
+    """The attr's SINGULAR noun form via the held WordNet morphy reference --
+    the SAME lemmatiser situation_model_reader._lemma/reading_collapse.
+    _clean_head already depend on, applied to the NOUN pos tag ('n') instead
+    of the verb one ('v') _lemma already uses. Mechanical morphological
+    normalisation, not a decision: 'philosophers' -> 'philosopher', 'mortal'
+    -> 'mortal' (already singular, a safe no-op), 'can_fly' -> unchanged (not
+    a noun form, morphy returns None, falls back to the surface). KNOWN,
+    NAMED LIMITATION (QUANTIFIED_DEDUCTION_PREREG.md Sec1): an IRREGULAR
+    plural ('men' -> 'man') is NOT reached by plain morphy lookups the way a
+    regular '-s' plural is -- 'men' round-trips to 'men' unchanged. Not
+    papered over here; the live demo is built on a regular-plural noun for
+    this reason."""
+    s = str(attr)
+    try:
+        from nltk.corpus import wordnet as wn
+        lem = wn.morphy(s, "n")
+        if lem:
+            return lem
+    except Exception:
+        pass
+    return s
+
+
+def _quantifier_lexicon(agent) -> dict:
+    """{"universal": [...], "existential": [...]} read off the resident
+    QuantifierLexicon node (seeds/inference_logical.json), with the SAME
+    defaults baked in if the node is somehow absent -- graph-native
+    codebook, never a hardcoded story rule, mirroring inference_generation.
+    _warning_lexicon/_trust_lexicon's exact idiom. SCOPED, deliberately:
+    'a'/'an' are NOT members here -- they stay owned by the EXISTING
+    bare_universal generic reading ('a bird can fly' already grounds and
+    fires today), so there is no ambiguity about which path a bare
+    indefinite-article sentence takes (unchanged, byte-identical)."""
+    sub, _, _ = _resolve(agent)
+    for n in sub.nodes("QuantifierLexicon"):
+        at = sub.node(n)["attrs"]
+        universal = [str(w).lower() for w in (at.get("universal") or [])]
+        existential = [str(w).lower() for w in (at.get("existential") or [])]
+        if universal or existential:
+            return {"universal": universal, "existential": existential}
+    return {"universal": ["all", "every", "each"], "existential": ["some"]}
+
+
+def _split_leading_quantifier(agent, statement: str):
+    """Recognise + strip a LEADING quantifier word from `statement` (a thin
+    I/O-boundary classifier -- CLAUDE.md's own named carve-out: converting an
+    opaque surface cue into the smallest graph token, and no reading-
+    pipeline construction already does this, measured in the PREREG doc
+    Sec2). Returns (force, remainder) where force is 'universal'/
+    'existential'/None (no recognised leading quantifier -- the honest
+    residual) and remainder is the statement with that ONE leading token
+    removed (unchanged otherwise). Plain str.split/lower -- no regex."""
+    s = str(statement or "").strip()
+    if not s:
+        return None, s
+    parts = s.split(None, 1)
+    if not parts:
+        return None, s
+    head = parts[0].lower().strip(".,;:!?")
+    rest = parts[1] if len(parts) > 1 else ""
+    lex = _quantifier_lexicon(agent)
+    if head in lex["universal"]:
+        return "universal", rest
+    if head in lex["existential"]:
+        return "existential", rest
+    return None, s
+
+
+def parse_universal(agent, statement: str) -> Optional[dict]:
+    """PARSE a UNIVERSAL quantified premise ('All philosophers are mortal',
+    'Every bird can fly'): strip the leading universal quantifier word
+    (_split_leading_quantifier), delegate the remainder to the EXISTING,
+    UNCHANGED parse_conditional (a thin adapter over its own output, exactly
+    the same reuse discipline parse_conditional itself already documents for
+    its own conditional-split form), then SINGULARISE the antecedent (always)
+    and the consequent (only for a plain property relation -- a capability
+    consequent is already the bare verb form, never plural-inflected).
+    Returns None (the honest residual) when the statement has no recognised
+    leading universal quantifier, or when the remainder does not parse via
+    parse_conditional."""
+    force, rest = _split_leading_quantifier(agent, statement)
+    if force != "universal":
+        return None
+    parsed = parse_conditional(agent, rest)
+    if parsed is None:
+        return None
+    antecedent_attr = _singular_attr(parsed["antecedent_attr"])
+    consequent_attr = parsed["consequent_attr"]
+    if parsed["consequent_relation"] == "is":
+        consequent_attr = _singular_attr(consequent_attr)
+    chain = ("UNIVERSAL(%r): stripped leading quantifier -> delegated remainder "
+             "%r to parse_conditional [reused, unchanged] -> singularised "
+             "ANTECEDENT is_a(X,%s) => CONSEQUENT is_a(X,%s) [propositional, "
+             "held, general-reader + noun-lemma normalisation]"
+             % (statement, rest, antecedent_attr, consequent_attr))
+    out = dict(parsed)
+    out["antecedent_attr"] = antecedent_attr
+    out["consequent_attr"] = consequent_attr
+    out["chain"] = chain
+    return out
+
+
+def mint_universal_schema(agent, statement: str, *, name: Optional[str] = None) -> dict:
+    """Install a UNIVERSAL premise (parse_universal) as ONE ShapeSignature
+    {kind:"knowledge_logical", quantifier:"universal"} node -- STRUCTURALLY
+    IDENTICAL in shape to a `mint_logical_schema` node (same signature/
+    supplies fields, same node type, same codebook pool), so inference_
+    generation.py's EXISTING detect_implication_gaps/resolve_implication_gap/
+    decode_gap pick it up with NO change to that module -- the SAME finding
+    the modus-tollens rung already made. A SELF-CONTAINED sibling of mint_
+    logical_schema (not a refactor of it) to keep that existing, tested
+    function's body byte-for-byte unchanged. Idempotent by name. Calls
+    derive_contrapositive at the end, exactly like mint_logical_schema
+    already does -- a universally-quantified premise composes with the
+    modus-tollens extension for free (same kind, same length-1 signature
+    shape)."""
+    parsed = parse_universal(agent, statement)
+    if parsed is None:
+        return {"minted": False, "reason":
+                ("%r does not parse as a universal premise (no recognised "
+                 "leading universal quantifier, or the remainder does not "
+                 "ground via parse_conditional) -- the NAMED residual") % statement}
+    sub, _, _ = _resolve(agent)
+    nm = name or ("logical_universal_%s_%s" % (parsed["antecedent_attr"],
+                                                 parsed["consequent_attr"]))
+    existing = _schema_by_name(sub, nm)
+    if existing is not None:
+        return {"minted": False, "already": True, "name": nm,
+                "node": existing, "parsed": parsed}
+    attrs = {
+        "name": nm,
+        "kind": "knowledge_logical",
+        "quantifier": "universal",
+        "coherence": "blocking",
+        "signature": json.dumps([["holds", parsed["antecedent_attr"]]]),
+        "supplies": json.dumps({"relation": "is_a",
+                                "attr": parsed["consequent_attr"]}),
+        "statement": statement,
+        "chain": parsed["chain"],
+    }
+    node = sub.add_node("ShapeSignature", attrs)
+    derive_contrapositive(agent, nm)
+    return {"minted": True, "name": nm, "node": node, "parsed": parsed}
+
+
+def parse_existential(agent, statement: str) -> Optional[dict]:
+    """PARSE an EXISTENTIAL quantified premise ('Some bird is a penguin'):
+    strip the leading existential quantifier word, delegate the remainder to
+    parse_conditional (reused, unchanged), singularise the same way parse_
+    universal does. Returns None (the honest residual) when the statement
+    has no recognised leading existential quantifier or the remainder does
+    not parse."""
+    force, rest = _split_leading_quantifier(agent, statement)
+    if force != "existential":
+        return None
+    parsed = parse_conditional(agent, rest)
+    if parsed is None:
+        return None
+    antecedent_attr = _singular_attr(parsed["antecedent_attr"])
+    consequent_attr = parsed["consequent_attr"]
+    if parsed["consequent_relation"] == "is":
+        consequent_attr = _singular_attr(consequent_attr)
+    chain = ("EXISTENTIAL(%r): stripped leading quantifier -> delegated remainder "
+             "%r to parse_conditional [reused, unchanged] -> singularised "
+             "ANTECEDENT is_a(X,%s) AND CONSEQUENT is_a(X,%s), witness "
+             "unresolved [propositional, held, general-reader + noun-lemma "
+             "normalisation]" % (statement, rest, antecedent_attr, consequent_attr))
+    out = dict(parsed)
+    out["antecedent_attr"] = antecedent_attr
+    out["consequent_attr"] = consequent_attr
+    out["chain"] = chain
+    return out
+
+
+def mint_existential_premise(agent, statement: str, *, name: Optional[str] = None) -> dict:
+    """Install an EXISTENTIAL premise (parse_existential) as ONE
+    ShapeSignature{kind:"knowledge_existential", quantifier:"existential"}
+    node. Reuses the SAME signature/supplies field SHAPE as knowledge_
+    logical (consistency with the rest of the codebook pool), but a
+    DISTINCT relation label in `signature` ("holds_some", not "holds"/
+    "holds_all") so this schema can NEVER become a candidate decoder for
+    detect_implication_gaps'/detect_conjunctive_gaps' own goals -- the SAME
+    per-gap-kind labelling discipline that closed the conjunction rung's own
+    cross-contamination bug (DEDUCTION_EXTENSION_RESULTS.md Sec3.3). Marked
+    `witnessed: 0` -- inference_generation.detect_existential_gaps/resolve_
+    existential_gap perform the actual witness search/mint (this function
+    only installs the PREMISE, mirroring mint_logical_schema's own
+    parse-then-install split). Idempotent by name. NOT decoded via
+    ShapeDecode/decode_gap (an honest architectural choice, not an
+    oversight -- see the PREREG doc Sec4: there is no competing schema to
+    choose among once a single existential premise is parsed, so a
+    collapse would be overhead with no discriminative work to do) and NOT
+    given a contrapositive (derive_contrapositive's own kind=="knowledge_
+    logical" scan skips it by construction)."""
+    parsed = parse_existential(agent, statement)
+    if parsed is None:
+        return {"minted": False, "reason":
+                ("%r does not parse as an existential premise (no recognised "
+                 "leading existential quantifier, or the remainder does not "
+                 "ground via parse_conditional) -- the NAMED residual") % statement}
+    sub, _, _ = _resolve(agent)
+    nm = name or ("existential_%s_%s" % (parsed["antecedent_attr"],
+                                          parsed["consequent_attr"]))
+    existing = _schema_by_name(sub, nm)
+    if existing is not None:
+        return {"minted": False, "already": True, "name": nm,
+                "node": existing, "parsed": parsed}
+    attrs = {
+        "name": nm,
+        "kind": "knowledge_existential",
+        "quantifier": "existential",
+        "coherence": "blocking",
+        "signature": json.dumps([["holds_some", parsed["antecedent_attr"]]]),
+        "supplies": json.dumps({"relation": "is_a",
+                                "attr": parsed["consequent_attr"]}),
+        "statement": statement,
+        "chain": parsed["chain"],
+        "witnessed": 0,
+    }
+    node = sub.add_node("ShapeSignature", attrs)
+    return {"minted": True, "name": nm, "node": node, "parsed": parsed}
+
+
 __all__ = ["parse_conditional", "mint_logical_schema",
-           "derive_contrapositive", "ensure_contrapositives"]
+           "derive_contrapositive", "ensure_contrapositives",
+           "parse_universal", "mint_universal_schema",
+           "parse_existential", "mint_existential_premise"]

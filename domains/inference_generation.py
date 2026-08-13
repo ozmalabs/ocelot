@@ -1159,6 +1159,132 @@ def resolve_conjunctive_gap(agent, gap: dict, *, t: int = 0, unit=None) -> dict:
 
 
 # --------------------------------------------------------------------------- #
+#  EXISTENTIAL-PREMISE GAP — "some bird is a penguin": a WITNESS SEARCH, not
+#  a breadth-apply-to-every-entity pass. See docs/research/engine_substrate/
+#  QUANTIFIED_DEDUCTION_PREREG.md/_RESULTS.md Sec4 for the full design
+#  record; domains/propositional_deduction.mint_existential_premise installs
+#  the premise this pair consumes. THE KEY DIFFERENCE FROM MP (`detect_
+#  implication_gaps`/`resolve_implication_gap`, both UNCHANGED, never called
+#  by this pair): MP applies its consequent to EVERY resident entity that
+#  satisfies the antecedent (breadth -- the graph-native realisation of
+#  universal instantiation, per the PREREG doc). An existential premise
+#  licenses NO SUCH THING -- it is satisfied by finding (or, failing that,
+#  MINTING) exactly ONE witness, never by iterating to completion. Both
+#  pieces reuse the SAME `for n in sub.nodes("SmEntity")` idiom every other
+#  detect_* function in this file already uses (the graph-native realisation
+#  of the Term algebra's own `Exists`/rule-match `Binding` semantics the
+#  PREREG doc cites -- no new Rust Term, no FFI call added), but STOP at the
+#  first qualifying entity rather than visiting all of them, and fall
+#  through to a MINT only when the search comes back empty -- the SAME
+#  search-before-mint Occam ordering CLAUDE.md's own sd-loop ladder already
+#  establishes ("exact recognize... only after BOTH rungs fail").
+#
+#  NOT routed through `decode_gap`/ShapeDecode: an existential premise, once
+#  parsed, is already a single, fully specified (antecedent_attr,
+#  consequent_attr) pair -- there is no competing schema to choose among, so
+#  a collapse would be overhead with no discriminative work to do (an
+#  honest architectural choice, not an oversight). The premise schema's
+#  `signature` uses the relation label "holds_some" (NOT "holds"/
+#  "holds_all"), so it can never become a candidate decoder for `detect_
+#  implication_gaps`'/`detect_conjunctive_gaps`' own goals either -- the SAME
+#  per-gap-kind labelling discipline that closed the conjunction rung's own
+#  cross-contamination bug (DEDUCTION_EXTENSION_RESULTS.md Sec3.3).
+# --------------------------------------------------------------------------- #
+def detect_existential_gaps(agent, unit=None) -> list:
+    """Every resident `ShapeSignature{kind:"knowledge_existential"}` premise
+    not yet marked `witnessed` -- a gap about the PREMISE SCHEMA itself (not
+    an entity, unlike every other detect_* in this file), read directly off
+    the node `mint_existential_premise` installed. Returns [{schema, node,
+    antecedent_attr, consequent_attr}]."""
+    ensure_logical_seeds(agent)
+    sub, _, _ = _resolve(agent)
+    gaps = []
+    for n in sub.nodes("ShapeSignature"):
+        at = sub.node(n)["attrs"]
+        if at.get("kind") != "knowledge_existential" or at.get("witnessed"):
+            continue
+        try:
+            sig = json.loads(at.get("signature") or "null")
+            supplies = json.loads(at.get("supplies") or "null")
+        except Exception:
+            continue
+        if not sig or len(sig) != 1 or sig[0][0] != "holds_some" or not supplies:
+            continue
+        gaps.append({"schema": at.get("name"), "node": n,
+                     "antecedent_attr": sig[0][1], "consequent_attr": supplies.get("attr")})
+    return gaps
+
+
+def _fresh_witness_name(sub, base: str) -> str:
+    """A resident-name-collision-checked fresh entity name for a MINTED
+    existential witness ('bird_witness', 'bird_witness_2', ...). Plain
+    node-scan uniqueness check -- the SAME 'first unused name' discipline
+    `_discourse_event_for`/`_schema_by_name` already use for a lookup, here
+    used to avoid one instead."""
+    existing = {sub.node(n)["attrs"].get("name") for n in sub.nodes("SmEntity")}
+    candidate = "%s_witness" % base
+    if candidate not in existing:
+        return candidate
+    i = 2
+    while ("%s_%d" % (candidate, i)) in existing:
+        i += 1
+    return "%s_%d" % (candidate, i)
+
+
+def resolve_existential_gap(agent, gap: dict, *, t: int = 0, unit=None) -> dict:
+    """Resolve ONE existential-premise gap: WITNESS SEARCH first (the first
+    resident, non-nested SmEntity whose antecedent attr is set to 1 --
+    mirrors `detect_implication_gaps`'s own admissible-fact discipline), mint the
+    consequent fact on THAT entity via `situation_model_reader.
+    ingest_predication` (UNCHANGED, reused, the identical call every other
+    resolve_* in this file already makes) when found (`witness_kind:
+    "found"`). If NO resident entity satisfies the antecedent, MINT a fresh
+    witness SmEntity (classical existential instantiation -- introduce a
+    fresh constant) carrying BOTH the antecedent and consequent facts,
+    tagged `existential_witness: 1` for honest provenance (mirrors the
+    `blocked_gap`/`imperative_derived` provenance-marker convention already
+    in this file) (`witness_kind: "minted"`). Either branch marks the
+    premise schema `witnessed: 1` (idempotent guard, mirrors
+    `contrapositive_of`) so a re-run is a no-op."""
+    sub, _, _ = _resolve(agent)
+    node = gap.get("node")
+    if node is not None and sub.node(node)["attrs"].get("witnessed"):
+        return {"minted": False, "gap": gap, "reason": "already witnessed -- idempotent, no re-search"}
+    antecedent_attr, consequent_attr = gap["antecedent_attr"], gap["consequent_attr"]
+    witness_entity = None
+    for n in sub.nodes("SmEntity"):
+        at = sub.node(n)["attrs"]
+        if at.get("nested") or not at.get("name"):
+            continue
+        if at.get(antecedent_attr) == 1:
+            witness_entity = at.get("name")
+            break
+    if witness_entity is not None:
+        ent = smr._entity(agent, witness_entity, unit=unit)
+        if sub.node(ent)["attrs"].get(consequent_attr) != 1:
+            smr.ingest_predication(agent, ["is_a", witness_entity, consequent_attr], t=t, unit=unit)
+        if node is not None:
+            sub.set_attr(node, "witnessed", 1)
+            sub.set_attr(node, "witness_kind", "found")
+            sub.set_attr(node, "witness_entity", witness_entity)
+        return {"minted": True, "gap": gap, "witness_kind": "found",
+                "entity": witness_entity,
+                "supplies": {"relation": "is_a", "attr": consequent_attr}}
+    fresh_name = _fresh_witness_name(sub, antecedent_attr)
+    smr.ingest_predication(agent, ["is_a", fresh_name, antecedent_attr], t=t, unit=unit)
+    smr.ingest_predication(agent, ["is_a", fresh_name, consequent_attr], t=t + 1, unit=unit)
+    ent = smr._entity(agent, fresh_name, unit=unit)
+    sub.set_attr(ent, "existential_witness", 1)
+    if node is not None:
+        sub.set_attr(node, "witnessed", 1)
+        sub.set_attr(node, "witness_kind", "minted")
+        sub.set_attr(node, "witness_entity", fresh_name)
+    return {"minted": True, "gap": gap, "witness_kind": "minted",
+            "entity": fresh_name,
+            "supplies": {"relation": "is_a", "attr": consequent_attr}}
+
+
+# --------------------------------------------------------------------------- #
 #  DECODE — the collapse. Goal -> ShapeDecode -> the winning schema.
 # --------------------------------------------------------------------------- #
 def _schema_node(sub, name: str):
@@ -1395,10 +1521,18 @@ def read_and_infer(agent, text: str, *, max_sentences: int = 40) -> dict:
     # `resolve_implication_gap` above are byte-unchanged by this pass.
     conjunctive = [resolve_conjunctive_gap(agent, g, t=990 + i)
                    for i, g in enumerate(detect_conjunctive_gaps(agent))]
+    # EXISTENTIAL PREMISES ("some bird is a penguin") -- QUANTIFIED_DEDUCTION_
+    # PREREG.md/_RESULTS.md. Runs AFTER `logical`/`conjunctive` so a fact either
+    # of those passes just derived is ALSO a candidate witness for the search --
+    # additive: `existential` is a NEW dict key, nothing above depends on it, and
+    # every existing gap kind above is byte-unchanged by this pass.
+    existential = [resolve_existential_gap(agent, g, t=995 + i)
+                   for i, g in enumerate(detect_existential_gaps(agent))]
 
     return {"text": text, "textbase": spine["textbase"], "before_situation_model": before,
             "blocking": blocking, "bridging": bridging, "goal": goal, "warning": warning,
             "embedded": embedded, "logical": logical, "conjunctive": conjunctive,
+            "existential": existential,
             "elaborative": elaborative, "situation_model": _situation_model(sub)}
 
 
@@ -1408,6 +1542,7 @@ __all__ = [
     "detect_causal_gaps", "detect_elaborative_candidates", "detect_implication_gaps",
     "detect_conjunctive_gaps", "detect_warning_gaps", "warning_membership", "resolve_warning_gap",
     "trust_membership", "resolve_warning_embedded",
+    "detect_existential_gaps", "resolve_existential_gap",
     "decode_gap", "resolve_precondition_gap", "resolve_bridging_gap", "resolve_goal_gap",
     "resolve_causal_gap", "resolve_elaborative_candidate", "resolve_implication_gap",
     "resolve_conjunctive_gap",
