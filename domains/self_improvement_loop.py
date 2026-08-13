@@ -136,16 +136,28 @@ def maybe_decay_J(substrate, mt, decay_rate: float = 0.001) -> int:
 def maybe_decay_h(substrate, mt, decay_rate: float = 0.0001) -> int:
     """Apply h decay iff Mt's policy allows h drift.
 
-    STAYS BLOCKED for native Mts (CAN_MT_SCOPED_RULES_RESULTS.md) — this is
-    NOT the run_rules()-orchestration hazard scoping fixes; it is a genuine
-    semantic gap, confirmed by direct read of both native CAN seeds
-    (`can_native_reimplementation.json`, `can_decay_identity.json`): no
-    rule anywhere decays `external_field`. `can_native_evidence_decay`
-    targets Hebbian evidence counters (wired to `maybe_decay_J` above,
-    reported as a re-targeted quantity); the identity-evidence rules
-    target `identity_evidence_confirm`/`_disconfirm`, a different ledger
-    again. There is no native quantity that plays h's role. Continuous
-    path is unconditional and unchanged."""
+    MIGRATED for native Mts (CAN_EXTERNAL_FIELD_DECAY_RESULTS.md — closes
+    the last-named blocker in CAN_MT_SCOPED_RULES_RESULTS.md §4c). Native
+    branch: `seeds/can_decay_identity.json` v1.1.0's `can_native_
+    external_field_decay` writes `external_field` directly (the ONE
+    quantity `can_native_update_3state`/`_2state`'s own local-field formula
+    reads six times but no rule wrote before v1.1.0) — a symmetric
+    clamp-toward-zero by exactly 1 quantum per strictly-later external
+    tick (max(h-1,0) when positive, min(h+1,0) when negative), the required
+    generalisation of `can_native_evidence_decay`'s one-sided integer-floor
+    shape since `external_field` is a signed float with no native
+    accumulation rule (unlike the two evidence ledgers, which are grown +1
+    by the SAME rule family that decays them). No same-tick-race guard is
+    needed here (confirmed by direct grep: no native rule and no Python
+    module, including `can_counterfactual.py`, ever writes `external_field`
+    — decay is the only writer this attr ever gets). `decay_rate` has no
+    native analog (fixed 1-quantum decrement, same precedent as `maybe_
+    decay_J`) and is silently unused on this branch. Continuous path
+    (`mt_allows` check + `substrate.mt_decay_h`) is unconditional and
+    byte-unchanged."""
+    if _is_native(substrate, mt):
+        from domains.can_native_orchestration import scoped_settle
+        return scoped_settle(substrate, mt)
     if not mt_allows(substrate, mt, "allow_h_drift"):
         return 0
     return substrate.mt_decay_h(mt, decay_rate)
