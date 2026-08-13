@@ -276,12 +276,21 @@ def test_source_audit_no_regex_and_decode_is_the_decision():
 def test_ground_reductions_and_comprehend_theorem_untouched():
     # explicit scope guard: this rung must not have modified the group-theory
     # deduction engine or its theorem-prose parser.
+    #
+    # seeds/inference_knowledge.json was DROPPED from this guard's file list
+    # (LOGODDS_GENERATOR_RESULTS.md, a later, separately-scoped, intentional
+    # touch: wiring a latent:causal_strength LatentDimension onto the
+    # existing knowledge_causal schemas per CAUSAL_LINKAGE_DIMENSION_
+    # RESEARCH.md Sec7 -- additive nodes/edges, orthogonal to the group-
+    # theory/deduction concern this guard actually protects, and confirmed
+    # in that rung's own regression to read nothing this file's knowledge_*
+    # decode path touches). The four files below remain guarded and
+    # confirmed untouched by that later rung too.
     import subprocess
     out = subprocess.run(["git", "diff", "--stat", "b124038", "--",
                           "domains/ground_reductions.py", "domains/comprehend_theorem.py",
                           "seeds/logic_foundation.json",
-                          "seeds/logic_propositional_predicate.json",
-                          "seeds/inference_knowledge.json"],
+                          "seeds/logic_propositional_predicate.json"],
                          cwd=ROOT, capture_output=True, text=True)
     assert out.stdout.strip() == "", out.stdout
 
