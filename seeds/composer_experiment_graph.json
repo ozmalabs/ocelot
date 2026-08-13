@@ -1567,8 +1567,45 @@
                  "value": {
                   "type": "Argmax",
                   "source": {
-                   "type": "NodesOfType",
-                   "node_type": "EditOp"
+                   "type": "Filter",
+                   "source": {
+                    "type": "NodesOfType",
+                    "node_type": "EditOp"
+                   },
+                   "var_name": "s",
+                   "predicate": {
+                    "type": "Or",
+                    "items": [
+                     {
+                      "type": "And",
+                      "items": [
+                       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "s"}, "key": "kind"}, "b": {"type": "Lit", "value": "flip_comparison"}},
+                       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "picked"}, "key": "applicable_flip_comparison"}, "b": {"type": "Lit", "value": 1.0}}
+                      ]
+                     },
+                     {
+                      "type": "And",
+                      "items": [
+                       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "s"}, "key": "kind"}, "b": {"type": "Lit", "value": "swap_term_leaf"}},
+                       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "picked"}, "key": "applicable_swap_term_leaf"}, "b": {"type": "Lit", "value": 1.0}}
+                      ]
+                     },
+                     {
+                      "type": "And",
+                      "items": [
+                       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "s"}, "key": "kind"}, "b": {"type": "Lit", "value": "drop_match_edge"}},
+                       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "picked"}, "key": "applicable_drop_match_edge"}, "b": {"type": "Lit", "value": 1.0}}
+                      ]
+                     },
+                     {
+                      "type": "And",
+                      "items": [
+                       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "s"}, "key": "kind"}, "b": {"type": "Lit", "value": "add_match_guard"}},
+                       {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "picked"}, "key": "applicable_add_match_guard"}, "b": {"type": "Lit", "value": 1.0}}
+                      ]
+                     }
+                    ]
+                   }
                   },
                   "var_name": "s",
                   "value": {
