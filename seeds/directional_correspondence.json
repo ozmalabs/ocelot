@@ -1,0 +1,165 @@
+{
+ "id": "directional_correspondence",
+ "version": "1.0.0",
+ "depends_on": [
+  "blob_edge_concept_correspondence"
+ ],
+ "description": "DIRECTIONAL_CORRESPONDENCE_PREREG.md / _RESULTS.md: candidate bridge 2 (REASONING_FACILITY_BRIDGE_RESULTS.md Sec3), built. `_pair_witness`'s own {shared, name_shared, fixed_count, transform} is SYMMETRIC by construction and carries no directional signal -- confirmed by that rung, not re-litigated here. This seed adds a genuinely asymmetric signal (structural-elaboration richness: how many axes of the SAME shape_vocabulary each concept in a pair is independently evidenced on, `sum(1 for _,v in vec if v != _ABSENT)` -- a plain arithmetic reduction over an already-computed vector, the SAME idiom `analogical_thinking._pair_witness`'s own `name_shared` count already uses, not a new judgement engine) and a NEW node type, `DirectionalCorrespondence`, to carry the direction verdict. `DirectionalCorrespondence` is DELIBERATELY NOT a `ShapeSignature`: runners/dsl/src/shape_decode.rs::load_parts loads EVERY `ShapeSignature` node with a name+signature attr into the live ShapeDecode codebook pool regardless of its `kind` attr (kind is read but never used to filter) -- confirmed by reading that function before writing this seed -- so an unverified hypothesis tagged ShapeSignature{kind:...} would be silently live in real deduction the moment its `signature` shape matched a real gap, no matter what `kind` said. The only genuinely safe gate is a node-TYPE boundary. Promotion into a real `ShapeSignature{kind:knowledge_logical}` (where it DOES become live, at the elaborative coherence tier) is a separate, explicit, never-automatic step -- domains/propositional_deduction.py::mint_logical_schema_from_analogy -- which is why this seed also adds ONE production for that promoted schema's own `derived_from` edge back to the DirectionalCorrespondence node it was promoted from (for inspectable provenance, distinguishing an analogically-derived schema from a directly-taught one).",
+ "microtheory": {
+  "name": "directional_correspondence",
+  "description": "a directional correspondence resolves to a_source (concept A is structurally richer), b_source (concept B is), symmetric (tied richness -- direction genuinely underdetermined, never forced), or no_correspondence (no shared structure at all) -- tick-driven, no Python decision."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:directional_correspondence:observed_directional_correspondence-0",
+   "src": { "type": "Agent", "var": "s" },
+   "edge_type": "observed_directional_correspondence",
+   "tgt": { "type": "DirectionalCorrespondence", "var": "t" }
+  },
+  {
+   "provenance": "seed:directional_correspondence:about_a-1",
+   "src": { "type": "DirectionalCorrespondence", "var": "s" },
+   "edge_type": "about_a",
+   "tgt": { "type": "Concept", "var": "t" }
+  },
+  {
+   "provenance": "seed:directional_correspondence:about_b-2",
+   "src": { "type": "DirectionalCorrespondence", "var": "s" },
+   "edge_type": "about_b",
+   "tgt": { "type": "Concept", "var": "t" }
+  },
+  {
+   "provenance": "seed:directional_correspondence:source_concept-3",
+   "src": { "type": "DirectionalCorrespondence", "var": "s" },
+   "edge_type": "source_concept",
+   "tgt": { "type": "Concept", "var": "t" }
+  },
+  {
+   "provenance": "seed:directional_correspondence:target_concept-4",
+   "src": { "type": "DirectionalCorrespondence", "var": "s" },
+   "edge_type": "target_concept",
+   "tgt": { "type": "Concept", "var": "t" }
+  },
+  {
+   "provenance": "seed:directional_correspondence:derived_from-5",
+   "src": { "type": "ShapeSignature", "var": "s" },
+   "edge_type": "derived_from",
+   "tgt": { "type": "DirectionalCorrespondence", "var": "t" }
+  }
+ ],
+ "rules": [
+  {
+   "name": "direction_a_source",
+   "comment": "A pending DirectionalCorrespondence whose two sides carry structural correspondence (shared_count>0) and whose 'a' side is STRICTLY richer (evidenced on more axes of the same shape vocabulary) than its 'b' side resolves a_source: the richer, better-elaborated concept supplies the hypothesis, the sparser one receives it -- the standard analogy-theory reading (a richer base domain explains a sparser target domain) applied to a quantity ALREADY computed per-side by the caller, never invented here. The JUDGEMENT (which count is bigger) is this Gt comparison, made by the engine over two already-written attrs -- never a Python if/else.",
+   "match_type": "DirectionalCorrespondence",
+   "match": [
+    ["ag", "observed_directional_correspondence", "c"],
+    ["c", "about_a", "na"],
+    ["c", "about_b", "nb"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     { "type": "Eq",
+       "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "status" },
+       "b": { "type": "Lit", "value": "pending" } },
+     { "type": "Gt",
+       "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "shared_count" },
+       "b": { "type": "Lit", "value": 0 } },
+     { "type": "Gt",
+       "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "richness_a" },
+       "b": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "richness_b" } }
+    ]
+   },
+   "effects": [
+    ["set_attr", "c", "status", "a_source"],
+    ["add_edge", "c", "source_concept", "na"],
+    ["add_edge", "c", "target_concept", "nb"]
+   ]
+  },
+  {
+   "name": "direction_b_source",
+   "comment": "Symmetric to direction_a_source: the 'b' side is strictly richer -- it supplies the hypothesis, 'a' receives it.",
+   "match_type": "DirectionalCorrespondence",
+   "match": [
+    ["ag", "observed_directional_correspondence", "c"],
+    ["c", "about_a", "na"],
+    ["c", "about_b", "nb"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     { "type": "Eq",
+       "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "status" },
+       "b": { "type": "Lit", "value": "pending" } },
+     { "type": "Gt",
+       "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "shared_count" },
+       "b": { "type": "Lit", "value": 0 } },
+     { "type": "Gt",
+       "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "richness_b" },
+       "b": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "richness_a" } }
+    ]
+   },
+   "effects": [
+    ["set_attr", "c", "status", "b_source"],
+    ["add_edge", "c", "source_concept", "nb"],
+    ["add_edge", "c", "target_concept", "na"]
+   ]
+  },
+  {
+   "name": "direction_symmetric",
+   "comment": "Real structural correspondence exists (shared_count>0) but the two sides are EQUALLY rich -- direction is genuinely underdetermined by this signal, and no direction is forced. No source_concept/target_concept edge is written; the honest non-answer, mirroring _finalise_analogy's own 'a claim that is neither aligned nor corroborated is None' ethos one grain over.",
+   "match_type": "DirectionalCorrespondence",
+   "match": [
+    ["ag", "observed_directional_correspondence", "c"],
+    ["c", "about_a", "na"],
+    ["c", "about_b", "nb"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     { "type": "Eq",
+       "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "status" },
+       "b": { "type": "Lit", "value": "pending" } },
+     { "type": "Gt",
+       "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "shared_count" },
+       "b": { "type": "Lit", "value": 0 } },
+     { "type": "Eq",
+       "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "richness_a" },
+       "b": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "richness_b" } }
+    ]
+   },
+   "effects": [
+    ["set_attr", "c", "status", "symmetric"]
+   ]
+  },
+  {
+   "name": "direction_no_correspondence",
+   "comment": "TERMINAL, fixpoint hygiene only (mirrors blob_no_collapse): no shared structure at all (shared_count<=0) -- the direction question does not even arise. Recorded as a definite status, never left pending forever and never forced into a direction.",
+   "match_type": "DirectionalCorrespondence",
+   "match": [
+    ["ag", "observed_directional_correspondence", "c"],
+    ["c", "about_a", "na"],
+    ["c", "about_b", "nb"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     { "type": "Eq",
+       "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "status" },
+       "b": { "type": "Lit", "value": "pending" } },
+     { "type": "Not",
+       "arg": {
+        "type": "Gt",
+        "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "shared_count" },
+        "b": { "type": "Lit", "value": 0 } } }
+    ]
+   },
+   "effects": [
+    ["set_attr", "c", "status", "no_correspondence"]
+   ]
+  }
+ ]
+}
