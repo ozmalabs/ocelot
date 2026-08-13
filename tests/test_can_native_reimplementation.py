@@ -606,13 +606,23 @@ def test_polarization_via_max_steps_sweep():
 # Migration-decision check -- Bigville's existing asymmetric edge schema.
 # ---------------------------------------------------------------------
 
-def test_bigville_schema_is_asymmetric_native_rule_reads_only_out_edges():
-    """PREREG Sec5's registered check: build ONE real resident's CAN network
-    via the EXISTING, UNMODIFIED worlds/bigville_can_beliefs.py builder, and
-    directly show the native discrete rule's local field disagrees with
-    can_ops.rs's symmetric build_couplings-based local field for at least
-    one Concept -- the concrete, measured basis for the migration
-    recommendation (NOT a hypothetical)."""
+def test_bigville_schema_symmetric_fix_makes_all_couplings_visible_to_native_rule():
+    """UPDATED, honestly, by CAN_CONSUMER_MIGRATION_RESULTS.md -- this test
+    originally (CAN_NATIVE_REIMPLEMENTATION_RESULTS.md Sec7) MEASURED the bug
+    it now guards against the regression of: claim_credible had an INCOMING
+    edge from trust_mayor (per STRUCTURAL_EDGES) but the builder minted ONLY
+    that one direction, so the native rule's out-edges-only
+    Sum(Edges(c,"causal_influence")) local field MISSED that coupling while
+    can_ops.rs's symmetric build_couplings read it -- the concrete, measured
+    basis for that rung's "not a clean swap today" verdict.
+
+    CAN_CONSUMER_MIGRATION_RESULTS.md implements the named, verified-
+    backward-compatible fix that rung sized but did not build: worlds/
+    bigville_can_beliefs.py's STRUCTURAL_EDGES loop now mints BOTH
+    directions of every causal_influence coupling. This test's assertion is
+    UPDATED (not left stale) to check the fix took effect: every one of
+    claim_credible's IN-neighbours must now ALSO be an OUT-neighbour -- the
+    same measurement as before, with the now-correct expected outcome."""
     from worlds import bigville_can_beliefs as bcb
 
     s = _loaded_substrate()
@@ -639,26 +649,23 @@ def test_bigville_schema_is_asymmetric_native_rule_reads_only_out_edges():
     marginal = inner.mt_mean_field_marginal(mt, 400, 1e-6, 1.0)
 
     # Manually compute the NATIVE rule's local field for one Concept (the
-    # SAME arithmetic can_native_update_plus/minus/zero's `where` clauses
-    # use) directly, without running the rules (so a mismatch is measured,
-    # not merely asserted) -- claim_credible has an INCOMING edge from
-    # trust_mayor (per STRUCTURAL_EDGES) but the builder mints ONLY that
-    # one direction.
+    # SAME arithmetic can_native_update_3state's `where`/effects use)
+    # directly, without running the rules (so the fix is measured, not
+    # merely asserted) -- claim_credible has a coupling with trust_mayor
+    # (per STRUCTURAL_EDGES); after the fix both directions are minted.
     claim_credible = concepts["claim_credible"]
     out_edges = inner.neighbours(claim_credible, "causal_influence")
     in_edges_all = inner.in_neighbours(claim_credible, "causal_influence")
     print("claim_credible OUT-neighbours (native rule reads these):", list(out_edges))
     print("claim_credible IN-neighbours (can_ops.rs ALSO reads these):", list(in_edges_all))
 
-    # The concrete, measured schema fact: claim_credible has an IN-neighbour
-    # (trust_mayor) that is NOT among its OUT-neighbours -- so the native
-    # rule's Sum-over-Edges(c,...) (out-edges only) would MISS that
-    # coupling entirely, while can_ops.rs's build_couplings reads it.
+    # The concrete, measured schema fact, post-fix: every IN-neighbour is
+    # now ALSO an OUT-neighbour -- nothing is invisible to the native rule's
+    # Sum-over-Edges(c,...) any more.
     in_only = set(in_edges_all) - set(out_edges)
     print("IN-neighbours invisible to the native rule's Sum(Edges(c,...)):", in_only)
-    assert len(in_only) > 0, (
-        "expected Bigville's existing single-direction edge schema to leave "
-        "at least one real coupling invisible to the native rule's out-edges-"
-        "only local field -- this is the measured basis for the migration "
-        "recommendation, not an assumption"
+    assert len(in_only) == 0, (
+        "expected the symmetric-edge fix to make every real coupling "
+        "visible to the native rule's out-edges-only local field -- "
+        "CAN_CONSUMER_MIGRATION_RESULTS.md's own regression guard"
     )
