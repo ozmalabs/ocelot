@@ -1,0 +1,155 @@
+{
+ "id": "blob_edge_correspondence",
+ "version": "1.0.0",
+ "depends_on": [
+  "math_capability_shapes"
+ ],
+ "description": "BLOB_EDGE_SD_LOOP_PREREG.md / _RESULTS.md: the sd loop's recognize/mint duality reapplied to CORRESPONDENCE persistence, not to observation-vs-codebook decode. `_shared_shape` (domains/reflective_faculty.py, UNCHANGED by this seed) already collapses two signatures onto shared held RelationCue structure (I_A -> S + r_A, I_B -> S + r_B, S = the shared RelationCue axis set); this seed's rules decide, for one computed correspondence, whether it RECOGNIZES an already-held structural pattern (blob_recognize, mirrors sd_dedup_existing's status-only terminal -- 'add_edge targets must be match-bound vars in this engine', so a Term-found existing BlobEdge cannot be edged-to within the rule) or MINTS a genuinely new one (blob_mint, mirrors sd_mint_quantum's add_node+add_edge shape, guarded so a recurring transform_key never re-mints). Per the creator's mid-flight correction (MDL framing, L(G_t+1) ~= L(G_t) + L(r_t) + L(E_t)): minting/recognizing fires AT COLLAPSE TIME (the first time a Correspondence node is decided, not after a recurrence threshold) -- re-read directly against sd_mint_quantum's own novelty guard, which already fires on first occurrence, never on a second sighting. A Correspondence with NO shared axis at all (shared_count<=0, no collapse onto anything held) terminates honestly via blob_no_collapse -- there is no larger residual-accumulation concept at the PAIRWISE-correspondence grain the way there is for a single Observation's unexplained predicates, so this is explicitly a narrower re-instance of the sd ladder (rungs 1/4 only -- recognize/mint -- never rungs 2/3 transform/infer, which have no defined meaning for a two-operand comparison with no codebook of many parts to decode against). Python (domains/reflective_faculty.py::record_correspondence) does mechanical ingest only, mirroring domains/meta_shape.py::observe byte-for-byte: write the Correspondence node + about_a/about_b edges to the two REAL ShapeSignature nodes, run_rules(), read back the verdict. No Python decision.",
+ "microtheory": {
+  "name": "blob_edge_correspondence",
+  "description": "a correspondence collapses onto held structure (recognize, reuse) or names a new pattern (mint, once) -- tick-driven, no Python decision."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:blob_edge_correspondence:observed_correspondence-0",
+   "src": { "type": "Agent", "var": "s" },
+   "edge_type": "observed_correspondence",
+   "tgt": { "type": "Correspondence", "var": "t" }
+  },
+  {
+   "provenance": "seed:blob_edge_correspondence:about_a-1",
+   "src": { "type": "Correspondence", "var": "s" },
+   "edge_type": "about_a",
+   "tgt": { "type": "ShapeSignature", "var": "t" }
+  },
+  {
+   "provenance": "seed:blob_edge_correspondence:about_b-2",
+   "src": { "type": "Correspondence", "var": "s" },
+   "edge_type": "about_b",
+   "tgt": { "type": "ShapeSignature", "var": "t" }
+  },
+  {
+   "provenance": "seed:blob_edge_correspondence:minted-3",
+   "src": { "type": "Correspondence", "var": "s" },
+   "edge_type": "minted",
+   "tgt": { "type": "BlobEdge", "var": "t" }
+  },
+  {
+   "provenance": "seed:blob_edge_correspondence:links_a-4",
+   "src": { "type": "BlobEdge", "var": "s" },
+   "edge_type": "links_a",
+   "tgt": { "type": "ShapeSignature", "var": "t" }
+  },
+  {
+   "provenance": "seed:blob_edge_correspondence:links_b-5",
+   "src": { "type": "BlobEdge", "var": "s" },
+   "edge_type": "links_b",
+   "tgt": { "type": "ShapeSignature", "var": "t" }
+  }
+ ],
+ "rules": [
+  {
+   "name": "blob_mint",
+   "comment": "DYNAMIC QUANTIZATION, one level up: a pending Correspondence whose shared_count is positive (the two signatures collapsed onto >=1 held RelationCue axis) and whose transform_key matches NO existing BlobEdge names a genuinely NEW correspondence pattern. Mints the BlobEdge (mirrors sd_mint_quantum's add_node+add_edge shape exactly) and links BOTH endpoints -- na/nb are match-bound (3-triple match), not Term-found, so add_edge to them is legal (see sd_dedup_existing's own documented constraint, reused here rather than reinvented).",
+   "match_type": "Correspondence",
+   "match": [
+    ["ag", "observed_correspondence", "c"],
+    ["c", "about_a", "na"],
+    ["c", "about_b", "nb"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     { "type": "Eq",
+       "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "status" },
+       "b": { "type": "Lit", "value": "pending" } },
+     { "type": "Gt",
+       "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "shared_count" },
+       "b": { "type": "Lit", "value": 0 } },
+     { "type": "Not",
+       "arg": {
+        "type": "Exists",
+        "source": { "type": "NodesOfType", "node_type": "BlobEdge" },
+        "var_name": "existing_blob",
+        "predicate": {
+         "type": "Eq",
+         "a": { "type": "Attr", "node": { "type": "Var", "name": "existing_blob" }, "key": "transform_key" },
+         "b": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "transform_key" }
+        }
+       } }
+    ]
+   },
+   "effects": [
+    ["add_node", "blob", "BlobEdge", {
+      "transform_key": { "__term__": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "transform_key" } },
+      "fixed_count": { "__term__": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "shared_count" } },
+      "source": { "__term__": { "type": "Lit", "value": "blob_edge_sd_loop" } }
+    }],
+    ["add_edge", "c", "minted", "blob"],
+    ["add_edge", "blob", "links_a", "na"],
+    ["add_edge", "blob", "links_b", "nb"],
+    ["set_attr", "c", "status", "minted"]
+   ]
+  },
+  {
+   "name": "blob_recognize",
+   "comment": "RECOGNIZE, mirroring sd_dedup_existing's exact terminal shape: a pending Correspondence whose transform_key ALREADY matches a held BlobEdge collapses onto held structure that is ALREADY persisted -- the correspondence PATTERN is not new, so no new BlobEdge is minted. 'add_edge targets must be match-bound vars in this engine' (sd_dedup_existing's own comment) means the existing BlobEdge, found via a Term search (Exists), cannot be edged-to within this rule -- status-only, exactly as sd_dedup_existing leaves the matching CapabilityAxis un-edged and lets Python re-resolve it by the same identity key afterward (there: capability_keys: here: transform_key).",
+   "match_type": "Correspondence",
+   "match": [
+    ["ag", "observed_correspondence", "c"],
+    ["c", "about_a", "na"],
+    ["c", "about_b", "nb"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     { "type": "Eq",
+       "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "status" },
+       "b": { "type": "Lit", "value": "pending" } },
+     { "type": "Gt",
+       "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "shared_count" },
+       "b": { "type": "Lit", "value": 0 } },
+     { "type": "Exists",
+       "source": { "type": "NodesOfType", "node_type": "BlobEdge" },
+       "var_name": "existing_blob",
+       "predicate": {
+        "type": "Eq",
+        "a": { "type": "Attr", "node": { "type": "Var", "name": "existing_blob" }, "key": "transform_key" },
+        "b": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "transform_key" }
+       } }
+    ]
+   },
+   "effects": [
+    ["set_attr", "c", "status", "recognized"]
+   ]
+  },
+  {
+   "name": "blob_no_collapse",
+   "comment": "TERMINAL, fixpoint hygiene only (parallel to giving every sd_* Observation a definite status): a pending Correspondence with shared_count<=0 collapsed onto NOTHING held at all -- no shared RelationCue axis, no structure to recognize or mint a pattern from. This is honestly out of the sd ladder's residual-accumulation scope (a pairwise Correspondence has no 'unexplained predicate list' the way a single Observation does), so it is recorded as a definite no_collapse status, not silently left pending forever and not forced into mint.",
+   "match_type": "Correspondence",
+   "match": [
+    ["ag", "observed_correspondence", "c"],
+    ["c", "about_a", "na"],
+    ["c", "about_b", "nb"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     { "type": "Eq",
+       "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "status" },
+       "b": { "type": "Lit", "value": "pending" } },
+     { "type": "Not",
+       "arg": {
+        "type": "Gt",
+        "a": { "type": "Attr", "node": { "type": "Var", "name": "c" }, "key": "shared_count" },
+        "b": { "type": "Lit", "value": 0 } } }
+    ]
+   },
+   "effects": [
+    ["set_attr", "c", "status", "no_collapse"]
+   ]
+  }
+ ]
+}
