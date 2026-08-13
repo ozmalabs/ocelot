@@ -461,6 +461,134 @@ def _pair_witness(substrate, vec_a: list, vec_b: list) -> dict:
     return out
 
 
+# ---------------------------------------------------------------------------
+# BLOB-EDGE CORRESPONDENCE, this site (BLOB_EDGE_ANALOGY_EXTENSION_PREREG.md /
+# _RESULTS.md) -- extends the SAME `seeds/blob_edge_correspondence.json`
+# recognize/mint rules (`blob_mint`/`blob_recognize`/`blob_no_collapse`,
+# reused VERBATIM, unedited) the predecessor rung built for
+# `reflective_faculty.py::_run_math_bridge`, to `_pair_witness`'s real
+# operands here: two `Concept` graph nodes, not two `ShapeSignature` nodes.
+# `seeds/blob_edge_concept_correspondence.json` (Gamma-only, additive) admits
+# the Concept-typed about_a/about_b/links_a/links_b edges the merged seed's
+# own productions do not. `_pair_witness` itself, above, is UNCHANGED.
+#
+# Deliberately NOT importing `reflective_faculty.record_correspondence` /
+# `_agent_node_id` / `_resolve_blob_edge` -- `_relation_cue_index`'s own
+# docstring already states the house convention this file follows:
+# "same pattern, own cache -- no cross-import." `reflective_faculty.py`
+# lazily imports FROM this module; this module imports nothing back.
+#
+# BATCHING WAS TRIED AND MEASURED UNSAFE, reverted to the merged site's own
+# per-write shape -- recorded here because the PREREG named this exact risk
+# and it is what was actually found, not a hypothetical. First attempt:
+# `record_pair_correspondence` wrote every pending `Correspondence` with NO
+# `run_rules()` call, and `find_analogies` called `run_rules()` ONCE after
+# PASS 1's whole loop (batch of up to 7970 pending nodes on the real
+# `computer_architecture` corpus). Measured result: `blob_mint`'s guard
+# (`Not(Exists(BlobEdge with matching transform_key)))` does NOT see
+# same-pass sibling mints -- the engine's matcher is semi-naive (matches are
+# found against a graph snapshot, effects applied after), so of the 7970
+# pending Correspondences sharing only 139 distinct transform_keys, ALL 7970
+# minted (7970 BlobEdge nodes, 7831 of them exact-duplicate transform_keys)
+# instead of 139. This is a genuine multi-write race the merged site's own
+# call sites (<=66 pending nodes/call, run_rules() per write) never
+# exercised. BLOB_EDGE_ANALOGY_EXTENSION_RESULTS.md Sec4 has the numbers.
+#
+# Fix: `record_pair_correspondence` calls `run_rules()` per write, exactly
+# `record_correspondence`'s own shape -- re-measured on the same corpus:
+# 139 BlobEdge nodes, zero duplicates, matching the pre-wiring instrumented
+# count exactly. Real, measured cost of correctness at this site's scale:
+# ~40s for `computer_architecture` x itself (7970 writes, ~5ms/write
+# overhead, vs ~2.5s unmodified -- ~16x) against ~1.3x at the smaller real
+# Mts (`mathematics`/`communication`, ~100 writes) -- reported honestly in
+# RESULTS, not hidden. No caller in the standing tree exercises the large
+# corpus today (`reframing_proposer.py`'s only live caller compares its own
+# 4-faculty Mt); the cost is real only if/when a future caller requests a
+# self-comparison over one of the large domain Mts. `find_analogies` still
+# calls `run_rules()` once after PASS 1 as a harmless idempotent safety net
+# (nothing is left pending by the time it runs).
+# ---------------------------------------------------------------------------
+
+def _agent_node_id(substrate):
+    """The single Agent hub node, found by scan -- local copy of
+    `reflective_faculty._agent_node_id`'s exact body (no cross-import, see
+    above)."""
+    sub = getattr(substrate, "s", substrate)
+    try:
+        nodes = sub.nodes("Agent")
+    except Exception:
+        return None
+    return nodes[0] if nodes else None
+
+
+def _canon_pair_shared(shared) -> str:
+    """Canonicalise `_pair_witness`'s own `out["shared"]` -- already a
+    filtered (non-wild, non-absent), deterministically-ordered list of
+    `(pred, val)` pairs (order follows `_vocabulary_keys`'s global sort) --
+    into a stable transform_key string. `sorted()` first for defence-in-depth
+    even though the input order is already canonical; `_shared_shape`'s own
+    `_canon_shared_shape` (reflective_faculty.py) serialises a differently-
+    shaped input (the raw AntiUnify template, wild rows included) and is not
+    reused here for that reason (Sec1.2 of the PREREG)."""
+    import json as _json
+    try:
+        return _json.dumps(sorted(tuple(x) for x in shared))
+    except Exception:
+        return ""
+
+
+def record_pair_correspondence(substrate, node_a, node_b, witness):
+    """MECHANICAL INGEST: write a `Correspondence` node from an ALREADY-
+    COMPUTED `_pair_witness` result plus `about_a`/`about_b`/
+    `observed_correspondence` edges to the two REAL `Concept` nodes, then run
+    the engine so `blob_mint`/`blob_recognize`/`blob_no_collapse` (UNEDITED)
+    decide -- never Python. `run_rules()` is called PER WRITE, exactly
+    `record_correspondence`'s own shape -- see the batching note above for
+    why an earlier once-per-batch attempt was measured unsafe (a genuine
+    duplicate-BlobEdge race) and reverted.
+
+    Returns the node id written, or `None` (honest no-op, no exception) when
+    either node id is missing or the substrate has no live `add_node` -- the
+    same non-match shape `record_correspondence` returns for its own
+    unwritable case."""
+    sub = getattr(substrate, "s", substrate)
+    if node_a is None or node_b is None or not hasattr(sub, "add_node"):
+        return None
+    key = _canon_pair_shared(witness.get("shared") or [])
+    try:
+        cid = sub.add_node("Correspondence", {
+            "status": "pending",
+            "shared_count": int(witness.get("fixed_count") or 0),
+            "transform_key": key,
+        })
+        sub.add_edge(cid, "about_a", node_a)
+        sub.add_edge(cid, "about_b", node_b)
+        ag = _agent_node_id(substrate)
+        if ag is not None:
+            sub.add_edge(ag, "observed_correspondence", cid)
+        native = getattr(sub, "_inner", sub)
+        native.run_rules()
+        return cid
+    except Exception:
+        return None
+
+
+def _resolve_blob_edge(substrate, transform_key: str):
+    """Mechanical read-back: the held `BlobEdge` node carrying this
+    `transform_key`, if any -- local copy of
+    `reflective_faculty._resolve_blob_edge`'s exact pattern (no cross-import,
+    see above). Never a decision -- the rule already decided `status`; this
+    only finds the node the rule's `Exists` check already confirmed exists."""
+    sub = getattr(substrate, "s", substrate)
+    try:
+        for n in sub.nodes("BlobEdge"):
+            if sub.node(n)["attrs"].get("transform_key") == transform_key:
+                return n
+    except Exception:
+        pass
+    return None
+
+
 def _canon_transform(sigmas) -> tuple:
     """The witness pair, canonicalised into a hashable key. Pure form.
 
@@ -560,6 +688,20 @@ def find_analogies(substrate, source_mt_name: str,
                     source_mt_name, tgt_mt_name)
                 if rec is not None:
                     raw.append(rec)
+
+    # BLOB-EDGE PERSISTENCE: `_compute_analogy` (via `_pair_witness` and
+    # `record_pair_correspondence`) already ran the engine per write during
+    # PASS 1 above — see the batching note at `record_pair_correspondence`'s
+    # definition for why per-write, not once-per-batch. Nothing is left
+    # pending by this point; this call is a harmless idempotent safety net,
+    # not load-bearing for correctness.
+    sub = getattr(substrate, "s", substrate)
+    native = getattr(sub, "_inner", sub)
+    if hasattr(native, "run_rules"):
+        try:
+            native.run_rules()
+        except Exception:
+            pass
 
     # PASS 2 — FAC: SYSTEMATICITY. Two candidate pairs whose held witnesses are
     # identical differ in exactly the same places by exactly the same amounts:
@@ -749,6 +891,7 @@ def _compute_analogy(substrate, sc, tc, order_n: int,
             vec_s = _concept_shape_vector(substrate, sc)
             vec_t = _concept_shape_vector(substrate, tc)
         witness = _pair_witness(substrate, vec_s, vec_t)
+        record_pair_correspondence(substrate, sc, tc, witness)
     # An order is ALIGNED when the template fixes at least one axis of that
     # order at real, identically-evidenced structure. Reading the axis prefix
     # off a held Term's output is destructuring, not a decision.

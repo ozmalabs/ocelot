@@ -1,0 +1,41 @@
+{
+ "id": "blob_edge_concept_correspondence",
+ "version": "1.0.0",
+ "depends_on": [
+  "blob_edge_correspondence"
+ ],
+ "description": "BLOB_EDGE_ANALOGY_EXTENSION_PREREG.md/_RESULTS.md: a Gamma-ONLY, additive extension of seeds/blob_edge_correspondence.json (UNCHANGED, not edited by this seed) so its blob_mint/blob_recognize/blob_no_collapse rules -- reused VERBATIM, zero new rules here -- can also persist a correspondence between two Concept graph nodes (domains/analogical_thinking.py::_pair_witness's real operands), not only two ShapeSignature nodes. The merged seed's productions type about_a/about_b/links_a/links_b to ShapeSignature specifically; checker.rs::check_edge resolves productions by the ACTUAL runtime type of both endpoints, so a Correspondence-about_a->Concept edge is admitted by NONE of the existing productions and would be rejected (Type1NoProduction) without this addition. The three existing rules never inspect na/nb's node type (their where-guards only read status/shared_count/transform_key off Correspondence/BlobEdge attrs), so they are type-agnostic over the correspondence endpoints by construction -- only the schema (Gamma) needed extending, in a separate file, keeping the merged seed's own rules untouched exactly as the charter requires.",
+ "microtheory": {
+  "name": "blob_edge_concept_correspondence",
+  "description": "schema-only: Correspondence/BlobEdge may also link two Concept nodes -- decisions still made entirely by blob_edge_correspondence's unedited rules."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:blob_edge_concept_correspondence:about_a-0",
+   "src": { "type": "Correspondence", "var": "s" },
+   "edge_type": "about_a",
+   "tgt": { "type": "Concept", "var": "t" }
+  },
+  {
+   "provenance": "seed:blob_edge_concept_correspondence:about_b-1",
+   "src": { "type": "Correspondence", "var": "s" },
+   "edge_type": "about_b",
+   "tgt": { "type": "Concept", "var": "t" }
+  },
+  {
+   "provenance": "seed:blob_edge_concept_correspondence:links_a-2",
+   "src": { "type": "BlobEdge", "var": "s" },
+   "edge_type": "links_a",
+   "tgt": { "type": "Concept", "var": "t" }
+  },
+  {
+   "provenance": "seed:blob_edge_concept_correspondence:links_b-3",
+   "src": { "type": "BlobEdge", "var": "s" },
+   "edge_type": "links_b",
+   "tgt": { "type": "Concept", "var": "t" }
+  }
+ ],
+ "rules": []
+}
