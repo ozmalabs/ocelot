@@ -4279,8 +4279,12 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
     agent's OWN perceived WorldInstance (never host-supplied); vary -> the SeedDelta's
     skip_seeds is CHOSEN BY A HELD TERM in the rule itself (an Argmax over graph-resident
     SeedSummary nodes — see substrate/boot_all.py's per-seed provenance — of word-overlap
-    with the axis's own residual_predicates, restricted to `skippable` seeds; abstains
-    (empty skip_seeds) when nothing overlaps), AND (when judge also grounded) a VARIANT of
+    with the axis's own residual_predicates, restricted to `skippable` seeds; abstains to a
+    SECOND Argmax over the SAME seeds' own aggregate structural signature
+    (`SeedSummary.where_signature_json`, `domains.seed_signature`) when the name-keyword
+    Argmax genuinely finds nothing — see SEED_PICK_STRUCTURAL_FALLBACK_RESULTS.md — and
+    only abstains to empty skip_seeds when NEITHER signal overlaps), AND (when judge also
+    grounded) a VARIANT of
     the judge rule — a threshold-shifted copy, its shift read from the axis's own residual
     size at compose time — is embedded into delta.add_rules (installed on the DISPATCHED
     COPY, not locally: the parent tries a modification ON THE VARIANT, not on itself);
@@ -4383,20 +4387,59 @@ def _compose_experiment_rule(agent, keys, rels) -> dict[str, Any]:
         delta_attrs = {"add_rules": "[]", "remove_rules": "[]"}
         add_rules_list = []            # accumulates ANY embedded variants (judge and/or acting)
         if "vary" in rp:
+            # Precompute the structural fallback's own aggregate attr BEFORE the Term
+            # below is built -- mirrors _pick_acting_rule's own precall discipline
+            # (_ensure_acting_rule_provenance + rule_signature.ensure_where_signature
+            # before its Term is built). Idempotent; a no-op on every call after the
+            # first (domains.seed_signature.ensure_seed_signature only mints the attr
+            # on SeedSummary nodes that don't already carry it).
+            from domains import seed_signature as _ssig
+            _sub_vary, _native_vary, _ag_vary = _resolve_agent(agent)
+            _ssig.ensure_seed_signature(_sub_vary)
             # THE AGENT PICKS WHAT TO ABLATE: overlap(seed) = how many of the axis's OWN
             # residual_predicates are substrings of that seed's keywords_text (the SAME
             # StringIndexOf-Sum text-overlap-argmax SHAPE _compose_browse_rule uses for
             # relevance), restricted to skippable (non-frozen) SeedSummary nodes. `best`
             # abstains (None) if no skippable seed exists at all; the outer Ite abstains
             # ("") if the winner's own overlap is 0 (no genuine match, not a random pick).
+            #
+            # STRUCTURAL FALLBACK (SEED_PICK_STRUCTURAL_FALLBACK_PREREG/RESULTS.md,
+            # the A3 charter `RULE_SIGNATURE_PRODUCTION_WIRING_RESULTS.md` names and
+            # does not build): the primary keywords_text Argmax above is UNCHANGED —
+            # tried first, exactly as before. Only when it genuinely abstains (no
+            # candidate scores > 0) does the SAME Sum/StringIndexOf/Argmax shape run a
+            # second time against SeedSummary.where_signature_json (the seed's OWN
+            # aggregate structural signature -- the union, over every rule the seed's
+            # manifest declares, of that rule's where-clause signature, tagged by rule
+            # name and PRECOMPUTED by domains.seed_signature.ensure_seed_signature the
+            # same additive-attr way rule_signature.ensure_where_signature precomputes
+            # RuleSummary's twin -- never a live nested join inside this installed
+            # rule's own Term, which would re-walk the whole seed/rule population on
+            # every firing with no engine-provided caching) instead of keywords_text --
+            # reading structural information a seed's id/rule-NAMES/description words
+            # can never carry (a concern's words naming something a seed's rules
+            # structurally read/write but that seed's own identifiers do not spell).
+            # Measured live (SEED_PICK_STRUCTURAL_FALLBACK_RESULTS.md): 6/6 genuine,
+            # mechanically-discovered Class A probes (primary abstains, structural
+            # fallback picks the correct seed) and 4/4 Class B probes (primary already
+            # non-abstaining, combined pick byte-identical to primary) -- the fallback
+            # is NEVER consulted when the primary Argmax already found a genuine
+            # (score > 0) match, by construction of the Ite guard below, exactly
+            # mirroring _pick_acting_rule's own fallback shape.
             words = Attr(V("axis"), "residual_predicates")
             overlap = lambda node_t: Sum(words, "w",
                 Ite(Gte(StrIdx(Attr(node_t, "keywords_text"), V("w")), L(0)), L(1), L(0)))
+            struct_overlap = lambda node_t: Sum(words, "w",
+                Ite(Gte(StrIdx(Attr(node_t, "where_signature_json"), V("w")), L(0)), L(1), L(0)))
             candidates = Filter(NodesOfType("SeedSummary"), "s", Eq(Attr(V("s"), "skippable"), L(1.0)))
             best = Argmax(candidates, "s", overlap(V("s")), None)
+            struct_best = Argmax(candidates, "s2", struct_overlap(V("s2")), None)
+            struct_skip_id_expr = LetT("sbest", struct_best,
+                Ite(Eq(V("sbest"), L(None)), L(""),
+                    Ite(Gt(struct_overlap(V("sbest")), L(0.0)), Attr(V("sbest"), "seed_id"), L(""))))
             skip_id_expr = LetT("best", best,
-                Ite(Eq(V("best"), L(None)), L(""),
-                    Ite(Gt(overlap(V("best")), L(0.0)), Attr(V("best"), "seed_id"), L(""))))
+                Ite(Eq(V("best"), L(None)), struct_skip_id_expr,
+                    Ite(Gt(overlap(V("best")), L(0.0)), Attr(V("best"), "seed_id"), struct_skip_id_expr)))
             skip_seeds_expr = LetT("skip_id", skip_id_expr,
                 Ite(Eq(V("skip_id"), L("")), L("[]"),
                     StrCat([L('["'), V("skip_id"), L('"]')])))
