@@ -1,0 +1,232 @@
+{
+ "id": "evidence_axis_infer",
+ "version": "1.0.0",
+ "depends_on": [],
+ "self_load_only": true,
+ "description": "AUTOMATIC recognition of the evidence-accumulation generator from a raw observation TRAJECTORY, closing the gap LOGODDS_GENERATOR_RESULTS.md Sec7.1 named and left un-built ('DimInfer/TimeInfer automatic recognition of this generator from a raw observation trajectory, rather than explicit declaration, is named as separate, un-sized follow-on work'). LOGODDS_DIMINFER_PREREG.md's decision: TimeInfer, not DimInfer -- DimInfer's rung-2 candidate-generator loop is architecturally unreached for a single (evidence_confirm, evidence_disconfirm) relation compared pairwise (build_candidate's tier-1 uniform-delta check is vacuously true for one aligned pair, so TransformDecode's rung-1 already explains any such delta with zero residual for DimInfer to add value over -- confirmed live in tests/test_evidence_axis_infer.py, not merely by source-reading). The problem is genuinely a TRAJECTORY (repeated real-world confirm/disconfirm observations across ticks), which is TimeInfer's own stated territory, and TimeInfer needs no pre-declared generator at all -- it infers kind/offset fresh from the data (generate-and-test on the first pair), so this seed never touches or depends on seeds/inference_knowledge.json's pre-declared 'logodds_evidence' DimensionGenerator. Two rules, mirroring two already-landed idioms exactly: evidence_axis_sample_window mirrors seeds/f16_flight_path_control.json's f16_sample_axis_margins (an Append/ListDrop/Count rolling sample-window Tuple attr, capped at a fixed ENGINEERING buffer size of 6 samples -- not a borrowed human perceptual-bin count, CAN_SOLVER_THEORETICAL_LIMITS_RESEARCH.md Sec5.3/Sec7's own caution against exactly that; 6 is chosen only to hold enough of a pure-reinforcement run to recognize plus enough of a gapped run to demonstrate the no-spurious-mint null, the same sizing logic f16's own cap uses). evidence_axis_infer mirrors seeds/shape_decode_loop.json's sd_recognize_dim (TimeInfer's field-selected output feeds an add_node_if_absent-minted DimensionGenerator{kind:'translate'} + LatentDimension{name:'latent:causal_strength_inferred'}, content-keyed dedup per DEDUP_ADOPTION_SWEEP_RESULTS.md v1.9.0, guarded against re-mint by a has_inferred_axis edge -- the same fixpoint-safety idiom sd_recognize_dim's has_transform-edge guard uses). PER-DIRECTION only, by design: this seed tracks the evidence_confirm axis alone (the SAME per-direction convention LOGODDS_GENERATOR_RESULTS.md Sec3 already uses for the two counters on one Coactivation node) -- the coupled 2-D (confirm, disconfirm) trajectory is NOT a shape TimeInfer's single-constant-generator orbit test can explain (an event-conditional per-tick offset that changes direction is not a constant-velocity orbit, and not a regular finite-difference stream either), which LOGODDS_DIMINFER_PREREG.md registers and LOGODDS_DIMINFER_RESULTS.md demonstrates directly as a real, honest scope boundary, not a defect. Reads evidence_confirm only; never writes evidence_confirm/evidence_disconfirm/evidence_tick or any key the log-odds render (Log(Div(Plus(confirm,1),Plus(disconfirm,1)))) depends on -- the inferred generator sits ALONGSIDE the existing Hebbian mechanism as additional graph data, never a parallel or disconnected one. Zero new Rust: TimeInfer (existing, shape_decode.rs) is the only Term this seed calls beyond the ordinary Attr/Plus/Gt/Gte/Eq/Not/And/Count/Append/ListDrop/MapList/Vec/IfThenElse arithmetic every other CAN-native rule already uses.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "EvidenceAxisSample",
+   "attrs": {
+    "name": "evidence_axis_sample",
+    "signature": "[[\"m\", 0]]",
+    "dim_types": [
+     "pred",
+     "coord:v"
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "evidence_axis_sample_window",
+   "area": "evidence_axis_infer",
+   "latency_class": "soft_realtime",
+   "order": -20,
+   "batch": false,
+   "match_type": "Concept",
+   "match": [
+    ["mt", "has_concept", "a"],
+    ["mt", "has_concept", "b"],
+    ["a", "coactivated_with", "coact"],
+    ["coact", "coactivation_of", "b"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Var", "name": "a"}, "b": {"type": "Var", "name": "b"}}},
+     {
+      "type": "Not",
+      "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "a"}, "key": "state"}, "b": {"type": "Lit", "value": 0}}
+     },
+     {
+      "type": "Not",
+      "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "b"}, "key": "state"}, "b": {"type": "Lit", "value": 0}}
+     },
+     {
+      "type": "Gt",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "can_tick"},
+      "b": {
+       "type": "Plus",
+       "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "coact"}, "key": "axis_sample_tick"},
+        {"type": "Lit", "value": 0}
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "coact", "axis_sample_tick", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "can_tick"}}],
+    [
+     "set_attr", "coact", "evidence_confirm_window",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Append",
+          "seq": {"type": "Attr", "node": {"type": "Var", "name": "coact"}, "key": "evidence_confirm_window"},
+          "item": {"type": "Attr", "node": {"type": "Var", "name": "coact"}, "key": "evidence_confirm"}
+         }
+        },
+        "b": {"type": "Lit", "value": 6}
+       },
+       "then": {
+        "type": "ListDrop",
+        "list": {
+         "type": "Append",
+         "seq": {"type": "Attr", "node": {"type": "Var", "name": "coact"}, "key": "evidence_confirm_window"},
+         "item": {"type": "Attr", "node": {"type": "Var", "name": "coact"}, "key": "evidence_confirm"}
+        },
+        "index": {"type": "Lit", "value": 0}
+       },
+       "other": {
+        "type": "Append",
+        "seq": {"type": "Attr", "node": {"type": "Var", "name": "coact"}, "key": "evidence_confirm_window"},
+        "item": {"type": "Attr", "node": {"type": "Var", "name": "coact"}, "key": "evidence_confirm"}
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "evidence_axis_infer",
+   "area": "evidence_axis_infer",
+   "latency_class": "soft_realtime",
+   "order": -19,
+   "batch": false,
+   "match_type": "Concept",
+   "match": [
+    ["mt", "has_concept", "a"],
+    ["mt", "has_concept", "b"],
+    ["a", "coactivated_with", "coact"],
+    ["coact", "coactivation_of", "b"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Var", "name": "a"}, "b": {"type": "Var", "name": "b"}}},
+     {
+      "type": "Gte",
+      "a": {"type": "Count", "source": {"type": "Attr", "node": {"type": "Var", "name": "coact"}, "key": "evidence_confirm_window"}},
+      "b": {"type": "Lit", "value": 3}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Count", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "coact"}, "edge_type": "has_inferred_axis"}},
+      "b": {"type": "Lit", "value": 0}
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "TimeInfer",
+       "sequence": {
+        "type": "MapList",
+        "source": {"type": "Attr", "node": {"type": "Var", "name": "coact"}, "key": "evidence_confirm_window"},
+        "var_name": "sample",
+        "value": {"type": "Vec", "items": [{"type": "Vec", "items": [{"type": "Lit", "value": "m"}, {"type": "Var", "name": "sample"}]}]}
+       },
+       "codebook_type": "EvidenceAxisSample",
+       "max_b": 8,
+       "max_steps": 64,
+       "robust": false,
+       "field": "explained"
+      },
+      "b": {"type": "Lit", "value": 1}
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent", "gen", "DimensionGenerator",
+     {
+      "name": "logodds_evidence_inferred",
+      "kind": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "MapList",
+         "source": {"type": "Attr", "node": {"type": "Var", "name": "coact"}, "key": "evidence_confirm_window"},
+         "var_name": "sample",
+         "value": {"type": "Vec", "items": [{"type": "Vec", "items": [{"type": "Lit", "value": "m"}, {"type": "Var", "name": "sample"}]}]}
+        },
+        "codebook_type": "EvidenceAxisSample",
+        "max_b": 8,
+        "max_steps": 64,
+        "robust": false,
+        "field": "kind"
+       }
+      },
+      "coord_dims": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "MapList",
+         "source": {"type": "Attr", "node": {"type": "Var", "name": "coact"}, "key": "evidence_confirm_window"},
+         "var_name": "sample",
+         "value": {"type": "Vec", "items": [{"type": "Vec", "items": [{"type": "Lit", "value": "m"}, {"type": "Var", "name": "sample"}]}]}
+        },
+        "codebook_type": "EvidenceAxisSample",
+        "max_b": 8,
+        "max_steps": 64,
+        "robust": false,
+        "field": "coord_dims"
+       }
+      },
+      "params": [1],
+      "offset": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "MapList",
+         "source": {"type": "Attr", "node": {"type": "Var", "name": "coact"}, "key": "evidence_confirm_window"},
+         "var_name": "sample",
+         "value": {"type": "Vec", "items": [{"type": "Vec", "items": [{"type": "Lit", "value": "m"}, {"type": "Var", "name": "sample"}]}]}
+        },
+        "codebook_type": "EvidenceAxisSample",
+        "max_b": 8,
+        "max_steps": 64,
+        "robust": false,
+        "field": "offset"
+       }
+      },
+      "source": "time_infer"
+     }
+    ],
+    [
+     "add_node_if_absent", "ld", "LatentDimension",
+     {
+      "name": "latent:causal_strength_inferred",
+      "generator": "logodds_evidence_inferred",
+      "k": {
+       "__term__": {
+        "type": "TimeInfer",
+        "sequence": {
+         "type": "MapList",
+         "source": {"type": "Attr", "node": {"type": "Var", "name": "coact"}, "key": "evidence_confirm_window"},
+         "var_name": "sample",
+         "value": {"type": "Vec", "items": [{"type": "Vec", "items": [{"type": "Lit", "value": "m"}, {"type": "Var", "name": "sample"}]}]}
+        },
+        "codebook_type": "EvidenceAxisSample",
+        "max_b": 8,
+        "max_steps": 64,
+        "robust": false,
+        "field": "window"
+       }
+      },
+      "source": "time_infer"
+     }
+    ],
+    ["add_edge", "coact", "has_inferred_axis", "ld", {}]
+   ]
+  }
+ ]
+}
