@@ -1123,6 +1123,9 @@
               "type": "Let",
               "name": "picked",
               "value": {
+ "type": "Let",
+ "name": "primary_pick_apick",
+ "value": {
                "type": "Let",
                "name": "apick",
                "value": {
@@ -1300,6 +1303,203 @@
                 }
                }
               },
+ "body": {
+  "type": "IfThenElse",
+  "cond": {
+   "type": "Eq",
+   "a": {
+    "type": "Var",
+    "name": "primary_pick_apick"
+   },
+   "b": {
+    "type": "Lit",
+    "value": null
+   }
+  },
+  "then": {
+   "type": "Let",
+   "name": "struct_pick_apick",
+   "value": {
+    "type": "Argmax",
+    "source": {
+     "type": "Filter",
+     "source": {
+      "type": "NodesOfType",
+      "node_type": "RuleSummary"
+     },
+     "var_name": "s2apick",
+     "predicate": {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s2apick"
+         },
+         "key": "writes_chosen_action"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s2apick"
+         },
+         "key": "skippable"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      ]
+     }
+    },
+    "var_name": "s2apick",
+    "value": {
+     "type": "Sum",
+     "source": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "cr"
+      },
+      "key": "residual_predicates"
+     },
+     "var_name": "w",
+     "value": {
+      "type": "IfThenElse",
+      "cond": {
+       "type": "Gte",
+       "a": {
+        "type": "StringIndexOf",
+        "haystack": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s2apick"
+         },
+         "key": "where_signature_json"
+        },
+        "needle": {
+         "type": "Var",
+         "name": "w"
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0
+       }
+      },
+      "then": {
+       "type": "Lit",
+       "value": 1
+      },
+      "other": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    },
+    "default": null
+   },
+   "body": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Eq",
+     "a": {
+      "type": "Var",
+      "name": "struct_pick_apick"
+     },
+     "b": {
+      "type": "Lit",
+      "value": null
+     }
+    },
+    "then": {
+     "type": "Lit",
+     "value": null
+    },
+    "other": {
+     "type": "IfThenElse",
+     "cond": {
+      "type": "Gt",
+      "a": {
+       "type": "Sum",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "residual_predicates"
+       },
+       "var_name": "w",
+       "value": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gte",
+         "a": {
+          "type": "StringIndexOf",
+          "haystack": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "struct_pick_apick"
+           },
+           "key": "where_signature_json"
+          },
+          "needle": {
+           "type": "Var",
+           "name": "w"
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     "then": {
+      "type": "Var",
+      "name": "struct_pick_apick"
+     },
+     "other": {
+      "type": "Lit",
+      "value": null
+     }
+    }
+   }
+  },
+  "other": {
+   "type": "Var",
+   "name": "primary_pick_apick"
+  }
+ }
+},
               "body": {
                "type": "IfThenElse",
                "cond": {
@@ -3025,6 +3225,9 @@
                "type": "Let",
                "name": "picked",
                "value": {
+ "type": "Let",
+ "name": "primary_pick_grad",
+ "value": {
                 "type": "Let",
                 "name": "best",
                 "value": {
@@ -3202,6 +3405,203 @@
                  }
                 }
                },
+ "body": {
+  "type": "IfThenElse",
+  "cond": {
+   "type": "Eq",
+   "a": {
+    "type": "Var",
+    "name": "primary_pick_grad"
+   },
+   "b": {
+    "type": "Lit",
+    "value": null
+   }
+  },
+  "then": {
+   "type": "Let",
+   "name": "struct_pick_grad",
+   "value": {
+    "type": "Argmax",
+    "source": {
+     "type": "Filter",
+     "source": {
+      "type": "NodesOfType",
+      "node_type": "RuleSummary"
+     },
+     "var_name": "s2grad",
+     "predicate": {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s2grad"
+         },
+         "key": "writes_chosen_action"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s2grad"
+         },
+         "key": "skippable"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      ]
+     }
+    },
+    "var_name": "s2grad",
+    "value": {
+     "type": "Sum",
+     "source": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "cr"
+      },
+      "key": "residual_predicates"
+     },
+     "var_name": "w",
+     "value": {
+      "type": "IfThenElse",
+      "cond": {
+       "type": "Gte",
+       "a": {
+        "type": "StringIndexOf",
+        "haystack": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s2grad"
+         },
+         "key": "where_signature_json"
+        },
+        "needle": {
+         "type": "Var",
+         "name": "w"
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0
+       }
+      },
+      "then": {
+       "type": "Lit",
+       "value": 1
+      },
+      "other": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    },
+    "default": null
+   },
+   "body": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Eq",
+     "a": {
+      "type": "Var",
+      "name": "struct_pick_grad"
+     },
+     "b": {
+      "type": "Lit",
+      "value": null
+     }
+    },
+    "then": {
+     "type": "Lit",
+     "value": null
+    },
+    "other": {
+     "type": "IfThenElse",
+     "cond": {
+      "type": "Gt",
+      "a": {
+       "type": "Sum",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "cr"
+        },
+        "key": "residual_predicates"
+       },
+       "var_name": "w",
+       "value": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gte",
+         "a": {
+          "type": "StringIndexOf",
+          "haystack": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "struct_pick_grad"
+           },
+           "key": "where_signature_json"
+          },
+          "needle": {
+           "type": "Var",
+           "name": "w"
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     "then": {
+      "type": "Var",
+      "name": "struct_pick_grad"
+     },
+     "other": {
+      "type": "Lit",
+      "value": null
+     }
+    }
+   }
+  },
+  "other": {
+   "type": "Var",
+   "name": "primary_pick_grad"
+  }
+ }
+},
                "body": {
                 "type": "IfThenElse",
                 "cond": {
@@ -4671,6 +5071,9 @@
                      "type": "Let",
                      "name": "skip_id",
                      "value": {
+ "type": "Let",
+ "name": "primary_seed_a",
+ "value": {
                       "type": "Let",
                       "name": "best",
                       "value": {
@@ -4832,6 +5235,187 @@
                        }
                       }
                      },
+ "body": {
+  "type": "IfThenElse",
+  "cond": {
+   "type": "Eq",
+   "a": {
+    "type": "Var",
+    "name": "primary_seed_a"
+   },
+   "b": {
+    "type": "Lit",
+    "value": ""
+   }
+  },
+  "then": {
+   "type": "Let",
+   "name": "struct_seed_a",
+   "value": {
+    "type": "Argmax",
+    "source": {
+     "type": "Filter",
+     "source": {
+      "type": "NodesOfType",
+      "node_type": "SeedSummary"
+     },
+     "var_name": "s2a",
+     "predicate": {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s2a"
+       },
+       "key": "skippable"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    },
+    "var_name": "s2a",
+    "value": {
+     "type": "Sum",
+     "source": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "axis"
+      },
+      "key": "residual_predicates"
+     },
+     "var_name": "w",
+     "value": {
+      "type": "IfThenElse",
+      "cond": {
+       "type": "Gte",
+       "a": {
+        "type": "StringIndexOf",
+        "haystack": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s2a"
+         },
+         "key": "where_signature_json"
+        },
+        "needle": {
+         "type": "Var",
+         "name": "w"
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0
+       }
+      },
+      "then": {
+       "type": "Lit",
+       "value": 1
+      },
+      "other": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    },
+    "default": null
+   },
+   "body": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Eq",
+     "a": {
+      "type": "Var",
+      "name": "struct_seed_a"
+     },
+     "b": {
+      "type": "Lit",
+      "value": null
+     }
+    },
+    "then": {
+     "type": "Lit",
+     "value": ""
+    },
+    "other": {
+     "type": "IfThenElse",
+     "cond": {
+      "type": "Gt",
+      "a": {
+       "type": "Sum",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "axis"
+        },
+        "key": "residual_predicates"
+       },
+       "var_name": "w",
+       "value": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gte",
+         "a": {
+          "type": "StringIndexOf",
+          "haystack": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "struct_seed_a"
+           },
+           "key": "where_signature_json"
+          },
+          "needle": {
+           "type": "Var",
+           "name": "w"
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     "then": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "struct_seed_a"
+      },
+      "key": "seed_id"
+     },
+     "other": {
+      "type": "Lit",
+      "value": ""
+     }
+    }
+   }
+  },
+  "other": {
+   "type": "Var",
+   "name": "primary_seed_a"
+  }
+ }
+},
                      "body": {
                       "type": "IfThenElse",
                       "cond": {
@@ -4882,6 +5466,9 @@
                    "type": "Lit",
                    "value": {
                     "__term__": {
+ "type": "Let",
+ "name": "primary_seed_b",
+ "value": {
                      "type": "Let",
                      "name": "best",
                      "value": {
@@ -5042,7 +5629,188 @@
                        }
                       }
                      }
-                    }
+                    },
+ "body": {
+  "type": "IfThenElse",
+  "cond": {
+   "type": "Eq",
+   "a": {
+    "type": "Var",
+    "name": "primary_seed_b"
+   },
+   "b": {
+    "type": "Lit",
+    "value": ""
+   }
+  },
+  "then": {
+   "type": "Let",
+   "name": "struct_seed_b",
+   "value": {
+    "type": "Argmax",
+    "source": {
+     "type": "Filter",
+     "source": {
+      "type": "NodesOfType",
+      "node_type": "SeedSummary"
+     },
+     "var_name": "s2b",
+     "predicate": {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "s2b"
+       },
+       "key": "skippable"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    },
+    "var_name": "s2b",
+    "value": {
+     "type": "Sum",
+     "source": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "axis"
+      },
+      "key": "residual_predicates"
+     },
+     "var_name": "w",
+     "value": {
+      "type": "IfThenElse",
+      "cond": {
+       "type": "Gte",
+       "a": {
+        "type": "StringIndexOf",
+        "haystack": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s2b"
+         },
+         "key": "where_signature_json"
+        },
+        "needle": {
+         "type": "Var",
+         "name": "w"
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 0
+       }
+      },
+      "then": {
+       "type": "Lit",
+       "value": 1
+      },
+      "other": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    },
+    "default": null
+   },
+   "body": {
+    "type": "IfThenElse",
+    "cond": {
+     "type": "Eq",
+     "a": {
+      "type": "Var",
+      "name": "struct_seed_b"
+     },
+     "b": {
+      "type": "Lit",
+      "value": null
+     }
+    },
+    "then": {
+     "type": "Lit",
+     "value": ""
+    },
+    "other": {
+     "type": "IfThenElse",
+     "cond": {
+      "type": "Gt",
+      "a": {
+       "type": "Sum",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "axis"
+        },
+        "key": "residual_predicates"
+       },
+       "var_name": "w",
+       "value": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gte",
+         "a": {
+          "type": "StringIndexOf",
+          "haystack": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "struct_seed_b"
+           },
+           "key": "where_signature_json"
+          },
+          "needle": {
+           "type": "Var",
+           "name": "w"
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     "then": {
+      "type": "Attr",
+      "node": {
+       "type": "Var",
+       "name": "struct_seed_b"
+      },
+      "key": "seed_id"
+     },
+     "other": {
+      "type": "Lit",
+      "value": ""
+     }
+    }
+   }
+  },
+  "other": {
+   "type": "Var",
+   "name": "primary_seed_b"
+  }
+ }
+}
                    }
                   },
                   "body": {
