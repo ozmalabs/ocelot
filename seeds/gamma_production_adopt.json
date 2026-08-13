@@ -1,0 +1,112 @@
+{
+ "id": "gamma_production_adopt",
+ "version": "1.0.0",
+ "depends_on": ["gamma_residual"],
+ "capability_keys": [
+  "gamma_production_judge_adopt"
+ ],
+ "description": "GAMMA_PRODUCTION_ADOPT_HANDLER_PREREG.md / _RESULTS.md: the missing StandingConcern -> judge -> adopt handler for a promoted `gamma_production` concern (seeds/gamma_residual.json's note_gamma_production_gap, GAMMA_COLLAPSE_ALGORITHM_RESULTS.md Q2's named, out-of-scope gap -- 'no gamma_production handler exists ... falls through to the generic comprehend_first default'). scripts/jabberwock_daemon.py's _concern_tick now routes a promoted gamma_production StandingConcern DIRECTLY into domains.gamma_production_growth.judge_gamma_production_gap (the code_write/prog_read precedent), which parses the concern's own recorded (src_type, edge_type, tgt_type) triple back out of its content string, probes the REAL is_edge_admissible (read-only, never add_production), and records a mechanical outcome (gamma_production_judge_status / _reason / [_candidate] JSON) onto the StandingConcern -- never a decision there. THIS seed's three rules read that datum: note_gamma_production_awaiting_adopt DECIDES a 'ready_for_adopt' outcome means a human/experiment decision is now warranted (sets awaiting_adopt=true, the signal domains.reflective_faculty._run_self_improvement_status surfaces alongside the existing exhausted/exhausted_note readback); resolve_gamma_production_already_admissible DECIDES an 'already_admissible' outcome means the gap resolved itself since it was filed (the world moved on -- some other production now covers the triple) and marks the ORIGINAL SelfConcern resolved directly, no adopt needed; note_gamma_production_composition_exhausted (the note_prog_read_composition_exhausted precedent verbatim) DECIDES an 'unresolvable' outcome (the content string didn't parse, or the probe itself failed) is honestly exhausted. NONE of these three rules' effects ever call add_production or touch Grammar/ConsistencyChecker -- Theorem XII (reference-monitor containment) is untouched by this seed, exactly like gamma_residual.json before it. Making a candidate Production LIVE is a SEPARATE, explicit, human-gated function (scripts/jabberwock_daemon.py::adopt_gamma_production_standing -> domains.gamma_production_growth.adopt_gamma_production, the promote_self_concern precedent: reachable only via an explicit call / the daemon's own admin HTTP route, re-verifies the triple is still inadmissible immediately before adopting, never invoked from run_rules or _concern_tick). No has_self_concern edge is assumed anywhere in this seed's matches (gamma_residual.json's own documented choice -- no reliable single-Agent anchor at this grain); every match anchors on the sc -promoted_to-> standing edge alone, which promote_self_concern always writes regardless of kind.",
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "note_gamma_production_awaiting_adopt",
+   "match": [
+    ["sc", "promoted_to", "standing"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "gamma_production"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "gamma_production_judge_status"},
+      "b": {"type": "Lit", "value": "ready_for_adopt"}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "awaiting_adopt"},
+       "b": {"type": "Lit", "value": true}
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "standing", "awaiting_adopt", true]
+   ]
+  },
+  {
+   "name": "resolve_gamma_production_already_admissible",
+   "match": [
+    ["sc", "promoted_to", "standing"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "gamma_production"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "gamma_production_judge_status"},
+      "b": {"type": "Lit", "value": "already_admissible"}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "sc"}, "key": "status"},
+       "b": {"type": "Lit", "value": "resolved"}
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "sc", "status", "resolved"]
+   ]
+  },
+  {
+   "name": "note_gamma_production_composition_exhausted",
+   "match": [
+    ["sc", "promoted_to", "standing"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "kind"},
+      "b": {"type": "Lit", "value": "gamma_production"}
+     },
+     {
+      "type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "gamma_production_judge_status"},
+      "b": {"type": "Lit", "value": "unresolvable"}
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "experiments_exhausted"},
+       "b": {"type": "Lit", "value": true}
+      }
+     }
+    ]
+   },
+   "effects": [
+    ["set_attr", "standing", "experiments_exhausted", true],
+    ["set_attr", "standing", "exhausted_note", {"__term__":
+     {"type": "Attr", "node": {"type": "Var", "name": "standing"}, "key": "gamma_production_judge_reason"}}]
+   ]
+  }
+ ]
+}
