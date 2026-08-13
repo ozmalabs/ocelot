@@ -18,6 +18,16 @@ codebook, not a rewrite: `ground_reductions.py`, `comprehend_theorem.py`, the
 inert `logic_foundation.json`/`logic_propositional_predicate.json` prose rules,
 and `seeds/inference_knowledge.json` itself are all untouched.
 
+CORRECTED 2026-08-13 (see docs/research/engine_substrate/
+DEDUCTION_GENERAL_READER_CORRECTION_RESULTS.md): the original
+`parse_conditional` was a hand-rolled token-pattern mini-grammar duplicating a
+capability `reading_collapse.py`'s already-general `conditional` construction
+(`tests/test_reading_collapse.py:57`) provided. The PARSE tests below now call
+`parse_conditional(agent, statement)` — it ingests the statement through the
+general reading pipeline (`reading_collapse.decompose_sentence`/`read_clause`)
+instead of a second grammar. Every other test (mint/headline/regression) is
+unchanged in OUTCOME; only the parse-layer plumbing changed.
+
 Run: PYTHONPATH=runners/dsl/python:.:scripts python3 -m pytest \
      tests/test_deduction_generalization.py -p no:randomly -q
 """
@@ -59,28 +69,32 @@ def _fresh():
 
 
 # --------------------------------------------------------------------------- #
-#  PARSE — the conditional mini-grammar, standalone (before any graph write).
+#  PARSE — via the GENERAL reading pipeline (reading_collapse.py), not a
+#  second grammar. Each call needs a fresh agent (the reading pipeline is
+#  graph-native — a codebook lives on the agent it decodes against).
 # --------------------------------------------------------------------------- #
 def test_parse_explicit_conditional():
-    p = pd.parse_conditional("if X is a bird, X can fly")
+    p = pd.parse_conditional(_fresh(), "if X is a bird, X can fly")
     assert p is not None
     assert p["antecedent_attr"] == "bird"
     assert p["consequent_attr"] == "can_fly"
     assert p["consequent_relation"] == "can"
+    assert p["form"] == "conditional_split"
 
 
 def test_parse_bare_universal_paraphrase():
     # a DIFFERENT surface form from the explicit "if X ... X ..." pattern above —
     # the generality bar comprehend_theorem's own docstring sets for itself
     # (parse a paraphrase it was not hand-tuned to), applied to this parser.
-    p = pd.parse_conditional("a fish can swim")
+    p = pd.parse_conditional(_fresh(), "a fish can swim")
     assert p is not None
     assert p["antecedent_attr"] == "fish"
     assert p["consequent_attr"] == "can_swim"
+    assert p["form"] == "bare_universal"
 
 
 def test_parse_property_form():
-    p = pd.parse_conditional("a mammal is warm-blooded")
+    p = pd.parse_conditional(_fresh(), "a mammal is warm-blooded")
     assert p is not None
     assert p["antecedent_attr"] == "mammal"
     assert p["consequent_relation"] == "is"
@@ -88,8 +102,29 @@ def test_parse_property_form():
 
 
 def test_parse_honest_residual_on_unrecognised_prose():
-    assert pd.parse_conditional("gibberish that matches nothing at all") is None
-    assert pd.parse_conditional("") is None
+    assert pd.parse_conditional(_fresh(), "gibberish that matches nothing at all") is None
+    assert pd.parse_conditional(_fresh(), "") is None
+
+
+# --------------------------------------------------------------------------- #
+#  THE CORRECTION'S OWN PROOF — the general reader's `conditional`
+#  construction (reading_collapse.py, decoded via the SAME ShapeDecode every
+#  other construction uses) already grounds an ordinary conditional sentence
+#  into a genuine `implies(antecedent, consequent)` predication, BYTE-
+#  IDENTICAL to tests/test_reading_collapse.py:57's own live proof — this is
+#  the capability the original `parse_conditional` duplicated instead of
+#  using. Confirmed here, independent of this module's own (different, and
+#  necessary — see the correction RESULTS doc) decompose_sentence/read_clause
+#  route, so the fact that the general `conditional` construction exists and
+#  works is not just asserted in the docstring but demonstrated by a test.
+# --------------------------------------------------------------------------- #
+def test_general_reader_conditional_construction_already_produces_implies():
+    from domains import reading_collapse as rc
+    ag = _fresh()
+    r = rc.read_clause(ag, "if it rains then the ground is wet")
+    assert r["construction"] == "conditional"
+    assert ["implies", "it_rains", "ground"] in r["predications"]
+    assert not r["minted"], "a seeded construction must not mint"
 
 
 # --------------------------------------------------------------------------- #
