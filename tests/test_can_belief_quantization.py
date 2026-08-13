@@ -334,24 +334,33 @@ def test_seed_manifest_boot_path_installs_the_rule_live():
     assert s.node(confident)["attrs"].get("is_ambivalent") != 1
 
 
-def _relax_with_fields(n, beta, rounded_j, fields, max_iter):
+def _relax_with_fields(n, beta, rounded_j, fields, max_iter, damping=0.5):
     """One mean-field relaxation from a FIXED all-zero start, with a fixed
     nonzero external field per node (the 'evidence pressure' the network is
-    trying to reconcile). Returns (marginal, concepts)."""
+    trying to reconcile). Returns (marginal, concepts).
+
+    `damping` defaults to 0.5 (can_ops.rs::DEFAULT_DAMPING) -- the FIX from
+    CAN_SYNCHRONOUS_UPDATE_FIX_RESULTS.md for the persistent period-2 limit
+    cycle the old fully-synchronous update was prone to (see _oscillates
+    below). Pass damping=1.0 to reproduce the OLD (pre-fix) undamped update
+    rule exactly -- mathematically identical, not merely similar:
+    (1-1.0)*old + 1.0*new == new."""
     s = _fresh_substrate()
     mt, concepts = _build_complete_network(s, n, beta=beta, weights=rounded_j)
     for idx, c in enumerate(concepts):
         s.set_attr(c, "external_field", fields[idx])
         s.set_attr(c, "state", 0.0)
-    marg = s.mt_mean_field_marginal(mt, max_iter, 1e-6)
+    marg = s.mt_mean_field_marginal(mt, max_iter, 1e-6, damping)
     return marg, concepts, s, mt
 
 
-def _oscillates(n, beta, rounded_j, fields):
-    """THE cohere-vs-fail-to-cohere probe. mt_mean_field_marginal's own
-    update rule (can_ops.rs :226-251) is SYNCHRONOUS (Jacobi-style: every
-    node's new value is computed from the PREVIOUS full state, all at once)
-    -- the textbook setup for a persistent 2-cycle limit oscillation on a
+def _oscillates(n, beta, rounded_j, fields, damping=0.5):
+    """THE cohere-vs-fail-to-cohere probe. mt_mean_field_marginal's update
+    rule (can_ops.rs, see DEFAULT_DAMPING) is DAMPED by default since
+    CAN_SYNCHRONOUS_UPDATE_FIX_RESULTS.md -- pass damping=1.0 to probe the
+    OLD fully-synchronous (Jacobi-style: every node's new value computed
+    from the PREVIOUS full state, all at once) update, which was the
+    textbook setup for a persistent 2-cycle limit oscillation on a
     frustrated network. Compares max_iter=400 vs max_iter=401 from the
     IDENTICAL fixed start: if the network has settled to a genuine fixed
     point, both land on it (gap ~ 0); if it is caught in a persistent
@@ -359,8 +368,8 @@ def _oscillates(n, beta, rounded_j, fields):
     gap) while SAME-parity counts (e.g. 400 vs 402, checked separately in
     RESULTS) land identically -- confirming a true oscillation, not merely
     slow convergence. Returns (is_oscillating, gap)."""
-    m400, cs, _, _ = _relax_with_fields(n, beta, rounded_j, fields, 400)
-    m401, _, _, _ = _relax_with_fields(n, beta, rounded_j, fields, 401)
+    m400, cs, _, _ = _relax_with_fields(n, beta, rounded_j, fields, 400, damping)
+    m401, _, _, _ = _relax_with_fields(n, beta, rounded_j, fields, 401, damping)
     gap = sum((m400.get(c.value, 0.0) - m401.get(c.value, 0.0)) ** 2 for c in cs) ** 0.5
     return gap > 0.01, gap
 
@@ -395,12 +404,20 @@ def _flatten_oscillation_study(ns=(6, 8, 10, 12), seeds=(1, 2, 3), beta=2.0):
 
 
 def test_relaxation_shows_a_real_cohere_vs_fail_to_cohere_signature():
-    """Confirms the SPECIFIC engine-level claim: does mt_mean_field_marginal
-    ever fail to converge to a stable fixed point at all (vs. always
-    settling to SOME state, degraded or not)? Uses a network hand-picked
-    (from the study below) to reliably land in the oscillatory regime,
-    confirmed via a same-parity control (400 vs 402 must match exactly if
-    it's a true 2-cycle, not just slow convergence)."""
+    """UPDATED by CAN_SYNCHRONOUS_UPDATE_FIX_RESULTS.md: `_oscillates` (and
+    `_relax_with_fields`, hence `mt_mean_field_marginal`) is now DAMPED by
+    default (damping=0.5 -- can_ops.rs::DEFAULT_DAMPING), which fixes the
+    exact persistent period-2 limit cycle this test used to assert on this
+    draw (CAN_BELIEF_QUANTIZATION_RESULTS.md S3.1: opposite-parity gap
+    5.615746, confirmed via the same-parity control below). This is not a
+    re-derivation with a different draw -- it is the IDENTICAL hand-picked
+    N=8 network, same seeds, same beta, same fine-resolution rounding --
+    now demonstrating the FIX rather than the bug: the corrected solver
+    converges cleanly (opposite-parity gap ~0) where the old synchronous
+    (Jacobi) update oscillated. The old oscillatory behaviour is preserved
+    and independently re-confirmed via `damping=1.0`, which is
+    mathematically exact to the pre-fix update rule
+    ((1-1.0)*old + 1.0*new == new) -- not merely believed equivalent."""
     n = 8
     pair_rng = random.Random(20260813 * 31 + n)
     pairs = [(i, j) for i in range(n) for j in range(i + 1, n)]
@@ -409,28 +426,52 @@ def test_relaxation_shows_a_real_cohere_vs_fail_to_cohere_signature():
     fields = {i: field_rng.uniform(-1.0, 1.0) for i in range(n)}
     rounded = {p: _round_to_vocab(v, 1.0 / 8, 8) for p, v in true_j.items()}  # fine
 
-    osc, gap = _oscillates(n, 2.0, rounded, fields)
-    assert osc, "expected this hand-verified draw to land in the oscillatory regime"
+    # BEFORE (damping=1.0, byte-identical to the old undamped update):
+    # reproduces the originally-measured persistent 2-cycle exactly.
+    osc_before, gap_before = _oscillates(n, 2.0, rounded, fields, damping=1.0)
+    assert osc_before, (
+        "damping=1.0 should reproduce the ORIGINAL synchronous-update "
+        "oscillation on this exact draw -- if this fails, the damping=1.0 "
+        "equivalence claim (not merely the fix) is broken")
+    m400b, csb, _, _ = _relax_with_fields(n, 2.0, rounded, fields, 400, damping=1.0)
+    m402b, _, _, _ = _relax_with_fields(n, 2.0, rounded, fields, 402, damping=1.0)
+    same_parity_gap_before = sum(
+        (m400b.get(c.value, 0.0) - m402b.get(c.value, 0.0)) ** 2 for c in csb
+    ) ** 0.5
+    assert same_parity_gap_before < 0.001, (
+        "damping=1.0, same-parity iteration counts should land on the "
+        "identical phase of the TRUE persistent 2-cycle, exactly as the "
+        "original (pre-fix) measurement found")
 
-    # Same-parity control: 400 vs 402 must be near-identical if this is a
-    # TRUE persistent 2-cycle rather than merely-still-converging.
-    m400, cs, _, _ = _relax_with_fields(n, 2.0, rounded, fields, 400)
-    m402, _, _, _ = _relax_with_fields(n, 2.0, rounded, fields, 402)
-    same_parity_gap = sum((m400.get(c.value, 0.0) - m402.get(c.value, 0.0)) ** 2
-                          for c in cs) ** 0.5
-    assert same_parity_gap < 0.001, (
-        "same-parity iteration counts should land on the identical phase of "
-        "a true 2-cycle -- a nonzero gap here would mean this is slow "
-        "convergence, not persistent oscillation")
+    # AFTER (default damping=0.5): the corrected solver converges cleanly
+    # on the SAME network -- no oscillation.
+    osc_after, gap_after = _oscillates(n, 2.0, rounded, fields)
+    assert not osc_after, (
+        "expected the damped (default) solver to converge cleanly on this "
+        "exact draw -- if this fails, the fix did not resolve the "
+        "originally-measured 2-cycle")
+    assert gap_after < 1e-6, "expected a near-zero opposite-parity gap under damping"
 
 
 def test_flatten_resolution_sweep_reports_cohere_or_abandon():
     """THE resolution-flattening demonstration (n=24 independent draws: 4
     network sizes x 3 seeds x {fine, coarse}). Run with `-s` to see the
-    full table. Reports whether coarse resolution shows a HIGHER rate of
-    failure-to-cohere (supporting 'flattening bins causes overflow /
-    abandonment') than fine resolution, on the real engine, real numbers --
-    honest either way."""
+    full table.
+
+    UPDATED by CAN_SYNCHRONOUS_UPDATE_FIX_RESULTS.md: this exact
+    pre-registered 24-trial sweep originally found fine oscillating 6/12
+    (50%) and coarse 8/12 (66.7%) under the OLD synchronous update --
+    reported at the time as a real but weak, non-power-analysed lean in the
+    predicted direction. Under the FIX (damping=0.5, the new default), this
+    SAME sweep (same seeds, same draws, same networks) finds ZERO
+    oscillation in all 24 trials, both conditions. This is itself the
+    headline finding of the fix rung: the coarse/fine oscillation-rate
+    DIFFERENCE this test used to look for was riding on a phenomenon
+    (persistent synchronous-update 2-cycles) that the fix eliminates
+    entirely on this sample -- there is no longer a "which condition
+    oscillates more" question to ask here, because neither does. See
+    CAN_SYNCHRONOUS_UPDATE_FIX_RESULTS.md SS4 for the abandonment-hypothesis
+    assessment this motivates (artifact vs. genuine signal)."""
     trials, fine_rate, coarse_rate = _flatten_oscillation_study()
     print("\n" + json.dumps(trials, indent=2))
     print(f"\nfine (17-value) oscillation rate:   {fine_rate:.2%} "
@@ -440,10 +481,12 @@ def test_flatten_resolution_sweep_reports_cohere_or_abandon():
           f"({sum(t['oscillates'] for t in trials if t['coarseness']=='coarse')}/"
           f"{sum(1 for t in trials if t['coarseness']=='coarse')})")
     assert len(trials) == 24
-    # Sanity only: the PHENOMENON (some real draws oscillate) must be real
-    # and reproducible, or this whole probe is measuring nothing.
-    assert any(t["oscillates"] for t in trials)
-    assert any(not t["oscillates"] for t in trials)
+    # UPDATED: under the fix, this exact sweep no longer oscillates at all
+    # -- the old "some draws oscillate, some don't" sanity check no longer
+    # holds, and that absence IS the result (see docstring).
+    assert fine_rate == 0.0
+    assert coarse_rate == 0.0
+    assert not any(t["oscillates"] for t in trials)
 
 
 def test_print_full_factorial_table():
