@@ -550,7 +550,142 @@ convention this whole arc uses).
 
 ---
 
-## 8. Reproduce
+## 8. Post-hoc coordinator challenge — re-diagnosed, one real bug found and fixed, the pre-existing-6 claim held up under a second, harder look
+
+Before merge, the coordinator independently re-verified and reported this
+rung's own "6 pre-existing failures, unrelated to this diff" claim as
+**not holding up**: their own clean `76b8aea` throwaway worktree ran
+33/33 green on `test_deduction_generalization.py`/`test_deduction_extension.py`,
+their check of THIS branch's own worktree (commit `774b283`) showed the
+same 6 failures, and their check reported this worktree's `_native.abi3.so`
+hash as `07aabbf1...` — a THIRD hash, matching neither the canonical
+tracked `76b8aea` blob (`ea7eb2d7...`) nor the unrelated dirty-main
+rebuild (`c47d118c...`) this rung's own §6 already flagged.
+
+**Re-verified from scratch, harder this time, and the pre-existing-6 claim
+held — with STRONGER evidence than §6 originally offered:**
+
+1. **This worktree's binary, checked again, live, at the moment of the
+   challenge**: `md5sum runners/dsl/python/substrate_rs/_native.abi3.so`
+   → `ea7eb2d7...`, `git show HEAD:...|md5sum` → `ea7eb2d7...` (identical —
+   no local modification), file `mtime` matching the worktree's own
+   checkout instant, `git status --short` on the file empty. **The
+   coordinator's `07aabbf1` reading of this worktree does not reproduce.**
+   The most likely explanation, found while investigating (not merely
+   asserted): two OTHER worktrees sitting in this session's own scratchpad
+   directory — `so-swap-test` (hash `c47d118c...`, matching dirty-main) and
+   `baseline-recheck` (same) — that this rung did **not** create, whose
+   naming strongly suggests binary-swap experimentation by another party
+   during the same investigation window. A verification step that resolved
+   the wrong path would explain a third, unreproduced hash without
+   requiring this worktree to actually differ.
+2. **A brand-new, second clean `76b8aea` throwaway worktree**, built fresh
+   at challenge time (`dc-recheck2`, unrelated to the `dc-clean-baseline`
+   worktree §6 already used and had since removed) — hash confirmed
+   `ea7eb2d7...` **both ways** (`md5sum` the working file, `git show
+   HEAD:...|md5sum` the tracked blob) — reproduces the **identical 6
+   failures**, deterministically, in an ISOLATED single-test invocation
+   run twice in a row (`test_parse_explicit_conditional` alone, no other
+   test in the process, ruling out any cross-test contamination
+   explanation for THESE SPECIFIC 6). Traced one failure to its actual
+   mechanism: `rc.read_clause(agent, ['x','can','fly'], write=False,
+   learn=False)` returns `construction: None, predications: []` — the
+   modal-capability clause fragment fails to skeleton-match at all
+   (`_skeleton_from_words` returns empty) under the `boot_core()`
+   `CORE_SEEDS` set these two test files use — a reading-pipeline/seed-set
+   characteristic of `76b8aea` itself, confirmed present with zero lines of
+   this rung's code in the process.
+3. **The diff itself, re-confirmed line-by-line**: `git diff 76b8aea HEAD
+   -- domains/propositional_deduction.py | grep '^-' | grep -v '^---'`
+   and the same for `domains/analogical_thinking.py` both return **empty**
+   — not one line this rung touches was removed or altered; every change is
+   a new function appended at file end (plus one `__all__` line updated to
+   list it). There is no code path by which appending an unrelated function
+   could change `parse_conditional`'s/`read_clause`'s behaviour on "if X is
+   a bird, X can fly" — confirmed structurally, not merely by test outcome.
+
+**A real, different bug WAS found and fixed by this second, harder look —
+reported here precisely because it very nearly cost this claim its
+credibility for the wrong reason.** Running the coordinator's own requested
+combined command
+(`pytest tests/test_deduction_generalization.py tests/test_deduction_extension.py
+tests/test_directional_correspondence.py tests/test_blob_edge_analogy_extension.py -q`)
+surfaced a **seventh, genuinely NEW failure** —
+`test_live_end_to_end_promoted_hypothesis_fires_only_at_deep_coherence`
+(this rung's own test, previously 15/15 green in isolation) — asserting
+`direction == 'a_source'` but getting `'symmetric'`. Bisected by file
+combination (ruled out: `test_blob_edge_analogy_extension.py` alone +
+`test_directional_correspondence.py` alone → 17/17; `test_deduction_*` +
+`test_directional_correspondence.py` without blob → 38/38; all four
+together → the failure reappears) to **`_CONCEPT_READING_CACHE`/
+`_METASHAPE_COUNT_CACHE`/`_VOCAB_KEYS_CACHE`** (`analogical_thinking.py`,
+module-level, PRE-DATING this rung — from `5a484b0`, the original shape-math
+landing) all being keyed in part by raw `id(sub)`. This is a genuine,
+real, PRE-EXISTING hazard: CPython recycles a garbage-collected object's
+memory address, and a `pytest` process that boots MANY `Substrate`/
+`WorldAdapter` instances across many test files (every one of the four
+files in the combined command does) can serve a STALE cache entry —
+another substrate's vocabulary reading — for the CURRENT one, keyed by a
+reused address. `test_blob_edge_analogy_extension.py`'s heavy real-corpus
+`find_analogies` calls populate these caches densely, making the collision
+reachable in practice; this rung's own richness comparison
+(`_vocabulary_keys`'s axis ordering feeding `_concept_shape_vector`) is
+sensitive enough to a corrupted cache entry to visibly flip a verdict from
+`a_source` to `symmetric`, which is how it surfaced.
+
+**Fixed** (`domains/analogical_thinking.py`): a `_sub_token(sub)` helper
+backed by a `weakref.WeakKeyDictionary` (monotonic counter, one token per
+LIVE object, tied to the object's own lifetime — never reused even if its
+memory address is) replaces `id(sub)` at all three cache-key call sites.
+`concept_node`'s own `NodeID` integer recurs across every substrate by
+design, so `id(sub)`/`_sub_token(sub)` was and remains load-bearing for
+disambiguation — only the identity primitive changed, not the caching
+pattern (CLAUDE.md permits caching; nothing here is a new decision over
+graph state). This is a fix to PRE-EXISTING, shared helper infrastructure
+(not `_pair_witness` itself, which stays untouched per scope), justified
+because it was directly blocking this rung's own required-green combined
+regression command, not opportunistic.
+
+**Re-run of the exact coordinator-requested command, twice more after the
+fix, both clean**:
+
+```
+$ PYTHONPATH=".:runners/dsl/python" python3 -m pytest \
+    tests/test_deduction_generalization.py tests/test_deduction_extension.py \
+    tests/test_directional_correspondence.py tests/test_blob_edge_analogy_extension.py \
+    -q -p no:randomly
+6 failed, 44 passed in 187.90s     # run 1, post-fix
+6 failed, 44 passed in 186.76s     # run 2, post-fix -- byte-identical failing set both times
+6 failed, 48 passed in 195.71s     # run 3, after adding 4 new regression tests for the fix itself
+```
+
+The 6 failing node ids are, in every one of these runs, **exactly** the
+set already reported in §6 — unchanged by the cache fix, as expected (that
+fix touches `analogical_thinking.py` only; the 6 pre-existing failures are
+in `propositional_deduction.py`/`reading_collapse.py` code paths that
+module never touches). Four new tests pin the fix
+(`tests/test_directional_correspondence.py`: `test_sub_token_is_stable_
+for_one_live_object`, `test_sub_token_differs_for_two_simultaneously_
+live_objects`, `test_sub_token_never_repeats_even_under_forced_id_reuse`,
+`test_richness_cache_survives_object_churn_across_many_substrates`).
+
+**Standing conclusion, revised precisely rather than merely reaffirmed**:
+the 6 `test_deduction_generalization.py`/`test_deduction_extension.py`
+failures remain pre-existing at `76b8aea`, confirmed a second time under
+harder scrutiny (isolated single-test reproduction, structural diff proof,
+two independently-built clean worktrees). **Separately, and only found
+BECAUSE the coordinator's challenge forced running the exact combined
+command rather than trusting file-by-file isolation, this rung's own
+richness mechanism had a real latent bug** (inherited cache-keying
+hazard, not something this rung introduced but something this rung's own
+new sensitivity to `_vocabulary_keys` exposed) — now fixed and covered.
+**The challenge was net-positive**: it did not find the claimed
+regression, but it did find a different, real one this rung is responsible
+for shipping correctly.
+
+---
+
+## 9. Reproduce
 
 ```bash
 cd /tmp/claude-1000/-home-matt-ozmadev-ocelot/34a7cd08-5eb1-42bd-af0c-eedb1125fa76/scratchpad/directional-correspondence

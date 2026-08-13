@@ -300,3 +300,82 @@ def test_promotion_refuses_when_concept_names_missing(agent):
         agent, {"direction": "a_source", "source_concept": None,
                 "target_concept": "y", "node": 1})
     assert out["minted"] is False
+
+
+# --------------------------------------------------------------------------- #
+# 8. `_sub_token` -- the id(sub)-reuse fix found while combining this rung's
+#    own suite with sibling test files in one pytest process (RESULTS.md's
+#    "a real new failure appeared" section): `_CONCEPT_READING_CACHE`/
+#    `_METASHAPE_COUNT_CACHE`/`_VOCAB_KEYS_CACHE` are module-level caches
+#    that PRE-DATE this rung; keying them by raw `id(sub)` is unsafe once
+#    many Substrate objects are created and freed in one process (CPython
+#    can recycle a freed object's address), which measurably corrupted this
+#    rung's own richness comparison when run alongside
+#    tests/test_blob_edge_analogy_extension.py. Fixed via a WeakKeyDictionary
+#    token whose lifetime is tied to the object, never reused.
+# --------------------------------------------------------------------------- #
+
+def test_sub_token_is_stable_for_one_live_object():
+    class Dummy:
+        pass
+    d = Dummy()
+    assert at._sub_token(d) == at._sub_token(d)
+
+
+def test_sub_token_differs_for_two_simultaneously_live_objects():
+    class Dummy:
+        pass
+    a, b = Dummy(), Dummy()
+    assert at._sub_token(a) != at._sub_token(b)
+
+
+def test_sub_token_never_repeats_even_under_forced_id_reuse():
+    """The actual property that matters: `_SUB_TOKENS` is a
+    `WeakKeyDictionary` keyed by object IDENTITY (Python's weakref
+    machinery), never by the raw `id()` integer the OLD code used directly
+    -- so even if CPython reuses a freed object's memory address for an
+    unrelated new object (the real hazard, allocator-dependent and not
+    reliably forceable from pure Python), the new object still gets a
+    FRESH token from the monotonic counter, never the stale one. This is
+    demonstrated by exhausting many short-lived objects (encouraging real
+    address reuse) and asserting every token handed out is unique, which
+    would NOT hold under the old `key = (id(sub), ...)` scheme if two of
+    these objects happened to share an address (verified separately, live,
+    by the combined-suite run in DIRECTIONAL_CORRESPONDENCE_RESULTS.md)."""
+    class Dummy:
+        pass
+    seen = set()
+    for _ in range(500):
+        d = Dummy()
+        tok = at._sub_token(d)
+        assert tok not in seen, "a token repeated -- _sub_token is no longer collision-safe"
+        seen.add(tok)
+        del d  # encourage the allocator to reuse this address next iteration
+
+
+def test_richness_cache_survives_object_churn_across_many_substrates(agent):
+    """Integration-level regression for the actual bug: build many
+    short-lived, BARE (no full seed boot -- kept cheap so this stays a fast
+    unit test) substrates interleaved with the real one under test,
+    encouraging address reuse of the KIND that corrupted
+    `_vocabulary_keys`/`_concept_reading` before the `_sub_token` fix, and
+    confirm richness stays internally consistent throughout."""
+    import substrate_rs
+
+    sub = agent.s
+    mt = _mt(sub, "dc_churn_mt")
+    rich = _concept(sub, mt, "dc_churn_rich",
+                    "this gate will schedule and buffer the flow through "
+                    "the machine, a store of state")
+    sparse = _concept(sub, mt, "dc_churn_sparse", "irrelevant text")
+    for _ in range(200):
+        churn = substrate_rs.Substrate()
+        cn = churn.add_node("Concept", {"name": "churn_c", "definition": "x"})
+        at._concept_reading(churn, cn)   # populate the SAME module caches
+        del churn                        # then let it (and its address) go
+
+    va = at._concept_shape_vector(sub, rich)
+    vb = at._concept_shape_vector(sub, sparse)
+    assert at._axis_richness(va) > at._axis_richness(vb), (
+        "richness comparison must stay correct for THIS substrate's own "
+        "concepts even after many other substrates were created and freed")

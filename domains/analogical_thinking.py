@@ -31,8 +31,54 @@ gains the bridge.
 """
 from __future__ import annotations
 
+import itertools
 import re
+import weakref
 from typing import Any
+
+
+#: DIRECTIONAL_CORRESPONDENCE_RESULTS.md Sec "a real new failure appeared":
+#: `_CONCEPT_READING_CACHE`/`_METASHAPE_COUNT_CACHE`/`_VOCAB_KEYS_CACHE`
+#: (below) are module-level performance caches keyed in part by `id(sub)` --
+#: a real, PRE-EXISTING hazard (present since this module's first shape-math
+#: landing, unrelated to any one rung's own additions) that this rung's own
+#: regression suite tripped over live: CPython reuses a garbage-collected
+#: object's memory address, and a test suite that boots many `Substrate`/
+#: `WorldAdapter` instances in one process (every `tests/test_*.py` file
+#: that uses the `agent`/`boot_core()` fixtures does exactly this) can
+#: therefore get a STALE cache hit keyed against a completely different,
+#: already-freed graph -- silently returning another substrate's vocabulary
+#: reading for the CURRENT one. Measured live: combining this rung's own
+#: `tests/test_directional_correspondence.py` with
+#: `tests/test_blob_edge_analogy_extension.py` (which populates these
+#: caches heavily on the real large-corpus boot) and the deduction test
+#: files in one `pytest` invocation made a richness comparison that is
+#: deterministic in isolation come back corrupted (`_vocabulary_keys`
+#: silently serving a stale axis list). `id(sub)` is necessary in the key
+#: (a `NodeID`'s own integer recurs across every substrate by construction,
+#: so `id(sub)` is the only thing disambiguating them today) but not
+#: SUFFICIENT once ids can be recycled. The fix does not touch what is
+#: cached or the caching pattern itself (CLAUDE.md permits caching) -- only
+#: the identity key, via a `WeakKeyDictionary` token whose lifetime is tied
+#: to the object it names, so no two live-or-dead substrates can ever share
+#: one, regardless of address reuse.
+_SUB_TOKEN_COUNTER = itertools.count()
+_SUB_TOKENS: "weakref.WeakKeyDictionary" = weakref.WeakKeyDictionary()
+
+
+def _sub_token(sub) -> int:
+    """A stable per-substrate identity token, safe against `id()` reuse --
+    see the module comment above. Falls back to `id(sub)` (the OLD,
+    collision-prone behaviour) only when `sub` cannot be weakly referenced
+    (defensive; every real `Substrate`/`WorldAdapter` observed can be)."""
+    try:
+        tok = _SUB_TOKENS.get(sub)
+        if tok is None:
+            tok = next(_SUB_TOKEN_COUNTER)
+            _SUB_TOKENS[sub] = tok
+        return tok
+    except TypeError:
+        return id(sub)
 
 
 # The order-2/3/4 classifier vocabulary (FunctionalRole / ShapePrinciple /
@@ -203,7 +249,7 @@ def _concept_reading(substrate, concept_node) -> dict:
     """`{"role": {..}, "principle": {..}, "shape": {..}}`, each mapping a
     vocabulary name to the frozenset of slots that evidenced it."""
     sub = getattr(substrate, "s", substrate)
-    key = (id(sub), concept_node)
+    key = (_sub_token(sub), concept_node)
     cached = _CONCEPT_READING_CACHE.get(key)
     if cached is not None:
         return cached
@@ -305,7 +351,7 @@ def metashape_realisation_counts(substrate) -> dict[str, int]:
         concepts = list(sub.nodes("Concept"))
     except Exception:
         return {}
-    key = (id(sub), len(concepts))
+    key = (_sub_token(sub), len(concepts))
     cached = _METASHAPE_COUNT_CACHE.get(key)
     if cached is not None:
         return cached
@@ -367,7 +413,7 @@ def _vocabulary_keys(substrate) -> list:
     laid out on the same axes are positionally aligned by construction.
     """
     sub = getattr(substrate, "s", substrate)
-    key = (id(sub), sum(len(_vocab_nodes(substrate, t))
+    key = (_sub_token(sub), sum(len(_vocab_nodes(substrate, t))
                         for t in ("FunctionalRole", "ShapePrinciple", "MetaShape")))
     cached = _VOCAB_KEYS_CACHE.get(key)
     if cached is not None:
