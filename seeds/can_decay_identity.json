@@ -1,11 +1,11 @@
 {
  "id": "can_decay_identity",
- "version": "1.0.0",
+ "version": "1.1.0",
  "depends_on": [
   "can_native_reimplementation"
  ],
  "self_load_only": true,
- "description": "Native decay + identity dynamics, closing two of consumer 6's three named blockers (CAN_CONSUMER_MIGRATION_RESULTS.md Sec1 row 6: 'decay ... no native analog proposed anywhere'; 'identity dynamics ... no native design exists at all'; Blocker B (Hebbian materialization) is a SIBLING rung's exact scope, not touched here). DECAY: the continuous mt_decay_h/mt_decay_J (can_ops.rs) are multiplicative (h <- (1-gamma)*h) -- a category error applied to an in-frame integer count (0.999*7 is not an integer). The integrality-preserving native analog is a fixed-quantum LINEAR decrement toward zero, exactly translate's own v -> v + offset[j] step (shape_decode.rs::apply_translate_once, offset=-1) PLUS an absorbing floor at 0 that plain translate does not have (registered explicitly as a deviation, not silently added) -- applied to the ONE in-frame integer quantity the native Hebbian mechanism already holds, evidence_confirm/evidence_disconfirm on a Coactivation ledger (seeds/can_native_reimplementation.json v1.1.0). IDENTITY: investigated whether a Concept's 'identity' is just another evidence-accumulation dimension -- CONFIRMED for the READING half (a per-Concept confirm/disconfirm ledger sampling sigma each tick, rendered via the SAME non-materializing log-odds Term the causal-strength axis already uses, gives a graded 'how committed' signal with zero new machinery), NOT resolved for the FEEDBACK half (identity_field is read by can_native_update_3state's own local-field sum as a materialized, feedback-participating float -- a genuinely different role from the Hebbian render's pure-comparator role; wiring the identity render back into identity_field is named as a separate, un-sized follow-on, not built). Both new rules re-express mt_allows(mt, 'allow_h_drift') (self_improvement_loop.py) as a Term (a graph decision, not a Python one) rather than relying on a Python policy check the way the continuous wrappers do. Zero new Rust anywhere in this seed -- Attr/EdgeAttr/Eq/Not/And/Or/Gt/Lt/Plus/IfThenElse/Log/Div all pre-existed and are reused as-is. See CAN_DECAY_IDENTITY_PREREG.md / _RESULTS.md.",
+ "description": "Native decay + identity dynamics, closing two of consumer 6's three named blockers (CAN_CONSUMER_MIGRATION_RESULTS.md Sec1 row 6: 'decay ... no native analog proposed anywhere'; 'identity dynamics ... no native design exists at all'; Blocker B (Hebbian materialization) is a SIBLING rung's exact scope, not touched here). DECAY: the continuous mt_decay_h/mt_decay_J (can_ops.rs) are multiplicative (h <- (1-gamma)*h) -- a category error applied to an in-frame integer count (0.999*7 is not an integer). The integrality-preserving native analog is a fixed-quantum LINEAR decrement toward zero, exactly translate's own v -> v + offset[j] step (shape_decode.rs::apply_translate_once, offset=-1) PLUS an absorbing floor at 0 that plain translate does not have (registered explicitly as a deviation, not silently added) -- applied to the ONE in-frame integer quantity the native Hebbian mechanism already holds, evidence_confirm/evidence_disconfirm on a Coactivation ledger (seeds/can_native_reimplementation.json v1.1.0). IDENTITY: investigated whether a Concept's 'identity' is just another evidence-accumulation dimension -- CONFIRMED for the READING half (a per-Concept confirm/disconfirm ledger sampling sigma each tick, rendered via the SAME non-materializing log-odds Term the causal-strength axis already uses, gives a graded 'how committed' signal with zero new machinery), NOT resolved for the FEEDBACK half (identity_field is read by can_native_update_3state's own local-field sum as a materialized, feedback-participating float -- a genuinely different role from the Hebbian render's pure-comparator role; wiring the identity render back into identity_field is named as a separate, un-sized follow-on, not built). Both new rules re-express mt_allows(mt, 'allow_h_drift') (self_improvement_loop.py) as a Term (a graph decision, not a Python one) rather than relying on a Python policy check the way the continuous wrappers do. Zero new Rust anywhere in this seed -- Attr/EdgeAttr/Eq/Not/And/Or/Gt/Lt/Plus/IfThenElse/Log/Div all pre-existed and are reused as-is. See CAN_DECAY_IDENTITY_PREREG.md / _RESULTS.md. v1.1.0 (CAN_EXTERNAL_FIELD_DECAY_PREREG.md/_RESULTS.md) adds can_native_external_field_decay, closing CAN_MT_SCOPED_RULES_RESULTS.md Sec4c's remaining maybe_decay_h blocker: external_field is read six times by can_native_update_3state/_2state's own local-field formula but written by no rule anywhere -- this rule is the first writer. Unlike the two rules above, external_field is a SIGNED float with no native accumulation rule (set exogenously, not grown +1 per tick by any rule this arc built), so the existing one-sided integer-floor body (Gt(x,0) then x-1) does not transfer verbatim -- it is generalised (not redesigned) to a symmetric clamp-toward-zero via Max/Min (pre-existing Rust Terms, already used declaratively elsewhere in this tree, e.g. seeds/arousal_window_coreg.json), registered as this rung's one explicit deviation, mirroring how the floor-at-0 deviation from bare translate was registered explicitly in v1.0.0. No same-tick-race guard is needed here (unlike can_native_evidence_decay's own fix): confirmed by direct grep that no native rule, and no Python module including can_counterfactual.py, ever writes external_field -- decay is the ONLY writer this attr ever gets, so there is no reinforcement event to race against.",
  "nodes": [
   {
    "local_id": 1,
@@ -53,6 +53,24 @@
     "source": "can_decay_identity_design",
     "_note": "The identity-commitment reading's declarative home, mirroring latent:causal_strength's own wiring (inference_knowledge.json local_id 14). No existing rule reads this node -- additive documentation only, matching LOGODDS_GENERATOR_RESULTS.md Sec7 point 2's own precedent (declarative scaffolding, not a consumed mechanism, in this rung)."
    }
+  },
+  {
+   "local_id": 4,
+   "type": "DimensionGenerator",
+   "attrs": {
+    "name": "external_field_decay",
+    "kind": "translate",
+    "coord_dims": [
+     0
+    ],
+    "params": [
+     1
+    ],
+    "offset": [
+     -1
+    ],
+    "_note": "v1.1.0 (CAN_EXTERNAL_FIELD_DECAY_PREREG/_RESULTS.md). Documents the SAME translate-toward-zero SHAPE local_id 1 (evidence_decay) declares, applied to external_field -- with ONE registered generalisation: external_field is SIGNED (h in no fixed range, typically set via field_rng.uniform(-1,1) by test/world-adapter code, never accumulated in integer steps by any rule), so the actual stepping (can_native_external_field_decay) clamps SYMMETRICALLY toward zero (max(h-1,0) when positive, min(h+1,0) when negative) via the pre-existing Max/Min Terms, not the one-sided Gt(x,0)-then-x-1 body local_id 1's rule uses (that body relies on x being a non-negative integer, which external_field is not). Declarative only, never literally invoked at runtime -- matching local_id 1/2's own convention."
+   }
   }
  ],
  "edges": [],
@@ -67,6 +85,11 @@
    "name": "can_native_identity_as_evidence_axis",
    "definition": "A Concept's per-tick sigma reading is a confirm/disconfirm-shaped evidence stream about its OWN typical state, tracked on the SAME evidence-ledger idiom the Hebbian causal-strength axis already uses (own counters, own strictly-later-tick epoch gate, own non-materializing log-odds render) -- the READING half of identity dynamics reuses the already-built mechanism with zero new machinery.",
    "why": "Closes CAN_CONSUMER_MIGRATION_RESULTS.md row 6 blocker (c) for the reading half only. The FEEDBACK half -- materializing the reading back into identity_field so it participates in can_native_update_3state's own local-field sum, the way the continuous h_id does -- is NOT resolved by this concept; identity_field's role there is a materialized MAP parameter, a genuinely different job than a pure external comparator, and wiring one into the other is named as separate follow-on work."
+  },
+  {
+   "name": "can_native_external_field_decay",
+   "definition": "v1.1.0. A native, in-frame-preserving analog of maybe_decay_h/can_ops.rs::decay_h for the ONE quantity that mechanism targets and this arc had not yet given a native writer: external_field (h), read by can_native_update_3state/_2state's own local-field formula but written by no rule anywhere before this version. Symmetric clamp-toward-zero by exactly 1 per strictly-later external tick (max(h-1,0) when positive, min(h+1,0) when negative, unchanged at 0), gated by the SAME allow_h_drift policy axis maybe_decay_h itself checks -- re-expressed as a graph Term, not a Python decision.",
+   "why": "Closes CAN_MT_SCOPED_RULES_RESULTS.md Sec4c's remaining maybe_decay_h blocker (the ONLY one of self_improvement_loop.py's seven operations not migrated for a rule-body reason rather than an orchestration or identity-feedback reason). external_field is signed and has no native accumulation rule (unlike evidence_confirm/identity_evidence_confirm, which are grown +1 by the SAME rule family that decays them), so the existing one-sided integer-floor decay body does not transfer verbatim -- generalised to a symmetric Max/Min clamp, registered explicitly as this rung's one deviation."
   }
  ],
  "exclusions": [],
@@ -782,6 +805,218 @@
      "set_attr",
      "c",
      "identity_decay_tick",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "mt"
+       },
+       "key": "can_tick"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "can_native_external_field_decay",
+   "comment": "v1.1.0. Native analog of maybe_decay_h/can_ops.rs::decay_h for external_field (h) -- the ONE quantity that mechanism targets and this arc had not given a native writer (CAN_MT_SCOPED_RULES_RESULTS.md Sec4c). Symmetric clamp toward zero (max(h-1,0) when positive, min(h+1,0) when negative) via pre-existing Max/Min Terms -- the required generalisation of can_native_evidence_decay's one-sided integer-floor body, since external_field is a signed float with no native accumulation rule (PREREG Sec1b). No same-tick-race guard: confirmed by direct grep (PREREG Sec0/Sec2) that no native rule and no Python module (including can_counterfactual.py) ever writes external_field -- decay is the only writer this attr ever gets, so there is no reinforcement event to race against, unlike can_native_evidence_decay's own fix. Policy-gated: mt_allows(mt, 'allow_h_drift'), the SAME axis maybe_decay_h/can_native_evidence_decay/can_native_identity_evidence_decay all use. See CAN_EXTERNAL_FIELD_DECAY_PREREG.md / _RESULTS.md.",
+   "match_type": "Concept",
+   "match": [
+    [
+     "mt",
+     "has_concept",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "mt"
+       },
+       "key": "can_tick"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "c"
+       },
+       "key": "external_field_decay_tick"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "mt"
+         },
+         "key": "update_policy"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "adaptive"
+        }
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "mt"
+           },
+           "key": "update_policy"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "hybrid"
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "mt"
+            },
+            "key": "allow_h_drift"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "c",
+     "external_field",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "external_field"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "c"
+           },
+           "key": "external_field"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Lt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "c"
+          },
+          "key": "external_field"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "then": {
+         "type": "Min",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "c"
+             },
+             "key": "external_field"
+            },
+            {
+             "type": "Lit",
+             "value": 1
+            }
+           ]
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "other": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "c"
+         },
+         "key": "external_field"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "c",
+     "external_field_decay_tick",
      {
       "__term__": {
        "type": "Attr",
