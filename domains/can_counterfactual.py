@@ -141,7 +141,18 @@ def predict_single_step_target(
     read live off the graph. Never writes to any node."""
     local = local_field_term(node_var="c", external_field_var="h_ovr")
     target = target_state_term(local, mt_var="mt", mode=mode)
-    return float(substrate.evaluate(target, {"c": concept, "mt": mt, "h_ovr": float(new_external_field)}))
+    env = {"c": concept, "mt": mt, "h_ovr": float(new_external_field)}
+    # Term.evaluate(env, substrate) — not substrate.evaluate(term, env) — so
+    # this works whether `substrate` is the sr.Substrate wrapper (this
+    # module's own test file's convention) OR the raw native substrate
+    # (drive_curiosity.py's/insight_seeking.py's own established
+    # convention, confirmed by every one of their tests and the absence of
+    # any production caller passing the wrapper): Term.evaluate already
+    # does `substrate._inner if isinstance(substrate, Substrate) else
+    # substrate` internally (substrate_rs/__init__.py), so this one change
+    # makes the module callable from either calling convention with zero
+    # duplicated dispatch logic here.
+    return float(target.evaluate(env, substrate))
 
 
 def predict_current_target(substrate, mt, concept, mode: str = "3state") -> float:
@@ -150,7 +161,7 @@ def predict_current_target(substrate, mt, concept, mode: str = "3state") -> floa
     against."""
     local = local_field_term(node_var="c")
     target = target_state_term(local, mt_var="mt", mode=mode)
-    return float(substrate.evaluate(target, {"c": concept, "mt": mt}))
+    return float(target.evaluate({"c": concept, "mt": mt}, substrate))
 
 
 def predict_ripple(
@@ -203,7 +214,7 @@ def predict_ripple(
             env = {"cx": c, "mt": mt}
             if is_probed:
                 env["h_ovr"] = float(new_external_field)
-            val = float(substrate.evaluate(target, env))
+            val = float(target.evaluate(env, substrate))
             if hyp[c.value] != val:
                 changed = True
             hyp[c.value] = val
