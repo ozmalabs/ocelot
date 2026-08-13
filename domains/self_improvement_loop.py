@@ -322,46 +322,84 @@ def nudge_identity_on_flipped(
     base_alpha: float = 0.05,
 ) -> int:
     """When an insight is consolidated, nudge identity_field on each
-    flipped node toward the new σ. Recurrence boosts α — substrate
-    'recognises' returning to the same basin and commits more.
+    flipped node toward the new σ. Recurrence boosts the nudge —
+    substrate 'recognises' returning to the same basin and commits more.
 
     Skips frozen Mts. Returns count of nudges applied.
 
-    STAYS on the continuous path for native Mts — investigated during
-    `CAN_IDENTITY_FEEDBACK_RESULTS.md` (the identity-feedback gap
-    `maybe_update_identity` closed, §above, is NOT the reason this one
-    stays blocked; the reason is genuinely different, found by direct
-    investigation, not copy-pasted). `can_native_identity_field_feedback`
-    (`seeds/can_decay_identity.json` v1.2.0) is a per-tick, epoch-gated,
-    whole-Mt sample step driven by the AMBIENT observed σ each Concept
-    already has — it has no input surface for this function's own EVENT
-    shape: a SPECIFIC set of flipped node ids, an injected `target_sigma`
-    per node (the insight's own new σ, not necessarily what `state`
-    already reads), and a `recurrence_count`-scaled `alpha_eff`. A
-    magnitude/recurrence-scaled per-tick step was investigated for
-    `maybe_update_identity` and REJECTED on stability grounds (a growing
-    per-tick jump threatens the discrete-async Lyapunov convergence
-    argument, `CAN_IDENTITY_FEEDBACK_PREREG.md` §2.2/§2.3) — the SAME
-    rejection applies here even more directly, since this function's whole
-    point is an IMMEDIATE, LARGER nudge on insight consolidation, which is
-    exactly the unbounded-step shape the convergence sweep was built to
-    guard against. Wiring this function onto the fixed-quantum per-tick
-    rule would silently discard the event's own target_sigma/recurrence
-    signal and just let the ambient tick-based rule do whatever it would
-    have done anyway — not a real migration of this function's contract,
-    reported honestly rather than forced through to claim a round 7/7."""
+    MIGRATED for native Mts (`CAN_IDENTITY_NUDGE_FINAL_RESULTS.md`,
+    closing the gap `CAN_IDENTITY_FEEDBACK_RESULTS.md` §6.2 investigated
+    and correctly declined to force through). The genuinely different
+    reason this one stayed blocked (an EVENT-triggered nudge — a specific
+    flipped-node set, an injected `target_sigma`, a recurrence signal —
+    has no input surface on `can_native_identity_field_feedback`, the
+    AMBIENT per-tick sampler) is closed by a SEPARATE, sibling native rule,
+    `can_native_identity_nudge_on_flip` (`seeds/can_decay_identity.json`
+    v1.3.0), triggered by a graph-resident EVENT MARKER instead of the
+    ambient per-tick epoch — not by routing through the ambient rule
+    (§6.2's rejected option 1 still stands: that would have silently
+    discarded this function's own signal).
+
+    Native branch: the ONLY Python write is mechanical translation of the
+    already-computed, substrate-agnostic `insight` dict (`detect_insight`,
+    confirmed unmodified) onto the SPECIFIC flipped Concept nodes —
+    `pending_identity_nudge_target_sigma` (passthrough of the insight's own
+    new σ), `pending_identity_nudge_recurrence` (passthrough of
+    `recurrence_count`, itself already graph-resident on the InsightEvent
+    node `record_insight` writes — not invented here), and
+    `pending_identity_nudge_epoch` (a plain monotonic per-Mt sequence
+    number, bookkeeping, not a decision). The DECISION — which sign to
+    nudge (from `target_sigma`), and the BOUNDED step size (1.0 first
+    occurrence, 2.0 recurring, via `Gt(recurrence, 1)` — a binary two-tier
+    distinction, never the continuous path's unbounded
+    `base_alpha*(1+ln(recurrence))` growth) — lives entirely in the new
+    rule's own `IfThenElse` effects, mirroring `can_native_identity_field_
+    feedback`'s own fixed-quantum-toward-sign shape. `base_alpha` has no
+    native analog (fixed binary step) and is silently unused on the native
+    path, the same precedent every other migrated operation in this module
+    already sets for its own continuous-only parameters. Continuous branch
+    byte-unchanged below. Convergence with BOTH native identity rules live
+    alongside real synthesized flip events was measured, not assumed —
+    `CAN_IDENTITY_NUDGE_FINAL_RESULTS.md` §3."""
     if not mt_allows(substrate, mt, "allow_h_drift"):
         return 0
     if not insight or "flipped_nodes" not in insight:
         return 0
+    flipped_by_id = {int(f["node"]): float(f["after"])
+                     for f in insight["flipped_nodes"]}
+    if _is_native(substrate, mt):
+        from domains.can_native_orchestration import scoped_settle
+        recurrence = int(insight.get("recurrence_count", 1))
+        new_epoch = int(
+            substrate.node(mt)["attrs"].get("insight_nudge_seq", 0)
+        ) + 1
+        substrate.set_attr(mt, "insight_nudge_seq", new_epoch)
+        targets = {}
+        for c in substrate.neighbours(mt, "has_concept"):
+            cid = c.value if hasattr(c, "value") else int(c)
+            if cid in flipped_by_id:
+                substrate.set_attr(
+                    c, "pending_identity_nudge_target_sigma",
+                    flipped_by_id[cid])
+                substrate.set_attr(
+                    c, "pending_identity_nudge_recurrence", recurrence)
+                substrate.set_attr(
+                    c, "pending_identity_nudge_epoch", new_epoch)
+                targets[cid] = c
+        scoped_settle(substrate, mt)
+        nudged = 0
+        for cid, c in targets.items():
+            applied = substrate.node(c)["attrs"].get(
+                "identity_nudge_applied_epoch")
+            if applied is not None and int(applied) == new_epoch:
+                nudged += 1
+        return nudged
     import math
     recurrence = int(insight.get("recurrence_count", 1))
     # log scaling so recurrence doesn't blow up — α grows but bounded.
     alpha_eff = base_alpha * (1.0 + math.log(max(1, recurrence)))
     nudged = 0
     # Look up the actual node handles by id.
-    flipped_by_id = {int(f["node"]): float(f["after"])
-                     for f in insight["flipped_nodes"]}
     for c in substrate.neighbours(mt, "has_concept"):
         cid = c.value if hasattr(c, "value") else int(c)
         if cid in flipped_by_id:
