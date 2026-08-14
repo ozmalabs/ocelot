@@ -223,6 +223,89 @@ _KNOWN_ARC6_TIER0_ENUM_REACH_DRIFT = {
     106: {"status": "gapped", "gap_reason": "enumerate_failed", "rung": "none"},
 }
 
+# 2026-08-14 (BUGFIX_SWEEP2_RESULTS.md item 2 — a FIFTH documented exception,
+# and a THIRD reconciliation on top of task 106's own already-superseded
+# `_KNOWN_ARC6_TIER0_ENUM_REACH_DRIFT` entry directly above). Investigated
+# live, in a fresh worktree off `main @ c87d065`, after
+# `PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_RUNG1_RESULTS.md §6` first flagged
+# task 242's drift (2026-08-11) and explicitly left it "not independently
+# confirmed correct or incorrect... requiring its own review" — that review
+# is this entry. `test_retrieval_migrated.py` is NOT one of the program-
+# synthesis "named 9-file suite" files (it is invoked only as a subprocess
+# by `test_prog_moves_migrated.py`/`test_exact_first_migrated.py`'s own
+# meta-tests), which is why this pin sat stale across two further merged
+# rungs (`progsyn-setlit-dictitems`, `progsyn-dictitems-sortby`) without
+# being independently re-verified.
+#
+# Re-running `test_ceiling_task_reproduces_measured_outcome_live` for all 12
+# `CEILING_TASK_IDS` live (three repeated runs, byte-identical) found THREE
+# mismatches, not one — 106, 115, AND 242 — all downstream of the SAME
+# cause chain (arc6/rung1's widened `OP_TABLE` plus the already-merged
+# `progsyn-setlit-dictitems` set/frozenset `Lit`-boundary fix), exactly the
+# "genuine, all downstream of the SAME widened op-table" class
+# `PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_RUNG1_RESULTS.md §5.2` already named
+# for this file's OTHER drifts. None of the three is a wrong-accept
+# regression — the direction is the SAME improvement direction every prior
+# reconciliation in this file privileges:
+#
+# - **242** (`count total number of characters in a string`) stays
+#   HONESTLY GAPPED both before and after (`_KNOWN_S2_STRUCTURAL_REJECT_
+#   DRIFT`'s own `status: "gapped"` is unchanged) — only the MECHANISM that
+#   produces the gap moved. Before: the retrieval ladder reached rung `d`
+#   (exemplar 776, adapted into a candidate the S2 structural-verdict rung
+#   correctly rejected as wrong-in-general). Now: the plain `SynthEnumerate`
+#   rung (upstream of retrieval in the Occam ladder) proposes its OWN
+#   candidate first — `fold(items, x, acc, init=0, body=acc+1)`, a
+#   syntactically-plausible length-count — and that candidate fails its own
+#   row verdict (a string is still ATOMIC in this engine,
+#   `STRUCTURAL_CEILING.md §3.1`'s S1 finding — `fix:StringAsSequence` has
+#   NOT landed — so `Fold` over a string genuinely iterates zero times and
+#   cannot reproduce the revealed rows), terminating the WHOLE ladder as
+#   `enumerate_failed` before it ever reaches retrieval. Both mechanisms are
+#   HONEST failures on a task this engine genuinely cannot yet solve; which
+#   one gets there first is exactly the kind of Occam-order reshuffling a
+#   primitive-layer widening is expected to cause, not a defect in either
+#   rung. `rung`/`exemplar` move to `"none"`/`None` because retrieval
+#   genuinely is not reached this time (byte-identical to how 106's own
+#   entry above already treats "the ladder reaches something wrong before
+#   retrieval fires" as a `rung: "none"` outcome, not an error).
+# - **106** (`append the given list to the given tuples`) moves FURTHER,
+#   past its own already-recorded `_KNOWN_ARC6_TIER0_ENUM_REACH_DRIFT`
+#   supersession above: live it is now `status: "accepted"`, `rung: "b"`,
+#   `exemplar: 750`, `holdout_ok: True` — a genuine RETRIEVAL-path accept
+#   (`rung` is set ONLY inside `domains/prog_retrieval.py`, never by the
+#   plain enumerator, so this is retrieval reaching rung `b`, not a
+#   mislabeled enumerate hit).
+# - **115** (the `TypeError` set-value case, `MEASURED_OUTCOMES[115] =
+#   {"exc": "TypeError"}`) no longer raises at all: the already-merged
+#   `progsyn-setlit-dictitems` rung's `Lit` set/frozenset-boundary fix
+#   (named but not built as of `STRUCTURAL_CEILING.md §7.4`, landed since)
+#   lets `ingest_spec` accept the row and the ladder now reaches
+#   `status: "accepted"`, `rung: "a"`, `exemplar: 741`, `holdout_ok: True`.
+#
+# **Deliberately NOT done, named for the orchestrator instead of asserted
+# here**: whether 106's and 115's new `holdout_ok: True` accepts are
+# GENUINE captures (vs. task 394's own already-documented precedent, a
+# coincidental fit the single held-out row could not catch — verified
+# wrong only by a CONSTRUCTED counter-example witness) has not been
+# independently checked by that same construction method. This entry pins
+# only the LIVE, MEASURED outcome (matching this file's own "a baseline
+# must be a list of ids, never a count" discipline); it deliberately does
+# NOT add 106/115 to `CAPTURED_TASK_IDS` or touch any MBPP headline number
+# — that is a materially bigger claim than a live re-pin and is exactly the
+# kind of re-verification `test_task_92_and_464_frozen_passes_were_already_
+# coincidental_fits` (`test_reject_informs_repair_migrated.py`) exists to
+# do, not this test.
+#
+# `MEASURED_OUTCOMES` itself is UNTOUCHED — the frozen table stays frozen
+# and every supersession is recorded beside it, exactly as every drift
+# above already does.
+_KNOWN_BUGFIX_SWEEP2_RUNG1_CASCADE_DRIFT = {
+    106: {"status": "accepted", "rung": "b", "exemplar": 750, "holdout_ok": True},
+    115: {"status": "accepted", "rung": "a", "exemplar": 741, "holdout_ok": True},
+    242: {"status": "gapped", "gap_reason": "enumerate_failed", "rung": "none"},
+}
+
 
 def boot():
     s = srs.Substrate()
@@ -535,7 +618,9 @@ def test_ceiling_task_reproduces_measured_outcome_live(tid):
         tasks = json.load(f)
     by_id = {t["task_id"]: t for t in tasks}
     out = _run_task_live(by_id[tid])
-    if tid in _KNOWN_ARC6_TIER0_ENUM_REACH_DRIFT:
+    if tid in _KNOWN_BUGFIX_SWEEP2_RUNG1_CASCADE_DRIFT:
+        expect = dict(_KNOWN_BUGFIX_SWEEP2_RUNG1_CASCADE_DRIFT[tid])
+    elif tid in _KNOWN_ARC6_TIER0_ENUM_REACH_DRIFT:
         expect = dict(_KNOWN_ARC6_TIER0_ENUM_REACH_DRIFT[tid])
     elif tid in _KNOWN_ARC6_PROPERTY_REJECT_DRIFT:
         expect = dict(_KNOWN_ARC6_PROPERTY_REJECT_DRIFT[tid])
