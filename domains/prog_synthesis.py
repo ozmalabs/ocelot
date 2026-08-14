@@ -171,6 +171,7 @@ from __future__ import annotations
 import json
 import math
 import os
+from fractions import Fraction
 from typing import Any, Dict, List, Optional
 
 import substrate_rs as srs
@@ -2756,6 +2757,23 @@ def _plain(v):
         return {_plain(k): _plain(x) for k, x in v.items()}
     if isinstance(v, bytes):
         return v.decode("utf-8", "replace")
+    # CEILING_REASSESSMENT_2 rung: the SAME class of gap the SetLit/DictItems
+    # rung already found and fixed for `set`/`frozenset` above (a
+    # PyO3-boundary Python type this JSON-safe flattener had no case for,
+    # because no program could ever return one before the DSL's exact-
+    # division Rational path was reachable). `Value::Rational` (the DSL's
+    # exact-fraction division result — CLAUDE.md's own "Rational(9,2) !=
+    # 4.5" cost class, `ARC6_STRUCTURAL_CEILING.md` §7.2) realises at the
+    # PyO3 boundary as Python's `fractions.Fraction`, and `json.dumps`
+    # cannot serialize it — `TypeError: Object of type Fraction is not
+    # JSON serializable`, live-reproduced on task 98's own search
+    # (`Div(Prod(a), Count(a))` over `(8,2,3,-1,7)` is exactly `-336/5`, a
+    # non-integer ratio the engine keeps EXACT). Converted via `float()`,
+    # matching every downstream comparator in this module (`agree`/
+    # `_row_cmp_ok`/`math.isclose`) which already expects a float and never
+    # an exact-rational type — never a second, drifting numeric kind.
+    if isinstance(v, Fraction):
+        return float(v)
     return v
 
 
