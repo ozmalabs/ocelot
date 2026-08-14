@@ -602,7 +602,7 @@
             "__term__": {
               "type": "Attr",
               "node": {
-                "type": "Argmax",
+                "type": "ArgminUnique",
                 "source": {
                   "type": "Filter",
                   "source": {
@@ -659,31 +659,34 @@
                 },
                 "var_name": "candidate_shape",
                 "value": {
-                  "type": "Count",
-                  "source": {
-                    "type": "Filter",
+                  "type": "Neg",
+                  "arg": {
+                    "type": "Count",
                     "source": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "candidate_shape"
-                      },
-                      "key": "trigger_tokens"
-                    },
-                    "var_name": "candidate_token",
-                    "predicate": {
-                      "type": "In",
-                      "member": {
-                        "type": "Var",
-                        "name": "candidate_token"
-                      },
-                      "container": {
+                      "type": "Filter",
+                      "source": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "message"
+                          "name": "candidate_shape"
                         },
-                        "key": "ps_tokens"
+                        "key": "trigger_tokens"
+                      },
+                      "var_name": "candidate_token",
+                      "predicate": {
+                        "type": "In",
+                        "member": {
+                          "type": "Var",
+                          "name": "candidate_token"
+                        },
+                        "container": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "message"
+                          },
+                          "key": "ps_tokens"
+                        }
                       }
                     }
                   }
@@ -702,7 +705,7 @@
             "__term__": {
               "type": "Attr",
               "node": {
-                "type": "Argmax",
+                "type": "ArgminUnique",
                 "source": {
                   "type": "Filter",
                   "source": {
@@ -759,31 +762,34 @@
                 },
                 "var_name": "candidate_shape",
                 "value": {
-                  "type": "Count",
-                  "source": {
-                    "type": "Filter",
+                  "type": "Neg",
+                  "arg": {
+                    "type": "Count",
                     "source": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "candidate_shape"
-                      },
-                      "key": "trigger_tokens"
-                    },
-                    "var_name": "candidate_token",
-                    "predicate": {
-                      "type": "In",
-                      "member": {
-                        "type": "Var",
-                        "name": "candidate_token"
-                      },
-                      "container": {
+                      "type": "Filter",
+                      "source": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "message"
+                          "name": "candidate_shape"
                         },
-                        "key": "ps_tokens"
+                        "key": "trigger_tokens"
+                      },
+                      "var_name": "candidate_token",
+                      "predicate": {
+                        "type": "In",
+                        "member": {
+                          "type": "Var",
+                          "name": "candidate_token"
+                        },
+                        "container": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "message"
+                          },
+                          "key": "ps_tokens"
+                        }
                       }
                     }
                   }
