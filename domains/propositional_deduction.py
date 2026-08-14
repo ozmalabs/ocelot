@@ -671,7 +671,104 @@ def mint_existential_premise(agent, statement: str, *, name: Optional[str] = Non
     return {"minted": True, "name": nm, "node": node, "parsed": parsed}
 
 
+# --------------------------------------------------------------------------- #
+#  (5) ANALOGICAL HYPOTHESIS PROMOTION (DIRECTIONAL_CORRESPONDENCE_PREREG.md /
+#  _RESULTS.md) -- turns a RESOLVED `DirectionalCorrespondence`
+#  (`domains.analogical_thinking.directional_hypothesis_for`'s own return
+#  shape) into a real `ShapeSignature{kind:"knowledge_logical"}` node, the
+#  SAME antecedent/consequent shape `mint_logical_schema` installs from
+#  parsed text -- but sourced from an analogical correspondence's own
+#  source/target Concept names, not NL parse, and NEVER called automatically.
+#  See the module comment in `analogical_thinking.py` above
+#  `DirectionalCorrespondence` for why a hypothesis has NO route into the
+#  live decode pool until this function is explicitly called: `kind` does
+#  not gate `ShapeDecode`'s codebook scan, only NODE TYPE does, and a
+#  `DirectionalCorrespondence` is not a `ShapeSignature`.
+# --------------------------------------------------------------------------- #
+def mint_logical_schema_from_analogy(agent, direction: dict, *,
+                                     name: Optional[str] = None) -> dict:
+    """PROMOTE a resolved directional analogical correspondence (the dict
+    `analogical_thinking.directional_hypothesis_for` returns) into a real
+    `knowledge_logical` schema, so `inference_generation.py`'s UNCHANGED
+    `decode_gap`/`resolve_implication_gap` pipeline can decode against it --
+    with ZERO new gap-detection code, the SAME reuse
+    `REASONING_FACILITY_BRIDGE_RESULTS.md`'s candidates 1/3 already
+    demonstrated for a different pair of facilities.
+
+    Refuses (never mints, no exception) a correspondence whose own direction
+    is not resolved: `direction["direction"] not in {"a_source","b_source"}`
+    -- i.e. `"symmetric"` (tied richness, no direction to assert),
+    `"no_correspondence"` (no shared structure), `"pending"`, or `None` --
+    an undirected correspondence names no antecedent, so forcing one would
+    fabricate a claim the correspondence itself never made.
+
+    Installed at `coherence:"elaborative"` -- deliberately NOT the
+    `"blocking"` tier `mint_logical_schema`'s directly-taught/proven schemas
+    use. This is the ALREADY-EXISTING, already-documented weaker-evidence
+    tier (`inference_generation.py`'s own docstring: a `"blocking"` schema
+    "always fires"; an `"elaborative"` one "fires ONLY when
+    `standard_of_coherence.depth` reads deep") -- reused here, not invented,
+    because a structural analogy, however well-corroborated, is not the
+    same evidentiary class as a proof-grade implication or a directly-taught
+    fact: it should be available to a deep-coherence reader willing to draw
+    weaker inferences, never asserted unconditionally the way a taught
+    fact is. `derive_contrapositive` (unchanged) already propagates whatever
+    `coherence` the parent schema carries, so the contrapositive of a
+    promoted analogical schema inherits `"elaborative"` automatically, with
+    no new code there.
+
+    Tagged `provenance:"analogical"` plus a `derived_from` edge back to the
+    `DirectionalCorrespondence` node it was promoted from (a NEW Gamma
+    production, `seeds/directional_correspondence.json`), so the resulting
+    schema is INSPECTABLY DISTINCT from a `mint_logical_schema` taught
+    schema in the graph itself (no `provenance` attr there, `coherence:
+    "blocking"`, no `derived_from` edge) -- never silently indistinguishable
+    from a directly-taught fact. Idempotent by name (find-or-create, the
+    SAME idiom every other domains/*.py ensure_seeds uses). Returns
+    `{minted, name, node, reason}` on refusal; `{minted: True, name, node}`
+    on success; `{minted: False, already: True, name, node}` if the schema
+    already exists."""
+    if direction.get("direction") not in ("a_source", "b_source"):
+        return {"minted": False, "reason":
+                ("correspondence direction is %r -- not resolved (only "
+                 "a_source/b_source are promotable); an undirected "
+                 "correspondence names no antecedent, nothing fabricated"
+                 ) % direction.get("direction")}
+    source_name = direction.get("source_concept")
+    target_name = direction.get("target_concept")
+    corr_node = direction.get("node")
+    if not source_name or not target_name or corr_node is None:
+        return {"minted": False, "reason":
+                "resolved direction is missing a concept name or node id"}
+    sub, _, _ = _resolve(agent)
+    antecedent_attr = _norm_attr(source_name)
+    consequent_attr = _norm_attr(target_name)
+    nm = name or ("logical_analogical_%s_%s" % (antecedent_attr, consequent_attr))
+    existing = _schema_by_name(sub, nm)
+    if existing is not None:
+        return {"minted": False, "already": True, "name": nm, "node": existing}
+    attrs = {
+        "name": nm,
+        "kind": "knowledge_logical",
+        "coherence": "elaborative",
+        "signature": json.dumps([["holds", antecedent_attr]]),
+        "supplies": json.dumps({"relation": "is_a", "attr": consequent_attr}),
+        "provenance": "analogical",
+        "chain": ("ANALOGICAL HYPOTHESIS from DirectionalCorrespondence node "
+                   "%r: %r found structurally richer than %r (confidence: %r) "
+                   "-- HYPOTHESIS is_a(X,%s) => is_a(X,%s) [analogical "
+                   "provenance, held at elaborative coherence, never "
+                   "blocking, never taught]"
+                   % (corr_node, source_name, target_name,
+                      direction.get("confidence"), antecedent_attr, consequent_attr)),
+    }
+    node = sub.add_node("ShapeSignature", attrs)
+    sub.add_edge(node, "derived_from", corr_node)
+    return {"minted": True, "name": nm, "node": node}
+
+
 __all__ = ["parse_conditional", "mint_logical_schema",
            "derive_contrapositive", "ensure_contrapositives",
            "parse_universal", "mint_universal_schema",
-           "parse_existential", "mint_existential_premise"]
+           "parse_existential", "mint_existential_premise",
+           "mint_logical_schema_from_analogy"]

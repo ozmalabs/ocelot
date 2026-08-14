@@ -31,8 +31,54 @@ gains the bridge.
 """
 from __future__ import annotations
 
+import itertools
 import re
+import weakref
 from typing import Any
+
+
+#: DIRECTIONAL_CORRESPONDENCE_RESULTS.md Sec "a real new failure appeared":
+#: `_CONCEPT_READING_CACHE`/`_METASHAPE_COUNT_CACHE`/`_VOCAB_KEYS_CACHE`
+#: (below) are module-level performance caches keyed in part by `id(sub)` --
+#: a real, PRE-EXISTING hazard (present since this module's first shape-math
+#: landing, unrelated to any one rung's own additions) that this rung's own
+#: regression suite tripped over live: CPython reuses a garbage-collected
+#: object's memory address, and a test suite that boots many `Substrate`/
+#: `WorldAdapter` instances in one process (every `tests/test_*.py` file
+#: that uses the `agent`/`boot_core()` fixtures does exactly this) can
+#: therefore get a STALE cache hit keyed against a completely different,
+#: already-freed graph -- silently returning another substrate's vocabulary
+#: reading for the CURRENT one. Measured live: combining this rung's own
+#: `tests/test_directional_correspondence.py` with
+#: `tests/test_blob_edge_analogy_extension.py` (which populates these
+#: caches heavily on the real large-corpus boot) and the deduction test
+#: files in one `pytest` invocation made a richness comparison that is
+#: deterministic in isolation come back corrupted (`_vocabulary_keys`
+#: silently serving a stale axis list). `id(sub)` is necessary in the key
+#: (a `NodeID`'s own integer recurs across every substrate by construction,
+#: so `id(sub)` is the only thing disambiguating them today) but not
+#: SUFFICIENT once ids can be recycled. The fix does not touch what is
+#: cached or the caching pattern itself (CLAUDE.md permits caching) -- only
+#: the identity key, via a `WeakKeyDictionary` token whose lifetime is tied
+#: to the object it names, so no two live-or-dead substrates can ever share
+#: one, regardless of address reuse.
+_SUB_TOKEN_COUNTER = itertools.count()
+_SUB_TOKENS: "weakref.WeakKeyDictionary" = weakref.WeakKeyDictionary()
+
+
+def _sub_token(sub) -> int:
+    """A stable per-substrate identity token, safe against `id()` reuse --
+    see the module comment above. Falls back to `id(sub)` (the OLD,
+    collision-prone behaviour) only when `sub` cannot be weakly referenced
+    (defensive; every real `Substrate`/`WorldAdapter` observed can be)."""
+    try:
+        tok = _SUB_TOKENS.get(sub)
+        if tok is None:
+            tok = next(_SUB_TOKEN_COUNTER)
+            _SUB_TOKENS[sub] = tok
+        return tok
+    except TypeError:
+        return id(sub)
 
 
 # The order-2/3/4 classifier vocabulary (FunctionalRole / ShapePrinciple /
@@ -203,7 +249,7 @@ def _concept_reading(substrate, concept_node) -> dict:
     """`{"role": {..}, "principle": {..}, "shape": {..}}`, each mapping a
     vocabulary name to the frozenset of slots that evidenced it."""
     sub = getattr(substrate, "s", substrate)
-    key = (id(sub), concept_node)
+    key = (_sub_token(sub), concept_node)
     cached = _CONCEPT_READING_CACHE.get(key)
     if cached is not None:
         return cached
@@ -305,7 +351,7 @@ def metashape_realisation_counts(substrate) -> dict[str, int]:
         concepts = list(sub.nodes("Concept"))
     except Exception:
         return {}
-    key = (id(sub), len(concepts))
+    key = (_sub_token(sub), len(concepts))
     cached = _METASHAPE_COUNT_CACHE.get(key)
     if cached is not None:
         return cached
@@ -367,7 +413,7 @@ def _vocabulary_keys(substrate) -> list:
     laid out on the same axes are positionally aligned by construction.
     """
     sub = getattr(substrate, "s", substrate)
-    key = (id(sub), sum(len(_vocab_nodes(substrate, t))
+    key = (_sub_token(sub), sum(len(_vocab_nodes(substrate, t))
                         for t in ("FunctionalRole", "ShapePrinciple", "MetaShape")))
     cached = _VOCAB_KEYS_CACHE.get(key)
     if cached is not None:
@@ -587,6 +633,153 @@ def _resolve_blob_edge(substrate, transform_key: str):
     except Exception:
         pass
     return None
+
+
+# ---------------------------------------------------------------------------
+# DIRECTIONAL CORRESPONDENCE (DIRECTIONAL_CORRESPONDENCE_PREREG.md /
+# _RESULTS.md) -- `_pair_witness`'s own {shared, name_shared, fixed_count,
+# transform} is SYMMETRIC by construction (REASONING_FACILITY_BRIDGE_
+# RESULTS.md Sec3, confirmed there and not re-litigated here: source_concept/
+# target_concept in a returned analogy record reflect SEARCH ORDER, never a
+# causal or logical direction). This section adds a genuinely ASYMMETRIC
+# signal -- structural-elaboration RICHNESS, how many axes of the SAME
+# `_vocabulary_keys` vocabulary each concept in a pair is independently
+# evidenced on -- and a NEW node type, `DirectionalCorrespondence`, to carry
+# whatever direction verdict that signal (or its absence) supports.
+#
+# RICHNESS is a plain count of non-`_ABSENT` entries in one side's OWN
+# `_concept_shape_vector` -- `sum(1 for _, v in vec if v != _ABSENT)`, the
+# SAME arithmetic-reduction idiom `_pair_witness`'s own `name_shared` count
+# already uses (line ~458 above), not a new judgement engine. AN EARLIER
+# ATTEMPT tried to reuse the held `FixedCount` Rust Term directly on one
+# side's vector (zero new Rust, maximal reuse) and was MEASURED, not
+# assumed, to be wrong: `FixedCount`'s `wild` sentinel is wrapped in a
+# 1-tuple at the call site (`term.rs`'s `TermNode::FixedCount` arm) because
+# it is designed to recognise an ENTIRE wilded ROW from `AntiUnify`'s own
+# output convention (a row replaced wholesale by the wild marker: a 1-tuple
+# `(WILD,)`), not an `_ABSENT` string sitting as one of two elements INSIDE
+# an intact 2-element row -- `is_wild`'s tuple-vs-bare-value comparison
+# (`term.rs::is_wild`) never matches a bare string leaf against the
+# 1-tuple-wrapped wild value, so BOTH leaves of every row (the axis name AND
+# the possibly-absent value) count as "fixed" unconditionally. Measured
+# live, not merely reasoned about: `FixedCount(vec, wild=_ABSENT)` returns
+# EXACTLY `2*len(vec)` for every vector tried, regardless of how many
+# entries are `_ABSENT` -- a CONSTANT, not even weakly correlated with axis
+# richness. Reported here rather than silently corrected: the RIGHT tool
+# was the plain Python count already used one scope up in this same file,
+# not a Term whose contract does not cover this shape.
+#
+# `DirectionalCorrespondence` is DELIBERATELY NOT a `ShapeSignature` --
+# `runners/dsl/src/shape_decode.rs::load_parts` loads EVERY `ShapeSignature`
+# node carrying a `name`+`signature` attr into the live `ShapeDecode`
+# codebook pool regardless of its `kind` attr (`kind` is read but never used
+# to filter eligibility -- confirmed by reading `load_parts` before writing
+# any code here), so tagging an unverified hypothesis `ShapeSignature
+# {kind:"knowledge_logical_hypothesis"}` would NOT keep it out of
+# `inference_generation.resolve_implication_gap`'s live decode pool: the
+# moment its `signature` shape matched a real gap's goal, it would compete
+# for a real modus-ponens mint on a real `SmEntity`, silently, regardless of
+# `kind`. The only genuinely safe gate is a node-TYPE boundary, which is
+# what `DirectionalCorrespondence` is. Promotion into a real
+# `ShapeSignature{kind:"knowledge_logical"}` (where it DOES become live) is
+# a separate, explicit, NEVER-automatic step --
+# `domains/propositional_deduction.py::mint_logical_schema_from_analogy`.
+# ---------------------------------------------------------------------------
+
+def _axis_richness(vec: list) -> int:
+    """How many axes of `vec` (a `_concept_shape_vector` output) are
+    EVIDENCED (value != `_ABSENT`) -- pure arithmetic over an
+    already-computed vector, the SAME reduction idiom `_pair_witness`'s own
+    `name_shared` uses. See the module-level comment above for why this is
+    NOT delegated to the held `FixedCount` Term (measured wrong for this
+    shape, not merely judged unnecessary)."""
+    return sum(1 for _, v in (vec or []) if v != _ABSENT)
+
+
+def record_directional_correspondence(substrate, node_a, node_b,
+                                       vec_a: list, vec_b: list, witness: dict):
+    """MECHANICAL INGEST: write a `DirectionalCorrespondence` node from an
+    ALREADY-COMPUTED `_pair_witness` result plus each side's own
+    `_axis_richness`, then run the engine so `direction_a_source`/
+    `direction_b_source`/`direction_symmetric`/`direction_no_correspondence`
+    (`seeds/directional_correspondence.json`) DECIDE the direction --
+    never Python. `run_rules()` is called PER WRITE, mirroring
+    `record_pair_correspondence`'s own proven-safe shape -- though for a
+    different reason here: `DirectionalCorrespondence` carries no novelty/
+    dedup guard at all (every witness computation gets its OWN node, exactly
+    like `Correspondence` itself), so there is no cross-write mint race to
+    guard against the way `BlobEdge` minting needed one; per-write is simply
+    the established convention at this call site, kept for consistency
+    rather than because a batching hazard was found here too.
+
+    Returns the node id written, or `None` (honest no-op, no exception) when
+    either node id is missing or the substrate has no live `add_node`."""
+    sub = getattr(substrate, "s", substrate)
+    if node_a is None or node_b is None or not hasattr(sub, "add_node"):
+        return None
+    try:
+        cid = sub.add_node("DirectionalCorrespondence", {
+            "status": "pending",
+            "shared_count": int(witness.get("fixed_count") or 0),
+            "richness_a": _axis_richness(vec_a),
+            "richness_b": _axis_richness(vec_b),
+            "transform_key": _canon_pair_shared(witness.get("shared") or []),
+        })
+        sub.add_edge(cid, "about_a", node_a)
+        sub.add_edge(cid, "about_b", node_b)
+        ag = _agent_node_id(substrate)
+        if ag is not None:
+            sub.add_edge(ag, "observed_directional_correspondence", cid)
+        native = getattr(sub, "_inner", sub)
+        native.run_rules()
+        return cid
+    except Exception:
+        return None
+
+
+def directional_hypothesis_for(substrate, corr_node) -> dict:
+    """MECHANICAL READ-BACK: the direction verdict the engine ALREADY
+    decided for one `DirectionalCorrespondence` node -- destructures the
+    node's own `status` + `source_concept`/`target_concept` edges (written
+    by the rule, never by Python), decides nothing.
+
+    Returns `{direction, node, source_concept, target_concept, source_node,
+    target_node, confidence}` where `direction` is one of `"a_source"`/
+    `"b_source"` (a real, resolved directional hypothesis --
+    `source_concept`/`target_concept` are then populated by NAME, not by
+    which side was visited first in the search loop), `"symmetric"` (real
+    structural correspondence, tied richness -- direction genuinely
+    underdetermined, never forced), `"no_correspondence"` (no shared
+    structure), or `"pending"`/`None` (the write did not resolve -- should
+    not happen via `record_directional_correspondence`'s own call shape,
+    reported rather than assumed impossible). `confidence` carries the raw
+    numbers the direction was decided from (`shared_count`, `richness_a`,
+    `richness_b`, `transform_key`), so a caller can inspect the basis for
+    the verdict rather than trust it blindly."""
+    sub = getattr(substrate, "s", substrate)
+    if corr_node is None:
+        return {"direction": None}
+    a = sub.node(corr_node)["attrs"]
+    out = {
+        "direction": a.get("status"),
+        "node": corr_node,
+        "confidence": {
+            "shared_count": a.get("shared_count"),
+            "richness_a": a.get("richness_a"),
+            "richness_b": a.get("richness_b"),
+            "transform_key": a.get("transform_key"),
+        },
+    }
+    if out["direction"] in ("a_source", "b_source"):
+        src = sub.neighbours(corr_node, "source_concept")
+        tgt = sub.neighbours(corr_node, "target_concept")
+        if src:
+            out["source_node"] = src[0]
+            out["source_concept"] = sub.node(src[0])["attrs"].get("name")
+        if tgt:
+            out["target_node"] = tgt[0]
+            out["target_concept"] = sub.node(tgt[0])["attrs"].get("name")
+    return out
 
 
 def _canon_transform(sigmas) -> tuple:
@@ -892,6 +1085,11 @@ def _compute_analogy(substrate, sc, tc, order_n: int,
             vec_t = _concept_shape_vector(substrate, tc)
         witness = _pair_witness(substrate, vec_s, vec_t)
         record_pair_correspondence(substrate, sc, tc, witness)
+        # DIRECTIONAL_CORRESPONDENCE_RESULTS.md: the SAME witness, plus each
+        # side's own richness, additionally recorded as a directional
+        # hypothesis candidate -- see the module comment above
+        # `_axis_richness` for the full design rationale.
+        record_directional_correspondence(substrate, sc, tc, vec_s, vec_t, witness)
     # An order is ALIGNED when the template fixes at least one axis of that
     # order at real, identically-evidenced structure. Reading the axis prefix
     # off a held Term's output is destructuring, not a decision.
