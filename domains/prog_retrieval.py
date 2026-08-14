@@ -256,7 +256,10 @@ def _row_list(sub, g) -> List[Dict[str, Any]]:
     for r in sub.neighbours(msg, "has_example"):
         rat = sub.node(r)["attrs"]
         rows.append({
-            "inputs": json.loads(_text(rat.get("inputs_json")) or "{}"),
+            # Rung 2: `_unwire` -- this row's inputs_json is now
+            # `_wire`-tagged at write time (prog_synthesis.py's
+            # `_add_example_row`), so every reader must invert it.
+            "inputs": psy._unwire(json.loads(_text(rat.get("inputs_json")) or "{}")),
             "expected": rat.get("expected"),
             "tol": rat.get("row_tol"),
             "unordered": rat.get("row_unordered") == 1.0,
