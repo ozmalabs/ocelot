@@ -65,6 +65,24 @@ cabac_baseline = []
 # Enable wgpu-based motion estimation. Adds the wgpu/pollster
 # dependencies. Build with `--features gpu_me`.
 gpu_me = ["dep:wgpu", "dep:pollster", "dep:bytemuck"]
+# AVX-512 fast paths (l1_hot_paths.rs::find_attr_sym_avx512, l3_lqr.rs's
+# mul_avx512 / mul_bf16_inner / mul_bf16_pre_b_inner). OFF by default:
+# `stdarch_x86_avx512` (rust-lang/rust#111137) and `avx512_target_feature`
+# (rust-lang/rust#44839) are unstable on this crate's baseline toolchain
+# (confirmed unstable through at least rustc 1.87.0; confirmed stabilized
+# by rustc 1.97.1 per docs/research/program_synthesis/
+# PROGRAM_SYNTHESIS_ARC6_WIRE_HANDS.md SS6 -- exact stabilizing release
+# in between not pinned here). Building WITH this feature still requires
+# EITHER a nightly toolchain (the crate opts into the two unstable
+# features above via `#![cfg_attr(feature = "avx512", feature(...))]` in
+# lib.rs, which nightly accepts and pre-1.9x stable rejects) OR a stable
+# toolchain new enough to have stabilized both gates -- plus AVX-512F
+# (and, for the BF16 matmul path, AVX-512BF16) capable hardware, e.g. the
+# AMD Ryzen 9600X (Zen 5) this fast path was originally tuned for. Build
+# with: `cargo build --release --features avx512` on such a toolchain.
+# Default build (this feature off) uses the scalar/FP64 fallback paths
+# only and compiles on any stable rustc with a plain x86_64/other target.
+avx512 = []
 
 [profile.release]
 opt-level = 3
