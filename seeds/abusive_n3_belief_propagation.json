@@ -1,0 +1,166 @@
+{
+  "id": "abusive_n3_belief_propagation",
+  "version": "1.0.0",
+  "depends_on": [
+    "abusive_n1_credibility_loop"
+  ],
+  "self_load_only": true,
+  "area": "retina",
+  "description": "ABUSIVE-DYNAMICS N3 -- BELIEF PROPAGATION OF THE ABUSER'S LIES (social contagion; a truth-anchor halts it), block 304000. Maps ABUSIVE_RELATIONSHIPS_NETWORK.md's A1/A8/A9 + B4 / Part E N3. Composes N1's credibility-asymmetry loop (abusive_n1_credibility_loop, block 298000, UNMODIFIED -- riding snap_frustration/arousal_window_coreg in turn, UNMODIFIED) with exactly ONE new rule, n3_peer_belief_update, that propagates belief_gap over a NEW peer_of edge type -- a node with no direct observation edge to the abuser forms its belief ENTIRELY from the mean of its peers' belief_gap (Neighbours/Sum/Count/Div, in-graph, no new Rust), a leaky pull toward the peer mean at rate peer_pull_rate (the SAME shape as n1_victim_entrainment's k_co pull, reused). Ordered (order 35) strictly BEFORE N1's credibility rules (order 40) so a node that ALSO observes the abuser directly (observes_stated/observes_held) has that direct evidence OVERWRITE the peer pull in the SAME run_rules() pass -- direct observation always wins; peer contagion is what is left for a node with none. The SAME peer_of topology serves BOTH the anchor and no-anchor arms: the anchor arm additionally gives ONE indirect node an observes_held edge + observes_private=1.0 (reusing N1's OWN n1_network_credibility_private rule, UNMODIFIED, to pin that node's belief every tick to the uncorrupted, victim-favouring formula regardless of what its peers believe). NO reward/punishment anywhere. NO Rust, NO new Term (Neighbours/Sum/Count/Div are all already used elsewhere in the tree, e.g. bigville_council_gov.json's cm_private_decision). self_load_only, default-OFF.",
+  "microtheory": {
+    "name": "belief_propagation_contagion",
+    "description": "A network node with NO direct line to the abuser is not forming an independent judgement -- it has no evidence of its own to judge FROM. Its belief is entirely a leaky average of what its peers already believe, which is itself either direct (corrupted) observation or ANOTHER peer average one hop further out. A consensus that traces back through this chain to one corrupted root is a contagion, not N independent corroborations, even though every single hop is an ordinary, locally-rational leaky pull toward what one's neighbours believe. A truth-anchor works by giving one node in the chain a belief that is NOT a function of its peers at all -- pinned by a direct, uncorrupted observation -- so the chain has a point where the contagion's own logic (trust what's around you) stops reproducing the corruption."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "abusive_n3_belief_propagation:node_peer_of_node",
+      "src": {
+        "type": "NetworkNode",
+        "var": "nn"
+      },
+      "edge_type": "peer_of",
+      "tgt": {
+        "type": "NetworkNode",
+        "var": "pp"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "n3_peer_belief_update",
+      "area": "retina",
+      "order": 35,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "net",
+          "has_member",
+          "nn"
+        ],
+        [
+          "nn",
+          "peer_of",
+          "pp0"
+        ]
+      ],
+      "where": {
+        "type": "Lt",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "nn"
+          },
+          "key": "peer_epoch"
+        },
+        "b": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "nn"
+          },
+          "key": "tick_epoch"
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "nn",
+          "belief_gap",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "nn"
+                  },
+                  "key": "belief_gap"
+                },
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "peer_pull_rate"
+                    },
+                    {
+                      "type": "Minus",
+                      "a": {
+                        "type": "Div",
+                        "a": {
+                          "type": "Sum",
+                          "source": {
+                            "type": "Neighbours",
+                            "node": {
+                              "type": "Var",
+                              "name": "nn"
+                            },
+                            "edge_type": "peer_of",
+                            "any_type": false
+                          },
+                          "var_name": "pp",
+                          "value": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "pp"
+                            },
+                            "key": "belief_gap"
+                          }
+                        },
+                        "b": {
+                          "type": "Count",
+                          "source": {
+                            "type": "Neighbours",
+                            "node": {
+                              "type": "Var",
+                              "name": "nn"
+                            },
+                            "edge_type": "peer_of",
+                            "any_type": false
+                          }
+                        }
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "nn"
+                        },
+                        "key": "belief_gap"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "nn",
+          "peer_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "nn"
+              },
+              "key": "tick_epoch"
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}
