@@ -214,6 +214,8 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::ParseInt { .. } => "ParseInt",
         TermNode::Slice { .. } => "Slice",
         TermNode::Sort { .. } => "Sort",
+        TermNode::DictItems { .. } => "DictItems",
+        TermNode::SortBy { .. } => "SortBy",
         TermNode::Argmax { .. } => "Argmax",
         TermNode::Argmin { .. } => "Argmin",
         TermNode::ArgminUnique { .. } => "ArgminUnique",
@@ -637,6 +639,14 @@ fn write_fields(
         }
         TermNode::Sort { seq } => {
             m.insert("seq".into(), child(*seq, arena, interner));
+        }
+        TermNode::DictItems { seq } => {
+            m.insert("seq".into(), child(*seq, arena, interner));
+        }
+        TermNode::SortBy { source, var_name, key } => {
+            m.insert("source".into(), child(*source, arena, interner));
+            m.insert("var_name".into(), sym_str(*var_name, interner));
+            m.insert("key".into(), child(*key, arena, interner));
         }
         TermNode::Filter { source, var_name, predicate }
         | TermNode::FilterList { source, var_name, predicate }
@@ -1439,6 +1449,14 @@ fn read_term(
         },
         "Sort" => TermNode::Sort {
             seq: child_of("seq", obj, arena, interner, variant)?,
+        },
+        "DictItems" => TermNode::DictItems {
+            seq: child_of("seq", obj, arena, interner, variant)?,
+        },
+        "SortBy" => TermNode::SortBy {
+            source: child_of("source", obj, arena, interner, variant)?,
+            var_name: get_sym("var_name", interner)?,
+            key: child_of("key", obj, arena, interner, variant)?,
         },
         "Eq" => TermNode::Eq {
             a: child_of("a", obj, arena, interner, variant)?,
