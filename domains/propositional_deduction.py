@@ -190,7 +190,32 @@ def parse_conditional(agent, statement: str) -> Optional[dict]:
     module docstring above. Returns None (the NAMED residual — a shape to
     acquire, never hand-wired around) when the general reading of `statement`
     does not yield an antecedent `is_a` predication together with a consequent
-    `is_a`/`can` predication."""
+    `is_a`/`can` predication.
+
+    BARE_UNIVERSAL SPEECH-ACT GATE (2026-08-15 bugfix — see
+    SOLVER_MATH_BOUNDARY_BUGFIX_RESULTS.md Sec1). The `bare_universal` branch
+    reads the WHOLE statement as one turn (`read_clause` on the raw string,
+    not a clause fragment), so it is the one branch where the general
+    reader's OWN turn-level speech-act classification is available and
+    meaningful. A CONDITIONAL/UNIVERSAL premise is, by definition, a
+    DECLARATIVE assertion ("a bird can fly") — never a QUESTION ("what is
+    17*23?", "what is the new area?", "is Socrates mortal?"). Measured live:
+    a question-shaped statement's grounding can still surface an `is_a`/`can`
+    predication that satisfies every check below (`_ground_question`'s own
+    honest fallback — when the wh-question's residual has no resolvable main
+    verb, it mechanically extracts `is_a(first_token, rest)` from whatever
+    tokens remain, which is the CORRECT thing for that facility to do for a
+    genuine copular wh-question, but is never a declarative claim), so the
+    relation-label check alone (`_relation_and_attr`) cannot tell "this text
+    has conditional/universal SHAPE" from "this text superficially tokenizes
+    into something the label check accepts." `whole["speech_act"]` is that
+    missing gate — it is the general reader's own verdict, already computed,
+    never re-derived here. Refusing here (not walling on relation content) is
+    also why this gate does not touch the `conditional_split` branch above:
+    that branch reads CLAUSE FRAGMENTS (a list, not a whole turn), so the
+    turn-level WH/AUXINV question skeleton is never even reachable there
+    (`_skeleton_from_words`'s `speech_turn` gate) — "If X is a fish, X can
+    swim." is unaffected by construction, not merely by this check."""
     if not statement or not str(statement).strip():
         return None
     dec = rc.decompose_sentence(agent, statement)
@@ -213,6 +238,11 @@ def parse_conditional(agent, statement: str) -> Optional[dict]:
     else:
         form = "bare_universal"
         whole = rc.read_clause(agent, statement, write=False, learn=False)
+        if whole.get("speech_act") == "question":
+            # The honest residual: a QUESTION has no declarative antecedent/
+            # consequent to hold, no matter what relation label its own
+            # grounding happens to produce (see the docstring section above).
+            return None
         preds = whole.get("predications") or []
         if not preds or len(preds[0]) < 3:
             return None
