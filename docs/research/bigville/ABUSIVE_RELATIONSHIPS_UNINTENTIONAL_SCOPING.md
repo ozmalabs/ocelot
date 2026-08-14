@@ -433,7 +433,10 @@ not rescued. **[design-hypothesis; rides 242000's unmodified `snap_count`/
 line's own convention for `instability_discount_weight` — no new Rust
 anticipated.]**
 
-**Why exactly two, and why these two, not more.** The task brief names two
+**Why exactly two no-divergence alternatives, and why these two, not more**
+(U0, the positive-control intentional rung, is a separate design decision,
+covered on its own terms just above and in Part E — it is not a third
+member of THIS "no-divergence" pair). The task brief originally named two
 distinct non-deceptive accounts (context-dependent affect; self-serving
 belief distortion) and this scoping keeps to exactly those two because they
 are genuinely DIFFERENT mechanisms with different failure modes: U1 tests
@@ -441,11 +444,10 @@ whether TIMING/CONTEXT alone (no belief distortion of any kind — the abuser's
 self-model, if it had one, would be perfectly accurate) is sufficient; U2
 tests whether a DISTORTED SELF-BELIEF (independent of context — the same
 distorted account would be given regardless of who's asking or when) is
-sufficient. A third design point — combining both, or sweeping the discount
-continuously — is deliberately NOT scoped here (see Open Questions) because
-each of U1 and U2 alone is already a clean, single-variable, failable test
-against N1's own three-arm precedent, and the task brief explicitly asks for
-1–3 rungs "buildable in 1–2 focused rungs," not a sweep.
+sufficient. A fourth design point — combining U1 and U2, or sweeping U2's
+discount continuously — is deliberately NOT scoped here (see Open Questions)
+because each of U1 and U2 alone is already a clean, single-variable, failable
+test against N1's own three-arm precedent.
 
 **The unifying picture.** N1 demonstrated that a network CAN be entrapped by
 a deliberate two-faced abuser. U1 and U2 ask the sharper, narrower, and (per
@@ -585,24 +587,99 @@ simultaneously, per N1's own prereg §D.3).
 
 ## PART E — THE LADDER (each rung: a failable control + the dissolution + the Part D protocol)
 
-**Naming scheme: `U1`/`U2` ("Unintentional" / "Un-deceptive").** Chosen to
-avoid any collision with the dyad line's `R1`–`R5` and the network line's
-`N1`–`N4` (both already-claimed letters denoting "relationship" and
-"network" respectively), while being mnemonic for what varies: whether the
-abuser's presentation divergence requires the abuser to have CHOSEN it — a
-goal-directed selection, not merely an awareness of it. Both rungs
+**Naming scheme: `U0`/`U1`/`U2`.** Chosen to avoid any collision with the
+dyad line's `R1`–`R5` and the network line's `N1`–`N4` (both already-claimed
+letters denoting "relationship" and "network" respectively). All three rungs
 below are direct COMPOSITIONS against N1's own seed/world — not a new dyad
 mechanism, not a new network mechanism — so a numbering that read as
-"N1a/N1b" was considered and rejected: these are not minor variants of N1's
-DESIGN, they are the OPPOSITE claim (no deliberate construct at all) tested
-against N1's own falsification structure, which merits being named as its
-own short line rather than folded into N1's own rung identity. Ordered by
-directness of test (U1 first: it removes the MOST — no belief-distortion
-node of any kind, only context-timing; U2 second: it removes the
-stated≠held SPLIT but introduces one new, disclosed, constant-driven
-distortion rule, slightly more machinery than U1).
+"N1a/N1b/N1c" was considered and rejected: these are not minor variants of
+N1's DESIGN, they are three DISTINCT claims about what N1's construction
+needs, tested against N1's own falsification structure, which merits being
+named as its own short line rather than folded into N1's own rung identity.
+**Ordered as a genuine three-arm comparison set, not "sharpest test first":**
+U0 is a POSITIVE control — a real, glass-box Argmax choosing to conceal,
+scored against a declared benefit, so the line has an honest example of what
+INTENT actually looks like as graph data before asking whether the pattern
+survives its removal. U1 and U2 are then the two intent-free alternatives
+(context-timing; sincere self-serving distortion), each compared against
+BOTH N1 (structural divergence, no choice) and U0 (structural divergence,
+WITH a choice) — a design this doc's own correction above made necessary:
+without U0, "U1/U2 reproduce the loop" would only show the pattern doesn't
+need the STRUCTURE N1 happened to use, not that it doesn't need INTENT,
+because N1 was never actually a positive example of intent to begin with.
 
-### U1 — CONTEXT-DEPENDENT AFFECT, NO DECEPTION NODE AT ALL (the sharpest test)
+### U0 — GENUINE INTENT: AN ARGMAX-SELECTED CONCEALMENT, SCORED AGAINST A DECLARED GOAL (the positive control)
+Maps A3 (Generally-Violent/Antisocial, DARVO-capable subtype)/A4 (proactive/
+instrumental pole)/B1. **This is not a third "no-intent" alternative — it is
+the missing INTENTIONAL comparison condition Open Question 8 (below) named,
+now fully specified.** Without it, U1/U2 can only show N1's construction is
+dispensable, never that intent itself is dispensable, because — per this
+doc's own correction above — N1 never modelled intent in the first place.
+
+**Design.** Delete N1's `n1_abuser_stated_charm` (the unconditional
+broadcast). Replace it with the SAME `Argmax`-over-two-candidate-`Appraisal`s
+template `seeds/abusive_r4_learned_helplessness.json` and the marshmallow
+line (block 240000) already use — `mm_appraise_wait`/`take` →
+`em_happiness`/`em_fulfilment_value`/`em_total_value` (block 204000's
+`core_emotions`, unmodified) → `mm_choose` — confirmed present and reusable
+by inspecting `seeds/abusive_r4_learned_helplessness.json`'s own provenance
+comment ("rides the SAME Argmax-over-two-candidate-Appraisals-via-
+core_emotions template MARSHMALLOW_DELAY already uses"), not invented for
+U0. Two candidate `Appraisal`s per tick: `present_charm`
+(`individual_benefit = concealment_benefit` — a declared constant, the SAME
+convention as N1's own `instability_discount_weight` / U2's
+`minimization_discount`, never learned or agent-chosen; `individual_cost =
+0`) and `present_true_state` (`individual_benefit = honesty_benefit`, a
+small declared constant; `individual_cost = suspicion_cost_scale *
+frustration` — the cost of presenting truthfully SCALES WITH the abuser's
+true `frustration`, the same already-existing 242000 attr U1/U2 also read
+unmodified). `em_happiness`/`em_total_value` (unmodified) score both;
+`Argmax` (unmodified structure, same as `mm_choose`/R4's `r4_choose`) picks
+`stated_charm = 1` iff `present_charm`'s total value exceeds
+`present_true_state`'s. **The signature this produces, and the thing that
+makes it a genuine positive example of intent rather than another
+unconditional rule: `stated_charm` should correlate with `frustration` —
+concealment gets selected more often exactly when there is more to conceal,
+because the cost of honesty rises with the true harm level.** N1's original
+construction concealed identically at `frustration=0` and `frustration=90`;
+a real Argmax choosing based on a cost that scales with harm should not.
+
+**Failable control:** a **GOAL-BLIND arm** — the SAME two-candidate Argmax
+structure exists, but `concealment_benefit` is set to `0` and
+`suspicion_cost_scale` is set to `0` (both candidates have equal, flat
+value regardless of `frustration`) — must show `stated_charm` selection
+**uncorrelated with `frustration`** (at most tracking whatever the Argmax's
+tie-break default is, not the abuser's true state). If the goal-blind arm
+STILL shows the same frustration-correlated concealment pattern as the
+scored arm, the Argmax isn't actually doing goal-directed selection — it has
+degenerated into another disguised unconditional rule, and the "this is a
+genuine intent model" claim fails. **A second, informative (not
+pass/fail-gating) comparison this rung should report regardless of outcome:**
+does the scored arm's `belief_gap` trajectory match, exceed, or fall short of
+N1's original headline number (`2370.81` at t=1000)? A real, goal-directed
+concealer that only conceals when frustration is high LEAKS true information
+on low-frustration ticks that N1's blanket broadcast never did — so it is a
+legitimate, pre-registered-as-open possibility that U0's belief-gap is
+SMALLER than N1's, not a failure of U0's design; report whichever way it
+goes, in the results doc, honestly.
+
+**Dissolves:** the flip side of U1/U2's target — "there's no way to tell a
+calculating abuser from a reactive one; the model can't represent real
+premeditation." U0 shows the substrate CAN hold a genuine, glass-box,
+Argmax-scored example of A3's Generally-Violent/Antisocial subtype
+specifically, and that the marker distinguishing it from reactive
+concealment is itself a readable graph quantity — a correlation between
+harm-level and concealment-selection, escalating secrecy tracking escalating
+harm — which is, clinically, a real and recognisable warning sign, distinct
+from (and complementary to) the trap-without-a-villain finding U1/U2 aim at.
+**Protocol:** identical induce → measure → RESTORE envelope to N1 (one
+minimal incident cycle on the dyad side); no scoring of the abuser for its
+CHOICE (Part D.2 binds exactly as it does for R4/marshmallow's own
+Argmax-decision rungs — the Argmax computes a value comparison, it is not a
+reward applied to the agent); belief-field, window, and the `Appraisal`
+candidates restored at end.
+
+### U1 — CONTEXT-DEPENDENT AFFECT, NO DECEPTION NODE AT ALL (the sharpest no-intent test)
 Maps A4 (reactive pole)/A7/B1. **Design:** delete N1's `n1_abuser_stated_
 charm`; network nodes observe the abuser's own true `frustration` value,
 sampled only during network-context (non-dyad-coupled) ticks, where it is
@@ -652,11 +729,14 @@ truthful one because it serves a goal) required at all.
 scoring; the `SelfAccount` value (a belief-state, not an action) is restored
 at end exactly as N1's `belief_gap`/`seen_charm` fields are.
 
-**Both rungs share N1's own G-glass-box and G-discipline conventions by
+**All three rungs share N1's own G-glass-box and G-discipline conventions by
 construction** (reuse `snap_frustration`/`arousal_window_coreg` unmodified;
-depend on nothing else; each proposed rung adds exactly ONE new rule to N1's
-existing four, replacing one of them — `n1_victim_entrainment` and the two
-`n1_network_credibility_*` rules are untouched in both designs).
+depend on nothing else beyond `core_emotions` for U0's Argmax; each proposed
+rung replaces `n1_abuser_stated_charm` with its own construction while
+leaving `n1_victim_entrainment` and the two `n1_network_credibility_*` rules
+untouched — U0 adds slightly more machinery than U1/U2 (the Argmax +
+two-`Appraisal` template, all reused from R4/marshmallow, zero new Rust) but
+follows the identical "replace exactly one rule" discipline).
 
 ---
 
@@ -696,19 +776,21 @@ existing four, replacing one of them — `n1_victim_entrainment` and the two
    the abuser's true `frustration`, the context flag or `SelfAccount` value,
    each network node's `belief_gap` and the observation it was computed
    from. No confabulated "why."
-3. **Failable control, constructed so it could pass** — U1's ALWAYS-OBSERVED
-   arm and U2's ZERO-DISCOUNT arm are both constructed so that the
-   "intent-free reproduces the loop" claim CAN fail; nothing in either
-   design structurally forces the control to resist entrapment, mirroring
-   N1's own "both controls behaved as a real test, not a rigged one"
-   discipline (`ABUSIVE_N1_CREDIBILITY_LOOP_RESULTS.md`).
-4. **General machinery, minimal new content** — each rung adds exactly ONE
-   new rule to N1's existing four, replacing (not augmenting) the one
-   deliberate-construct rule; the dyad mechanism, the window/dysregulation
-   mechanism, and the credibility-comparison rule SHAPE are all reused
-   unmodified. A design needing bespoke intent-detection machinery would be
-   weaker (it would be modelling "how to tell if someone is lying," not
-   testing whether the loop needs a lie at all).
+3. **Failable control, constructed so it could pass** — U0's GOAL-BLIND arm,
+   U1's ALWAYS-OBSERVED arm, and U2's ZERO-DISCOUNT arm are all constructed
+   so that their respective claims CAN fail; nothing in any of the three
+   designs structurally forces the control to behave differently from its
+   test arm, mirroring N1's own "both controls behaved as a real test, not a
+   rigged one" discipline (`ABUSIVE_N1_CREDIBILITY_LOOP_RESULTS.md`).
+4. **General machinery, minimal new content** — each rung replaces (not
+   augments) N1's one deliberate-construct rule with its own construction
+   (U1/U2: one new rule; U0: the Argmax+two-`Appraisal` template, entirely
+   reused from R4/marshmallow, zero new Rust); the dyad mechanism, the
+   window/dysregulation mechanism, and the credibility-comparison rule SHAPE
+   are all reused unmodified across all three. A design needing bespoke
+   intent-detection machinery would be weaker (it would be modelling "how to
+   tell if someone is lying," not testing whether the loop needs a lie at
+   all, or what a genuine one looks like).
 
 ### Smuggled premises to REFUSE
 - **"Intent-free means no responsibility / it wasn't really abuse."**
@@ -816,28 +898,17 @@ existing four, replacing one of them — `n1_victim_entrainment` and the two
    loop" absence is targeted-search only across two independent scoping
    passes now; re-verify with dedicated searches before any prereg claims
    primacy.
-8. **A genuinely-intentional comparison condition is NOT scoped here, and
-   the correction above ("WHERE THE QUESTION ACTUALLY LIVES") means one is
-   now missing from the three-way picture.** N1, as built, does not contain
-   an `Argmax`/goal-directed choice selecting the stated-face — it is an
-   unconditional broadcast, authored that way by the rung's builder, not
-   selected at runtime by the agent. So N1/U1/U2 as a set currently compare
-   "divergence present, unconditionally" (N1) against "no divergence, timing-
-   driven" (U1) and "no divergence, discount-driven" (U2) — none of the
-   three test what happens when the divergence itself is the OUTPUT of a
-   goal-directed choice (e.g. an `Appraisal`+`Argmax` over candidate
-   stated-faces, scored against a declared goal such as "minimise the
-   network's suspicion given the observed harm"). A future rung — call it
-   **U0** to mark it as the missing genuinely-intentional condition this
-   correction surfaces, not a third no-intent alternative — would need
-   exactly that: a choice mechanism, not just a divergence. Until U0 (or
-   something like it) exists, this line can report "the pattern does not
-   require a stated≠held STRUCTURE" (what U1/U2 actually test) but cannot
-   yet report "the pattern does not require INTENT" as directly as this
-   doc's own framing implies, because nothing built so far — N1 included —
-   has isolated intent as a variable. This is the single most important
-   thing a prereg author must resolve before claiming U1/U2's results speak
-   to intent rather than to structure.
+8. **RESOLVED, into Part E's U0.** This item originally named a missing
+   genuinely-intentional comparison condition; it is now a fully specified
+   third rung (U0, above) rather than an open gap. What remains genuinely
+   open: whether `concealment_benefit`/`suspicion_cost_scale`/
+   `honesty_benefit` (U0's three declared constants) should be swept rather
+   than fixed at single pilot-chosen values — a single operating point can
+   show "intent CAN produce the pattern," but a sweep would be needed to
+   characterise HOW SENSITIVE the pattern is to the strength of the
+   incentive, which is out of scope for a first minimal rung (matching the
+   same "why exactly two, not a sweep" reasoning Part B already gives for
+   U1/U2).
 
 ---
 
@@ -848,29 +919,35 @@ unconditional broadcast), and, on inspection, that rule is not itself a
 goal-directed CHOICE either (no `Argmax`, no evaluation against a benefit) —
 it is a fixed, always-on divergence the builder authored, not one the agent
 selected. So "intent" was never cleanly isolated as a variable by N1 alone.
-This scoping proposes two minimal, failable compositions that remove the
-DIVERGENCE — **U1** (the abuser's calm face is genuinely, contextually true;
-no concealment, only timing) and **U2** (the abuser's own account of events
-is sincerely, self-servingly distorted, via a fixed discount constant, not a
-goal-evaluated selection; no external lie, only a distorted held belief) —
-while reusing everything else N1 already validated, unmodified, and names
-the genuinely-intentional comparison condition (an `Argmax`-driven choice
-among candidate presentations, scored against a declared goal — Open
-Question 8, tentatively "U0") that would be needed to test the INTENT axis
-directly rather than infer it from N1's absence of a choice mechanism. The
-clinical literature (Bandura's moral disengagement, batterer-intervention
-minimization research, the Holtzworth-Munroe & Stuart typology,
-reactive/proactive aggression, Baumeister's self-serving narrative
+This scoping now proposes THREE minimal, failable compositions, not two.
+**U0** supplies the missing positive control this doc's own correction
+showed was absent: an `Argmax`-driven choice among candidate presentations
+(concealment vs. honesty), scored against a declared benefit that scales
+with the true harm level — reusing R4/marshmallow's own Argmax-over-
+Appraisals template unmodified, zero new Rust — so the line finally has a
+genuine, glass-box example of INTENT to compare against, rather than
+inferring intent's absence from N1's own construction (which, on inspection,
+was never a choice mechanism either). **U1** and **U2** then remove the
+divergence entirely — U1 (the abuser's calm face is genuinely, contextually
+true; no concealment, only timing) and U2 (the abuser's own account of
+events is sincerely, self-servingly distorted, via a fixed discount
+constant, not a goal-evaluated selection; no external lie, only a distorted
+held belief) — while all three reuse everything else N1 already validated,
+unmodified. The clinical literature (Bandura's moral disengagement,
+batterer-intervention minimization research, the Holtzworth-Munroe & Stuart
+typology, reactive/proactive aggression, Baumeister's self-serving narrative
 construction) makes a strong case that MOST real abusers are closer to the
 non-calculating, reactive pole than to a scheming, goal-evaluating one — and
 the typology evidence (A3) is explicit that only ONE of its named subtypes
-maps onto a genuinely instrumental, DARVO-capable actor. Whether the
-substrate's own credibility-asymmetry mechanism actually needs a
-goal-directed choice to produce its headline pattern is not asserted either
-way here — that is exactly what U1/U2 (for the STRUCTURAL divergence
-question) and a future U0 (for the INTENT question proper) are built to find
-out, and a null in either direction is named, in advance, as an equally
-valuable, equally reportable result. **Intent-free is not a claim of
+(Generally-Violent/Antisocial) maps onto the genuinely instrumental,
+DARVO-capable actor U0 is built to represent. Whether the substrate's own
+credibility-asymmetry mechanism actually NEEDS a goal-directed choice to
+produce its headline pattern is not asserted either way here — that is
+exactly what the U0/U1/U2 comparison set is built to find out, and a null in
+any direction (including U0's own goal-blind control failing to distinguish
+itself, or U0's scored arm producing a WEAKER belief-gap than N1's crude
+unconditional version) is named, in advance, as an equally valuable, equally
+reportable result. **Intent-free is not a claim of
 innocence** — Part F states this at length because it is the single easiest
 way this document could be misread, and the misreading would be a serious
 one. **This doc authorises no build; a build begins only when a rung's
