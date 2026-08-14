@@ -10,10 +10,18 @@ silently alters this boundary is caught, exactly the way
 QUESTION_DRIVER_BUGFIX_AND_RECHECK_RESULTS.md pinned the treewidth_bound=0
 footgun as a regression test once it was found.
 
-Nothing in domains/solver_dispatch.py, domains/problem_shape.py, or
-domains/propositional_deduction.py is modified by this rung -- every
-assertion below characterizes EXISTING behaviour, discovered live by
-scripts/solver_math_boundary_run.py, not new capability.
+UPDATED 2026-08-15 (docs/research/engine_substrate/
+SOLVER_MATH_BOUNDARY_BUGFIX_RESULTS.md): the two defects this file used to
+pin as CURRENT behaviour are now FIXED --
+`domains/propositional_deduction.py::parse_conditional` gates its
+`bare_universal` branch on the general reader's own `speech_act` (a
+question no longer fabricates an implication) and
+`domains/solver_dispatch.py::solve_deduction`'s `mode="auto"` ladder now
+tries the quantifier-aware parsers first (a leading "All"/"Some" statement
+under mode="auto" now matches an explicit mode call). The tests below assert
+the CORRECTED behaviour; see the bugfix RESULTS doc for the root-cause
+trace, the live demonstration, and the regression proof that genuine
+conditional/universal parsing is unchanged.
 """
 from __future__ import annotations
 
@@ -152,23 +160,44 @@ def test_two_premise_syllogism_now_walls_honestly(agent):
 
 
 # --------------------------------------------------------------------------- #
-#  THE MODE=AUTO LADDER-ORDERING FINDING -- a leading "All"/"Some" quantifier
-#  sentence resolves via the auto ladder's bare_universal reading BEFORE the
-#  dedicated quantifier-stripping parser ever gets a chance (mint_logical_
-#  schema, tried first, already succeeds), producing a worse-quality schema
-#  (unstripped 'all_philosophers'/'some_bird' blob antecedent) than calling
-#  mode='universal'/'existential' explicitly would. Pinned on both sides.
+#  FIXED (2026-08-15, SOLVER_MATH_BOUNDARY_BUGFIX_RESULTS.md Sec2) -- the
+#  MODE=AUTO LADDER-ORDERING FINDING. A leading "All"/"Some" quantifier
+#  sentence used to resolve via the auto ladder's bare_universal reading
+#  BEFORE the dedicated quantifier-stripping parser ever got a chance
+#  (mint_logical_schema, tried first, already succeeded), producing a
+#  worse-quality schema (unstripped 'all_philosophers'/'some_bird' blob
+#  antecedent) than calling mode='universal'/'existential' explicitly would.
+#  Fixed by reordering the ladder (domains/solver_dispatch.py::solve_deduction)
+#  to try the quantifier-aware parsers FIRST (universal -> existential ->
+#  conditional) -- safe for every non-quantified statement because both
+#  quantifier-aware parsers refuse in O(1) (one first-word lexicon check, no
+#  reading-pipeline call) whenever no leading quantifier word is present, so
+#  a plain conditional/indefinite-bare-universal statement falls straight
+#  through to the unchanged `mint_logical_schema`. mode="auto" now reaches
+#  parity with an explicit mode call whenever a real quantifier is present.
+#  Pinned on both sides -- both now assert the SAME (correct) schema.
 # --------------------------------------------------------------------------- #
-def test_auto_mode_does_not_strip_leading_universal_quantifier(agent):
+def test_auto_mode_now_strips_leading_universal_quantifier(agent):
     row = _run(agent, "All philosophers are mortal.", mode="auto")
     assert row["status"] == "resolved"
-    assert row["schema_name"] == "logical_all_philosophers_mortal"  # blob, not stripped
+    assert row["schema_name"] == "logical_universal_philosopher_mortal"  # correctly stripped now
+    assert row["form_used"] == "universal"
 
 
 def test_explicit_universal_mode_DOES_strip_the_quantifier(agent):
     row = _run(agent, "All philosophers are mortal.", mode="universal")
     assert row["status"] == "resolved"
     assert row["schema_name"] == "logical_universal_philosopher_mortal"  # correctly singularised
+
+
+def test_auto_mode_leaves_a_plain_conditional_unchanged(agent):
+    """Regression proof for the ladder reorder: a genuinely non-quantified
+    conditional statement is byte-identical (same schema, same form_used)
+    to what mode='auto' produced before this bugfix."""
+    row = _run(agent, "If X is a fish, X can swim.", mode="auto")
+    assert row["status"] == "resolved"
+    assert row["schema_name"] == "logical_fish_can_swim"
+    assert row["form_used"] == "conditional"
 
 
 # --------------------------------------------------------------------------- #

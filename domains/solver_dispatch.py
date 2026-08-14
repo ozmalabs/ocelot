@@ -160,12 +160,13 @@ def _mint_base(adapter, kind: str, raw: str, attrs: dict):
 def mint_solve_deduction_goal(adapter, statement: str, *, mode: str = "auto"):
     """`mode` in {"conditional","universal","existential","auto"} --
     "auto" (default) tries all three parsers in a FIXED priority order
-    (conditional -> universal -> existential) and keeps the first that
-    parses; an explicit mode skips straight to one parser. Mirrors
-    `_split_leading_quantifier`'s own honest-residual discipline: the
-    ladder is a fixed, inspectable order over EXISTING independent parsers
-    (propositional_deduction.py's own three mint_* entry points), not a
-    semantic decision about the statement's meaning."""
+    (universal -> existential -> conditional, see `solve_deduction`'s own
+    docstring for why quantifier-aware goes first, 2026-08-15 bugfix) and
+    keeps the first that parses; an explicit mode skips straight to one
+    parser. Mirrors `_split_leading_quantifier`'s own honest-residual
+    discipline: the ladder is a fixed, inspectable order over EXISTING
+    independent parsers (propositional_deduction.py's own three mint_*
+    entry points), not a semantic decision about the statement's meaning."""
     return _mint_base(adapter, "solve_deduction", statement,
                        {"statement": statement, "mode": mode})
 
@@ -265,7 +266,38 @@ def solve_deduction(adapter, goal_node) -> None:
     entrypoints -- see `mint_solve_deduction_goal`'s docstring for the
     fixed-order "auto" ladder. Writes `form_used`/`schema_name`/`answer`/
     `note`/`status`; the full parsed dict (may include node-bearing fields)
-    is stashed via `_stash_result`."""
+    is stashed via `_stash_result`.
+
+    AUTO-MODE LADDER ORDER (2026-08-15 bugfix -- see
+    SOLVER_MATH_BOUNDARY_BUGFIX_RESULTS.md Sec2). Previously the ladder tried
+    `mint_logical_schema` (plain conditional/bare-universal, NO quantifier
+    stripping) FIRST. Because "All X are Y"/"Some X is Y" are also
+    grammatically valid bare-universal clauses on their own (subject = "All
+    X"/"Some X"), the plain parser ALWAYS succeeded first on a
+    leading-quantifier sentence, so `mint_universal_schema`/`mint_
+    existential_premise` -- which correctly STRIP the quantifier word -- were
+    never reached under mode="auto", silently degrading schema quality
+    (`logical_all_philosophers_mortal`, unstripped, instead of `logical_
+    universal_philosopher_mortal`, singularised) versus what an explicit
+    `mode="universal"` call already produced.
+
+    Fixed by trying the quantifier-aware parsers FIRST: universal ->
+    existential -> conditional. This is provably safe for every
+    NON-quantified statement, not merely a reordering gamble: `mint_
+    universal_schema`/`mint_existential_premise` both delegate immediately to
+    `_split_leading_quantifier` (propositional_deduction.py), which returns
+    the honest `None` residual in O(1) -- one lowercase string comparison of
+    the FIRST WORD against the held QuantifierLexicon, no reading-pipeline
+    call at all -- whenever the statement has no recognised leading
+    universal/existential quantifier word. A plain conditional ("If X is a
+    fish, X can swim.") or an indefinite bare-universal ("A bird can fly.",
+    "a"/"an" are deliberately NOT quantifier-lexicon members, see
+    `_split_leading_quantifier`'s own docstring) therefore refuses BOTH
+    quantifier-aware parsers immediately and falls through to
+    `mint_logical_schema` exactly as before -- same function, same input,
+    same result, byte-identical schema. Only a statement that genuinely
+    starts with a recognised quantifier word takes a different path than
+    before, and that path is the intentionally BETTER one."""
     from domains import propositional_deduction as pd
     sub, native, ag = _resolve(adapter)
     at = sub.node(goal_node)["attrs"]
@@ -275,9 +307,9 @@ def solve_deduction(adapter, goal_node) -> None:
         "conditional": [("conditional", pd.mint_logical_schema)],
         "universal": [("universal", pd.mint_universal_schema)],
         "existential": [("existential", pd.mint_existential_premise)],
-    }.get(mode, [("conditional", pd.mint_logical_schema),
-                 ("universal", pd.mint_universal_schema),
-                 ("existential", pd.mint_existential_premise)])
+    }.get(mode, [("universal", pd.mint_universal_schema),
+                 ("existential", pd.mint_existential_premise),
+                 ("conditional", pd.mint_logical_schema)])
     last_reason = None
     for form_name, fn in ladder:
         result = fn(adapter, statement)
