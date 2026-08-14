@@ -10,10 +10,18 @@ silently alters this boundary is caught, exactly the way
 QUESTION_DRIVER_BUGFIX_AND_RECHECK_RESULTS.md pinned the treewidth_bound=0
 footgun as a regression test once it was found.
 
-Nothing in domains/solver_dispatch.py, domains/problem_shape.py, or
-domains/propositional_deduction.py is modified by this rung -- every
-assertion below characterizes EXISTING behaviour, discovered live by
-scripts/solver_math_boundary_run.py, not new capability.
+UPDATED 2026-08-15 (docs/research/engine_substrate/
+SOLVER_MATH_BOUNDARY_BUGFIX_RESULTS.md): the two defects this file used to
+pin as CURRENT behaviour are now FIXED --
+`domains/propositional_deduction.py::parse_conditional` gates its
+`bare_universal` branch on the general reader's own `speech_act` (a
+question no longer fabricates an implication) and
+`domains/solver_dispatch.py::solve_deduction`'s `mode="auto"` ladder now
+tries the quantifier-aware parsers first (a leading "All"/"Some" statement
+under mode="auto" now matches an explicit mode call). The tests below assert
+the CORRECTED behaviour; see the bugfix RESULTS doc for the root-cause
+trace, the live demonstration, and the regression proof that genuine
+conditional/universal parsing is unchanged.
 """
 from __future__ import annotations
 
@@ -90,70 +98,106 @@ def test_bare_universal_resolves_correctly(agent):
 
 
 # --------------------------------------------------------------------------- #
-#  SILENT-WRONG (the sharpest finding) -- a bare numeric/measurement
-#  "is"-copula sentence is NOT recognised as out-of-scope; it mints a
-#  fabricated implication instead of honestly walling. Pinned so a future
-#  change either fixes this (test updated deliberately) or is caught if it
-#  makes the mangling worse/different silently.
+#  FIXED (2026-08-15, SOLVER_MATH_BOUNDARY_BUGFIX_RESULTS.md Sec1) -- these
+#  three used to be SILENT-WRONG: a bare numeric/measurement "is"-copula
+#  QUESTION was not recognised as out-of-scope; it minted a fabricated
+#  implication instead of honestly walling (the headline silent-failure
+#  finding of SOLVER_MATH_BOUNDARY_RESULTS.md). Root cause: `parse_conditional`'s
+#  `bare_universal` branch checked only the RELATION LABEL of the grounded
+#  predication (`is_a`/`can`), never the general reader's own `speech_act`
+#  verdict -- so a wh-QUESTION whose fallback grounding happens to produce an
+#  `is_a(...)` predication (the reader's own honest behaviour for a genuine
+#  copular wh-question, e.g. `_ground_question`'s no-main-verb fallback) was
+#  laundered through as if it were a declarative conditional/universal
+#  STATEMENT. Fixed by gating `bare_universal` on
+#  `whole.get("speech_act") == "question"` (`domains/propositional_
+#  deduction.py::parse_conditional`) -- a conditional/universal premise is,
+#  by definition, a declarative assertion, never a question. All three of
+#  these pinned cases end in '?' and share this exact root cause (confirmed
+#  live, not assumed -- see the RESULTS doc); the task named only the first
+#  by name, but the SAME single-gate fix corrects all three, so all three are
+#  updated here rather than leaving two of them silently un-pinned.
 # --------------------------------------------------------------------------- #
-def test_arithmetic_expression_resolves_WRONGLY_instead_of_walling(agent):
-    """'What is 17 * 23?' should, ideally, wall (it is not a conditional
-    statement). It does not: the general reading pipeline grounds it as a
-    spurious is_a(17) => is_a(23) copular predication, and solve_deduction
-    mints it as real held knowledge with status=='resolved' -- a
-    plausible-looking, entirely wrong answer, never flagged as such. This is
-    the headline silent-failure finding of SOLVER_MATH_BOUNDARY_RESULTS.md."""
+def test_arithmetic_expression_now_walls_honestly(agent):
+    """'What is 17 * 23?' is a QUESTION, not a conditional/universal
+    statement -- it now walls honestly (no schema minted) instead of minting
+    the fabricated `logical_17_23` implication this test used to pin."""
     row = _run(agent, "What is 17 * 23?")
-    assert row["status"] == "resolved"          # the WRONG outcome, pinned as found
-    assert row["schema_name"] == "logical_17_23"  # the fabricated schema, pinned as found
+    assert row["status"] == "walled"
+    assert row["gap_key"] == "solve_deduction:What is 17 * 23?"
+    assert row["schema_name"] is None
 
 
-def test_geometry_word_problem_resolves_WRONGLY_instead_of_walling(agent):
+def test_geometry_word_problem_now_walls_honestly(agent):
     row = _run(agent, "A rectangular garden is 5m by 3m. If you increase "
                        "both sides by 2m, what is the new area?")
-    assert row["status"] == "resolved"
-    assert row["schema_name"] == "logical_rectangular_garden_5m"
+    assert row["status"] == "walled"
+    assert row["schema_name"] is None
 
 
-def test_two_premise_syllogism_resolves_but_never_answers_the_query(agent):
-    """The sharpest boundary case: solve_deduction has NO second-fact
-    ingestion and NO query-answering step at all (verified by direct read of
-    domains/propositional_deduction.py -- mint_logical_schema/mint_universal_
-    schema/mint_existential_premise only ever install ONE ShapeSignature from
-    ONE statement; nothing in domains/solver_dispatch.py's solve_deduction
-    calls inference_generation.detect_implication_gaps/resolve_implication_gap,
-    the facility that would actually apply a premise to a fact). Given the
-    full three-sentence syllogism as raw text, it resolves -- but the minted
-    schema is a mangled cross-sentence word blob ('mortal_socrates' as a
-    SINGLE consequent attr, fusing words from two different sentences), not
-    a correct representation of any of the three sentences, and the Goal
-    carries no 'answer' field addressing whether Socrates is mortal at all."""
+def test_two_premise_syllogism_now_walls_honestly(agent):
+    """The sharpest boundary case, corrected: solve_deduction has NO
+    second-fact ingestion and NO query-answering step at all (verified by
+    direct read of domains/propositional_deduction.py -- mint_logical_schema/
+    mint_universal_schema/mint_existential_premise only ever install ONE
+    ShapeSignature from ONE statement; nothing in domains/solver_dispatch.py's
+    solve_deduction calls inference_generation.detect_implication_gaps/
+    resolve_implication_gap, the facility that would actually apply a premise
+    to a fact). Given the full three-sentence syllogism as raw text, it used
+    to resolve into a mangled cross-sentence word blob
+    ('logical_all_men_mortal_socrates', fusing words from two different
+    sentences); it now walls honestly instead, because the statement (like
+    the whole battery's other two silent-wrong cases) is itself a QUESTION
+    ("...Is Socrates mortal?") and the bare_universal speech-act gate refuses
+    it. `solve_deduction` still has no query-answering step (that remains a
+    real, separate, out-of-scope capability boundary -- see
+    SOLVER_MATH_BOUNDARY_RESULTS.md Sec5) -- the fix only stops it from
+    fabricating a wrong-shaped answer where it has none."""
     row = _run(agent, "All men are mortal. Socrates is a man. Is Socrates "
                        "mortal?")
-    assert row["status"] == "resolved"
-    assert row["schema_name"] == "logical_all_men_mortal_socrates"
-    # No yes/no verdict about Socrates exists anywhere on this outcome.
-    assert "socrates" not in ("true", "false")  # trivial: there is no such field to check
+    assert row["status"] == "walled"
+    assert row["schema_name"] is None
 
 
 # --------------------------------------------------------------------------- #
-#  THE MODE=AUTO LADDER-ORDERING FINDING -- a leading "All"/"Some" quantifier
-#  sentence resolves via the auto ladder's bare_universal reading BEFORE the
-#  dedicated quantifier-stripping parser ever gets a chance (mint_logical_
-#  schema, tried first, already succeeds), producing a worse-quality schema
-#  (unstripped 'all_philosophers'/'some_bird' blob antecedent) than calling
-#  mode='universal'/'existential' explicitly would. Pinned on both sides.
+#  FIXED (2026-08-15, SOLVER_MATH_BOUNDARY_BUGFIX_RESULTS.md Sec2) -- the
+#  MODE=AUTO LADDER-ORDERING FINDING. A leading "All"/"Some" quantifier
+#  sentence used to resolve via the auto ladder's bare_universal reading
+#  BEFORE the dedicated quantifier-stripping parser ever got a chance
+#  (mint_logical_schema, tried first, already succeeded), producing a
+#  worse-quality schema (unstripped 'all_philosophers'/'some_bird' blob
+#  antecedent) than calling mode='universal'/'existential' explicitly would.
+#  Fixed by reordering the ladder (domains/solver_dispatch.py::solve_deduction)
+#  to try the quantifier-aware parsers FIRST (universal -> existential ->
+#  conditional) -- safe for every non-quantified statement because both
+#  quantifier-aware parsers refuse in O(1) (one first-word lexicon check, no
+#  reading-pipeline call) whenever no leading quantifier word is present, so
+#  a plain conditional/indefinite-bare-universal statement falls straight
+#  through to the unchanged `mint_logical_schema`. mode="auto" now reaches
+#  parity with an explicit mode call whenever a real quantifier is present.
+#  Pinned on both sides -- both now assert the SAME (correct) schema.
 # --------------------------------------------------------------------------- #
-def test_auto_mode_does_not_strip_leading_universal_quantifier(agent):
+def test_auto_mode_now_strips_leading_universal_quantifier(agent):
     row = _run(agent, "All philosophers are mortal.", mode="auto")
     assert row["status"] == "resolved"
-    assert row["schema_name"] == "logical_all_philosophers_mortal"  # blob, not stripped
+    assert row["schema_name"] == "logical_universal_philosopher_mortal"  # correctly stripped now
+    assert row["form_used"] == "universal"
 
 
 def test_explicit_universal_mode_DOES_strip_the_quantifier(agent):
     row = _run(agent, "All philosophers are mortal.", mode="universal")
     assert row["status"] == "resolved"
     assert row["schema_name"] == "logical_universal_philosopher_mortal"  # correctly singularised
+
+
+def test_auto_mode_leaves_a_plain_conditional_unchanged(agent):
+    """Regression proof for the ladder reorder: a genuinely non-quantified
+    conditional statement is byte-identical (same schema, same form_used)
+    to what mode='auto' produced before this bugfix."""
+    row = _run(agent, "If X is a fish, X can swim.", mode="auto")
+    assert row["status"] == "resolved"
+    assert row["schema_name"] == "logical_fish_can_swim"
+    assert row["form_used"] == "conditional"
 
 
 # --------------------------------------------------------------------------- #
