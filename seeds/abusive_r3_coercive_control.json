@@ -1,0 +1,803 @@
+{
+  "id": "abusive_r3_coercive_control",
+  "version": "1.0.0",
+  "depends_on": [
+    "snap_frustration",
+    "arousal_window_coreg"
+  ],
+  "self_load_only": true,
+  "area": "retina",
+  "description": "ABUSIVE-DYNAMICS R3 -- COERCIVE CONTROL: window-narrowing + prior-mis-setting + isolation/frontier-collapse (block 289000). Extends R2's OWN dyad-coupling pattern (block 286000; snap_frustration drives the abuser's tension-building->incident relaxation oscillator, arousal_window_coreg drives the victim's entrainment/self-regulation/window plasticity), reusing R2's own genuine composition finding (route the victim's entrainment through `frustration`, never write `arousal` directly, because snap_arousal_track unconditionally clobbers has_affective_state nodes). R2's OWN prereg (Sec. 7) already named the mechanism this rung measures as an honest, disclosed residual: 'the victim's window half_width narrows monotonically toward its floor... because the abuser never satisfies got_coreg's regulated==1 condition... consistent with R3's (out-of-scope) window-narrowing focus.' R3 makes that residual the headline: run the SAME single-anchor dyad for many incident cycles (window-narrowing OVER EPISODES) and add a SECOND, structurally distinct arm where a fixed-calm, always-regulated OUTSIDE regulator is ALSO connected to the victim, via a DIFFERENT edge type (`also_attended_by` -- a second same-typed `attended_by` edge was piloted and found to corrupt this seed's own entrainment rule whenever arousal_window_coreg's selfreg_pull is also loaded, see the world adapter's docstring) so the frontier is NOT collapsed to one source -- `r3_mark_coreg_support_outside` (an edge-type substitution of arousal_window_coreg's OWN unmodified mark_coreg_support) then attributes got_coreg via the outside source, so the window holds/widens (via arousal_window_coreg's own, UNMODIFIED episode_resolve_widen/narrow) instead of narrowing. THE SAFETY-ANCHOR INVERSION (B3/A7 of ABUSIVE_RELATIONSHIPS_SCOPING.md -- Main & Hesse's 'fright without solution': the only available regulator IS the threat) is the single-anchor arm's STRUCTURE itself (one attended_by edge, to the dysregulation source) -- measured as how closely the victim's entrained arousal tracks the abuser's, compared against the outside-regulator arm's tracking distance. PRIOR MIS-SETTING (others_trust/self_worth, B3's third coupled move) rides the SAME narrow_count/widen_count counters arousal_window_coreg ALREADY bumps (UNMODIFIED) via a counter-delta observer, using the SAME clamp01 step idiom bigville_life_rearing.json (block 262000) already uses for its own (one-shot, coming-of-age) prior_others_trust/prior_self_worth -- R3's version is PROGRESSIVE (per-episode), so it is a NEW pair of attrs on the victim's WindowOfTolerance node (others_trust/self_worth), not a reuse of bigville's Agent-node attrs of a similar name (disclosed naming choice, not a collision -- different node, different semantics, see prereg Sec. 2). NO reward/punishment anywhere; the tension trickle and the outside regulator's fixed calm arousal are both world-delivered facts (mechanically identical to a goal-block magnitude or a caregiver arousal reading in 239000/242000), never a scored choice. self_load_only, default-OFF.",
+  "microtheory": {
+    "name": "coercive_control_window_narrowing_and_anchor_inversion",
+    "description": "Coercive control is not a new mechanism -- it is R2's own leaky-integrate-fire abuser + leaky-entrainment victim dyad, run over many incident cycles and read for what it does to the victim's window and priors when the ONLY available regulator is also the dysregulation source, versus what happens when a second, healthy regulator keeps the frontier open."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "abusive_r3_coercive_control:victim_attended_by_abuser",
+      "src": {
+        "type": "Agent",
+        "var": "victim"
+      },
+      "edge_type": "attended_by",
+      "tgt": {
+        "type": "Agent",
+        "var": "abuser"
+      }
+    },
+    {
+      "provenance": "abusive_r3_coercive_control:victim_also_attended_by_outside",
+      "src": {
+        "type": "Agent",
+        "var": "victim"
+      },
+      "edge_type": "also_attended_by",
+      "tgt": {
+        "type": "Agent",
+        "var": "outside"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "r3_victim_entrainment_solo",
+      "area": "retina",
+      "order": 8,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "victim",
+          "has_affective_state",
+          "vaff"
+        ],
+        [
+          "victim",
+          "attended_by",
+          "abuser"
+        ],
+        [
+          "abuser",
+          "has_affective_state",
+          "aaff"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "vaff"
+              },
+              "key": "pcr_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "vaff"
+              },
+              "key": "tick_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aaff"
+              },
+              "key": "is_abuser"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "vaff"
+              },
+              "key": "has_outside_regulator"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "vaff",
+          "frustration",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "vaff"
+                    },
+                    "key": "arousal"
+                  },
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "vaff"
+                        },
+                        "key": "k_co"
+                      },
+                      {
+                        "type": "Minus",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "aaff"
+                          },
+                          "key": "arousal"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "vaff"
+                          },
+                          "key": "arousal"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "vaff"
+                        },
+                        "key": "k_self"
+                      },
+                      {
+                        "type": "Minus",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "vaff"
+                          },
+                          "key": "setpoint"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "vaff"
+                          },
+                          "key": "arousal"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "vaff"
+                },
+                "key": "setpoint"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "vaff",
+          "pcr_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "vaff"
+              },
+              "key": "tick_epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "r3_victim_entrainment_dyad",
+      "area": "retina",
+      "order": 8,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "victim",
+          "has_affective_state",
+          "vaff"
+        ],
+        [
+          "victim",
+          "attended_by",
+          "abuser"
+        ],
+        [
+          "abuser",
+          "has_affective_state",
+          "aaff"
+        ],
+        [
+          "victim",
+          "also_attended_by",
+          "outside"
+        ],
+        [
+          "outside",
+          "has_affective_state",
+          "oaff"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "vaff"
+              },
+              "key": "pcr_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "vaff"
+              },
+              "key": "tick_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aaff"
+              },
+              "key": "is_abuser"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "oaff"
+              },
+              "key": "is_abuser"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "vaff"
+              },
+              "key": "has_outside_regulator"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "vaff",
+          "frustration",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "vaff"
+                    },
+                    "key": "arousal"
+                  },
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "vaff"
+                        },
+                        "key": "k_co"
+                      },
+                      {
+                        "type": "Minus",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "aaff"
+                          },
+                          "key": "arousal"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "vaff"
+                          },
+                          "key": "arousal"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "vaff"
+                        },
+                        "key": "k_co"
+                      },
+                      {
+                        "type": "Minus",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "oaff"
+                          },
+                          "key": "arousal"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "vaff"
+                          },
+                          "key": "arousal"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "vaff"
+                        },
+                        "key": "k_self"
+                      },
+                      {
+                        "type": "Minus",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "vaff"
+                          },
+                          "key": "setpoint"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "vaff"
+                          },
+                          "key": "arousal"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "vaff"
+                },
+                "key": "setpoint"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "vaff",
+          "pcr_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "vaff"
+              },
+              "key": "tick_epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "r3_mark_coreg_support_outside",
+      "area": "retina",
+      "order": 6,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "infant",
+          "has_affective_state",
+          "iaff"
+        ],
+        [
+          "infant",
+          "also_attended_by",
+          "cg"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "iaff"
+              },
+              "key": "in_episode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cg"
+              },
+              "key": "regulated"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "iaff",
+          "got_coreg",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "r3_prior_track_narrow",
+      "area": "retina",
+      "order": 10,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "victim",
+          "has_window",
+          "wot"
+        ]
+      ],
+      "where": {
+        "type": "Gt",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "wot"
+          },
+          "key": "narrow_count"
+        },
+        "b": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "wot"
+          },
+          "key": "pn_last_narrow"
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "wot",
+          "others_trust",
+          {
+            "__term__": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Lit",
+                  "value": 0.0
+                },
+                {
+                  "type": "Min",
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": 1.0
+                    },
+                    {
+                      "type": "Minus",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "wot"
+                        },
+                        "key": "others_trust"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 0.03
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "wot",
+          "self_worth",
+          {
+            "__term__": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Lit",
+                  "value": 0.0
+                },
+                {
+                  "type": "Min",
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": 1.0
+                    },
+                    {
+                      "type": "Minus",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "wot"
+                        },
+                        "key": "self_worth"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 0.03
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "wot",
+          "pn_last_narrow",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "wot"
+              },
+              "key": "narrow_count"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "r3_prior_track_widen",
+      "area": "retina",
+      "order": 10,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "victim",
+          "has_window",
+          "wot"
+        ]
+      ],
+      "where": {
+        "type": "Gt",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "wot"
+          },
+          "key": "widen_count"
+        },
+        "b": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "wot"
+          },
+          "key": "pn_last_widen"
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "wot",
+          "others_trust",
+          {
+            "__term__": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Lit",
+                  "value": 0.0
+                },
+                {
+                  "type": "Min",
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": 1.0
+                    },
+                    {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "wot"
+                          },
+                          "key": "others_trust"
+                        },
+                        {
+                          "type": "Lit",
+                          "value": 0.03
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "wot",
+          "self_worth",
+          {
+            "__term__": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Lit",
+                  "value": 0.0
+                },
+                {
+                  "type": "Min",
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": 1.0
+                    },
+                    {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "wot"
+                          },
+                          "key": "self_worth"
+                        },
+                        {
+                          "type": "Lit",
+                          "value": 0.03
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "wot",
+          "pn_last_widen",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "wot"
+              },
+              "key": "widen_count"
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}
