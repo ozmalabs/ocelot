@@ -1,0 +1,161 @@
+{
+ "id": "abusive_r4_learned_helplessness",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": ["core_emotions"],
+ "area": "retina",
+ "description": "ABUSIVE-DYNAMICS R4 -- LEARNED HELPLESSNESS: blocked escape -> non-contingency -> mis-set agency/contingency prior -> stops trying (block 292000). Honours the Maier & Seligman 2016 reframe (Psychological Review, PubMed 27337390) named in ABUSIVE_RELATIONSHIPS_SCOPING.md A4/B4: passivity under aversive events is the DEFAULT, unlearned response -- what is LEARNED is CONTROL (contingency-detection), which non-contingency prevents from forming. This is NOT 'helplessness is learned' -- it is 'control is the thing that fails to get learned'. Rides the SAME Argmax-over-two-candidate-Appraisals-via-core_emotions template MARSHMALLOW_DELAY (block 240000) already uses (mm_appraise_wait/take -> em_happiness/em_fulfilment_value/em_total_value -> mm_choose), with ONE structural difference the R4 mechanism specifically needs: the belief is a PRIOR-AS-NODE (EscapeDecision.contingency_prior, marshmallow's own explicitly-named precedent, ABUSIVE_R4_LEARNED_HELPLESSNESS_PREREG.md Sec. 1) that UPDATES from observed outcome evidence via a leaky EMA (r4_belief_update, the SAME mt_learn/tb_bond_accrue delta-rule idiom already used at blocks 236000/283000 -- v += lr*(observation-v) -- applied here to a CONTROLLABILITY belief instead of a reward value). The escape/stay DECISION (r4_appraise_attempt/r4_appraise_stay/r4_choose) is a pure Argmax reading the CURRENT prior, structurally identical to mm_choose; the belief update is a SEPARATE rule that only touches the prior from a delivered outcome MAGNITUDE (a world fact, like a stressor magnitude or a harm/relief event in 283000/286000), never a scored choice -- see Part C.2 of the locked ethical protocol. NO reward/punishment token: the outcome is a STATE (escape worked / escape was blocked), read by a Bayesian-style leaky filter, never a value assigned to the agent for its choice. attempt_cost > 0 structurally means passivity is the DEFAULT at a low/floor prior (attempt's expected value = prior*escape_value - attempt_cost is negative -> stay, valued 0, wins) -- exactly the 2016 reframe's claim, falling out of the value economy rather than being hand-coded. A harm-analog AffectiveState.arousal channel (r4_arousal_track, independent of and never feeding the decision, mirroring tb_arousal_track at block 283000) exists only for the G-ethics induction/restore demonstration. Integer/float-native (Plus/Minus/Times/Max/Min/Gt/Eq/And/IfThenElse/Argmax/Attr/Var/Lit/Neighbours only -- NO Rust, NO new Term). OFF by default: self_load_only; depends_on core_emotions only (its em_happiness/em_fulfilment_value/em_total_value rules, unmodified, are what the Argmax reads); absent this seed, every existing path is byte-identical.",
+ "microtheory": {
+  "name": "learned_helplessness_contingency_prior",
+  "description": "Escape-attempt behaviour is an Argmax over (attempt, stay) whose attempt-side value is contingency_prior * escape_value - attempt_cost. The prior is a belief-as-node that updates via a leaky filter over observed escape outcomes (worked / blocked), never over a scored choice. A contingent world (escape reliably works) drives the prior up and sustains attempts; a non-contingent world (outcomes independent of the attempt) drives the prior down until the attempt's expected value goes negative and the agent -- correctly, given what it has observed -- stops trying. Passivity is the default the value economy falls into at a low prior, not a separately hand-coded 'give up' rule."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {"provenance": "seed:abusive_r4_learned_helplessness:hub-has-escape-decision",
+   "src": {"type": "EmotionHub", "var": "hub"},
+   "edge_type": "has_escape_decision",
+   "tgt": {"type": "EscapeDecision", "var": "dec"}},
+  {"provenance": "seed:abusive_r4_learned_helplessness:hub-has-affective-state",
+   "src": {"type": "EmotionHub", "var": "hub"},
+   "edge_type": "has_affective_state",
+   "tgt": {"type": "AffectiveState", "var": "aff"}}
+ ],
+ "rules": [
+  {"name": "r4_belief_update",
+   "area": "retina",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "comment": "THE CONTINGENCY-BELIEF UPDATE. A leaky EMA over the outcome the world just delivered (1.0 = escape worked, 0.0 = escape was blocked) -- the SAME v += lr*(observation-v) delta-rule idiom mt_learn (block 236000) and tb_bond_accrue (block 283000) already use, applied to a CONTROLLABILITY belief. Guarded on outcome_epoch > processed_epoch so it fires exactly once per delivered outcome (self-terminating within the fixpoint, the same epoch-guard idiom seeds/abusive_r3_coercive_control.json's pcr_epoch/tick_epoch pair already uses) -- it does NOT fire on ticks with no fresh outcome (i.e. ticks where the agent chose to stay, so no attempt was made and no evidence arrived). This is a STATE-BELIEF update over an observed world fact, never a reward/punishment signal: nothing here scores the agent's choice, it only revises a probability estimate from what was observed.",
+   "match": [
+    ["hub", "has_escape_decision", "dec"]
+   ],
+   "where": {"type": "Gt",
+    "a": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "outcome_epoch"},
+    "b": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "processed_epoch"}},
+   "effects": [
+    ["set_attr", "dec", "contingency_prior",
+     {"__term__": {"type": "Max", "items": [
+       {"type": "Lit", "value": 0.0},
+       {"type": "Min", "items": [
+         {"type": "Lit", "value": 1.0},
+         {"type": "Plus", "items": [
+           {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "contingency_prior"},
+           {"type": "Times", "items": [
+             {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "lr"},
+             {"type": "Minus",
+              "a": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "outcome"},
+              "b": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "contingency_prior"}}
+           ]}
+         ]}
+       ]}
+     ]}}],
+    ["set_attr", "dec", "processed_epoch",
+     {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "outcome_epoch"}}]
+   ]},
+
+  {"name": "r4_appraise_attempt",
+   "area": "retina",
+   "order": 2,
+   "latency_class": "hard_realtime",
+   "comment": "The ATTEMPT candidate's valuation: individual_benefit = contingency_prior * escape_value (the expected payoff, scaled by the CURRENT belief); individual_cost = attempt_cost (a fixed structural cost of trying, independent of outcome -- NOT a punishment token; it is what makes passivity the value-economy's DEFAULT at a low prior, per the 2016 reframe named in the seed description).",
+   "match": [
+    ["hub", "has_emotion_params", "ep"],
+    ["hub", "has_escape_decision", "dec"],
+    ["hub", "has_candidate", "c"]
+   ],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "action"}, "b": {"type": "Lit", "value": 1.0}}
+   ]},
+   "effects": [
+    ["set_attr", "c", "individual_benefit",
+     {"__term__": {"type": "Times", "items": [
+       {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "contingency_prior"},
+       {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "escape_value"}
+     ]}}],
+    ["set_attr", "c", "individual_cost",
+     {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "attempt_cost"}}]
+   ]},
+
+  {"name": "r4_appraise_stay",
+   "area": "retina",
+   "order": 2,
+   "latency_class": "hard_realtime",
+   "comment": "The STAY candidate's valuation: individual_benefit = 0, individual_cost = 0 -- the passive default carries no structural cost or benefit of its own; whether it wins the Argmax is decided entirely by whether the attempt candidate's prior-scaled value clears its own attempt_cost.",
+   "match": [
+    ["hub", "has_emotion_params", "ep"],
+    ["hub", "has_escape_decision", "dec"],
+    ["hub", "has_candidate", "c"]
+   ],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "action"}, "b": {"type": "Lit", "value": 0.0}}
+   ]},
+   "effects": [
+    ["set_attr", "c", "individual_benefit", {"__term__": {"type": "Lit", "value": 0.0}}],
+    ["set_attr", "c", "individual_cost", {"__term__": {"type": "Lit", "value": 0.0}}]
+   ]},
+
+  {"name": "r4_choose",
+   "area": "retina",
+   "order": 20,
+   "latency_class": "hard_realtime",
+   "comment": "THE DECISION. Identical Argmax structure to mm_choose/hv_choose_harvest: chosen_action = the action of whichever candidate Appraisal has the greatest total_value (happiness + fulfilment_value, computed by core_emotions em_happiness/em_total_value, UNMODIFIED, from the individual_benefit/individual_cost the appraise rules set). action==1 (attempt) wins while contingency_prior*escape_value - attempt_cost > 0; else action==0 (stay).",
+   "match": [
+    ["hub", "has_emotion_params", "ep"],
+    ["hub", "has_escape_decision", "dec"]
+   ],
+   "where": {"type": "Eq",
+    "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "enabled"},
+    "b": {"type": "Lit", "value": 1.0}},
+   "effects": [
+    ["set_attr", "dec", "chosen_action",
+     {"__term__": {"type": "Attr",
+       "node": {"type": "Argmax",
+         "source": {"type": "Neighbours",
+           "node": {"type": "Var", "name": "hub"},
+           "edge_type": "has_candidate",
+           "any_type": false},
+         "var_name": "c",
+         "value": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "total_value"}},
+       "key": "action"}}]
+   ]},
+
+  {"name": "r4_arousal_track",
+   "area": "retina",
+   "order": 2,
+   "latency_class": "hard_realtime",
+   "comment": "HARM-ANALOG channel only (Part C.3 of the locked protocol) -- independent of, and never read by, the escape decision above (r4_appraise_attempt/stay/r4_choose never touch this node). A self-regulation leak toward setpoint, pushed by a relief/aversive magnitude, applied as ONE atomic step exactly on the tick a fresh outcome was delivered. Guarded on outcome_epoch > arousal_epoch (the SAME self-terminating epoch-guard idiom r4_belief_update uses -- without it, an UNGUARDED self-referential update (new arousal as a function of ITS OWN previous value) is not idempotent across the repeating run_rules fixpoint and converges to the recurrence's OWN steady state within a single run_rules() call instead of advancing one tick's worth of leak -- a genuine composition hazard found and fixed while piloting this rung, the same CLASS of finding ABUSIVE_R2_CYCLE_LIMIT_PREREG.md Sec. 3.0 already reported for a different rule). Exists solely so the G-ethics induce/measure/restore demonstration has a state that visibly moves and is then verified byte-identically restored.",
+   "match": [
+    ["hub", "has_escape_decision", "dec"],
+    ["hub", "has_affective_state", "aff"]
+   ],
+   "where": {"type": "Gt",
+    "a": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "outcome_epoch"},
+    "b": {"type": "Attr", "node": {"type": "Var", "name": "aff"}, "key": "arousal_epoch"}},
+   "effects": [
+    ["set_attr", "aff", "arousal",
+     {"__term__": {"type": "Plus", "items": [
+       {"type": "Attr", "node": {"type": "Var", "name": "aff"}, "key": "arousal"},
+       {"type": "Times", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "aff"}, "key": "k_self"},
+         {"type": "Minus",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "aff"}, "key": "setpoint"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "aff"}, "key": "arousal"}}
+       ]},
+       {"type": "IfThenElse",
+        "cond": {"type": "Gt",
+         "a": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "outcome"},
+         "b": {"type": "Lit", "value": 0.5}},
+        "then": {"type": "Attr", "node": {"type": "Var", "name": "aff"}, "key": "relief_mag"},
+        "other": {"type": "Times", "items": [
+          {"type": "Lit", "value": -1.0},
+          {"type": "Attr", "node": {"type": "Var", "name": "aff"}, "key": "block_mag"}
+        ]}}
+     ]}}],
+    ["set_attr", "aff", "arousal_epoch",
+     {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "outcome_epoch"}}]
+   ]}
+ ]
+}
