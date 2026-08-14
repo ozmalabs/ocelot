@@ -1,8 +1,9 @@
 {
  "id": "gap_awareness",
- "version": "1.6.0",
+ "version": "1.7.0",
  "depends_on": [
-  "intent"
+  "intent",
+  "solver_dispatch"
  ],
  "capability_keys": [
   "gap_detection",
@@ -1407,6 +1408,148 @@
      "sc"
     ]
    ]
+  },
+  {
+   "name": "note_solve_exhausted_gap",
+   "match": [
+    [
+     "agent",
+     "has_goal",
+     "g"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "In",
+      "member": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "kind"
+      },
+      "container": {
+       "type": "Lit",
+       "value": [
+        "solve_deduction",
+        "solve_can_relax",
+        "solve_can_exact",
+        "solve_can_bp",
+        "solve_reasoning_bridge",
+        "solve_analogical_promote",
+        "solve_decompose"
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "g"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "walled"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "gap_noted"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SelfConcern"
+       },
+       "var_name": "sc2",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc2"
+         },
+         "key": "content"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "g"
+         },
+         "key": "gap_key"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "g",
+     "gap_noted",
+     1.0
+    ],
+    [
+     "add_node",
+     "sc",
+     "SelfConcern",
+     {
+      "status": "noted",
+      "source": "implicit",
+      "kind": "solve_failure",
+      "content": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "g"
+        },
+        "key": "gap_key"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_self_concern",
+     "sc"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "about_goal",
+     "g"
+    ]
+   ]
   }
- ]
+ ],
+ "_solve_failure_note": "v1.7.0 (QUESTION_DRIVER_RUNG2_PREREG.md/RESULTS.md): a SOLVE-ATTEMPT gap. domains/solver_dispatch.py's seven solve_* resolvers (Rung 1, seeds/solver_dispatch.json) already write status='resolved'|'walled' on EVERY code path -- the mechanical outcome fact this rule needs already existed at Rung 1's own construction time (parse_conditional returning None, decompose_or_refuse returning attempted:False, a treewidth-exceeding CAN network, a bridge with no linkable entity, all already wall). Rung 2 adds exactly ONE new mechanical datum at each wall site (domains/solver_dispatch.py::_wall) -- gap_key, a stable identity for THIS attempt (statement text / targeted node id / direction / candidate set + bound), because unlike note_unresolved_topic_gap's g.concept, no solve_* Goal carried a differentiating identifier before this. note_solve_exhausted_gap DECIDES a solve_* goal whose status=='walled' is a capability gap, files SelfConcern{source:'implicit', kind:'solve_failure', content:<gap_key>} (content-deduped on gap_key + gap_noted mint-once, the SAME two guards note_unresolved_topic_gap already uses), and marks gap_noted=1.0. Downstream (promote_self_concern, _run_self_gaps, composer_dispatch.json) is verified unmodified: promote_self_concern reads `kind` generically and falls to a comprehend_first default for any kind it doesn't special-case; _run_self_gaps groups by (source,kind,content) with no kind-specific branching; composer_dispatch.json contains no 'kind' literal at all."
 }

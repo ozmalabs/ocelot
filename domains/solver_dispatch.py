@@ -50,6 +50,17 @@ projection's nodes are ShapeSignature ids rather than plain CAN concept ids,
 (mirroring `question_driver.py`'s existing `pack_caps` pattern for
 non-graph-primitive data) rather than written onto the Goal node; only plain
 scalars/strings/flat-numeric-dicts are written as Goal attrs.
+
+RUNG 2 ADDITION (QUESTION_DRIVER_RUNG2_PREREG.md): every wall branch now
+ALSO writes a `gap_key` attr via the `_wall` helper -- a stable identity for
+THIS attempt (statement text / targeted node id / direction / candidate set
++ bound, whichever the call site has on hand), alongside the `status:
+"walled"` + `note` write Rung 1 already made at every failure point. This is
+the SAME mechanical-fact-recording precedent `_answer_topic_reply` already
+uses for `outcome` (`substrate/world_adapter.py`) -- never a decision about
+whether a wall IS a gap. `seeds/gap_awareness.json::note_solve_exhausted_gap`
+is the Rule that reads `status=="walled"` + `gap_key` and decides to file a
+`SelfConcern{kind:"solve_failure"}`, content-deduped on `gap_key`.
 """
 from __future__ import annotations
 
@@ -83,6 +94,24 @@ def _solve_caps(adapter) -> dict:
 
 def _stash_result(adapter, goal_node, result: Any) -> None:
     _solve_caps(adapter).setdefault(goal_node, {})["result"] = result
+
+
+def _wall(sub, goal_node, gap_key: str, note, **extra) -> None:
+    """Rung 2 (QUESTION_DRIVER_RUNG2_PREREG.md Sec2/Sec3): the SAME mechanical
+    write-back every resolver's wall branch already did in Rung 1
+    (`status:"walled"` + `note`), plus ONE new datum -- `gap_key`, a stable
+    identity for THIS attempt (statement text / targeted node id / direction
+    / candidate+bound, whichever this call site actually has on hand), never
+    a re-derivation of the note text. This is a fact write, not a decision:
+    seeds/gap_awareness.json::note_solve_exhausted_gap is the Rule that reads
+    `status=="walled"` + `gap_key` and DECIDES a gap should be filed (with
+    its own content-dedup guard on `gap_key`) -- this helper never touches
+    SelfConcern, gap_noted, or any gap-awareness node."""
+    sub.set_attr(goal_node, "status", "walled")
+    sub.set_attr(goal_node, "note", note)
+    sub.set_attr(goal_node, "gap_key", gap_key)
+    for k, v in extra.items():
+        sub.set_attr(goal_node, k, v)
 
 
 # =============================================================================
@@ -239,9 +268,8 @@ def solve_deduction(adapter, goal_node) -> None:
             _stash_result(adapter, goal_node, result)
             return
         last_reason = result.get("reason")
-    sub.set_attr(goal_node, "status", "walled")
-    sub.set_attr(goal_node, "note", last_reason or
-                 "no supported deduction form parsed this statement (honest residual)")
+    _wall(sub, goal_node, "solve_deduction:%s" % statement,
+          last_reason or "no supported deduction form parsed this statement (honest residual)")
 
 
 def solve_can_relax(adapter, goal_node) -> None:
@@ -254,8 +282,8 @@ def solve_can_relax(adapter, goal_node) -> None:
     at = sub.node(goal_node)["attrs"]
     mts = native.neighbours(goal_node, "targets_mt")
     if not mts:
-        sub.set_attr(goal_node, "status", "walled")
-        sub.set_attr(goal_node, "note", "no targets_mt edge -- no Microtheory to relax")
+        _wall(sub, goal_node, "solve_can_relax:no_targets_mt",
+              "no targets_mt edge -- no Microtheory to relax")
         return
     mt = mts[0]
     k_starts = int(at.get("k_starts") or 1)
@@ -297,8 +325,8 @@ def solve_can_exact(adapter, goal_node) -> None:
     at = sub.node(goal_node)["attrs"]
     mts = native.neighbours(goal_node, "targets_mt")
     if not mts:
-        sub.set_attr(goal_node, "status", "walled")
-        sub.set_attr(goal_node, "note", "no targets_mt edge -- no Microtheory to solve exactly")
+        _wall(sub, goal_node, "solve_can_exact:no_targets_mt",
+              "no targets_mt edge -- no Microtheory to solve exactly")
         return
     mt = mts[0]
     bound = int(at.get("treewidth_bound") or cjt.DEFAULT_TREEWIDTH_BOUND)
@@ -310,10 +338,10 @@ def solve_can_exact(adapter, goal_node) -> None:
                                             max_exact_n=max_exact_n, commit=commit)
     _stash_result(adapter, goal_node, result)
     if not result.get("attempted"):
-        sub.set_attr(goal_node, "status", "walled")
-        sub.set_attr(goal_node, "wall_kind", "treewidth_exceeds_bound")
-        sub.set_attr(goal_node, "treewidth", float(result.get("treewidth") or 0.0))
-        sub.set_attr(goal_node, "note", result.get("reason"))
+        _wall(sub, goal_node,
+              "solve_can_exact:mt=%r:tw=%r" % (mt, result.get("treewidth")),
+              result.get("reason"), wall_kind="treewidth_exceeds_bound",
+              treewidth=float(result.get("treewidth") or 0.0))
         return
     sub.set_attr(goal_node, "answer", {"energy": float(result["energy"]),
                                         "state": {int(k): float(v) for k, v in result["state"].items()}})
@@ -333,8 +361,8 @@ def solve_can_bp(adapter, goal_node) -> None:
     at = sub.node(goal_node)["attrs"]
     mts = native.neighbours(goal_node, "targets_mt")
     if not mts:
-        sub.set_attr(goal_node, "status", "walled")
-        sub.set_attr(goal_node, "note", "no targets_mt edge -- no Microtheory to run BP over")
+        _wall(sub, goal_node, "solve_can_bp:no_targets_mt",
+              "no targets_mt edge -- no Microtheory to run BP over")
         return
     mt = mts[0]
     combine = at.get("combine") or "max_product"
@@ -370,8 +398,8 @@ def solve_reasoning_bridge(adapter, goal_node) -> None:
     if direction == "deduction_to_can":
         entity, attr = at.get("entity"), at.get("attr")
         if not entity or not attr:
-            sub.set_attr(goal_node, "status", "walled")
-            sub.set_attr(goal_node, "note", "deduction_to_can needs entity+attr")
+            _wall(sub, goal_node, "solve_reasoning_bridge:deduction_to_can:missing_entity_attr",
+                  "deduction_to_can needs entity+attr")
             return
         result = rcb.apply_derived_fact_as_can_evidence(
             adapter, entity, attr, positive=bool(at.get("positive", True)),
@@ -384,13 +412,14 @@ def solve_reasoning_bridge(adapter, goal_node) -> None:
                                              "(alpha=%r)" % result.get("alpha"))
             sub.set_attr(goal_node, "status", "resolved")
         else:
-            sub.set_attr(goal_node, "note", result.get("reason"))
-            sub.set_attr(goal_node, "status", "walled")
+            _wall(sub, goal_node,
+                  "solve_reasoning_bridge:deduction_to_can:%s:%s" % (entity, attr),
+                  result.get("reason"))
     elif direction == "can_to_deduction":
         mts = native.neighbours(goal_node, "targets_mt")
         if not mts:
-            sub.set_attr(goal_node, "status", "walled")
-            sub.set_attr(goal_node, "note", "can_to_deduction needs a targets_mt edge")
+            _wall(sub, goal_node, "solve_reasoning_bridge:can_to_deduction:no_targets_mt",
+                  "can_to_deduction needs a targets_mt edge")
             return
         results = rcb.can_state_as_predications(adapter, mts[0], t=int(at.get("t") or 0))
         _stash_result(adapter, goal_node, results)
@@ -399,10 +428,9 @@ def solve_reasoning_bridge(adapter, goal_node) -> None:
                      "ingested %d CAN-state predication(s) into deduction" % len(results))
         sub.set_attr(goal_node, "status", "resolved")
     else:
-        sub.set_attr(goal_node, "status", "walled")
-        sub.set_attr(goal_node, "note",
-                     "no recognised direction (%r) -- expected "
-                     "'deduction_to_can'/'can_to_deduction'" % direction)
+        _wall(sub, goal_node, "solve_reasoning_bridge:bad_direction:%r" % direction,
+              "no recognised direction (%r) -- expected "
+              "'deduction_to_can'/'can_to_deduction'" % direction)
 
 
 def solve_analogical_promote(adapter, goal_node) -> None:
@@ -416,8 +444,8 @@ def solve_analogical_promote(adapter, goal_node) -> None:
     sub, native, ag = _resolve(adapter)
     corrs = native.neighbours(goal_node, "targets_correspondence")
     if not corrs:
-        sub.set_attr(goal_node, "status", "walled")
-        sub.set_attr(goal_node, "note", "no targets_correspondence edge")
+        _wall(sub, goal_node, "solve_analogical_promote:no_targets_correspondence",
+              "no targets_correspondence edge")
         return
     corr = corrs[0]
     direction = at_mod.directional_hypothesis_for(sub, corr)
@@ -433,8 +461,7 @@ def solve_analogical_promote(adapter, goal_node) -> None:
                      % (direction.get("direction"), result.get("name")))
         sub.set_attr(goal_node, "status", "resolved")
     else:
-        sub.set_attr(goal_node, "note", result.get("reason"))
-        sub.set_attr(goal_node, "status", "walled")
+        _wall(sub, goal_node, "solve_analogical_promote:corr=%r" % corr, result.get("reason"))
 
 
 def solve_decompose(adapter, goal_node) -> None:
@@ -448,16 +475,14 @@ def solve_decompose(adapter, goal_node) -> None:
     caps = _solve_caps(adapter).get(goal_node) or {}
     candidates = caps.get("candidates")
     if not candidates:
-        sub.set_attr(goal_node, "status", "walled")
-        sub.set_attr(goal_node, "note",
-                     "no candidate projections staged for this goal "
-                     "(solve_caps[goal]['candidates'] missing -- honest wall, "
-                     "not a fabricated decomposition)")
+        _wall(sub, goal_node, "solve_decompose:no_candidates",
+              "no candidate projections staged for this goal "
+              "(solve_caps[goal]['candidates'] missing -- honest wall, "
+              "not a fabricated decomposition)")
         return
     if at.get("bound") is None:
-        sub.set_attr(goal_node, "status", "walled")
-        sub.set_attr(goal_node, "note", "no treewidth bound supplied for this "
-                                         "decompose goal (honest wall)")
+        _wall(sub, goal_node, "solve_decompose:no_bound",
+              "no treewidth bound supplied for this decompose goal (honest wall)")
         return
     bound = int(at.get("bound"))
     max_exact_n = int(at.get("max_exact_n") or 10)
@@ -477,9 +502,10 @@ def solve_decompose(adapter, goal_node) -> None:
                         len(result.get("bags") or {})))
         sub.set_attr(goal_node, "status", "resolved")
     else:
-        sub.set_attr(goal_node, "wall_kind", "treewidth_exceeds_bound")
-        sub.set_attr(goal_node, "note", result.get("reason"))
-        sub.set_attr(goal_node, "status", "walled")
+        cand_names = ",".join(sorted(c.get("name", "?") for c in candidates))
+        _wall(sub, goal_node,
+              "solve_decompose:candidates=%s:bound=%d" % (cand_names, bound),
+              result.get("reason"), wall_kind="treewidth_exceeds_bound")
 
 
 SOLVE_RESOLVER_FUNCTIONS = {
