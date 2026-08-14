@@ -267,7 +267,12 @@ fn py_float_str(f: f64) -> String {
     }
 }
 
-fn py_str(v: &Value, interner: &Interner) -> String {
+/// Rung 1 (`PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_REASSESSMENT_PREREG.md`):
+/// `pub(crate)` so `term.rs`'s new `Str`/`Round`/`Slice` Term evaluators
+/// can reuse these EXACT helpers rather than re-deriving a second, driftable
+/// copy of Python's `str()`/`round()`/slice-index semantics. Visibility-only
+/// change; no behaviour here is touched.
+pub(crate) fn py_str(v: &Value, interner: &Interner) -> String {
     match v {
         Value::None => "None".to_string(),
         Value::Bool(b) => if *b { "True" } else { "False" }.to_string(),
@@ -382,7 +387,7 @@ fn value_kind(v: &Value) -> &'static str {
 /// CPython's `PySlice_AdjustIndices` algorithm: realise `[start:stop:step]`
 /// over a sequence of length `len` into the concrete list of indices to
 /// read, honestly (never OOB — Python slicing clamps, it never raises).
-fn slice_indices(len: i64, start: Option<i64>, stop: Option<i64>, step: i64) -> Vec<i64> {
+pub(crate) fn slice_indices(len: i64, start: Option<i64>, stop: Option<i64>, step: i64) -> Vec<i64> {
     let (lower, upper) = if step > 0 { (0, len) } else { (-1, len - 1) };
     let clamp = |v: i64| v.clamp(lower, upper);
     let norm = |v: Option<i64>, default: i64| -> i64 {
@@ -463,7 +468,7 @@ fn round_half_even(x: f64) -> f64 {
     }
 }
 
-fn round_half_even_digits(x: f64, ndigits: i32) -> f64 {
+pub(crate) fn round_half_even_digits(x: f64, ndigits: i32) -> f64 {
     let mult = 10f64.powi(ndigits);
     round_half_even(x * mult) / mult
 }

@@ -230,6 +230,18 @@ const DEFAULT_SATURATE_K: i64 = 3;
 
 /// generator.py's DEFAULT_OPS, in order (enumeration order is part of
 /// the port).
+///
+/// Rung 1 measured (not assumed) that blindly appending here is UNSAFE:
+/// `DEFAULT_OPS` is the typed default for every "neither string- nor
+/// list-shaped" spec — i.e. it is the WIDEST-blast-radius bucket in this
+/// module (every plain-arithmetic MBPP task lands here), and a first
+/// attempt that appended `Round`/`ParseInt`/`Str` unconditionally
+/// regressed 3 previously-passing tasks to `budget` (`tested==
+/// max_candidates` exactly, confirmed live) plus 2 more to a wrong
+/// exemplar-retrieval fallback — `RUNG1_RESULTS.md` §"regression
+/// investigation". Left UNCHANGED here; see `str_ops_relevant` below for
+/// where the three land instead (evidence-gated, the same discipline
+/// `TUPLE_BUILD_OPS` already uses for `op:TupleOf`).
 const DEFAULT_OPS: &[&str] = &[
     "Plus", "Times", "Minus", "Div", "Min", "Max", "Abs", "Neg",
     "Gt", "Lt", "Eq", "IfThenElse",
@@ -265,6 +277,13 @@ enum OpKind {
     ListMap,
     /// Arc6 tier-0: BOTH children drawn from `list_by_size` (`ConcatList`).
     ListBinary,
+    /// Rung 1: `IndexedMap` — source from `list_by_size` (like `ListMap`),
+    /// value template from its OWN pool (`indexed_map_templates_by_size`,
+    /// built separately from `map_templates_by_size` so the shipped
+    /// `MapList` pool's arena layout / enumeration order is never
+    /// perturbed — the `tmpl:nested_reduction` precedent). The template
+    /// may reference EITHER the bound item OR the bound index.
+    IndexedMap,
 }
 
 const OP_TABLE: &[(&str, OpKind)] = &[
@@ -314,6 +333,23 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     ("ProdList", OpKind::ListUnary),       // -> Prod{source, item, Var(item)}  (the SumList twin)
     ("ConcatList", OpKind::ListBinary),    // -> Fold{b, acc<-a, Append(acc,item)} (the JoinList precedent)
     ("ArgMaxLenOver", OpKind::ListUnary),  // -> Argmax{source, item, Count(Var(item))} (the MaxLenOver arg-twin)
+    // --- Rung 1 (PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_REASSESSMENT_
+    // PREREG.md §5.1, `STRUCTURAL_CEILING.md` §9's own priced order):
+    // Tier-1 stdlib Term ports. Each is a NEW `TermNode` variant (unlike
+    // tier-0's zero-new-variant exposures) that ports a behaviour
+    // `ProgEval` already runs — CLAUDE.md's third, sanctioned "new
+    // primitive" pathway, not a shape/codebook growth. ---
+    ("Replace", OpKind::Ternary),      // -> Replace{text,old,new} (str.replace)
+    ("Str", OpKind::Unary),            // -> Str{value} (Python str())
+    ("Split", OpKind::Binary),         // -> Split{text,sep} (str.split)
+    ("StrCount", OpKind::Binary),      // -> StrCount{text,sub} (substring count)
+    ("Round", OpKind::Binary),         // -> Round{value,ndigits} (2-arg round())
+    ("Reverse", OpKind::Unary),        // -> Reverse{seq} (type-preserving reversed())
+    ("IndexedMap", OpKind::IndexedMap),// -> IndexedMap{source,item,index,value}
+    ("Capitalize", OpKind::Unary),     // -> Capitalize{text} (str.capitalize)
+    ("ParseInt", OpKind::Unary),       // -> ParseInt{text} (Python int(s))
+    // Deliberately LAST (§5.1): the largest blast radius of the ten.
+    ("Slice", OpKind::Ternary),        // -> Slice{seq,start,stop} (negative-index-correct, type-general)
 ];
 
 /// Arc4-S4: the list-op names, in `OP_TABLE` declaration order — appended
@@ -330,6 +366,19 @@ const LIST_EXTRA_OPS: &[&str] = &[
     // can therefore only find a solution EARLIER or at a size where none
     // existed — never displace one.
     "ProdList", "ConcatList", "ArgMaxLenOver",
+    // Rung 1 — APPENDED (same discipline). ONLY `Reverse`/`Slice` (cheap,
+    // linear Unary/Ternary registration — O(by_size[size-1]), the same
+    // cost class as every pre-existing Unary/Binary op) live here
+    // unconditionally, and task 132 (this codebase's own documented
+    // most budget-fragile spec, `distinct` already 1941/200,000 before
+    // this rung touched anything — the exact task `TUPLE_BUILD_OPS` was
+    // narrow-gated to protect) measured intolerant of EVEN `Reverse`+
+    // `Slice` alone (2 cheap Unary/Ternary ops) appended unconditionally
+    // to this bucket. So ZERO Rung-1 ops are unconditional here — every
+    // one of the ten is evidence-gated (`extra_evidence_ops` /
+    // `spec_has_repeated_list_element`, below) — see
+    // `RUNG1_RESULTS.md` §"regression investigation" for the measured
+    // walk (5 regressions -> 1 -> 0 across three narrowing passes).
 ];
 
 /// Arc6 tier-0: `op:TupleOf` is offered under a NARROWER typed default than
@@ -370,7 +419,20 @@ fn is_listlike(v: &Value) -> bool {
 /// design — the enumerator's job is COMPOSITION over a caller-declared
 /// inventory, not a from-scratch string-algorithm search; a caller
 /// that wants more (e.g. `string_methods`) declares `ops` explicitly.
-const DEFAULT_STR_OPS: &[&str] = &["Concat", "CaseFold", "Eq", "IfThenElse"];
+/// Rung 1 — APPENDED (never interleaved, same discipline as
+/// `LIST_EXTRA_OPS`'s own growth): `Replace`/`Split`/`StrCount`/
+/// `Capitalize`/`Reverse`/`Slice`/`Str` are the direct stdlib string
+/// methods `STRUCTURAL_CEILING.md` §9's tier-1 table names (each already
+/// a shipped `ProgEval` behaviour, §2 of that document) — every one of
+/// them is a plausible composable for a PURE string-in/string-out spec,
+/// which is exactly what `DEFAULT_STR_OPS` selects for. This still stays
+/// well short of "every string primitive" (no `startswith`/`find`/
+/// `isdigit`/... — a caller that wants those declares `ops` explicitly,
+/// per this const's own original design note above).
+const DEFAULT_STR_OPS: &[&str] = &[
+    "Concat", "CaseFold", "Eq", "IfThenElse",
+    "Replace", "Split", "StrCount", "Capitalize", "Reverse", "Slice", "Str",
+];
 
 /// Build the TermNode for an op over already-arena'd children.
 fn build_op(name: &str, kids: &[TermIdx]) -> TermNode {
@@ -399,6 +461,16 @@ fn build_op(name: &str, kids: &[TermIdx]) -> TermNode {
         // have here; a variable-arity tuple is NOT reachable this way and is
         // recorded as such (see the tier-0 results document).
         "TupleOf" => TermNode::Vec_ { items: kids.to_vec() },
+        // Rung 1 Tier-1 stdlib Term ports.
+        "Replace" => TermNode::Replace { text: kids[0], old: kids[1], new: kids[2] },
+        "Str" => TermNode::Str { value: kids[0] },
+        "Split" => TermNode::Split { text: kids[0], sep: kids[1] },
+        "StrCount" => TermNode::StrCount { text: kids[0], sub: kids[1] },
+        "Round" => TermNode::Round { value: kids[0], ndigits: kids[1] },
+        "Reverse" => TermNode::Reverse { seq: kids[0] },
+        "Capitalize" => TermNode::Capitalize { text: kids[0] },
+        "ParseInt" => TermNode::ParseInt { text: kids[0] },
+        "Slice" => TermNode::Slice { seq: kids[0], start: kids[1], stop: kids[2] },
         _ => unreachable!("op filtered through OP_TABLE"),
     }
 }
@@ -504,6 +576,16 @@ fn build_list_ho(name: &str, source: TermIdx, tmpl: TermIdx, item: Sym) -> TermN
         "MapList" => TermNode::MapList { source, var_name: item, value: tmpl },
         _ => unreachable!("ListHigherOrder op filtered through OP_TABLE"),
     }
+}
+
+/// Rung 1 `op:IndexedMap` — the `MapList` twin with a SECOND bound
+/// variable (the element's own position). `tmpl` is drawn from
+/// `indexed_map_templates_by_size` (built separately from
+/// `map_templates_by_size`, never perturbing the shipped pool's arena
+/// layout — the `tmpl:nested_reduction` precedent, see that unit's own
+/// module-doc note).
+fn build_indexed_map(source: TermIdx, tmpl: TermIdx, item: Sym, index: Sym) -> TermNode {
+    TermNode::IndexedMap { source, item_name: item, index_name: index, value: tmpl }
 }
 
 /// Arc4-S4: the FIXED node-count `build_list_unary` injects BEYOND
@@ -1057,6 +1139,56 @@ fn term_json(
             "member": term_json(arena, *member, names, interner),
             "container": term_json(arena, *container, names, interner),
         }),
+        // Rung 1 Tier-1 stdlib Term ports — field names match
+        // `jsonio.rs`'s (already-general) parser exactly, so the winning
+        // candidate round-trips through `json.loads` on the Python side
+        // the same way every other op's output already does.
+        TermNode::Replace { text, old, new } => json!({
+            "type": "Replace",
+            "text": term_json(arena, *text, names, interner),
+            "old": term_json(arena, *old, names, interner),
+            "new": term_json(arena, *new, names, interner),
+        }),
+        TermNode::Str { value } => json!({
+            "type": "Str", "value": term_json(arena, *value, names, interner),
+        }),
+        TermNode::Split { text, sep } => json!({
+            "type": "Split",
+            "text": term_json(arena, *text, names, interner),
+            "sep": term_json(arena, *sep, names, interner),
+        }),
+        TermNode::StrCount { text, sub } => json!({
+            "type": "StrCount",
+            "text": term_json(arena, *text, names, interner),
+            "sub": term_json(arena, *sub, names, interner),
+        }),
+        TermNode::Round { value, ndigits } => json!({
+            "type": "Round",
+            "value": term_json(arena, *value, names, interner),
+            "ndigits": term_json(arena, *ndigits, names, interner),
+        }),
+        TermNode::Reverse { seq } => json!({
+            "type": "Reverse", "seq": term_json(arena, *seq, names, interner),
+        }),
+        TermNode::IndexedMap { source, item_name, index_name, value } => json!({
+            "type": "IndexedMap",
+            "source": term_json(arena, *source, names, interner),
+            "item_name": names.get(item_name).cloned().unwrap_or_default(),
+            "index_name": names.get(index_name).cloned().unwrap_or_default(),
+            "value": term_json(arena, *value, names, interner),
+        }),
+        TermNode::Capitalize { text } => json!({
+            "type": "Capitalize", "text": term_json(arena, *text, names, interner),
+        }),
+        TermNode::ParseInt { text } => json!({
+            "type": "ParseInt", "text": term_json(arena, *text, names, interner),
+        }),
+        TermNode::Slice { seq, start, stop } => json!({
+            "type": "Slice",
+            "seq": term_json(arena, *seq, names, interner),
+            "start": term_json(arena, *start, names, interner),
+            "stop": term_json(arena, *stop, names, interner),
+        }),
         _ => unreachable!("candidates are built only from the op table + leaves"),
     }
 }
@@ -1193,6 +1325,39 @@ fn term_str(arena: &TermArena, idx: TermIdx, names: &FxHashMap<Sym, String>, int
             "({} in {})",
             term_str(arena, *member, names, interner),
             term_str(arena, *container, names, interner),
+        ),
+        // Rung 1 Tier-1 stdlib Term ports (readable, never re-parsed).
+        TermNode::Replace { text, old, new } => format!(
+            "{}.replace({}, {})",
+            term_str(arena, *text, names, interner),
+            term_str(arena, *old, names, interner),
+            term_str(arena, *new, names, interner),
+        ),
+        TermNode::Str { value } => format!("str({})", term_str(arena, *value, names, interner)),
+        TermNode::Split { text, sep } => format!(
+            "{}.split({})", term_str(arena, *text, names, interner), term_str(arena, *sep, names, interner)
+        ),
+        TermNode::StrCount { text, sub } => format!(
+            "{}.count({})", term_str(arena, *text, names, interner), term_str(arena, *sub, names, interner)
+        ),
+        TermNode::Round { value, ndigits } => format!(
+            "round({}, {})", term_str(arena, *value, names, interner), term_str(arena, *ndigits, names, interner)
+        ),
+        TermNode::Reverse { seq } => format!("reversed({})", term_str(arena, *seq, names, interner)),
+        TermNode::IndexedMap { source, item_name, index_name, value } => format!(
+            "[{} for {}, {} in enumerate({})]",
+            term_str(arena, *value, names, interner),
+            names.get(index_name).cloned().unwrap_or_default(),
+            names.get(item_name).cloned().unwrap_or_default(),
+            term_str(arena, *source, names, interner),
+        ),
+        TermNode::Capitalize { text } => format!("{}.capitalize()", term_str(arena, *text, names, interner)),
+        TermNode::ParseInt { text } => format!("int({})", term_str(arena, *text, names, interner)),
+        TermNode::Slice { seq, start, stop } => format!(
+            "{}[{}:{}]",
+            term_str(arena, *seq, names, interner),
+            term_str(arena, *start, names, interner),
+            term_str(arena, *stop, names, interner),
         ),
         _ => "?".to_string(),
     }
@@ -1464,6 +1629,11 @@ pub(crate) fn eval_synth_enumerate(
     // `__item`/`__acc`.
     let inner_sym = local_sym(ctx.interner, &mut extra, &mut next_placeholder, "__inner");
     names.entry(inner_sym).or_insert_with(|| "__inner".to_string());
+    // Rung 1 `op:IndexedMap`: the SECOND bound variable an indexed-map
+    // body needs (the element's own 0-based position). Same `local_sym`
+    // precedent, minted unconditionally and cheaply.
+    let index_sym = local_sym(ctx.interner, &mut extra, &mut next_placeholder, "__index");
+    names.entry(index_sym).or_insert_with(|| "__index".to_string());
 
     // --- Typed enumeration (Q1): a spec whose every variable value AND
     // output is string-shaped, with NO caller-declared `ops`, composes
@@ -1499,7 +1669,64 @@ pub(crate) fn eval_synth_enumerate(
     // Arc6 tier-0: the tuple CONSTRUCTOR is offered only to a spec that
     // wants a tuple back (see `TUPLE_BUILD_OPS`).
     let spec_output_is_listlike = !outputs.is_empty() && outputs.iter().all(is_listlike);
+    // Rung 1: EVIDENCE-gated string/float method ops (`TUPLE_BUILD_OPS`'s
+    // own discipline, generalised past output-shape to ANY-row content
+    // evidence). Loose "ANY row, any var or the output" tests — NOT the
+    // strict ALL-string `spec_is_string_shaped` test above — because a
+    // spec that is otherwise numeric but carries ONE string argument
+    // (e.g. `int(s)`) still genuinely needs `ParseInt`/`Str`, and a spec
+    // is never penalised for having the evidence absent (the bucket is
+    // simply empty, byte-identical to today).
+    let spec_has_string_value = envs.iter().flat_map(|e| e.iter()).any(|(_, v)| is_str_val(v))
+        || outputs.iter().any(is_str_val);
+    let is_float_val = |v: &Value| matches!(v, Value::Float(_) | Value::Rational(_, _));
+    let spec_has_float_value = envs.iter().flat_map(|e| e.iter()).any(|(_, v)| is_float_val(v))
+        || outputs.iter().any(is_float_val);
+    // Rung 1: measured live that even an "inside the list" string-content
+    // test still fires for task 132 (a genuine list-of-CHARACTERS ->
+    // joined-string spec) and still regresses it to `budget` — see the
+    // list-shaped branch below, which for this reason does NOT offer the
+    // string-method ops at all for a list-shaped spec.
+    // Rung 1 `op:IndexedMap`'s OWN justification, made a real evidence
+    // gate rather than an unconditional list-shaped default: "with
+    // repeated elements, no composition of the current [element-wise]
+    // ops can distinguish two occurrences" (the variant's own doc
+    // comment / `STRUCTURAL_CEILING.md`'s S8 class). A list-shaped var
+    // or output whose elements are all DISTINCT on some row never needs
+    // the position at all — `IndexAt`/`Argmax`/etc already reach
+    // everything an index-free composition can. `IndexedMap` is the
+    // single most expensive op this rung adds (a full `ListMap`-shaped
+    // source x template cross-product every size), so it stays OUT of
+    // the unconditional `LIST_EXTRA_OPS` bucket entirely and is offered
+    // only when this concrete evidence is present.
+    let has_dup = |v: &Value| -> bool {
+        let Some(items) = items_of(v) else { return false };
+        for i in 0..items.len() {
+            for j in (i + 1)..items.len() {
+                if items[i] == items[j] {
+                    return true;
+                }
+            }
+        }
+        false
+    };
+    let spec_has_repeated_list_element = envs.iter().flat_map(|e| e.iter()).any(|(_, v)| has_dup(v))
+        || outputs.iter().any(has_dup);
+    let mut extra_evidence_ops: Vec<&str> = Vec::new();
+    if spec_has_string_value {
+        extra_evidence_ops.extend(["Replace", "Split", "StrCount", "Capitalize", "Str", "ParseInt"]);
+    }
+    if spec_has_float_value {
+        extra_evidence_ops.push("Round");
+    }
+    if spec_is_list_shaped && spec_has_repeated_list_element {
+        extra_evidence_ops.push("IndexedMap");
+    }
     let default_ops: Vec<&str> = if spec_is_string_shaped {
+        // DEFAULT_STR_OPS already carries the full Tier-1 string-method
+        // set (§ its own doc comment) — that bucket's OWN gate (every
+        // row's every value string-shaped) is already narrow, so no
+        // further evidence-gating is layered on top here.
         DEFAULT_STR_OPS.to_vec()
     } else if spec_is_list_shaped {
         let mut v: Vec<&str> =
@@ -1507,9 +1734,32 @@ pub(crate) fn eval_synth_enumerate(
         if spec_output_is_listlike {
             v.extend(TUPLE_BUILD_OPS.iter().copied());
         }
+        // Measured (not assumed): even the NARROWER `spec_list_has_
+        // string_elements` gate still fires for task 132 (a genuine
+        // list-of-CHARACTERS -> joined-string spec — its elements really
+        // are strings) and still regresses it to `budget`
+        // (`RUNG1_RESULTS.md` §"regression investigation" walks all four
+        // attempts, `distinct` 1941 -> 1508 -> still `tested==
+        // max_candidates`). None of this rung's measured gains are
+        // list-shaped specs needing the string-method ops (checked
+        // directly against the 6 `newly_passing` ids), so the honest,
+        // measured-safe choice is: the list-shaped branch does NOT offer
+        // `Replace`/`Split`/`StrCount`/`Capitalize`/`Str`/`ParseInt` at
+        // all. A list of strings still reaches them via `MapList`
+        // composing a per-element `Str`/`Capitalize`/... IF a future
+        // task needs it enough to declare `ops` explicitly (Rung 4's
+        // selection layer) — this typed default stays conservative.
+        if spec_has_float_value {
+            v.push("Round");
+        }
+        if spec_has_repeated_list_element {
+            v.push("IndexedMap");
+        }
         v
     } else {
-        DEFAULT_OPS.to_vec()
+        let mut v = DEFAULT_OPS.to_vec();
+        v.extend(extra_evidence_ops.iter().copied());
+        v
     };
     let op_list: Vec<(String, OpKind)> = match ops_t {
         Some(t) => {
@@ -1672,10 +1922,17 @@ pub(crate) fn eval_synth_enumerate(
     // never requests `FilterList`/`MapList` pays nothing for this.
     let filter_wanted = op_list.iter().any(|(n, _)| n == "FilterList");
     let map_wanted = op_list.iter().any(|(n, _)| n == "MapList");
+    // Rung 1 `op:IndexedMap`.
+    let indexed_map_wanted = op_list.iter().any(|(n, _)| n == "IndexedMap");
     let template_cap = max_size + 1;
     let mut filter_templates_by_size: Vec<Vec<TermIdx>> = vec![Vec::new(); template_cap];
     let mut map_templates_by_size: Vec<Vec<TermIdx>> = vec![Vec::new(); template_cap];
-    if filter_wanted || map_wanted {
+    // Rung 1: built SEPARATELY from `map_templates_by_size` so that
+    // pool's arena layout (and hence the enumeration order of every
+    // already-shipped `MapList` spec) is never perturbed — the
+    // `tmpl:nested_reduction` precedent.
+    let mut indexed_map_templates_by_size: Vec<Vec<TermIdx>> = vec![Vec::new(); template_cap];
+    if filter_wanted || map_wanted || indexed_map_wanted {
         let numeric_consts: Vec<Value> = const_set
             .iter()
             .filter(|v| matches!(v, Value::Int(_) | Value::Float(_) | Value::Rational(_, _)))
@@ -1933,6 +2190,54 @@ pub(crate) fn eval_synth_enumerate(
                 push(&mut map_templates_by_size, ix, 3);
             }
         }
+        // ---- Rung 1 `op:IndexedMap` templates -------------------------
+        // The (index, element) BINDER `STRUCTURAL_CEILING.md`'s S8 class
+        // names: a value template that may reference the bound POSITION
+        // as well as the bound element. Deliberately its OWN pool (never
+        // shares arena slots with `map_templates_by_size` above).
+        if indexed_map_wanted {
+            // index — size 1 (e.g. "the position itself").
+            let idxn = search.scratch.add(TermNode::Var { name: index_sym });
+            push(&mut indexed_map_templates_by_size, idxn, 1);
+            // item — size 1 (plain MapList-identity is still reachable
+            // through IndexedMap too, so a spec that requests only this
+            // op name isn't missing the trivial case).
+            let itn = search.scratch.add(TermNode::Var { name: item_sym });
+            push(&mut indexed_map_templates_by_size, itn, 1);
+            // (index, item) — size 3: the BINDING itself, directly
+            // closing the S8 gap ("no Term binds an index alongside the
+            // element").
+            let iv1 = search.scratch.add(TermNode::Var { name: index_sym });
+            let iv2 = search.scratch.add(TermNode::Var { name: item_sym });
+            let pair = search.scratch.add(TermNode::Vec_ { items: vec![iv1, iv2] });
+            push(&mut indexed_map_templates_by_size, pair, 3);
+            // item == index — size 3 (e.g. "the element equal to its own
+            // position").
+            let ev1 = search.scratch.add(TermNode::Var { name: item_sym });
+            let ev2 = search.scratch.add(TermNode::Var { name: index_sym });
+            let eqn = search.scratch.add(TermNode::Eq { a: ev1, b: ev2 });
+            push(&mut indexed_map_templates_by_size, eqn, 3);
+            for c in &numeric_consts {
+                // index + c, index - c — size 3 each (e.g. 1-based
+                // position, or an offset lookup).
+                let a1 = search.scratch.add(TermNode::Var { name: index_sym });
+                let b1 = search.scratch.add(TermNode::Lit { value: c.clone() });
+                let plus = search.scratch.add(TermNode::Plus { items: vec![a1, b1] });
+                push(&mut indexed_map_templates_by_size, plus, 3);
+                let a2 = search.scratch.add(TermNode::Var { name: index_sym });
+                let b2 = search.scratch.add(TermNode::Lit { value: c.clone() });
+                let minus = search.scratch.add(TermNode::Minus { a: a2, b: b2 });
+                push(&mut indexed_map_templates_by_size, minus, 3);
+            }
+            for v in &scalar_vars {
+                // index == other_scalar_var — size 3 (e.g. "the element
+                // at the requested position").
+                let iv = search.scratch.add(TermNode::Var { name: index_sym });
+                let vv = search.scratch.add(TermNode::Var { name: *v });
+                let eqv = search.scratch.add(TermNode::Eq { a: iv, b: vv });
+                push(&mut indexed_map_templates_by_size, eqv, 3);
+            }
+        }
     }
 
     let mut distinct_history: Vec<usize> = vec![search.seen.len()];
@@ -2049,6 +2354,23 @@ pub(crate) fn eval_synth_enumerate(
                         for s_ in &srcs {
                             for t_ in &tmpls {
                                 reg!(build_list_ho(name, *s_, *t_, item_sym), size);
+                            }
+                        }
+                    }
+                }
+                // Rung 1 `op:IndexedMap` — same shape as `ListMap`, its
+                // OWN template pool (`indexed_map_templates_by_size`).
+                OpKind::IndexedMap => {
+                    for sa in 1..size.saturating_sub(1) {
+                        let st = (size - 1) - sa;
+                        if st < 1 || st >= indexed_map_templates_by_size.len() {
+                            continue;
+                        }
+                        let srcs = search.list_by_size[sa].clone();
+                        let tmpls = indexed_map_templates_by_size[st].clone();
+                        for s_ in &srcs {
+                            for t_ in &tmpls {
+                                reg!(build_indexed_map(*s_, *t_, item_sym, index_sym), size);
                             }
                         }
                     }

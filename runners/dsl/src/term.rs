@@ -120,6 +120,101 @@ pub enum TermNode {
     /// Concatenate Str / Surface(Text) `parts` into a single Text surface.
     /// Other value types are skipped. Agent-built via babble loop.
     StringConcat { parts: Vec<TermIdx> },
+
+    // -----------------------------------------------------------------
+    // PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_REASSESSMENT_PREREG.md Rung 1
+    // (Tier 1 stdlib Term ports, `STRUCTURAL_CEILING.md` §9 order) — each
+    // is a Term-layer port of a behaviour `ProgEval` already runs
+    // (`STRUCTURAL_CEILING.md` §2: the pipeline could already RUN these,
+    // it could not PROPOSE them from the enumerator's own op table).
+    // CLAUDE.md's THIRD, sanctioned "new primitive" pathway: "add a new
+    // DSL Term" — a primitive, not a shape/codebook growth (Q1 of the
+    // reassessment doc: this layer needs Rust, not sd-loop machinery).
+    // -----------------------------------------------------------------
+    /// `str.replace(old, new)` (Python's un-countedreplace-all form —
+    /// `Rust`'s `str::replace` has identical semantics for an empty
+    /// pattern, inserting between every character, so no special case is
+    /// needed). Non-string-like `text`/`old`/`new` -> an empty Text
+    /// surface (the `StringSlice` refusal convention).
+    Replace { text: TermIdx, old: TermIdx, new: TermIdx },
+    /// Python `str(value)` — coerce ANY Value to its Python-spelled
+    /// string form (`prog_eval::py_str`, reused directly so this Term's
+    /// spelling can never drift from the `ProgEval` interpreter's own
+    /// `str()`/f-string rendering).  S5 ("Value -> string coercion", e.g.
+    /// `Join` emitting `Int(4)` for a non-string element) is this Term
+    /// composed with `StringConcat`.
+    Str { value: TermIdx },
+    /// `str.split(sep)` — `sep` evaluating to `Value::None` (or an
+    /// empty/non-string value) falls back to Python's no-arg
+    /// whitespace-split (never a trap: an enumerated candidate has no
+    /// error channel, see `synth_enumerate.rs`'s module docs). Returns a
+    /// `Value::List` of Surface(Text) parts, matching CPython's
+    /// `str.split` list return.
+    Split { text: TermIdx, sep: TermIdx },
+    /// Count NON-OVERLAPPING occurrences of `sub` in `text`
+    /// (`str.count`, ProgEval's own semantics ported directly: an empty
+    /// `sub` counts as `char_count + 1`). Distinct from the already-
+    /// shipped `Count` Term (sequence LENGTH, tier-0's
+    /// `fix:StringAsSequence`) — this is substring occurrence counting
+    /// (`STRUCTURAL_CEILING.md` task 172).
+    StrCount { text: TermIdx, sub: TermIdx },
+    /// Python's 2-arg `round(value, ndigits)`, round-half-to-even
+    /// (`prog_eval::round_half_even_digits`, reused directly). Preserves
+    /// Python's own type rule: `Int` input with `ndigits >= 0` returns
+    /// the `Int` unchanged; `Int` with negative `ndigits`, or any
+    /// `Float`/`Rational` input, returns a `Float`. `ndigits` coerces via
+    /// `Value::as_i64` (so a Bool/Float ndigits behaves as it does
+    /// everywhere else in this engine); non-numeric `value` -> the
+    /// unevaluated `Value::None`.
+    Round { value: TermIdx, ndigits: TermIdx },
+    /// `reversed(seq)`, TYPE-PRESERVING: a `Str`/`Surface(Text)` reverses
+    /// to text, a `Value::List` to a `List`, a `Value::Tuple` to a
+    /// `Tuple` (CPython's own `l[::-1]` vs `t[::-1]` distinction, the
+    /// same list/tuple identity the ARC6 value layer made possible).
+    /// Non-reversible input passes through unchanged.
+    Reverse { seq: TermIdx },
+    /// `[value for index, item in enumerate(source)]` — the (index,
+    /// element) BINDER `STRUCTURAL_CEILING.md`'s S8 class names as the
+    /// missing primitive (position is already an in-frame integer
+    /// `IndexAt` can read; nothing bound it INTO a map body alongside
+    /// the element). Iterates `source`'s items in order, pushing BOTH
+    /// `item_name` -> the element and `index_name` -> its 0-based
+    /// position before evaluating `value`, popping both after. Modelled
+    /// directly on `MapList`'s env-push/pop shape, generalised to two
+    /// bound variables instead of one. Non-list-like `source` -> an
+    /// empty `Value::List`.
+    IndexedMap { source: TermIdx, item_name: Sym, index_name: Sym, value: TermIdx },
+    /// `str.capitalize()` — first character uppercased, the rest
+    /// lowercased (ProgEval's `call_recv_oracle` "capitalize" arm,
+    /// ported verbatim). Non-string-like `text` -> an empty Text
+    /// surface.
+    Capitalize { text: TermIdx },
+    /// Python `int(s)` for a string argument ONLY (the numeric-input
+    /// arms of ProgEval's `"int"` extern — `Int`/`Float`/`Bool`/
+    /// `Rational` truncation — are already reachable via the shipped
+    /// `IDiv`/cast-free arithmetic Terms, so this Term ports exactly the
+    /// missing S16 case, task 439: parsing a STRING into an int).
+    /// Trimmed before parsing (CPython's own `int()` behaviour); a
+    /// non-string-like or unparseable argument -> `Value::None` (never a
+    /// panic — this engine's Term evaluator has no error channel).
+    ParseInt { text: TermIdx },
+    /// General sequence slice `seq[start:stop]`, negative-index-correct
+    /// (CPython's `PySlice_AdjustIndices` algorithm,
+    /// `prog_eval::slice_indices`, reused directly — the fix for
+    /// `StringSlice`'s measured refusal of a negative end,
+    /// `STRUCTURAL_CEILING.md` §7.5) and TYPE-GENERAL: `Str`/
+    /// `Surface(Text)`, `Value::List`, and `Value::Tuple` all slice,
+    /// preserving their own container kind. Step is always 1 (no
+    /// 4-operand op exists at the enumerator's grammar level — the
+    /// negative-index/type-generality fix is the whole point of this
+    /// unit, per `STRUCTURAL_CEILING.md` §9's own ordering, not a
+    /// strided-slice widening). Deliberately the LAST Tier-1 unit
+    /// landed (§5.1 of the reassessment doc): its blast radius is the
+    /// largest of the ten (touches slicing semantics generally), so it
+    /// lands only after the other nine validate the "one Term, byte-
+    /// identical regression sweep" workflow. Unsliceable input -> an
+    /// empty Text surface.
+    Slice { seq: TermIdx, start: TermIdx, stop: TermIdx },
     /// Verify that `term` (evaluated under bindings from `env`) equals
     /// `expected`. `env` should evaluate to a Value::Dict of
     /// (Str, Value) pairs — each entry is pushed onto the eval env
@@ -2831,6 +2926,23 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
         TermNode::StringIndexOf { haystack, needle } => TermNode::StringIndexOf { haystack: copy_subtree(src, dst, haystack), needle: copy_subtree(src, dst, needle) },
         TermNode::StringSlice { s, start, end } => TermNode::StringSlice { s: copy_subtree(src, dst, s), start: copy_subtree(src, dst, start), end: copy_subtree(src, dst, end) },
         TermNode::StringConcat { parts } => TermNode::StringConcat { parts: parts.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
+        // Rung 1 Tier-1 stdlib Term ports.
+        TermNode::Replace { text, old, new } => TermNode::Replace {
+            text: copy_subtree(src, dst, text), old: copy_subtree(src, dst, old), new: copy_subtree(src, dst, new),
+        },
+        TermNode::Str { value } => TermNode::Str { value: copy_subtree(src, dst, value) },
+        TermNode::Split { text, sep } => TermNode::Split { text: copy_subtree(src, dst, text), sep: copy_subtree(src, dst, sep) },
+        TermNode::StrCount { text, sub } => TermNode::StrCount { text: copy_subtree(src, dst, text), sub: copy_subtree(src, dst, sub) },
+        TermNode::Round { value, ndigits } => TermNode::Round { value: copy_subtree(src, dst, value), ndigits: copy_subtree(src, dst, ndigits) },
+        TermNode::Reverse { seq } => TermNode::Reverse { seq: copy_subtree(src, dst, seq) },
+        TermNode::IndexedMap { source, item_name, index_name, value } => TermNode::IndexedMap {
+            source: copy_subtree(src, dst, source), item_name, index_name, value: copy_subtree(src, dst, value),
+        },
+        TermNode::Capitalize { text } => TermNode::Capitalize { text: copy_subtree(src, dst, text) },
+        TermNode::ParseInt { text } => TermNode::ParseInt { text: copy_subtree(src, dst, text) },
+        TermNode::Slice { seq, start, stop } => TermNode::Slice {
+            seq: copy_subtree(src, dst, seq), start: copy_subtree(src, dst, start), stop: copy_subtree(src, dst, stop),
+        },
         TermNode::Verify { term, env, expected } => TermNode::Verify { term: copy_subtree(src, dst, term), env: copy_subtree(src, dst, env), expected: copy_subtree(src, dst, expected) },
         TermNode::MkDict { items } =>
             TermNode::MkDict { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
@@ -4855,6 +4967,188 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 }
             }
             Value::Surface(SurfaceKind::Text, std::sync::Arc::from(out))
+        }
+
+        // -------------------------------------------------------------
+        // Rung 1 Tier-1 stdlib Term ports (see the variant doc comments
+        // above for provenance/semantics of each).
+        // -------------------------------------------------------------
+        TermNode::Replace { text, old, new } => {
+            let tv = evaluate(arena, *text, env, ctx);
+            let ov = evaluate(arena, *old, env, ctx);
+            let nv = evaluate(arena, *new, env, ctx);
+            let (Some(t), Some(o), Some(n)) = (
+                str_like_owned(&tv, ctx.interner),
+                str_like_owned(&ov, ctx.interner),
+                str_like_owned(&nv, ctx.interner),
+            ) else {
+                return Value::Surface(SurfaceKind::Text, std::sync::Arc::from(&[][..]));
+            };
+            Value::Surface(SurfaceKind::Text, std::sync::Arc::from(t.replace(o.as_str(), &n).into_bytes()))
+        }
+
+        TermNode::Str { value } => {
+            let v = evaluate(arena, *value, env, ctx);
+            Value::Surface(SurfaceKind::Text, std::sync::Arc::from(
+                crate::prog_eval::py_str(&v, ctx.interner).into_bytes(),
+            ))
+        }
+
+        TermNode::Split { text, sep } => {
+            let tv = evaluate(arena, *text, env, ctx);
+            let Some(t) = str_like_owned(&tv, ctx.interner) else {
+                return Value::List(std::sync::Arc::new(smallvec::smallvec![]));
+            };
+            let sv = evaluate(arena, *sep, env, ctx);
+            let sep_s = str_like_owned(&sv, ctx.interner);
+            let parts: Vec<String> = match sep_s {
+                Some(s) if !s.is_empty() => t.split(s.as_str()).map(|p| p.to_string()).collect(),
+                // No separator, or an empty one -- Python's no-arg
+                // whitespace-split (an empty-string `sep` is a raise in
+                // CPython; this engine has no error channel for a
+                // candidate term, so it degrades to the safe default
+                // rather than trapping).
+                _ => t.split_whitespace().map(|p| p.to_string()).collect(),
+            };
+            let out: smallvec::SmallVec<[Value; 4]> = parts
+                .into_iter()
+                .map(|p| Value::Surface(SurfaceKind::Text, std::sync::Arc::from(p.into_bytes())))
+                .collect();
+            Value::List(std::sync::Arc::new(out))
+        }
+
+        TermNode::StrCount { text, sub } => {
+            let tv = evaluate(arena, *text, env, ctx);
+            let sv = evaluate(arena, *sub, env, ctx);
+            let (Some(t), Some(s)) = (str_like_owned(&tv, ctx.interner), str_like_owned(&sv, ctx.interner)) else {
+                return Value::Int(0);
+            };
+            let n = if s.is_empty() {
+                t.chars().count() as i64 + 1
+            } else {
+                t.matches(s.as_str()).count() as i64
+            };
+            Value::Int(n)
+        }
+
+        TermNode::Round { value, ndigits } => {
+            let v = evaluate(arena, *value, env, ctx);
+            let nd = evaluate(arena, *ndigits, env, ctx).as_i64() as i32;
+            match v {
+                Value::Int(n) if nd >= 0 => Value::Int(n),
+                Value::Int(n) => Value::Int(crate::prog_eval::round_half_even_digits(n as f64, nd) as i64),
+                Value::Float(f) => Value::Float(crate::prog_eval::round_half_even_digits(f, nd)),
+                Value::Bool(b) => {
+                    let n = if b { 1 } else { 0 };
+                    if nd >= 0 { Value::Int(n) } else { Value::Int(crate::prog_eval::round_half_even_digits(n as f64, nd) as i64) }
+                }
+                Value::Rational(n, d) => Value::Float(crate::prog_eval::round_half_even_digits(n as f64 / d as f64, nd)),
+                _ => Value::None,
+            }
+        }
+
+        TermNode::Reverse { seq } => {
+            let v = evaluate(arena, *seq, env, ctx);
+            match v {
+                Value::Str(sym) => {
+                    let s = ctx.interner.resolve(sym);
+                    let rev: String = s.chars().rev().collect();
+                    Value::Surface(SurfaceKind::Text, std::sync::Arc::from(rev.into_bytes()))
+                }
+                Value::Surface(SurfaceKind::Text, b) => {
+                    let s = String::from_utf8_lossy(&b);
+                    let rev: String = s.chars().rev().collect();
+                    Value::Surface(SurfaceKind::Text, std::sync::Arc::from(rev.into_bytes()))
+                }
+                Value::List(items) => {
+                    let mut v: Vec<Value> = items.iter().cloned().collect();
+                    v.reverse();
+                    Value::List(std::sync::Arc::new(v.into_iter().collect()))
+                }
+                Value::Tuple(items) => {
+                    let mut v: Vec<Value> = items.iter().cloned().collect();
+                    v.reverse();
+                    Value::Tuple(std::sync::Arc::new(v.into_iter().collect()))
+                }
+                other => other,
+            }
+        }
+
+        TermNode::IndexedMap { source, item_name, index_name, value } => {
+            let s = evaluate(arena, *source, env, ctx);
+            let snap = s.snapshot();
+            let mut out: smallvec::SmallVec<[Value; 4]> = smallvec::smallvec![];
+            for (i, it_ref) in snap.iter().enumerate() {
+                env.push((*item_name, it_ref.clone()));
+                env.push((*index_name, Value::Int(i as i64)));
+                let v = evaluate(arena, *value, env, ctx);
+                env.pop();
+                env.pop();
+                out.push(v);
+            }
+            Value::List(std::sync::Arc::new(out))
+        }
+
+        TermNode::Capitalize { text } => {
+            let tv = evaluate(arena, *text, env, ctx);
+            let Some(t) = str_like_owned(&tv, ctx.interner) else {
+                return Value::Surface(SurfaceKind::Text, std::sync::Arc::from(&[][..]));
+            };
+            let mut chars = t.chars();
+            let out = match chars.next() {
+                Some(c) => c.to_uppercase().collect::<String>() + &chars.as_str().to_lowercase(),
+                None => String::new(),
+            };
+            Value::Surface(SurfaceKind::Text, std::sync::Arc::from(out.into_bytes()))
+        }
+
+        TermNode::ParseInt { text } => {
+            let tv = evaluate(arena, *text, env, ctx);
+            let Some(t) = str_like_owned(&tv, ctx.interner) else {
+                return Value::None;
+            };
+            match t.trim().parse::<i64>() {
+                Ok(n) => Value::Int(n),
+                Err(_) => Value::None,
+            }
+        }
+
+        TermNode::Slice { seq, start, stop } => {
+            let sv = evaluate(arena, *seq, env, ctx);
+            let start_v = evaluate(arena, *start, env, ctx);
+            let stop_v = evaluate(arena, *stop, env, ctx);
+            let start_i = match start_v { Value::Int(n) => Some(n), Value::None => None, other => Some(other.as_i64()) };
+            let stop_i = match stop_v { Value::Int(n) => Some(n), Value::None => None, other => Some(other.as_i64()) };
+            match sv {
+                Value::Str(sym) => {
+                    let chars: Vec<char> = ctx.interner.resolve(sym).chars().collect();
+                    let n = chars.len() as i64;
+                    let idxs = crate::prog_eval::slice_indices(n, start_i, stop_i, 1);
+                    let out: String = idxs.iter().map(|&i| chars[i as usize]).collect();
+                    Value::Surface(SurfaceKind::Text, std::sync::Arc::from(out.into_bytes()))
+                }
+                Value::Surface(SurfaceKind::Text, b) => {
+                    let s = String::from_utf8_lossy(&b);
+                    let chars: Vec<char> = s.chars().collect();
+                    let n = chars.len() as i64;
+                    let idxs = crate::prog_eval::slice_indices(n, start_i, stop_i, 1);
+                    let out: String = idxs.iter().map(|&i| chars[i as usize]).collect();
+                    Value::Surface(SurfaceKind::Text, std::sync::Arc::from(out.into_bytes()))
+                }
+                Value::List(items) => {
+                    let n = items.len() as i64;
+                    let idxs = crate::prog_eval::slice_indices(n, start_i, stop_i, 1);
+                    let out: smallvec::SmallVec<[Value; 4]> = idxs.iter().map(|&i| items[i as usize].clone()).collect();
+                    Value::List(std::sync::Arc::new(out))
+                }
+                Value::Tuple(items) => {
+                    let n = items.len() as i64;
+                    let idxs = crate::prog_eval::slice_indices(n, start_i, stop_i, 1);
+                    let out: smallvec::SmallVec<[Value; 4]> = idxs.iter().map(|&i| items[i as usize].clone()).collect();
+                    Value::Tuple(std::sync::Arc::new(out))
+                }
+                _ => Value::Surface(SurfaceKind::Text, std::sync::Arc::from(&[][..])),
+            }
         }
 
 TermNode::MorphHead { text } => {
@@ -10038,6 +10332,17 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
             out.push(*alternative);
             out.push(*dimension_count);
         }
+        // Rung 1 Tier-1 stdlib Term ports.
+        TermNode::Replace { text, old, new } => { out.push(*text); out.push(*old); out.push(*new); }
+        TermNode::Str { value } => out.push(*value),
+        TermNode::Split { text, sep } => { out.push(*text); out.push(*sep); }
+        TermNode::StrCount { text, sub } => { out.push(*text); out.push(*sub); }
+        TermNode::Round { value, ndigits } => { out.push(*value); out.push(*ndigits); }
+        TermNode::Reverse { seq } => out.push(*seq),
+        TermNode::IndexedMap { source, value, .. } => { out.push(*source); out.push(*value); }
+        TermNode::Capitalize { text } => out.push(*text),
+        TermNode::ParseInt { text } => out.push(*text),
+        TermNode::Slice { seq, start, stop } => { out.push(*seq); out.push(*start); out.push(*stop); }
     }
     out
 }
