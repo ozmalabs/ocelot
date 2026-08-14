@@ -6,9 +6,19 @@ SCOPING.md` (the dyad line, R1–R5, landed) and `ABUSIVE_RELATIONSHIPS_NETWORK.
 measures nothing, states no numbers, touches no engine, writes no `seed_claim`,
 and INDUCES NOTHING.** It asks a single, narrow, falsifiable question about
 ONE already-landed rung: does N1's credibility-asymmetry loop require the
-abuser to hold a conscious `stated≠held` deception construct, or does the same
-observable network pattern emerge from an abuser with **no such internal
-gap at all**? Clinical, anti-sensational register throughout; the purpose is
+abuser to **INTEND** the two-faced presentation — a **goal-directed choice**,
+evaluated against some benefit to the abuser (avoiding consequences,
+maintaining reputation, keeping control), to present a different face to each
+audience — or does the same observable network pattern emerge from an abuser
+who is **not choosing anything at all**, where the divergence is a mechanical
+or context-driven byproduct with **no goal-representation selecting it**?
+**This is a question about VOLITION (is harm/deception a chosen means to an
+end), not about EPISTEMICS (does the abuser know or not know)** — an abuser
+can be fully aware of a pattern in their own behaviour without that pattern
+having arisen from a decision to produce it, exactly as `snap_frustration`'s
+existing leaky-integrate-fire abuser mechanism (below) is not "unconscious,"
+it simply never evaluated harming the victim as a means to anything. Clinical,
+anti-sensational register throughout; the purpose is
 scientific / clinical understanding grounded in the creator's in-vivo trauma /
 foster-care experience, modelling MECHANISM, not moral labels.
 
@@ -71,27 +81,51 @@ intent":
   reading each rung's `depends_on` list in its own prereg. The dyad line's
   harm-generator was intent-free from the start; nothing here needs to
   change to make THAT half unintentional, because it already is.
-- **The ONLY place a deliberate knowledge-gap construct exists in this
+- **The ONLY place a `stated≠held` divergence construct exists in this
   entire line is N1's `n1_abuser_stated_charm` rule.** Per
   `ABUSIVE_N1_CREDIBILITY_LOOP_PREREG.md` §2.1: under `deception_on` (fixed
   ON in every N1 arm), the abuser's `AffectiveState.stated_charm` is set to
-  `1.0` **unconditionally every tick, regardless of its held state** — this
-  is what makes N1's abuser a DELIBERATE two-faced presenter rather than a
-  reactive one. The RESULTS doc's own glass-box readout is explicit: at
-  trajectory end the abuser's `frustration` is `47.43` (genuinely, mid-range
-  elevated — well above `recover_floor=25.0`) while `stated_charm=1.0`
-  ("broadcasting charm even mid-elevation — the readable deception gap,"
-  `ABUSIVE_N1_CREDIBILITY_LOOP_RESULTS.md`, G-glass-box). That one line is
-  the entire locus of "the abuser knows and conceals."
+  `1.0` **unconditionally every tick, regardless of its held state.** The
+  RESULTS doc's own glass-box readout is explicit: at trajectory end the
+  abuser's `frustration` is `47.43` (genuinely, mid-range elevated — well
+  above `recover_floor=25.0`) while `stated_charm=1.0` ("broadcasting charm
+  even mid-elevation — the readable deception gap,"
+  `ABUSIVE_N1_CREDIBILITY_LOOP_RESULTS.md`, G-glass-box).
+- **A correction this scoping surfaces, and states plainly rather than
+  glossing over: N1's construct, read strictly against the INTENT question
+  above, is not actually a modelled CHOICE either.** `n1_abuser_stated_charm`
+  is an unconditional rule — `stated_charm=1.0` fires every tick regardless
+  of `frustration`, with no `Appraisal`, no `Argmax`, no evaluation of
+  candidate presentations against a goal (e.g. "minimise suspicion,"
+  "maintain reputation"). It is a fixed, always-on divergence AUTHORED by
+  the rung's builder, not a divergence the AGENT selects at runtime. Calling
+  it "deliberate" in N1's own docs describes the SHAPE of the outcome (the
+  network sees a face that diverges from the truth) more precisely than it
+  describes the presence of a goal-directed decision mechanism producing
+  that outcome — because there isn't one, in either N1 or (as designed) U1/U2
+  below. **This means the three-way comparison this doc originally set out
+  to scope (deliberate-N1 vs. no-gap-U1 vs. no-gap-U2) is actually a
+  two-way comparison on the intent axis (none of the three have an
+  Argmax/goal node selecting the divergence) crossed with a one-way
+  comparison on a DIFFERENT axis (whether a stated≠held gap-STRUCTURE
+  exists in the graph at all, present in N1, absent in U1/U2).** Both axes
+  are worth keeping distinct and both are named honestly below (see the new
+  Open Question this correction adds) rather than silently treating "N1 has
+  the gap" as "N1 has the intent."
 - **Consequence for scoping:** the user's question — "the abuser not
   needing to be doing it intentionally" — is not a whole-architecture
-  concern. It is a precise, falsifiable question about ONE rule in ONE
-  landed rung: does `n1_abuser_stated_charm`'s unconditional broadcast (an
-  authored, deliberate `stated≠held` gap) do explanatory work that a
-  no-gap alternative cannot reproduce? This scoping proposes exactly two
-  no-gap alternatives to that one rule, both reusing every other atom of
-  N1 (the dyad mechanism, the credibility-comparison rule shape,
-  the three-arm control discipline) byte-for-byte.
+  concern, and it is sharper than "does the gap exist." It is a precise,
+  falsifiable question about whether the credibility-asymmetry pattern needs
+  ANY goal-directed selection mechanism at all (none of N1/U1/U2 have one,
+  by the correction above), separately from whether it needs a
+  structural stated≠held DIVERGENCE (N1 has one; U1/U2 remove it). This
+  scoping proposes exactly two no-divergence alternatives to
+  `n1_abuser_stated_charm`, both reusing every other atom of N1 (the dyad
+  mechanism, the credibility-comparison rule shape, the three-arm control
+  discipline) byte-for-byte, and Part E's Open Questions name the
+  genuinely-intentional (Argmax-driven) comparison condition this doc does
+  NOT scope as the natural next rung if a reader wants the intent axis
+  tested directly rather than inferred from N1's absence of one.
 
 ---
 
@@ -350,7 +384,7 @@ NOT mechanistically necessary for N1's headline pattern — the SAME structural
 fact (the abuser's dyad-coupled ticks concentrate its elevated-frustration
 time onto the victim, and its context-decoupled ticks concentrate its
 low-frustration time onto the network) reproduces the asymmetry without any
-node encoding "the abuser knows." IF the loop does NOT entrap under this
+node encoding a choice to diverge. IF the loop does NOT entrap under this
 construction (belief-gap collapses toward the NON_DYSREGULATED_CONTROL's
 `0.0`, or is CI-indistinguishable from it), that is an equally reportable,
 equally valuable finding: it would mean N1's deliberate unconditional
@@ -555,7 +589,8 @@ simultaneously, per N1's own prereg §D.3).
 avoid any collision with the dyad line's `R1`–`R5` and the network line's
 `N1`–`N4` (both already-claimed letters denoting "relationship" and
 "network" respectively), while being mnemonic for what varies: whether the
-abuser's presentation gap requires the abuser to KNOW it is a gap. Both rungs
+abuser's presentation divergence requires the abuser to have CHOSEN it — a
+goal-directed selection, not merely an awareness of it. Both rungs
 below are direct COMPOSITIONS against N1's own seed/world — not a new dyad
 mechanism, not a new network mechanism — so a numbering that read as
 "N1a/N1b" was considered and rejected: these are not minor variants of N1's
@@ -580,11 +615,13 @@ favouring the abuser to the same degree (if it does, the context-selectivity
 is not what is doing the work, and something else — most likely the
 victim-side instability discount alone, already isolated as sufficient in
 N1's own NON_DYSREGULATED_CONTROL — is the real driver, reported straight).
-**Dissolves:** the "he must be lying" assumption behind reading a two-faced
-presentation as necessarily calculated — shows (if the headline gate passes)
-that the SAME network belief-corruption can arise from an abuser who is
-truthfully, unremarkably calmer away from the relationship that stresses
-him, with nothing to catch because there is nothing concealed.
+**Dissolves:** the "he must have MEANT to look calmer around other people"
+assumption behind reading a two-faced presentation as necessarily a chosen
+strategy — shows (if the headline gate passes) that the SAME network
+belief-corruption can arise from an abuser who never selected anything,
+who is truthfully, unremarkably calmer away from the relationship that
+stresses him, with no goal being served because there is no choice being
+made.
 **Protocol:** identical induce → measure → RESTORE envelope to N1 (one
 minimal incident cycle on the dyad side); no scoring of abuser, victim, or
 network nodes; belief-field and window restored at end.
@@ -603,11 +640,14 @@ belief-gap NOT favouring the abuser; if it does, minimization specifically
 is not the driver (again, most likely the victim-side discount alone is
 sufficient on its own, an outcome already partially visible in N1's results
 and worth explicitly re-confirming here rather than assumed). **Dissolves:**
-the "he must know what he's doing to control the narrative" assumption —
-shows (if the gate passes) that a SINCERE, self-servingly distorted account
-of one's own conduct — the exact phenomenon Henning & Holdford (A2) and
-Bandura (A1) document as common and clinically central — is sufficient on
-its own, with no strategic narrative-management intent required.
+the "he must be CHOOSING to manage the narrative" assumption — shows (if
+the gate passes) that a SINCERE, self-servingly distorted account of one's
+own conduct — the exact phenomenon Henning & Holdford (A2) and Bandura (A1)
+document as common and clinically central, produced here by a fixed,
+undirected discount constant rather than any goal-evaluated selection among
+candidate narratives — is sufficient on its own, with no narrative-
+management INTENT (no Argmax picking the self-serving account over a
+truthful one because it serves a goal) required at all.
 **Protocol:** identical induce → measure → RESTORE envelope to N1 and U1; no
 scoring; the `SelfAccount` value (a belief-state, not an action) is restored
 at end exactly as N1's `belief_gap`/`seen_charm` fields are.
@@ -776,32 +816,60 @@ existing four, replacing one of them — `n1_victim_entrainment` and the two
    loop" absence is targeted-search only across two independent scoping
    passes now; re-verify with dedicated searches before any prereg claims
    primacy.
+8. **A genuinely-intentional comparison condition is NOT scoped here, and
+   the correction above ("WHERE THE QUESTION ACTUALLY LIVES") means one is
+   now missing from the three-way picture.** N1, as built, does not contain
+   an `Argmax`/goal-directed choice selecting the stated-face — it is an
+   unconditional broadcast, authored that way by the rung's builder, not
+   selected at runtime by the agent. So N1/U1/U2 as a set currently compare
+   "divergence present, unconditionally" (N1) against "no divergence, timing-
+   driven" (U1) and "no divergence, discount-driven" (U2) — none of the
+   three test what happens when the divergence itself is the OUTPUT of a
+   goal-directed choice (e.g. an `Appraisal`+`Argmax` over candidate
+   stated-faces, scored against a declared goal such as "minimise the
+   network's suspicion given the observed harm"). A future rung — call it
+   **U0** to mark it as the missing genuinely-intentional condition this
+   correction surfaces, not a third no-intent alternative — would need
+   exactly that: a choice mechanism, not just a divergence. Until U0 (or
+   something like it) exists, this line can report "the pattern does not
+   require a stated≠held STRUCTURE" (what U1/U2 actually test) but cannot
+   yet report "the pattern does not require INTENT" as directly as this
+   doc's own framing implies, because nothing built so far — N1 included —
+   has isolated intent as a variable. This is the single most important
+   thing a prereg author must resolve before claiming U1/U2's results speak
+   to intent rather than to structure.
 
 ---
 
 **Bottom line.** N1 demonstrated that a network can be entrapped by an abuser
-who KNOWS it is presenting two faces — but reading N1's own seed closely
-shows that knowledge-gap construct lives in exactly ONE rule
-(`n1_abuser_stated_charm`'s unconditional broadcast), not anywhere in the
-dyad mechanism it rides (which was never intent-based) or in the credibility-
-comparison machinery it composes with (which is agnostic to why the abuser's
-observable differs). This scoping proposes two minimal, failable
-compositions — **U1** (the abuser's calm face is genuinely, contextually
-true; no concealment, only timing) and **U2** (the abuser's own account of
-events is sincerely, self-servingly distorted; no external lie, only a
-distorted held belief) — that swap that one rule for a no-deception
-alternative while reusing everything else N1 already validated, unmodified.
-The clinical literature (Bandura's moral disengagement, batterer-
-intervention minimization research, the Holtzworth-Munroe & Stuart typology,
+presenting two diverging faces — but reading N1's own seed closely shows
+that divergence lives in exactly ONE rule (`n1_abuser_stated_charm`'s
+unconditional broadcast), and, on inspection, that rule is not itself a
+goal-directed CHOICE either (no `Argmax`, no evaluation against a benefit) —
+it is a fixed, always-on divergence the builder authored, not one the agent
+selected. So "intent" was never cleanly isolated as a variable by N1 alone.
+This scoping proposes two minimal, failable compositions that remove the
+DIVERGENCE — **U1** (the abuser's calm face is genuinely, contextually true;
+no concealment, only timing) and **U2** (the abuser's own account of events
+is sincerely, self-servingly distorted, via a fixed discount constant, not a
+goal-evaluated selection; no external lie, only a distorted held belief) —
+while reusing everything else N1 already validated, unmodified, and names
+the genuinely-intentional comparison condition (an `Argmax`-driven choice
+among candidate presentations, scored against a declared goal — Open
+Question 8, tentatively "U0") that would be needed to test the INTENT axis
+directly rather than infer it from N1's absence of a choice mechanism. The
+clinical literature (Bandura's moral disengagement, batterer-intervention
+minimization research, the Holtzworth-Munroe & Stuart typology,
 reactive/proactive aggression, Baumeister's self-serving narrative
-construction) makes a strong case that MOST real abusers are closer to this
-non-calculating pole than to N1's deliberate-manipulator construction — and
+construction) makes a strong case that MOST real abusers are closer to the
+non-calculating, reactive pole than to a scheming, goal-evaluating one — and
 the typology evidence (A3) is explicit that only ONE of its named subtypes
 maps onto a genuinely instrumental, DARVO-capable actor. Whether the
-substrate's own credibility-asymmetry mechanism actually needs the knowledge
-gap to produce its headline pattern is not asserted either way here — that is
-exactly what U1/U2's failable controls are built to find out, and a null (the
-loop requires knowing intent after all) is named, in advance, as an equally
+substrate's own credibility-asymmetry mechanism actually needs a
+goal-directed choice to produce its headline pattern is not asserted either
+way here — that is exactly what U1/U2 (for the STRUCTURAL divergence
+question) and a future U0 (for the INTENT question proper) are built to find
+out, and a null in either direction is named, in advance, as an equally
 valuable, equally reportable result. **Intent-free is not a claim of
 innocence** — Part F states this at length because it is the single easiest
 way this document could be misread, and the misreading would be a serious
