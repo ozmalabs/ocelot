@@ -367,6 +367,39 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
             Child { name: "geometry", child: *geometry },
         ]),
         TermNode::StringConcat { parts } => ("StringConcat", vec![Children { name: "parts", items: parts }]),
+        // Rung 1 Tier-1 stdlib Term ports.
+        TermNode::Replace { text, old, new } => ("Replace", vec![
+            Child { name: "text", child: *text },
+            Child { name: "old", child: *old },
+            Child { name: "new", child: *new },
+        ]),
+        TermNode::Str { value } => ("Str", vec![Child { name: "value", child: *value }]),
+        TermNode::Split { text, sep } => ("Split", vec![
+            Child { name: "text", child: *text },
+            Child { name: "sep", child: *sep },
+        ]),
+        TermNode::StrCount { text, sub } => ("StrCount", vec![
+            Child { name: "text", child: *text },
+            Child { name: "sub", child: *sub },
+        ]),
+        TermNode::Round { value, ndigits } => ("Round", vec![
+            Child { name: "value", child: *value },
+            Child { name: "ndigits", child: *ndigits },
+        ]),
+        TermNode::Reverse { seq } => ("Reverse", vec![Child { name: "seq", child: *seq }]),
+        TermNode::IndexedMap { source, item_name, index_name, value } => ("IndexedMap", vec![
+            Child { name: "source", child: *source },
+            ScalarSym { name: "item_name", value: *item_name },
+            ScalarSym { name: "index_name", value: *index_name },
+            Child { name: "value", child: *value },
+        ]),
+        TermNode::Capitalize { text } => ("Capitalize", vec![Child { name: "text", child: *text }]),
+        TermNode::ParseInt { text } => ("ParseInt", vec![Child { name: "text", child: *text }]),
+        TermNode::Slice { seq, start, stop } => ("Slice", vec![
+            Child { name: "seq", child: *seq },
+            Child { name: "start", child: *start },
+            Child { name: "stop", child: *stop },
+        ]),
         TermNode::Argmax { source, var_name, value, default } => ("Argmax", vec![
             Child { name: "source", child: *source },
             ScalarSym { name: "var_name", value: *var_name },
@@ -1197,6 +1230,26 @@ fn reconstruct(
             geometry: take_child!("geometry"),
         },
         "StringConcat" => TermNode::StringConcat { parts: take_children!("parts") },
+        // Rung 1 Tier-1 stdlib Term ports.
+        "Replace" => TermNode::Replace {
+            text: take_child!("text"), old: take_child!("old"), new: take_child!("new"),
+        },
+        "Str" => TermNode::Str { value: take_child!("value") },
+        "Split" => TermNode::Split { text: take_child!("text"), sep: take_child!("sep") },
+        "StrCount" => TermNode::StrCount { text: take_child!("text"), sub: take_child!("sub") },
+        "Round" => TermNode::Round { value: take_child!("value"), ndigits: take_child!("ndigits") },
+        "Reverse" => TermNode::Reverse { seq: take_child!("seq") },
+        "IndexedMap" => TermNode::IndexedMap {
+            source: take_child!("source"),
+            item_name: get_sym("item_name")?,
+            index_name: get_sym("index_name")?,
+            value: take_child!("value"),
+        },
+        "Capitalize" => TermNode::Capitalize { text: take_child!("text") },
+        "ParseInt" => TermNode::ParseInt { text: take_child!("text") },
+        "Slice" => TermNode::Slice {
+            seq: take_child!("seq"), start: take_child!("start"), stop: take_child!("stop"),
+        },
         "Argmax" => TermNode::Argmax {
             source: take_child!("source"),
             var_name: get_sym("var_name")?,

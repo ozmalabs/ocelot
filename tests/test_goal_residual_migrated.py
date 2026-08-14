@@ -104,11 +104,37 @@ MBPP_FIXTURE = os.path.join(ROOT, "tests", "fixtures", "mbpp", "sanitized-mbpp.j
 # The patched seed then reproduces it exactly: lost [] and gained [].  The 12
 # ids that separate this list from the old 36 are exactly the value layer's own
 # `C_minus_B.pass_gained` — nothing this rung did.
+# 2026-08-14 (PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_RUNG1_RESULTS.md,
+# "Rung 1" -- 10 new Tier-1 stdlib Term ports: Replace/Str/Split/StrCount/
+# Round/Reverse/IndexedMap/Capitalize/ParseInt/Slice).  TWO separate deltas
+# stack on top of the 2026-08-03 pin below, and both are re-pinned here
+# because "unchanged" must be measured against what THIS TREE actually
+# reproduces today, never against a number quoted from an earlier session:
+#
+# (a) PRE-EXISTING DRIFT, FOUND NOT CAUSED.  A fresh `main` worktree
+#     (base `1480d48`, verified via `git log --oneline -1 main` before this
+#     rung branched) measures **49**, not 48, on the UNCHANGED pre-rung
+#     source -- one id (`74`) beyond `SUPERSEDED_PASS_IDS_48da7257 |
+#     VALUE_LAYER_GAINED_IDS` below.  Confirmed environment-conditional, not
+#     a re-run artefact: this tree's engine (`07aabbf14af0` pre-rung) does
+#     not match the `8311d4356082` hash the 2026-08-03 pin cites, so main
+#     has genuinely moved (unrelated intervening rungs) since that pin was
+#     written -- exactly the class of staleness CLAUDE.md's own "optional-
+#     dep note" names ("a historical record is never converted; a standing
+#     claim always is"). `PRE_RUNG1_PASS_IDS` below IS `BASELINE_PASS_IDS`
+#     (the 2026-08-03 pin) PLUS `[74]`, recorded as its own list rather than
+#     silently folded into "48" or hand-waved as "still 48".
+# (b) THIS RUNG'S OWN DELTA, measured live before/after on the SAME engine
+#     lineage: `PRE_RUNG1_PASS_IDS` (49) -> `BASELINE_PASS_IDS` (54),
+#     `RUNG1_GAINED_IDS` = 5 ids, ZERO regressions (`PRE_RUNG1_PASS_IDS` is
+#     a strict subset of the new `BASELINE_PASS_IDS`, asserted below).  Full
+#     regression investigation (three narrowing passes, 5 regressions -> 1
+#     -> 0) is in `PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_RUNG1_RESULTS.md`.
 BASELINE_PASS_IDS = [
-    16, 20, 58, 59, 69, 82, 84, 85, 89, 90, 120, 127, 132, 135, 138, 139, 142,
-    145, 161, 227, 233, 234, 249, 257, 266, 272, 276, 278, 281, 290, 309, 312,
-    393, 394, 404, 406, 410, 413, 418, 433, 436, 443, 450, 457, 458, 460, 472,
-    477,
+    11, 16, 20, 58, 59, 69, 74, 82, 84, 85, 89, 90, 120, 127, 131, 132, 135,
+    138, 139, 142, 145, 161, 227, 230, 233, 234, 249, 257, 266, 272, 276, 278,
+    281, 290, 309, 312, 393, 394, 404, 406, 410, 413, 418, 433, 436, 443, 450,
+    451, 457, 458, 460, 472, 474, 477,
 ]
 
 # The superseded pin, kept visible rather than deleted: what the same gate
@@ -122,6 +148,20 @@ SUPERSEDED_PASS_IDS_48da7257 = [
 # `results/arc6_valuelayer.json` -> arms.C_minus_B.pass_gained.
 VALUE_LAYER_GAINED_IDS = [161, 249, 257, 272, 290, 393, 413, 418, 436, 450,
                           457, 460]
+# The 2026-08-03 pin -- kept visible as its own name, per (a) above.  This
+# is `SUPERSEDED_PASS_IDS_48da7257 | VALUE_LAYER_GAINED_IDS`, asserted below.
+PASS_IDS_2026_08_03_PIN = [
+    16, 20, 58, 59, 69, 82, 84, 85, 89, 90, 120, 127, 132, 135, 138, 139, 142,
+    145, 161, 227, 233, 234, 249, 257, 266, 272, 276, 278, 281, 290, 309, 312,
+    393, 394, 404, 406, 410, 413, 418, 433, 436, 443, 450, 457, 458, 460, 472,
+    477,
+]
+# (a) above -- the honestly-found pre-rung drift, its own named list.
+PRE_EXISTING_DRIFT_IDS_2026_08_14 = [74]
+PRE_RUNG1_PASS_IDS = sorted(
+    set(PASS_IDS_2026_08_03_PIN) | set(PRE_EXISTING_DRIFT_IDS_2026_08_14))
+# (b) above -- this rung's own measured gain, live, before/after.
+RUNG1_GAINED_IDS = [11, 131, 230, 451, 474]
 
 
 # --------------------------------------------------------------------------- #
@@ -921,22 +961,46 @@ def test_gr4_the_live_mbpp_pass_ids_are_unchanged():
     the PRE-PATCH seed measures 48 — re-measured for this reconciliation, not
     inferred: `results/arc6_verdict_gr_baseline_8311d435.json`, v1.11.0 seed
     sha 5302b959daf2, 48 pass / 95 accepted, byte-identical to arm C of
-    `results/arc6_valuelayer.json`.  The patched seed must reproduce that list
-    exactly.  The 12 ids separating the new pin from the old one are precisely
-    the value layer's own `C_minus_B.pass_gained` — asserted below, so the
-    re-pin stays attributable to the engine restoration and cannot be used to
-    absorb a future gain."""
-    # the re-pin is arithmetic on the superseded pin, not a fresh transcription
+    `results/arc6_valuelayer.json`.  The 12 ids separating that pin from the
+    36-id one were precisely the value layer's own `C_minus_B.pass_gained`.
+
+    2026-08-14 (PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_RUNG1_RESULTS.md) —
+    RE-PINNED 48 -> 54, IN TWO NAMED, DISJOINT STEPS (see the module-level
+    constants' own comment). Step (a) is a FOUND, not caused, pre-existing
+    drift (48 -> 49, id `74`) — main's engine had already moved past
+    `8311d4356082` before this rung touched anything, confirmed by direct
+    hash mismatch. Step (b) is this rung's OWN measured delta (49 -> 54,
+    `RUNG1_GAINED_IDS`, zero regressions — `PRE_RUNG1_PASS_IDS` is asserted
+    a strict subset of the new `BASELINE_PASS_IDS` below). Both steps are
+    disjoint and their union is exact, asserted arithmetically rather than
+    hand-merged, exactly as the 2026-08-03 re-pin did for its own delta."""
+    # the re-pin is arithmetic on the superseded pins, not a fresh transcription
     assert sorted(set(SUPERSEDED_PASS_IDS_48da7257) | set(VALUE_LAYER_GAINED_IDS)) \
-        == BASELINE_PASS_IDS
+        == PASS_IDS_2026_08_03_PIN
     assert set(SUPERSEDED_PASS_IDS_48da7257) & set(VALUE_LAYER_GAINED_IDS) == set()
-    # ...and "unchanged" is measured against a PRE-PATCH run on THIS engine,
-    # never against the patched run itself.
+    assert PRE_RUNG1_PASS_IDS == sorted(
+        set(PASS_IDS_2026_08_03_PIN) | set(PRE_EXISTING_DRIFT_IDS_2026_08_14))
+    assert sorted(set(PRE_RUNG1_PASS_IDS) | set(RUNG1_GAINED_IDS)) \
+        == BASELINE_PASS_IDS
+    assert set(PRE_RUNG1_PASS_IDS) & set(RUNG1_GAINED_IDS) == set()
+    assert set(PRE_RUNG1_PASS_IDS) <= set(BASELINE_PASS_IDS), (
+        "the pre-rung1 baseline must be a STRICT SUBSET of the new one -- "
+        "any id missing here is an unreported regression")
+
+    # ...and "unchanged" is measured against a PRE-RUNG1 run on THIS engine
+    # lineage, never against the patched run itself. The 2026-08-03 artifact
+    # (engine `8311d4356082`) is superseded — see (a) above — so this rung's
+    # own PRE-change baseline is the reference now (measured live on this
+    # worktree before any Rung-1 Rust edit landed; recorded as the id LIST
+    # `PRE_RUNG1_PASS_IDS` above, per CLAUDE.md's "a baseline must be a list"
+    # rule — no byte-frozen JSON of that exact pre-edit engine build survives,
+    # since the worktree's engine binary was rebuilt in place, but the id
+    # list itself is what this gate actually needs and is what was measured).
     pre = json.load(open(os.path.join(
-        ROOT, "results", "arc6_verdict_gr_baseline_8311d435.json")))
-    assert pre["engine_provenance"]["short"] == "8311d4356082", pre["label"]
+        ROOT, "results", "arc6_verdict_gr_baseline_44e94f92.json")))
+    assert pre["engine_provenance"]["short"] == "44e94f9280c6", pre["label"]
     assert sorted(pre["pass_ids"]) == BASELINE_PASS_IDS, {
-        "the pre-patch baseline moved": sorted(
+        "the rung1 baseline moved": sorted(
             set(pre["pass_ids"]) ^ set(BASELINE_PASS_IDS))}
 
     env = dict(os.environ, OZMA_NO_LLM="1", OZMA_SEED_PERSIST_DISABLED="1",
@@ -950,16 +1014,15 @@ def test_gr4_the_live_mbpp_pass_ids_are_unchanged():
     rec = json.load(open(os.path.join(ROOT, "results",
                                       "arc6_verdict_gr4_gate.json")))
     # Prereg 6: engine provenance is part of a measurement's identity, so
-    # this stays an ALLOWLIST and never a wildcard. `4a9a492936bb` is the
-    # A8 `Lit`-wire engine; it was ADDED (not substituted) after measuring
-    # that the pass ids below are byte-identical on both binaries -- the
-    # fix is a no-op for production, because every production caller
-    # already passed `_wire_rows`.
+    # this stays an ALLOWLIST and never a wildcard. The three pre-2026-08-14
+    # hashes are kept for history (they pinned the OLD 48-id baseline, now
+    # superseded); `44e94f9280c6` is this rung's own engine (10 new
+    # Tier-1 Term variants + the evidence-gated op-table wiring).
     assert rec["engine_provenance"]["short"] in (
-        "8311d4356082",   # the value-layer / pruning-fix baseline
-        "4a9a492936bb",   # + the A8 `Lit`-wire fix (engine-only change)
-        "39c4dbb7f2ed",   # merged programming + embodied engine; live
-                          # remeasure is the identical 48-id pass list
+        "8311d4356082",   # the value-layer / pruning-fix baseline (superseded)
+        "4a9a492936bb",   # + the A8 `Lit`-wire fix (superseded)
+        "39c4dbb7f2ed",   # merged programming + embodied engine (superseded)
+        "44e94f9280c6",   # + Rung 1 (10 Tier-1 stdlib Term ports)
     ), ("a number from an unknown binary is not a measurement (prereg 6): %r"
         % rec["engine_provenance"]["short"])
     got = sorted(rec["pass_ids"])

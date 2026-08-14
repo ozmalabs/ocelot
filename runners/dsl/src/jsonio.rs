@@ -202,6 +202,17 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::TemporalDiff { .. } => "TemporalDiff",
         TermNode::Foveate { .. } => "Foveate",
         TermNode::StringConcat { .. } => "StringConcat",
+        // Rung 1 Tier-1 stdlib Term ports.
+        TermNode::Replace { .. } => "Replace",
+        TermNode::Str { .. } => "Str",
+        TermNode::Split { .. } => "Split",
+        TermNode::StrCount { .. } => "StrCount",
+        TermNode::Round { .. } => "Round",
+        TermNode::Reverse { .. } => "Reverse",
+        TermNode::IndexedMap { .. } => "IndexedMap",
+        TermNode::Capitalize { .. } => "Capitalize",
+        TermNode::ParseInt { .. } => "ParseInt",
+        TermNode::Slice { .. } => "Slice",
         TermNode::Argmax { .. } => "Argmax",
         TermNode::Argmin { .. } => "Argmin",
         TermNode::ArgminUnique { .. } => "ArgminUnique",
@@ -581,6 +592,47 @@ fn write_fields(
         }
         TermNode::StringConcat { parts } => {
             m.insert("parts".into(), J::Array(parts.iter().map(|c| child(*c, arena, interner)).collect()));
+        }
+        // Rung 1 Tier-1 stdlib Term ports.
+        TermNode::Replace { text, old, new } => {
+            m.insert("text".into(), child(*text, arena, interner));
+            m.insert("old".into(), child(*old, arena, interner));
+            m.insert("new".into(), child(*new, arena, interner));
+        }
+        TermNode::Str { value } => {
+            m.insert("value".into(), child(*value, arena, interner));
+        }
+        TermNode::Split { text, sep } => {
+            m.insert("text".into(), child(*text, arena, interner));
+            m.insert("sep".into(), child(*sep, arena, interner));
+        }
+        TermNode::StrCount { text, sub } => {
+            m.insert("text".into(), child(*text, arena, interner));
+            m.insert("sub".into(), child(*sub, arena, interner));
+        }
+        TermNode::Round { value, ndigits } => {
+            m.insert("value".into(), child(*value, arena, interner));
+            m.insert("ndigits".into(), child(*ndigits, arena, interner));
+        }
+        TermNode::Reverse { seq } => {
+            m.insert("seq".into(), child(*seq, arena, interner));
+        }
+        TermNode::IndexedMap { source, item_name, index_name, value } => {
+            m.insert("source".into(), child(*source, arena, interner));
+            m.insert("item_name".into(), sym_str(*item_name, interner));
+            m.insert("index_name".into(), sym_str(*index_name, interner));
+            m.insert("value".into(), child(*value, arena, interner));
+        }
+        TermNode::Capitalize { text } => {
+            m.insert("text".into(), child(*text, arena, interner));
+        }
+        TermNode::ParseInt { text } => {
+            m.insert("text".into(), child(*text, arena, interner));
+        }
+        TermNode::Slice { seq, start, stop } => {
+            m.insert("seq".into(), child(*seq, arena, interner));
+            m.insert("start".into(), child(*start, arena, interner));
+            m.insert("stop".into(), child(*stop, arena, interner));
         }
         TermNode::Filter { source, var_name, predicate }
         | TermNode::FilterList { source, var_name, predicate }
@@ -1339,6 +1391,47 @@ fn read_term(
         },
         "StringConcat" => TermNode::StringConcat {
             parts: children_of("parts", obj, arena, interner)?,
+        },
+        // Rung 1 Tier-1 stdlib Term ports.
+        "Replace" => TermNode::Replace {
+            text: child_of("text", obj, arena, interner, variant)?,
+            old: child_of("old", obj, arena, interner, variant)?,
+            new: child_of("new", obj, arena, interner, variant)?,
+        },
+        "Str" => TermNode::Str {
+            value: child_of("value", obj, arena, interner, variant)?,
+        },
+        "Split" => TermNode::Split {
+            text: child_of("text", obj, arena, interner, variant)?,
+            sep: child_of("sep", obj, arena, interner, variant)?,
+        },
+        "StrCount" => TermNode::StrCount {
+            text: child_of("text", obj, arena, interner, variant)?,
+            sub: child_of("sub", obj, arena, interner, variant)?,
+        },
+        "Round" => TermNode::Round {
+            value: child_of("value", obj, arena, interner, variant)?,
+            ndigits: child_of("ndigits", obj, arena, interner, variant)?,
+        },
+        "Reverse" => TermNode::Reverse {
+            seq: child_of("seq", obj, arena, interner, variant)?,
+        },
+        "IndexedMap" => TermNode::IndexedMap {
+            source: child_of("source", obj, arena, interner, variant)?,
+            item_name: get_sym("item_name", interner)?,
+            index_name: get_sym("index_name", interner)?,
+            value: child_of("value", obj, arena, interner, variant)?,
+        },
+        "Capitalize" => TermNode::Capitalize {
+            text: child_of("text", obj, arena, interner, variant)?,
+        },
+        "ParseInt" => TermNode::ParseInt {
+            text: child_of("text", obj, arena, interner, variant)?,
+        },
+        "Slice" => TermNode::Slice {
+            seq: child_of("seq", obj, arena, interner, variant)?,
+            start: child_of("start", obj, arena, interner, variant)?,
+            stop: child_of("stop", obj, arena, interner, variant)?,
         },
         "Eq" => TermNode::Eq {
             a: child_of("a", obj, arena, interner, variant)?,
