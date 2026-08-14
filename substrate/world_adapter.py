@@ -8161,12 +8161,31 @@ class WorldAdapter:
         capability_keys list-attrs, so the compose rules work on real seeded axes/faculties without
         rewriting every seed. CapabilityAxis.capability_keys -> requires_key; a held faculty's provided
         keys (provides_keys / capability_keys) -> provides_key + reliability (its best saturation).
-        Get-or-create CapKey by name (idempotent). Mechanical graph construction; no decision."""
+        Get-or-create CapKey by name (idempotent). Mechanical graph construction; no decision.
+
+        MARKER-GUARDED (2026-08-14, SHAPE_AUDIT.md §4.6 fix): `load_seed_manifest`
+        mints every manifest node with `add_node` unconditionally -- ALL
+        idempotency in this system is the CALLER'S marker check (every other
+        call site honours that: `boot_core.load_seeds_into` checks `Seed{id}` +
+        `SeedSummary{seed_id}`; `reflective_faculty._ensure_shape_decode_loop`
+        checks `_installed_seed_ids`). This call site had none -- a second
+        `wire_self_extension()` on the same agent (e.g. a resumed checkpoint
+        that already ran it) would mint a second copy of every self_extension
+        rule, the exact bug class the Wave-3 `load_seeds_into` fix documents
+        (`tests/test_capkey_backfill_migrated.py:82` even calls this
+        "(idempotent)" while it wasn't). Guarded the same way
+        `_ensure_shape_decode_loop` is: a `Seed{id:"self_extension"}` marker
+        node, checked via the SAME `_installed_seed_ids` reader (also catches
+        a `SeedSummary` marker from a full `load_all_seeds` boot, so this
+        doesn't double-install on top of THAT convention either)."""
         from substrate.seed_loader import manifest_for
-        try:
-            self.inner.load_seed_manifest(manifest_for("self_extension"), self.agent)
-        except Exception:
-            pass
+        from domains.reflective_faculty import _installed_seed_ids
+        if "self_extension" not in _installed_seed_ids(self.s):
+            try:
+                self.inner.load_seed_manifest(manifest_for("self_extension"), self.agent)
+                self.s.add_node("Seed", {"id": "self_extension", "version": "1.0.0"})
+            except Exception:
+                pass
         keymap = {}
         for ck in self.s.nodes("CapKey"):
             nm = self.s.node(ck)["attrs"].get("name")

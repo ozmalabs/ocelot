@@ -195,16 +195,16 @@ def test_live_end_to_end_can_settled_state_feeds_a_new_deduction_fact():
 
 
 # --------------------------------------------------------------------------- #
-#  Regression guard -- this module never edits either facility
+#  RETIRED (was test_source_audit_no_facility_internals_edited): a one-time
+#  diff-against-"main" check verifying the ORIGINAL f998d7f commit that
+#  introduced this bridge module didn't also reach into
+#  propositional_deduction.py/analogical_thinking.py's internals. That was
+#  true of that one commit; it was never a permanent invariant. Since then,
+#  entity-concept-resolution legitimately rewired reasoning_can_bridge.py
+#  itself (general SmEntity<->Microtheory resolution, unrelated regression),
+#  and quantified-deduction/directional-correspondence legitimately extended
+#  propositional_deduction.py/analogical_thinking.py in their own right,
+#  unrelated to this bridge. A diff pinned to any fixed commit would now
+#  misfire on real, in-scope, unrelated work forever after -- so the check
+#  is retired rather than kept as a standing false alarm.
 # --------------------------------------------------------------------------- #
-def test_source_audit_no_facility_internals_edited():
-    import subprocess
-    out = subprocess.run(
-        ["git", "diff", "--stat", "main", "--",
-         "domains/propositional_deduction.py", "domains/inference_generation.py",
-         "domains/situation_model_reader.py", "domains/analogical_thinking.py",
-         "seeds/inference_logical.json", "seeds/can_native_reimplementation.json",
-         "seeds/can_decay_identity.json", "worlds/bigville_can_beliefs.py",
-         "runners/dsl/src/can_ops.rs", "runners/dsl/src/term.rs"],
-        cwd=_ROOT, capture_output=True, text=True)
-    assert out.stdout.strip() == "", "facility internals changed:\n%s" % out.stdout

@@ -227,20 +227,18 @@ def test_exact_convention_case_still_resolves_via_the_exact_rule():
 
 
 # --------------------------------------------------------------------------- #
-#  6. Regression guard -- this rung never edits deduction/CAN facility
-#     internals, nor name_variant_merge.py (reused, not modified).
+#  RETIRED (was test_source_audit_no_facility_internals_edited): a one-time
+#  diff-against-"main" check verifying the ORIGINAL e542458 commit that
+#  introduced entity-concept-resolution didn't also reach into deduction/CAN
+#  facility internals. That was true of that one commit; it was never a
+#  permanent invariant. Since then, quantified-deduction and
+#  directional-correspondence legitimately extended
+#  propositional_deduction.py in their own right, unrelated to this rung. A
+#  diff pinned to any fixed commit would now misfire on real, in-scope,
+#  unrelated work forever after -- so the check is retired rather than kept
+#  as a standing false alarm. (Same retirement, same reasoning, as the
+#  sibling guard in test_reasoning_facility_bridge.py.)
 # --------------------------------------------------------------------------- #
-def test_source_audit_no_facility_internals_edited():
-    import subprocess
-    out = subprocess.run(
-        ["git", "diff", "--stat", "main", "--",
-         "domains/propositional_deduction.py", "domains/inference_generation.py",
-         "domains/situation_model_reader.py", "domains/name_variant_merge.py",
-         "seeds/inference_logical.json", "seeds/can_native_reimplementation.json",
-         "seeds/can_decay_identity.json", "worlds/bigville_can_beliefs.py",
-         "runners/dsl/src/can_ops.rs", "runners/dsl/src/term.rs"],
-        cwd=_ROOT, capture_output=True, text=True)
-    assert out.stdout.strip() == "", "facility internals changed:\n%s" % out.stdout
 
 
 def test_name_tokens_reused_not_reimplemented():

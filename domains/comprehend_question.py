@@ -230,30 +230,16 @@ _META_LEXICON_FALLBACK: list[dict] = [
 ]
 
 
-# SELF-MODEL meta-targets (domains/self_model.py's query handlers) — appended
-# in-code rather than added to seeds/question_targets.json: that file is a
-# graph-DATA seed outside this task's editable-file set, and (unlike the
-# world-target lexicon) `load_meta_lexicon` only falls back to a Python list
-# when the seed is EMPTY, which it isn't (55 entries) — so a fallback-only
-# addition would never be reached. Appending here (always, whichever source
-# supplied the base list) is the smallest change that lands the three new
-# question shapes without touching the seed file.
-#
-# 'what does <rule> do' carries no you/your/me self-cue on its own (it names
-# a rule, not the agent) — `self_cue_optional` lets THIS entry bypass the
-# self-cue gate (see `comprehend_meta`); a nonsense/unheld name still comes
-# back honest (`self_model.run_self_model_rule`'s exact-match lookup), so a
-# world question that happens to share the 'what does X do' shape is a safe,
-# discriminative miss, not a wrong answer.
-_SELF_MODEL_META_ENTRIES: list[dict] = [
-    {"meta_target": "self_model_rule", "faculty": "self_model",
-     "match": ["what", "does", "do"], "self_cue_optional": True,
-     "arg_between": {"start": ["does"], "end": ["do"]}},
-    {"meta_target": "self_model_topic", "faculty": "self_model",
-     "match": ["which", "rules", "about"], "arg_after": ["about"]},
-    {"meta_target": "self_model_touches", "faculty": "self_model",
-     "match": ["which", "parts", "touch"], "arg_after": ["touch"]},
-]
+# SELF-MODEL meta-targets (domains/self_model.py's query handlers) used to be
+# appended here in Python (SHAPE_AUDIT.md §7 instance 1: "that file is a
+# graph-DATA seed outside this task's editable-file set" -- a scoping
+# constraint from when this was added, not a structural one). Moved into
+# seeds/question_targets.json's `meta_targets` list itself
+# (2026-08-14, tools/consolidate_self_model_meta_entries.py) -- same three
+# rows, same content ('what does <rule> do' still carries no you/your/me
+# self-cue on its own, so it still needs `self_cue_optional`; see
+# `comprehend_meta`), now living in the ONE seed the other 79 meta-target
+# rows already live in instead of a fourth, always-appended Python copy.
 
 
 def load_meta_lexicon(path: Path = _SEED) -> list[dict]:
@@ -261,10 +247,10 @@ def load_meta_lexicon(path: Path = _SEED) -> list[dict]:
         data = json.loads(Path(path).read_text())
         lex = data.get("meta_targets")
         if isinstance(lex, list) and lex:
-            return list(lex) + _SELF_MODEL_META_ENTRIES
+            return list(lex)
     except Exception:
         pass
-    return _META_LEXICON_FALLBACK + _SELF_MODEL_META_ENTRIES
+    return _META_LEXICON_FALLBACK
 
 
 def _has_self_cue(tokens: list[str]) -> bool:
@@ -327,7 +313,8 @@ def comprehend_meta(question_text: str,
     Each entry fires iff: (the question carries a self-cue, OR the entry
     declares `self_cue_optional` — a shape unambiguous enough to not need one,
     e.g. 'what does <rule> do' names a specific held mechanism rather than the
-    agent generically; see `comprehend_question._SELF_MODEL_META_ENTRIES`),
+    agent generically; see the `self_model_rule` row in
+    seeds/question_targets.json),
     ALL `match` fragments appear, AND for every group in `any` (optional) at
     least one fragment appears. `arg_after` (optional) captures the tail after
     the anchor as the meta-arg; `arg_between` (optional) captures the BOUNDED
@@ -359,6 +346,58 @@ def comprehend_meta(question_text: str,
         return {"meta_target": entry["meta_target"],
                 "faculty": entry["faculty"], "meta_arg": meta_arg}
     return None
+
+
+def _score_meta_entry(entry: dict, words: set[str]) -> int:
+    """The SAME AND-of-bag semantics `comprehend_meta`'s `_all_present` uses
+    (every `match` fragment must appear SOMEWHERE in the words, order-free —
+    that already tolerates insertions/reordering) — but scored, not boolean,
+    so the BEST-covered entry wins instead of the FIRST-listed one, and any
+    `any`-group hit breaks ties toward a more specific reading. An entry whose
+    `match` fragments are not ALL present scores 0 (never a partial-keyword
+    guess on a single stray word).
+
+    MOVED HERE from domains/comprehend_text.py (2026-08-14,
+    SHAPE_AUDIT.md §7 finding #10 / instance 3): this is lexicon-matching
+    logic over the SAME meta lexicon `comprehend_meta` above reads, so it
+    belongs with `_all_present`/`comprehend_meta` rather than duplicated in
+    the caller. `comprehend_text.py` keeps a thin re-export
+    (`_score_meta_entry = _cq._score_meta_entry`) for its one call site."""
+    frags = [_norm(f) for f in entry.get("match", [])]
+    if frags and not all(f in words for f in frags):
+        return 0
+    score = len(frags)
+    for grp in entry.get("any") or []:
+        if any(_norm(a) in words for a in grp):
+            score += 1
+    return score
+
+
+def _best_meta_entry(lex: list[dict], words: set[str], has_cue: bool):
+    """The BEST-COVERED meta-target entry (by `_score_meta_entry`), vs.
+    `comprehend_meta`'s FIRST-MATCH-WINS selection over the same lexicon.
+
+    SHAPE_AUDIT.md §7 finding #10 / instance 3 named these as two DIFFERENT
+    selection semantics over one table, with no documented reason they must
+    differ. They are deliberately NOT unified in this rung: a lexicon-wide
+    shadowing scan (no entry's `match` set is a strict subset of another
+    entry's for a different target) confirms first-match and best-covered
+    agree on every seed row checked, but that scan does not prove agreement
+    on every possible INPUT (two entries with unrelated match sets can both
+    satisfy a specific token set, where first-match keeps seed-authored order
+    and best-covered would not) -- unifying the algorithm is therefore a real
+    behaviour change to `comprehend_meta`'s broad production call sites, not
+    a proven-safe refactor, and is left as a named residual rather than
+    risked in this pass. What IS done here: the two selectors now share this
+    ONE implementation instead of a byte-for-byte duplicate."""
+    best, best_score = None, 0
+    for entry in lex:
+        if not has_cue and not entry.get("self_cue_optional"):
+            continue
+        score = _score_meta_entry(entry, words)
+        if score > best_score:
+            best, best_score = entry, score
+    return best, best_score
 
 
 # A KNOW question is a bare DEFINITIONAL ask: 'what is X' / 'what are X' / 'what
