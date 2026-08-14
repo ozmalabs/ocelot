@@ -215,6 +215,21 @@ pub enum TermNode {
     /// identical regression sweep" workflow. Unsliceable input -> an
     /// empty Text surface.
     Slice { seq: TermIdx, start: TermIdx, stop: TermIdx },
+    /// `sorted(seq)`, ascending, via the already-shipped
+    /// `cmp_value_lex` (the SAME comparator `Lt`/`Gt`/`Argmax`/`MinOver`/
+    /// the `sorted`/`min`/`max` `ProgEval` externs already use —
+    /// `cmp_value` itself, the boot-order-dependent canonicalisation
+    /// comparator, is NEVER touched by this Term, so it carries none of
+    /// the cross-cutting fixture risk `STRUCTURAL_CEILING.md` §7.2 named
+    /// for a naive `Sort`; see `PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_
+    /// RUNG2_RUNG3_PREREG.md`'s own Step 2, which vetted exactly this
+    /// reuse). TYPE-PRESERVING like `Reverse`: `Value::List` sorts to a
+    /// `List`, `Value::Tuple` to a `Tuple` — a 2-element tuple sorted
+    /// this way is precisely CPython's `tuple(sorted(pair))` canonical
+    /// form. `Value::Set`/`Value::FrozenSet` pass through unchanged
+    /// (already canonically ordered by construction). Non-sequence input
+    /// passes through unchanged (the `Reverse` degrade precedent).
+    Sort { seq: TermIdx },
     /// Verify that `term` (evaluated under bindings from `env`) equals
     /// `expected`. `env` should evaluate to a Value::Dict of
     /// (Str, Value) pairs — each entry is pushed onto the eval env
@@ -2943,6 +2958,7 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
         TermNode::Slice { seq, start, stop } => TermNode::Slice {
             seq: copy_subtree(src, dst, seq), start: copy_subtree(src, dst, start), stop: copy_subtree(src, dst, stop),
         },
+        TermNode::Sort { seq } => TermNode::Sort { seq: copy_subtree(src, dst, seq) },
         TermNode::Verify { term, env, expected } => TermNode::Verify { term: copy_subtree(src, dst, term), env: copy_subtree(src, dst, env), expected: copy_subtree(src, dst, expected) },
         TermNode::MkDict { items } =>
             TermNode::MkDict { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
@@ -5148,6 +5164,23 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                     Value::Tuple(std::sync::Arc::new(out))
                 }
                 _ => Value::Surface(SurfaceKind::Text, std::sync::Arc::from(&[][..])),
+            }
+        }
+
+        TermNode::Sort { seq } => {
+            let v = evaluate(arena, *seq, env, ctx);
+            match v {
+                Value::List(items) => {
+                    let mut v: Vec<Value> = items.iter().cloned().collect();
+                    v.sort_by(|a, b| crate::value::cmp_value_lex(a, b, ctx.interner));
+                    Value::List(std::sync::Arc::new(v.into_iter().collect()))
+                }
+                Value::Tuple(items) => {
+                    let mut v: Vec<Value> = items.iter().cloned().collect();
+                    v.sort_by(|a, b| crate::value::cmp_value_lex(a, b, ctx.interner));
+                    Value::Tuple(std::sync::Arc::new(v.into_iter().collect()))
+                }
+                other => other,
             }
         }
 
@@ -10343,6 +10376,7 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         TermNode::Capitalize { text } => out.push(*text),
         TermNode::ParseInt { text } => out.push(*text),
         TermNode::Slice { seq, start, stop } => { out.push(*seq); out.push(*start); out.push(*stop); }
+        TermNode::Sort { seq } => out.push(*seq),
     }
     out
 }

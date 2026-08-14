@@ -350,6 +350,16 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     ("ParseInt", OpKind::Unary),       // -> ParseInt{text} (Python int(s))
     // Deliberately LAST (§5.1): the largest blast radius of the ten.
     ("Slice", OpKind::Ternary),        // -> Slice{seq,start,stop} (negative-index-correct, type-general)
+    // --- SetLit/DictItems rung (PROGRAM_SYNTHESIS_SETLIT_DICTITEMS_
+    // PREREG.md): the PROPOSAL layer for Sets. `Union`/`Intersect`/
+    // `MapSet` already exist as pure, already-shipped Terms (`term.rs`)
+    // — the gap was purely that this OP_TABLE never exposed them. `Sort`
+    // is the one new `TermNode` this rung adds, via the already-vetted
+    // zero-blast-radius `cmp_value_lex` reuse (Rung 3's own Step 2). ---
+    ("Sort", OpKind::Unary),           // -> Sort{seq} (type-preserving ascending sort)
+    ("SetMap", OpKind::ListMap),       // -> MapSet{source,item,<template>} (the MapList twin, returns a Set)
+    ("Intersect", OpKind::ListBinary), // -> Intersect{a,b} (the shipped Set/FrozenSet Term, direct)
+    ("Union", OpKind::ListBinary),     // -> Union{a,b} (the shipped Set/FrozenSet Term, direct)
 ];
 
 /// Arc4-S4: the list-op names, in `OP_TABLE` declaration order — appended
@@ -400,6 +410,30 @@ const LIST_EXTRA_OPS: &[&str] = &[
 /// `halt_reason:"budget"` — i.e. it REGRESSED an already-passing task.
 /// Measured, then priced; see `PROGRAM_SYNTHESIS_ARC6_TIER0.md`.
 const TUPLE_BUILD_OPS: &[&str] = &["TupleOf"];
+
+/// SetLit/DictItems rung: a DEDICATED small typed default for a spec
+/// whose OUTPUT is itself Set/FrozenSet-shaped (`spec_output_is_setlike`)
+/// — the `DEFAULT_STR_OPS` precedent (a small, shape-tailored bucket, not
+/// additive to the much larger list-shaped default). `SetMap` reuses
+/// `OpKind::ListMap`'s exact registration code path (same
+/// `map_templates_by_size` pool `MapList` already builds); `Intersect`/
+/// `Union` reuse `OpKind::ListBinary` (the `ConcatList` precedent); all
+/// three source from `list_by_size`, which already includes Set/
+/// FrozenSet-shaped candidates by construction (`is_listlike`), so no new
+/// type-filtered pool is needed. `Sort`/`Reverse`/`Slice` are included
+/// unconditionally HERE (unlike the general list-shaped bucket, where
+/// Rung 1 measured they regress task 132) because this branch is
+/// mutually exclusive with task 132's own branch — task 132's output is
+/// a STRING, never Set-shaped, so it can never reach this bucket at all.
+/// Deliberately EXCLUDES `DEFAULT_OPS`'s numeric arithmetic (`Plus`/
+/// `Times`/...) and `LIST_EXTRA_OPS`'s dozen list-reduction ops — MEASURED
+/// (not assumed) that including them causes budget exhaustion before the
+/// search reaches the in-budget witness for task 473 (`tested==200000,
+/// found:false` with `DEFAULT_OPS` included vs. `found:true` at 74830
+/// tested without it).
+const SET_DEFAULT_OPS: &[&str] = &[
+    "Eq", "IfThenElse", "Sort", "Reverse", "Slice", "SetMap", "Intersect", "Union",
+];
 
 fn table_kind(name: &str) -> Option<OpKind> {
     OP_TABLE.iter().find(|(n, _)| *n == name).map(|(_, k)| *k)
@@ -471,6 +505,7 @@ fn build_op(name: &str, kids: &[TermIdx]) -> TermNode {
         "Capitalize" => TermNode::Capitalize { text: kids[0] },
         "ParseInt" => TermNode::ParseInt { text: kids[0] },
         "Slice" => TermNode::Slice { seq: kids[0], start: kids[1], stop: kids[2] },
+        "Sort" => TermNode::Sort { seq: kids[0] },
         _ => unreachable!("op filtered through OP_TABLE"),
     }
 }
@@ -550,6 +585,12 @@ fn build_list_binary(name: &str, a: TermIdx, b: TermIdx, item: Sym, acc: Sym, sc
             let body = scratch.add(TermNode::Append { seq: accv, item: itemv });
             TermNode::Fold { source: b, var_name: item, acc_name: acc, init: a, body }
         }
+        // SetLit/DictItems rung: `Union`/`Intersect` are already-shipped,
+        // already-pure Set Terms — no Fold/Append scaffolding needed,
+        // unlike `ConcatList`. Direct wrap, hence 0 extra fixed nodes
+        // (`list_binary_extra_cost` below).
+        "Intersect" => TermNode::Intersect { a, b },
+        "Union" => TermNode::Union { a, b },
         _ => unreachable!("ListBinary op filtered through OP_TABLE"),
     }
 }
@@ -560,7 +601,7 @@ fn build_list_binary(name: &str, a: TermIdx, b: TermIdx, item: Sym, acc: Sym, sc
 fn list_binary_extra_cost(name: &str) -> usize {
     match name {
         "ConcatList" => 3, // Fold{.., body: Append(Var(acc), Var(item))}
-        _ => 0,
+        _ => 0, // Intersect/Union: direct TermNode wrap, no injected nodes.
     }
 }
 
@@ -574,6 +615,11 @@ fn build_list_ho(name: &str, source: TermIdx, tmpl: TermIdx, item: Sym) -> TermN
     match name {
         "FilterList" => TermNode::FilterList { source, var_name: item, predicate: tmpl },
         "MapList" => TermNode::MapList { source, var_name: item, value: tmpl },
+        // SetLit/DictItems rung: `SetMap` is `MapList`'s SET-returning
+        // twin — same `OpKind::ListMap` registration path, same
+        // `map_templates_by_size` pool, only the built Term differs
+        // (`MapSet` instead of `MapList`).
+        "SetMap" => TermNode::MapSet { source, var_name: item, value: tmpl },
         _ => unreachable!("ListHigherOrder op filtered through OP_TABLE"),
     }
 }
@@ -1189,6 +1235,26 @@ fn term_json(
             "start": term_json(arena, *start, names, interner),
             "stop": term_json(arena, *stop, names, interner),
         }),
+        // SetLit/DictItems rung.
+        TermNode::Sort { seq } => json!({
+            "type": "Sort", "seq": term_json(arena, *seq, names, interner),
+        }),
+        TermNode::MapSet { source, var_name, value } => json!({
+            "type": "MapSet",
+            "source": term_json(arena, *source, names, interner),
+            "var_name": names.get(var_name).cloned().unwrap_or_default(),
+            "value": term_json(arena, *value, names, interner),
+        }),
+        TermNode::Intersect { a, b } => json!({
+            "type": "Intersect",
+            "a": term_json(arena, *a, names, interner),
+            "b": term_json(arena, *b, names, interner),
+        }),
+        TermNode::Union { a, b } => json!({
+            "type": "Union",
+            "a": term_json(arena, *a, names, interner),
+            "b": term_json(arena, *b, names, interner),
+        }),
         _ => unreachable!("candidates are built only from the op table + leaves"),
     }
 }
@@ -1358,6 +1424,20 @@ fn term_str(arena: &TermArena, idx: TermIdx, names: &FxHashMap<Sym, String>, int
             term_str(arena, *seq, names, interner),
             term_str(arena, *start, names, interner),
             term_str(arena, *stop, names, interner),
+        ),
+        // SetLit/DictItems rung.
+        TermNode::Sort { seq } => format!("sorted({})", term_str(arena, *seq, names, interner)),
+        TermNode::MapSet { source, var_name, value } => format!(
+            "{{{} for {} in {}}}",
+            term_str(arena, *value, names, interner),
+            names.get(var_name).cloned().unwrap_or_default(),
+            term_str(arena, *source, names, interner),
+        ),
+        TermNode::Intersect { a, b } => format!(
+            "{} & {}", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)
+        ),
+        TermNode::Union { a, b } => format!(
+            "{} | {}", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)
         ),
         _ => "?".to_string(),
     }
@@ -1669,6 +1749,10 @@ pub(crate) fn eval_synth_enumerate(
     // Arc6 tier-0: the tuple CONSTRUCTOR is offered only to a spec that
     // wants a tuple back (see `TUPLE_BUILD_OPS`).
     let spec_output_is_listlike = !outputs.is_empty() && outputs.iter().all(is_listlike);
+    // SetLit/DictItems rung: the SAME narrow output-type gate as
+    // `spec_output_is_listlike`, for Set/FrozenSet — see `SET_DEFAULT_OPS`.
+    let spec_output_is_setlike = !outputs.is_empty()
+        && outputs.iter().all(|v| matches!(v, Value::Set(_) | Value::FrozenSet(_)));
     // Rung 1: EVIDENCE-gated string/float method ops (`TUPLE_BUILD_OPS`'s
     // own discipline, generalised past output-shape to ANY-row content
     // evidence). Loose "ANY row, any var or the output" tests — NOT the
@@ -1728,11 +1812,35 @@ pub(crate) fn eval_synth_enumerate(
         // row's every value string-shaped) is already narrow, so no
         // further evidence-gating is layered on top here.
         DEFAULT_STR_OPS.to_vec()
+    } else if spec_output_is_setlike {
+        // SetLit/DictItems rung: a DEDICATED small typed default — the
+        // `DEFAULT_STR_OPS` precedent (a small, shape-tailored bucket),
+        // NOT layered onto the much larger list-shaped default below.
+        // MEASURED necessary, not assumed: layering `Sort`/`SetMap`/
+        // `Intersect`/`Union` on top of `DEFAULT_OPS ∪ LIST_EXTRA_OPS`'s
+        // dozen other list ops caused BUDGET EXHAUSTION before the
+        // search ever reached the in-budget witness for tasks 232/473
+        // (`tested==200000, found:false`, live-measured) even though
+        // THIS narrow bucket solves both well under budget (19772/74830
+        // tested respectively) — the exact Rung-1 lesson ("even cheap
+        // unconditional additions regress a budget-fragile spec"),
+        // reproduced here and resolved the same way Rung 1 resolved it:
+        // narrow the bucket, don't widen the budget.
+        SET_DEFAULT_OPS.to_vec()
     } else if spec_is_list_shaped {
         let mut v: Vec<&str> =
             DEFAULT_OPS.iter().chain(LIST_EXTRA_OPS.iter()).copied().collect();
         if spec_output_is_listlike {
             v.extend(TUPLE_BUILD_OPS.iter().copied());
+        }
+        // SetLit/DictItems rung: `Sort` offered under the SAME narrow
+        // output-type gate `TUPLE_BUILD_OPS` uses (never on input-shape
+        // evidence alone — Rung 1 measured that even cheap unconditional
+        // Unary/Ternary additions regress task 132). Set-shaped output
+        // is handled entirely by the dedicated branch above; this arm is
+        // only reached when the output is List/Tuple-shaped, not Set.
+        if spec_output_is_listlike {
+            v.push("Sort");
         }
         // Measured (not assumed): even the NARROWER `spec_list_has_
         // string_elements` gate still fires for task 132 (a genuine
@@ -1921,7 +2029,12 @@ pub(crate) fn eval_synth_enumerate(
     // inventory actually contains the relevant op name, so a spec that
     // never requests `FilterList`/`MapList` pays nothing for this.
     let filter_wanted = op_list.iter().any(|(n, _)| n == "FilterList");
-    let map_wanted = op_list.iter().any(|(n, _)| n == "MapList");
+    // SetLit/DictItems rung: `SetMap` shares `MapList`'s exact template
+    // pool (`OpKind::ListMap`), so it must ALSO gate pool construction —
+    // a spec that requests `SetMap` but never `MapList` would otherwise
+    // build an empty pool and find nothing.
+    let set_map_wanted = op_list.iter().any(|(n, _)| n == "SetMap");
+    let map_wanted = op_list.iter().any(|(n, _)| n == "MapList") || set_map_wanted;
     // Rung 1 `op:IndexedMap`.
     let indexed_map_wanted = op_list.iter().any(|(n, _)| n == "IndexedMap");
     let template_cap = max_size + 1;
@@ -2188,6 +2301,20 @@ pub(crate) fn eval_synth_enumerate(
                 let vv = search.scratch.add(TermNode::Var { name: *v });
                 let ix = search.scratch.add(TermNode::IndexAt { seq: iv, index: vv });
                 push(&mut map_templates_by_size, ix, 3);
+            }
+            // SetLit/DictItems rung: sorted(item) — size 2. Gated to
+            // `set_map_wanted` ONLY (not unconditional whenever
+            // `map_wanted`), so every already-shipped `MapList`-only
+            // spec's template pool stays BYTE-IDENTICAL to today — a
+            // spec that never asked for `SetMap` pays nothing for this.
+            // General-purpose (per-element canonicalization, e.g.
+            // "collapse an unordered pair" — not 2-tuple-specific in the
+            // Term itself), reused by MapList too if a future spec's
+            // template search reaches it via `SetMap`'s own gate.
+            if set_map_wanted {
+                let iv = search.scratch.add(TermNode::Var { name: item_sym });
+                let srt = search.scratch.add(TermNode::Sort { seq: iv });
+                push(&mut map_templates_by_size, srt, 2);
             }
         }
         // ---- Rung 1 `op:IndexedMap` templates -------------------------

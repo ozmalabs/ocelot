@@ -213,6 +213,7 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::Capitalize { .. } => "Capitalize",
         TermNode::ParseInt { .. } => "ParseInt",
         TermNode::Slice { .. } => "Slice",
+        TermNode::Sort { .. } => "Sort",
         TermNode::Argmax { .. } => "Argmax",
         TermNode::Argmin { .. } => "Argmin",
         TermNode::ArgminUnique { .. } => "ArgminUnique",
@@ -633,6 +634,9 @@ fn write_fields(
             m.insert("seq".into(), child(*seq, arena, interner));
             m.insert("start".into(), child(*start, arena, interner));
             m.insert("stop".into(), child(*stop, arena, interner));
+        }
+        TermNode::Sort { seq } => {
+            m.insert("seq".into(), child(*seq, arena, interner));
         }
         TermNode::Filter { source, var_name, predicate }
         | TermNode::FilterList { source, var_name, predicate }
@@ -1432,6 +1436,9 @@ fn read_term(
             seq: child_of("seq", obj, arena, interner, variant)?,
             start: child_of("start", obj, arena, interner, variant)?,
             stop: child_of("stop", obj, arena, interner, variant)?,
+        },
+        "Sort" => TermNode::Sort {
+            seq: child_of("seq", obj, arena, interner, variant)?,
         },
         "Eq" => TermNode::Eq {
             a: child_of("a", obj, arena, interner, variant)?,

@@ -2735,6 +2735,23 @@ def _text(v) -> Optional[str]:
 def _plain(v):
     if isinstance(v, (list, tuple)):
         return [_plain(x) for x in v]
+    # SetLit/DictItems rung: a real Set/FrozenSet-valued program result is
+    # now REACHABLE (SetMap/Intersect/Union as SynthEnumerate ops) where
+    # before this rung it never was, so this JSON-safe "plain" flattener
+    # never needed a case for it -- exactly the same class of latent gap
+    # `_wire`/`_unwire` closed one boundary upstream (`inputs_json`/
+    # `expected`). Converted via `sorted()` (mirrors `mbpp_endgame_
+    # battery.py`'s own `_json_default` set-handling exactly), which is
+    # EQUALITY-PRESERVING for any `_plain(a) == _plain(b)` comparison
+    # site in this module (two equal sets sort to the same list; two
+    # distinct sets never coincidentally sort equal for orderable
+    # elements) -- never downgrades a genuine set-equality verdict to a
+    # list-order-sensitive one.
+    if isinstance(v, (set, frozenset)):
+        try:
+            return [_plain(x) for x in sorted(v)]
+        except TypeError:
+            return [_plain(x) for x in v]
     if isinstance(v, dict):
         return {_plain(k): _plain(x) for k, x in v.items()}
     if isinstance(v, bytes):
