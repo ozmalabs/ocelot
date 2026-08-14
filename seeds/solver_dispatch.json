@@ -1,0 +1,92 @@
+{
+  "id": "solver_dispatch",
+  "version": "1.0.0",
+  "depends_on": ["question_driving"],
+  "description": "QUESTION_DRIVER_SOLVER_DISPATCH_PREREG.md Rung 1: seven new solve_* Resolver nodes wiring the reasoning/solving toolbox (propositional_deduction.py, can_native_orchestration.py, can_junction_tree.py, can_native_bp.py, reasoning_can_bridge.py, analogical_thinking.py/propositional_deduction.mint_logical_schema_from_analogy, problem_decomposition.py) as dispatch targets of the EXISTING, UNCHANGED qd_bind_resolver JOIN (seeds/question_driving.json) -- zero new rules for the dispatch step itself, per the prereg's own headline finding. Every resolves_kind is 'solve_'-prefixed (verified, by direct grep across every domains/*.py and seeds/*.json Goal.kind mint site, to collide with nothing in the existing Goal.kind namespace shared by reflective_faculty.py/reading_drive.py/conversation_action.py/conversation_topic_route.json -- the namespace-collision risk the prereg names in its Sec1.3). Two new Gamma productions (targets_mt, targets_correspondence) let a solve_* Goal reference the Microtheory/DirectionalCorrespondence node it operates over via a graph edge (mirroring has_subgoal/has_goal's own edge-reference discipline), rather than smuggling a raw NodeID into a Goal attr (untested territory for this engine's attr serialization -- a deliberate, documented judgment call, see QUESTION_DRIVER_RUNG1_RESULTS.md).",
+  "microtheory": {
+    "name": "solver_dispatch",
+    "description": "solve_* Goal kinds -> the seven new toolbox Resolvers, via the SAME qd_bind_resolver JOIN question_driving.json already declares."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "Resolver",
+      "attrs": {
+        "name": "solve_deduction",
+        "resolves_kind": "solve_deduction"
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "Resolver",
+      "attrs": {
+        "name": "solve_can_relax",
+        "resolves_kind": "solve_can_relax"
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Resolver",
+      "attrs": {
+        "name": "solve_can_exact",
+        "resolves_kind": "solve_can_exact"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Resolver",
+      "attrs": {
+        "name": "solve_can_bp",
+        "resolves_kind": "solve_can_bp"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Resolver",
+      "attrs": {
+        "name": "solve_reasoning_bridge",
+        "resolves_kind": "solve_reasoning_bridge"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Resolver",
+      "attrs": {
+        "name": "solve_analogical_promote",
+        "resolves_kind": "solve_analogical_promote"
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "Resolver",
+      "attrs": {
+        "name": "solve_decompose",
+        "resolves_kind": "solve_decompose"
+      }
+    }
+  ],
+  "edges": [
+    { "src": { "role": "agent_root" }, "tgt": { "local": 0 }, "type": "has_resolver", "attrs": {} },
+    { "src": { "role": "agent_root" }, "tgt": { "local": 1 }, "type": "has_resolver", "attrs": {} },
+    { "src": { "role": "agent_root" }, "tgt": { "local": 2 }, "type": "has_resolver", "attrs": {} },
+    { "src": { "role": "agent_root" }, "tgt": { "local": 3 }, "type": "has_resolver", "attrs": {} },
+    { "src": { "role": "agent_root" }, "tgt": { "local": 4 }, "type": "has_resolver", "attrs": {} },
+    { "src": { "role": "agent_root" }, "tgt": { "local": 5 }, "type": "has_resolver", "attrs": {} },
+    { "src": { "role": "agent_root" }, "tgt": { "local": 6 }, "type": "has_resolver", "attrs": {} }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:solver_dispatch:targets_mt-0",
+      "src": { "type": "Goal", "var": "s" },
+      "edge_type": "targets_mt",
+      "tgt": { "type": "Microtheory", "var": "t" }
+    },
+    {
+      "provenance": "seed:solver_dispatch:targets_correspondence-1",
+      "src": { "type": "Goal", "var": "s" },
+      "edge_type": "targets_correspondence",
+      "tgt": { "type": "DirectionalCorrespondence", "var": "t" }
+    }
+  ],
+  "rules": []
+}
