@@ -230,6 +230,27 @@ pub enum TermNode {
     /// (already canonically ordered by construction). Non-sequence input
     /// passes through unchanged (the `Reverse` degrade precedent).
     Sort { seq: TermIdx },
+    /// DictItems/SortBy rung (`PROGRAM_SYNTHESIS_DICTITEMS_SORTBY_PREREG.md`,
+    /// task 475 `sort_counter`/`Counter.most_common()`): Python's
+    /// `dict.items()` — a `Value::Dict` becomes a `Value::Tuple` of
+    /// `(key, value)` 2-tuples, in the Dict's own stored order.
+    /// `OpKind::Unary`, sourced from the enumerator's general `by_size`
+    /// pool exactly like `Sort`/`Reverse` (zero new registration
+    /// machinery). Non-Dict input passes through unchanged (the `Sort`/
+    /// `Reverse` degrade precedent).
+    DictItems { seq: TermIdx },
+    /// DictItems/SortBy rung: `sorted(source, key=lambda item: key(item))`
+    /// — a STABLE sort of `source`'s elements by a PROJECTED key (the
+    /// `item` binder evaluates `key` per element), keeping the ORIGINAL
+    /// elements (unlike `MapList`, whose template computes the OUTPUT
+    /// value; here the template computes only the sort key). Ascending;
+    /// compose with `Reverse` for descending (`Counter.most_common()`'s
+    /// shape). Reuses `OpKind::ListMap`'s search-registration path and
+    /// `map_templates_by_size` template pool verbatim (see PREREG §3) —
+    /// the same binder shape as `MapList`/`MapSet`/`IndexedMap`. Uses
+    /// `cmp_value_lex` for the key comparison, the same comparator
+    /// `Sort` already uses. Non-listlike source passes through unchanged.
+    SortBy { source: TermIdx, var_name: Sym, key: TermIdx },
     /// Verify that `term` (evaluated under bindings from `env`) equals
     /// `expected`. `env` should evaluate to a Value::Dict of
     /// (Str, Value) pairs — each entry is pushed onto the eval env
@@ -2959,6 +2980,10 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
             seq: copy_subtree(src, dst, seq), start: copy_subtree(src, dst, start), stop: copy_subtree(src, dst, stop),
         },
         TermNode::Sort { seq } => TermNode::Sort { seq: copy_subtree(src, dst, seq) },
+        TermNode::DictItems { seq } => TermNode::DictItems { seq: copy_subtree(src, dst, seq) },
+        TermNode::SortBy { source, var_name, key } => TermNode::SortBy {
+            source: copy_subtree(src, dst, source), var_name, key: copy_subtree(src, dst, key),
+        },
         TermNode::Verify { term, env, expected } => TermNode::Verify { term: copy_subtree(src, dst, term), env: copy_subtree(src, dst, env), expected: copy_subtree(src, dst, expected) },
         TermNode::MkDict { items } =>
             TermNode::MkDict { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
@@ -5179,6 +5204,67 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                     let mut v: Vec<Value> = items.iter().cloned().collect();
                     v.sort_by(|a, b| crate::value::cmp_value_lex(a, b, ctx.interner));
                     Value::Tuple(std::sync::Arc::new(v.into_iter().collect()))
+                }
+                other => other,
+            }
+        }
+
+        TermNode::DictItems { seq } => {
+            let v = evaluate(arena, *seq, env, ctx);
+            match v {
+                Value::Dict(pairs) => {
+                    // Python's `dict.items()`/`list(d.items())`: the OUTER
+                    // container is a List (matches `Counter.most_common()`'s
+                    // own return type, and the `__list__`/`__tuple__` wire
+                    // tags a real MBPP spec's list-of-tuples output carries
+                    // through the `Lit` boundary — see PREREG/RESULTS §
+                    // "container type", found live, not assumed); each
+                    // (key, value) PAIR is a genuine 2-tuple.
+                    let out: smallvec::SmallVec<[Value; 4]> = pairs
+                        .iter()
+                        .map(|(k, val)| {
+                            let tup: SmallVec<[Value; 4]> = smallvec![k.clone(), val.clone()];
+                            Value::Tuple(std::sync::Arc::new(tup))
+                        })
+                        .collect();
+                    Value::List(std::sync::Arc::new(out))
+                }
+                other => other,
+            }
+        }
+
+        TermNode::SortBy { source, var_name, key } => {
+            let s = evaluate(arena, *source, env, ctx);
+            match s {
+                Value::List(items) => {
+                    let mut keyed: Vec<(Value, Value)> = items
+                        .iter()
+                        .map(|it_ref| {
+                            env.push((*var_name, it_ref.clone()));
+                            let k = evaluate(arena, *key, env, ctx);
+                            env.pop();
+                            (k, it_ref.clone())
+                        })
+                        .collect();
+                    keyed.sort_by(|a, b| crate::value::cmp_value_lex(&a.0, &b.0, ctx.interner));
+                    let out: smallvec::SmallVec<[Value; 4]> =
+                        keyed.into_iter().map(|(_, v)| v).collect();
+                    Value::List(std::sync::Arc::new(out))
+                }
+                Value::Tuple(items) => {
+                    let mut keyed: Vec<(Value, Value)> = items
+                        .iter()
+                        .map(|it_ref| {
+                            env.push((*var_name, it_ref.clone()));
+                            let k = evaluate(arena, *key, env, ctx);
+                            env.pop();
+                            (k, it_ref.clone())
+                        })
+                        .collect();
+                    keyed.sort_by(|a, b| crate::value::cmp_value_lex(&a.0, &b.0, ctx.interner));
+                    let out: smallvec::SmallVec<[Value; 4]> =
+                        keyed.into_iter().map(|(_, v)| v).collect();
+                    Value::Tuple(std::sync::Arc::new(out))
                 }
                 other => other,
             }
@@ -9984,6 +10070,10 @@ fn collect_into(arena: &TermArena, idx: TermIdx, out: &mut SmallVec<[Sym; 8]>, e
             collect_into(arena, *source, out, excluded);
             collect_into(arena, *value, out, Some(*var_name));
         }
+        TermNode::SortBy { source, var_name, key } => {
+            collect_into(arena, *source, out, excluded);
+            collect_into(arena, *key, out, Some(*var_name));
+        }
         TermNode::MinOver { source, var_name, value, default }
         | TermNode::MaxOver { source, var_name, value, default } => {
             collect_into(arena, *source, out, excluded);
@@ -10377,6 +10467,8 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         TermNode::ParseInt { text } => out.push(*text),
         TermNode::Slice { seq, start, stop } => { out.push(*seq); out.push(*start); out.push(*stop); }
         TermNode::Sort { seq } => out.push(*seq),
+        TermNode::DictItems { seq } => out.push(*seq),
+        TermNode::SortBy { source, key, .. } => { out.push(*source); out.push(*key); }
     }
     out
 }

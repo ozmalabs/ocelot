@@ -401,6 +401,12 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
             Child { name: "stop", child: *stop },
         ]),
         TermNode::Sort { seq } => ("Sort", vec![Child { name: "seq", child: *seq }]),
+        TermNode::DictItems { seq } => ("DictItems", vec![Child { name: "seq", child: *seq }]),
+        TermNode::SortBy { source, var_name, key } => ("SortBy", vec![
+            Child { name: "source", child: *source },
+            ScalarSym { name: "var_name", value: *var_name },
+            Child { name: "key", child: *key },
+        ]),
         TermNode::Argmax { source, var_name, value, default } => ("Argmax", vec![
             Child { name: "source", child: *source },
             ScalarSym { name: "var_name", value: *var_name },
@@ -1252,6 +1258,12 @@ fn reconstruct(
             seq: take_child!("seq"), start: take_child!("start"), stop: take_child!("stop"),
         },
         "Sort" => TermNode::Sort { seq: take_child!("seq") },
+        "DictItems" => TermNode::DictItems { seq: take_child!("seq") },
+        "SortBy" => TermNode::SortBy {
+            source: take_child!("source"),
+            var_name: get_sym("var_name")?,
+            key: take_child!("key"),
+        },
         "Argmax" => TermNode::Argmax {
             source: take_child!("source"),
             var_name: get_sym("var_name")?,

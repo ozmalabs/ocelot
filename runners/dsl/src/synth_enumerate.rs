@@ -360,6 +360,15 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     ("SetMap", OpKind::ListMap),       // -> MapSet{source,item,<template>} (the MapList twin, returns a Set)
     ("Intersect", OpKind::ListBinary), // -> Intersect{a,b} (the shipped Set/FrozenSet Term, direct)
     ("Union", OpKind::ListBinary),     // -> Union{a,b} (the shipped Set/FrozenSet Term, direct)
+    // --- DictItems/SortBy rung (PROGRAM_SYNTHESIS_DICTITEMS_SORTBY_
+    // PREREG.md, task 475 `sort_counter`/`Counter.most_common()`):
+    // `DictItems` is `Sort`-class (Unary, general `by_size` pool, zero new
+    // registration machinery). `SortBy` reuses `OpKind::ListMap`'s
+    // registration path verbatim (the `SetMap`/`IndexedMap` precedent) —
+    // its template is a SORT KEY, not an output value (see `build_list_ho`
+    // and the evaluator in term.rs). ---
+    ("DictItems", OpKind::Unary),      // -> DictItems{seq} (dict.items() as a Tuple of (k,v) pairs)
+    ("SortBy", OpKind::ListMap),       // -> SortBy{source,item,<key template>} (stable sort by projected key)
 ];
 
 /// Arc4-S4: the list-op names, in `OP_TABLE` declaration order — appended
@@ -506,6 +515,7 @@ fn build_op(name: &str, kids: &[TermIdx]) -> TermNode {
         "ParseInt" => TermNode::ParseInt { text: kids[0] },
         "Slice" => TermNode::Slice { seq: kids[0], start: kids[1], stop: kids[2] },
         "Sort" => TermNode::Sort { seq: kids[0] },
+        "DictItems" => TermNode::DictItems { seq: kids[0] },
         _ => unreachable!("op filtered through OP_TABLE"),
     }
 }
@@ -620,6 +630,12 @@ fn build_list_ho(name: &str, source: TermIdx, tmpl: TermIdx, item: Sym) -> TermN
         // `map_templates_by_size` pool, only the built Term differs
         // (`MapSet` instead of `MapList`).
         "SetMap" => TermNode::MapSet { source, var_name: item, value: tmpl },
+        // DictItems/SortBy rung: same `OpKind::ListMap` registration path,
+        // same `map_templates_by_size` pool — `tmpl` here is the SORT KEY
+        // template, not an output-value template (the built `TermNode`
+        // holds it as `key`, and the evaluator sorts the ORIGINAL elements
+        // by it, keeping them unchanged — see term.rs `SortBy`).
+        "SortBy" => TermNode::SortBy { source, var_name: item, key: tmpl },
         _ => unreachable!("ListHigherOrder op filtered through OP_TABLE"),
     }
 }
@@ -1255,6 +1271,16 @@ fn term_json(
             "a": term_json(arena, *a, names, interner),
             "b": term_json(arena, *b, names, interner),
         }),
+        // DictItems/SortBy rung.
+        TermNode::DictItems { seq } => json!({
+            "type": "DictItems", "seq": term_json(arena, *seq, names, interner),
+        }),
+        TermNode::SortBy { source, var_name, key } => json!({
+            "type": "SortBy",
+            "source": term_json(arena, *source, names, interner),
+            "var_name": names.get(var_name).cloned().unwrap_or_default(),
+            "key": term_json(arena, *key, names, interner),
+        }),
         _ => unreachable!("candidates are built only from the op table + leaves"),
     }
 }
@@ -1766,6 +1792,17 @@ pub(crate) fn eval_synth_enumerate(
     let is_float_val = |v: &Value| matches!(v, Value::Float(_) | Value::Rational(_, _));
     let spec_has_float_value = envs.iter().flat_map(|e| e.iter()).any(|(_, v)| is_float_val(v))
         || outputs.iter().any(is_float_val);
+    // DictItems/SortBy rung (PREREG §4): a spec with a top-level
+    // Dict-shaped VARIABLE (never a nested one — the same shallow,
+    // top-level-only test `spec_has_string_value`/`spec_has_float_value`
+    // already use). Narrow by construction: `is_listlike` deliberately
+    // excludes Dict, so no currently-shipped bucket ever offers
+    // `DictItems`/`SortBy`, and — measured against the real corpus,
+    // PREREG §4 — no CURRENTLY-PASSING task has a top-level Dict variable,
+    // so this evidence gate can only ever ADD ops to a spec that is not
+    // already solved, never touch one that is.
+    let is_dict_val = |v: &Value| matches!(v, Value::Dict(_));
+    let spec_has_dict_value = envs.iter().flat_map(|e| e.iter()).any(|(_, v)| is_dict_val(v));
     // Rung 1: measured live that even an "inside the list" string-content
     // test still fires for task 132 (a genuine list-of-CHARACTERS ->
     // joined-string spec) and still regresses it to `budget` — see the
@@ -1862,6 +1899,20 @@ pub(crate) fn eval_synth_enumerate(
         }
         if spec_has_repeated_list_element {
             v.push("IndexedMap");
+        }
+        // DictItems/SortBy rung: same evidence-gate discipline as
+        // `Round`/`IndexedMap` above — offered only when the spec's own
+        // content proves it is needed (PREREG §4's regression audit).
+        // `Reverse` is included alongside (not unconditional in
+        // `LIST_EXTRA_OPS` per Rung 1's own measured task-132 regression)
+        // because it is needed for the `Counter.most_common()` descending
+        // shape and is mutually exclusive with task 132's branch the same
+        // way `SET_DEFAULT_OPS`'s unconditional `Reverse` is: task 132 has
+        // no Dict-shaped variable, so it can never reach this gate.
+        if spec_has_dict_value {
+            v.push("DictItems");
+            v.push("SortBy");
+            v.push("Reverse");
         }
         v
     } else {
@@ -2034,7 +2085,12 @@ pub(crate) fn eval_synth_enumerate(
     // a spec that requests `SetMap` but never `MapList` would otherwise
     // build an empty pool and find nothing.
     let set_map_wanted = op_list.iter().any(|(n, _)| n == "SetMap");
-    let map_wanted = op_list.iter().any(|(n, _)| n == "MapList") || set_map_wanted;
+    // DictItems/SortBy rung: `SortBy` shares `MapList`'s exact template
+    // pool too (same `OpKind::ListMap` reuse as `SetMap`) — must ALSO gate
+    // pool construction, same reasoning as `set_map_wanted` above.
+    let sort_by_wanted = op_list.iter().any(|(n, _)| n == "SortBy");
+    let map_wanted =
+        op_list.iter().any(|(n, _)| n == "MapList") || set_map_wanted || sort_by_wanted;
     // Rung 1 `op:IndexedMap`.
     let indexed_map_wanted = op_list.iter().any(|(n, _)| n == "IndexedMap");
     let template_cap = max_size + 1;
