@@ -1,0 +1,62 @@
+{
+  "id": "abusive_r2_cycle_limit",
+  "version": "1.0.0",
+  "depends_on": ["snap_frustration", "arousal_window_coreg"],
+  "self_load_only": true,
+  "area": "retina",
+  "description": "ABUSIVE-DYNAMICS R2 -- THE CYCLE OF ABUSE as a LIMIT CYCLE (block 286000). Composes TWO already-built, unmodified seeds onto one dyad: snap_frustration (block 242000) drives the ABUSER's own tension-building->incident relaxation oscillator (a leaky frustration accumulator crossing the window's upper bound snaps, discharges, recovers); arousal_window_coreg (block 239000) drives the VICTIM's entrainment (coreg_pull leaky-pulls the victim's arousal toward whatever the attended-to caregiver's arousal currently is) + self-regulation + window dysregulation/plasticity bookkeeping. The four Walker cycle-of-abuse phases (A1/B2 of ABUSIVE_RELATIONSHIPS_SCOPING.md) fall out as ONE closed orbit in the victim's arousal: tension-building = the abuser's frustration climbing (pulls the victim up via entrainment); incident = the abuser's snap (arousal spikes to setpoint+frustration, pulls the victim up hard); reconciliation/honeymoon = the abuser's discharge+recovery (arousal crashes, pulls the victim back down -- the SAME leaky pull that heals in 239000, here re-arming the cycle); calm = both transiently near setpoint until tension rebuilds. THE ONLY STRUCTURAL COMPOSITION is one attended_by edge (victim -> abuser) -- everything above is the two seeds' OWN unmodified rules. THE ONE RULE IN THIS FILE EXISTS FOR AN EMPIRICALLY-DISCOVERED REASON, NOT TO ADD NEW DYNAMICS (see ABUSIVE_R2_CYCLE_LIMIT_PREREG.md Sec 3.0, a two-stage finding): snap_frustration's own snap_arousal_track (order 5, match = has_affective_state ONLY, no has_window/goal_block needed) unconditionally overwrites arousal := setpoint+frustration for EVERY has_affective_state-connected node in the substrate, including the victim's -- and because run_rules() is a REPEATING fixpoint over all orders (not a single ascending sweep), a rule that instead tried to write victim.arousal directly at a LATER order is not a fix: snap_arousal_track keeps re-matching (its where clause has no per-tick epoch guard) on every subsequent pass within the same tick and re-clobbers arousal back to setpoint+frustration=0 until nothing further changes -- the fixpoint's only stable resting point for a direct-arousal-write composition IS arousal=0. The resolution is to stop writing victim.arousal at all and instead write victim.frustration (an attribute arousal_window_coreg never touches) to EXACTLY the value that makes setpoint+frustration equal the desired entrained arousal; snap_arousal_track (unmodified, still firing every tick as designed) then becomes the mechanism that COMMITS the entrained value to arousal, and the fixpoint converges there because that is now the only value at which snap_arousal_track's own where clause goes false. r2_victim_entrainment_via_frustration computes, per tick, the SAME coreg_pull + selfreg_pull deltas (a single simultaneous-Euler-step combination of both, a disclosed minor simplification of arousal_window_coreg's own sequential two-rule order4-then-order5 form) as an offset from setpoint, written to frustration once per tick (epoch-guarded). Neither snap_arousal_track nor coreg_pull/selfreg_pull is disabled or edited; all three still fire exactly as designed every tick. This is a genuine composition hazard between two independently-gated seeds sharing the generic has_affective_state edge shape, resolved by routing through an attribute the colliding rule was already designed to read, not by fighting its own commit. NO reward/punishment anywhere; the tension trickle is a world-delivered magnitude (mechanically identical to a goal-block magnitude in 242000), never a scored choice. self_load_only, default-OFF.",
+  "microtheory": {
+    "name": "cycle_of_abuse_limit_cycle",
+    "description": "The cycle of abuse is not a new mechanism -- it is the SAME leaky-integrate-fire relaxation oscillator already used for frustration snapping (block 242000), coupled to the SAME leaky co-regulation entrainment already used for arousal/window-of-tolerance (block 239000), via one attended_by edge. Tension-building, incident, honeymoon, and calm are the abuser's own accumulate/leak/snap/discharge/recover cycle, read through the victim's entrainment to it."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "abusive_r2_cycle_limit:victim_attended_by_abuser",
+      "src": {"type": "Agent", "var": "victim"},
+      "edge_type": "attended_by",
+      "tgt": {"type": "Agent", "var": "abuser"}
+    }
+  ],
+  "rules": [
+    {
+      "name": "r2_victim_entrainment_via_frustration",
+      "area": "retina",
+      "order": 8,
+      "latency_class": "hard_realtime",
+      "match": [
+        ["victim", "has_affective_state", "vaff"],
+        ["victim", "attended_by", "abuser"],
+        ["abuser", "has_affective_state", "aaff"]
+      ],
+      "where": {
+        "type": "Lt",
+        "a": {"type": "Attr", "node": {"type": "Var", "name": "vaff"}, "key": "pcr_epoch"},
+        "b": {"type": "Attr", "node": {"type": "Var", "name": "vaff"}, "key": "tick_epoch"}
+      },
+      "effects": [
+        ["set_attr", "vaff", "frustration", {"__term__": {
+          "type": "Minus",
+          "a": {"type": "Plus", "items": [
+            {"type": "Attr", "node": {"type": "Var", "name": "vaff"}, "key": "arousal"},
+            {"type": "Times", "items": [
+              {"type": "Attr", "node": {"type": "Var", "name": "vaff"}, "key": "k_co"},
+              {"type": "Minus",
+               "a": {"type": "Attr", "node": {"type": "Var", "name": "aaff"}, "key": "arousal"},
+               "b": {"type": "Attr", "node": {"type": "Var", "name": "vaff"}, "key": "arousal"}}
+            ]},
+            {"type": "Times", "items": [
+              {"type": "Attr", "node": {"type": "Var", "name": "vaff"}, "key": "k_self"},
+              {"type": "Minus",
+               "a": {"type": "Attr", "node": {"type": "Var", "name": "vaff"}, "key": "setpoint"},
+               "b": {"type": "Attr", "node": {"type": "Var", "name": "vaff"}, "key": "arousal"}}
+            ]}
+          ]},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "vaff"}, "key": "setpoint"}
+        }}],
+        ["set_attr", "vaff", "pcr_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "vaff"}, "key": "tick_epoch"}}]
+      ]
+    }
+  ]
+}
