@@ -400,6 +400,7 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
             Child { name: "start", child: *start },
             Child { name: "stop", child: *stop },
         ]),
+        TermNode::Sort { seq } => ("Sort", vec![Child { name: "seq", child: *seq }]),
         TermNode::Argmax { source, var_name, value, default } => ("Argmax", vec![
             Child { name: "source", child: *source },
             ScalarSym { name: "var_name", value: *var_name },
@@ -1250,6 +1251,7 @@ fn reconstruct(
         "Slice" => TermNode::Slice {
             seq: take_child!("seq"), start: take_child!("start"), stop: take_child!("stop"),
         },
+        "Sort" => TermNode::Sort { seq: take_child!("seq") },
         "Argmax" => TermNode::Argmax {
             source: take_child!("source"),
             var_name: get_sym("var_name")?,
