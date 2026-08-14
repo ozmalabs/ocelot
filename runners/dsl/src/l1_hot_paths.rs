@@ -37,6 +37,14 @@
 //!    to compare 16 `Sym(u32)` values per cycle when scanning an
 //!    `Attrs` Vec. Scalar fallback for non-AVX-512 CPUs.
 //!
+//!    The AVX-512 path is gated behind the `avx512` Cargo feature
+//!    (default OFF — see `Cargo.toml` and `lib.rs`'s crate-level doc
+//!    comment): the intrinsics it uses are unstable on this crate's
+//!    baseline toolchain. The default build always takes the scalar
+//!    fallback; build with `cargo build --release --features avx512`
+//!    on a supporting toolchain + AVX-512F hardware to get the fast
+//!    path back (see `AVX512_PORTABILITY_FIX_RESULTS.md`).
+//!
 //! ## L1 invariants satisfied (after this module)
 //!
 //! - `cache_friendly_typed_traversal` — prefetch hides latency
@@ -143,7 +151,15 @@ impl L1HotPaths for TypedGraph {
         // AVX-512 fast path — compare 16 Sym(u32) at a time. Only
         // worth invoking for medium-sized attribute tables; for
         // small tables (≤4 entries) scalar wins by branch-prediction.
-        #[cfg(target_arch = "x86_64")]
+        //
+        // Gated behind the `avx512` Cargo feature (default OFF) as well
+        // as `target_arch = "x86_64"`: the intrinsics `find_attr_sym_avx512`
+        // uses are unstable on this crate's baseline toolchain (see
+        // AVX512_PORTABILITY_FIX_RESULTS.md). With the feature off, this
+        // block does not exist in the compiled output and the scalar
+        // fallback below is the only path — no runtime check is left
+        // guarding code that can't run.
+        #[cfg(all(target_arch = "x86_64", feature = "avx512"))]
         {
             if attrs.0.len() >= 8 && is_x86_feature_detected!("avx512f") {
                 return unsafe { find_attr_sym_avx512(attrs, key) };
@@ -166,7 +182,7 @@ impl L1HotPaths for TypedGraph {
 /// non-trivial size — we can't load 16 consecutive Syms in one go
 /// because Values are between them. Instead we use VPGATHERDD with
 /// indices [0, 1, 2, ...] scaled by sizeof((Sym, Value)).
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", feature = "avx512"))]
 #[target_feature(enable = "avx512f")]
 unsafe fn find_attr_sym_avx512(attrs: &Attrs, key: Sym) -> Option<usize> {
     use std::arch::x86_64::*;

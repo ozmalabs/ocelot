@@ -183,11 +183,14 @@ impl Mat {
                    "inner dims mismatch: {}x{} * {}x{}",
                    self.rows, self.cols, other.rows, other.cols);
         // Dispatch to AVX-512 path when:
+        //   · built with the `avx512` Cargo feature (default OFF — the
+        //     intrinsics `mul_avx512` uses are unstable on this crate's
+        //     baseline toolchain, see AVX512_PORTABILITY_FIX_RESULTS.md)
         //   · target is x86_64 with AVX-512F at runtime
         //   · inner-row width (other.cols) ≥ 8 (one SIMD lane)
-        // Smaller widths fall through to the scalar path because
-        // SIMD setup cost dominates.
-        #[cfg(target_arch = "x86_64")]
+        // Smaller widths, or a default (`avx512` feature off) build,
+        // fall through to the scalar path.
+        #[cfg(all(target_arch = "x86_64", feature = "avx512"))]
         {
             if other.cols >= 8 && is_x86_feature_detected!("avx512f") {
                 return unsafe { self.mul_avx512(other) };
@@ -234,26 +237,35 @@ impl Mat {
     /// = ~960 GFLOPs single-core (BF16-effective) at ~5 GHz.
     ///
     /// Falls back to `mul` when dimensions aren't compatible
-    /// (requires `k % 2 == 0`, `n % 16 == 0`, both ≥ minimum).
+    /// (requires `k % 2 == 0`, `n % 16 == 0`, both ≥ minimum), when the
+    /// runtime lacks AVX-512F/BF16, or when this crate was built
+    /// without the `avx512` Cargo feature (default OFF — the
+    /// intrinsics `mul_bf16_inner` uses are unstable on this crate's
+    /// baseline toolchain, see AVX512_PORTABILITY_FIX_RESULTS.md; the
+    /// fallback is exact FP64 `mul`, which is strictly more precise
+    /// than the BF16 path it replaces).
     #[cfg(target_arch = "x86_64")]
     pub fn mul_bf16(&self, other: &Mat) -> Mat {
         assert_eq!(self.cols, other.rows,
                    "inner dims mismatch: {}x{} * {}x{}",
                    self.rows, self.cols, other.rows, other.cols);
-        let k = self.cols;
-        let n = other.cols;
-        // Require K even (pair-reduction) and N a multiple of 16
-        // (SIMD lane width). Otherwise scalar path.
-        if k < 2 || n < 16 || k % 2 != 0 || n % 16 != 0
-            || !is_x86_feature_detected!("avx512f")
-            || !is_x86_feature_detected!("avx512bf16")
+        #[cfg(feature = "avx512")]
         {
-            return self.mul(other);
+            let k = self.cols;
+            let n = other.cols;
+            // Require K even (pair-reduction) and N a multiple of 16
+            // (SIMD lane width). Otherwise scalar path.
+            if k >= 2 && n >= 16 && k % 2 == 0 && n % 16 == 0
+                && is_x86_feature_detected!("avx512f")
+                && is_x86_feature_detected!("avx512bf16")
+            {
+                return unsafe { self.mul_bf16_inner(other) };
+            }
         }
-        unsafe { self.mul_bf16_inner(other) }
+        self.mul(other)
     }
 
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(all(target_arch = "x86_64", feature = "avx512"))]
     #[target_feature(enable = "avx512f,avx512bf16")]
     unsafe fn mul_bf16_inner(&self, other: &Mat) -> Mat {
         use std::arch::x86_64::*;
@@ -346,24 +358,30 @@ impl Mat {
     /// `pack_for_bf16_b` (which only returns Some when dimensions
     /// qualify); this method asserts internal dims + checks features.
     /// Falls back to scalar conversion-from-packed when SIMD isn't
-    /// available (rare; for portability).
+    /// available (rare; for portability) OR when this crate was built
+    /// without the `avx512` Cargo feature (default OFF — see
+    /// AVX512_PORTABILITY_FIX_RESULTS.md).
     #[cfg(target_arch = "x86_64")]
     pub fn mul_bf16_pre_b(&self, packed: &Bf16PackedB) -> Mat {
         assert_eq!(self.cols, packed.k_rows,
                    "inner dims mismatch: {}x{} * (packed K={})",
                    self.rows, self.cols, packed.k_rows);
-        if is_x86_feature_detected!("avx512f")
-            && is_x86_feature_detected!("avx512bf16")
+        #[cfg(feature = "avx512")]
         {
-            return unsafe { self.mul_bf16_pre_b_inner(packed) };
+            if is_x86_feature_detected!("avx512f")
+                && is_x86_feature_detected!("avx512bf16")
+            {
+                return unsafe { self.mul_bf16_pre_b_inner(packed) };
+            }
         }
         // Scalar fallback: reconstruct B from packed (lossy due to
-        // BF16 → FP64) + multiply. Only used on non-AVX-512 hosts.
+        // BF16 → FP64) + multiply. Used on non-AVX-512 hosts and on
+        // any build without the `avx512` feature.
         let b = packed.to_f64_mat();
         self.mul_scalar(&b)
     }
 
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(all(target_arch = "x86_64", feature = "avx512"))]
     #[target_feature(enable = "avx512f,avx512bf16")]
     unsafe fn mul_bf16_pre_b_inner(&self, packed: &Bf16PackedB) -> Mat {
         use std::arch::x86_64::*;
@@ -419,7 +437,10 @@ impl Mat {
     /// A 64×64×64 matmul = 524288 FLOPs ≈ 3.3 µs at peak.
     ///
     /// Closes the Bench 3c 64-dim Kalman gap from commit b0a7954.
-    #[cfg(target_arch = "x86_64")]
+    ///
+    /// Gated behind the `avx512` Cargo feature (default OFF — see
+    /// AVX512_PORTABILITY_FIX_RESULTS.md).
+    #[cfg(all(target_arch = "x86_64", feature = "avx512"))]
     #[target_feature(enable = "avx512f")]
     unsafe fn mul_avx512(&self, other: &Mat) -> Mat {
         use std::arch::x86_64::*;
@@ -797,8 +818,8 @@ mod tests {
     #[test]
     fn bf16_matmul_within_precision_tolerance() {
         #[cfg(target_arch = "x86_64")]
-        if !is_x86_feature_detected!("avx512bf16") {
-            eprintln!("avx512bf16 not detected, skipping BF16 test");
+        if !cfg!(feature = "avx512") || !is_x86_feature_detected!("avx512bf16") {
+            eprintln!("avx512 feature not enabled or avx512bf16 not detected, skipping BF16 test");
             return;
         }
         for n in [16, 32, 64] {
@@ -833,9 +854,10 @@ mod tests {
     /// numerically equivalent to the reference.
     #[test]
     fn avx512_matches_scalar_across_dimensions() {
-        // Skip if hardware lacks AVX-512F.
+        // Skip if the `avx512` Cargo feature is off (default) or
+        // hardware lacks AVX-512F.
         #[cfg(target_arch = "x86_64")]
-        if !is_x86_feature_detected!("avx512f") { return; }
+        if !cfg!(feature = "avx512") || !is_x86_feature_detected!("avx512f") { return; }
         for n in [8, 9, 16, 17, 32, 64, 65] {
             // Pseudorandom but deterministic.
             let mut a = Mat::zeros(n, n);

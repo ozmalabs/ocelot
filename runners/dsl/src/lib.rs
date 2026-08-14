@@ -25,6 +25,24 @@
 //! - [`reflect`] — term ↔ G-subgraph round-trip (Axiom 3).
 //! - [`persist`] — graph ↔ dict serialisation (Python-compatible wire format).
 //! - [`jsonio`] — Term ↔ JSON (compat with `substrate/jsonio.py`).
+//!
+//! ## AVX-512 fast paths — opt-in only
+//!
+//! `l1_hot_paths.rs` (`find_attr_sym_avx512`) and `l3_lqr.rs` (`mul_avx512`,
+//! `mul_bf16_inner`, `mul_bf16_pre_b_inner`) contain AVX-512 fast paths
+//! gated behind the `avx512` Cargo feature (default OFF — see
+//! `Cargo.toml`). The two unstable compiler features those paths need
+//! (`stdarch_x86_avx512`, rust-lang/rust#111137; `avx512_target_feature`,
+//! rust-lang/rust#44839) are opted into HERE, but only when the `avx512`
+//! feature is enabled — so the default build never asks a stable
+//! toolchain to accept an unstable crate attribute. Building with
+//! `--features avx512` still requires a toolchain where both gates are
+//! satisfied (nightly, or a stable release new enough to have stabilized
+//! them — confirmed present by rustc 1.97.1, confirmed absent through
+//! 1.87.0; see `AVX512_PORTABILITY_FIX_RESULTS.md`) — that is intentional,
+//! matching how the rest of the ecosystem gates genuinely
+//! platform-specific SIMD code.
+#![cfg_attr(feature = "avx512", feature(stdarch_x86_avx512, avx512_target_feature))]
 
 pub mod sym;
 pub mod value;
