@@ -96,6 +96,30 @@ def _stash_result(adapter, goal_node, result: Any) -> None:
     _solve_caps(adapter).setdefault(goal_node, {})["result"] = result
 
 
+def _at_num(at: dict, key: str, default):
+    """Mechanical attr read: distinguishes "not supplied" (attr absent /
+    None -- use `default`) from "supplied, including an explicit falsy
+    numeric value such as 0 or 0.0" (honour it). Every numeric Goal attr
+    read in this module that has a real, meaningful zero value (a
+    treewidth bound of 0 is a genuine -- if degenerate -- request for a
+    single-node/edgeless decomposition; an alpha/epsilon of 0.0 is a
+    genuine zero-weight/zero-tolerance request) must go through this, not
+    a bare `at.get(key) or default` -- Python's `or` treats 0/0.0 as
+    "missing" and would silently substitute `default`, indistinguishable
+    from the caller never having supplied the attr at all. Found live as a
+    real footgun on `treewidth_bound` while building
+    QUESTION_DRIVER_RUNG2_RESULTS.md's own can_exact wall test (documented
+    there, fixed here); this is the swept fix for every other numeric attr
+    read in this module that shares the same shape. Sites where the
+    default itself already equals the falsy value (e.g. `t` defaulting to
+    0, `refine_budget` defaulting to 0) are intentionally left on the
+    plain `or` form -- there is no observable difference between "absent"
+    and "explicit 0" there, so converting them would be a no-op churn, not
+    a fix; this helper exists for sites where the distinction is real."""
+    v = at.get(key)
+    return default if v is None else v
+
+
 def _wall(sub, goal_node, gap_key: str, note, **extra) -> None:
     """Rung 2 (QUESTION_DRIVER_RUNG2_PREREG.md Sec2/Sec3): the SAME mechanical
     write-back every resolver's wall branch already did in Rung 1
@@ -286,7 +310,7 @@ def solve_can_relax(adapter, goal_node) -> None:
               "no targets_mt edge -- no Microtheory to relax")
         return
     mt = mts[0]
-    k_starts = int(at.get("k_starts") or 1)
+    k_starts = int(_at_num(at, "k_starts", 1))
     kwargs: dict = {}
     if at.get("max_steps") is not None:
         kwargs["max_steps"] = int(at["max_steps"])
@@ -329,8 +353,8 @@ def solve_can_exact(adapter, goal_node) -> None:
               "no targets_mt edge -- no Microtheory to solve exactly")
         return
     mt = mts[0]
-    bound = int(at.get("treewidth_bound") or cjt.DEFAULT_TREEWIDTH_BOUND)
-    max_exact_n = int(at.get("max_exact_n") or cjt.DEFAULT_MAX_EXACT_TREEWIDTH_N)
+    bound = int(_at_num(at, "treewidth_bound", cjt.DEFAULT_TREEWIDTH_BOUND))
+    max_exact_n = int(_at_num(at, "max_exact_n", cjt.DEFAULT_MAX_EXACT_TREEWIDTH_N))
     commit = True if at.get("commit") is None else bool(at.get("commit"))
     # native-only ops again (mt_energy/mt_frustration_given_state on commit) --
     # pass the raw native handle, not the wrapper.
@@ -366,8 +390,8 @@ def solve_can_bp(adapter, goal_node) -> None:
         return
     mt = mts[0]
     combine = at.get("combine") or "max_product"
-    max_rounds = int(at.get("max_rounds") or cbp.DEFAULT_MAX_ROUNDS)
-    epsilon = float(at.get("epsilon") or cbp.DEFAULT_EPSILON)
+    max_rounds = int(_at_num(at, "max_rounds", cbp.DEFAULT_MAX_ROUNDS))
+    epsilon = float(_at_num(at, "epsilon", cbp.DEFAULT_EPSILON))
     commit = bool(at.get("commit") or False)
     # can_native_bp.py reads external_field/identity_field/weight/temperature
     # via Term.evaluate (handle-agnostic) but this module's docstring commits
@@ -403,7 +427,7 @@ def solve_reasoning_bridge(adapter, goal_node) -> None:
             return
         result = rcb.apply_derived_fact_as_can_evidence(
             adapter, entity, attr, positive=bool(at.get("positive", True)),
-            alpha=float(at.get("alpha") or 1.0))
+            alpha=float(_at_num(at, "alpha", 1.0)))
         _stash_result(adapter, goal_node, result)
         sub.set_attr(goal_node, "answer", {"applied": bool(result.get("applied")),
                                             "entity": entity, "attr": attr})
@@ -485,7 +509,7 @@ def solve_decompose(adapter, goal_node) -> None:
               "no treewidth bound supplied for this decompose goal (honest wall)")
         return
     bound = int(at.get("bound"))
-    max_exact_n = int(at.get("max_exact_n") or 10)
+    max_exact_n = int(_at_num(at, "max_exact_n", 10))
     refine_budget = int(at.get("refine_budget") or 0)
     result = pdec.decompose_problem(sub, candidates, bound, max_exact_n=max_exact_n,
                                     refine_budget=refine_budget)
