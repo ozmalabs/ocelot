@@ -1,0 +1,186 @@
+{
+  "id": "abusive_n2_isolation",
+  "version": "1.0.0",
+  "depends_on": [
+    "abusive_n1_credibility_loop"
+  ],
+  "self_load_only": true,
+  "area": "retina",
+  "description": "ABUSIVE-DYNAMICS N2 -- ISOLATION AS AN ACTIVE PROCESS (support edges severed over time), block 301000. Maps ABUSIVE_RELATIONSHIPS_NETWORK.md's A3 + B3 / Part E N2. Composes N1's credibility-asymmetry loop (abusive_n1_credibility_loop, block 298000, UNMODIFIED -- riding snap_frustration/arousal_window_coreg in turn, UNMODIFIED) with TWO new, independent, coupled severing drivers over a small population of NetworkNode 'support nodes', each holding one support_edge to the victim: (1) n2_abuser_active_sever -- the abuser's own active isolation tactic, a mechanical per-node severing SCHEDULE (sever_at_tick, set once at construction) acted on by the rule only when the arm's isolation_tactic_on switch is armed; (2) n2_network_drift_sever -- the network drifting away ON ITS OWN, pulled by the SAME belief_gap N1's own n1_network_credibility_stated rule already computes (never recomputed here) once it crosses that node's pre-assigned (staggered) drift_threshold. Both rules del_edge the SAME support_edge; a node severed by either driver cannot fire either rule again (match requires the edge to still exist). NO reward/punishment anywhere. NO Rust, NO new Term (Gte is the only Term new to this line, already a peer of Eq/Lt/Gt in the engine). self_load_only, default-OFF.",
+  "microtheory": {
+    "name": "isolation_as_active_process",
+    "description": "Isolation is not a trait of the victim or a failure of her friends -- it is DOUBLY driven, by two independent, coupled mechanisms that happen to share one graph quantity (the support_edge count). The abuser's active severing tactic acts on a schedule regardless of what the network believes; the network's own drift acts on what N1's credibility loop has already corrupted, independent of anything the abuser directly does to that edge. Neither driver needs the other to operate; together they are strictly worse than either alone, which is the measured content of 'doubly driven.'"
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "abusive_n2_isolation:node_supports_victim",
+      "src": {
+        "type": "NetworkNode",
+        "var": "nn"
+      },
+      "edge_type": "support_edge",
+      "tgt": {
+        "type": "Agent",
+        "var": "victim"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "n2_abuser_active_sever",
+      "area": "retina",
+      "order": 41,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "net",
+          "has_member",
+          "nn"
+        ],
+        [
+          "nn",
+          "support_edge",
+          "victim"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "net"
+              },
+              "key": "isolation_tactic_on"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "nn"
+              },
+              "key": "tick_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "nn"
+              },
+              "key": "sever_at_tick"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "del_edge",
+          "nn",
+          "support_edge",
+          "victim"
+        ],
+        [
+          "set_attr",
+          "nn",
+          "severed",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "nn",
+          "severed_reason",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "n2_network_drift_sever",
+      "area": "retina",
+      "order": 42,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "net",
+          "has_member",
+          "nn"
+        ],
+        [
+          "nn",
+          "support_edge",
+          "victim"
+        ]
+      ],
+      "where": {
+        "type": "Gt",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "nn"
+          },
+          "key": "belief_gap"
+        },
+        "b": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "nn"
+          },
+          "key": "drift_threshold"
+        }
+      },
+      "effects": [
+        [
+          "del_edge",
+          "nn",
+          "support_edge",
+          "victim"
+        ],
+        [
+          "set_attr",
+          "nn",
+          "severed",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "nn",
+          "severed_reason",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 2.0
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}
