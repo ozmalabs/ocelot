@@ -472,9 +472,21 @@ fn is_listlike(v: &Value) -> bool {
 /// well short of "every string primitive" (no `startswith`/`find`/
 /// `isdigit`/... — a caller that wants those declares `ops` explicitly,
 /// per this const's own original design note above).
+///
+/// Map-template-pool rung (PROGRAM_SYNTHESIS_CEILING_REASSESSMENT_2_
+/// PREREG.md §3, tasks 102/411 "snake_case -> CamelCase"): APPENDED
+/// `MapList`/`JoinList` — a string-shaped spec composes over its own
+/// characters/substrings (`Split` already offered above), and until now
+/// had no way to MAP a per-element transform (e.g. `Capitalize`) over the
+/// pieces and rejoin them. `JoinList` is the already-shipped
+/// Fold+concat-with-"" ListUnary (the `tup_string`/task-132 precedent);
+/// `MapList` draws its per-element body from `map_templates_by_size`
+/// (built below, itself evidence-gated). Both are cheap ListUnary/ListMap
+/// registrations, not a new arity class.
 const DEFAULT_STR_OPS: &[&str] = &[
     "Concat", "CaseFold", "Eq", "IfThenElse",
     "Replace", "Split", "StrCount", "Capitalize", "Reverse", "Slice", "Str",
+    "MapList", "JoinList",
 ];
 
 /// Build the TermNode for an op over already-arena'd children.
@@ -1833,6 +1845,41 @@ pub(crate) fn eval_synth_enumerate(
     };
     let spec_has_repeated_list_element = envs.iter().flat_map(|e| e.iter()).any(|(_, v)| has_dup(v))
         || outputs.iter().any(has_dup);
+    // Map-template-pool rung (PROGRAM_SYNTHESIS_CEILING_REASSESSMENT_2_
+    // PREREG.md §3): nested, ONE-LEVEL-DOWN evidence — does a list-shaped
+    // var/output have elements that are THEMSELVES list-shaped ("a list of
+    // lists")? This is the `spec_has_dict_value`/`spec_has_float_value`
+    // discipline one grain finer, needed because `MapList`'s per-element
+    // body operates on the BOUND ITEM, not the outer spec value — e.g.
+    // "sort each sublist" (task 104) never shows up as a top-level Dict/
+    // Float value, only as a list variable whose OWN elements are lists.
+    let spec_has_list_of_lists = envs.iter().flat_map(|e| e.iter()).any(|(_, v)| {
+        items_of(v).is_some_and(|items| !items.is_empty() && items.iter().all(is_listlike))
+    }) || outputs.iter().any(|v| {
+        items_of(v).is_some_and(|items| !items.is_empty() && items.iter().all(is_listlike))
+    });
+    // Map-template-pool rung, same grain as `spec_has_list_of_lists` above
+    // but for STRING elements (task 456, "reverse each string in a list" —
+    // the outer var/output is a List, never a bare Str, so the existing
+    // flat `spec_has_string_value` never sees it). Deliberately used ONLY
+    // to gate `map_templates_by_size` entries (never `op_list`/`DEFAULT_
+    // OPS` — Rung 1's own measured lesson, `RUNG1_RESULTS.md`, is that
+    // THIS exact "list has string elements" evidence still regresses
+    // task 132 when it widens the TOP-LEVEL op inventory; it does not
+    // license widening op_list here, only the bounded per-element pool).
+    let spec_has_string_list_elements = envs.iter().flat_map(|e| e.iter()).any(|(_, v)| {
+        items_of(v).is_some_and(|items| !items.is_empty() && items.iter().all(is_str_val))
+    }) || outputs.iter().any(|v| {
+        items_of(v).is_some_and(|items| !items.is_empty() && items.iter().all(is_str_val))
+    });
+    // Same grain, for FLOAT elements (task 419, "round every number of a
+    // given list") — `spec_has_float_value`'s flat top-level test never
+    // sees a Float nested one level inside a List var/output either.
+    let spec_has_float_list_elements = envs.iter().flat_map(|e| e.iter()).any(|(_, v)| {
+        items_of(v).is_some_and(|items| items.iter().any(is_float_val))
+    }) || outputs.iter().any(|v| {
+        items_of(v).is_some_and(|items| items.iter().any(is_float_val))
+    });
     let mut extra_evidence_ops: Vec<&str> = Vec::new();
     if spec_has_string_value {
         extra_evidence_ops.extend(["Replace", "Split", "StrCount", "Capitalize", "Str", "ParseInt"]);
@@ -1879,6 +1926,18 @@ pub(crate) fn eval_synth_enumerate(
         if spec_output_is_listlike {
             v.push("Sort");
         }
+        // Map-template-pool rung (task 118, "split a string into a list of
+        // strings"): `Split` under the SAME narrow output-type gate as
+        // `Sort`/`TUPLE_BUILD_OPS` above, PLUS the string-content evidence
+        // gate `Round` already uses below — never on input-shape evidence
+        // alone (task 132's own exclusion above stays in force: its output
+        // is a STRING, not listlike, so `spec_output_is_listlike` is false
+        // for it and this arm is unreached). A list-shaped spec whose
+        // output is NOT listlike still gets none of the string-method ops,
+        // exactly as the paragraph below already decided.
+        if spec_output_is_listlike && spec_has_string_value {
+            v.push("Split");
+        }
         // Measured (not assumed): even the NARROWER `spec_list_has_
         // string_elements` gate still fires for task 132 (a genuine
         // list-of-CHARACTERS -> joined-string spec — its elements really
@@ -1896,6 +1955,28 @@ pub(crate) fn eval_synth_enumerate(
         // selection layer) — this typed default stays conservative.
         if spec_has_float_value {
             v.push("Round");
+        }
+        // Map-template-pool rung (task 439, "join a list of integers into
+        // a single integer" — `ParseInt(JoinList(MapList(a,item,
+        // Str(item))))`): narrow, output-type-only gate — a list-shaped
+        // spec whose output is a BARE Int (never listlike) and which
+        // carries NO top-level string/float evidence at all (so this
+        // never overlaps `Split`'s own gate immediately above, nor
+        // `Round`'s). `ParseInt` only ever matches a genuinely String-
+        // typed candidate at evaluation time, so on a spec with no string
+        // content anywhere it costs a registration attempt that can never
+        // produce a NEW distinct value — the same "harmless when unused"
+        // shape as `Round` being offered to a spec with no float value
+        // would be, except this one is additionally gated to never even
+        // apply until this rung's own `Str(item)` map-template exists.
+        let spec_output_is_bare_int = !outputs.is_empty()
+            && outputs.iter().all(|v| matches!(v, Value::Int(_)));
+        if !spec_output_is_listlike
+            && spec_output_is_bare_int
+            && !spec_has_string_value
+            && !spec_has_float_value
+        {
+            v.push("ParseInt");
         }
         if spec_has_repeated_list_element {
             v.push("IndexedMap");
@@ -1943,7 +2024,6 @@ pub(crate) fn eval_synth_enumerate(
             .map(|n| (n.to_string(), table_kind(n).unwrap()))
             .collect(),
     };
-
     // --- Constant set: requested (default 0,1,2,-1) + integer-valued
     //     outputs (dedup, order preserved) ---
     let mut const_set: Vec<Value> = match consts_t {
@@ -2367,10 +2447,72 @@ pub(crate) fn eval_synth_enumerate(
             // "collapse an unordered pair" — not 2-tuple-specific in the
             // Term itself), reused by MapList too if a future spec's
             // template search reaches it via `SetMap`'s own gate.
-            if set_map_wanted {
+            //
+            // Map-template-pool rung (task 104, "sort each sublist of
+            // strings"): the SAME `sorted(item)` template is ALSO offered
+            // when the spec has direct nested-list evidence
+            // (`spec_has_list_of_lists`, defined above — a list variable
+            // or output whose OWN elements are themselves list-shaped),
+            // widening past `set_map_wanted`-only without going
+            // unconditional. Emitted once via `Or`, so a spec that is
+            // neither Set-shaped nor list-of-lists pays nothing (byte-
+            // identical to today).
+            if set_map_wanted || spec_has_list_of_lists {
                 let iv = search.scratch.add(TermNode::Var { name: item_sym });
                 let srt = search.scratch.add(TermNode::Sort { seq: iv });
                 push(&mut map_templates_by_size, srt, 2);
+            }
+            // Map-template-pool rung (PROGRAM_SYNTHESIS_CEILING_
+            // REASSESSMENT_2_PREREG.md §3): four more per-element
+            // templates, APPENDED (never interleaved — every existing
+            // template above keeps its exact arena index and pool
+            // position, so any already-shipped `MapList` spec's own
+            // enumeration order is byte-identical to before this rung).
+            // Each is gated on the SAME evidence discipline
+            // `Round`/`IndexedMap`/`DictItems` already use in the op_list
+            // construction above (never unconditional-by-default beyond
+            // that), applied one level down at the per-element grain
+            // `spec_has_string_value`/`spec_has_float_value` don't reach
+            // (they test the OUTER spec value, not the bound item).
+            //
+            // reverse(item) — size 2 (task 456, "reverse each string").
+            // `spec_has_string_value` alone misses 456 (its outer var/
+            // output is a List, never a bare Str) — OR'd with the nested
+            // `spec_has_string_list_elements` evidence above.
+            if spec_has_string_value || spec_has_string_list_elements {
+                let iv = search.scratch.add(TermNode::Var { name: item_sym });
+                let rv = search.scratch.add(TermNode::Reverse { seq: iv });
+                push(&mut map_templates_by_size, rv, 2);
+            }
+            // capitalize(item) — size 2 (tasks 102/411, snake->camel via
+            // `MapList(Split(a,"_"), item, Capitalize(item))`).
+            if spec_has_string_value || spec_has_string_list_elements {
+                let iv = search.scratch.add(TermNode::Var { name: item_sym });
+                let cap = search.scratch.add(TermNode::Capitalize { text: iv });
+                push(&mut map_templates_by_size, cap, 2);
+            }
+            // str(item) — size 2 (tasks 439/421, joining non-string
+            // elements into one string/int). Gated on the SAME
+            // `map_wanted` precondition alone — `Str` is a total,
+            // type-general conversion (unlike `Reverse`/`Capitalize`,
+            // which are only meaningful on string/sequence items), so no
+            // further narrowing is needed beyond already being inside
+            // this `if map_wanted` block.
+            {
+                let iv = search.scratch.add(TermNode::Var { name: item_sym });
+                let s = search.scratch.add(TermNode::Str { value: iv });
+                push(&mut map_templates_by_size, s, 2);
+            }
+            // round(item, c) — size 3 each (task 419, "round every number
+            // ... print the resultant list"). Nested evidence, same
+            // reasoning as `spec_has_string_list_elements` above.
+            if spec_has_float_value || spec_has_float_list_elements {
+                for c in &numeric_consts {
+                    let iv = search.scratch.add(TermNode::Var { name: item_sym });
+                    let cv = search.scratch.add(TermNode::Lit { value: c.clone() });
+                    let rnd = search.scratch.add(TermNode::Round { value: iv, ndigits: cv });
+                    push(&mut map_templates_by_size, rnd, 3);
+                }
             }
         }
         // ---- Rung 1 `op:IndexedMap` templates -------------------------
