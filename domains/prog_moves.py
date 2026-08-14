@@ -587,13 +587,55 @@ def _goal_message(sub, g):
     return None
 
 
+def _wire(v):
+    """TYPE-FAITHFUL WIRE ENCODING, duplicated in miniature from
+    `domains/prog_synthesis.py::_wire` -- this module stays
+    import-independent of that one (the `_mint_example_row` precedent's
+    own stated reason), so the mechanical helper is mirrored rather than
+    imported. Rung 2 (PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_RUNG2_RUNG3_
+    PREREG.md): symmetric with `_unwire` below, keeps this module's OWN
+    `inputs_json` writer (`_mint_example_row`) consistent with
+    `prog_synthesis.py`'s now-tagged wire format, so a mixed-source
+    `ExampleRow` population (some minted here, some in prog_synthesis.py)
+    reads uniformly under either module's reader."""
+    if isinstance(v, tuple):
+        return {"__tuple__": [_wire(x) for x in v]}
+    if isinstance(v, list):
+        return {"__list__": [_wire(x) for x in v]}
+    if isinstance(v, frozenset):
+        return {"__fset__": [_wire(x) for x in v]}
+    if isinstance(v, set):
+        return {"__set__": [_wire(x) for x in v]}
+    if isinstance(v, dict):
+        return {k: _wire(x) for k, x in v.items()}
+    return v
+
+
+def _unwire(v):
+    """Inverse of `_wire`, mirrored from `domains/prog_synthesis.py`
+    for the same import-independence reason. Mechanical translation."""
+    if isinstance(v, dict):
+        if list(v.keys()) == ["__tuple__"]:
+            return tuple(_unwire(x) for x in v["__tuple__"])
+        if list(v.keys()) == ["__list__"]:
+            return [_unwire(x) for x in v["__list__"]]
+        if list(v.keys()) == ["__fset__"]:
+            return frozenset(_unwire(x) for x in v["__fset__"])
+        if list(v.keys()) == ["__set__"]:
+            return set(_unwire(x) for x in v["__set__"])
+        return {k: _unwire(x) for k, x in v.items()}
+    if isinstance(v, list):
+        return [_unwire(x) for x in v]
+    return v
+
+
 def _goal_rows(sub, msg) -> Tuple[List[str], List[Dict[str, Any]]]:
     row_nodes = list(sub.neighbours(msg, "has_example")) if msg is not None else []
     args: List[str] = []
     envs: List[Tuple[Dict[str, Any], Any]] = []
     for r in row_nodes:
         rat = sub.node(r)["attrs"]
-        env = json.loads(_text(rat.get("inputs_json")) or "{}")
+        env = _unwire(json.loads(_text(rat.get("inputs_json")) or "{}"))
         for k in env:
             if k not in args:
                 args.append(k)
@@ -609,7 +651,7 @@ def _mint_example_row(sub, inputs: Dict[str, Any], expected: Any):
     `_add_example_row` precedent (`domains/prog_synthesis.py`), duplicated
     here in miniature so this module stays import-independent of it."""
     return sub.add_node("ExampleRow", {
-        "inputs_json": json.dumps(inputs, sort_keys=True),
+        "inputs_json": json.dumps(_wire(inputs), sort_keys=True),
         "expected": expected,
         "has_list_input": 0.0,
         "eval_attempt": -1.0,

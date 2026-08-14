@@ -313,7 +313,9 @@ def _row_list(sub, g) -> List[Dict[str, Any]]:
     for r in psy._outer_rows(sub, g):
         rat = sub.node(r)["attrs"]
         rows.append({
-            "inputs": json.loads(psy._text(rat.get("inputs_json")) or "{}"),
+            # Rung 2: `_unwire` -- symmetric with `_add_example_row`'s
+            # `_wire`d write side.
+            "inputs": psy._unwire(json.loads(psy._text(rat.get("inputs_json")) or "{}")),
             "expected": rat.get("expected"),
         })
     return rows

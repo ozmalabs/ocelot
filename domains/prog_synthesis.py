@@ -580,7 +580,14 @@ def _add_example_row(sub, inputs, expected, *, tol=None, unordered=False):
     scope themselves OFF these rows (byte-unchanged for every plain row,
     where neither flag is ever set)."""
     attrs: Dict[str, Any] = {
-        "inputs_json": json.dumps(inputs, sort_keys=True),
+        # Rung 2 (PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_RUNG2_RUNG3_
+        # PREREG.md): `_wire` the row's INPUT record before it crosses the
+        # JSON round-trip, symmetric to the already-shipped output-side
+        # `_wire` — JSON has one array type, so an un-wired tuple ARGUMENT
+        # (e.g. task 106's `add_lists([5,6,7], (9,10))`) would arrive at
+        # every `inputs_json` reader already flattened to a list. Every
+        # reader is updated to `_unwire` in the same rung.
+        "inputs_json": json.dumps(_wire(inputs), sort_keys=True),
         "expected": expected,
         "has_list_input": 1.0 if any(isinstance(v, (list, tuple))
                                      for v in inputs.values()) else 0.0,
@@ -837,7 +844,7 @@ def eval_and_record(sub, ag_node, g) -> bool:
     term = _prog_eval_term("e", "p")
     for r in rows:
         rat = sub.node(r)["attrs"]
-        env = json.loads(_text(rat.get("inputs_json")) or "{}")
+        env = _unwire(json.loads(_text(rat.get("inputs_json")) or "{}"))
         out = sub._inner.evaluate(term, {"e": env, "p": root})
         got = out.get("result")
         ok = 1.0 if (out.get("halted") is True and out.get("trap") is None) \
@@ -894,6 +901,36 @@ def _wire(v):
         return {"__set__": [_wire(x) for x in v]}
     if isinstance(v, dict):
         return {k: _wire(x) for k, x in v.items()}
+    return v
+
+
+def _unwire(v):
+    """Inverse of `_wire` — recovers a native Python tuple/list/set/
+    frozenset from a wire-tagged JSON value. Mechanical translation; no
+    decision.
+
+    Rung 2 (PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_RUNG2_RUNG3_PREREG.md):
+    `_wire`'s write side is used on `inputs_json` at row-construction time
+    (`_add_example_row`) so a tuple ARGUMENT survives the JSON round-trip
+    instead of arriving as an indistinguishable list; every
+    `inputs_json` reader applies this inverse so the row's inputs are
+    handed back in their true container kind. A plain dict whose keys are
+    not exactly one of the four tag names (e.g. the top-level
+    {param_name: value} row-inputs dict itself) falls through to
+    per-value recursion, mirroring `_wire`'s own dict handling.
+    """
+    if isinstance(v, dict):
+        if list(v.keys()) == ["__tuple__"]:
+            return tuple(_unwire(x) for x in v["__tuple__"])
+        if list(v.keys()) == ["__list__"]:
+            return [_unwire(x) for x in v["__list__"]]
+        if list(v.keys()) == ["__fset__"]:
+            return frozenset(_unwire(x) for x in v["__fset__"])
+        if list(v.keys()) == ["__set__"]:
+            return set(_unwire(x) for x in v["__set__"])
+        return {k: _unwire(x) for k, x in v.items()}
+    if isinstance(v, list):
+        return [_unwire(x) for x in v]
     return v
 
 
@@ -1050,7 +1087,7 @@ def screen_construction(sub, ag_node, g) -> bool:
     if verdict == 1.0:
         for r in rows:
             rat = sub.node(r)["attrs"]
-            env = json.loads(_text(rat.get("inputs_json")) or "{}")
+            env = _unwire(json.loads(_text(rat.get("inputs_json")) or "{}"))
             try:
                 got, ok = _screen_eval(sub, ir, env)
                 if ok:
@@ -1125,7 +1162,7 @@ def run_enumerate(sub, ag_node, g) -> bool:
     args: List[str] = []
     for r in (sub.neighbours(msg, "has_example") if msg is not None else []):
         rat = sub.node(r)["attrs"]
-        env = json.loads(_text(rat.get("inputs_json")) or "{}")
+        env = _unwire(json.loads(_text(rat.get("inputs_json")) or "{}"))
         for k in env:
             if k not in args:
                 args.append(k)
@@ -1289,7 +1326,7 @@ def run_exact_family(sub, ag_node, g) -> bool:
     row_dicts: List[Dict[str, Any]] = []
     for r in row_nodes:
         rat = sub.node(r)["attrs"]
-        env = json.loads(_text(rat.get("inputs_json")) or "{}")
+        env = _unwire(json.loads(_text(rat.get("inputs_json")) or "{}"))
         for k in env:
             if k not in args:
                 args.append(k)
@@ -1646,7 +1683,7 @@ def compute_structural_facts(sub, ag_node, g) -> bool:
     for r in rows:
         rat = sub.node(r)["attrs"]
         revealed_expected.add(_st_hashable(rat.get("expected")))
-        row_inputs.append(json.loads(_text(rat.get("inputs_json")) or "{}"))
+        row_inputs.append(_unwire(json.loads(_text(rat.get("inputs_json")) or "{}")))
 
     unread = [p for p in params if p not in var_refs]
     varying_unread = []
@@ -1795,7 +1832,7 @@ def _derive_fold_step(sub, g, h):
         return [], "init_not_evaluable"
     rows, skipped = [], 0
     for r in _outer_rows(sub, g):
-        env = json.loads(_text(sub.node(r)["attrs"].get("inputs_json")) or "{}")
+        env = _unwire(json.loads(_text(sub.node(r)["attrs"].get("inputs_json")) or "{}"))
         elems = _fold_source_list(sub, source_term, env)
         if elems is not None and len(elems) == 1:
             rows.append({"inputs": {acc: init_val, itv: elems[0]},
@@ -1860,7 +1897,7 @@ def _derive_final_expr(sub, g, h):
         return [], "no_expression_grain_covers"
     rows, skipped = [], 0
     for r in _outer_rows(sub, g):
-        env = json.loads(_text(sub.node(r)["attrs"].get("inputs_json")) or "{}")
+        env = _unwire(json.loads(_text(sub.node(r)["attrs"].get("inputs_json")) or "{}"))
         vals: Dict[str, Any] = {}
         ok = True
         for i, term in enumerate(terms):
@@ -1935,7 +1972,7 @@ def _derive_branch_arms(sub, g, holes) -> None:
     if isinstance(term, dict) and term.get("type") == "IfThenElse" \
             and cond is not None:
         for r in _outer_rows(sub, g):
-            env = json.loads(_text(sub.node(r)["attrs"].get("inputs_json")) or "{}")
+            env = _unwire(json.loads(_text(sub.node(r)["attrs"].get("inputs_json")) or "{}"))
             try:
                 c = sub._inner.evaluate(cond, env)
             except Exception:
@@ -2089,7 +2126,7 @@ def _splice_final_expr(sub, g, h, expr):
     at = sub.node(g)["attrs"]
     args: List[str] = []
     for r in _outer_rows(sub, g):
-        env = json.loads(_text(sub.node(r)["attrs"].get("inputs_json")) or "{}")
+        env = _unwire(json.loads(_text(sub.node(r)["attrs"].get("inputs_json")) or "{}"))
         for k in env:
             if k not in args:
                 args.append(k)
@@ -2119,7 +2156,7 @@ def _splice_branch_arm(sub, g, expr):
     outer rows' own raw inputs."""
     args: List[str] = []
     for r in _outer_rows(sub, g):
-        env = json.loads(_text(sub.node(r)["attrs"].get("inputs_json")) or "{}")
+        env = _unwire(json.loads(_text(sub.node(r)["attrs"].get("inputs_json")) or "{}"))
         for k in env:
             if k not in args:
                 args.append(k)
@@ -2150,7 +2187,7 @@ def _foldup_reflect_and_eval(sub, g, ir, seq) -> None:
     sub.add_edge_unchecked(g, "ps_ir_reflected", root)
     term = _prog_eval_term("e", "p")
     for r in _outer_rows(sub, g):
-        env = json.loads(_text(sub.node(r)["attrs"].get("inputs_json")) or "{}")
+        env = _unwire(json.loads(_text(sub.node(r)["attrs"].get("inputs_json")) or "{}"))
         out = sub._inner.evaluate(term, {"e": env, "p": root})
         got = out.get("result")
         ok = 1.0 if (out.get("halted") is True and out.get("trap") is None) \
@@ -2285,7 +2322,7 @@ def _trace_final_expr(sub, g, ir, rows):
     skel_agree = 1.0
     diverge = 0.0
     for r in rows:
-        env = json.loads(_text(sub.node(r)["attrs"].get("inputs_json")) or "{}")
+        env = _unwire(json.loads(_text(sub.node(r)["attrs"].get("inputs_json")) or "{}"))
         vals: Dict[str, Any] = {}
         row_derivable = True
         for i, (name, term) in enumerate(terms):
@@ -2361,7 +2398,7 @@ def _trace_fold_step(sub, g, ir, rows):
     derivable = 0
     diverge = 0.0
     for r in rows:
-        env = json.loads(_text(sub.node(r)["attrs"].get("inputs_json")) or "{}")
+        env = _unwire(json.loads(_text(sub.node(r)["attrs"].get("inputs_json")) or "{}"))
         elems = _fold_source_list(sub, source_term, env)
         if elems is not None and len(elems) == 1:
             item = elems[0]
