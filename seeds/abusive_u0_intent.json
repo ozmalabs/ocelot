@@ -1,0 +1,1018 @@
+{
+  "id": "abusive_u0_intent",
+  "version": "1.0.0",
+  "depends_on": [
+    "snap_frustration",
+    "arousal_window_coreg",
+    "core_emotions"
+  ],
+  "self_load_only": true,
+  "area": "retina",
+  "description": "ABUSIVE-DYNAMICS U0 -- GENUINE INTENT: AN ARGMAX-SELECTED CONCEALMENT, SCORED AGAINST A DECLARED GOAL (block 307000). The positive-control rung of the unintentional/no-deliberate-deception companion dimension (ABUSIVE_RELATIONSHIPS_UNINTENTIONAL_SCOPING.md Part E, U0). DELETES N1's n1_abuser_stated_charm (the unconditional broadcast) by self-contained restatement of N1's OTHER three rules (u0_victim_entrainment, u0_network_credibility_stated/_private -- byte-identical formulas, N1's seed file is NOT depended on, so n1_abuser_stated_charm never loads -- the only clean way to REPLACE rather than augment it; two rules unconditionally racing to set the same attr every tick would not reach a fixpoint). REPLACES it with the SAME Argmax-over-two-candidate-Appraisals template abusive_r4_learned_helplessness.json/marshmallow_delay.json (block 240000) already use: u0_appraise_charm/u0_appraise_true_state value two candidates (present_charm: individual_benefit=concealment_benefit const, individual_cost=0; present_true_state: individual_benefit=honesty_benefit const, individual_cost=suspicion_cost_scale*frustration -- SCALES WITH the abuser's TRUE, already-existing frustration, 242000's own unmodified attr). em_happiness/em_total_value (core_emotions, block 204000, UNMODIFIED) score both; u0_choose is the Argmax (structurally IDENTICAL to r4_choose/mm_choose -- a VALUE COMPARISON between two candidates, NOT a reward applied to the agent); u0_apply_presentation_choice copies the winner's action onto AffectiveState.stated_charm, the SAME attr N1's rule wrote, so every downstream rule/adapter is unchanged. The signature this produces: stated_charm selection correlates with frustration (concealment gets selected more often exactly when there is more to conceal, because honesty's cost scales with true harm) -- N1's unconditional broadcast could not produce this correlation, by construction, since it never read frustration at all. NO Rust, NO new Term. self_load_only, default-OFF.",
+  "microtheory": {
+    "name": "genuine_intent_concealment_choice",
+    "description": "A genuinely intentional concealment is an Argmax over two candidate presentations (charm, truth) scored against a declared benefit -- the SAME value-economy mechanism the marshmallow/R4 lines already use for a delay-of-gratification or an escape-attempt choice, applied here to a presentation choice. The cost of honesty scales with the true harm level, so the Argmax's own selection tracks how much there is to conceal -- a readable, glass-box marker of calculated concealment, distinct from a reactive or context-driven presentation gap."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "abusive_u0_intent:victim_attended_by_abuser",
+      "src": {
+        "type": "Agent",
+        "var": "victim"
+      },
+      "edge_type": "attended_by",
+      "tgt": {
+        "type": "Agent",
+        "var": "abuser"
+      }
+    },
+    {
+      "provenance": "abusive_u0_intent:network_has_member",
+      "src": {
+        "type": "Network",
+        "var": "net"
+      },
+      "edge_type": "has_member",
+      "tgt": {
+        "type": "NetworkNode",
+        "var": "nn"
+      }
+    },
+    {
+      "provenance": "abusive_u0_intent:node_observes_stated",
+      "src": {
+        "type": "NetworkNode",
+        "var": "nn"
+      },
+      "edge_type": "observes_stated",
+      "tgt": {
+        "type": "Agent",
+        "var": "abuser"
+      }
+    },
+    {
+      "provenance": "abusive_u0_intent:node_observes_held",
+      "src": {
+        "type": "NetworkNode",
+        "var": "nn"
+      },
+      "edge_type": "observes_held",
+      "tgt": {
+        "type": "Agent",
+        "var": "abuser"
+      }
+    },
+    {
+      "provenance": "abusive_u0_intent:node_observes_victim",
+      "src": {
+        "type": "NetworkNode",
+        "var": "nn"
+      },
+      "edge_type": "observes_victim",
+      "tgt": {
+        "type": "Agent",
+        "var": "victim"
+      }
+    },
+    {
+      "provenance": "abusive_u0_intent:hub_has_emotion_params",
+      "src": {
+        "type": "EmotionHub",
+        "var": "hub"
+      },
+      "edge_type": "has_emotion_params",
+      "tgt": {
+        "type": "HeldEmotionParams",
+        "var": "ep"
+      }
+    },
+    {
+      "provenance": "abusive_u0_intent:hub_has_presentation_decision",
+      "src": {
+        "type": "EmotionHub",
+        "var": "hub"
+      },
+      "edge_type": "has_presentation_decision",
+      "tgt": {
+        "type": "PresentationDecision",
+        "var": "dec"
+      }
+    },
+    {
+      "provenance": "abusive_u0_intent:hub_has_affective_state",
+      "src": {
+        "type": "EmotionHub",
+        "var": "hub"
+      },
+      "edge_type": "has_affective_state",
+      "tgt": {
+        "type": "AffectiveState",
+        "var": "aaff"
+      }
+    },
+    {
+      "provenance": "abusive_u0_intent:hub_has_appraisal",
+      "src": {
+        "type": "EmotionHub",
+        "var": "hub"
+      },
+      "edge_type": "has_appraisal",
+      "tgt": {
+        "type": "Appraisal",
+        "var": "c"
+      }
+    },
+    {
+      "provenance": "abusive_u0_intent:hub_has_candidate",
+      "src": {
+        "type": "EmotionHub",
+        "var": "hub"
+      },
+      "edge_type": "has_candidate",
+      "tgt": {
+        "type": "Appraisal",
+        "var": "c"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "u0_victim_entrainment",
+      "area": "retina",
+      "order": 8,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "victim",
+          "has_affective_state",
+          "vaff"
+        ],
+        [
+          "victim",
+          "attended_by",
+          "abuser"
+        ],
+        [
+          "abuser",
+          "has_affective_state",
+          "aaff"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "vaff"
+              },
+              "key": "pcr_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "vaff"
+              },
+              "key": "tick_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aaff"
+              },
+              "key": "is_abuser"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "vaff",
+          "frustration",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "vaff"
+                    },
+                    "key": "arousal"
+                  },
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "vaff"
+                        },
+                        "key": "k_co"
+                      },
+                      {
+                        "type": "Minus",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "aaff"
+                          },
+                          "key": "arousal"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "vaff"
+                          },
+                          "key": "arousal"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "vaff"
+                        },
+                        "key": "k_self"
+                      },
+                      {
+                        "type": "Minus",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "vaff"
+                          },
+                          "key": "setpoint"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "vaff"
+                          },
+                          "key": "arousal"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "vaff"
+                },
+                "key": "setpoint"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "vaff",
+          "pcr_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "vaff"
+              },
+              "key": "tick_epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "u0_appraise_charm",
+      "area": "retina",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "hub",
+          "has_emotion_params",
+          "ep"
+        ],
+        [
+          "hub",
+          "has_presentation_decision",
+          "dec"
+        ],
+        [
+          "hub",
+          "has_candidate",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "action"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "c",
+          "individual_benefit",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dec"
+              },
+              "key": "concealment_benefit"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "c",
+          "individual_cost",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "u0_appraise_true_state",
+      "area": "retina",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "hub",
+          "has_emotion_params",
+          "ep"
+        ],
+        [
+          "hub",
+          "has_presentation_decision",
+          "dec"
+        ],
+        [
+          "hub",
+          "has_affective_state",
+          "aaff"
+        ],
+        [
+          "hub",
+          "has_candidate",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "action"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "c",
+          "individual_benefit",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dec"
+              },
+              "key": "honesty_benefit"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "c",
+          "individual_cost",
+          {
+            "__term__": {
+              "type": "Times",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "dec"
+                  },
+                  "key": "suspicion_cost_scale"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "aaff"
+                  },
+                  "key": "frustration"
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "u0_choose",
+      "area": "retina",
+      "order": 20,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "hub",
+          "has_emotion_params",
+          "ep"
+        ],
+        [
+          "hub",
+          "has_presentation_decision",
+          "dec"
+        ]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "ep"
+          },
+          "key": "enabled"
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1.0
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "dec",
+          "chosen_action",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Argmax",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "hub"
+                  },
+                  "edge_type": "has_candidate",
+                  "any_type": false
+                },
+                "var_name": "c",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "c"
+                  },
+                  "key": "total_value"
+                }
+              },
+              "key": "action"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "u0_apply_presentation_choice",
+      "area": "retina",
+      "order": 21,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "hub",
+          "has_emotion_params",
+          "ep"
+        ],
+        [
+          "hub",
+          "has_presentation_decision",
+          "dec"
+        ],
+        [
+          "hub",
+          "has_affective_state",
+          "aaff"
+        ]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "ep"
+          },
+          "key": "enabled"
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1.0
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "aaff",
+          "stated_charm",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dec"
+              },
+              "key": "chosen_action"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "u0_network_credibility_stated",
+      "area": "retina",
+      "order": 40,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "net",
+          "has_member",
+          "nn"
+        ]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "nn"
+          },
+          "key": "observes_private"
+        },
+        "b": {
+          "type": "Lit",
+          "value": 0.0
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "nn",
+          "cred_abuser",
+          {
+            "__term__": {
+              "type": "Times",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "nn"
+                  },
+                  "key": "charm_weight"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "nn"
+                  },
+                  "key": "seen_charm"
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "nn",
+          "cred_victim",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Times",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "claim_weight"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "seen_victim_claim"
+                  }
+                ]
+              },
+              "b": {
+                "type": "Times",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "instability_discount_weight"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "seen_victim_unstable"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "nn",
+          "belief_gap",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Times",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "charm_weight"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "seen_charm"
+                  }
+                ]
+              },
+              "b": {
+                "type": "Minus",
+                "a": {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "claim_weight"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "seen_victim_claim"
+                    }
+                  ]
+                },
+                "b": {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "instability_discount_weight"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "seen_victim_unstable"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "u0_network_credibility_private",
+      "area": "retina",
+      "order": 40,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "net",
+          "has_member",
+          "nn"
+        ]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "nn"
+          },
+          "key": "observes_private"
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1.0
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "nn",
+          "cred_abuser",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Lit",
+                "value": 0.0
+              },
+              "b": {
+                "type": "Times",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "harm_discount_weight"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "seen_harm_direct"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "nn",
+          "cred_victim",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Times",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "claim_weight"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "seen_victim_claim"
+                  }
+                ]
+              },
+              "b": {
+                "type": "Times",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "instability_discount_weight"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "seen_victim_unstable"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "nn",
+          "belief_gap",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Minus",
+                "a": {
+                  "type": "Lit",
+                  "value": 0.0
+                },
+                "b": {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "harm_discount_weight"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "seen_harm_direct"
+                    }
+                  ]
+                }
+              },
+              "b": {
+                "type": "Minus",
+                "a": {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "claim_weight"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "seen_victim_claim"
+                    }
+                  ]
+                },
+                "b": {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "instability_discount_weight"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "seen_victim_unstable"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}
