@@ -810,6 +810,18 @@ silently delete adapter methods. The migrated bench is the guard — run
 `pytest tests/ -k migrated` before trusting a green-looking working
 tree.
 
+**Scale note (2026-08-14):** the migrated bench is now 8000+ tests. A
+full `-k migrated` sweep is realistically 60-90 minutes even with
+bounded xdist parallelism (`-n 6`ish), and `-n auto` on a
+many-core/finite-RAM box can OOM the whole machine (measured: `-n
+auto` on a 24-core/62GB box killed the run and took the session with
+it) — never use `-n auto` for this suite. For everyday changes, run a
+SCOPED slice (the touched seed's own `test_*_migrated.py`, plus
+anything importing the seeds/modules you touched) as the guard; reserve
+the full sweep for pre-merge or when a change touches widely-shared
+seed/adapter surface. Treat "I ran the full suite" as a claim to
+justify, not a default reflex.
+
 ## Self-correction prompts
 
 If you catch yourself writing Python that violates this rule, stop:
