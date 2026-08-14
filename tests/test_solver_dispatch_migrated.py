@@ -198,6 +198,117 @@ def test_solve_can_exact_resolves_via_qd_bind_resolver(agent):
     assert "energy" in a_["answer"]
 
 
+# --------------------------------------------------------------------------- #
+#  BUGFIX (QUESTION_DRIVER_BUGFIX_AND_RECHECK_RESULTS.md): treewidth_bound=0
+#  must be HONORED as an explicit (if degenerate) request, never silently
+#  substituted with cjt.DEFAULT_TREEWIDTH_BOUND -- named as a live footgun in
+#  QUESTION_DRIVER_RUNG2_RESULTS.md sec2.1 (found while building that rung's
+#  own test), fixed in domains/solver_dispatch.py::solve_can_exact via the
+#  new `_at_num` helper (`at.get(key) or default` treats 0/0.0 as "missing";
+#  `_at_num` only substitutes `default` when the attr is genuinely absent/
+#  None).
+# --------------------------------------------------------------------------- #
+def _edgeless_single_concept_mt(agent):
+    """A REAL, genuinely treewidth-0 CAN network -- one Concept, zero
+    `causal_influence` edges -- the concrete case an explicit
+    `treewidth_bound=0` request is honestly asking for (CLAUDE.md/the task's
+    own framing: "a single-node or edgeless graph" is a real, valid,
+    if degenerate, zero-treewidth request, not a contrived input)."""
+    native = agent.inner
+    bcb.install_productions(native)
+    mt = native.add_node("Microtheory", {
+        "temperature": 1.0, "discrete_mode": "3state", "can_tick": 0,
+    })
+    c = native.add_node("Concept", {
+        "name": "solo", "state": 0.0, "external_field": 0.3, "identity_field": 0.0,
+    })
+    native.add_edge(mt, "has_concept", c, {})
+    return mt, c
+
+
+def test_solve_can_exact_treewidth_bound_zero_is_honored_on_a_genuine_zero_treewidth_network(agent):
+    """POSITIVE case: bound=0, explicitly supplied, on a REAL network whose
+    true treewidth IS 0 (a single concept, no edges) -- must be ATTEMPTED
+    and RESOLVED, proving 0 is read as "the caller's real bound," not
+    dropped as falsy."""
+    sub = agent.s
+    mt, _c = _edgeless_single_concept_mt(agent)
+    goal = sd.mint_solve_can_exact_goal(agent, mt, treewidth_bound=0)
+    assert sub.node(goal)["attrs"]["treewidth_bound"] == 0.0  # mint-side write, unaffected by the bug
+    _pump(agent, goal)
+    a_ = sub.node(goal)["attrs"]
+    assert a_["status"] == "resolved", a_.get("note")
+    assert a_["treewidth"] == 0.0
+    stashed = sd._solve_caps(agent)[goal]["result"]
+    assert stashed["treewidth_bound"] == 0, (
+        "the bound actually PASSED to junction_tree_exact_settle must be the "
+        "caller's real 0, never the silently-substituted default")
+
+
+def test_solve_can_exact_treewidth_bound_zero_is_honored_not_defaulted_on_real_nonzero_network(agent):
+    """NEGATIVE/discriminating case: bound=0, explicitly supplied, on a REAL
+    Bigville resident network (measured treewidth ~2, well within the
+    DEFAULT_TREEWIDTH_BOUND=4 this footgun used to silently fall back to).
+    Pre-fix, `at.get("treewidth_bound") or cjt.DEFAULT_TREEWIDTH_BOUND` reads
+    the stored `0.0` as falsy and substitutes 4 -- the goal would wrongly
+    RESOLVE (2 <= 4). Post-fix, the real 0 is honoured, 2 > 0, and the goal
+    correctly WALLS -- this is the exact regression this test pins."""
+    from domains import can_junction_tree as cjt
+    sub = agent.s
+    mt, _resident, _concepts = _resident_mt(agent, index=6)
+    goal = sd.mint_solve_can_exact_goal(agent, mt, treewidth_bound=0)
+    _pump(agent, goal)
+    a_ = sub.node(goal)["attrs"]
+    assert a_["status"] == "walled", (
+        "treewidth_bound=0 on a real treewidth~2 network must WALL -- a "
+        "'resolved' status here means the bug regressed (0 silently read "
+        "as the %r default)" % cjt.DEFAULT_TREEWIDTH_BOUND)
+    assert a_["wall_kind"] == "treewidth_exceeds_bound"
+    assert a_["treewidth"] > 0.0
+    stashed = sd._solve_caps(agent)[goal]["result"]
+    assert stashed["treewidth_bound"] == 0, (
+        "the honest-refusal reason must cite the caller's real bound (0), "
+        "not the silently-substituted default (%r)" % cjt.DEFAULT_TREEWIDTH_BOUND)
+    assert stashed["treewidth_bound"] != cjt.DEFAULT_TREEWIDTH_BOUND
+
+
+def test_solve_can_exact_nonzero_and_absent_bound_behaviour_unchanged(agent):
+    """REGRESSION PROOF: the pre-existing non-zero-bound behaviour (an
+    explicit bound, and the no-bound-supplied default-to-
+    DEFAULT_TREEWIDTH_BOUND path) is byte-identical to before the fix --
+    both still resolve on a real treewidth~2 network."""
+    sub = agent.s
+    # (a) no treewidth_bound supplied at all -> falls back to
+    #     cjt.DEFAULT_TREEWIDTH_BOUND, exactly as test_solve_can_exact_
+    #     resolves_via_qd_bind_resolver (Rung 1, unmodified) already asserts.
+    mt_a, _r, _c = _resident_mt(agent, index=7)
+    goal_a = sd.mint_solve_can_exact_goal(agent, mt_a)
+    assert "treewidth_bound" not in sub.node(goal_a)["attrs"]
+    _pump(agent, goal_a)
+    a_a = sub.node(goal_a)["attrs"]
+    assert a_a["status"] == "resolved", a_a.get("note")
+    assert a_a["treewidth"] <= 4
+
+    # (b) an explicit non-zero bound (4, matching the default's own value)
+    #     -> still resolves, same as always.
+    mt_b, _r2, _c2 = _resident_mt(agent, index=8)
+    goal_b = sd.mint_solve_can_exact_goal(agent, mt_b, treewidth_bound=4)
+    _pump(agent, goal_b)
+    a_b = sub.node(goal_b)["attrs"]
+    assert a_b["status"] == "resolved", a_b.get("note")
+    assert a_b["treewidth"] <= 4
+
+    # (c) an explicit non-zero bound that IS too tight (1, below the real
+    #     ~2 treewidth) -> still walls, same as QUESTION_DRIVER_RUNG2_RESULTS.md
+    #     sec2.1's own test_solve_can_exact_failure_files_a_solve_failure_gap.
+    mt_c, _r3, _c3 = _resident_mt(agent, index=9)
+    goal_c = sd.mint_solve_can_exact_goal(agent, mt_c, treewidth_bound=1)
+    _pump(agent, goal_c)
+    a_c = sub.node(goal_c)["attrs"]
+    assert a_c["status"] == "walled", a_c.get("note")
+    assert a_c["wall_kind"] == "treewidth_exceeds_bound"
+
+
 def test_solve_can_bp_resolves_via_qd_bind_resolver(agent):
     sub = agent.s
     mt, _resident, _concepts = _resident_mt(agent, index=4)
