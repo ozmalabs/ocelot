@@ -1,0 +1,80 @@
+{
+ "id": "abusive_r5_recovery",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": ["traumatic_bond_r1", "abusive_r2_cycle_limit", "abusive_r3_coercive_control", "abusive_r4_learned_helplessness"],
+ "area": "retina",
+ "description": "ABUSIVE-DYNAMICS R5 -- LEAVING/RECOVERY: the integrative reversal of R1-R4 (block 295000). Composes FOUR already-built, unmodified rungs onto ONE victim node: traumatic_bond_r1 (block 283000, MoodTask/Mood -> Partner.value bond accrual), abusive_r2_cycle_limit (block 286000, the abuser's leaky-integrate-fire snap oscillator entraining the victim via frustration-routing), abusive_r3_coercive_control (block 289000, window-narrowing + others_trust/self_worth prior tracking + the also_attended_by outside-regulator mechanism), and abusive_r4_learned_helplessness (block 292000, EscapeDecision.contingency_prior + the Argmax escape/stay decision). R5's OWN new composition is exactly TWO rules, each answering a question the four prior rungs individually could not: R1's tb_bond_accrue is a MONOTONE accumulator (only ever adds a positive swing) with no decay term anywhere in the line, so 'bond weakening' cannot fall out of R1 alone -- r5_bond_extinguish adds the PREE's own flip side (A3 of ABUSIVE_RELATIONSHIPS_SCOPING.md: intermittent reinforcement is what makes a response EXTINCTION-RESISTANT; take the reinforcement away and it extinguishes), a constant proportional per-tick leak on Partner.value, active in BOTH arms -- whether it wins depends on whether fresh positive swings keep outpacing it, which is a WORLD fact (does the abuser still have intermittent access to the victim), never a rule-level arm switch. R4's r4_belief_update only ever revises EscapeDecision.contingency_prior from evidence delivered on an ATTEMPT's own outcome_epoch/processed_epoch channel -- and R4's own results doc names the resulting trap explicitly: once contingency_prior crosses the attempt/stay breakeven, the agent stops attempting, which cuts off the ONLY channel that could ever deliver fresh evidence, so the belief freezes and cannot self-repair. r5_contingency_restore adds a SECOND, INDEPENDENT evidence channel (support_epoch/support_processed_epoch/support_outcome -- distinct attrs, never touching outcome_epoch/processed_epoch) so an outside-delivered demonstration of controllability can revise the SAME belief without requiring the frozen agent to attempt first -- the same leaky-EMA idiom r4_belief_update already uses, applied to a different trigger. NOTHING else is new: the window WIDENING / others_trust / self_worth reversal is R3's OWN unmodified episode_resolve_widen + r3_prior_track_widen + r3_mark_coreg_support_outside, exercised for the first time in this line from an ALREADY-NARROWED starting window (R3's own honest residual named this path as built-but-untested); the safety-anchor de-inversion is the SAME abuser-tracking-distance readout R3 already used, read after the SAME also_attended_by edge R3 already proved safe (the two-same-type-OUTGOING-edges hazard R3 diagnosed and fixed). Attaching an also_attended_by edge and flipping has_outside_regulator=1.0 is ONE mechanical world event ('outside support becomes available'), decided once by the runner/experimenter, never a per-tick agent decision -- exactly matching every prior rung's own arm-selection convention. NO reward/punishment anywhere: the extinction leak is an unconditional decay (a world-independent structural fact, like a stressor magnitude), and the support evidence is a world-delivered outcome magnitude on a FIXED schedule, never conditioned on the victim's own chosen_action -- see Part C.2 of the locked ethical protocol. Integer/float-native (Times/Minus/Plus/Max/Min/Gt/Attr/Var/Lit only) -- NO Rust, NO new Term. OFF by default: self_load_only, loaded only by the R5 world adapter.",
+ "microtheory": {
+  "name": "abusive_recovery_reversal",
+  "description": "Recovery is not a new mechanism -- it is R1-R4's own machinery run with the trap's INPUTS removed and one additional, independent evidence/co-regulation source added. The bond weakens because the same schedule that made it extinction-resistant (A3) stops running; the window widens because arousal_window_coreg's own widen path (never exercised in this line before) requires a resolved episode with got_coreg, which requires SOMEONE at the attended-to end who is actually regulated, which the abuser structurally never is; the contingency belief recovers because an outside witness can supply the evidence the frozen agent's own self-cut-off attempt channel can no longer generate for itself."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "r5_bond_extinguish",
+   "area": "retina",
+   "order": 4,
+   "latency_class": "hard_realtime",
+   "comment": "THE EXTINCTION LEAK (A3's flip side). A constant proportional per-tick decay on Partner.value, fired AFTER tb_bond_accrue (order 3) so a tick that both accrues and decays applies both in sequence. Runs identically in EVERY arm/phase -- whether the bond nets upward or downward is a WORLD fact (does fresh intermittent reinforcement keep arriving faster than this leak), never a rule-level branch. Guarded on mt.input_epoch > partner.e_extinct so it advances by exactly one tick's worth of decay per tick (the SAME self-referential-write hazard ABUSIVE_R2_CYCLE_LIMIT_PREREG.md Sec. 3.0 and ABUSIVE_R4_LEARNED_HELPLESSNESS_PREREG.md Sec. 3.1 both already named and fixed the same way).",
+   "match": [
+    ["hub", "has_mood_task", "mt"],
+    ["hub", "bonded_to", "partner"]
+   ],
+   "where": {
+    "type": "Gt",
+    "a": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "input_epoch"},
+    "b": {"type": "Attr", "node": {"type": "Var", "name": "partner"}, "key": "e_extinct"}
+   },
+   "effects": [
+    ["set_attr", "partner", "value", {"__term__": {
+     "type": "Times",
+     "items": [
+      {"type": "Attr", "node": {"type": "Var", "name": "partner"}, "key": "value"},
+      {"type": "Minus",
+       "a": {"type": "Lit", "value": 1.0},
+       "b": {"type": "Attr", "node": {"type": "Var", "name": "partner"}, "key": "decay_rate"}}
+     ]
+    }}],
+    ["set_attr", "partner", "e_extinct", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "mt"}, "key": "input_epoch"}}]
+   ]
+  },
+  {
+   "name": "r5_contingency_restore",
+   "area": "retina",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "comment": "THE OUTSIDE EVIDENCE CHANNEL. A SECOND, INDEPENDENT leaky-EMA revision of EscapeDecision.contingency_prior -- the SAME v += lr*(observation-v) idiom r4_belief_update (block 292000, unmodified) already uses, applied to evidence delivered on a DISTINCT epoch pair (support_epoch/support_processed_epoch/support_outcome) that never touches r4_belief_update's own outcome_epoch/processed_epoch. This is why it can revise a FROZEN belief: r4_belief_update can only ever fire when the agent itself attempts (R4's own documented trap -- once passive, no more evidence arrives via THAT channel), but this channel does not require an attempt at all, so an outside witness/demonstration can reach the belief even while the agent is not currently attempting anything. Once contingency_prior crosses the attempt/stay breakeven, r4_choose (unmodified, order 20, still live every tick) naturally resumes choosing to attempt -- no rule here touches chosen_action.",
+   "match": [
+    ["hub", "has_escape_decision", "dec"]
+   ],
+   "where": {
+    "type": "Gt",
+    "a": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "support_epoch"},
+    "b": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "support_processed_epoch"}
+   },
+   "effects": [
+    ["set_attr", "dec", "contingency_prior", {"__term__": {
+     "type": "Max", "items": [
+      {"type": "Lit", "value": 0.0},
+      {"type": "Min", "items": [
+       {"type": "Lit", "value": 1.0},
+       {"type": "Plus", "items": [
+        {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "contingency_prior"},
+        {"type": "Times", "items": [
+         {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "support_lr"},
+         {"type": "Minus",
+          "a": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "support_outcome"},
+          "b": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "contingency_prior"}}
+        ]}
+       ]}
+      ]}
+     ]
+    }}],
+    ["set_attr", "dec", "support_processed_epoch", {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "support_epoch"}}]
+   ]
+  }
+ ]
+}
