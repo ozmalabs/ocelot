@@ -3,13 +3,13 @@
 **Status:** synthesis doc. This document builds nothing, measures nothing new,
 and touches no engine — every number below is copied from an already-landed,
 already-gated rung's own results doc, cited by file. Its job is to give a
-reader the shape of the whole line in one place: eleven rungs, each with a
-failable control, each ethics-gated before it ran, spanning three companion
-scoping documents written and locked in that order:
+reader the shape of the whole line in one place: **the full twelve-rung line
+is now landed** — each rung with a failable control, each ethics-gated before
+it ran, spanning three companion scoping documents written and locked in
+that order:
 
 - `ABUSIVE_RELATIONSHIPS_SCOPING.md` — the dyad line (**R1–R5**)
-- `ABUSIVE_RELATIONSHIPS_NETWORK.md` — the network line (**N1–N4**; N4 not
-  yet built — see "What is NOT built" below)
+- `ABUSIVE_RELATIONSHIPS_NETWORK.md` — the network line (**N1–N4**)
 - `ABUSIVE_RELATIONSHIPS_UNINTENTIONAL_SCOPING.md` — whether the network
   line's headline mechanism requires intent (**U0–U2**)
 
@@ -20,23 +20,24 @@ moral labels — stated once here, and true of every rung below.
 
 ---
 
-## THE ONE FINDING ALL ELEVEN RUNGS ELABORATE
+## THE ONE FINDING ALL TWELVE RUNGS ELABORATE
 
 Block 239000 (`AROUSAL_WOT_RESULTS.md`, part of this substrate's pre-existing
 developmental line, not built for this line) already measured that a
 regulating other placed ON the source of dysregulation "couples the wrong way
-and never returns." Every rung below is that single finding, elaborated:
-same arousal/window/co-regulation/prior/bond machinery, same
+and never returns." Eleven of the twelve rungs below are that single finding,
+elaborated — same arousal/window/co-regulation/prior/bond machinery, same
 readable-deception/reputation machinery (block 234000/245000), pointed at
-successively darker and more socially-embedded configurations. No rung
-invents a bespoke "abuse mechanism" — falsification bar 4 of both scoping
-docs requires reuse of existing atoms, and every rung below satisfies it: as
-of this doc, **zero new Rust and zero new Python agent-decision logic across
-all eleven rungs.**
+successively darker and more socially-embedded configurations. The twelfth
+(N4) is the same finding run in reverse: what it takes to make the coupling
+work the RIGHT way again. No rung invents a bespoke "abuse mechanism" —
+falsification bar 4 of both scoping docs requires reuse of existing atoms,
+and every rung below satisfies it: as of this doc, **zero new Rust and zero
+new Python agent-decision logic across all twelve rungs.**
 
 ---
 
-## THE ETHICS PROTOCOL (identical across all eleven rungs, locked before any of them ran)
+## THE ETHICS PROTOCOL (identical across all twelve rungs, locked before any of them ran)
 
 Every prereg in this line locks the same four-point protocol verbatim,
 carried from `ABUSIVE_RELATIONSHIPS_SCOPING.md` Part C through the network
@@ -112,13 +113,14 @@ confirmatory run, not discovered after the fact.
 
 ---
 
-## N1–N3 — THE NETWORK LINE
+## N1–N4 — THE NETWORK LINE
 
 | rung | mechanism | headline result | gate |
 |---|---|---|---|
 | **N1** credibility-asymmetry loop | one abuser, two stated-faces, network belief-update on corrupted observables | belief_gap widens 204→2371 (t=100→1000); private-face insider −1144.20; non-dysregulated control 0.00 | PASS (both controls resist) |
 | **N2** isolation | 2×2 factorial: active severing × network drift | both_drivers 0.00 [0,0] intact edges vs. active-only 4.00 [4,4] vs. drift-only 1.90 [1.86,1.94] vs. no-tactic control 8.00 [8,8] | PASS (super-additivity confirmed) |
 | **N3** belief propagation | 8-node topology, indirect nodes with zero direct abuser observation | indirect corruption 2231.38 [2230.35,2232.41] with zero direct observation; truth-anchor arm **reverses** to −953.57 [−954.55,−952.58] | PASS |
+| **N4** one believing agent | max-integration: one N2 network node converted into an N1 insider + R3/R5 outside co-regulator, one severed edge restored | bond 9.58 vs 511.25; window 12.47 vs floor 5.00; believer belief_gap −1312.08 vs 1539.89 (sign-flip); intact edges 4.00 vs 1.00 | **PASS — 4 of 4** (cleaner than R5's own 3/4) |
 
 **N1** (`ABUSIVE_N1_CREDIBILITY_LOOP_RESULTS.md`) is the network line's
 headline: found and reused an already-gated rule shape (block 245000's
@@ -136,15 +138,29 @@ result rather than assume it — a same-order staggering hazard that would
 have made the result true by construction was found and fixed before
 locking.
 
-**N3** (`ABUSIVE_N3_BELIEF_PROPAGATION_RESULTS.md`) is the line's strongest
-single number: a truth-anchor doesn't just slow contagion, it FULLY REVERSES
-the local belief-gap's sign. Pluralistic ignorance (Latané & Darley) was
-measured directly rather than assumed — it falls out of plain
+**N3** (`ABUSIVE_N3_BELIEF_PROPAGATION_RESULTS.md`) is one of the line's
+strongest single numbers: a truth-anchor doesn't just slow contagion, it
+FULLY REVERSES the local belief-gap's sign. Pluralistic ignorance (Latané &
+Darley) was measured directly rather than assumed — it falls out of plain
 neighbour-belief-averaging for free, no explicit term needed, resolving the
 network scoping doc's open question #4. A real matching-bug (N1's
 credibility rules silently zeroing indirect nodes' belief via a default
 `observes_private=0.0`) was found by pilot and fixed with a disclosed
 sentinel value, zero edits to N1's own seed.
+
+**N4** (`ABUSIVE_N4_BELIEVING_AGENT_RESULTS.md`) is the network line's own
+recovery rung and the most integrative in the entire line — depending
+directly on both `abusive_r5_recovery` and `abusive_n2_isolation` (N1 reached
+transitively through N2), it needed **zero new rules**: one mechanical world
+event converts a single, already-severed N2 support node into an N1 insider
+(reusing the exact private-face formula N3's own truth-anchor validated) AND
+an R3/R5-style outside co-regulator simultaneously, then restores its
+support edge. Unlike R5's honest 3-of-4 partial, N4 clears all four
+metrics — bond, window, believer belief-gap (a full sign reversal, same
+shape as N3's anchor), and intact-edge count. An unscripted bonus finding:
+restoring one edge measurably slowed the OTHER, unconnected nodes' drift too
+— the victim's own reduced dysregulation feeds every node's belief update,
+not just the believer's directly-observing one.
 
 ---
 
@@ -237,9 +253,6 @@ mechanism, not character:
 
 ## WHAT IS NOT BUILT
 
-- **N4** ("one non-doubting agent restores a support edge") — the network
-  line's own recovery rung, tying to R5. Named and speced in
-  `ABUSIVE_RELATIONSHIPS_NETWORK.md` Part E; not yet built.
 - **A sweep of U0's declared constants** (`concealment_benefit`/
   `honesty_benefit`/`suspicion_cost_scale`) — U0 shows intent CAN produce the
   pattern at one operating point; whether the pattern's strength is sensitive
@@ -256,8 +269,8 @@ mechanism, not character:
 
 ## CROSS-CUTTING ENGINEERING FINDINGS (evidence this is measurement, not a just-so story)
 
-Five independent, disclosed engine/design hazards were found and fixed
-across the line, none requiring a Rust change:
+Six independent, disclosed engine/design hazards were found and fixed across
+the line, none requiring a Rust change:
 
 1. R2 — a shared rule (`snap_frustration`'s arousal-clobber) fires on any
    connected node; fixed by routing through a different attr, letting the
@@ -269,6 +282,12 @@ across the line, none requiring a Rust change:
 4. U1 and U2, independently — a reward-only observable structurally biases
    a failable control toward the wrong side; fixed both times with a signed
    balance instead of a one-sided accumulator.
+5. N4 — a genuinely new kind: converting a node's ROLE mid-trajectory (from
+   corrupted network node to believing outside regulator) inherited stale
+   discount counters against a freshly-zeroed credibility term, producing a
+   transient belief-gap that immediately re-severed the just-restored edge
+   on tick 0 of recovery; fixed with a mechanical counter reset at the
+   world-adapter layer, zero edits to N1's or N2's seeds.
 
 Every one of these was caught by pilot measurement BEFORE the confirmatory
 run was locked, and every one is documented in its own rung's prereg or
@@ -278,14 +297,15 @@ build process itself, not just the final numbers.
 
 ---
 
-**Bottom line.** Eleven rungs, one ethics protocol locked before any of them
-ran, zero new Rust, zero new Python agent-decision logic, five disclosed
+**Bottom line.** Twelve rungs, one ethics protocol locked before any of them
+ran, zero new Rust, zero new Python agent-decision logic, six disclosed
 engineering hazards caught before they could quietly produce a rigged
-result, and one honest partial (R5, 3 of 4). The dyad line shows the trap
-from the inside (bond, cycle, entrapment, passivity, recovery); the network
-line shows it is not a private pathology but a social one (corrupted
-observables, active and passive isolation, contagion, a truth-anchor's
-outsized power to reverse it); the intent line shows the trap's mechanism
-does not require — though it can accommodate — a villain. Same machinery
-throughout, same four-point protocol, three dissolutions, and honest nulls
-reported exactly where they occurred.
+result, and one honest partial (R5, 3 of 4 — N4, the line's other recovery
+rung, cleared all 4). The dyad line shows the trap from the inside (bond,
+cycle, entrapment, passivity, recovery); the network line shows it is not a
+private pathology but a social one (corrupted observables, active and
+passive isolation, contagion, a truth-anchor's outsized power to reverse
+it, and one believing agent's outsized power to unwind it); the intent line
+shows the trap's mechanism does not require — though it can accommodate — a
+villain. Same machinery throughout, same four-point protocol, three
+dissolutions, and honest nulls reported exactly where they occurred.
