@@ -292,3 +292,158 @@ def test_singleton_real_shapes_stay_residual_not_forced_or_minted(agent):
     names = {sub.node(n)["attrs"]["name"] for n in sub.nodes("ProblemShape")}
     assert a_bridge["key"] not in names
     assert a_promote["key"] not in names
+
+
+# --------------------------------------------------------------------------- #
+#  6. PROBLEM_SHAPE_CAN_AXES_PREREG.md/_RESULTS.md -- the three CAN solver
+#     kinds (solve_can_relax/solve_can_exact/solve_can_bp) used to collapse
+#     onto the SAME `ps_has_targets_mt=yes` key (SHAPE_WOBBLE_POSITION_
+#     RESULTS.md Sec4's found-but-deferred defect, re-verified live before
+#     this rung built anything). `has_k_starts`/`has_combine` (new axes,
+#     read from attrs each mint_solve_can_*_goal function writes
+#     UNCONDITIONALLY, never from `kind`) now discriminate them.
+#     `solve_can_relax` (3 real recurring tests/ instances) and
+#     `solve_can_bp` (2, exactly at the recurrence floor) are DELIBERATELY
+#     left unseeded and grown live here, mirroring `decompose_shape`'s own
+#     recognize -> residual -> recurrence -> mint -> re-decode -> recognized
+#     loop (test 4 above) exactly -- `solve_can_exact` keeps recognizing via
+#     the EXISTING seeded entry (widened, same key), so it needs no mint.
+# --------------------------------------------------------------------------- #
+def test_can_relax_and_bp_shapes_mint_from_real_recurrence_and_redecode(agent):
+    sub = agent.s
+    before = {sub.node(n)["attrs"]["name"] for n in sub.nodes("ProblemShape")}
+    assert "ps_has_k_starts=yes_has_targets_mt=yes" not in before, \
+        "must not already exist for this test to prove growth"
+    assert "ps_has_combine=yes_has_targets_mt=yes" not in before, \
+        "must not already exist for this test to prove growth"
+
+    # -- solve_can_relax: FIRST real observation, over a real Bigville
+    #    resident CAN network, is a genuine residual (support=1).
+    mt_r1, _r1, _c1 = _resident_mt(agent, index=5)
+    gr1 = sd.mint_solve_can_relax_goal(agent, mt_r1)
+    _pump(agent, gr1)
+    assert sub.node(gr1)["attrs"]["status"] == "resolved"
+    obs_r1 = ps.observe(agent, gr1)
+    assert sub.node(obs_r1)["attrs"]["status"] == "residual", sub.node(obs_r1)["attrs"]
+    assert sub.node(obs_r1)["attrs"]["key"] == "ps_has_k_starts=yes_has_targets_mt=yes"
+    mid = {sub.node(n)["attrs"]["name"] for n in sub.nodes("ProblemShape")}
+    assert "ps_has_k_starts=yes_has_targets_mt=yes" not in mid, \
+        "a SINGLE occurrence must not mint"
+
+    # SECOND real solve_can_relax observation (a different real resident) --
+    # real recurrence, triggers the mint exactly once.
+    mt_r2, _r2, _c2 = _resident_mt(agent, index=6)
+    gr2 = sd.mint_solve_can_relax_goal(agent, mt_r2)
+    _pump(agent, gr2)
+    assert sub.node(gr2)["attrs"]["status"] == "resolved"
+    obs_r2 = ps.observe(agent, gr2)
+
+    after = {sub.node(n)["attrs"]["name"] for n in sub.nodes("ProblemShape")}
+    assert "ps_has_k_starts=yes_has_targets_mt=yes" in after
+    minted_relax = [n for n in sub.nodes("ProblemShape")
+                    if sub.node(n)["attrs"]["name"] == "ps_has_k_starts=yes_has_targets_mt=yes"]
+    assert len(minted_relax) == 1, "mint-once, not once per observation"
+    assert sub.node(minted_relax[0])["attrs"]["minted"] == 1.0
+    assert sub.node(minted_relax[0])["attrs"]["support"] == 2
+
+    # both real relax observations end up recognized against the freshly
+    # minted entry (obs_r2 directly; obs_r1 via ps_redecode's re-arm under
+    # the bumped epoch -- the exact pattern test 4 above already
+    # demonstrated for decompose_shape).
+    assert sub.node(obs_r1)["attrs"]["status"] == "recognized", sub.node(obs_r1)["attrs"]
+    assert sub.node(obs_r1)["attrs"]["covered_by"] == "ps_has_k_starts=yes_has_targets_mt=yes"
+    assert sub.node(obs_r2)["attrs"]["status"] == "recognized", sub.node(obs_r2)["attrs"]
+    assert sub.node(obs_r2)["attrs"]["covered_by"] == "ps_has_k_starts=yes_has_targets_mt=yes"
+
+    # -- solve_can_bp: the SAME loop, independently, over two MORE real
+    #    Bigville residents.
+    mt_b1, _b1, _cb1 = _resident_mt(agent, index=7)
+    gb1 = sd.mint_solve_can_bp_goal(agent, mt_b1)
+    _pump(agent, gb1)
+    assert sub.node(gb1)["attrs"]["status"] == "resolved"
+    obs_b1 = ps.observe(agent, gb1)
+    assert sub.node(obs_b1)["attrs"]["status"] == "residual", sub.node(obs_b1)["attrs"]
+    assert sub.node(obs_b1)["attrs"]["key"] == "ps_has_combine=yes_has_targets_mt=yes"
+
+    mt_b2, _b2, _cb2 = _resident_mt(agent, index=10)
+    gb2 = sd.mint_solve_can_bp_goal(agent, mt_b2)
+    _pump(agent, gb2)
+    assert sub.node(gb2)["attrs"]["status"] == "resolved"
+    obs_b2 = ps.observe(agent, gb2)
+
+    after_bp = {sub.node(n)["attrs"]["name"] for n in sub.nodes("ProblemShape")}
+    assert "ps_has_combine=yes_has_targets_mt=yes" in after_bp
+    minted_bp = [n for n in sub.nodes("ProblemShape")
+                 if sub.node(n)["attrs"]["name"] == "ps_has_combine=yes_has_targets_mt=yes"]
+    assert len(minted_bp) == 1, "mint-once, not once per observation"
+    assert sub.node(minted_bp[0])["attrs"]["minted"] == 1.0
+    assert sub.node(minted_bp[0])["attrs"]["support"] == 2
+
+    assert sub.node(obs_b1)["attrs"]["status"] == "recognized", sub.node(obs_b1)["attrs"]
+    assert sub.node(obs_b1)["attrs"]["covered_by"] == "ps_has_combine=yes_has_targets_mt=yes"
+    assert sub.node(obs_b2)["attrs"]["status"] == "recognized", sub.node(obs_b2)["attrs"]
+    assert sub.node(obs_b2)["attrs"]["covered_by"] == "ps_has_combine=yes_has_targets_mt=yes"
+
+    # the two newly-minted keys are genuinely distinct from each other and
+    # from the pre-existing seeded/minted keys.
+    assert minted_relax[0] != minted_bp[0]
+    seeded_and_minted = {sub.node(n)["attrs"]["name"] for n in sub.nodes("ProblemShape")}
+    assert {"ps_has_statement=yes", "ps_has_targets_mt=yes",
+            "ps_has_k_starts=yes_has_targets_mt=yes",
+            "ps_has_combine=yes_has_targets_mt=yes"} <= seeded_and_minted
+
+
+def test_three_can_kinds_recognize_as_distinct_shapes_not_collapsed(agent):
+    """THE LIVE DEMONSTRATION: after the growth loop above has grown the
+    codebook, one MORE real solve_can_relax, one real solve_can_exact, and
+    one real solve_can_bp Goal -- each over its OWN real Bigville resident
+    CAN network -- all reach `status == "recognized"`, each against its OWN
+    DISTINCT ProblemShape key. Before PROBLEM_SHAPE_CAN_AXES_PREREG.md's fix
+    all three read back the SAME collapsed `ps_has_targets_mt=yes` key
+    (Sec1's live re-verification); this asserts they no longer do."""
+    sub = agent.s
+
+    mt_relax, _r, _c = _resident_mt(agent, index=12)
+    g_relax = sd.mint_solve_can_relax_goal(agent, mt_relax)
+    _pump(agent, g_relax)
+    assert sub.node(g_relax)["attrs"]["status"] == "resolved"
+    obs_relax = ps.observe(agent, g_relax)
+
+    mt_exact, _r2, _c2 = _resident_mt(agent, index=13)
+    g_exact = sd.mint_solve_can_exact_goal(agent, mt_exact)
+    _pump(agent, g_exact)
+    assert sub.node(g_exact)["attrs"]["status"] == "resolved"
+    obs_exact = ps.observe(agent, g_exact)
+
+    mt_bp, _r3, _c3 = _resident_mt(agent, index=14)
+    g_bp = sd.mint_solve_can_bp_goal(agent, mt_bp)
+    _pump(agent, g_bp)
+    assert sub.node(g_bp)["attrs"]["status"] == "resolved"
+    obs_bp = ps.observe(agent, g_bp)
+
+    a_relax = sub.node(obs_relax)["attrs"]
+    a_exact = sub.node(obs_exact)["attrs"]
+    a_bp = sub.node(obs_bp)["attrs"]
+
+    assert a_relax["status"] == "recognized", a_relax
+    assert a_exact["status"] == "recognized", a_exact
+    assert a_bp["status"] == "recognized", a_bp
+
+    assert a_relax["covered_by"] == "ps_has_k_starts=yes_has_targets_mt=yes"
+    assert a_exact["covered_by"] == "ps_has_targets_mt=yes"
+    assert a_bp["covered_by"] == "ps_has_combine=yes_has_targets_mt=yes"
+
+    # the headline assertion: three genuinely distinct keys, never the old
+    # collapsed one shared across all three.
+    keys = {a_relax["covered_by"], a_exact["covered_by"], a_bp["covered_by"]}
+    assert len(keys) == 3, "the three CAN kinds must NOT collapse onto one key"
+
+    # a real solve_deduction Goal, dispatched fresh here, still recognizes
+    # correctly against the (unrelated, unaffected) deduction_shape entry --
+    # confirms the axis widening did not disturb a DIFFERENT shape family.
+    g_ded = sd.mint_solve_deduction_goal(agent, "if X is a whale, X can swim")
+    _pump(agent, g_ded)
+    obs_ded = ps.observe(agent, g_ded)
+    a_ded = sub.node(obs_ded)["attrs"]
+    assert a_ded["status"] == "recognized", a_ded
+    assert a_ded["covered_by"] == "ps_has_statement=yes"
