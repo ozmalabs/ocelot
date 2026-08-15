@@ -901,7 +901,27 @@ def _wire(v):
     if isinstance(v, set):
         return {"__set__": [_wire(x) for x in v]}
     if isinstance(v, dict):
-        return {k: _wire(x) for k, x in v.items()}
+        # GroupCount/DictMerge rung (task 88, `freq_count` — a dict whose
+        # KEYS are the original list elements, e.g. `{10: 4, 20: 4, ...}`):
+        # a bare JSON object can only ever have STRING keys, so an
+        # int-keyed dict silently lost its key type through this exact
+        # `_wire`->`json.dumps` boundary (found live: `SynthEnumerate`'s
+        # OWN internal example-row comparison accepted a WRONG candidate —
+        # `GroupCount(MapList(a,item,Str(item)))`, which stringifies every
+        # element before counting — because the STRINGIFIED-key result
+        # matched the ALSO-silently-stringified `expected` dict, while the
+        # correct `GroupCount(a)` produced genuine Int keys that could
+        # never match). The engine already has an exact tagged form for
+        # this on BOTH sides (`decode_value`/`encode_value`, `persist.rs`,
+        # `__dict__` — the SAME family as `__tuple__`/`__list__`/`__set__`/
+        # `__fset__` this function already emits for CONTAINER kind); this
+        # is its write side for DICT KEY type, applied only when it is
+        # actually needed (an all-string-keyed dict is byte-identical to
+        # before — the common case, and every currently-passing task's own
+        # dict-shaped values, verified empty of non-string keys).
+        if all(isinstance(k, str) for k in v):
+            return {k: _wire(x) for k, x in v.items()}
+        return {"__dict__": [[_wire(k), _wire(x)] for k, x in v.items()]}
     return v
 
 
@@ -929,6 +949,8 @@ def _unwire(v):
             return frozenset(_unwire(x) for x in v["__fset__"])
         if list(v.keys()) == ["__set__"]:
             return set(_unwire(x) for x in v["__set__"])
+        if list(v.keys()) == ["__dict__"]:
+            return {_unwire(k): _unwire(x) for k, x in v["__dict__"]}
         return {k: _unwire(x) for k, x in v.items()}
     if isinstance(v, list):
         return [_unwire(x) for x in v]

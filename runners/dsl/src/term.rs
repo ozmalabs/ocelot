@@ -251,6 +251,36 @@ pub enum TermNode {
     /// `cmp_value_lex` for the key comparison, the same comparator
     /// `Sort` already uses. Non-listlike source passes through unchanged.
     SortBy { source: TermIdx, var_name: Sym, key: TermIdx },
+    /// GroupCount/DictMerge rung (`PROGRAM_SYNTHESIS_GROUPCOUNT_DICTMERGE_
+    /// PREREG.md`, task 88 `freq_count` — Python's `Counter(seq)` /
+    /// "get the frequency of all elements in a list, returned as a
+    /// dictionary"): builds a `Value::Dict` mapping each DISTINCT element
+    /// of `seq` to its occurrence count (`Value::Int`). `OpKind::Unary`,
+    /// sourced from the enumerator's general `by_size` pool exactly like
+    /// `Sort`/`DictItems` (zero new registration machinery). Grouping uses
+    /// `Value`'s own structural `PartialEq` (the same equality every other
+    /// Term in this file already relies on); output pairs are canonically
+    /// sorted by `cmp_value`, the SAME invariant `MkDict` maintains, so a
+    /// `GroupCount`-built Dict compares equal to any other dict with the
+    /// same key/count pairs regardless of build path. `Value::List`/
+    /// `Value::Tuple` input only (the `Sort`/`Reverse` scope); non-listlike
+    /// input passes through unchanged (the same degrade precedent).
+    GroupCount { seq: TermIdx },
+    /// GroupCount/DictMerge rung (task 87 `merge_dictionaries_three` —
+    /// "merge three dictionaries into a single dictionary"): Python's
+    /// `{**a, **b}` / `dict.update` — `b`'s entries win over `a`'s on a
+    /// KEY COLLISION, `a`'s entries are kept where `b` has no matching key.
+    /// `OpKind::Binary`. A 3-way merge is NOT a new arity — it composes
+    /// exactly like every other binary reduction in this arc
+    /// (`ConcatList(ConcatList(a,b),c)`, task 108's own witness): nesting
+    /// `DictMerge(DictMerge(dict3,dict2),dict1)` gives dict1 the highest
+    /// priority, matching MBPP task 87's own asserted precedence (verified
+    /// against its real fixture rows in the PREREG, not assumed from the
+    /// prompt text). Output pairs canonically sorted by `cmp_value`, same
+    /// as `GroupCount`/`MkDict`. Non-Dict-Dict input degrades to `a`
+    /// unchanged (never panics; mirrors this file's standing degrade
+    /// convention for a type-mismatched operand).
+    DictMerge { a: TermIdx, b: TermIdx },
     /// Verify that `term` (evaluated under bindings from `env`) equals
     /// `expected`. `env` should evaluate to a Value::Dict of
     /// (Str, Value) pairs — each entry is pushed onto the eval env
@@ -2984,6 +3014,10 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
         TermNode::SortBy { source, var_name, key } => TermNode::SortBy {
             source: copy_subtree(src, dst, source), var_name, key: copy_subtree(src, dst, key),
         },
+        TermNode::GroupCount { seq } => TermNode::GroupCount { seq: copy_subtree(src, dst, seq) },
+        TermNode::DictMerge { a, b } => TermNode::DictMerge {
+            a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b),
+        },
         TermNode::Verify { term, env, expected } => TermNode::Verify { term: copy_subtree(src, dst, term), env: copy_subtree(src, dst, env), expected: copy_subtree(src, dst, expected) },
         TermNode::MkDict { items } =>
             TermNode::MkDict { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
@@ -5267,6 +5301,52 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                     Value::Tuple(std::sync::Arc::new(out))
                 }
                 other => other,
+            }
+        }
+
+        TermNode::GroupCount { seq } => {
+            let v = evaluate(arena, *seq, env, ctx);
+            let items: Option<smallvec::SmallVec<[Value; 4]>> = match &v {
+                Value::List(items) => Some(items.iter().cloned().collect()),
+                Value::Tuple(items) => Some(items.iter().cloned().collect()),
+                _ => None,
+            };
+            match items {
+                Some(items) => {
+                    let mut counts: Vec<(Value, i64)> = Vec::new();
+                    for it in items.iter() {
+                        match counts.iter_mut().find(|(k, _)| k == it) {
+                            Some(entry) => entry.1 += 1,
+                            None => counts.push((it.clone(), 1)),
+                        }
+                    }
+                    let mut pairs: Vec<(Value, Value)> = counts
+                        .into_iter()
+                        .map(|(k, c)| (k, Value::Int(c)))
+                        .collect();
+                    pairs.sort_by(|a, b| cmp_value(&a.0, &b.0));
+                    Value::Dict(std::sync::Arc::from(pairs))
+                }
+                None => v,
+            }
+        }
+
+        TermNode::DictMerge { a, b } => {
+            let av = evaluate(arena, *a, env, ctx);
+            let bv = evaluate(arena, *b, env, ctx);
+            match (&av, &bv) {
+                (Value::Dict(pa), Value::Dict(pb)) => {
+                    let mut out: Vec<(Value, Value)> = pa.iter().cloned().collect();
+                    for (k, v) in pb.iter() {
+                        match out.iter_mut().find(|(ek, _)| ek == k) {
+                            Some(entry) => entry.1 = v.clone(),
+                            None => out.push((k.clone(), v.clone())),
+                        }
+                    }
+                    out.sort_by(|x, y| cmp_value(&x.0, &y.0));
+                    Value::Dict(std::sync::Arc::from(out))
+                }
+                _ => av,
             }
         }
 
@@ -10469,6 +10549,8 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         TermNode::Sort { seq } => out.push(*seq),
         TermNode::DictItems { seq } => out.push(*seq),
         TermNode::SortBy { source, key, .. } => { out.push(*source); out.push(*key); }
+        TermNode::GroupCount { seq } => out.push(*seq),
+        TermNode::DictMerge { a, b } => { out.push(*a); out.push(*b); }
     }
     out
 }

@@ -216,6 +216,8 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::Sort { .. } => "Sort",
         TermNode::DictItems { .. } => "DictItems",
         TermNode::SortBy { .. } => "SortBy",
+        TermNode::GroupCount { .. } => "GroupCount",
+        TermNode::DictMerge { .. } => "DictMerge",
         TermNode::Argmax { .. } => "Argmax",
         TermNode::Argmin { .. } => "Argmin",
         TermNode::ArgminUnique { .. } => "ArgminUnique",
@@ -647,6 +649,13 @@ fn write_fields(
             m.insert("source".into(), child(*source, arena, interner));
             m.insert("var_name".into(), sym_str(*var_name, interner));
             m.insert("key".into(), child(*key, arena, interner));
+        }
+        TermNode::GroupCount { seq } => {
+            m.insert("seq".into(), child(*seq, arena, interner));
+        }
+        TermNode::DictMerge { a, b } => {
+            m.insert("a".into(), child(*a, arena, interner));
+            m.insert("b".into(), child(*b, arena, interner));
         }
         TermNode::Filter { source, var_name, predicate }
         | TermNode::FilterList { source, var_name, predicate }
@@ -1457,6 +1466,13 @@ fn read_term(
             source: child_of("source", obj, arena, interner, variant)?,
             var_name: get_sym("var_name", interner)?,
             key: child_of("key", obj, arena, interner, variant)?,
+        },
+        "GroupCount" => TermNode::GroupCount {
+            seq: child_of("seq", obj, arena, interner, variant)?,
+        },
+        "DictMerge" => TermNode::DictMerge {
+            a: child_of("a", obj, arena, interner, variant)?,
+            b: child_of("b", obj, arena, interner, variant)?,
         },
         "Eq" => TermNode::Eq {
             a: child_of("a", obj, arena, interner, variant)?,

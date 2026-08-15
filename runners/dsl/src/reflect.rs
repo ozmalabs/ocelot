@@ -407,6 +407,11 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
             ScalarSym { name: "var_name", value: *var_name },
             Child { name: "key", child: *key },
         ]),
+        TermNode::GroupCount { seq } => ("GroupCount", vec![Child { name: "seq", child: *seq }]),
+        TermNode::DictMerge { a, b } => ("DictMerge", vec![
+            Child { name: "a", child: *a },
+            Child { name: "b", child: *b },
+        ]),
         TermNode::Argmax { source, var_name, value, default } => ("Argmax", vec![
             Child { name: "source", child: *source },
             ScalarSym { name: "var_name", value: *var_name },
@@ -1264,6 +1269,8 @@ fn reconstruct(
             var_name: get_sym("var_name")?,
             key: take_child!("key"),
         },
+        "GroupCount" => TermNode::GroupCount { seq: take_child!("seq") },
+        "DictMerge" => TermNode::DictMerge { a: take_child!("a"), b: take_child!("b") },
         "Argmax" => TermNode::Argmax {
             source: take_child!("source"),
             var_name: get_sym("var_name")?,
