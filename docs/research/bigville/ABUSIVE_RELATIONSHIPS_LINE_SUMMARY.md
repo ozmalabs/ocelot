@@ -3,15 +3,17 @@
 **Status:** synthesis doc. This document builds nothing, measures nothing new,
 and touches no engine — every number below is copied from an already-landed,
 already-gated rung's own results doc, cited by file. Its job is to give a
-reader the shape of the whole line in one place: **the full twelve-rung line
-is now landed** — each rung with a failable control, each ethics-gated before
-it ran, spanning three companion scoping documents written and locked in
-that order:
+reader the shape of the whole line in one place: **the full fourteen-rung
+line is now landed** — each rung with a failable control, each ethics-gated
+before it ran, spanning four companion scoping documents written and locked
+in that order:
 
 - `ABUSIVE_RELATIONSHIPS_SCOPING.md` — the dyad line (**R1–R5**)
 - `ABUSIVE_RELATIONSHIPS_NETWORK.md` — the network line (**N1–N4**)
 - `ABUSIVE_RELATIONSHIPS_UNINTENTIONAL_SCOPING.md` — whether the network
   line's headline mechanism requires intent (**U0–U2**)
+- `ABUSIVE_RELATIONSHIPS_BARRIERS_AND_RETURN_SCOPING.md` — material barriers
+  to leaving, and staying left (**R6–R7**)
 
 Clinical, anti-sensational register throughout, matching every doc it
 summarises. The purpose is scientific/clinical understanding grounded in the
@@ -20,24 +22,29 @@ moral labels — stated once here, and true of every rung below.
 
 ---
 
-## THE ONE FINDING ALL TWELVE RUNGS ELABORATE
+## THE ONE FINDING ALL FOURTEEN RUNGS ELABORATE
 
 Block 239000 (`AROUSAL_WOT_RESULTS.md`, part of this substrate's pre-existing
 developmental line, not built for this line) already measured that a
 regulating other placed ON the source of dysregulation "couples the wrong way
-and never returns." Eleven of the twelve rungs below are that single finding,
+and never returns." Most of the rungs below are that single finding,
 elaborated — same arousal/window/co-regulation/prior/bond machinery, same
 readable-deception/reputation machinery (block 234000/245000), pointed at
-successively darker and more socially-embedded configurations. The twelfth
-(N4) is the same finding run in reverse: what it takes to make the coupling
-work the RIGHT way again. No rung invents a bespoke "abuse mechanism" —
-falsification bar 4 of both scoping docs requires reuse of existing atoms,
-and every rung below satisfies it: as of this doc, **zero new Rust and zero
-new Python agent-decision logic across all twelve rungs.**
+successively darker and more socially-embedded configurations. N4 is the
+same finding run in reverse: what it takes to make the coupling work the
+RIGHT way again. R6 and R7 elaborate a SECOND, independent finding this
+line's own value-economy machinery already carried (R4's Argmax-over-
+Appraisal) — that a decision can be entirely correct about controllability
+and still land on "stay," and that a genuinely recovered trajectory is not
+protected from a later pull back. No rung invents a bespoke "abuse
+mechanism" — falsification bar 4 of every scoping doc requires reuse of
+existing atoms, and every rung below satisfies it: as of this doc, **zero
+new Rust and zero new Python agent-decision logic across all fourteen
+rungs.**
 
 ---
 
-## THE ETHICS PROTOCOL (identical across all twelve rungs, locked before any of them ran)
+## THE ETHICS PROTOCOL (identical across all fourteen rungs, locked before any of them ran)
 
 Every prereg in this line locks the same four-point protocol verbatim,
 carried from `ABUSIVE_RELATIONSHIPS_SCOPING.md` Part C through the network
@@ -110,6 +117,58 @@ widening, escape-attempts resuming) are CI-separated PASSES; the fourth
 the abuser's own large arousal excursions swamp the raw `|victim−abuser|`
 distance arithmetic. Pre-registered as the likely outcome before the
 confirmatory run, not discovered after the fact.
+
+---
+
+## R6–R7 — MATERIAL BARRIERS TO LEAVING, AND STAYING LEFT
+
+The user asked directly: is there an obvious thing missing from the wider
+line — structural barriers like children and money, and survivors who
+return after leaving? Both were real gaps. Scoping them surfaced a precise
+distinction: R4 already modelled whether escape WORKS; nothing modelled
+whether escape is WORTH IT even when it works, or what happens after a real
+recovery when a residual bond is still standing.
+
+| rung | mechanism | headline result | gate |
+|---|---|---|---|
+| **R6** dependent-cost devaluation | one new subtracted term in R4's own Appraisal; zero-dependents replication vs. high-dependents | attempt_rate **0.000 [0,0]** vs. zero-dependents' 1.000 [1,1], DESPITE `contingency_prior` staying at its uninformative 0.4998 (never even disconfirmed) | PASS (+ harness-neutrality check) |
+| **R7** the return cycle | 2×2 factorial: post-separation honeymoon contact × post-leaving resource collapse | both_drivers 0.7278 [0.7278,0.7278] > honeymoon_only 0.3921 [0.3882,0.3959] and collapse_only 0.3145 [0.3123,0.3167], both > neither's exact 0.0000 [0,0] | PASS — all 5 sub-gates |
+
+**R6** (`ABUSIVE_R6_DEPENDENT_COST_RESULTS.md`) adds exactly one rule to R4's
+completely unmodified template, and reproduces R4's own landed contingent-arm
+numbers exactly at `dependent_cost=0` (the harness-neutrality check) before
+showing the headline dissociation: at a high enough dependent cost, the
+agent never attempts even once, so `r4_belief_update`'s guard (which only
+fires on a delivered outcome) never triggers — the belief that escape would
+work stays essentially untouched while the attempt rate goes to an exact
+zero. Mechanistically distinct from R4's own trap, which needs several
+blocked attempts and an actively disconfirmed belief before freezing —
+here passivity is immediate and the belief is never even tested.
+
+**R7** (`ABUSIVE_R7_RETURN_CYCLE_RESULTS.md`) is the most structurally
+complex rung in the line — three induction phases (R5's own recovery, a
+mechanical `leave()` event, a post-leave test window) from one checkpoint to
+one restore — and found, while designing, that R2's own honeymoon RULE
+cannot literally fire post-separation (its match clause needs the
+`attended_by` edge leaving removes); it reuses R2's CONCEPT instead, via a
+new sparse post-separation event schedule feeding R1's own unmodified bond
+mechanism. A first naive constant choice genuinely failed pilot (one
+honeymoon event alone swamped the whole resource ceiling, making
+honeymoon-alone indistinguishable from both-drivers) — found, disclosed, and
+fixed before locking, not smoothed over. Phase 1/2 numbers reproduce R5's
+own exactly. Also improved on the scoping doc's own disclosed uncertainty:
+confirmed the DSL's native `Count` term exists (already load-bearing in
+N3) and used it for `resource_intact_count`, rather than the
+explicit-counter fallback the scoping doc named.
+
+**What R6/R7 add to the line's account:** R4 already showed why some people
+don't even try; R6 shows a DIFFERENT, equally real reason someone can
+correctly, rationally not attempt — a value comparison that genuinely
+doesn't clear, given real material stakes, with the belief that escape
+would work fully intact. And R5 already showed recovery is real when
+support holds; R7 shows a real, complete recovery is not by itself immune
+to a later pull back, without that pull meaning the recovery — or the
+earlier leaving — wasn't real.
 
 ---
 
@@ -224,7 +283,7 @@ all). Three structurally distinct routes to the identical trap.
 
 ---
 
-## THE THREE DISSOLUTIONS
+## THE DISSOLUTIONS
 
 Each rung targets a specific misattribution and shows it dissolving into
 mechanism, not character:
@@ -248,6 +307,15 @@ mechanism, not character:
   and this doc repeats once: **intent-free is not a claim of innocence.**
   Responsibility for harm and conscious/deliberate intent to harm are not
   the same axis; every rung's own Part F says so explicitly.
+- **"She could leave if she really wanted to / if she really left she
+  wouldn't have gone back"** — dissolved by R6 and R7, each aimed at a
+  version of the question that SURVIVES R4/R5's own answers. R6 shows a
+  value comparison, not a controllability failure, can correctly land on
+  "stay" given real material stakes, with the belief that escape would work
+  fully intact. R7 shows a real, mechanistically genuine recovery is not
+  protected from a later pull back — and that a return does not mean the
+  earlier leaving was never real, the same way R4's passivity was never
+  evidence the victim "wasn't really trying."
 
 ---
 
@@ -261,6 +329,15 @@ mechanism, not character:
 - **Combining U1 and U2**, or a continuous sweep of U2's minimisation
   discount — deliberately out of scope for a first minimal pair, per that
   doc's own "why exactly two, not a sweep" reasoning.
+- **R6's `dependent_cost` as a count of `Dependent` nodes**, rather than a
+  fixed constant — named in the barriers-and-return scoping doc as the
+  natural, more graph-native refinement, deliberately not built for a first
+  minimal rung.
+- **R7 modelling MULTIPLE leave→return→leave cycles** within one trajectory
+  — the current design is a single leave-then-test-return; a genuinely
+  multi-cycle design (re-triggering the three phases recursively, gated on
+  the Return Appraisal's own outcome) is named as the clinically well-
+  motivated next step, not scoped in mechanism detail.
 - Everything each individual results doc itself names as an honest residual
   (R2's window-narrows-and-stays finding, flagged there as "R3-adjacent" and
   since addressed by R3 itself; R5's anchor-distance null).
@@ -269,8 +346,8 @@ mechanism, not character:
 
 ## CROSS-CUTTING ENGINEERING FINDINGS (evidence this is measurement, not a just-so story)
 
-Six independent, disclosed engine/design hazards were found and fixed across
-the line, none requiring a Rust change:
+Seven independent, disclosed engine/design hazards were found and fixed
+across the line, none requiring a Rust change:
 
 1. R2 — a shared rule (`snap_frustration`'s arousal-clobber) fires on any
    connected node; fixed by routing through a different attr, letting the
@@ -288,6 +365,11 @@ the line, none requiring a Rust change:
    transient belief-gap that immediately re-severed the just-restored edge
    on tick 0 of recovery; fixed with a mechanical counter reset at the
    world-adapter layer, zero edits to N1's or N2's seeds.
+6. R7 — a design-parameter hazard, same class as U1/U2's: a first naive
+   constant choice (`resource_value`) let one honeymoon event alone swamp
+   the entire resource ceiling, making the honeymoon-only arm indistinguishable
+   from the both-drivers arm; found by pilot before locking, fixed by
+   re-choosing the constant, disclosed rather than silently re-tuned.
 
 Every one of these was caught by pilot measurement BEFORE the confirmatory
 run was locked, and every one is documented in its own rung's prereg or
@@ -297,15 +379,18 @@ build process itself, not just the final numbers.
 
 ---
 
-**Bottom line.** Twelve rungs, one ethics protocol locked before any of them
-ran, zero new Rust, zero new Python agent-decision logic, six disclosed
-engineering hazards caught before they could quietly produce a rigged
-result, and one honest partial (R5, 3 of 4 — N4, the line's other recovery
-rung, cleared all 4). The dyad line shows the trap from the inside (bond,
-cycle, entrapment, passivity, recovery); the network line shows it is not a
-private pathology but a social one (corrupted observables, active and
-passive isolation, contagion, a truth-anchor's outsized power to reverse
-it, and one believing agent's outsized power to unwind it); the intent line
+**Bottom line.** Fourteen rungs, one ethics protocol locked before any of
+them ran, zero new Rust, zero new Python agent-decision logic, seven
+disclosed engineering hazards caught before they could quietly produce a
+rigged result, and one honest partial (R5, 3 of 4 — N4, the line's other
+recovery rung, cleared all 4). The dyad line shows the trap from the inside
+(bond, cycle, entrapment, passivity, recovery); the network line shows it is
+not a private pathology but a social one (corrupted observables, active and
+passive isolation, contagion, a truth-anchor's outsized power to reverse it,
+and one believing agent's outsized power to unwind it); the intent line
 shows the trap's mechanism does not require — though it can accommodate — a
-villain. Same machinery throughout, same four-point protocol, three
+villain; and R6/R7 show the trap has a second, independent axis entirely —
+real material stakes that can make leaving correctly not worth it even when
+it would work, and a real recovery that is not, by itself, immune to a later
+pull back. Same machinery throughout, same four-point protocol, four
 dissolutions, and honest nulls reported exactly where they occurred.
