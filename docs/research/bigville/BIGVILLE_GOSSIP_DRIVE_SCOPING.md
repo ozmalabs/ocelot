@@ -635,6 +635,66 @@ repo's full 156, all green.
 
 ---
 
+## PART 5 — SECOND-HAND SPREAD (the user's own follow-up: N2/N3-style propagation)
+
+Open Question 4 above named this and deferred it: a listener updates their
+OWN belief about the gossip's subject, but nothing lets them RE-TELL it —
+the spread stops at one hop. The user asked for the abuse-line's N2/N3
+treatment specifically: a countable population, a real propagation
+mechanism, and a failable control that could show the spread DOESN'T reach
+someone, mirroring N3's own truth-anchor discipline.
+
+**Grounded, search-verified:**
+- Allport, G.W. & Postman, L. (1947), *The Psychology of Rumor* (verified
+  live). Rumor content distorts across retellings (leveling: unfamiliar
+  detail dropped; sharpening: a few details emphasized) — but the load-
+  bearing part for THIS design is the "basic law of rumor": spread and
+  intensity scale with the event's importance (this codebase's `severity`)
+  — the same variable Part 4's retelling-decay already keys on, now the
+  natural variable for spread reach too.
+- DeGroot (1974)'s iterative-averaging opinion model (verified live,
+  already the load-bearing precedent for N3's own neighbour-to-neighbour
+  belief update in the abuse line). Confidence in a relayed report should
+  compound MULTIPLICATIVELY across hops — the standard shape for repeated
+  trust-weighted averaging, not an independent re-roll at each hop.
+
+**The design, composing what already shipped — no new sharing or rendering
+mechanism, only a new SECOND-HAND observation channel:** a heard `share`
+already gives the listener a belief update (`_hear_gossip`); it now ALSO
+gives them a `heard_events[event] = {"day_heard": day, "strength": s}`
+entry (the SAME per-actor bookkeeping-dict idiom as `told_events`/
+`speech_bonds`), where `strength = source_trust * speaker_confidence` — the
+immediate hop's trust, multiplied by the SPEAKER's own inherited confidence
+(`1.0` if the speaker witnessed it first-hand; their own `heard_events`
+strength if they only heard it too). This is DeGroot-shaped compounding by
+construction: a three-hop chain's strength is the PRODUCT of three trust
+terms, degrading exactly like a real rumor's credibility does. Second-hand
+events join the SAME `_speech_share_event` candidate pool `observed_event`
+already populates — `base_salience * strength`, gated on age-since-HEARD (not
+the event's own day, matching "the news is fresh to me even if it happened
+last week"), then damped by the SAME `told_events` retelling-decay Part 4
+already built. **Zero new sharing mechanism, zero new content-rendering
+path** — a second-hand teller uses the identical `share` option, the
+identical `_speech_goal` renderer, the identical retelling decay; only the
+observation channel and its trust-compounded strength are new.
+
+**The failable-control analog to N3's truth-anchor:** an agent with no
+co-presence path to anyone who has heard or witnessed the event has an
+empty `heard_events` and no `observed_event` edge for it — spread is
+STRUCTURALLY bounded by the town's actual encounter topology, never a
+global broadcast. This is not asserted; it falls out of `heard_events` only
+ever being populated inside `_hear_gossip`, itself only ever called from a
+real, co-located, heard `share`.
+
+**Open, named honestly, not built:** Allport & Postman's CONTENT distortion
+(leveling/sharpening the detail itself) is not modelled — `_speech_goal`
+has no hedged-reported-speech grammar yet ("I heard that..." vs "..."), so
+a second-hand retelling currently carries the same rendered content as a
+first-hand one, only a lower salience/trust weight. Marking retellings as
+hearsay linguistically is a real, separate extension, not scoped here.
+
+---
+
 ## OPEN QUESTIONS
 
 1. **Does Bigville's speech mechanism carry arbitrary propositional
