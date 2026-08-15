@@ -400,6 +400,16 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     // `ConcatList(ConcatList(a,b),c)` precedent task 108 already uses. ---
     ("GroupCount", OpKind::Unary),     // -> GroupCount{seq} (Counter(seq) as a Dict of element->count)
     ("DictMerge", OpKind::Binary),     // -> DictMerge{a,b} (dict.update semantics: b wins over a on key conflict)
+    // --- PROGRAM_SYNTHESIS_MODSQRT_SCOPED_FIX (PROGRAM_SYNTHESIS_BUDGET_
+    // EXHAUSTED_SURVEY_PREREG/RESULTS.md §5.1/§5.3): `Mod`/`Sqrt` are
+    // already-shipped, already-evaluated `TermNode` variants (`term.rs`),
+    // used elsewhere in the engine, that had never been exposed in
+    // `OP_TABLE` at all. Registered here so an explicit `ops` request (or
+    // a caller building its own op list) CAN name them; the bare-scalar
+    // typed default (below) is the only unconditional consumer — see that
+    // branch's own comment for why it is scoped this narrowly. ---
+    ("Mod", OpKind::Binary),   // -> Mod{a,b} (Python a % b)
+    ("Sqrt", OpKind::Unary),   // -> Sqrt{arg} (Python math.sqrt)
 ];
 
 /// Arc4-S4: the list-op names, in `OP_TABLE` declaration order — appended
@@ -599,6 +609,8 @@ fn build_op(name: &str, kids: &[TermIdx], derived_names: &FxHashMap<String, Sym>
         "DictItems" => TermNode::DictItems { seq: kids[0] },
         "GroupCount" => TermNode::GroupCount { seq: kids[0] },
         "DictMerge" => TermNode::DictMerge { a: kids[0], b: kids[1] },
+        "Mod" => TermNode::Mod { a: kids[0], b: kids[1] },
+        "Sqrt" => TermNode::Sqrt { arg: kids[0] },
         _ => call_fallback(name, kids.to_vec(), derived_names),
     }
 }
@@ -1588,6 +1600,18 @@ fn term_json(
             "type": "MkDict",
             "items": items.iter().map(|i| term_json(arena, *i, names, interner)).collect::<Vec<_>>(),
         }),
+        // PROGRAM_SYNTHESIS_MODSQRT_SCOPED_FIX: the SAME missing-arm class
+        // `DictFromPairs`/`MkDict` already hit (see that comment above) —
+        // `Mod`/`Sqrt` are the first op-table exposure whose built
+        // candidate tree can contain a bare `Mod`/`Sqrt` node. Field names
+        // match `jsonio.rs`'s own parser (`"a"`/`"b"` for `Mod`, `"arg"`
+        // for `Sqrt`).
+        TermNode::Mod { a, b } => json!({
+            "type": "Mod", "a": term_json(arena, *a, names, interner), "b": term_json(arena, *b, names, interner)
+        }),
+        TermNode::Sqrt { arg } => json!({
+            "type": "Sqrt", "arg": term_json(arena, *arg, names, interner),
+        }),
         // Derived-operator tier: a winning candidate may itself be a
         // `Call{name,args}` node (build-A's own fallback arms route an
         // unrecognized-but-registered op name here) — rendered exactly
@@ -1981,6 +2005,7 @@ pub(crate) fn eval_synth_enumerate(
     consts_t: Option<TermIdx>,
     exclude_t: Option<TermIdx>,
     derived_ops_t: Option<TermIdx>,
+    exclude_ops_t: Option<TermIdx>,
     max_size: i64,
     max_candidates: i64,
     saturate_k: i64,
@@ -2366,6 +2391,19 @@ pub(crate) fn eval_synth_enumerate(
     } else {
         let mut v = DEFAULT_OPS.to_vec();
         v.extend(extra_evidence_ops.iter().copied());
+        // PROGRAM_SYNTHESIS_MODSQRT_SCOPED_FIX: `Mod`/`Sqrt` pushed onto
+        // this LOCAL `v` only — never onto the shared `DEFAULT_OPS`
+        // constant the list-shaped branch above also consumes, so every
+        // list-shaped spec's op inventory (including task 132's) is
+        // byte-unchanged, exactly as the bare-scalar-`else`-branch-only
+        // scoping this arc's own BUDGET_EXHAUSTED_SURVEY_PREREG/RESULTS.md
+        // §6/§8 already established was the correct blast-radius
+        // boundary. A call site that needs the pre-Mod/Sqrt bare-scalar
+        // inventory back (the retrieval-ladder/decomposition-probe
+        // cross-lane callers this fix scopes) uses `exclude_ops` instead
+        // of a second typed-default branch.
+        v.push("Mod");
+        v.push("Sqrt");
         v
     };
     // --- Derived-operator tier, stage 1 (metadata only — no arena needed
@@ -2431,6 +2469,28 @@ pub(crate) fn eval_synth_enumerate(
             .iter()
             .map(|n| (n.to_string(), table_kind(n).unwrap()))
             .collect(),
+    };
+    // PROGRAM_SYNTHESIS_MODSQRT_SCOPED_FIX: `exclude_ops` is a soft,
+    // call-site-scoped filter applied AFTER `op_list` converges (whether
+    // it came from the typed default above or a caller's own explicit
+    // `ops`) — the single point both paths already meet. Absent
+    // (`exclude_ops_t == None`) is the byte-unchanged case every existing
+    // caller hits. An unrecognized name is simply not present in
+    // `op_list` to begin with, so it is a no-op, matching `exclude`'s own
+    // "unrecognized/malformed entries are skipped, never fatal" idiom.
+    let op_list: Vec<(String, OpKind)> = match exclude_ops_t {
+        Some(t) => {
+            let xv = evaluate(arena, t, env, ctx);
+            match items_of(&xv) {
+                Some(items) => {
+                    let names: Vec<String> =
+                        items.iter().filter_map(|v| value_str(v, ctx.interner)).collect();
+                    op_list.into_iter().filter(|(n, _)| !names.iter().any(|x| x == n)).collect()
+                }
+                None => op_list,
+            }
+        }
+        None => op_list,
     };
     // --- Constant set: requested (default 0,1,2,-1) + integer-valued
     //     outputs (dedup, order preserved) ---
@@ -3274,6 +3334,7 @@ mod tests {
                 consts: None,
                 exclude: None,
                 derived_ops: None,
+                exclude_ops: None,
                 max_size,
                 max_candidates,
                 saturate_k: 0,
@@ -3310,6 +3371,7 @@ mod tests {
                 consts: None,
                 exclude: None,
                 derived_ops: Some(derived_t),
+                exclude_ops: None,
                 max_size,
                 max_candidates,
                 saturate_k: 0,
@@ -3536,6 +3598,7 @@ mod tests {
             consts: None,
             exclude: None,
             derived_ops: None,
+            exclude_ops: None,
             max_size: 7,
             max_candidates: 0,
             saturate_k: 0,
@@ -3802,6 +3865,7 @@ mod tests {
             consts: None,
             exclude: Some(excl_t),
             derived_ops: None,
+            exclude_ops: None,
             max_size: 9,
             max_candidates: 0,
             saturate_k: 0,
@@ -3903,6 +3967,7 @@ mod tests {
             consts: None,
             exclude: None,
             derived_ops: Some(derived_t),
+            exclude_ops: None,
             max_size: 9,
             max_candidates: 0,
             saturate_k: 0,

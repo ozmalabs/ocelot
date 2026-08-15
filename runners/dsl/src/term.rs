@@ -2412,6 +2412,20 @@ pub enum TermNode {
         consts: Option<TermIdx>,
         exclude: Option<TermIdx>,
         derived_ops: Option<TermIdx>,
+        /// PROGRAM_SYNTHESIS_MODSQRT_SCOPED_FIX: an optional list of op
+        /// NAMES (evaluates like `ops`/`consts` — a `Lit` of strings, or
+        /// `None`/absent) to strip from whichever `op_list` this call
+        /// would otherwise use — the TYPED DEFAULT when `ops` is absent,
+        /// or the caller's own explicit `ops` list when given. Applied as
+        /// a post-filter at the single point both converge
+        /// (`eval_synth_enumerate`'s `op_list` construction), so it is
+        /// call-site-scoped rather than a second typed-default table: a
+        /// caller that never sets this field is byte-unchanged (empty
+        /// filter). Mirrors `exclude`'s existing "soft hint, never part
+        /// of the spec contract, unrecognized names silently skipped"
+        /// discipline — this is the SAME idiom for op names instead of
+        /// candidate terms.
+        exclude_ops: Option<TermIdx>,
         max_size: i64,
         max_candidates: i64,
         saturate_k: i64,
@@ -3392,13 +3406,14 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
         TermNode::CaseFold { text } => TermNode::CaseFold { text: copy_subtree(src, dst, text) },
         TermNode::Call { name, args } =>
             TermNode::Call { name, args: args.iter().map(|a| copy_subtree(src, dst, *a)).collect() },
-        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, max_size, max_candidates, saturate_k, field } =>
+        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, exclude_ops, max_size, max_candidates, saturate_k, field } =>
             TermNode::SynthEnumerate {
                 examples: copy_subtree(src, dst, examples),
                 ops: ops.map(|o| copy_subtree(src, dst, o)),
                 consts: consts.map(|c| copy_subtree(src, dst, c)),
                 exclude: exclude.map(|e| copy_subtree(src, dst, e)),
                 derived_ops: derived_ops.map(|d| copy_subtree(src, dst, d)),
+                exclude_ops: exclude_ops.map(|x| copy_subtree(src, dst, x)),
                 max_size,
                 max_candidates,
                 saturate_k,
@@ -6493,9 +6508,9 @@ TermNode::MorphHead { text } => {
         }
 
         // --- Program synthesis (P4-A/Q1): one-line handoff. ---
-        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, max_size, max_candidates, saturate_k, field } => {
+        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, exclude_ops, max_size, max_candidates, saturate_k, field } => {
             crate::synth_enumerate::eval_synth_enumerate(
-                arena, *examples, *ops, *consts, *exclude, *derived_ops, *max_size, *max_candidates, *saturate_k, *field,
+                arena, *examples, *ops, *consts, *exclude, *derived_ops, *exclude_ops, *max_size, *max_candidates, *saturate_k, *field,
                 env, ctx,
             )
         }
@@ -10651,12 +10666,13 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         }
         TermNode::SnakeCase { text } | TermNode::CaseFold { text } => out.push(*text),
         TermNode::Call { args, .. } => out.extend(args.iter().copied()),
-        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, .. } => {
+        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, exclude_ops, .. } => {
             out.push(*examples);
             if let Some(o) = ops { out.push(*o); }
             if let Some(c) = consts { out.push(*c); }
             if let Some(e) = exclude { out.push(*e); }
             if let Some(d) = derived_ops { out.push(*d); }
+            if let Some(x) = exclude_ops { out.push(*x); }
         }
         TermNode::ParetoDominates { candidate, alternative, dimension_count, .. } => {
             out.push(*candidate);

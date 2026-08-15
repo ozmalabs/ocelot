@@ -1190,12 +1190,13 @@ fn write_fields(
         TermNode::CaseFold { text } => {
             m.insert("text".into(), child(*text, arena, interner));
         }
-        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, max_size, max_candidates, saturate_k, field } => {
+        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, exclude_ops, max_size, max_candidates, saturate_k, field } => {
             m.insert("examples".into(), child(*examples, arena, interner));
             m.insert("ops".into(), opt_child(*ops, arena, interner));
             m.insert("consts".into(), opt_child(*consts, arena, interner));
             m.insert("exclude".into(), opt_child(*exclude, arena, interner));
             m.insert("derived_ops".into(), opt_child(*derived_ops, arena, interner));
+            m.insert("exclude_ops".into(), opt_child(*exclude_ops, arena, interner));
             m.insert("max_size".into(), J::Number(serde_json::Number::from(*max_size)));
             m.insert("max_candidates".into(), J::Number(serde_json::Number::from(*max_candidates)));
             m.insert("saturate_k".into(), J::Number(serde_json::Number::from(*saturate_k)));
@@ -2307,6 +2308,7 @@ fn read_term(
             consts: opt_child_of("consts", obj, arena, interner)?,
             exclude: opt_child_of("exclude", obj, arena, interner)?,
             derived_ops: opt_child_of("derived_ops", obj, arena, interner)?,
+            exclude_ops: opt_child_of("exclude_ops", obj, arena, interner)?,
             max_size: get_int("max_size"),
             max_candidates: get_int("max_candidates"),
             saturate_k: get_int("saturate_k"),

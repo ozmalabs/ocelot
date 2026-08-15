@@ -975,13 +975,14 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
         ]),
         TermNode::SnakeCase { text } => ("SnakeCase", vec![Child { name: "text", child: *text }]),
         TermNode::CaseFold { text } => ("CaseFold", vec![Child { name: "text", child: *text }]),
-        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, max_size, max_candidates, saturate_k, field } => {
+        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, exclude_ops, max_size, max_candidates, saturate_k, field } => {
             ("SynthEnumerate", vec![
                 Child { name: "examples", child: *examples },
                 OptChild { name: "ops", child: *ops },
                 OptChild { name: "consts", child: *consts },
                 OptChild { name: "exclude", child: *exclude },
                 OptChild { name: "derived_ops", child: *derived_ops },
+                OptChild { name: "exclude_ops", child: *exclude_ops },
                 ScalarInt { name: "max_size", value: *max_size },
                 ScalarInt { name: "max_candidates", value: *max_candidates },
                 ScalarInt { name: "saturate_k", value: *saturate_k },
@@ -1867,6 +1868,7 @@ fn reconstruct(
             consts: take_opt_child!("consts"),
             exclude: take_opt_child!("exclude"),
             derived_ops: take_opt_child!("derived_ops"),
+            exclude_ops: take_opt_child!("exclude_ops"),
             max_size: get_int("max_size")?,
             max_candidates: get_int("max_candidates")?,
             saturate_k: get_int("saturate_k")?,

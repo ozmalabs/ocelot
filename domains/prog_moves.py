@@ -335,11 +335,28 @@ def _run_synth_enumerate(sub, spec_rows: List[Dict[str, Any]], *,
     # Function-local import — `prog_synthesis` imports THIS module.
     from domains.prog_synthesis import _wire_rows
     try:
+        # PROGRAM_SYNTHESIS_MODSQRT_SCOPED_FIX: this probe omits an
+        # explicit `ops` key (same as every caller here), so it reaches
+        # the SAME Rust-internal bare-scalar typed default `domains/
+        # prog_synthesis.py::run_enumerate`'s own top-level call reaches.
+        # `exclude_ops` (`runners/dsl/src/synth_enumerate.rs`'s `op_list`
+        # post-filter) keeps this probe's own SMALLER `_PROBE_MAX_
+        # CANDIDATES` budget reading the SAME per-size search cost this
+        # module's own EARNS-ITS-KEEP gate (`intermediate_candidates`'s
+        # `direct_found` check, `orbit_candidates`'s `direct`/`aug`
+        # scoring) already depended on before Mod/Sqrt existed — widening
+        # the op inventory here changes what THIS bounded probe can reach
+        # within its own budget, not just what the top-level 200k-budget
+        # search can, and task 59's own inner-factor probe is exactly
+        # this shape (PROGRAM_SYNTHESIS_MODSQRT_SCOPED_FIX_RESULTS.md).
+        # `domains/prog_synthesis.py::run_enumerate`'s own top-level call
+        # never sets this field, so Mod/Sqrt stay fully available there.
         out = sub._inner.evaluate(
             {"type": "SynthEnumerate",
              "examples": {"type": "Lit", "value": _wire_rows(spec_rows)},
              "max_size": max_size, "max_candidates": max_candidates,
-             "saturate_k": 0, "field": ""}, {})
+             "saturate_k": 0, "field": "",
+             "exclude_ops": {"type": "Lit", "value": ["Mod", "Sqrt"]}}, {})
     except Exception:
         return {"found": False, "tested": 0, "term": None, "term_str": None,
                 "halt_reason": "error"}
