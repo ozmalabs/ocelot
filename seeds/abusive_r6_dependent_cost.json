@@ -1,0 +1,38 @@
+{
+ "id": "abusive_r6_dependent_cost",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": ["abusive_r4_learned_helplessness"],
+ "area": "retina",
+ "description": "ABUSIVE-DYNAMICS R6 -- DEPENDENT/RESOURCE-COST DEVALUATION OF ESCAPE'S VALUE (block 361000). A direct, minimal extension of R4 (block 292000, seeds/abusive_r4_learned_helplessness.json, depended on UNMODIFIED), grounded in Strube & Barbour (1983, 'The Decision to Leave an Abusive Relationship: Economic Dependence and Psychological Commitment', Journal of Marriage and the Family) and Adams, Sullivan, Bybee & Greeson (2008, 'Development of the Scale of Economic Abuse', Violence Against Women) -- ABUSIVE_RELATIONSHIPS_BARRIERS_AND_RETURN_SCOPING.md A1/A2/B1. R4's own escape/stay Argmax (r4_appraise_attempt/r4_appraise_stay/r4_choose) and belief update (r4_belief_update) answer 'does escape WORK' (contingency_prior). R6 adds exactly ONE new rule, r6_appraise_attempt_dependent, ordered strictly AFTER r4_appraise_attempt's own order (2) and strictly before r4_choose's own order (20) -- the last pure re-derivation to fire within a converged run_rules fixpoint pass is the one whose value sticks, the SAME idiom R2's r2_victim_entrainment_via_frustration (after snap_arousal_track) and R5's r5_bond_extinguish (after tb_bond_accrue) already use. It sets c.individual_cost := dec.attempt_cost + dec.dependent_cost -- a SECOND pure re-derivation, reading only dec's own FIXED declared attrs (attempt_cost, dependent_cost -- never c's own current value, never dec's contingency_prior), answering a DIFFERENT question: is escape WORTH IT even once it works, given the material stake in the outcome (custody exposure, loss of housing, loss of joint income) that is present whether or not any given attempt mechanically succeeds. dependent_cost is a declared constant on EscapeDecision, set once per arm at world-adapter construction (exactly like attempt_cost/escape_value), never a per-tick decision -- NOT a belief-as-node (a material circumstance is a FACT, not something the agent updates from observed outcomes, ABUSIVE_RELATIONSHIPS_BARRIERS_AND_RETURN_SCOPING.md Part B1's own design-choice reasoning). At dependent_cost=0 this rule is numerically a no-op (individual_cost reduces to attempt_cost exactly), replicating R4's own contingent-arm baseline byte-for-byte -- the harness-neutrality check. At a sufficiently high dependent_cost (escape_value - attempt_cost - dependent_cost < 0 even at contingency_prior=1.0, the theoretical ceiling), the attempt candidate's value is negative for EVERY possible belief, so stay wins the Argmax from tick 1 regardless of what the agent believes about controllability -- producing a dissociation R4's own mechanism cannot produce: a HIGH, UNDISTURBED contingency_prior (never even disconfirmed, because r4_belief_update only ever fires on a DELIVERED outcome, which requires an attempt) coexisting with a near-zero attempt_rate. This is NOT a claim that R1-R5's psychological account was wrong or overstated -- R4's own contingency-belief mechanism is reused completely unmodified; R6 adds a SEPARATE, ADDITIONAL term to the SAME Appraisal, showing the psychological account (does she believe it would work) and the material account (is it worth it even if it would) are two independent, simultaneously-real terms in one value comparison, not competing explanations for the same variance. NO reward/punishment token: dependent_cost is a structural FACT about material circumstances, exactly like attempt_cost, never a value assigned to grade the agent's choice -- see Part D.2 of the locked ethical protocol and R6's own note on point 2 in ABUSIVE_R6_DEPENDENT_COST_PREREG.md ('stay winning R6's Argmax is a STATE the value economy computes, never a grade on the agent'). Integer/float-native (Plus/Attr/Var/And/Eq/Lit only -- NO Rust, NO new Term). OFF by default: self_load_only; depends_on abusive_r4_learned_helplessness only; absent this seed, every existing path (including R4's own) is byte-identical.",
+ "microtheory": {
+  "name": "dependent_cost_devaluation",
+  "description": "The attempt candidate's individual_cost is attempt_cost (R4's own cost of trying) PLUS dependent_cost (a fixed structural stake in the outcome -- custody, housing, income -- present whether or not the attempt mechanically succeeds). A high enough dependent_cost can drive the attempt candidate's value negative for every possible contingency_prior, so a materially-dependent agent never attempts even once, regardless of how strongly and correctly it believes escape would work -- a value comparison correctly returning stay, not a controllability failure."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {"name": "r6_appraise_attempt_dependent",
+   "area": "retina",
+   "order": 3,
+   "latency_class": "hard_realtime",
+   "comment": "THE DEPENDENT-COST TERM. A SECOND pure re-derivation of the attempt candidate's individual_cost, firing strictly AFTER r4_appraise_attempt's own order-2 write within the same run_rules fixpoint pass (the last pure re-derivation to fire is the one that sticks -- the same idiom R2's r2_victim_entrainment_via_frustration/R5's r5_bond_extinguish already use relative to their own upstream rules). Reads ONLY dec's own fixed declared attrs (attempt_cost, dependent_cost) -- never c's own current value (no self-reference hazard) and never dec's contingency_prior (that stays r4_appraise_attempt's own concern, via individual_benefit, untouched here). At dependent_cost=0 this is numerically a no-op, byte-identical to R4's own r4_appraise_attempt write -- the harness-neutrality check named in ABUSIVE_R6_DEPENDENT_COST_PREREG.md.",
+   "match": [
+    ["hub", "has_emotion_params", "ep"],
+    ["hub", "has_escape_decision", "dec"],
+    ["hub", "has_candidate", "c"]
+   ],
+   "where": {"type": "And", "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "action"}, "b": {"type": "Lit", "value": 1.0}}
+   ]},
+   "effects": [
+    ["set_attr", "c", "individual_cost",
+     {"__term__": {"type": "Plus", "items": [
+       {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "attempt_cost"},
+       {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "dependent_cost"}
+     ]}}]
+   ]}
+ ]
+}
