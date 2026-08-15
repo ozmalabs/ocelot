@@ -383,6 +383,7 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::SnakeCase { .. } => "SnakeCase",
         TermNode::CaseFold { .. } => "CaseFold",
         TermNode::SynthEnumerate { .. } => "SynthEnumerate",
+        TermNode::Call { .. } => "Call",
         TermNode::ParetoDominates { .. } => "ParetoDominates",
     }
 }
@@ -1189,15 +1190,20 @@ fn write_fields(
         TermNode::CaseFold { text } => {
             m.insert("text".into(), child(*text, arena, interner));
         }
-        TermNode::SynthEnumerate { examples, ops, consts, exclude, max_size, max_candidates, saturate_k, field } => {
+        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, max_size, max_candidates, saturate_k, field } => {
             m.insert("examples".into(), child(*examples, arena, interner));
             m.insert("ops".into(), opt_child(*ops, arena, interner));
             m.insert("consts".into(), opt_child(*consts, arena, interner));
             m.insert("exclude".into(), opt_child(*exclude, arena, interner));
+            m.insert("derived_ops".into(), opt_child(*derived_ops, arena, interner));
             m.insert("max_size".into(), J::Number(serde_json::Number::from(*max_size)));
             m.insert("max_candidates".into(), J::Number(serde_json::Number::from(*max_candidates)));
             m.insert("saturate_k".into(), J::Number(serde_json::Number::from(*saturate_k)));
             m.insert("field".into(), sym_str(*field, interner));
+        }
+        TermNode::Call { name, args } => {
+            m.insert("name".into(), sym_str(*name, interner));
+            m.insert("args".into(), children(args, arena, interner));
         }
         TermNode::ParetoDominates {
             candidate, alternative, dimension_count, value_edge, measure_edge,
@@ -2300,10 +2306,15 @@ fn read_term(
             ops: opt_child_of("ops", obj, arena, interner)?,
             consts: opt_child_of("consts", obj, arena, interner)?,
             exclude: opt_child_of("exclude", obj, arena, interner)?,
+            derived_ops: opt_child_of("derived_ops", obj, arena, interner)?,
             max_size: get_int("max_size"),
             max_candidates: get_int("max_candidates"),
             saturate_k: get_int("saturate_k"),
             field: get_optional_sym("field", interner),
+        },
+        "Call" => TermNode::Call {
+            name: get_sym("name", interner)?,
+            args: children_of("args", obj, arena, interner)?,
         },
         "ParetoDominates" => TermNode::ParetoDominates {
             candidate: child_of("candidate", obj, arena, interner, variant)?,

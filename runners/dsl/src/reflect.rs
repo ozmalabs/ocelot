@@ -975,18 +975,23 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
         ]),
         TermNode::SnakeCase { text } => ("SnakeCase", vec![Child { name: "text", child: *text }]),
         TermNode::CaseFold { text } => ("CaseFold", vec![Child { name: "text", child: *text }]),
-        TermNode::SynthEnumerate { examples, ops, consts, exclude, max_size, max_candidates, saturate_k, field } => {
+        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, max_size, max_candidates, saturate_k, field } => {
             ("SynthEnumerate", vec![
                 Child { name: "examples", child: *examples },
                 OptChild { name: "ops", child: *ops },
                 OptChild { name: "consts", child: *consts },
                 OptChild { name: "exclude", child: *exclude },
+                OptChild { name: "derived_ops", child: *derived_ops },
                 ScalarInt { name: "max_size", value: *max_size },
                 ScalarInt { name: "max_candidates", value: *max_candidates },
                 ScalarInt { name: "saturate_k", value: *saturate_k },
                 ScalarSym { name: "field", value: *field },
             ])
         }
+        TermNode::Call { name, args } => ("Call", vec![
+            ScalarSym { name: "name", value: *name },
+            Children { name: "args", items: args },
+        ]),
         TermNode::ParetoDominates {
             candidate, alternative, dimension_count, value_edge, measure_edge,
             dimension_key, verified_key, signed_value_key,
@@ -1861,10 +1866,15 @@ fn reconstruct(
             ops: take_opt_child!("ops"),
             consts: take_opt_child!("consts"),
             exclude: take_opt_child!("exclude"),
+            derived_ops: take_opt_child!("derived_ops"),
             max_size: get_int("max_size")?,
             max_candidates: get_int("max_candidates")?,
             saturate_k: get_int("saturate_k")?,
             field: get_sym("field")?,
+        },
+        "Call" => TermNode::Call {
+            name: get_sym("name")?,
+            args: take_children!("args"),
         },
         "ParetoDominates" => TermNode::ParetoDominates {
             candidate: take_child!("candidate"),

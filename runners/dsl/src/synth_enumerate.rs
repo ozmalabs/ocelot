@@ -221,7 +221,9 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use smallvec::SmallVec;
 
 use crate::sym::{Interner, Sym};
-use crate::term::{evaluate, Env, EvalCtx, TermArena, TermIdx, TermNode};
+use crate::term::{
+    evaluate, DerivedOpDef, DerivedOpPool, DerivedOpRegistry, Env, EvalCtx, TermArena, TermIdx, TermNode,
+};
 use crate::value::{cmp_value, SurfaceKind, Value};
 
 const DEFAULT_MAX_SIZE: i64 = 9;
@@ -507,8 +509,25 @@ const DEFAULT_STR_OPS: &[&str] = &[
     "MapList", "JoinList",
 ];
 
+/// Build-A's own narrow fallback (`DERIVED_OPERATOR_TIER_RESULTS.md` §4,
+/// `_SLICE1_PREREG.md` §9 step 2): an op name unrecognized by `OP_TABLE`
+/// but present in `derived_names` (built from the `derived_ops`
+/// registry; `op_list`'s own construction already confirmed a
+/// compatible arity/pool shape via `derived_op_kind`) dispatches
+/// through `Call{name,args}` instead of a native `TermNode`. Reached
+/// only for a name the caller's own `op_list` put there — this function
+/// trusts that gate the same way every existing `build_*` function
+/// already trusts `op_list` to only ever hand it a table-recognized
+/// name.
+fn call_fallback(name: &str, args: Vec<TermIdx>, derived_names: &FxHashMap<String, Sym>) -> TermNode {
+    match derived_names.get(name) {
+        Some(sym) => TermNode::Call { name: *sym, args },
+        None => unreachable!("op filtered through OP_TABLE or derived_ops"),
+    }
+}
+
 /// Build the TermNode for an op over already-arena'd children.
-fn build_op(name: &str, kids: &[TermIdx]) -> TermNode {
+fn build_op(name: &str, kids: &[TermIdx], derived_names: &FxHashMap<String, Sym>) -> TermNode {
     match name {
         "Plus" => TermNode::Plus { items: kids.to_vec() },
         "Times" => TermNode::Times { items: kids.to_vec() },
@@ -548,7 +567,7 @@ fn build_op(name: &str, kids: &[TermIdx]) -> TermNode {
         "DictItems" => TermNode::DictItems { seq: kids[0] },
         "GroupCount" => TermNode::GroupCount { seq: kids[0] },
         "DictMerge" => TermNode::DictMerge { a: kids[0], b: kids[1] },
-        _ => unreachable!("op filtered through OP_TABLE"),
+        _ => call_fallback(name, kids.to_vec(), derived_names),
     }
 }
 
@@ -558,7 +577,10 @@ fn build_op(name: &str, kids: &[TermIdx]) -> TermNode {
 /// statement BEFORE `search.register(...)` (never inlined into the same
 /// call), so this `&mut TermArena` borrow of `search.scratch` ends before
 /// `search.register` needs `&mut search` — see the call sites below.
-fn build_list_unary(name: &str, source: TermIdx, item: Sym, acc: Sym, scratch: &mut TermArena) -> TermNode {
+fn build_list_unary(
+    name: &str, source: TermIdx, item: Sym, acc: Sym, scratch: &mut TermArena,
+    derived_names: &FxHashMap<String, Sym>,
+) -> TermNode {
     match name {
         "Len" => TermNode::Count { source },
         "SumList" => {
@@ -609,7 +631,7 @@ fn build_list_unary(name: &str, source: TermIdx, item: Sym, acc: Sym, scratch: &
             let cnt = scratch.add(TermNode::Count { source: iv });
             TermNode::Argmax { source, var_name: item, value: cnt, default: None }
         }
-        _ => unreachable!("ListUnary op filtered through OP_TABLE"),
+        _ => call_fallback(name, vec![source], derived_names),
     }
 }
 
@@ -619,7 +641,10 @@ fn build_list_unary(name: &str, source: TermIdx, item: Sym, acc: Sym, scratch: &
 /// body.  (`Cat` is string concat and emits Rust debug reprs on lists —
 /// measured, §7.3 — so `Fold`+`Append` is the real route, and both Terms
 /// are already shipped.)
-fn build_list_binary(name: &str, a: TermIdx, b: TermIdx, item: Sym, acc: Sym, scratch: &mut TermArena) -> TermNode {
+fn build_list_binary(
+    name: &str, a: TermIdx, b: TermIdx, item: Sym, acc: Sym, scratch: &mut TermArena,
+    derived_names: &FxHashMap<String, Sym>,
+) -> TermNode {
     match name {
         "ConcatList" => {
             let accv = scratch.add(TermNode::Var { name: acc });
@@ -633,17 +658,21 @@ fn build_list_binary(name: &str, a: TermIdx, b: TermIdx, item: Sym, acc: Sym, sc
         // (`list_binary_extra_cost` below).
         "Intersect" => TermNode::Intersect { a, b },
         "Union" => TermNode::Union { a, b },
-        _ => unreachable!("ListBinary op filtered through OP_TABLE"),
+        _ => call_fallback(name, vec![a, b], derived_names),
     }
 }
 
 /// Arc6 tier-0: the FIXED node-count `build_list_binary` injects beyond its
 /// two sources — the same honest MDL accounting `list_unary_extra_cost`
-/// does for the unary shapes.
-fn list_binary_extra_cost(name: &str) -> usize {
+/// does for the unary shapes. `derived_extra` is the DATA-driven twin of
+/// this hand-authored table — a derived `ListBinary` op's own
+/// `extra_cost` (§3.1), consulted for any name this table itself doesn't
+/// recognize.
+fn list_binary_extra_cost(name: &str, derived_extra: &FxHashMap<String, usize>) -> usize {
     match name {
         "ConcatList" => 3, // Fold{.., body: Append(Var(acc), Var(item))}
-        _ => 0, // Intersect/Union: direct TermNode wrap, no injected nodes.
+        "Intersect" | "Union" => 0, // direct TermNode wrap, no injected nodes.
+        _ => derived_extra.get(name).copied().unwrap_or(0),
     }
 }
 
@@ -653,7 +682,15 @@ fn list_binary_extra_cost(name: &str) -> usize {
 /// shared child across every `source` it is combined with (the same
 /// subtree-sharing discipline every other op in this module already
 /// relies on).
-fn build_list_ho(name: &str, source: TermIdx, tmpl: TermIdx, item: Sym) -> TermNode {
+/// `derived_names`'s own fallback arm here is, honestly, DEAD CODE under
+/// this slice's own `derived_op_kind` inference (`DERIVED_OPERATOR_
+/// TIER_SLICE1_PREREG.md`'s own "fallback-arm reachability" note): no
+/// `op_list`-construction path this slice builds can route an
+/// unrecognized name into `OpKind::ListFilter`/`ListMap` (the parent
+/// doc's own §3.1: "the three template pools are NOT argument sources
+/// for a top-level op"). Added for literal completeness with step 2's
+/// five-function list, not because it is reachable today.
+fn build_list_ho(name: &str, source: TermIdx, tmpl: TermIdx, item: Sym, derived_names: &FxHashMap<String, Sym>) -> TermNode {
     match name {
         "FilterList" => TermNode::FilterList { source, var_name: item, predicate: tmpl },
         "MapList" => TermNode::MapList { source, var_name: item, value: tmpl },
@@ -668,7 +705,7 @@ fn build_list_ho(name: &str, source: TermIdx, tmpl: TermIdx, item: Sym) -> TermN
         // holds it as `key`, and the evaluator sorts the ORIGINAL elements
         // by it, keeping them unchanged — see term.rs `SortBy`).
         "SortBy" => TermNode::SortBy { source, var_name: item, key: tmpl },
-        _ => unreachable!("ListHigherOrder op filtered through OP_TABLE"),
+        _ => call_fallback(name, vec![source, tmpl], derived_names),
     }
 }
 
@@ -678,8 +715,17 @@ fn build_list_ho(name: &str, source: TermIdx, tmpl: TermIdx, item: Sym) -> TermN
 /// `map_templates_by_size`, never perturbing the shipped pool's arena
 /// layout — the `tmpl:nested_reduction` precedent, see that unit's own
 /// module-doc note).
-fn build_indexed_map(source: TermIdx, tmpl: TermIdx, item: Sym, index: Sym) -> TermNode {
-    TermNode::IndexedMap { source, item_name: item, index_name: index, value: tmpl }
+///
+/// `name`'s own fallback arm here is, like `build_list_ho`'s, DEAD CODE
+/// under this slice's own arity/pool inference (no path routes an
+/// unrecognized name into `OpKind::IndexedMap` today) — added for
+/// literal completeness with step 2's five-function list.
+fn build_indexed_map(name: &str, source: TermIdx, tmpl: TermIdx, item: Sym, index: Sym, derived_names: &FxHashMap<String, Sym>) -> TermNode {
+    if name == "IndexedMap" {
+        TermNode::IndexedMap { source, item_name: item, index_name: index, value: tmpl }
+    } else {
+        call_fallback(name, vec![source, tmpl], derived_names)
+    }
 }
 
 /// Arc4-S4: the FIXED node-count `build_list_unary` injects BEYOND
@@ -690,7 +736,7 @@ fn build_indexed_map(source: TermIdx, tmpl: TermIdx, item: Sym, index: Sym) -> T
 /// not just the visible `source` argument. Kept as its own lookup so the
 /// growth loop's size partition (`size == 1 + extra + source_size`) is
 /// correct per-name rather than assuming a uniform "+1".
-fn list_unary_extra_cost(name: &str) -> usize {
+fn list_unary_extra_cost(name: &str, derived_extra: &FxHashMap<String, usize>) -> usize {
     match name {
         "Len" => 0,           // Count{source} — no other child
         "SumList" => 1,       // Sum{source, value:Var(item)}
@@ -704,7 +750,10 @@ fn list_unary_extra_cost(name: &str) -> usize {
         // Arc6 tier-0.
         "ProdList" => 1,      // Prod{source, value:Var(item)}
         "ArgMaxLenOver" => 2, // Argmax{source, value:Count(Var(item))}
-        _ => 0,
+        // Derived-operator tier: the DATA-driven generalization of this
+        // same hand-authored table (§3.1's own `extra_cost`), for any
+        // name this table itself doesn't recognize.
+        _ => derived_extra.get(name).copied().unwrap_or(0),
     }
 }
 
@@ -834,6 +883,124 @@ fn parse_excluded_term(
         }
         _ => None,
     }
+}
+
+// ---------------------------------------------------------------------------
+// Derived-operator tier (`DERIVED_OPERATOR_TIER_RESULTS.md` §3.3(b),
+// `DERIVED_OPERATOR_TIER_SLICE1_PREREG.md`): parse the `derived_ops`
+// argument's Term-JSON registry-entry strings. Two-stage, because
+// `op_list` (which needs each entry's arity/pool shape) is built BEFORE
+// `Search`/`search.scratch` exists — the arena a template body must be
+// parsed into (the `filter_templates_by_size` precedent). Stage 1
+// (`parse_derived_op_meta`, below) reads only name/params/extra_cost —
+// no arena needed. Stage 2 (`build_derived_op_registry`, further below)
+// parses each entry's `template` into `search.scratch`, once `search`
+// exists, reusing `parse_excluded_term`'s EXISTING local grammar
+// unchanged (this rung's own parity op — `Plus{Var,Var}` — is already
+// covered by it) called with an EXTENDED `var_by_name` (spec vars plus
+// this entry's own params) — the literal sense in which this is "an
+// extension of `parse_excluded_term`'s existing local grammar": a new
+// calling context, not a grammar rewrite. A template referencing
+// ANOTHER derived op (`Call` inside a template) is NOT supported by
+// this parser — out of scope, no entry this slice registers needs it.
+// ---------------------------------------------------------------------------
+
+/// One `derived_ops` entry, parsed enough to decide its `OpKind` for
+/// `op_list` construction — the template itself stays as raw JSON until
+/// `search.scratch` exists (stage 2).
+struct DerivedOpMeta {
+    /// The op's own display name, as given in the JSON — this is what
+    /// an explicit `ops` list names to request it.
+    name: String,
+    name_sym: Sym,
+    /// (display name, Sym, pool), ordered/positional.
+    params: Vec<(String, Sym, DerivedOpPool)>,
+    extra_cost: usize,
+    template_json: serde_json::Value,
+}
+
+fn parse_derived_op_meta(
+    j: &serde_json::Value,
+    interner: &Interner,
+    extra: &mut FxHashMap<String, Sym>,
+    next_id: &mut u32,
+) -> Option<DerivedOpMeta> {
+    let obj = j.as_object()?;
+    let name = obj.get("name")?.as_str()?.to_string();
+    let name_sym = local_sym(interner, extra, next_id, &name);
+    let params_json = obj.get("params")?.as_array()?;
+    let mut params = Vec::with_capacity(params_json.len());
+    for p in params_json {
+        let pobj = p.as_object()?;
+        let pname = pobj.get("name")?.as_str()?.to_string();
+        let pool = match pobj.get("pool")?.as_str()? {
+            "general" => DerivedOpPool::General,
+            "list" => DerivedOpPool::List,
+            _ => return None,
+        };
+        let psym = local_sym(interner, extra, next_id, &pname);
+        params.push((pname, psym, pool));
+    }
+    let extra_cost = obj.get("extra_cost").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+    let template_json = obj.get("template")?.clone();
+    Some(DerivedOpMeta { name, name_sym, params, extra_cost, template_json })
+}
+
+/// Arity/pool -> `OpKind`, build-A's own narrow inference
+/// (`DERIVED_OPERATOR_TIER_RESULTS.md` §4/§9 step 2). A mixed-pool shape
+/// (`JoinListSep`'s own — one `list`, one `general`) is correctly
+/// unrecognized here; that is build (B)'s job.
+fn derived_op_kind(meta: &DerivedOpMeta) -> Option<OpKind> {
+    let pools: Vec<DerivedOpPool> = meta.params.iter().map(|(_, _, p)| *p).collect();
+    match pools.as_slice() {
+        [DerivedOpPool::General] => Some(OpKind::Unary),
+        [DerivedOpPool::General, DerivedOpPool::General] => Some(OpKind::Binary),
+        [DerivedOpPool::General, DerivedOpPool::General, DerivedOpPool::General] => Some(OpKind::Ternary),
+        [DerivedOpPool::List] => Some(OpKind::ListUnary),
+        [DerivedOpPool::List, DerivedOpPool::List] => Some(OpKind::ListBinary),
+        _ => None,
+    }
+}
+
+/// Stage 2: build the full `DerivedOpRegistry`, parsing each entry's
+/// `template` into `scratch` (must be `search.scratch` — the arena
+/// `evaluate()` will run `Call`'s dispatch against).
+fn build_derived_op_registry(
+    metas: &[DerivedOpMeta],
+    scratch: &mut TermArena,
+    base_var_by_name: &FxHashMap<String, Sym>,
+) -> DerivedOpRegistry {
+    let mut registry = DerivedOpRegistry::default();
+    for meta in metas {
+        let mut var_by_name = base_var_by_name.clone();
+        for (pname, psym, _pool) in &meta.params {
+            var_by_name.insert(pname.clone(), *psym);
+        }
+        let Some(body) = parse_excluded_term(&meta.template_json, scratch, &var_by_name) else {
+            continue; // malformed template — skip this entry, never fatal (the `exclude` discipline)
+        };
+        let params: Vec<(Sym, DerivedOpPool)> = meta.params.iter().map(|(_, s, p)| (*s, *p)).collect();
+        registry.insert(meta.name_sym, DerivedOpDef { params, body, extra_cost: meta.extra_cost });
+    }
+    registry
+}
+
+/// Scope-guard: install `registry` into `ctx.derived_ops` for the
+/// duration of `body`, restoring the PREVIOUS value afterward (`None`
+/// in every real case today) so a `Call` node evaluated later in the
+/// SAME `evaluate()` call tree — after this `SynthEnumerate` call
+/// returns — can never dispatch through a stale registry
+/// (`DERIVED_OPERATOR_TIER_SLICE1_PREREG.md`'s own "design decisions").
+fn with_derived_ops<R>(
+    ctx: &mut EvalCtx,
+    registry: DerivedOpRegistry,
+    body: impl FnOnce(&mut EvalCtx) -> R,
+) -> R {
+    let prev = ctx.derived_ops.take();
+    ctx.derived_ops = Some(Arc::new(registry));
+    let r = body(ctx);
+    ctx.derived_ops = prev;
+    r
 }
 
 // ---------------------------------------------------------------------------
@@ -1322,6 +1489,17 @@ fn term_json(
             "a": term_json(arena, *a, names, interner),
             "b": term_json(arena, *b, names, interner),
         }),
+        // Derived-operator tier: a winning candidate may itself be a
+        // `Call{name,args}` node (build-A's own fallback arms route an
+        // unrecognized-but-registered op name here) — rendered exactly
+        // like every other op, `name` resolved through THIS module's own
+        // local table (never `Interner::resolve`; see the "Register each
+        // derived op's own name" note where `names` is populated).
+        TermNode::Call { name, args } => json!({
+            "type": "Call",
+            "name": names.get(name).cloned().unwrap_or_default(),
+            "args": args.iter().map(|a| term_json(arena, *a, names, interner)).collect::<Vec<_>>(),
+        }),
         _ => unreachable!("candidates are built only from the op table + leaves"),
     }
 }
@@ -1506,6 +1684,11 @@ fn term_str(arena: &TermArena, idx: TermIdx, names: &FxHashMap<Sym, String>, int
         TermNode::Union { a, b } => format!(
             "{} | {}", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)
         ),
+        // Derived-operator tier — see `term_json`'s matching `Call` arm.
+        TermNode::Call { name, args } => {
+            let kids: Vec<String> = args.iter().map(|a| term_str(arena, *a, names, interner)).collect();
+            format!("{}({})", names.get(name).cloned().unwrap_or_default(), kids.join(", "))
+        }
         _ => "?".to_string(),
     }
 }
@@ -1698,6 +1881,7 @@ pub(crate) fn eval_synth_enumerate(
     ops_t: Option<TermIdx>,
     consts_t: Option<TermIdx>,
     exclude_t: Option<TermIdx>,
+    derived_ops_t: Option<TermIdx>,
     max_size: i64,
     max_candidates: i64,
     saturate_k: i64,
@@ -2085,6 +2269,39 @@ pub(crate) fn eval_synth_enumerate(
         v.extend(extra_evidence_ops.iter().copied());
         v
     };
+    // --- Derived-operator tier, stage 1 (metadata only — no arena needed
+    // yet; `Search`/`search.scratch` doesn't exist until below). A
+    // derived op is NEVER part of a typed default (`default_ops` above)
+    // — like `JoinListSep`'s own precedent, it is reachable only via an
+    // EXPLICIT `ops` request naming it. ---
+    let derived_metas: Vec<DerivedOpMeta> = match derived_ops_t {
+        Some(t) => {
+            let dv = evaluate(arena, t, env, ctx);
+            match items_of(&dv) {
+                Some(items) => items
+                    .iter()
+                    .filter_map(|v| value_str(v, ctx.interner))
+                    .filter_map(|text| serde_json::from_str::<serde_json::Value>(&text).ok())
+                    .filter_map(|j| parse_derived_op_meta(&j, ctx.interner, &mut extra, &mut next_placeholder))
+                    .collect(),
+                None => Vec::new(),
+            }
+        }
+        None => Vec::new(),
+    };
+    // Register each derived op's own name (and param names) in the
+    // OUTPUT name table too — `term_json`/`term_str` (this module's own
+    // LOCAL serializers, never `jsonio.rs`'s generic ones — see the
+    // module doc's own "Serialization is LOCAL" note) resolve a `Call`
+    // node's `name`/param `Var`s the same way they already resolve
+    // `__item`/`__acc`/every spec variable, via THIS table, never
+    // `Interner::resolve` directly.
+    for meta in &derived_metas {
+        names.entry(meta.name_sym).or_insert_with(|| meta.name.clone());
+        for (pname, psym, _pool) in &meta.params {
+            names.entry(*psym).or_insert_with(|| pname.clone());
+        }
+    }
     let op_list: Vec<(String, OpKind)> = match ops_t {
         Some(t) => {
             let ov = evaluate(arena, t, env, ctx);
@@ -2097,7 +2314,15 @@ pub(crate) fn eval_synth_enumerate(
                     Some(items) => items
                         .iter()
                         .filter_map(|v| value_str(v, ctx.interner))
-                        .filter_map(|n| table_kind(&n).map(|k| (n, k)))
+                        .filter_map(|n| {
+                            if let Some(k) = table_kind(&n) {
+                                return Some((n, k));
+                            }
+                            derived_metas
+                                .iter()
+                                .find(|m| m.name == n)
+                                .and_then(|m| derived_op_kind(m).map(|k| (n.clone(), k)))
+                        })
                         .collect(),
                     None => return finish(None, None, "invalid_examples", false, field, ctx.interner),
                 },
@@ -2214,6 +2439,30 @@ pub(crate) fn eval_synth_enumerate(
             }
         }
     }
+
+    // --- Derived-operator tier, stage 2: build the template bodies into
+    // `search.scratch` now that it exists, then install the registry into
+    // `ctx.derived_ops` for the scope of the search only (`with_derived_ops`
+    // restores `ctx.derived_ops` to its PREVIOUS value before this
+    // function returns, so a `Call` node evaluated elsewhere in the same
+    // `evaluate()` call tree can never see a stale registry — see
+    // `DERIVED_OPERATOR_TIER_SLICE1_PREREG.md`'s own "design decisions").
+    let derived_var_by_name: FxHashMap<String, Sym> =
+        search.names.iter().map(|(s, n)| (n.clone(), *s)).collect();
+    let derived_registry =
+        build_derived_op_registry(&derived_metas, &mut search.scratch, &derived_var_by_name);
+    // Build-A's own fallback arms (§4/§9 step 2, `build_op`/`build_list_*`
+    // below) need the SAME name -> Sym mapping the registry itself is
+    // keyed by (so a `Call{name,...}` node built mid-search dispatches
+    // to the exact entry `ctx.derived_ops` holds) plus each entry's own
+    // `extra_cost` (consulted only by the two shapes that already have
+    // an extra-cost concept — `ListUnary`/`ListBinary`).
+    let derived_names: FxHashMap<String, Sym> =
+        derived_metas.iter().map(|m| (m.name.clone(), m.name_sym)).collect();
+    let derived_extra: FxHashMap<String, usize> =
+        derived_metas.iter().map(|m| (m.name.clone(), m.extra_cost)).collect();
+
+    let result = with_derived_ops(ctx, derived_registry, |ctx| {
 
     macro_rules! reg {
         ($node:expr, $size:expr) => {
@@ -2659,7 +2908,7 @@ pub(crate) fn eval_synth_enumerate(
                 OpKind::Unary => {
                     // child has size-1
                     for child in search.by_size[size - 1].clone() {
-                        reg!(build_op(name, &[child]), size);
+                        reg!(build_op(name, &[child], &derived_names), size);
                     }
                 }
                 OpKind::Binary => {
@@ -2674,7 +2923,7 @@ pub(crate) fn eval_synth_enumerate(
                         let right = search.by_size[sb].clone();
                         for ca in &left {
                             for cb in &right {
-                                let node = build_op(name, &[*ca, *cb]);
+                                let node = build_op(name, &[*ca, *cb], &derived_names);
                                 let r = if terminal {
                                     search.register_terminal(node, size, ctx)
                                 } else {
@@ -2708,7 +2957,7 @@ pub(crate) fn eval_synth_enumerate(
                             for cc in &conds {
                                 for tt in &thens {
                                     for oo in &others {
-                                        reg!(build_op(name, &[*cc, *tt, *oo]), size);
+                                        reg!(build_op(name, &[*cc, *tt, *oo], &derived_names), size);
                                     }
                                 }
                             }
@@ -2724,12 +2973,12 @@ pub(crate) fn eval_synth_enumerate(
                     // Honest MDL sizing: `size == 1 (this node) + extra
                     // (the shape's own hidden fixed leaves) + source_size`
                     // — see `list_unary_extra_cost`.
-                    let extra = list_unary_extra_cost(name);
+                    let extra = list_unary_extra_cost(name, &derived_extra);
                     if size >= 1 + extra {
                         let src_size = size - 1 - extra;
                         if src_size >= 1 {
                             for child in search.list_by_size[src_size].clone() {
-                                let node = build_list_unary(name, child, item_sym, acc_sym, &mut search.scratch);
+                                let node = build_list_unary(name, child, item_sym, acc_sym, &mut search.scratch, &derived_names);
                                 reg!(node, size);
                             }
                         }
@@ -2746,7 +2995,7 @@ pub(crate) fn eval_synth_enumerate(
                         let tmpls = filter_templates_by_size[st].clone();
                         for s_ in &srcs {
                             for t_ in &tmpls {
-                                reg!(build_list_ho(name, *s_, *t_, item_sym), size);
+                                reg!(build_list_ho(name, *s_, *t_, item_sym, &derived_names), size);
                             }
                         }
                     }
@@ -2762,7 +3011,7 @@ pub(crate) fn eval_synth_enumerate(
                         let tmpls = map_templates_by_size[st].clone();
                         for s_ in &srcs {
                             for t_ in &tmpls {
-                                reg!(build_list_ho(name, *s_, *t_, item_sym), size);
+                                reg!(build_list_ho(name, *s_, *t_, item_sym, &derived_names), size);
                             }
                         }
                     }
@@ -2779,7 +3028,7 @@ pub(crate) fn eval_synth_enumerate(
                         let tmpls = indexed_map_templates_by_size[st].clone();
                         for s_ in &srcs {
                             for t_ in &tmpls {
-                                reg!(build_indexed_map(*s_, *t_, item_sym, index_sym), size);
+                                reg!(build_indexed_map(name, *s_, *t_, item_sym, index_sym, &derived_names), size);
                             }
                         }
                     }
@@ -2791,7 +3040,7 @@ pub(crate) fn eval_synth_enumerate(
                 // ORDERS are reached by the full sa x sb cross product, the
                 // same way the ordinary Binary arm reaches (a,b) and (b,a).
                 OpKind::ListBinary => {
-                    let extra = list_binary_extra_cost(name);
+                    let extra = list_binary_extra_cost(name, &derived_extra);
                     if size >= 2 + extra {
                         let budget = size - 1 - extra; // sa + sb
                         for sa in 1..budget {
@@ -2804,7 +3053,7 @@ pub(crate) fn eval_synth_enumerate(
                             for ca in &left {
                                 for cb in &right {
                                     let node = build_list_binary(
-                                        name, *ca, *cb, item_sym, acc_sym, &mut search.scratch);
+                                        name, *ca, *cb, item_sym, acc_sym, &mut search.scratch, &derived_names);
                                     reg!(node, size);
                                 }
                             }
@@ -2826,6 +3075,8 @@ pub(crate) fn eval_synth_enumerate(
     }
 
     finish(Some(&search), None, "max_size", false, field, ctx.interner)
+    });
+    result
 }
 
 // ---------------------------------------------------------------------------
@@ -2923,6 +3174,43 @@ mod tests {
                 ops: ops_t,
                 consts: None,
                 exclude: None,
+                derived_ops: None,
+                max_size,
+                max_candidates,
+                saturate_k: 0,
+                field: Sym::default(),
+            });
+            let mut env: Env = SmallVec::new();
+            let mut ctx = EvalCtx::new(&self.graph, &self.interner);
+            evaluate(&self.arena, t, &mut env, &mut ctx)
+        }
+
+        /// Like `run`, but with an explicit `derived_ops` registry-entry
+        /// list (Term-JSON strings, §3.3(b)'s own wire shape) — the
+        /// derived-operator-tier slice1 parity test's own entry point.
+        fn run_with_derived(
+            &mut self,
+            examples: Value,
+            ops: Option<Value>,
+            derived_ops_json: &[&str],
+            max_size: i64,
+            max_candidates: i64,
+        ) -> Value {
+            let ex = self.arena.add(TermNode::Lit { value: examples });
+            let ops_t = ops.map(|o| self.arena.add(TermNode::Lit { value: o }));
+            let derived_items: SmallVec<[Value; 4]> = derived_ops_json
+                .iter()
+                .map(|s| surf_string(s.to_string()))
+                .collect();
+            let derived_t = self
+                .arena
+                .add(TermNode::Lit { value: Value::Tuple(Arc::new(derived_items)) });
+            let t = self.arena.add(TermNode::SynthEnumerate {
+                examples: ex,
+                ops: ops_t,
+                consts: None,
+                exclude: None,
+                derived_ops: Some(derived_t),
                 max_size,
                 max_candidates,
                 saturate_k: 0,
@@ -3148,6 +3436,7 @@ mod tests {
             ops: None,
             consts: None,
             exclude: None,
+            derived_ops: None,
             max_size: 7,
             max_candidates: 0,
             saturate_k: 0,
@@ -3413,6 +3702,7 @@ mod tests {
             ops: None,
             consts: None,
             exclude: Some(excl_t),
+            derived_ops: None,
             max_size: 9,
             max_candidates: 0,
             saturate_k: 0,
@@ -3424,5 +3714,186 @@ mod tests {
         assert_eq!(dget(&out, "found"), Value::Bool(true));
         assert_eq!(text(&dget(&out, "term_str")), "(x + 1)");
         assert_eq!(dget(&out, "size"), Value::Int(3));
+    }
+
+    // -----------------------------------------------------------------
+    // Derived-operator tier, slice 1 — `Call{name,args}` dispatch +
+    // build-A fallback arms (`DERIVED_OPERATOR_TIER_SLICE1_PREREG.md`,
+    // `DERIVED_OPERATOR_TIER_RESULTS.md` §9 steps 1-3).
+    // -----------------------------------------------------------------
+
+    /// §9 step 3's own parity op — `Total2`: Binary, general pool,
+    /// template `Plus{Var(a),Var(b)}`, `extra_cost:0`. Deliberately a
+    /// registry-authored re-expression of the ALREADY-SHIPPED, byte-
+    /// for-byte-identical `Plus` op (not a novel composition) — the
+    /// cleanest possible isolation of dispatch-plumbing correctness.
+    const TOTAL2_JSON: &str = r#"{"name":"Total2","params":[{"name":"a","pool":"general"},{"name":"b","pool":"general"}],"extra_cost":0,"template":{"type":"Plus","items":[{"type":"Var","name":"a"},{"type":"Var","name":"b"}]}}"#;
+
+    /// Direct `Call` evaluation, bypassing `SynthEnumerate` entirely:
+    /// `Call{"Total2",[3,4]}` must evaluate to EXACTLY what
+    /// `Plus{items:[3,4]}` does — the registry's template is `Plus`
+    /// itself, so this is byte-for-byte parity by construction, not by
+    /// coincidence.
+    #[test]
+    fn call_dispatches_to_registry_template_matching_native_plus() {
+        let mut f = Fixture::new();
+        let mut arena = TermArena::new();
+        let a_sym = f.interner.intern("a");
+        let b_sym = f.interner.intern("b");
+        let av = arena.add(TermNode::Var { name: a_sym });
+        let bv = arena.add(TermNode::Var { name: b_sym });
+        let body = arena.add(TermNode::Plus { items: vec![av, bv] });
+        let total2_sym = f.interner.intern("Total2");
+        let bogus_sym = f.interner.intern("Bogus"); // interned up front — `ctx` below borrows `f.interner`
+        let mut registry = DerivedOpRegistry::default();
+        registry.insert(
+            total2_sym,
+            DerivedOpDef {
+                params: vec![(a_sym, DerivedOpPool::General), (b_sym, DerivedOpPool::General)],
+                body,
+                extra_cost: 0,
+            },
+        );
+
+        let x1 = arena.add(TermNode::Lit { value: Value::Int(3) });
+        let x2 = arena.add(TermNode::Lit { value: Value::Int(4) });
+        let call_node = arena.add(TermNode::Call { name: total2_sym, args: vec![x1, x2] });
+        let plus_node = arena.add(TermNode::Plus { items: vec![x1, x2] });
+        let bogus_call = arena.add(TermNode::Call { name: bogus_sym, args: vec![x1, x2] });
+
+        let mut env: Env = SmallVec::new();
+        let mut ctx = EvalCtx::new(&f.graph, &f.interner);
+        ctx.derived_ops = Some(Arc::new(registry));
+        let call_val = evaluate(&arena, call_node, &mut env, &mut ctx);
+        let plus_val = evaluate(&arena, plus_node, &mut env, &mut ctx);
+        assert_eq!(call_val, Value::Int(7));
+        assert_eq!(call_val, plus_val);
+
+        // ctx.derived_ops is caller-managed here (direct evaluate(), not
+        // through eval_synth_enumerate) — confirms a MISSING registry
+        // entry is `Value::None`, never a panic (the documented "no
+        // registered entry -> Value::None" contract).
+        assert_eq!(evaluate(&arena, bogus_call, &mut env, &mut ctx), Value::None);
+    }
+
+    /// `ctx.derived_ops` is restored to its PREVIOUS value (`None` here)
+    /// once `eval_synth_enumerate` returns, on the SAME `EvalCtx`
+    /// instance — the `with_derived_ops` scope-guard's own restore
+    /// contract, verified by reusing one `ctx` across two `evaluate()`
+    /// calls (a fresh `EvalCtx` would trivially have `derived_ops:
+    /// None` regardless of whether the guard works, so this must NOT
+    /// construct a new `ctx` for the second call).
+    #[test]
+    fn derived_ops_registry_does_not_leak_past_the_call() {
+        let mut f = Fixture::new();
+        let ex = f.rows(&[
+            (&[("x", 1), ("y", 2)], Value::Int(3)),
+            (&[("x", 2), ("y", 5)], Value::Int(7)),
+        ]);
+        let ops_t = {
+            let ops = f.ops(&["Total2"]);
+            f.arena.add(TermNode::Lit { value: ops })
+        };
+        let ex_t = f.arena.add(TermNode::Lit { value: ex });
+        let derived_t = f.arena.add(TermNode::Lit {
+            value: Value::Tuple(Arc::new(smallvec::smallvec![surf_string(TOTAL2_JSON.to_string())])),
+        });
+        let synth_t = f.arena.add(TermNode::SynthEnumerate {
+            examples: ex_t,
+            ops: Some(ops_t),
+            consts: None,
+            exclude: None,
+            derived_ops: Some(derived_t),
+            max_size: 9,
+            max_candidates: 0,
+            saturate_k: 0,
+            field: Sym::default(),
+        });
+        let total2_sym = f.interner.intern("Total2");
+        let a1 = f.arena.add(TermNode::Lit { value: Value::Int(1) });
+        let a2 = f.arena.add(TermNode::Lit { value: Value::Int(2) });
+        let call_t = f.arena.add(TermNode::Call { name: total2_sym, args: vec![a1, a2] });
+
+        let mut env: Env = SmallVec::new();
+        let mut ctx = EvalCtx::new(&f.graph, &f.interner);
+        assert!(ctx.derived_ops.is_none()); // before: no registry
+        let synth_out = evaluate(&f.arena, synth_t, &mut env, &mut ctx);
+        assert_eq!(dget(&synth_out, "found"), Value::Bool(true)); // the call itself worked
+        assert!(ctx.derived_ops.is_none()); // after: restored, not leaked
+        // And a Call node evaluated on this SAME (now-registry-less) ctx
+        // finds nothing — proof the restore is behaviourally real, not
+        // just a field read-out.
+        assert_eq!(evaluate(&f.arena, call_t, &mut env, &mut ctx), Value::None);
+    }
+
+    /// The parity check itself (§9 step 3): a search offered
+    /// `ops:["Total2"]` (the registry-authored derived op) on a
+    /// `Plus`-shaped spec must reach the SAME size, with the SAME
+    /// `tested`/`distinct`/`pruned_equiv`/`halt_reason` counters, as the
+    /// identical search offered `ops:["Plus"]` — the winning term
+    /// differs ONLY in the outer node's own name/shape
+    /// (`(x + y)` vs `Total2(x, y)`), never in the search's own
+    /// behaviour. A plumbing proof, not a capability claim.
+    #[test]
+    fn total2_derived_op_search_matches_native_plus_byte_for_byte() {
+        let mut f = Fixture::new();
+        let ex = f.rows(&[
+            (&[("x", 1), ("y", 2)], Value::Int(3)),
+            (&[("x", 2), ("y", 5)], Value::Int(7)),
+            (&[("x", 0), ("y", 0)], Value::Int(0)),
+            (&[("x", -3), ("y", 9)], Value::Int(6)),
+        ]);
+
+        let ops_plus = f.ops(&["Plus"]);
+        let native = f.run(ex.clone(), Some(ops_plus), 9, 0);
+
+        let ops_total2 = f.ops(&["Total2"]);
+        let derived = f.run_with_derived(ex, Some(ops_total2), &[TOTAL2_JSON], 9, 0);
+
+        assert_eq!(dget(&native, "found"), Value::Bool(true));
+        assert_eq!(dget(&derived, "found"), Value::Bool(true));
+        assert_eq!(dget(&native, "size"), dget(&derived, "size"));
+        assert_eq!(dget(&native, "tested"), dget(&derived, "tested"));
+        assert_eq!(dget(&native, "distinct"), dget(&derived, "distinct"));
+        assert_eq!(dget(&native, "pruned_equiv"), dget(&derived, "pruned_equiv"));
+        assert_eq!(dget(&native, "halt_reason"), dget(&derived, "halt_reason"));
+
+        let native_term = text(&dget(&native, "term_str"));
+        let derived_term = text(&dget(&derived, "term_str"));
+        assert!(native_term.contains('+'), "native term_str: {native_term}");
+        assert!(derived_term.starts_with("Total2("), "derived term_str: {derived_term}");
+
+        // Byte-identical VALUE at the winning candidate too, not just
+        // matching counters — re-evaluate both winning terms over a
+        // fresh row and confirm equal output.
+        let native_json = text(&dget(&native, "term"));
+        let derived_json = text(&dget(&derived, "term"));
+        assert!(derived_json.contains("\"type\":\"Call\""), "derived term JSON: {derived_json}");
+        assert_ne!(native_json, derived_json); // different node kinds, same behaviour
+    }
+
+    /// §9 step 2's own honest residual, verified directly rather than
+    /// merely asserted in prose: a `derived_ops` entry whose pool shape
+    /// build-A does NOT cover (`JoinListSep`'s own mixed
+    /// `[list,general]` shape) is silently UNUSABLE — `op_list`
+    /// construction drops it (never an error), so an explicit `ops`
+    /// request naming it finds nothing to search with and reports
+    /// `found:false` honestly, exactly as if the name were never
+    /// registered at all.
+    #[test]
+    fn mixed_pool_derived_op_is_silently_unusable_under_build_a() {
+        let mut f = Fixture::new();
+        // Two rows with DIFFERENT outputs, neither equal to `x` itself —
+        // a leaf (var or auto-appended-const, `synth_enumerate.rs`'s own
+        // "integer-valued outputs are appended to `const_set`" rule)
+        // can satisfy at most ONE row's fixed value, never both, so
+        // `found:true` here can only come from a genuine COMPOSITION —
+        // which needs an op, and none is usable (`op_list` construction
+        // drops the mixed-pool `Mixed` entry entirely).
+        let ex = f.rows(&[(&[("x", 1)], Value::Int(5)), (&[("x", 2)], Value::Int(9))]);
+        let mixed_json = r#"{"name":"Mixed","params":[{"name":"s","pool":"list"},{"name":"g","pool":"general"}],"extra_cost":0,"template":{"type":"Var","name":"s"}}"#;
+        let ops = f.ops(&["Mixed"]);
+        let out = f.run_with_derived(ex, Some(ops), &[mixed_json], 5, 0);
+        assert_eq!(dget(&out, "found"), Value::Bool(false));
     }
 }
