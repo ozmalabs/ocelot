@@ -13,7 +13,7 @@ orchestrator to review and merge. **A sibling agent is concurrently building
 worktree-creation time); this task reads those five files only from
 `main @ df00b37`, never from that worktree, and writes to none of them.**
 `git diff --stat df00b37` is empty for every tracked source file — confirmed
-at the end of this document (§9).
+at the end of this document (§10).
 
 **Headline: GO on the design, NOT-YET-READY to build the full version
 blind — and, read honestly against its own retroactive test case, this
@@ -41,7 +41,7 @@ single-task held-out-row agreement an unsafe mint bar for something that
 becomes REUSABLE, OFFERED, EXECUTABLE code — a cross-task recurrence floor
 (support ≥ 2, independently verified, mirroring `META_SHAPE_FIRST_CLASS_
 RESULTS.md §4.1`'s own support=2 floor) is the correct bar, and the
-retroactive walkthrough (§7) shows this bar would have correctly REFUSED to
+retroactive walkthrough (§8) shows this bar would have correctly REFUSED to
 mint `JoinListSep` (DELIMJOIN's own investigation found it has no second
 candidate task in the fixture) — a good discipline result, but it means the
 mechanism does not unlock task 421 even in the best case.
@@ -422,7 +422,7 @@ exclusively from the CLOSED two-pool taxonomy — which is a real, useful,
 but narrower claim than "any composition of existing Terms is now free."**
 Build (A) alone does not make this claim true in general; it makes it true
 for a real but bounded subset, and is the correct, cheaper first slice for
-exactly that reason (§8).
+exactly that reason (§9).
 
 ---
 
@@ -538,12 +538,243 @@ together. Named as a real, cheap synergy; not priced or built here.
 
 ---
 
-## 7. Retroactive walkthrough: would this have minted `JoinListSep`?
+## 7. Cross-domain generalization: is this Term-tree-specific, or does it reach motor programs?
+
+CLAUDE.md's own SHAPES-NOT-NUMBERS section names, in a DIFFERENT embodiment,
+the identical gap this document designs for: *"the motor-program's slope
+collapse had to be hand-written as a bespoke rule when it is rung 2 of a
+ladder that already exists... everything the sd loop gives shapes for free —
+recognise, transform, infer, mint — the motor path reimplements or does
+without."* A motor program IS a derived operator by the same test this
+document already applies to `JoinListSep`: a named, reusable, parameterized
+sequence of primitives, invoked with different parameters instead of
+re-derived from scratch each time. This section checks that claim against
+the REAL F-16 motor-program code, not by analogy — reading
+`docs/research/flight_control/regime_pareto_frontier_results.md` Block CT
+(`emp_signature_internalized_program`/`emp_grow_motor_program_shape`),
+`seeds/embodied_motor_program.json`, and `runners/dsl/src/motor_compose.rs`
+in full, then asking precisely which layer of this document's own design
+generalizes and which stays domain-specific.
+
+### 7.1 The mint/recognize DISCIPLINE is already proven across three domains — this would be a fourth instance, not a novel generalization
+
+`seeds/embodied_motor_program.json:11` (the seed's own top-level
+description, read in full): *"Flown programs are indexed BY TYPE AND SHAPE
+in an `EmbodiedMotorProgramShape` codebook (one relation per member:
+actuator group as predicate, integer command ordinal as coordinate), grown
+and collapsed behind the action and re-armed by `motor_codebook_epoch`."*
+The rule itself (`seeds/embodied_motor_program.json:1760340-1760404`, read
+in full, `emp_grow_motor_program_shape`) mints a NEW `EmbodiedMotorProgramShape`
+node, guarded by a dedup test (`Count(Neighbours(program,
+"has_motor_program_shape")) == 0` — semantically the SAME
+`Not(Exists(...))`-shaped novelty guard `seeds/gap_awareness.json`'s
+`retire_duplicate_gap` and `seeds/shape_decode_loop.json`'s `sd_mint_quantum`
+both use, expressed with `Count`/`Eq` instead of `Not`/`Exists` — a
+syntactic variant of the identical idiom, not a different one), and bumps
+`motor_codebook_epoch` — the SAME epoch-gated re-arm pattern
+`codebook_epoch` uses everywhere else in the sd loop.
+
+`regime_pareto_frontier_results.md` Block CT (`:6251-6323`, read in full)
+measured the payoff: over 300 actions of `damaged_wing`, **234 programs
+composed, 160 internalized, only 35 distinct shapes — ~84% of composition
+re-derives a program already held.** This is `JoinListSep`'s own motivating
+observation (re-deriving a known-good composition from scratch every time it
+recurs) independently measured in a completely different embodiment, with a
+completely different primitive vocabulary (actuator commands, not DSL
+Terms), and independently landed as a real fix.
+
+**This is the third domain-specific instantiation of the SAME
+recognize→dedup-guarded-mint→epoch-rearm shape**, not the second:
+`ProblemShape` (`seeds/problem_shape_growth.json`, cited in
+`OPLIST_ADMISSIBILITY_GRAMMAR_RESULTS.md`'s own precedent list) is the
+solver-dispatch instance; vision parts (`grow_part_library`, cited in Block
+CT's own "Correction 3") is the shape-decode instance; `EmbodiedMotorProgramShape`
+is the motor instance. **All three use a NEW, domain-specific node type
+(never a shared `ShapeSignature{kind:...}` — `problem_shape_growth.json`'s
+own comment states this explicitly: "a kind-tagged `ShapeSignature` would
+silently compete for [ShapeDecode's] real decode slot")**, and all three
+HAND-AUTHOR their own mint rule using the SAME small vocabulary of generic
+Terms (`Eq`/`Exists`/`Count`/`Argmin`/`Plus`) rather than literally calling
+one shared Rust or seed-level mint function. **The pattern generalizes; the
+wiring does not — each domain still needs its own node type and its own
+hand-authored rule**, exactly the same shape as this document's own §5
+design (a new registry/mint discipline, not a call into an existing one).
+This document's own §5 (written before this cross-domain check) already
+independently arrived at the identical shape (new node type, dedup-guarded
+mint, cross-observation recurrence bar) — this section's finding is that
+this is not a coincidence; it is the established, three-times-measured
+default shape for "how does this codebase grow a named reusable unit," and
+this design's own instance was already conforming to it without having been
+explicitly checked against it.
+
+### 7.2 The DISPATCH/execution mechanism is legitimately domain-specific, for a reason grounded in the real code, not left unexplored
+
+`MotorCompose` is not a separate, hand-rolled native interpreter outside
+the DSL — it is itself a plain `TermNode` variant
+(`term.rs:1120: MotorCompose { episode: TermIdx, policy: TermIdx, candidate:
+TermIdx }`, dispatched at `term.rs:7018-7034` through the SAME `evaluate()`
+every other Term in this codebase runs through, including `SynthEnumerate`
+and this document's own proposed `Call`). **Both domains share ONE universal
+execution substrate** — this is not a narrow, SynthEnumerate-only design
+decision; `Call{name,args}`, once built as a genuine `TermNode` variant, is
+automatically reachable from ANY Term-tree context in the engine, motor
+included, with zero additional plumbing to make it "reachable" — reachability
+was never the gap.
+
+**What is genuinely different is what gets composed.** Read
+`motor_compose.rs:1-15` (module doc) and `term.rs:7018-7034` (the
+`MotorCompose` evaluator arm) together: `MotorCompose` does not recursively
+evaluate a Term-tree of named sub-actions the way `Fold`/`MapList`/a
+hypothetical `Call` would — it calls `motor_compose_member(graph, interner,
+episode, policy, candidate)`, a single native Rust MEMBERSHIP TEST ("would
+adding this actuator-group member help this candidate program"), invoked
+REPEATEDLY across MULTIPLE `run_rules` ticks by the SEED'S OWN iterative
+composition loop (`motor_compose.rs`'s own doc comment: "open best singleton
+→ snapshot-parallel per-group expansion rounds → close when no candidate
+improves" — a graph-rule-driven incremental build, not a one-shot Term-tree
+search). A flown motor program's actual STRUCTURE — what `EmbodiedMotorProgramShape`
+indexes — is a sequence of GRAPH RELATIONS (`predicate = actuator_group,
+argument = command_ordinal`), never a nested Term-tree of named
+sub-Terms. There is, today, no Term-tree-shaped object inside the motor
+domain for a `Call{name,args}`-style splice to operate ON, even though the
+MECHANISM that would eventually evaluate one (the shared `evaluate()`/
+`TermArena`) is already common ground.
+
+**This is a genuine representational difference, confirmed by reading the
+code, not merely an unexplored opportunity**: `SynthEnumerate` composes
+Term-trees of Terms (Call's natural domain); the motor composer composes
+graph relations via an iterative rule-driven loop with a fast native
+membership oracle (a different compositional paradigm that happens to
+ALSO bottom out in the same underlying Term/graph substrate for speed,
+exactly as `motor_compose.rs`'s own doc comment states: the seed-rule
+composer was "correct but interpreted" at 300-600 ms/quadratic, and this
+module is "the SAME selection as one pure function... Rust only answers the
+membership question" — the native/graph split CLAUDE.md's own "primitive in
+Rust, composition in graph" rule already prescribes, independently applied
+here). Forcing `Call{name,args}` to also serve as the motor domain's
+chunk-reuse mechanism would mean either (a) representing motor programs as
+Term-trees (a real, larger redesign, unscoped and unpriced here, with no
+evidence it is worth it given `EmbodiedMotorProgramShape`'s own approach
+already measured the 84% redundancy fix it needed), or (b) building a SECOND,
+parallel splice mechanism native to graph-relation sequences — which is
+just Block CT's `EmbodiedMotorProgramShape` mechanism, already built,
+under a different name. Neither is this rung's job.
+
+### 7.3 A real, measured, domain-specific reason the MINT-SWEEP PLACEMENT differs too — and program synthesis has the easier version of this problem
+
+Block CT's own "Correction 3" (`regime_pareto_frontier_results.md:6292-6299`,
+read in full): *"There is one `run_rules` fixpoint per action, so
+`soft_realtime` is not 'behind the action' — it is IN it... the shape path
+works asynchronously only because `grow_part_library` is called from
+OUTSIDE the fixpoint, by a Python builder; the motor path has no such
+caller. **The gap is real and nothing landed here closes it.**"* And
+"Correction 2" (`:6284-6290`): with the interpreted composer instead of
+native `MotorCompose`, one episode took 838 s without completing, against
+69 s/episode native — over 12x, because motor composition runs INSIDE a
+hard real-time control loop (10 Hz, 100 ms budget per action, confirmed
+Block CT's own "Correction 1": "S2 p99 is 52 ms and total request p99 56 ms,
+inside the 100 ms budget").
+
+`synth_enumerate.rs`'s own documented contract is the exact opposite:
+*"Budgets are COUNTS, never a wall clock... `max_candidates` REPLACES
+`timeout_s`"* (`synth_enumerate.rs:64-70`, already cited §1.1). **This
+document's own §5.4 mint sweep (an OFFLINE script, no tick-time constraint
+at all) is therefore UNCONDITIONALLY the easier version of the exact
+placement problem Block CT names as still-open for motor**: program
+synthesis never had a `grow_part_library`-shaped "who calls this outside
+the fixpoint" gap to begin with, because `SynthEnumerate` was never inside
+a real-time fixpoint in the first place. This is worth stating precisely
+rather than assumed: this document's design does not merely avoid Block
+CT's placement problem by luck — it avoids it because the two domains'
+underlying TIMING CONSTRAINTS genuinely differ, confirmed by reading both
+budget contracts directly.
+
+### 7.4 What actually generalizes, named precisely, and independent supporting evidence
+
+**Generalizes cleanly, already proven three times over, and this design's
+own §5 already (independently) conforms to it**: the NAMING/REGISTRY/MINT
+DISCIPLINE — a new domain-specific node type, a dedup-guarded mint rule,
+epoch-gated re-arm, and (this document's own addition, §5.2-5.3, not yet
+measured elsewhere in this codebase) a recurrence bar stricter than
+single-observation because the minted object is EXECUTABLE and OFFERED, not
+inert data. **Stays domain-specific, for a reason grounded in the real code
+(not merely unpriced)**: the DISPATCH/splice mechanism itself
+(`Call{name,args}`), because the two domains' compositional substrates
+genuinely differ (nested Term-trees of Terms vs. graph-relation sequences
+built by an iterative rule loop with a native membership oracle), even
+though both already share one common execution engine underneath.
+
+Two pieces of independent, external, non-codebase evidence, cited for what
+they establish and no more (this project's own prior "cite external
+literature precisely, distinguish what it independently establishes from
+what remains this project's own claim" discipline, `CLAUDE.md`'s "SHAPE IS
+ACQUISITION" arc's own handling of DeepGAR/MarT/SEER):
+
+- **Schmidt's Generalized Motor Program / Schema Theory (1975)** is a
+  direct, decades-prior neuroscience precedent for exactly the split this
+  document's design already makes: a motor program stores the INVARIANT
+  structure of a movement class (relative timing, relative force, component
+  order — the "template"), while overall duration/force/effector are
+  PARAMETERS supplied at invocation ("holes," filled per call) — motor
+  equivalence (a signature written with the foot in sand is still
+  recognizable, despite an untrained muscle group executing it) is
+  independent evidence that what is stored really is the structure, not the
+  literal low-level commands, the same distinction as "the Term-tree
+  template" vs. "the specific substituted `TermIdx` values" in §3.2's
+  design. This independently supports treating `EmbodiedMotorProgramShape`
+  and this document's own `DerivedOp` registry as the SAME kind of object
+  in two vocabularies, not a strained analogy.
+- **Skill-automatization neuroscience** (effortful, DLPFC/working-memory-led
+  assembly early in learning, shifting to putamen/SMA-driven single-unit
+  automatic execution with repetition) is independent, biological evidence
+  for RECURRENCE-GATED promotion specifically — a composition earns
+  promotion to "no longer re-derived from parts" only after it recurs, not
+  on first success — which is exactly this document's own §5.3 cross-task
+  support≥2 bar, arrived at here from this codebase's own measured
+  DELIMJOIN spurious-memorization risk (§5.2), not from this citation. The
+  citation is independent corroboration of the SAME discipline from a
+  different field, not the source of the discipline in this design.
+- **Central pattern generators** (spinal/brainstem circuits driving
+  walking/breathing/chewing without cortical control) are the biological
+  analogue of this codebase's OTHER, already-distinct tier — the fixed,
+  hand-written, non-learned PRIMITIVE (`OP_TABLE`'s 50 entries, §0; a new
+  `TermNode` variant, CLAUDE.md's own sanctioned "new primitive → Rust"
+  pathway) — independently supporting keeping "native primitive" and
+  "derived/learned operator" as two SHARPLY DISTINCT tiers in this design
+  (as §3-4 already do) rather than trying to collapse them into one
+  mechanism, which this document never proposed but is worth stating is
+  independently the right call.
+
+**Net finding, stated as one of the three valid outcomes the task named
+in advance**: this is the middle case — **not a clean full generalization
+buildable now, and not "genuinely domain-specific and shouldn't
+generalize" either.** The RECOGNIZE/MINT DISCIPLINE generalizes cleanly and
+is already proven three times independently; a fourth instance (this
+document's `DerivedOp` registry) is low-risk, established-pattern work, not
+speculative architecture. The DISPATCH mechanism does NOT generalize this
+rung, for a real, measured, code-grounded reason (a genuine representational
+difference between Term-tree composition and graph-relation composition),
+not merely because nobody has tried. **Named follow-on, not built or priced
+here**: if a future domain's own "chunk of primitives" is ALSO naturally a
+nested Term-tree (unlike today's motor-program relations), `Call{name,args}`
+would already be directly reusable for it with zero further dispatch-layer
+work, because it is a plain `TermNode` reachable from anywhere in the
+engine (§7.2) — the design in §3 should therefore keep its registry SCHEMA
+(name, params, recurrence bar, domain-specific verification test) phrased
+generically enough that a THIRD "named reusable composition" mechanism,
+whenever one is next needed, does not have to re-derive §5's discipline
+from scratch — and, reading §3.1/§5 back against this finding, they already
+are (no `TermNode`-only vocabulary leaked into the registry SCHEMA itself,
+only into the dispatch node `Call` uses to execute it).
+
+---
+
+## 8. Retroactive walkthrough: would this have minted `JoinListSep`?
 
 Read `PROGRAM_SYNTHESIS_DELIMJOIN_BUDGETWALL_RESULTS.md §1` in full again
 against this design, concretely, in three parts.
 
-### 7.1 Would the mechanism have EXPRESSED `JoinListSep`?
+### 8.1 Would the mechanism have EXPRESSED `JoinListSep`?
 
 Yes, cleanly, but only under build (B) (§4), not build (A). `JoinListSep`'s
 own two arguments — `source` (list-shaped, drawn from `list_by_size`) and
@@ -581,7 +812,7 @@ field exactly once per call, side-effect-free per this Term's own documented
 "Pure. No substrate mutation" contract) — binding them as pre-computed
 Values referenced via `Var` inside the template changes nothing observable.
 
-### 7.2 Would it have changed DELIMJOIN's measured OUTCOME?
+### 8.2 Would it have changed DELIMJOIN's measured OUTCOME?
 
 **No — and this is the sharp, honest finding, not an assumed one.** Two
 independent reasons, both already measured in `DELIMJOIN_BUDGETWALL_
@@ -608,7 +839,7 @@ RESULTS.md`, neither touched by WHERE the composition lives:
    op, loses this same race for the same reason: this design does not
    change enumeration ORDER, only WHERE a template's definition lives.
 
-### 7.3 Would `JoinListSep` even have PASSED the mint bar (§5.3)?
+### 8.3 Would `JoinListSep` even have PASSED the mint bar (§5.3)?
 
 **No — and this is a positive result for the design's own discipline, even
 though it means no capability gain here.** `DELIMJOIN_BUDGETWALL_RESULTS.md
@@ -622,7 +853,7 @@ designed in §5 would have correctly refused to promote a support=1
 candidate — which is the discipline working as intended, not a gap in it.**
 The larger, real, honestly-stated payoff of this whole design is therefore
 NOT "task 421 would now pass" (it would not, under any build variant, for
-reasons §7.2 shows are independent of this design entirely) — it is: **the
+reasons §8.2 shows are independent of this design entirely) — it is: **the
 NEXT task that needs a `sep.join(...)`-shaped construction, on a spec where
 the reachability floor and the spurious-race problem do NOT also bind,
 would no longer require re-deriving and re-building the same Rust twice** —
@@ -631,19 +862,25 @@ task brief's framing might suggest.
 
 ---
 
-## 8. GO / NOT-YET-READY, and the buildable first slice
+## 9. GO / NOT-YET-READY, and the buildable first slice
 
 **Design-level call: GO.** §2 finds a real, close, already-tested precedent
 for exactly the right dispatch shape (`DerivationRegistry`'s `ValueTaker`),
 missing only an addressable object for brand-new op names — precisely the
 `RULES_AS_SHAPE_DESIGN_SPIKE.md` pattern, one level over. §3 prices the one
 generic mechanism needed at a bounded, one-time, ~60-100-line, six-file cost
-matching an already-shipped variant's exact footprint.
+matching an already-shipped variant's exact footprint. §7 adds a THIRD
+independent confirmation that the recognize/mint DISCIPLINE this design
+uses (not the `Call` dispatch mechanism specifically) is the established,
+correct shape for "grow a named reusable unit" in this codebase — it is
+already proven in two other domains (`ProblemShape`, `EmbodiedMotorProgramShape`)
+before this document's own use of it, which is independent evidence this
+design is conforming to a real pattern rather than inventing a bespoke one.
 
 **Build-level call: NOT-YET-READY to build the full (build-B) generic
 pool-typed combinator blind.** §4 found the "zero new Rust per derived op"
 claim is real but conditional — true only for derived ops whose pools match
-the existing (A) shapes, or once the larger (B) combinator is built. §7
+the existing (A) shapes, or once the larger (B) combinator is built. §8
 found the mechanism, even fully built, would not have converted its own
 concrete test case (`JoinListSep`/task 421) for two reasons unrelated to
 this design (a fixed reachability floor, a fixed enumeration-order race) —
@@ -683,17 +920,27 @@ known-safe fact before trusting it with anything novel):**
 5. **Only then**: build the offline mint sweep (§5.4) and wire the Γ
    composition (§6) — reusing `OPLIST_ADMISSIBILITY_GRAMMAR_RESULTS.md
    §3-4`'s own design unchanged, adding only the `kind` attr distinction.
+6. **Not in this rung, named as a real but unpriced follow-on** (§7.4):
+   keep the registry SCHEMA (name/params/recurrence-bar/verification-test)
+   phrased without `TermNode`-specific vocabulary so a future domain whose
+   own "chunk of primitives" is naturally a nested Term-tree can adopt
+   `Call{name,args}` directly (it is already reachable anywhere in the
+   engine per §7.2, zero further dispatch-layer work) — but do NOT attempt
+   to unify this with `EmbodiedMotorProgramShape`/`MotorCompose`'s own
+   graph-relation-sequence mechanism this rung; §7.2 found that is a
+   genuine representational difference, not an oversight.
 
 **Explicitly NOT in this first slice**: the generic (B) combinator, the
 mint sweep, the Γ-composition wiring, registering `JoinListSep` itself
-(§7.3 already shows it would fail the mint bar even if built), and any
-claim that this design moves the MBPP pass count — per §7.2, it honestly
-does not, for the one concrete case this document could check against real,
-already-measured data.
+(§8.3 already shows it would fail the mint bar even if built), any attempt
+to unify `Call` dispatch with the motor domain's own composition mechanism
+(§7.2), and any claim that this design moves the MBPP pass count — per
+§8.2, it honestly does not, for the one concrete case this document could
+check against real, already-measured data.
 
 ---
 
-## 9. What this document does NOT establish
+## 10. What this document does NOT establish
 
 1. **No code was written or run.** `git diff --stat df00b37` in this
    worktree is empty for every tracked source file — confirmed directly
@@ -707,14 +954,14 @@ already-measured data.
    proven safe** — a support=2 candidate that passes both held-out checks
    could still, in principle, be a coincidental double-fit rather than a
    genuine primitive; no corpus-wide false-positive rate is measured here.
-4. **This document's own retroactive test case (§7) is exactly ONE
+4. **This document's own retroactive test case (§8) is exactly ONE
    candidate** (`JoinListSep`), and it is a NEGATIVE case for capability
    gain (support=1, reachability-bound, race-bound) — this document does
    NOT claim a positive retroactive case exists anywhere in the corpus; no
    sweep was run to look for one (that sweep is itself named as future,
-   gated work, §8 step 4).
+   gated work, §9 step 4).
 5. **Whether a derived-operator tier, once built, ever moves the MBPP pass
-   count is unmeasured and — per §7.2 — is not established even
+   count is unmeasured and — per §8.2 — is not established even
    qualitatively for the one case this document could check against real
    data.** Its claimed value is REUSE (avoiding re-deriving a composition
    in fresh Rust each time it recurs) and REGISTRY HYGIENE (a stricter
@@ -723,6 +970,21 @@ already-measured data.
 6. **This document does not re-verify `OPLIST_ADMISSIBILITY_GRAMMAR_
    RESULTS.md`'s own findings** beyond the one figure corrected in §0 — it
    extends that document's design (§6) and cites the rest as landed.
+7. **§7's cross-domain finding is checked against ONE other embodiment**
+   (the F-16 motor-program work) **plus two prior sd-loop instances cited,
+   not independently re-read in full for this document** (`ProblemShape`,
+   vision parts) — the "three domains" claim rests on `seeds/
+   problem_shape_growth.json`'s own comment and Block CT's own "Correction
+   3" naming `grow_part_library`, both read directly, but this document did
+   not itself re-derive the vision-parts case end to end the way it did for
+   motor programs. The external neuroscience citations (Schmidt's GMP/
+   schema theory, skill-automatization) are independent corroboration of
+   the SHAPE of this design's own discipline, not a source for any of its
+   specific bars (§5's support≥2 floor and held-out-row requirement were
+   both derived from this codebase's own DELIMJOIN measurement, before the
+   citations were added) — they establish that the discipline is
+   biologically plausible, not that it is correct or sufficient for this
+   codebase's own purposes.
 
 ---
 
@@ -747,4 +1009,13 @@ grep -rn "with_derivations\|DerivationRegistry" runners/dsl/src/*.rs | grep -v t
 sed -n '870,880p' runners/dsl/src/shape.rs                 # confirms #[test] context
 sed -n '1,132p' tools/gen_term_variants.py                 # mechanical regen, read in full
 sed -n '1172,1230p' domains/prog_synthesis.py               # exclude precedent, run_enumerate
+# Cross-domain generalization check (§7):
+sed -n '6251,6323p' docs/research/flight_control/regime_pareto_frontier_results.md   # Block CT, motor-program shapes
+sed -n '6284,6299p' docs/research/flight_control/regime_pareto_frontier_results.md   # Corrections 2/3, real-time bind
+grep -n "emp_signature_internalized_program\|emp_grow_motor_program_shape\|codebook_type" seeds/embodied_motor_program.json
+sed -n '1760340,1760404p' seeds/embodied_motor_program.json   # the hand-authored mint rule
+grep -n "MotorCompose" runners/dsl/src/term.rs runners/dsl/src/jsonio.rs
+sed -n '1120,1121p' runners/dsl/src/term.rs                 # MotorCompose is a plain TermNode
+sed -n '7018,7034p' runners/dsl/src/term.rs                 # dispatched through the same evaluate()
+sed -n '1,15p' runners/dsl/src/motor_compose.rs              # module doc: native membership test, not a Term-tree splice
 ```
