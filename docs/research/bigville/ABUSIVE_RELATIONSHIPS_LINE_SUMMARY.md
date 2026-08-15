@@ -3,9 +3,9 @@
 **Status:** synthesis doc. This document builds nothing, measures nothing new,
 and touches no engine — every number below is copied from an already-landed,
 already-gated rung's own results doc, cited by file. Its job is to give a
-reader the shape of the whole line in one place: **the full fourteen-rung
+reader the shape of the whole line in one place: **the full fifteen-rung
 line is now landed** — each rung with a failable control, each ethics-gated
-before it ran, spanning four companion scoping documents written and locked
+before it ran, spanning five companion scoping documents written and locked
 in that order:
 
 - `ABUSIVE_RELATIONSHIPS_SCOPING.md` — the dyad line (**R1–R5**)
@@ -14,6 +14,9 @@ in that order:
   line's headline mechanism requires intent (**U0–U2**)
 - `ABUSIVE_RELATIONSHIPS_BARRIERS_AND_RETURN_SCOPING.md` — material barriers
   to leaving, and staying left (**R6–R7**)
+- `ABUSIVE_RELATIONSHIPS_VISIBILITY_SCOPING.md` — whether a discrete,
+  victim-independent trace of harm protects credibility a diffuse pattern
+  cannot earn (**V1**)
 
 Clinical, anti-sensational register throughout, matching every doc it
 summarises. The purpose is scientific/clinical understanding grounded in the
@@ -22,7 +25,7 @@ moral labels — stated once here, and true of every rung below.
 
 ---
 
-## THE ONE FINDING ALL FOURTEEN RUNGS ELABORATE
+## THE ONE FINDING ALL FIFTEEN RUNGS ELABORATE
 
 Block 239000 (`AROUSAL_WOT_RESULTS.md`, part of this substrate's pre-existing
 developmental line, not built for this line) already measured that a
@@ -36,15 +39,18 @@ RIGHT way again. R6 and R7 elaborate a SECOND, independent finding this
 line's own value-economy machinery already carried (R4's Argmax-over-
 Appraisal) — that a decision can be entirely correct about controllability
 and still land on "stay," and that a genuinely recovered trajectory is not
-protected from a later pull back. No rung invents a bespoke "abuse
-mechanism" — falsification bar 4 of every scoping doc requires reuse of
-existing atoms, and every rung below satisfies it: as of this doc, **zero
-new Rust and zero new Python agent-decision logic across all fourteen
-rungs.**
+protected from a later pull back. V1 elaborates a THIRD, network-side
+finding: N1's own credibility engine, unmodified, responds to what evidence
+reaches it, not to what actually happened — so whether a harm type happens
+to leave a discrete trace changes the outcome even when the harm itself is
+held identical. No rung invents a bespoke "abuse mechanism" — falsification
+bar 4 of every scoping doc requires reuse of existing atoms, and every rung
+below satisfies it: as of this doc, **zero new Rust and zero new Python
+agent-decision logic across all fifteen rungs.**
 
 ---
 
-## THE ETHICS PROTOCOL (identical across all fourteen rungs, locked before any of them ran)
+## THE ETHICS PROTOCOL (identical across all fifteen rungs, locked before any of them ran)
 
 Every prereg in this line locks the same four-point protocol verbatim,
 carried from `ABUSIVE_RELATIONSHIPS_SCOPING.md` Part C through the network
@@ -283,6 +289,50 @@ all). Three structurally distinct routes to the identical trap.
 
 ---
 
+## V1 — WHY "IT WOULD BE EASIER IF HE HIT ME" IS QUANTIFIABLE
+
+The user asked whether a widely-reported survivor statement — that physical
+abuse would be easier than psychological/coercive-control-only abuse,
+because it's harder to get people to believe the latter — could be
+quantified rather than just asserted. Reading N1's own credibility rules
+directly, and R2/R3 directly, surfaced two findings before any design was
+possible: N1's ordinary network nodes have NO channel for a discrete,
+victim-independent trace at all (only the abuser's continuous charm
+broadcast and the victim's own continuous state); and R2/R3 do not actually
+differ in whether the abuser's conduct produces a discrete incident — both
+use the identical `snap_frustration` driver. The real, substrate-honest axis
+is entirely network-side: whether an already-occurring incident's trace
+*reaches* anyone at all.
+
+| rung | mechanism | headline result | gate |
+|---|---|---|---|
+| **V1** evidentiary visibility | N1's dyad reused byte-identically in both arms; one new adapter-delivered observable (`seen_incident`) discounting the abuser's credibility | INCIDENT_VISIBLE 2248.17 [2246.72,2249.62] vs. INCIDENT_INVISIBLE 2369.46 [2368.09,2370.83] (≈ N1's own 2370.81, discipline check) | PASS — CI-separated |
+
+**V1** (`ABUSIVE_V1_EVIDENTIARY_VISIBILITY_RESULTS.md`) is deliberately the
+leanest composition in the whole line: N1's dyad is not varied at all
+between arms — same abuser, same seed stream, same victim — so harm is
+matched by construction, not by tuning a dose. The only variable is whether
+the world adapter delivers one new observable, keyed on the abuser's own
+already-existing `snap_count`, discounting HIS credibility (never boosting
+the victim's own claim term — a deliberate choice to keep "there is now
+evidence of what he did" separate from "she is more believable"). Grounded
+in Stark's own evidentiary-invisibility argument and the UK's own 2021
+government review of the controlling-or-coercive-behaviour offence (35%
+evidentiary-insufficiency vs. 24% for domestic abuse generally) — genuinely
+complicated in the scoping doc by a live academic dispute (Walby & Towers)
+over whether the incident/pattern distinction is even the right lens, and by
+finding, unprompted, a DV-advocacy source naming the survivor phrase itself
+as a myth to avoid perpetuating. **The result is a real pass, reported with
+an honest limit rather than oversold**: the gap narrows (CI-separated) but
+does not flip sign at the disclosed, non-extreme weight actually used — the
+abuser is still net-favoured even when the incident channel is visible. A
+pilot sweep (0.5 to 100.0) found the separation held at every tested value,
+wider than the ~24× frequency gap between continuous charm and discrete
+incidents had suggested was likely, because N1's own dyad has near-zero
+cross-trajectory variance.
+
+---
+
 ## THE DISSOLUTIONS
 
 Each rung targets a specific misattribution and shows it dissolving into
@@ -316,6 +366,16 @@ mechanism, not character:
   protected from a later pull back — and that a return does not mean the
   earlier leaving was never real, the same way R4's passivity was never
   evidence the victim "wasn't really trying."
+- **"Why is it so hard to get people to act on psychological abuse, even
+  when everyone's acting in good faith?"** — dissolved by V1, and explicitly
+  NOT a severity claim (harm is held structurally identical across both
+  arms by construction): a network applying the identical, fair rule to
+  identical harm still extends less credit to a purely diffuse pattern than
+  one that happens to leave a trace, for reasons entirely about the harm's
+  SHAPE, never about the victim's presentation or the harm's severity. V1's
+  own results doc explicitly refuses the reading that this ranks harm types,
+  or that it validates "it would be easier if he hit me" as a genuine
+  preference rather than a real, mechanistic evidentiary-visibility effect.
 
 ---
 
@@ -346,7 +406,7 @@ mechanism, not character:
 
 ## CROSS-CUTTING ENGINEERING FINDINGS (evidence this is measurement, not a just-so story)
 
-Seven independent, disclosed engine/design hazards were found and fixed
+Eight independent, disclosed engine/design hazards were found and fixed
 across the line, none requiring a Rust change:
 
 1. R2 — a shared rule (`snap_frustration`'s arousal-clobber) fires on any
@@ -370,6 +430,10 @@ across the line, none requiring a Rust change:
    the entire resource ceiling, making the honeymoon-only arm indistinguishable
    from the both-drivers arm; found by pilot before locking, fixed by
    re-choosing the constant, disclosed rather than silently re-tuned.
+7. V1 — a rule with `where: null` fired on the first `run_rules()` pass but
+   was not re-triggered by incremental dirty-tracking on later attribute
+   changes; fixed with an idiom already established elsewhere in the
+   codebase (`Eq(1.0,1.0)`), not new Rust.
 
 Every one of these was caught by pilot measurement BEFORE the confirmatory
 run was locked, and every one is documented in its own rung's prereg or
@@ -379,8 +443,8 @@ build process itself, not just the final numbers.
 
 ---
 
-**Bottom line.** Fourteen rungs, one ethics protocol locked before any of
-them ran, zero new Rust, zero new Python agent-decision logic, seven
+**Bottom line.** Fifteen rungs, one ethics protocol locked before any of
+them ran, zero new Rust, zero new Python agent-decision logic, eight
 disclosed engineering hazards caught before they could quietly produce a
 rigged result, and one honest partial (R5, 3 of 4 — N4, the line's other
 recovery rung, cleared all 4). The dyad line shows the trap from the inside
@@ -389,8 +453,12 @@ not a private pathology but a social one (corrupted observables, active and
 passive isolation, contagion, a truth-anchor's outsized power to reverse it,
 and one believing agent's outsized power to unwind it); the intent line
 shows the trap's mechanism does not require — though it can accommodate — a
-villain; and R6/R7 show the trap has a second, independent axis entirely —
-real material stakes that can make leaving correctly not worth it even when
-it would work, and a real recovery that is not, by itself, immune to a later
-pull back. Same machinery throughout, same four-point protocol, four
-dissolutions, and honest nulls reported exactly where they occurred.
+villain; R6/R7 show the trap has a second, independent axis entirely — real
+material stakes that can make leaving correctly not worth it even when it
+would work, and a real recovery that is not, by itself, immune to a later
+pull back; and V1 shows a third, network-side axis — that identical harm can
+receive systematically less credit from a network for reasons entirely about
+what evidence the harm's SHAPE happens to leave behind, never about its
+severity or the victim's own presentation. Same machinery throughout, same
+four-point protocol, five dissolutions, and honest nulls and limits reported
+exactly where they occurred.
