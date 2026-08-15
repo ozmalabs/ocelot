@@ -566,6 +566,61 @@ line's standing falsifier-knob discipline.
 
 ---
 
+## PART 4 — RETELLING DECAY (the user's own follow-up: dedup is not binary)
+
+Once the two/three bridges above landed (see the BUILD LANDED note), the
+next honest residual it surfaced was: nothing stops a speaker re-telling the
+SAME news to the SAME listener every tick it stays salient and co-located.
+The user's own framing sharpened the fix precisely: *"how do people dedupe
+things? high salience gossip is often retold to the same person"* — i.e. a
+naive "never repeat" rule would be WRONG, not just crude; real people retell
+high-salience news to the same person, repeatedly, and stop only gradually.
+
+**Grounded, search-verified (not recalled from priors), both real:**
+- Clark, H.H. & Brennan, S.E. (1991), *"Grounding in Communication,"* in
+  Resnick et al. (eds), *Perspectives on Socially Shared Cognition* (verified
+  live). **Common ground is established PER-DYAD**, not globally — a speaker
+  tracks what THIS listener already knows, not whether the news has been
+  told to anyone. This is the reason dedup, if it exists, must be keyed on
+  `(speaker, listener, event)`, never on the event alone: retelling a
+  DIFFERENT person stays fully available even after five retellings to the
+  first.
+- Rimé, B. (2009), *"Emotion Elicits the Social Sharing of Emotion,"*
+  **Emotion Review** (already grounded [HIGH] in Part A2.4 above, re-verified
+  live for this specific claim). Direct finding: *"Social sharing is
+  expected to be a repetitive phenomenon, declining over time... the best
+  known predictor of the slope of this evolution [is] the initial intensity
+  of the shared emotion."* More intense episodes are shared at ~90% within a
+  week and DECLINE MORE SLOWLY, not less — i.e. high-salience news should be
+  retold MORE before tapering, exactly the user's own observation, not an
+  edge case to special-case away.
+
+**The design, composing what already shipped:** not a binary "already told"
+flag, but a per-`(listener, event)` retelling COUNT, held as a plain dict on
+the actor mind (`BigvilleOcelotActor.told_events`, the same bookkeeping-dict
+idiom `speech_bonds`/`speech_choices` already use — consistent with this
+repo's own established pattern, not a new one), damping `share_salience`
+multiplicatively PER LISTENER: `effective_salience = base_salience *
+(retell_decay ** retell_count)`, where `retell_decay = min(0.95, 0.3 +
+severity)` — a MORE severe event gets a decay rate CLOSER TO 1 (slower
+decline, more sustained retellings), a mild event decays fast, matching
+Rimé's own "initial intensity predicts the slope" finding directly rather
+than by analogy. The count increments only when a `share` is actually heard
+by that listener (mirroring the existing `_hear_gossip` call site exactly).
+Reuses the SAME `value *= 1 - decay_rate`-shaped idiom this whole research
+line has used repeatedly (R5's `r5_bond_extinguish`) — one new per-actor
+dict, one new multiplicative term in the existing salience computation, zero
+new node types, zero new rule mechanism.
+
+**Falsifiable, not asserted:** with `retell_decay` forced to `0.0` (hard
+one-and-done dedup), a high-severity event should show markedly FEWER total
+retellings to the same listener than the real, severity-scaled decay rate
+produces — the mechanism's whole point is that severity-scaled decay
+produces MORE repetition for high-salience news, not less, which a
+zero-decay control could not.
+
+---
+
 ## OPEN QUESTIONS
 
 1. **Does Bigville's speech mechanism carry arbitrary propositional
