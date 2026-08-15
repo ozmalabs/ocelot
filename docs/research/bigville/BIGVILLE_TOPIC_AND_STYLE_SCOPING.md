@@ -830,6 +830,44 @@ term either, only on the same underlying relationship data.
    this itself without bigville needing to compute or expose anything
    further — left open rather than assumed either way.
 
+## BUILD LANDED (2026-08-16, `ozmalabs/bigville` commit `719c5e9`)
+
+Rungs 1 and 2 landed as designed. Two findings surfaced only by actually
+building and running the code, both fixed:
+
+1. **Town100's relationship-seeding density (Open Question 3) resolved**:
+   household grouping turned out to be structurally impossible for town100
+   (every resident's `home_cell` is unique by construction), so the real
+   proximity signal is workplace CELL, not just workplace kind (25 labourers
+   can share one market cell — an all-pairs pass would be a 300-edge clique
+   for one profession alone). `seed_workplace_relationships()` links each
+   resident to one neighbour per workplace-cell group in a ring: 86 pairs /
+   172 directed edges across 100 residents, genuinely sparse, made opt-in
+   (not auto-wired into `populate_town100`) since an existing test asserts
+   an exact `directed_bonds` count against a bare `from_town100()`.
+2. **A second, genuinely pre-existing composition hazard, found only by
+   running Rung 2's coupling end-to-end**: `decide_speech`'s own
+   `affect_affection > 0 → greeting` branch fires unconditionally on ANY
+   positive relationship, on every single encounter, forever — permanently
+   outranking the arousal-gated smalltalk branch Rung 2's new coupling
+   feeds. A real friendship never reached smalltalk at all, measured 100%
+   greeting / 0% smalltalk for a tied pair, before this was fixed. Not
+   introduced by this rung — a dormant hazard that had simply never been
+   exercised, because `set_relationship` had never been called in
+   production code until this same rung's own prerequisite (1) populated
+   it. Fixed by reusing already-held state (`speech_choices`, the same
+   `told_events`/`heard_events` bookkeeping-dict idiom the gossip work
+   already established): a held friendship is a standing REASON to greet,
+   not a standing INSTRUCTION to greet every encounter, so greeting no
+   longer outranks smalltalk once the pair's last exchange was itself a
+   greeting. Verified live: a tied pair now reaches both greeting and
+   smalltalk (previously greeting only, 100% of the time); a zero-tie pair
+   stays pure smalltalk throughout, unchanged.
+
+17 new tests (`tests/test_bigville_topic_style_migrated.py`) + 193/193
+across the whole repo. Sub-claim 4 (style convergence) was not built, per
+3.4 — it remains a named pointer to a separate Ocelot-repo task.
+
 ## BOTTOM LINE
 
 The user's four sub-claims are all genuinely true gaps — none of the four is
