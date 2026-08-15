@@ -2347,6 +2347,26 @@ pub enum TermNode {
 
     // --- Program synthesis (P4-A) ---
 
+    /// `Call{name,args}` — dispatch to a registry-resident, named,
+    /// parameterized Term-tree template (`DERIVED_OPERATOR_TIER_
+    /// RESULTS.md` §3.2, `DERIVED_OPERATOR_TIER_SLICE1_PREREG.md`): the
+    /// generic mechanism a brand-new "derived" op name dispatches
+    /// through, when it has no native `TermNode` variant of its own.
+    /// `name` is a `Sym` that need NOT already be interned (may be a
+    /// `local_sym`-fabricated placeholder — the whole point is to avoid
+    /// `DerivationRegistry`'s own `ctx.interner.lookup` requirement, see
+    /// `EvalCtx::derived_ops`'s doc). Evaluation binds each `args[i]`'s
+    /// evaluated Value under the registry entry's own conventional
+    /// param name (`Derivation::ValueTaker`'s exact bind-then-evaluate
+    /// shape, copied nearly verbatim), then evaluates the entry's own
+    /// template `TermIdx` — which must already be a node in the SAME
+    /// arena this `evaluate()` call is running against (the
+    /// `filter_templates_by_size`/`map_templates_by_size` template-pool
+    /// precedent: built once, referenced many times, never a foreign
+    /// arena). No registered entry for `name` (or no registry present
+    /// at all) → `Value::None`, never a panic.
+    Call { name: Sym, args: Vec<TermIdx> },
+
     /// `SynthEnumerate` — the bottom-up enumerative synthesizer
     /// (faithful port of `domains/generator.py::synthesize`, unguided
     /// path): size/MDL-ordered enumeration over a caller-declared op
@@ -2374,11 +2394,24 @@ pub enum TermNode {
     /// variable, uses an op outside this call's own inventory, bad
     /// JSON) is skipped, not fatal — `exclude` is a soft refutation
     /// hint, not part of the spec contract.
+    ///
+    /// `derived_ops` (`DERIVED_OPERATOR_TIER_RESULTS.md` §3.3(b),
+    /// build-A slice) evaluates to a list of Term-JSON REGISTRY-ENTRY
+    /// strings (not bare Terms) — `{"name", "params":[{"name","pool"}],
+    /// "extra_cost", "template"}` — each declaring one `Call`-dispatched
+    /// derived op. `ops` (above) may then name a `derived_ops` entry
+    /// exactly like any native op name; unrecognized/malformed entries
+    /// are skipped, never fatal — the same soft-hint discipline as
+    /// `exclude`. Only entries whose params are ALL `"general"` (arity
+    /// 1-3) or ALL `"list"` (arity 1-2) are usable this slice (build-A's
+    /// own narrow fallback, §4) — a mixed-pool shape is silently
+    /// unusable (not an error) until build (B) exists.
     SynthEnumerate {
         examples: TermIdx,
         ops: Option<TermIdx>,
         consts: Option<TermIdx>,
         exclude: Option<TermIdx>,
+        derived_ops: Option<TermIdx>,
         max_size: i64,
         max_candidates: i64,
         saturate_k: i64,
@@ -2585,6 +2618,57 @@ pub enum Derivation {
     BodyTaker,
 }
 
+/// Which pool a `Call`-dispatched derived op's parameter draws from
+/// (`DERIVED_OPERATOR_TIER_RESULTS.md` §3.1's own closed two-pool
+/// taxonomy — `General` mirrors `synth_enumerate.rs`'s `by_size`,
+/// `List` mirrors its `list_by_size`). Build-A's own arity/pool →
+/// `OpKind` inference (`synth_enumerate.rs`) only recognizes an entry
+/// whose params are ALL `General` (arity 1-3) or ALL `List`
+/// (arity 1-2) — a mixed-pool shape (`JoinListSep`'s own) is build (B)
+/// territory and is correctly left unusable here, not built.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DerivedOpPool {
+    General,
+    List,
+}
+
+/// One derived-operator registry entry — `DERIVED_OPERATOR_TIER_
+/// RESULTS.md` §3.1/§3.2: a named, parameterized Term-tree template a
+/// `Call{name,args}` node dispatches to. `params` is ordered and
+/// positional — `params[i]`'s Sym is the template-local `Var` name
+/// `args[i]`'s evaluated Value binds under (the pool tag travels with
+/// it only for `synth_enumerate.rs`'s own `op_list`/build-A arity
+/// inference; `Call`'s own evaluation never reads the pool). `body` is
+/// already a node in the SAME arena the whole search/evaluation is
+/// running against (never a separate/foreign arena — the
+/// `filter_templates_by_size`/`map_templates_by_size` template-pool
+/// precedent).
+#[derive(Clone, Debug)]
+pub struct DerivedOpDef {
+    pub params: Vec<(Sym, DerivedOpPool)>,
+    pub body: TermIdx,
+    /// The DATA-driven generalization of `list_unary_extra_cost`/
+    /// `list_binary_extra_cost`'s own hand-authored Rust tables — read
+    /// only by a derived op reached through `OpKind::ListUnary`/
+    /// `ListBinary` (the two existing shapes that already have an
+    /// extra-cost concept). `OpKind::Unary`/`Binary`/`Ternary` have NO
+    /// such concept upstream (every native entry there is a single-node
+    /// wrap, no hidden scaffolding), so a general-pool derived op's own
+    /// `extra_cost` is honestly unused/unconsulted this slice — a named,
+    /// not hidden, build-A limitation.
+    pub extra_cost: usize,
+}
+
+/// Registry of derived operators for ONE `SynthEnumerate` call, keyed
+/// by the op's own name Sym (real-interned if the name happens to
+/// already exist, else `local_sym`-fabricated — never
+/// `ctx.interner.lookup`, `DerivationRegistry`'s own §2.2-documented
+/// gap). Reaches `evaluate()` only via `EvalCtx::derived_ops`; only
+/// ever populated by `synth_enumerate::eval_synth_enumerate`, and only
+/// for the scope of its own search (see `with_derived_ops`) — never
+/// touched by Python/PyO3.
+pub type DerivedOpRegistry = FxHashMap<Sym, DerivedOpDef>;
+
 /// Evaluator state passed through every recursive call. Holds the
 /// graph + interner + optional cache + concept resolver + a depth
 /// guard (matches Python's `_holds_depth`).
@@ -2639,6 +2723,23 @@ pub struct EvalCtx<'a> {
     /// constructing `EvalCtx` directly, e.g. a test or a future
     /// primitive, can exercise it).
     pub framebuffers: Option<&'a rustc_hash::FxHashMap<u32, crate::framebuffer::FbHandle>>,
+    /// Optional registry for `Call{name,args}` dispatch
+    /// (`DERIVED_OPERATOR_TIER_SLICE1_PREREG.md`'s own "design decisions"
+    /// section). `Arc`, NOT a borrowed `&'a DerivedOpRegistry` — a
+    /// registry is built fresh, locally, inside ONE
+    /// `SynthEnumerate` call and cannot satisfy `EvalCtx`'s own shared
+    /// `'a` (fixed by whatever ancestor call originally constructed
+    /// `ctx`, generally far outliving one search); `Arc` carries no
+    /// borrowed lifetime, so this field needs no lifetime parameter of
+    /// its own and every other field/caller is untouched. `None` (the
+    /// default, same posture as `derivations`/`shape_cache`) means
+    /// `Call` evaluates to `Value::None`. Set ONLY by
+    /// `synth_enumerate::eval_synth_enumerate`, for the scope of its
+    /// own search, via the `with_derived_ops` scope guard — never
+    /// PyO3-exposed, never Python-settable (deliberately: see the
+    /// PREREG's own §"design decisions", which rejects a
+    /// Python-facing field for this exact shape).
+    pub derived_ops: Option<Arc<DerivedOpRegistry>>,
 }
 
 impl<'a> EvalCtx<'a> {
@@ -2654,6 +2755,7 @@ impl<'a> EvalCtx<'a> {
             derivations: None,
             shape_target: None,
             shape_cache: None,
+            derived_ops: None,
             framebuffers: None,
         }
     }
@@ -3288,12 +3390,15 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
             },
         TermNode::SnakeCase { text } => TermNode::SnakeCase { text: copy_subtree(src, dst, text) },
         TermNode::CaseFold { text } => TermNode::CaseFold { text: copy_subtree(src, dst, text) },
-        TermNode::SynthEnumerate { examples, ops, consts, exclude, max_size, max_candidates, saturate_k, field } =>
+        TermNode::Call { name, args } =>
+            TermNode::Call { name, args: args.iter().map(|a| copy_subtree(src, dst, *a)).collect() },
+        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, max_size, max_candidates, saturate_k, field } =>
             TermNode::SynthEnumerate {
                 examples: copy_subtree(src, dst, examples),
                 ops: ops.map(|o| copy_subtree(src, dst, o)),
                 consts: consts.map(|c| copy_subtree(src, dst, c)),
                 exclude: exclude.map(|e| copy_subtree(src, dst, e)),
+                derived_ops: derived_ops.map(|d| copy_subtree(src, dst, d)),
                 max_size,
                 max_candidates,
                 saturate_k,
@@ -6366,10 +6471,31 @@ TermNode::MorphHead { text } => {
             )
         }
 
+        // --- Derived-operator tier: registry dispatch (`Derivation::
+        // ValueTaker`'s exact bind-then-evaluate shape, copied nearly
+        // verbatim, generalized to a runtime name + `local_sym`-safe
+        // binding — see `Call`'s own doc and `EvalCtx::derived_ops`'s). ---
+        TermNode::Call { name, args } => {
+            let Some(reg) = ctx.derived_ops.clone() else { return Value::None };
+            let Some(def) = reg.get(name) else { return Value::None };
+            let n = args.len().min(def.params.len());
+            let mut pushed = 0usize;
+            for (a, (pname, _pool)) in args.iter().zip(def.params.iter()).take(n) {
+                let v = evaluate(arena, *a, env, ctx);
+                env.push((*pname, v));
+                pushed += 1;
+            }
+            let r = evaluate(arena, def.body, env, ctx);
+            for _ in 0..pushed {
+                env.pop();
+            }
+            r
+        }
+
         // --- Program synthesis (P4-A/Q1): one-line handoff. ---
-        TermNode::SynthEnumerate { examples, ops, consts, exclude, max_size, max_candidates, saturate_k, field } => {
+        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, max_size, max_candidates, saturate_k, field } => {
             crate::synth_enumerate::eval_synth_enumerate(
-                arena, *examples, *ops, *consts, *exclude, *max_size, *max_candidates, *saturate_k, *field,
+                arena, *examples, *ops, *consts, *exclude, *derived_ops, *max_size, *max_candidates, *saturate_k, *field,
                 env, ctx,
             )
         }
@@ -10524,11 +10650,13 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
             if let Some(o) = oracles { out.push(*o); }
         }
         TermNode::SnakeCase { text } | TermNode::CaseFold { text } => out.push(*text),
-        TermNode::SynthEnumerate { examples, ops, consts, exclude, .. } => {
+        TermNode::Call { args, .. } => out.extend(args.iter().copied()),
+        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, .. } => {
             out.push(*examples);
             if let Some(o) = ops { out.push(*o); }
             if let Some(c) = consts { out.push(*c); }
             if let Some(e) = exclude { out.push(*e); }
+            if let Some(d) = derived_ops { out.push(*d); }
         }
         TermNode::ParetoDominates { candidate, alternative, dimension_count, .. } => {
             out.push(*candidate);
