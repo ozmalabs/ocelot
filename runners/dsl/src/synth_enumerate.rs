@@ -1995,6 +1995,26 @@ pub(crate) fn eval_synth_enumerate(
             v.push("SortBy");
             v.push("Reverse");
         }
+        // Ceiling reassessment 3 (task 64, "sort a list of tuples using the
+        // second value of each tuple"): `SortBy` was gated to
+        // `spec_has_dict_value` ONLY when it landed (scoped narrowly to
+        // serve task 475's own `Counter.most_common()` shape) and never
+        // re-checked against a spec with NO dict at all but a genuine
+        // sort-by-projected-key need — a `List[Tuple]` never sets
+        // `spec_has_dict_value`. `spec_has_list_of_lists` (map-template-pool
+        // rung, already measured safe for the `Sort(item)` key template
+        // this exact witness uses) is the correct, already-existing,
+        // already-narrow evidence: a spec whose own list variable/output
+        // contains list-shaped (or tuple-shaped — `is_listlike` covers
+        // both) elements is exactly the shape `SortBy` composes over.
+        // Deliberately does NOT also widen `DictItems`/`Reverse` here —
+        // both stay exactly as dict-scoped as before; only `SortBy` gets
+        // the second disjunct, because only `SortBy` has a live witness
+        // under this evidence (task 64, `SortBy(a, item, Sort(item))`,
+        // confirmed against every revealed AND held-out row).
+        if spec_has_list_of_lists && !spec_has_dict_value {
+            v.push("SortBy");
+        }
         v
     } else {
         let mut v = DEFAULT_OPS.to_vec();
