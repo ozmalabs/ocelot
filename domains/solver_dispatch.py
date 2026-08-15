@@ -316,6 +316,129 @@ def mint_solve_analogical_promote_goal(adapter, corr_node):
     return goal
 
 
+def _find_concepts_by_name(sub, name: str) -> list:
+    """A local copy of the SAME mechanical global-scan-by-name idiom
+    `domains/neuroscience_tagging.py::_find_concept_by_name` /
+    `domains/reasoning_can_bridge.py::_find_concept_by_name` /
+    `domains/propositional_deduction.py::_schema_by_name` already are
+    (unedited elsewhere) -- "same pattern, own cache -- no cross-import",
+    the house convention `analogical_thinking.py`'s own module comment
+    documents for `_agent_node_id`/`_resolve_blob_edge`. Returns EVERY
+    Concept node named `name`, not just the first (the caller, not this
+    lookup, decides what to do about more than one -- see
+    `mint_solve_analogical_promote_goal_from_text`'s ambiguity gate,
+    SOLVER_ANALOGY_ADAPTER_PREREG.md Sec3)."""
+    return [c for c in sub.nodes("Concept") if sub.node(c)["attrs"].get("name") == name]
+
+
+def mint_solve_analogical_promote_goal_from_text(adapter, statement: str):
+    """The SECOND NL-to-structure adapter for the six previously-unwired
+    `solve_*` resolvers (docs/research/engine_substrate/SOLVER_ANALOGY_
+    ADAPTER_PREREG.md/_RESULTS.md) -- a front door onto `solve_analogical_
+    promote`, which the predecessor rung (SOLVER_NL_ADAPTER_RESULTS.md)
+    ranked #2 and left unbuilt on the belief that "no analogy-shaped
+    sentence parser exists anywhere in the tree." That belief does not
+    survive a broader grep: `seeds/reading_constructions.json` already
+    seeds a `LIKE` MarkerClass (`like`/`resembles`/`resemble`) plus
+    `comparative_like`/`comparative_like_cop` constructions that ground
+    "X is like Y"/"X resembles Y" to exactly `["similar", subject, object]`
+    via the UNMODIFIED general reading pipeline -- confirmed live on real
+    corpus vocabulary before this function was written, see the PREREG.
+
+    PARSE: `reading_collapse.read_clause` (unmodified) -> leading
+    predication must be `["similar", subj, obj]` (the relation label the
+    seeded construction already emits for a genuine analogy cue; `contrast`
+    -- "X is unlike Y" -- is the honest opposite signal and is correctly
+    NOT accepted here).
+
+    RESOLVE: `subj`/`obj` -> real `Concept` graph nodes via
+    `_find_concepts_by_name` (the SAME mechanical exact-name-match idiom
+    `neuroscience_tagging._find_concept_by_name` already is, unedited
+    elsewhere), each REQUIRED to resolve to EXACTLY ONE Concept node.
+    `Concept` is a heavily-overloaded node type (CAN belief-network
+    propositions AND domain-vocabulary corpus terms share it,
+    `ENTITY_RESOLUTION_RESULTS.md` Sec1) -- 507 real duplicate Concept
+    names exist in a full `load_all_seeds()` boot, so this is a REAL,
+    reachable ambiguity, not a defensive hypothetical (PREREG Sec3 confirms
+    live: "The agent is like the patient." hits a 3-way-ambiguous
+    "agent"). Mirrors `ENTITY_RESOLUTION_RESULTS.md`'s own no-over-merge
+    discipline: REFUSE rather than guess which Concept was meant.
+
+    COMPOSE: `analogical_thinking._concept_shape_vector`/`_pair_witness`/
+    `record_directional_correspondence` -- all three UNEDITED, all three
+    already mechanical, already load-bearing-tested
+    (`tests/test_directional_correspondence.py`) -- turn the two resolved
+    Concept nodes into a real `DirectionalCorrespondence` node, then
+    dispatches through the UNCHANGED `mint_solve_analogical_promote_goal` ->
+    `qd_bind_resolver` -> `solve_analogical_promote` machinery exactly as
+    every other caller already does. `solve_analogical_promote`'s own
+    internals are untouched; this function only adds the missing front
+    door, the SAME shape `mint_solve_reasoning_bridge_goal_from_text`
+    already established for its own resolver.
+
+    HONEST DECLINE (returns `None`, mints NOTHING -- mirrors the Bug 1 fix
+    precedent both prior NL-adapter rungs already established: an adapter
+    that silently mints garbage from unsuitable input repeats the exact
+    mistake those rungs spent themselves fixing):
+      * empty/whitespace-only statement;
+      * `speech_act == "question"` (a comparative question, "Is X like Y?",
+        still grounds a `similar` predication -- the SAME risk class as the
+        arithmetic-question bug fixed for `solve_deduction`, gated
+        defensively rather than assumed safe);
+      * no predication at all, or the leading predication's relation is not
+        exactly `"similar"` (excludes `"contrast"` -- dissimilarity is not
+        an analogy -- and every ordinary property/event predication);
+      * `subj`/`obj` does not resolve to EXACTLY ONE Concept node each (zero
+        matches -- unknown vocabulary; more than one match -- a genuine,
+        measured, reachable ambiguity, see above);
+      * the two resolved Concept nodes are IDENTICAL (mirrors
+        `_compute_analogy`'s own `if sn == tn: return None` guard,
+        `analogical_thinking.py:1000` -- "same concept; not an analogy");
+      * `record_directional_correspondence` itself returns `None` (its own
+        documented honest no-op -- defensive, matches that function's own
+        contract).
+
+    Only a single leading predication is read (mirrors `mint_solve_
+    reasoning_bridge_goal_from_text`'s own single-predication scope, itself
+    mirroring `parse_conditional`'s). Only the seeded `LIKE`-marker-class
+    surface forms (`like`/`resembles`/`resemble`, copular and verbal) are
+    covered -- "X is similar to Y" (adjective+"to") does not ground via this
+    construction today (checked live, PREREG Sec2) and is a named, separate
+    follow-on, not attempted here."""
+    from domains import reading_collapse as rc
+    from domains import analogical_thinking as at_mod
+    if not statement or not str(statement).strip():
+        return None
+    sub, native, ag = _resolve(adapter)
+    whole = rc.read_clause(adapter, statement, write=False, learn=False)
+    if whole.get("speech_act") == "question":
+        return None
+    preds = whole.get("predications") or []
+    if not preds or len(preds[0]) < 3:
+        return None
+    rel, subj, obj = preds[0][0], preds[0][1], preds[0][2]
+    if rel != "similar":
+        return None
+    subj, obj = str(subj).strip(), str(obj).strip()
+    if not subj or not obj:
+        return None
+    hits_a = _find_concepts_by_name(sub, subj)
+    hits_b = _find_concepts_by_name(sub, obj)
+    if len(hits_a) != 1 or len(hits_b) != 1:
+        return None
+    node_a, node_b = hits_a[0], hits_b[0]
+    if node_a == node_b:
+        return None
+    vec_a = at_mod._concept_shape_vector(sub, node_a)
+    vec_b = at_mod._concept_shape_vector(sub, node_b)
+    witness = at_mod._pair_witness(sub, vec_a, vec_b)
+    corr_node = at_mod.record_directional_correspondence(
+        sub, node_a, node_b, vec_a, vec_b, witness)
+    if corr_node is None:
+        return None
+    return mint_solve_analogical_promote_goal(adapter, corr_node)
+
+
 def mint_solve_decompose_goal(adapter, candidates: list, bound: int, *,
                               max_exact_n: int = 10, refine_budget: int = 0):
     """`candidates`: the plain `{"name","nodes","edges",["edge_reason"]}`
@@ -654,7 +777,7 @@ __all__ = [
     "mint_solve_deduction_goal", "mint_solve_can_relax_goal",
     "mint_solve_can_exact_goal", "mint_solve_can_bp_goal",
     "mint_solve_reasoning_bridge_goal", "mint_solve_reasoning_bridge_goal_from_text",
-    "mint_solve_analogical_promote_goal",
+    "mint_solve_analogical_promote_goal", "mint_solve_analogical_promote_goal_from_text",
     "mint_solve_decompose_goal",
     "solve_deduction", "solve_can_relax", "solve_can_exact", "solve_can_bp",
     "solve_reasoning_bridge", "solve_analogical_promote", "solve_decompose",
