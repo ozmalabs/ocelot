@@ -4,7 +4,7 @@
  "depends_on": [
   "solver_dispatch"
  ],
- "description": "QUESTION_DRIVER_RUNG3_PREREG.md / _RESULTS.md: a ProblemShape codebook recognizing the STRUCTURAL SHAPE of an already-minted solve_* Goal (domains/solver_dispatch.py) from its own real attrs/edges (never from its kind string), via the UNCHANGED ShapeDecode Term pointed at codebook_type='ProblemShape' (load_parts is grain-agnostic -- confirmed at runners/dsl/src/shape_decode.rs, re-confirmed here). ProblemShape is a NEW node type (not a ShapeSignature{kind:...}), mirroring the DirectionalCorrespondence precedent (analogical_thinking.py:672-687): ShapeDecode's live decode pool does not partition on kind, so a kind-tagged ShapeSignature would silently compete for inference_generation.resolve_implication_gap's real decode slot. Two shapes (deduction_shape, can_shape) are SEEDED, grounded in >=5 real recurring dispatch instances each (QUESTION_DRIVER_RUNG3_PREREG.md Sec1.1); a third (decompose_shape) is DELIBERATELY left unseeded to mint live from real recurrence (2 real solve_decompose instances -- the same support=2 floor META_SHAPE_FIRST_CLASS_RESULTS.md Sec4.1 already established as 'the smallest cardinality at which recurs is defined'). Rung 1 uses literal ShapeDecode (Count(residual)==0), NOT Covers -- every signature here is fully concrete, no WILD, unlike meta-shape's anti-unified lgg codebook (Sec4.1 of the prereg explains why Covers is unneeded here). Mint (rung 4) uses ONLY existing generic Terms (Eq/Exists/Argmin/Count/Plus -- the SAME canonical-minter idiom seeds/gap_awareness.json::retire_duplicate_gap already uses), not a bespoke Rust Term: every real solve_decompose observation produces the IDENTICAL literal signature, so anti-unifying two of them is a no-op and minting directly from the observation's own signature is correct. Rungs 2/3 (TransformDecode/DimInfer) are NOT wired -- a graceful, deliberate no-op (every axis here is a categorical presence/value string, never an integer coordinate; QUESTION_DRIVER_RUNG3_PREREG.md Sec4.1), mirroring META_SHAPE_FIRST_CLASS_RESULTS.md Sec3's own rung-3 no-op. The hold-open multi-candidate layer and pre-mint auto-dispatch are explicitly OUT of scope this rung (QUESTION_DRIVER_RUNG3_PREREG.md Sec5) -- no real case of genuine candidate competition, and no real raw-problem corpus, exists yet to ground either.",
+ "description": "QUESTION_DRIVER_RUNG3_PREREG.md / _RESULTS.md: a ProblemShape codebook recognizing the STRUCTURAL SHAPE of an already-minted solve_* Goal (domains/solver_dispatch.py) from its own real attrs/edges (never from its kind string), via the UNCHANGED ShapeDecode Term pointed at codebook_type='ProblemShape' (load_parts is grain-agnostic -- confirmed at runners/dsl/src/shape_decode.rs, re-confirmed here). ProblemShape is a NEW node type (not a ShapeSignature{kind:...}), mirroring the DirectionalCorrespondence precedent (analogical_thinking.py:672-687): ShapeDecode's live decode pool does not partition on kind, so a kind-tagged ShapeSignature would silently compete for inference_generation.resolve_implication_gap's real decode slot. Two shapes (deduction_shape, can_shape) are SEEDED, grounded in real recurring dispatch instances (QUESTION_DRIVER_RUNG3_PREREG.md Sec1.1); a third (decompose_shape) is DELIBERATELY left unseeded to mint live from real recurrence (2 real solve_decompose instances -- the same support=2 floor META_SHAPE_FIRST_CLASS_RESULTS.md Sec4.1 already established as 'the smallest cardinality at which recurs is defined'). Rung 1 uses literal ShapeDecode (Count(residual)==0), NOT Covers -- every signature here is fully concrete, no WILD, unlike meta-shape's anti-unified lgg codebook (Sec4.1 of the prereg explains why Covers is unneeded here). Mint (rung 4) uses ONLY existing generic Terms (Eq/Exists/Argmin/Count/Plus -- the SAME canonical-minter idiom seeds/gap_awareness.json::retire_duplicate_gap already uses), not a bespoke Rust Term: every real solve_decompose observation produces the IDENTICAL literal signature, so anti-unifying two of them is a no-op and minting directly from the observation's own signature is correct. Rungs 2/3 (TransformDecode/DimInfer) are NOT wired -- a graceful, deliberate no-op (every axis here is a categorical presence/value string, never an integer coordinate; QUESTION_DRIVER_RUNG3_PREREG.md Sec4.1), mirroring META_SHAPE_FIRST_CLASS_RESULTS.md Sec3's own rung-3 no-op. The hold-open multi-candidate layer and pre-mint auto-dispatch are explicitly OUT of scope this rung (QUESTION_DRIVER_RUNG3_PREREG.md Sec5) -- no real case of genuine candidate competition, and no real raw-problem corpus, exists yet to ground either. UPDATE (PROBLEM_SHAPE_CAN_AXES_PREREG.md/_RESULTS.md): `can_shape` (local_id 2, key `ps_has_targets_mt=yes`) originally collapsed all three CAN solver kinds (solve_can_relax/solve_can_exact/solve_can_bp) onto one signature because domains/problem_shape.py's _AXES never read anything that discriminates them. Two new axes (has_k_starts, has_combine -- presence-checks on attrs mint_solve_can_relax_goal/mint_solve_can_bp_goal write unconditionally, never kind) now separate all three; the seeded entry's own signature was widened (both new axes '-', since solve_can_exact writes neither) so it keeps its key/name and now represents solve_can_exact specifically (support corrected from a stale 5.0, which conflated all three kinds as of Rung 3's own base commit, to a fresh honest recount of 13.0 exact-only real test call sites). solve_can_relax (3 real recurring instances) and solve_can_bp (2, exactly at the floor) are deliberately left unseeded, grown live from real recurrence the same way decompose_shape was, rather than hand-seeded, per this update's own PREREG Sec5.",
  "microtheory": {
   "name": "problem_shape_growth",
   "description": "the ProblemShape codebook recognizes a solve_* Goal's real structural facts and grows on genuine recurrence"
@@ -21,7 +21,15 @@
       "-"
      ],
      [
+      "has_combine",
+      "-"
+     ],
+     [
       "has_direction",
+      "-"
+     ],
+     [
+      "has_k_starts",
       "-"
      ],
      [
@@ -57,7 +65,15 @@
       "-"
      ],
      [
+      "has_combine",
+      "-"
+     ],
+     [
       "has_direction",
+      "-"
+     ],
+     [
+      "has_k_starts",
       "-"
      ],
      [
@@ -77,9 +93,9 @@
       "problem"
      ]
     ],
-    "support": 5.0,
+    "support": 13.0,
     "minted": 0.0,
-    "source": "problem_shape_growth:seeded"
+    "source": "problem_shape_growth:seeded (solve_can_exact only, PROBLEM_SHAPE_CAN_AXES_PREREG.md Sec4/5 -- solve_can_relax/solve_can_bp now discriminate onto their own keys via has_k_starts/has_combine and are grown live from real recurrence, not seeded here)"
    }
   }
  ],

@@ -58,8 +58,24 @@ _ABSENT = "-"
 #: Fixed axis order (QUESTION_DRIVER_RUNG3_PREREG.md Sec2.1) -- sorted by
 #: predicate name so the representation is order-independent, the same
 #: discipline `meta_shape.item_signature` documents.
-_AXES = ("has_bound", "has_direction", "has_statement",
-         "has_targets_correspondence", "has_targets_mt")
+#:
+#: `has_combine`/`has_k_starts` (PROBLEM_SHAPE_CAN_AXES_PREREG.md/_RESULTS.md)
+#: added to discriminate the three CAN solver kinds
+#: (`solve_can_relax`/`solve_can_exact`/`solve_can_bp`), which previously all
+#: collapsed to the same signature -- none of the original 5 axes reads
+#: anything a CAN Goal carries. Both are presence-checks on attrs each
+#: `mint_solve_can_*_goal` function (`domains/solver_dispatch.py:174-211`)
+#: writes UNCONDITIONALLY (every call, regardless of caller kwargs), never on
+#: a caller-optional attr like `treewidth_bound`/`max_rounds` -- an axis keyed
+#: on an optional attr would silently re-collapse real no-kwargs call sites
+#: back to indistinguishable (PREREG Sec2). `k_starts` is written only by
+#: `mint_solve_can_relax_goal`; `combine` is written only by `mint_solve_can_
+#: bp_goal`; `mint_solve_can_exact_goal` writes neither -- so the two axes
+#: jointly separate all three kinds (relax: k_starts yes/combine no; bp:
+#: k_starts no/combine yes; exact: neither), with `solve_can_exact` staying
+#: on the SAME `ps_has_targets_mt=yes` key it always had (PREREG Sec3).
+_AXES = ("has_bound", "has_combine", "has_direction", "has_k_starts",
+         "has_statement", "has_targets_correspondence", "has_targets_mt")
 
 
 def _resolve(agent):
@@ -84,7 +100,9 @@ def goal_signature(sub, native, goal_node) -> list:
     at = sub.node(goal_node)["attrs"]
     facts = {
         "has_bound": "yes" if at.get("bound") is not None else _ABSENT,
+        "has_combine": "yes" if at.get("combine") else _ABSENT,
         "has_direction": at.get("direction") if at.get("direction") else _ABSENT,
+        "has_k_starts": "yes" if at.get("k_starts") is not None else _ABSENT,
         "has_statement": "yes" if at.get("statement") else _ABSENT,
         "has_targets_correspondence": "yes" if native.neighbours(
             goal_node, "targets_correspondence") else _ABSENT,
