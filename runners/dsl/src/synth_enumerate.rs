@@ -369,6 +369,15 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     // and the evaluator in term.rs). ---
     ("DictItems", OpKind::Unary),      // -> DictItems{seq} (dict.items() as a Tuple of (k,v) pairs)
     ("SortBy", OpKind::ListMap),       // -> SortBy{source,item,<key template>} (stable sort by projected key)
+    // --- GroupCount/DictMerge rung (PROGRAM_SYNTHESIS_GROUPCOUNT_
+    // DICTMERGE_PREREG.md, tasks 88/87 — priced by ARC6_STRUCTURAL_CEILING
+    // §4.3 / CEILING_REASSESSMENT_2 §6.4 as 1-new-Term-each stdlib ports,
+    // reconfirmed live before this rung built either). `GroupCount` is
+    // `Sort`/`DictItems`-class (Unary, general `by_size` pool). `DictMerge`
+    // is Binary — a 3-way merge composes via nesting, the SAME
+    // `ConcatList(ConcatList(a,b),c)` precedent task 108 already uses. ---
+    ("GroupCount", OpKind::Unary),     // -> GroupCount{seq} (Counter(seq) as a Dict of element->count)
+    ("DictMerge", OpKind::Binary),     // -> DictMerge{a,b} (dict.update semantics: b wins over a on key conflict)
 ];
 
 /// Arc4-S4: the list-op names, in `OP_TABLE` declaration order — appended
@@ -443,6 +452,15 @@ const TUPLE_BUILD_OPS: &[&str] = &["TupleOf"];
 const SET_DEFAULT_OPS: &[&str] = &[
     "Eq", "IfThenElse", "Sort", "Reverse", "Slice", "SetMap", "Intersect", "Union",
 ];
+
+/// GroupCount/DictMerge rung: the `SET_DEFAULT_OPS` precedent for a spec
+/// that is Dict-shaped (`spec_output_is_dictlike`) but reaches neither the
+/// string-, set-, nor list-shaped typed default (task 87's own three
+/// Dict-valued variables and Dict-valued output never set `spec_is_list_
+/// shaped`, since `is_listlike` deliberately excludes Dict). Narrow by
+/// construction, same as `SET_DEFAULT_OPS` — `Eq`/`IfThenElse` from the
+/// base arithmetic set plus exactly the two new ops this rung adds.
+const DICT_DEFAULT_OPS: &[&str] = &["Eq", "IfThenElse", "GroupCount", "DictMerge"];
 
 fn table_kind(name: &str) -> Option<OpKind> {
     OP_TABLE.iter().find(|(n, _)| *n == name).map(|(_, k)| *k)
@@ -528,6 +546,8 @@ fn build_op(name: &str, kids: &[TermIdx]) -> TermNode {
         "Slice" => TermNode::Slice { seq: kids[0], start: kids[1], stop: kids[2] },
         "Sort" => TermNode::Sort { seq: kids[0] },
         "DictItems" => TermNode::DictItems { seq: kids[0] },
+        "GroupCount" => TermNode::GroupCount { seq: kids[0] },
+        "DictMerge" => TermNode::DictMerge { a: kids[0], b: kids[1] },
         _ => unreachable!("op filtered through OP_TABLE"),
     }
 }
@@ -1293,6 +1313,15 @@ fn term_json(
             "var_name": names.get(var_name).cloned().unwrap_or_default(),
             "key": term_json(arena, *key, names, interner),
         }),
+        // GroupCount/DictMerge rung.
+        TermNode::GroupCount { seq } => json!({
+            "type": "GroupCount", "seq": term_json(arena, *seq, names, interner),
+        }),
+        TermNode::DictMerge { a, b } => json!({
+            "type": "DictMerge",
+            "a": term_json(arena, *a, names, interner),
+            "b": term_json(arena, *b, names, interner),
+        }),
         _ => unreachable!("candidates are built only from the op table + leaves"),
     }
 }
@@ -1815,6 +1844,16 @@ pub(crate) fn eval_synth_enumerate(
     // already solved, never touch one that is.
     let is_dict_val = |v: &Value| matches!(v, Value::Dict(_));
     let spec_has_dict_value = envs.iter().flat_map(|e| e.iter()).any(|(_, v)| is_dict_val(v));
+    // GroupCount/DictMerge rung: the OUTPUT-shape twin of `spec_has_dict_
+    // value` above, mirroring `spec_output_is_listlike`/`spec_output_is_
+    // setlike`'s own already-measured-safe discipline (an output-type gate,
+    // never input-shape alone). Task 88 (`freq_count`, output Dict, input a
+    // plain List) needs `GroupCount` even though it has NO dict-shaped
+    // VARIABLE; task 87 (`merge_dictionaries_three`, output AND all three
+    // inputs Dict) needs `DictMerge` and has no list-shaped variable at
+    // all, so it never reaches the list-shaped branch below — see the
+    // dedicated `DICT_DEFAULT_OPS` branch this flag also gates.
+    let spec_output_is_dictlike = !outputs.is_empty() && outputs.iter().all(is_dict_val);
     // Rung 1: measured live that even an "inside the list" string-content
     // test still fires for task 132 (a genuine list-of-CHARACTERS ->
     // joined-string spec) and still regresses it to `budget` — see the
@@ -2015,7 +2054,32 @@ pub(crate) fn eval_synth_enumerate(
         if spec_has_list_of_lists && !spec_has_dict_value {
             v.push("SortBy");
         }
+        // GroupCount/DictMerge rung (task 88, `freq_count`): task 88's own
+        // variable `a` is list-shaped (so this spec reaches THIS branch,
+        // never the dedicated `DICT_DEFAULT_OPS` branch below), but its
+        // OUTPUT is Dict-shaped — the SAME output-type-only gate discipline
+        // `Sort`/`Split`/`ParseInt` above already use. `DictMerge` is
+        // deliberately NOT added here: task 88 has no live witness needing
+        // it under this evidence, and every one of task 87's own variables
+        // is Dict-shaped, not list-shaped, so it never reaches this branch
+        // to need it here.
+        if spec_output_is_dictlike {
+            v.push("GroupCount");
+        }
         v
+    } else if spec_output_is_dictlike {
+        // GroupCount/DictMerge rung (task 87, `merge_dictionaries_three`):
+        // a spec whose variables and output are ALL Dict-shaped is neither
+        // string-, set-, nor list-shaped (`spec_is_list_shaped` requires a
+        // LIST/Tuple/Set/FrozenSet-shaped var or output; Dict is
+        // deliberately excluded from `is_listlike`, same exclusion
+        // `spec_has_dict_value`'s own doc comment already names) — it would
+        // otherwise fall to the bare arithmetic `DEFAULT_OPS` below and
+        // never see `DictMerge`/`GroupCount` at all. A dedicated small
+        // bucket, mirroring `SET_DEFAULT_OPS`'s own precedent (a shape that
+        // isn't "list-shaped" gets its OWN narrow typed default, not a
+        // layer on top of the much larger list-shaped bucket).
+        DICT_DEFAULT_OPS.to_vec()
     } else {
         let mut v = DEFAULT_OPS.to_vec();
         v.extend(extra_evidence_ops.iter().copied());
