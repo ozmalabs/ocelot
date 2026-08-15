@@ -3,6 +3,29 @@
 Status: SCOPING ONLY. No seed, world, script, or test file was written or
 modified to produce this document. No engine touched. No test run.
 
+**REPO-LOCATION CORRECTION (2026-08-15, added after the original audit).**
+This doc's Part 1 audit was originally run against Ocelot's own then-current
+copy of the Bigville implementation. **The canonical Bigville implementation
+has since been extracted into its own repository**, `ozmalabs/bigville`,
+cloned locally at `/home/matt/ozmadev/bigville` (Ocelot's own
+`worlds/bigville_world.py`, `domains/bigville_entities.py`, and
+`seeds/bigville_*.json` are now gone — commit `5065fb8`, "Extract Bigville
+implementation from Ocelot"; this line's own `docs/research/bigville/*.md`
+research docs, including this one, were NOT part of that extraction and
+remain here). **Every specific claim in Part 1 below was re-verified
+directly against the real, separate `bigville` repo** (not re-derived from
+memory) and **every one held exactly as originally written** — the `share`
+branch's hardcoded weather placeholder, `bond_gossip_update`'s absence from
+the live actor's loaded seed manifest, `hear_gossip`'s single call site
+(only from `tests/test_bigville_bond_migrated.py`), and the Python `max()`
+event-selection residual are all still true, verbatim, in the real repo.
+One thing did move: `web/townview/server/app.py` no longer exists under
+that name — its live-visualisation role is now `bigville/server.py`
+(`GameService`, built on `bigville.api.create_game`), confirmed to serve the
+same purpose. **Below, every file path is relative to
+`/home/matt/ozmadev/bigville`, NOT to this Ocelot repo** — and any future
+BUILD of Part 3's design must happen in that repo, not this one.
+
 This is a capability-gap analysis, not a harm-induction rung — it does not
 carry (and does not need) the abuse line's Part D ethics protocol. The
 question is whether Bigville residents have a *reason* to tell each other
