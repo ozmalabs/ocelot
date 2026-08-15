@@ -580,9 +580,29 @@ def run_retrieval_ladder(sub, ag_node, g) -> bool:
         sub.set_attr(g, "pr_ladder_done", 1.0)
         return True
     try:
+        # PROGRAM_SYNTHESIS_MODSQRT_SCOPED_FIX: this call omits an explicit
+        # `ops` key (like every pre-existing caller here), so it reaches
+        # the SAME Rust-internal bare-scalar typed default `domains/
+        # prog_synthesis.py::run_enumerate`'s own top-level call reaches --
+        # confirmed BY LIVE TRACE (not assumed) to be the exact, sole
+        # cross-lane call site that regressed tasks 59/135/138/406 when
+        # Mod/Sqrt were exposed there unconditionally
+        # (PROGRAM_SYNTHESIS_MODSQRT_SCOPED_FIX_PREREG.md sec.2): a
+        # cheap, spurious Mod/Sqrt-shaped candidate fits this rung's own
+        # masked-hole sub-spec's few revealed rows without being the true
+        # general program, and gets accepted here (labelled
+        # `retrieved_exemplar` uniformly with every other retrieval-ladder
+        # rung) before the holdout row catches it. `exclude_ops` is a
+        # soft, call-site-scoped filter (`runners/dsl/src/synth_enumerate
+        # .rs`'s `op_list` post-filter, mirroring `exclude`'s own
+        # "unrecognized names silently skipped" discipline) -- it does
+        # NOT touch `domains/prog_synthesis.py::run_enumerate`'s own
+        # top-level call (which never sets this field), so Mod/Sqrt stay
+        # fully available there.
         spec = {"type": "SynthEnumerate",
                "examples": {"type": "Lit", "value": derived_rows},
-               "max_size": 7, "max_candidates": 0, "saturate_k": 0, "field": ""}
+               "max_size": 7, "max_candidates": 0, "saturate_k": 0, "field": "",
+               "exclude_ops": {"type": "Lit", "value": ["Mod", "Sqrt"]}}
         out = sub._inner.evaluate(spec, {})
     except Exception:  # noqa: BLE001
         out = None

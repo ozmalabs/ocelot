@@ -369,20 +369,56 @@ def test_task59_solves_via_intermediate_decomposition(mbpp_tasks):
 def test_task59_direct_search_genuinely_fails_at_the_default_budget(mbpp_tasks):
     """The comparator: a DIRECT search over the whole function (no
     decomposition), at SynthEnumerate's own default ceiling (200,000,
-    max_size=9), does not converge — reproducing PROGRAM_SYNTHESIS_ARC5_
-    THREE_MOVES.md's own headline live, not quoting it."""
+    max_size=9), does not converge on the TRUE general program —
+    reproducing PROGRAM_SYNTHESIS_ARC5_THREE_MOVES.md's own headline live,
+    not quoting it.
+
+    2026-08-16 (PROGRAM_SYNTHESIS_MODSQRT_SCOPED_FIX): superseded, not
+    weakened. `Mod`/`Sqrt` are now exposed to this exact top-level,
+    unscoped call (deliberately — `exclude_ops` scopes them OUT only of
+    the decomposition/retrieval probes, per that rung's own PREREG/
+    RESULTS), so the search no longer exhausts its budget silently — it
+    now FINDS `(if a==5 then 65 else 280)`-shaped candidate at tested=
+    67223, a spurious two-revealed-row memorization, in 65223 fewer
+    candidates than before. This is mechanism (a) from that rung's own
+    diagnosis, asserted directly here rather than left implicit: the
+    comparator's job — proving direct search does NOT reach the TRUE
+    general program within budget — still holds, just via a different,
+    now-stronger signature (a wrong-but-accepted candidate rather than
+    silent exhaustion). Live-verified: `term_str` is a literal `IfThenElse`
+    that reproduces exactly the two revealed rows and disagrees with the
+    held-out row (`a=15` expects `645`, not `65` or `280`) — proven wrong
+    by construction, the same discipline `test_arc6_property_rejected_
+    ceiling_candidates_are_wrong_by_construction` already uses elsewhere
+    in this arc, not a weaker substitute for the old exhaustion check.
+    `test_task59_solves_via_intermediate_decomposition` (immediately
+    above) is what actually proves the real, end-to-end pipeline still
+    reaches the TRUE program via `intermediate_factor` — this test's own
+    job was always narrower: characterizing the raw top-level probe's own
+    behavior, which has genuinely changed."""
     task = mbpp_tasks[59]
     parsed = ms.parse_asserts(task)
     spec = ms.split_rows(parsed["rows"], "primary")
     rows = [{"inputs": r["inputs"], "output": r["expected"]} for r in spec["revealed"]]
+    held = spec["held_out"]
     s = srs.Substrate()
     out = s._inner.evaluate(
         {"type": "SynthEnumerate", "examples": {"type": "Lit", "value": rows},
          "max_size": 9, "max_candidates": 200000, "saturate_k": 0, "field": ""}, {})
-    assert out["found"] is False
-    assert out["tested"] == 200000
-    print("\ntask 59 direct search: exhausted %d candidates, not found" %
-          out["tested"])
+    assert out["found"] is True
+    assert out["tested"] < 200000
+    ir = json.loads(out["term"])
+    for row in held:
+        assert _eval_ir(s, ir, row["inputs"]) != row["expected"], (
+            "task 59 direct-search candidate must be WRONG on the held-out "
+            "row (proving it is a spurious revealed-row memorization, not "
+            "the true general program) -- if this ever agrees, the direct "
+            "search has genuinely solved task 59 without decomposition and "
+            "this whole comparator test needs re-scoping, not just re-pinning")
+    print("\ntask 59 direct search: found a SPURIOUS candidate (%s) in %d "
+          "candidates, wrong on the held-out row -- still does not reach "
+          "the true general program without decomposition" %
+          (out["term_str"], out["tested"]))
 
 
 def test_task59_inner_factor_alone_converges_cheaply(mbpp_tasks):
