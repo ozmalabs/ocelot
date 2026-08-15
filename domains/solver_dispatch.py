@@ -211,6 +211,240 @@ def mint_solve_can_bp_goal(adapter, mt, *, combine: str = "max_product",
     return goal
 
 
+# =============================================================================
+#  CAN NETWORK GROWTH FROM TEXT (docs/research/engine_substrate/SOLVER_CAN_
+#  ADAPTER_PREREG.md/_RESULTS.md) -- the fourth NL-adapter rung in this arc,
+#  and the ONLY one of the four that does NOT mint a solve_* Goal itself.
+#  `solve_can_relax`/`solve_can_exact`/`solve_can_bp` all need a `targets_mt`
+#  edge to an ALREADY-POPULATED CAN Microtheory (Concept nodes + weighted
+#  causal_influence edges) -- `worlds/bigville_can_beliefs.build_resident_
+#  can_mt` remains the ONLY network-from-scratch builder, and it is a
+#  mechanical translation of an ALREADY-DRAWN numeric params dict, not text
+#  (unchanged finding, PREREG Sec2 -- there is still no NL path to a brand
+#  new Concept or to a weight read off a sentence).
+#
+#  What DOES compose, confirmed live before this was written (PREREG Sec4-6):
+#  seeds/can_native_reimplementation.json's Hebbian mint-on-recurrence
+#  mechanism (can_native_note_coactivation / can_native_hebbian_mint, BOTH
+#  UNCHANGED) mints a genuinely NEW causal_influence edge (fixed +1.0 weight
+#  -- never read from language) between two Concepts of an ALREADY-BUILT
+#  Mt once they persistently co-activate to the SAME NONZERO sign across
+#  >=2 distinct external ticks. `Concept.state` (the sign it keys on) is
+#  computed by that SAME seed's can_native_update_3state rule from
+#  `external_field` -- exactly the attr `reasoning_can_bridge.apply_
+#  derived_fact_as_can_evidence` (UNCHANGED) already writes from a real
+#  declarative sentence. Chaining these (apply real NL evidence -> let the
+#  discrete relaxation settle -> tick the Hebbian mechanism forward) grows
+#  real network STRUCTURE from real text -- narrower than "build a network
+#  from a description" (no new Concept, no weight-from-language), but a
+#  real, live-verified composition, not a reweighting of something the
+#  hand-authored STRUCTURAL_EDGES template already declared (PREREG Sec6's
+#  own control: the SAME tick schedule with no evidence applied never grows
+#  the pair, ruling out "would have happened anyway").
+# =============================================================================
+_CAN_NATIVE_SEED_PATH = None  # resolved lazily, see ensure_can_native_engine_loaded
+
+
+def _can_native_seed_path() -> str:
+    global _CAN_NATIVE_SEED_PATH
+    if _CAN_NATIVE_SEED_PATH is None:
+        import os
+        _root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        _CAN_NATIVE_SEED_PATH = os.path.join(_root, "seeds", "can_native_reimplementation.json")
+    return _CAN_NATIVE_SEED_PATH
+
+
+def ensure_can_native_engine_loaded(adapter) -> bool:
+    """Idempotently install `seeds/can_native_reimplementation.json`'s
+    engine rules (can_native_update_3state/_2state, can_native_note_
+    coactivation, can_native_hebbian_mint/_reweight, ...) onto `adapter`'s
+    live substrate -- the file declares `"self_load_only": true`
+    (`substrate/boot_all.py:39`), so a normal `load_all_seeds()` boot does
+    NOT install it (by design, matching this codebase's own on-demand-seed
+    convention). `tests/test_bigville_can_native_migration.py::_run_native`
+    is the EXISTING precedent for this exact `engine_rules_only` +
+    `load_seed_manifest` load path -- this function is that same call,
+    reused, guarded for idempotency.
+
+    The guard matters: confirmed live (PREREG Sec8) that calling
+    `load_seed_manifest` on this manifest TWICE on one substrate DOUBLES
+    the rule count and would double-fire every effect (a second, redundant
+    `evidence_confirm` bump per tick; a real risk of corrupting the
+    Coactivation ledger). The sentinel is `can_native_hebbian_mint`'s own
+    presence in `export_rules()` by name -- the SAME `_has_concept`-sentinel
+    idempotency idiom `reasoning_can_bridge._ensure_correspondence_seed`
+    already uses for a structurally identical problem (installed-already
+    check before a `load_seed_manifest` call), applied here to a rule name
+    instead of a Concept name because this seed's own sentinel is a rule,
+    not a Concept.
+
+    Returns `True` if this call actually installed the rules, `False` if
+    they were already present (a pure informational read, not a decision
+    anything downstream branches on)."""
+    sub, native, ag = _resolve(adapter)
+    already = any(r.get("name") == "can_native_hebbian_mint" for r in native.export_rules())
+    if already:
+        return False
+    import json
+    from substrate.seed_loader import engine_rules_only
+    manifest = json.load(open(_can_native_seed_path()))
+    native.load_seed_manifest(engine_rules_only(manifest))
+    return True
+
+
+def _extract_property_fact(adapter, statement: str):
+    """Pure, zero-mutation parse: `statement` -> `(entity, attr)` or `None`.
+    A local, "own copy" duplicate of the SAME three gates `mint_solve_
+    reasoning_bridge_goal_from_text` already established (speech_act,
+    property-predication, non-empty extraction) -- not a shared import,
+    mirroring the house convention `_would_parse_as_deduction` already
+    follows for the identical reason (this rung must not touch that prior
+    rung's own function)."""
+    from domains import reading_collapse as rc
+    from domains import propositional_deduction as pd
+    from domains import situation_model_reader as smr
+    if not statement or not str(statement).strip():
+        return None
+    whole = rc.read_clause(adapter, statement, write=False, learn=False)
+    if whole.get("speech_act") == "question":
+        return None
+    preds = whole.get("predications") or []
+    if not preds or len(preds[0]) < 3:
+        return None
+    rel, subj, obj = preds[0][0], preds[0][1], preds[0][2]
+    if not smr._is_property_pred(str(rel)):
+        return None
+    entity = str(subj).strip()
+    attr = pd._norm_attr(obj)
+    if not entity or entity == "_" or not attr:
+        return None
+    return (entity, attr)
+
+
+def grow_can_network_from_text(adapter, mt, statements: list, *, alpha: float = 1.0,
+                               extra_ticks: int = 2) -> Optional[dict]:
+    """Grows real `causal_influence` EDGE structure on an ALREADY-BUILT CAN
+    Microtheory `mt` (e.g. `worlds.bigville_can_beliefs.build_resident_
+    can_mt`'s own output, UNCHANGED) from a list of real declarative
+    sentences -- narrower than "build a network from a description" (see
+    the module comment above and PREREG Sec11): no new Concept is ever
+    minted, and a minted edge's weight is ALWAYS the Hebbian mechanism's own
+    fixed +1.0 constant, never read from language. What genuinely grows is
+    which PAIRS of the Mt's own already-existing Concepts become newly
+    coupled, driven by real NL evidence feeding the discrete relaxation +
+    Hebbian mint-on-recurrence mechanism (`ensure_can_native_engine_loaded`
+    must have been called on `adapter` already, or this Mt's `discrete_mode`
+    must already be configured -- see step 1).
+
+    PRECONDITION (step 1, honest decline, not silently patched): `mt.
+    discrete_mode` must already be `"3state"`/`"2state"` (mechanically
+    defaulted to `"3state"`+`can_tick=0` if entirely absent -- matching
+    every existing test/demo's own default) or this call declines (`None`)
+    -- a Mt deliberately configured to something else (e.g. `"static"`,
+    used elsewhere in this codebase to isolate the Hebbian rules from the
+    relaxation rules) has opted out, and this function must not override
+    that caller choice.
+
+    PURE PRE-CHECK (step 2, zero mutation, mirrors `_would_parse_as_
+    deduction`'s own precedent): each statement is parsed via
+    `_extract_property_fact` (read-only). Declines (`None`, zero graph
+    mutation) if fewer than 2 statements survive -- cannot demonstrate
+    co-occurrence-driven growth from 0-1 facts, the same "at least 2" floor
+    `solve_decompose`'s own adapter uses for the identical structural reason.
+
+    REAL APPLICATION (step 3, a documented, honest departure from a
+    zero-mutation-on-ANY-decline guarantee -- the SAME departure `SOLVER_
+    DECOMPOSE_ADAPTER_RESULTS.md` Sec4 already made and justified for the
+    identical reason: the suitability signal, "does this Concept exist in
+    THIS Mt", is only knowable by actually calling `apply_derived_fact_as_
+    can_evidence`, UNCHANGED): each pre-checked `(entity, attr)` pair is
+    applied via that existing function; a hit is counted only if it BOTH
+    reports `applied: True` AND resolves to a Concept that is actually a
+    `has_concept` member of the CALLER's own `mt` (a defensive re-check
+    against `apply_derived_fact_as_can_evidence`'s own name-based ambiguity
+    residual, PREREG Sec11 item 5 -- not fixed here, only guarded against
+    for this function's own accounting). If fewer than 2 pairs actually
+    applied to THIS Mt, returns `{"grown": False, "reason": ..., "applied":
+    [...]}"` -- real evidence may already be sitting in the graph for
+    whichever pairs DID succeed; this is reported, not hidden.
+
+    DRIVE (step 4): `native.force_all_dirty()` (a host-side PyO3 write --
+    `concept_apply_evidence` -- does not mark a Concept dirty for `run_
+    rules()`'s incremental matching, confirmed live, PREREG Sec6 step 3;
+    this is the SAME established idiom 20+ existing call sites in this
+    codebase already use after a host-side attribute write) + `run_rules()`
+    to settle discrete state, then `extra_ticks` (default 2, the measured-
+    live-necessary minimum for genuine cross-tick recurrence, PREREG Sec4)
+    more distinct `can_tick` epochs, each mechanically bumped + ticked -- a
+    FIXED, bounded schedule, never a data-dependent decision, mirroring
+    `solve_decompose`'s own `_drive_to_resolution` bounded-loop precedent.
+
+    REPORT (step 5): before/after edge sets read via `can_junction_tree.
+    can_network_from_mt` (UNCHANGED, pure read) bracket the drive step --
+    `{"grown": bool, "new_edges": [(id_a, id_b), ...], "applied": [(entity,
+    attr), ...], "before_edge_count": int, "after_edge_count": int}` --
+    reports what a real before/after diff shows, never a claim about what
+    "should" have grown."""
+    from domains import reasoning_can_bridge as rcb
+    from domains import can_junction_tree as cjt
+    sub, native, ag = _resolve(adapter)
+
+    # --- step 1: precondition ------------------------------------------------
+    mt_attrs = sub.node(mt)["attrs"]
+    mode = mt_attrs.get("discrete_mode")
+    if mode is None:
+        sub.set_attr(mt, "discrete_mode", "3state")
+        if mt_attrs.get("can_tick") is None:
+            sub.set_attr(mt, "can_tick", 0.0)
+        mode = "3state"
+    elif mode not in ("3state", "2state"):
+        return None
+    if sub.node(mt)["attrs"].get("can_tick") is None:
+        sub.set_attr(mt, "can_tick", 0.0)
+
+    # --- step 2: pure pre-check, zero mutation -------------------------------
+    if not isinstance(statements, (list, tuple)):
+        return None
+    candidates = []
+    for stmt in statements:
+        got = _extract_property_fact(adapter, stmt)
+        if got is not None:
+            candidates.append(got)
+    if len(candidates) < 2:
+        return None
+
+    # --- step 3: real application, tracked, defensively re-verified ---------
+    mt_concepts = set(native.neighbours(mt, "has_concept"))
+    applied = []
+    for entity, attr in candidates:
+        r = rcb.apply_derived_fact_as_can_evidence(adapter, entity, attr,
+                                                     positive=True, alpha=alpha)
+        if r.get("applied") and r.get("concept") in mt_concepts:
+            applied.append((entity, attr))
+    if len(applied) < 2:
+        return {"grown": False, "applied": applied,
+                "reason": "fewer than 2 statements resolved to a Concept "
+                          "actually inside the target Mt"}
+
+    # --- step 4: drive the growth loop ---------------------------------------
+    before = cjt.can_network_from_mt(native, mt)
+    before_edges = set(before["edges"])
+
+    native.force_all_dirty()
+    native.run_rules()
+    base_tick = float(sub.node(mt)["attrs"].get("can_tick") or 0.0)
+    for i in range(1, max(2, int(extra_ticks)) + 1):
+        sub.set_attr(mt, "can_tick", base_tick + i)
+        native.run_rules()
+
+    # --- step 5: report, measured not assumed --------------------------------
+    after = cjt.can_network_from_mt(native, mt)
+    after_edges = set(after["edges"])
+    new_edges = sorted(after_edges - before_edges)
+    return {"grown": bool(new_edges), "new_edges": new_edges, "applied": applied,
+            "before_edge_count": len(before_edges), "after_edge_count": len(after_edges)}
+
+
 def mint_solve_reasoning_bridge_goal(adapter, direction: str, *, entity: Optional[str] = None,
                                      attr: Optional[str] = None, positive: bool = True,
                                      alpha: float = 1.0, mt=None, t: int = 0):
@@ -936,6 +1170,7 @@ __all__ = [
     "SOLVE_RESOLVER_FUNCTIONS", "SOLVER_DISPATCH_SEED_ID",
     "mint_solve_deduction_goal", "mint_solve_can_relax_goal",
     "mint_solve_can_exact_goal", "mint_solve_can_bp_goal",
+    "ensure_can_native_engine_loaded", "grow_can_network_from_text",
     "mint_solve_reasoning_bridge_goal", "mint_solve_reasoning_bridge_goal_from_text",
     "mint_solve_analogical_promote_goal", "mint_solve_analogical_promote_goal_from_text",
     "mint_solve_decompose_goal", "mint_solve_decompose_goal_from_text",
