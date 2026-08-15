@@ -231,6 +231,78 @@ def mint_solve_reasoning_bridge_goal(adapter, direction: str, *, entity: Optiona
     return goal
 
 
+def mint_solve_reasoning_bridge_goal_from_text(adapter, statement: str, *,
+                                               alpha: float = 1.0):
+    """The FIRST NL-to-structure adapter for the six previously-unwired
+    `solve_*` resolvers (docs/research/engine_substrate/SOLVER_NL_ADAPTER_
+    PREREG.md/_RESULTS.md) -- a front door onto `solve_reasoning_bridge`'s
+    `deduction_to_can` direction, which needed only two bare strings
+    (`entity`, `attr`) to begin with, unlike the other five resolvers' own
+    graph-object prerequisites (a CAN Microtheory, a DirectionalCorrespondence,
+    a candidate-projection list -- see the PREREG's ranking).
+
+    PARSE: reads `statement` through the SAME general reading pipeline
+    `propositional_deduction.parse_conditional`'s `bare_universal` branch
+    already uses (`reading_collapse.read_clause`, unmodified) -- one
+    declarative copular/property predication `[rel, subject, object]` ->
+    `entity = subject`, `attr = propositional_deduction._norm_attr(object)`.
+    Both extraction primitives are pure reuse, not new parsing: `_norm_attr`
+    is `solve_deduction`'s own normaliser; `situation_model_reader.
+    _is_property_pred` is the SAME property-predication gate a dozen other
+    modules already import (coref_entities.py/inference_generation.py/
+    character_tom.py/global_monitoring.py/reading_drive.py -- confirmed by
+    grep before reuse, see PREREG Sec2).
+
+    HONEST DECLINE (returns `None`, mints NOTHING -- mirrors the Bug 1 fix
+    precedent in SOLVER_MATH_BOUNDARY_BUGFIX_RESULTS.md: an adapter that
+    silently mints garbage from unsuitable input repeats the exact mistake
+    that rung spent itself fixing):
+      * empty/whitespace-only statement;
+      * `speech_act == "question"` (the reader's OWN verdict, already
+        computed -- a question's honest fallback grounding can still surface
+        an is_a-shaped predication, e.g. "Is Verity trustworthy?", that would
+        otherwise pass every downstream check; SAME gate `parse_conditional`
+        already added for the identical reason);
+      * no predication at all, or the leading predication's relation is not
+        a property predication (`_is_property_pred` -- an ordinary
+        transitive event like "Verity likes apples" grounds fine but is NOT
+        a held attribute this direction's signature means);
+      * an empty/degenerate subject or attr after extraction.
+
+    `positive` is always `True` -- no negation-detection machinery exists
+    anywhere in the reading pipeline for a plain declarative sentence's
+    polarity (checked: `reading_collapse.py` carries no NEG/negator markup
+    that reaches a grounded predication's relation), so this adapter
+    honestly never attempts a negated fact; wiring negation detection is a
+    named, separate follow-on, not attempted here.
+
+    Dispatches through the UNCHANGED `mint_solve_reasoning_bridge_goal` ->
+    `qd_bind_resolver` -> `solve_reasoning_bridge` machinery exactly as
+    every other caller already does -- this function only adds the missing
+    front door; `solve_reasoning_bridge`'s own internals are untouched."""
+    from domains import reading_collapse as rc
+    from domains import propositional_deduction as pd
+    from domains import situation_model_reader as smr
+    if not statement or not str(statement).strip():
+        return None
+    whole = rc.read_clause(adapter, statement, write=False, learn=False)
+    if whole.get("speech_act") == "question":
+        return None
+    preds = whole.get("predications") or []
+    if not preds or len(preds[0]) < 3:
+        return None
+    rel, subj, obj = preds[0][0], preds[0][1], preds[0][2]
+    if not smr._is_property_pred(str(rel)):
+        return None
+    entity = str(subj).strip()
+    attr = pd._norm_attr(obj)
+    if not entity or entity == "_" or not attr:
+        return None
+    return mint_solve_reasoning_bridge_goal(
+        adapter, "deduction_to_can", entity=entity, attr=attr,
+        positive=True, alpha=alpha)
+
+
 def mint_solve_analogical_promote_goal(adapter, corr_node):
     """`corr_node`: a `DirectionalCorrespondence` node already recorded via
     `analogical_thinking.record_directional_correspondence` (mechanical
@@ -581,7 +653,8 @@ __all__ = [
     "SOLVE_RESOLVER_FUNCTIONS", "SOLVER_DISPATCH_SEED_ID",
     "mint_solve_deduction_goal", "mint_solve_can_relax_goal",
     "mint_solve_can_exact_goal", "mint_solve_can_bp_goal",
-    "mint_solve_reasoning_bridge_goal", "mint_solve_analogical_promote_goal",
+    "mint_solve_reasoning_bridge_goal", "mint_solve_reasoning_bridge_goal_from_text",
+    "mint_solve_analogical_promote_goal",
     "mint_solve_decompose_goal",
     "solve_deduction", "solve_can_relax", "solve_can_exact", "solve_can_bp",
     "solve_reasoning_bridge", "solve_analogical_promote", "solve_decompose",
