@@ -1,0 +1,473 @@
+{
+  "id": "abusive_v1_evidentiary_visibility",
+  "version": "1.0.0",
+  "depends_on": [
+    "snap_frustration",
+    "arousal_window_coreg"
+  ],
+  "self_load_only": true,
+  "area": "retina",
+  "description": "ABUSIVE-DYNAMICS V1 -- EVIDENTIARY VISIBILITY (block 364000). Does a discrete, victim-independent incident trace protect credibility a purely diffuse pattern cannot earn? (ABUSIVE_RELATIONSHIPS_VISIBILITY_SCOPING.md Part E, V1). Composes N1's own dyad (snap_frustration block 242000 + arousal_window_coreg block 239000, BOTH UNMODIFIED) via a byte-identical restatement of N1's own n1_victim_entrainment rule (v1_victim_entrainment) -- N1's own seed (abusive_n1_credibility_loop) is READ for this rule's SHAPE, never depended on or edited, matching R3's own convention against R2. v1_network_credibility_incident_aware extends N1's own credibility-comparison rule SHAPE by exactly one new discount term: cred_abuser = charm_weight*seen_charm - incident_discount_weight*seen_incident (a NEW, discrete, victim-independent observable -- direct evidence AGAINST the abuser's conduct, deliberately wired to discount the ABUSER's credibility term rather than boost the VICTIM's claim term -- conflating 'there is evidence of what he did' with 'she is more believable' would smuggle back the exact victim-credibility framing this line dissolves). cred_victim is UNCHANGED from N1's own formula (claim_weight*seen_victim_claim - instability_discount_weight*seen_victim_unstable). ONE shared rule serves BOTH of V1's arms (INCIDENT_VISIBLE / INCIDENT_INVISIBLE) -- the only difference between arms is whether the world adapter ever delivers a nonzero seen_incident, mechanically, under the SAME counter-DELTA-observer idiom R3's own r3_prior_track_narrow/_widen already established (wot.narrow_count > wot.pn_last_narrow) -- never a read of the transient in_snap/snapped flags (N1's own Sec. 2.1 finding). seen_charm is delivered as a mechanical constant (+=1.0/tick) rather than restating N1's own n1_abuser_stated_charm rule, because that rule, under deception_on=1 (fixed ON in every one of N1's own arms), always evaluates to stated_charm=1.0 unconditionally -- a structural constant at V1's own single-dyad operating point, reproduced byte-identically without the extra rule. v1_network_credibility_incident_aware's own `where` is a trivially-true Eq(1.0,1.0) (matching bigville_loud_comm.json's lo_choose_loudness idiom), not `where: None` -- an engine finding surfaced while building this rule: a null-where rule fires on the first full run_rules() pass but is not re-triggered by the engine's incremental dirty-tracking on a subsequent attribute change (confirmed directly against the real graph). NO reward/punishment anywhere. NO Rust, NO new Term (Plus/Minus/Times/Attr/Var/Lit/Eq/Lt/And only, all already used by snap_frustration/arousal_window_coreg/abusive_n1_credibility_loop). self_load_only, default-OFF.",
+  "microtheory": {
+    "name": "evidentiary_visibility",
+    "description": "A network node's belief tracks only what evidence reaches it. The credibility-asymmetry loop N1 already validated does not change; what changes is whether ONE more channel of evidence -- a discrete, victim-independent trace of the abuser's own conduct -- ever reaches the network at all. The loop's cruelty in the diffuse-only case is not that the network judges unfairly; it is that a purely diffuse pattern of harm structurally produces no evidence of the kind an incident-shaped credibility rule can act on."
+  },
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "abusive_v1_evidentiary_visibility:victim_attended_by_abuser",
+      "src": {
+        "type": "Agent",
+        "var": "victim"
+      },
+      "edge_type": "attended_by",
+      "tgt": {
+        "type": "Agent",
+        "var": "abuser"
+      }
+    },
+    {
+      "provenance": "abusive_v1_evidentiary_visibility:network_has_member",
+      "src": {
+        "type": "Network",
+        "var": "net"
+      },
+      "edge_type": "has_member",
+      "tgt": {
+        "type": "NetworkNode",
+        "var": "nn"
+      }
+    },
+    {
+      "provenance": "abusive_v1_evidentiary_visibility:node_observes_stated",
+      "src": {
+        "type": "NetworkNode",
+        "var": "nn"
+      },
+      "edge_type": "observes_stated",
+      "tgt": {
+        "type": "Agent",
+        "var": "abuser"
+      }
+    },
+    {
+      "provenance": "abusive_v1_evidentiary_visibility:node_observes_victim",
+      "src": {
+        "type": "NetworkNode",
+        "var": "nn"
+      },
+      "edge_type": "observes_victim",
+      "tgt": {
+        "type": "Agent",
+        "var": "victim"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "v1_victim_entrainment",
+      "area": "retina",
+      "order": 8,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "victim",
+          "has_affective_state",
+          "vaff"
+        ],
+        [
+          "victim",
+          "attended_by",
+          "abuser"
+        ],
+        [
+          "abuser",
+          "has_affective_state",
+          "aaff"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "vaff"
+              },
+              "key": "pcr_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "vaff"
+              },
+              "key": "tick_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aaff"
+              },
+              "key": "is_abuser"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "vaff",
+          "frustration",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "vaff"
+                    },
+                    "key": "arousal"
+                  },
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "vaff"
+                        },
+                        "key": "k_co"
+                      },
+                      {
+                        "type": "Minus",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "aaff"
+                          },
+                          "key": "arousal"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "vaff"
+                          },
+                          "key": "arousal"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "vaff"
+                        },
+                        "key": "k_self"
+                      },
+                      {
+                        "type": "Minus",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "vaff"
+                          },
+                          "key": "setpoint"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "vaff"
+                          },
+                          "key": "arousal"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "vaff"
+                },
+                "key": "setpoint"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "vaff",
+          "pcr_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "vaff"
+              },
+              "key": "tick_epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "v1_network_credibility_incident_aware",
+      "area": "retina",
+      "order": 40,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "net",
+          "has_member",
+          "nn"
+        ]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "Lit",
+          "value": 1.0
+        },
+        "b": {
+          "type": "Lit",
+          "value": 1.0
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "nn",
+          "cred_abuser",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Times",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "charm_weight"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "seen_charm"
+                  }
+                ]
+              },
+              "b": {
+                "type": "Times",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "incident_discount_weight"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "seen_incident"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "nn",
+          "cred_victim",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Times",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "claim_weight"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "seen_victim_claim"
+                  }
+                ]
+              },
+              "b": {
+                "type": "Times",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "instability_discount_weight"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "nn"
+                    },
+                    "key": "seen_victim_unstable"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "nn",
+          "belief_gap",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Minus",
+                "a": {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "charm_weight"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "seen_charm"
+                    }
+                  ]
+                },
+                "b": {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "incident_discount_weight"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "seen_incident"
+                    }
+                  ]
+                }
+              },
+              "b": {
+                "type": "Minus",
+                "a": {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "claim_weight"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "seen_victim_claim"
+                    }
+                  ]
+                },
+                "b": {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "instability_discount_weight"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "nn"
+                      },
+                      "key": "seen_victim_unstable"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}
