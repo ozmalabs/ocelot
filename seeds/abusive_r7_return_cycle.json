@@ -1,0 +1,151 @@
+{
+ "id": "abusive_r7_return_cycle",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": ["abusive_r5_recovery"],
+ "area": "retina",
+ "description": "ABUSIVE-DYNAMICS R7 -- THE RETURN CYCLE: residual bond + post-separation contact + post-leaving material collapse -> a new Return Appraisal (block 316000). Maps ABUSIVE_RELATIONSHIPS_BARRIERS_AND_RETURN_SCOPING.md Part B2 + the '### R7' entry of Part E. Composes abusive_r5_recovery (block 295000, UNMODIFIED, transitively pulling traumatic_bond_r1/abusive_r2_cycle_limit/abusive_r3_coercive_control/abusive_r4_learned_helplessness) with FOUR new rules of its own. THE HONEYMOON-PULL COMPONENT NEEDS ZERO NEW RULES: R2's own r2_victim_entrainment_via_frustration cannot fire post-separation (its match requires a live victim-attended_by->abuser edge, which 'leaving' removes by construction) -- what R7 actually needs from R2 is not R2's RULE but R2's CONCEPTUAL CONTRIBUTION (a period of calm/affection genuinely follows tension/incident), which is exactly the shape of event R1's OWN tb_bond_accrue (traumatic_bond_r1, UNMODIFIED) already knows how to accrue. R7 therefore feeds tb_bond_accrue a NEW, SPARSE, POST-LEAVING-SPECIFIC bond-event schedule at the world-adapter layer (a mechanical scheduling choice, never a new rule) -- see worlds/abusive_r7_return_cycle_world.py's make_honeymoon_schedule. THE MATERIAL-COLLAPSE COMPONENT is modelled on N2's n2_abuser_active_sever SHAPE (a per-node scheduled severing keyed on a tick_epoch >= sever_at_tick guard, abusive_n2_isolation.json, block 301000) -- NOT depended on N2's file, since N2's own rules are specific to support_edge/belief_gap (a network construct). r7_resource_collapse_sever introduces its OWN new edge type (resource_edge, victim -> a small population of ResourceNode -- housing/joint finances/transportation/health-insurance access) and severs them on a FIXED, disclosed post-leaving schedule once left_at_tick (set once, at the moment the mechanical leave() world event fires) has passed, gated additionally on a per-arm collapse_on switch (mirroring N2's own isolation_tactic_on switch). resource_intact_count is a PURE RE-DERIVATION via the DSL's native Count Term (Count(Neighbours(hub,'resource_edge',false)) -- confirmed present and already used inside a rule's effects by seeds/abusive_n3_belief_propagation.json's own n3_peer_pull rule, resolving Open Question #2 of the scoping doc: the explicit-counter idiom R2/R3 use for snap_count/widen_count/narrow_count is NOT needed here, because a native aggregate-Count Term over Neighbours already exists and is already load-bearing elsewhere in this exact line) -- never an incremented/decremented counter attr, so it can never drift out of sync with the actual resource_edge population; a severed resource's edge is simply gone (del_edge, exactly N2's own idiom), and the count re-derives fresh every tick. THE NEW RETURN APPRAISAL mirrors r4_appraise_attempt/r4_appraise_stay/r4_choose's Argmax-over-two-candidates template exactly in STRUCTURE (r7_appraise_return/r7_appraise_remain/r7_choose), computing return.individual_benefit = bond_weight * partner.value (the abuser's own Agent node, R5's own bond target, read via the SAME bonded_to edge tb_bond_accrue/r5_bond_extinguish already use), return.individual_cost = return_cost (a fixed structural residual-resistance cost, mirrors attempt_cost), remain_left.individual_benefit = resource_intact_count * resource_value (the material safety net still intact), remain_left.individual_cost = 0 (the passive default, mirrors R4's own stay candidate exactly). CRITICAL COMPOSITION-HAZARD FIX, per R3's own Sec. 3 same-typed-edge precedent: the victim's EmotionHub structurally still carries R4's own EscapeDecision + has_candidate edges throughout R7 (nothing deletes them) -- R7's two new candidate Appraisals therefore hang off a DISTINCT edge type, has_return_candidate (NEVER has_candidate), so r4_choose's own Argmax cannot see R7's candidates and r7_choose's own Argmax cannot see R4's, avoiding the exact same-type-edge Argmax-collision hazard R3 first diagnosed. R7's two new Appraisal nodes DO still carry the SHARED, generic has_appraisal edge (so core_emotions' em_happiness/em_fulfilment_value/em_total_value -- UNMODIFIED, matched generically on any hub-has_appraisal->ap pair -- compute total_value on them exactly as they already do for R4's own candidates); has_appraisal is not the hazard, has_candidate specifically is. All four new rules are additionally gated on dec.left_at_tick > -1.0 (the leaving marker) -- the return/remain competition does not even activate until leaving has actually happened, which the mechanical leave() world event (worlds/abusive_r7_return_cycle_world.py) enacts by removing the victim's attended_by edge (making R2/R3's entrainment machinery structurally inert -- no coupling to entrain through) and setting ReturnDecision.left_at_tick to a FIXED tick, once. NO reward/punishment anywhere: the resource-severing schedule and the honeymoon-contact schedule are both world-delivered FACTS (a schedule and a magnitude, like every prior rung's own stressor/harm/relief/support-evidence magnitude), never a scored choice -- see Part D of the locked ethical protocol. Integer/float-native (Times/Minus/Plus/Max/Min/Gt/Gte/Eq/And/Attr/Var/Lit/Neighbours/Argmax/Count only) -- NO Rust, NO new Term. OFF by default: self_load_only, loaded only by the R7 world adapter.",
+ "microtheory": {
+  "name": "return_cycle_bond_vs_resources",
+  "description": "A genuinely-recovered trajectory is not a one-way ratchet. R5's own recovery composition already leaves a small, nonzero residual bond standing (asymptotic decay, never zero in finite time); the SAME mechanism that made that residual accrue in the first place (tb_bond_accrue, unmodified) can accrue it again from a sparse, post-separation contact event, exactly as it accrued from a dense, within-relationship one. Independently, the material safety net that made leaving survivable can itself collapse on its own schedule, post-leaving. The return/remain decision is a direct structural mirror of R4's own escape/stay Argmax, pointed at a different comparison: bond-pull vs. resource-safety-net, not controllability-belief vs. attempt-cost. Neither driver needs the other to operate; the model's job is to show whether, and how much, each is independently sufficient, and whether together they compound."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {"provenance": "seed:abusive_r7_return_cycle:victim-resource-edge-resourcenode",
+   "src": {"type": "Agent", "var": "victim"},
+   "edge_type": "resource_edge",
+   "tgt": {"type": "ResourceNode", "var": "rn"}},
+  {"provenance": "seed:abusive_r7_return_cycle:hub-has-return-decision",
+   "src": {"type": "EmotionHub", "var": "hub"},
+   "edge_type": "has_return_decision",
+   "tgt": {"type": "ReturnDecision", "var": "dec"}},
+  {"provenance": "seed:abusive_r7_return_cycle:hub-has-return-candidate",
+   "src": {"type": "EmotionHub", "var": "hub"},
+   "edge_type": "has_return_candidate",
+   "tgt": {"type": "Appraisal", "var": "c"}}
+ ],
+ "rules": [
+  {
+   "name": "r7_resource_collapse_sever",
+   "area": "retina",
+   "order": 9,
+   "latency_class": "hard_realtime",
+   "comment": "THE MATERIAL-COLLAPSE DRIVER, modelled on N2's n2_abuser_active_sever SHAPE (abusive_n2_isolation.json, block 301000, NOT depended on -- a distinct edge type/domain). A per-ResourceNode scheduled severing: once the arm's collapse_on switch is armed AND leaving has actually happened (dec.left_at_tick > -1.0) AND this node's own tick_epoch has reached its own sever_at_tick (assigned once, per-node-index, at world construction -- mechanical setup, never a live decision), the resource_edge is severed. A node severed once cannot fire this rule again (match requires the edge to still exist).",
+   "match": [
+    ["hub", "has_return_decision", "dec"],
+    ["hub", "resource_edge", "rn"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "collapse_on"},
+      "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "left_at_tick"},
+      "b": {"type": "Lit", "value": -1.0}},
+     {"type": "Gte",
+      "a": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "tick_epoch"},
+      "b": {"type": "Attr", "node": {"type": "Var", "name": "rn"}, "key": "sever_at_tick"}}
+    ]
+   },
+   "effects": [
+    ["del_edge", "hub", "resource_edge", "rn"],
+    ["set_attr", "rn", "severed", {"__term__": {"type": "Lit", "value": 1.0}}]
+   ]
+  },
+  {
+   "name": "r7_appraise_return",
+   "area": "retina",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "comment": "THE RETURN candidate's valuation, a direct structural mirror of r4_appraise_attempt: individual_benefit = bond_weight * partner.value (the abuser's OWN Agent node, read via the SAME bonded_to edge tb_bond_accrue/r5_bond_extinguish already use -- R5's own bond target, UNCHANGED); individual_cost = return_cost (a fixed structural cost of going back -- the residual resistance, mirrors attempt_cost exactly). Gated on dec.left_at_tick > -1.0: the return/remain competition does not activate until leaving has actually happened.",
+   "match": [
+    ["hub", "has_emotion_params", "ep"],
+    ["hub", "has_return_decision", "dec"],
+    ["hub", "has_return_candidate", "c"],
+    ["hub", "bonded_to", "partner"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "action"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "left_at_tick"}, "b": {"type": "Lit", "value": -1.0}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "c", "individual_benefit",
+     {"__term__": {"type": "Times", "items": [
+       {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "bond_weight"},
+       {"type": "Attr", "node": {"type": "Var", "name": "partner"}, "key": "value"}
+     ]}}],
+    ["set_attr", "c", "individual_cost",
+     {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "return_cost"}}]
+   ]
+  },
+  {
+   "name": "r7_appraise_remain",
+   "area": "retina",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "comment": "THE REMAIN-LEFT candidate's valuation, a direct structural mirror of r4_appraise_stay: individual_benefit = resource_intact_count * resource_value (the material safety net STILL intact); individual_cost = 0 (the passive default carries no structural cost of its own, exactly like R4's stay candidate). resource_intact_count is a PURE RE-DERIVATION via the native Count Term over the CURRENT resource_edge population (Open Question #2, resolved -- Count is confirmed present and already load-bearing in seeds/abusive_n3_belief_propagation.json's own n3_peer_pull rule), never an incremented counter, so it can never drift from the graph's own edge population. Gated on dec.left_at_tick > -1.0, matching r7_appraise_return.",
+   "match": [
+    ["hub", "has_emotion_params", "ep"],
+    ["hub", "has_return_decision", "dec"],
+    ["hub", "has_return_candidate", "c"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "action"}, "b": {"type": "Lit", "value": 0.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "left_at_tick"}, "b": {"type": "Lit", "value": -1.0}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "dec", "resource_intact_count",
+     {"__term__": {"type": "Count",
+       "source": {"type": "Neighbours", "node": {"type": "Var", "name": "hub"}, "edge_type": "resource_edge", "any_type": false}}}],
+    ["set_attr", "c", "individual_benefit",
+     {"__term__": {"type": "Times", "items": [
+       {"type": "Count",
+        "source": {"type": "Neighbours", "node": {"type": "Var", "name": "hub"}, "edge_type": "resource_edge", "any_type": false}},
+       {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "resource_value"}
+     ]}}],
+    ["set_attr", "c", "individual_cost", {"__term__": {"type": "Lit", "value": 0.0}}]
+   ]
+  },
+  {
+   "name": "r7_choose",
+   "area": "retina",
+   "order": 20,
+   "latency_class": "hard_realtime",
+   "comment": "THE DECISION. Identical Argmax structure to r4_choose, but over Neighbours(hub, has_return_candidate) -- a DISTINCT edge type from R4's own has_candidate, so the two Argmaxes cannot see or corrupt each other's candidate pools (the same same-typed-edge Argmax-collision hazard R3's Sec. 3 first diagnosed). chosen_action = the action of whichever of return/remain_left has the greater total_value (happiness + fulfilment_value, computed by core_emotions' em_happiness/em_total_value, UNMODIFIED, off individual_benefit/individual_cost the two appraise rules set). Gated on dec.left_at_tick > -1.0: chosen_action stays at its -1.0 sentinel until leaving has happened.",
+   "match": [
+    ["hub", "has_emotion_params", "ep"],
+    ["hub", "has_return_decision", "dec"]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "ep"}, "key": "enabled"}, "b": {"type": "Lit", "value": 1.0}},
+     {"type": "Gt", "a": {"type": "Attr", "node": {"type": "Var", "name": "dec"}, "key": "left_at_tick"}, "b": {"type": "Lit", "value": -1.0}}
+    ]
+   },
+   "effects": [
+    ["set_attr", "dec", "chosen_action",
+     {"__term__": {"type": "Attr",
+       "node": {"type": "Argmax",
+         "source": {"type": "Neighbours",
+           "node": {"type": "Var", "name": "hub"},
+           "edge_type": "has_return_candidate",
+           "any_type": false},
+         "var_name": "c",
+         "value": {"type": "Attr", "node": {"type": "Var", "name": "c"}, "key": "total_value"}},
+       "key": "action"}}]
+   ]
+  }
+ ]
+}
