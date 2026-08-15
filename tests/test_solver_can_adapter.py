@@ -118,11 +118,14 @@ def test_grow_from_text_mints_genuinely_new_edges_not_in_the_template(agent):
 
     # None of build_resident_can_mt's own STRUCTURAL_EDGES pairs are in the
     # new set -- this is real NEW structure, not a re-confirmation of the
-    # hand-authored template.
+    # hand-authored template. can_network_from_mt's edges are plain ints
+    # (its own node_by_id convention), so resolve names via the SAME
+    # concepts-by-id reverse map every other test in this file uses.
     structural = {frozenset(p[:2]) for p in bcb.STRUCTURAL_EDGES}
-    for a, b in new_pairs:
-        name_a = agent.s.node(a)["attrs"]["name"]
-        name_b = agent.s.node(b)["attrs"]["name"]
+    concepts_by_id = {v.value: k for k, v in built["concepts"].items()}
+    for pa, pb in new_pairs:
+        name_a = concepts_by_id[pa]
+        name_b = concepts_by_id[pb]
         assert frozenset((name_a, name_b)) not in structural, (
             f"({name_a},{name_b}) is a hand-authored structural edge, not new growth")
 
@@ -150,12 +153,18 @@ def test_grown_network_dispatches_through_solve_can_exact_correctly(agent):
 
 
 def test_grown_network_dispatches_through_solve_can_relax_and_bp(agent):
-    built = _built_mt(agent, 3)
+    # Resident 3 ("Alby Marsh") is deliberately NOT used here: "Marsh" is a
+    # real, honest reading-pipeline collision with a common-noun lexicon
+    # entry (confirmed live: "Alby Marsh is self worth." mis-grounds to
+    # [['has_property','l','marsh']], not a property predication about the
+    # resident at all) -- the adapter's own honest decline on that input is
+    # CORRECT, not a bug to route around; resident 8 has no such collision.
+    built = _built_mt(agent, 8)
     mt = built["mt_node"]
 
     result = sd.grow_can_network_from_text(
         agent, mt,
-        ["Alby Marsh is self worth.", "Alby Marsh is debtor trustworthy."])
+        ["Wat Bracken is self worth.", "Wat Bracken is debtor trustworthy."])
     assert result is not None
 
     g_relax = sd.mint_solve_can_relax_goal(agent, mt)
@@ -174,7 +183,18 @@ def test_grown_network_dispatches_through_solve_can_relax_and_bp(agent):
 #     grows the pair (rules out "would have happened anyway").
 # --------------------------------------------------------------------------- #
 def test_control_no_evidence_never_grows_the_pair(agent):
-    built = _built_mt(agent, 4)
+    # Resident 4 ("Bryony Turnbull") is deliberately NOT used here: measured
+    # live (PREREG investigation) to have ALL five Concepts already
+    # co-activated to the same sign from scenario evidence alone, so
+    # self_worth-debtor_trustworthy mints at the baseline growth tick with
+    # NO adapter involvement at all -- exactly the "would have happened
+    # anyway" confound this control exists to rule out. Resident 9
+    # ("Gristle Bracken") is measured to have BOTH self_worth and
+    # debtor_trustworthy sitting ambivalent (state=0) after scenario
+    # evidence alone (the note_coactivation guard requires a NONZERO sign
+    # match, so two zeros never co-activate) -- the pair genuinely cannot
+    # form without text evidence pushing at least one of them off zero.
+    built = _built_mt(agent, 9)
     mt = built["mt_node"]
     concepts = built["concepts"]
 
