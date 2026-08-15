@@ -1,6 +1,6 @@
 {
   "id": "program_synthesis",
-  "version": "1.12.0",
+  "version": "1.13.0",
   "depends_on": [],
   "capability_keys": [
     "program_synthesis_loop"
@@ -6985,7 +6985,7 @@
     },
     {
       "name": "ps_property_reject_gap",
-      "comment": "Arc6-D PROPERTY VERDICT (unreopenable source): a held PropertyAtom (seeds/program_properties.json) fired -- the CURRENT verified candidate's own executed output disagrees, at a hand-constructed witness, with a reference relation the goal's own revealed rows already self-verify (domains/prog_property.py::compute_property_facts / _self_verify_atom). Sits BESIDE ps_structural_reject_exclusion_gap: a property violation, like D1/D2, names no single declared parameter to hand to a hole-reopen (the fault is in what the whole candidate COMPUTES at the witness, not in one ignored input), and on a 'retrieved_exemplar' source ps_propose cannot distinguish a next candidate from this one (the S2-stall reason ps_structural_reject_exclusion_gap already documents) -- so this rung goes straight to the honest terminal 'gapped' (ps_gap_reason := 'property_verdict_reject'), route='exclusion' recorded on the Rejection for explainability even though it was never enacted. See ps_property_reject_reopen for the reopenable twin.",
+      "comment": "Arc6-D PROPERTY VERDICT (unreopenable source): a held PropertyAtom (seeds/program_properties.json) fired -- the CURRENT verified candidate's own executed output disagrees, at a hand-constructed witness, with a reference relation the goal's own revealed rows already self-verify (domains/prog_property.py::compute_property_facts / _self_verify_atom). Sits BESIDE ps_structural_reject_exclusion_gap: a property violation, like D1/D2, names no single declared parameter to hand to a hole-reopen (the fault is in what the whole candidate COMPUTES at the witness, not in one ignored input), and on a 'retrieved_exemplar' source ps_propose cannot distinguish a next candidate from this one (the S2-stall reason ps_structural_reject_exclusion_gap already documents) -- so this rung goes straight to the honest terminal 'gapped' (ps_gap_reason := 'property_verdict_reject'), route='exclusion' recorded on the Rejection for explainability even though it was never enacted. See ps_property_reject_reopen for the reopenable twin. v1.12.0 (PROGRAM_SYNTHESIS_PROPERTY_REJECT_SURVEY, 2026-08-16): gained ONE extra AND-clause -- (ps_rung_enumerate==1.0 OR the enumerate reserve lane is exhausted) -- so this rule now fires ONLY after the new sibling rule `ps_property_reject_retrieval_enumerate_fallback` has had its one-shot chance to try SynthEnumerate as an independent second candidate source (or was structurally ineligible to). The two rules partition the space exactly (each gains the other's negation), so this remains byte-identical for every goal where the fallback already ran or could not apply -- the terminal 'gapped'/'property_verdict_reject' outcome for the 24/26 population where enumerate's own candidate ALSO violates the property is completely unchanged.",
       "batch": true,
       "match": [
         [
@@ -7104,6 +7104,48 @@
               "type": "Lit",
               "value": "retrieved_exemplar"
             }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "ps_rung_enumerate"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Lt",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "key": "ps_enum_reserve_used"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "key": "ps_enum_reserve_budget"
+                  }
+                }
+              }
+            ]
           }
         ]
       },
@@ -7179,6 +7221,218 @@
           "g",
           "status",
           "gapped"
+        ]
+      ]
+    },
+    {
+      "name": "ps_property_reject_retrieval_enumerate_fallback",
+      "comment": "PROGRAM_SYNTHESIS_PROPERTY_REJECT_SURVEY (2026-08-16): a held PropertyAtom fired against a retrieved_exemplar candidate -- exactly ps_property_reject_gap's own trigger -- but UNLIKE that terminal rule, enumerate has not yet been tried for this goal (ps_rung_enumerate != 1.0) and the Arc4-S1 isolated enumerate-reserve lane has headroom (retrieval never touches it). Live-verified (PROGRAM_SYNTHESIS_PROPERTY_REJECT_SURVEY_RESULTS.md): across the FULL 26-task property_verdict_reject population, SynthEnumerate finds an independent candidate for 26/26; re-checking THAT candidate against the SAME fired PropertyAtom(s) (domains/prog_property.py::check_property, the identical held reference relation + witnesses that rejected the RETRIEVED candidate) separates the 2 tasks where enumerate's candidate is ACTUALLY CORRECT (clears the property) from the 24 where it is ALSO wrong (still violates it) with 100% precision and 100% recall -- zero exceptions. This rule does not accept anything itself: it only ADMITS the goal into the enumerate rung, byte-identically to ps_enumerate_mark's own effects (rung mark, status, reserve bump). The already-shipped, unchanged downstream pipeline (run_enumerate -> eval_and_record -> compute_structural_facts -> compute_property_facts -> ps_property_clear/ps_accept, OR -> ps_property_reject_gap again if the new candidate ALSO violates) is what actually decides accept vs terminal gap, exactly as it already does for every non-retrieval construction path (compute_property_facts's own docstring: 'on every path (codebook, enumerate, retrieval, fold-up)'). Deliberately bypasses the ps_exclude_failed/ps_reproposal CEGIS spine (RETRIEVAL_FALLTHROUGH_RESULTS.md's own S2-stall precedent: excluding 'retrieved_exemplar' by NAME there leaves ps_propose nothing to offer, 'pipeline_stall_nonterminal_status' -- the documented reason ps_property_reject_gap routes straight to gapped instead of reopening). Mutually exclusive with the edited ps_property_reject_gap by construction (see that rule's own updated comment) -- no third, stalled state is reachable. CORRECTION (found live, this same rung): the goal's ps_prop_computed/ps_st_computed flags are UNCONDITIONALLY set 1.0 by compute_property_facts/compute_structural_facts on every run and NEVER reset by any rule -- a previously-latent race in the shared verdict machinery, discovered live by this rung: within ONE run_rules() fixpoint pass, ps_row_pass can flip status straight back to 'verified' for the NEW (enumerate) candidate, and ps_property_reject_gap/ps_property_clear /ps_structural_reject_exclusion_gap/ps_structural_clear/ps_accept would then immediately read the STILL-1.0, STILL-stale ps_prop_computed/ps_st_computed flags (and the fired/witness facts attached to them) left over from the FIRST (retrieved) candidate, one full run_rules() fixpoint BEFORE compute_property_facts/compute_structural_facts (Python verbs, dispatched only after run_rules() reaches fixpoint each round) ever get a chance to recompute for the new n_reflected count. Live-verified: without this reset, task 17 read back gap_reason=property_verdict_reject with the ORIGINAL retrieved candidate's violation still recorded, even though ps_ir held the freshly-enumerated, ACTUALLY-CORRECT candidate. Explicitly resetting both computed-flags to 0.0 here (this rule is the one initiating the second candidate, so it is the correct place to invalidate the first candidate's cached verdict) forces the decision rules to wait one more round for the verbs to refresh, exactly as they already do for a goal's FIRST candidate (where these flags start unset). This race is a general property of the shared freshness-key design, not specific to this rule -- PROGRAM_SYNTHESIS_PROPERTY_REJECT_ SURVEY_RESULTS.md documents whether it is exercised anywhere else in the currently-measured population; nothing else is touched here.",
+      "batch": true,
+      "match": [
+        [
+          "ag",
+          "has_goal",
+          "g"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "synth_program"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "ps_depth"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "ps_prop_computed"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "ps_rung_descend"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "ps_prop_any_fired"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "ps_construction"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "retrieved_exemplar"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "ps_rung_enumerate"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "ps_enum_reserve_used"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "ps_enum_reserve_budget"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "g",
+          "ps_rung_enumerate",
+          1.0
+        ],
+        [
+          "set_attr",
+          "g",
+          "status",
+          "enumerate_pending"
+        ],
+        [
+          "set_attr",
+          "g",
+          "ps_enum_reserve_used",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "ps_enum_reserve_used"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "g",
+          "ps_prop_computed",
+          0.0
+        ],
+        [
+          "set_attr",
+          "g",
+          "ps_st_computed",
+          0.0
         ]
       ]
     },

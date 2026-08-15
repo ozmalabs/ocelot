@@ -185,20 +185,24 @@ def test_program_synthesis_seed_bumped_with_three_new_rules():
     # unaffected either way.
     with open(SYNTH_SEED_PATH) as f:
         d = json.load(f)
-    assert d["version"] == "1.12.0"  # 2026-08-03: 1.11.0 -> 1.12.0, the goal-residual weight term
+    assert d["version"] == "1.13.0"  # 2026-08-03: 1.11.0 -> 1.12.0, the goal-residual weight term
     # (ps_move_mark stamps ps_move_w_residual; ps_move_select subtracts a
     # held refutation's weight inside its Argmax). Pin reconciled, not
     # relaxed -- see PROGRAM_SYNTHESIS_ARC6_GOAL_RESIDUALS.md GR4.
+    # 2026-08-16: 1.12.0 -> 1.13.0, PROGRAM_SYNTHESIS_PROPERTY_REJECT_
+    # SURVEY's ps_property_reject_retrieval_enumerate_fallback rule (+1).
     names = {r["name"] for r in d["rules"]}
     assert {"ps_exact_mark", "ps_exact_solved", "ps_exact_failed"} <= names
     PRE_EXACT_FIRST_RULE_COUNT = 63  # v1.8.0, arc4 S6
     N_EXACT_FIRST_NEW_RULES = 3
     # arc5 moves: ps_move_* (4, v1.9.0 -> v1.10.0)
     # + arc6 seam D: ps_property_* (3, v1.10.0 -> v1.11.0)
-    N_RULES_ADDED_SINCE_EXACT_FIRST = 4 + 3
+    # + property_reject_survey: ps_property_reject_retrieval_enumerate_
+    #   fallback (1, v1.12.0 -> v1.13.0)
+    N_RULES_ADDED_SINCE_EXACT_FIRST = 4 + 3 + 1
     assert len(d["rules"]) == (
         PRE_EXACT_FIRST_RULE_COUNT + N_EXACT_FIRST_NEW_RULES
-        + N_RULES_ADDED_SINCE_EXACT_FIRST) == 73
+        + N_RULES_ADDED_SINCE_EXACT_FIRST) == 74
 
 
 def test_ensure_program_synthesis_installs_exact_families():

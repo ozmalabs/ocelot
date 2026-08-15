@@ -182,10 +182,17 @@ def test_seed_loads_clean():
     # every other verdict path uses; ps_accept was EDITED in place a
     # SECOND time to gate additionally on ps_property_reject == 0.0 beside
     # ps_structural_reject == 0.0; see PROGRAM_SYNTHESIS_ARC6_D.md and
-    # tests/test_prog_property_migrated.py) -- the pin follows the
-    # version bump, the P6.5 precedent
-    # (26 → 27 → 38 → 43 → 49 → 54 → 57 → 58 → 60 → 63 → 66 → 70 → 73).
-    assert len(manifest["rules"]) == 73
+    # tests/test_prog_property_migrated.py) + 1 PROGRAM_SYNTHESIS_
+    # PROPERTY_REJECT_SURVEY rule (seed v1.13.0, 2026-08-16:
+    # ps_property_reject_retrieval_enumerate_fallback -- a retrieved_
+    # exemplar candidate that fails a held PropertyAtom check gets ONE
+    # extra chance via SynthEnumerate as an independently-sourced second
+    # candidate, gated on ALSO clearing the SAME fired PropertyAtom
+    # before the existing ps_property_reject_gap terminal fires; see
+    # PROGRAM_SYNTHESIS_PROPERTY_REJECT_SURVEY_RESULTS.md) -- the pin
+    # follows the version bump, the P6.5 precedent
+    # (26 → 27 → 38 → 43 → 49 → 54 → 57 → 58 → 60 → 63 → 66 → 70 → 73 → 74).
+    assert len(manifest["rules"]) == 74
 
 
 # ---------------------------------------------------------------------------

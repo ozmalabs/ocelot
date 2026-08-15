@@ -186,9 +186,33 @@ _KNOWN_S2_STRUCTURAL_REJECT_DRIFT = {
 # moment, and CAPTURED_TASK_IDS / the headline count are untouched (none of
 # the three was ever a capture).
 _KNOWN_ARC6_PROPERTY_REJECT_DRIFT = {
-    105: {"status": "gapped", "gap_reason": "property_verdict_reject",
-          "rung": "c", "exemplar": 802},
-    238: {"status": "gapped", "gap_reason": "property_verdict_reject",
+    # 2026-08-16 (PROGRAM_SYNTHESIS_PROPERTY_REJECT_SURVEY, a FOURTH
+    # supersession on top of this one — task 105 only): the
+    # `ps_property_reject_retrieval_enumerate_fallback` rule gives a
+    # retrieved_exemplar candidate that fails a held PropertyAtom ONE
+    # extra chance via SynthEnumerate, gated on the enumerate candidate
+    # ALSO clearing the SAME fired atom before the terminal gap fires.
+    # Live-verified: for 105 the enumerate candidate (`Sum(a)` — True==1
+    # in Python, so summing a list of booleans counts the True elements)
+    # clears `prop_count_true` AND passes the held-out row
+    # (holdout_ok=True) — a genuine correction, not a capability lost.
+    # 238/405's enumerate candidates ALSO clear the fallback's own
+    # attempt but STILL violate their own fired PropertyAtom (independent,
+    # per-task probe, PROGRAM_SYNTHESIS_PROPERTY_REJECT_SURVEY_RESULTS.md),
+    # so both stay pinned exactly as before -- this rung touches 105 only.
+    105: {"status": "accepted", "rung": "c", "exemplar": 802,
+          "holdout_ok": True},
+    # 2026-08-16: 238's enumerate fallback candidate ALSO violates its own
+    # fired PropertyAtom (still genuinely wrong, unlike 105) -- but on the
+    # SECOND `compute_structural_facts` pass (over the enumerate
+    # candidate) a D1/D2/D3 structural detector ALSO fires and is what
+    # actually routes this goal to terminal `gapped` this time (the two
+    # verdict families are independent, unordered checks that both run on
+    # every verified candidate; whichever's OWN gate rule matches first
+    # decides the recorded gap_reason -- status/rung/exemplar are
+    # unaffected, this is a diagnostic-label change only, see
+    # PROGRAM_SYNTHESIS_PROPERTY_REJECT_SURVEY_RESULTS.md).
+    238: {"status": "gapped", "gap_reason": "structural_verdict_reject",
           "rung": "d", "exemplar": 802},
     405: {"status": "gapped", "gap_reason": "property_verdict_reject",
           "rung": "d", "exemplar": 637},
@@ -561,31 +585,33 @@ def test_occam_order_exact_pass_never_falls_through_to_deeper_rungs():
     through to rung d — that is what `out["rung"]` below still asserts,
     exactly as written.
 
-    What changed is the TERMINAL VERDICT, and only that. Seam D's property
-    rung (PROGRAM_SYNTHESIS_ARC6_D.md) now refuses task 105's rung-c
-    candidate before it can be accepted, so `status` is `gapped` /
-    `gap_reason` `property_verdict_reject` rather than `accepted`. The pin
-    is rewritten to the NEW, CORRECT outcome rather than loosened: the
-    refusal is asserted positively, and the rung assertion — the thing this
-    fixture exists to prove — is untouched.
+    What changed FIRST (2026-08-01) was the TERMINAL VERDICT, and only
+    that: Seam D's property rung (PROGRAM_SYNTHESIS_ARC6_D.md) refused
+    task 105's rung-c candidate before it could be accepted, so `status`
+    was `gapped` / `gap_reason` `property_verdict_reject` rather than
+    `accepted`.
 
-    HONEST COVERAGE NOTE (a gap, recorded, not papered over): the original
-    docstring framed the rung-c hit as an "exact pass", and it is NOT one.
-    Task 105's rung-c candidate is a coincidental fit on the two revealed
-    rows, proven wrong-in-general by the constructed witness in
-    `test_arc6_property_rejected_ceiling_candidates_are_wrong_by_
-    construction` (a=[True,True] -> 0, reference 2). So this fixture
-    demonstrates Occam ORDERING over a candidate that is itself wrong; it
-    no longer demonstrates "an earlier rung produced a CORRECT program, so
-    the ladder stopped". No fixture in this file currently covers that
-    stronger reading on a witness-verified-correct candidate — recorded
-    here as a coverage gap rather than fixed by weakening anything."""
+    2026-08-16 (PROGRAM_SYNTHESIS_PROPERTY_REJECT_SURVEY) — a SECOND
+    supersession, and this one closes the "HONEST COVERAGE NOTE" gap this
+    docstring used to record: `ps_property_reject_retrieval_enumerate_
+    fallback` gives the refused rung-c candidate one independent second
+    opinion via SynthEnumerate, gated on ALSO clearing the SAME fired
+    PropertyAtom before the terminal gap fires. For 105, `Sum(a)` (True==1
+    in Python, so summing a boolean list counts the True elements) clears
+    `prop_count_true` AND passes the held-out row — task 105 is genuinely
+    `accepted` now, not a coincidental fit papered over. The rung
+    assertion below — the thing this fixture actually exists to prove — is
+    UNCHANGED: `out["rung"]` still reads whichever rung the RETRIEVAL
+    ladder itself reached (`retrieval.accept_task_id`/`rung_reached` are
+    never touched by the property/enumerate machinery), so Occam ordering
+    is still being checked exactly as written, now over a candidate this
+    file can finally call correct."""
     with open(FIXTURE_PATH) as f:
         tasks = json.load(f)
     by_id = {t["task_id"]: t for t in tasks}
     out = _run_task_live(by_id[105])
-    assert out["status"] == "gapped"
-    assert out["gap_reason"] == "property_verdict_reject"
+    assert out["status"] == "accepted"
+    assert out["holdout_ok"] is True
     assert out["rung"] == "a" or out["rung"] in ("a", "b", "c"), (
         "task 105 has a genuine rung-a exemplar (798) or a rung-c leaf-edit "
         "reachable within the top-5 ranked pool; it must never silently "
@@ -654,11 +680,11 @@ def test_ceiling_task_reproduces_measured_outcome_live(tid):
 # a=100,b=150 ...), and the expected value comes from the task's OWN
 # reference implementation in the fixture (`code`), executed here — not
 # from any part of the synthesis pipeline.
+# 2026-08-16: task 105 REMOVED (PROGRAM_SYNTHESIS_PROPERTY_REJECT_SURVEY --
+# see `_KNOWN_ARC6_PROPERTY_REJECT_DRIFT`'s own updated comment) -- its
+# candidate is no longer wrong by construction, it is genuinely correct, so
+# a "prove it wrong" witness no longer applies. 238/405 are untouched.
 _ARC6_WRONG_BY_CONSTRUCTION = {
-    105: ("count", (
-        ({"a": [True, True]}, 0, 2),
-        ({"a": [True, False, True, True]}, 2, 3),
-    )),
     238: ("number_of_substrings", (
         ({"a": "ab"}, 10, 3),
         ({"a": "z"}, 10, 1),
@@ -828,11 +854,18 @@ def test_attempt1_codebook_screen_rules_stay_absent_from_the_seed():
     # none of the three new names contains "screen" either, so the intent
     # guard above (attempt-1 codebook SCREEN rules stay absent) still bites
     # exactly as written; pure version/count pin update.
-    assert d["version"] == "1.12.0"  # 2026-08-03: 1.11.0 -> 1.12.0, the goal-residual weight term
+    assert d["version"] == "1.13.0"  # 2026-08-03: 1.11.0 -> 1.12.0, the goal-residual weight term
     # (ps_move_mark stamps ps_move_w_residual; ps_move_select subtracts a
     # held refutation's weight inside its Argmax). Pin reconciled, not
     # relaxed -- see PROGRAM_SYNTHESIS_ARC6_GOAL_RESIDUALS.md GR4.
-    assert len(d["rules"]) == 73
+    # 2026-08-16: v1.12.0/73 -> v1.13.0/74, PROGRAM_SYNTHESIS_PROPERTY_
+    # REJECT_SURVEY's ps_property_reject_retrieval_enumerate_fallback rule
+    # -- its name doesn't contain "screen" either, and it never mints an
+    # Excluded/ScreenPass node (its only effects are set_attr, the SAME
+    # ps_isolate_fallthrough isolation shape checked above): it admits a
+    # goal into the enumerate rung, it does not judge a candidate's
+    # correctness itself, so both intent guards are unaffected.
+    assert len(d["rules"]) == 74
 
 
 def test_la10_partial_cover_regression_scenario_reproduces_original_rungs():

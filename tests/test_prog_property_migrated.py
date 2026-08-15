@@ -708,11 +708,18 @@ def test_live_population_property_catches_are_genuine_defects_not_regressions(
 #  10. seed version / rule-count / atom-count pin (owned by THIS phase).
 # --------------------------------------------------------------------------- #
 def test_seed_version_bumped_and_three_new_rules(seed_manifest):
-    assert seed_manifest["version"] == "1.12.0"  # 2026-08-03: 1.11.0 -> 1.12.0, the goal-residual weight term
+    assert seed_manifest["version"] == "1.13.0"  # 2026-08-03: 1.11.0 -> 1.12.0, the goal-residual weight term
     # (ps_move_mark stamps ps_move_w_residual; ps_move_select subtracts a
     # held refutation's weight inside its Argmax). Pin reconciled, not
     # relaxed -- see PROGRAM_SYNTHESIS_ARC6_GOAL_RESIDUALS.md GR4.
-    assert len(seed_manifest["rules"]) == 73
+    # 2026-08-16: 1.12.0/73 -> 1.13.0/74, PROGRAM_SYNTHESIS_PROPERTY_REJECT_
+    # SURVEY's ps_property_reject_retrieval_enumerate_fallback rule -- all
+    # three ps_property_* rules this test names are untouched (the fallback
+    # rule sits BESIDE them: it is the ONLY thing gating whether
+    # ps_property_reject_gap gets to fire on the FIRST property-reject for
+    # a retrieved_exemplar goal, or whether SynthEnumerate gets one
+    # independent try first).
+    assert len(seed_manifest["rules"]) == 74
     names = {r["name"] for r in seed_manifest["rules"]}
     for landed in ("ps_property_clear", "ps_property_reject_gap",
                   "ps_property_reject_reopen"):
