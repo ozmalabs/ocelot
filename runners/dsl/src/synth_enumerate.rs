@@ -335,6 +335,16 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     ("ProdList", OpKind::ListUnary),       // -> Prod{source, item, Var(item)}  (the SumList twin)
     ("ConcatList", OpKind::ListBinary),    // -> Fold{b, acc<-a, Append(acc,item)} (the JoinList precedent)
     ("ArgMaxLenOver", OpKind::ListUnary),  // -> Argmax{source, item, Count(Var(item))} (the MaxLenOver arg-twin)
+    // --- CEILING_REASSESSMENT_4 (PROGRAM_SYNTHESIS_CEILING_REASSESSMENT_4_
+    // PREREG.md §3.2, tasks 111/140): a FOLDED reduction of the already-
+    // shipped 2-arg `Intersect`/`Union` Set Terms across a variable-length
+    // OUTER sequence — the `ConcatList`/`JoinList` `Fold`-composition
+    // precedent one level up (those fold a fixed binary op across ONE
+    // sequence too; this is the same shape with a Set op as the body).
+    // ZERO new `TermNode` variant: `Fold`/`Intersect`/`Union`/`IndexAt`/
+    // `Var`/`Lit` are all pre-existing, already-wired Terms. ---
+    ("IntersectAll", OpKind::ListUnary),   // -> Fold{source, init:IndexAt(source,0), body:Intersect(acc,item)}
+    ("UnionAll", OpKind::ListUnary),       // -> Fold{source, init:IndexAt(source,0), body:Union(acc,item)}
     // --- Rung 1 (PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_REASSESSMENT_
     // PREREG.md §5.1, `STRUCTURAL_CEILING.md` §9's own priced order):
     // Tier-1 stdlib Term ports. Each is a NEW `TermNode` variant (unlike
@@ -453,6 +463,11 @@ const TUPLE_BUILD_OPS: &[&str] = &["TupleOf"];
 /// tested without it).
 const SET_DEFAULT_OPS: &[&str] = &[
     "Eq", "IfThenElse", "Sort", "Reverse", "Slice", "SetMap", "Intersect", "Union",
+    // CEILING_REASSESSMENT_4 (tasks 111/140): the FOLDED, variable-arity
+    // twins of the `Intersect`/`Union` pair two lines up — same bucket,
+    // same `ListUnary` cheap registration cost, live-verified end-to-end
+    // (`PROGRAM_SYNTHESIS_CEILING_REASSESSMENT_4_PREREG.md` §3.1).
+    "IntersectAll", "UnionAll",
 ];
 
 /// GroupCount/DictMerge rung: the `SET_DEFAULT_OPS` precedent for a spec
@@ -631,6 +646,31 @@ fn build_list_unary(
             let cnt = scratch.add(TermNode::Count { source: iv });
             TermNode::Argmax { source, var_name: item, value: cnt, default: None }
         }
+        // CEILING_REASSESSMENT_4 `op:IntersectAll`/`op:UnionAll` (tasks
+        // 111/140, PREREG §3.1-3.2): reduce a variable-length outer
+        // sequence with the already-shipped binary `Intersect`/`Union`
+        // Set Terms via `Fold`, seeded with the FIRST element as the
+        // accumulator (`IndexAt(source, 0)`). Folding the WHOLE source
+        // (including index 0 again) is safe because both ops are
+        // idempotent under self-application (`Intersect(A,A)=A`,
+        // `Union(A,A)=A`) — live-verified end-to-end against all three
+        // fixture rows (including held-out) for both target tasks.
+        "IntersectAll" => {
+            let zero = scratch.add(TermNode::Lit { value: Value::Int(0) });
+            let init = scratch.add(TermNode::IndexAt { seq: source, index: zero });
+            let accv = scratch.add(TermNode::Var { name: acc });
+            let itemv = scratch.add(TermNode::Var { name: item });
+            let body = scratch.add(TermNode::Intersect { a: accv, b: itemv });
+            TermNode::Fold { source, var_name: item, acc_name: acc, init, body }
+        }
+        "UnionAll" => {
+            let zero = scratch.add(TermNode::Lit { value: Value::Int(0) });
+            let init = scratch.add(TermNode::IndexAt { seq: source, index: zero });
+            let accv = scratch.add(TermNode::Var { name: acc });
+            let itemv = scratch.add(TermNode::Var { name: item });
+            let body = scratch.add(TermNode::Union { a: accv, b: itemv });
+            TermNode::Fold { source, var_name: item, acc_name: acc, init, body }
+        }
         _ => call_fallback(name, vec![source], derived_names),
     }
 }
@@ -750,6 +790,11 @@ fn list_unary_extra_cost(name: &str, derived_extra: &FxHashMap<String, usize>) -
         // Arc6 tier-0.
         "ProdList" => 1,      // Prod{source, value:Var(item)}
         "ArgMaxLenOver" => 2, // Argmax{source, value:Count(Var(item))}
+        // CEILING_REASSESSMENT_4: Fold{source, init:IndexAt(source,Lit(0))
+        // (2: Lit(0)+IndexAt), body:Intersect|Union(Var(acc),Var(item))
+        // (3: Var(acc)+Var(item)+Intersect|Union)} = 5.
+        "IntersectAll" => 5,
+        "UnionAll" => 5,
         // Derived-operator tier: the DATA-driven generalization of this
         // same hand-authored table (§3.1's own `extra_cost`), for any
         // name this table itself doesn't recognize.
