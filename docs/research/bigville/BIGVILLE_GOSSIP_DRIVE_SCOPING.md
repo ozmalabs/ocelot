@@ -619,6 +619,20 @@ produces — the mechanism's whole point is that severity-scaled decay
 produces MORE repetition for high-salience news, not less, which a
 zero-decay control could not.
 
+**BUILD LANDED (2026-08-15, `ozmalabs/bigville` commit `acf0961`).**
+`BigvilleOcelotActor.told_events` (per-`(listener, event)` count, same
+bookkeeping-dict idiom `speech_bonds`/`speech_choices` already use);
+`_speech_share_event` now takes `listener` and damps each candidate event's
+salience by `retell_decay ** count` before the max-selection, so a
+still-being-retold event can still win against a fresher but milder one when
+its damped salience remains highest; the count increments only on an
+actually-heard share, at the existing `_hear_gossip` call site. Verified
+live in a running town: an event told 11 times to one listener damped from
+`0.6` to `~0.19` (retained, never zero); a never-told listener saw the full
+undamped `0.6` in the same tick — confirming the per-dyad claim directly,
+not just the decay curve. 4 new tests (13 total in the gossip suite) + the
+repo's full 156, all green.
+
 ---
 
 ## OPEN QUESTIONS
