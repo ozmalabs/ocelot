@@ -1,0 +1,489 @@
+{
+  "id": "program_synthesis_opgrammar",
+  "version": "1.0.0",
+  "depends_on": [
+    "program_synthesis"
+  ],
+  "description": "OPLIST_ADMISSIBILITY_GRAMMAR_PREREG.md / _RESULTS.md (the design this seed builds) + OPLIST_ADMISSIBILITY_GRAMMAR_SLICE1_RESULTS.md (this slice's own writeup). The op-list boolean gate ladder inside eval_synth_enumerate (runners/dsl/src/synth_enumerate.rs) is Gamma-shaped -- a real generated multi-production admissible-move SET, CLAUDE.md's own 'set of allowed moves' test, not a quantity that changes (no sd-loop residual here). This seed is the buildable FIRST SLICE the design doc itself scoped (RESULTS.md section 8): (1) the static SynthOp{name} vocabulary, one node per REAL current OP_TABLE entry (52 entries as of main @ c1d0b4c -- both the design doc's original '31' citation and DERIVED_OPERATOR_TIER_RESULTS.md's own correction to '50' are stale; re-verified live against the source for this slice, see SLICE1_RESULTS.md section 1); (2) EXACTLY the two already-shipped SortBy gates as Gamma productions -- the parity check, not a full port of all fourteen section 1.1 gates (explicitly out of scope for this slice, per the design doc's own section 8 step 5 separation). SynthSpecShape is the OTHER new node type this slice mints (one per run_enumerate call, via domains/prog_synthesis.py:: _synth_spec_shape_flags + ensure_program_synthesis_opgrammar) -- it carries no seed-authored nodes of its own (minted live, not static), so this manifest declares it only implicitly via the two productions' src pattern. Both productions' where clause references tgt (op's own name attr), so is_edge_admissible always takes its scratch-node slow path for this pair -- the exact mechanism RESULTS.md section 4 already confirmed calls into ConsistencyChecker::check_edge, so this is REAL enforced Gamma, not decorative vocabulary.",
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Plus"
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Times"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Minus"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Div"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Min"
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Max"
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Abs"
+      }
+    },
+    {
+      "local_id": 8,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Neg"
+      }
+    },
+    {
+      "local_id": 9,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Gt"
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Lt"
+      }
+    },
+    {
+      "local_id": 11,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Gte"
+      }
+    },
+    {
+      "local_id": 12,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Lte"
+      }
+    },
+    {
+      "local_id": 13,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Eq"
+      }
+    },
+    {
+      "local_id": 14,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "And"
+      }
+    },
+    {
+      "local_id": 15,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Or"
+      }
+    },
+    {
+      "local_id": 16,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Not"
+      }
+    },
+    {
+      "local_id": 17,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "IfThenElse"
+      }
+    },
+    {
+      "local_id": 18,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Concat"
+      }
+    },
+    {
+      "local_id": 19,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "CaseFold"
+      }
+    },
+    {
+      "local_id": 20,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Len"
+      }
+    },
+    {
+      "local_id": 21,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "SumList"
+      }
+    },
+    {
+      "local_id": 22,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "MaxList"
+      }
+    },
+    {
+      "local_id": 23,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "MinList"
+      }
+    },
+    {
+      "local_id": 24,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "MaxLenOver"
+      }
+    },
+    {
+      "local_id": 25,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "MinLenOver"
+      }
+    },
+    {
+      "local_id": 26,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "First"
+      }
+    },
+    {
+      "local_id": 27,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "LastElem"
+      }
+    },
+    {
+      "local_id": 28,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "JoinList"
+      }
+    },
+    {
+      "local_id": 29,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "FilterList"
+      }
+    },
+    {
+      "local_id": 30,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "MapList"
+      }
+    },
+    {
+      "local_id": 31,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "TupleOf"
+      }
+    },
+    {
+      "local_id": 32,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "ProdList"
+      }
+    },
+    {
+      "local_id": 33,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "ConcatList"
+      }
+    },
+    {
+      "local_id": 34,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "ArgMaxLenOver"
+      }
+    },
+    {
+      "local_id": 35,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Replace"
+      }
+    },
+    {
+      "local_id": 36,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Str"
+      }
+    },
+    {
+      "local_id": 37,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Split"
+      }
+    },
+    {
+      "local_id": 38,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "StrCount"
+      }
+    },
+    {
+      "local_id": 39,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Round"
+      }
+    },
+    {
+      "local_id": 40,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Reverse"
+      }
+    },
+    {
+      "local_id": 41,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "IndexedMap"
+      }
+    },
+    {
+      "local_id": 42,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Capitalize"
+      }
+    },
+    {
+      "local_id": 43,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "ParseInt"
+      }
+    },
+    {
+      "local_id": 44,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Slice"
+      }
+    },
+    {
+      "local_id": 45,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Sort"
+      }
+    },
+    {
+      "local_id": 46,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "SetMap"
+      }
+    },
+    {
+      "local_id": 47,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Intersect"
+      }
+    },
+    {
+      "local_id": 48,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Union"
+      }
+    },
+    {
+      "local_id": 49,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "DictItems"
+      }
+    },
+    {
+      "local_id": 50,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "SortBy"
+      }
+    },
+    {
+      "local_id": 51,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "GroupCount"
+      }
+    },
+    {
+      "local_id": 52,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "DictMerge"
+      }
+    }
+  ],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "program_synthesis_opgrammar:sortby_dict_gate",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "SortBy"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "has_dict_value"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provenance": "program_synthesis_opgrammar:sortby_list_of_lists_gate",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "SortBy"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "has_list_of_lists"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "has_dict_value"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -244,6 +244,7 @@ def ensure_program_synthesis(sub, native, ag_node) -> None:
             "id": _GROUNDING_SEED_ID,
             "version": "1.0.0",
         })
+    ensure_program_synthesis_opgrammar(sub, native, ag_node)
     _normalise_triggers(sub)
     _normalise_fold_marks(sub)
     ensure_construction_bigrams(sub)
@@ -1147,6 +1148,148 @@ def synth_enumerate_live(sub) -> bool:
         return True
 
 
+# --------------------------------------------------------------------------- #
+#  Opgrammar slice 1 (OPLIST_ADMISSIBILITY_GRAMMAR_PREREG.md /
+#  _RESULTS.md, OPLIST_ADMISSIBILITY_GRAMMAR_SLICE1_RESULTS.md): the
+#  op-list boolean gate ladder is Γ-shaped (a real generated multi-
+#  production admissible-move SET, CLAUDE.md's own "set of allowed moves"
+#  test) — this is the buildable first slice's parity check, `SortBy`
+#  only, run ALONGSIDE the existing hand-written Rust ladder, never
+#  replacing it. See seeds/program_synthesis_opgrammar.json for the two
+#  Γ productions this feeds.
+# --------------------------------------------------------------------------- #
+_OPGRAMMAR_SEED_ID = "program_synthesis_opgrammar"
+
+
+def ensure_program_synthesis_opgrammar(sub, native, ag_node) -> None:
+    """Idempotent install of the `program_synthesis_opgrammar` seed (the
+    `SynthOp` vocabulary + the two hand-authored `SortBy` Γ productions).
+    Same `_has_seed` guard idiom `ensure_program_synthesis` already uses
+    for every other seed it installs."""
+    if not _has_seed(sub, _OPGRAMMAR_SEED_ID):
+        summary = native.load_seed_manifest(
+            manifest_for(_OPGRAMMAR_SEED_ID), ag_node)
+        if summary.get("rules_skipped") or summary.get("reflexes_skipped"):
+            raise RuntimeError(
+                "program_synthesis_opgrammar did not install cleanly: %r"
+                % (summary,))
+        sub.add_node("Seed", {"id": _OPGRAMMAR_SEED_ID, "version": "1.0.0"})
+
+
+def _synth_spec_shape_flags(raw_rows: "List[Dict[str, Any]]") -> "Dict[str, bool]":
+    """DUPLICATED EVIDENCE-FLAG COMPUTATION — a Python mirror of the
+    evidence flags `eval_synth_enumerate` computes internally in Rust
+    (`runners/dsl/src/synth_enumerate.rs`, the `is_listlike` helper
+    ~line 473, `items_of` ~line 1012, and the evidence-flag block
+    ~lines 1791-1919 as of `main @ c1d0b4c`).
+
+    THIS IS FORK (a) FROM `OPLIST_ADMISSIBILITY_GRAMMAR_RESULTS.md` §7's
+    OWN NAMED TRADEOFF TABLE, taken deliberately, not by drift: the Rust
+    flag computation is internal to `eval_synth_enumerate` and is not
+    exposed via any PyO3 method, so this function is a SECOND,
+    independently-maintained copy of the SAME predicates over the SAME
+    raw example-row values — never a call into the Rust computation. This
+    is a TRACKED DRIFT LIABILITY, the same class of risk `PROGRAM_
+    SYNTHESIS_STRUCTURAL_CEILING_REASSESSMENT_PREREG.md`'s own Q1 names
+    for `NATIVE_ORACLES`: every other "own copy, no cross-import"
+    duplication in this codebase documents itself this way (e.g.
+    `_examples_numeric_eligible` above, a different duplication of the
+    same discipline). If `eval_synth_enumerate`'s evidence-flag
+    predicates ever change, THIS function must be updated to match BY
+    HAND — there is no automatic sync. A follow-on rung may close this by
+    exposing the Rust computation via a new PyO3 method (fork (b) in the
+    same table) — deliberately NOT attempted here (this slice is zero
+    `.rs` changes, per its own scope).
+
+    Operates on RAW (pre-`_wire`) Python values — native tuple/list/set/
+    frozenset/dict/str/int/float/bool/None, exactly the shape `env`/
+    `rat.get("expected")` carry in `run_enumerate` BEFORE `_wire` tags
+    them for the JSON `Lit` boundary — so `isinstance` here reads the
+    same container kind Rust's own `Value` enum decodes from the wired
+    form, without needing the wire round-trip.
+
+    Returns the ten flags `SynthSpecShape` carries as attrs — a direct
+    1:1 port of `OPLIST_ADMISSIBILITY_GRAMMAR_RESULTS.md` §3.2's flag
+    set: has_dict_value, has_list_of_lists, has_string_value,
+    has_float_value, has_repeated_list_element, output_is_listlike,
+    output_is_setlike, output_is_bare_int, is_string_shaped,
+    is_list_shaped."""
+    def is_listlike(v) -> bool:
+        return isinstance(v, (tuple, list, set, frozenset))
+
+    def is_dict_val(v) -> bool:
+        return isinstance(v, dict)
+
+    def is_str_val(v) -> bool:
+        return isinstance(v, str)
+
+    def is_float_val(v) -> bool:
+        # Value::Rational has no native Python spec-row equivalent here
+        # (a raw example row never carries a fractions.Fraction) — the
+        # Rust side's is_float_val also matches Rational, this mirror
+        # only sees Float-shaped rows in practice.
+        return isinstance(v, float)
+
+    def items_of(v):
+        if isinstance(v, (tuple, list, set, frozenset)):
+            return list(v)
+        return None
+
+    def has_dup(v) -> bool:
+        items = items_of(v)
+        if not items:
+            return False
+        for i in range(len(items)):
+            for j in range(i + 1, len(items)):
+                if items[i] == items[j]:
+                    return True
+        return False
+
+    var_values: Dict[str, List[Any]] = {}
+    all_input_values: List[Any] = []
+    outputs: List[Any] = []
+    for row in raw_rows:
+        inputs = row.get("inputs") or {}
+        for k, v in inputs.items():
+            var_values.setdefault(k, []).append(v)
+            all_input_values.append(v)
+        outputs.append(row.get("output"))
+
+    def any_nested_all_listlike(values) -> bool:
+        for v in values:
+            items = items_of(v)
+            if items and all(is_listlike(x) for x in items):
+                return True
+        return False
+
+    is_list_shaped = bool(outputs) and all(is_listlike(v) for v in outputs)
+    if not is_list_shaped:
+        for name, vals in var_values.items():
+            if len(vals) == len(raw_rows) and vals and all(is_listlike(v) for v in vals):
+                is_list_shaped = True
+                break
+
+    return {
+        "has_dict_value": any(is_dict_val(v) for v in all_input_values),
+        "has_list_of_lists": (any_nested_all_listlike(all_input_values)
+                               or any_nested_all_listlike(outputs)),
+        "has_string_value": (any(is_str_val(v) for v in all_input_values)
+                              or any(is_str_val(v) for v in outputs)),
+        "has_float_value": (any(is_float_val(v) for v in all_input_values)
+                             or any(is_float_val(v) for v in outputs)),
+        "has_repeated_list_element": (any(has_dup(v) for v in all_input_values)
+                                       or any(has_dup(v) for v in outputs)),
+        "output_is_listlike": bool(outputs) and all(is_listlike(v) for v in outputs),
+        "output_is_setlike": bool(outputs) and all(
+            isinstance(v, (set, frozenset)) for v in outputs),
+        "output_is_bare_int": bool(outputs) and all(
+            isinstance(v, int) and not isinstance(v, bool) for v in outputs),
+        "is_string_shaped": (bool(outputs) and all(is_str_val(v) for v in outputs)
+                              and all(is_str_val(v) for v in all_input_values)),
+        "is_list_shaped": is_list_shaped,
+    }
+
+
 def run_enumerate(sub, ag_node, g) -> bool:
     """The P4-A seam, live: SynthEnumerate{examples, max_size,
     max_candidates, saturate_k, field, exclude} → Dict{found, term
@@ -1182,6 +1325,7 @@ def run_enumerate(sub, ag_node, g) -> bool:
     for n in sub.neighbours(g, "about_message"):
         msg = n
     rows = []
+    raw_rows: List[Dict[str, Any]] = []
     args: List[str] = []
     for r in (sub.neighbours(msg, "has_example") if msg is not None else []):
         rat = sub.node(r)["attrs"]
@@ -1191,6 +1335,29 @@ def run_enumerate(sub, ag_node, g) -> bool:
                 args.append(k)
         rows.append({"inputs": {k: _wire(v) for k, v in env.items()},
                      "output": _wire(rat.get("expected"))})
+        # Opgrammar slice 1: the SAME rows, kept RAW (pre-`_wire`) so
+        # `_synth_spec_shape_flags` can read native container types
+        # directly (see that function's own docstring for why).
+        raw_rows.append({"inputs": dict(env), "output": rat.get("expected")})
+    # Opgrammar slice 1 parity probe (OPLIST_ADMISSIBILITY_GRAMMAR_
+    # SLICE1_RESULTS.md): mint a SynthSpecShape node carrying the
+    # duplicated evidence flags, then ask Γ (`is_edge_admissible`)
+    # whether it admits SynthOp{name:"SortBy"} for this spec's shape.
+    # Recorded as a fact on `g` purely for parity comparison against the
+    # existing hand-written Rust ladder — NEVER consulted for
+    # `spec["ops"]` construction below. This slice's job is to prove the
+    # plumbing is transparent, not to cut production behaviour over onto
+    # unproven machinery (OPLIST_ADMISSIBILITY_GRAMMAR_RESULTS.md §8,
+    # step 4's own stated scope).
+    spec_shape_flags = _synth_spec_shape_flags(raw_rows)
+    spec_shape_node = sub.add_node("SynthSpecShape", spec_shape_flags)
+    try:
+        gamma_sortby_admitted = bool(sub._inner.is_edge_admissible(
+            spec_shape_node, "admits_op", "SynthOp", {"name": "SortBy"}))
+    except Exception as e:
+        gamma_sortby_admitted = None
+        sub.set_attr(g, "ps_enum_gamma_sortby_error", str(e)[:200])
+    sub.set_attr(g, "ps_enum_gamma_sortby_admitted", gamma_sortby_admitted)
     spec: Dict[str, Any] = {
         "type": "SynthEnumerate",
         "examples": {"type": "Lit", "value": rows},
