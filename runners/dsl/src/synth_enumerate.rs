@@ -345,6 +345,16 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     // `Var`/`Lit` are all pre-existing, already-wired Terms. ---
     ("IntersectAll", OpKind::ListUnary),   // -> Fold{source, init:IndexAt(source,0), body:Intersect(acc,item)}
     ("UnionAll", OpKind::ListUnary),       // -> Fold{source, init:IndexAt(source,0), body:Union(acc,item)}
+    // --- PROGRAM_SYNTHESIS_DICTFROMPAIRS_PREREG.md §3-4 (tasks 277/465):
+    // Python's `dict(pairs)` — build a `Value::Dict` from a RUNTIME-LENGTH
+    // list of (key,value) pairs. `MkDict{items}` alone can't (its `items`
+    // are build-time-fixed `TermIdx`s), but `Fold` supplies the missing
+    // variable-length reduction exactly as it did for `IntersectAll`/
+    // `UnionAll` one rung earlier: accumulate a `Value::Dict`, one pair at
+    // a time, via already-shipped `MkDict` (single-pair) folded in with
+    // already-shipped `DictMerge` (later pair wins a key collision --
+    // Python's own duplicate-key rule). ZERO new `TermNode` variant. ---
+    ("DictFromPairs", OpKind::ListUnary),  // -> Fold{source, init:MkDict([]), body:DictMerge(acc, MkDict([IndexAt(item,0),IndexAt(item,1)]))}
     // --- Rung 1 (PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_REASSESSMENT_
     // PREREG.md §5.1, `STRUCTURAL_CEILING.md` §9's own priced order):
     // Tier-1 stdlib Term ports. Each is a NEW `TermNode` variant (unlike
@@ -477,7 +487,14 @@ const SET_DEFAULT_OPS: &[&str] = &[
 /// shaped`, since `is_listlike` deliberately excludes Dict). Narrow by
 /// construction, same as `SET_DEFAULT_OPS` — `Eq`/`IfThenElse` from the
 /// base arithmetic set plus exactly the two new ops this rung adds.
-const DICT_DEFAULT_OPS: &[&str] = &["Eq", "IfThenElse", "GroupCount", "DictMerge"];
+/// DICTFROMPAIRS_PREREG §4: `DictFromPairs` appended, same narrow bucket,
+/// same cheap `ListUnary` registration cost. Deliberately NOT joined by
+/// `DictItems`/`FilterList` here -- both already exist but the search's own
+/// `filter_templates_by_size` predicate grammar has no "project a fixed
+/// index out of the bound item" template shape (PREREG §5), so offering
+/// them would add real search cost to this bucket's one live canary (task
+/// 87) for no measured raw-search benefit under the current template pool.
+const DICT_DEFAULT_OPS: &[&str] = &["Eq", "IfThenElse", "GroupCount", "DictMerge", "DictFromPairs"];
 
 fn table_kind(name: &str) -> Option<OpKind> {
     OP_TABLE.iter().find(|(n, _)| *n == name).map(|(_, k)| *k)
@@ -671,6 +688,24 @@ fn build_list_unary(
             let body = scratch.add(TermNode::Union { a: accv, b: itemv });
             TermNode::Fold { source, var_name: item, acc_name: acc, init, body }
         }
+        // PROGRAM_SYNTHESIS_DICTFROMPAIRS_PREREG.md §3-4: Python's
+        // `dict(pairs)`. `init` is the empty dict; each fold step merges in
+        // a single-pair dict built from the bound item's own two elements,
+        // with `DictMerge`'s "b wins" rule giving later pairs priority on a
+        // duplicate key -- exactly Python's own `dict()` semantics.
+        "DictFromPairs" => {
+            let empty = scratch.add(TermNode::MkDict { items: vec![] });
+            let accv = scratch.add(TermNode::Var { name: acc });
+            let key_item = scratch.add(TermNode::Var { name: item });
+            let key_idx = scratch.add(TermNode::Lit { value: Value::Int(0) });
+            let key = scratch.add(TermNode::IndexAt { seq: key_item, index: key_idx });
+            let val_item = scratch.add(TermNode::Var { name: item });
+            let val_idx = scratch.add(TermNode::Lit { value: Value::Int(1) });
+            let val = scratch.add(TermNode::IndexAt { seq: val_item, index: val_idx });
+            let pair = scratch.add(TermNode::MkDict { items: vec![key, val] });
+            let body = scratch.add(TermNode::DictMerge { a: accv, b: pair });
+            TermNode::Fold { source, var_name: item, acc_name: acc, init: empty, body }
+        }
         _ => call_fallback(name, vec![source], derived_names),
     }
 }
@@ -795,6 +830,10 @@ fn list_unary_extra_cost(name: &str, derived_extra: &FxHashMap<String, usize>) -
         // (3: Var(acc)+Var(item)+Intersect|Union)} = 5.
         "IntersectAll" => 5,
         "UnionAll" => 5,
+        // DICTFROMPAIRS_PREREG §4: Fold{source, init:MkDict([])(1), body:
+        // DictMerge(Var(acc)(1), MkDict([IndexAt(Var(item),Lit(0))(3),
+        // IndexAt(Var(item),Lit(1))(3)])(1))(1)} = 1+1+1+3+3+1 = 10.
+        "DictFromPairs" => 10,
         // Derived-operator tier: the DATA-driven generalization of this
         // same hand-authored table (§3.1's own `extra_cost`), for any
         // name this table itself doesn't recognize.
@@ -1533,6 +1572,21 @@ fn term_json(
             "type": "DictMerge",
             "a": term_json(arena, *a, names, interner),
             "b": term_json(arena, *b, names, interner),
+        }),
+        // DICTFROMPAIRS_PREREG §4: `MkDict` had NO arm here (this module's
+        // own local `term_json` renderer, distinct from `jsonio.rs`'s) --
+        // every prior op composing it (`MkDict` calls elsewhere in this
+        // file are all rule-authoring/`Verify`-test call sites, never
+        // reachable from a SEARCH-BUILT candidate) never hit this path.
+        // `DictFromPairs` is the FIRST op-table exposure whose built
+        // candidate tree can contain a bare `MkDict` node, and omitting
+        // this arm panics `unreachable!()` the first time the search
+        // renders such a candidate (found live, not anticipated -- see
+        // RESULTS §"genuine mid-rung finding"). Field name matches
+        // `jsonio.rs`'s own `MkDict` parser (`"items"`).
+        TermNode::MkDict { items } => json!({
+            "type": "MkDict",
+            "items": items.iter().map(|i| term_json(arena, *i, names, interner)).collect::<Vec<_>>(),
         }),
         // Derived-operator tier: a winning candidate may itself be a
         // `Call{name,args}` node (build-A's own fallback arms route an
