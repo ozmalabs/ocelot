@@ -178,11 +178,10 @@ gitignored `data/` directory rather than `/tmp`.
 - `web/index.html` + `app.js` + `mock_server.py` — a graph visualiser /
   interrogation frontend (`graph_interrogate.py`'s "ASK" counterpart to this
   "LOOK" viewer — see `docs/research/engine_substrate/`).
-- `web/townview/` — **TownView**, a production-quality single-page app that
-  renders the Bigville living town as a pixel-art world: residents walk,
-  speak, and act on the surprise clock, and — because every resident is a
-  full mind in the graph — clicking one shows its held state, journal, and
-  bonds. Two modes: replay a recorded `play.json`, or connect live.
+- Bigville's game client and town viewer now live in the standalone
+  [`ozmalabs/bigville`](https://github.com/ozmalabs/bigville) repository. Ocelot
+  retains only the substrate and explicit integration boundaries; it does not
+  carry a duplicate Bigville renderer.
 
 ## Top-level non-source directories (not part of this reorg's scope)
 
