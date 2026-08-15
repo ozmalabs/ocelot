@@ -453,6 +453,166 @@ def mint_solve_decompose_goal(adapter, candidates: list, bound: int, *,
     return goal
 
 
+def _would_parse_as_deduction(adapter, statement: str) -> bool:
+    """Pure, ZERO-MUTATION pre-check mirroring `solve_deduction`'s own fixed
+    universal -> existential -> conditional ladder order (see `solve_
+    deduction`'s docstring, the 2026-08-15 bugfix) -- calls ONLY the pure
+    `parse_universal`/`parse_existential`/`parse_conditional` functions
+    (`domains/propositional_deduction.py`, all UNEDITED), never their
+    `mint_*` installer siblings. Every one of the three delegates to
+    `reading_collapse.read_clause`/`decompose_sentence` with `write=False,
+    learn=False` throughout (confirmed by direct read,
+    SOLVER_DECOMPOSE_ADAPTER_PREREG.md Sec4) -- no `add_node`/`mint_*` call
+    is reachable from any of the three. Used ONLY to decide, before minting
+    anything at all, whether a statement is worth actually resolving via the
+    real `solve_deduction` Goal/resolver machinery -- so a total decline
+    (fewer than 2 usable statements) leaves ZERO graph mutation, matching
+    the SAME "mints nothing on decline" guarantee `mint_solve_reasoning_
+    bridge_goal_from_text`/`mint_solve_analogical_promote_goal_from_text`
+    already established."""
+    from domains import propositional_deduction as pd
+    if pd.parse_universal(adapter, statement) is not None:
+        return True
+    if pd.parse_existential(adapter, statement) is not None:
+        return True
+    if pd.parse_conditional(adapter, statement) is not None:
+        return True
+    return False
+
+
+def _drive_to_resolution(adapter, goal_node, max_iters: int = 32) -> None:
+    """A same-shape, OWN-COPY mirror of `question_driver.py::_pump`'s own
+    bounded tick loop (`domains/question_driver.py:652` -- production code,
+    already called by `QuestionDriver.drive()`, not test-only) and `tests/
+    test_solver_dispatch_migrated.py::_pump`'s identical inline copy: fire
+    the `question_pursue` reflex, run the seeded rules to fixpoint, stop
+    once the goal resolves or walls. "Same pattern, own cache -- no
+    cross-import" -- the house convention `analogical_thinking.py`'s own
+    module comment documents, already followed by this module's own
+    `_find_concepts_by_name` (a local copy of `neuroscience_tagging._find_
+    concept_by_name`'s idiom). This is the SAME already-existing Rust
+    rule-engine invocation (`native.run_rules()`) every other driver in this
+    codebase already performs -- sequencing an existing loop, never a NEW
+    Python decision about what a goal's result means."""
+    sub = getattr(adapter, "s", adapter)
+    native = getattr(adapter, "inner", None)
+    if native is None:
+        native = getattr(sub, "_inner", sub)
+    for _ in range(max_iters):
+        adapter.fire_reflexes()
+        native.run_rules()
+        if sub.node(goal_node)["attrs"].get("status") in ("resolved", "walled"):
+            return
+
+
+def mint_solve_decompose_goal_from_text(adapter, statements: list, bound: int, *,
+                                        max_exact_n: int = 10, refine_budget: int = 0,
+                                        mode: str = "auto"):
+    """The THIRD NL-to-structure adapter for the six previously-unwired
+    `solve_*` resolvers (docs/research/engine_substrate/SOLVER_DECOMPOSE_
+    ADAPTER_PREREG.md/_RESULTS.md) -- a front door onto `solve_decompose`,
+    which prior rungs ranked #3 ("expensive, non-independent -- inherits
+    whichever upstream object it projects over"). That ranking does not
+    survive investigation: `mint_solve_deduction_goal` (`solver_dispatch.py`
+    above) has taken a bare statement string since Rung 1 -- it was NEVER
+    gated behind a pre-built graph object, unlike `solve_reasoning_bridge`/
+    `solve_analogical_promote`/the three CAN resolvers -- and `problem_
+    decomposition.project_deduction_shared_attr`/`project_deduction_complete`
+    (UNEDITED) are mechanical, node-source-AGNOSTIC shape extraction over
+    whatever `ShapeSignature` nodes they are handed. Building a candidate
+    projection from real deduction schema nodes was therefore ALREADY pure
+    composition, not new capability -- confirmed live before writing this
+    function (PREREG Sec2-3): three genuine Bigville-styled conditional
+    statements ("If X is a resident, X can vote."/"... X is world safe."/
+    "If X is a mayor, X can govern.") drive three real `solve_deduction`
+    sub-goals to resolution, and racing `project_deduction_shared_attr`
+    (treewidth=1, the real shared 'resident' antecedent) against `project_
+    deduction_complete` (treewidth=2, K3) over those SAME 3 real schema
+    nodes reproduces the exact discrimination shape `QUESTION_DRIVER_RUNG1_
+    RESULTS.md`'s own hand-built chain test already measured, on
+    independent statement text.
+
+    SCOPE (a deliberate, named boundary, mirroring both prior `_from_text`
+    rungs' own narrow scoping -- PREREG Sec5): this adapter covers ONLY
+    deduction-schema candidates (`project_deduction_shared_attr`/
+    `project_deduction_complete`) built from a LIST of deduction-shaped
+    statements. `project_can_*` (needs an already-built CAN Microtheory --
+    no NL-to-CAN-network path exists anywhere in this codebase, unchanged
+    finding from `SOLVER_NL_ADAPTER_PREREG.md`) and `project_situation_
+    model_shared_event` (needs already-minted `SmEvent` nodes -- situation-
+    model ingestion is a separate, never-`solve_*`-wired facility) are named,
+    separate follow-ons, NOT attempted here.
+
+    PARSE + DRIVE (the one genuinely new piece is a DRIVER, not a parser --
+    PREREG Sec3): each statement is dispatched through the ALREADY-EXISTING
+    `mint_solve_deduction_goal` (an NL adapter since day one) and driven to
+    resolution via `_drive_to_resolution` (a same-shape, own-copy mirror of
+    `question_driver.py::_pump`'s own bounded tick loop -- production code,
+    not test-only). This is unavoidable, not a design choice: `solve_
+    decompose`'s own prerequisite (`mint_solve_decompose_goal`'s contract)
+    is an ALREADY-RESOLVED node list staged in `solve_caps` at mint time --
+    there is no way to defer resolving the sub-goals the way the two prior
+    `_from_text` adapters deferred their own resolver dispatch to the
+    caller.
+
+    HONEST DECLINE (returns `None`; mirrors the Bug 1 fix precedent every
+    rung in this arc has established -- an adapter that silently mints
+    garbage from unsuitable input repeats the exact mistake those rungs
+    spent themselves fixing):
+      * `statements` is not a non-empty list/tuple, or `bound is None`;
+      * fewer than 2 non-empty statements pass the PURE, zero-mutation
+        `_would_parse_as_deduction` pre-check -- a genuine total decline
+        leaves ZERO graph mutation, matching the prior two `_from_text`
+        adapters' own "mints nothing" guarantee EXACTLY (PREREG Sec4);
+      * fewer than 2 real `ShapeSignature` schema nodes are actually
+        collected after driving the surviving statements' sub-goals (an
+        honest defensive re-check -- the pure pre-check and the resolver's
+        own ladder are not byte-identical code paths, so the ACTUAL outcome
+        is re-verified rather than trusted from the pre-check's prediction).
+
+    **A real, honestly-documented departure from the prior two `_from_text`
+    adapters (PREREG Sec4), not silently glossed over**: a PARTIAL success
+    (>=2 statements pass the pre-check, their sub-goals then driven for
+    real) DOES leave real, inspectable `solve_deduction` Goal + `Shape
+    Signature` nodes in the graph for the statements actually used, even if
+    this function's own `solve_decompose` Goal is ultimately minted and
+    returned. This is the unavoidable cost of `solve_decompose`'s
+    prerequisite being an already-resolved node, not a bare string -- a
+    total decline (the case that matters for "never silently mint garbage")
+    remains a genuine zero-mutation refusal.
+
+    Dispatches through the UNCHANGED `mint_solve_decompose_goal` ->
+    `qd_bind_resolver` -> `solve_decompose` machinery exactly as every other
+    caller already does -- this function only adds the missing front door;
+    `solve_decompose`'s own internals, `solve_deduction`'s own internals,
+    and `problem_decomposition.py` are all untouched."""
+    if not statements or not isinstance(statements, (list, tuple)) or bound is None:
+        return None
+    candidates_text = [str(s).strip() for s in statements if s and str(s).strip()]
+    usable = [s for s in candidates_text if _would_parse_as_deduction(adapter, s)]
+    if len(usable) < 2:
+        return None
+    sub = getattr(adapter, "s", adapter)
+    schema_nodes = []
+    for statement in usable:
+        g = mint_solve_deduction_goal(adapter, statement, mode=mode)
+        _drive_to_resolution(adapter, g)
+        at = sub.node(g)["attrs"]
+        if at.get("status") != "resolved":
+            continue
+        result = _solve_caps(adapter).get(g, {}).get("result") or {}
+        node = result.get("node")
+        if node is not None:
+            schema_nodes.append(node)
+    if len(schema_nodes) < 2:
+        return None
+    from domains import problem_decomposition as pdec
+    cand_shared = pdec.project_deduction_shared_attr(sub, schema_nodes)
+    cand_complete = pdec.project_deduction_complete(sub, schema_nodes)
+    return mint_solve_decompose_goal(adapter, [cand_shared, cand_complete], bound,
+                                     max_exact_n=max_exact_n, refine_budget=refine_budget)
+
+
 # =============================================================================
 #  THE SEVEN RESOLVER CALLABLES
 # =============================================================================
@@ -778,7 +938,7 @@ __all__ = [
     "mint_solve_can_exact_goal", "mint_solve_can_bp_goal",
     "mint_solve_reasoning_bridge_goal", "mint_solve_reasoning_bridge_goal_from_text",
     "mint_solve_analogical_promote_goal", "mint_solve_analogical_promote_goal_from_text",
-    "mint_solve_decompose_goal",
+    "mint_solve_decompose_goal", "mint_solve_decompose_goal_from_text",
     "solve_deduction", "solve_can_relax", "solve_can_exact", "solve_can_bp",
     "solve_reasoning_bridge", "solve_analogical_promote", "solve_decompose",
 ]
