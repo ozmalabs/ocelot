@@ -693,6 +693,21 @@ a second-hand retelling currently carries the same rendered content as a
 first-hand one, only a lower salience/trust weight. Marking retellings as
 hearsay linguistically is a real, separate extension, not scoped here.
 
+**BUILD LANDED (2026-08-15, `ozmalabs/bigville` commit `d95961f`).**
+`BigvilleOcelotActor.heard_events` (second-hand observation channel,
+`{event: {day_heard, strength}}`); `_hear_gossip` now computes
+`speaker_confidence` (1.0 first-hand, else the speaker's own inherited
+strength) and records `strength = source_trust * speaker_confidence` on the
+listener — exact DeGroot compounding; `_speech_share_event` draws
+candidates from both `observed_event` and `heard_events`. Verified live in
+a two-phase simulated encounter (Anselm meets Bryony; Bryony then meets
+Dara; Anselm and Dara never co-located): Dara learned the event second-hand
+with strength exactly `0.9 * 0.7 = 0.63`, the compounded product of both
+hops' trust — and, separately, a disconnected bystander with no path to the
+chain stayed at zero standing to share, confirming the failable-control
+claim directly rather than by construction. 4 new tests (17 total) +
+160/160 across the repo.
+
 ---
 
 ## OPEN QUESTIONS
