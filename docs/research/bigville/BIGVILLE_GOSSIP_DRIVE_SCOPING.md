@@ -26,6 +26,34 @@ same purpose. **Below, every file path is relative to
 `/home/matt/ozmadev/bigville`, NOT to this Ocelot repo** — and any future
 BUILD of Part 3's design must happen in that repo, not this one.
 
+**BUILD LANDED (2026-08-15, `ozmalabs/bigville` commit `714d0fe`) — WITH ONE
+LOAD-BEARING CORRECTION TO PART 3's OWN DESIGN.** Before building, direct
+reading of `bigville/runtime.py::BigvilleGraph` found it has **no
+rule-evaluation engine at all** — `load_seed_manifest` only stores manifest
+data; nothing walks a seed's `Argmax`/`Term` tree and executes it. This
+standalone repo does not depend on Ocelot's Rust `substrate_rs` DSL
+evaluator. **The decision logic Part 1 read as a declarative Argmax
+(`sp_choose_utterance`) is, in the live code, a hand-written Python
+if/elif chain (`decide_speech`) that computes the same formula by hand** —
+the seed JSON is closer to documentation/spec than executable rule data in
+this repo. Consequently Part 3's own "load the `bigville_bond_update` seed
+manifest into the live actor's mind so `bond_gossip_update` runs" plan was
+**not buildable as written** — there is no engine to run it. The build
+instead ported `hear_gossip`'s tested formula
+(`content_valence * gossip_weight * source_trust`) directly into a new
+Python method (`_hear_gossip`) on the live `BigvilleWorld`, exactly mirroring
+how `decide_speech` already hand-implements `sp_choose_utterance`. A THIRD
+gap, more fundamental than either of Part 1's two, was also found only by
+building: `_spontaneous_speech_tick`'s single call to `decide_speech` never
+passed `share_salience` at all, leaving it at its `0.0` default — `share`
+was structurally unreachable in the live path regardless of the other two
+fixes. All three are now closed (`_speech_share_event` computes real
+salience from `observed_event` data; `_speech_goal`'s `share` branch renders
+the real event; `_hear_gossip` moves the listener's belief, gated correctly
+on trust in the source). Verified end-to-end in a live simulated town, not
+just unit-isolated. 9 new tests + the repo's existing 152, all green. Full
+detail: `ozmalabs/bigville` commit `714d0fe`'s own message.
+
 This is a capability-gap analysis, not a harm-induction rung — it does not
 carry (and does not need) the abuse line's Part D ethics protocol. The
 question is whether Bigville residents have a *reason* to tell each other
