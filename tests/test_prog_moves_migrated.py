@@ -127,14 +127,17 @@ def test_seed_bumped_with_three_new_rules():
     # head pin is bumped forward rather than loosened.
     with open(SYNTH_SEED_PATH) as f:
         d = json.load(f)
-    assert d["version"] == "1.12.0"  # 2026-08-03: 1.11.0 -> 1.12.0, the goal-residual weight term
+    assert d["version"] == "1.13.0"  # 2026-08-03: 1.11.0 -> 1.12.0, the goal-residual weight term
     # (ps_move_mark stamps ps_move_w_residual; ps_move_select subtracts a
     # held refutation's weight inside its Argmax). Pin reconciled, not
     # relaxed -- see PROGRAM_SYNTHESIS_ARC6_GOAL_RESIDUALS.md GR4.
+    # 2026-08-16: 1.12.0/73 -> 1.13.0/74, PROGRAM_SYNTHESIS_PROPERTY_REJECT_
+    # SURVEY's ps_property_reject_retrieval_enumerate_fallback rule, purely
+    # additive (all four ps_move_* rules this test names are untouched).
     names = {r["name"] for r in d["rules"]}
     assert {"ps_move_mark", "ps_move_select", "ps_move_none",
            "ps_move_fresh_attempt"} <= names
-    assert len(d["rules"]) == 73
+    assert len(d["rules"]) == 74
 
 
 def test_seed_installs_clean_live():

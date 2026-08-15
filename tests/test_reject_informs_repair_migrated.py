@@ -223,10 +223,16 @@ def test_seed_v1_8_0_shape(seed_manifest):
     # below on a disjoint attr family (ps_property_* vs ps_structural_*)
     # rather than replacing it — all four S6 rules are still present and
     # unedited, so this test's own shape claim is unchanged.
-    assert seed_manifest["version"] == "1.12.0"  # 2026-08-03: 1.11.0 -> 1.12.0, the goal-residual weight term
+    assert seed_manifest["version"] == "1.13.0"  # 2026-08-03: 1.11.0 -> 1.12.0, the goal-residual weight term
     # (ps_move_mark stamps ps_move_w_residual; ps_move_select subtracts a
     # held refutation's weight inside its Argmax). Pin reconciled, not
     # relaxed -- see PROGRAM_SYNTHESIS_ARC6_GOAL_RESIDUALS.md GR4.
+    # 2026-08-16: 1.12.0 -> 1.13.0, PROGRAM_SYNTHESIS_PROPERTY_REJECT_
+    # SURVEY's ps_property_reject_retrieval_enumerate_fallback rule --
+    # sits BESIDE the four S6 reject-routing rules asserted below (gates
+    # whether ps_property_reject_gap gets to fire on the FIRST
+    # property-reject for a retrieved_exemplar goal), does not touch or
+    # replace any of them.
     names = {r["name"] for r in seed_manifest["rules"]}
     assert "ps_structural_reject" not in names
     assert "ps_structural_clear" in names
