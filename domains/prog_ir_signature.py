@@ -34,6 +34,7 @@ THE GRAIN (registered in the prereg before anything ran):
 from __future__ import annotations
 
 import json
+from fractions import Fraction
 from typing import Any, Dict, Iterator, List, Optional
 
 # --------------------------------------------------------------------------- #
@@ -284,11 +285,31 @@ def _text(v) -> Optional[str]:
 
 def _plain(v):
     """tuples -> lists recursively (native.evaluate / attr read-back returns
-    TUPLES, the documented gotcha) — for JSON artifacts and re-set_attr."""
+    TUPLES, the documented gotcha) — for JSON artifacts and re-set_attr.
+    Deliberately LOSSY (never a round-trip codec) — see
+    `prog_synthesis.py::_plain`, the reference implementation this
+    mirrors for parity.
+
+    WIRE_BOUNDARY_SYSTEMIC_AUDIT (2026-08): brought to parity with
+    `prog_synthesis.py::_plain`'s set/frozenset/Fraction handling — see
+    `prog_chunk_growth.py::_plain`'s docstring for the full account of
+    why this sibling copy existed and what it was missing. This module's
+    own call sites (`signature`, a statement's structural LGG) are
+    tuple/str/int-shaped in practice, so this was a latent gap, not a
+    live failure — closed here so it can't become one silently."""
     if isinstance(v, (list, tuple)):
         return [_plain(x) for x in v]
+    if isinstance(v, (set, frozenset)):
+        try:
+            return [_plain(x) for x in sorted(v)]
+        except TypeError:
+            return [_plain(x) for x in v]
+    if isinstance(v, dict):
+        return {_plain(k): _plain(x) for k, x in v.items()}
     if isinstance(v, bytes):
         return v.decode("utf-8", "replace")
+    if isinstance(v, Fraction):
+        return float(v)
     return v
 
 

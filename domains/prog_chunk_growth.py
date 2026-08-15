@@ -38,6 +38,7 @@ from __future__ import annotations
 import json
 import os
 import re
+from fractions import Fraction
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 from domains import prog_ir_signature as pis
@@ -677,10 +678,33 @@ def _text(v) -> Optional[str]:
 
 
 def _plain(v):
+    """JSON-safe, deliberately LOSSY flattener for display/re-set_attr use
+    (never a round-trip codec — see `prog_synthesis.py::_plain`, the
+    reference implementation this mirrors for parity).
+
+    WIRE_BOUNDARY_SYSTEMIC_AUDIT (2026-08): brought to parity with
+    `prog_synthesis.py::_plain`'s set/frozenset/Fraction handling — this
+    copy was an independently-reinvented, narrower flattener (the same
+    "own cache, no cross-import" duplication pattern found across
+    `domains/*.py`) missing the exact two type cases three separate
+    rungs added to the `prog_synthesis.py` original. This module's own
+    call sites (`trigger_tokens`) are string-shaped in practice, so this
+    was a latent gap, not a live failure — closed here so it can't
+    become one silently if a future caller routes a set/Fraction-valued
+    attribute through it."""
     if isinstance(v, (list, tuple)):
         return [_plain(x) for x in v]
+    if isinstance(v, (set, frozenset)):
+        try:
+            return [_plain(x) for x in sorted(v)]
+        except TypeError:
+            return [_plain(x) for x in v]
+    if isinstance(v, dict):
+        return {_plain(k): _plain(x) for k, x in v.items()}
     if isinstance(v, bytes):
         return v.decode("utf-8", "replace")
+    if isinstance(v, Fraction):
+        return float(v)
     return v
 
 

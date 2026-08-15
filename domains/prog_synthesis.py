@@ -887,74 +887,48 @@ def _wire(v):
     measured: 161/272/413/436/450/460 all evaluate to the exactly-correct
     LIST and were still reported `enumerate_failed`.
 
-    The engine already has an exact tagged form for this
-    (`__tuple__`/`__list__`/`__set__`/`__fset__`, `persist.rs`); this is
-    its write side. A BARE array is deliberately left meaning `Tuple`, so
-    every seed-resident `Lit` array literal is byte-unchanged.
+    WIRE_BOUNDARY_SYSTEMIC_AUDIT (2026-08): this function used to be a
+    hand-rolled hand-authored hand-tagged (`__tuple__`/`__list__`/
+    `__fset__`/`__set__`/`__dict__`) re-derivation of the engine's own
+    ALREADY-COMPLETE, ALREADY-EXPOSED codec — three separate coverage
+    gaps (frozenset, Fraction, non-string dict keys) were found and
+    patched into this hand-rolled copy across three separate rungs
+    (PROGRAM_SYNTHESIS_SETLIT_DICTITEMS_RESULTS.md,
+    PROGRAM_SYNTHESIS_CEILING_REASSESSMENT_3_RESULTS.md,
+    PROGRAM_SYNTHESIS_GROUPCOUNT_DICTMERGE_RESULTS.md), each patch
+    correct in isolation and each one re-deriving a strict subset of a
+    tag scheme `runners/dsl/src/persist.rs::encode_value` already
+    implements COMPLETELY over the engine's own `Value` enum (all 13
+    variants, including `Rational`/`Node`/`Surface` this hand-rolled copy
+    never covered at all) and already exposes to Python, unused, as
+    `substrate_rs.encode`/`substrate_rs.decode` (`py.rs`'s `encode`/
+    `decode` `#[pyfunction]`s, wrapping the exact same `py_to_value` /
+    `encode_value` chain `set_attr`/`node()`/`evaluate()` already use for
+    every OTHER attr on this graph). Per CLAUDE.md's Rust-primitive-reuse
+    rule ("Never 'primitive in Python'"), `_wire` now delegates to that
+    primitive instead of re-deriving a fourth, narrower copy of it. The
+    function NAME and call sites are kept byte-unchanged (call-site
+    compatibility, `test_arc6_lit_wire_migrated.py`'s own
+    `callable(getattr(prog_synthesis, "_wire", None))` pin); the tag
+    vocabulary emitted is IDENTICAL to the hand-rolled version's (same
+    `persist.rs` tag family), so every already-stored `inputs_json`
+    string decodes unchanged under the new `_unwire`.
+    WIRE_BOUNDARY_SYSTEMIC_AUDIT_RESULTS.md documents the audit.
     """
-    if isinstance(v, tuple):
-        return {"__tuple__": [_wire(x) for x in v]}
-    if isinstance(v, list):
-        return {"__list__": [_wire(x) for x in v]}
-    if isinstance(v, frozenset):
-        return {"__fset__": [_wire(x) for x in v]}
-    if isinstance(v, set):
-        return {"__set__": [_wire(x) for x in v]}
-    if isinstance(v, dict):
-        # GroupCount/DictMerge rung (task 88, `freq_count` — a dict whose
-        # KEYS are the original list elements, e.g. `{10: 4, 20: 4, ...}`):
-        # a bare JSON object can only ever have STRING keys, so an
-        # int-keyed dict silently lost its key type through this exact
-        # `_wire`->`json.dumps` boundary (found live: `SynthEnumerate`'s
-        # OWN internal example-row comparison accepted a WRONG candidate —
-        # `GroupCount(MapList(a,item,Str(item)))`, which stringifies every
-        # element before counting — because the STRINGIFIED-key result
-        # matched the ALSO-silently-stringified `expected` dict, while the
-        # correct `GroupCount(a)` produced genuine Int keys that could
-        # never match). The engine already has an exact tagged form for
-        # this on BOTH sides (`decode_value`/`encode_value`, `persist.rs`,
-        # `__dict__` — the SAME family as `__tuple__`/`__list__`/`__set__`/
-        # `__fset__` this function already emits for CONTAINER kind); this
-        # is its write side for DICT KEY type, applied only when it is
-        # actually needed (an all-string-keyed dict is byte-identical to
-        # before — the common case, and every currently-passing task's own
-        # dict-shaped values, verified empty of non-string keys).
-        if all(isinstance(k, str) for k in v):
-            return {k: _wire(x) for k, x in v.items()}
-        return {"__dict__": [[_wire(k), _wire(x)] for k, x in v.items()]}
-    return v
+    return srs.encode(v)
 
 
 def _unwire(v):
     """Inverse of `_wire` — recovers a native Python tuple/list/set/
-    frozenset from a wire-tagged JSON value. Mechanical translation; no
-    decision.
+    frozenset/Fraction/dict-with-any-key from a wire-tagged JSON value.
+    Mechanical translation; no decision.
 
-    Rung 2 (PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_RUNG2_RUNG3_PREREG.md):
-    `_wire`'s write side is used on `inputs_json` at row-construction time
-    (`_add_example_row`) so a tuple ARGUMENT survives the JSON round-trip
-    instead of arriving as an indistinguishable list; every
-    `inputs_json` reader applies this inverse so the row's inputs are
-    handed back in their true container kind. A plain dict whose keys are
-    not exactly one of the four tag names (e.g. the top-level
-    {param_name: value} row-inputs dict itself) falls through to
-    per-value recursion, mirroring `_wire`'s own dict handling.
+    WIRE_BOUNDARY_SYSTEMIC_AUDIT (2026-08): delegates to
+    `substrate_rs.decode` (see `_wire`'s docstring) instead of a
+    hand-rolled tag match — same tag vocabulary, so already-stored
+    `inputs_json` strings decode identically.
     """
-    if isinstance(v, dict):
-        if list(v.keys()) == ["__tuple__"]:
-            return tuple(_unwire(x) for x in v["__tuple__"])
-        if list(v.keys()) == ["__list__"]:
-            return [_unwire(x) for x in v["__list__"]]
-        if list(v.keys()) == ["__fset__"]:
-            return frozenset(_unwire(x) for x in v["__fset__"])
-        if list(v.keys()) == ["__set__"]:
-            return set(_unwire(x) for x in v["__set__"])
-        if list(v.keys()) == ["__dict__"]:
-            return {_unwire(k): _unwire(x) for k, x in v["__dict__"]}
-        return {k: _unwire(x) for k, x in v.items()}
-    if isinstance(v, list):
-        return [_unwire(x) for x in v]
-    return v
+    return srs.decode(v)
 
 
 def _wire_rows(rows):

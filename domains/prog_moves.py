@@ -106,6 +106,8 @@ import json
 import math
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
+import substrate_rs as srs
+
 # Bounded scoring-probe budget: comfortably above every measured target in
 # this arc (25,240 / 28,490) and comfortably below the engine's own 200,000
 # default, so a genuinely hard/impossible direct search reads as hard
@@ -588,45 +590,39 @@ def _goal_message(sub, g):
 
 
 def _wire(v):
-    """TYPE-FAITHFUL WIRE ENCODING, duplicated in miniature from
-    `domains/prog_synthesis.py::_wire` -- this module stays
-    import-independent of that one (the `_mint_example_row` precedent's
-    own stated reason), so the mechanical helper is mirrored rather than
-    imported. Rung 2 (PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_RUNG2_RUNG3_
-    PREREG.md): symmetric with `_unwire` below, keeps this module's OWN
-    `inputs_json` writer (`_mint_example_row`) consistent with
-    `prog_synthesis.py`'s now-tagged wire format, so a mixed-source
-    `ExampleRow` population (some minted here, some in prog_synthesis.py)
-    reads uniformly under either module's reader."""
-    if isinstance(v, tuple):
-        return {"__tuple__": [_wire(x) for x in v]}
-    if isinstance(v, list):
-        return {"__list__": [_wire(x) for x in v]}
-    if isinstance(v, frozenset):
-        return {"__fset__": [_wire(x) for x in v]}
-    if isinstance(v, set):
-        return {"__set__": [_wire(x) for x in v]}
-    if isinstance(v, dict):
-        return {k: _wire(x) for k, x in v.items()}
-    return v
+    """TYPE-FAITHFUL WIRE ENCODING for this module's OWN `inputs_json`
+    writer (`_mint_example_row`), consistent with `prog_synthesis.py`'s
+    tagged wire format so a mixed-source `ExampleRow` population (some
+    minted here, some in `prog_synthesis.py`) reads uniformly under
+    either module's reader.
+
+    WIRE_BOUNDARY_SYSTEMIC_AUDIT (2026-08): this used to be a hand-rolled
+    MINIATURE of `prog_synthesis.py::_wire`, "duplicated... so the
+    mechanical helper is mirrored rather than imported" (the
+    import-independence convention this codebase uses pervasively across
+    `domains/*.py` — confirmed real and load-bearing elsewhere this
+    session). That convention is about NOT importing another Python
+    module's cache/logic; it says nothing about re-deriving a Rust
+    primitive by hand. This module's copy had drifted from
+    `prog_synthesis.py`'s (missing the non-string-dict-key `__dict__`
+    tag fixed there by PROGRAM_SYNTHESIS_GROUPCOUNT_DICTMERGE_RESULTS.md
+    — exactly the predicted "same bug class, different missing subset"
+    failure mode). Delegating to `substrate_rs.encode`/`decode` (the
+    engine's own already-complete, already-exposed codec — see
+    `prog_synthesis.py::_wire`'s docstring for the full account) keeps
+    this module import-independent of `prog_synthesis.py` (it calls the
+    shared RUST primitive, not the sibling Python file) while making
+    drift between the two copies structurally impossible: there is only
+    one implementation now, and it lives in Rust.
+    WIRE_BOUNDARY_SYSTEMIC_AUDIT_RESULTS.md documents the audit."""
+    return srs.encode(v)
 
 
 def _unwire(v):
-    """Inverse of `_wire`, mirrored from `domains/prog_synthesis.py`
-    for the same import-independence reason. Mechanical translation."""
-    if isinstance(v, dict):
-        if list(v.keys()) == ["__tuple__"]:
-            return tuple(_unwire(x) for x in v["__tuple__"])
-        if list(v.keys()) == ["__list__"]:
-            return [_unwire(x) for x in v["__list__"]]
-        if list(v.keys()) == ["__fset__"]:
-            return frozenset(_unwire(x) for x in v["__fset__"])
-        if list(v.keys()) == ["__set__"]:
-            return set(_unwire(x) for x in v["__set__"])
-        return {k: _unwire(x) for k, x in v.items()}
-    if isinstance(v, list):
-        return [_unwire(x) for x in v]
-    return v
+    """Inverse of `_wire`. See `_wire`'s docstring — delegates to
+    `substrate_rs.decode`, the engine's own codec. Mechanical
+    translation; no decision."""
+    return srs.decode(v)
 
 
 def _goal_rows(sub, msg) -> Tuple[List[str], List[Dict[str, Any]]]:

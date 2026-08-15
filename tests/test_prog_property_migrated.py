@@ -194,8 +194,23 @@ def _fresh_goal(*, construction: str = "probe", attempts: float = 1.0,
 
 
 def _add_row(s, m, inputs: Dict[str, Any], expected: Any, *, attempt: float = 1.0):
+    # WIRE_BOUNDARY_SYSTEMIC_AUDIT (2026-08): this helper used to write
+    # `inputs_json` via a bare `json.dumps(inputs)` -- skipping `_wire`
+    # entirely, unlike the production writer (`_add_example_row`). JSON
+    # has one array type, so any tuple-shaped input (e.g. task 143's
+    # `find_lists(([1,2,3,4],[5,6,7,8]))`) silently lost its outer-tuple/
+    # inner-list distinction on the way in. It happened to round-trip
+    # back out as an (incorrectly) all-list shape under the OLD
+    # `_unwire`'s bare-array fallback and an (also incorrect, differently
+    # wrong) all-tuple shape under `substrate_rs.decode`'s bare-array
+    # convention (`persist.rs`: "a bare array means Tuple") once `_unwire`
+    # was switched to delegate to the engine's own codec -- neither
+    # matches the TRUE mixed tuple-of-lists shape. `_wire` here restores
+    # that true shape (matches `_add_example_row`), so the type-sensitive
+    # reference relation `_unwire` readers use downstream sees exactly
+    # what the original Python call carried.
     r = s.add_node("ExampleRow", {
-        "inputs_json": json.dumps(inputs), "expected": expected,
+        "inputs_json": json.dumps(psy._wire(inputs)), "expected": expected,
         "eval_attempt": attempt, "verdict_attempt": -1.0,
         "eval_ok": 1.0, "got": expected, "ce_attempt": -1.0,
     })

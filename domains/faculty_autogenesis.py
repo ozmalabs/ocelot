@@ -26,8 +26,18 @@ def pump(agent) -> None:
         examples = []
         for example in native.neighbours(need, "has_faculty_example"):
             example_attrs = sub.node(example)["attrs"]
+            # WIRE_BOUNDARY_SYSTEMIC_AUDIT (2026-08): this used to be a
+            # bare `json.loads` with no `_unwire` step -- the exact bug
+            # class three `prog_synthesis.py::_wire`/`_unwire` rungs
+            # fixed, but on the DECODE side and at a CONSUMER site: a
+            # tuple/set/non-string-keyed-dict-valued FacultyNeed example
+            # input would silently reach `ingest_spec` as its raw
+            # `{"__tuple__": [...]}` tag dict instead of the real value.
+            # `prog_synthesis` is already imported here (no new
+            # cross-import); this module already delegates to it for
+            # `ensure_program_synthesis`/`ingest_spec`/`pump`.
             examples.append((
-                json.loads(str(example_attrs["inputs_json"])),
+                prog_synthesis._unwire(json.loads(str(example_attrs["inputs_json"]))),
                 example_attrs["expected"],
             ))
         message = prog_synthesis.ingest_spec(
