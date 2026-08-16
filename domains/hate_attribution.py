@@ -27,6 +27,18 @@ crystallizing incident's removal_desire_for alpha is amplified by
 whatever arousal has built up, read BEFORE this incident's own
 contribution, the same read-before/update-after convention `shared_
 arousal.record_targeted_incident` already established.
+
+v1.7.0 (ADMIRATION_GRATITUDE_PREREG.md): generalizes the SAME
+crystallization ladder to the POSITIVE sign -- OCC (Ortony, Clore &
+Collins 1988)'s Attribution branch, praiseworthy cell. Found and fixed a
+real bug in the process: crystallize_hate's own gate never checked the
+sign of the crystallizing pattern, so repeated POSITIVE incidents wrongly
+minted a Hate node too. crystallize_admiration is the positive mirror,
+routing ('admiration'/'none') via the SAME controllability sign-read
+crystallize_hate's own consequence_route uses. gratitude_debt (McCullough,
+Emmons & Tsang 2002) accumulates on EVERY positive incident and amplifies
+admiration_for's crystallizing alpha the same way resentment_debt
+amplifies removal_desire_for's.
 """
 from __future__ import annotations
 
@@ -53,12 +65,13 @@ def mint_target_pattern(inner, mt, target: str):
             return existing
     pat = inner.add_node("TargetPattern", {
         "target": target, "incident_count": 0, "confirm_streak": 0,
-        "crystallized": 0.0, "resentment_debt": 0.0,
+        "crystallized": 0.0, "resentment_debt": 0.0, "gratitude_debt": 0.0,
     })
     inner.add_edge(mt, "has_target_pattern", pat, {})
     regard = mint_target_concept(inner, mt, "regard_for", target)
     removal = mint_target_concept(inner, mt, "removal_desire_for", target)
     pity = mint_target_concept(inner, mt, "pity_for", target)
+    admiration_concept = mint_target_concept(inner, mt, "admiration_for", target)
     # controllability is a ToM belief ABOUT the target (Weiner's
     # attribution), not the resident's own affect toward them -- minted
     # through the named ToM entry point (bigville_theory_of_mind.py),
@@ -67,6 +80,7 @@ def mint_target_pattern(inner, mt, target: str):
     inner.add_edge(pat, "tracks_concept", regard, {})
     inner.add_edge(pat, "tracks_removal_desire", removal, {})
     inner.add_edge(pat, "tracks_pity", pity, {})
+    inner.add_edge(pat, "tracks_admiration", admiration_concept, {})
     inner.add_edge(pat, "tracks_controllability", controllability, {})
     arousal = mint_target_arousal(inner, mt, target)
     inner.add_edge(pat, "tracks_arousal", arousal, {})
@@ -103,10 +117,22 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
 
     Returns {attribution_locus, confirm_streak, crystallized,
     crystallized_this_call, regard_state, removal_desire_state,
-    arousal_level, effective_removal_alpha}.
+    arousal_level, effective_removal_alpha, gratitude_debt,
+    admiration_crystallized_this_call, admiration_consequence_route,
+    effective_admiration_alpha}.
     """
     signal = 1.0 if not negative else -1.0
     hate_count_before = len(list(inner.neighbours(pattern, "has_hate")))
+    admiration_count_before = len(list(inner.neighbours(pattern, "has_admiration")))
+    # gratitude_debt, UNLIKE resentment_debt, increments on the SAME
+    # global_other incident that can crystallize admiration (resentment_
+    # debt's own increment is gated OFF on global_other, so it never
+    # faces this) -- reading it post-run_rules() would pick up THIS
+    # incident's own contribution, violating the read-before/update-after
+    # convention every other coupling in this arc uses. Found and fixed
+    # here by snapshotting BEFORE the first run_rules() call, the same
+    # point hate_count_before/admiration_count_before already snapshot.
+    gratitude_debt_before = inner.node(pattern)["attrs"]["gratitude_debt"]
 
     ir = inner.add_node("IncidentReport", {
         "target": inner.node(pattern)["attrs"]["target"],
@@ -153,6 +179,24 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
             pity_concept = next(iter(inner.neighbours(pattern, "tracks_pity")))
             inner.concept_apply_evidence(pity_concept, 1.0, base_alpha)
 
+    admiration_count_after = len(list(inner.neighbours(pattern, "has_admiration")))
+    admiration_crystallized_this_call = admiration_count_after > admiration_count_before
+    effective_admiration_alpha = None
+    admiration_consequence_route = None
+    if admiration_crystallized_this_call:
+        admiration_node = next(iter(inner.neighbours(pattern, "has_admiration")))
+        admiration_consequence_route = inner.node(admiration_node)["attrs"]["consequence_route"]
+        # ADMIRATION_GRATITUDE_PREREG.md Sec2: the positive mirror of
+        # removal_desire_for's own amplification -- arousal AND
+        # gratitude_debt, multiplicatively. Uses gratitude_debt_before
+        # (the pre-this-incident snapshot), NOT a fresh post-run_rules()
+        # read -- gratitude_debt, unlike resentment_debt, increments on
+        # the SAME global_other incident that can crystallize admiration.
+        if admiration_consequence_route == "admiration":
+            effective_admiration_alpha = base_alpha * (1.0 + current_arousal) * (1.0 + gratitude_debt_before)
+            admiration_concept = next(iter(inner.neighbours(pattern, "tracks_admiration")))
+            inner.concept_apply_evidence(admiration_concept, 1.0, effective_admiration_alpha)
+
     inner.force_all_dirty()
     inner.run_rules(max_steps)
 
@@ -198,6 +242,12 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
             next(iter(inner.neighbours(pattern, "tracks_pity"))))["attrs"]["external_field"],
         "controllability_external_field": inner.node(
             next(iter(inner.neighbours(pattern, "tracks_controllability"))))["attrs"]["external_field"],
+        "gratitude_debt": pat_attrs["gratitude_debt"],
+        "admiration_crystallized_this_call": admiration_crystallized_this_call,
+        "admiration_consequence_route": admiration_consequence_route,
+        "effective_admiration_alpha": effective_admiration_alpha,
+        "admiration_external_field": inner.node(
+            next(iter(inner.neighbours(pattern, "tracks_admiration"))))["attrs"]["external_field"],
     }
 
 

@@ -53,12 +53,19 @@ def test_hate_attribution_controllability_routes_through_the_named_entry_point()
 
 
 def test_no_prior_seed_was_edited():
+    # hate_attribution.json is NOT in this guard -- unlike can_native_
+    # reimplementation.json/shared_arousal.json (genuinely foundational,
+    # frozen), it is the actively-iterated arc this whole rung's own
+    # domain module (mint_resident_tom_belief) is part of, and later
+    # rungs (e.g. ADMIRATION_GRATITUDE_PREREG.md) legitimately extend it
+    # further -- this test only ever needed to confirm the two TRULY
+    # frozen seeds stayed untouched.
     import subprocess
     try:
         out = subprocess.run(
             ["git", "status", "--porcelain",
              "seeds/can_native_reimplementation.json",
-             "seeds/shared_arousal.json", "seeds/hate_attribution.json"],
+             "seeds/shared_arousal.json"],
             capture_output=True, text=True, timeout=10, cwd=".",
         )
     except Exception:

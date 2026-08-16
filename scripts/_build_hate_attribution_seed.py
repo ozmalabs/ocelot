@@ -40,6 +40,10 @@ def Gte(a, b):
     return {"type": "Gte", "a": a, "b": b}
 
 
+def Lt(a, b):
+    return {"type": "Lt", "a": a, "b": b}
+
+
 def AndT(items):
     return {"type": "And", "items": items}
 
@@ -174,6 +178,18 @@ def _new_resentment_debt_term(pat_var="pat", ir_var="ir"):
     return PlusT([Attr(Var(pat_var), "resentment_debt"), increment])
 
 
+def _new_gratitude_debt_term(pat_var="pat", ir_var="ir"):
+    # ADMIRATION_GRATITUDE_PREREG.md Sec2: EVERY positive incident adds a
+    # fixed unit to a monotonically-accumulating gratitude_debt ledger
+    # (McCullough, Emmons & Tsang 2002 -- a debt of gratitude, like
+    # unresolved resentment, does not evaporate). Unlike resentment_debt,
+    # NOT gated by locus -- OCC's own gratitude does not require pattern-
+    # stability or pattern-violation, just a beneficial act.
+    is_positive = Gt(_incident_signal_term(ir_var), Lit(0.0))
+    increment = IfThenElse(is_positive, Lit(1.0), Lit(0.0))
+    return PlusT([Attr(Var(pat_var), "gratitude_debt"), increment])
+
+
 # --------------------------------------------------------------------- #
 # Rule 1: a pending IncidentReport derives its attribution_locus, updates
 # the tracked TargetPattern's incident_count + confirm_streak. Guarded by
@@ -207,7 +223,11 @@ def rule_derive_attribution():
             "resentment_debt, a never-decremented ledger (HATE_"
             "RESENTMENT_PASSION_COUPLING_PREREG.md Sec2 -- McCullough, "
             "Fincham & Tsang 2003: unforgiveness does not fade with time "
-            "the way arousal does). Guarded by status pending->appraised "
+            "the way arousal does). EVERY positive incident (regardless "
+            "of locus) also accumulates a SEPARATE gratitude_debt ledger "
+            "(ADMIRATION_GRATITUDE_PREREG.md Sec2 -- McCullough, Emmons & "
+            "Tsang 2002: a debt of gratitude does not evaporate either). "
+            "Guarded by status pending->appraised "
             "so re-running run_rules() does not "
             "double-derive."
         ),
@@ -229,6 +249,7 @@ def rule_derive_attribution():
             # Plus-1 precedent elsewhere in this codebase already relies
             # on), so this order is load-bearing, not cosmetic.
             term_effect("pat", "resentment_debt", _new_resentment_debt_term("pat", "ir")),
+            term_effect("pat", "gratitude_debt", _new_gratitude_debt_term("pat", "ir")),
             term_effect("pat", "confirm_streak", _new_streak_term("pat", "ir")),
             term_effect("pat", "incident_count",
                         PlusT([Attr(Var("pat"), "incident_count"), Lit(1)])),
@@ -270,6 +291,14 @@ def rule_crystallize_hate():
     where = AndT([
         Gte(Attr(pat, "confirm_streak"), _effective_threshold_term("pat")),
         Eq(Attr(pat, "crystallized"), Lit(0.0)),
+        # ADMIRATION_GRATITUDE_PREREG.md Sec0: a real, found-before-
+        # designing bug fix -- crystallize_hate's gate never checked the
+        # SIGN of the crystallizing pattern, so repeated POSITIVE
+        # incidents wrongly minted a Hate node too (confirmed live,
+        # never exercised by any prior test). Hate requires a NEGATIVE
+        # held pattern; the positive case is crystallize_admiration's
+        # own, separate rule below.
+        Lt(_held_regard_term("pat"), Lit(0.0)),
     ])
     return {
         "name": "crystallize_hate",
@@ -292,7 +321,11 @@ def rule_crystallize_hate():
             "resident's own ToM belief about the target "
             "(tracks_controllability) -- >=0 (controllable, or no "
             "understanding at all, Ross 1977's default) routes removal; "
-            "understood-uncontrollable routes pity. Fires exactly once "
+            "understood-uncontrollable routes pity. ADMIRATION_GRATITUDE_"
+            "PREREG.md Sec0: gated to a NEGATIVE held regard_for "
+            "external_field -- a positive crystallizing pattern is "
+            "crystallize_admiration's own rule, not this one (a real bug "
+            "fix, not always true). Fires exactly once "
             "per TargetPattern (crystallized==0.0 guard)." % HATE_STABILITY_THRESHOLD
         ),
         "match_type": "TargetPattern",
@@ -309,9 +342,57 @@ def rule_crystallize_hate():
     }
 
 
+def _admiration_route_term(pat_var="pat"):
+    # ADMIRATION_GRATITUDE_PREREG.md Sec2: Weiner's OWN original
+    # (achievement-attribution) context -- a positive pattern attributed
+    # to a CONTROLLABLE cause (skill, effort) earns admiration; an
+    # UNCONTROLLABLE one (luck) does not. Same controllability sign read
+    # crystallize_hate's own consequence_route already uses.
+    return IfThenElse(Gte(_controllability_term(pat_var), Lit(0.0)), Lit("admiration"), Lit("none"))
+
+
+def rule_crystallize_admiration():
+    pat = Var("pat")
+    where = AndT([
+        Gte(Attr(pat, "confirm_streak"), _effective_threshold_term("pat")),
+        Eq(Attr(pat, "crystallized"), Lit(0.0)),
+        Gt(_held_regard_term("pat"), Lit(0.0)),
+    ])
+    return {
+        "name": "crystallize_admiration",
+        "comment": (
+            "ADMIRATION_GRATITUDE_PREREG.md Sec2: the positive mirror of "
+            "crystallize_hate -- OCC (Ortony, Clore & Collins 1988)'s "
+            "Attribution branch, praiseworthy cell. SAME effective-"
+            "threshold ladder (Sternberg's decision/commitment, Slovic et "
+            "al. 2007's arousal-lowered bar), gated to a POSITIVE held "
+            "regard_for external_field. consequence_route "
+            "('admiration'/'none') reads controllability the SAME way "
+            "crystallize_hate's own consequence_route does -- Weiner's "
+            "OWN original achievement-attribution context: a controllable "
+            "positive pattern (skill, effort) earns admiration; an "
+            "uncontrollable one (luck) does not. Fires exactly once per "
+            "TargetPattern -- shares the SAME crystallized==0.0 guard as "
+            "crystallize_hate (a target's reputation crystallizes once, "
+            "either direction, not both)."
+        ),
+        "match_type": "TargetPattern",
+        "match": [["mt", "has_target_pattern", "pat"]],
+        "where": where,
+        "effects": [
+            term_effect("pat", "crystallized", Lit(1.0)),
+            add_node_effect("admiration", "Admiration", {
+                "target": {"__term__": Attr(pat, "target")},
+                "consequence_route": {"__term__": _admiration_route_term("pat")},
+            }),
+            add_edge_effect("pat", "has_admiration", "admiration"),
+        ],
+    }
+
+
 SEED = {
     "id": "hate_attribution",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "depends_on": ["shared_arousal"],
     "self_load_only": True,
     "description": (
@@ -370,13 +451,32 @@ SEED = {
         "evidence to removal_desire_for as before; understood-"
         "uncontrollable routes it to a new pity_for:<target> Concept "
         "instead -- mutually exclusive, unamplified by arousal or "
-        "resentment_debt (pity is not a passion channel). See "
-        "HATE_ATTRIBUTION_PREREG.md / _RESULTS.md, HATE_PASSION_COUPLING_"
-        "PREREG.md / _RESULTS.md, HATE_STABILITY_AROUSAL_COUPLING_PREREG."
-        "md / _RESULTS.md, HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md "
-        "/ _RESULTS.md, HATE_RESET_RESENTMENT_COUPLING_PREREG.md / "
+        "resentment_debt (pity is not a passion channel). v1.7.0 "
+        "(ADMIRATION_GRATITUDE_PREREG.md) generalizes the ladder to the "
+        "POSITIVE sign -- OCC (Ortony, Clore & Collins 1988)'s Attribution "
+        "branch, praiseworthy cell. Fixes a real bug found before "
+        "designing: crystallize_hate's own gate never checked the SIGN of "
+        "the crystallizing pattern, so repeated POSITIVE incidents wrongly "
+        "minted a Hate node too (confirmed live, never exercised by any "
+        "prior test) -- crystallize_hate now requires a NEGATIVE held "
+        "regard_for. A new, parallel crystallize_admiration rule mints an "
+        "Admiration node for a POSITIVE pattern, routing "
+        "('admiration'/'none') via the SAME controllability sign-read, "
+        "Weiner's OWN original achievement-attribution context (a "
+        "controllable success earns admiration; a lucky, uncontrollable "
+        "one does not). A new gratitude_debt ledger (McCullough, Emmons & "
+        "Tsang 2002 -- the companion paper to the unforgiveness citation "
+        "resentment_debt already used) accumulates on EVERY positive "
+        "incident regardless of locus or crystallization, and amplifies "
+        "admiration_for's crystallizing alpha the SAME way resentment_"
+        "debt amplifies removal_desire_for's. See HATE_ATTRIBUTION_"
+        "PREREG.md / _RESULTS.md, HATE_PASSION_COUPLING_PREREG.md / "
+        "_RESULTS.md, HATE_STABILITY_AROUSAL_COUPLING_PREREG.md / "
+        "_RESULTS.md, HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md / "
+        "_RESULTS.md, HATE_RESET_RESENTMENT_COUPLING_PREREG.md / "
         "_RESULTS.md, HATE_RESENTMENT_PASSION_COUPLING_PREREG.md / "
-        "_RESULTS.md, HATE_PITY_TOM_UNDERSTANDING_PREREG.md / _RESULTS.md."
+        "_RESULTS.md, HATE_PITY_TOM_UNDERSTANDING_PREREG.md / _RESULTS.md, "
+        "ADMIRATION_GRATITUDE_PREREG.md / _RESULTS.md."
         % HATE_STABILITY_THRESHOLD
     ),
     "nodes": [],
@@ -462,10 +562,27 @@ SEED = {
             "weight": Lit(1.0),
             "provenance": "hate_attribution",
         },
+        {
+            "src": {"type": "TargetPattern", "var": "pat"},
+            "edge_type": "has_admiration",
+            "tgt": {"type": "Admiration", "var": "admiration"},
+            "where": None,
+            "weight": Lit(1.0),
+            "provenance": "hate_attribution",
+        },
+        {
+            "src": {"type": "TargetPattern", "var": "pat"},
+            "edge_type": "tracks_admiration",
+            "tgt": {"type": "Concept", "var": "c"},
+            "where": None,
+            "weight": Lit(1.0),
+            "provenance": "hate_attribution",
+        },
     ],
     "rules": [
         rule_derive_attribution(),
         rule_crystallize_hate(),
+        rule_crystallize_admiration(),
     ],
     "concepts": [
         {

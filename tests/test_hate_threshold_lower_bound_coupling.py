@@ -37,6 +37,11 @@ def _fresh(name="test_mt"):
 def test_zero_arousal_gate_matches_the_base_constant_exactly():
     inner, mt = _fresh()
     pat = mint_target_pattern(inner, mt, "Alex")
+    # ADMIRATION_GRATITUDE_PREREG.md Sec0's bug fix: crystallize_hate now
+    # requires a NEGATIVE held regard_for -- a coherent negative pattern,
+    # not a bare staged streak.
+    regard = next(iter(inner.neighbours(pat, "tracks_concept")))
+    inner.set_attr(regard, "external_field", -2.0)
     inner.set_attr(pat, "confirm_streak", float(HATE_STABILITY_THRESHOLD) - 0.1)
     inner.force_all_dirty()
     inner.run_rules(3000)
@@ -58,6 +63,8 @@ def test_elevated_arousal_crystallizes_a_streak_that_would_not_crystallize_cold(
 
     inner_cold, mt_cold = _fresh("cold")
     pat_cold = mint_target_pattern(inner_cold, mt_cold, "Alex")
+    regard_cold = next(iter(inner_cold.neighbours(pat_cold, "tracks_concept")))
+    inner_cold.set_attr(regard_cold, "external_field", -2.0)
     inner_cold.set_attr(pat_cold, "confirm_streak", streak_value)
     inner_cold.force_all_dirty()
     inner_cold.run_rules(3000)
@@ -65,6 +72,8 @@ def test_elevated_arousal_crystallizes_a_streak_that_would_not_crystallize_cold(
 
     inner_hot, mt_hot = _fresh("hot")
     pat_hot = mint_target_pattern(inner_hot, mt_hot, "Alex")
+    regard_hot = next(iter(inner_hot.neighbours(pat_hot, "tracks_concept")))
+    inner_hot.set_attr(regard_hot, "external_field", -2.0)
     arousal_hot = next(iter(inner_hot.neighbours(pat_hot, "tracks_arousal")))
     inner_hot.set_attr(arousal_hot, "level", 1.0)  # effective_threshold = 3/(1+1) = 1.5
     inner_hot.set_attr(pat_hot, "confirm_streak", streak_value)  # == 2.0 >= 1.5
@@ -122,6 +131,8 @@ def test_both_couplings_crystallize_sooner_than_increment_coupling_alone():
 def test_threshold_lowering_does_not_leak_across_targets():
     inner, mt = _fresh()
     alex = mint_target_pattern(inner, mt, "Alex")
+    regard_alex = next(iter(inner.neighbours(alex, "tracks_concept")))
+    inner.set_attr(regard_alex, "external_field", -2.0)
     arousal_alex = next(iter(inner.neighbours(alex, "tracks_arousal")))
     inner.set_attr(arousal_alex, "level", 2.0)  # effective_threshold = 1.0
     inner.set_attr(alex, "confirm_streak", 1.5)

@@ -1,11 +1,11 @@
 {
  "id": "hate_attribution",
- "version": "1.6.0",
+ "version": "1.7.0",
  "depends_on": [
   "shared_arousal"
  ],
  "self_load_only": true,
- "description": "Generalizes ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md's self-directed residual outward -- a held pattern about ANOTHER agent (their regard_for Concept's own live state) instead of oneself. Adds a stability gate (Sternberg 2003's decision/commitment component: confirm_streak >= an effective threshold, base 3 confirmation UNITS at zero arousal) before a Hate marker crystallizes, and gates a motivational removal_desire_for consequence (Fischer, Halperin, Canetti & Jasini 2018's elimination goal) behind that gate, not behind any single angry appraisal. v1.1.0 (HATE_PASSION_COUPLING_PREREG.md) tracks the SAME shared TargetArousal pool shared_arousal.json already built (Sternberg's passion component) and couples the crystallizing incident's removal_desire_for alpha to it. v1.2.0 (HATE_STABILITY_AROUSAL_COUPLING_PREREG.md) additionally scales each confirming incident's own contribution to confirm_streak by 1+arousal_level (Slovic, Finucane, Peters & MacGregor 2007's affect heuristic: a more arousing confirming incident reads as MORE representative of a stable pattern). v1.3.0 (HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md) additionally lowers the EFFECTIVE threshold itself under arousal (base_threshold/(1+arousal_level), the SAME affect-heuristic citation's second claim: strong affect needs less accumulated evidence before a judgment is treated as settled) -- two independent, additive channels by which passion accelerates crystallization, neither replacing the other. v1.4.0 (HATE_RESET_RESENTMENT_COUPLING_PREREG.md) couples the specific_act RESET too -- instead of an unconditional wipe to 0, confirm_streak is multiplied by arousal_level/(1+arousal_level) (0 at zero arousal, an exact full reset; a positive fraction retained when aroused, per Bodenhausen 1993 -- aroused judgment discounts disconfirming evidence). This retained residue IS this arc's operationalization of resentment: a grievance that persists past a genuine disconfirming act because the act was processed under the same arousal the grievance itself produced. v1.5.0 (HATE_RESENTMENT_PASSION_COUPLING_PREREG.md) additionally accumulates that SAME residue into resentment_debt, a never-decremented ledger (McCullough, Fincham & Tsang 2003 -- unforgiveness does not fade with time the way arousal does), and amplifies the crystallizing incident's removal_desire_for alpha by BOTH arousal AND resentment_debt multiplicatively: base_alpha*(1+arousal_level)*(1+resentment_debt) -- a target whose grievance was repeatedly discounted-not-forgotten reacts more strongly once hate finally crystallizes than an identical target with no such history. v1.6.0 (HATE_PITY_TOM_UNDERSTANDING_PREREG.md) adds Weiner's THIRD attribution dimension, controllability -- a new controllability_for:<target> Concept IS the resident's Theory-of-Mind belief about the target (mint_target_concept reused again, tracked via tracks_controllability), evidenced by record_understanding_incident. crystallize_hate now ALSO writes consequence_route ('removal'/'pity') onto the minted Hate node >=0 controllability (or none at all, Ross 1977's Fundamental Attribution Error default) routes the crystallizing incident's evidence to removal_desire_for as before; understood-uncontrollable routes it to a new pity_for:<target> Concept instead -- mutually exclusive, unamplified by arousal or resentment_debt (pity is not a passion channel). See HATE_ATTRIBUTION_PREREG.md / _RESULTS.md, HATE_PASSION_COUPLING_PREREG.md / _RESULTS.md, HATE_STABILITY_AROUSAL_COUPLING_PREREG.md / _RESULTS.md, HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md / _RESULTS.md, HATE_RESET_RESENTMENT_COUPLING_PREREG.md / _RESULTS.md, HATE_RESENTMENT_PASSION_COUPLING_PREREG.md / _RESULTS.md, HATE_PITY_TOM_UNDERSTANDING_PREREG.md / _RESULTS.md.",
+ "description": "Generalizes ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md's self-directed residual outward -- a held pattern about ANOTHER agent (their regard_for Concept's own live state) instead of oneself. Adds a stability gate (Sternberg 2003's decision/commitment component: confirm_streak >= an effective threshold, base 3 confirmation UNITS at zero arousal) before a Hate marker crystallizes, and gates a motivational removal_desire_for consequence (Fischer, Halperin, Canetti & Jasini 2018's elimination goal) behind that gate, not behind any single angry appraisal. v1.1.0 (HATE_PASSION_COUPLING_PREREG.md) tracks the SAME shared TargetArousal pool shared_arousal.json already built (Sternberg's passion component) and couples the crystallizing incident's removal_desire_for alpha to it. v1.2.0 (HATE_STABILITY_AROUSAL_COUPLING_PREREG.md) additionally scales each confirming incident's own contribution to confirm_streak by 1+arousal_level (Slovic, Finucane, Peters & MacGregor 2007's affect heuristic: a more arousing confirming incident reads as MORE representative of a stable pattern). v1.3.0 (HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md) additionally lowers the EFFECTIVE threshold itself under arousal (base_threshold/(1+arousal_level), the SAME affect-heuristic citation's second claim: strong affect needs less accumulated evidence before a judgment is treated as settled) -- two independent, additive channels by which passion accelerates crystallization, neither replacing the other. v1.4.0 (HATE_RESET_RESENTMENT_COUPLING_PREREG.md) couples the specific_act RESET too -- instead of an unconditional wipe to 0, confirm_streak is multiplied by arousal_level/(1+arousal_level) (0 at zero arousal, an exact full reset; a positive fraction retained when aroused, per Bodenhausen 1993 -- aroused judgment discounts disconfirming evidence). This retained residue IS this arc's operationalization of resentment: a grievance that persists past a genuine disconfirming act because the act was processed under the same arousal the grievance itself produced. v1.5.0 (HATE_RESENTMENT_PASSION_COUPLING_PREREG.md) additionally accumulates that SAME residue into resentment_debt, a never-decremented ledger (McCullough, Fincham & Tsang 2003 -- unforgiveness does not fade with time the way arousal does), and amplifies the crystallizing incident's removal_desire_for alpha by BOTH arousal AND resentment_debt multiplicatively: base_alpha*(1+arousal_level)*(1+resentment_debt) -- a target whose grievance was repeatedly discounted-not-forgotten reacts more strongly once hate finally crystallizes than an identical target with no such history. v1.6.0 (HATE_PITY_TOM_UNDERSTANDING_PREREG.md) adds Weiner's THIRD attribution dimension, controllability -- a new controllability_for:<target> Concept IS the resident's Theory-of-Mind belief about the target (mint_target_concept reused again, tracked via tracks_controllability), evidenced by record_understanding_incident. crystallize_hate now ALSO writes consequence_route ('removal'/'pity') onto the minted Hate node >=0 controllability (or none at all, Ross 1977's Fundamental Attribution Error default) routes the crystallizing incident's evidence to removal_desire_for as before; understood-uncontrollable routes it to a new pity_for:<target> Concept instead -- mutually exclusive, unamplified by arousal or resentment_debt (pity is not a passion channel). v1.7.0 (ADMIRATION_GRATITUDE_PREREG.md) generalizes the ladder to the POSITIVE sign -- OCC (Ortony, Clore & Collins 1988)'s Attribution branch, praiseworthy cell. Fixes a real bug found before designing: crystallize_hate's own gate never checked the SIGN of the crystallizing pattern, so repeated POSITIVE incidents wrongly minted a Hate node too (confirmed live, never exercised by any prior test) -- crystallize_hate now requires a NEGATIVE held regard_for. A new, parallel crystallize_admiration rule mints an Admiration node for a POSITIVE pattern, routing ('admiration'/'none') via the SAME controllability sign-read, Weiner's OWN original achievement-attribution context (a controllable success earns admiration; a lucky, uncontrollable one does not). A new gratitude_debt ledger (McCullough, Emmons & Tsang 2002 -- the companion paper to the unforgiveness citation resentment_debt already used) accumulates on EVERY positive incident regardless of locus or crystallization, and amplifies admiration_for's crystallizing alpha the SAME way resentment_debt amplifies removal_desire_for's. See HATE_ATTRIBUTION_PREREG.md / _RESULTS.md, HATE_PASSION_COUPLING_PREREG.md / _RESULTS.md, HATE_STABILITY_AROUSAL_COUPLING_PREREG.md / _RESULTS.md, HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md / _RESULTS.md, HATE_RESET_RESENTMENT_COUPLING_PREREG.md / _RESULTS.md, HATE_RESENTMENT_PASSION_COUPLING_PREREG.md / _RESULTS.md, HATE_PITY_TOM_UNDERSTANDING_PREREG.md / _RESULTS.md, ADMIRATION_GRATITUDE_PREREG.md / _RESULTS.md.",
  "nodes": [],
  "edges": [],
  "productions": [
@@ -178,12 +178,46 @@
     "value": 1.0
    },
    "provenance": "hate_attribution"
+  },
+  {
+   "src": {
+    "type": "TargetPattern",
+    "var": "pat"
+   },
+   "edge_type": "has_admiration",
+   "tgt": {
+    "type": "Admiration",
+    "var": "admiration"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "hate_attribution"
+  },
+  {
+   "src": {
+    "type": "TargetPattern",
+    "var": "pat"
+   },
+   "edge_type": "tracks_admiration",
+   "tgt": {
+    "type": "Concept",
+    "var": "c"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "hate_attribution"
   }
  ],
  "rules": [
   {
    "name": "derive_hate_attribution",
-   "comment": "HATE_ATTRIBUTION_PREREG.md Sec2: attribution_locus is a RESIDUAL between the incident's own signal and the LIVE regard_for Concept's state (via tracks_concept) -- no prior incident -> first_encounter (hate cannot form on a first impression), signs agree (confirms the held pattern) -> global_other, signs disagree (an exception) -> specific_act. confirm_streak increments by 1+arousal_level on global_other (HATE_STABILITY_AROUSAL_COUPLING_PREREG.md Sec2 -- an aroused confirming incident counts for MORE than one confirmation unit, read via tracks_arousal BEFORE this incident's own update; 0 arousal is exactly the pre-coupling +1), otherwise MULTIPLIES by arousal_level/(1+arousal_level) (HATE_RESET_RESENTMENT_COUPLING_PREREG.md Sec2 -- the resentment residue: at 0 arousal this is an exact full reset to 0, unchanged; elevated arousal retains a fraction of the pre-exception streak instead of fully clearing it, per Bodenhausen 1993's finding that aroused judgment discounts disconfirming evidence) -- that SAME residue also ACCUMULATES into resentment_debt, a never-decremented ledger (HATE_RESENTMENT_PASSION_COUPLING_PREREG.md Sec2 -- McCullough, Fincham & Tsang 2003: unforgiveness does not fade with time the way arousal does). Guarded by status pending->appraised so re-running run_rules() does not double-derive.",
+   "comment": "HATE_ATTRIBUTION_PREREG.md Sec2: attribution_locus is a RESIDUAL between the incident's own signal and the LIVE regard_for Concept's state (via tracks_concept) -- no prior incident -> first_encounter (hate cannot form on a first impression), signs agree (confirms the held pattern) -> global_other, signs disagree (an exception) -> specific_act. confirm_streak increments by 1+arousal_level on global_other (HATE_STABILITY_AROUSAL_COUPLING_PREREG.md Sec2 -- an aroused confirming incident counts for MORE than one confirmation unit, read via tracks_arousal BEFORE this incident's own update; 0 arousal is exactly the pre-coupling +1), otherwise MULTIPLIES by arousal_level/(1+arousal_level) (HATE_RESET_RESENTMENT_COUPLING_PREREG.md Sec2 -- the resentment residue: at 0 arousal this is an exact full reset to 0, unchanged; elevated arousal retains a fraction of the pre-exception streak instead of fully clearing it, per Bodenhausen 1993's finding that aroused judgment discounts disconfirming evidence) -- that SAME residue also ACCUMULATES into resentment_debt, a never-decremented ledger (HATE_RESENTMENT_PASSION_COUPLING_PREREG.md Sec2 -- McCullough, Fincham & Tsang 2003: unforgiveness does not fade with time the way arousal does). EVERY positive incident (regardless of locus) also accumulates a SEPARATE gratitude_debt ledger (ADMIRATION_GRATITUDE_PREREG.md Sec2 -- McCullough, Emmons & Tsang 2002: a debt of gratitude does not evaporate either). Guarded by status pending->appraised so re-running run_rules() does not double-derive.",
    "match_type": "IncidentReport",
    "match": [
     [
@@ -456,6 +490,52 @@
     [
      "set_attr",
      "pat",
+     "gratitude_debt",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "pat"
+         },
+         "key": "gratitude_debt"
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ir"
+           },
+           "key": "signal"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "pat",
      "confirm_streak",
      {
       "__term__": {
@@ -669,7 +749,7 @@
   },
   {
    "name": "crystallize_hate",
-   "comment": "HATE_ATTRIBUTION_PREREG.md Sec2/prediction 5: crystallization requires the STABILITY THRESHOLD, not the first global_other confirmation -- Sternberg 2003's decision/commitment component requires a pattern held over TIME, not a single outburst. HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md Sec2: the gate now compares confirm_streak against an EFFECTIVE threshold, HATE_STABILITY_THRESHOLD/(1+arousal_level) (== the base constant 3 at zero arousal, LOWER when aroused -- Slovic et al. 2007's affect heuristic: strong affect needs less accumulated evidence before a judgment is treated as settled), read via the SAME tracks_arousal edge derive_hate_attribution already reads. HATE_PITY_TOM_UNDERSTANDING_PREREG.md Sec2: the minted Hate node ALSO carries consequence_route ('removal'/'pity'), Weiner's third attribution dimension (controllability) read via the resident's own ToM belief about the target (tracks_controllability) -- >=0 (controllable, or no understanding at all, Ross 1977's default) routes removal; understood-uncontrollable routes pity. Fires exactly once per TargetPattern (crystallized==0.0 guard).",
+   "comment": "HATE_ATTRIBUTION_PREREG.md Sec2/prediction 5: crystallization requires the STABILITY THRESHOLD, not the first global_other confirmation -- Sternberg 2003's decision/commitment component requires a pattern held over TIME, not a single outburst. HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md Sec2: the gate now compares confirm_streak against an EFFECTIVE threshold, HATE_STABILITY_THRESHOLD/(1+arousal_level) (== the base constant 3 at zero arousal, LOWER when aroused -- Slovic et al. 2007's affect heuristic: strong affect needs less accumulated evidence before a judgment is treated as settled), read via the SAME tracks_arousal edge derive_hate_attribution already reads. HATE_PITY_TOM_UNDERSTANDING_PREREG.md Sec2: the minted Hate node ALSO carries consequence_route ('removal'/'pity'), Weiner's third attribution dimension (controllability) read via the resident's own ToM belief about the target (tracks_controllability) -- >=0 (controllable, or no understanding at all, Ross 1977's default) routes removal; understood-uncontrollable routes pity. ADMIRATION_GRATITUDE_PREREG.md Sec0: gated to a NEGATIVE held regard_for external_field -- a positive crystallizing pattern is crystallize_admiration's own rule, not this one (a real bug fix, not always true). Fires exactly once per TargetPattern (crystallized==0.0 guard).",
    "match_type": "TargetPattern",
    "match": [
     [
@@ -732,6 +812,28 @@
         "name": "pat"
        },
        "key": "crystallized"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "pat"
+         },
+         "edge_type": "tracks_concept"
+        }
+       },
+       "key": "external_field"
       },
       "b": {
        "type": "Lit",
@@ -809,6 +911,173 @@
      "pat",
      "has_hate",
      "hate"
+    ]
+   ]
+  },
+  {
+   "name": "crystallize_admiration",
+   "comment": "ADMIRATION_GRATITUDE_PREREG.md Sec2: the positive mirror of crystallize_hate -- OCC (Ortony, Clore & Collins 1988)'s Attribution branch, praiseworthy cell. SAME effective-threshold ladder (Sternberg's decision/commitment, Slovic et al. 2007's arousal-lowered bar), gated to a POSITIVE held regard_for external_field. consequence_route ('admiration'/'none') reads controllability the SAME way crystallize_hate's own consequence_route does -- Weiner's OWN original achievement-attribution context: a controllable positive pattern (skill, effort) earns admiration; an uncontrollable one (luck) does not. Fires exactly once per TargetPattern -- shares the SAME crystallized==0.0 guard as crystallize_hate (a target's reputation crystallizes once, either direction, not both).",
+   "match_type": "TargetPattern",
+   "match": [
+    [
+     "mt",
+     "has_target_pattern",
+     "pat"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pat"
+       },
+       "key": "confirm_streak"
+      },
+      "b": {
+       "type": "Div",
+       "a": {
+        "type": "Lit",
+        "value": 3.0
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Lit",
+          "value": 1.0
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "pat"
+            },
+            "edge_type": "tracks_arousal"
+           }
+          },
+          "key": "level"
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pat"
+       },
+       "key": "crystallized"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "pat"
+         },
+         "edge_type": "tracks_concept"
+        }
+       },
+       "key": "external_field"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "pat",
+     "crystallized",
+     {
+      "__term__": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ],
+    [
+     "add_node",
+     "admiration",
+     "Admiration",
+     {
+      "target": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pat"
+        },
+        "key": "target"
+       }
+      },
+      "consequence_route": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "pat"
+            },
+            "edge_type": "tracks_controllability"
+           }
+          },
+          "key": "external_field"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": "admiration"
+        },
+        "other": {
+         "type": "Lit",
+         "value": "none"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "pat",
+     "has_admiration",
+     "admiration"
     ]
    ]
   }
