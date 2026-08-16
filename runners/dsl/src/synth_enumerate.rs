@@ -1481,24 +1481,106 @@ fn value_str(v: &Value, interner: &Interner) -> Option<String> {
 /// Integer-valued outputs (the separate auto-append at `:2767-2778`) are
 /// deliberately NOT priced by this function — DESIGN_REVIEW_CAPABILITY_
 /// EXPANSION_PREREG.md §7 item 6 scopes slice 1 to strings only.
-fn literal_witness_cost(s: &str, envs: &[Env], outputs: &[Value], interner: &Interner) -> usize {
-    let is_input_witness = envs.iter().any(|row| {
-        row.iter().any(|(_, v)| value_str(v, interner).is_some_and(|sv| sv.contains(s)))
-    });
-    if is_input_witness {
+///
+/// ALPHABET_SEARCH_COST_WALL_PREREG.md: rule 3's pricing (own character
+/// count) degenerates to `1` for a SINGLE-CHARACTER literal — a
+/// one-character string's own length is always 1, so there is nothing
+/// left to compress. And rule 1 (checked first) fires for nearly every
+/// character a realistic spec contains, because a character is drawn
+/// FROM the input/output strings themselves (`:2941-2958`) and is
+/// therefore, definitionally, overwhelmingly likely to also be a
+/// substring of some revealed input. Net effect: realistic English-word
+/// specs register their WHOLE observed alphabet (15-19 distinct
+/// characters, measured in `PBE_STRING_BENCHMARK_RESULTS.md` §2.2) at a
+/// uniform cost 1, all competing for the same size-1 leaf slot — a
+/// POOL-SIZE problem, not a mispricing bug (every rule above is correct
+/// given what it measures; none of them can express "this character
+/// conveys little information because the spec's own alphabet is
+/// large," because alphabet size never entered the ladder before this).
+///
+/// The fix generalizes THIS function's own stated principle — "price a
+/// pooled STRING literal by its description length given its
+/// witnesses" — along the axis rule 3 could not reach for a
+/// single-character literal: not "how many characters does this string
+/// itself contain" (always 1) but **"how many bits does it take to
+/// select ONE symbol out of the spec's own observed alphabet"** —
+/// `alphabet_char_cost`, `ceil(log2(alphabet_size))`, the textbook MDL
+/// cost of an index into a size-N code. Applies ONLY when
+/// `s.chars().count() == 1`; every multi-character literal's pricing
+/// (rules 1-4 above) is completely untouched — verify by inspection:
+/// the `char_count == 1` guard is the only new condition anywhere in
+/// this function, and reduces to the pre-existing branch whenever it is
+/// false. Row-invariance (rule 2) is checked FIRST for the
+/// single-character case specifically — independent evidence of genuine
+/// task relevance (a fixed replacement symbol, a genuine per-task
+/// separator) that alphabet size does not undermine — so a row-invariant
+/// character still costs 1 regardless of alphabet size, exactly as
+/// today. `ALPHABET_SEARCH_COST_WALL_PREREG.md` §2 records why a
+/// per-character SEMANTIC classifier ("is this specific character
+/// individually useful") was tried first, on real fixture data, and
+/// rejected — it does not discriminate at this corpus's realistic row
+/// count and risks pruning a genuinely-needed literal.
+fn literal_witness_cost(
+    s: &str,
+    envs: &[Env],
+    outputs: &[Value],
+    interner: &Interner,
+    alphabet_size: usize,
+) -> usize {
+    let char_count = s.chars().count();
+    // ALPHABET_SEARCH_COST_WALL_RESULTS.md §2 (added after the first MBPP
+    // paired battery found a real regression on tasks 230/451, both
+    // whitespace-removal/replacement shapes): a Unicode WHITESPACE
+    // character is a universal token/word separator by construction --
+    // Python's own `str.split()`/`str.strip()` default to it, and this
+    // module's own `PBE_CONSTS`-precedent already privileges the empty
+    // string as "Split's own documented whitespace-split trigger". This is
+    // a structural fact about the CHARACTER (a Unicode category), not
+    // evidence read from the spec's rows, so it is checked ahead of and
+    // independent of alphabet size -- exactly like row-invariance (rule 2)
+    // is independent of witness rules 1/3/4. Scoped to char_count==1 only;
+    // never touches multi-character literal pricing.
+    if char_count == 1 && s.chars().next().is_some_and(|c| c.is_whitespace()) {
         return 1;
     }
     let output_witness_rows = outputs
         .iter()
         .filter(|v| value_str(v, interner).is_some_and(|sv| sv.contains(s)))
         .count();
-    if !outputs.is_empty() && output_witness_rows == outputs.len() {
+    let row_invariant = !outputs.is_empty() && output_witness_rows == outputs.len();
+    if char_count == 1 && row_invariant {
+        return 1; // row-invariant single character: genuine task constant.
+    }
+    let is_input_witness = envs.iter().any(|row| {
+        row.iter().any(|(_, v)| value_str(v, interner).is_some_and(|sv| sv.contains(s)))
+    });
+    if is_input_witness {
+        return if char_count == 1 { alphabet_char_cost(alphabet_size) } else { 1 };
+    }
+    if row_invariant {
         return 1; // row-invariant: a genuine task constant.
     }
     if output_witness_rows == 1 {
-        return s.chars().count().max(1); // single-witness output quote.
+        return if char_count == 1 {
+            alphabet_char_cost(alphabet_size)
+        } else {
+            char_count.max(1) // single-witness output quote.
+        };
     }
-    1 // conservative default: unchanged.
+    if char_count == 1 { alphabet_char_cost(alphabet_size) } else { 1 } // conservative default.
+}
+
+/// `ceil(log2(alphabet_size))`, floored at 1 — the MDL bits to select one
+/// symbol out of `alphabet_size` observed distinct characters. `alphabet_size
+/// <= 2` is byte-identical to the pre-fix uniform cost 1 (nothing to
+/// select between). See `literal_witness_cost`'s doc comment for why this
+/// axis, not a per-character semantic classifier.
+fn alphabet_char_cost(alphabet_size: usize) -> usize {
+    if alphabet_size <= 2 {
+        1
+    } else {
+        ((usize::BITS - (alphabet_size - 1).leading_zeros()) as usize).max(1)
+    }
 }
 
 /// Dict lookup by resolved key string.
@@ -2956,6 +3038,13 @@ pub(crate) fn eval_synth_enumerate(
             }
         }
     }
+    // ALPHABET_SEARCH_COST_WALL_PREREG.md: the distinct-character count
+    // already present in `str_consts` -- exactly the quantity
+    // `PBE_STRING_BENCHMARK_RESULTS.md` §2.2 measured and named. Computed
+    // ONCE here (not per-leaf) and threaded through to every
+    // `literal_witness_cost` call below.
+    let alphabet_size =
+        str_consts.iter().filter(|v| value_str(v, ctx.interner).is_some_and(|s| s.chars().count() == 1)).count();
     // MDL_OCCAM_WITNESS_PRICING: `str_consts` is registered as leaves
     // SEPARATELY from `const_set` (below, at the leaf-registration loop),
     // each at its own witness-priced size, instead of being merged in here
@@ -3087,7 +3176,7 @@ pub(crate) fn eval_synth_enumerate(
     // via `surf_string`, above); `unwrap_or_default` is defensive only.
     for c in str_consts.clone() {
         let s = value_str(&c, ctx.interner).unwrap_or_default();
-        let cost = literal_witness_cost(&s, &search.envs, &outputs, ctx.interner);
+        let cost = literal_witness_cost(&s, &search.envs, &outputs, ctx.interner, alphabet_size);
         if cost > max_size {
             // Priced beyond this search's own size budget: registering it
             // would index `by_size` out of bounds, and it could never be
