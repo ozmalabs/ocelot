@@ -90,6 +90,41 @@ def test_one_slot_contradiction_produces_computed_residual():
 
 
 # ---------------------------------------------------------------------
+# 2b. TRIVIAL_DISPUTE_ESCALATION_VERIFICATION.md -- "you can still escalate
+#     effectively nothing... finding something to argue about" (user). A
+#     minimal, genuinely-nonzero residual (1/3, the smallest StructSim can
+#     produce over a 3-slot predication) STILL escalates when relational
+#     tension exists (Coser 1956's "non-realistic conflict": the specific
+#     object of conflict is substitutable once tension-release is the real
+#     driver) -- and this is CORRECT, literature-matching behavior, not the
+#     same class of defect the zero-residual fix addressed. Locked in as a
+#     standing regression so a future change does not "fix" this away.
+# ---------------------------------------------------------------------
+def test_minimal_nonzero_residual_still_escalates_under_relational_tension():
+    s = _loaded_substrate()
+    inner = s._inner
+    r = _dispute_from_beliefs(
+        inner, claim_pred=["pays_pot", "free_parking", "one_dollar"],
+        truth_pred=["pays_pot", "free_parking", "two_dollars"],
+        band_code=-1, witnesses=[0.0] * 5)
+    assert r["minted"] is True
+    assert r["issue_severity"] == pytest.approx(1.0 / 3.0)
+    assert r["outcome"] == "escalate"
+
+
+def test_same_minimal_residual_defuses_under_secure_relationship():
+    s = _loaded_substrate()
+    inner = s._inner
+    r = _dispute_from_beliefs(
+        inner, claim_pred=["pays_pot", "free_parking", "one_dollar"],
+        truth_pred=["pays_pot", "free_parking", "two_dollars"],
+        band_code=5, witnesses=[])
+    assert r["minted"] is True
+    assert r["issue_severity"] == pytest.approx(1.0 / 3.0)
+    assert r["outcome"] == "defuse"
+
+
+# ---------------------------------------------------------------------
 # 3. Prediction 3 -- total disagreement produces the highest severity.
 # ---------------------------------------------------------------------
 def test_total_disagreement_produces_maximal_severity():
