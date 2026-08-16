@@ -1,0 +1,265 @@
+{
+ "id": "rule_dispute_self_conscious_bridge",
+ "version": "1.0.0",
+ "depends_on": [
+  "rule_dispute_escalation",
+  "self_conscious_emotions"
+ ],
+ "self_load_only": true,
+ "description": "Bridges a decided rule dispute (seeds/rule_dispute_escalation.json) to a self-conscious-emotion appraisal (seeds/self_conscious_emotions.json) for the claim-holder who was wrong, WITHOUT editing either seed -- strictly additive. The dispute's escalate/defuse outcome IS the correction style (Tangney & Dearing 2002: hostile/confrontational vs calm), which sets attribution_locus (global_self vs specific_act) and, identically, each carried-over witness's judgment. standard_met is unconditionally 0.0 -- a dispute existing at all means the claim-holder was wrong. This bridge structurally never produces attribution_locus=circumstance, so it never produces embarrassment -- a genuine rules dispute is an attributable epistemic error, not a circumstantial mishap (PREREG Sec1's registered scope boundary, prediction 3). Zero new Rust Terms -- Eq/And/IfThenElse/Count/Neighbours/Attr/Var/Lit all pre-existed; add_node/add_edge rule effects mirror seeds/gap_awareness.json's own mint-on-decision idiom exactly. See RULE_DISPUTE_SELF_CONSCIOUS_BRIDGE_PREREG.md / _RESULTS.md.",
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "src": {
+    "type": "DisputeContext",
+    "var": "ctx"
+   },
+   "edge_type": "bridged_to",
+   "tgt": {
+    "type": "SelfConsciousContext",
+    "var": "sc_ctx"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "rule_dispute_self_conscious_bridge"
+  },
+  {
+   "src": {
+    "type": "WitnessPresence",
+    "var": "wp"
+   },
+   "edge_type": "mirrored_as",
+   "tgt": {
+    "type": "WitnessBelief",
+    "var": "wb"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "rule_dispute_self_conscious_bridge"
+  }
+ ],
+ "concepts": [
+  {
+   "name": "rule_dispute_self_conscious_bridge",
+   "definition": "A rules dispute's escalate/defuse outcome IS a correction style (hostile/confrontational vs calm), which mechanically determines the self-conscious emotion the disputant who was wrong experiences -- shame from an escalated confrontation, guilt from a defused correction -- via the same attribution-locus mechanism the self-conscious-emotions rung already established, never a bespoke third decision.",
+   "why": "The user asked to wire the self-conscious-emotions mechanism live off the rule-dispute escalation outcome, the follow-on both prior RESULTS docs named. RULE_DISPUTE_SELF_CONSCIOUS_BRIDGE_PREREG.md."
+  }
+ ],
+ "exclusions": [],
+ "rules": [
+  {
+   "name": "bridge_dispute_to_self_conscious_context",
+   "comment": "PREREG Sec1: a decided RuleDisputeSignal mints a SelfConsciousContext for the claim-holder -- standard_met=0.0 unconditionally (the dispute's own premise is that this party was wrong about the rule, RULE_DISPUTE_ESCALATION_PREREG.md Sec2). attribution_locus and witness_judgment are both derived from the SAME outcome-keyed mapping (Tangney & Dearing 2002: a hostile/confrontational correction (escalate) reads as global-self attribution; a calm one (defuse) reads as specific-act) -- not two independent decisions. Guarded by a bridged_to dedup edge so re-running run_rules() does not double-mint (PREREG prediction 5).",
+   "match_type": "RuleDisputeSignal",
+   "match": [
+    [
+     "ctx",
+     "has_signal",
+     "sig"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sig"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "decided"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ctx"
+        },
+        "edge_type": "bridged_to"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "sc_ctx",
+     "SelfConsciousContext",
+     {
+      "standard_met": 0.0,
+      "attribution_locus": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sig"
+          },
+          "key": "outcome"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "escalate"
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": "global_self"
+        },
+        "other": {
+         "type": "Lit",
+         "value": "specific_act"
+        }
+       }
+      },
+      "witness_judgment": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "sig"
+          },
+          "key": "outcome"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "escalate"
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": "violated"
+        },
+        "other": {
+         "type": "Lit",
+         "value": "met"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "add_node",
+     "sc_sig",
+     "SelfConsciousSignal",
+     {
+      "status": "pending"
+     }
+    ],
+    [
+     "add_edge",
+     "sc_ctx",
+     "has_appraisal",
+     "sc_sig"
+    ],
+    [
+     "add_edge",
+     "ctx",
+     "bridged_to",
+     "sc_ctx"
+    ]
+   ]
+  },
+  {
+   "name": "bridge_dispute_witness_to_self_conscious_witness",
+   "comment": "PREREG Sec1/prediction 4: each WitnessPresence already on the dispute's DisputeContext mints a corresponding WitnessBelief on the bridged SelfConsciousContext, judgment taken from the SAME witness_judgment Rule 1 already derived (not re-derived here) -- an escalated (public, confrontational) dispute reads to onlookers as a clear violation; a defused one does not. Guarded by a mirrored_as dedup edge per witness (PREREG prediction 5).",
+   "match_type": "WitnessPresence",
+   "match": [
+    [
+     "ctx",
+     "has_witness",
+     "wp"
+    ],
+    [
+     "ctx",
+     "bridged_to",
+     "sc_ctx"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "wp"
+        },
+        "edge_type": "mirrored_as"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "wb",
+     "WitnessBelief",
+     {
+      "judgment": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "sc_ctx"
+        },
+        "key": "witness_judgment"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "sc_ctx",
+     "has_witness_belief",
+     "wb"
+    ],
+    [
+     "add_edge",
+     "wp",
+     "mirrored_as",
+     "wb"
+    ]
+   ]
+  }
+ ]
+}
