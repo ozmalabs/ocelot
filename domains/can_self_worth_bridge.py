@@ -184,6 +184,64 @@ def mint_domain_self_worth(inner, resident_can: dict, domain: str, *,
     return domain_concept
 
 
+def mint_peer_comparison_context(inner, domain_concept):
+    """Idempotent: the domain Concept's own PeerComparisonContext, minted
+    once (RELATIVE_SELF_WORTH_PREREG.md Sec2). Reused by
+    record_peer_observation/read_relative_self_worth on every later call
+    for this same domain Concept."""
+    existing = inner.neighbours(domain_concept, "has_peer_comparison")
+    if existing:
+        return existing[0]
+    ctx = inner.add_node("PeerComparisonContext", {})
+    inner.add_edge(domain_concept, "has_peer_comparison", ctx, {})
+    return ctx
+
+
+def record_peer_observation(inner, peer_context, *, peer_did_well: bool,
+                            max_steps: int = 3000):
+    """Mechanically record ONE observation of another resident's outcome
+    in this domain (RELATIVE_SELF_WORTH_PREREG.md Sec2) -- a real,
+    SEPARATE evidence channel from the resident's own incidents
+    (record_incident_outcome, untouched). Whether the peer did well is
+    caller-supplied data (what was actually observed/heard), exactly as
+    every other input in this arc has been; the log-odds DECISION is
+    still entirely the engine's own compute_relative_self_worth rule."""
+    outcome = "did_well" if peer_did_well else "did_poorly"
+    obs = inner.add_node("PeerObservation", {"outcome": outcome})
+    inner.add_edge(peer_context, "has_observation", obs, {})
+    inner.run_rules(max_steps)
+    return obs
+
+
+def read_relative_self_worth(inner, domain_concept) -> float:
+    """The engine's own computed relative_self_worth (domain state minus
+    the peer-comparison log-odds baseline) -- what SelfPattern.
+    held_self_worth should be sourced from going forward
+    (RELATIVE_SELF_WORTH_PREREG.md Sec2), not the raw domain state alone.
+    Falls back to the raw domain state if no PeerComparisonContext has
+    ever been minted for this Concept (zero real or fictional comparison
+    data at all -- distinct from the zero-observations-but-minted case,
+    which the engine's own rule already resolves to state-minus-0.0)."""
+    attrs = inner.node(domain_concept)["attrs"]
+    if "relative_self_worth" in attrs:
+        return attrs["relative_self_worth"]
+    return attrs["state"]
+
+
+def ensure_peer_comparison_seed(inner) -> None:
+    """Idempotently load seeds/peer_comparison.json (depends_on
+    can_native_reimplementation, loaded first via ensure_can_seed)."""
+    import json
+    from substrate.seed_loader import engine_rules_only
+
+    ensure_can_seed(inner)
+    if inner.nodes("PeerComparisonSeedLoaded"):
+        return
+    d = json.load(open("seeds/peer_comparison.json"))
+    inner.load_seed_manifest(engine_rules_only(d))
+    inner.add_node("PeerComparisonSeedLoaded", {})
+
+
 def ensure_can_seed(inner) -> None:
     """Idempotently load seeds/can_native_reimplementation.json and install
     worlds/bigville_can_beliefs.py's Gamma productions -- the two pieces a
@@ -203,4 +261,6 @@ def ensure_can_seed(inner) -> None:
 
 
 __all__ = ["relax_resident_self_worth", "find_or_build_resident_can",
-           "record_incident_outcome", "mint_domain_self_worth", "ensure_can_seed"]
+           "record_incident_outcome", "mint_domain_self_worth", "ensure_can_seed",
+           "mint_peer_comparison_context", "record_peer_observation",
+           "read_relative_self_worth", "ensure_peer_comparison_seed"]

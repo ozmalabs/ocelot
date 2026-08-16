@@ -30,7 +30,8 @@ import json
 from substrate.seed_loader import engine_rules_only
 
 from domains.can_self_worth_bridge import (
-    ensure_can_seed, find_or_build_resident_can, mint_domain_self_worth,
+    ensure_can_seed, ensure_peer_comparison_seed, find_or_build_resident_can,
+    mint_domain_self_worth, mint_peer_comparison_context, read_relative_self_worth,
     record_incident_outcome,
 )
 
@@ -48,7 +49,7 @@ def ensure_pipeline_seeds(inner) -> None:
     the next is loaded, plus can_self_worth_bridge's own CAN seed/
     productions. Guarded by a sentinel node, mirroring ensure_can_seed's
     own idempotency idiom exactly."""
-    ensure_can_seed(inner)
+    ensure_peer_comparison_seed(inner)
     if inner.nodes("RuleDisputePipelineSeedLoaded"):
         return
     for path in _PIPELINE_SEED_PATHS:
@@ -91,7 +92,13 @@ def run_rule_dispute(inner, *, claimant: dict, claim_pred, truth_pred, domain: s
     resident_can = find_or_build_resident_can(inner, claimant, max_steps=max_steps)
     domain_concept = mint_domain_self_worth(inner, resident_can, domain,
                                             max_steps=max_steps)
+    mint_peer_comparison_context(inner, domain_concept)
     self_worth_before = inner.node(domain_concept)["attrs"]["state"]
+    # RELATIVE_SELF_WORTH_PREREG.md: the appraisal reads how the claimant
+    # stacks up against their own peer-comparison log-odds baseline, not
+    # raw absolute state alone -- self-worth can drop with zero change to
+    # the claimant's own track record if the comparison baseline moved.
+    relative_self_worth_before = read_relative_self_worth(inner, domain_concept)
 
     claims = inner.add_node("HeldBelief", {"pred": list(claim_pred)})
     truth = inner.add_node("HeldBelief", {"pred": list(truth_pred)})
@@ -103,7 +110,8 @@ def run_rule_dispute(inner, *, claimant: dict, claim_pred, truth_pred, domain: s
     for closeness in witnesses:
         w = inner.add_node("WitnessPresence", {"closeness": closeness})
         inner.add_edge(bd, "has_witness", w, {})
-    pattern = inner.add_node("SelfPattern", {"held_self_worth": float(self_worth_before)})
+    pattern = inner.add_node("SelfPattern", {
+        "held_self_worth": float(relative_self_worth_before)})
     inner.add_edge(bd, "has_self_pattern", pattern, {})
 
     inner.run_rules(50)
@@ -112,7 +120,9 @@ def run_rule_dispute(inner, *, claimant: dict, claim_pred, truth_pred, domain: s
     if not bridged:
         return {"dispute_minted": False, "domain_concept": domain_concept,
                 "self_worth_before": self_worth_before,
-                "self_worth_after": self_worth_before}
+                "self_worth_after": self_worth_before,
+                "relative_self_worth_before": relative_self_worth_before,
+                "relative_self_worth_after": relative_self_worth_before}
     ctx = bridged[0]
     sig = inner.neighbours(ctx, "has_signal")[0]
     issue_severity = inner.node(ctx)["attrs"]["issue_severity"]
@@ -130,12 +140,16 @@ def run_rule_dispute(inner, *, claimant: dict, claim_pred, truth_pred, domain: s
         inner, {"self_worth": domain_concept}, standard_met=standard_met,
         attribution_locus=attribution_locus, alpha=belief_plasticity,
         max_steps=max_steps)
+    relative_self_worth_after = read_relative_self_worth(inner, domain_concept)
 
     return {
         "dispute_minted": True, "issue_severity": issue_severity,
         "dispute_outcome": dispute_outcome, "attribution_locus": attribution_locus,
         "emotion": emotion, "self_worth_before": self_worth_before,
-        "self_worth_after": self_worth_after, "domain_concept": domain_concept,
+        "self_worth_after": self_worth_after,
+        "relative_self_worth_before": relative_self_worth_before,
+        "relative_self_worth_after": relative_self_worth_after,
+        "domain_concept": domain_concept,
     }
 
 
