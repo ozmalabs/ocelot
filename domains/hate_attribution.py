@@ -47,7 +47,7 @@ def mint_target_pattern(inner, mt, target: str):
             return existing
     pat = inner.add_node("TargetPattern", {
         "target": target, "incident_count": 0, "confirm_streak": 0,
-        "crystallized": 0.0,
+        "crystallized": 0.0, "resentment_debt": 0.0,
     })
     inner.add_edge(mt, "has_target_pattern", pat, {})
     regard = mint_target_concept(inner, mt, "regard_for", target)
@@ -94,12 +94,18 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
 
     arousal_node = next(iter(inner.neighbours(pattern, "tracks_arousal")))
     current_arousal = inner.node(arousal_node)["attrs"]["level"]
+    resentment_debt = inner.node(pattern)["attrs"]["resentment_debt"]
 
     hate_count_after = len(list(inner.neighbours(pattern, "has_hate")))
     crystallized_this_call = hate_count_after > hate_count_before
     effective_removal_alpha = None
     if crystallized_this_call:
-        effective_removal_alpha = base_alpha * (1.0 + current_arousal)
+        # HATE_RESENTMENT_PASSION_COUPLING_PREREG.md Sec2: BOTH momentary
+        # arousal AND accumulated (never-decremented) resentment_debt
+        # amplify the crystallizing incident's removal motive,
+        # multiplicatively -- at resentment_debt==0 this is exactly
+        # v1.1.0's original arousal-only formula.
+        effective_removal_alpha = base_alpha * (1.0 + current_arousal) * (1.0 + resentment_debt)
         removal_concept = next(iter(inner.neighbours(pattern, "tracks_removal_desire")))
         inner.concept_apply_evidence(removal_concept, 1.0, effective_removal_alpha)
 
@@ -142,6 +148,7 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
         "removal_desire_state": removal_attrs["state"],
         "arousal_level": new_arousal,
         "effective_removal_alpha": effective_removal_alpha,
+        "resentment_debt": pat_attrs["resentment_debt"],
     }
 
 

@@ -150,13 +150,28 @@ def _retained_fraction_term(pat_var="pat"):
     return DivT(level, PlusT([Lit(1.0), level]))
 
 
+def _residue_term(pat_var="pat"):
+    return TimesT([Attr(Var(pat_var), "confirm_streak"), _retained_fraction_term(pat_var)])
+
+
 def _new_streak_term(pat_var="pat", ir_var="ir"):
     is_global = Eq(_attribution_locus_term(pat_var, ir_var), Lit("global_other"))
     return IfThenElse(
         is_global,
         PlusT([Attr(Var(pat_var), "confirm_streak"), _streak_increment_term(pat_var)]),
-        TimesT([Attr(Var(pat_var), "confirm_streak"), _retained_fraction_term(pat_var)]),
+        _residue_term(pat_var),
     )
+
+
+def _new_resentment_debt_term(pat_var="pat", ir_var="ir"):
+    # HATE_RESENTMENT_PASSION_COUPLING_PREREG.md Sec2: every specific_act
+    # residue ALSO adds to a monotonically-accumulating resentment_debt
+    # ledger (never decremented -- McCullough, Fincham & Tsang 2003:
+    # unforgiveness does not fade with time the way ordinary arousal
+    # does). Zero contribution on global_other (no exception occurred).
+    is_global = Eq(_attribution_locus_term(pat_var, ir_var), Lit("global_other"))
+    increment = IfThenElse(is_global, Lit(0.0), _residue_term(pat_var))
+    return PlusT([Attr(Var(pat_var), "resentment_debt"), increment])
 
 
 # --------------------------------------------------------------------- #
@@ -188,8 +203,12 @@ def rule_derive_attribution():
             "elevated arousal retains a fraction of the pre-exception "
             "streak instead of fully clearing it, per Bodenhausen 1993's "
             "finding that aroused judgment discounts disconfirming "
-            "evidence). Guarded by status pending->appraised so re-running "
-            "run_rules() does not "
+            "evidence) -- that SAME residue also ACCUMULATES into "
+            "resentment_debt, a never-decremented ledger (HATE_"
+            "RESENTMENT_PASSION_COUPLING_PREREG.md Sec2 -- McCullough, "
+            "Fincham & Tsang 2003: unforgiveness does not fade with time "
+            "the way arousal does). Guarded by status pending->appraised "
+            "so re-running run_rules() does not "
             "double-derive."
         ),
         "match_type": "IncidentReport",
@@ -203,6 +222,13 @@ def rule_derive_attribution():
                 "attribution_locus": {"__term__": _attribution_locus_term("pat", "ir")},
             }),
             add_edge_effect("ir", "has_appraisal", "appraisal"),
+            # resentment_debt's own residue read MUST come before
+            # confirm_streak's effect below overwrites confirm_streak --
+            # effects apply progressively within one rule firing (the
+            # same order-dependent-read affordance the identity_field
+            # Plus-1 precedent elsewhere in this codebase already relies
+            # on), so this order is load-bearing, not cosmetic.
+            term_effect("pat", "resentment_debt", _new_resentment_debt_term("pat", "ir")),
             term_effect("pat", "confirm_streak", _new_streak_term("pat", "ir")),
             term_effect("pat", "incident_count",
                         PlusT([Attr(Var("pat"), "incident_count"), Lit(1)])),
@@ -265,7 +291,7 @@ def rule_crystallize_hate():
 
 SEED = {
     "id": "hate_attribution",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "depends_on": ["shared_arousal"],
     "self_load_only": True,
     "description": (
@@ -302,11 +328,21 @@ SEED = {
         "evidence). This retained residue IS this arc's operationalization "
         "of resentment: a grievance that persists past a genuine "
         "disconfirming act because the act was processed under the same "
-        "arousal the grievance itself produced. See HATE_ATTRIBUTION_"
-        "PREREG.md / _RESULTS.md, HATE_PASSION_COUPLING_PREREG.md / "
-        "_RESULTS.md, HATE_STABILITY_AROUSAL_COUPLING_PREREG.md / "
-        "_RESULTS.md, HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md / "
-        "_RESULTS.md, HATE_RESET_RESENTMENT_COUPLING_PREREG.md / "
+        "arousal the grievance itself produced. v1.5.0 (HATE_RESENTMENT_"
+        "PASSION_COUPLING_PREREG.md) additionally accumulates that SAME "
+        "residue into resentment_debt, a never-decremented ledger "
+        "(McCullough, Fincham & Tsang 2003 -- unforgiveness does not fade "
+        "with time the way arousal does), and amplifies the crystallizing "
+        "incident's removal_desire_for alpha by BOTH arousal AND "
+        "resentment_debt multiplicatively: base_alpha*(1+arousal_level)*"
+        "(1+resentment_debt) -- a target whose grievance was repeatedly "
+        "discounted-not-forgotten reacts more strongly once hate finally "
+        "crystallizes than an identical target with no such history. See "
+        "HATE_ATTRIBUTION_PREREG.md / _RESULTS.md, HATE_PASSION_COUPLING_"
+        "PREREG.md / _RESULTS.md, HATE_STABILITY_AROUSAL_COUPLING_PREREG."
+        "md / _RESULTS.md, HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md "
+        "/ _RESULTS.md, HATE_RESET_RESENTMENT_COUPLING_PREREG.md / "
+        "_RESULTS.md, HATE_RESENTMENT_PASSION_COUPLING_PREREG.md / "
         "_RESULTS.md."
         % HATE_STABILITY_THRESHOLD
     ),
