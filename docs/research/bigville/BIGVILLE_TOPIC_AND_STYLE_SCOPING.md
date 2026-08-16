@@ -868,6 +868,25 @@ building and running the code, both fixed:
 across the whole repo. Sub-claim 4 (style convergence) was not built, per
 3.4 — it remains a named pointer to a separate Ocelot-repo task.
 
+## 3.4 CONTEXT PLUMBING LANDED (2026-08-16, `ozmalabs/bigville` commit `1b79a0f`)
+
+The bigville-side half of 3.4 — the only half scoped as bigville-native
+work — is built: `BigvilleGame._relationship_signal(actor, other)` reads the
+held bond (`world.relationship`, honest `{0.0, 0.0}` floor when unset) and
+reuses `BigvilleBondWorld._band_code` verbatim (not reimplemented) to spread
+`tie_strength`/`band_code` onto every entry of
+`ActorContext.observations["nearby_residents"]`. No register/style decision
+is made in bigville — the method returns two numbers, nothing rendered, per
+the explicit constraint this rung was built under (rendering belongs
+entirely to Ocelot; bigville exposes data only). 4 new tests
+(`tests/test_bigville_game_api.py`) cover the floor default, a held tie's
+values, agreement with `BigvilleBondWorld._band_code` computed directly, and
+that the exposed dict carries no rendered text — 197/197 across the whole
+repo. This closes the "confirmed absent from `ActorContext` today, and
+addable mechanically" gap the doc itself named at line 417; wiring an actual
+Ocelot-side `CognitionBackend` that reads these fields into the
+CAN_REGISTER_QUANTIZATION rule remains unbuilt, unrequested follow-on work.
+
 ## BOTTOM LINE
 
 The user's four sub-claims are all genuinely true gaps — none of the four is
