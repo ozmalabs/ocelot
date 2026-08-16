@@ -311,6 +311,46 @@ attempted in this rung:
    in `BIGVILLE_TOPIC_AND_STYLE_SCOPING.md` itself as belonging to a
    future external Ocelot-side backend, not designed here.
 
+## 8b. Ocelot-side backend wiring LANDED (2026-08-16)
+
+Item 2's first half — bigville's `band_code`/`tie_strength` plumbing — landed
+first (`ozmalabs/bigville` commit `1b79a0f`, recorded in
+`BIGVILLE_TOPIC_AND_STYLE_SCOPING.md`). This section lands item 2's second
+half: `domains/bigville_register_backend.py`'s `RegisterDecisionEngine`, a
+pure capability class (CLAUDE.md's own allowed Python category) that boots
+`can_register_quantization.json` once and exposes `decode_band(resolution_bins,
+resolution_level, band_code)` — mints one `RegisterProfile`/`RegisterObservation`
+pair, calls `run_rules()`, reads the engine's own `can_register_decode_band`
+decision back, and **retires both scratch nodes** so a per-encounter caller
+does not grow the graph (verified: 20/50 repeated calls leave the graph at
+its pre-call node count, both in the module's own test and standalone).
+`decide_registers(character_personality, nearby_residents)` is the
+ActorContext-shaped entry point: it reads exactly bigville's real
+`observations["nearby_residents"]` dict shape (`id`/`band_code`/...) and
+`character.personality`, falling back to a fixed, documented,
+un-fitted `resolution_bins=6`/`resolution_level=1.0` default (the same
+honesty class this rung's own demo already used for `resolution_level`)
+because bigville does not expose either trait via `ActorContext.personality`
+today (item 1, still unbuilt) — confirmed, not assumed, by reading
+`BigvilleGame._characters_from_world`'s personality filter directly. Out-of-
+codebook bands (`-1`, rival) are skipped, not approximated, per item 3.
+
+Ocelot does not import bigville, mirroring `bigville/backends/ocelot.py`'s
+own converse boundary statement — this module returns plain dicts, not a
+constructed `ActorResponse`; a caller (bigville's own `OcelotBackend`, or any
+future one) wires that shape onto its own response object. **Rendering
+`register_label` into phrasing (item 5) remains unbuilt** — this rung only
+gets a real per-encounter register DECISION out of the engine, nothing more.
+
+10 new tests (`tests/test_bigville_register_backend.py`): formula agreement
+with `test_can_register_quantization.py`'s own regressions, structural
+never-neutral at `resolution_bins=2`, convergence direction
+(stranger→formal, family→casual), `-1` skip, zero graph growth across
+repeated calls, the ActorContext-shaped entry point end-to-end, the
+documented-default fallback, a carried trait actually changing the
+decision, and both empty-input skip paths. All green alongside the existing
+16/16.
+
 ## 9. Files
 
 - `docs/research/engine_substrate/CAN_REGISTER_QUANTIZATION_PREREG.md`
