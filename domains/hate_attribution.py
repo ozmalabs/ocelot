@@ -30,6 +30,7 @@ arousal.record_targeted_incident` already established.
 """
 from __future__ import annotations
 
+from domains.bigville_theory_of_mind import mint_resident_tom_belief
 from domains.shared_arousal import mint_target_arousal, mint_target_concept
 
 HATE_STABILITY_THRESHOLD = 3
@@ -58,7 +59,11 @@ def mint_target_pattern(inner, mt, target: str):
     regard = mint_target_concept(inner, mt, "regard_for", target)
     removal = mint_target_concept(inner, mt, "removal_desire_for", target)
     pity = mint_target_concept(inner, mt, "pity_for", target)
-    controllability = mint_target_concept(inner, mt, "controllability_for", target)
+    # controllability is a ToM belief ABOUT the target (Weiner's
+    # attribution), not the resident's own affect toward them -- minted
+    # through the named ToM entry point (bigville_theory_of_mind.py),
+    # not mint_target_concept directly (TOM_SYSTEM_UNIFICATION_RESULTS.md).
+    controllability = mint_resident_tom_belief(inner, mt, "controllability", target)
     inner.add_edge(pat, "tracks_concept", regard, {})
     inner.add_edge(pat, "tracks_removal_desire", removal, {})
     inner.add_edge(pat, "tracks_pity", pity, {})
