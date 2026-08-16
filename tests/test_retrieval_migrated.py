@@ -330,6 +330,31 @@ _KNOWN_BUGFIX_SWEEP2_RUNG1_CASCADE_DRIFT = {
     242: {"status": "gapped", "gap_reason": "enumerate_failed", "rung": "none"},
 }
 
+# 2026-08-16 (PROGRAM_SYNTHESIS_CEILING_REASSESSMENT_5, orchestrator
+# reconciliation — a SIXTH documented exception, same "improvement
+# direction" class as `_KNOWN_ARC6_TIER0_ENUM_REACH_DRIFT`'s own 106 entry
+# above): `MEASURED_OUTCOMES[412]` records `rung: "none"` (task 412 was the
+# CURRENT witness for "retrieval finds nothing", per
+# `test_ladder_gap_spends_no_attempt_when_retrieval_finds_nothing`'s own
+# docstring). That rung's own `tmpl:item_mod_eq` FilterList predicate
+# family (`item % c == r` / `!= r`, composed entirely from already-shipped
+# `Mod`/`Eq`/`Not` -- zero new `TermNode` variants) makes the enumerator
+# rung propose `FilterList(a, item, Eq(Mod(item,2),0))` for task 412
+# ("remove odd numbers"), which the retrieval ladder's own rung d accepts
+# and which passes its held-out row. Live-verified against the merged
+# engine: `status: accepted, rung: 'd', exemplar: 775, holdout_ok: True`.
+# `MEASURED_OUTCOMES` itself is UNTOUCHED, matching every prior drift
+# dict's own discipline -- the supersession is recorded beside it.
+# `test_ladder_gap_spends_no_attempt_when_retrieval_finds_nothing` itself
+# is NOT re-pinned here (task 412 no longer stands for "finds nothing",
+# but choosing its replacement witness is real, separate investigative
+# work -- finding a new task with a LIVE-confirmed `rung == "none"`, per
+# that test's own docstring warning -- left for a follow-on rung, not
+# forced through here).
+_KNOWN_CEILING_REASSESSMENT_5_DRIFT = {
+    412: {"status": "accepted", "rung": "d", "exemplar": 775, "holdout_ok": True},
+}
+
 
 def boot():
     s = srs.Substrate()
@@ -644,7 +669,9 @@ def test_ceiling_task_reproduces_measured_outcome_live(tid):
         tasks = json.load(f)
     by_id = {t["task_id"]: t for t in tasks}
     out = _run_task_live(by_id[tid])
-    if tid in _KNOWN_BUGFIX_SWEEP2_RUNG1_CASCADE_DRIFT:
+    if tid in _KNOWN_CEILING_REASSESSMENT_5_DRIFT:
+        expect = dict(_KNOWN_CEILING_REASSESSMENT_5_DRIFT[tid])
+    elif tid in _KNOWN_BUGFIX_SWEEP2_RUNG1_CASCADE_DRIFT:
         expect = dict(_KNOWN_BUGFIX_SWEEP2_RUNG1_CASCADE_DRIFT[tid])
     elif tid in _KNOWN_ARC6_TIER0_ENUM_REACH_DRIFT:
         expect = dict(_KNOWN_ARC6_TIER0_ENUM_REACH_DRIFT[tid])
