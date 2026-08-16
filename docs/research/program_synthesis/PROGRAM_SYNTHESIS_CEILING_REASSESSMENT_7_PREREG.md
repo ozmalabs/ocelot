@@ -415,6 +415,32 @@ production file is touched by this rung. `results/mbpp_endgame.json` /
 `results/ceiling3_diag_sweep.json` reflect the unmodified baseline
 re-measurement; no `_AFTER` artifacts exist because nothing was built.
 
+## 8. Regression discipline, run anyway despite zero code changes
+
+Confirmed live rather than assumed, matching this arc's own "run the
+suites every rung" discipline even for an investigation-only NO-GO:
+
+**Named 9-file suite**: `3 failed, 241 passed` — exactly the 3 known
+pre-existing pin-drift failures (`test_mbpp_baseline_migrated.py::
+test_three_runnable_tasks_reverify_live`, `test_prog_moves_migrated.py::
+test_named_regression_sweep_only_known_pins_drift`, `test_exact_first_
+migrated.py::test_named_regression_sweep_only_known_pins_drift`), nothing
+new.
+
+**`test_retrieval_migrated.py` + `test_reject_informs_repair_migrated.py`**:
+first run showed `6 failed, 48 passed, 1 error` — traced immediately to
+ONE missing gitignored fixture in this worktree (`results/arc4_endgame.json`,
+a DIFFERENT file from `arc4_structural_verdicts.json`, not on the standard
+copy-list this arc's predecessor docs enumerate) causing a cascading
+`FileNotFoundError` in 3 of the 6 "failures" plus the 1 error. Copied from
+the canonical tree and re-run: **`5 failed, 50 passed`** — exactly the
+task brief's own cited 5 known pre-existing failures (task 238's
+`structural_verdict_reject`→`enumerate_failed` pin drift +
+`test_reject_informs_repair_migrated.py`'s own 4 known failures), nothing
+new. Since this rung's own `git diff --stat` is empty (§ above), this
+result is definitionally a re-measurement of unmodified `main @ 03fa65d`,
+not a property of anything this rung built.
+
 ## Reproduce
 
 ```bash
