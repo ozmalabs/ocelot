@@ -1,17 +1,28 @@
 """can_self_worth_bridge -- sources SelfPattern.held_self_worth from a
-resident's REAL, live CAN self_worth belief instead of a hand-picked
-scalar.
+resident's REAL, live, PERSISTENT CAN self_worth belief instead of a
+hand-picked scalar.
 
-Per docs/research/psychology_affect/HELD_SELF_WORTH_FROM_CAN_PREREG.md.
-Pure world-adapter/harness code (CLAUDE.md's architecture rule): builds a
-resident's real CAN Microtheory (worlds/bigville_can_beliefs.py), relaxes
-it via the engine's OWN discrete-asynchronous update rule
-(seeds/can_native_reimplementation.json's can_native_update_3state, under
-run_rules()), and reads the converged self_worth Concept's `state` back.
-No decision is made here -- the relaxed belief IS the engine's own
-Hopfield-style fixpoint, not a Python computation. This module only
-mechanically translates "which resident" into "what does their CAN network
-say," exactly as reading a rulebook translates text into a HeldRule.
+Per docs/research/psychology_affect/HELD_SELF_WORTH_FROM_CAN_PREREG.md and
+PERSISTENT_SELF_WORTH_PREREG.md. Pure world-adapter/harness code (CLAUDE.md's
+architecture rule): builds a resident's real CAN Microtheory
+(worlds/bigville_can_beliefs.py), relaxes it via the engine's OWN
+discrete-asynchronous update rule (seeds/can_native_reimplementation.json's
+can_native_update_3state, under run_rules()), and reads the converged
+self_worth Concept's `state` back. No decision is made here -- the relaxed
+belief IS the engine's own Hopfield-style fixpoint, not a Python
+computation. A resident appraised more than once on the SAME substrate
+REUSES their one persistent network (find_or_build_resident_can) rather
+than minting a fresh, reset one each call, and record_incident_outcome
+feeds an already-decided appraisal back as evidence so the belief genuinely
+drifts across repeated incidents -- the SAME concept_apply_evidence PyO3 op
+apply_scenario_evidence already established, mechanically re-applied.
+
+REAL ENGINE GOTCHA (PERSISTENT_SELF_WORTH_PREREG.md Sec1, found live):
+concept_apply_evidence mutates external_field OUTSIDE the rule-effect path,
+so run_rules()'s incremental dirty-tracking never re-examines the Concept
+afterward -- confirmed directly: even a massive evidence application left
+`state` unchanged (steps=0) until `force_all_dirty()` was called first.
+Every evidence-then-relax call in this module calls it -- do not remove it.
 
 No seed is edited by this module -- can_native_reimplementation.json is
 loaded and consumed exactly as tests/test_can_native_reimplementation.py's
@@ -23,17 +34,39 @@ from __future__ import annotations
 from worlds import bigville_can_beliefs as bcb
 
 
-def relax_resident_self_worth(inner, resident: dict, *, max_steps: int = 3000) -> dict:
-    """Build `resident`'s real CAN Microtheory, relax it, and return
-    {self_worth, concepts, mt, steps}. `self_worth` is the converged
-    `state` attr on the resident's own `self_worth` Concept -- already on
-    the same [-1,1]-ish scale (discrete {-1,0,+1}) SelfPattern.
-    held_self_worth uses, no rescaling.
+def _find_resident_node(inner, name: str):
+    for node in inner.nodes("Resident"):
+        if inner.node(node)["attrs"].get("name") == name:
+            return node
+    return None
 
-    `resident` is a full worlds/bigville_can_beliefs.py-shaped record
-    ({"name", "index", "params": {...}}) -- caller-supplied data, exactly
-    as every other rung's inputs have been.
+
+def _concepts_for_resident(inner, resident_node):
+    mt = inner.neighbours(resident_node, "has_belief_mt")[0]
+    concepts = {}
+    for concept in inner.neighbours(mt, "has_concept"):
+        concepts[inner.node(concept)["attrs"]["name"]] = concept
+    return mt, concepts
+
+
+def find_or_build_resident_can(inner, resident: dict, *, max_steps: int = 3000) -> dict:
+    """The PERSISTENT entry point (PERSISTENT_SELF_WORTH_PREREG.md Sec2):
+    if `resident["name"]` already has a Resident node on this substrate,
+    reuse its EXISTING Microtheory/Concepts (the SAME network, carrying
+    whatever `self_worth` it has drifted to from prior incidents) instead
+    of minting a fresh, reset one. Only a genuinely NEW resident gets
+    initialized (state/external_field=0.0, discrete_mode='3state') and
+    relaxed for the first time. Returns {resident_node, mt, concepts,
+    self_worth, steps, is_new}.
     """
+    existing = _find_resident_node(inner, resident["name"])
+    if existing is not None:
+        mt, concepts = _concepts_for_resident(inner, existing)
+        steps = inner.run_rules(max_steps)
+        self_worth = inner.node(concepts["self_worth"])["attrs"]["state"]
+        return {"resident_node": existing, "mt": mt, "concepts": concepts,
+                "self_worth": self_worth, "steps": steps, "is_new": False}
+
     built = bcb.build_resident_can_mt(inner, resident)
     mt = built["mt_node"]
     concepts = built["concepts"]
@@ -48,7 +81,46 @@ def relax_resident_self_worth(inner, resident: dict, *, max_steps: int = 3000) -
     inner.set_attr(mt, "can_tick", 0)
     steps = inner.run_rules(max_steps)
     self_worth = inner.node(concepts["self_worth"])["attrs"]["state"]
-    return {"self_worth": self_worth, "concepts": concepts, "mt": mt, "steps": steps}
+    return {"resident_node": built["resident_node"], "mt": mt, "concepts": concepts,
+            "self_worth": self_worth, "steps": steps, "is_new": True}
+
+
+def relax_resident_self_worth(inner, resident: dict, *, max_steps: int = 3000) -> dict:
+    """Backward-compatible name for find_or_build_resident_can's own
+    {self_worth, concepts, mt, steps} shape (HELD_SELF_WORTH_FROM_CAN_
+    RESULTS.md's original callers) -- now PERSISTENT: a second call for the
+    same resident name reuses the existing, possibly-drifted network."""
+    out = find_or_build_resident_can(inner, resident, max_steps=max_steps)
+    return {"self_worth": out["self_worth"], "concepts": out["concepts"],
+            "mt": out["mt"], "steps": out["steps"]}
+
+
+def record_incident_outcome(inner, concepts: dict, *, standard_met: bool,
+                            attribution_locus: str, alpha: float = 0.3,
+                            max_steps: int = 3000):
+    """Feed an ALREADY-DECIDED self-conscious appraisal back as evidence on
+    the resident's OWN self_worth Concept (PERSISTENT_SELF_WORTH_PREREG.md
+    Sec2) -- no new decision, standard_met/attribution_locus were already
+    decided by the dispute/self-conscious chain. Gated on attribution_locus
+    != 'circumstance': an outcome not attributed to the self at all should
+    not move the self-concept (Lewis 1971; Miller 1996) -- a real
+    theoretical claim, not an incidental scoping choice. Returns the
+    (possibly unchanged) current self_worth state; None input attribution_
+    locus is never valid (callers always have a decided one).
+
+    MUST call force_all_dirty() before re-running -- concept_apply_evidence
+    writes external_field outside the rule-effect path and run_rules()'s
+    incremental dirty-tracking will otherwise silently no-op (PREREG Sec1,
+    found live; regression-tested).
+    """
+    self_worth_concept = concepts["self_worth"]
+    if attribution_locus == "circumstance":
+        return inner.node(self_worth_concept)["attrs"]["state"]
+    evidence = 1.0 if standard_met else -1.0
+    inner.concept_apply_evidence(self_worth_concept, evidence, alpha)
+    inner.force_all_dirty()
+    inner.run_rules(max_steps)
+    return inner.node(self_worth_concept)["attrs"]["state"]
 
 
 def ensure_can_seed(inner) -> None:
@@ -69,4 +141,5 @@ def ensure_can_seed(inner) -> None:
     inner.add_node("CanSelfWorthBridgeSeedLoaded", {})
 
 
-__all__ = ["relax_resident_self_worth", "ensure_can_seed"]
+__all__ = ["relax_resident_self_worth", "find_or_build_resident_can",
+           "record_incident_outcome", "ensure_can_seed"]
