@@ -1,0 +1,73 @@
+"""One-off authoring script that EMITS seeds/shared_arousal.json.
+
+Not agent runtime -- a tool script (CLAUDE.md's `tools/*` precedent).
+Declares the ONE new Gamma production `domains/shared_arousal.py` needs
+(`Microtheory -has_target_arousal-> TargetArousal`) -- everything else it
+uses (`Concept`, `Microtheory -has_concept-> Concept`) is already admitted
+by worlds/bigville_can_beliefs.py's own install_productions. No rules --
+the DECISION (how much a belief moves) is entirely concept_apply_evidence
++ can_native_update_3state, both pre-existing; this seed only makes the
+new edge type admissible.
+
+See docs/research/psychology_affect/
+SHARED_AROUSAL_EXCITATION_TRANSFER_PREREG.md for the full registered
+design.
+
+Run: python3 scripts/_build_shared_arousal_seed.py > seeds/shared_arousal.json
+"""
+import json
+
+SEED = {
+    "id": "shared_arousal",
+    "version": "1.0.0",
+    "depends_on": ["can_native_reimplementation"],
+    "self_load_only": True,
+    "description": (
+        "Declares Microtheory -has_target_arousal-> TargetArousal as an "
+        "admissible edge -- the one new graph-structural piece domains/"
+        "shared_arousal.py needs. The actual excitation-transfer DECISION "
+        "(how much a co-target incident's evidence moves a belief) is "
+        "entirely the pre-existing concept_apply_evidence PyO3 op + "
+        "can_native_update_3state's own relaxation -- no rule is added "
+        "here, only admissibility. See "
+        "SHARED_AROUSAL_EXCITATION_TRANSFER_PREREG.md / _RESULTS.md."
+    ),
+    "nodes": [],
+    "edges": [],
+    "productions": [
+        {
+            "src": {"type": "Microtheory", "var": "mt"},
+            "edge_type": "has_target_arousal",
+            "tgt": {"type": "TargetArousal", "var": "arousal"},
+            "where": None,
+            "weight": {"type": "Lit", "value": 1.0},
+            "provenance": "shared_arousal",
+        },
+    ],
+    "concepts": [
+        {
+            "name": "shared_arousal_excitation_transfer",
+            "definition": (
+                "Arousal connected to a specific target is a single, "
+                "valence-blind pool shared by every belief update about "
+                "that target -- a hostile incident and a desire-relevant "
+                "incident toward the SAME person draw from and contribute "
+                "to the SAME arousal level, so elevated arousal from one "
+                "amplifies the effective evidence strength of the other, "
+                "purely from co-occurrence, not from any change to the "
+                "evidence itself."
+            ),
+            "why": (
+                "User: 'the concept of hatefucking needs to work' -- "
+                "scoped as an abstract arousal-sharing mechanism "
+                "(Zillmann 1971/1983 excitation transfer; Dutton & Aron "
+                "1974), not narrative content. "
+                "SHARED_AROUSAL_EXCITATION_TRANSFER_PREREG.md."
+            ),
+        },
+    ],
+    "exclusions": [],
+    "rules": [],
+}
+
+print(json.dumps(SEED, indent=1))
