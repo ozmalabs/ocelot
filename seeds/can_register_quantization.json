@@ -1,0 +1,671 @@
+{
+ "id": "can_register_quantization",
+ "version": "1.0.0",
+ "depends_on": [
+  "can_native_reimplementation",
+  "interlocutor_shapes"
+ ],
+ "self_load_only": true,
+ "description": "Personality-trait-quantized REGISTER/STYLE codebook, applied per discrete relationship band (band_code 0-5, the tie-strength ladder half of Bigville's real BigvilleBondWorld._band_code -- band_code =-1/'rival' is out of scope, PREREG Sec1 point 4). Reuses resolution_bins (the SAME per-resident cognitive-resolution trait BIGVILLE_CAN_INTEGRATION_PREREG/RESULTS.md introduced for belief quantization, and every later rung in this arc reused unmodified) and the SAME effective_bins=max(2,round(resolution_bins*resolution_level)) composition formula, applied to a NEW continuous quantity: a per-band register-affinity value on [-1,1] that is a SATURATING function of band_code (Brinberg & Ram 2021's measured exponential-approach-to-asymptote convergence curve for real couples' linguistic alignment -- BIGVILLE_TOPIC_AND_STYLE_SCOPING.md Sec2.5), authored ONCE as static BandAffinityAnchor codebook data (band_code in 0..5), never recomputed via Exp inside run_rules() (frame/continuum invariant: the one transcendental piece of this design stays a one-time cross-frame authoring computation, never an in-loop one). The quantized value is classified against a 3-entry RegisterLabelAnchor codebook (formal/neutral/casual, labels reused from seeds/interlocutor_shapes.json's sig_register vocabulary -- that seed's own nodes/rules are NOT used, read-only label-vocabulary reuse only) via Argmin nearest-point decode -- an already-established engine-native selection primitive (seeds/gap_awareness.json's retire_duplicate_gap), deliberately NOT ShapeDecode/shape_decode_loop (PREREG Sec2's registered justification: a scalar nearest-point classification against 3 fixed references has no relational structure for ShapeDecode's beam-search/residual-coverage machinery to compose). Zero new Rust Terms anywhere in this seed -- Plus/Minus/Times/Div/Round/Max/Abs/Gte/IfThenElse/Let/Argmin/NodesOfType/Attr/Var/Lit/Eq/Not/And all pre-existed. See CAN_REGISTER_QUANTIZATION_PREREG.md / _RESULTS.md.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "BandAffinityAnchor",
+   "attrs": {
+    "band_code": 0,
+    "band_name": "stranger",
+    "true_affinity": -1.0
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "BandAffinityAnchor",
+   "attrs": {
+    "band_code": 1,
+    "band_name": "consequential_stranger",
+    "true_affinity": -0.097623
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "BandAffinityAnchor",
+   "attrs": {
+    "band_code": 2,
+    "band_name": "acquaintance",
+    "true_affinity": 0.397612
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "BandAffinityAnchor",
+   "attrs": {
+    "band_code": 3,
+    "band_name": "friend",
+    "true_affinity": 0.669402
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "BandAffinityAnchor",
+   "attrs": {
+    "band_code": 4,
+    "band_name": "intimate",
+    "true_affinity": 0.818564
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "BandAffinityAnchor",
+   "attrs": {
+    "band_code": 5,
+    "band_name": "family",
+    "true_affinity": 0.900426
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "RegisterLabelAnchor",
+   "attrs": {
+    "label": "formal",
+    "canonical_value": -1.0
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "RegisterLabelAnchor",
+   "attrs": {
+    "label": "neutral",
+    "canonical_value": 0.0
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "RegisterLabelAnchor",
+   "attrs": {
+    "label": "casual",
+    "canonical_value": 1.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "src": {
+    "type": "RegisterProfile",
+    "var": "prof"
+   },
+   "edge_type": "observed_band",
+   "tgt": {
+    "type": "RegisterObservation",
+    "var": "obs"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "can_register_quantization"
+  }
+ ],
+ "concepts": [
+  {
+   "name": "can_register_band_quantization",
+   "definition": "A resident's register affinity toward a discrete relationship band is a saturating function of that band's accumulated closeness, quantized onto a resolution_bins-sized grid (the SAME trait and composition formula CAN belief quantization already uses) and classified against a small held label codebook via Argmin nearest-point decode -- the register-domain sibling of can_native_basin_decode's belief-domain basin classification, sized for a scalar classification problem rather than a relational one.",
+   "why": "The mechanism BIGVILLE_TOPIC_AND_STYLE_SCOPING.md's Part 3.4 named as OCELOT's own job, not Bigville's -- a personality-trait-quantized codebook applied per discrete relationship band, reusing resolution_bins rather than inventing a second resolution trait."
+  }
+ ],
+ "exclusions": [],
+ "rules": [
+  {
+   "name": "can_register_decode_band",
+   "comment": "PREREG Sec4-5: quantizes a resident's per-band 'true' continuous register affinity (a saturating function of band_code, authored once as static BandAffinityAnchor data, PREREG Sec4.1) onto a linspace(-1,1,effective_bins) grid, effective_bins = max(2, round(resolution_bins*resolution_level)) -- the SAME composition BIGVILLE_CAN_INTEGRATION_PREREG.md Sec4 established for belief quantization, reused verbatim here for register quantization (PREREG Sec3). The quantized value is then classified against a 3-entry RegisterLabelAnchor codebook (formal/neutral/casual, labels reused from seeds/interlocutor_shapes.json's own sig_register vocabulary, PREREG Sec1 point 3) via Argmin nearest-point decode (PREREG Sec2's registered justification for Argmin over ShapeDecode: a scalar nearest-point classification against 3 fixed references has no relational structure to compose, so the beam-search/residual-coverage machinery ShapeDecode exists for is the wrong-sized tool here). ALL arithmetic (Round/Times/Div/Plus/Minus/Max/Gte/IfThenElse/Let/Argmin/Abs) is pre-existing Term vocabulary -- zero new Rust (PREREG Sec1 point 6). The register DECISION (which label wins) is this Rule's own Argmin call, not Python.",
+   "match_type": "RegisterObservation",
+   "match": [
+    [
+     "prof",
+     "observed_band",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pending"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "effective_bins",
+     {
+      "__term__": {
+       "type": "Let",
+       "name": "eb_raw",
+       "value": {
+        "type": "Round",
+        "value": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "prof"
+           },
+           "key": "resolution_bins"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "prof"
+           },
+           "key": "resolution_level"
+          }
+         ]
+        },
+        "ndigits": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "body": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gte",
+         "a": {
+          "type": "Var",
+          "name": "eb_raw"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 2
+         }
+        },
+        "then": {
+         "type": "Var",
+         "name": "eb_raw"
+        },
+        "other": {
+         "type": "Lit",
+         "value": 2
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "register_level_index",
+     {
+      "__term__": {
+       "type": "Let",
+       "name": "eb",
+       "value": {
+        "type": "Let",
+        "name": "eb_raw",
+        "value": {
+         "type": "Round",
+         "value": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "prof"
+            },
+            "key": "resolution_bins"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "prof"
+            },
+            "key": "resolution_level"
+           }
+          ]
+         },
+         "ndigits": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gte",
+          "a": {
+           "type": "Var",
+           "name": "eb_raw"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 2
+          }
+         },
+         "then": {
+          "type": "Var",
+          "name": "eb_raw"
+         },
+         "other": {
+          "type": "Lit",
+          "value": 2
+         }
+        }
+       },
+       "body": {
+        "type": "Round",
+        "value": {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Div",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "obs"
+              },
+              "key": "true_affinity"
+             },
+             {
+              "type": "Lit",
+              "value": 1.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 2.0
+           }
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Var",
+            "name": "eb"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1
+           }
+          }
+         ]
+        },
+        "ndigits": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "quantized_value",
+     {
+      "__term__": {
+       "type": "Let",
+       "name": "eb",
+       "value": {
+        "type": "Let",
+        "name": "eb_raw",
+        "value": {
+         "type": "Round",
+         "value": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "prof"
+            },
+            "key": "resolution_bins"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "prof"
+            },
+            "key": "resolution_level"
+           }
+          ]
+         },
+         "ndigits": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gte",
+          "a": {
+           "type": "Var",
+           "name": "eb_raw"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 2
+          }
+         },
+         "then": {
+          "type": "Var",
+          "name": "eb_raw"
+         },
+         "other": {
+          "type": "Lit",
+          "value": 2
+         }
+        }
+       },
+       "body": {
+        "type": "Let",
+        "name": "idx",
+        "value": {
+         "type": "Round",
+         "value": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Div",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "obs"
+               },
+               "key": "true_affinity"
+              },
+              {
+               "type": "Lit",
+               "value": 1.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 2.0
+            }
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Var",
+             "name": "eb"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         },
+         "ndigits": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "body": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Lit",
+           "value": -1.0
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Var",
+             "name": "idx"
+            },
+            {
+             "type": "Div",
+             "a": {
+              "type": "Lit",
+              "value": 2.0
+             },
+             "b": {
+              "type": "Minus",
+              "a": {
+               "type": "Var",
+               "name": "eb"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            }
+           ]
+          }
+         ]
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "register_label",
+     {
+      "__term__": {
+       "type": "Let",
+       "name": "eb",
+       "value": {
+        "type": "Let",
+        "name": "eb_raw",
+        "value": {
+         "type": "Round",
+         "value": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "prof"
+            },
+            "key": "resolution_bins"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "prof"
+            },
+            "key": "resolution_level"
+           }
+          ]
+         },
+         "ndigits": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "body": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gte",
+          "a": {
+           "type": "Var",
+           "name": "eb_raw"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 2
+          }
+         },
+         "then": {
+          "type": "Var",
+          "name": "eb_raw"
+         },
+         "other": {
+          "type": "Lit",
+          "value": 2
+         }
+        }
+       },
+       "body": {
+        "type": "Let",
+        "name": "idx",
+        "value": {
+         "type": "Round",
+         "value": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Div",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "obs"
+               },
+               "key": "true_affinity"
+              },
+              {
+               "type": "Lit",
+               "value": 1.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 2.0
+            }
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Var",
+             "name": "eb"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         },
+         "ndigits": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "body": {
+         "type": "Let",
+         "name": "qv",
+         "value": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Lit",
+            "value": -1.0
+           },
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Var",
+              "name": "idx"
+             },
+             {
+              "type": "Div",
+              "a": {
+               "type": "Lit",
+               "value": 2.0
+              },
+              "b": {
+               "type": "Minus",
+               "a": {
+                "type": "Var",
+                "name": "eb"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              }
+             }
+            ]
+           }
+          ]
+         },
+         "body": {
+          "type": "Attr",
+          "node": {
+           "type": "Argmin",
+           "source": {
+            "type": "NodesOfType",
+            "node_type": "RegisterLabelAnchor"
+           },
+           "var_name": "lbl",
+           "value": {
+            "type": "Abs",
+            "arg": {
+             "type": "Minus",
+             "a": {
+              "type": "Var",
+              "name": "qv"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "lbl"
+              },
+              "key": "canonical_value"
+             }
+            }
+           }
+          },
+          "key": "label"
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "decoded"
+    ]
+   ]
+  }
+ ]
+}
