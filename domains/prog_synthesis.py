@@ -1710,6 +1710,21 @@ def _st_bound_names(sub, root) -> set:
             names.add(_text(attrs["var_name"]))
         if attrs.get("acc_name"):
             names.add(_text(attrs["acc_name"]))
+        # PROGRAM_SYNTHESIS_ZIPWITH_FOLLOWON: `ZipWith` binds ITS OWN two
+        # names (`a_name`/`b_name`, `reflect.rs`'s own ScalarSym fields --
+        # a THIRD binder-field-naming convention alongside `var_name`/
+        # `acc_name`, distinct from both), never previously recognized
+        # here -- found live via `zip_structural_probe.py`: D2 was firing
+        # on every ZipWith candidate's OWN bound `__za`/`__zb` (and the
+        # nested inner `__zi`/`__zj`), a genuine false positive of the
+        # exact SAME class this function's own docstring already documents
+        # fixing once for the HOF `var_name`/`acc_name` binders. Same
+        # unconditional (pre-`_ST_BINDING_TERM_TYPES`-gate) dispatch
+        # discipline as the two checks immediately above.
+        if attrs.get("a_name"):
+            names.add(_text(attrs["a_name"]))
+        if attrs.get("b_name"):
+            names.add(_text(attrs["b_name"]))
         if t not in _ST_BINDING_TERM_TYPES:
             return
         if t == "Term.ProgTupleUnpack":
