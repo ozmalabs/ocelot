@@ -1,12 +1,12 @@
 {
  "id": "rule_dispute_self_conscious_bridge",
- "version": "1.0.0",
+ "version": "1.1.0",
  "depends_on": [
   "rule_dispute_escalation",
   "self_conscious_emotions"
  ],
  "self_load_only": true,
- "description": "Bridges a decided rule dispute (seeds/rule_dispute_escalation.json) to a self-conscious-emotion appraisal (seeds/self_conscious_emotions.json) for the claim-holder who was wrong, WITHOUT editing either seed -- strictly additive. The dispute's escalate/defuse outcome IS the correction style (Tangney & Dearing 2002: hostile/confrontational vs calm), which sets attribution_locus (global_self vs specific_act) and, identically, each carried-over witness's judgment. standard_met is unconditionally 0.0 -- a dispute existing at all means the claim-holder was wrong. This bridge structurally never produces attribution_locus=circumstance, so it never produces embarrassment -- a genuine rules dispute is an attributable epistemic error, not a circumstantial mishap (PREREG Sec1's registered scope boundary, prediction 3). Zero new Rust Terms -- Eq/And/IfThenElse/Count/Neighbours/Attr/Var/Lit all pre-existed; add_node/add_edge rule effects mirror seeds/gap_awareness.json's own mint-on-decision idiom exactly. See RULE_DISPUTE_SELF_CONSCIOUS_BRIDGE_PREREG.md / _RESULTS.md.",
+ "description": "Bridges a decided rule dispute (seeds/rule_dispute_escalation.json) to a self-conscious-emotion appraisal (seeds/self_conscious_emotions.json) for the claim-holder who was wrong, WITHOUT editing either seed -- strictly additive. standard_met is unconditionally 0.0 -- a dispute existing at all means the claim-holder was wrong. v1.1.0 (ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md): attribution_locus is now a RESIDUAL, not a hand-picked lookup from the dispute outcome -- the incident's own implied signal (-1.0, standard violated) compared against the agent's held SelfPattern (0 or 1 optional edge): no pattern -> circumstance (Miller 1996's embarrassment mode, correctly recovered for first-time incidents); signs agree (confirms the pattern) -> global_self (Abramson, Seligman & Teasdale 1978's depressive attributional style); signs disagree (contradicts it) -> specific_act (Miller & Ross 1975's self-serving bias). witness_judgment stays keyed to the dispute's OWN escalate/defuse outcome (Tangney & Dearing 2002) -- a genuinely different, correctly-external signal (what OTHERS perceive), unchanged. Zero new Rust Terms -- Eq/And/IfThenElse/Count/Neighbours/PickUnique/Times/Gt/Attr/Var/Lit all pre-existed; add_node/add_edge rule effects mirror seeds/gap_awareness.json's own mint-on-decision idiom exactly. See RULE_DISPUTE_SELF_CONSCIOUS_BRIDGE_PREREG.md / _RESULTS.md and ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md / _RESULTS.md.",
  "nodes": [],
  "edges": [],
  "productions": [
@@ -43,20 +43,37 @@
     "value": 1.0
    },
    "provenance": "rule_dispute_self_conscious_bridge"
+  },
+  {
+   "src": {
+    "type": "DisputeContext",
+    "var": "ctx"
+   },
+   "edge_type": "has_self_pattern",
+   "tgt": {
+    "type": "SelfPattern",
+    "var": "pattern"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "rule_dispute_self_conscious_bridge"
   }
  ],
  "concepts": [
   {
    "name": "rule_dispute_self_conscious_bridge",
-   "definition": "A rules dispute's escalate/defuse outcome IS a correction style (hostile/confrontational vs calm), which mechanically determines the self-conscious emotion the disputant who was wrong experiences -- shame from an escalated confrontation, guilt from a defused correction -- via the same attribution-locus mechanism the self-conscious-emotions rung already established, never a bespoke third decision.",
-   "why": "The user asked to wire the self-conscious-emotions mechanism live off the rule-dispute escalation outcome, the follow-on both prior RESULTS docs named. RULE_DISPUTE_SELF_CONSCIOUS_BRIDGE_PREREG.md."
+   "definition": "A rules dispute's claim-holder experiences shame, guilt, or embarrassment depending on whether the incident confirms or contradicts their own held self-pattern (a residual, not a lookup from the dispute outcome) -- while who ELSE believes a violation occurred (witness_judgment) stays keyed to the dispute's own escalate/defuse outcome, a genuinely separate signal.",
+   "why": "The user asked to wire the self-conscious-emotions mechanism live off the rule-dispute escalation outcome, then to wire attribution_locus itself as a residual, mirroring issue_severity's own fix. RULE_DISPUTE_SELF_CONSCIOUS_BRIDGE_PREREG.md, ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md."
   }
  ],
  "exclusions": [],
  "rules": [
   {
    "name": "bridge_dispute_to_self_conscious_context",
-   "comment": "PREREG Sec1: a decided RuleDisputeSignal mints a SelfConsciousContext for the claim-holder -- standard_met=0.0 unconditionally (the dispute's own premise is that this party was wrong about the rule, RULE_DISPUTE_ESCALATION_PREREG.md Sec2). attribution_locus and witness_judgment are both derived from the SAME outcome-keyed mapping (Tangney & Dearing 2002: a hostile/confrontational correction (escalate) reads as global-self attribution; a calm one (defuse) reads as specific-act) -- not two independent decisions. Guarded by a bridged_to dedup edge so re-running run_rules() does not double-mint (PREREG prediction 5).",
+   "comment": "PREREG Sec1: a decided RuleDisputeSignal mints a SelfConsciousContext for the claim-holder -- standard_met=0.0 unconditionally (the dispute's own premise is that this party was wrong about the rule, RULE_DISPUTE_ESCALATION_PREREG.md Sec2). attribution_locus is now a RESIDUAL (ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md Sec2): the incident's own implied signal vs the agent's held SelfPattern -- no pattern -> circumstance, signs agree (confirms the pattern) -> global_self, signs disagree (contradicts it) -> specific_act. witness_judgment stays keyed to the dispute's OWN escalate/defuse outcome -- a genuinely different, correctly-external signal (what OTHERS perceive), not the agent's own attribution. Guarded by a bridged_to dedup edge so re-running run_rules() does not double-mint (PREREG prediction 5).",
    "match_type": "RuleDisputeSignal",
    "match": [
     [
@@ -116,25 +133,66 @@
         "cond": {
          "type": "Eq",
          "a": {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "sig"
-          },
-          "key": "outcome"
+          "type": "Count",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "ctx"
+           },
+           "edge_type": "has_self_pattern"
+          }
          },
          "b": {
           "type": "Lit",
-          "value": "escalate"
+          "value": 0
          }
         },
         "then": {
          "type": "Lit",
-         "value": "global_self"
+         "value": "circumstance"
         },
         "other": {
-         "type": "Lit",
-         "value": "specific_act"
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "PickUnique",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "ctx"
+               },
+               "edge_type": "has_self_pattern"
+              }
+             },
+             "key": "held_self_worth"
+            },
+            {
+             "type": "Lit",
+             "value": -1.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": "global_self"
+         },
+         "other": {
+          "type": "Lit",
+          "value": "specific_act"
+         }
         }
        }
       },

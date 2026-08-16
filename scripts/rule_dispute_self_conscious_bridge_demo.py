@@ -1,13 +1,14 @@
 """Live demonstration harness for seeds/rule_dispute_self_conscious_bridge.json.
 
 Per docs/research/psychology_affect/
-RULE_DISPUTE_SELF_CONSCIOUS_BRIDGE_PREREG.md Sec2. Pure world-adapter/
-harness code (CLAUDE.md's architecture rule): this script MECHANICALLY
-builds a DisputeContext exactly as rule_dispute_escalation_demo.py does,
-calls `run_rules()` ONCE, and reads back BOTH the dispute outcome and the
+RULE_DISPUTE_SELF_CONSCIOUS_BRIDGE_PREREG.md Sec2 and
+ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md Sec3. Pure world-adapter/harness
+code (CLAUDE.md's architecture rule): this script MECHANICALLY builds a
+DisputeContext (optionally with a held SelfPattern) exactly as
+rule_dispute_escalation_demo.py does, calls `run_rules()` ONCE, and reads
+back the dispute outcome, the residual-derived attribution_locus, and the
 bridged self-conscious emotion the engine's own rules already decided. It
-makes no bridging decision itself -- the outcome->attribution_locus mapping
-is entirely bridge_dispute_to_self_conscious_context's own effect.
+makes no bridging decision itself.
 
 Run: python3 scripts/rule_dispute_self_conscious_bridge_demo.py
 """
@@ -39,9 +40,10 @@ def _loaded_substrate():
     return s
 
 
-def dispute_then_appraise(inner, *, issue_severity, band_code, witnesses, audience_gain=0.15, label=""):
-    """witnesses: list of per-witness closeness values, mirroring
-    rule_dispute_escalation_demo.py::decide exactly."""
+def dispute_then_appraise(inner, *, issue_severity, band_code, witnesses,
+                          held_self_worth=None, audience_gain=0.15, label=""):
+    """witnesses: list of per-witness closeness values. held_self_worth:
+    None (no track record) or a scalar in [-1,1]."""
     ctx = inner.add_node("DisputeContext", {
         "label": label, "issue_severity": issue_severity, "band_code": band_code,
         "audience_gain": audience_gain,
@@ -49,6 +51,9 @@ def dispute_then_appraise(inner, *, issue_severity, band_code, witnesses, audien
     for closeness in witnesses:
         w = inner.add_node("WitnessPresence", {"closeness": closeness})
         inner.add_edge(ctx, "has_witness", w, {})
+    if held_self_worth is not None:
+        pattern = inner.add_node("SelfPattern", {"held_self_worth": held_self_worth})
+        inner.add_edge(ctx, "has_self_pattern", pattern, {})
     sig = inner.add_node("RuleDisputeSignal", {"status": "pending"})
     inner.add_edge(ctx, "has_signal", sig, {})
     inner.run_rules(50)
@@ -56,12 +61,11 @@ def dispute_then_appraise(inner, *, issue_severity, band_code, witnesses, audien
     sc_ctx = inner.neighbours(ctx, "bridged_to")[0]
     sc_sig = inner.neighbours(sc_ctx, "has_appraisal")[0]
     emotion_attrs = inner.node(sc_sig)["attrs"]
-    witness_belief_count = len(inner.neighbours(sc_ctx, "has_witness_belief"))
     return {
         "label": label, "dispute_outcome": dispute_attrs["outcome"],
         "attribution_locus": inner.node(sc_ctx)["attrs"]["attribution_locus"],
+        "witness_judgment": inner.node(sc_ctx)["attrs"]["witness_judgment"],
         "emotion": emotion_attrs["emotion"],
-        "witness_belief_count": witness_belief_count,
     }
 
 
@@ -70,35 +74,57 @@ def main():
     inner = s._inner
 
     print("=" * 78)
-    print("END-TO-END: the SAME two scenarios rule_dispute_escalation_demo.py")
-    print("used, now bridged through to a self-conscious emotion")
+    print("ATTRIBUTION AS A RESIDUAL (ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md")
+    print("predictions 1-2): the SAME failure, opposite held self-pattern")
     print("=" * 78)
-    escalated = dispute_then_appraise(
-        inner, label="near-strangers, confident contradiction, whole table watching",
-        issue_severity=0.9, band_code=0, witnesses=[0.0, 0.0, 0.0])
-    defused = dispute_then_appraise(
-        inner, label="close friends, ambiguous issue, private aside",
-        issue_severity=0.2, band_code=4, witnesses=[])
-    for r in (escalated, defused):
-        print("%-55s dispute=%-9s locus=%-13s witnesses=%d -> %s" % (
-            r["label"], r["dispute_outcome"], r["attribution_locus"],
-            r["witness_belief_count"], r["emotion"]))
+    negative_pattern = dispute_then_appraise(
+        inner, label="failure confirms an already-negative self-pattern",
+        issue_severity=0.9, band_code=0, witnesses=[0.0, 0.0, 0.0],
+        held_self_worth=-0.6)
+    positive_pattern = dispute_then_appraise(
+        inner, label="SAME failure, but a positive self-pattern (contradicts it)",
+        issue_severity=0.9, band_code=0, witnesses=[0.0, 0.0, 0.0],
+        held_self_worth=0.6)
+    for r in (negative_pattern, positive_pattern):
+        print("%-55s locus=%-13s -> %s" % (r["label"], r["attribution_locus"], r["emotion"]))
 
     print()
     print("=" * 78)
-    print("NEVER EMBARRASSMENT (PREREG Sec2 prediction 3) -- a small sweep")
+    print("NO TRACK RECORD -> CIRCUMSTANCE, EMBARRASSMENT RECOVERED")
+    print("(prediction 3 -- retracts the prior 'never embarrassment' finding)")
     print("=" * 78)
-    emotions_seen = set()
-    for band in (0, 2, 4, 5):
-        for severity10 in (2, 5, 8):
-            r = dispute_then_appraise(
-                inner, issue_severity=severity10 / 10.0, band_code=band,
-                witnesses=[0.0, 0.5])
-            emotions_seen.add(r["emotion"])
-    print("emotions produced across the sweep:", sorted(emotions_seen))
-    print("embarrassment ever produced:", "embarrassment" in emotions_seen)
+    first_time_private = dispute_then_appraise(
+        inner, label="first-time incident, no track record, private",
+        issue_severity=0.9, band_code=0, witnesses=[])
+    first_time_public = dispute_then_appraise(
+        inner, label="SAME first-time incident, witnessed",
+        issue_severity=0.9, band_code=0, witnesses=[0.0, 0.0, 0.0])
+    for r in (first_time_private, first_time_public):
+        print("%-55s locus=%-13s -> %s" % (r["label"], r["attribution_locus"], r["emotion"]))
 
-    return {"escalated": escalated, "defused": defused, "emotions_seen": sorted(emotions_seen)}
+    print()
+    print("=" * 78)
+    print("witness_judgment (audience perception) is UNCHANGED -- still keyed")
+    print("to the dispute's own escalate/defuse outcome, not the residual")
+    print("=" * 78)
+    escalated = dispute_then_appraise(
+        inner, label="near-strangers, confident contradiction, witnessed",
+        issue_severity=0.9, band_code=0, witnesses=[0.0, 0.0, 0.0],
+        held_self_worth=-0.6)
+    defused = dispute_then_appraise(
+        inner, label="close friends, ambiguous issue, private",
+        issue_severity=0.2, band_code=4, witnesses=[],
+        held_self_worth=-0.6)
+    for r in (escalated, defused):
+        print("%-55s dispute=%-9s witness_judgment=%-9s emotion=%s" % (
+            r["label"], r["dispute_outcome"], r["witness_judgment"], r["emotion"]))
+    print("(witness_judgment differs -- 'violated' vs 'met' -- but the emotion")
+    print(" is the SAME 'shame' in both, since attribution_locus=global_self")
+    print(" for both (identical held_self_worth) and only the circumstance")
+    print(" cell reads witness_judgment at all)")
+
+    return {"negative_pattern": negative_pattern, "positive_pattern": positive_pattern,
+            "first_time_private": first_time_private, "first_time_public": first_time_public}
 
 
 if __name__ == "__main__":
