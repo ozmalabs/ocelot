@@ -71,6 +71,14 @@ def NodesOfType(node_type):
     return {"type": "NodesOfType", "node_type": node_type}
 
 
+def Neighbours(node, edge_type):
+    return {"type": "Neighbours", "node": node, "edge_type": edge_type}
+
+
+def SumT(source, var_name, value):
+    return {"type": "Sum", "source": source, "var_name": var_name, "value": value}
+
+
 def term_effect(node, key, term):
     return ["set_attr", node, key, {"__term__": term}]
 
@@ -93,21 +101,36 @@ def _closeness_term(ctx_var="ctx"):
     return DivT(Attr(Var(ctx_var), "band_code"), Lit(5.0))
 
 
+def _audience_term(ctx_var="ctx"):
+    """PREREG Sec3b (Rung 2): sum, over each PRESENT witness, of
+    audience_gain*(1-witness.closeness) -- each witness contributes their
+    OWN suppression (closeness to whichever disputant they'd regulate,
+    Sbarra & Hazan 2008 coregulation), not the dyad's. An anonymous witness
+    (closeness=0.0) contributes audience_gain*(1-0)=audience_gain, so N
+    anonymous witnesses reproduce Rung 1's witnesses=N case exactly --
+    generalization, not a behavior change for the already-tested cases."""
+    ctx = Var(ctx_var)
+    witness = Var("witness")
+    return SumT(
+        source=Neighbours(ctx, "has_witness"),
+        var_name="witness",
+        value=TimesT([
+            Attr(ctx, "audience_gain"),
+            MinusT(Lit(1.0), Attr(witness, "closeness")),
+        ]),
+    )
+
+
 def _pressure_term(ctx_var="ctx"):
-    """pressure = issue_severity + audience_gain*witnesses*(1-closeness) -
-    closeness -- PREREG Sec2's registered composition. The (1-closeness)
-    interaction term is the load-bearing design choice (PREREG Sec2's own
-    citations): closeness SUPPRESSES the audience-amplification term, it
-    does not merely add a separate independent calming term."""
+    """pressure = issue_severity + audience_term - closeness -- PREREG
+    Sec2/Sec3b's registered composition. The dyad's own closeness still
+    suppresses pressure directly (the two disputants' own relationship);
+    each witness separately suppresses via their OWN closeness inside
+    _audience_term, the load-bearing Rung 2 generalization."""
     ctx = Var(ctx_var)
     closeness = _closeness_term(ctx_var)
-    audience_term = TimesT([
-        Attr(ctx, "audience_gain"),
-        Attr(ctx, "witnesses"),
-        MinusT(Lit(1.0), closeness),
-    ])
     return MinusT(
-        PlusT([Attr(ctx, "issue_severity"), audience_term]),
+        PlusT([Attr(ctx, "issue_severity"), _audience_term(ctx_var)]),
         closeness,
     )
 
@@ -188,7 +211,7 @@ NODES = dispute_outcome_anchor_nodes()
 
 SEED = {
     "id": "rule_dispute_escalation",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "depends_on": [],
     "self_load_only": True,
     "description": (
@@ -211,8 +234,15 @@ SEED = {
         "effect shape Giles' Communication Accommodation Theory already "
         "gave this session's register/style work (convergence in-group, "
         "divergence out-group). Zero new Rust Terms -- Div/Times/Minus/"
-        "Plus/Abs/Let/Argmin/Attr/Var/Lit/Eq/And all pre-existed. See "
-        "RULE_DISPUTE_ESCALATION_PREREG.md / _RESULTS.md."
+        "Plus/Abs/Let/Argmin/Attr/Var/Lit/Eq/And all pre-existed. v1.1.0 "
+        "(Rung 2, PREREG Sec3b) generalizes the bare 'witnesses' count into "
+        "WitnessPresence nodes, each carrying its OWN closeness to "
+        "whichever disputant they'd regulate (Sbarra & Hazan 2008, "
+        "coregulation) -- audience_gain*(1-witness.closeness), summed via "
+        "the pre-existing Sum/Neighbours Terms, not a new principle; an "
+        "anonymous witness (closeness=0.0) reproduces Rung 1's per-witness "
+        "contribution exactly. See RULE_DISPUTE_ESCALATION_PREREG.md / "
+        "_RESULTS.md."
     ),
     "nodes": NODES,
     "edges": [],
@@ -221,6 +251,14 @@ SEED = {
             "src": {"type": "DisputeContext", "var": "ctx"},
             "edge_type": "has_signal",
             "tgt": {"type": "RuleDisputeSignal", "var": "sig"},
+            "where": None,
+            "weight": {"type": "Lit", "value": 1.0},
+            "provenance": "rule_dispute_escalation",
+        },
+        {
+            "src": {"type": "DisputeContext", "var": "ctx"},
+            "edge_type": "has_witness",
+            "tgt": {"type": "WitnessPresence", "var": "witness"},
             "where": None,
             "weight": {"type": "Lit", "value": 1.0},
             "provenance": "rule_dispute_escalation",

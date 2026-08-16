@@ -1,9 +1,9 @@
 {
  "id": "rule_dispute_escalation",
- "version": "1.0.0",
+ "version": "1.1.0",
  "depends_on": [],
  "self_load_only": true,
- "description": "Composes a dyadic rule-dispute's issue severity, relationship closeness (band_code/tie_strength, reusing bigville's already-built plumbing verbatim -- commit 1b79a0f), and bystander/witness count into a scalar 'pressure', classified via Argmin nearest-point decode against a 2-entry DisputeOutcomeAnchor codebook (defuse/escalate) -- the SAME compose-then-Argmin-classify shape seeds/can_register_quantization.json already established, reused here rather than reinvented (RULE_DISPUTE_ESCALATION_PREREG.md Sec1's own SHAPES-not-numbers justification). The load-bearing design choice is the (1-closeness) interaction term: audience presence amplifies escalation (Felson 1982, 'Impression Management and the Escalation of Aggression and Violence'), but closeness SUPPRESSES that amplification rather than merely offsetting it additively (Coleman, Deutsch & Marcus, Handbook of Conflict Resolution -- established cooperative-norm relationships actively resist destructive escalation) -- the same interaction-effect shape Giles' Communication Accommodation Theory already gave this session's register/style work (convergence in-group, divergence out-group). Zero new Rust Terms -- Div/Times/Minus/Plus/Abs/Let/Argmin/Attr/Var/Lit/Eq/And all pre-existed. See RULE_DISPUTE_ESCALATION_PREREG.md / _RESULTS.md.",
+ "description": "Composes a dyadic rule-dispute's issue severity, relationship closeness (band_code/tie_strength, reusing bigville's already-built plumbing verbatim -- commit 1b79a0f), and bystander/witness count into a scalar 'pressure', classified via Argmin nearest-point decode against a 2-entry DisputeOutcomeAnchor codebook (defuse/escalate) -- the SAME compose-then-Argmin-classify shape seeds/can_register_quantization.json already established, reused here rather than reinvented (RULE_DISPUTE_ESCALATION_PREREG.md Sec1's own SHAPES-not-numbers justification). The load-bearing design choice is the (1-closeness) interaction term: audience presence amplifies escalation (Felson 1982, 'Impression Management and the Escalation of Aggression and Violence'), but closeness SUPPRESSES that amplification rather than merely offsetting it additively (Coleman, Deutsch & Marcus, Handbook of Conflict Resolution -- established cooperative-norm relationships actively resist destructive escalation) -- the same interaction-effect shape Giles' Communication Accommodation Theory already gave this session's register/style work (convergence in-group, divergence out-group). Zero new Rust Terms -- Div/Times/Minus/Plus/Abs/Let/Argmin/Attr/Var/Lit/Eq/And all pre-existed. v1.1.0 (Rung 2, PREREG Sec3b) generalizes the bare 'witnesses' count into WitnessPresence nodes, each carrying its OWN closeness to whichever disputant they'd regulate (Sbarra & Hazan 2008, coregulation) -- audience_gain*(1-witness.closeness), summed via the pre-existing Sum/Neighbours Terms, not a new principle; an anonymous witness (closeness=0.0) reproduces Rung 1's per-witness contribution exactly. See RULE_DISPUTE_ESCALATION_PREREG.md / _RESULTS.md.",
  "nodes": [
   {
    "local_id": 1,
@@ -33,6 +33,23 @@
    "tgt": {
     "type": "RuleDisputeSignal",
     "var": "sig"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "rule_dispute_escalation"
+  },
+  {
+   "src": {
+    "type": "DisputeContext",
+    "var": "ctx"
+   },
+   "edge_type": "has_witness",
+   "tgt": {
+    "type": "WitnessPresence",
+    "var": "witness"
    },
    "where": null,
    "weight": {
@@ -124,47 +141,44 @@
           "key": "issue_severity"
          },
          {
-          "type": "Times",
-          "items": [
-           {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "ctx"
-            },
-            "key": "audience_gain"
+          "type": "Sum",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "ctx"
            },
-           {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "ctx"
+           "edge_type": "has_witness"
+          },
+          "var_name": "witness",
+          "value": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "ctx"
+             },
+             "key": "audience_gain"
             },
-            "key": "witnesses"
-           },
-           {
-            "type": "Minus",
-            "a": {
-             "type": "Lit",
-             "value": 1.0
-            },
-            "b": {
-             "type": "Div",
+            {
+             "type": "Minus",
              "a": {
+              "type": "Lit",
+              "value": 1.0
+             },
+             "b": {
               "type": "Attr",
               "node": {
                "type": "Var",
-               "name": "ctx"
+               "name": "witness"
               },
-              "key": "band_code"
-             },
-             "b": {
-              "type": "Lit",
-              "value": 5.0
+              "key": "closeness"
              }
             }
-           }
-          ]
+           ]
+          }
          }
         ]
        },
@@ -208,47 +222,44 @@
            "key": "issue_severity"
           },
           {
-           "type": "Times",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "ctx"
-             },
-             "key": "audience_gain"
+           "type": "Sum",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "ctx"
             },
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "ctx"
+            "edge_type": "has_witness"
+           },
+           "var_name": "witness",
+           "value": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "ctx"
+              },
+              "key": "audience_gain"
              },
-             "key": "witnesses"
-            },
-            {
-             "type": "Minus",
-             "a": {
-              "type": "Lit",
-              "value": 1.0
-             },
-             "b": {
-              "type": "Div",
+             {
+              "type": "Minus",
               "a": {
+               "type": "Lit",
+               "value": 1.0
+              },
+              "b": {
                "type": "Attr",
                "node": {
                 "type": "Var",
-                "name": "ctx"
+                "name": "witness"
                },
-               "key": "band_code"
-              },
-              "b": {
-               "type": "Lit",
-               "value": 5.0
+               "key": "closeness"
               }
              }
-            }
-           ]
+            ]
+           }
           }
          ]
         },

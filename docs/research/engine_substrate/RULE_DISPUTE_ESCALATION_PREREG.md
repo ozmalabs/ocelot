@@ -117,6 +117,51 @@ picked to fit an outcome:
    stranger tie (a floor sanity check on the `/5.0` normalization, since -1
    is out of the 0–5 scale it was built for).
 
+## 3b. Rung 2 — a regulating witness (registered before rebuilding)
+
+User: *"try it with near strangers, but one has their partner there to
+regulate them."* Rung 1's `witnesses` was a bare count — every witness
+contributed the SAME audience-amplification term, with the DYAD's own
+closeness (not any witness's) doing all the suppression. That conflates two
+different things: how close the two disputants are to EACH OTHER, and how
+close a given BYSTANDER is to one of them. A partner in the room is not an
+anonymous audience member; a real bystander's regulating effect depends on
+THEIR OWN closeness to the person they're calming, not on the disputants'
+mutual closeness. Rung 1 cannot represent this case at all — it is a
+genuine missing degree of freedom, not a parameter tweak.
+
+**Design**: `witnesses` (a scalar count) becomes a set of `WitnessPresence`
+nodes (`ctx -has_witness-> witness`, each carrying its own `closeness` ∈
+[0,1] to whichever disputant they'd regulate). The audience term
+generalizes from `audience_gain*witnesses*(1-closeness_dyad)` to
+`Sum` over present witnesses of `audience_gain*(1-witness.closeness)` —
+each witness contributes their OWN suppression, not the dyad's. An
+anonymous witness (`closeness=0.0`) reproduces Rung 1's per-witness
+contribution exactly (`audience_gain*(1-0)=audience_gain`), so N anonymous
+witnesses reproduce Rung 1's `witnesses=N` case byte-for-byte — this is a
+generalization, not a behavior change for the already-tested cases.
+`Sum`/`Neighbours` are pre-existing Terms (`jsonio.rs` `TermNode::Sum`/
+`TermNode::Neighbours`); zero new Rust.
+
+**Grounding for a partner specifically de-escalating** (not just "a closer
+witness"): Sbarra & Hazan (2008), "Coregulation, Dysregulation,
+Self-Regulation" — an attachment partner's presence measurably down-regulates
+physiological arousal during stress, a distinct, well-evidenced mechanism
+from mere audience-size effects (Felson, Rung 1). This is why the witness's
+OWN closeness term is additive-suppressive at the per-witness level, the
+same interaction shape Rung 1 already used for the dyad, not a new
+principle.
+
+**Prediction 6 (registered)**: near-strangers (`band_code=0`), high severity
+(0.9), 3 witnesses — Rung 1 already showed this escalates with all-anonymous
+witnesses. Replacing ONE anonymous witness with a high-closeness
+(`closeness=0.9`) partner of one disputant, holding severity/dyad-closeness/
+witness COUNT fixed, strictly lowers `pressure` relative to the all-anonymous
+case, and is expected to flip the outcome to `defuse` (not merely reduce
+pressure) for this specific severity/band/witness-count combination —
+checked, not assumed, since the flip threshold is an empirical fact of the
+composed formula, not guaranteed by the direction alone.
+
 ## 4. Scope boundaries
 
 - Does NOT wire this live into `BigvilleGame`'s tick loop or the

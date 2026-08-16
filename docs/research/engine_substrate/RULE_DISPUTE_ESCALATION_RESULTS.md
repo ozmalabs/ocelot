@@ -50,7 +50,14 @@ issue/people/bystanders) is reproduced end to end.
    `band_code=5` (`pressure=-0.200`, defuse) — the same public dispute plays
    out differently depending on who is having it, exactly the claim
    `(1-closeness)` was designed to produce, not merely a monotonic trend
-   crossing zero somewhere convenient. **PASS.**
+   crossing zero somewhere convenient. **PASS under Rung 1's formula.**
+   **RETRACTED under Rung 2 (Sec3b below)**: Rung 1 achieved this by
+   conflating the DYAD's closeness with generic bystanders' own closeness —
+   Rung 2 corrects that conflation, and the same sweep no longer flips
+   (stays `escalate` throughout `band_code=0→5`, `pressure: 1.250→0.250`).
+   The dyad-closeness mechanism itself (Prediction 1) still holds; the
+   claim that it was SUPPRESSING anonymous-audience amplification was
+   wrong. See Sec3b for what replaces it.
 5. **Rival floor** — `band_code=-1` (rival): `pressure=1.540`;
    `band_code=0` (stranger): `pressure=1.250`. Rival pressure is HIGHER
    (more escalation-prone), never lower — rivalry does not accidentally read
@@ -59,6 +66,69 @@ issue/people/bystanders) is reproduced end to end.
 No null. Every registered prediction held on the first run, with no
 post-hoc formula adjustment — the composition in the PREREG is the exact
 composition tested.
+
+## 3b. Rung 2 — a regulating witness (PREREG Sec3b)
+
+User: *"try it with near strangers, but one has their partner there to
+regulate them."* Rung 1's `witnesses` was a bare count with no slot for a
+bystander's OWN relationship to a disputant — genuinely unable to represent
+this case. Generalized `witnesses` into `WitnessPresence` nodes, each
+carrying its own `closeness`; the audience term is now a `Sum` over present
+witnesses of `audience_gain*(1-witness.closeness)` instead of
+`audience_gain*witnesses*(1-dyad_closeness)`. Zero new Rust (`Sum`/
+`Neighbours` pre-existed).
+
+**A real regression, found and corrected, not hidden.** Rung 1's own
+"prediction 4" (interaction sweep) no longer holds: with all-anonymous
+witnesses, dyad closeness now has ZERO effect on the audience term (it only
+had one before because Rung 1 conflated the dyad's closeness with generic
+bystanders' — a modeling shortcut, not a real claim). Re-run at the ORIGINAL
+prediction-4 parameters (severity=0.8, witnesses=3 anonymous, band 0→5):
+`1.250 → 1.050 → 0.850 → 0.650 → 0.450 → 0.250` — monotonic (the dyad term
+alone still works), but never crosses into `defuse` any more, where Rung 1
+crossed at `band_code=5`. **This is retracted, not silently updated**: Rung
+1's claim that closeness suppresses generic-audience amplification was
+wrong; the corrected model (a witness's OWN closeness does that, not the
+dyad's) is more realistic — anonymous strangers' presence-pressure doesn't
+care how close YOU are with your OWN dispute partner. Encoded as a standing
+regression, `test_anonymous_witness_pressure_is_independent_of_dyad_closeness`.
+
+**Prediction 6, run honestly — direction holds, flip does not (at the
+originally-proposed severe scenario):**
+
+```
+3 anonymous witnesses                                   pressure=+1.350 -> escalate
+2 anonymous + 1 regulating partner (closeness=0.9)      pressure=+1.215 -> escalate
+partner lowers pressure: True
+outcome flips escalate -> defuse: False
+```
+
+The registered PREREG hedge ("checked, not assumed, since the flip threshold
+is an empirical fact") was necessary — it did not flip. Structural reason,
+found by range-search rather than asserted: each `WitnessPresence`
+contributes at most `audience_gain` (0.15) to `pressure`, so swapping ONE
+anonymous witness for a fully-regulating partner (`closeness=0.9`) moves
+`pressure` by only `0.15*0.9=0.135` — small relative to `issue_severity=0.9`
+dominating the sum. **A single calm bystander cannot, on its own, overcome a
+genuinely severe near-stranger dispute in front of a crowd — realistic, not
+a bug.** Range-search over `{band_code, issue_severity}` at 1 witness found
+where the SAME mechanism DOES flip a dispute already close to the
+defuse/escalate boundary:
+
+```
+near-stranger, mild issue, 1 anonymous witness          pressure=+0.050 -> escalate
+near-stranger, mild issue, 1 regulating partner         pressure=-0.085 -> defuse
+outcome flips escalate -> defuse: True
+```
+
+Grounding for the witness-specific mechanism: Sbarra & Hazan (2008),
+"Coregulation, Dysregulation, Self-Regulation" — an attachment partner's
+presence measurably down-regulates physiological arousal during stress, a
+distinct, evidenced mechanism from generic audience-size effects (Felson,
+Rung 1). 4 new tests (12 total, all green): direction always holds; the
+severe-scenario null; the borderline flip; and the anonymous-witness
+closed-form check (`audience_gain` per witness, confirming Rung 2 is a
+strict generalization of Rung 1's per-witness contribution, not a rewrite).
 
 ## 4. Honesty notes — what this does and does not establish
 
@@ -108,4 +178,4 @@ boundary, not a gap discovered after the fact).
 - `scripts/_build_rule_dispute_escalation_seed.py`
 - `seeds/rule_dispute_escalation.json`
 - `scripts/rule_dispute_escalation_demo.py`
-- `tests/test_rule_dispute_escalation.py` (9/9)
+- `tests/test_rule_dispute_escalation.py` (12/12, v1.1.0/Rung 2)
