@@ -173,9 +173,51 @@ def rule_carry_over_witnesses():
     }
 
 
+# --------------------------------------------------------------------- #
+# Rule 3: an OPTIONAL SelfPattern on the BeliefDisagreement carries over to
+# the newly minted DisputeContext -- mirrors rule_carry_over_witnesses
+# exactly. WIRE_IN_PREREG.md: closes the gap that stopped the full chain
+# from composing -- without this, a DisputeContext minted BY this seed
+# (rather than hand-built by a caller) had nowhere for
+# rule_dispute_self_conscious_bridge.json's own has_self_pattern edge to
+# attach.
+# --------------------------------------------------------------------- #
+def rule_carry_over_self_pattern():
+    bd, pattern, ctx = Var("bd"), Var("pattern"), Var("ctx")
+    where = AndT([
+        Eq(CountT(Neighbours(pattern, "mirrored_as")), Lit(0)),
+    ])
+    return {
+        "name": "carry_over_belief_disagreement_self_pattern",
+        "comment": (
+            "WIRE_IN_PREREG.md: a SelfPattern already on the "
+            "BeliefDisagreement (0 or 1, optional, mirrors rule_dispute_"
+            "self_conscious_bridge.json's own has_self_pattern shape "
+            "exactly) carries over to the newly minted DisputeContext, "
+            "held_self_worth copied unchanged -- the SAME node type reused "
+            "(SelfPattern is the self-conscious bridge's own primitive; "
+            "this rung does not reinterpret it). Guarded by a mirrored_as "
+            "dedup edge."
+        ),
+        "match_type": "SelfPattern",
+        "match": [
+            ["bd", "has_self_pattern", "pattern"],
+            ["bd", "bridged_to", "ctx"],
+        ],
+        "where": where,
+        "effects": [
+            add_node_effect("pattern2", "SelfPattern", {
+                "held_self_worth": {"__term__": Attr(pattern, "held_self_worth")},
+            }),
+            add_edge_effect("ctx", "has_self_pattern", "pattern2"),
+            add_edge_effect("pattern", "mirrored_as", "pattern2"),
+        ],
+    }
+
+
 SEED = {
     "id": "dispute_severity_from_beliefs",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "depends_on": ["rule_dispute_escalation"],
     "self_load_only": True,
     "description": (
@@ -197,8 +239,15 @@ SEED = {
         "pre-existed (runners/dsl/src/term.rs::struct_sim_value), "
         "confirmed by direct probe before registering (PREREG Sec1: 0.667 "
         "similarity / 0.333 residual on a one-slot contradiction, 1.0/0.0 "
-        "on identical predications) rather than assumed. See "
-        "DISPUTE_SEVERITY_AS_RESIDUAL_PREREG.md / _RESULTS.md."
+        "on identical predications) rather than assumed. v1.1.0 "
+        "(WIRE_IN_PREREG.md): an optional SelfPattern on the "
+        "BeliefDisagreement now carries over to the minted DisputeContext, "
+        "mirroring witness carry-over exactly -- closes the gap that "
+        "stopped this seed and rule_dispute_self_conscious_bridge.json "
+        "from composing end to end when a dispute originates from raw "
+        "beliefs rather than a hand-built DisputeContext. See "
+        "DISPUTE_SEVERITY_AS_RESIDUAL_PREREG.md / _RESULTS.md and "
+        "WIRE_IN_PREREG.md."
     ),
     "nodes": [],
     "edges": [],
@@ -243,6 +292,30 @@ SEED = {
             "weight": {"type": "Lit", "value": 1.0},
             "provenance": "dispute_severity_from_beliefs",
         },
+        {
+            "src": {"type": "BeliefDisagreement", "var": "bd"},
+            "edge_type": "has_self_pattern",
+            "tgt": {"type": "SelfPattern", "var": "pattern"},
+            "where": None,
+            "weight": {"type": "Lit", "value": 1.0},
+            "provenance": "dispute_severity_from_beliefs",
+        },
+        {
+            "src": {"type": "DisputeContext", "var": "ctx"},
+            "edge_type": "has_self_pattern",
+            "tgt": {"type": "SelfPattern", "var": "pattern2"},
+            "where": None,
+            "weight": {"type": "Lit", "value": 1.0},
+            "provenance": "dispute_severity_from_beliefs",
+        },
+        {
+            "src": {"type": "SelfPattern", "var": "pattern"},
+            "edge_type": "mirrored_as",
+            "tgt": {"type": "SelfPattern", "var": "pattern2"},
+            "where": None,
+            "weight": {"type": "Lit", "value": 1.0},
+            "provenance": "dispute_severity_from_beliefs",
+        },
     ],
     "concepts": [
         {
@@ -268,6 +341,7 @@ SEED = {
     "rules": [
         rule_severity_from_beliefs(),
         rule_carry_over_witnesses(),
+        rule_carry_over_self_pattern(),
     ],
 }
 

@@ -1,11 +1,11 @@
 {
  "id": "dispute_severity_from_beliefs",
- "version": "1.0.0",
+ "version": "1.1.0",
  "depends_on": [
   "rule_dispute_escalation"
  ],
  "self_load_only": true,
- "description": "issue_severity, computed: 1-StructSim(claim.pred, truth.pred) -- the residual between what a disputant claims and what the rulebook-grounded ground truth actually says -- replacing rule_dispute_escalation.json's own caller-supplied scalar with a genuinely derived value, per the user's own diagnosis ('a dispute is the residual between two held beliefs') and CLAUDE.md's SHAPES-NOT-NUMBERS rule (a hand-set scalar knob is unpaid debt). Strictly additive: rule_dispute_escalation.json is NOT edited, reused via its own unchanged has_signal production. Fires ONLY when a genuine residual exists (StructSim<1.0) -- identical beliefs mint no dispute at all, a live correction after finding severity=0.0 does not structurally floor the downstream pressure formula (ambient audience/closeness terms are independent of severity). Zero new Rust -- StructSim, like every other Term this arc has used, pre-existed (runners/dsl/src/term.rs::struct_sim_value), confirmed by direct probe before registering (PREREG Sec1: 0.667 similarity / 0.333 residual on a one-slot contradiction, 1.0/0.0 on identical predications) rather than assumed. See DISPUTE_SEVERITY_AS_RESIDUAL_PREREG.md / _RESULTS.md.",
+ "description": "issue_severity, computed: 1-StructSim(claim.pred, truth.pred) -- the residual between what a disputant claims and what the rulebook-grounded ground truth actually says -- replacing rule_dispute_escalation.json's own caller-supplied scalar with a genuinely derived value, per the user's own diagnosis ('a dispute is the residual between two held beliefs') and CLAUDE.md's SHAPES-NOT-NUMBERS rule (a hand-set scalar knob is unpaid debt). Strictly additive: rule_dispute_escalation.json is NOT edited, reused via its own unchanged has_signal production. Fires ONLY when a genuine residual exists (StructSim<1.0) -- identical beliefs mint no dispute at all, a live correction after finding severity=0.0 does not structurally floor the downstream pressure formula (ambient audience/closeness terms are independent of severity). Zero new Rust -- StructSim, like every other Term this arc has used, pre-existed (runners/dsl/src/term.rs::struct_sim_value), confirmed by direct probe before registering (PREREG Sec1: 0.667 similarity / 0.333 residual on a one-slot contradiction, 1.0/0.0 on identical predications) rather than assumed. v1.1.0 (WIRE_IN_PREREG.md): an optional SelfPattern on the BeliefDisagreement now carries over to the minted DisputeContext, mirroring witness carry-over exactly -- closes the gap that stopped this seed and rule_dispute_self_conscious_bridge.json from composing end to end when a dispute originates from raw beliefs rather than a hand-built DisputeContext. See DISPUTE_SEVERITY_AS_RESIDUAL_PREREG.md / _RESULTS.md and WIRE_IN_PREREG.md.",
  "nodes": [],
  "edges": [],
  "productions": [
@@ -86,6 +86,57 @@
    "tgt": {
     "type": "WitnessPresence",
     "var": "wp2"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "dispute_severity_from_beliefs"
+  },
+  {
+   "src": {
+    "type": "BeliefDisagreement",
+    "var": "bd"
+   },
+   "edge_type": "has_self_pattern",
+   "tgt": {
+    "type": "SelfPattern",
+    "var": "pattern"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "dispute_severity_from_beliefs"
+  },
+  {
+   "src": {
+    "type": "DisputeContext",
+    "var": "ctx"
+   },
+   "edge_type": "has_self_pattern",
+   "tgt": {
+    "type": "SelfPattern",
+    "var": "pattern2"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "dispute_severity_from_beliefs"
+  },
+  {
+   "src": {
+    "type": "SelfPattern",
+    "var": "pattern"
+   },
+   "edge_type": "mirrored_as",
+   "tgt": {
+    "type": "SelfPattern",
+    "var": "pattern2"
    },
    "where": null,
    "weight": {
@@ -315,6 +366,77 @@
      "wp",
      "mirrored_as",
      "wp2"
+    ]
+   ]
+  },
+  {
+   "name": "carry_over_belief_disagreement_self_pattern",
+   "comment": "WIRE_IN_PREREG.md: a SelfPattern already on the BeliefDisagreement (0 or 1, optional, mirrors rule_dispute_self_conscious_bridge.json's own has_self_pattern shape exactly) carries over to the newly minted DisputeContext, held_self_worth copied unchanged -- the SAME node type reused (SelfPattern is the self-conscious bridge's own primitive; this rung does not reinterpret it). Guarded by a mirrored_as dedup edge.",
+   "match_type": "SelfPattern",
+   "match": [
+    [
+     "bd",
+     "has_self_pattern",
+     "pattern"
+    ],
+    [
+     "bd",
+     "bridged_to",
+     "ctx"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "pattern"
+        },
+        "edge_type": "mirrored_as"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "pattern2",
+     "SelfPattern",
+     {
+      "held_self_worth": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pattern"
+        },
+        "key": "held_self_worth"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ctx",
+     "has_self_pattern",
+     "pattern2"
+    ],
+    [
+     "add_edge",
+     "pattern",
+     "mirrored_as",
+     "pattern2"
     ]
    ]
   }

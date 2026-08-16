@@ -223,4 +223,5 @@ def test_rule_dispute_escalation_seed_is_untouched():
 def test_seed_manifest_dependencies_and_productions():
     d = json.load(open("seeds/dispute_severity_from_beliefs.json"))
     assert d["depends_on"] == ["rule_dispute_escalation"]
-    assert len(d["productions"]) == 5
+    assert len(d["productions"]) == 8
+    assert d["version"] == "1.1.0"
