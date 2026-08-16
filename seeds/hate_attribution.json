@@ -1,11 +1,11 @@
 {
  "id": "hate_attribution",
- "version": "1.1.0",
+ "version": "1.2.0",
  "depends_on": [
   "shared_arousal"
  ],
  "self_load_only": true,
- "description": "Generalizes ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md's self-directed residual outward -- a held pattern about ANOTHER agent (their regard_for Concept's own live state) instead of oneself. Adds a stability gate (Sternberg 2003's decision/commitment component: confirm_streak >= 3) before a Hate marker crystallizes, and gates a motivational removal_desire_for consequence (Fischer, Halperin, Canetti & Jasini 2018's elimination goal) behind that gate, not behind any single angry appraisal. v1.1.0 (HATE_PASSION_COUPLING_PREREG.md) tracks the SAME shared TargetArousal pool shared_arousal.json already built (Sternberg's passion component) and couples the crystallizing incident's removal_desire_for alpha to it. See HATE_ATTRIBUTION_PREREG.md / _RESULTS.md, HATE_PASSION_COUPLING_PREREG.md / _RESULTS.md.",
+ "description": "Generalizes ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md's self-directed residual outward -- a held pattern about ANOTHER agent (their regard_for Concept's own live state) instead of oneself. Adds a stability gate (Sternberg 2003's decision/commitment component: confirm_streak >= 3 confirmation UNITS) before a Hate marker crystallizes, and gates a motivational removal_desire_for consequence (Fischer, Halperin, Canetti & Jasini 2018's elimination goal) behind that gate, not behind any single angry appraisal. v1.1.0 (HATE_PASSION_COUPLING_PREREG.md) tracks the SAME shared TargetArousal pool shared_arousal.json already built (Sternberg's passion component) and couples the crystallizing incident's removal_desire_for alpha to it. v1.2.0 (HATE_STABILITY_AROUSAL_COUPLING_PREREG.md) additionally scales each confirming incident's own contribution to confirm_streak by 1+arousal_level (Slovic, Finucane, Peters & MacGregor 2007's affect heuristic: a more arousing confirming incident reads as MORE representative of a stable pattern) -- the threshold constant itself is unchanged, only how fast one incident closes in on it. See HATE_ATTRIBUTION_PREREG.md / _RESULTS.md, HATE_PASSION_COUPLING_PREREG.md / _RESULTS.md, HATE_STABILITY_AROUSAL_COUPLING_PREREG.md / _RESULTS.md.",
  "nodes": [],
  "edges": [],
  "productions": [
@@ -149,7 +149,7 @@
  "rules": [
   {
    "name": "derive_hate_attribution",
-   "comment": "HATE_ATTRIBUTION_PREREG.md Sec2: attribution_locus is a RESIDUAL between the incident's own signal and the LIVE regard_for Concept's state (via tracks_concept) -- no prior incident -> first_encounter (hate cannot form on a first impression), signs agree (confirms the held pattern) -> global_other, signs disagree (an exception) -> specific_act. confirm_streak increments on global_other, resets to 0 otherwise (a single exception breaks the pattern -- prediction 4). Guarded by status pending->appraised so re-running run_rules() does not double-derive.",
+   "comment": "HATE_ATTRIBUTION_PREREG.md Sec2: attribution_locus is a RESIDUAL between the incident's own signal and the LIVE regard_for Concept's state (via tracks_concept) -- no prior incident -> first_encounter (hate cannot form on a first impression), signs agree (confirms the held pattern) -> global_other, signs disagree (an exception) -> specific_act. confirm_streak increments by 1+arousal_level on global_other (HATE_STABILITY_AROUSAL_COUPLING_PREREG.md Sec2 -- an aroused confirming incident counts for MORE than one confirmation unit, read via tracks_arousal BEFORE this incident's own update; 0 arousal is exactly the pre-coupling +1), resets to 0 otherwise (a single exception fully breaks the pattern -- prediction 4, unchanged by the arousal coupling). Guarded by status pending->appraised so re-running run_rules() does not double-derive.",
    "match_type": "IncidentReport",
    "match": [
     [
@@ -356,8 +356,28 @@
           "key": "confirm_streak"
          },
          {
-          "type": "Lit",
-          "value": 1
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 1.0
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "PickUnique",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "pat"
+              },
+              "edge_type": "tracks_arousal"
+             }
+            },
+            "key": "level"
+           }
+          ]
          }
         ]
        },

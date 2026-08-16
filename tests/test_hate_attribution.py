@@ -47,10 +47,13 @@ def test_first_encounter_is_never_global_other():
 def test_confirming_incident_is_global_other():
     inner, mt = _fresh()
     pat = mint_target_pattern(inner, mt, "Alex")
-    record_hate_incident(inner, mt, pat, negative=True)
+    first = record_hate_incident(inner, mt, pat, negative=True)
     r = record_hate_incident(inner, mt, pat, negative=True)
     assert r["attribution_locus"] == "global_other"
-    assert r["confirm_streak"] == 1
+    # HATE_STABILITY_AROUSAL_COUPLING_PREREG.md Sec2: streak_increment is
+    # 1+arousal_level (read BEFORE this incident's own update), not a bare
+    # +1 -- at incident 0's post-update arousal this is 1+0.8=1.8, not 1.
+    assert r["confirm_streak"] == pytest.approx(1.0 + first["arousal_level"])
 
 
 # ---------------------------------------------------------------------
@@ -70,15 +73,19 @@ def test_disconfirming_incident_is_specific_act():
 def test_specific_act_resets_confirm_streak():
     inner, mt = _fresh()
     pat = mint_target_pattern(inner, mt, "Sam")
-    record_hate_incident(inner, mt, pat, negative=True)
+    r0 = record_hate_incident(inner, mt, pat, negative=True)
     r_confirm = record_hate_incident(inner, mt, pat, negative=True)
-    assert r_confirm["confirm_streak"] == 1
+    assert r_confirm["confirm_streak"] == pytest.approx(1.0 + r0["arousal_level"])
     r_exception = record_hate_incident(inner, mt, pat, negative=False)
     assert r_exception["attribution_locus"] == "specific_act"
     assert r_exception["confirm_streak"] == 0
     r_after = record_hate_incident(inner, mt, pat, negative=True)
     assert r_after["attribution_locus"] == "global_other"
-    assert r_after["confirm_streak"] == 1
+    # streak reset to 0 by the exception, then incremented by
+    # 1+arousal_level -- arousal itself is UNAFFECTED by the reset (every
+    # incident contributes regardless of locus), so this is 1 +
+    # r_exception's own post-update arousal_level, not 1.
+    assert r_after["confirm_streak"] == pytest.approx(1.0 + r_exception["arousal_level"])
 
 
 # ---------------------------------------------------------------------
@@ -87,21 +94,28 @@ def test_specific_act_resets_confirm_streak():
 def test_crystallization_requires_the_stability_threshold():
     inner, mt = _fresh()
     pat = mint_target_pattern(inner, mt, "Alex")
-    # call 0 is first_encounter (streak 0); calls 1..threshold-1 are
-    # global_other, incrementing the streak by 1 each time; the streak
-    # only reaches HATE_STABILITY_THRESHOLD on call index
-    # HATE_STABILITY_THRESHOLD itself -- HATE_STABILITY_THRESHOLD+1 total
-    # calls to reach it.
-    results = [record_hate_incident(inner, mt, pat, negative=True)
-               for _ in range(HATE_STABILITY_THRESHOLD + 1)]
+    # HATE_STABILITY_AROUSAL_COUPLING_PREREG.md Sec2: confirm_streak
+    # increments by 1+arousal_level, not a bare +1 -- with arousal
+    # compounding across back-to-back confirming incidents the streak
+    # OVERSHOOTS HATE_STABILITY_THRESHOLD rather than landing on it
+    # exactly, so drive incidents until crystallization is observed
+    # instead of assuming a fixed call count.
+    results = []
+    for _ in range(10):
+        r = record_hate_incident(inner, mt, pat, negative=True)
+        results.append(r)
+        if r["crystallized_this_call"]:
+            break
+    else:
+        pytest.fail("did not crystallize within 10 incidents")
     for r in results[:-1]:
         assert not r["crystallized"]
     assert results[-1]["crystallized"]
-    assert results[-1]["crystallized_this_call"]
-    assert results[-1]["confirm_streak"] == HATE_STABILITY_THRESHOLD
-    # below-threshold incidents never crystallize even though several are global_other
-    below_threshold_global = [r for r in results[:-1] if r["attribution_locus"] == "global_other"]
-    assert len(below_threshold_global) == HATE_STABILITY_THRESHOLD - 1  # first call is first_encounter
+    assert results[-1]["confirm_streak"] >= HATE_STABILITY_THRESHOLD
+    # the FIRST global_other confirmation alone is not enough -- it takes
+    # at least two confirming incidents even with arousal amplification
+    global_other_before_crystallizing = [r for r in results[:-1] if r["attribution_locus"] == "global_other"]
+    assert len(global_other_before_crystallizing) >= 1
 
 
 # ---------------------------------------------------------------------
@@ -110,17 +124,19 @@ def test_crystallization_requires_the_stability_threshold():
 def test_removal_desire_evidence_gated_on_crystallization():
     inner, mt = _fresh()
     pat = mint_target_pattern(inner, mt, "Alex")
-    # HATE_STABILITY_THRESHOLD+1 calls reaches crystallization (see the
-    # threshold test above); one more call afterward confirms the gate
-    # only opens once.
-    results = [record_hate_incident(inner, mt, pat, negative=True)
-               for _ in range(HATE_STABILITY_THRESHOLD + 2)]
-    for r in results[:HATE_STABILITY_THRESHOLD]:
+    results = []
+    for _ in range(10):
+        r = record_hate_incident(inner, mt, pat, negative=True)
+        results.append(r)
+        if r["crystallized_this_call"]:
+            break
+    else:
+        pytest.fail("did not crystallize within 10 incidents")
+    for r in results[:-1]:
         assert r["removal_desire_external_field"] == 0.0
-    crystallizing = results[HATE_STABILITY_THRESHOLD]
-    assert crystallizing["crystallized_this_call"]
+    crystallizing = results[-1]
     assert crystallizing["removal_desire_external_field"] > 0.0
-    after = results[HATE_STABILITY_THRESHOLD + 1]
+    after = record_hate_incident(inner, mt, pat, negative=True)
     assert not after["crystallized_this_call"]
     assert after["removal_desire_external_field"] == pytest.approx(
         crystallizing["removal_desire_external_field"])

@@ -121,11 +121,25 @@ def _attribution_locus_term(pat_var="pat", ir_var="ir"):
     )
 
 
+def _arousal_level_term(pat_var="pat"):
+    return Attr(PickUniqueT(Neighbours(Var(pat_var), "tracks_arousal")), "level")
+
+
+def _streak_increment_term(pat_var="pat"):
+    # HATE_STABILITY_AROUSAL_COUPLING_PREREG.md Sec2: 1 + arousal_level,
+    # read BEFORE this incident's own arousal update (Python applies that
+    # update AFTER run_rules(), the same read-before/update-after
+    # convention every prior coupling in this arc uses). At level==0 this
+    # is exactly 1 -- a strict generalization of the pre-coupling +1,
+    # never a redefinition of the cold-start case.
+    return PlusT([Lit(1.0), _arousal_level_term(pat_var)])
+
+
 def _new_streak_term(pat_var="pat", ir_var="ir"):
     is_global = Eq(_attribution_locus_term(pat_var, ir_var), Lit("global_other"))
     return IfThenElse(
         is_global,
-        PlusT([Attr(Var(pat_var), "confirm_streak"), Lit(1)]),
+        PlusT([Attr(Var(pat_var), "confirm_streak"), _streak_increment_term(pat_var)]),
         Lit(0),
     )
 
@@ -148,10 +162,15 @@ def rule_derive_attribution():
             "incident -> first_encounter (hate cannot form on a first "
             "impression), signs agree (confirms the held pattern) -> "
             "global_other, signs disagree (an exception) -> specific_act. "
-            "confirm_streak increments on global_other, resets to 0 "
-            "otherwise (a single exception breaks the pattern -- "
-            "prediction 4). Guarded by status pending->appraised so "
-            "re-running run_rules() does not double-derive."
+            "confirm_streak increments by 1+arousal_level on global_other "
+            "(HATE_STABILITY_AROUSAL_COUPLING_PREREG.md Sec2 -- an aroused "
+            "confirming incident counts for MORE than one confirmation "
+            "unit, read via tracks_arousal BEFORE this incident's own "
+            "update; 0 arousal is exactly the pre-coupling +1), resets to "
+            "0 otherwise (a single exception fully breaks the pattern -- "
+            "prediction 4, unchanged by the arousal coupling). Guarded by "
+            "status pending->appraised so re-running run_rules() does not "
+            "double-derive."
         ),
         "match_type": "IncidentReport",
         "match": [
@@ -208,7 +227,7 @@ def rule_crystallize_hate():
 
 SEED = {
     "id": "hate_attribution",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "depends_on": ["shared_arousal"],
     "self_load_only": True,
     "description": (
@@ -216,15 +235,23 @@ SEED = {
         "directed residual outward -- a held pattern about ANOTHER agent "
         "(their regard_for Concept's own live state) instead of oneself. "
         "Adds a stability gate (Sternberg 2003's decision/commitment "
-        "component: confirm_streak >= %d) before a Hate marker crystallizes, "
-        "and gates a motivational removal_desire_for consequence (Fischer, "
-        "Halperin, Canetti & Jasini 2018's elimination goal) behind that "
-        "gate, not behind any single angry appraisal. v1.1.0 "
-        "(HATE_PASSION_COUPLING_PREREG.md) tracks the SAME shared "
-        "TargetArousal pool shared_arousal.json already built (Sternberg's "
-        "passion component) and couples the crystallizing incident's "
-        "removal_desire_for alpha to it. See HATE_ATTRIBUTION_PREREG.md / "
-        "_RESULTS.md, HATE_PASSION_COUPLING_PREREG.md / _RESULTS.md."
+        "component: confirm_streak >= %d confirmation UNITS) before a Hate "
+        "marker crystallizes, and gates a motivational removal_desire_for "
+        "consequence (Fischer, Halperin, Canetti & Jasini 2018's "
+        "elimination goal) behind that gate, not behind any single angry "
+        "appraisal. v1.1.0 (HATE_PASSION_COUPLING_PREREG.md) tracks the "
+        "SAME shared TargetArousal pool shared_arousal.json already built "
+        "(Sternberg's passion component) and couples the crystallizing "
+        "incident's removal_desire_for alpha to it. v1.2.0 (HATE_"
+        "STABILITY_AROUSAL_COUPLING_PREREG.md) additionally scales each "
+        "confirming incident's own contribution to confirm_streak by "
+        "1+arousal_level (Slovic, Finucane, Peters & MacGregor 2007's "
+        "affect heuristic: a more arousing confirming incident reads as "
+        "MORE representative of a stable pattern) -- the threshold "
+        "constant itself is unchanged, only how fast one incident closes "
+        "in on it. See HATE_ATTRIBUTION_PREREG.md / _RESULTS.md, "
+        "HATE_PASSION_COUPLING_PREREG.md / _RESULTS.md, HATE_STABILITY_"
+        "AROUSAL_COUPLING_PREREG.md / _RESULTS.md."
         % HATE_STABILITY_THRESHOLD
     ),
     "nodes": [],
