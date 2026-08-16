@@ -1,0 +1,986 @@
+[
+ {
+  "task_id": "pbe_001",
+  "name": "reverse_string",
+  "tier": "tier1_single_op",
+  "description": "Reverse the whole string.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "hello"
+    },
+    "output": "olleh"
+   },
+   {
+    "inputs": {
+     "s": "world"
+    },
+    "output": "dlrow"
+   },
+   {
+    "inputs": {
+     "s": "banana"
+    },
+    "output": "ananab"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "python"
+    },
+    "output": "nohtyp"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_002",
+  "name": "lowercase_all",
+  "tier": "tier1_single_op",
+  "description": "Lowercase every character.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "HELLO"
+    },
+    "output": "hello"
+   },
+   {
+    "inputs": {
+     "s": "WoRLD"
+    },
+    "output": "world"
+   },
+   {
+    "inputs": {
+     "s": "Test123"
+    },
+    "output": "test123"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "MiXeD"
+    },
+    "output": "mixed"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_003",
+  "name": "capitalize_sentence",
+  "tier": "tier1_single_op",
+  "description": "Capitalize first character, lowercase the rest (Python str.capitalize).",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "hello world"
+    },
+    "output": "Hello world"
+   },
+   {
+    "inputs": {
+     "s": "PYTHON rocks"
+    },
+    "output": "Python rocks"
+   },
+   {
+    "inputs": {
+     "s": "ALREADY good"
+    },
+    "output": "Already good"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "aBC def"
+    },
+    "output": "Abc def"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_004",
+  "name": "first_three_chars",
+  "tier": "tier1_single_op",
+  "description": "Take the first three characters.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "hello"
+    },
+    "output": "hel"
+   },
+   {
+    "inputs": {
+     "s": "cat"
+    },
+    "output": "cat"
+   },
+   {
+    "inputs": {
+     "s": "go"
+    },
+    "output": "go"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "elephant"
+    },
+    "output": "ele"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_005",
+  "name": "last_two_chars",
+  "tier": "tier1_single_op",
+  "description": "Take the last two characters.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "hello"
+    },
+    "output": "lo"
+   },
+   {
+    "inputs": {
+     "s": "cat"
+    },
+    "output": "at"
+   },
+   {
+    "inputs": {
+     "s": "elephant"
+    },
+    "output": "nt"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "go"
+    },
+    "output": "go"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_006",
+  "name": "remove_spaces",
+  "tier": "tier1_single_op",
+  "description": "Remove every space character.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "hello world"
+    },
+    "output": "helloworld"
+   },
+   {
+    "inputs": {
+     "s": "a b c"
+    },
+    "output": "abc"
+   },
+   {
+    "inputs": {
+     "s": "no  extra   spaces"
+    },
+    "output": "noextraspaces"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "no spaces here"
+    },
+    "output": "nospaceshere"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_007",
+  "name": "count_letter",
+  "tier": "tier1_single_op",
+  "description": "Count occurrences of a given character in a string (int output).",
+  "vars": [
+   "s",
+   "c"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "banana",
+     "c": "a"
+    },
+    "output": 3
+   },
+   {
+    "inputs": {
+     "s": "mississippi",
+     "c": "s"
+    },
+    "output": 4
+   },
+   {
+    "inputs": {
+     "s": "aardvark",
+     "c": "a"
+    },
+    "output": 3
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "hello",
+     "c": "l"
+    },
+    "output": 2
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_008",
+  "name": "replace_char",
+  "tier": "tier1_single_op",
+  "description": "Replace every occurrence of `old` with `new` in `s`.",
+  "vars": [
+   "s",
+   "old",
+   "new"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "hello world",
+     "old": "o",
+     "new": "0"
+    },
+    "output": "hell0 w0rld"
+   },
+   {
+    "inputs": {
+     "s": "banana",
+     "old": "a",
+     "new": "o"
+    },
+    "output": "bonono"
+   },
+   {
+    "inputs": {
+     "s": "aaa",
+     "old": "a",
+     "new": "bb"
+    },
+    "output": "bbbbbb"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "mississippi",
+     "old": "s",
+     "new": "x"
+    },
+    "output": "mixxixxippi"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_009",
+  "name": "concat_two",
+  "tier": "tier1_single_op",
+  "description": "Concatenate two strings.",
+  "vars": [
+   "a",
+   "b"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "a": "foo",
+     "b": "bar"
+    },
+    "output": "foobar"
+   },
+   {
+    "inputs": {
+     "a": "cat",
+     "b": "dog"
+    },
+    "output": "catdog"
+   },
+   {
+    "inputs": {
+     "a": "x",
+     "b": "y"
+    },
+    "output": "xy"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "a": "a",
+     "b": "b"
+    },
+    "output": "ab"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_010",
+  "name": "first_word",
+  "tier": "tier2_composition",
+  "description": "Return the first whitespace-separated word.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "the quick fox"
+    },
+    "output": "the"
+   },
+   {
+    "inputs": {
+     "s": "  hello world"
+    },
+    "output": "hello"
+   },
+   {
+    "inputs": {
+     "s": "single"
+    },
+    "output": "single"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "one two three"
+    },
+    "output": "one"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_011",
+  "name": "last_word",
+  "tier": "tier2_composition",
+  "description": "Return the last whitespace-separated word.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "the quick fox"
+    },
+    "output": "fox"
+   },
+   {
+    "inputs": {
+     "s": "hello world"
+    },
+    "output": "world"
+   },
+   {
+    "inputs": {
+     "s": "single"
+    },
+    "output": "single"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "one two three"
+    },
+    "output": "three"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_012",
+  "name": "initials_concat",
+  "tier": "tier2_composition",
+  "description": "Concatenate the first letter of every whitespace-separated word (no separator).",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "the quick fox"
+    },
+    "output": "tqf"
+   },
+   {
+    "inputs": {
+     "s": "open ai lab"
+    },
+    "output": "oal"
+   },
+   {
+    "inputs": {
+     "s": "solo"
+    },
+    "output": "s"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "one two three four"
+    },
+    "output": "ottf"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_013",
+  "name": "reverse_first_word",
+  "tier": "tier2_composition",
+  "description": "Reverse just the first whitespace-separated word.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "hello world"
+    },
+    "output": "olleh"
+   },
+   {
+    "inputs": {
+     "s": "python rocks"
+    },
+    "output": "nohtyp"
+   },
+   {
+    "inputs": {
+     "s": "single"
+    },
+    "output": "elgnis"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "data science rules"
+    },
+    "output": "atad"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_014",
+  "name": "double_string",
+  "tier": "tier2_composition",
+  "description": "Concatenate the string with itself.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "ab"
+    },
+    "output": "abab"
+   },
+   {
+    "inputs": {
+     "s": "hi"
+    },
+    "output": "hihi"
+   },
+   {
+    "inputs": {
+     "s": "z"
+    },
+    "output": "zz"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "cat"
+    },
+    "output": "catcat"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_015",
+  "name": "first_and_last_char",
+  "tier": "tier2_composition",
+  "description": "Concatenate the first character and the last character.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "hello"
+    },
+    "output": "ho"
+   },
+   {
+    "inputs": {
+     "s": "cat"
+    },
+    "output": "ct"
+   },
+   {
+    "inputs": {
+     "s": "go"
+    },
+    "output": "go"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "banana"
+    },
+    "output": "ba"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_016",
+  "name": "capitalize_then_reverse",
+  "tier": "tier2_composition",
+  "description": "Capitalize the string, then reverse the whole result.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "hello world"
+    },
+    "output": "dlrow olleH"
+   },
+   {
+    "inputs": {
+     "s": "python rocks"
+    },
+    "output": "skcor nohtyP"
+   },
+   {
+    "inputs": {
+     "s": "already Capitalized"
+    },
+    "output": "dezilatipac ydaerlA"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "data science"
+    },
+    "output": "ecneics ataD"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_017",
+  "name": "trim_first_and_last_char",
+  "tier": "tier2_composition",
+  "description": "Drop the first and last character.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "hello"
+    },
+    "output": "ell"
+   },
+   {
+    "inputs": {
+     "s": "cats"
+    },
+    "output": "at"
+   },
+   {
+    "inputs": {
+     "s": "go"
+    },
+    "output": ""
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "banana"
+    },
+    "output": "anan"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "task_id": "pbe_018",
+  "name": "shout",
+  "tier": "tier3_deep_or_missing",
+  "description": "Uppercase the whole string (str.upper()).",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "hello"
+    },
+    "output": "HELLO"
+   },
+   {
+    "inputs": {
+     "s": "world"
+    },
+    "output": "WORLD"
+   },
+   {
+    "inputs": {
+     "s": "MiXeD case"
+    },
+    "output": "MIXED CASE"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "python"
+    },
+    "output": "PYTHON"
+   }
+  ],
+  "notes": "PREDICTED IMPOSSIBLE: term.rs has NO uppercase Term at all (CaseFold is lower() only; grepped, confirmed absent) -- a genuine missing-primitive case, not a search-cost failure."
+ },
+ {
+  "task_id": "pbe_019",
+  "name": "title_case_words",
+  "tier": "tier3_deep_or_missing",
+  "description": "Capitalize every whitespace-separated word, rejoined with single spaces (Python str.title()-ish via split/capitalize/join).",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "hello world"
+    },
+    "output": "Hello World"
+   },
+   {
+    "inputs": {
+     "s": "python rocks hard"
+    },
+    "output": "Python Rocks Hard"
+   },
+   {
+    "inputs": {
+     "s": "single"
+    },
+    "output": "Single"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "data science rules"
+    },
+    "output": "Data Science Rules"
+   }
+  ],
+  "notes": "PREDICTED LIKELY IMPOSSIBLE at this op set: JoinList only Fold-joins with the empty string (no separator arg exists in OP_TABLE) -- confirmed by reading JoinList's build site -- so a space-preserving rejoin has no direct primitive."
+ },
+ {
+  "task_id": "pbe_020",
+  "name": "strip_whitespace",
+  "tier": "tier3_deep_or_missing",
+  "description": "Strip leading/trailing whitespace (str.strip()).",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "  hello  "
+    },
+    "output": "hello"
+   },
+   {
+    "inputs": {
+     "s": " world   "
+    },
+    "output": "world"
+   },
+   {
+    "inputs": {
+     "s": "tabs\tand stuff  "
+    },
+    "output": "tabs\tand stuff"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "  data  "
+    },
+    "output": "data"
+   }
+  ],
+  "notes": "PREDICTED IMPOSSIBLE: no Strip/Lstrip/Rstrip Term exists (grepped, confirmed absent), and variable-length whitespace can't be expressed with fixed-literal Slice bounds."
+ },
+ {
+  "task_id": "pbe_021",
+  "name": "first_three_reversed",
+  "tier": "tier3_deep_or_missing",
+  "description": "Take the first three characters, then reverse them.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "hello"
+    },
+    "output": "leh"
+   },
+   {
+    "inputs": {
+     "s": "python"
+    },
+    "output": "typ"
+   },
+   {
+    "inputs": {
+     "s": "go"
+    },
+    "output": "og"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "elephant"
+    },
+    "output": "ele"
+   }
+  ],
+  "notes": "Genuine reachable 2-op composition -- a solvable contrast against the predicted-impossible tasks in this tier."
+ },
+ {
+  "task_id": "pbe_022",
+  "name": "initials_capitalized_concat",
+  "tier": "tier3_deep_or_missing",
+  "description": "Concatenate the CAPITALIZED first letter of every word (no separator).",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "the quick fox"
+    },
+    "output": "TQF"
+   },
+   {
+    "inputs": {
+     "s": "open ai lab"
+    },
+    "output": "OAL"
+   },
+   {
+    "inputs": {
+     "s": "solo"
+    },
+    "output": "S"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "one two three four"
+    },
+    "output": "OTTF"
+   }
+  ],
+  "notes": "Deeper reachable composition (Split + MapList[Capitalize+Slice template] + JoinList) -- tests search depth on a genuinely solvable 4-op task."
+ },
+ {
+  "task_id": "pbe_023",
+  "name": "trap_reverse_simple",
+  "tier": "memorization_trap",
+  "description": "CONTROL: genuine rule is a single primitive (Reverse), already cheaper than any lookup table regardless of literal pricing -- expected to pass under BOTH pre-fix and post-fix pricing.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "cat"
+    },
+    "output": "tac"
+   },
+   {
+    "inputs": {
+     "s": "dog"
+    },
+    "output": "god"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "stop"
+    },
+    "output": "pots"
+   }
+  ],
+  "notes": "Size control: Reverse(x) is size 2, far below any IfThenElse lookup shape (size >=6) -- pricing should never matter here."
+ },
+ {
+  "task_id": "pbe_024",
+  "name": "trap_capitalize_reverse_slice",
+  "tier": "memorization_trap",
+  "description": "Genuine rule: capitalize(reverse(first 4 characters)). Sized (size 7) to sit ABOVE the pre-fix lookup-table size (6, when every literal costs 1) but BELOW the post-fix witness-priced lookup size (~12, once the two 4-char output quotes cost 4 each) -- the exact shape CEILING_REASSESSMENT_7/MDL_OCCAM_WITNESS_PRICING measured for MBPP.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "hello world"
+    },
+    "output": "Lleh"
+   },
+   {
+    "inputs": {
+     "s": "python rocks"
+    },
+    "output": "Htyp"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "data science"
+    },
+    "output": "Atad"
+   }
+  ],
+  "notes": "PRIMARY memorization-wall probe."
+ },
+ {
+  "task_id": "pbe_025",
+  "name": "trap_replace_reverse",
+  "tier": "memorization_trap",
+  "description": "Genuine rule: reverse(replace('p'->'@', s)). Sized near the pre-fix lookup's own size (a tie zone) -- reported empirically, not predicted with confidence in advance.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "apple"
+    },
+    "output": "el@@a"
+   },
+   {
+    "inputs": {
+     "s": "grape"
+    },
+    "output": "e@arg"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "paper"
+    },
+    "output": "re@a@"
+   }
+  ],
+  "notes": "Tie-zone probe, reported as found either way."
+ },
+ {
+  "task_id": "pbe_026",
+  "name": "trap_slice_capitalize_reverse",
+  "tier": "memorization_trap",
+  "description": "Genuine rule: reverse(capitalize(last 4 characters)). A second variant of the size-7 shape (pbe_024's own mirror, last-anchored instead of first-anchored) -- a replication check, not a fresh prediction.",
+  "vars": [
+   "s"
+  ],
+  "revealed": [
+   {
+    "inputs": {
+     "s": "hello world"
+    },
+    "output": "dlrO"
+   },
+   {
+    "inputs": {
+     "s": "python rocks"
+    },
+    "output": "skcO"
+   }
+  ],
+  "held_out": [
+   {
+    "inputs": {
+     "s": "data science"
+    },
+    "output": "ecnE"
+   }
+  ],
+  "notes": "Replication of pbe_024's shape, last-anchored slice."
+ }
+]
