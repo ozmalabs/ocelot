@@ -18,12 +18,23 @@ bool->float mappings this arc has used since record_incident_outcome, not
 branches over graph state. concept_apply_evidence (the belief-update
 primitive) is only ever called from Python, driven by values the rules
 already decided.
+
+v1.1.0 (HATE_PASSION_COUPLING_PREREG.md): the target's TargetPattern also
+tracks the SAME shared TargetArousal pool `shared_arousal.py` already
+built (Sternberg 2003's passion component) -- every incident contributes
+to it (valence-blind intensity, Schachter & Singer 1962), and the
+crystallizing incident's removal_desire_for alpha is amplified by
+whatever arousal has built up, read BEFORE this incident's own
+contribution, the same read-before/update-after convention `shared_
+arousal.record_targeted_incident` already established.
 """
 from __future__ import annotations
 
-from domains.shared_arousal import mint_target_concept
+from domains.shared_arousal import mint_target_arousal, mint_target_concept
 
 HATE_STABILITY_THRESHOLD = 3
+AROUSAL_INTENSITY = 0.8
+AROUSAL_DECAY = 0.7
 
 
 def mint_target_pattern(inner, mt, target: str):
@@ -43,6 +54,8 @@ def mint_target_pattern(inner, mt, target: str):
     removal = mint_target_concept(inner, mt, "removal_desire_for", target)
     inner.add_edge(pat, "tracks_concept", regard, {})
     inner.add_edge(pat, "tracks_removal_desire", removal, {})
+    arousal = mint_target_arousal(inner, mt, target)
+    inner.add_edge(pat, "tracks_arousal", arousal, {})
     return pat
 
 
@@ -58,10 +71,10 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
         removal_desire_for <- concept_apply_evidence(+1.0)   [ONLY the incident that crystallizes hate]
 
     Returns {attribution_locus, confirm_streak, crystallized,
-    crystallized_this_call, regard_state, removal_desire_state}.
+    crystallized_this_call, regard_state, removal_desire_state,
+    arousal_level, effective_removal_alpha}.
     """
     signal = 1.0 if not negative else -1.0
-    regard = inner.node(pattern)["attrs"]
     hate_count_before = len(list(inner.neighbours(pattern, "has_hate")))
 
     ir = inner.add_node("IncidentReport", {
@@ -79,11 +92,19 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
     regard_concept = next(iter(inner.neighbours(pattern, "tracks_concept")))
     inner.concept_apply_evidence(regard_concept, signal, base_alpha)
 
+    arousal_node = next(iter(inner.neighbours(pattern, "tracks_arousal")))
+    current_arousal = inner.node(arousal_node)["attrs"]["level"]
+
     hate_count_after = len(list(inner.neighbours(pattern, "has_hate")))
     crystallized_this_call = hate_count_after > hate_count_before
+    effective_removal_alpha = None
     if crystallized_this_call:
+        effective_removal_alpha = base_alpha * (1.0 + current_arousal)
         removal_concept = next(iter(inner.neighbours(pattern, "tracks_removal_desire")))
-        inner.concept_apply_evidence(removal_concept, 1.0, base_alpha)
+        inner.concept_apply_evidence(removal_concept, 1.0, effective_removal_alpha)
+
+    new_arousal = current_arousal * AROUSAL_DECAY + AROUSAL_INTENSITY
+    inner.set_attr(arousal_node, "level", new_arousal)
 
     inner.force_all_dirty()
     inner.run_rules(max_steps)
@@ -108,6 +129,8 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
         "regard_state": regard_attrs["state"],
         "removal_desire_external_field": removal_attrs["external_field"],
         "removal_desire_state": removal_attrs["state"],
+        "arousal_level": new_arousal,
+        "effective_removal_alpha": effective_removal_alpha,
     }
 
 

@@ -1,11 +1,11 @@
 {
  "id": "hate_attribution",
- "version": "1.0.0",
+ "version": "1.1.0",
  "depends_on": [
-  "can_native_reimplementation"
+  "shared_arousal"
  ],
  "self_load_only": true,
- "description": "Generalizes ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md's self-directed residual outward -- a held pattern about ANOTHER agent (their regard_for Concept's own live state) instead of oneself. Adds a stability gate (Sternberg 2003's decision/commitment component: confirm_streak >= 3) before a Hate marker crystallizes, and gates a motivational removal_desire_for consequence (Fischer, Halperin, Canetti & Jasini 2018's elimination goal) behind that gate, not behind any single angry appraisal. See HATE_ATTRIBUTION_PREREG.md / _RESULTS.md.",
+ "description": "Generalizes ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md's self-directed residual outward -- a held pattern about ANOTHER agent (their regard_for Concept's own live state) instead of oneself. Adds a stability gate (Sternberg 2003's decision/commitment component: confirm_streak >= 3) before a Hate marker crystallizes, and gates a motivational removal_desire_for consequence (Fischer, Halperin, Canetti & Jasini 2018's elimination goal) behind that gate, not behind any single angry appraisal. v1.1.0 (HATE_PASSION_COUPLING_PREREG.md) tracks the SAME shared TargetArousal pool shared_arousal.json already built (Sternberg's passion component) and couples the crystallizing incident's removal_desire_for alpha to it. See HATE_ATTRIBUTION_PREREG.md / _RESULTS.md, HATE_PASSION_COUPLING_PREREG.md / _RESULTS.md.",
  "nodes": [],
  "edges": [],
  "productions": [
@@ -120,6 +120,23 @@
    "tgt": {
     "type": "Concept",
     "var": "c"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "hate_attribution"
+  },
+  {
+   "src": {
+    "type": "TargetPattern",
+    "var": "pat"
+   },
+   "edge_type": "tracks_arousal",
+   "tgt": {
+    "type": "TargetArousal",
+    "var": "arousal"
    },
    "where": null,
    "weight": {

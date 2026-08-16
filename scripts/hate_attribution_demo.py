@@ -17,8 +17,9 @@ def fresh(name):
     s = sr.Substrate()
     inner = s._inner
     ensure_can_seed(inner)
-    d = json.load(open("seeds/hate_attribution.json"))
-    inner.load_seed_manifest(engine_rules_only(d))
+    for seed_path in ("seeds/shared_arousal.json", "seeds/hate_attribution.json"):
+        d = json.load(open(seed_path))
+        inner.load_seed_manifest(engine_rules_only(d))
     mt = inner.add_node("Microtheory", {"name": name, "temperature": 1.5})
     return inner, mt
 

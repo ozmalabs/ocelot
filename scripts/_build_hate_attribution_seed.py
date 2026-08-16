@@ -208,8 +208,8 @@ def rule_crystallize_hate():
 
 SEED = {
     "id": "hate_attribution",
-    "version": "1.0.0",
-    "depends_on": ["can_native_reimplementation"],
+    "version": "1.1.0",
+    "depends_on": ["shared_arousal"],
     "self_load_only": True,
     "description": (
         "Generalizes ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md's self-"
@@ -219,8 +219,13 @@ SEED = {
         "component: confirm_streak >= %d) before a Hate marker crystallizes, "
         "and gates a motivational removal_desire_for consequence (Fischer, "
         "Halperin, Canetti & Jasini 2018's elimination goal) behind that "
-        "gate, not behind any single angry appraisal. See "
-        "HATE_ATTRIBUTION_PREREG.md / _RESULTS.md." % HATE_STABILITY_THRESHOLD
+        "gate, not behind any single angry appraisal. v1.1.0 "
+        "(HATE_PASSION_COUPLING_PREREG.md) tracks the SAME shared "
+        "TargetArousal pool shared_arousal.json already built (Sternberg's "
+        "passion component) and couples the crystallizing incident's "
+        "removal_desire_for alpha to it. See HATE_ATTRIBUTION_PREREG.md / "
+        "_RESULTS.md, HATE_PASSION_COUPLING_PREREG.md / _RESULTS.md."
+        % HATE_STABILITY_THRESHOLD
     ),
     "nodes": [],
     "edges": [],
@@ -277,6 +282,14 @@ SEED = {
             "src": {"type": "TargetPattern", "var": "pat"},
             "edge_type": "tracks_removal_desire",
             "tgt": {"type": "Concept", "var": "c"},
+            "where": None,
+            "weight": Lit(1.0),
+            "provenance": "hate_attribution",
+        },
+        {
+            "src": {"type": "TargetPattern", "var": "pat"},
+            "edge_type": "tracks_arousal",
+            "tgt": {"type": "TargetArousal", "var": "arousal"},
             "where": None,
             "weight": Lit(1.0),
             "provenance": "hate_attribution",
