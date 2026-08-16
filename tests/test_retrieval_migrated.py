@@ -585,16 +585,57 @@ def test_ladder_gap_spends_no_attempt_when_retrieval_finds_nothing():
     nothing" (its new outcome is pinned in
     `_KNOWN_ARC6_TIER0_ENUM_REACH_DRIFT`).
 
-    Task 412 does still genuinely find nothing live — `rung == "none"`,
-    `attempts == 0.0`, gap `enumerate_failed` — verified against the same
-    engine that produced this reconciliation, and it is what the pin now
-    stands on. NOTE for whoever moves it next: a re-pin here is only ever
-    valid if the NEW task's `rung == "none"` is confirmed LIVE, never
-    inherited from `MEASURED_OUTCOMES`."""
+    2026-08-16 (PROGRAM_SYNTHESIS_RETRIEVAL_WITNESS_REPIN): RE-PINNED AGAIN,
+    412 -> 440, for the same KIND of reason as both prior re-pins:
+    `PROGRAM_SYNTHESIS_CEILING_REASSESSMENT_5` (already merged, see
+    `_KNOWN_CEILING_REASSESSMENT_5_DRIFT` above) added a new `tmpl:item_
+    mod_eq` `FilterList` predicate family (`item % c == r` / `!= r`,
+    composed entirely from already-shipped `Mod`/`Eq`/`Not`), which makes
+    the enumerator propose `FilterList(a, item, Eq(Mod(item,2),0))` for
+    task 412 ("remove odd numbers") -- retrieval's rung d now accepts it
+    and it passes its held-out row. Task 412 can therefore no longer stand
+    for "retrieval finds nothing" (live-confirmed: `status == "accepted"`,
+    matching `_KNOWN_CEILING_REASSESSMENT_5_DRIFT[412]` exactly).
+
+    Task 440 ("find the first adverb and their positions in a given
+    sentence") is the new witness, chosen deliberately for durability, not
+    just because it currently reads `rung: none`. Its own reference
+    implementation (`tests/fixtures/mbpp/sanitized-mbpp.json`, task_id 440)
+    is `for m in re.finditer(r"\\w+ly", text): return (m.start(), m.end(),
+    m.group(0))` -- a REGEX match-object search, not an arithmetic/list-op
+    composition. Every witness this test has stood on before (394, 106,
+    412) was closed by adding a new composition INSIDE the DSL's existing
+    Term algebra (Fold+Append for tuple/list concat; Mod+Eq+Not for a
+    modulus predicate) -- narrow single-primitive-family widenings this arc
+    has now landed three times running. Regex pattern search is not that
+    kind of gap: `PROGRAM_SYNTHESIS_ARC2_Q0_HISTOGRAM.md` (an early,
+    wide MBPP-population capability histogram) names `regex` as the single
+    LARGEST unrestricted-curve capability family (26 tasks) and explicitly
+    excludes it from this arc's scope as "a genuinely new object model
+    (match objects, `re.Match` methods)"; `PROGRAM_SYNTHESIS_OPERATOR_
+    SHAPE_WITNESS_CHECK_PREREG.md` (the same-day predecessor to the rung
+    that converted 412) independently buckets task 440 alongside the same
+    excluded family from a different angle (an operator-shape survey, not
+    a capability histogram). Neither guarantees permanence, but this is
+    the strongest available evidence in this codebase that 440's blocker
+    is architecturally further from `OP_TABLE` than 394/106/412's ever
+    were -- full reasoning and the 47-candidate search in
+    `PROGRAM_SYNTHESIS_RETRIEVAL_WITNESS_REPIN_PREREG.md`.
+
+    Live-verified (this test's own `boot()`/`_run_task_live` path,
+    3 repeated runs, byte-identical): `status == "gapped"`, `gap_reason ==
+    "enumerate_failed"`, `rung == "none"`, `attempts == 0.0`. Retrieval
+    scored 5 candidates into its pool (`n_candidates: 5`) but accepted none
+    of them at any rung, and enumerate independently exhausted its full
+    200000-candidate budget without a fit -- both sides of the ladder come
+    up genuinely empty, not merely an empty pool. NOTE for whoever moves it
+    next: a re-pin here is only ever valid if the NEW task's `rung ==
+    "none"` is confirmed LIVE, never inherited from `MEASURED_OUTCOMES` or
+    from this docstring."""
     with open(FIXTURE_PATH) as f:
         tasks = json.load(f)
     by_id = {t["task_id"]: t for t in tasks}
-    out = _run_task_live(by_id[412])
+    out = _run_task_live(by_id[440])
     assert out["status"] == "gapped"
     assert out["rung"] == "none"
     assert out["attempts"] == 0.0, "screening never touches ps_attempts (HR2)"
