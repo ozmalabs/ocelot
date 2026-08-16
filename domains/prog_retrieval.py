@@ -599,6 +599,13 @@ def run_retrieval_ladder(sub, ag_node, g) -> bool:
         # NOT touch `domains/prog_synthesis.py::run_enumerate`'s own
         # top-level call (which never sets this field), so Mod/Sqrt stay
         # fully available there.
+        # UNREGISTERED_OPS_WITNESS_CHECK: `Shl`/`BitXor`/`BitAnd` are NOT in
+        # the bare-scalar typed default at all (priced, then declined --
+        # see that branch's own comment: `Shl` alone reproduces this exact
+        # mechanism on task 58, `BitXor`/`BitAnd` on task 435), so excluding
+        # any of them here would be a no-op; left off the list rather than
+        # added defensively, matching this arc's own "never state a scope
+        # wider than what's actually true" discipline.
         spec = {"type": "SynthEnumerate",
                "examples": {"type": "Lit", "value": derived_rows},
                "max_size": 7, "max_candidates": 0, "saturate_k": 0, "field": "",

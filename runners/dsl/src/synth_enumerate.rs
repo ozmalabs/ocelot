@@ -486,6 +486,28 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     // branch's own comment for why it is scoped this narrowly. ---
     ("Mod", OpKind::Binary),   // -> Mod{a,b} (Python a % b)
     ("Sqrt", OpKind::Unary),   // -> Sqrt{arg} (Python math.sqrt)
+    // --- UNREGISTERED_OPS_WITNESS_CHECK_PREREG.md: `Shl`/`BitXor`/`BitAnd`
+    // are already-shipped, already-evaluated `TermNode` variants (`term.rs`)
+    // that had no general, freestanding `OP_TABLE` entry (`BitAnd`/`BitXor`
+    // existed only inside `ZipWith`'s own self-contained
+    // `ZIP_ELEMENTWISE_OP_NAMES` pool, which never consults `OP_TABLE` --
+    // structurally independent of this entry, confirmed by reading both
+    // call sites). Live-verified witnesses: task 274 (`Shl` alone,
+    // `2^(n-1)`), task 228 (`Shl`+`BitXor`+`BitAnd` jointly, a bit-range
+    // mask check). Registered here so an explicit `ops` request can name
+    // them; the bare-scalar typed default (below) is the only unconditional
+    // consumer, scoped exactly like `Mod`/`Sqrt`. ---
+    ("Shl", OpKind::Binary),      // -> Shl{a,b} (Python a << b)
+    ("BitXor", OpKind::Binary),   // -> BitXor{a,b} (Python a ^ b)
+    ("BitAnd", OpKind::Binary),   // -> BitAnd{a,b} (Python a & b)
+    // `XorList` (task 119, "element that appears only once"): the
+    // `IntersectAll`/`UnionAll`/`DictFromPairs` `Fold`-composition
+    // precedent -- reduce a list with `BitXor` seeded at 0. Zero new
+    // `TermNode`. Gated to `spec_output_is_bare_int` in the list-shaped
+    // branch below (NOT unconditional in `LIST_EXTRA_OPS` -- Rung 1's own
+    // measured task-132 regression from even two cheap unconditional
+    // additions to that exact bucket is the risk this gate avoids).
+    ("XorList", OpKind::ListUnary), // -> Fold{source, init:0, body:BitXor(acc,item)}
 ];
 
 /// Arc4-S4: the list-op names, in `OP_TABLE` declaration order — appended
@@ -707,6 +729,9 @@ fn build_op(name: &str, kids: &[TermIdx], derived_names: &FxHashMap<String, Sym>
         "DictMerge" => TermNode::DictMerge { a: kids[0], b: kids[1] },
         "Mod" => TermNode::Mod { a: kids[0], b: kids[1] },
         "Sqrt" => TermNode::Sqrt { arg: kids[0] },
+        "Shl" => TermNode::Shl { a: kids[0], b: kids[1] },
+        "BitXor" => TermNode::BitXor { a: kids[0], b: kids[1] },
+        "BitAnd" => TermNode::BitAnd { a: kids[0], b: kids[1] },
         _ => call_fallback(name, kids.to_vec(), derived_names),
     }
 }
@@ -795,6 +820,22 @@ fn build_list_unary(
             let itemv = scratch.add(TermNode::Var { name: item });
             let body = scratch.add(TermNode::Union { a: accv, b: itemv });
             TermNode::Fold { source, var_name: item, acc_name: acc, init, body }
+        }
+        // UNREGISTERED_OPS_WITNESS_CHECK_PREREG.md (task 119, "element that
+        // appears only once in a sorted array"): XOR-reduce the whole list,
+        // seeded at 0 (Python's own `functools.reduce(operator.xor, a, 0)`
+        // idiom) -- every duplicate cancels (`x^x=0`), the lone singleton
+        // survives. The `IntersectAll`/`UnionAll` `Fold`-composition
+        // precedent one level up, with `BitXor` as the body instead of
+        // `Intersect`/`Union` and a `Lit(0)` init instead of `IndexAt(source,
+        // 0)` (XOR's identity element is 0, unlike Intersect/Union which
+        // need a real first element to seed from).
+        "XorList" => {
+            let zero = scratch.add(TermNode::Lit { value: Value::Int(0) });
+            let accv = scratch.add(TermNode::Var { name: acc });
+            let itemv = scratch.add(TermNode::Var { name: item });
+            let body = scratch.add(TermNode::BitXor { a: accv, b: itemv });
+            TermNode::Fold { source, var_name: item, acc_name: acc, init: zero, body }
         }
         // PROGRAM_SYNTHESIS_DICTFROMPAIRS_PREREG.md §3-4: Python's
         // `dict(pairs)`. `init` is the empty dict; each fold step merges in
@@ -984,6 +1025,11 @@ fn list_unary_extra_cost(name: &str, derived_extra: &FxHashMap<String, usize>) -
         // (3: Var(acc)+Var(item)+Intersect|Union)} = 5.
         "IntersectAll" => 5,
         "UnionAll" => 5,
+        // UNREGISTERED_OPS_WITNESS_CHECK_PREREG.md: Fold{source, init:Lit(0)
+        // (1), body:BitXor(Var(acc),Var(item))(3: BitXor+acc+item)} = 4,
+        // the same accounting shape as `JoinList`'s own `4` above (a
+        // Lit-init instead of an IndexAt-init).
+        "XorList" => 4,
         // DICTFROMPAIRS_PREREG §4: Fold{source, init:MkDict([])(1), body:
         // DictMerge(Var(acc)(1), MkDict([IndexAt(Var(item),Lit(0))(3),
         // IndexAt(Var(item),Lit(1))(3)])(1))(1)} = 1+1+1+3+3+1 = 10.
@@ -1845,6 +1891,14 @@ fn term_json(
         TermNode::Sqrt { arg } => json!({
             "type": "Sqrt", "arg": term_json(arena, *arg, names, interner),
         }),
+        // UNREGISTERED_OPS_WITNESS_CHECK_PREREG.md: `Shl` is the one op of
+        // the three added this rung with no PRE-EXISTING `term_json` arm
+        // (`BitXor`/`BitAnd` already have one, installed for `ZipWith`'s
+        // own candidate rendering, `synth_enumerate.rs:1579-1584`). Field
+        // names match `jsonio.rs`'s own parser (`"a"`/`"b"`).
+        TermNode::Shl { a, b } => json!({
+            "type": "Shl", "a": term_json(arena, *a, names, interner), "b": term_json(arena, *b, names, interner)
+        }),
         // Derived-operator tier: a winning candidate may itself be a
         // `Call{name,args}` node (build-A's own fallback arms route an
         // unrecognized-but-registered op name here) — rendered exactly
@@ -1904,6 +1958,7 @@ fn term_str(arena: &TermArena, idx: TermIdx, names: &FxHashMap<Sym, String>, int
         TermNode::IDiv { a, b } => format!("({} // {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
         TermNode::BitAnd { a, b } => format!("({} & {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
         TermNode::BitXor { a, b } => format!("({} ^ {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
+        TermNode::Shl { a, b } => format!("({} << {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
         TermNode::Gt { a, b } => format!("({} > {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
         TermNode::Lt { a, b } => format!("({} < {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
         TermNode::Gte { a, b } => format!("({} >= {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
@@ -2618,6 +2673,16 @@ pub(crate) fn eval_synth_enumerate(
         {
             v.push("ParseInt");
         }
+        // UNREGISTERED_OPS_WITNESS_CHECK_PREREG.md (task 119): same narrow
+        // output-type-only gate as `ParseInt` immediately above (reusing the
+        // SAME already-computed `spec_output_is_bare_int`) — a list-shaped
+        // spec whose output is a bare int is exactly the shape an XOR-fold
+        // reduction produces. Deliberately NOT added to `LIST_EXTRA_OPS`
+        // unconditionally (Rung 1's own measured task-132 regression from
+        // even two cheap unconditional additions to that bucket).
+        if !spec_output_is_listlike && spec_output_is_bare_int {
+            v.push("XorList");
+        }
         if spec_has_repeated_list_element {
             v.push("IndexedMap");
         }
@@ -2707,6 +2772,37 @@ pub(crate) fn eval_synth_enumerate(
         // of a second typed-default branch.
         v.push("Mod");
         v.push("Sqrt");
+        // UNREGISTERED_OPS_WITNESS_CHECK_PREREG.md / _RESULTS.md §"the
+        // bare-scalar retreat, twice over": NEITHER `Shl` NOR `BitXor`/
+        // `BitAnd` is pushed onto this bare-scalar `v`, despite task 274's
+        // own clean single-op `Shl` witness. Live-measured, TWICE, via the
+        // full paired battery plus the named regression suite (not
+        // assumed): (1) `BitXor`/`BitAnd` reopen the MODSQRT_SCOPED_FIX-
+        // class mechanism-(a) regression at the unscoped TOP-LEVEL
+        // `run_enumerate` call (task 435's true `Mod(a,10)` loses a
+        // candidate-discovery-order race to a spurious two-row-coincidence
+        // `5 - (a & 2)`); (2) `Shl` ALONE, even without `BitXor`/`BitAnd`,
+        // causes the SAME class of regression on task 58 -- and this one
+        // is WORSE than a budget-exhaustion gap: the search finds and
+        // ACCEPTS a WRONG general program, `a > (a << b)`, that happens to
+        // pass task 58's own single official held-out row by coincidence
+        // (its true formula is `(a ^ b) < 0`, needing the SAME `BitXor`
+        // this rung already declined) but fails on other real inputs
+        // (e.g. (100,100)) -- caught only by
+        // `tests/test_prog_moves_migrated.py::
+        // test_mbpp_58_opposite_signs_converts_correctly`'s own
+        // wider hand-picked probe set, NOT by the battery's coarser
+        // pass/fail check. Both `Shl` and `BitXor`/`BitAnd` reach this
+        // SAME unscoped top-level call (the one call site that must stay
+        // unscoped for ANY of these ops' own witnesses to convert at all),
+        // so neither can be rescued by `exclude_ops` without losing the
+        // witness it exists for. `BitXor` stays available via the
+        // ISOLATED, disjoint `XorList` list-fold op below (task 119) --
+        // that path never touches this bare-scalar branch's own inventory
+        // at all, so it carries none of this cost. `Shl`/`BitXor`/
+        // `BitAnd` remain registered in `OP_TABLE` (so an explicit `ops`
+        // request can still name them) -- only the UNCONDITIONAL
+        // typed-default exposure is declined.
         v
     };
     // --- Derived-operator tier, stage 1 (metadata only — no arena needed
