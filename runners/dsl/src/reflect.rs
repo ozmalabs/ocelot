@@ -412,6 +412,13 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
             Child { name: "a", child: *a },
             Child { name: "b", child: *b },
         ]),
+        TermNode::ZipWith { a, b, a_name, b_name, value } => ("ZipWith", vec![
+            Child { name: "a", child: *a },
+            Child { name: "b", child: *b },
+            ScalarSym { name: "a_name", value: *a_name },
+            ScalarSym { name: "b_name", value: *b_name },
+            Child { name: "value", child: *value },
+        ]),
         TermNode::Argmax { source, var_name, value, default } => ("Argmax", vec![
             Child { name: "source", child: *source },
             ScalarSym { name: "var_name", value: *var_name },
@@ -1277,6 +1284,13 @@ fn reconstruct(
         },
         "GroupCount" => TermNode::GroupCount { seq: take_child!("seq") },
         "DictMerge" => TermNode::DictMerge { a: take_child!("a"), b: take_child!("b") },
+        "ZipWith" => TermNode::ZipWith {
+            a: take_child!("a"),
+            b: take_child!("b"),
+            a_name: get_sym("a_name")?,
+            b_name: get_sym("b_name")?,
+            value: take_child!("value"),
+        },
         "Argmax" => TermNode::Argmax {
             source: take_child!("source"),
             var_name: get_sym("var_name")?,

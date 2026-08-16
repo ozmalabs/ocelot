@@ -281,6 +281,32 @@ pub enum TermNode {
     /// unchanged (never panics; mirrors this file's standing degrade
     /// convention for a type-mismatched operand).
     DictMerge { a: TermIdx, b: TermIdx },
+    /// `ZIP_ELEMENTWISE` rung (`PROGRAM_SYNTHESIS_ZIP_ELEMENTWISE_PREREG.md`,
+    /// an 8-task MBPP cluster — 259/261/273/282/399/401/429/445 — all
+    /// needing Python's `zip(a, b)` paired with a per-pair binary
+    /// combiner, e.g. `tuple(x - y for x, y in zip(a, b))`): iterates `a`
+    /// and `b` IN LOCKSTEP (Python `zip` truncation semantics — stops at
+    /// `min(len(a), len(b))`), binding each pair's two elements to
+    /// `a_name`/`b_name` before evaluating `value`, popping both after.
+    /// Modelled directly on `IndexedMap`'s two-bound-variable-over-one-
+    /// source shape, generalised to TWO sources instead of one (the same
+    /// generalisation `IndexedMap`'s own doc comment already applied to
+    /// `MapList`) — and on the already-shipped `vec_binary` helper
+    /// (`VecAdd`/`VecSub`), which already zips two operands with a FIXED
+    /// op; this Term is that same zip shape with the op made a Term
+    /// argument instead of a hard-coded closure, so nested tasks (259/
+    /// 401/445 — a tuple OF tuples, needing `zip` applied at BOTH the
+    /// outer and inner level) compose as `ZipWith` calling `ZipWith`
+    /// again in its own `value`, rather than needing a second Term.
+    /// Output container kind follows `a` (`Value::reseq` — the
+    /// `RewriteTreeNodes`/`ShiftThresholdLits` kind-preserving precedent),
+    /// so a List-in/List-out spec (task 282) and a Tuple-in/Tuple-out
+    /// spec (the other 7) both round-trip their own container kind
+    /// without a separate coercion step. Non-listlike `a`/`b` -> an empty
+    /// sequence of `a`'s own kind (the `MapList`/`Reverse` degrade
+    /// precedent: `av.snapshot()` is empty for a non-collection `Value`,
+    /// so the loop simply never runs).
+    ZipWith { a: TermIdx, b: TermIdx, a_name: Sym, b_name: Sym, value: TermIdx },
     /// Verify that `term` (evaluated under bindings from `env`) equals
     /// `expected`. `env` should evaluate to a Value::Dict of
     /// (Str, Value) pairs — each entry is pushed onto the eval env
@@ -3134,6 +3160,10 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
         TermNode::DictMerge { a, b } => TermNode::DictMerge {
             a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b),
         },
+        TermNode::ZipWith { a, b, a_name, b_name, value } => TermNode::ZipWith {
+            a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b),
+            a_name, b_name, value: copy_subtree(src, dst, value),
+        },
         TermNode::Verify { term, env, expected } => TermNode::Verify { term: copy_subtree(src, dst, term), env: copy_subtree(src, dst, env), expected: copy_subtree(src, dst, expected) },
         TermNode::MkDict { items } =>
             TermNode::MkDict { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
@@ -5468,6 +5498,24 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 }
                 _ => av,
             }
+        }
+
+        TermNode::ZipWith { a, b, a_name, b_name, value } => {
+            let av = evaluate(arena, *a, env, ctx);
+            let bv = evaluate(arena, *b, env, ctx);
+            let a_snap = av.snapshot();
+            let b_snap = bv.snapshot();
+            let n = a_snap.len().min(b_snap.len());
+            let mut out: SmallVec<[Value; 4]> = SmallVec::with_capacity(n);
+            for i in 0..n {
+                env.push((*a_name, a_snap[i].clone()));
+                env.push((*b_name, b_snap[i].clone()));
+                let v = evaluate(arena, *value, env, ctx);
+                env.pop();
+                env.pop();
+                out.push(v);
+            }
+            av.reseq(out)
         }
 
 TermNode::MorphHead { text } => {
@@ -10695,6 +10743,7 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         TermNode::SortBy { source, key, .. } => { out.push(*source); out.push(*key); }
         TermNode::GroupCount { seq } => out.push(*seq),
         TermNode::DictMerge { a, b } => { out.push(*a); out.push(*b); }
+        TermNode::ZipWith { a, b, value, .. } => { out.push(*a); out.push(*b); out.push(*value); }
     }
     out
 }

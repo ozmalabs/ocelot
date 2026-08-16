@@ -286,6 +286,17 @@ enum OpKind {
     /// perturbed — the `tmpl:nested_reduction` precedent). The template
     /// may reference EITHER the bound item OR the bound index.
     IndexedMap,
+    /// `ZIP_ELEMENTWISE` rung: `ZipWith` — TWO sources, both drawn from
+    /// `list_by_size[1]` ONLY (raw declared spec variables, never a
+    /// derived subterm — every one of this rung's 8 witness tasks zips
+    /// the raw arguments directly, so this is a deliberate, documented
+    /// narrowing, not the full `sa x sb` cross product `ListBinary` uses;
+    /// see `PROGRAM_SYNTHESIS_ZIP_ELEMENTWISE_PREREG.md` §4), value
+    /// template from its OWN pool (`zip_op_templates_by_size`, built
+    /// separately so it never perturbs `map_templates_by_size`'s/
+    /// `indexed_map_templates_by_size`'s own arena layout — the
+    /// `tmpl:nested_reduction` precedent, generalised a second time).
+    ZipMap,
 }
 
 const OP_TABLE: &[(&str, OpKind)] = &[
@@ -400,6 +411,14 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     // `ConcatList(ConcatList(a,b),c)` precedent task 108 already uses. ---
     ("GroupCount", OpKind::Unary),     // -> GroupCount{seq} (Counter(seq) as a Dict of element->count)
     ("DictMerge", OpKind::Binary),     // -> DictMerge{a,b} (dict.update semantics: b wins over a on key conflict)
+    // --- PROGRAM_SYNTHESIS_ZIP_ELEMENTWISE_PREREG.md (an 8-task MBPP
+    // cluster — 259/261/273/282/399/401/429/445 — all needing Python's
+    // `zip(a, b)` paired with a per-pair binary combiner). `ZipWith` is a
+    // NEW `TermNode` variant (no existing Term iterates two sequences in
+    // lockstep), registered via its OWN `OpKind::ZipMap` (see that
+    // variant's doc comment for the deliberate `list_by_size[1]`-only
+    // sourcing scope). ---
+    ("ZipWith", OpKind::ZipMap), // -> ZipWith{a,b,a_name,b_name,value} (zip(a,b) + a per-pair binary combiner)
     // --- PROGRAM_SYNTHESIS_MODSQRT_SCOPED_FIX (PROGRAM_SYNTHESIS_BUDGET_
     // EXHAUSTED_SURVEY_PREREG/RESULTS.md §5.1/§5.3): `Mod`/`Sqrt` are
     // already-shipped, already-evaluated `TermNode` variants (`term.rs`),
@@ -812,6 +831,52 @@ fn build_indexed_map(name: &str, source: TermIdx, tmpl: TermIdx, item: Sym, inde
         TermNode::IndexedMap { source, item_name: item, index_name: index, value: tmpl }
     } else {
         call_fallback(name, vec![source, tmpl], derived_names)
+    }
+}
+
+/// `ZIP_ELEMENTWISE` rung `op:ZipWith` — two sources (`a`, `b`, both
+/// drawn from `list_by_size[1]`, see `OpKind::ZipMap`'s own doc comment),
+/// `tmpl` drawn from `zip_op_templates_by_size` (already references
+/// `a_name`/`b_name` as free `Var`s — see the pool-construction site).
+///
+/// `name`'s own fallback arm here is, like `build_indexed_map`'s, DEAD
+/// CODE under this slice's own arity/pool inference (no path routes an
+/// unrecognized name into `OpKind::ZipMap` today) — added for the same
+/// literal-completeness reason that precedent's own comment gives.
+fn build_zip_with(
+    name: &str, a: TermIdx, b: TermIdx, tmpl: TermIdx, a_name: Sym, b_name: Sym,
+    derived_names: &FxHashMap<String, Sym>,
+) -> TermNode {
+    if name == "ZipWith" {
+        TermNode::ZipWith { a, b, a_name, b_name, value: tmpl }
+    } else {
+        call_fallback(name, vec![a, b, tmpl], derived_names)
+    }
+}
+
+/// `ZIP_ELEMENTWISE` rung: the fixed 7-op inventory the pool builds a
+/// `ZipWith` value-template from — exactly the 7 elementwise binary ops
+/// this rung's 8-task witness population needs (`PROGRAM_SYNTHESIS_
+/// ZIP_ELEMENTWISE_PREREG.md` §2), all already-shipped `TermNode`
+/// variants (no new arithmetic Term).
+const ZIP_ELEMENTWISE_OP_NAMES: &[&str] =
+    &["Max", "IDiv", "Minus", "BitXor", "Plus", "BitAnd", "Times"];
+
+/// Build a single `ZIP_ELEMENTWISE_OP_NAMES` entry applied to two
+/// already-built operand `TermIdx`s. `Max`/`Plus`/`Times` are the
+/// variadic-`items` arithmetic Terms (`term.rs`); the rest are the
+/// binary-`{a,b}` shape. Both reduce to a 2-operand application here.
+fn build_zip_elementwise_op(name: &str, x: TermIdx, y: TermIdx) -> TermNode {
+    match name {
+        "Max" => TermNode::Max { items: vec![x, y] },
+        "Plus" => TermNode::Plus { items: vec![x, y] },
+        "Times" => TermNode::Times { items: vec![x, y] },
+        "IDiv" => TermNode::IDiv { a: x, b: y },
+        "Minus" => TermNode::Minus { a: x, b: y },
+        "BitXor" => TermNode::BitXor { a: x, b: y },
+        "BitAnd" => TermNode::BitAnd { a: x, b: y },
+        // Unreachable: `ZIP_ELEMENTWISE_OP_NAMES` is the only caller.
+        _ => TermNode::Minus { a: x, b: y },
     }
 }
 
@@ -1362,6 +1427,30 @@ fn term_json(
         TermNode::Div { a, b } => json!({
             "type": "Div", "a": term_json(arena, *a, names, interner), "b": term_json(arena, *b, names, interner)
         }),
+        // `ZIP_ELEMENTWISE` rung: `IDiv` is a pre-existing, already-shipped
+        // `TermNode` (already handled by `jsonio.rs`/`reflect.rs`) that was
+        // NEVER previously reachable via a search-built candidate — it had
+        // no `OP_TABLE` entry of its own before this rung, so this
+        // module's own LOCAL `term_json` (distinct from `jsonio.rs`'s,
+        // per the `MkDict`/`DictFromPairs` precedent's own comment two
+        // arms below) never needed an arm for it. `ZipWith`'s template
+        // pool is the first thing to make `IDiv` a possible `value` inside
+        // a winning candidate (task 261, Python `//`) — found live, the
+        // SAME class of gap `DICTFROMPAIRS_PREREG.md` §4 already hit for
+        // `MkDict`, fixed the same way: add the arm before it ships.
+        TermNode::IDiv { a, b } => json!({
+            "type": "IDiv", "a": term_json(arena, *a, names, interner), "b": term_json(arena, *b, names, interner)
+        }),
+        // `ZIP_ELEMENTWISE` rung: same gap as `IDiv` above — `BitAnd`/
+        // `BitXor` are pre-existing shipped Terms with no prior `OP_TABLE`
+        // entry, first made search-reachable by `ZipWith`'s template pool
+        // (tasks 429/399). Found live (task 399, `zip`+`^`).
+        TermNode::BitAnd { a, b } => json!({
+            "type": "BitAnd", "a": term_json(arena, *a, names, interner), "b": term_json(arena, *b, names, interner)
+        }),
+        TermNode::BitXor { a, b } => json!({
+            "type": "BitXor", "a": term_json(arena, *a, names, interner), "b": term_json(arena, *b, names, interner)
+        }),
         TermNode::Gt { a, b } => json!({
             "type": "Gt", "a": term_json(arena, *a, names, interner), "b": term_json(arena, *b, names, interner)
         }),
@@ -1585,6 +1674,19 @@ fn term_json(
             "a": term_json(arena, *a, names, interner),
             "b": term_json(arena, *b, names, interner),
         }),
+        // `ZIP_ELEMENTWISE` rung: this module's own local `term_json`
+        // renderer is exhaustive (an omitted arm here `unreachable!()`s
+        // the first time the search renders a `ZipWith` candidate — the
+        // SAME finding `GROUPCOUNT_DICTMERGE_RESULTS.md` §4 already hit
+        // for `MkDict`, avoided here by adding the arm up front).
+        TermNode::ZipWith { a, b, a_name, b_name, value } => json!({
+            "type": "ZipWith",
+            "a": term_json(arena, *a, names, interner),
+            "b": term_json(arena, *b, names, interner),
+            "a_name": names.get(a_name).cloned().unwrap_or_default(),
+            "b_name": names.get(b_name).cloned().unwrap_or_default(),
+            "value": term_json(arena, *value, names, interner),
+        }),
         // DICTFROMPAIRS_PREREG §4: `MkDict` had NO arm here (this module's
         // own local `term_json` renderer, distinct from `jsonio.rs`'s) --
         // every prior op composing it (`MkDict` calls elsewhere in this
@@ -1668,6 +1770,9 @@ fn term_str(arena: &TermArena, idx: TermIdx, names: &FxHashMap<Sym, String>, int
         }
         TermNode::Minus { a, b } => format!("({} - {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
         TermNode::Div { a, b } => format!("({} / {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
+        TermNode::IDiv { a, b } => format!("({} // {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
+        TermNode::BitAnd { a, b } => format!("({} & {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
+        TermNode::BitXor { a, b } => format!("({} ^ {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
         TermNode::Gt { a, b } => format!("({} > {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
         TermNode::Lt { a, b } => format!("({} < {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
         TermNode::Gte { a, b } => format!("({} >= {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
@@ -1784,6 +1889,14 @@ fn term_str(arena: &TermArena, idx: TermIdx, names: &FxHashMap<Sym, String>, int
             names.get(index_name).cloned().unwrap_or_default(),
             names.get(item_name).cloned().unwrap_or_default(),
             term_str(arena, *source, names, interner),
+        ),
+        TermNode::ZipWith { a, b, a_name, b_name, value } => format!(
+            "[{} for {}, {} in zip({}, {})]",
+            term_str(arena, *value, names, interner),
+            names.get(a_name).cloned().unwrap_or_default(),
+            names.get(b_name).cloned().unwrap_or_default(),
+            term_str(arena, *a, names, interner),
+            term_str(arena, *b, names, interner),
         ),
         TermNode::Capitalize { text } => format!("{}.capitalize()", term_str(arena, *text, names, interner)),
         TermNode::ParseInt { text } => format!("int({})", term_str(arena, *text, names, interner)),
@@ -2089,6 +2202,23 @@ pub(crate) fn eval_synth_enumerate(
     // precedent, minted unconditionally and cheaply.
     let index_sym = local_sym(ctx.interner, &mut extra, &mut next_placeholder, "__index");
     names.entry(index_sym).or_insert_with(|| "__index".to_string());
+    // `ZIP_ELEMENTWISE` rung `op:ZipWith`: the two bound variables a
+    // zip-body needs (one per zipped pair, OUTER level). A SEPARATE,
+    // distinctly-named INNER pair (`__zi`/`__zj`) is minted too, for the
+    // one-level-nested composition tasks 259/401/445 need (a tuple OF
+    // tuples: the outer `ZipWith` binds `__za`/`__zb` to a PAIR of
+    // sub-tuples, whose own elements the INNER `ZipWith` binds
+    // `__zi`/`__zj` to) — distinct names, matching the `__item`/`__inner`
+    // two-level precedent, even though the engine's own stack-shadowing
+    // `env_get` (searches from the end) would tolerate reuse.
+    let za_sym = local_sym(ctx.interner, &mut extra, &mut next_placeholder, "__za");
+    names.entry(za_sym).or_insert_with(|| "__za".to_string());
+    let zb_sym = local_sym(ctx.interner, &mut extra, &mut next_placeholder, "__zb");
+    names.entry(zb_sym).or_insert_with(|| "__zb".to_string());
+    let zi_sym = local_sym(ctx.interner, &mut extra, &mut next_placeholder, "__zi");
+    names.entry(zi_sym).or_insert_with(|| "__zi".to_string());
+    let zj_sym = local_sym(ctx.interner, &mut extra, &mut next_placeholder, "__zj");
+    names.entry(zj_sym).or_insert_with(|| "__zj".to_string());
 
     // --- Typed enumeration (Q1): a spec whose every variable value AND
     // output is string-shaped, with NO caller-declared `ops`, composes
@@ -2118,6 +2248,33 @@ pub(crate) fn eval_synth_enumerate(
                         .unwrap_or(false)
                 })
         });
+
+    // `ZIP_ELEMENTWISE` rung: does this spec have (at least) TWO DISTINCT
+    // list/tuple-shaped variables that are pairwise-zippable (equal
+    // length on EVERY row)? Narrow, structural evidence — the same
+    // "consistently typed on every row" discipline `list_vars`/
+    // `scalar_vars` below already use — for a genuine two-sequence spec
+    // (`zip(a, b)` needs both operands the same length to mean anything).
+    // A single list-shaped variable (e.g. task 88's `a`) never sets this.
+    let zippable_list_vars: SmallVec<[Sym; 4]> = var_order
+        .iter()
+        .cloned()
+        .filter(|s| {
+            !envs.is_empty()
+                && envs.iter().all(|e| {
+                    e.iter().find(|(vs, _)| vs == s).map(|(_, v)| is_listlike(v)).unwrap_or(false)
+                })
+        })
+        .collect();
+    let spec_has_two_zippable_list_vars = zippable_list_vars.iter().enumerate().any(|(i, s1)| {
+        zippable_list_vars.iter().skip(i + 1).any(|s2| {
+            envs.iter().all(|e| {
+                let l1 = e.iter().find(|(vs, _)| vs == s1).and_then(|(_, v)| items_of(v)).map(|it| it.len());
+                let l2 = e.iter().find(|(vs, _)| vs == s2).and_then(|(_, v)| items_of(v)).map(|it| it.len());
+                l1.is_some() && l1 == l2
+            })
+        })
+    });
 
     // --- Op inventory (caller-declared, else a TYPED default; unknown
     //     names ignored — generator.py's `if name in table`) ---
@@ -2373,6 +2530,16 @@ pub(crate) fn eval_synth_enumerate(
         // to need it here.
         if spec_output_is_dictlike {
             v.push("GroupCount");
+        }
+        // `ZIP_ELEMENTWISE` rung (tasks 259/261/273/282/399/401/429/445):
+        // narrow, structural evidence — a genuine two-sequence spec, see
+        // `spec_has_two_zippable_list_vars`'s own doc comment. Every one
+        // of this rung's 8 witness tasks has EXACTLY two spec variables,
+        // both list/tuple-shaped, equal length on every row, so this gate
+        // is a real narrowing, not a rename of `spec_is_list_shaped`
+        // itself (a single-list-var spec like task 88 never sets it).
+        if spec_has_two_zippable_list_vars {
+            v.push("ZipWith");
         }
         v
     } else if spec_output_is_dictlike {
@@ -2673,6 +2840,12 @@ pub(crate) fn eval_synth_enumerate(
     // already-shipped `MapList` spec) is never perturbed — the
     // `tmpl:nested_reduction` precedent.
     let mut indexed_map_templates_by_size: Vec<Vec<TermIdx>> = vec![Vec::new(); template_cap];
+    // `ZIP_ELEMENTWISE` rung `op:ZipWith`: built in its OWN, independent
+    // block below (never entangled with the filter/map pool construction
+    // above — narrower blast radius, matches `OpKind::ZipMap`'s own doc
+    // comment).
+    let zip_wanted = op_list.iter().any(|(n, _)| n == "ZipWith");
+    let mut zip_op_templates_by_size: Vec<Vec<TermIdx>> = vec![Vec::new(); template_cap];
     if filter_wanted || map_wanted || indexed_map_wanted {
         let numeric_consts: Vec<Value> = const_set
             .iter()
@@ -3057,6 +3230,56 @@ pub(crate) fn eval_synth_enumerate(
         }
     }
 
+    // ---- `ZIP_ELEMENTWISE` rung `op:ZipWith` template pool -------------
+    // Built ONCE (never counted toward `tested`/budget — the `FilterList`/
+    // `MapList` pool-construction discipline above), zero cost unless the
+    // caller's op inventory actually contains `ZipWith`. A SMALL, FIXED
+    // set of templates — the exact 7 elementwise binary ops this rung's
+    // 8-task witness population needs (`PROGRAM_SYNTHESIS_ZIP_ELEMENTWISE_
+    // PREREG.md` §2), each in TWO flavours:
+    //   - FLAT (size 3): `OP(Var(__za), Var(__zb))` — the direct per-pair
+    //     combine (tasks 261/273/282/399/429).
+    //   - NESTED (size 6): `ZipWith(Var(__za), Var(__zb), __zi, __zj,
+    //     OP(Var(__zi), Var(__zj)))` — a SECOND `zip` applied to each
+    //     bound pair's own elements, for a tuple-OF-tuples spec (tasks
+    //     259/401/445, each `zip`-ing at BOTH the outer and inner level).
+    // No numeric-constant/scalar-variable cross product (unlike
+    // `filter_templates_by_size`'s six families) — every one of this
+    // rung's 8 witnesses composes the bound pair DIRECTLY, with no
+    // constant or third variable involved, so a bigger pool would only
+    // cost search budget for zero additional reach.
+    if zip_wanted {
+        let push = |pool: &mut Vec<Vec<TermIdx>>, idx: TermIdx, sz: usize| {
+            if sz < pool.len() {
+                pool[sz].push(idx);
+            }
+        };
+        // (op name, build-fn) — `Max`/`Plus`/`Times` are variadic
+        // (`items: Vec<TermIdx>`), the rest are binary (`a`, `b`); both
+        // shapes reduce to a 2-element application here.
+        for op_name in ZIP_ELEMENTWISE_OP_NAMES {
+            // FLAT: OP(Var(__za), Var(__zb)) — size 3.
+            let za1 = search.scratch.add(TermNode::Var { name: za_sym });
+            let zb1 = search.scratch.add(TermNode::Var { name: zb_sym });
+            let flat = search.scratch.add(build_zip_elementwise_op(op_name, za1, zb1));
+            push(&mut zip_op_templates_by_size, flat, 3);
+
+            // NESTED: ZipWith(Var(__za), Var(__zb), __zi, __zj,
+            // OP(Var(__zi), Var(__zj))) — size 6 (1 for the inner
+            // ZipWith node + 1 + 1 for its own Var(__za)/Var(__zb) +
+            // 3 for the size-3 OP(Var(__zi),Var(__zj)) inner value).
+            let za2 = search.scratch.add(TermNode::Var { name: za_sym });
+            let zb2 = search.scratch.add(TermNode::Var { name: zb_sym });
+            let zi = search.scratch.add(TermNode::Var { name: zi_sym });
+            let zj = search.scratch.add(TermNode::Var { name: zj_sym });
+            let inner_op = search.scratch.add(build_zip_elementwise_op(op_name, zi, zj));
+            let nested = search.scratch.add(TermNode::ZipWith {
+                a: za2, b: zb2, a_name: zi_sym, b_name: zj_sym, value: inner_op,
+            });
+            push(&mut zip_op_templates_by_size, nested, 6);
+        }
+    }
+
     let mut distinct_history: Vec<usize> = vec![search.seen.len()];
 
     // grow sizes 2..=max_size (generator.py's loop, partitions in the
@@ -3188,6 +3411,28 @@ pub(crate) fn eval_synth_enumerate(
                         for s_ in &srcs {
                             for t_ in &tmpls {
                                 reg!(build_indexed_map(name, *s_, *t_, item_sym, index_sym, &derived_names), size);
+                            }
+                        }
+                    }
+                }
+                // `ZIP_ELEMENTWISE` rung `op:ZipWith` — see `OpKind::ZipMap`'s
+                // own doc comment: `a`/`b` are drawn ONLY from
+                // `list_by_size[1]` (raw declared spec variables), so
+                // `size == 1 (node) + 1 (a) + 1 (b) + st (template)`
+                // pins `st` to a SINGLE value per `size`, never a sa x sb
+                // cross product.
+                OpKind::ZipMap => {
+                    if size >= 4 {
+                        let st = size - 3;
+                        if st < zip_op_templates_by_size.len() {
+                            let srcs = search.list_by_size[1].clone();
+                            let tmpls = zip_op_templates_by_size[st].clone();
+                            for ca in &srcs {
+                                for cb in &srcs {
+                                    for t_ in &tmpls {
+                                        reg!(build_zip_with(name, *ca, *cb, *t_, za_sym, zb_sym, &derived_names), size);
+                                    }
+                                }
                             }
                         }
                     }

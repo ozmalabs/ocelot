@@ -218,6 +218,7 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::SortBy { .. } => "SortBy",
         TermNode::GroupCount { .. } => "GroupCount",
         TermNode::DictMerge { .. } => "DictMerge",
+        TermNode::ZipWith { .. } => "ZipWith",
         TermNode::Argmax { .. } => "Argmax",
         TermNode::Argmin { .. } => "Argmin",
         TermNode::ArgminUnique { .. } => "ArgminUnique",
@@ -657,6 +658,13 @@ fn write_fields(
         TermNode::DictMerge { a, b } => {
             m.insert("a".into(), child(*a, arena, interner));
             m.insert("b".into(), child(*b, arena, interner));
+        }
+        TermNode::ZipWith { a, b, a_name, b_name, value } => {
+            m.insert("a".into(), child(*a, arena, interner));
+            m.insert("b".into(), child(*b, arena, interner));
+            m.insert("a_name".into(), sym_str(*a_name, interner));
+            m.insert("b_name".into(), sym_str(*b_name, interner));
+            m.insert("value".into(), child(*value, arena, interner));
         }
         TermNode::Filter { source, var_name, predicate }
         | TermNode::FilterList { source, var_name, predicate }
@@ -1480,6 +1488,13 @@ fn read_term(
         "DictMerge" => TermNode::DictMerge {
             a: child_of("a", obj, arena, interner, variant)?,
             b: child_of("b", obj, arena, interner, variant)?,
+        },
+        "ZipWith" => TermNode::ZipWith {
+            a: child_of("a", obj, arena, interner, variant)?,
+            b: child_of("b", obj, arena, interner, variant)?,
+            a_name: get_sym("a_name", interner)?,
+            b_name: get_sym("b_name", interner)?,
+            value: child_of("value", obj, arena, interner, variant)?,
         },
         "Eq" => TermNode::Eq {
             a: child_of("a", obj, arena, interner, variant)?,
