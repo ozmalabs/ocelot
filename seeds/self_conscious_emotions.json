@@ -1,0 +1,270 @@
+{
+ "id": "self_conscious_emotions",
+ "version": "1.0.0",
+ "depends_on": [],
+ "self_load_only": true,
+ "description": "Classifies a self-conscious episode (did the agent, by its own knowledge, meet a Standard; what attribution locus applies; did any witness form a belief -- possibly diverging from ground truth -- that the standard was violated) into {hubristic_pride, authentic_pride, shame, guilt, embarrassment, none}, per the Lewis (1971) / Tracy & Robins (2004, 2007) / Miller (1996) / Tangney, Miller, Flicker & Barlow (1996) appraisal literature -- SELF_CONSCIOUS_EMOTIONS_PREREG.md. Reuses the SmEntity-belief_world nested-belief SHAPE domains/character_tom.py already established (a witness's belief about the agent is a node structurally distinct from ground truth), applied to a NEW, live-encounter trigger (WitnessBelief nodes minted mechanically, not via NLP attitude-sentence parsing) and NEW, reflexively self-directed content (a witness's judgment of the APPRAISING agent). standard_met drives the shame/guilt/pride axis regardless of exposure (Tangney et al. 1996); perceived_violation -- read from witness belief, which may diverge from standard_met -- drives embarrassment specifically, gated to the circumstance-attributed cell (Miller 1996). Zero new Rust Terms.",
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "src": {
+    "type": "SelfConsciousContext",
+    "var": "ctx"
+   },
+   "edge_type": "has_appraisal",
+   "tgt": {
+    "type": "SelfConsciousSignal",
+    "var": "sig"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "self_conscious_emotions"
+  },
+  {
+   "src": {
+    "type": "SelfConsciousContext",
+    "var": "ctx"
+   },
+   "edge_type": "has_witness_belief",
+   "tgt": {
+    "type": "WitnessBelief",
+    "var": "witness"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "self_conscious_emotions"
+  }
+ ],
+ "concepts": [
+  {
+   "name": "self_conscious_emotion_appraisal",
+   "definition": "A self-conscious emotion (pride/shame/guilt/embarrassment) is a categorical function of standard-compliance, attribution locus (global-self / specific-act / circumstance), and perceived (not necessarily actual) social exposure -- distinct emotions for the same outcome depending on WHERE the cause is attributed, and one specific cell (circumstance) gated on whether any witness believes a violation occurred, independent of whether one actually did.",
+   "why": "The user asked whether CAN/PSI can produce embarrassment 'and otherwise' -- a research pass found three missing primitives (reflexive second-order belief, a violable Standard, attribution-locus classification); this seed supplies all three. SELF_CONSCIOUS_EMOTIONS_PREREG.md."
+  }
+ ],
+ "exclusions": [],
+ "rules": [
+  {
+   "name": "sc_decide_emotion",
+   "comment": "PREREG Sec2-3: classifies a self-conscious episode into {hubristic_pride, authentic_pride, shame, guilt, embarrassment, none} from (standard_met, attribution_locus, perceived_violation). standard_met (the agent's OWN ground truth) drives the shame/guilt/pride axis regardless of exposure (Tangney, Miller, Flicker & Barlow 1996: shame/guilt are NOT reliably audience-dependent). perceived_violation -- Exists over WitnessBelief.judgment, which may DIVERGE from standard_met -- drives embarrassment specifically, gated to the circumstance-attributed cell only (Miller 1996: embarrassment attributes to circumstance/involuntary exposure, not a moral standard violation; Tangney et al. 1996: embarrassment IS reliably audience-dependent, the one cell this design gates on exposure). Pride bifurcates the same way shame/guilt do (Tracy & Robins 2007): global_self attribution -> hubristic, specific_act attribution -> authentic. attribution_locus is CATEGORICAL (Lewis 1971's three-way split), not a continuous scalar, so this is a genuine lookup table (IfThenElse), not a misapplied Argmin-over-codebook quantization. Zero new Rust -- Eq/And/IfThenElse/Let/Exists/Neighbours/Attr/Var/Lit all pre-existed. The emotion DECISION is this Rule's own nested IfThenElse, not Python.",
+   "match_type": "SelfConsciousSignal",
+   "match": [
+    [
+     "ctx",
+     "has_appraisal",
+     "sig"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sig"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pending"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sig",
+     "perceived_violation",
+     {
+      "__term__": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ctx"
+        },
+        "edge_type": "has_witness_belief"
+       },
+       "var_name": "witness",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "witness"
+         },
+         "key": "judgment"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "violated"
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sig",
+     "emotion",
+     {
+      "__term__": {
+       "type": "Let",
+       "name": "perceived_violation",
+       "value": {
+        "type": "Exists",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "ctx"
+         },
+         "edge_type": "has_witness_belief"
+        },
+        "var_name": "witness",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "witness"
+          },
+          "key": "judgment"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "violated"
+         }
+        }
+       },
+       "body": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ctx"
+          },
+          "key": "attribution_locus"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "circumstance"
+         }
+        },
+        "then": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Var",
+          "name": "perceived_violation"
+         },
+         "then": {
+          "type": "Lit",
+          "value": "embarrassment"
+         },
+         "other": {
+          "type": "Lit",
+          "value": "none"
+         }
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ctx"
+           },
+           "key": "attribution_locus"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "global_self"
+          }
+         },
+         "then": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ctx"
+            },
+            "key": "standard_met"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": "hubristic_pride"
+          },
+          "other": {
+           "type": "Lit",
+           "value": "shame"
+          }
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ctx"
+            },
+            "key": "standard_met"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 1.0
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": "authentic_pride"
+          },
+          "other": {
+           "type": "Lit",
+           "value": "guilt"
+          }
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sig",
+     "status",
+     "decided"
+    ]
+   ]
+  }
+ ]
+}
