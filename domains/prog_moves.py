@@ -351,6 +351,9 @@ def _run_synth_enumerate(sub, spec_rows: List[Dict[str, Any]], *,
         # this shape (PROGRAM_SYNTHESIS_MODSQRT_SCOPED_FIX_RESULTS.md).
         # `domains/prog_synthesis.py::run_enumerate`'s own top-level call
         # never sets this field, so Mod/Sqrt stay fully available there.
+        # UNREGISTERED_OPS_WITNESS_CHECK: `Shl`/`BitXor`/`BitAnd` are NOT in
+        # the bare-scalar typed default at all (priced, then declined --
+        # see that branch's own comment), so they are not listed here.
         out = sub._inner.evaluate(
             {"type": "SynthEnumerate",
              "examples": {"type": "Lit", "value": _wire_rows(spec_rows)},

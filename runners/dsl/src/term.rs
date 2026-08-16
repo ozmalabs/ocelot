@@ -7720,7 +7720,14 @@ TermNode::MorphHead { text } => {
             if bi == 0 {
                 Value::Int(0)
             } else {
-                Value::Int(av.as_i64().rem_euclid(bi))
+                // UNREGISTERED_OPS_WITNESS_CHECK: `i64::rem_euclid` panics
+                // unconditionally (not merely under `overflow-checks`) on
+                // `i64::MIN % -1` -- reachable via the search once `Shl` is
+                // exposed (`1i64 << 63 == i64::MIN`) composed with `Mod`
+                // (already exposed, MODSQRT_SCOPED_FIX). `wrapping_rem_euclid`
+                // is the same guard `IDiv`'s own `wrapping_div` already uses
+                // for the identical overflow case a few lines above/below.
+                Value::Int(av.as_i64().wrapping_rem_euclid(bi))
             }
         }
         TermNode::Pow { a, b } => {
