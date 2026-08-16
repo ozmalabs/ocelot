@@ -229,6 +229,30 @@ use crate::value::{cmp_value, SurfaceKind, Value};
 const DEFAULT_MAX_SIZE: i64 = 9;
 const DEFAULT_MAX_CANDIDATES: i64 = 200_000;
 const DEFAULT_SATURATE_K: i64 = 3;
+/// `PROGRAM_SYNTHESIS_ZIPWITH_FOLLOWON`: a call-site-scoped budget raise,
+/// narrower than `MAX_SIZE_SEAM_PRICING_PREREG.md`'s already-NO-GO'd
+/// GLOBAL `max_size` raise (a different budget DIMENSION — this is
+/// `max_candidates`, the COUNT ceiling, never touched by that document).
+/// Measured directly (`ZIP_ELEMENTWISE_RESULTS.md` §1.4, re-confirmed
+/// live in this rung): the 3 one-level-nested `ZipWith` witness tasks
+/// (259/401/445) each need 261,316-261,322 candidates tested under the
+/// REAL production op inventory to reach their own correct, size-9
+/// nested candidate — ~30% over `DEFAULT_MAX_CANDIDATES`. `300_000`
+/// clears the measured ceiling with ~15% headroom. Applied ONLY when (a)
+/// the resolved `op_list` for THIS call actually contains `ZipWith`
+/// (`zip_wanted`, already computed below for the template pool — the
+/// SAME narrow, per-call, spec-shape-gated scope every prior op
+/// addition in this module uses) AND (b) the caller passed
+/// `max_candidates <= 0` (asking for "the engine's own default", never
+/// overriding an EXPLICIT caller-supplied budget — the identical
+/// discipline `PROGRAM_SYNTHESIS_MODSQRT_SCOPED_FIX_RESULTS.md` used for
+/// `exclude_ops`, inverted: there a call opts OUT of an op; here a
+/// call's own op-list shape opts IN to a bigger ceiling, but only when
+/// it did not already ask for a specific number). A caller that already
+/// requests a smaller/larger explicit budget (`prog_moves.py`'s
+/// `_PROBE_MAX_CANDIDATES`-scoped probes) is completely unaffected
+/// regardless of whether `ZipWith` is in its own op list.
+const ZIP_MAX_CANDIDATES: u64 = 300_000;
 
 /// generator.py's DEFAULT_OPS, in order (enumeration order is part of
 /// the port).
@@ -2127,6 +2151,11 @@ pub(crate) fn eval_synth_enumerate(
     ctx: &mut EvalCtx,
 ) -> Value {
     let max_size = (if max_size <= 0 { DEFAULT_MAX_SIZE } else { max_size }) as usize;
+    // `ZIP_MAX_CANDIDATES`'s own doc comment: remember whether the CALLER
+    // asked for the engine's own default budget (`<= 0`) before it is
+    // overwritten below — an explicit caller-supplied budget (e.g.
+    // `prog_moves.py`'s `_PROBE_MAX_CANDIDATES`) must never be widened.
+    let caller_wants_default_candidates = max_candidates <= 0;
     let max_candidates = (if max_candidates <= 0 { DEFAULT_MAX_CANDIDATES } else { max_candidates }) as u64;
     let saturate_k = (if saturate_k <= 0 { DEFAULT_SATURATE_K } else { saturate_k }) as usize;
 
@@ -2726,6 +2755,20 @@ pub(crate) fn eval_synth_enumerate(
     }
     const_set.extend(str_consts);
 
+    // `ZIP_MAX_CANDIDATES`'s own doc comment: `op_list` is fully resolved
+    // (typed default or explicit `ops`, post-`exclude_ops` filter) by
+    // this point — the single narrow, per-call gate below decides
+    // whether THIS call's own budget gets the scoped raise. Computed
+    // once here and reused verbatim by `zip_wanted` further down (the
+    // template-pool gate), never re-derived, so the two can never
+    // disagree about what this call's own resolved op list contains.
+    let zip_wanted_for_budget = op_list.iter().any(|(n, _)| n == "ZipWith");
+    let max_candidates = if zip_wanted_for_budget && caller_wants_default_candidates {
+        max_candidates.max(ZIP_MAX_CANDIDATES)
+    } else {
+        max_candidates
+    };
+
     // --- The search ---
     let mut search = Search {
         scratch: TermArena::new(),
@@ -2843,8 +2886,11 @@ pub(crate) fn eval_synth_enumerate(
     // `ZIP_ELEMENTWISE` rung `op:ZipWith`: built in its OWN, independent
     // block below (never entangled with the filter/map pool construction
     // above — narrower blast radius, matches `OpKind::ZipMap`'s own doc
-    // comment).
-    let zip_wanted = op_list.iter().any(|(n, _)| n == "ZipWith");
+    // comment). `zip_wanted_for_budget` (computed once, above, before
+    // `Search` construction) IS this same check — reused verbatim, never
+    // re-derived, so the budget gate and the template-pool gate can never
+    // disagree about what this call's own resolved op list contains.
+    let zip_wanted = zip_wanted_for_budget;
     let mut zip_op_templates_by_size: Vec<Vec<TermIdx>> = vec![Vec::new(); template_cap];
     if filter_wanted || map_wanted || indexed_map_wanted {
         let numeric_consts: Vec<Value> = const_set
