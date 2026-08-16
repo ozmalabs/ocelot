@@ -253,6 +253,18 @@ def _effective_threshold_term(pat_var="pat"):
                 PlusT([Lit(1.0), _arousal_level_term(pat_var)]))
 
 
+def _controllability_term(pat_var="pat"):
+    return Attr(PickUniqueT(Neighbours(Var(pat_var), "tracks_controllability")), "external_field")
+
+
+def _consequence_route_term(pat_var="pat"):
+    # HATE_PITY_TOM_UNDERSTANDING_PREREG.md Sec2: Weiner 1980/1985 --
+    # controllable (or unknown, Ross 1977's Fundamental Attribution Error
+    # default) -> removal; understood-uncontrollable -> pity. The SAME
+    # moment crystallization fires, no new timing point.
+    return IfThenElse(Gte(_controllability_term(pat_var), Lit(0.0)), Lit("removal"), Lit("pity"))
+
+
 def rule_crystallize_hate():
     pat = Var("pat")
     where = AndT([
@@ -273,8 +285,15 @@ def rule_crystallize_hate():
             "Slovic et al. 2007's affect heuristic: strong affect needs "
             "less accumulated evidence before a judgment is treated as "
             "settled), read via the SAME tracks_arousal edge derive_hate_"
-            "attribution already reads. Fires exactly once per "
-            "TargetPattern (crystallized==0.0 guard)." % HATE_STABILITY_THRESHOLD
+            "attribution already reads. HATE_PITY_TOM_UNDERSTANDING_"
+            "PREREG.md Sec2: the minted Hate node ALSO carries "
+            "consequence_route ('removal'/'pity'), Weiner's third "
+            "attribution dimension (controllability) read via the "
+            "resident's own ToM belief about the target "
+            "(tracks_controllability) -- >=0 (controllable, or no "
+            "understanding at all, Ross 1977's default) routes removal; "
+            "understood-uncontrollable routes pity. Fires exactly once "
+            "per TargetPattern (crystallized==0.0 guard)." % HATE_STABILITY_THRESHOLD
         ),
         "match_type": "TargetPattern",
         "match": [["mt", "has_target_pattern", "pat"]],
@@ -283,6 +302,7 @@ def rule_crystallize_hate():
             term_effect("pat", "crystallized", Lit(1.0)),
             add_node_effect("hate", "Hate", {
                 "target": {"__term__": Attr(pat, "target")},
+                "consequence_route": {"__term__": _consequence_route_term("pat")},
             }),
             add_edge_effect("pat", "has_hate", "hate"),
         ],
@@ -291,7 +311,7 @@ def rule_crystallize_hate():
 
 SEED = {
     "id": "hate_attribution",
-    "version": "1.5.0",
+    "version": "1.6.0",
     "depends_on": ["shared_arousal"],
     "self_load_only": True,
     "description": (
@@ -337,13 +357,26 @@ SEED = {
         "resentment_debt multiplicatively: base_alpha*(1+arousal_level)*"
         "(1+resentment_debt) -- a target whose grievance was repeatedly "
         "discounted-not-forgotten reacts more strongly once hate finally "
-        "crystallizes than an identical target with no such history. See "
+        "crystallizes than an identical target with no such history. "
+        "v1.6.0 (HATE_PITY_TOM_UNDERSTANDING_PREREG.md) adds Weiner's "
+        "THIRD attribution dimension, controllability -- a new "
+        "controllability_for:<target> Concept IS the resident's Theory-"
+        "of-Mind belief about the target (mint_target_concept reused "
+        "again, tracked via tracks_controllability), evidenced by "
+        "record_understanding_incident. crystallize_hate now ALSO writes "
+        "consequence_route ('removal'/'pity') onto the minted Hate node "
+        ">=0 controllability (or none at all, Ross 1977's Fundamental "
+        "Attribution Error default) routes the crystallizing incident's "
+        "evidence to removal_desire_for as before; understood-"
+        "uncontrollable routes it to a new pity_for:<target> Concept "
+        "instead -- mutually exclusive, unamplified by arousal or "
+        "resentment_debt (pity is not a passion channel). See "
         "HATE_ATTRIBUTION_PREREG.md / _RESULTS.md, HATE_PASSION_COUPLING_"
         "PREREG.md / _RESULTS.md, HATE_STABILITY_AROUSAL_COUPLING_PREREG."
         "md / _RESULTS.md, HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md "
         "/ _RESULTS.md, HATE_RESET_RESENTMENT_COUPLING_PREREG.md / "
         "_RESULTS.md, HATE_RESENTMENT_PASSION_COUPLING_PREREG.md / "
-        "_RESULTS.md."
+        "_RESULTS.md, HATE_PITY_TOM_UNDERSTANDING_PREREG.md / _RESULTS.md."
         % HATE_STABILITY_THRESHOLD
     ),
     "nodes": [],
@@ -400,6 +433,22 @@ SEED = {
         {
             "src": {"type": "TargetPattern", "var": "pat"},
             "edge_type": "tracks_removal_desire",
+            "tgt": {"type": "Concept", "var": "c"},
+            "where": None,
+            "weight": Lit(1.0),
+            "provenance": "hate_attribution",
+        },
+        {
+            "src": {"type": "TargetPattern", "var": "pat"},
+            "edge_type": "tracks_pity",
+            "tgt": {"type": "Concept", "var": "c"},
+            "where": None,
+            "weight": Lit(1.0),
+            "provenance": "hate_attribution",
+        },
+        {
+            "src": {"type": "TargetPattern", "var": "pat"},
+            "edge_type": "tracks_controllability",
             "tgt": {"type": "Concept", "var": "c"},
             "where": None,
             "weight": Lit(1.0),

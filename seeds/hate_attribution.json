@@ -1,11 +1,11 @@
 {
  "id": "hate_attribution",
- "version": "1.5.0",
+ "version": "1.6.0",
  "depends_on": [
   "shared_arousal"
  ],
  "self_load_only": true,
- "description": "Generalizes ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md's self-directed residual outward -- a held pattern about ANOTHER agent (their regard_for Concept's own live state) instead of oneself. Adds a stability gate (Sternberg 2003's decision/commitment component: confirm_streak >= an effective threshold, base 3 confirmation UNITS at zero arousal) before a Hate marker crystallizes, and gates a motivational removal_desire_for consequence (Fischer, Halperin, Canetti & Jasini 2018's elimination goal) behind that gate, not behind any single angry appraisal. v1.1.0 (HATE_PASSION_COUPLING_PREREG.md) tracks the SAME shared TargetArousal pool shared_arousal.json already built (Sternberg's passion component) and couples the crystallizing incident's removal_desire_for alpha to it. v1.2.0 (HATE_STABILITY_AROUSAL_COUPLING_PREREG.md) additionally scales each confirming incident's own contribution to confirm_streak by 1+arousal_level (Slovic, Finucane, Peters & MacGregor 2007's affect heuristic: a more arousing confirming incident reads as MORE representative of a stable pattern). v1.3.0 (HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md) additionally lowers the EFFECTIVE threshold itself under arousal (base_threshold/(1+arousal_level), the SAME affect-heuristic citation's second claim: strong affect needs less accumulated evidence before a judgment is treated as settled) -- two independent, additive channels by which passion accelerates crystallization, neither replacing the other. v1.4.0 (HATE_RESET_RESENTMENT_COUPLING_PREREG.md) couples the specific_act RESET too -- instead of an unconditional wipe to 0, confirm_streak is multiplied by arousal_level/(1+arousal_level) (0 at zero arousal, an exact full reset; a positive fraction retained when aroused, per Bodenhausen 1993 -- aroused judgment discounts disconfirming evidence). This retained residue IS this arc's operationalization of resentment: a grievance that persists past a genuine disconfirming act because the act was processed under the same arousal the grievance itself produced. v1.5.0 (HATE_RESENTMENT_PASSION_COUPLING_PREREG.md) additionally accumulates that SAME residue into resentment_debt, a never-decremented ledger (McCullough, Fincham & Tsang 2003 -- unforgiveness does not fade with time the way arousal does), and amplifies the crystallizing incident's removal_desire_for alpha by BOTH arousal AND resentment_debt multiplicatively: base_alpha*(1+arousal_level)*(1+resentment_debt) -- a target whose grievance was repeatedly discounted-not-forgotten reacts more strongly once hate finally crystallizes than an identical target with no such history. See HATE_ATTRIBUTION_PREREG.md / _RESULTS.md, HATE_PASSION_COUPLING_PREREG.md / _RESULTS.md, HATE_STABILITY_AROUSAL_COUPLING_PREREG.md / _RESULTS.md, HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md / _RESULTS.md, HATE_RESET_RESENTMENT_COUPLING_PREREG.md / _RESULTS.md, HATE_RESENTMENT_PASSION_COUPLING_PREREG.md / _RESULTS.md.",
+ "description": "Generalizes ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md's self-directed residual outward -- a held pattern about ANOTHER agent (their regard_for Concept's own live state) instead of oneself. Adds a stability gate (Sternberg 2003's decision/commitment component: confirm_streak >= an effective threshold, base 3 confirmation UNITS at zero arousal) before a Hate marker crystallizes, and gates a motivational removal_desire_for consequence (Fischer, Halperin, Canetti & Jasini 2018's elimination goal) behind that gate, not behind any single angry appraisal. v1.1.0 (HATE_PASSION_COUPLING_PREREG.md) tracks the SAME shared TargetArousal pool shared_arousal.json already built (Sternberg's passion component) and couples the crystallizing incident's removal_desire_for alpha to it. v1.2.0 (HATE_STABILITY_AROUSAL_COUPLING_PREREG.md) additionally scales each confirming incident's own contribution to confirm_streak by 1+arousal_level (Slovic, Finucane, Peters & MacGregor 2007's affect heuristic: a more arousing confirming incident reads as MORE representative of a stable pattern). v1.3.0 (HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md) additionally lowers the EFFECTIVE threshold itself under arousal (base_threshold/(1+arousal_level), the SAME affect-heuristic citation's second claim: strong affect needs less accumulated evidence before a judgment is treated as settled) -- two independent, additive channels by which passion accelerates crystallization, neither replacing the other. v1.4.0 (HATE_RESET_RESENTMENT_COUPLING_PREREG.md) couples the specific_act RESET too -- instead of an unconditional wipe to 0, confirm_streak is multiplied by arousal_level/(1+arousal_level) (0 at zero arousal, an exact full reset; a positive fraction retained when aroused, per Bodenhausen 1993 -- aroused judgment discounts disconfirming evidence). This retained residue IS this arc's operationalization of resentment: a grievance that persists past a genuine disconfirming act because the act was processed under the same arousal the grievance itself produced. v1.5.0 (HATE_RESENTMENT_PASSION_COUPLING_PREREG.md) additionally accumulates that SAME residue into resentment_debt, a never-decremented ledger (McCullough, Fincham & Tsang 2003 -- unforgiveness does not fade with time the way arousal does), and amplifies the crystallizing incident's removal_desire_for alpha by BOTH arousal AND resentment_debt multiplicatively: base_alpha*(1+arousal_level)*(1+resentment_debt) -- a target whose grievance was repeatedly discounted-not-forgotten reacts more strongly once hate finally crystallizes than an identical target with no such history. v1.6.0 (HATE_PITY_TOM_UNDERSTANDING_PREREG.md) adds Weiner's THIRD attribution dimension, controllability -- a new controllability_for:<target> Concept IS the resident's Theory-of-Mind belief about the target (mint_target_concept reused again, tracked via tracks_controllability), evidenced by record_understanding_incident. crystallize_hate now ALSO writes consequence_route ('removal'/'pity') onto the minted Hate node >=0 controllability (or none at all, Ross 1977's Fundamental Attribution Error default) routes the crystallizing incident's evidence to removal_desire_for as before; understood-uncontrollable routes it to a new pity_for:<target> Concept instead -- mutually exclusive, unamplified by arousal or resentment_debt (pity is not a passion channel). See HATE_ATTRIBUTION_PREREG.md / _RESULTS.md, HATE_PASSION_COUPLING_PREREG.md / _RESULTS.md, HATE_STABILITY_AROUSAL_COUPLING_PREREG.md / _RESULTS.md, HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md / _RESULTS.md, HATE_RESET_RESENTMENT_COUPLING_PREREG.md / _RESULTS.md, HATE_RESENTMENT_PASSION_COUPLING_PREREG.md / _RESULTS.md, HATE_PITY_TOM_UNDERSTANDING_PREREG.md / _RESULTS.md.",
  "nodes": [],
  "edges": [],
  "productions": [
@@ -117,6 +117,40 @@
     "var": "pat"
    },
    "edge_type": "tracks_removal_desire",
+   "tgt": {
+    "type": "Concept",
+    "var": "c"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "hate_attribution"
+  },
+  {
+   "src": {
+    "type": "TargetPattern",
+    "var": "pat"
+   },
+   "edge_type": "tracks_pity",
+   "tgt": {
+    "type": "Concept",
+    "var": "c"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "hate_attribution"
+  },
+  {
+   "src": {
+    "type": "TargetPattern",
+    "var": "pat"
+   },
+   "edge_type": "tracks_controllability",
    "tgt": {
     "type": "Concept",
     "var": "c"
@@ -635,7 +669,7 @@
   },
   {
    "name": "crystallize_hate",
-   "comment": "HATE_ATTRIBUTION_PREREG.md Sec2/prediction 5: crystallization requires the STABILITY THRESHOLD, not the first global_other confirmation -- Sternberg 2003's decision/commitment component requires a pattern held over TIME, not a single outburst. HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md Sec2: the gate now compares confirm_streak against an EFFECTIVE threshold, HATE_STABILITY_THRESHOLD/(1+arousal_level) (== the base constant 3 at zero arousal, LOWER when aroused -- Slovic et al. 2007's affect heuristic: strong affect needs less accumulated evidence before a judgment is treated as settled), read via the SAME tracks_arousal edge derive_hate_attribution already reads. Fires exactly once per TargetPattern (crystallized==0.0 guard).",
+   "comment": "HATE_ATTRIBUTION_PREREG.md Sec2/prediction 5: crystallization requires the STABILITY THRESHOLD, not the first global_other confirmation -- Sternberg 2003's decision/commitment component requires a pattern held over TIME, not a single outburst. HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md Sec2: the gate now compares confirm_streak against an EFFECTIVE threshold, HATE_STABILITY_THRESHOLD/(1+arousal_level) (== the base constant 3 at zero arousal, LOWER when aroused -- Slovic et al. 2007's affect heuristic: strong affect needs less accumulated evidence before a judgment is treated as settled), read via the SAME tracks_arousal edge derive_hate_attribution already reads. HATE_PITY_TOM_UNDERSTANDING_PREREG.md Sec2: the minted Hate node ALSO carries consequence_route ('removal'/'pity'), Weiner's third attribution dimension (controllability) read via the resident's own ToM belief about the target (tracks_controllability) -- >=0 (controllable, or no understanding at all, Ross 1977's default) routes removal; understood-uncontrollable routes pity. Fires exactly once per TargetPattern (crystallized==0.0 guard).",
    "match_type": "TargetPattern",
    "match": [
     [
@@ -731,6 +765,41 @@
          "name": "pat"
         },
         "key": "target"
+       }
+      },
+      "consequence_route": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gte",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "PickUnique",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "pat"
+            },
+            "edge_type": "tracks_controllability"
+           }
+          },
+          "key": "external_field"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": "removal"
+        },
+        "other": {
+         "type": "Lit",
+         "value": "pity"
+        }
        }
       }
      }

@@ -39,9 +39,14 @@ AROUSAL_DECAY = 0.7
 
 def mint_target_pattern(inner, mt, target: str):
     """Idempotent: the (mt, target)'s TargetPattern, tracking a live
-    regard_for Concept and a removal_desire_for Concept (both minted via
-    the existing shared_arousal.mint_target_concept -- reused, not
-    reinvented)."""
+    regard_for Concept, a removal_desire_for Concept, a pity_for Concept,
+    and a controllability_for Concept (all minted via the existing
+    shared_arousal.mint_target_concept -- reused, not reinvented).
+    controllability_for IS the resident's Theory-of-Mind belief about
+    the target (HATE_PITY_TOM_UNDERSTANDING_PREREG.md Sec0/2) -- the
+    first resident-of-resident ToM content in bigville, built as the
+    SAME per-target CAN Concept shape as every other belief in this arc,
+    not a new primitive."""
     for existing in inner.neighbours(mt, "has_target_pattern"):
         if inner.node(existing)["attrs"].get("target") == target:
             return existing
@@ -52,11 +57,32 @@ def mint_target_pattern(inner, mt, target: str):
     inner.add_edge(mt, "has_target_pattern", pat, {})
     regard = mint_target_concept(inner, mt, "regard_for", target)
     removal = mint_target_concept(inner, mt, "removal_desire_for", target)
+    pity = mint_target_concept(inner, mt, "pity_for", target)
+    controllability = mint_target_concept(inner, mt, "controllability_for", target)
     inner.add_edge(pat, "tracks_concept", regard, {})
     inner.add_edge(pat, "tracks_removal_desire", removal, {})
+    inner.add_edge(pat, "tracks_pity", pity, {})
+    inner.add_edge(pat, "tracks_controllability", controllability, {})
     arousal = mint_target_arousal(inner, mt, target)
     inner.add_edge(pat, "tracks_arousal", arousal, {})
     return pat
+
+
+def record_understanding_incident(inner, pattern, *, exculpatory: bool,
+                                  alpha: float = 0.3) -> float:
+    """ONE piece of understanding about WHY the target behaves as they
+    do -- evidences the resident's controllability_for ToM belief
+    directly (HATE_PITY_TOM_UNDERSTANDING_PREREG.md Sec2). Flat,
+    accumulating CAN evidence, no locus/stability layer -- a single
+    piece of understanding has no "confirms a pattern" structure the way
+    a repeated hostile incident does. Returns the Concept's new
+    external_field."""
+    evidence = -1.0 if exculpatory else 1.0
+    controllability = next(iter(inner.neighbours(pattern, "tracks_controllability")))
+    inner.concept_apply_evidence(controllability, evidence, alpha)
+    inner.force_all_dirty()
+    inner.run_rules(3000)
+    return inner.node(controllability)["attrs"]["external_field"]
 
 
 def record_hate_incident(inner, mt, pattern, *, negative: bool,
@@ -99,15 +125,28 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
     hate_count_after = len(list(inner.neighbours(pattern, "has_hate")))
     crystallized_this_call = hate_count_after > hate_count_before
     effective_removal_alpha = None
+    consequence_route = None
     if crystallized_this_call:
-        # HATE_RESENTMENT_PASSION_COUPLING_PREREG.md Sec2: BOTH momentary
-        # arousal AND accumulated (never-decremented) resentment_debt
-        # amplify the crystallizing incident's removal motive,
-        # multiplicatively -- at resentment_debt==0 this is exactly
-        # v1.1.0's original arousal-only formula.
-        effective_removal_alpha = base_alpha * (1.0 + current_arousal) * (1.0 + resentment_debt)
-        removal_concept = next(iter(inner.neighbours(pattern, "tracks_removal_desire")))
-        inner.concept_apply_evidence(removal_concept, 1.0, effective_removal_alpha)
+        hate_node = next(iter(inner.neighbours(pattern, "has_hate")))
+        consequence_route = inner.node(hate_node)["attrs"]["consequence_route"]
+        # HATE_PITY_TOM_UNDERSTANDING_PREREG.md Sec2: the rule already
+        # DECIDED consequence_route (Weiner's controllability dimension,
+        # read from the resident's own ToM belief about the target);
+        # Python only dispatches which literal Concept receives the
+        # evidence -- pity_for is unamplified (not a passion channel),
+        # so effective_removal_alpha stays None unless actually applied.
+        if consequence_route == "removal":
+            # HATE_RESENTMENT_PASSION_COUPLING_PREREG.md Sec2: BOTH
+            # momentary arousal AND accumulated (never-decremented)
+            # resentment_debt amplify the removal motive, multiplicatively
+            # -- at resentment_debt==0 this is exactly v1.1.0's original
+            # arousal-only formula.
+            effective_removal_alpha = base_alpha * (1.0 + current_arousal) * (1.0 + resentment_debt)
+            removal_concept = next(iter(inner.neighbours(pattern, "tracks_removal_desire")))
+            inner.concept_apply_evidence(removal_concept, 1.0, effective_removal_alpha)
+        else:
+            pity_concept = next(iter(inner.neighbours(pattern, "tracks_pity")))
+            inner.concept_apply_evidence(pity_concept, 1.0, base_alpha)
 
     inner.force_all_dirty()
     inner.run_rules(max_steps)
@@ -149,7 +188,13 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
         "arousal_level": new_arousal,
         "effective_removal_alpha": effective_removal_alpha,
         "resentment_debt": pat_attrs["resentment_debt"],
+        "consequence_route": consequence_route,
+        "pity_external_field": inner.node(
+            next(iter(inner.neighbours(pattern, "tracks_pity"))))["attrs"]["external_field"],
+        "controllability_external_field": inner.node(
+            next(iter(inner.neighbours(pattern, "tracks_controllability"))))["attrs"]["external_field"],
     }
 
 
-__all__ = ["mint_target_pattern", "record_hate_incident", "HATE_STABILITY_THRESHOLD"]
+__all__ = ["mint_target_pattern", "record_understanding_incident",
+           "record_hate_incident", "HATE_STABILITY_THRESHOLD"]
