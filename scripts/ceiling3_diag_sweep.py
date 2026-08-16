@@ -19,6 +19,26 @@ import domains.mbpp_spec as ms  # noqa: E402
 import domains.prog_chunk_growth as pcg  # noqa: E402
 
 import mbpp_endgame_battery as battery  # noqa: E402
+from domains import engineering_residual_ingest as eri  # noqa: E402
+
+
+def ingest_engineering_residuals(out: list) -> dict:
+    """PROPOSAL 3 (measured-residual filing, DESIGN_REVIEW_CAPABILITY_
+    EXPANSION_PREREG.md sec4): `out`'s rows already carry `task_id`/
+    `outcome` -- the exact two fields `battery.taxonomy()` reads -- so it
+    is reused verbatim (no new grouping logic) to build the "N tasks in
+    bucket X" dict, then mechanically ingested as EngineeringResidual fact
+    nodes on the same dedicated, persisted substrate the battery uses (a
+    DIFFERENT source_script identity, 'ceiling3_diag_sweep', so the two
+    scripts' populations never collide). No interpretation happens here."""
+    tax = battery.taxonomy(out, [])
+    s, agent = eri.load_or_boot_residual_substrate()
+    result = eri.ingest_taxonomy(s, agent, source_script="ceiling3_diag_sweep",
+                                 taxonomy=tax)
+    eri.save_residual_substrate(s, agent)
+    print("ingested engineering residuals:", len(result["upserted"]), "populations",
+          "->", eri.DEFAULT_CHECKPOINT)
+    return result
 
 
 def boot_full():
@@ -96,6 +116,8 @@ def main():
     with open(os.path.join(ROOT, "results/ceiling3_diag_sweep.json"), "w") as f:
         json.dump(out, f, indent=1, default=str)
     print("wrote", len(out), "rows")
+
+    ingest_engineering_residuals(out)
 
 
 if __name__ == "__main__":

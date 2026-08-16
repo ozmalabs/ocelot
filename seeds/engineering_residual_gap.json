@@ -1,0 +1,290 @@
+{
+    "id": "engineering_residual_gap",
+    "version": "1.0.0",
+    "depends_on": [
+        "gap_awareness"
+    ],
+    "capability_keys": [
+        "engineering_gap_detection"
+    ],
+    "description": "PROPOSAL 3 (DESIGN_REVIEW_CAPABILITY_EXPANSION_PREREG.md sec4; docs/research/engine_substrate/MEASURED_RESIDUAL_FILING_PREREG.md): the agent's ENGINEERING self, not just its conversational self, gets eyes via gap_awareness.json's own mechanism. A diagnostic script mechanically ingests its already-computed residual population dict as EngineeringResidual fact nodes (domains.engineering_residual_ingest.ingest_taxonomy); THIS seed's rules decide which populations are standing gaps (note_engineering_residual_gap) and retire them on re-measurement (retire_resolved_engineering_residual_gap, the retire_duplicate_gap guard shape pointed at count-went-to-zero instead of duplication). The minted SelfConcern is the SAME node shape every other gap_awareness.json rule mints, so reflective_faculty._run_self_gaps surfaces it and jabberwock_daemon.promote_self_concern promotes it with ZERO new plumbing -- verified by reading both, not assumed.",
+    "microtheory": {
+        "name": "engineering_residual_gap",
+        "description": "a measured engineering-subsystem residual population (a blocker bucket, a priced tier, an Occam-wall population) is a capability gap the agent files on itself, from its own diagnostic scripts' own numbers"
+    },
+    "nodes": [],
+    "edges": [],
+    "productions": [],
+    "rules": [
+        {
+            "name": "note_engineering_residual_gap",
+            "comment": "MEASURED-RESIDUAL FILING (Proposal 3, DESIGN_REVIEW_CAPABILITY_EXPANSION_PREREG.md sec4): a diagnostic script (scripts/ceiling3_diag_sweep.py, scripts/mbpp_endgame_battery.py) already computes a structured residual population and ingests it MECHANICALLY as an EngineeringResidual fact node (domains.engineering_residual_ingest.ingest_taxonomy -- no interpretation, the numbers are already in a dict). THIS rule DECIDES a nonzero, non-'pass' population is a standing capability gap: it files SelfConcern{status:'noted', source:'implicit', kind:'engineering_residual', content:<population_key>} -- the SAME node shape gap_awareness.json's own gap rules mint, so the surfacing reader (reflective_faculty._run_self_gaps) and the human-gated promote spine (jabberwock_daemon.promote_self_concern) both find it with zero new plumbing. ONE SelfConcern per POPULATION (content = population_key, e.g. 'mbpp_endgame_battery.full:accepted_holdout_fail'), never per task-id -- the design doc's one named granularity risk, closed by construction (this rule matches EngineeringResidual nodes, one per outcome bucket, and never iterates task_ids). 'pass' is excluded by name -- the one hardcoded literal in this seed, the same success sentinel both scripts' own row['outcome']='pass' lines already define; excluding it IS the rule deciding what counts as a residual, never Python. Content-deduped (Not Exists SelfConcern content==X, verbatim note_unresolved_topic_gap/note_solve_exhausted_gap shape) + mint-once via engineering_gap_noted on the EngineeringResidual node, the gap_noted precedent.",
+            "match": [
+                [
+                    "agent",
+                    "has_engineering_residual",
+                    "er"
+                ]
+            ],
+            "where": {
+                "type": "And",
+                "items": [
+                    {
+                        "type": "Not",
+                        "arg": {
+                            "type": "Eq",
+                            "a": {
+                                "type": "Attr",
+                                "node": {
+                                    "type": "Var",
+                                    "name": "er"
+                                },
+                                "key": "count"
+                            },
+                            "b": {
+                                "type": "Lit",
+                                "value": 0
+                            }
+                        }
+                    },
+                    {
+                        "type": "Not",
+                        "arg": {
+                            "type": "Eq",
+                            "a": {
+                                "type": "Attr",
+                                "node": {
+                                    "type": "Var",
+                                    "name": "er"
+                                },
+                                "key": "outcome"
+                            },
+                            "b": {
+                                "type": "Lit",
+                                "value": "pass"
+                            }
+                        }
+                    },
+                    {
+                        "type": "Not",
+                        "arg": {
+                            "type": "Eq",
+                            "a": {
+                                "type": "Attr",
+                                "node": {
+                                    "type": "Var",
+                                    "name": "er"
+                                },
+                                "key": "engineering_gap_noted"
+                            },
+                            "b": {
+                                "type": "Lit",
+                                "value": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "type": "Not",
+                        "arg": {
+                            "type": "Exists",
+                            "source": {
+                                "type": "NodesOfType",
+                                "node_type": "SelfConcern"
+                            },
+                            "var_name": "sc2",
+                            "predicate": {
+                                "type": "Eq",
+                                "a": {
+                                    "type": "Attr",
+                                    "node": {
+                                        "type": "Var",
+                                        "name": "sc2"
+                                    },
+                                    "key": "content"
+                                },
+                                "b": {
+                                    "type": "Attr",
+                                    "node": {
+                                        "type": "Var",
+                                        "name": "er"
+                                    },
+                                    "key": "population_key"
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            "effects": [
+                [
+                    "set_attr",
+                    "er",
+                    "engineering_gap_noted",
+                    1.0
+                ],
+                [
+                    "add_node",
+                    "sc",
+                    "SelfConcern",
+                    {
+                        "status": "noted",
+                        "source": "implicit",
+                        "kind": "engineering_residual",
+                        "content": {
+                            "__term__": {
+                                "type": "Attr",
+                                "node": {
+                                    "type": "Var",
+                                    "name": "er"
+                                },
+                                "key": "population_key"
+                            }
+                        },
+                        "count": {
+                            "__term__": {
+                                "type": "Attr",
+                                "node": {
+                                    "type": "Var",
+                                    "name": "er"
+                                },
+                                "key": "count"
+                            }
+                        },
+                        "task_ids": {
+                            "__term__": {
+                                "type": "Attr",
+                                "node": {
+                                    "type": "Var",
+                                    "name": "er"
+                                },
+                                "key": "task_ids"
+                            }
+                        }
+                    }
+                ],
+                [
+                    "add_edge",
+                    "agent",
+                    "has_self_concern",
+                    "sc"
+                ],
+                [
+                    "add_edge",
+                    "sc",
+                    "about_residual",
+                    "er"
+                ]
+            ]
+        },
+        {
+            "name": "retire_resolved_engineering_residual_gap",
+            "comment": "retire_duplicate_gap's exact guard shape (gap_awareness.json), pointed at RE-MEASUREMENT instead of duplication: a 'engineering_residual' SelfConcern whose population's EngineeringResidual now reads count==0 (the diagnostic script re-ran and the population is empty) is retired -- status='retired' + del_edge has_self_concern, byte-identical effect shape to retire_duplicate_gap. Scoped to kind=='engineering_residual' so it never touches any other concern kind's retire discipline.",
+            "match": [
+                [
+                    "agent",
+                    "has_self_concern",
+                    "sc"
+                ]
+            ],
+            "where": {
+                "type": "And",
+                "items": [
+                    {
+                        "type": "Eq",
+                        "a": {
+                            "type": "Attr",
+                            "node": {
+                                "type": "Var",
+                                "name": "sc"
+                            },
+                            "key": "kind"
+                        },
+                        "b": {
+                            "type": "Lit",
+                            "value": "engineering_residual"
+                        }
+                    },
+                    {
+                        "type": "Not",
+                        "arg": {
+                            "type": "Eq",
+                            "a": {
+                                "type": "Attr",
+                                "node": {
+                                    "type": "Var",
+                                    "name": "sc"
+                                },
+                                "key": "status"
+                            },
+                            "b": {
+                                "type": "Lit",
+                                "value": "retired"
+                            }
+                        }
+                    },
+                    {
+                        "type": "Exists",
+                        "source": {
+                            "type": "NodesOfType",
+                            "node_type": "EngineeringResidual"
+                        },
+                        "var_name": "er",
+                        "predicate": {
+                            "type": "And",
+                            "items": [
+                                {
+                                    "type": "Eq",
+                                    "a": {
+                                        "type": "Attr",
+                                        "node": {
+                                            "type": "Var",
+                                            "name": "er"
+                                        },
+                                        "key": "population_key"
+                                    },
+                                    "b": {
+                                        "type": "Attr",
+                                        "node": {
+                                            "type": "Var",
+                                            "name": "sc"
+                                        },
+                                        "key": "content"
+                                    }
+                                },
+                                {
+                                    "type": "Eq",
+                                    "a": {
+                                        "type": "Attr",
+                                        "node": {
+                                            "type": "Var",
+                                            "name": "er"
+                                        },
+                                        "key": "count"
+                                    },
+                                    "b": {
+                                        "type": "Lit",
+                                        "value": 0
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "effects": [
+                [
+                    "set_attr",
+                    "sc",
+                    "status",
+                    "retired"
+                ],
+                [
+                    "del_edge",
+                    "agent",
+                    "has_self_concern",
+                    "sc"
+                ]
+            ]
+        }
+    ]
+}
