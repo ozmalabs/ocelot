@@ -1150,6 +1150,44 @@ def ensure_program_synthesis_opgrammar(sub, native, ag_node) -> None:
         sub.add_node("Seed", {"id": _OPGRAMMAR_SEED_ID, "version": "1.0.0"})
 
 
+# GAMMA_CONSULTATION_FLIP: the candidate ORDER `run_enumerate` supplies to
+# `admissible_moves` when consulting Γ for the op-list default (see that
+# function's own "Opgrammar consultation" block below). This is a THIRD
+# instance of the SAME "own copy, no cross-import, documented tradeoff"
+# duplication idiom `_synth_spec_shape_flags` and `_examples_numeric_
+# eligible` already use in this file — a 1:1 port of `OP_TABLE`'s live
+# declaration order (`synth_enumerate.rs:359-419` as of `main @ de1845d`,
+# re-derived by reading the const's body directly, not inherited from any
+# prior document's stale count).
+#
+# GAMMA_CONSULTATION_FLIP_PREREG.md §4 records, with a concrete confirmed
+# example (`MapList`/`JoinList` ordered oppositely by `DEFAULT_STR_OPS`
+# vs `LIST_EXTRA_OPS`), that NO single static order can reproduce every
+# real branch's own internal push order simultaneously — the branches
+# that disagree are mutually exclusive per spec, so this is a structural
+# property of the ladder, not a bug in this list. `admissible_moves`
+# returns admitted candidates in the SAME relative order they are
+# supplied (verified against `substrate.rs`), so this order is what
+# ultimately reaches `spec["ops"]`. Order-fidelity to the real ladder is
+# therefore NOT assumed here; it is verified empirically (the paired MBPP
+# battery's exact task-id diff, GAMMA_CONSULTATION_FLIP_RESULTS.md §
+# battery).
+_GAMMA_OP_CANDIDATE_ORDER: "List[str]" = [
+    "Plus", "Times", "Minus", "Div", "Min", "Max", "Abs", "Neg",
+    "Gt", "Lt", "Gte", "Lte", "Eq", "And", "Or", "Not", "IfThenElse",
+    "Concat", "CaseFold",
+    "Len", "SumList", "MaxList", "MinList", "MaxLenOver", "MinLenOver",
+    "First", "LastElem", "JoinList", "FilterList", "MapList",
+    "TupleOf", "ProdList", "ConcatList", "ArgMaxLenOver",
+    "IntersectAll", "UnionAll", "DictFromPairs",
+    "Replace", "Str", "Split", "StrCount", "Round", "Reverse",
+    "IndexedMap", "Capitalize", "ParseInt", "Slice", "Sort",
+    "SetMap", "Intersect", "Union",
+    "DictItems", "SortBy", "GroupCount", "DictMerge", "ZipWith",
+    "Mod", "Sqrt",
+]
+
+
 def _synth_spec_shape_flags(raw_rows: "List[Dict[str, Any]]") -> "Dict[str, bool]":
     """DUPLICATED EVIDENCE-FLAG COMPUTATION — a Python mirror of the
     evidence flags `eval_synth_enumerate` computes internally in Rust
@@ -1182,7 +1220,7 @@ def _synth_spec_shape_flags(raw_rows: "List[Dict[str, Any]]") -> "Dict[str, bool
     same container kind Rust's own `Value` enum decodes from the wired
     form, without needing the wire round-trip.
 
-    Returns the ELEVEN flags `SynthSpecShape` carries as attrs — the
+    Returns the TWELVE flags `SynthSpecShape` carries as attrs — the
     original ten are a direct 1:1 port of `OPLIST_ADMISSIBILITY_GRAMMAR_
     RESULTS.md` §3.2's flag set: has_dict_value, has_list_of_lists,
     has_string_value, has_float_value, has_repeated_list_element,
@@ -1197,7 +1235,15 @@ def _synth_spec_shape_flags(raw_rows: "List[Dict[str, Any]]") -> "Dict[str, bool
     module's original ten flags were written). It does NOT admit any
     `DICT_DEFAULT_OPS`-bucket op (`GroupCount`/`DictMerge`/
     `DictFromPairs` stay out of Γ scope entirely, per that document's
-    §1)."""
+    §1). `has_two_zippable_list_vars` was added by
+    `GAMMA_CONSULTATION_FLIP_PREREG/RESULTS.md` — a direct 1:1 port of
+    `spec_has_two_zippable_list_vars` (`synth_enumerate.rs:2395-2413`):
+    at least two spec variables that are EACH list/tuple/set/frozenset-
+    shaped on every row, with some such PAIR having equal length on every
+    row. Needed for the new `ZipWith` evidence-gate production — a real
+    op-list site that landed in `synth_enumerate.rs` AFTER the bulk
+    transcription rung and was found uncovered by that document's own
+    14-site table."""
     def is_listlike(v) -> bool:
         return isinstance(v, (tuple, list, set, frozenset))
 
@@ -1253,6 +1299,29 @@ def _synth_spec_shape_flags(raw_rows: "List[Dict[str, Any]]") -> "Dict[str, bool
                 is_list_shaped = True
                 break
 
+    # ZIP_ELEMENTWISE rung's own evidence (`spec_has_two_zippable_list_
+    # vars`, synth_enumerate.rs:2395-2413): every var consistently
+    # list-shaped on every row is a "zippable" candidate; two DISTINCT
+    # such vars with equal length on EVERY row (pairwise) is the genuine
+    # two-sequence shape `ZipWith` composes over. A single list-shaped
+    # var (e.g. task 88's `a`) never sets this.
+    zippable_vars = [
+        name for name, vals in var_values.items()
+        if len(vals) == len(raw_rows) and vals and all(is_listlike(v) for v in vals)
+    ]
+    has_two_zippable_list_vars = False
+    for i in range(len(zippable_vars)):
+        for j in range(i + 1, len(zippable_vars)):
+            v1 = var_values[zippable_vars[i]]
+            v2 = var_values[zippable_vars[j]]
+            lens1 = [len(items_of(v)) for v in v1]
+            lens2 = [len(items_of(v)) for v in v2]
+            if lens1 == lens2:
+                has_two_zippable_list_vars = True
+                break
+        if has_two_zippable_list_vars:
+            break
+
     return {
         "has_dict_value": any(is_dict_val(v) for v in all_input_values),
         "has_list_of_lists": (any_nested_all_listlike(all_input_values)
@@ -1272,6 +1341,7 @@ def _synth_spec_shape_flags(raw_rows: "List[Dict[str, Any]]") -> "Dict[str, bool
         "is_string_shaped": (bool(outputs) and all(is_str_val(v) for v in outputs)
                               and all(is_str_val(v) for v in all_input_values)),
         "is_list_shaped": is_list_shaped,
+        "has_two_zippable_list_vars": has_two_zippable_list_vars,
     }
 
 
@@ -1324,25 +1394,31 @@ def run_enumerate(sub, ag_node, g) -> bool:
         # `_synth_spec_shape_flags` can read native container types
         # directly (see that function's own docstring for why).
         raw_rows.append({"inputs": dict(env), "output": rat.get("expected")})
-    # Opgrammar slice 1 parity probe (OPLIST_ADMISSIBILITY_GRAMMAR_
-    # SLICE1_RESULTS.md): mint a SynthSpecShape node carrying the
-    # duplicated evidence flags, then ask Γ (`is_edge_admissible`)
-    # whether it admits SynthOp{name:"SortBy"} for this spec's shape.
-    # Recorded as a fact on `g` purely for parity comparison against the
-    # existing hand-written Rust ladder — NEVER consulted for
-    # `spec["ops"]` construction below. This slice's job is to prove the
-    # plumbing is transparent, not to cut production behaviour over onto
-    # unproven machinery (OPLIST_ADMISSIBILITY_GRAMMAR_RESULTS.md §8,
-    # step 4's own stated scope).
+    # GAMMA_CONSULTATION_FLIP (closing residual #41, GAMMA_CONSULTATION_
+    # FLIP_PREREG/RESULTS.md): mint a SynthSpecShape node carrying the
+    # duplicated evidence flags, then ask Γ (`admissible_moves`, ONE call
+    # over every real SynthOp name) which ops it admits for this spec's
+    # shape. Superseded is the SLICE1-era single-op `SortBy` parity probe
+    # (`is_edge_admissible`) — this now asks Γ for the FULL op set, since
+    # that verdict is about to be consulted (below), not merely recorded.
     spec_shape_flags = _synth_spec_shape_flags(raw_rows)
     spec_shape_node = sub.add_node("SynthSpecShape", spec_shape_flags)
     try:
-        gamma_sortby_admitted = bool(sub._inner.is_edge_admissible(
-            spec_shape_node, "admits_op", "SynthOp", {"name": "SortBy"}))
+        # `admissible_moves` returns (tgt_TYPE, tgt_attrs, weight) triples
+        # — the op NAME lives in `tgt_attrs["name"]`, not the first slot
+        # (that slot is always the literal string "SynthOp", the type
+        # every candidate was materialised with; verified directly
+        # against `substrate.rs::admissible_moves`'s own `for (sym, attrs,
+        # w) in moves` construction before writing this).
+        admitted = sub._inner.admissible_moves(
+            spec_shape_node, "admits_op",
+            [("SynthOp", {"name": name}) for name in _GAMMA_OP_CANDIDATE_ORDER])
+        gamma_ops = [attrs["name"] for (_typ, attrs, _weight) in admitted]
     except Exception as e:
-        gamma_sortby_admitted = None
-        sub.set_attr(g, "ps_enum_gamma_sortby_error", str(e)[:200])
-    sub.set_attr(g, "ps_enum_gamma_sortby_admitted", gamma_sortby_admitted)
+        gamma_ops = None
+        sub.set_attr(g, "ps_enum_gamma_ops_error", str(e)[:200])
+    sub.set_attr(g, "ps_enum_gamma_ops_admitted",
+                 ",".join(gamma_ops) if gamma_ops is not None else None)
     spec: Dict[str, Any] = {
         "type": "SynthEnumerate",
         "examples": {"type": "Lit", "value": rows},
@@ -1354,10 +1430,26 @@ def run_enumerate(sub, ag_node, g) -> bool:
     graph_ops = _plain(sub.node(msg)["attrs"].get("ps_enum_ops")) \
         if msg is not None else None
     if graph_ops:
+        # Explicit op selection (the NL classifier's own verdict) always
+        # wins — unchanged, out of this rung's scope.
         spec["ops"] = {
             "type": "Lit",
             "value": [_text(op) for op in graph_ops],
         }
+        sub.set_attr(g, "ps_enum_gamma_ops_used", False)
+    elif gamma_ops:
+        # GAMMA_CONSULTATION_FLIP: Γ's own non-empty verdict is now the
+        # SOURCE of the typed-default op list, not merely a recorded fact
+        # alongside it. When Γ admits nothing for this spec's shape (the
+        # DICT_DEFAULT_OPS branch — GAMMA_CONSULTATION_FLIP_PREREG.md §2
+        # point 3, §3.2 — proven empty by exhaustive reading of every
+        # production's `where` clause, not assumed), `spec["ops"]` stays
+        # unset below and the Rust ladder's own internal default decides,
+        # byte-identical to pre-flip behaviour for that branch.
+        spec["ops"] = {"type": "Lit", "value": gamma_ops}
+        sub.set_attr(g, "ps_enum_gamma_ops_used", True)
+    else:
+        sub.set_attr(g, "ps_enum_gamma_ops_used", False)
     # P7-B: hole-scope const drops (spawn_subgoal's mechanical transcription
     # of the rule-minted ExcludedSub facts). The passed list mirrors the
     # Term's documented default — (0, 1, 2, -1) — minus the dropped values.
