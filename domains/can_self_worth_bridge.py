@@ -219,6 +219,88 @@ def mint_domain_self_worth(inner, resident_can: dict, domain: str, *,
     return domain_concept
 
 
+def mint_domain_reparative_desire(inner, resident_can: dict, domain: str):
+    """Idempotent: the resident's `reparative_desire_for:<domain>` Concept
+    (SELF_CONSCIOUS_CONSEQUENCE_PREREG.md Sec2) -- guilt's motivational
+    consequence (Tangney & Dearing 2002: guilt attributes to a specific
+    act and motivates REPARATIVE action toward whoever was affected). A
+    fresh, UNCOUPLED accumulator (unlike mint_domain_self_worth's
+    projected-then-decoupling design) -- a reparative urge is not a
+    generalized expectancy, it starts at 0.0 with no prior."""
+    mt = resident_can["mt"]
+    concept_name = "reparative_desire_for:%s" % domain
+    for existing in inner.neighbours(mt, "has_concept"):
+        if inner.node(existing)["attrs"].get("name") == concept_name:
+            return existing
+    concept = inner.add_node("Concept", {
+        "name": concept_name, "state": 0.0, "external_field": 0.0,
+        "identity_field": 0.0,
+    })
+    inner.add_edge(mt, "has_concept", concept, {})
+    return concept
+
+
+def mint_domain_withdrawal_desire(inner, resident_can: dict, domain: str):
+    """Idempotent: the resident's `withdrawal_desire_for:<domain>` Concept
+    (SELF_CONSCIOUS_CONSEQUENCE_PREREG.md Sec2) -- shame's motivational
+    consequence (Tangney & Dearing 2002: shame attributes to the global
+    self and motivates WITHDRAWAL/avoidance/hiding). Same fresh,
+    uncoupled shape as mint_domain_reparative_desire."""
+    mt = resident_can["mt"]
+    concept_name = "withdrawal_desire_for:%s" % domain
+    for existing in inner.neighbours(mt, "has_concept"):
+        if inner.node(existing)["attrs"].get("name") == concept_name:
+            return existing
+    concept = inner.add_node("Concept", {
+        "name": concept_name, "state": 0.0, "external_field": 0.0,
+        "identity_field": 0.0,
+    })
+    inner.add_edge(mt, "has_concept", concept, {})
+    return concept
+
+
+def record_self_conscious_consequence(inner, resident_can: dict, domain: str, *,
+                                      emotion: str, alpha: float = 0.3,
+                                      max_steps: int = 3000) -> dict:
+    """Route evidence to guilt's or shame's own motivational consequence,
+    keyed on the ALREADY-DECIDED `emotion` (SelfConsciousSignal.emotion,
+    self_conscious_emotions.json's own sc_decide_emotion rule) --
+    SELF_CONSCIOUS_CONSEQUENCE_PREREG.md Sec2. No decision made here: the
+    dispatch is a literal string match on a value the substrate's OWN
+    rule already decided, the same shape HATE_PITY_TOM_UNDERSTANDING_
+    PREREG.md's consequence_route dispatch and record_incident_outcome's
+    own `attribution_locus == "circumstance"` check already use.
+
+    hubristic_pride/authentic_pride/embarrassment/none apply evidence to
+    NEITHER Concept -- a specific gate, not a catch-all.
+
+    Returns {"consequence": "reparative"|"withdrawal"|None,
+    "reparative_desire_state", "withdrawal_desire_state"} (external_field
+    of each Concept, minting lazily on first use so an untouched Concept
+    reads 0.0 rather than requiring the caller to pre-mint both)."""
+    consequence = None
+    if emotion == "guilt":
+        concept = mint_domain_reparative_desire(inner, resident_can, domain)
+        inner.concept_apply_evidence(concept, 1.0, alpha)
+        inner.force_all_dirty()
+        inner.run_rules(max_steps)
+        consequence = "reparative"
+    elif emotion == "shame":
+        concept = mint_domain_withdrawal_desire(inner, resident_can, domain)
+        inner.concept_apply_evidence(concept, 1.0, alpha)
+        inner.force_all_dirty()
+        inner.run_rules(max_steps)
+        consequence = "withdrawal"
+
+    reparative_concept = mint_domain_reparative_desire(inner, resident_can, domain)
+    withdrawal_concept = mint_domain_withdrawal_desire(inner, resident_can, domain)
+    return {
+        "consequence": consequence,
+        "reparative_desire_state": inner.node(reparative_concept)["attrs"]["external_field"],
+        "withdrawal_desire_state": inner.node(withdrawal_concept)["attrs"]["external_field"],
+    }
+
+
 def mint_peer_comparison_context(inner, domain_concept):
     """Idempotent: the domain Concept's own PeerComparisonContext, minted
     once (RELATIVE_SELF_WORTH_PREREG.md Sec2). Reused by

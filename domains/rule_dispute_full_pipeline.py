@@ -32,7 +32,7 @@ from substrate.seed_loader import engine_rules_only
 from domains.can_self_worth_bridge import (
     ensure_can_seed, ensure_peer_comparison_seed, find_or_build_resident_can,
     mint_domain_self_worth, mint_peer_comparison_context, read_relative_self_worth,
-    record_incident_outcome,
+    record_incident_outcome, record_self_conscious_consequence,
 )
 
 _PIPELINE_SEED_PATHS = [
@@ -155,6 +155,8 @@ def run_rule_dispute(inner, *, claimant: dict, claim_pred, truth_pred, domain: s
         attribution_locus=attribution_locus, alpha=belief_plasticity,
         max_steps=max_steps)
     relative_self_worth_after = read_relative_self_worth(inner, domain_concept)
+    consequence = record_self_conscious_consequence(
+        inner, resident_can, domain, emotion=emotion, max_steps=max_steps)
 
     return {
         "dispute_minted": True, "issue_severity": issue_severity,
@@ -164,6 +166,8 @@ def run_rule_dispute(inner, *, claimant: dict, claim_pred, truth_pred, domain: s
         "relative_self_worth_before": relative_self_worth_before,
         "relative_self_worth_after": relative_self_worth_after,
         "domain_concept": domain_concept,
+        "reparative_desire_state": consequence["reparative_desire_state"],
+        "withdrawal_desire_state": consequence["withdrawal_desire_state"],
     }
 
 
