@@ -253,6 +253,12 @@ def rule_derive_attribution():
             term_effect("pat", "confirm_streak", _new_streak_term("pat", "ir")),
             term_effect("pat", "incident_count",
                         PlusT([Attr(Var("pat"), "incident_count"), Lit(1)])),
+            # CONTEMPT_PREREG.md Sec2: a mechanical passthrough (literal
+            # caller-supplied data, no decision) -- the CRYSTALLIZING
+            # incident's own violation_type is what consequence_route
+            # reads, the same snapshot-at-crystallization convention
+            # controllability's own read already uses.
+            term_effect("pat", "violation_type", Attr(Var("ir"), "violation_type")),
             term_effect("ir", "status", Lit("appraised")),
         ],
     }
@@ -281,9 +287,20 @@ def _controllability_term(pat_var="pat"):
 def _consequence_route_term(pat_var="pat"):
     # HATE_PITY_TOM_UNDERSTANDING_PREREG.md Sec2: Weiner 1980/1985 --
     # controllable (or unknown, Ross 1977's Fundamental Attribution Error
-    # default) -> removal; understood-uncontrollable -> pity. The SAME
-    # moment crystallization fires, no new timing point.
-    return IfThenElse(Gte(_controllability_term(pat_var), Lit(0.0)), Lit("removal"), Lit("pity"))
+    # default) -> removal or devaluation; understood-uncontrollable ->
+    # pity. CONTEMPT_PREREG.md Sec2: WITHIN the controllable branch, the
+    # Rozin/Lowery/Haidt 1999 CAD-triad violation_type further splits
+    # removal (autonomy violation -- direct harm, Fischer et al. 2018's
+    # elimination goal) from devaluation (community violation -- a
+    # social-norm/status judgment, NOT direct harm). The two axes
+    # (controllability, violation_type) compose independently -- an
+    # uncontrollable norm violation still routes to pity, not devaluation.
+    return IfThenElse(
+        Gte(_controllability_term(pat_var), Lit(0.0)),
+        IfThenElse(Eq(Attr(Var(pat_var), "violation_type"), Lit("norm")),
+                   Lit("devaluation"), Lit("removal")),
+        Lit("pity"),
+    )
 
 
 def rule_crystallize_hate():
@@ -392,7 +409,7 @@ def rule_crystallize_admiration():
 
 SEED = {
     "id": "hate_attribution",
-    "version": "1.7.0",
+    "version": "1.8.0",
     "depends_on": ["shared_arousal"],
     "self_load_only": True,
     "description": (
@@ -476,7 +493,16 @@ SEED = {
         "_RESULTS.md, HATE_RESET_RESENTMENT_COUPLING_PREREG.md / "
         "_RESULTS.md, HATE_RESENTMENT_PASSION_COUPLING_PREREG.md / "
         "_RESULTS.md, HATE_PITY_TOM_UNDERSTANDING_PREREG.md / _RESULTS.md, "
-        "ADMIRATION_GRATITUDE_PREREG.md / _RESULTS.md."
+        "ADMIRATION_GRATITUDE_PREREG.md / _RESULTS.md. v1.8.0 (CONTEMPT_"
+        "PREREG.md) adds a third consequence_route, 'devaluation' -- "
+        "Rozin, Lowery & Haidt 1999's CAD triad: WITHIN the controllable "
+        "branch, a new caller-supplied violation_type ('harm', the "
+        "existing default, vs 'norm') splits removal (autonomy violation "
+        "-- direct harm, unchanged) from devaluation (community "
+        "violation -- a social-norm/status judgment). devaluation_for's "
+        "alpha is unamplified by arousal or resentment_debt, the SAME "
+        "choice pity_for already made -- contempt's own documented "
+        "'colder' character. See CONTEMPT_PREREG.md / _RESULTS.md."
         % HATE_STABILITY_THRESHOLD
     ),
     "nodes": [],
@@ -573,6 +599,14 @@ SEED = {
         {
             "src": {"type": "TargetPattern", "var": "pat"},
             "edge_type": "tracks_admiration",
+            "tgt": {"type": "Concept", "var": "c"},
+            "where": None,
+            "weight": Lit(1.0),
+            "provenance": "hate_attribution",
+        },
+        {
+            "src": {"type": "TargetPattern", "var": "pat"},
+            "edge_type": "tracks_devaluation",
             "tgt": {"type": "Concept", "var": "c"},
             "where": None,
             "weight": Lit(1.0),

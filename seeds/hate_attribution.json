@@ -1,11 +1,11 @@
 {
  "id": "hate_attribution",
- "version": "1.7.0",
+ "version": "1.8.0",
  "depends_on": [
   "shared_arousal"
  ],
  "self_load_only": true,
- "description": "Generalizes ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md's self-directed residual outward -- a held pattern about ANOTHER agent (their regard_for Concept's own live state) instead of oneself. Adds a stability gate (Sternberg 2003's decision/commitment component: confirm_streak >= an effective threshold, base 3 confirmation UNITS at zero arousal) before a Hate marker crystallizes, and gates a motivational removal_desire_for consequence (Fischer, Halperin, Canetti & Jasini 2018's elimination goal) behind that gate, not behind any single angry appraisal. v1.1.0 (HATE_PASSION_COUPLING_PREREG.md) tracks the SAME shared TargetArousal pool shared_arousal.json already built (Sternberg's passion component) and couples the crystallizing incident's removal_desire_for alpha to it. v1.2.0 (HATE_STABILITY_AROUSAL_COUPLING_PREREG.md) additionally scales each confirming incident's own contribution to confirm_streak by 1+arousal_level (Slovic, Finucane, Peters & MacGregor 2007's affect heuristic: a more arousing confirming incident reads as MORE representative of a stable pattern). v1.3.0 (HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md) additionally lowers the EFFECTIVE threshold itself under arousal (base_threshold/(1+arousal_level), the SAME affect-heuristic citation's second claim: strong affect needs less accumulated evidence before a judgment is treated as settled) -- two independent, additive channels by which passion accelerates crystallization, neither replacing the other. v1.4.0 (HATE_RESET_RESENTMENT_COUPLING_PREREG.md) couples the specific_act RESET too -- instead of an unconditional wipe to 0, confirm_streak is multiplied by arousal_level/(1+arousal_level) (0 at zero arousal, an exact full reset; a positive fraction retained when aroused, per Bodenhausen 1993 -- aroused judgment discounts disconfirming evidence). This retained residue IS this arc's operationalization of resentment: a grievance that persists past a genuine disconfirming act because the act was processed under the same arousal the grievance itself produced. v1.5.0 (HATE_RESENTMENT_PASSION_COUPLING_PREREG.md) additionally accumulates that SAME residue into resentment_debt, a never-decremented ledger (McCullough, Fincham & Tsang 2003 -- unforgiveness does not fade with time the way arousal does), and amplifies the crystallizing incident's removal_desire_for alpha by BOTH arousal AND resentment_debt multiplicatively: base_alpha*(1+arousal_level)*(1+resentment_debt) -- a target whose grievance was repeatedly discounted-not-forgotten reacts more strongly once hate finally crystallizes than an identical target with no such history. v1.6.0 (HATE_PITY_TOM_UNDERSTANDING_PREREG.md) adds Weiner's THIRD attribution dimension, controllability -- a new controllability_for:<target> Concept IS the resident's Theory-of-Mind belief about the target (mint_target_concept reused again, tracked via tracks_controllability), evidenced by record_understanding_incident. crystallize_hate now ALSO writes consequence_route ('removal'/'pity') onto the minted Hate node >=0 controllability (or none at all, Ross 1977's Fundamental Attribution Error default) routes the crystallizing incident's evidence to removal_desire_for as before; understood-uncontrollable routes it to a new pity_for:<target> Concept instead -- mutually exclusive, unamplified by arousal or resentment_debt (pity is not a passion channel). v1.7.0 (ADMIRATION_GRATITUDE_PREREG.md) generalizes the ladder to the POSITIVE sign -- OCC (Ortony, Clore & Collins 1988)'s Attribution branch, praiseworthy cell. Fixes a real bug found before designing: crystallize_hate's own gate never checked the SIGN of the crystallizing pattern, so repeated POSITIVE incidents wrongly minted a Hate node too (confirmed live, never exercised by any prior test) -- crystallize_hate now requires a NEGATIVE held regard_for. A new, parallel crystallize_admiration rule mints an Admiration node for a POSITIVE pattern, routing ('admiration'/'none') via the SAME controllability sign-read, Weiner's OWN original achievement-attribution context (a controllable success earns admiration; a lucky, uncontrollable one does not). A new gratitude_debt ledger (McCullough, Emmons & Tsang 2002 -- the companion paper to the unforgiveness citation resentment_debt already used) accumulates on EVERY positive incident regardless of locus or crystallization, and amplifies admiration_for's crystallizing alpha the SAME way resentment_debt amplifies removal_desire_for's. See HATE_ATTRIBUTION_PREREG.md / _RESULTS.md, HATE_PASSION_COUPLING_PREREG.md / _RESULTS.md, HATE_STABILITY_AROUSAL_COUPLING_PREREG.md / _RESULTS.md, HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md / _RESULTS.md, HATE_RESET_RESENTMENT_COUPLING_PREREG.md / _RESULTS.md, HATE_RESENTMENT_PASSION_COUPLING_PREREG.md / _RESULTS.md, HATE_PITY_TOM_UNDERSTANDING_PREREG.md / _RESULTS.md, ADMIRATION_GRATITUDE_PREREG.md / _RESULTS.md.",
+ "description": "Generalizes ATTRIBUTION_LOCUS_AS_RESIDUAL_PREREG.md's self-directed residual outward -- a held pattern about ANOTHER agent (their regard_for Concept's own live state) instead of oneself. Adds a stability gate (Sternberg 2003's decision/commitment component: confirm_streak >= an effective threshold, base 3 confirmation UNITS at zero arousal) before a Hate marker crystallizes, and gates a motivational removal_desire_for consequence (Fischer, Halperin, Canetti & Jasini 2018's elimination goal) behind that gate, not behind any single angry appraisal. v1.1.0 (HATE_PASSION_COUPLING_PREREG.md) tracks the SAME shared TargetArousal pool shared_arousal.json already built (Sternberg's passion component) and couples the crystallizing incident's removal_desire_for alpha to it. v1.2.0 (HATE_STABILITY_AROUSAL_COUPLING_PREREG.md) additionally scales each confirming incident's own contribution to confirm_streak by 1+arousal_level (Slovic, Finucane, Peters & MacGregor 2007's affect heuristic: a more arousing confirming incident reads as MORE representative of a stable pattern). v1.3.0 (HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md) additionally lowers the EFFECTIVE threshold itself under arousal (base_threshold/(1+arousal_level), the SAME affect-heuristic citation's second claim: strong affect needs less accumulated evidence before a judgment is treated as settled) -- two independent, additive channels by which passion accelerates crystallization, neither replacing the other. v1.4.0 (HATE_RESET_RESENTMENT_COUPLING_PREREG.md) couples the specific_act RESET too -- instead of an unconditional wipe to 0, confirm_streak is multiplied by arousal_level/(1+arousal_level) (0 at zero arousal, an exact full reset; a positive fraction retained when aroused, per Bodenhausen 1993 -- aroused judgment discounts disconfirming evidence). This retained residue IS this arc's operationalization of resentment: a grievance that persists past a genuine disconfirming act because the act was processed under the same arousal the grievance itself produced. v1.5.0 (HATE_RESENTMENT_PASSION_COUPLING_PREREG.md) additionally accumulates that SAME residue into resentment_debt, a never-decremented ledger (McCullough, Fincham & Tsang 2003 -- unforgiveness does not fade with time the way arousal does), and amplifies the crystallizing incident's removal_desire_for alpha by BOTH arousal AND resentment_debt multiplicatively: base_alpha*(1+arousal_level)*(1+resentment_debt) -- a target whose grievance was repeatedly discounted-not-forgotten reacts more strongly once hate finally crystallizes than an identical target with no such history. v1.6.0 (HATE_PITY_TOM_UNDERSTANDING_PREREG.md) adds Weiner's THIRD attribution dimension, controllability -- a new controllability_for:<target> Concept IS the resident's Theory-of-Mind belief about the target (mint_target_concept reused again, tracked via tracks_controllability), evidenced by record_understanding_incident. crystallize_hate now ALSO writes consequence_route ('removal'/'pity') onto the minted Hate node >=0 controllability (or none at all, Ross 1977's Fundamental Attribution Error default) routes the crystallizing incident's evidence to removal_desire_for as before; understood-uncontrollable routes it to a new pity_for:<target> Concept instead -- mutually exclusive, unamplified by arousal or resentment_debt (pity is not a passion channel). v1.7.0 (ADMIRATION_GRATITUDE_PREREG.md) generalizes the ladder to the POSITIVE sign -- OCC (Ortony, Clore & Collins 1988)'s Attribution branch, praiseworthy cell. Fixes a real bug found before designing: crystallize_hate's own gate never checked the SIGN of the crystallizing pattern, so repeated POSITIVE incidents wrongly minted a Hate node too (confirmed live, never exercised by any prior test) -- crystallize_hate now requires a NEGATIVE held regard_for. A new, parallel crystallize_admiration rule mints an Admiration node for a POSITIVE pattern, routing ('admiration'/'none') via the SAME controllability sign-read, Weiner's OWN original achievement-attribution context (a controllable success earns admiration; a lucky, uncontrollable one does not). A new gratitude_debt ledger (McCullough, Emmons & Tsang 2002 -- the companion paper to the unforgiveness citation resentment_debt already used) accumulates on EVERY positive incident regardless of locus or crystallization, and amplifies admiration_for's crystallizing alpha the SAME way resentment_debt amplifies removal_desire_for's. See HATE_ATTRIBUTION_PREREG.md / _RESULTS.md, HATE_PASSION_COUPLING_PREREG.md / _RESULTS.md, HATE_STABILITY_AROUSAL_COUPLING_PREREG.md / _RESULTS.md, HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md / _RESULTS.md, HATE_RESET_RESENTMENT_COUPLING_PREREG.md / _RESULTS.md, HATE_RESENTMENT_PASSION_COUPLING_PREREG.md / _RESULTS.md, HATE_PITY_TOM_UNDERSTANDING_PREREG.md / _RESULTS.md, ADMIRATION_GRATITUDE_PREREG.md / _RESULTS.md. v1.8.0 (CONTEMPT_PREREG.md) adds a third consequence_route, 'devaluation' -- Rozin, Lowery & Haidt 1999's CAD triad: WITHIN the controllable branch, a new caller-supplied violation_type ('harm', the existing default, vs 'norm') splits removal (autonomy violation -- direct harm, unchanged) from devaluation (community violation -- a social-norm/status judgment). devaluation_for's alpha is unamplified by arousal or resentment_debt, the SAME choice pity_for already made -- contempt's own documented 'colder' character. See CONTEMPT_PREREG.md / _RESULTS.md.",
  "nodes": [],
  "edges": [],
  "productions": [
@@ -202,6 +202,23 @@
     "var": "pat"
    },
    "edge_type": "tracks_admiration",
+   "tgt": {
+    "type": "Concept",
+    "var": "c"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "hate_attribution"
+  },
+  {
+   "src": {
+    "type": "TargetPattern",
+    "var": "pat"
+   },
+   "edge_type": "tracks_devaluation",
    "tgt": {
     "type": "Concept",
     "var": "c"
@@ -736,6 +753,21 @@
     ],
     [
      "set_attr",
+     "pat",
+     "violation_type",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ir"
+       },
+       "key": "violation_type"
+      }
+     }
+    ],
+    [
+     "set_attr",
      "ir",
      "status",
      {
@@ -895,8 +927,30 @@
          }
         },
         "then": {
-         "type": "Lit",
-         "value": "removal"
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "pat"
+           },
+           "key": "violation_type"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "norm"
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": "devaluation"
+         },
+         "other": {
+          "type": "Lit",
+          "value": "removal"
+         }
         },
         "other": {
          "type": "Lit",

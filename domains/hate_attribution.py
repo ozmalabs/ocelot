@@ -66,12 +66,17 @@ def mint_target_pattern(inner, mt, target: str):
     pat = inner.add_node("TargetPattern", {
         "target": target, "incident_count": 0, "confirm_streak": 0,
         "crystallized": 0.0, "resentment_debt": 0.0, "gratitude_debt": 0.0,
+        # CONTEMPT_PREREG.md Sec2: "harm" (autonomy violation) is the
+        # default, byte-compatible with every caller that predates
+        # violation_type.
+        "violation_type": "harm",
     })
     inner.add_edge(mt, "has_target_pattern", pat, {})
     regard = mint_target_concept(inner, mt, "regard_for", target)
     removal = mint_target_concept(inner, mt, "removal_desire_for", target)
     pity = mint_target_concept(inner, mt, "pity_for", target)
     admiration_concept = mint_target_concept(inner, mt, "admiration_for", target)
+    devaluation = mint_target_concept(inner, mt, "devaluation_for", target)
     # controllability is a ToM belief ABOUT the target (Weiner's
     # attribution), not the resident's own affect toward them -- minted
     # through the named ToM entry point (bigville_theory_of_mind.py),
@@ -81,6 +86,7 @@ def mint_target_pattern(inner, mt, target: str):
     inner.add_edge(pat, "tracks_removal_desire", removal, {})
     inner.add_edge(pat, "tracks_pity", pity, {})
     inner.add_edge(pat, "tracks_admiration", admiration_concept, {})
+    inner.add_edge(pat, "tracks_devaluation", devaluation, {})
     inner.add_edge(pat, "tracks_controllability", controllability, {})
     arousal = mint_target_arousal(inner, mt, target)
     inner.add_edge(pat, "tracks_arousal", arousal, {})
@@ -105,6 +111,7 @@ def record_understanding_incident(inner, pattern, *, exculpatory: bool,
 
 
 def record_hate_incident(inner, mt, pattern, *, negative: bool,
+                         violation_type: str = "harm",
                          base_alpha: float = 0.3, max_steps: int = 3000) -> dict:
     """ONE incident about a target: mints an IncidentReport, lets the
     seeded rules derive attribution_locus (a residual against the
@@ -136,7 +143,7 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
 
     ir = inner.add_node("IncidentReport", {
         "target": inner.node(pattern)["attrs"]["target"],
-        "signal": signal, "status": "pending",
+        "signal": signal, "status": "pending", "violation_type": violation_type,
     })
     inner.add_edge(mt, "has_incident_report", ir, {})
     inner.add_edge(ir, "about_pattern", pattern, {})
@@ -175,6 +182,12 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
             effective_removal_alpha = base_alpha * (1.0 + current_arousal) * (1.0 + resentment_debt)
             removal_concept = next(iter(inner.neighbours(pattern, "tracks_removal_desire")))
             inner.concept_apply_evidence(removal_concept, 1.0, effective_removal_alpha)
+        elif consequence_route == "devaluation":
+            # CONTEMPT_PREREG.md Sec2: unamplified by arousal or
+            # resentment_debt -- the SAME choice pity_for already made,
+            # contempt's own documented "colder" character.
+            devaluation_concept = next(iter(inner.neighbours(pattern, "tracks_devaluation")))
+            inner.concept_apply_evidence(devaluation_concept, 1.0, base_alpha)
         else:
             pity_concept = next(iter(inner.neighbours(pattern, "tracks_pity")))
             inner.concept_apply_evidence(pity_concept, 1.0, base_alpha)
@@ -248,6 +261,8 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
         "effective_admiration_alpha": effective_admiration_alpha,
         "admiration_external_field": inner.node(
             next(iter(inner.neighbours(pattern, "tracks_admiration"))))["attrs"]["external_field"],
+        "devaluation_external_field": inner.node(
+            next(iter(inner.neighbours(pattern, "tracks_devaluation"))))["attrs"]["external_field"],
     }
 
 
