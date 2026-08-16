@@ -108,6 +108,18 @@ def record_incident_outcome(inner, concepts: dict, *, standard_met: bool,
     (possibly unchanged) current self_worth state; None input attribution_
     locus is never valid (callers always have a decided one).
 
+    `alpha` IS belief plasticity (DOMAIN_SELF_WORTH_PROJECTION_PREREG.md
+    Sec4b) -- Dweck's fixed-vs-growth-mindset axis: a LOW alpha resident's
+    domain belief barely moves even after many same-sign incidents (fixed
+    mindset / "does not learn that"); a HIGH alpha resident's decouples
+    from the global-belief projection within 1-2. This is a PERSONALITY
+    TRAIT, not a fixed constant -- a caller should read it from
+    `resident["params"]` (the SAME convention prior_self_worth/w_supergraph/
+    w_spite already use) and pass it here explicitly, exactly as every
+    other trait in this file already flows from data to a mechanical PyO3
+    call. The 0.3 default exists ONLY for callers (this module's own prior
+    rungs) that predate this trait and never varied it.
+
     MUST call force_all_dirty() before re-running -- concept_apply_evidence
     writes external_field outside the rule-effect path and run_rules()'s
     incremental dirty-tracking will otherwise silently no-op (PREREG Sec1,
@@ -121,6 +133,55 @@ def record_incident_outcome(inner, concepts: dict, *, standard_met: bool,
     inner.force_all_dirty()
     inner.run_rules(max_steps)
     return inner.node(self_worth_concept)["attrs"]["state"]
+
+
+def mint_domain_self_worth(inner, resident_can: dict, domain: str, *,
+                           coupling_weight: float = 0.6, max_steps: int = 3000):
+    """Domain-scoped self-worth as PROJECTION-THEN-DECOUPLING
+    (DOMAIN_SELF_WORTH_PROJECTION_PREREG.md Sec2-3) -- Rotter (1954)'s
+    generalized-vs-specific-expectancy mechanism, implemented with ZERO new
+    Rust/rules: a domain Concept with NO independent prior
+    (identity_field=0.0 -- a domain never faced before has none) coupled
+    (both directions, mirroring STRUCTURAL_EDGES' own convention) to the
+    resident's GLOBAL self_worth Concept. The FIRST relaxation has nothing
+    else to go on but that coupling, so the domain Concept's state settles
+    to whatever the global Concept's CURRENT state is -- projection,
+    mechanically, via the SAME can_native_update_3state formula every other
+    Concept in this arc already uses. record_incident_outcome, called with
+    {"self_worth": <the returned domain Concept>}, then accumulates
+    domain-specific evidence there (not on the global Concept) -- once that
+    outweighs the coupling term, the domain belief decouples and reflects
+    its own track record instead (Rotter's specific expectancy displacing
+    the generalized one).
+
+    Idempotent: a second call for the same resident_can + domain name
+    returns the EXISTING Concept (whatever it has drifted to), never a
+    freshly reset one -- mirrors find_or_build_resident_can's own
+    discipline exactly.
+
+    `resident_can` is find_or_build_resident_can's own return dict (needs
+    "mt" and "concepts"["self_worth"]). `domain` is a plain label (e.g.
+    "public_speaking") -- the Concept is named "self_worth:<domain>".
+    """
+    mt = resident_can["mt"]
+    global_self_worth = resident_can["concepts"]["self_worth"]
+    concept_name = "self_worth:%s" % domain
+    for existing in inner.neighbours(mt, "has_concept"):
+        if inner.node(existing)["attrs"].get("name") == concept_name:
+            return existing
+
+    domain_concept = inner.add_node("Concept", {
+        "name": concept_name, "state": 0.0, "external_field": 0.0,
+        "identity_field": 0.0,
+    })
+    inner.add_edge(mt, "has_concept", domain_concept, {})
+    inner.add_edge(global_self_worth, "causal_influence", domain_concept,
+                   {"weight": coupling_weight})
+    inner.add_edge(domain_concept, "causal_influence", global_self_worth,
+                   {"weight": coupling_weight})
+    inner.force_all_dirty()
+    inner.run_rules(max_steps)
+    return domain_concept
 
 
 def ensure_can_seed(inner) -> None:
@@ -142,4 +203,4 @@ def ensure_can_seed(inner) -> None:
 
 
 __all__ = ["relax_resident_self_worth", "find_or_build_resident_can",
-           "record_incident_outcome", "ensure_can_seed"]
+           "record_incident_outcome", "mint_domain_self_worth", "ensure_can_seed"]
