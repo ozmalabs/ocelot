@@ -1182,12 +1182,22 @@ def _synth_spec_shape_flags(raw_rows: "List[Dict[str, Any]]") -> "Dict[str, bool
     same container kind Rust's own `Value` enum decodes from the wired
     form, without needing the wire round-trip.
 
-    Returns the ten flags `SynthSpecShape` carries as attrs — a direct
-    1:1 port of `OPLIST_ADMISSIBILITY_GRAMMAR_RESULTS.md` §3.2's flag
-    set: has_dict_value, has_list_of_lists, has_string_value,
-    has_float_value, has_repeated_list_element, output_is_listlike,
-    output_is_setlike, output_is_bare_int, is_string_shaped,
-    is_list_shaped."""
+    Returns the ELEVEN flags `SynthSpecShape` carries as attrs — the
+    original ten are a direct 1:1 port of `OPLIST_ADMISSIBILITY_GRAMMAR_
+    RESULTS.md` §3.2's flag set: has_dict_value, has_list_of_lists,
+    has_string_value, has_float_value, has_repeated_list_element,
+    output_is_listlike, output_is_setlike, output_is_bare_int,
+    is_string_shaped, is_list_shaped. `output_is_dictlike` was added by
+    `PROGRAM_SYNTHESIS_GAMMA_BULK_TRANSCRIPTION_PREREG/RESULTS.md` (a
+    direct 1:1 port of `spec_output_is_dictlike`,
+    `synth_enumerate.rs:2164`, `outputs.iter().all(is_dict_val)`) — needed
+    ONLY so the bare-scalar-fallback `DEFAULT_OPS` Γ production can
+    correctly exclude the `DICT_DEFAULT_OPS` branch (inserted into the
+    `if`/`else if` chain by the GroupCount/DictMerge rung, after this
+    module's original ten flags were written). It does NOT admit any
+    `DICT_DEFAULT_OPS`-bucket op (`GroupCount`/`DictMerge`/
+    `DictFromPairs` stay out of Γ scope entirely, per that document's
+    §1)."""
     def is_listlike(v) -> bool:
         return isinstance(v, (tuple, list, set, frozenset))
 
@@ -1258,6 +1268,7 @@ def _synth_spec_shape_flags(raw_rows: "List[Dict[str, Any]]") -> "Dict[str, bool
             isinstance(v, (set, frozenset)) for v in outputs),
         "output_is_bare_int": bool(outputs) and all(
             isinstance(v, int) and not isinstance(v, bool) for v in outputs),
+        "output_is_dictlike": bool(outputs) and all(is_dict_val(v) for v in outputs),
         "is_string_shaped": (bool(outputs) and all(is_str_val(v) for v in outputs)
                               and all(is_str_val(v) for v in all_input_values)),
         "is_list_shaped": is_list_shaped,

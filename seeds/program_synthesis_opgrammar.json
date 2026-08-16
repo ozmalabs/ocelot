@@ -1,10 +1,10 @@
 {
   "id": "program_synthesis_opgrammar",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "depends_on": [
     "program_synthesis"
   ],
-  "description": "OPLIST_ADMISSIBILITY_GRAMMAR_PREREG.md / _RESULTS.md (the design this seed builds) + OPLIST_ADMISSIBILITY_GRAMMAR_SLICE1_RESULTS.md (this slice's own writeup). The op-list boolean gate ladder inside eval_synth_enumerate (runners/dsl/src/synth_enumerate.rs) is Gamma-shaped -- a real generated multi-production admissible-move SET, CLAUDE.md's own 'set of allowed moves' test, not a quantity that changes (no sd-loop residual here). This seed is the buildable FIRST SLICE the design doc itself scoped (RESULTS.md section 8): (1) the static SynthOp{name} vocabulary, one node per REAL current OP_TABLE entry (52 entries as of main @ c1d0b4c -- both the design doc's original '31' citation and DERIVED_OPERATOR_TIER_RESULTS.md's own correction to '50' are stale; re-verified live against the source for this slice, see SLICE1_RESULTS.md section 1); (2) EXACTLY the two already-shipped SortBy gates as Gamma productions -- the parity check, not a full port of all fourteen section 1.1 gates (explicitly out of scope for this slice, per the design doc's own section 8 step 5 separation). SynthSpecShape is the OTHER new node type this slice mints (one per run_enumerate call, via domains/prog_synthesis.py:: _synth_spec_shape_flags + ensure_program_synthesis_opgrammar) -- it carries no seed-authored nodes of its own (minted live, not static), so this manifest declares it only implicitly via the two productions' src pattern. Both productions' where clause references tgt (op's own name attr), so is_edge_admissible always takes its scratch-node slow path for this pair -- the exact mechanism RESULTS.md section 4 already confirmed calls into ConsistencyChecker::check_edge, so this is REAL enforced Gamma, not decorative vocabulary.",
+  "description": "OPLIST_ADMISSIBILITY_GRAMMAR_PREREG.md / _RESULTS.md (the design this seed builds) + OPLIST_ADMISSIBILITY_GRAMMAR_SLICE1_RESULTS.md (the first slice: 52 SynthOp nodes + the two SortBy productions) + PROGRAM_SYNTHESIS_GAMMA_BULK_TRANSCRIPTION_PREREG.md/_RESULTS.md (this rung: the bulk transcription of the remaining 12 op-list evidence-gate sites named by OPLIST_ADMISSIBILITY_GRAMMAR_RESULTS.md section 1.1's own 14-site table, plus the necessary 13th bare-scalar-fallback DEFAULT_OPS baseline production found while verifying parity -- see that RESULTS doc section 4). The op-list boolean gate ladder inside eval_synth_enumerate (runners/dsl/src/synth_enumerate.rs) is Gamma-shaped -- a real generated multi-production admissible-move SET, CLAUDE.md's own 'set of allowed moves' test, not a quantity that changes (no sd-loop residual here). This seed now carries 57 static SynthOp nodes (one per REAL current OP_TABLE entry, re-verified live against source -- the earlier '52' count is stale, 5 more ops landed since: IntersectAll, UnionAll, DictFromPairs, Mod, Sqrt) and 15 Productions -- the original 2 SortBy gates (has_dict_value, has_list_of_lists) plus 13 new productions covering site A (is_string_shaped -> DEFAULT_STR_OPS), site B (is_list_shaped -> DEFAULT_OPS u LIST_EXTRA_OPS), sites C/D/E (output_is_listlike -> TupleOf/Sort/[+has_string_value]Split), site F (output_is_setlike -> SET_DEFAULT_OPS), sites G/H (has_string_value/has_float_value on the bare-scalar fallback branch), site I (has_float_value on the list-shaped branch -> Round), a completion of the has_dict_value site (DictItems/Reverse -- SortBy was already shipped for this evidence), site L (has_repeated_list_element on the list-shaped branch -> IndexedMap), site N (output_is_bare_int -> ParseInt), and a 13th production for the bare-scalar-fallback DEFAULT_OPS baseline (needed for genuine parity on plain-arithmetic specs, not itself one of the named 14 sites -- see the RESULTS doc). Site K (has_repeated_list_element on the SAME bare-scalar branch) was found DEAD in current source (its guard can never be true when the code path that would consume it is reached) and is NOT ported -- see the RESULTS doc section 3. Every production nested inside the Rust ladder's 'else if spec_is_list_shaped' arm carries an explicit Not(output_is_setlike) conjunct -- REQUIRED, not decorative: a Set/FrozenSet-shaped output always ALSO satisfies is_list_shaped (Set/FrozenSet are is_listlike), and output_is_setlike is checked earlier in the if/else-if chain, so without this exclusion a list-shaped-branch production would wrongly admit ops for every Set-shaped spec in the corpus (tasks 232/473), not a rare edge case. Bucket admits (sites A, B, F, G, and the has_dict_value completion, plus the 13th) use a single production keyed by the Term algebra's own already-shipped `In` (member-of-a-literal-list) operator instead of one production per op -- In is already load-bearing this exact way in seeds/conversation_capability_route.json and siblings, so this is an established idiom, not a new mechanism; Production.tgt matches by node TYPE only (never attrs), so op-name specificity has to live in `where_` regardless of whether it's Eq or In. SynthSpecShape now carries an ELEVENTH flag, output_is_dictlike (domains/prog_synthesis.py:: _synth_spec_shape_flags), added ONLY so the bare-scalar-fallback production can correctly exclude the DICT_DEFAULT_OPS branch a later rung (GroupCount/DictMerge) inserted into the ladder's if/else-if chain -- DICT_DEFAULT_OPS's own two new ops (GroupCount, DictMerge) stay OUT of Gamma scope entirely, not one of the 14 named sites. As before, Gamma verdicts here are recorded facts only -- run_enumerate's real op-list construction is untouched, still driven entirely by the hand-written Rust ladder; zero MBPP task-id changes are expected from this rung.",
   "nodes": [
     {
       "local_id": 1,
@@ -369,6 +369,41 @@
       "attrs": {
         "name": "DictMerge"
       }
+    },
+    {
+      "local_id": 53,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "IntersectAll"
+      }
+    },
+    {
+      "local_id": 54,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "UnionAll"
+      }
+    },
+    {
+      "local_id": 55,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "DictFromPairs"
+      }
+    },
+    {
+      "local_id": 56,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Mod"
+      }
+    },
+    {
+      "local_id": 57,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "Sqrt"
+      }
     }
   ],
   "edges": [],
@@ -415,6 +450,39 @@
             "b": {
               "type": "Lit",
               "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "is_list_shaped"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_setlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
             }
           }
         ]
@@ -475,6 +543,1199 @@
                   "name": "spec"
                 },
                 "key": "has_dict_value"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "is_list_shaped"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_setlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provenance": "program_synthesis_opgrammar:site_a_string_shaped_default_str_ops",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "In",
+            "member": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "container": {
+              "type": "Lit",
+              "value": [
+                "Concat",
+                "CaseFold",
+                "Eq",
+                "IfThenElse",
+                "Replace",
+                "Split",
+                "StrCount",
+                "Capitalize",
+                "Reverse",
+                "Slice",
+                "Str",
+                "MapList",
+                "JoinList"
+              ]
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "is_string_shaped"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provenance": "program_synthesis_opgrammar:site_f_output_setlike_set_default_ops",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "In",
+            "member": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "container": {
+              "type": "Lit",
+              "value": [
+                "Eq",
+                "IfThenElse",
+                "Sort",
+                "Reverse",
+                "Slice",
+                "SetMap",
+                "Intersect",
+                "Union",
+                "IntersectAll",
+                "UnionAll"
+              ]
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "output_is_setlike"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provenance": "program_synthesis_opgrammar:site_b_list_shaped_default_and_list_extra_ops",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "In",
+            "member": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "container": {
+              "type": "Lit",
+              "value": [
+                "Abs",
+                "ArgMaxLenOver",
+                "ConcatList",
+                "Div",
+                "Eq",
+                "FilterList",
+                "First",
+                "Gt",
+                "IfThenElse",
+                "JoinList",
+                "LastElem",
+                "Len",
+                "Lt",
+                "MapList",
+                "Max",
+                "MaxLenOver",
+                "MaxList",
+                "Min",
+                "MinLenOver",
+                "MinList",
+                "Minus",
+                "Neg",
+                "Plus",
+                "ProdList",
+                "SumList",
+                "Times"
+              ]
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "is_list_shaped"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_setlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provenance": "program_synthesis_opgrammar:site_c_output_listlike_tupleof",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "TupleOf"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "output_is_listlike"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_setlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provenance": "program_synthesis_opgrammar:site_d_output_listlike_sort",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "Sort"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "output_is_listlike"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_setlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provenance": "program_synthesis_opgrammar:site_e_output_listlike_string_value_split",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "Split"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "output_is_listlike"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "has_string_value"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_setlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provenance": "program_synthesis_opgrammar:site_g_bare_scalar_string_value_ops",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "In",
+            "member": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "container": {
+              "type": "Lit",
+              "value": [
+                "Replace",
+                "Split",
+                "StrCount",
+                "Capitalize",
+                "Str",
+                "ParseInt"
+              ]
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "has_string_value"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "is_string_shaped"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_setlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "is_list_shaped"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_dictlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provenance": "program_synthesis_opgrammar:site_h_bare_scalar_float_value_round",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "Round"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "has_float_value"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "is_string_shaped"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_setlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "is_list_shaped"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_dictlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provenance": "program_synthesis_opgrammar:site_i_list_shaped_float_value_round",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "Round"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "has_float_value"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "is_list_shaped"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_setlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provenance": "program_synthesis_opgrammar:site_j_completion_dict_value_dictitems_reverse",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "In",
+            "member": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "container": {
+              "type": "Lit",
+              "value": [
+                "DictItems",
+                "Reverse"
+              ]
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "has_dict_value"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "is_list_shaped"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_setlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provenance": "program_synthesis_opgrammar:site_l_list_shaped_repeated_element_indexedmap",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "IndexedMap"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "has_repeated_list_element"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "is_list_shaped"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_setlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provenance": "program_synthesis_opgrammar:site_n_list_shaped_bare_int_parseint",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ParseInt"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "output_is_bare_int"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "is_list_shaped"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_setlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_listlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "has_string_value"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "has_float_value"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provenance": "program_synthesis_opgrammar:bare_scalar_fallback_default_ops_baseline",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "In",
+            "member": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "container": {
+              "type": "Lit",
+              "value": [
+                "Plus",
+                "Times",
+                "Minus",
+                "Div",
+                "Min",
+                "Max",
+                "Abs",
+                "Neg",
+                "Gt",
+                "Lt",
+                "Eq",
+                "IfThenElse"
+              ]
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "is_string_shaped"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_setlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "is_list_shaped"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_dictlike"
               },
               "b": {
                 "type": "Lit",
