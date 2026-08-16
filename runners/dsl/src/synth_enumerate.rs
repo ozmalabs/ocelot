@@ -1401,6 +1401,60 @@ fn value_str(v: &Value, interner: &Interner) -> Option<String> {
     }
 }
 
+/// MDL_OCCAM_WITNESS_PRICING (design doc §2 slice 1): price a pooled STRING
+/// literal by its description length given its witnesses, instead of the
+/// uniform leaf cost 1 every `const_set` entry got before this. This is the
+/// same "extra cost beyond the uniform node count" idiom
+/// `list_unary_extra_cost`/`list_binary_extra_cost` already apply to
+/// derived-op node counts (`:854,968` above) — applied here to a LEAF's
+/// registered size rather than an interior node's child count.
+///
+/// Computed entirely from data already in scope (`envs`, `outputs` — no new
+/// inputs), substring-based so a whole quoted value AND a single delimiter
+/// character are both correctly classified (a character is, definitionally,
+/// a substring of whatever string it was drawn from). Priority order, first
+/// match wins:
+///
+///   1. appears in >=1 revealed INPUT (any row's env variable value
+///      contains it) -> DATA-DERIVED (a delimiter, a probe value) -> cost 1,
+///      byte-unchanged.
+///   2. appears in EVERY revealed row's output -> ROW-INVARIANT (a genuine
+///      constant of the task, not a memorized per-row answer) -> cost 1,
+///      byte-unchanged.
+///   3. appears in EXACTLY ONE row's output and nowhere else (no input
+///      witness, not row-invariant) -> the memorization signature: a
+///      SINGLE-WITNESS OUTPUT QUOTE. Priced at its own description length
+///      (character count for a string).
+///   otherwise (partial multi-row output coverage, e.g. present in 2 of 3
+///      output rows, no input witness) -> cost 1, unchanged. Slice 1's own
+///      scope is the one named memorization signature above, not every
+///      shade of partial coverage — this is the conservative default that
+///      keeps the change to "which size class a literal registers into,"
+///      nothing else.
+///
+/// Integer-valued outputs (the separate auto-append at `:2767-2778`) are
+/// deliberately NOT priced by this function — DESIGN_REVIEW_CAPABILITY_
+/// EXPANSION_PREREG.md §7 item 6 scopes slice 1 to strings only.
+fn literal_witness_cost(s: &str, envs: &[Env], outputs: &[Value], interner: &Interner) -> usize {
+    let is_input_witness = envs.iter().any(|row| {
+        row.iter().any(|(_, v)| value_str(v, interner).is_some_and(|sv| sv.contains(s)))
+    });
+    if is_input_witness {
+        return 1;
+    }
+    let output_witness_rows = outputs
+        .iter()
+        .filter(|v| value_str(v, interner).is_some_and(|sv| sv.contains(s)))
+        .count();
+    if !outputs.is_empty() && output_witness_rows == outputs.len() {
+        return 1; // row-invariant: a genuine task constant.
+    }
+    if output_witness_rows == 1 {
+        return s.chars().count().max(1); // single-witness output quote.
+    }
+    1 // conservative default: unchanged.
+}
+
 /// Dict lookup by resolved key string.
 fn dict_get(pairs: &[(Value, Value)], key: &str, interner: &Interner) -> Option<Value> {
     for (k, v) in pairs {
@@ -2806,7 +2860,14 @@ pub(crate) fn eval_synth_enumerate(
             }
         }
     }
-    const_set.extend(str_consts);
+    // MDL_OCCAM_WITNESS_PRICING: `str_consts` is registered as leaves
+    // SEPARATELY from `const_set` (below, at the leaf-registration loop),
+    // each at its own witness-priced size, instead of being merged in here
+    // at a uniform cost 1 — see `literal_witness_cost`'s doc comment. Kept
+    // as its own vector (not extended into `const_set`) so the two leaf
+    // populations can carry different per-item costs; `const_set` itself
+    // (the requested/default consts + auto-appended integer outputs) is
+    // completely unchanged, still all cost 1.
 
     // `ZIP_MAX_CANDIDATES`'s own doc comment: `op_list` is fully resolved
     // (typed default or explicit `ops`, post-`exclude_ops` filter) by
@@ -2919,6 +2980,28 @@ pub(crate) fn eval_synth_enumerate(
     }
     for c in const_set.clone() {
         reg!(TermNode::Lit { value: c }, 1);
+    }
+    // MDL_OCCAM_WITNESS_PRICING (design doc §2 slice 1): each string
+    // literal registers at its OWN witness-priced size instead of the
+    // uniform 1 above — see `literal_witness_cost`'s doc comment. Data-
+    // derived and row-invariant literals still register at cost 1
+    // (byte-identical to before, and in the SAME relative order as before,
+    // since only the priced-up subset is now absent from `by_size[1]`).
+    // `value_str` always succeeds here (`str_consts` is built exclusively
+    // via `surf_string`, above); `unwrap_or_default` is defensive only.
+    for c in str_consts.clone() {
+        let s = value_str(&c, ctx.interner).unwrap_or_default();
+        let cost = literal_witness_cost(&s, &search.envs, &outputs, ctx.interner);
+        if cost > max_size {
+            // Priced beyond this search's own size budget: registering it
+            // would index `by_size` out of bounds, and it could never be
+            // reached by the growth loop regardless -- this IS the fix's
+            // whole point, a single-witness output quote should not be a
+            // cheap building block. Skip it entirely (not counted toward
+            // `tested`, exactly like an already-excluded signature).
+            continue;
+        }
+        reg!(TermNode::Lit { value: c }, cost);
     }
 
     // Arc4-S4: build the FilterList/MapList template pools — ONCE, never
