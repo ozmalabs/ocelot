@@ -104,6 +104,8 @@ from domains.prog_ir_emit import NATIVE_ORACLES  # noqa: E402
 import prog_synthesis_battery as psb  # noqa: E402 — strip_to_starter, byte-identical reuse
 from mbpp_zero_shot_baseline import split_tasks as q0_split_tasks  # noqa: E402
 
+from domains import engineering_residual_ingest as eri  # noqa: E402
+
 FIXTURE_PATH = os.path.join(ROOT, "tests", "fixtures", "mbpp",
                             "sanitized-mbpp.json")
 PROVENANCE_PATH = os.path.join(ROOT, "tests", "fixtures", "mbpp",
@@ -585,6 +587,28 @@ def migration_matrix(q0_artifact: Dict[str, Any], full_arm: Dict[str, Any],
 # --------------------------------------------------------------------------- #
 #  main
 # --------------------------------------------------------------------------- #
+# --------------------------------------------------------------------------- #
+#  PROPOSAL 3 (measured-residual filing, DESIGN_REVIEW_CAPABILITY_EXPANSION_
+#  PREREG.md §4) — the FULL arm's own `outcome_taxonomy` (built above by
+#  `taxonomy()`, already the "N tasks in bucket X" dict the design doc names)
+#  is mechanically ingested as EngineeringResidual fact nodes on a small,
+#  dedicated, persisted substrate (domains.engineering_residual_ingest —
+#  NOT the real jabberwock daemon's own checkpoint). No interpretation
+#  happens here: the numbers are already computed by `run_arm`/`taxonomy`
+#  above; this function only writes them. seeds/engineering_residual_gap.json
+#  (loaded on that substrate) decides which populations are standing gaps.
+# --------------------------------------------------------------------------- #
+def ingest_engineering_residuals(artifact: Dict[str, Any]) -> Dict[str, Any]:
+    tax = artifact["arms"]["full"]["outcome_taxonomy"]
+    s, agent = eri.load_or_boot_residual_substrate()
+    result = eri.ingest_taxonomy(s, agent, source_script="mbpp_endgame_battery.full",
+                                 taxonomy=tax)
+    eri.save_residual_substrate(s, agent)
+    print("ingested engineering residuals:", len(result["upserted"]), "populations",
+          "->", eri.DEFAULT_CHECKPOINT)
+    return result
+
+
 def main() -> None:
     t_start = time.time()
     with open(FIXTURE_PATH) as f:
@@ -765,6 +789,8 @@ def main() -> None:
         json.dump(artifact, f, indent=1, sort_keys=False, default=_json_default)
         f.write("\n")
     print("wrote", OUT_PATH)
+
+    ingest_engineering_residuals(artifact)
     for name in ("full", "content_stripped", "official"):
         agg = artifact["arms"][name]["aggregates"]
         pr = agg["pass_over_runnable"]
