@@ -135,8 +135,17 @@ def record_incident_outcome(inner, concepts: dict, *, standard_met: bool,
     return inner.node(self_worth_concept)["attrs"]["state"]
 
 
+def _existing_domain_self_worth_count(inner, mt) -> int:
+    count = 0
+    for concept in inner.neighbours(mt, "has_concept"):
+        name = inner.node(concept)["attrs"].get("name", "")
+        if name.startswith("self_worth:"):
+            count += 1
+    return count
+
+
 def mint_domain_self_worth(inner, resident_can: dict, domain: str, *,
-                           coupling_weight: float = 0.6, max_steps: int = 3000):
+                           base_coupling: float = 0.6, max_steps: int = 3000):
     """Domain-scoped self-worth as PROJECTION-THEN-DECOUPLING
     (DOMAIN_SELF_WORTH_PROJECTION_PREREG.md Sec2-3) -- Rotter (1954)'s
     generalized-vs-specific-expectancy mechanism, implemented with ZERO new
@@ -154,6 +163,18 @@ def mint_domain_self_worth(inner, resident_can: dict, domain: str, *,
     its own track record instead (Rotter's specific expectancy displacing
     the generalized one).
 
+    The COUPLING STRENGTH is not a flat constant (SELF_COMPLEXITY_COUPLING_
+    PREREG.md): `coupling_weight = base_coupling / (existing_domain_count +
+    1)` -- Linville (1985, 1987)'s self-complexity buffering, weighted
+    against a REAL, observed graph quantity (how many domains this
+    resident has already differentiated), Laplace-style ("+1, made up when
+    absent" -- a resident's first domain gets the FULL base_coupling,
+    matching the un-audited original behavior exactly). Given this
+    engine's own already-measured discrete-3-state threshold
+    (DOMAIN_SELF_WORTH_PROJECTION_RESULTS.md Sec2 point 5, ~0.366 at
+    temperature=1.5), this is a SHARP step under the current mechanism,
+    not a graded one -- registered and accepted, not smoothed over.
+
     Idempotent: a second call for the same resident_can + domain name
     returns the EXISTING Concept (whatever it has drifted to), never a
     freshly reset one -- mirrors find_or_build_resident_can's own
@@ -169,6 +190,9 @@ def mint_domain_self_worth(inner, resident_can: dict, domain: str, *,
     for existing in inner.neighbours(mt, "has_concept"):
         if inner.node(existing)["attrs"].get("name") == concept_name:
             return existing
+
+    existing_domain_count = _existing_domain_self_worth_count(inner, mt)
+    coupling_weight = base_coupling / (existing_domain_count + 1)
 
     domain_concept = inner.add_node("Concept", {
         "name": concept_name, "state": 0.0, "external_field": 0.0,

@@ -59,9 +59,14 @@ def test_domain_specific_evidence_decouples_without_touching_global():
 
 # ---------------------------------------------------------------------
 # 3. Prediction 3 -- two different domains for the SAME resident hold
-#    opposite beliefs simultaneously.
+#    DIFFERENT beliefs simultaneously, independent of one another. Since
+#    SELF_COMPLEXITY_COUPLING_PREREG.md, a resident's SECOND domain
+#    couples more weakly to global (Linville 1985/1987 self-complexity
+#    buffering) and, given this engine's own already-measured discrete
+#    threshold, lands NEUTRAL rather than mirroring global -- registered
+#    and expected, not a regression.
 # ---------------------------------------------------------------------
-def test_two_domains_hold_opposite_beliefs_simultaneously():
+def test_two_domains_hold_independent_beliefs_simultaneously():
     inner = _fresh()
     resident = find_or_build_resident_can(inner, CONFIDENT)
     speaking = mint_domain_self_worth(inner, resident, "public_speaking")
@@ -70,7 +75,11 @@ def test_two_domains_hold_opposite_beliefs_simultaneously():
                                 attribution_locus="global_self", alpha=0.3)
     chess = mint_domain_self_worth(inner, resident, "chess")
     assert inner.node(speaking)["attrs"]["state"] == -1.0
-    assert inner.node(chess)["attrs"]["state"] == 1.0  # freshly projected, untouched
+    # chess is this resident's SECOND domain (existing_domain_count=1 at
+    # mint time) -- coupling_weight=0.6/2=0.3, below the ~0.366 discrete
+    # threshold, so it lands neutral rather than projecting global=1.0
+    # (SELF_COMPLEXITY_COUPLING_PREREG.md prediction 2).
+    assert inner.node(chess)["attrs"]["state"] == 0.0
     assert inner.node(resident["concepts"]["self_worth"])["attrs"]["state"] == 1.0
 
 
@@ -101,14 +110,14 @@ def test_minting_is_idempotent_and_preserves_drift():
 def test_coupling_weight_below_threshold_lands_neutral_not_weak_projection():
     inner = _fresh()
     resident = find_or_build_resident_can(inner, CONFIDENT)
-    domain = mint_domain_self_worth(inner, resident, "cooking", coupling_weight=0.3)
+    domain = mint_domain_self_worth(inner, resident, "cooking", base_coupling=0.3)
     assert inner.node(domain)["attrs"]["state"] == 0.0
 
 
 def test_coupling_weight_above_threshold_projects_the_global_sign():
     inner = _fresh()
     resident = find_or_build_resident_can(inner, CONFIDENT)
-    domain = mint_domain_self_worth(inner, resident, "cooking", coupling_weight=0.4)
+    domain = mint_domain_self_worth(inner, resident, "cooking", base_coupling=0.4)
     assert inner.node(domain)["attrs"]["state"] == 1.0
 
 

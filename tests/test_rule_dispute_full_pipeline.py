@@ -65,7 +65,14 @@ def test_repeated_real_disputes_drift_self_worth_and_flip_the_emotion():
 
 # ---------------------------------------------------------------------
 # 3. Prediction 3 -- a different domain is untouched by disputes in
-#    another domain, for the SAME resident.
+#    another domain, for the SAME resident. Since SELF_COMPLEXITY_
+#    COUPLING_PREREG.md, chess is Bob's SECOND domain here
+#    (existing_domain_count=1 at mint time), so it projects at the
+#    weaker, self-complexity-buffered coupling (0.6/2=0.3, below this
+#    engine's own ~0.366 discrete threshold) and lands neutral rather
+#    than mirroring global=1.0 -- registered and expected. The point of
+#    THIS test -- untouched by the monopoly disputes specifically --
+#    still holds: nothing about chess's value came from those disputes.
 # ---------------------------------------------------------------------
 def test_a_different_domain_is_unaffected_by_disputes_elsewhere():
     inner = _fresh()
@@ -81,7 +88,11 @@ def test_a_different_domain_is_unaffected_by_disputes_elsewhere():
         truth_pred=["is_a", "queen", "strongest_piece"],  # identical -> no dispute
         domain="chess", band_code=0, witnesses=[])
     assert chess["dispute_minted"] is False
-    assert chess["self_worth_before"] == chess["self_worth_after"] == 1.0  # projected from global
+    # untouched BY THE MONOPOLY DISPUTES: before/after this (non-)dispute
+    # are identical, and neither matches monopoly_rules's own drifted (-1)
+    # value -- chess's own coupling-projected value, self-complexity-
+    # buffered as Bob's second domain, not contaminated by the other one.
+    assert chess["self_worth_before"] == chess["self_worth_after"] == 0.0
 
 
 # ---------------------------------------------------------------------
