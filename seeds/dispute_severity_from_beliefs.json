@@ -1,0 +1,322 @@
+{
+ "id": "dispute_severity_from_beliefs",
+ "version": "1.0.0",
+ "depends_on": [
+  "rule_dispute_escalation"
+ ],
+ "self_load_only": true,
+ "description": "issue_severity, computed: 1-StructSim(claim.pred, truth.pred) -- the residual between what a disputant claims and what the rulebook-grounded ground truth actually says -- replacing rule_dispute_escalation.json's own caller-supplied scalar with a genuinely derived value, per the user's own diagnosis ('a dispute is the residual between two held beliefs') and CLAUDE.md's SHAPES-NOT-NUMBERS rule (a hand-set scalar knob is unpaid debt). Strictly additive: rule_dispute_escalation.json is NOT edited, reused via its own unchanged has_signal production. Fires ONLY when a genuine residual exists (StructSim<1.0) -- identical beliefs mint no dispute at all, a live correction after finding severity=0.0 does not structurally floor the downstream pressure formula (ambient audience/closeness terms are independent of severity). Zero new Rust -- StructSim, like every other Term this arc has used, pre-existed (runners/dsl/src/term.rs::struct_sim_value), confirmed by direct probe before registering (PREREG Sec1: 0.667 similarity / 0.333 residual on a one-slot contradiction, 1.0/0.0 on identical predications) rather than assumed. See DISPUTE_SEVERITY_AS_RESIDUAL_PREREG.md / _RESULTS.md.",
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "src": {
+    "type": "BeliefDisagreement",
+    "var": "bd"
+   },
+   "edge_type": "claims",
+   "tgt": {
+    "type": "HeldBelief",
+    "var": "claims"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "dispute_severity_from_beliefs"
+  },
+  {
+   "src": {
+    "type": "BeliefDisagreement",
+    "var": "bd"
+   },
+   "edge_type": "truth",
+   "tgt": {
+    "type": "HeldBelief",
+    "var": "truth"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "dispute_severity_from_beliefs"
+  },
+  {
+   "src": {
+    "type": "BeliefDisagreement",
+    "var": "bd"
+   },
+   "edge_type": "has_witness",
+   "tgt": {
+    "type": "WitnessPresence",
+    "var": "wp"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "dispute_severity_from_beliefs"
+  },
+  {
+   "src": {
+    "type": "BeliefDisagreement",
+    "var": "bd"
+   },
+   "edge_type": "bridged_to",
+   "tgt": {
+    "type": "DisputeContext",
+    "var": "ctx"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "dispute_severity_from_beliefs"
+  },
+  {
+   "src": {
+    "type": "WitnessPresence",
+    "var": "wp"
+   },
+   "edge_type": "mirrored_as",
+   "tgt": {
+    "type": "WitnessPresence",
+    "var": "wp2"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "dispute_severity_from_beliefs"
+  }
+ ],
+ "concepts": [
+  {
+   "name": "dispute_severity_as_residual",
+   "definition": "A rule dispute's issue_severity is the structural residual between a disputant's claimed belief and the rulebook-grounded ground truth -- 1 minus their StructSim similarity -- not a hand-set scalar. Two identical beliefs produce zero severity structurally; a partial contradiction produces a graded, measured residual.",
+   "why": "User: 'A dispute is the residual between two held beliefs' -- a direct correction of rule_dispute_escalation.json's own hand-picked issue_severity input. DISPUTE_SEVERITY_AS_RESIDUAL_PREREG.md."
+  }
+ ],
+ "exclusions": [],
+ "rules": [
+  {
+   "name": "severity_from_belief_disagreement",
+   "comment": "PREREG Sec1-2: issue_severity is COMPUTED as 1-StructSim(claim.pred, truth.pred) -- the residual between two held beliefs -- not a caller-supplied scalar. Fires ONLY when a genuine residual exists (StructSim<1.0) -- identical beliefs mint no dispute at all, corrected live after finding severity=0.0 does NOT structurally floor the downstream pressure formula (PREREG prediction 1, revised). Mints a fresh DisputeContext (band_code/audience_gain copied from the BeliefDisagreement wrapper, genuinely external social-context data, PREREG Sec4) plus its own RuleDisputeSignal via rule_dispute_escalation's UNCHANGED has_signal production. Zero new Rust -- Minus/StructSim/Lt/Count/Neighbours/Attr/Var/Lit/Eq/And all pre-existed. Guarded by a bridged_to dedup edge, mirroring seeds/rule_dispute_self_conscious_bridge.json's own idiom exactly.",
+   "match_type": "BeliefDisagreement",
+   "match": [
+    [
+     "bd",
+     "claims",
+     "claims"
+    ],
+    [
+     "bd",
+     "truth",
+     "truth"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "bd"
+        },
+        "edge_type": "bridged_to"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "StructSim",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "claims"
+        },
+        "key": "pred"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "truth"
+        },
+        "key": "pred"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "ctx",
+     "DisputeContext",
+     {
+      "issue_severity": {
+       "__term__": {
+        "type": "Minus",
+        "a": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "b": {
+         "type": "StructSim",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "claims"
+          },
+          "key": "pred"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "truth"
+          },
+          "key": "pred"
+         }
+        }
+       }
+      },
+      "band_code": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "bd"
+        },
+        "key": "band_code"
+       }
+      },
+      "audience_gain": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "bd"
+        },
+        "key": "audience_gain"
+       }
+      }
+     }
+    ],
+    [
+     "add_node",
+     "sig",
+     "RuleDisputeSignal",
+     {
+      "status": "pending"
+     }
+    ],
+    [
+     "add_edge",
+     "ctx",
+     "has_signal",
+     "sig"
+    ],
+    [
+     "add_edge",
+     "bd",
+     "bridged_to",
+     "ctx"
+    ]
+   ]
+  },
+  {
+   "name": "carry_over_belief_disagreement_witnesses",
+   "comment": "PREREG Sec2: each WitnessPresence already on the BeliefDisagreement mints a corresponding WitnessPresence on the newly minted DisputeContext, closeness copied unchanged -- the SAME node type reused (WitnessPresence is rule_dispute_escalation's own audience primitive; this rung does not reinterpret it). Guarded by a mirrored_as dedup edge per witness.",
+   "match_type": "WitnessPresence",
+   "match": [
+    [
+     "bd",
+     "has_witness",
+     "wp"
+    ],
+    [
+     "bd",
+     "bridged_to",
+     "ctx"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "wp"
+        },
+        "edge_type": "mirrored_as"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "wp2",
+     "WitnessPresence",
+     {
+      "closeness": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "wp"
+        },
+        "key": "closeness"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ctx",
+     "has_witness",
+     "wp2"
+    ],
+    [
+     "add_edge",
+     "wp",
+     "mirrored_as",
+     "wp2"
+    ]
+   ]
+  }
+ ]
+}
