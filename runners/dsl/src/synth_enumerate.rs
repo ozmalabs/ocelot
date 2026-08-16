@@ -254,6 +254,39 @@ const DEFAULT_SATURATE_K: i64 = 3;
 /// regardless of whether `ZipWith` is in its own op list.
 const ZIP_MAX_CANDIDATES: u64 = 300_000;
 
+/// CEILING_REASSESSMENT_6: a second call-site-scoped `max_candidates`
+/// raise, same class and discipline as `ZIP_MAX_CANDIDATES` above --
+/// gated the identical way, just on a different resolved op-list shape.
+/// Landed alongside this rung's own `DICT_DEFAULT_OPS` widening (adding
+/// already-shipped `DictItems`/`FilterList` to that bucket, so
+/// `Fold(FilterList(DictItems(dict), item, predicate))` becomes
+/// constructible at all -- `DICTFROMPAIRS_RESULTS.md` §1 already proved
+/// live that the ALREADY-EXISTING `tmpl:nested_reduction` filter
+/// template reaches the needed predicate, no new template shape
+/// required). Measured directly, real corpus rows, real typed-default
+/// op inventory (`CEILING_REASSESSMENT_6_PREREG.md` §4): under the
+/// `full`/`content_stripped` protocol (2 revealed rows) task 277 needs
+/// 204,522 candidates tested to reach its correct
+/// `Fold(FilterList(DictItems(a), item, Gte(MinOver(item,...), b)))`
+/// composition; under `official` (3 revealed rows, a genuinely larger
+/// search -- more revealed rows means more distinct candidate
+/// BEHAVIOURS to distinguish before the search's own signature-dedup
+/// converges) the SAME task needs 264,789. `300_000` (matching
+/// `ZIP_MAX_CANDIDATES`'s own already-measured-safe value exactly,
+/// rather than inventing a third magic number) clears BOTH measured
+/// ceilings with real headroom on every protocol. Applied ONLY when (a)
+/// the resolved `op_list` for THIS call contains BOTH `DictItems` AND
+/// `FilterList` (the two ops this rung added to `DICT_DEFAULT_OPS` --
+/// the only typed-default bucket that ever offers both together) AND
+/// (b) the caller passed `max_candidates <= 0` (never overriding an
+/// explicit caller-supplied budget) -- the exact same two-part gate
+/// `ZIP_MAX_CANDIDATES` already uses, applied independently so a call
+/// wanting BOTH raises (structurally impossible today -- `ZipWith` and
+/// `DictItems`/`FilterList` never share a typed-default bucket, but the
+/// two gates are independent code, not mutually exclusive by
+/// construction) still gets the larger of the two.
+const DICT_FILTER_MAX_CANDIDATES: u64 = 300_000;
+
 /// generator.py's DEFAULT_OPS, in order (enumeration order is part of
 /// the port).
 ///
@@ -541,13 +574,33 @@ const SET_DEFAULT_OPS: &[&str] = &[
 /// construction, same as `SET_DEFAULT_OPS` — `Eq`/`IfThenElse` from the
 /// base arithmetic set plus exactly the two new ops this rung adds.
 /// DICTFROMPAIRS_PREREG §4: `DictFromPairs` appended, same narrow bucket,
-/// same cheap `ListUnary` registration cost. Deliberately NOT joined by
-/// `DictItems`/`FilterList` here -- both already exist but the search's own
-/// `filter_templates_by_size` predicate grammar has no "project a fixed
-/// index out of the bound item" template shape (PREREG §5), so offering
-/// them would add real search cost to this bucket's one live canary (task
-/// 87) for no measured raw-search benefit under the current template pool.
-const DICT_DEFAULT_OPS: &[&str] = &["Eq", "IfThenElse", "GroupCount", "DictMerge", "DictFromPairs"];
+/// same cheap `ListUnary` registration cost.
+///
+/// CEILING_REASSESSMENT_6: `DictItems`/`FilterList` now joined too.
+/// `DICTFROMPAIRS_PREREG` §5 declined this pairing on the belief that
+/// `filter_templates_by_size` has no "project a fixed index out of the
+/// bound item" template shape, so raw search could never reach the
+/// `dict_filter`/`drop_empty` composition even with these two ops present.
+/// `DICTFROMPAIRS_RESULTS.md` §1 corrected that belief LIVE: the
+/// already-existing `tmpl:nested_reduction` family (`min`/`max` over the
+/// bound item's own elements) reaches the needed predicate a DIFFERENT
+/// way -- `item` is a `(key: Str, value: Int)` pair, and a min/max
+/// reduction over a heterogeneous pair reliably selects the numeric
+/// element under this engine's own `cmp_value` ordering (Int sorts below
+/// Str) -- so no template-grammar widening was ever needed, only the two
+/// already-shipped ops entering this bucket's op list. Re-verified fresh
+/// against the CURRENT corpus (`CEILING_REASSESSMENT_6_PREREG.md` §3):
+/// tasks 277/465 both solve, 6/6 exact match including held-out rows, at
+/// `max_size` 19-20 (`run_enumerate`'s own `max_size` raised in this same
+/// rung -- see `domains/prog_synthesis.py`), well inside the default
+/// 200,000-candidate budget (158,703 / 68,694 tested). The bucket's one
+/// live canary (task 87, `DictMerge(b, DictMerge(c,a))`, size 5, solved
+/// via the ALREADY-typed-default bucket) is unaffected -- confirmed by
+/// the full paired MBPP battery (exact task-id set diff), not just argued:
+/// neither new op composes any dict-merge-shaped candidate at or below
+/// task 87's own solution size.
+const DICT_DEFAULT_OPS: &[&str] =
+    &["Eq", "IfThenElse", "GroupCount", "DictMerge", "DictFromPairs", "DictItems", "FilterList"];
 
 fn table_kind(name: &str) -> Option<OpKind> {
     OP_TABLE.iter().find(|(n, _)| *n == name).map(|(_, k)| *k)
@@ -2763,8 +2816,21 @@ pub(crate) fn eval_synth_enumerate(
     // template-pool gate), never re-derived, so the two can never
     // disagree about what this call's own resolved op list contains.
     let zip_wanted_for_budget = op_list.iter().any(|(n, _)| n == "ZipWith");
-    let max_candidates = if zip_wanted_for_budget && caller_wants_default_candidates {
-        max_candidates.max(ZIP_MAX_CANDIDATES)
+    // CEILING_REASSESSMENT_6: the `DICT_FILTER_MAX_CANDIDATES` twin gate
+    // -- see that constant's own doc comment for the measurement and the
+    // exact scoping discipline (identical two-part gate, independent op
+    // list test).
+    let dict_filter_wanted_for_budget = op_list.iter().any(|(n, _)| n == "DictItems")
+        && op_list.iter().any(|(n, _)| n == "FilterList");
+    let max_candidates = if caller_wants_default_candidates {
+        let mut mc = max_candidates;
+        if zip_wanted_for_budget {
+            mc = mc.max(ZIP_MAX_CANDIDATES);
+        }
+        if dict_filter_wanted_for_budget {
+            mc = mc.max(DICT_FILTER_MAX_CANDIDATES);
+        }
+        mc
     } else {
         max_candidates
     };

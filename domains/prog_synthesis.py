@@ -1346,7 +1346,7 @@ def run_enumerate(sub, ag_node, g) -> bool:
     spec: Dict[str, Any] = {
         "type": "SynthEnumerate",
         "examples": {"type": "Lit", "value": rows},
-        "max_size": 9, "max_candidates": 0, "saturate_k": 0,
+        "max_size": 20, "max_candidates": 0, "saturate_k": 0,
         "field": ""}
     # The operator inventory is a graph verdict produced by
     # ps_select_synthesis_operator_shape.  This adapter merely transcribes
