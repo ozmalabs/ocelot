@@ -2961,6 +2961,61 @@ pub(crate) fn eval_synth_enumerate(
                 }
             }
 
+            // ---- PROGRAM_SYNTHESIS_CEILING_REASSESSMENT_5_PREREG.md
+            // `tmpl:item_mod_eq` (tasks 412 "remove odd numbers",
+            // 426 "filter odd numbers") ----------------------------------
+            // `item % c == r` / `item % c != r` — a modulus/parity
+            // predicate. Mirrors family 1's own `item OP c` construction
+            // exactly (spec-derived numeric consts only, never a
+            // benchmark-specific literal): `c`/`r` are both drawn from the
+            // SAME `numeric_consts` pool every other template family in
+            // this block already uses. Restricted to the mathematically
+            // well-formed range — modulus `c > 1` (mod-by-0/1 is
+            // degenerate: mod 1 is always 0, and this engine's own `Mod`
+            // treats `b == 0` as a 0 short-circuit, `term.rs`'s
+            // `rem_euclid` arm), remainder `0 <= r < c` (the exact range
+            // `Mod`'s own `rem_euclid` semantics can ever produce for a
+            // positive modulus) — a semantic constraint, not a
+            // benchmark-fitted one, that keeps this addition's own
+            // contribution to the pool small (typically 1-2 valid moduli
+            // out of the default 4-constant pool, confirmed live in the
+            // PREREG). Only `Eq`/`Not(Eq(...))` are offered (not the full
+            // 5-way `CMPS` crossing family 1 uses) — a modulus compared
+            // via `Gt`/`Lt` is not a predicate shape any surveyed MBPP
+            // task needs, and omitting it keeps this addition's blast
+            // radius to exactly the two forms 412/426 require, the same
+            // "only build what's witnessed" discipline `ZIP_ELEMENTWISE_
+            // OP_NAMES`'s own fixed 7-op inventory already uses.
+            for c in &numeric_consts {
+                let Value::Int(ci) = c else { continue };
+                if *ci <= 1 {
+                    continue;
+                }
+                for r in &numeric_consts {
+                    let Value::Int(ri) = r else { continue };
+                    if *ri < 0 || *ri >= *ci {
+                        continue;
+                    }
+                    // item % c == r — size 5 (Eq + Mod + Var + Lit + Lit).
+                    let iv = search.scratch.add(TermNode::Var { name: item_sym });
+                    let cv = search.scratch.add(TermNode::Lit { value: c.clone() });
+                    let md = search.scratch.add(TermNode::Mod { a: iv, b: cv });
+                    let rv = search.scratch.add(TermNode::Lit { value: r.clone() });
+                    let eq = search.scratch.add(TermNode::Eq { a: md, b: rv });
+                    push(&mut filter_templates_by_size, eq, 5);
+                    // item % c != r — size 6 (Not + the above, the same
+                    // "+1 for the negated form" idiom `tmpl:item_in_listvar`
+                    // uses immediately below for `in`/`not in`).
+                    let iv2 = search.scratch.add(TermNode::Var { name: item_sym });
+                    let cv2 = search.scratch.add(TermNode::Lit { value: c.clone() });
+                    let md2 = search.scratch.add(TermNode::Mod { a: iv2, b: cv2 });
+                    let rv2 = search.scratch.add(TermNode::Lit { value: r.clone() });
+                    let eq2 = search.scratch.add(TermNode::Eq { a: md2, b: rv2 });
+                    let ne2 = search.scratch.add(TermNode::Not { arg: eq2 });
+                    push(&mut filter_templates_by_size, ne2, 6);
+                }
+            }
+
             // ---- Arc6 tier-0 `tmpl:item_in_listvar` ----------------------
             // `item in <list var>` / `item not in <list var>`, over the
             // SHIPPED `In` Term.  The pool already compares the bound item
