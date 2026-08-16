@@ -1,0 +1,313 @@
+{
+ "id": "rule_dispute_escalation",
+ "version": "1.0.0",
+ "depends_on": [],
+ "self_load_only": true,
+ "description": "Composes a dyadic rule-dispute's issue severity, relationship closeness (band_code/tie_strength, reusing bigville's already-built plumbing verbatim -- commit 1b79a0f), and bystander/witness count into a scalar 'pressure', classified via Argmin nearest-point decode against a 2-entry DisputeOutcomeAnchor codebook (defuse/escalate) -- the SAME compose-then-Argmin-classify shape seeds/can_register_quantization.json already established, reused here rather than reinvented (RULE_DISPUTE_ESCALATION_PREREG.md Sec1's own SHAPES-not-numbers justification). The load-bearing design choice is the (1-closeness) interaction term: audience presence amplifies escalation (Felson 1982, 'Impression Management and the Escalation of Aggression and Violence'), but closeness SUPPRESSES that amplification rather than merely offsetting it additively (Coleman, Deutsch & Marcus, Handbook of Conflict Resolution -- established cooperative-norm relationships actively resist destructive escalation) -- the same interaction-effect shape Giles' Communication Accommodation Theory already gave this session's register/style work (convergence in-group, divergence out-group). Zero new Rust Terms -- Div/Times/Minus/Plus/Abs/Let/Argmin/Attr/Var/Lit/Eq/And all pre-existed. See RULE_DISPUTE_ESCALATION_PREREG.md / _RESULTS.md.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "DisputeOutcomeAnchor",
+   "attrs": {
+    "label": "defuse",
+    "canonical_value": -1.0
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "DisputeOutcomeAnchor",
+   "attrs": {
+    "label": "escalate",
+    "canonical_value": 1.0
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "src": {
+    "type": "DisputeContext",
+    "var": "ctx"
+   },
+   "edge_type": "has_signal",
+   "tgt": {
+    "type": "RuleDisputeSignal",
+    "var": "sig"
+   },
+   "where": null,
+   "weight": {
+    "type": "Lit",
+    "value": 1.0
+   },
+   "provenance": "rule_dispute_escalation"
+  }
+ ],
+ "concepts": [
+  {
+   "name": "rule_dispute_escalation",
+   "definition": "A tabletop rules disagreement's outcome (defuse or escalate into an argument) is a scalar composition of issue severity, dyadic closeness, and audience size, classified via Argmin nearest-point decode against a held 2-entry outcome codebook -- the register-quantization rung's compose-then-classify shape, applied to a conflict-pressure quantity instead of a communication-style quantity.",
+   "why": "The user asked for a testable scenario where two Bigville board-game residents disagree about a rule, and the disagreement either defuses or escalates depending on the nature of the issue, the two people, and who else is in the room -- RULE_DISPUTE_ESCALATION_PREREG.md."
+  }
+ ],
+ "exclusions": [],
+ "rules": [
+  {
+   "name": "rd_decide_outcome",
+   "comment": "PREREG Sec2: composes a scalar 'pressure' from issue_severity (how starkly a claim contradicts the resident's own document-grounded HeldRule reading), closeness (band_code/5.0, reusing bigville's already-built band_code/tie_strength plumbing verbatim -- bigville commit 1b79a0f), and witnesses (bystander count, a bare integer -- who else is in the room), then classifies against a 2-entry DisputeOutcomeAnchor codebook (defuse/escalate) via Argmin nearest-point decode -- the SAME compose-then-Argmin-classify shape can_register_decode_band already established (seeds/can_register_quantization.json), reused here for a different composed quantity. ALL arithmetic (Div/Times/Minus/Plus/Abs/Let/Argmin/Attr/Var/Lit/Eq/And) is pre-existing Term vocabulary -- zero new Rust. The escalate-vs-defuse DECISION is this Rule's own Argmin call, not Python.",
+   "match_type": "RuleDisputeSignal",
+   "match": [
+    [
+     "ctx",
+     "has_signal",
+     "sig"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sig"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "pending"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sig",
+     "closeness",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ctx"
+        },
+        "key": "band_code"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 5.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sig",
+     "pressure",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ctx"
+          },
+          "key": "issue_severity"
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ctx"
+            },
+            "key": "audience_gain"
+           },
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "ctx"
+            },
+            "key": "witnesses"
+           },
+           {
+            "type": "Minus",
+            "a": {
+             "type": "Lit",
+             "value": 1.0
+            },
+            "b": {
+             "type": "Div",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "ctx"
+              },
+              "key": "band_code"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 5.0
+             }
+            }
+           }
+          ]
+         }
+        ]
+       },
+       "b": {
+        "type": "Div",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ctx"
+         },
+         "key": "band_code"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 5.0
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sig",
+     "outcome",
+     {
+      "__term__": {
+       "type": "Let",
+       "name": "pressure",
+       "value": {
+        "type": "Minus",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ctx"
+           },
+           "key": "issue_severity"
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "ctx"
+             },
+             "key": "audience_gain"
+            },
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "ctx"
+             },
+             "key": "witnesses"
+            },
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Lit",
+              "value": 1.0
+             },
+             "b": {
+              "type": "Div",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "ctx"
+               },
+               "key": "band_code"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 5.0
+              }
+             }
+            }
+           ]
+          }
+         ]
+        },
+        "b": {
+         "type": "Div",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ctx"
+          },
+          "key": "band_code"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 5.0
+         }
+        }
+       },
+       "body": {
+        "type": "Attr",
+        "node": {
+         "type": "Argmin",
+         "source": {
+          "type": "NodesOfType",
+          "node_type": "DisputeOutcomeAnchor"
+         },
+         "var_name": "anchor",
+         "value": {
+          "type": "Abs",
+          "arg": {
+           "type": "Minus",
+           "a": {
+            "type": "Var",
+            "name": "pressure"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "anchor"
+            },
+            "key": "canonical_value"
+           }
+          }
+         }
+        },
+        "key": "label"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "sig",
+     "status",
+     "decided"
+    ]
+   ]
+  }
+ ]
+}
