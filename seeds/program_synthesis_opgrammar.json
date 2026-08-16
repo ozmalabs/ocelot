@@ -1,10 +1,10 @@
 {
   "id": "program_synthesis_opgrammar",
-  "version": "1.1.0",
+  "version": "1.3.0",
   "depends_on": [
     "program_synthesis"
   ],
-  "description": "OPLIST_ADMISSIBILITY_GRAMMAR_PREREG.md / _RESULTS.md (the design this seed builds) + OPLIST_ADMISSIBILITY_GRAMMAR_SLICE1_RESULTS.md (the first slice: 52 SynthOp nodes + the two SortBy productions) + PROGRAM_SYNTHESIS_GAMMA_BULK_TRANSCRIPTION_PREREG.md/_RESULTS.md (this rung: the bulk transcription of the remaining 12 op-list evidence-gate sites named by OPLIST_ADMISSIBILITY_GRAMMAR_RESULTS.md section 1.1's own 14-site table, plus the necessary 13th bare-scalar-fallback DEFAULT_OPS baseline production found while verifying parity -- see that RESULTS doc section 4). The op-list boolean gate ladder inside eval_synth_enumerate (runners/dsl/src/synth_enumerate.rs) is Gamma-shaped -- a real generated multi-production admissible-move SET, CLAUDE.md's own 'set of allowed moves' test, not a quantity that changes (no sd-loop residual here). This seed now carries 57 static SynthOp nodes (one per REAL current OP_TABLE entry, re-verified live against source -- the earlier '52' count is stale, 5 more ops landed since: IntersectAll, UnionAll, DictFromPairs, Mod, Sqrt) and 15 Productions -- the original 2 SortBy gates (has_dict_value, has_list_of_lists) plus 13 new productions covering site A (is_string_shaped -> DEFAULT_STR_OPS), site B (is_list_shaped -> DEFAULT_OPS u LIST_EXTRA_OPS), sites C/D/E (output_is_listlike -> TupleOf/Sort/[+has_string_value]Split), site F (output_is_setlike -> SET_DEFAULT_OPS), sites G/H (has_string_value/has_float_value on the bare-scalar fallback branch), site I (has_float_value on the list-shaped branch -> Round), a completion of the has_dict_value site (DictItems/Reverse -- SortBy was already shipped for this evidence), site L (has_repeated_list_element on the list-shaped branch -> IndexedMap), site N (output_is_bare_int -> ParseInt), and a 13th production for the bare-scalar-fallback DEFAULT_OPS baseline (needed for genuine parity on plain-arithmetic specs, not itself one of the named 14 sites -- see the RESULTS doc). Site K (has_repeated_list_element on the SAME bare-scalar branch) was found DEAD in current source (its guard can never be true when the code path that would consume it is reached) and is NOT ported -- see the RESULTS doc section 3. Every production nested inside the Rust ladder's 'else if spec_is_list_shaped' arm carries an explicit Not(output_is_setlike) conjunct -- REQUIRED, not decorative: a Set/FrozenSet-shaped output always ALSO satisfies is_list_shaped (Set/FrozenSet are is_listlike), and output_is_setlike is checked earlier in the if/else-if chain, so without this exclusion a list-shaped-branch production would wrongly admit ops for every Set-shaped spec in the corpus (tasks 232/473), not a rare edge case. Bucket admits (sites A, B, F, G, and the has_dict_value completion, plus the 13th) use a single production keyed by the Term algebra's own already-shipped `In` (member-of-a-literal-list) operator instead of one production per op -- In is already load-bearing this exact way in seeds/conversation_capability_route.json and siblings, so this is an established idiom, not a new mechanism; Production.tgt matches by node TYPE only (never attrs), so op-name specificity has to live in `where_` regardless of whether it's Eq or In. SynthSpecShape now carries an ELEVENTH flag, output_is_dictlike (domains/prog_synthesis.py:: _synth_spec_shape_flags), added ONLY so the bare-scalar-fallback production can correctly exclude the DICT_DEFAULT_OPS branch a later rung (GroupCount/DictMerge) inserted into the ladder's if/else-if chain -- DICT_DEFAULT_OPS's own two new ops (GroupCount, DictMerge) stay OUT of Gamma scope entirely, not one of the 14 named sites. As before, Gamma verdicts here are recorded facts only -- run_enumerate's real op-list construction is untouched, still driven entirely by the hand-written Rust ladder; zero MBPP task-id changes are expected from this rung.",
+  "description": "OPLIST_ADMISSIBILITY_GRAMMAR_PREREG.md / _RESULTS.md (the design this seed builds) + OPLIST_ADMISSIBILITY_GRAMMAR_SLICE1_RESULTS.md (the first slice: 52 SynthOp nodes + the two SortBy productions) + PROGRAM_SYNTHESIS_GAMMA_BULK_TRANSCRIPTION_PREREG.md/_RESULTS.md (the bulk transcription of 12 more op-list evidence-gate sites, 57 SynthOp nodes) + GAMMA_CONSULTATION_FLIP_PREREG.md/_RESULTS.md (THIS rung: closes residual #41 -- domains/prog_synthesis.py::run_enumerate now reads Gamma's own admissible_moves verdict as the SOURCE of spec['ops'] when the caller passes no explicit ops, instead of merely recording it; falls back to the Rust ladder's own internal default when Gamma admits nothing, which happens exactly for the still-out-of-scope DICT_DEFAULT_OPS branch, §2/§3 of that PREREG). The op-list boolean gate ladder inside eval_synth_enumerate (runners/dsl/src/synth_enumerate.rs) is Gamma-shaped -- a real generated multi-production admissible-move SET, CLAUDE.md's own 'set of allowed moves' test, not a quantity that changes (no sd-loop residual here). This seed now carries 58 static SynthOp nodes (one per REAL current OP_TABLE entry, re-verified live against source -- ZipWith is the 58th, landed in the progsyn-zip-elementwise rung, AFTER the bulk transcription rung's own 57-node snapshot) and 17 Productions -- the original 2 SortBy gates (has_dict_value, has_list_of_lists), 13 productions from the bulk transcription rung covering site A (is_string_shaped -> DEFAULT_STR_OPS), site B (is_list_shaped -> DEFAULT_OPS u LIST_EXTRA_OPS), sites C/D/E (output_is_listlike -> TupleOf/Sort/[+has_string_value]Split), site F (output_is_setlike -> SET_DEFAULT_OPS), sites G/H (has_string_value/has_float_value on the bare-scalar fallback branch), site I (has_float_value on the list-shaped branch -> Round), a completion of the has_dict_value site (DictItems/Reverse), site L (has_repeated_list_element on the list-shaped branch -> IndexedMap), site N (output_is_bare_int -> ParseInt), the 13th bare-scalar-fallback DEFAULT_OPS baseline production, PLUS TWO NEW productions this rung adds (site O: is_list_shaped & output_is_dictlike -> GroupCount, the list-shaped-branch push at synth_enumerate.rs:2667-2669, distinct from the still-out-of-scope DICT_DEFAULT_OPS bucket; site P: is_list_shaped & has_two_zippable_list_vars -> ZipWith, the ZIP_ELEMENTWISE rung's own evidence gate, landed after the bulk transcription rung and confirmed uncovered by GAMMA_CONSULTATION_FLIP_PREREG.md's own direct source read). Site K (has_repeated_list_element on the bare-scalar branch) was found DEAD in current source and is NOT ported -- see the bulk transcription RESULTS doc section 3. Every production nested inside the Rust ladder's 'else if spec_is_list_shaped' arm carries an explicit Not(output_is_setlike) conjunct -- REQUIRED, not decorative: a Set/FrozenSet-shaped output always ALSO satisfies is_list_shaped (Set/FrozenSet are is_listlike), and output_is_setlike is checked earlier in the if/else-if chain, so without this exclusion a list-shaped-branch production would wrongly admit ops for every Set-shaped spec in the corpus (tasks 232/473), not a rare edge case -- sites O and P both carry it too. Bucket admits (sites A, B, F, G, and the has_dict_value completion, plus the 13th) use a single production keyed by the Term algebra's own already-shipped `In` (member-of-a-literal-list) operator instead of one production per op; sites O/P are single-op Eq productions, matching sites C/D/I/L/N's own precedent for a narrow single-op evidence gate. SynthSpecShape carries a TWELFTH flag, has_two_zippable_list_vars (domains/prog_synthesis.py::_synth_spec_shape_flags), a direct 1:1 port of spec_has_two_zippable_list_vars (synth_enumerate.rs:2395-2413), needed ONLY for site P. The DICT_DEFAULT_OPS branch (7 ops as of the ceiling-reassessment-6 rung, widened from 5 since the bulk transcription snapshot) remains DELIBERATELY out of Gamma scope entirely -- confirmed, not assumed, that Gamma's admitted set is exactly EMPTY for a spec landing there today, which is exactly the case run_enumerate's own fallback rule (Gamma admits nothing -> defer to the Rust ladder's own internal default) is designed to handle correctly without extending Gamma to cover it. A REAL REGRESSION was found and fixed live during this rung's own paired MBPP battery (GAMMA_CONSULTATION_FLIP_RESULTS.md section 5): the bare-scalar-fallback baseline production originally only carried the 12 DEFAULT_OPS names, but the real Rust ladder ALSO unconditionally appends Mod/Sqrt on that SAME branch (synth_enumerate.rs, the bare-scalar `else` arm) -- since that branch's Gamma verdict was non-empty (DEFAULT_OPS alone), the empty-verdict fallback never caught this, and Gamma-sourced spec[\"ops\"] silently omitted Mod/Sqrt, regressing tasks 171/246/435/441/479/14/etc (any bare-scalar task needing Mod or Sqrt) on the full/content_stripped/official arms. Fixed by widening the SAME baseline production's In-list to also admit Mod/Sqrt, gated by the IDENTICAL bare-scalar-branch condition -- both ops are pushed in that exact unconditional context in the real ladder, so this is the SAME site, not a new one. Mod/Sqrt are therefore NO LONGER out of Gamma scope; only DictMerge/DictFromPairs (the still-uncovered DICT_DEFAULT_OPS branch) remain so.",
   "nodes": [
     {
       "local_id": 1,
@@ -403,6 +403,13 @@
       "type": "SynthOp",
       "attrs": {
         "name": "Sqrt"
+      }
+    },
+    {
+      "local_id": 58,
+      "type": "SynthOp",
+      "attrs": {
+        "name": "ZipWith"
       }
     }
   ],
@@ -1630,7 +1637,7 @@
       }
     },
     {
-      "provenance": "program_synthesis_opgrammar:bare_scalar_fallback_default_ops_baseline",
+      "provenance": "program_synthesis_opgrammar:bare_scalar_fallback_default_ops_baseline_plus_modsqrt",
       "src": {
         "type": "SynthSpecShape",
         "var": "spec"
@@ -1667,7 +1674,9 @@
                 "Gt",
                 "Lt",
                 "Eq",
-                "IfThenElse"
+                "IfThenElse",
+                "Mod",
+                "Sqrt"
               ]
             }
           },
@@ -1736,6 +1745,166 @@
                   "name": "spec"
                 },
                 "key": "output_is_dictlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provenance": "program_synthesis_opgrammar:site_o_list_shaped_dictlike_output_groupcount",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "GroupCount"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "is_list_shaped"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "output_is_dictlike"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_setlike"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provenance": "program_synthesis_opgrammar:site_p_list_shaped_two_zippable_vars_zipwith",
+      "src": {
+        "type": "SynthSpecShape",
+        "var": "spec"
+      },
+      "edge_type": "admits_op",
+      "tgt": {
+        "type": "SynthOp",
+        "var": "op"
+      },
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ZipWith"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "is_list_shaped"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "spec"
+              },
+              "key": "has_two_zippable_list_vars"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "spec"
+                },
+                "key": "output_is_setlike"
               },
               "b": {
                 "type": "Lit",

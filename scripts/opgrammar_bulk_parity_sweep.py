@@ -1,29 +1,37 @@
 """opgrammar_bulk_parity_sweep — PROGRAM_SYNTHESIS_GAMMA_BULK_TRANSCRIPTION_
-RESULTS.md's own verification harness. NOT a production module, NOT part of
-the named 9-file regression suite, NOT wired into any agent path — a
-one-off diagnostic script, in the family of `scripts/ceiling3_diag_sweep.py`.
+RESULTS.md's own verification harness, UPDATED by GAMMA_CONSULTATION_FLIP_
+PREREG/RESULTS.md (closing residual #41) to match CURRENT source exactly —
+the prior oracle had drifted stale (its `DICT_DEFAULT_OPS` constant was
+missing `DictItems`/`FilterList`, added by the `ceiling-reassessment-6`
+rung after the bulk transcription snapshot; it had no `ZipWith` branch at
+all, that op having landed in the `zip-elementwise` rung, also after the
+snapshot). NOT a production module, NOT part of the named 9-file
+regression suite, NOT wired into any agent path — a one-off diagnostic
+script, in the family of `scripts/ceiling3_diag_sweep.py`.
 
 For every real MBPP task in `tests/fixtures/mbpp/sanitized-mbpp.json` whose
 "primary" revealed rows are runnable, this script:
 
-  1. Computes the 11-flag `_synth_spec_shape_flags` dict from the raw
+  1. Computes the 12-flag `_synth_spec_shape_flags` dict from the raw
      revealed rows (the SAME flags `run_enumerate` mints onto a live
      `SynthSpecShape` node).
   2. Computes `_real_admitted_ops(flags)` — a FAITHFUL, hand-traced Python
      replica of the CURRENT `eval_synth_enumerate` default-ops ladder
-     (`runners/dsl/src/synth_enumerate.rs:2093-2408`, re-read in full while
-     writing this), including the branches this rung's Γ productions
-     deliberately do NOT cover (the `DICT_DEFAULT_OPS` branch and its two
-     new ops `GroupCount`/`DictMerge`/`DictFromPairs`, and the unconditional
-     `Mod`/`Sqrt` append on the bare-scalar branch) — this is the
-     "ground truth" oracle.
-  3. Computes Γ's admitted set by calling `is_edge_admissible` once per
-     real `SynthOp` name (57 calls) against a freshly-minted
-     `SynthSpecShape` node carrying the computed flags.
+     (`runners/dsl/src/synth_enumerate.rs:2359-2711`, re-read in full while
+     writing this), including the ONE branch Γ still deliberately does NOT
+     cover (the `DICT_DEFAULT_OPS` branch and its own `DictMerge`/
+     `DictFromPairs`, plus the unconditional `Mod`/`Sqrt` append on the
+     bare-scalar branch) — this is the "ground truth" oracle.
+  3. Computes Γ's admitted set via ONE `admissible_moves` call (58
+     candidates, matching `run_enumerate`'s own `_GAMMA_OP_CANDIDATE_
+     ORDER` — the SAME consultation mechanism `run_enumerate` now actually
+     uses in production, not merely an `is_edge_admissible` probe) against
+     a freshly-minted `SynthSpecShape` node carrying the computed flags.
   4. Diffs the two sets and classifies every difference as EXPECTED (an op
-     name this rung deliberately left out of Γ scope, or a spec whose real
-     admitted set comes from the out-of-scope `DICT_DEFAULT_OPS` branch) or
-     UNEXPECTED (anything else — a genuine transcription bug).
+     name still out of Γ scope — `DictMerge`/`DictFromPairs`/`Mod`/`Sqrt`
+     — or a spec whose real admitted set comes from the out-of-scope
+     `DICT_DEFAULT_OPS` branch) or UNEXPECTED (anything else — a genuine
+     transcription bug).
 
 Prints a summary table and exits nonzero if any UNEXPECTED mismatch is
 found, so it doubles as a CI-style gate when run directly.
@@ -43,10 +51,23 @@ from domains import prog_synthesis as psy  # noqa: E402
 
 # --------------------------------------------------------------------------- #
 # The out-of-Gamma-scope op population: never admitted by ANY production
-# this rung (or the earlier SLICE1 rung) ships, by deliberate, documented
-# design (PROGRAM_SYNTHESIS_GAMMA_BULK_TRANSCRIPTION_PREREG.md section 1).
+# this rung (or its predecessors) ships, by deliberate, documented design
+# (PROGRAM_SYNTHESIS_GAMMA_BULK_TRANSCRIPTION_PREREG.md section 1;
+# GAMMA_CONSULTATION_FLIP_PREREG.md section 2 point 3). `GroupCount` and
+# `ZipWith` are DELIBERATELY REMOVED from this set relative to the prior
+# version of this script — GAMMA_CONSULTATION_FLIP added productions
+# covering both (sites O and P) inside the already-Gamma-covered
+# list-shaped branch. `Mod`/`Sqrt` are ALSO removed — a REAL regression
+# (GAMMA_CONSULTATION_FLIP_RESULTS.md section 5) found them missing from
+# the bare-scalar-fallback baseline production even though that branch's
+# own Gamma verdict is non-empty (so the empty-verdict fallback never
+# caught it); the baseline production now admits them too. Only
+# `DictMerge`/`DictFromPairs` (the still-uncovered `DICT_DEFAULT_OPS`
+# branch) remain out of scope — and specs landing in THAT branch are
+# separately classified as expected via `is_dict_branch` below regardless
+# of which op names it contributes.
 # --------------------------------------------------------------------------- #
-_OUT_OF_SCOPE_OPS = frozenset({"GroupCount", "DictMerge", "DictFromPairs", "Mod", "Sqrt"})
+_OUT_OF_SCOPE_OPS = frozenset({"DictMerge", "DictFromPairs"})
 
 DEFAULT_OPS = ["Plus", "Times", "Minus", "Div", "Min", "Max", "Abs", "Neg",
                "Gt", "Lt", "Eq", "IfThenElse"]
@@ -56,7 +77,12 @@ LIST_EXTRA_OPS = ["Len", "SumList", "MaxList", "MinList", "MaxLenOver", "MinLenO
 TUPLE_BUILD_OPS = ["TupleOf"]
 SET_DEFAULT_OPS = ["Eq", "IfThenElse", "Sort", "Reverse", "Slice", "SetMap",
                     "Intersect", "Union", "IntersectAll", "UnionAll"]
-DICT_DEFAULT_OPS = ["Eq", "IfThenElse", "GroupCount", "DictMerge", "DictFromPairs"]
+# CEILING_REASSESSMENT_6 widened this 5 -> 7 (DictItems, FilterList added)
+# AFTER the bulk transcription rung's own snapshot -- the prior version of
+# this oracle still had the stale 5-op list; fixed here to match current
+# source exactly (synth_enumerate.rs:602-603).
+DICT_DEFAULT_OPS = ["Eq", "IfThenElse", "GroupCount", "DictMerge", "DictFromPairs",
+                     "DictItems", "FilterList"]
 DEFAULT_STR_OPS = ["Concat", "CaseFold", "Eq", "IfThenElse", "Replace", "Split",
                     "StrCount", "Capitalize", "Reverse", "Slice", "Str",
                     "MapList", "JoinList"]
@@ -76,6 +102,7 @@ def _real_admitted_ops(flags: "dict[str, bool]") -> "set[str]":
     has_rep = flags["has_repeated_list_element"]
     out_listlike = flags["output_is_listlike"]
     out_bare_int = flags["output_is_bare_int"]
+    has_two_zip = flags.get("has_two_zippable_list_vars", False)
 
     if T:
         return set(DEFAULT_STR_OPS)
@@ -100,6 +127,12 @@ def _real_admitted_ops(flags: "dict[str, bool]") -> "set[str]":
             v.add("SortBy")
         if D:
             v.add("GroupCount")
+        # ZIP_ELEMENTWISE rung (landed AFTER the bulk transcription
+        # snapshot): a genuine two-sequence spec gets ZipWith too
+        # (synth_enumerate.rs:2670-2679). Site P (GAMMA_CONSULTATION_FLIP)
+        # covers this.
+        if has_two_zip:
+            v.add("ZipWith")
         return v
     if D:
         return set(DICT_DEFAULT_OPS)
@@ -117,13 +150,18 @@ def _real_admitted_ops(flags: "dict[str, bool]") -> "set[str]":
     return v
 
 
-def _gamma_admitted_ops(sub, all_op_names, flags) -> "set[str]":
+def _gamma_admitted_ops(sub, candidate_order, flags) -> "set[str]":
+    """Uses `admissible_moves` — the SAME consultation mechanism
+    `run_enumerate` now actually uses in production (GAMMA_CONSULTATION_
+    FLIP), not a per-op `is_edge_admissible` probe. The candidate ORDER
+    doesn't affect this function's own output (a `set`), only whether the
+    real `run_enumerate` call downstream preserves the real ladder's op
+    ORDER — a separate, explicitly out-of-scope-for-this-script concern
+    named in GAMMA_CONSULTATION_FLIP_PREREG.md section 4."""
     n = sub.add_node("SynthSpecShape", flags)
-    out = set()
-    for name in all_op_names:
-        if sub._inner.is_edge_admissible(n, "admits_op", "SynthOp", {"name": name}):
-            out.add(name)
-    return out
+    admitted = sub._inner.admissible_moves(
+        n, "admits_op", [("SynthOp", {"name": name}) for name in candidate_order])
+    return {attrs["name"] for (_typ, attrs, _weight) in admitted}
 
 
 def main() -> int:
@@ -131,7 +169,10 @@ def main() -> int:
     ag = s.add_node("Agent", {})
     psy.ensure_program_synthesis(s, s._inner, ag)
     all_op_names = sorted(s.node(n)["attrs"]["name"] for n in s.nodes("SynthOp"))
-    assert len(all_op_names) == 57, len(all_op_names)
+    assert len(all_op_names) == 58, len(all_op_names)
+    candidate_order = psy._GAMMA_OP_CANDIDATE_ORDER
+    assert sorted(candidate_order) == all_op_names, (
+        "candidate order and live SynthOp population have diverged")
 
     with open("tests/fixtures/mbpp/sanitized-mbpp.json") as f:
         tasks = json.load(f)
@@ -157,7 +198,7 @@ def main() -> int:
             continue
         flags = psy._synth_spec_shape_flags(raw_rows)
         real = _real_admitted_ops(flags)
-        gamma = _gamma_admitted_ops(s, all_op_names, flags)
+        gamma = _gamma_admitted_ops(s, candidate_order, flags)
 
         n_checked += 1
         diff = real.symmetric_difference(gamma)

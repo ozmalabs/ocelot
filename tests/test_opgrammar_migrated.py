@@ -1,33 +1,46 @@
 """test_opgrammar_migrated — OPLIST_ADMISSIBILITY_GRAMMAR_SLICE1_RESULTS.md
 (the first slice: `SynthOp`/`SynthSpecShape` node types + the two SortBy
-productions) EXTENDED by PROGRAM_SYNTHESIS_GAMMA_BULK_TRANSCRIPTION_
-PREREG/_RESULTS.md (the bulk transcription of the remaining 12 op-list
-evidence-gate sites named by OPLIST_ADMISSIBILITY_GRAMMAR_RESULTS.md §1.1's
-own 14-site table, plus a 13th bare-scalar-fallback `DEFAULT_OPS` baseline
-production found necessary for genuine parity — see that RESULTS doc). The
-MBPP op-list boolean gate ladder inside `eval_synth_enumerate`
-(runners/dsl/src/synth_enumerate.rs) is Γ-shaped (a real generated
-multi-production admissible-move SET, CLAUDE.md's own "set of allowed
-moves" test) — this seed mints the `SynthOp` vocabulary (57 static nodes,
-one per real, live `OP_TABLE` entry) + a `SynthSpecShape` node type
-(eleven evidence flags), and `run_enumerate` probes `is_edge_admissible`
-ALONGSIDE (never replacing) the existing hand-written Rust ladder — Γ
-verdicts are recorded facts only, never consulted for `spec["ops"]`
-construction.
+productions), EXTENDED by PROGRAM_SYNTHESIS_GAMMA_BULK_TRANSCRIPTION_
+PREREG/_RESULTS.md (the bulk transcription of 12 more op-list evidence-gate
+sites) and then by GAMMA_CONSULTATION_FLIP_PREREG/_RESULTS.md (closing
+residual #41): the MBPP op-list boolean gate ladder inside
+`eval_synth_enumerate` (runners/dsl/src/synth_enumerate.rs) is Γ-shaped (a
+real generated multi-production admissible-move SET, CLAUDE.md's own "set
+of allowed moves" test) — this seed mints the `SynthOp` vocabulary (58
+static nodes, one per real, live `OP_TABLE` entry) + a `SynthSpecShape`
+node type (twelve evidence flags), and `run_enumerate` now CONSULTS Γ
+(`admissible_moves`, one call over all 58 names) as the SOURCE of
+`spec["ops"]` when the caller passes no explicit `ops` — falling back to
+the Rust ladder's own internal default only when Γ admits nothing (proven
+to happen exactly for the still-out-of-scope `DICT_DEFAULT_OPS` branch).
 
 The bulk-transcription rung's own parity sweep
 (`scripts/opgrammar_bulk_parity_sweep.py`, full 420-real-spec run) found
 TWO real, corpus-confirmed parity bugs in the two ALREADY-SHIPPED `SortBy`
 productions (both missing a `¬output_is_setlike` exclusion; the
 `has_dict_value` gate also missing an `is_list_shaped` requirement) and
-fixed them in place — see that RESULTS doc §6 for the full diagnosis. Tests
-below reflect the FIXED productions, not the original SLICE1 shape.
+fixed them in place — see that RESULTS doc §6 for the full diagnosis.
+GAMMA_CONSULTATION_FLIP added two MORE productions (site O: `GroupCount`
+inside the list-shaped branch when `output_is_dictlike`; site P:
+`ZipWith` when `has_two_zippable_list_vars`) — both evidence sites that
+live INSIDE the already-Γ-covered list-shaped branch but had never been
+given their own site. It ALSO found and fixed a REAL regression live
+during its own paired MBPP battery (GAMMA_CONSULTATION_FLIP_RESULTS.md
+§5): `Mod`/`Sqrt` are pushed unconditionally on the bare-scalar branch
+in the real Rust ladder, but the bare-scalar-fallback baseline production
+originally only carried `DEFAULT_OPS`'s 12 names — since that branch's Γ
+verdict was non-empty regardless (DEFAULT_OPS alone), the flip's
+empty-verdict fallback never caught the gap, and 6+ real currently-
+passing tasks (171/246/435/441/479/464) regressed. Fixed by widening the
+SAME baseline production to also admit `Mod`/`Sqrt` under the identical
+gate. Tests below reflect the CURRENT, flip-consulted, POST-FIX shape,
+not any prior rung's snapshot.
 
-NOT attempted in this rung, and not tested here: the mint sweep (a
-separate, later rung per the design doc's own §8 step 5); the
-`DICT_DEFAULT_OPS` branch and its `GroupCount`/`DictMerge`/`DictFromPairs`
-ops, and the unconditional `Mod`/`Sqrt` append — all explicitly out of
-Γ scope (not among the 14 named sites).
+Still NOT attempted, and not tested here: the mint sweep (a separate,
+later rung per the design doc's own §8 step 5); the `DICT_DEFAULT_OPS`
+branch itself and its `DictMerge`/`DictFromPairs` ops — confirmed, not
+assumed, to remain the only op-list evidence-gate site still out of Γ
+scope (GAMMA_CONSULTATION_FLIP_PREREG.md §2 point 3, §5).
 """
 from __future__ import annotations
 
@@ -54,25 +67,27 @@ def boot():
 #    PROGRAM_SYNTHESIS_GAMMA_BULK_TRANSCRIPTION_RESULTS.md §1), the seed
 #    marker, and idempotent re-install (the `_has_seed` guard).
 # --------------------------------------------------------------------------- #
-def test_opgrammar_seed_installs_57_synthop_nodes_and_is_idempotent():
+def test_opgrammar_seed_installs_58_synthop_nodes_and_is_idempotent():
     s, ag = boot()
     assert any(
         s.node(n)["attrs"].get("id") == "program_synthesis_opgrammar"
         for n in s.nodes("Seed")
     )
     ops = sorted(s.node(n)["attrs"].get("name") for n in s.nodes("SynthOp"))
-    assert len(ops) == 57, len(ops)
-    assert len(set(ops)) == 57, "no duplicate SynthOp names"
+    assert len(ops) == 58, len(ops)
+    assert len(set(ops)) == 58, "no duplicate SynthOp names"
     assert "SortBy" in ops and "DictItems" in ops and "GroupCount" in ops \
         and "DictMerge" in ops
     assert "IntersectAll" in ops and "UnionAll" in ops \
         and "DictFromPairs" in ops and "Mod" in ops and "Sqrt" in ops
+    assert "ZipWith" in ops  # GAMMA_CONSULTATION_FLIP: the 58th, landed
+    # in the zip-elementwise rung, AFTER the bulk-transcription snapshot.
 
     # Idempotent: calling ensure_program_synthesis_opgrammar again must not
     # mint a second population of SynthOp nodes.
     psy.ensure_program_synthesis_opgrammar(s, s._inner, ag)
     ops_again = [s.node(n)["attrs"].get("name") for n in s.nodes("SynthOp")]
-    assert len(ops_again) == 57
+    assert len(ops_again) == 58
 
 
 # --------------------------------------------------------------------------- #
@@ -88,6 +103,7 @@ _BASE_FLAGS = {
     "output_is_setlike": False, "output_is_bare_int": False,
     "output_is_dictlike": False,
     "is_string_shaped": False, "is_list_shaped": True,
+    "has_two_zippable_list_vars": False,
 }
 
 
@@ -154,13 +170,18 @@ def test_gamma_never_admits_an_out_of_scope_op_no_matter_the_flags():
     `DEFAULT_STR_OPS`/`DICT_DEFAULT_OPS`/`TUPLE_BUILD_OPS`, confirmed by
     reading every bucket in full) — reachable only via an explicit `ops`
     request, never a typed default, so Γ must never admit them regardless
-    of which evidence flags are set. `GroupCount`/`DictMerge`/
-    `DictFromPairs`/`Mod`/`Sqrt` are real gate-admitted ops in the Rust
-    ladder but DELIBERATELY out of Γ scope this rung (the `DICT_DEFAULT_
-    OPS` branch and the unconditional bare-scalar append — see
-    PROGRAM_SYNTHESIS_GAMMA_BULK_TRANSCRIPTION_RESULTS.md §1) — Γ must
-    never admit these either, by design, even though the real ladder
-    sometimes does."""
+    of which evidence flags are set. `DictMerge`/`DictFromPairs` are real
+    gate-admitted ops in the Rust ladder but DELIBERATELY out of Γ scope
+    (the still-uncovered `DICT_DEFAULT_OPS` branch —
+    GAMMA_CONSULTATION_FLIP_PREREG.md §2 point 3, §5) — Γ must never admit
+    these either, by design, even though the real ladder sometimes does.
+    THIS flag combination sets `is_list_shaped=True`, so `Mod`/`Sqrt`
+    (bare-scalar-branch-only, now Γ-covered — see the dedicated regression
+    test below) and `GroupCount`/`ZipWith`'s own required flags
+    (`output_is_dictlike`/`has_two_zippable_list_vars`, both False here)
+    correctly stay unadmitted HERE too — none of these four names is
+    reachable on a list-shaped-branch flag combination missing their own
+    specific gate, exercised as their own dedicated tests elsewhere."""
     s, ag = boot()
     # A maximal, "everything true" flag combination -- the strongest
     # stress test: if these names are still never admitted here, they are
@@ -172,12 +193,35 @@ def test_gamma_never_admits_an_out_of_scope_op_no_matter_the_flags():
         output_is_listlike=True, output_is_setlike=False,
         output_is_bare_int=True, output_is_dictlike=False,
         is_string_shaped=False, is_list_shaped=True,
+        has_two_zippable_list_vars=False,
     )
     n = s.add_node("SynthSpecShape", flags)
-    for other in ("Gte", "And", "Or", "Not", "GroupCount", "DictMerge",
-                  "DictFromPairs", "Mod", "Sqrt"):
+    for other in ("Gte", "And", "Or", "Not", "DictMerge",
+                  "DictFromPairs", "Mod", "Sqrt", "GroupCount", "ZipWith"):
         assert s._inner.is_edge_admissible(
             n, "admits_op", "SynthOp", {"name": other}) is False, other
+
+
+def test_bare_scalar_fallback_baseline_also_admits_mod_and_sqrt():
+    """REGRESSION TEST for the real bug found live during this rung's own
+    paired MBPP battery (GAMMA_CONSULTATION_FLIP_RESULTS.md §5): the real
+    Rust ladder pushes `Mod`/`Sqrt` unconditionally on the SAME bare-scalar
+    branch as `DEFAULT_OPS` -- the baseline production must admit both,
+    under the identical gate, or a Γ-sourced spec["ops"] silently drops
+    Mod/Sqrt for every bare-scalar spec (this regressed 6+ real MBPP
+    tasks -- 171/246/435/441/479/464 -- before the fix)."""
+    s, ag = boot()
+    for op in ("Mod", "Sqrt"):
+        assert _admits(s, dict(_ALL_FALSE), op) is True, op
+    # Same exclusion as the rest of the baseline production: a Dict-output
+    # spec must not admit Mod/Sqrt here either (falls to the still-
+    # out-of-scope DICT_DEFAULT_OPS branch instead).
+    assert _admits(s, dict(_ALL_FALSE, output_is_dictlike=True), "Mod") is False
+    assert _admits(s, dict(_ALL_FALSE, output_is_dictlike=True), "Sqrt") is False
+    # And not admitted on the list-shaped branch -- Mod/Sqrt never appear
+    # there in the real ladder.
+    assert _admits(s, dict(_ALL_FALSE, is_list_shaped=True), "Mod") is False
+    assert _admits(s, dict(_ALL_FALSE, is_list_shaped=True), "Sqrt") is False
 
 
 # --------------------------------------------------------------------------- #
@@ -257,6 +301,7 @@ _ALL_FALSE = {
     "output_is_setlike": False, "output_is_bare_int": False,
     "output_is_dictlike": False,
     "is_string_shaped": False, "is_list_shaped": False,
+    "has_two_zippable_list_vars": False,
 }
 
 
@@ -340,6 +385,40 @@ def test_site_n_parseint_needs_bare_int_output_and_no_competing_evidence():
     assert _admits(s, dict(f, output_is_listlike=True), "ParseInt") is False
 
 
+def test_site_o_groupcount_admitted_only_when_list_shaped_and_output_dictlike():
+    """GAMMA_CONSULTATION_FLIP site O: the list-shaped-branch `GroupCount`
+    push (synth_enumerate.rs:2667-2669, task 88's own witness) — distinct
+    from the still-out-of-scope `DICT_DEFAULT_OPS` bucket, which is a
+    DIFFERENT real branch reached only when `is_list_shaped=False`."""
+    s, ag = boot()
+    f = dict(_ALL_FALSE, is_list_shaped=True, output_is_dictlike=True)
+    assert _admits(s, f, "GroupCount") is True
+    # Not admitted without is_list_shaped -- that's the (still out-of-scope)
+    # DICT_DEFAULT_OPS branch instead, which Gamma correctly stays silent on.
+    assert _admits(s, dict(_ALL_FALSE, output_is_dictlike=True),
+                    "GroupCount") is False
+    # Not admitted without output_is_dictlike -- plain list-shaped branch.
+    assert _admits(s, dict(_ALL_FALSE, is_list_shaped=True),
+                    "GroupCount") is False
+    # The standing Set-exclusion invariant applies here too.
+    assert _admits(s, dict(f, output_is_setlike=True), "GroupCount") is False
+
+
+def test_site_p_zipwith_admitted_only_when_list_shaped_and_two_zippable_vars():
+    """GAMMA_CONSULTATION_FLIP site P: the ZIP_ELEMENTWISE rung's own
+    evidence gate (synth_enumerate.rs:2670-2679), landed AFTER the bulk
+    transcription rung and confirmed uncovered by GAMMA_CONSULTATION_
+    FLIP_PREREG.md's own direct source read."""
+    s, ag = boot()
+    f = dict(_ALL_FALSE, is_list_shaped=True, has_two_zippable_list_vars=True)
+    assert _admits(s, f, "ZipWith") is True
+    assert _admits(s, dict(_ALL_FALSE, has_two_zippable_list_vars=True),
+                    "ZipWith") is False
+    assert _admits(s, dict(_ALL_FALSE, is_list_shaped=True),
+                    "ZipWith") is False
+    assert _admits(s, dict(f, output_is_setlike=True), "ZipWith") is False
+
+
 def test_bare_scalar_fallback_baseline_admits_default_ops_but_not_when_dictlike():
     """The 13th production (not itself one of the 14 named sites, but
     necessary for genuine parity -- RESULTS.md §4): the bare-scalar
@@ -372,7 +451,9 @@ def test_full_corpus_parity_sweep_zero_unexplained_mismatches():
     ag = s.add_node("Agent", {})
     psy.ensure_program_synthesis(s, s._inner, ag)
     all_op_names = sorted(s.node(n)["attrs"]["name"] for n in s.nodes("SynthOp"))
-    assert len(all_op_names) == 57
+    assert len(all_op_names) == 58
+    candidate_order = psy._GAMMA_OP_CANDIDATE_ORDER
+    assert sorted(candidate_order) == all_op_names
 
     tasks = _mbpp_tasks()
     n_checked = 0
@@ -391,7 +472,7 @@ def test_full_corpus_parity_sweep_zero_unexplained_mismatches():
             continue
         flags = psy._synth_spec_shape_flags(raw_rows)
         real = sweep._real_admitted_ops(flags)
-        gamma = sweep._gamma_admitted_ops(s, all_op_names, flags)
+        gamma = sweep._gamma_admitted_ops(s, candidate_order, flags)
         n_checked += 1
         diff = real.symmetric_difference(gamma)
         is_dict_branch = (not flags["is_string_shaped"] and not flags["output_is_setlike"]
@@ -410,9 +491,10 @@ def test_full_corpus_parity_sweep_zero_unexplained_mismatches():
 #    for task 64 (the widened, list-of-lists witness), task 475 (the
 #    original, dict-shaped witness), and task 2 (currently-passing,
 #    matches NEITHER gate — the negative control) and calls `run_enumerate`
-#    directly with NO explicit `ops` (so the Rust hand-written ladder's own
-#    default decides), confirming Γ's `is_edge_admissible` answer for
-#    `SortBy` matches whether the winning term actually used `SortBy`.
+#    directly with NO explicit `ops`. GAMMA_CONSULTATION_FLIP means this now
+#    exercises the REAL flip (Γ's own admitted set becomes `spec["ops"]`),
+#    not merely a side-channel probe — so this is now also a live regression
+#    check for the flip itself on real MBPP specs, not only a parity check.
 # --------------------------------------------------------------------------- #
 def _mbpp_tasks():
     with open("tests/fixtures/mbpp/sanitized-mbpp.json") as f:
@@ -445,18 +527,135 @@ def test_live_demonstration_gamma_matches_the_real_ladder(task_id, expect_sortby
     ran = _force_run_enumerate(s, ag, g)
     assert ran is True
     attrs = s.node(g)["attrs"]
-    assert attrs.get("ps_enum_gamma_sortby_error") is None
-    gamma_admitted = attrs.get("ps_enum_gamma_sortby_admitted")
-    assert gamma_admitted is expect_sortby, (task_id, gamma_admitted)
+    assert attrs.get("ps_enum_gamma_ops_error") is None
+    gamma_admitted = (attrs.get("ps_enum_gamma_ops_admitted") or "").split(",")
+    assert ("SortBy" in gamma_admitted) is expect_sortby, (task_id, gamma_admitted)
+    # GAMMA_CONSULTATION_FLIP: Γ's non-empty verdict is now the SOURCE of
+    # spec["ops"] for all three of these tasks (none pass an explicit
+    # ps_enum_ops, confirmed above by `_plain_ops`, and Γ's admitted set is
+    # non-empty for all three real shapes).
+    assert attrs.get("ps_enum_gamma_ops_used") is True, task_id
     term = attrs.get("ps_enum_last_term_json") or ""
     used_sortby = "SortBy" in term
     # The discriminating check: Γ's admission answer for SortBy must match
     # the real ladder's own observable behaviour — SortBy actually appears
-    # in the winning term iff the default ladder admitted it, and Γ agrees
-    # with the ladder on every one of the three tasks.
+    # in the winning term iff Γ (now the actual source of the op list)
+    # admitted it, on every one of the three tasks.
     assert used_sortby is expect_sortby, (task_id, term)
 
 
 def _plain_ops(s, m):
     v = s.node(m)["attrs"].get("ps_enum_ops")
     return v or None
+
+
+# --------------------------------------------------------------------------- #
+# 7) THE FLIP ITSELF, end to end on real MBPP tasks — GAMMA_CONSULTATION_
+#    FLIP's own core claim: Γ's verdict is now the SOURCE of spec["ops"]
+#    (not a recorded fact alongside it), EXCEPT for the one branch Γ still
+#    does not cover (DICT_DEFAULT_OPS, task 87's own shape), where the
+#    fallback rule must defer to the Rust ladder's own internal default
+#    and the outcome must be unaffected.
+# --------------------------------------------------------------------------- #
+def test_flip_task_87_dict_default_ops_branch_falls_back_and_still_solves():
+    """Task 87 (`merge_dictionaries_three`): is_list_shaped=False,
+    output_is_dictlike=True -- lands in the still-out-of-scope
+    DICT_DEFAULT_OPS branch. Γ's admitted set is proven empty for this
+    flag combination (GAMMA_CONSULTATION_FLIP_PREREG.md §2 point 3) --
+    `ps_enum_gamma_ops_used` must be False and the Rust ladder's own
+    internal default must still find the DictMerge-based solution,
+    byte-unchanged from pre-flip behaviour."""
+    tasks = _mbpp_tasks()
+    task = tasks[87]
+    parsed = ms.parse_asserts(task)
+    split = ms.split_rows(parsed["rows"], "primary")
+    assert split["runnable"]
+    s, ag = boot()
+    m = psy.ingest_spec(s, ag, task["prompt"], split["revealed"])
+    psy.pump(s, ag)
+    g = s.in_neighbours(m, "about_message")[0]
+    assert not _plain_ops(s, m)
+    ran = _force_run_enumerate(s, ag, g)
+    assert ran is True
+    attrs = s.node(g)["attrs"]
+    assert attrs.get("ps_enum_gamma_ops_admitted") == ""  # empty verdict
+    assert attrs.get("ps_enum_gamma_ops_used") is False
+    assert attrs.get("ps_enumerate_outcome") == "ok"
+    term = attrs.get("ps_enum_last_term_json") or ""
+    assert "DictMerge" in term, term
+
+
+def test_flip_task_88_site_o_groupcount_is_gamma_sourced():
+    """Task 88 (`freq_count`): is_list_shaped=True, output_is_dictlike=True
+    -- site O's own witness. Γ's admitted set (non-empty) becomes
+    spec["ops"], and the winning term correctly uses GroupCount."""
+    tasks = _mbpp_tasks()
+    task = tasks[88]
+    parsed = ms.parse_asserts(task)
+    split = ms.split_rows(parsed["rows"], "primary")
+    assert split["runnable"]
+    s, ag = boot()
+    m = psy.ingest_spec(s, ag, task["prompt"], split["revealed"])
+    psy.pump(s, ag)
+    g = s.in_neighbours(m, "about_message")[0]
+    assert not _plain_ops(s, m)
+    ran = _force_run_enumerate(s, ag, g)
+    assert ran is True
+    attrs = s.node(g)["attrs"]
+    gamma_admitted = (attrs.get("ps_enum_gamma_ops_admitted") or "").split(",")
+    assert "GroupCount" in gamma_admitted
+    assert attrs.get("ps_enum_gamma_ops_used") is True
+    assert attrs.get("ps_enumerate_outcome") == "ok"
+    term = attrs.get("ps_enum_last_term_json") or ""
+    assert "GroupCount" in term, term
+
+
+def test_flip_task_259_site_p_zipwith_is_gamma_sourced():
+    """Task 259 (a ZIP_ELEMENTWISE witness, PROGRAM_SYNTHESIS_ZIP_
+    ELEMENTWISE_RESULTS.md): is_list_shaped=True,
+    has_two_zippable_list_vars=True -- site P's own witness, and one of
+    the 8 real tasks whose typed-default op list (no explicit `ops`) this
+    rung's flip now actually sources from Γ. Without site P this task
+    would silently lose ZipWith from its op list AND the ZIP_MAX_
+    CANDIDATES budget raise (GAMMA_CONSULTATION_FLIP_PREREG.md §3.4)."""
+    tasks = _mbpp_tasks()
+    task = tasks[259]
+    parsed = ms.parse_asserts(task)
+    split = ms.split_rows(parsed["rows"], "primary")
+    assert split["runnable"]
+    s, ag = boot()
+    m = psy.ingest_spec(s, ag, task["prompt"], split["revealed"])
+    psy.pump(s, ag)
+    g = s.in_neighbours(m, "about_message")[0]
+    assert not _plain_ops(s, m)
+    ran = _force_run_enumerate(s, ag, g)
+    assert ran is True
+    attrs = s.node(g)["attrs"]
+    gamma_admitted = (attrs.get("ps_enum_gamma_ops_admitted") or "").split(",")
+    assert "ZipWith" in gamma_admitted
+    assert attrs.get("ps_enum_gamma_ops_used") is True
+    assert attrs.get("ps_enumerate_outcome") == "ok"
+    term = attrs.get("ps_enum_last_term_json") or ""
+    assert "ZipWith" in term, term
+
+
+def test_flip_explicit_ops_still_wins_over_gamma():
+    """`graph_ops` (the NL classifier's own explicit op selection) must
+    still win over Γ's verdict when both are present -- unchanged, out of
+    this rung's scope. Uses task 64's own real rows with an explicit
+    ps_enum_ops set directly on the message, forcing a DIFFERENT (single-op)
+    inventory than Γ would pick, and confirms that inventory is what is
+    actually used."""
+    tasks = _mbpp_tasks()
+    task = tasks[64]
+    parsed = ms.parse_asserts(task)
+    split = ms.split_rows(parsed["rows"], "primary")
+    s, ag = boot()
+    m = psy.ingest_spec(s, ag, task["prompt"], split["revealed"])
+    psy.pump(s, ag)
+    g = s.in_neighbours(m, "about_message")[0]
+    s.set_attr(m, "ps_enum_ops", ["Plus"])
+    ran = _force_run_enumerate(s, ag, g)
+    assert ran is True
+    attrs = s.node(g)["attrs"]
+    assert attrs.get("ps_enum_gamma_ops_used") is False
