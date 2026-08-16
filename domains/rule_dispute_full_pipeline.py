@@ -59,7 +59,7 @@ def ensure_pipeline_seeds(inner) -> None:
 
 
 def run_rule_dispute(inner, *, claimant: dict, claim_pred, truth_pred, domain: str,
-                     band_code: float, witnesses=(), audience_gain: float = 0.15,
+                     band_code: float, witnesses=(), base_audience_gain: float = 0.15,
                      belief_plasticity: float = 0.3, max_steps: int = 3000):
     """Run ONE real dispute end to end for `claimant` (a
     worlds/bigville_can_beliefs.py-shaped resident record) and return the
@@ -75,6 +75,15 @@ def run_rule_dispute(inner, *, claimant: dict, claim_pred, truth_pred, domain: s
     accumulate on the SAME belief (WIRE_IN_PREREG.md Sec2).
     `witnesses`: list of per-witness closeness values (rule_dispute_
     escalation.json's own WitnessPresence shape).
+    `base_audience_gain`: HABITUATES (EVIDENCE_AND_AUDIENCE_WEIGHTING_
+    PREREG.md Sec1) -- the value actually supplied to seeds/rule_dispute_
+    escalation.json's own (unedited) `DisputeContext.audience_gain` field
+    is `base_audience_gain / (claimant_dispute_count + 1)`,
+    `claimant_dispute_count` a REAL observed quantity (how many
+    `run_rule_dispute` calls this claimant has been through before,
+    ACROSS all domains -- audience habituation generalizes, unlike
+    domain-scoped belief). A resident's first-ever dispute is unaffected
+    (byte-identical to pre-audit behavior).
     `belief_plasticity`: the claimant's own personality trait
     (DOMAIN_SELF_WORTH_PROJECTION_PREREG.md Sec4b) -- how readily this
     incident's outcome can move their domain-scoped self_worth. A caller
@@ -100,10 +109,15 @@ def run_rule_dispute(inner, *, claimant: dict, claim_pred, truth_pred, domain: s
     # the claimant's own track record if the comparison baseline moved.
     relative_self_worth_before = read_relative_self_worth(inner, domain_concept)
 
+    resident_node = resident_can["resident_node"]
+    dispute_count = int(inner.node(resident_node)["attrs"].get("dispute_count", 0))
+    effective_audience_gain = base_audience_gain / (dispute_count + 1)
+    inner.set_attr(resident_node, "dispute_count", dispute_count + 1)
+
     claims = inner.add_node("HeldBelief", {"pred": list(claim_pred)})
     truth = inner.add_node("HeldBelief", {"pred": list(truth_pred)})
     bd = inner.add_node("BeliefDisagreement", {
-        "band_code": band_code, "audience_gain": audience_gain,
+        "band_code": band_code, "audience_gain": effective_audience_gain,
     })
     inner.add_edge(bd, "claims", claims, {})
     inner.add_edge(bd, "truth", truth, {})

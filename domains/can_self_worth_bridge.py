@@ -120,6 +120,17 @@ def record_incident_outcome(inner, concepts: dict, *, standard_met: bool,
     call. The 0.3 default exists ONLY for callers (this module's own prior
     rungs) that predate this trait and never varied it.
 
+    RETRACTED, checked and reverted before shipping (EVIDENCE_AND_AUDIENCE_
+    WEIGHTING_PREREG.md Sec1/RESULTS Sec1): `alpha / (domain_incident_count
+    + 1)` was tried and measured -- it reproduces the count-divided
+    (`1/n`) learning-rate anti-pattern CLAUDE.md's own F-16 retrospective
+    already diagnosed ("1/n asserts stationarity... each rate needs a
+    rate") -- the harmonic series diverges so slowly that a belief this
+    formula governs takes ~200 incidents to flip, not the "still learns,
+    just slower" the PREREG registered. Caught before shipping, not after.
+    `alpha` stays UNWEIGHTED, applied flat -- exactly as `DOMAIN_SELF_
+    WORTH_PROJECTION_PREREG.md` originally established it, unchanged.
+
     MUST call force_all_dirty() before re-running -- concept_apply_evidence
     writes external_field outside the rule-effect path and run_rules()'s
     incremental dirty-tracking will otherwise silently no-op (PREREG Sec1,
