@@ -68,9 +68,12 @@ def test_disconfirming_incident_is_specific_act():
 
 
 # ---------------------------------------------------------------------
-# 4. A specific_act resets confirm_streak to 0.
+# 4. A specific_act partially resets confirm_streak -- HATE_RESET_
+#    RESENTMENT_COUPLING_PREREG.md Sec2: multiplied by
+#    arousal_level/(1+arousal_level), an exact full reset only at zero
+#    arousal (the resentment residue is nonzero once aroused).
 # ---------------------------------------------------------------------
-def test_specific_act_resets_confirm_streak():
+def test_specific_act_leaves_an_arousal_scaled_resentment_residue():
     inner, mt = _fresh()
     pat = mint_target_pattern(inner, mt, "Sam")
     r0 = record_hate_incident(inner, mt, pat, negative=True)
@@ -78,14 +81,19 @@ def test_specific_act_resets_confirm_streak():
     assert r_confirm["confirm_streak"] == pytest.approx(1.0 + r0["arousal_level"])
     r_exception = record_hate_incident(inner, mt, pat, negative=False)
     assert r_exception["attribution_locus"] == "specific_act"
-    assert r_exception["confirm_streak"] == 0
+    # retained_fraction reads arousal as of r_confirm (read-before
+    # convention -- the value left over going INTO the exception).
+    retained_fraction = r_confirm["arousal_level"] / (1.0 + r_confirm["arousal_level"])
+    assert r_exception["confirm_streak"] == pytest.approx(
+        r_confirm["confirm_streak"] * retained_fraction)
+    assert r_exception["confirm_streak"] > 0.0  # the resentment residue, not a clean wipe
+
     r_after = record_hate_incident(inner, mt, pat, negative=True)
     assert r_after["attribution_locus"] == "global_other"
-    # streak reset to 0 by the exception, then incremented by
-    # 1+arousal_level -- arousal itself is UNAFFECTED by the reset (every
-    # incident contributes regardless of locus), so this is 1 +
-    # r_exception's own post-update arousal_level, not 1.
-    assert r_after["confirm_streak"] == pytest.approx(1.0 + r_exception["arousal_level"])
+    # the residue carries forward and is incremented, same formula as
+    # every other global_other confirmation.
+    assert r_after["confirm_streak"] == pytest.approx(
+        r_exception["confirm_streak"] + 1.0 + r_exception["arousal_level"])
 
 
 # ---------------------------------------------------------------------

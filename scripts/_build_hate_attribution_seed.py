@@ -139,12 +139,23 @@ def _streak_increment_term(pat_var="pat"):
     return PlusT([Lit(1.0), _arousal_level_term(pat_var)])
 
 
+def _retained_fraction_term(pat_var="pat"):
+    # HATE_RESET_RESENTMENT_COUPLING_PREREG.md Sec2: level/(1+level) --
+    # at level==0 this is exactly 0 (a full reset, byte-identical to the
+    # pre-coupling Lit(0) branch); elevated arousal retains a strictly
+    # positive fraction of the pre-exception streak -- the resentment
+    # residue. Same X/(1+X) shape family as the threshold-lowering term,
+    # same arousal_level read.
+    level = _arousal_level_term(pat_var)
+    return DivT(level, PlusT([Lit(1.0), level]))
+
+
 def _new_streak_term(pat_var="pat", ir_var="ir"):
     is_global = Eq(_attribution_locus_term(pat_var, ir_var), Lit("global_other"))
     return IfThenElse(
         is_global,
         PlusT([Attr(Var(pat_var), "confirm_streak"), _streak_increment_term(pat_var)]),
-        Lit(0),
+        TimesT([Attr(Var(pat_var), "confirm_streak"), _retained_fraction_term(pat_var)]),
     )
 
 
@@ -170,10 +181,15 @@ def rule_derive_attribution():
             "(HATE_STABILITY_AROUSAL_COUPLING_PREREG.md Sec2 -- an aroused "
             "confirming incident counts for MORE than one confirmation "
             "unit, read via tracks_arousal BEFORE this incident's own "
-            "update; 0 arousal is exactly the pre-coupling +1), resets to "
-            "0 otherwise (a single exception fully breaks the pattern -- "
-            "prediction 4, unchanged by the arousal coupling). Guarded by "
-            "status pending->appraised so re-running run_rules() does not "
+            "update; 0 arousal is exactly the pre-coupling +1), otherwise "
+            "MULTIPLIES by arousal_level/(1+arousal_level) (HATE_RESET_"
+            "RESENTMENT_COUPLING_PREREG.md Sec2 -- the resentment residue: "
+            "at 0 arousal this is an exact full reset to 0, unchanged; "
+            "elevated arousal retains a fraction of the pre-exception "
+            "streak instead of fully clearing it, per Bodenhausen 1993's "
+            "finding that aroused judgment discounts disconfirming "
+            "evidence). Guarded by status pending->appraised so re-running "
+            "run_rules() does not "
             "double-derive."
         ),
         "match_type": "IncidentReport",
@@ -249,7 +265,7 @@ def rule_crystallize_hate():
 
 SEED = {
     "id": "hate_attribution",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "depends_on": ["shared_arousal"],
     "self_load_only": True,
     "description": (
@@ -277,10 +293,21 @@ SEED = {
         "claim: strong affect needs less accumulated evidence before a "
         "judgment is treated as settled) -- two independent, additive "
         "channels by which passion accelerates crystallization, neither "
-        "replacing the other. See HATE_ATTRIBUTION_PREREG.md / _RESULTS.md, "
-        "HATE_PASSION_COUPLING_PREREG.md / _RESULTS.md, HATE_STABILITY_"
-        "AROUSAL_COUPLING_PREREG.md / _RESULTS.md, HATE_THRESHOLD_LOWER_"
-        "BOUND_COUPLING_PREREG.md / _RESULTS.md."
+        "replacing the other. v1.4.0 (HATE_RESET_RESENTMENT_COUPLING_"
+        "PREREG.md) couples the specific_act RESET too -- instead of an "
+        "unconditional wipe to 0, confirm_streak is multiplied by "
+        "arousal_level/(1+arousal_level) (0 at zero arousal, an exact "
+        "full reset; a positive fraction retained when aroused, per "
+        "Bodenhausen 1993 -- aroused judgment discounts disconfirming "
+        "evidence). This retained residue IS this arc's operationalization "
+        "of resentment: a grievance that persists past a genuine "
+        "disconfirming act because the act was processed under the same "
+        "arousal the grievance itself produced. See HATE_ATTRIBUTION_"
+        "PREREG.md / _RESULTS.md, HATE_PASSION_COUPLING_PREREG.md / "
+        "_RESULTS.md, HATE_STABILITY_AROUSAL_COUPLING_PREREG.md / "
+        "_RESULTS.md, HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md / "
+        "_RESULTS.md, HATE_RESET_RESENTMENT_COUPLING_PREREG.md / "
+        "_RESULTS.md."
         % HATE_STABILITY_THRESHOLD
     ),
     "nodes": [],
