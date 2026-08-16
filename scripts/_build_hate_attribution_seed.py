@@ -68,6 +68,10 @@ def PlusT(items):
     return {"type": "Plus", "items": items}
 
 
+def DivT(a, b):
+    return {"type": "Div", "a": a, "b": b}
+
+
 def term_effect(node, key, term):
     return ["set_attr", node, key, {"__term__": term}]
 
@@ -196,20 +200,38 @@ def rule_derive_attribution():
 # component made concrete. Fires ONCE (guarded by crystallized==0.0) when
 # confirm_streak crosses HATE_STABILITY_THRESHOLD.
 # --------------------------------------------------------------------- #
+def _effective_threshold_term(pat_var="pat"):
+    # HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md Sec2:
+    # HATE_STABILITY_THRESHOLD / (1+arousal_level) -- at level==0 this is
+    # exactly the base constant; elevated arousal LOWERS the bar. No new
+    # floor constant: shared_arousal's own bounded fixed-point dynamics
+    # (level converges to intensity/(1-decay), never unbounded) already
+    # keep this from collapsing to 0.
+    return DivT(Lit(float(HATE_STABILITY_THRESHOLD)),
+                PlusT([Lit(1.0), _arousal_level_term(pat_var)]))
+
+
 def rule_crystallize_hate():
     pat = Var("pat")
     where = AndT([
-        Gte(Attr(pat, "confirm_streak"), Lit(HATE_STABILITY_THRESHOLD)),
+        Gte(Attr(pat, "confirm_streak"), _effective_threshold_term("pat")),
         Eq(Attr(pat, "crystallized"), Lit(0.0)),
     ])
     return {
         "name": "crystallize_hate",
         "comment": (
             "HATE_ATTRIBUTION_PREREG.md Sec2/prediction 5: crystallization "
-            "requires the STABILITY THRESHOLD (confirm_streak >= %d), not "
-            "the first global_other confirmation -- Sternberg 2003's "
-            "decision/commitment component requires a pattern held over "
-            "TIME, not a single outburst. Fires exactly once per "
+            "requires the STABILITY THRESHOLD, not the first global_other "
+            "confirmation -- Sternberg 2003's decision/commitment "
+            "component requires a pattern held over TIME, not a single "
+            "outburst. HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md Sec2: "
+            "the gate now compares confirm_streak against an EFFECTIVE "
+            "threshold, HATE_STABILITY_THRESHOLD/(1+arousal_level) (== the "
+            "base constant %d at zero arousal, LOWER when aroused -- "
+            "Slovic et al. 2007's affect heuristic: strong affect needs "
+            "less accumulated evidence before a judgment is treated as "
+            "settled), read via the SAME tracks_arousal edge derive_hate_"
+            "attribution already reads. Fires exactly once per "
             "TargetPattern (crystallized==0.0 guard)." % HATE_STABILITY_THRESHOLD
         ),
         "match_type": "TargetPattern",
@@ -227,7 +249,7 @@ def rule_crystallize_hate():
 
 SEED = {
     "id": "hate_attribution",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "depends_on": ["shared_arousal"],
     "self_load_only": True,
     "description": (
@@ -235,8 +257,9 @@ SEED = {
         "directed residual outward -- a held pattern about ANOTHER agent "
         "(their regard_for Concept's own live state) instead of oneself. "
         "Adds a stability gate (Sternberg 2003's decision/commitment "
-        "component: confirm_streak >= %d confirmation UNITS) before a Hate "
-        "marker crystallizes, and gates a motivational removal_desire_for "
+        "component: confirm_streak >= an effective threshold, base %d "
+        "confirmation UNITS at zero arousal) before a Hate marker "
+        "crystallizes, and gates a motivational removal_desire_for "
         "consequence (Fischer, Halperin, Canetti & Jasini 2018's "
         "elimination goal) behind that gate, not behind any single angry "
         "appraisal. v1.1.0 (HATE_PASSION_COUPLING_PREREG.md) tracks the "
@@ -247,11 +270,17 @@ SEED = {
         "confirming incident's own contribution to confirm_streak by "
         "1+arousal_level (Slovic, Finucane, Peters & MacGregor 2007's "
         "affect heuristic: a more arousing confirming incident reads as "
-        "MORE representative of a stable pattern) -- the threshold "
-        "constant itself is unchanged, only how fast one incident closes "
-        "in on it. See HATE_ATTRIBUTION_PREREG.md / _RESULTS.md, "
+        "MORE representative of a stable pattern). v1.3.0 (HATE_THRESHOLD_"
+        "LOWER_BOUND_COUPLING_PREREG.md) additionally lowers the "
+        "EFFECTIVE threshold itself under arousal (base_threshold/"
+        "(1+arousal_level), the SAME affect-heuristic citation's second "
+        "claim: strong affect needs less accumulated evidence before a "
+        "judgment is treated as settled) -- two independent, additive "
+        "channels by which passion accelerates crystallization, neither "
+        "replacing the other. See HATE_ATTRIBUTION_PREREG.md / _RESULTS.md, "
         "HATE_PASSION_COUPLING_PREREG.md / _RESULTS.md, HATE_STABILITY_"
-        "AROUSAL_COUPLING_PREREG.md / _RESULTS.md."
+        "AROUSAL_COUPLING_PREREG.md / _RESULTS.md, HATE_THRESHOLD_LOWER_"
+        "BOUND_COUPLING_PREREG.md / _RESULTS.md."
         % HATE_STABILITY_THRESHOLD
     ),
     "nodes": [],

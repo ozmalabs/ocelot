@@ -103,11 +103,22 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
         removal_concept = next(iter(inner.neighbours(pattern, "tracks_removal_desire")))
         inner.concept_apply_evidence(removal_concept, 1.0, effective_removal_alpha)
 
-    new_arousal = current_arousal * AROUSAL_DECAY + AROUSAL_INTENSITY
-    inner.set_attr(arousal_node, "level", new_arousal)
-
     inner.force_all_dirty()
     inner.run_rules(max_steps)
+
+    # arousal updates AFTER every rule pass for this incident has
+    # settled -- HATE_THRESHOLD_LOWER_BOUND_COUPLING_PREREG.md's
+    # crystallize_hate gate reads arousal_level too, and this second
+    # run_rules() call (needed to relax the regard_for/removal_desire
+    # evidence just applied) would otherwise re-fire crystallize_hate
+    # using THIS incident's own bumped-up arousal instead of the
+    # pre-incident value every coupling in this arc reads by design --
+    # found and fixed here (previously the set_attr ran before this
+    # call, corrupting crystallized_this_call's own hate-count-delta
+    # detection whenever crystallization happened to land in the second
+    # pass instead of the first).
+    new_arousal = current_arousal * AROUSAL_DECAY + AROUSAL_INTENSITY
+    inner.set_attr(arousal_node, "level", new_arousal)
 
     pat_attrs = inner.node(pattern)["attrs"]
     regard_attrs = inner.node(regard_concept)["attrs"]

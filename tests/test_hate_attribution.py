@@ -89,17 +89,21 @@ def test_specific_act_resets_confirm_streak():
 
 
 # ---------------------------------------------------------------------
-# 5. Crystallization requires the threshold, not the first confirmation.
+# 5. Crystallization requires reaching the EFFECTIVE (arousal-lowered)
+#    threshold, not merely existing -- HATE_THRESHOLD_LOWER_BOUND_
+#    COUPLING_PREREG.md Sec2.
 # ---------------------------------------------------------------------
-def test_crystallization_requires_the_stability_threshold():
+def test_crystallization_uses_the_arousal_lowered_effective_threshold():
     inner, mt = _fresh()
     pat = mint_target_pattern(inner, mt, "Alex")
     # HATE_STABILITY_AROUSAL_COUPLING_PREREG.md Sec2: confirm_streak
-    # increments by 1+arousal_level, not a bare +1 -- with arousal
-    # compounding across back-to-back confirming incidents the streak
-    # OVERSHOOTS HATE_STABILITY_THRESHOLD rather than landing on it
-    # exactly, so drive incidents until crystallization is observed
-    # instead of assuming a fixed call count.
+    # increments by 1+arousal_level, not a bare +1. HATE_THRESHOLD_LOWER_
+    # BOUND_COUPLING_PREREG.md Sec2: the gate itself is HATE_STABILITY_
+    # THRESHOLD/(1+arousal_level), not the bare constant -- with arousal
+    # compounding, this can now crystallize on the FIRST confirming
+    # incident, below the base constant entirely. Drive incidents until
+    # crystallization is observed instead of assuming a fixed call count
+    # or a fixed streak value.
     results = []
     for _ in range(10):
         r = record_hate_incident(inner, mt, pat, negative=True)
@@ -111,11 +115,19 @@ def test_crystallization_requires_the_stability_threshold():
     for r in results[:-1]:
         assert not r["crystallized"]
     assert results[-1]["crystallized"]
-    assert results[-1]["confirm_streak"] >= HATE_STABILITY_THRESHOLD
-    # the FIRST global_other confirmation alone is not enough -- it takes
-    # at least two confirming incidents even with arousal amplification
-    global_other_before_crystallizing = [r for r in results[:-1] if r["attribution_locus"] == "global_other"]
-    assert len(global_other_before_crystallizing) >= 1
+    # crystallization never fires on a bare first_encounter (locus gate
+    # keeps streak at 0), so it always takes at least one prior incident.
+    assert len(results) >= 2
+
+    # the effective threshold at crystallization time used the arousal
+    # level AS OF THE PRIOR incident (read-before convention) -- verify
+    # confirm_streak actually crossed THAT value, and that it is a real,
+    # strict lowering below the un-coupled base constant (confirming the
+    # threshold coupling did something, not just the increment coupling).
+    prior_arousal = results[-2]["arousal_level"]
+    effective_threshold = HATE_STABILITY_THRESHOLD / (1.0 + prior_arousal)
+    assert results[-1]["confirm_streak"] >= effective_threshold
+    assert effective_threshold < HATE_STABILITY_THRESHOLD
 
 
 # ---------------------------------------------------------------------
