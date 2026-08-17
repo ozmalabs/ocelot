@@ -328,10 +328,20 @@ def test_self_detected_wrongness_headline_36_of_36(headline_36):
     assert fired_ids == RESIDUAL_36, (
         "self-detected-wrongness rate over the 36-task honest residual: "
         "%d/36 — missing: %r" % (len(fired_ids), sorted(set(RESIDUAL_36) - set(fired_ids))))
+    # 2026-08-17 (ALPHABET_SEARCH_COST_WALL_RESULTS.md D4 addendum): task 165
+    # is now ALSO caught by the new boundary-witness detector (D4,
+    # compute_structural_facts / program_synthesis v1.14.0) -- both verdict
+    # families run over the SAME verified candidate and, exactly as already
+    # documented for task 238 in test_retrieval_migrated.py's
+    # `_KNOWN_ARC6_PROPERTY_REJECT_DRIFT` comment, "whichever's OWN gate rule
+    # matches first decides the recorded gap_reason". status stays 'gapped'
+    # and `any_fired`/the 36/36 headline rate are BOTH unaffected -- this is
+    # a diagnostic-label change only, never a wrongness-detection regression.
+    _RELABELED_BY_D4 = {165: "structural_verdict_reject"}
     for tid in RESIDUAL_36:
         r = headline_36[tid]
         assert r["status"] == "gapped", (tid, r["status"])
-        assert r["gap_reason"] == "property_verdict_reject", tid
+        assert r["gap_reason"] == _RELABELED_BY_D4.get(tid, "property_verdict_reject"), tid
         assert r["program"] is None, (tid, "no Program node was ever minted")
         assert r["property"]["fired_properties"], tid
         assert r["property"]["witnesses"], tid
@@ -708,7 +718,7 @@ def test_live_population_property_catches_are_genuine_defects_not_regressions(
 #  10. seed version / rule-count / atom-count pin (owned by THIS phase).
 # --------------------------------------------------------------------------- #
 def test_seed_version_bumped_and_three_new_rules(seed_manifest):
-    assert seed_manifest["version"] == "1.13.0"  # 2026-08-03: 1.11.0 -> 1.12.0, the goal-residual weight term
+    assert seed_manifest["version"] == "1.14.0"  # 2026-08-17: 1.13.0 -> 1.14.0, D4 boundary-witness trap detector (ALPHABET_SEARCH_COST_WALL_RESULTS.md)
     # (ps_move_mark stamps ps_move_w_residual; ps_move_select subtracts a
     # held refutation's weight inside its Argmax). Pin reconciled, not
     # relaxed -- see PROGRAM_SYNTHESIS_ARC6_GOAL_RESIDUALS.md GR4.

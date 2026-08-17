@@ -339,3 +339,154 @@ evidence-independent protected category rather than papered over or
 silently dropped. Left committed, unmerged, unpushed on
 `alphabet-search-cost-wall` for the orchestrator's independent
 re-verification.
+
+---
+
+## 9. ADDENDUM (orchestrator's independent re-verification): task 242's
+MBPP "gain" was a genuine wrong-accept, not a capture — found, root-caused,
+and closed with a new D4 structural detector before merge
+
+Independent re-verification (per house discipline: never accept a
+worked-agent's own report at face value) reproduced every number in §1-§8
+above exactly — engine rebuild, 778/778 Rust suite, MBPP battery
+(88/87/115→89/88/116, `lost_pass=[]`), PBE battery
+(12/17/20, `lost=[]`) — with one exception this addendum exists to
+record: **task 242's MBPP "capture" does not survive a constructed-witness
+check.**
+
+**The finding.** `_run_task_live(242)` post-fix returns `accepted`, rung
+`d`, exemplar 776, `holdout_ok: True` against the frozen held-out row
+(`'words'` → 5). Evaluated live at 8 hand-constructed witnesses (never
+revealed, never held-out) via the same `ProgEval` term every verdict path
+uses: `'x'`, `''`, and every string shorter than 3 characters raise
+`index:oob`; every string of length ≥3 passes correctly. The candidate is
+`len(a)`-shaped but genuinely wrong-in-general — it happens to hold out
+because the one frozen row (`'words'`, length 5) never exercises the
+short-string branch. This is a coincidental fit, structurally identical
+in kind to the S2-era 242/284/414 wrong accepts `_KNOWN_S2_STRUCTURAL_
+REJECT_DRIFT` already treats as requiring rejection, not blessing
+(`test_retrieval_migrated.py`).
+
+**Root cause: a pre-existing D1-D3 coverage gap, newly REACHED, not
+newly CREATED.** `compute_structural_facts`'s three detectors (memo-
+lookup-table, dead free vars, unread declared param) have never checked
+whether a candidate traps on a boundary input — this gap predates this
+rung. Pre-fix, task 242 never reached this candidate at all
+(`enumerate_failed`, upstream of retrieval). The alphabet-size pricing
+change reorders rung d's hole-fill search enough that retrieval reaches
+exemplar 776 again (the SAME shape the old S2-era pin already describes)
+— this is the MODSQRT_SCOPED_FIX-class regression pattern named
+elsewhere in this session's work: exposing something in one place
+reaches a pre-existing gap elsewhere, rather than the pricing math
+itself being wrong.
+
+**PBE's gains are unaffected and independently confirmed genuine.** PBE
+never touches `prog_retrieval.py`'s hole-fill or `compute_structural_
+facts` at all — `pbe_string_battery.py` calls `SynthEnumerate` directly
+on a bare spec. All 8 newly-gained PBE tasks
+(`pbe_010/011/013/015/021/024/025/026`) were hand-verified by reading
+their returned terms against the stated task rule (e.g. `pbe_013`:
+`reversed(s).split(0)[-1]` — reversing the whole string reverses word
+order too, so the LAST word of the reversed string is the FIRST word of
+the original, reversed; a real general algorithm, not exemplar overfit).
+
+**The fix: D4, a new boundary-witness trap detector, scoped narrowly
+after measuring the naive version unsafe.** A first, general design
+(any param, empty-or-singleton witness, compared against the task's
+`code` reference) was measured against all 89 currently-genuine `full`-
+arm passes before being built for real: it produced **8 false flags**
+(74/111/120/142/232 — artifacts of independently perturbing one param
+while holding others fixed, manufacturing cross-param combinations the
+task's own semantics never intended; 90/443 — tasks whose OWN reference
+solution (`list1[0]`) is equally undefined on empty input, so a trap
+there is correct, not a bug). A second design — **singleton only (never
+empty), scoped to goals with exactly one declared param, no reference
+comparison at all (only "does the candidate complete")** — measured
+**zero false flags** across all 89 `full`-arm passes and correctly
+caught exactly task 242.
+
+D4 is wired into `domains/prog_synthesis.py::compute_structural_facts`
+(mechanical rim, facts only) and `seeds/program_synthesis.json`
+(v1.13.0 → v1.14.0): the two existing exclusion rules
+(`ps_structural_reject_exclusion_gap`/`_reopen`) now also match on
+`ps_st_d4_fired==1.0`, and the two repair rules
+(`ps_structural_reject_repair_gap`/`_reopen`) now additionally require
+`ps_st_d4_fired==0.0`, so a D3+D4 combination routes through the more
+conservative exclusion lane. No Rust changes; the initial `min(vals,
+key=len)` witness-selection draft was caught and removed by this
+codebase's own `test_prog_synthesis_no_python_decisions` audit (an
+argmin-shaped Python decision) and replaced with the first revealed
+row's value, matching the existing "first-in-order, never chosen" idiom
+D1-D3 already use.
+
+**Confirmed live: task 242 is gapped again**, `structural_verdict_
+reject`, rung `d`, exemplar 776 — landing back on the exact S2-era
+outcome shape.
+
+**Bonus finding: D4 also caught a SECOND, PRE-EXISTING wrong accept
+(task 461, official arm) that predates this entire rung.** Re-running
+the full MBPP battery with D4 wired in gave `full=88, content_
+stripped=87` (byte-identical to the ORIGINAL pre-alphabet-fix baseline —
+242 cleanly excluded, nothing else moved) but `official=114`, one below
+the original baseline's 115. Diffed against the pre-fix baseline
+directly: `lost=[461]`, not gained anywhere. Task 461
+("count the upper-case characters") retrieves the SAME exemplar-776
+vowel-window template, adapted to `1 - (a == 'program')` — a literal
+memorization of the official arm's 3-row revealed set (which duplicates
+its own held-out set exactly, per protocol) dressed as a program. This
+candidate was ALREADY present, unchanged, in the untouched pre-fix
+`main @ 5494752` baseline (`git show f155c86:...` confirms the
+identical IR and `retrieved_exemplar` construction) — it has nothing to
+do with the alphabet-pricing change; D4 simply closes a real, older gap
+the moment it starts running. **114/257 official is the more honest
+number; 115 always contained one wrong accept.**
+
+**Final re-verified numbers (this addendum's own independent measurement,
+not the pre-D4 numbers in §1-§8 above):**
+
+| arm | pre-fix baseline | pre-D4 (alphabet fix alone) | post-D4 (final) |
+|---|---|---|---|
+| full | 88 | 89 (+242, wrong) | 88 (honest) |
+| content_stripped | 87 | 88 (+242, wrong) | 87 (honest) |
+| official | 115 (already contained 461, wrong) | 116 (+242, wrong) | 114 (honest — both wrong accepts closed) |
+| PBE declared | — | 17/26 | 17/26 (unaffected) |
+| PBE declared+high | — | 20/26 | 20/26 (unaffected) |
+
+**Named 9-file regression suite: exactly 3 (the expected baseline),
+after three additional, necessary reconciliations** (all mechanical,
+all following this codebase's own established pin-update conventions):
+1. `results/code_synthesis_baseline.json` was missing from this
+   worktree entirely (gitignored, never regenerated here) — regenerated
+   via its documented `scripts/code_synthesis_baseline_build.py` command
+   (unrelated to the engine; a `domains/` function-scan artifact).
+2. Five test files hard-pin `program_synthesis.json`'s exact version
+   string; all five bumped `"1.13.0"` → `"1.14.0"` with a dated comment,
+   the same mechanical-pin-update pattern this file's own history
+   already documents repeatedly (arc4 S2/S6, arc5, arc6 seam D, …).
+3. `test_retrieval_migrated.py::test_ceiling_task_reproduces_measured_
+   outcome_live[242]` and `test_prog_property_migrated.py::test_self_
+   detected_wrongness_headline_36_of_36` (task 165 only) needed new,
+   fully-narrated dated drift entries — both are the SAME already-
+   precedented "two independent verdict families race on one candidate,
+   whichever fires first gets the label" phenomenon this codebase's own
+   task-238 history already names and treats as a diagnostic-label-only
+   change, never a wrongness-detection regression (confirmed live: task
+   165 stays `gapped`, `any_fired==1.0`, the 36/36 self-detected-
+   wrongness headline is unchanged).
+
+The wider arc-4 subprocess sweep (run by `test_prog_moves_migrated.py`/
+`test_exact_first_migrated.py`'s own meta-tests, not one of the 9 named
+files) dropped from 12 unexpected items (measured on the unmodified
+`f155c86` tip, before any of this addendum's work) to 9 — all 9
+independently confirmed pre-existing on `f155c86` itself
+(`test_budget_isolation_migrated.py`, `test_mbpp_arc3_endgame_
+migrated.py` ×4, `test_prog_descent_migrated.py`,
+`test_descent_widening_migrated.py`, `test_verdict_discrimination_
+migrated.py`), none attributable to this rung or this addendum.
+
+**Recommendation: GO — merge.** The alphabet-size MDL pricing fix is
+real and validated on its target corpus (PBE). Its one MBPP-visible side
+effect (reaching a pre-existing structural-verdict gap) is now closed by
+a narrowly-scoped, measured-safe D4 detector that also retired an older,
+unrelated wrong accept as a bonus. Every number in this addendum was
+independently re-derived, not taken from any prior report.
