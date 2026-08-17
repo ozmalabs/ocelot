@@ -92,6 +92,7 @@ if _ROOT not in sys.path:
 
 import substrate_rs as srs                                   # noqa: E402
 from substrate.seed_loader import manifest_for                # noqa: E402
+from domains.core_emotions_weight import quantize_weight      # noqa: E402
 from worlds.traumatic_bond_r1_world import make_schedule       # noqa: E402
 from worlds.abusive_r4_learned_helplessness_world import resolve_outcome  # noqa: E402
 
@@ -274,6 +275,7 @@ class AbusiveR5RecoveryWorld:
         # attrs (the second, independent evidence channel).
         ep = dict(enabled=1.0, w_supergraph=0.0, mood_bias=0.0, residual_thresh=100.0,
                   high_arousal=800.0, mid_arousal=400.0, low_arousal=50.0, comms_on=0.0)
+        ep["w_supergraph_q"], ep["w_scale_bits"] = quantize_weight(ep["w_supergraph"])
         self.ep = self.s.add_node("HeldEmotionParams", ep)
         self.inner.add_edge_unchecked(self.victim, "has_emotion_params", self.ep)
 

@@ -109,8 +109,14 @@ def _eye(load_emotions=True):
 
 
 def _hub(eye, inner, **ep_over):
+    from domains.core_emotions_weight import quantize_weight
     hub = eye.substrate.add_node("EmotionHub", {})
-    p = dict(EP_DEFAULTS); p.update({k: float(v) for k, v in ep_over.items()})
+    p = dict(EP_DEFAULTS)
+    p.update({k: float(v) for k, v in ep_over.items()
+             if k not in ("w_supergraph_q", "w_scale_bits")})
+    wq, bits = quantize_weight(p["w_supergraph"])
+    p["w_supergraph_q"] = float(ep_over.get("w_supergraph_q", wq))
+    p["w_scale_bits"] = float(ep_over.get("w_scale_bits", bits))
     ep = eye.substrate.add_node("HeldEmotionParams", p)
     inner.add_edge_unchecked(hub, "has_emotion_params", ep)
     return hub, ep
@@ -386,8 +392,17 @@ def g4_state_observed():
 
 # --------------------------------------------------------- G5 integer + default-off
 def integer_audit():
+    """AST-level audit. `Times` was moved OUT of this denylist (was: {"Div",
+    "Times", "Exp", "Log", "Sqrt", "Sin", "Cos"}) — SUPERGRAPH_WEIGHT_MAGNITUDE
+    _PREREG.md sec1: Times(Int,Int) is exactly integer-closed (term.rs's
+    numeric_variadic, same closure property as Plus/Minus/Ashr, unlike
+    Div/Exp/Log/Sqrt/Sin/Cos which are NOT integer-closed in general — this
+    denylist now tests the property it actually claims, not just the op
+    NAME). The real guarantee is integer_values_audit() below, widened in
+    the same change to cover em_weighted_contribution's real w-range, not
+    just this AST name-check."""
     seed = json.load(open(os.path.join(ROOT, "seeds", "core_emotions.json")))
-    float_terms = {"Div", "Times", "Exp", "Log", "Sqrt", "Sin", "Cos"}
+    float_terms = {"Div", "Exp", "Log", "Sqrt", "Sin", "Cos"}
 
     def ops(term, acc):
         if isinstance(term, dict):
@@ -415,13 +430,16 @@ def integer_audit():
 
 def integer_values_audit():
     """Every attribute the emotion rules PRODUCE is an exact integer (no float
-    residue) across all G1 canonical appraisals."""
+    residue) across all G1 canonical appraisals, AND across
+    em_weighted_contribution's real w/contribution range (the actual
+    property Times(Int,Int)'s removal from integer_audit's denylist relies
+    on -- checked at the VALUE level, not just the AST-name level)."""
     eye, inner = _eye()
     hub, ep = _hub(eye, inner)
     produced = ["threat_precision", "threat_persists", "learning_progress",
                 "value_progress", "happiness", "fulfilment_value", "total_value",
                 "act_endorsed", "n_fired", "action_tendency", "emotion",
-                "valence", "arousal"]
+                "valence", "arousal", "weighted_contribution"]
     bad = []
     for nm in CORE:
         ap = _appraise(eye, inner, hub, **CANON[nm])
@@ -431,6 +449,20 @@ def integer_values_audit():
             v = a.get(k, 0.0)
             if float(v) != float(int(v)):
                 bad.append((nm, k, v))
+    # em_weighted_contribution's own real value-range: every w in {0} u [1,inf)
+    # any live consumer uses PLUS bigville's real continuous (0,1) draws,
+    # crossed with every live consumer's real contribution magnitude
+    # (domains/core_emotions_weight.py's own named ceilings).
+    for w in (0.0, 0.1, 0.25, 0.4785, 0.5, 0.75, 0.9114, 1.0, 2.0, 250.0):
+        for contribution in (0.0, -3.0, 3.0, 60.0, -60.0, 300.0, -800.0, 987.0):
+            hub2, ep2 = _hub(eye, inner, w_supergraph=w, mood_bias=0.0)
+            ap2 = _appraise(eye, inner, hub2, appraised=1,
+                            supergraph_contribution=contribution)
+            inner.run_rules()
+            v = _attrs(eye, ap2).get("weighted_contribution", 0.0)
+            if float(v) != float(int(v)):
+                bad.append(("w=%.4f,c=%.1f" % (w, contribution),
+                           "weighted_contribution", v))
     eye.stop()
     return dict(non_integer_cells=len(bad), offenders=bad[:20],
                 all_integer=(len(bad) == 0))
@@ -445,11 +477,21 @@ def source_audit():
     # every core emotion has a rule that sets its own hit flag
     have_rule = all(("em_" + nm) in rules for nm in CORE)
     sets_hit = all(rules["em_" + nm]["effects"][0][2] == "hit_" + nm for nm in CORE)
-    # fulfilment reads the SUPERGRAPH frame (w_supergraph on params)
+    # fulfilment reads the SUPERGRAPH frame (w_supergraph on params) --
+    # SUPERGRAPH_WEIGHT_MAGNITUDE_PREREG.md: em_fulfilment now reads
+    # weighted_contribution (settled by em_weighted_contribution, order 1)
+    # rather than raw supergraph_contribution directly, so the dependency
+    # is checked one hop out: em_fulfilment reads weighted_contribution,
+    # AND weighted_contribution's OWN rule reads both supergraph_contribution
+    # and w_supergraph_q -- the supergraph frame is still reached, just
+    # through the new named intermediate instead of inline.
     ful = rules["em_fulfilment"]
-    ful_reads_super = "supergraph_contribution" in json.dumps(ful["where"])
+    wc = rules["em_weighted_contribution"]
+    ful_reads_super = ("weighted_contribution" in json.dumps(ful["where"])
+                       and "supergraph_contribution" in json.dumps(wc["effects"])
+                       and "w_supergraph_q" in json.dumps(wc["effects"]))
     fv = rules["em_fulfilment_value"]
-    fv_reads_w = "w_supergraph" in json.dumps(fv)
+    fv_reads_w = "weighted_contribution" in json.dumps(fv)
     # the reused atoms are literally present
     tp = json.dumps(rules["em_threat_precision"])
     reuses_freshness = ("Ashr" in tp and "IDiv" in tp and "half_life" in tp)

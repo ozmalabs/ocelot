@@ -14,6 +14,53 @@ the mechanical inverse-inference MEASURE (`scripts/emotion_phenotype_measure.py`
 + its gate (`tests/test_emotion_phenotype_migrated.py`). `source_match = own`. Raw:
 `results/emotion_phenotype.json`, `results/emotion_phenotype/recovery.png`.*
 
+## CORRECTION (2026-08-17, `SUPERGRAPH_WEIGHT_MAGNITUDE_PREREG.md`/`_RESULTS.md`) — made in place, not silently converted
+
+**The "STRUCTURALLY unidentifiable... a plateau no amount of data can resolve"
+claim below (§2, §5) was FORMULA-CONDITIONAL, and the formula was a bug, not a
+structural property of `w_supergraph` itself.** §2's own parenthetical already
+named the cause without drawing the conclusion: *"`em_fulfilment_value` gates
+on `w_supergraph > 0` and does NOT scale by it."* That gate
+(`IfThenElse(Gt(w_supergraph,0), supergraph_contribution, 0)`) discarded
+magnitude for ANY positive `w_supergraph` — not because integer-native rules
+structurally cannot represent a weighted magnitude, but because this specific
+rule never tried to. Fixed: `em_fulfilment_value` now reads a genuinely
+magnitude-sensitive `weighted_contribution` (a declared integer fixed-point
+lattice, `w_supergraph_q`/`w_scale_bits`, `domains/core_emotions_weight.py`) —
+zero new Rust, integer-native throughout, byte-identical at every `w` value
+this doc's own G1 panel and `W_MAG_PROBE=[1,2,5,25,250]` ever drew.
+
+**What survives, with its condition attached — a STRONGER, now-PROVED claim,
+not a weaker one:**
+
+- The plateau across `[1, 2, 5, 25, 250]` **is still real and still
+  reproduces byte-identically** — because `quantize_weight` is
+  ATTENUATION-ONLY above the reference weight `w=1.0` (a declared clamp,
+  citing `bigville`'s own `_PARAM_SPEC` `[0,1]` clip as the reason no real
+  consumer needs `w>1` to mean anything graded). Every number in §2/§5's
+  panel tables is UNCHANGED.
+- **A genuinely structural resolution limit was PROVED, not just
+  observed**, one level down from where this doc looked: when
+  `supergraph_contribution` itself is a single bit (0/1 — bigville's own
+  live `record_action_outcome` path, before this same change graded it),
+  an integer-valued `fulfilment_value` bounded by `|contribution|` has a
+  codomain of exactly `{0,1}` — NO formula, integer-native or not, can
+  make `w`'s magnitude more than 1 bit distinguishable at that specific
+  resolution. That IS a structural claim, proved by a counting argument
+  (`SUPERGRAPH_WEIGHT_MAGNITUDE_RESULTS.md` §1), not asserted.
+- What was NOT structural: `w` in `(0,1)` — bigville's own real, continuously-
+  drawn population range, never swept by this doc's `[1,2,5,25,250]` probe —
+  now produces genuinely distinct, monotone `fulfilment_value` (measured:
+  7 distinct values at `supergraph_contribution=300`, `w` from 0.0 to 1.0).
+  This range was simply never tested here; its plateau claim was inferred
+  from a probe that, in hindsight, never touched it.
+
+This is the **second time** a status line in this codebase's history was
+quoted past its condition and treated as unconditional (cf. CLAUDE.md's own
+"optional-dep note" retraction). The standing lesson repeats: **report a
+structural claim together with the specific formula/probe range it was
+measured against, not as a property of the parameter alone.**
+
 ## 0. What this is — the framework's inverse-inference validation
 
 If the 204000 emotion framework is even close to correct, a synthetic agent's

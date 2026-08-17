@@ -107,13 +107,29 @@ helpers = [
          [("set_attr", "ap", "happiness",
            Plus(Minus(A("ap", "individual_benefit"), A("ap", "individual_cost")),
                 A("ep", "mood_bias")))]),
-    # FULFILMENT VALUE (SUPERGRAPH reference frame): w_supergraph * contribution +
-    #   mood_bias.  w_supergraph ~ 0 == psychopathy knob (reads others, does not value).
+    # WEIGHTED CONTRIBUTION: w_supergraph genuinely WEIGHTS contribution, not just
+    #   gates its sign. w_supergraph_q/w_scale_bits are the INTEGER LATTICE
+    #   rendering of the continuous [0,1] trait (domains/core_emotions_weight.py,
+    #   computed once at each consumer's HeldEmotionParams construction site --
+    #   CLAUDE.md's BASE-AS-DIMENSION: in-frame is integer, the continuum lives
+    #   in the map that produces the step, never in the frame). Fixed-point
+    #   Times+Ashr: at w=1.0 (the reference weight, w_supergraph_q == 2**B),
+    #   this recovers contribution EXACTLY (Ashr undoes Times by the same B);
+    #   at w=0, this is exactly 0 -- both endpoints byte-identical to the old
+    #   sign gate. ATTENUATION-ONLY above w=1.0 (quantize_weight clamps), so
+    #   every existing consumer (w in {0} u [1,inf), see
+    #   SUPERGRAPH_WEIGHT_MAGNITUDE_PREREG.md sec0) is unaffected; only w in
+    #   (0,1) -- previously indistinguishable from w=1 -- now genuinely varies.
+    #   CORRECTED (design-review + user steering, phase A): was
+    #   IfThenElse(Gt(w,0), contribution, 0) -- a SIGN GATE that discarded
+    #   magnitude for ~99.4% of a drawn bigville population.
+    rule("em_weighted_contribution", 1, m(), ENABLED,
+         [("set_attr", "ap", "weighted_contribution",
+           Ashr(Times(A("ep", "w_supergraph_q"), A("ap", "supergraph_contribution")),
+                A("ep", "w_scale_bits")))]),
     rule("em_fulfilment_value", 2, m(), ENABLED,
          [("set_attr", "ap", "fulfilment_value",
-           Plus(Ite(Gt(A("ep", "w_supergraph"), L(0)),
-                    A("ap", "supergraph_contribution"), L(0)),
-                A("ep", "mood_bias")))]),
+           Plus(A("ap", "weighted_contribution"), A("ep", "mood_bias")))]),
     # TOTAL VALUE + ENDORSE — the somatic-marker decision bias: an act is endorsed
     #   iff individual+supergraph value >= 0. A healthy agent DECLINES a supergraph-
     #   harmful act; w_supergraph~0 removes the brake (instrumentalising).
@@ -187,10 +203,17 @@ emotion_rules = [
          hit("boredom")),
     # fulfilment [SUPERGRAPH] — the agent's action increased the COLLECTIVE's success,
     #   and the agent VALUES the supergraph (w_supergraph > 0). Deep, low-hedonic.
+    # Both gates read weighted_contribution (em_weighted_contribution, order 1,
+    #   already settled) instead of the raw contribution+sign-gate conjunction --
+    #   Gt(weighted,0) == Gt(contribution,0) AND Gt(w,0) exactly for every w in
+    #   {0} u [1,inf) (SUPERGRAPH_WEIGHT_MAGNITUDE_PREREG.md sec0/sec2), so this
+    #   is byte-identical everywhere except bigville's continuous w in (0,1),
+    #   where a small-w resident's tiny weighted_contribution can now floor to
+    #   0 and correctly NOT fire -- a truncation artifact of the lattice
+    #   resolution, not a designed threshold (documented, not hidden).
     rule("em_fulfilment", 5, m(),
          And(ENABLED, Eq(A("ap", "appraised"), L(1)),
-             Gt(A("ap", "supergraph_contribution"), L(0)),
-             Gt(A("ep", "w_supergraph"), L(0)),
+             Gt(A("ap", "weighted_contribution"), L(0)),
              Gt(A("ap", "collective_success"), A("ap", "collective_success_prev"))),
          hit("fulfilment")),
     # pride [SOCIAL frame] — supergraph contribution ATTRIBUTED to self AND observed
@@ -198,8 +221,7 @@ emotion_rules = [
     #   (both supergraph-frame); presented OUTSIDE the G1 confusion matrix.
     rule("em_pride", 5, m(),
          And(ENABLED, Eq(A("ap", "appraised"), L(1)),
-             Gt(A("ap", "supergraph_contribution"), L(0)),
-             Gt(A("ep", "w_supergraph"), L(0)),
+             Gt(A("ap", "weighted_contribution"), L(0)),
              Eq(A("ap", "contribution_by_self"), L(1)),
              Eq(A("ap", "observed_by_other"), L(1))),
          hit("pride")),
@@ -234,7 +256,7 @@ def arousal_mux():
                A("ap", "threat_precision"),
            Ite(Eq(A("ap", "hit_curiosity"), L(1)), A("ap", "learning_progress"),
            Ite(Eq(A("ap", "hit_joy"), L(1)), A("ap", "value_progress"),
-           Ite(Eq(A("ap", "hit_fulfilment"), L(1)), Abs(A("ap", "supergraph_contribution")),
+           Ite(Eq(A("ap", "hit_fulfilment"), L(1)), Abs(A("ap", "weighted_contribution")),
            Ite(Or(Eq(A("ap", "hit_anger"), L(1)), Eq(A("ap", "hit_frustration"), L(1))),
                A("ep", "high_arousal"),
            Ite(Eq(A("ap", "hit_disgust"), L(1)), A("ep", "mid_arousal"),

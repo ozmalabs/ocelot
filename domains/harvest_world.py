@@ -30,6 +30,7 @@ if _ROOT not in sys.path:
 
 from domains.photon_eye import GraphEye              # noqa: E402
 from substrate.seed_loader import manifest_for       # noqa: E402
+from domains.core_emotions_weight import quantize_weight  # noqa: E402
 
 # ---- FIXED world constants (pre-registered, HARVEST_EMOTIONAL_SEEDS_PREREG.md §2)
 K = 120           # carrying capacity
@@ -114,6 +115,7 @@ class HarvestWorld:
             ep = dict(EP_DEFAULTS)
             ep.update(w_supergraph=w, mood_bias=float(self.moods[i]),
                       comms_on=1.0 if self.comms else 0.0)
+            ep["w_supergraph_q"], ep["w_scale_bits"] = quantize_weight(w)
             epn = self.s.add_node("HeldEmotionParams", ep)
             self.inner.add_edge_unchecked(hub, "has_emotion_params", epn)
             self.inner.add_edge_unchecked(hub, "member_of", self.sg)

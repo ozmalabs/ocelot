@@ -21,18 +21,29 @@ every artifact here is a scalar, a Concept name, or a Term formula.
 from __future__ import annotations
 
 
-def mint_target_concept(inner, mt, relation: str, target: str):
+def mint_target_concept(inner, mt, relation: str, target: str, *, affinity=None):
     """Idempotent: the (mt, relation, target)-scoped Concept, e.g.
     `desire_for:Alice` or `regard_for:Alice`. Mirrors mint_domain_self_
-    worth's own idempotent-by-name lookup exactly."""
+    worth's own idempotent-by-name lookup exactly.
+
+    `affinity` (optional dict, e.g. {"affinity_warm": 1.0}) tags the
+    Concept with the small DATA-level affinity shape the generic
+    affect-coupling rule (seeds/affect_coupling.json,
+    AFFECT_COUPLING_SHAPE_PREREG.md) matches on -- set ONLY at creation,
+    the same one-time-init discipline `state`/`external_field` already
+    use here. This function does NOT add the couples_affect_to edge --
+    that requires a resident's own AffectCoupler, which is an adapter-
+    level concern (worlds/bigville_ocelot_adapter.py), not a generic CAN
+    operation."""
     concept_name = "%s:%s" % (relation, target)
     for existing in inner.neighbours(mt, "has_concept"):
         if inner.node(existing)["attrs"].get("name") == concept_name:
             return existing
-    concept = inner.add_node("Concept", {
-        "name": concept_name, "state": 0.0, "external_field": 0.0,
-        "identity_field": 0.0,
-    })
+    attrs = {"name": concept_name, "state": 0.0, "external_field": 0.0,
+             "identity_field": 0.0}
+    if affinity:
+        attrs.update(affinity)
+    concept = inner.add_node("Concept", attrs)
     inner.add_edge(mt, "has_concept", concept, {})
     return concept
 

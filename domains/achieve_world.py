@@ -30,6 +30,7 @@ if _ROOT not in sys.path:
 
 from domains.photon_eye import GraphEye                        # noqa: E402
 from domains.harvest_world import EP_DEFAULTS, APPR_DEFAULTS   # noqa: E402  (reuse the LANDED economy defaults)
+from domains.core_emotions_weight import quantize_weight       # noqa: E402
 from substrate.seed_loader import manifest_for                 # noqa: E402
 
 # ---- FROZEN task constants (pre-registered, SPITE_TO_SUCCEED_PREREG.md §2) ----
@@ -67,6 +68,7 @@ class AchieveWorld:
         self.hub = self.s.add_node("EmotionHub", {})
         ep = dict(EP_DEFAULTS)
         ep.update(w_supergraph=0.0, mood_bias=0.0, comms_on=0.0)   # individual achievement
+        ep["w_supergraph_q"], ep["w_scale_bits"] = quantize_weight(ep["w_supergraph"])
         epn = self.s.add_node("HeldEmotionParams", ep)
         self.inner.add_edge_unchecked(self.hub, "has_emotion_params", epn)
 

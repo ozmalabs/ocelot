@@ -1,0 +1,1228 @@
+{
+ "concepts": [],
+ "depends_on": [],
+ "description": "AFFECT-COUPLING PHASE 2 (EMOTIONAL_SYSTEMS_UNIFICATION_DESIGN.md sec4, AFFECT_COUPLING_SHAPE_PREREG.md): the single reusable Rule that automatically couples a resident's PSI modulator state (AffectiveState, seeds/affective_state_core.json) and stable disposition traits (bigville_town100_world.py _PARAM_SPEC, transported by worlds/bigville_ocelot_adapter.py Phase 1) onto ANY node carrying a small affinity-tag shape -- matched generically via MatchEdge's own type-agnostic endpoints, not a coefficient hand-authored per decision type. OFF by default (coupling_on guard) and NOT added to boot_core.CORE_SEEDS/boot_all -- opt-in only, loaded the same way core_emotions/shared_arousal/hate_attribution already are (_ensure_emotional_core).",
+ "edges": [],
+ "id": "affect_coupling",
+ "nodes": [],
+ "productions": [],
+ "rules": [
+  {
+   "batch": false,
+   "comment": "Normalises raw disposition traits (drawn once per resident, bigville_town100_world.py _PARAM_SPEC) into GAINS relative to the generator's own registered population means -- a population-mean resident gets gain=1.0 (neutral) on every channel. Div-by-zero is fail-quiet (term.rs Div evaluator) -- a missing reference mean silently zeroes the gain; AFFECT_COUPLING_SHAPE_PREREG.md registers this as a named, tested failure mode, not a surprise. DELIBERATELY UNCAPPED (RETRACTED an earlier gain_cap=2.0 clamp, see AFFECT_COUPLING_SHAPE_RESULTS.md's correction note): every _PARAM_SPEC trait this normalises is already drawn via _draw_clip against an explicit [0,1] bound (bigville_town100_world.py), so a REAL generated resident's gain is already naturally bounded (e.g. hostile_gain <= 1.0/hostile_ref = 2.5) with NO extra clamp needed -- adding one anyway was an invented, undocumented ceiling with no derivation, and it silently guaranteed disposition could never override even an arbitrarily strong real relationship, which is an ARCHITECTURAL decision this rule has no business making. A resident deliberately constructed outside the population range (a genuine tail case, EMOTIONAL_SYSTEMS_UNIFICATION_DESIGN.md sec3b's own psychopathy/mania citations) is SUPPOSED to be able to produce gains that dominate -- who wins is decided by the actual relative magnitudes at Sum-time, never architecturally pre-decided here. Quantizing to a log-weight (see module docstring above) does not reintroduce this: log_weight_scale is derived, not capped, so an out-of-population resident still produces a dominating gain -- verified: zero decision flips across the real 100-resident cast at the derived SCALE, and the smallest representable step is ~36x finer than the tightest real decision margin it needs to preserve.",
+   "effects": [
+    [
+     "set_attr_if_different",
+     "c",
+     "log_reactivity_weight",
+     {
+      "__term__": {
+       "cond": {
+        "a": {
+         "items": [
+          {
+           "key": "trait_arousal",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ],
+         "type": "Plus"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "type": "Gt"
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "then": {
+        "ndigits": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "type": "Round",
+        "value": {
+         "items": [
+          {
+           "items": [
+            {
+             "key": "log_weight_scale",
+             "node": {
+              "name": "c",
+              "type": "Var"
+             },
+             "type": "Attr"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ],
+           "type": "Plus"
+          },
+          {
+           "arg": {
+            "a": {
+             "items": [
+              {
+               "key": "trait_arousal",
+               "node": {
+                "name": "c",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ],
+             "type": "Plus"
+            },
+            "b": {
+             "items": [
+              {
+               "key": "arousal_ref",
+               "node": {
+                "name": "c",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ],
+             "type": "Plus"
+            },
+            "type": "Div"
+           },
+           "type": "Log"
+          }
+         ],
+         "type": "Times"
+        }
+       },
+       "type": "IfThenElse"
+      }
+     }
+    ],
+    [
+     "set_attr_if_different",
+     "c",
+     "reactivity_gain",
+     {
+      "__term__": {
+       "cond": {
+        "a": {
+         "items": [
+          {
+           "key": "trait_arousal",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ],
+         "type": "Plus"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "type": "Gt"
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "then": {
+        "arg": {
+         "items": [
+          {
+           "a": {
+            "type": "Lit",
+            "value": 1.0
+           },
+           "b": {
+            "items": [
+             {
+              "key": "log_weight_scale",
+              "node": {
+               "name": "c",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ],
+            "type": "Plus"
+           },
+           "type": "Div"
+          },
+          {
+           "ndigits": {
+            "type": "Lit",
+            "value": 0.0
+           },
+           "type": "Round",
+           "value": {
+            "items": [
+             {
+              "items": [
+               {
+                "key": "log_weight_scale",
+                "node": {
+                 "name": "c",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ],
+              "type": "Plus"
+             },
+             {
+              "arg": {
+               "a": {
+                "items": [
+                 {
+                  "key": "trait_arousal",
+                  "node": {
+                   "name": "c",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ],
+                "type": "Plus"
+               },
+               "b": {
+                "items": [
+                 {
+                  "key": "arousal_ref",
+                  "node": {
+                   "name": "c",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ],
+                "type": "Plus"
+               },
+               "type": "Div"
+              },
+              "type": "Log"
+             }
+            ],
+            "type": "Times"
+           }
+          }
+         ],
+         "type": "Times"
+        },
+        "type": "Exp"
+       },
+       "type": "IfThenElse"
+      }
+     }
+    ],
+    [
+     "set_attr_if_different",
+     "c",
+     "log_hostile_weight",
+     {
+      "__term__": {
+       "cond": {
+        "a": {
+         "items": [
+          {
+           "key": "trait_hostile_weight",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ],
+         "type": "Plus"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "type": "Gt"
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "then": {
+        "ndigits": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "type": "Round",
+        "value": {
+         "items": [
+          {
+           "items": [
+            {
+             "key": "log_weight_scale",
+             "node": {
+              "name": "c",
+              "type": "Var"
+             },
+             "type": "Attr"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ],
+           "type": "Plus"
+          },
+          {
+           "arg": {
+            "a": {
+             "items": [
+              {
+               "key": "trait_hostile_weight",
+               "node": {
+                "name": "c",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ],
+             "type": "Plus"
+            },
+            "b": {
+             "items": [
+              {
+               "key": "hostile_ref",
+               "node": {
+                "name": "c",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ],
+             "type": "Plus"
+            },
+            "type": "Div"
+           },
+           "type": "Log"
+          }
+         ],
+         "type": "Times"
+        }
+       },
+       "type": "IfThenElse"
+      }
+     }
+    ],
+    [
+     "set_attr_if_different",
+     "c",
+     "hostile_gain",
+     {
+      "__term__": {
+       "cond": {
+        "a": {
+         "items": [
+          {
+           "key": "trait_hostile_weight",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ],
+         "type": "Plus"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "type": "Gt"
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "then": {
+        "arg": {
+         "items": [
+          {
+           "a": {
+            "type": "Lit",
+            "value": 1.0
+           },
+           "b": {
+            "items": [
+             {
+              "key": "log_weight_scale",
+              "node": {
+               "name": "c",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ],
+            "type": "Plus"
+           },
+           "type": "Div"
+          },
+          {
+           "ndigits": {
+            "type": "Lit",
+            "value": 0.0
+           },
+           "type": "Round",
+           "value": {
+            "items": [
+             {
+              "items": [
+               {
+                "key": "log_weight_scale",
+                "node": {
+                 "name": "c",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ],
+              "type": "Plus"
+             },
+             {
+              "arg": {
+               "a": {
+                "items": [
+                 {
+                  "key": "trait_hostile_weight",
+                  "node": {
+                   "name": "c",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ],
+                "type": "Plus"
+               },
+               "b": {
+                "items": [
+                 {
+                  "key": "hostile_ref",
+                  "node": {
+                   "name": "c",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ],
+                "type": "Plus"
+               },
+               "type": "Div"
+              },
+              "type": "Log"
+             }
+            ],
+            "type": "Times"
+           }
+          }
+         ],
+         "type": "Times"
+        },
+        "type": "Exp"
+       },
+       "type": "IfThenElse"
+      }
+     }
+    ],
+    [
+     "set_attr_if_different",
+     "c",
+     "log_warmth_weight",
+     {
+      "__term__": {
+       "cond": {
+        "a": {
+         "items": [
+          {
+           "key": "trait_charm_weight",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ],
+         "type": "Plus"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "type": "Gt"
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "then": {
+        "ndigits": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "type": "Round",
+        "value": {
+         "items": [
+          {
+           "items": [
+            {
+             "key": "log_weight_scale",
+             "node": {
+              "name": "c",
+              "type": "Var"
+             },
+             "type": "Attr"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ],
+           "type": "Plus"
+          },
+          {
+           "arg": {
+            "a": {
+             "items": [
+              {
+               "key": "trait_charm_weight",
+               "node": {
+                "name": "c",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ],
+             "type": "Plus"
+            },
+            "b": {
+             "items": [
+              {
+               "key": "charm_ref",
+               "node": {
+                "name": "c",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ],
+             "type": "Plus"
+            },
+            "type": "Div"
+           },
+           "type": "Log"
+          }
+         ],
+         "type": "Times"
+        }
+       },
+       "type": "IfThenElse"
+      }
+     }
+    ],
+    [
+     "set_attr_if_different",
+     "c",
+     "warmth_gain",
+     {
+      "__term__": {
+       "cond": {
+        "a": {
+         "items": [
+          {
+           "key": "trait_charm_weight",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ],
+         "type": "Plus"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "type": "Gt"
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "then": {
+        "arg": {
+         "items": [
+          {
+           "a": {
+            "type": "Lit",
+            "value": 1.0
+           },
+           "b": {
+            "items": [
+             {
+              "key": "log_weight_scale",
+              "node": {
+               "name": "c",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ],
+            "type": "Plus"
+           },
+           "type": "Div"
+          },
+          {
+           "ndigits": {
+            "type": "Lit",
+            "value": 0.0
+           },
+           "type": "Round",
+           "value": {
+            "items": [
+             {
+              "items": [
+               {
+                "key": "log_weight_scale",
+                "node": {
+                 "name": "c",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ],
+              "type": "Plus"
+             },
+             {
+              "arg": {
+               "a": {
+                "items": [
+                 {
+                  "key": "trait_charm_weight",
+                  "node": {
+                   "name": "c",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ],
+                "type": "Plus"
+               },
+               "b": {
+                "items": [
+                 {
+                  "key": "charm_ref",
+                  "node": {
+                   "name": "c",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ],
+                "type": "Plus"
+               },
+               "type": "Div"
+              },
+              "type": "Log"
+             }
+            ],
+            "type": "Times"
+           }
+          }
+         ],
+         "type": "Times"
+        },
+        "type": "Exp"
+       },
+       "type": "IfThenElse"
+      }
+     }
+    ],
+    [
+     "set_attr_if_different",
+     "c",
+     "log_spite_weight",
+     {
+      "__term__": {
+       "cond": {
+        "a": {
+         "items": [
+          {
+           "key": "trait_w_spite",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ],
+         "type": "Plus"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "type": "Gt"
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "then": {
+        "ndigits": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "type": "Round",
+        "value": {
+         "items": [
+          {
+           "items": [
+            {
+             "key": "log_weight_scale",
+             "node": {
+              "name": "c",
+              "type": "Var"
+             },
+             "type": "Attr"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ],
+           "type": "Plus"
+          },
+          {
+           "arg": {
+            "a": {
+             "items": [
+              {
+               "key": "trait_w_spite",
+               "node": {
+                "name": "c",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ],
+             "type": "Plus"
+            },
+            "b": {
+             "items": [
+              {
+               "key": "spite_ref",
+               "node": {
+                "name": "c",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ],
+             "type": "Plus"
+            },
+            "type": "Div"
+           },
+           "type": "Log"
+          }
+         ],
+         "type": "Times"
+        }
+       },
+       "type": "IfThenElse"
+      }
+     }
+    ],
+    [
+     "set_attr_if_different",
+     "c",
+     "spite_gain",
+     {
+      "__term__": {
+       "cond": {
+        "a": {
+         "items": [
+          {
+           "key": "trait_w_spite",
+           "node": {
+            "name": "c",
+            "type": "Var"
+           },
+           "type": "Attr"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ],
+         "type": "Plus"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        },
+        "type": "Gt"
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "then": {
+        "arg": {
+         "items": [
+          {
+           "a": {
+            "type": "Lit",
+            "value": 1.0
+           },
+           "b": {
+            "items": [
+             {
+              "key": "log_weight_scale",
+              "node": {
+               "name": "c",
+               "type": "Var"
+              },
+              "type": "Attr"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ],
+            "type": "Plus"
+           },
+           "type": "Div"
+          },
+          {
+           "ndigits": {
+            "type": "Lit",
+            "value": 0.0
+           },
+           "type": "Round",
+           "value": {
+            "items": [
+             {
+              "items": [
+               {
+                "key": "log_weight_scale",
+                "node": {
+                 "name": "c",
+                 "type": "Var"
+                },
+                "type": "Attr"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ],
+              "type": "Plus"
+             },
+             {
+              "arg": {
+               "a": {
+                "items": [
+                 {
+                  "key": "trait_w_spite",
+                  "node": {
+                   "name": "c",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ],
+                "type": "Plus"
+               },
+               "b": {
+                "items": [
+                 {
+                  "key": "spite_ref",
+                  "node": {
+                   "name": "c",
+                   "type": "Var"
+                  },
+                  "type": "Attr"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ],
+                "type": "Plus"
+               },
+               "type": "Div"
+              },
+              "type": "Log"
+             }
+            ],
+            "type": "Times"
+           }
+          }
+         ],
+         "type": "Times"
+        },
+        "type": "Exp"
+       },
+       "type": "IfThenElse"
+      }
+     }
+    ]
+   ],
+   "match": [
+    [
+     "agent",
+     "has_affect_coupler",
+     "c"
+    ]
+   ],
+   "name": "psi_resolve_disposition_gains",
+   "where": {
+    "a": {
+     "items": [
+      {
+       "key": "coupling_on",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      {
+       "type": "Lit",
+       "value": 0.0
+      }
+     ],
+     "type": "Plus"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    },
+    "type": "Eq"
+   }
+  },
+  {
+   "batch": false,
+   "comment": "value = base_value(elsewhere) + Sum_channels( affinity(x) * (state(a)+bias(c)) * gain(c) * pathway_gain(c) ), written ONCE, with the channel set as DATA (AffectChannel rows, has_affect_channel edges off c) -- a new channel is a new row, not a rule edit. Every read is P0-guarded: an UNTAGGED x (no affinity_* attr matching a channel's affinity_key) gets affect_bias==0.0 exactly, the vmPFC-lesion case as an absence, not a branch. Consumers opt in by (a) getting a couples_affect_to edge and (b) carrying affinity_* attrs -- nothing else.",
+   "effects": [
+    [
+     "set_attr_if_different",
+     "x",
+     "affect_bias",
+     {
+      "__term__": {
+       "source": {
+        "any_type": false,
+        "edge_type": "has_affect_channel",
+        "node": {
+         "name": "c",
+         "type": "Var"
+        },
+        "type": "Neighbours"
+       },
+       "type": "Sum",
+       "value": {
+        "items": [
+         {
+          "items": [
+           {
+            "name": {
+             "key": "affinity_key",
+             "node": {
+              "name": "ch",
+              "type": "Var"
+             },
+             "type": "Attr"
+            },
+            "node": {
+             "name": "x",
+             "type": "Var"
+            },
+            "type": "AttrByName"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ],
+          "type": "Plus"
+         },
+         {
+          "items": [
+           {
+            "items": [
+             {
+              "name": {
+               "key": "state_key",
+               "node": {
+                "name": "ch",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "node": {
+               "name": "a",
+               "type": "Var"
+              },
+              "type": "AttrByName"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ],
+            "type": "Plus"
+           },
+           {
+            "items": [
+             {
+              "name": {
+               "key": "bias_key",
+               "node": {
+                "name": "ch",
+                "type": "Var"
+               },
+               "type": "Attr"
+              },
+              "node": {
+               "name": "c",
+               "type": "Var"
+              },
+              "type": "AttrByName"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ],
+            "type": "Plus"
+           }
+          ],
+          "type": "Plus"
+         },
+         {
+          "items": [
+           {
+            "name": {
+             "key": "gain_key",
+             "node": {
+              "name": "ch",
+              "type": "Var"
+             },
+             "type": "Attr"
+            },
+            "node": {
+             "name": "c",
+             "type": "Var"
+            },
+            "type": "AttrByName"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ],
+          "type": "Plus"
+         },
+         {
+          "items": [
+           {
+            "name": {
+             "key": "pathway_gain_key",
+             "node": {
+              "name": "ch",
+              "type": "Var"
+             },
+             "type": "Attr"
+            },
+            "node": {
+             "name": "c",
+             "type": "Var"
+            },
+            "type": "AttrByName"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ],
+          "type": "Plus"
+         }
+        ],
+        "type": "Times"
+       },
+       "var_name": "ch"
+      }
+     }
+    ]
+   ],
+   "match": [
+    [
+     "c",
+     "couples_affect_to",
+     "x"
+    ],
+    [
+     "c",
+     "reads_affect",
+     "a"
+    ]
+   ],
+   "name": "psi_couple_affect_to_tagged",
+   "where": {
+    "a": {
+     "items": [
+      {
+       "key": "coupling_on",
+       "node": {
+        "name": "c",
+        "type": "Var"
+       },
+       "type": "Attr"
+      },
+      {
+       "type": "Lit",
+       "value": 0.0
+      }
+     ],
+     "type": "Plus"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    },
+    "type": "Eq"
+   }
+  }
+ ],
+ "self_load_only": true,
+ "version": "1.0.0"
+}

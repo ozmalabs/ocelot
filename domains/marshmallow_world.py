@@ -32,6 +32,7 @@ if _ROOT not in sys.path:
 
 from domains.photon_eye import GraphEye              # noqa: E402
 from substrate.seed_loader import manifest_for       # noqa: E402
+from domains.core_emotions_weight import quantize_weight  # noqa: E402
 
 # ---- FIXED world constants (pre-registered, MARSHMALLOW_DELAY_PREREG.md §2) ----
 DELAYED_REWARD = 200     # L: the delayed larger reward (two marshmallows)
@@ -101,6 +102,7 @@ class MarshmallowWorld:
         for i in range(self.n):
             hub = self.s.add_node("EmotionHub", {})
             ep = dict(EP_DEFAULTS)
+            ep["w_supergraph_q"], ep["w_scale_bits"] = quantize_weight(ep["w_supergraph"])
             epn = self.s.add_node("HeldEmotionParams", ep)
             self.inner.add_edge_unchecked(hub, "has_emotion_params", epn)
             # the TIME-COST DRIVE (block 207000 node type); weight = TEMPERAMENT

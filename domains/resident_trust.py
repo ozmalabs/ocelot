@@ -20,11 +20,30 @@ from __future__ import annotations
 from domains.bigville_theory_of_mind import mint_resident_tom_belief
 
 
-def mint_trust_beliefs(inner, mt, target: str) -> dict:
+def mint_trust_beliefs(inner, mt, target: str, *, prior_others_trust=None) -> dict:
     """Idempotent: the (mt, target)'s competence_for and willingness_for
-    ToM beliefs. Returns {"competence": <Concept>, "willingness": <Concept>}."""
+    ToM beliefs. Returns {"competence": <Concept>, "willingness": <Concept>}.
+
+    `prior_others_trust` (optional): a cold-start PRIOR -- the gap this
+    module's own docstring named ("Optionally consumes ... a cold-start
+    prior ... named, not required") and AFFECT_COUPLING Phase 5 closes.
+    Applied ONCE, only if these beliefs are being minted fresh for the
+    first time (checked BEFORE minting, mirroring the hate_count_before-
+    style before/after idiom used elsewhere in this arc) -- a resident's
+    own drawn `prior_others_trust` trait (bigville_town100_world.py
+    `_PARAM_SPEC`) becomes the starting point before any real trust
+    incident, the same "prior before evidence" shape `trust_mayor`
+    already uses. Byte-identical for every existing no-arg caller."""
+    existing_names = {inner.node(c)["attrs"].get("name")
+                      for c in inner.neighbours(mt, "has_concept")}
+    is_fresh = ("competence_for:%s" % target) not in existing_names
     competence = mint_resident_tom_belief(inner, mt, "competence", target)
     willingness = mint_resident_tom_belief(inner, mt, "willingness", target)
+    if is_fresh and prior_others_trust is not None:
+        inner.concept_apply_evidence(competence, float(prior_others_trust), 1.0)
+        inner.concept_apply_evidence(willingness, float(prior_others_trust), 1.0)
+        inner.force_all_dirty()
+        inner.run_rules()
     return {"competence": competence, "willingness": willingness}
 
 

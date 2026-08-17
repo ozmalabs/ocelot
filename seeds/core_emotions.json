@@ -617,6 +617,80 @@
    ]
   },
   {
+   "name": "em_weighted_contribution",
+   "area": "retina",
+   "order": 1,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "hub",
+     "has_emotion_params",
+     "ep"
+    ],
+    [
+     "hub",
+     "has_appraisal",
+     "ap"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "ep"
+     },
+     "key": "enabled"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1.0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ap",
+     "weighted_contribution",
+     {
+      "__term__": {
+       "type": "Ashr",
+       "a": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ep"
+          },
+          "key": "w_supergraph_q"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ap"
+          },
+          "key": "supergraph_contribution"
+         }
+        ]
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ep"
+        },
+        "key": "w_scale_bits"
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
    "name": "em_fulfilment_value",
    "area": "retina",
    "order": 2,
@@ -658,34 +732,12 @@
        "type": "Plus",
        "items": [
         {
-         "type": "IfThenElse",
-         "cond": {
-          "type": "Gt",
-          "a": {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "ep"
-           },
-           "key": "w_supergraph"
-          },
-          "b": {
-           "type": "Lit",
-           "value": 0.0
-          }
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ap"
          },
-         "then": {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "ap"
-          },
-          "key": "supergraph_contribution"
-         },
-         "other": {
-          "type": "Lit",
-          "value": 0.0
-         }
+         "key": "weighted_contribution"
         },
         {
          "type": "Attr",
@@ -1869,22 +1921,7 @@
         "type": "Var",
         "name": "ap"
        },
-       "key": "supergraph_contribution"
-      },
-      "b": {
-       "type": "Lit",
-       "value": 0.0
-      }
-     },
-     {
-      "type": "Gt",
-      "a": {
-       "type": "Attr",
-       "node": {
-        "type": "Var",
-        "name": "ep"
-       },
-       "key": "w_supergraph"
+       "key": "weighted_contribution"
       },
       "b": {
        "type": "Lit",
@@ -1984,22 +2021,7 @@
         "type": "Var",
         "name": "ap"
        },
-       "key": "supergraph_contribution"
-      },
-      "b": {
-       "type": "Lit",
-       "value": 0.0
-      }
-     },
-     {
-      "type": "Gt",
-      "a": {
-       "type": "Attr",
-       "node": {
-        "type": "Var",
-        "name": "ep"
-       },
-       "key": "w_supergraph"
+       "key": "weighted_contribution"
       },
       "b": {
        "type": "Lit",
@@ -2988,7 +3010,7 @@
               "type": "Var",
               "name": "ap"
              },
-             "key": "supergraph_contribution"
+             "key": "weighted_contribution"
             }
            },
            "other": {

@@ -103,14 +103,34 @@ def test_mint_trust_beliefs_is_idempotent():
 
 
 def test_trust_mayor_seed_is_untouched():
-    import subprocess
-    try:
-        out = subprocess.run(
-            ["git", "status", "--porcelain",
-             "seeds/can_native_reimplementation.json", "worlds/bigville_can_beliefs.py"],
-            capture_output=True, text=True, timeout=10, cwd=".",
-        )
-    except Exception:
-        pytest.skip("git unavailable")
-    assert out.returncode == 0
-    assert out.stdout.strip() == "", out.stdout
+    """UPDATED, honestly: this test originally asserted `git status
+    --porcelain` was empty for these two files -- a crude proxy, at the time
+    RESIDENT_TRUST_PREREG.md's own generic mint_trust_beliefs work landed,
+    for "my new work didn't collaterally touch trust_mayor's existing seed."
+    That proxy cannot survive ANY later, unrelated, legitimate edit to
+    either file (e.g. SUPERGRAPH_WEIGHT_MAGNITUDE_PREREG.md's Phase B wired
+    a real cred_on consumer into claim_credible's identity_field in
+    worlds/bigville_can_beliefs.py -- a correct, intentional change, not a
+    regression). The actual invariant worth protecting is BEHAVIORAL: that
+    trust_mayor's own identity_field formula -- ``(charm_weight -
+    hostile_weight) * 0.5 + 0.5 * (prior_others_trust - 0.5)`` -- is
+    unchanged, checked directly rather than inferred from a file's dirty
+    bit."""
+    from worlds import bigville_can_beliefs as bcb
+
+    s = sr.Substrate()
+    bcb.install_productions(s)
+    resident = {
+        "name": "TrustMayorRegression", "index": 0,
+        "params": {
+            "resolution_bins": 8, "arousal": 0.2,
+            "prior_world_safe": 0.6, "prior_self_worth": 0.55,
+            "charm_weight": 0.7, "hostile_weight": 0.3, "prior_others_trust": 0.6,
+            "claim_weight": 0.6, "w_supergraph": 0.5, "w_spite": 0.1,
+            "mood_bias": 0.3,
+        },
+    }
+    built = bcb.build_resident_can_mt(s, resident)
+    expected = (0.7 - 0.3) * 0.5 + 0.5 * (0.6 - 0.5)
+    actual = s.node(built["concepts"]["trust_mayor"])["attrs"]["identity_field"]
+    assert actual == pytest.approx(expected)

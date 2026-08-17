@@ -38,6 +38,7 @@ if _ROOT not in sys.path:
 import numpy as np                                     # noqa: E402
 from domains.photon_eye import GraphEye                # noqa: E402
 from substrate.seed_loader import manifest_for         # noqa: E402
+from domains.core_emotions_weight import quantize_weight  # noqa: E402
 
 # ---- FIXED world constants (pre-registered, GLASS_BOX_R1_PREREG.md §2/§4) ----
 N_DEFAULT = 8      # agents (4 hold X, 4 hold Y)
@@ -96,6 +97,7 @@ class GlassBoxR1World:
             hub = self.s.add_node("EmotionHub", {})
             ep = dict(EP_DEFAULTS)
             ep.update(w_supergraph=w, comms_on=1.0 if self.comms else 0.0)
+            ep["w_supergraph_q"], ep["w_scale_bits"] = quantize_weight(w)
             epn = self.s.add_node("HeldEmotionParams", ep)
             self.inner.add_edge_unchecked(hub, "has_emotion_params", epn)
             self.inner.add_edge_unchecked(hub, "member_of", self.sg)

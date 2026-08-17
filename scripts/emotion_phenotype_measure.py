@@ -154,9 +154,14 @@ def _eye():
 
 
 def _hub(eye, inner, **ep_over):
+    from domains.core_emotions_weight import quantize_weight
     hub = eye.substrate.add_node("EmotionHub", {})
     p = dict(EP_DEFAULTS)
-    p.update({k: float(v) for k, v in ep_over.items()})
+    p.update({k: float(v) for k, v in ep_over.items()
+             if k not in ("w_supergraph_q", "w_scale_bits")})
+    wq, bits = quantize_weight(p["w_supergraph"])
+    p["w_supergraph_q"] = float(ep_over.get("w_supergraph_q", wq))
+    p["w_scale_bits"] = float(ep_over.get("w_scale_bits", bits))
     ep = eye.substrate.add_node("HeldEmotionParams", p)
     inner.add_edge_unchecked(hub, "has_emotion_params", ep)
     return hub

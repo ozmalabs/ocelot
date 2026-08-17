@@ -72,11 +72,24 @@ def mint_target_pattern(inner, mt, target: str):
         "violation_type": "harm",
     })
     inner.add_edge(mt, "has_target_pattern", pat, {})
-    regard = mint_target_concept(inner, mt, "regard_for", target)
-    removal = mint_target_concept(inner, mt, "removal_desire_for", target)
+    # Affinity tags for the generic affect-coupling rule (AFFECT_COUPLING_
+    # SHAPE_PREREG.md Phase 4, TARGET_SCOPED_COUPLING_PREREG.md): regard/
+    # admiration are warm-pathway, removal_desire/devaluation are hostile-
+    # pathway. pity_for and controllability_for get NEITHER -- pity is not
+    # on either pathway (it is the OUTCOME of low controllability, not an
+    # affect the coupler should shade), and controllability is a ToM
+    # belief about the target, not the resident's own affect (amygdala-
+    # dissociation modularity constraint: distinct Concepts stay distinct,
+    # this coupling never merges them).
+    regard = mint_target_concept(inner, mt, "regard_for", target,
+                                 affinity={"affinity_warm": 1.0})
+    removal = mint_target_concept(inner, mt, "removal_desire_for", target,
+                                  affinity={"affinity_hostile": 1.0})
     pity = mint_target_concept(inner, mt, "pity_for", target)
-    admiration_concept = mint_target_concept(inner, mt, "admiration_for", target)
-    devaluation = mint_target_concept(inner, mt, "devaluation_for", target)
+    admiration_concept = mint_target_concept(inner, mt, "admiration_for", target,
+                                             affinity={"affinity_warm": 1.0})
+    devaluation = mint_target_concept(inner, mt, "devaluation_for", target,
+                                      affinity={"affinity_hostile": 1.0})
     # controllability is a ToM belief ABOUT the target (Weiner's
     # attribution), not the resident's own affect toward them -- minted
     # through the named ToM entry point (bigville_theory_of_mind.py),
@@ -112,7 +125,8 @@ def record_understanding_incident(inner, pattern, *, exculpatory: bool,
 
 def record_hate_incident(inner, mt, pattern, *, negative: bool,
                          violation_type: str = "harm",
-                         base_alpha: float = 0.3, max_steps: int = 3000) -> dict:
+                         base_alpha: float = 0.3, max_steps: int = 3000,
+                         spite_gain: float = 1.0) -> dict:
     """ONE incident about a target: mints an IncidentReport, lets the
     seeded rules derive attribution_locus (a residual against the
     tracked regard_for Concept's CURRENT, pre-this-incident state) and
@@ -178,8 +192,15 @@ def record_hate_incident(inner, mt, pattern, *, negative: bool,
             # momentary arousal AND accumulated (never-decremented)
             # resentment_debt amplify the removal motive, multiplicatively
             # -- at resentment_debt==0 this is exactly v1.1.0's original
-            # arousal-only formula.
-            effective_removal_alpha = base_alpha * (1.0 + current_arousal) * (1.0 + resentment_debt)
+            # arousal-only formula. spite_gain (TARGET_SCOPED_COUPLING_
+            # PREREG.md, AFFECT_COUPLING Phase 4) is a THIRD, independent
+            # multiplicative factor -- a resident's own w_spite disposition
+            # trait, distinct from arousal/resentment_debt (spite is
+            # accepting one's own cost for another's loss, not provocation
+            # reactivity). Defaults to 1.0 -- byte-identical to every
+            # existing caller that predates this parameter.
+            effective_removal_alpha = (base_alpha * (1.0 + current_arousal)
+                                       * (1.0 + resentment_debt) * spite_gain)
             removal_concept = next(iter(inner.neighbours(pattern, "tracks_removal_desire")))
             inner.concept_apply_evidence(removal_concept, 1.0, effective_removal_alpha)
         elif consequence_route == "devaluation":

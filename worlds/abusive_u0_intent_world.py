@@ -64,6 +64,7 @@ if _ROOT not in sys.path:
 
 import substrate_rs as srs                                  # noqa: E402
 from substrate.seed_loader import manifest_for               # noqa: E402
+from domains.core_emotions_weight import quantize_weight     # noqa: E402
 
 # ---- FROZEN world constants (pre-registered, ABUSIVE_U0_INTENT_PREREG.md)
 SETPOINT = 0.0
@@ -226,7 +227,9 @@ class AbusiveU0IntentWorld:
         # has_affective_state edge) so u0_appraise_true_state can read its
         # TRUE frustration.
         self.hub = self.s.add_node("EmotionHub", {"name": "abuser_presentation"})
-        self.ep = self.s.add_node("HeldEmotionParams", dict(EP_DEFAULTS))
+        ep = dict(EP_DEFAULTS)
+        ep["w_supergraph_q"], ep["w_scale_bits"] = quantize_weight(ep["w_supergraph"])
+        self.ep = self.s.add_node("HeldEmotionParams", ep)
         self.inner.add_edge_unchecked(self.hub, "has_emotion_params", self.ep)
         self.inner.add_edge_unchecked(self.hub, "has_affective_state", self.aaff)
 

@@ -42,6 +42,7 @@ if _ROOT not in sys.path:
 import numpy as np                                       # noqa: E402
 from substrate.world_adapter import WorldAdapter          # noqa: E402
 from substrate.seed_loader import manifest_for            # noqa: E402
+from domains.core_emotions_weight import quantize_weight  # noqa: E402
 
 # ---- FIXED world constants (pre-registered, LANGSIM_..._PREREG.md) ----
 # Two resource types; two producer roles. Agent role 0 gathers wood, needs stone;
@@ -107,6 +108,7 @@ class Agent:
         self.hub = self.s.add_node("EmotionHub", {})
         ep = dict(EP_DEFAULTS); ep.update(w_supergraph=self.w,
                                           comms_on=1.0 if comms else 0.0)
+        ep["w_supergraph_q"], ep["w_scale_bits"] = quantize_weight(self.w)
         epn = self.s.add_node("HeldEmotionParams", ep)
         self.inner.add_edge_unchecked(self.hub, "has_emotion_params", epn)
         self.inner.add_edge_unchecked(self.hub, "member_of", self.sg)

@@ -168,8 +168,16 @@ def build_resident_can_mt(s, resident: dict, res_gain: float = 1.0,
     s.set_attr(concepts["trust_mayor"], "identity_field",
                (p["charm_weight"] - p["hostile_weight"]) * 0.5
                + 0.5 * (p["prior_others_trust"] - 0.5))
+    # cred_on (bigville_town100_world._PARAM_SPEC: mean=1.0, sd=0.2, clip
+    # lo=0.0 hi=None) as a GAIN on the whole credibility signal, not an
+    # additive term -- byte-identical at the population mean (cred_on=1.0),
+    # and non-negative by construction (clip lo=0.0) so it scales magnitude
+    # without flipping sign. This is the real consumer the seed's own
+    # docstring already named ("h seeded from claim_weight, cred_on,
+    # w_supergraph") but the formula had never actually read.
     s.set_attr(concepts["claim_credible"], "identity_field",
-               (p["claim_weight"] - 1.0) * 0.5 + (p["w_supergraph"] - 0.5))
+               p.get("cred_on", 1.0) * ((p["claim_weight"] - 1.0) * 0.5
+                                        + (p["w_supergraph"] - 0.5)))
     s.set_attr(concepts["debtor_trustworthy"], "identity_field",
                -p["w_spite"] + (p["prior_others_trust"] - 0.5))
 
