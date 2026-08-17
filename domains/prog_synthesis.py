@@ -1989,6 +1989,36 @@ def compute_structural_facts(sub, ag_node, g) -> bool:
     d2_fired = bool(free_vars)
     d3_fired = bool(varying_unread)
 
+    # D4 (ALPHABET_SEARCH_COST_WALL follow-on): boundary-witness trap.
+    # Scoped to goals with EXACTLY ONE declared param, str- or list-typed
+    # across every revealed row -- measured (ALPHABET_SEARCH_COST_WALL_
+    # RESULTS.md D4 addendum) to be the only shape with zero false-flag
+    # risk against the live full-arm pass population; a multi-param goal
+    # risks a witness that independently perturbs one param while holding
+    # others fixed, manufacturing a cross-param combination the task's own
+    # semantics never intended (measured false flags on 74/111/120/142/232
+    # in the wider probe). The witness itself is a SINGLETON (1-char /
+    # 1-element), never empty -- empty is frequently genuinely undefined
+    # by the task's own reference (measured false flags on 90/443, both
+    # `list1[0]`-shaped first-element access with no empty-guard in the
+    # task's own reference solution). No reference/expected value is
+    # needed or used: this only asks whether the CURRENT candidate even
+    # completes (no trap) on an in-domain boundary input, the same
+    # mechanical-fact-only shape as D1-D3.
+    d4_fired = False
+    if len(params) == 1 and row_inputs:
+        pname = params[0]
+        vals = [inp[pname] for inp in row_inputs if pname in inp]
+        first = vals[0] if vals else None
+        is_seq = (isinstance(first, str) and all(isinstance(v, str) for v in vals)) \
+            or (isinstance(first, list) and all(isinstance(v, list) for v in vals))
+        if is_seq and len(first) >= 2:
+            witness = {pname: first[:1]}
+            wout = sub._inner.evaluate(_prog_eval_term("e", "p"),
+                                        {"e": witness, "p": root})
+            if not (wout.get("halted") is True and wout.get("trap") is None):
+                d4_fired = True
+
     fired: List[str] = []
     if d1_fired:
         fired.append("d1_memo_lookup_table")
@@ -1996,10 +2026,13 @@ def compute_structural_facts(sub, ag_node, g) -> bool:
         fired.append("d2_dead_code_free_vars")
     if d3_fired:
         fired.append("d3_unread_declared_param")
+    if d4_fired:
+        fired.append("d4_boundary_witness_trap")
 
     sub.set_attr(g, "ps_st_d1_fired", 1.0 if d1_fired else 0.0)
     sub.set_attr(g, "ps_st_d2_fired", 1.0 if d2_fired else 0.0)
     sub.set_attr(g, "ps_st_d3_fired", 1.0 if d3_fired else 0.0)
+    sub.set_attr(g, "ps_st_d4_fired", 1.0 if d4_fired else 0.0)
     sub.set_attr(g, "ps_st_free_vars", free_vars)
     sub.set_attr(g, "ps_st_varying_unread_params", varying_unread)
     sub.set_attr(g, "ps_st_d1_leaves", [_plain(x) for x in d1_leaves])

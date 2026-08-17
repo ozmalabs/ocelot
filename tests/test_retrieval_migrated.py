@@ -355,6 +355,32 @@ _KNOWN_CEILING_REASSESSMENT_5_DRIFT = {
     412: {"status": "accepted", "rung": "d", "exemplar": 775, "holdout_ok": True},
 }
 
+# 2026-08-17 (ALPHABET_SEARCH_COST_WALL_RESULTS.md D4 addendum -- an EIGHTH
+# documented exception, a SECOND reconciliation on top of task 242's own
+# already-superseded `_KNOWN_BUGFIX_SWEEP2_RUNG1_CASCADE_DRIFT` entry
+# above). The alphabet-size MDL pricing fix reorders rung d's hole-fill
+# search enough that retrieval reaches exemplar 776 for 242 again (same
+# candidate shape the OLD `_KNOWN_S2_STRUCTURAL_REJECT_DRIFT` entry already
+# describes), rather than failing upstream at plain SynthEnumerate as
+# `_KNOWN_BUGFIX_SWEEP2_RUNG1_CASCADE_DRIFT` recorded. Independently
+# verified live (constructed witnesses, never revealed/held-out): the
+# candidate this reaches passes the frozen held-out row ('words'->5) but
+# raises `index:oob` on any string shorter than 3 characters -- a genuine
+# wrong-in-general accept, not a capture (identical in kind to the S2-era
+# 242/284/414 wrong accepts this file already treats as a WIN when
+# rejected). D4 (`compute_structural_facts`, program_synthesis v1.14.0) now
+# catches it: a NEW boundary-witness detector, scoped to single-param
+# str/list goals, fires when the candidate traps on a mechanically
+# constructed 1-char/1-element witness. Status/rung/exemplar land back on
+# EXACTLY the old S2-era shape (gapped / structural_verdict_reject / d /
+# 776) -- the mechanism is D4 this time, not the D2/structural-verdict rule
+# that originally caught this shape, but the observable outcome is
+# byte-identical to that historical pin.
+_KNOWN_ALPHABET_D4_DRIFT = {
+    242: {"status": "gapped", "gap_reason": "structural_verdict_reject",
+          "rung": "d", "exemplar": 776},
+}
+
 
 def boot():
     s = srs.Substrate()
@@ -710,7 +736,9 @@ def test_ceiling_task_reproduces_measured_outcome_live(tid):
         tasks = json.load(f)
     by_id = {t["task_id"]: t for t in tasks}
     out = _run_task_live(by_id[tid])
-    if tid in _KNOWN_CEILING_REASSESSMENT_5_DRIFT:
+    if tid in _KNOWN_ALPHABET_D4_DRIFT:
+        expect = dict(_KNOWN_ALPHABET_D4_DRIFT[tid])
+    elif tid in _KNOWN_CEILING_REASSESSMENT_5_DRIFT:
         expect = dict(_KNOWN_CEILING_REASSESSMENT_5_DRIFT[tid])
     elif tid in _KNOWN_BUGFIX_SWEEP2_RUNG1_CASCADE_DRIFT:
         expect = dict(_KNOWN_BUGFIX_SWEEP2_RUNG1_CASCADE_DRIFT[tid])
@@ -922,7 +950,7 @@ def test_attempt1_codebook_screen_rules_stay_absent_from_the_seed():
     # none of the three new names contains "screen" either, so the intent
     # guard above (attempt-1 codebook SCREEN rules stay absent) still bites
     # exactly as written; pure version/count pin update.
-    assert d["version"] == "1.13.0"  # 2026-08-03: 1.11.0 -> 1.12.0, the goal-residual weight term
+    assert d["version"] == "1.14.0"  # 2026-08-17: 1.13.0 -> 1.14.0, D4 boundary-witness trap detector (ALPHABET_SEARCH_COST_WALL_RESULTS.md)
     # (ps_move_mark stamps ps_move_w_residual; ps_move_select subtracts a
     # held refutation's weight inside its Argmax). Pin reconciled, not
     # relaxed -- see PROGRAM_SYNTHESIS_ARC6_GOAL_RESIDUALS.md GR4.

@@ -223,7 +223,7 @@ def test_seed_v1_8_0_shape(seed_manifest):
     # below on a disjoint attr family (ps_property_* vs ps_structural_*)
     # rather than replacing it — all four S6 rules are still present and
     # unedited, so this test's own shape claim is unchanged.
-    assert seed_manifest["version"] == "1.13.0"  # 2026-08-03: 1.11.0 -> 1.12.0, the goal-residual weight term
+    assert seed_manifest["version"] == "1.14.0"  # 2026-08-17: 1.13.0 -> 1.14.0, D4 boundary-witness trap detector (ALPHABET_SEARCH_COST_WALL_RESULTS.md)
     # (ps_move_mark stamps ps_move_w_residual; ps_move_select subtracts a
     # held refutation's weight inside its Argmax). Pin reconciled, not
     # relaxed -- see PROGRAM_SYNTHESIS_ARC6_GOAL_RESIDUALS.md GR4.
