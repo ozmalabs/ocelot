@@ -169,6 +169,204 @@ def test_unproductive_window_is_dominated_and_cannot_continue():
     assert agent.inner.neighbours(current, "is_dominated_by_pareto_candidate") == []
 
 
+def test_new_graph_selected_step_attaches_process_and_clears_terminal_latch():
+    agent, episode, plan, step, instance, process = _fixture(span=4)
+    _advance(
+        agent, step, instance,
+        epoch=4, effort=4, success=0, failure=1,
+    )
+
+    replacement_step = agent.s.add_node("LearningPlanStep", {
+        "status": "active", "last_receipt_seq": 0,
+        "context_evidence_units": 0, "evidence_spent_units": 0,
+    })
+    replacement_instance = agent.s.add_node("Node", {
+        "status": "active", "success_count": 0, "failure_count": 0,
+    })
+    replacement_goal = agent.s.add_node("Goal", {
+        "status": "active", "progress_units": 0, "resolved_units": 0,
+    })
+    for source, edge_type, target in (
+        (plan, "has_learning_plan_step", replacement_step),
+        (replacement_step, "plans_learning_capability", replacement_instance),
+        (replacement_step, "pursues_goal", replacement_goal),
+    ):
+        _edge(agent, source, edge_type, target)
+
+    # This is the ordinary graph planner handoff: release the held step and
+    # select a valid replacement. The supervision seed must attach a fresh
+    # process and clear the old check-in's terminal latch.
+    agent.inner.remove_edge_unchecked(
+        plan, "has_selected_learning_plan_step", step
+    )
+    _edge(agent, plan, "has_selected_learning_plan_step", replacement_step)
+    agent.tick(max_steps=100)
+
+    assert agent.s.node(episode)["attrs"][
+        "cognitive_checkin_terminal"
+    ] == 0
+    assert agent.s.node(episode)["attrs"][
+        "cognitive_continuation_authority"
+    ] == 1
+    replacement_processes = [
+        candidate for candidate in agent.s.nodes("CognitiveProcess")
+        if replacement_step in agent.inner.neighbours(
+            candidate, "supervises_learning_plan_step"
+        )
+    ]
+    assert len(replacement_processes) == 1
+    replacement_attrs = agent.s.node(replacement_processes[0])["attrs"]
+    assert replacement_attrs["status"] == "monitoring"
+    assert replacement_attrs["continuation_authority"] == 1
+
+
+def test_productive_replan_selects_ready_alternative_after_suspended_step():
+    """A real suspended cognitive step hands control back to the plan.
+
+    The replacement is deliberately graph-authored and ready before the
+    second check-in. The supervisor releases the old step; the ordinary
+    developmental Pareto profile selects the alternative and the lease seed
+    attaches a fresh process. No host selection or safety override is used.
+    """
+    agent = WorldAdapter(seeds=("embodied_development",))
+    episode = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "development_learning_active": 1,
+        "development_evidence_window": 9,
+        "latest_development_receipt_seq": 0,
+        "embodiment_reset_available": 1,
+        "embodiment_reset_reachable": 1,
+        "embodiment_reset_cost_units": 6,
+        "embodied_reset_requested": 0,
+        "development_effector_coverage_complete": 0,
+    })
+    _edge(agent, agent.agent, "has_embodied_development_episode", episode)
+    agent.tick(max_steps=100)
+
+    plan = agent.inner.neighbours(
+        episode, "has_self_directed_learning_plan"
+    )[0]
+    old_step = agent.inner.neighbours(
+        plan, "has_selected_learning_plan_step"
+    )[0]
+    old_instance = agent.inner.neighbours(
+        old_step, "plans_learning_capability"
+    )[0]
+    old_process = agent.inner.neighbours(
+        episode, "has_cognitive_process"
+    )[0]
+    old_goal = agent.inner.neighbours(
+        old_process, "pursues_goal"
+    )[0]
+    policy = agent.inner.neighbours(
+        old_process, "governed_by_cognitive_supervision_policy"
+    )[0]
+
+    replacement_instance = agent.s.add_node(
+        "EmbodiedSituatedDevelopmentalCapability", {
+            "name": "graph_ready_replacement", "goal": "replacement_goal",
+            "ordinal": 99, "status": "available", "attempt_count": 0,
+            "success_count": 0, "failure_count": 0,
+            "last_reinstantiation_failure_count": 0,
+            "warm_start_overlap": 0, "optional_route": 1,
+        },
+    )
+    replacement_step = agent.s.add_node("LearningPlanStep", {
+        "name": "graph_ready_replacement", "goal": "replacement_goal",
+        "ordinal": 99, "status": "ready", "evidence_budget_units": 9,
+        "evidence_spent_units": 0, "context_evidence_units": 0,
+        "successful_evidence_units": 0, "failed_evidence_units": 0,
+        "last_receipt_seq": 0, "selection_count": 0,
+        "revision_count": 0, "last_revision_receipt_seq": 0,
+        "last_budget_review_receipt_seq": 0, "budget_success_baseline": 0,
+        "budget_failure_baseline": 0, "deferred_generation": 0,
+        "last_selected_decision_epoch": 0, "optional_route": 1,
+    })
+    replacement_goal = agent.s.add_node("Goal", {
+        "status": "active", "progress_units": 0, "resolved_units": 0,
+    })
+    for source, edge_type, target in (
+        (plan, "has_learning_plan_step", replacement_step),
+        (replacement_step, "plans_learning_capability", replacement_instance),
+        (replacement_step, "pursues_goal", replacement_goal),
+    ):
+        _edge(agent, source, edge_type, target)
+
+    for node, key, value in (
+        (old_step, "evidence_spent_units", 10),
+        (old_instance, "success_count", 10),
+        (old_instance, "failure_count", 0),
+        (old_goal, "progress_units", 10),
+    ):
+        agent.inner.set_attr(node, key, value)
+    agent.inner.set_attr(policy, "cognitive_epoch", 3)
+    agent.tick(max_steps=200)
+
+    for node, key, value in (
+        (old_step, "evidence_spent_units", 19),
+        (old_instance, "success_count", 10),
+        (old_instance, "failure_count", 4),
+        (old_goal, "progress_units", 10),
+    ):
+        agent.inner.set_attr(node, key, value)
+    agent.inner.set_attr(policy, "cognitive_epoch", 8)
+    agent.tick(max_steps=300)
+
+    # The old step stays suspended while the distinct graph-authored
+    # replacement is selected; no evidence budget or mastery is fabricated.
+    assert agent.s.node(old_step)["attrs"]["status"] == "meta_suspended"
+    assert agent.s.node(old_process)["attrs"]["status"] == "replan_required"
+    assert agent.inner.neighbours(
+        plan, "has_selected_learning_plan_step"
+    ) == [replacement_step]
+    assert agent.s.node(episode)["attrs"][
+        "cognitive_checkin_terminal"
+    ] == 0
+    assert agent.s.node(episode)["attrs"][
+        "cognitive_continuation_authority"
+    ] == 1
+    new_processes = [
+        process for process in agent.s.nodes("CognitiveProcess")
+        if replacement_step in agent.inner.neighbours(
+            process, "supervises_learning_plan_step"
+        )
+    ]
+    assert len(new_processes) == 1
+    assert agent.s.node(new_processes[0])["attrs"]["status"] == "monitoring"
+    assert agent.s.node(new_processes[0])["attrs"][
+        "continuation_authority"
+    ] == 1
+
+
+def test_verified_learning_safety_context_alone_does_not_revive_held_process():
+    agent, episode, _, step, instance, process = _fixture(span=4)
+    _advance(
+        agent, step, instance,
+        epoch=4, effort=4, success=0, failure=1,
+    )
+    safety = agent.s.add_node("LearningSafetyContext", {
+        "verified": 1, "reset_reachable": 1, "reset_cost_units": 1,
+        "protective_support_available": 0,
+        "protective_support_effectiveness": 0,
+        "recovery_path_count": 1, "required_horizon_units": 1,
+        "minimum_width_relaxation": 1,
+        "information_loss_allowance": 1,
+    })
+    _edge(agent, episode, "has_learning_safety_context", safety)
+
+    for _ in range(2):
+        agent.tick(max_steps=100)
+
+    assert agent.s.node(episode)["attrs"][
+        "cognitive_checkin_terminal"
+    ] == 1
+    assert agent.s.node(episode)["attrs"][
+        "cognitive_continuation_authority"
+    ] == 0
+    assert agent.s.node(process)["attrs"]["status"] == "replan_required"
+    assert agent.s.node(process)["attrs"]["continuation_authority"] == 0
+    assert len(list(agent.s.nodes("CognitiveProcess"))) == 1
+
+
 def test_surprise_preempts_approximate_checkin_time():
     agent, episode, _, step, instance, process = _fixture(span=4)
     signal = agent.s.add_node("CognitiveProcessSignal", {
@@ -208,12 +406,19 @@ def test_checkin_time_is_situated_not_a_global_magic_interval():
     assert list(short[0].s.nodes("CognitiveCheckIn")) == []
 
 
-def test_cognitive_clock_checks_in_even_when_no_receipt_arrives():
-    agent, episode, _, _, _, process = _fixture(span=3)
+def test_cognitive_clock_does_not_check_in_without_evidence_progress():
+    agent, episode, _, step, _, process = _fixture(span=3)
     policy = agent.inner.neighbours(
         process, "governed_by_cognitive_supervision_policy"
     )[0]
     agent.inner.set_attr(policy, "cognitive_epoch", 2)
+    agent.tick()
+
+    assert list(agent.s.nodes("CognitiveCheckIn")) == []
+
+    # The same lease becomes due when the graph-owned evidence counter moves,
+    # regardless of how many cognitive scheduler epochs elapsed.
+    agent.inner.set_attr(step, "evidence_spent_units", 3)
     agent.tick()
 
     checkin = list(agent.s.nodes("CognitiveCheckIn"))[0]
@@ -242,45 +447,40 @@ def test_signal_inside_expected_envelope_does_not_preempt_lease():
     assert agent.s.node(process)["attrs"]["continuation_authority"] == 1
 
 
-def test_previous_window_dominates_same_yield_at_twice_the_effort():
+def test_dominated_productive_window_continues_when_it_is_the_only_future():
     agent, episode, _, step, instance, process = _fixture(span=4)
     _advance(
         agent, step, instance,
-        epoch=4, effort=2, success=1, failure=0,
+        epoch=4, effort=4, success=1, failure=0,
     )
     first_reference = agent.inner.neighbours(
         process, "has_reference_efficiency_window"
     )[0]
-    assert agent.s.node(first_reference)["attrs"]["effort_units"] == 2
+    assert agent.s.node(first_reference)["attrs"]["effort_units"] == 4
 
     _advance(
         agent, step, instance,
-        epoch=8, effort=6, success=2, failure=0,
+        epoch=8, effort=12, success=2, failure=0,
     )
     checkins = sorted(
         agent.s.nodes("CognitiveCheckIn"),
         key=lambda node: agent.s.node(node)["attrs"]["epoch"],
     )
     second = checkins[-1]
-    assert agent.s.node(second)["attrs"]["status"] == "replan_required"
+    assert agent.s.node(second)["attrs"]["status"] == "continued"
     profile = agent.inner.neighbours(
         second, "has_efficiency_pareto_profile"
     )[0]
     current = agent.inner.neighbours(
         profile, "has_incumbent_pareto_candidate"
     )[0]
-    dominators = agent.inner.neighbours(
-        current, "is_dominated_by_pareto_candidate"
-    )
-    assert any(
-        agent.s.node(candidate)["attrs"]["kind"]
-        == "previous_cognitive_efficiency_window"
-        for candidate in dominators
-    )
-    assert agent.s.node(process)["attrs"]["continuation_authority"] == 0
+    # The direct Pareto comparison detects dominance before the historical
+    # relation needs to be materialized, but cannot discard the sole future.
+    assert agent.s.node(current)["attrs"]["dominated"] == 0
+    assert agent.s.node(process)["attrs"]["continuation_authority"] == 1
     assert agent.s.node(episode)["attrs"][
         "cognitive_continuation_authority"
-    ] == 0
+    ] == 1
 
 
 def test_deep_subgoal_progress_renews_root_process_without_root_progress():

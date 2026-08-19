@@ -340,11 +340,16 @@ def _model_attrs(option: dict[str, Any], ordinal: int) -> dict[str, Any]:
         "recalibration_required": 0.0,
         "mean_flow_speed_squared": 0.0,
         "flow_variance_sum": 0.0,
+        "context_delta_experience_count": 0.0,
         "semantics": "unknown",
     }
     for feature in FLOW_FEATURES:
         attrs[f"mean_{feature}"] = 0.0
         attrs[f"{feature}_variance_sum"] = 0.0
+        attrs[f"mean_context_delta_{feature}"] = 0.0
+        for conditioning in FLOW_FEATURES:
+            attrs[f"context_delta_covariance_{feature}_{conditioning}"] = 0.0
+            attrs[f"context_delta_gain_{feature}_{conditioning}"] = 0.0
     for key in CONSEQUENCES:
         attrs[f"mean_{key}"] = float(
             option.get(f"specified_mean_{key}", 0.0)
@@ -429,6 +434,17 @@ def _outcome_attrs(
             f"post_body_w{axis}": value
             for axis, value in zip(("x", "y", "z"), post_rates)
         },
+        "post_flow_forward": post_body[0],
+        "post_flow_lateral": post_body[1],
+        "post_flow_vertical": post_body[2],
+        "post_power_state": sum(after["engine_power_state"]) / len(after["engine_power_state"]),
+        "observed_context_delta_flow_forward": post_body[0] - pre_body[0],
+        "observed_context_delta_flow_lateral": post_body[1] - pre_body[1],
+        "observed_context_delta_flow_vertical": post_body[2] - pre_body[2],
+        "observed_context_delta_power_state": (
+            sum(after["engine_power_state"]) / len(after["engine_power_state"])
+            - pre_power
+        ),
         "pre_flow_forward": pre_body[0],
         "pre_flow_lateral": pre_body[1],
         "pre_flow_vertical": pre_body[2],
@@ -471,6 +487,7 @@ def _run(
     ] | None = None,
     seeds: tuple[str, ...] = ("embodied_motor_program",),
     capture_plant_failure: bool = False,
+    future_manifold_enabled: bool = False,
 ) -> dict[str, Any]:
     agent = WorldAdapter(seeds=seeds)
     policy = unique_node(agent, "EmbodiedMotorProgramPolicy")
@@ -495,6 +512,12 @@ def _run(
         "activation_weight": 0.002,
     }
     policy_attrs.update(policy_overrides or {})
+    if future_manifold_enabled:
+        policy_attrs.update({
+            "future_manifold_enabled": 1.0,
+            "future_manifold_establish_from_seq": 80.0,
+            "future_manifold_establish_until_seq": 100.0,
+        })
     stamp_attrs(agent, policy, policy_attrs)
     world_context = world_adapter or FixedWingJetWorld(
         parameters=parameters,
@@ -574,6 +597,12 @@ def _run(
         # something the frame should be told.
         plant = agent.s.add_node("EmbodiedEffectorModel", {
             "token": "plant",
+            # This contributor is observed and learned from residuals, but it
+            # is never a command target.  Keep that generic contract on the
+            # model itself so every command/token boundary can exclude it;
+            # otherwise the graph emits its descriptive token to a plant that
+            # only accepts physical effector tokens.
+            "never_commanded": 1.0,
             "ordinal": float(len(options)),
             "actuator_group": float(_PLANT_EFFECTOR_GROUP),
             "activation_magnitude": 1.0,
@@ -628,11 +657,14 @@ def _run(
         agent.tick()
 
         trace = []
+        simulator_step_calls = 0
+        simulator_step_attempts = 0
         graph_latencies_ns = []
         reuse_latencies_ns = []
         synthesis_latencies_ns = []
         plant_failure: str | None = None
         previous_airspeed_fps: float | None = None
+
         for request_seq in range(1, steps + 1):
             scheduled_reference: dict[str, float] = {}
             for onset_action, reference_attrs in reference_schedule or ():
@@ -707,9 +739,56 @@ def _run(
                 description=f"fixed-wing trial {request_seq}",
             )
             tokens = _trial_tokens(agent, trial)
+            program = agent.inner.neighbours(
+                trial, "enacts_embodied_motor_program"
+            )[0]
+            program_attrs = agent.s.node(program)["attrs"]
+            if future_manifold_enabled and request_seq > 100:
+                required_projection_attrs = (
+                    "manifold_phase", "manifold_projection_resolved",
+                    "manifold_projection_reason", "manifold_projection_horizon",
+                    "manifold_projection_support", "manifold_projection_budget",
+                    "projection_policy", "projection_target_policy",
+                    "projection_time_bound",
+                    *(f"manifold_retained_{axis}" for axis in
+                      ("forward", "lateral", "vertical", "roll", "pitch", "turn")),
+                )
+                missing = [key for key in required_projection_attrs
+                           if key not in program_attrs]
+                if missing:
+                    raise RuntimeError(
+                        f"future-manifold treatment projection audit missing at request {request_seq}: "
+                        + ", ".join(missing)
+                    )
+                if (
+                    float(program_attrs["manifold_projection_resolved"]) <= 0.5
+                    or float(program_attrs["manifold_projection_support"]) <= 0.0
+                    or float(program_attrs["manifold_projection_horizon"]) <= 0.0
+                    or float(program_attrs["manifold_projection_budget"]) <= 0.0
+                ):
+                    projection_members = []
+                    for member in agent.inner.neighbours(
+                        program, "includes_embodied_effector_model"
+                    ):
+                        attrs = agent.s.node(member)["attrs"]
+                        projection_members.append({
+                            "token": attrs.get("token"),
+                            "experience_count": attrs.get("experience_count"),
+                            "context_delta_experience_count": attrs.get(
+                                "context_delta_experience_count"
+                            ),
+                        })
+                    raise RuntimeError(
+                        f"future-manifold treatment projection unresolved at request {request_seq}: "
+                        f"reason={program_attrs['manifold_projection_reason']!r}, "
+                        f"source={program_attrs.get('source')!r}, "
+                        f"members={projection_members!r}"
+                    )
             before = observation
             try:
+                simulator_step_attempts += 1
                 observation = world.step_program(tokens)
+                simulator_step_calls += 1
             except (ArithmeticError, RuntimeError) as exc:
                 if not capture_plant_failure:
                     raise
@@ -726,10 +805,47 @@ def _run(
             agent.tick()
             agent.inner.set_attr(episode, "receipt_boundary_seq", float(request_seq))
             agent.tick()
-            program = agent.inner.neighbours(
-                trial, "enacts_embodied_motor_program"
-            )[0]
             episode_attrs = agent.s.node(episode)["attrs"]
+            # Pure observation for generic control-trace diagnostics.  The
+            # reducer in substrate.control_trace_probe consumes these fields
+            # to measure instantaneous-shape flicker and whether selected
+            # regime-local models/program members follow it.  No value is
+            # written back to the graph and none participates in control.
+            commanded_models = agent.inner.neighbours(
+                trial, "commands_embodied_effector_model"
+            )
+            selected_model_ids = [
+                {
+                    "token": agent.s.node(model)["attrs"].get("token", ""),
+                    "actuator_group": float(
+                        agent.s.node(model)["attrs"].get("actuator_group", 0.0)
+                    ),
+                    "shape_ordinal": float(
+                        agent.s.node(model)["attrs"].get("shape_ordinal", 0.0)
+                    ),
+                }
+                for model in commanded_models
+            ]
+            # Selection happened inside _settle_graph_request from the
+            # pre-request state. Align the ordinal with that same action;
+            # reading episode_attrs here would compare a selected program to
+            # the receipt's post-action surprise and manufacture a phase lag.
+            instantaneous_ordinal = float(
+                before_request_attrs.get("current_surprise_ordinal", 0.0)
+            )
+            condensed = False
+            if instantaneous_ordinal > 0.0:
+                for shape in agent.inner.neighbours(
+                    agent.agent, "has_embodied_surprise_shape_library"
+                ):
+                    shape_attrs = agent.s.node(shape)["attrs"]
+                    if int(float(shape_attrs.get("ordinal", -1.0))) == int(
+                        instantaneous_ordinal
+                    ):
+                        condensed = float(
+                            shape_attrs.get("condensed", 0.0)
+                        ) > 0.5
+                        break
             trace.append({
                 "request_seq": request_seq,
                 "tokens": list(tokens),
@@ -740,6 +856,13 @@ def _run(
                     )
                 ],
                 "member_count": len(tokens),
+                "instantaneous_surprise_ordinal": instantaneous_ordinal,
+                "confirmed_regime_ordinal": float(
+                    before_request_attrs.get("regime_ordinal", 0.0)
+                ),
+                "condensed": condensed,
+                "selected_model": selected_model_ids,
+                "selected_program_members": list(tokens),
                 "default_reused": default_reused,
                 "program_mode": episode_attrs["program_mode"],
                 "recalibration_count": episode_attrs["recalibration_count"],
@@ -767,6 +890,24 @@ def _run(
                 "prediction_error_energy": agent.s.node(program)["attrs"].get(
                     "prediction_error_energy", 0.0
                 ),
+                "simulator_step_calls": simulator_step_calls,
+                "future_manifold_horizon": program_attrs.get("manifold_horizon"),
+                "future_manifold_retained_width": program_attrs.get("manifold_retained_width"),
+                "future_manifold_information_loss": program_attrs.get("manifold_information_loss"),
+                "future_manifold_forced_transition": program_attrs.get("manifold_forced_transition"),
+                "future_manifold_retained_flags": {
+                    axis: program_attrs.get(f"manifold_retained_{axis}")
+                    for axis in ("forward", "lateral", "vertical", "roll", "pitch", "turn")
+                },
+                "manifold_phase": program_attrs.get("manifold_phase"),
+                "manifold_projection_resolved": program_attrs.get("manifold_projection_resolved"),
+                "manifold_projection_reason": program_attrs.get("manifold_projection_reason"),
+                "manifold_projection_horizon": program_attrs.get("manifold_projection_horizon"),
+                "manifold_projection_support": program_attrs.get("manifold_projection_support"),
+                "manifold_projection_budget": program_attrs.get("manifold_projection_budget"),
+                "projection_policy": program_attrs.get("projection_policy"),
+                "projection_target_policy": program_attrs.get("projection_target_policy"),
+                "projection_time_bound": program_attrs.get("projection_time_bound"),
                 # Published for the descent probe: the budget the composer
                 # prices, and the ladder rung that names why.
                 "margin_actions": float(
@@ -907,6 +1048,10 @@ def _run(
             "pareto_profile_core": "embodied_pareto_profile",
             "control_objectives_scalarized": False,
             "completed_steps": len(trace),
+            "simulator_step_calls": simulator_step_calls,
+            "simulator_step_attempts": simulator_step_attempts,
+            "simulator_step_calls_match_emitted_actions": simulator_step_calls == len(trace),
+            "future_manifold_enabled": bool(future_manifold_enabled),
             "plant_failure": plant_failure,
             "effector_groups": world.effector_group_count,
             "primitive_options": len(world.actuator_options()),

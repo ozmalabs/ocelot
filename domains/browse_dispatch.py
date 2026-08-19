@@ -102,20 +102,19 @@ def scan_and_browse(agent, *, max_actions: int = _MAX_ACTIONS_DEFAULT,
         touched.append(req)
 
         from domains.information_commitment import assess
+        from domains.shape_tube import goal_manifold, goal_projection
         gate = assess(
             agent,
             commit={
                 "name": "browser_apply",
                 "expected_goal_work": float(a.get("expected_goal_work", 1.0)),
                 "expected_information_gain": float(a.get("expected_information_gain", 0.5)),
-                "footprint": {
-                    "deleted_facts": 0.0, "overwritten_facts": 0.0,
-                    "recoverability": float(a.get("recoverability", 0.8)),
-                    "externality": float(a.get("externality_cost", 0.1)),
-                },
+                "projection": goal_projection("browser_apply_goal", active=True, action_count=1, intervention_magnitude=1.0),
             },
-            wait={"delay_cost": float(a.get("delay_cost", 0.1))},
-            refine={"refinement_cost": 1.0},
+            wait={"delay_cost": float(a.get("delay_cost", 0.1)),
+                  "projection": goal_projection("browser_apply_goal", active=False, action_count=0, intervention_magnitude=0.0)},
+            refine={"refinement_cost": 1.0, "projection": goal_projection("browser_apply_goal", active=False, action_count=1, intervention_magnitude=0.5)},
+            manifold=goal_manifold("browser_apply_goal"),
             retain_trace=False,
         )
         I.set_attr(req, "commit_decision", gate["decision"] or "undetermined")

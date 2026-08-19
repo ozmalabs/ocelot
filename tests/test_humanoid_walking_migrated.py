@@ -382,8 +382,11 @@ def _motor_library_fixture(signature):
 
 
 def _held_motor_library(signature):
+    from scripts.jabberwock_humanoid_walk import developmental_curriculum_contract
+
     return {
         "version": 3,
+        "developmental_curriculum_contract": developmental_curriculum_contract(),
         "body_shapes": [{
             "attrs": {
                 "name": "held_shape",
@@ -681,7 +684,10 @@ def test_shape_matched_library_warm_starts_without_host_actuator_mapping():
         episode,
         "has_humanoid_motor_program",
     )
-    assert restored == {"shape_count": 1, "program_count": 1}
+    assert restored["shape_count"] == 1
+    assert restored["program_count"] == 1
+    assert restored["developmental_curriculum_contract_version"] == 1
+    assert len(restored["developmental_curriculum_contract_digest"]) == 64
     assert episode_attrs["warm_start_shape_recognized"] == 1.0
     assert episode_attrs["warm_start_program_count"] == 1.0
     assert len(programs) == 1

@@ -464,6 +464,11 @@ class LanguageProduction:
             # optional {role -> adjective-concept} modifiers, realized before the role's noun (see
             # morphophonological_encoding). Empty by default, so production is unchanged without them.
             "adjectives": frame.get("adjectives") or {},
+            # Optional semantic category for a filled role.  This lets a
+            # copular complement be realized as an adjective without adding
+            # a determiner ("the weather is clear").  Ordinary noun roles
+            # remain byte-identical when the map is absent.
+            "role_kinds": frame.get("role_kinds") or {},
             # VOICE-EXPANSION morphological feature requests (all optional, all
             # empty by default so production is byte-identical without them):
             #   tense           -- the clause tense (past selects the grounded
@@ -496,6 +501,7 @@ class LanguageProduction:
         feat_map = _concept_surface_by_feature(self.world, language)
         fws = _grounded_function_words(self.world, language)
         adjectives = surface_structure.get("adjectives") or {}
+        role_kinds = surface_structure.get("role_kinds") or {}
         inflect = surface_structure.get("inflect") or {}
         adj_features = surface_structure.get("adjective_features") or {}
         tense = surface_structure.get("tense")
@@ -523,8 +529,9 @@ class LanguageProduction:
             }
             is_wh = isinstance(concept, str) and concept in ("?WHO", "?WHAT")
             is_proper = isinstance(concept, str) and concept[:1].isupper()
-            is_noun_role = (role in ("agent", "patient", "location")
-                            or role in preprole.FINE_ROLES)
+            is_noun_role = ((role in ("agent", "patient", "location")
+                             or role in preprole.FINE_ROLES)
+                            and role_kinds.get(role) != "adjective")
             # Function words read back from the grounded FunctionWord nodes.
             for fw in self._function_words_for_slot(
                     fws, role, language, is_wh, is_proper, is_noun_role):

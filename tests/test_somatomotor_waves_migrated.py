@@ -505,6 +505,7 @@ def test_humanoid_bridge_collapses_wave_to_existing_compound_program_path():
     generated = manifest()
     rules = {rule["name"]: rule for rule in generated["rules"]}
     assert {
+        "hdc_index_wave_cell_local_commands",
         "hdc_open_humanoid_program_from_somatomotor_wave",
         "hdc_bind_wave_cells_to_least_experienced_local_commands",
         "hdc_collapse_somatomotor_wave_to_one_compound_outcome",
@@ -513,6 +514,11 @@ def test_humanoid_bridge_collapses_wave_to_existing_compound_program_path():
     collapse = json.dumps(
         rules["hdc_collapse_somatomotor_wave_to_one_compound_outcome"]
     )
+    binding = json.dumps(
+        rules["hdc_bind_wave_cells_to_least_experienced_local_commands"]
+    )
+    assert "indexes_humanoid_wave_local_command" in binding
+    assert "models_embodied_effector" not in binding
     assert "includes_humanoid_phase_action_model" in collapse
     assert "has_ready_humanoid_motor_program" in collapse
     assert "spontaneous_somatomotor_wave" in collapse

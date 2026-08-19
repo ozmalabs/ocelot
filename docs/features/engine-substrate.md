@@ -1,5 +1,24 @@
 # Engine / substrate mechanics
 
+## Decision and risk boundary
+
+The engine's general commitment gate establishes a context-specific future
+manifold as a time-indexed shape tube, then compares `wait`, `refine`, and
+`commit` projections against the complete tube. Execution chooses the minimum
+sufficient action/intervention that keeps the projected tube inside it; goals
+only break equal-intervention ties. Width, information loss, and time bounds
+are explicit fields, with changes treated as explicit transitions. Hard safety
+vetoes and external approval remain separate, non-tradeable host boundaries.
+The F-16 is one proving ground among many.
+
+At each projected time slice the engine computes retained, lost, and escape
+residual shapes itself. The time/width/information-loss triangle bounds those
+residuals; complete cells and topology links are retained for audit. The gate
+enforces this shape residual within each assessment, not persisted lineage
+across assessments. Manifold momentum is nonphysical continuity when
+longitudinal callers reuse an established manifold; identity or bounds changes
+must be represented by those callers as explicit transitions.
+
 The rule-engine internals underneath every capability doc in this
 directory: the `run_rules` fixpoint itself, the Python-to-Rust migration
 that made it canonical, and the project's own self-improvement/self-account

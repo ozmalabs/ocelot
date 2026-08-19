@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """jabberwock_commitment_gate — demonstrator for domains/commitment_gate.py.
 
-Prints the reversibility classification table, then runs three scenarios
+Prints the consequence classification table, then runs three scenarios
 against a fresh, throwaway `substrate_rs.Substrate()` (no daemon, no
 checkpoint):
 
   1. a reversible in-graph action (add_node) -- passes free, no record.
-  2. a committing action with no policy/approver (del_node) -- refused.
-  3. the same committing action, approved under an explicit policy -- allowed,
-     Commitment record minted.
+  2. a committing action with explicit future-manifold projection but no
+     policy/approver (del_node) -- refused.
+  3. the same committing action, with the same risk evidence and approved
+     under an explicit policy -- allowed, Commitment record minted.
 
 Then demonstrates SUBSUMPTION against `domains/proposal_install.py`'s real
 guardrails on a "failed" proposal (refused) -- see
@@ -32,16 +33,33 @@ for p in (str(ROOT), str(ROOT / "runners" / "dsl" / "python")):
 import substrate_rs as srs                                # noqa: E402
 from domains import commitment_gate as cg                 # noqa: E402
 from domains import proposal_install as pinstall           # noqa: E402
+from domains.shape_tube import goal_manifold, goal_projection  # noqa: E402
 
 
 def print_table() -> None:
     print("=" * 78)
-    print("REVERSIBILITY CLASSIFICATION TABLE")
+    print("CONSEQUENCE CLASSIFICATION TABLE")
     print("=" * 78)
     for row in cg.classification_table():
         star = "*" if row.get("archetype") else " "
         print(f"{star} {row['category']:<11} {row['kind']:<20} {row['reason'][:90]}")
     print()
+
+
+def _risk(kind: str, *, projected_margin: float = 0.75) -> dict:
+    """Return deterministic future-manifold evidence for a committing demo."""
+    return {"risk": {
+        "commit": {"name": kind, "projection": goal_projection(
+            "commitment_demo_goal", active=True, action_count=1,
+            intervention_magnitude=1.0)},
+        "wait": {"name": "wait", "delay_cost": 0.1, "projection": {
+            **goal_projection("commitment_demo_goal", active=False,
+                              action_count=0, intervention_magnitude=0.0)}},
+        "refine": {"name": "refine", "refinement_cost": 0.2, "projection": {
+            **goal_projection("commitment_demo_goal", active=False,
+                              action_count=1, intervention_magnitude=0.5)}},
+        "manifold": goal_manifold("commitment_demo_goal"),
+    }}
 
 
 def scenario_reversible() -> None:
@@ -59,9 +77,9 @@ def scenario_reversible() -> None:
 
 def scenario_committing_refused() -> None:
     print("-" * 78)
-    print("2) committing action, no policy/approver: del_node -- should be refused")
+    print("2) committing action, risk evidence but no policy/approver: del_node -- should be refused")
     s = srs.Substrate()
-    result = cg.commit_gate(s, {"kind": "del_node"})
+    result = cg.commit_gate(s, {"kind": "del_node", **_risk("del_node")})
     print(f"   result: {result}")
     assert result["allowed"] is False and result["gated"] is True and result["record"] is not None
     rec = s.node(result["record"])["attrs"]
@@ -74,7 +92,9 @@ def scenario_committing_approved() -> None:
     print("3) committing action, approved under policy: del_node -- should be allowed")
     s = srs.Substrate()
     policy = {"allowlist": ["del_node"], "require_approver": True}
-    result = cg.commit_gate(s, {"kind": "del_node"}, approver="pytest", policy=policy)
+    result = cg.commit_gate(
+        s, {"kind": "del_node", **_risk("del_node")},
+        approver="pytest", policy=policy)
     print(f"   result: {result}")
     assert result["allowed"] is True and result["gated"] is True and result["record"] is not None
     rec = s.node(result["record"])["attrs"]
@@ -99,8 +119,10 @@ def scenario_subsumption_deny() -> None:
     })
     s._inner.add_edge_unchecked(prop_id, "validates", spec_id)
 
-    gate_result = cg.commit_gate(s, {"kind": "runtime_install", "proposal_id": prop_id},
-                                  approver="pytest")
+    gate_result = cg.commit_gate(
+        s, {"kind": "runtime_install", "proposal_id": prop_id,
+            **_risk("runtime_install", projected_margin=0.5)},
+        approver="pytest")
     oracle_result = pinstall.install_proposal(s, prop_id, approver="pytest")
     print(f"   commit_gate:      allowed={gate_result['allowed']!r} reason={gate_result['reason']!r}")
     print(f"   install_proposal: ok={oracle_result['ok']!r} reason={oracle_result['reason']!r}")

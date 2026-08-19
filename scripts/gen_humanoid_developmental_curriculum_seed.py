@@ -2193,41 +2193,12 @@ def complete_selected_order_n_program_path_rule():
 
 def wave_phase_candidates(cell="cell", plan="plan"):
     return Filter(
-        Neighbours("episode", "has_humanoid_phase_action_model"),
+        Neighbours(cell, "indexes_humanoid_wave_local_command"),
         "wave_candidate",
         And(
             Eq(
                 P0("wave_candidate", "support_phase"),
                 P0("episode", "current_support_phase"),
-            ),
-            Exists(
-                Neighbours(
-                    "wave_candidate", "generalizes_humanoid_action_model"
-                ),
-                "wave_action_model",
-                And(
-                    Eq(P0("wave_action_model", "tonic_default"), L(0)),
-                    Exists(
-                        Neighbours(
-                            "wave_action_model", "models_embodied_effector"
-                        ),
-                        "wave_model_effector",
-                        Exists(
-                            Neighbours(cell, "represents_embodied_effector"),
-                            "wave_cell_effector",
-                            Eq(
-                                P0(
-                                    "wave_cell_effector",
-                                    "channel_ordinal",
-                                ),
-                                P0(
-                                    "wave_model_effector",
-                                    "channel_ordinal",
-                                ),
-                            ),
-                        ),
-                    ),
-                ),
             ),
             Not(Exists(
                 Neighbours(plan, "includes_humanoid_phase_action_model"),
@@ -2239,6 +2210,56 @@ def wave_phase_candidates(cell="cell", plan="plan"):
             )),
         ),
     )
+
+
+def index_humanoid_wave_local_commands_rule():
+    """Materialize the stable wave-cell to local-command join once.
+
+    Support phase and current program membership remain dynamic filters.  The
+    expensive anatomy join does not: a wave cell's effector channel and an
+    opaque action model's effector channel are body-topology facts.  Holding
+    that join as an edge keeps later winner selection proportional to the
+    commands for one cell instead of to the episode's entire action alphabet.
+    """
+    indexed = Neighbours("cell", "indexes_humanoid_wave_local_command")
+    return {
+        "name": "hdc_index_wave_cell_local_commands",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -94,
+        "batch": True,
+        "comment": "Cache the immutable topology join between a generic "
+        "wave cell and body-local opaque commands. Receipt-derived rank, "
+        "support phase, and actuator-group exclusion stay live at selection.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "has_somatomotor_wave_field", "field"],
+            ["field", "has_somatomotor_wave_cell", "cell"],
+            ["cell", "represents_embodied_effector", "cell_effector"],
+            ["episode", "has_humanoid_phase_action_model", "candidate"],
+            [
+                "candidate", "generalizes_humanoid_action_model",
+                "action_model",
+            ],
+            ["action_model", "models_embodied_effector", "model_effector"],
+        ],
+        "where": And(
+            Eq(P0("action_model", "tonic_default"), L(0)),
+            Eq(
+                P0("cell_effector", "channel_ordinal"),
+                P0("model_effector", "channel_ordinal"),
+            ),
+            Not(Exists(
+                indexed,
+                "indexed_candidate",
+                Eq(V("indexed_candidate"), V("candidate")),
+            )),
+        ),
+        "effects": [[
+            "add_edge", "cell", "indexes_humanoid_wave_local_command",
+            "candidate",
+        ]],
+    }
 
 
 def passively_scaffolded_phase_candidates():
@@ -2882,7 +2903,7 @@ def bind_humanoid_wave_member_rule():
             ["field", "has_somatomotor_wave_program", "wave_program"],
             ["wave_program", "realizes_humanoid_motor_program", "plan"],
             ["wave_program", "includes_somatomotor_wave_cell", "cell"],
-            ["episode", "has_humanoid_phase_action_model", "candidate"],
+            ["cell", "indexes_humanoid_wave_local_command", "candidate"],
         ],
         "where": And(
             Eq(A("plan", "status"), L("somatomotor_wave_building")),
@@ -3052,6 +3073,15 @@ def manifest() -> dict:
                 "edge_type": "uses_embodied_inverse_kinematic_query",
                 "tgt": {"type": "EmbodiedInverseKinematicQuery", "var": "query"},
             },
+            {
+                "provenance": "humanoid_development:wave_local_command_index",
+                "src": {"type": "SomatomotorWaveCell", "var": "cell"},
+                "edge_type": "indexes_humanoid_wave_local_command",
+                "tgt": {
+                    "type": "HumanoidPhaseActionModel",
+                    "var": "phase_model",
+                },
+            },
         ],
         "rules": [
             archive_stale_inverse_kinematic_query_rule(),
@@ -3084,6 +3114,7 @@ def manifest() -> dict:
             bind_scaffolded_unfixed_reference_rule(),
             close_scaffolded_self_attempt_rule(),
             distinguish_active_agency_from_passive_body_model_rule(),
+            index_humanoid_wave_local_commands_rule(),
             open_humanoid_wave_program_rule(),
             resume_humanoid_wave_program_rule(),
             bind_humanoid_wave_member_rule(),

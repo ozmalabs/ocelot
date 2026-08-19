@@ -1,15 +1,15 @@
 {
  "id": "information_commitment",
- "version": "1.0.0",
+ "version": "4.0.0",
  "self_load_only": true,
  "depends_on": [
   "cognitive_areas"
  ],
  "area": "executive",
- "description": "Thermodynamic commitment as graph cognition. Wait, refine and commit are co-present candidates; concrete effect footprints determine information destruction and irreversibility; hard host vetoes remain outside scalar trade-offs.",
+ "description": "Shape-residual future-manifold gate and least-action selection.",
  "microtheory": {
   "name": "information_commitment",
-  "description": "goal work and information gain versus erasure, option loss, uncertainty and delay"
+  "description": "least-action selection after hard residual-tube gating"
  },
  "nodes": [],
  "edges": [],
@@ -27,14 +27,14 @@
    }
   },
   {
-   "provenance": "seed:information_commitment:footprint",
+   "provenance": "seed:information_commitment:projection",
    "src": {
     "type": "CommitOption",
     "var": "candidate"
    },
-   "edge_type": "has_effect_footprint",
+   "edge_type": "has_manifold_projection",
    "tgt": {
-    "type": "EffectFootprint",
+    "type": "ManifoldProjection",
     "var": "fp"
    }
   },
@@ -65,7 +65,7 @@
  ],
  "rules": [
   {
-   "name": "ic_commit_without_footprint_fails_closed",
+   "name": "ic_missing_manifold_projection_fails_closed",
    "area": "executive",
    "order": 3,
    "latency_class": "soft_realtime",
@@ -80,21 +80,6 @@
     "type": "And",
     "items": [
      {
-      "type": "Eq",
-      "a": {
-       "type": "Attr",
-       "node": {
-        "type": "Var",
-        "name": "candidate"
-       },
-       "key": "decision_kind"
-      },
-      "b": {
-       "type": "Lit",
-       "value": "commit"
-      }
-     },
-     {
       "type": "Not",
       "arg": {
        "type": "Exists",
@@ -104,7 +89,7 @@
          "type": "Var",
          "name": "candidate"
         },
-        "edge_type": "has_effect_footprint",
+        "edge_type": "has_manifold_projection",
         "any_type": false
        },
        "var_name": "fp",
@@ -142,12 +127,12 @@
      "set_attr_if_different",
      "candidate",
      "veto_reason",
-     "unknown_effect_footprint"
+     "future_manifold_evidence_required"
     ]
    ]
   },
   {
-   "name": "ic_derive_information_destruction",
+   "name": "ic_gate_manifold_projection",
    "area": "executive",
    "order": 3,
    "latency_class": "soft_realtime",
@@ -159,7 +144,7 @@
     ],
     [
      "candidate",
-     "has_effect_footprint",
+     "has_manifold_projection",
      "fp"
     ]
    ],
@@ -171,88 +156,712 @@
       "type": "Var",
       "name": "candidate"
      },
-     "key": "decision_kind"
+     "key": "hard_veto"
     },
     "b": {
      "type": "Lit",
-     "value": "commit"
+     "value": 0.0
     }
    },
    "effects": [
     [
      "set_attr_if_different",
      "candidate",
-     "information_destroyed",
+     "future_manifold_reason",
      {
       "__term__": {
-       "type": "Plus",
-       "items": [
-        {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "fp"
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "fp"
+          },
+          "key": "validated"
          },
-         "key": "deleted_facts"
-        },
-        {
-         "type": "Times",
-         "items": [
-          {
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "future_manifold_evidence_required"
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
            "type": "Attr",
            "node": {
             "type": "Var",
             "name": "fp"
            },
-           "key": "overwritten_facts"
+           "key": "manifold_id"
           },
-          {
-           "type": "Minus",
-           "a": {
-            "type": "Lit",
-            "value": 1.0
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ctx"
            },
-           "b": {
+           "key": "manifold_id"
+          }
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": "manifold_identity_mismatch"
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "fp"
+           },
+           "key": "projection_horizon"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ctx"
+           },
+           "key": "required_horizon"
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": "insufficient_temporal_coverage"
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Gt",
+           "a": {
             "type": "Attr",
             "node": {
              "type": "Var",
              "name": "fp"
             },
-            "key": "recoverability"
+            "key": "has_escape_residual"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": "outside_future_manifold"
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Lt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "fp"
+             },
+             "key": "minimum_retained_width"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "ctx"
+             },
+             "key": "minimum_width"
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": "insufficient_width"
+           },
+           "other": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "fp"
+              },
+              "key": "maximum_information_loss"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "ctx"
+              },
+              "key": "maximum_information_loss"
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": "excess_information_loss"
+            },
+            "other": {
+             "type": "Lit",
+             "value": "allowed"
+            }
            }
           }
-         ]
-        },
-        {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "fp"
-         },
-         "key": "externality"
+         }
         }
-       ]
+       }
       }
      }
     ],
     [
      "set_attr_if_different",
      "candidate",
-     "irreversibility",
+     "future_manifold_allowed",
      {
       "__term__": {
-       "type": "Minus",
-       "a": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "fp"
+             },
+             "key": "validated"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": "future_manifold_evidence_required"
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "fp"
+              },
+              "key": "manifold_id"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "ctx"
+              },
+              "key": "manifold_id"
+             }
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": "manifold_identity_mismatch"
+           },
+           "other": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Lt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "fp"
+              },
+              "key": "projection_horizon"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "ctx"
+              },
+              "key": "required_horizon"
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": "insufficient_temporal_coverage"
+            },
+            "other": {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Gt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "fp"
+               },
+               "key": "has_escape_residual"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             "then": {
+              "type": "Lit",
+              "value": "outside_future_manifold"
+             },
+             "other": {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Lt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "fp"
+                },
+                "key": "minimum_retained_width"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "ctx"
+                },
+                "key": "minimum_width"
+               }
+              },
+              "then": {
+               "type": "Lit",
+               "value": "insufficient_width"
+              },
+              "other": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Gt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "fp"
+                 },
+                 "key": "maximum_information_loss"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "ctx"
+                 },
+                 "key": "maximum_information_loss"
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": "excess_information_loss"
+               },
+               "other": {
+                "type": "Lit",
+                "value": "allowed"
+               }
+              }
+             }
+            }
+           }
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": "allowed"
+         }
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr_if_different",
+     "candidate",
+     "hard_veto",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Not",
+           "arg": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "fp"
+             },
+             "key": "validated"
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1.0
+            }
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": "future_manifold_evidence_required"
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "fp"
+              },
+              "key": "manifold_id"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "ctx"
+              },
+              "key": "manifold_id"
+             }
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": "manifold_identity_mismatch"
+           },
+           "other": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Lt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "fp"
+              },
+              "key": "projection_horizon"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "ctx"
+              },
+              "key": "required_horizon"
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": "insufficient_temporal_coverage"
+            },
+            "other": {
+             "type": "IfThenElse",
+             "cond": {
+              "type": "Gt",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "fp"
+               },
+               "key": "has_escape_residual"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             "then": {
+              "type": "Lit",
+              "value": "outside_future_manifold"
+             },
+             "other": {
+              "type": "IfThenElse",
+              "cond": {
+               "type": "Lt",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "fp"
+                },
+                "key": "minimum_retained_width"
+               },
+               "b": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "ctx"
+                },
+                "key": "minimum_width"
+               }
+              },
+              "then": {
+               "type": "Lit",
+               "value": "insufficient_width"
+              },
+              "other": {
+               "type": "IfThenElse",
+               "cond": {
+                "type": "Gt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "fp"
+                 },
+                 "key": "maximum_information_loss"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "ctx"
+                 },
+                 "key": "maximum_information_loss"
+                }
+               },
+               "then": {
+                "type": "Lit",
+                "value": "excess_information_loss"
+               },
+               "other": {
+                "type": "Lit",
+                "value": "allowed"
+               }
+              }
+             }
+            }
+           }
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": "allowed"
+         }
+        }
+       },
+       "then": {
         "type": "Lit",
         "value": 1.0
        },
-       "b": {
-        "type": "Attr",
-        "node": {
-         "type": "Var",
-         "name": "fp"
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr_if_different",
+     "candidate",
+     "veto_reason",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "fp"
+          },
+          "key": "validated"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "future_manifold_evidence_required"
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "fp"
+           },
+           "key": "manifold_id"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ctx"
+           },
+           "key": "manifold_id"
+          }
+         }
         },
-        "key": "recoverability"
+        "then": {
+         "type": "Lit",
+         "value": "manifold_identity_mismatch"
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "fp"
+           },
+           "key": "projection_horizon"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ctx"
+           },
+           "key": "required_horizon"
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": "insufficient_temporal_coverage"
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Gt",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "fp"
+            },
+            "key": "has_escape_residual"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": "outside_future_manifold"
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Lt",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "fp"
+             },
+             "key": "minimum_retained_width"
+            },
+            "b": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "ctx"
+             },
+             "key": "minimum_width"
+            }
+           },
+           "then": {
+            "type": "Lit",
+            "value": "insufficient_width"
+           },
+           "other": {
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Gt",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "fp"
+              },
+              "key": "maximum_information_loss"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "ctx"
+              },
+              "key": "maximum_information_loss"
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": "excess_information_loss"
+            },
+            "other": {
+             "type": "Lit",
+             "value": "allowed"
+            }
+           }
+          }
+         }
+        }
        }
       }
      }
@@ -295,25 +904,12 @@
       "__term__": {
        "type": "Minus",
        "a": {
-        "type": "Plus",
-        "items": [
-         {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "candidate"
-          },
-          "key": "preservation_value"
-         },
-         {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "candidate"
-          },
-          "key": "expected_information_gain"
-         }
-        ]
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "candidate"
+        },
+        "key": "expected_information_gain"
        },
        "b": {
         "type": "Plus",
@@ -377,7 +973,7 @@
       "__term__": {
        "type": "Minus",
        "a": {
-        "type": "Plus",
+        "type": "Times",
         "items": [
          {
           "type": "Attr",
@@ -385,28 +981,15 @@
            "type": "Var",
            "name": "candidate"
           },
-          "key": "preservation_value"
+          "key": "expected_information_gain"
          },
          {
-          "type": "Times",
-          "items": [
-           {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "candidate"
-            },
-            "key": "expected_information_gain"
-           },
-           {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "candidate"
-            },
-            "key": "decision_relevance"
-           }
-          ]
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "candidate"
+          },
+          "key": "decision_relevance"
          }
         ]
        },
@@ -493,54 +1076,12 @@
         ]
        },
        "b": {
-        "type": "Plus",
-        "items": [
-         {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "candidate"
-          },
-          "key": "information_destroyed"
-         },
-         {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "candidate"
-          },
-          "key": "option_volume_lost"
-         },
-         {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "candidate"
-          },
-          "key": "resource_cost"
-         },
-         {
-          "type": "Times",
-          "items": [
-           {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "candidate"
-            },
-            "key": "uncertainty"
-           },
-           {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "candidate"
-            },
-            "key": "irreversibility"
-           }
-          ]
-         }
-        ]
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "candidate"
+        },
+        "key": "resource_cost"
        }
       }
      }
@@ -573,13 +1114,445 @@
        "source": {
         "type": "Filter",
         "source": {
-         "type": "Neighbours",
-         "node": {
-          "type": "Var",
-          "name": "ctx"
+         "type": "Filter",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "ctx"
+             },
+             "edge_type": "has_candidate",
+             "any_type": false
+            },
+            "var_name": "option",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "option"
+              },
+              "key": "hard_veto"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           },
+           "var_name": "option",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "option"
+             },
+             "key": "action_count"
+            },
+            "b": {
+             "type": "MinOver",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "ctx"
+               },
+               "edge_type": "has_candidate",
+               "any_type": false
+              },
+              "var_name": "option",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "option"
+                },
+                "key": "hard_veto"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              }
+             },
+             "var_name": "x",
+             "value": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "x"
+              },
+              "key": "action_count"
+             },
+             "default": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           }
+          },
+          "var_name": "option",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "option"
+            },
+            "key": "intervention_magnitude"
+           },
+           "b": {
+            "type": "MinOver",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "ctx"
+               },
+               "edge_type": "has_candidate",
+               "any_type": false
+              },
+              "var_name": "option",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "option"
+                },
+                "key": "hard_veto"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              }
+             },
+             "var_name": "option",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "option"
+               },
+               "key": "action_count"
+              },
+              "b": {
+               "type": "MinOver",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "ctx"
+                 },
+                 "edge_type": "has_candidate",
+                 "any_type": false
+                },
+                "var_name": "option",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "option"
+                  },
+                  "key": "hard_veto"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                }
+               },
+               "var_name": "x",
+               "value": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "x"
+                },
+                "key": "action_count"
+               },
+               "default": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              }
+             }
+            },
+            "var_name": "x",
+            "value": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "x"
+             },
+             "key": "intervention_magnitude"
+            },
+            "default": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           }
+          }
          },
-         "edge_type": "has_candidate",
-         "any_type": false
+         "var_name": "option",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "option"
+           },
+           "key": "net_value"
+          },
+          "b": {
+           "type": "MaxOver",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "ctx"
+               },
+               "edge_type": "has_candidate",
+               "any_type": false
+              },
+              "var_name": "option",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "option"
+                },
+                "key": "hard_veto"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              }
+             },
+             "var_name": "option",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "option"
+               },
+               "key": "action_count"
+              },
+              "b": {
+               "type": "MinOver",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "ctx"
+                 },
+                 "edge_type": "has_candidate",
+                 "any_type": false
+                },
+                "var_name": "option",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "option"
+                  },
+                  "key": "hard_veto"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                }
+               },
+               "var_name": "x",
+               "value": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "x"
+                },
+                "key": "action_count"
+               },
+               "default": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              }
+             }
+            },
+            "var_name": "option",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "option"
+              },
+              "key": "intervention_magnitude"
+             },
+             "b": {
+              "type": "MinOver",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "ctx"
+                 },
+                 "edge_type": "has_candidate",
+                 "any_type": false
+                },
+                "var_name": "option",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "option"
+                  },
+                  "key": "hard_veto"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                }
+               },
+               "var_name": "option",
+               "predicate": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "option"
+                 },
+                 "key": "action_count"
+                },
+                "b": {
+                 "type": "MinOver",
+                 "source": {
+                  "type": "Filter",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "ctx"
+                   },
+                   "edge_type": "has_candidate",
+                   "any_type": false
+                  },
+                  "var_name": "option",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "option"
+                    },
+                    "key": "hard_veto"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  }
+                 },
+                 "var_name": "x",
+                 "value": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "x"
+                  },
+                  "key": "action_count"
+                 },
+                 "default": {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                }
+               }
+              },
+              "var_name": "x",
+              "value": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "x"
+               },
+               "key": "intervention_magnitude"
+              },
+              "default": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            }
+           },
+           "var_name": "x",
+           "value": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "x"
+            },
+            "key": "net_value"
+           },
+           "default": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         }
         },
         "var_name": "option",
         "predicate": {
@@ -590,25 +1563,475 @@
            "type": "Var",
            "name": "option"
           },
-          "key": "hard_veto"
+          "key": "decision_ordinal"
          },
          "b": {
-          "type": "Lit",
-          "value": 0.0
+          "type": "MinOver",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Filter",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "ctx"
+               },
+               "edge_type": "has_candidate",
+               "any_type": false
+              },
+              "var_name": "option",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "option"
+                },
+                "key": "hard_veto"
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              }
+             },
+             "var_name": "option",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "option"
+               },
+               "key": "action_count"
+              },
+              "b": {
+               "type": "MinOver",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "ctx"
+                 },
+                 "edge_type": "has_candidate",
+                 "any_type": false
+                },
+                "var_name": "option",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "option"
+                  },
+                  "key": "hard_veto"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                }
+               },
+               "var_name": "x",
+               "value": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "x"
+                },
+                "key": "action_count"
+               },
+               "default": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              }
+             }
+            },
+            "var_name": "option",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "option"
+              },
+              "key": "intervention_magnitude"
+             },
+             "b": {
+              "type": "MinOver",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "ctx"
+                 },
+                 "edge_type": "has_candidate",
+                 "any_type": false
+                },
+                "var_name": "option",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "option"
+                  },
+                  "key": "hard_veto"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                }
+               },
+               "var_name": "option",
+               "predicate": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "option"
+                 },
+                 "key": "action_count"
+                },
+                "b": {
+                 "type": "MinOver",
+                 "source": {
+                  "type": "Filter",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "ctx"
+                   },
+                   "edge_type": "has_candidate",
+                   "any_type": false
+                  },
+                  "var_name": "option",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "option"
+                    },
+                    "key": "hard_veto"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  }
+                 },
+                 "var_name": "x",
+                 "value": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "x"
+                  },
+                  "key": "action_count"
+                 },
+                 "default": {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                }
+               }
+              },
+              "var_name": "x",
+              "value": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "x"
+               },
+               "key": "intervention_magnitude"
+              },
+              "default": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            }
+           },
+           "var_name": "option",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "option"
+             },
+             "key": "net_value"
+            },
+            "b": {
+             "type": "MaxOver",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "ctx"
+                 },
+                 "edge_type": "has_candidate",
+                 "any_type": false
+                },
+                "var_name": "option",
+                "predicate": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "option"
+                  },
+                  "key": "hard_veto"
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                }
+               },
+               "var_name": "option",
+               "predicate": {
+                "type": "Eq",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "option"
+                 },
+                 "key": "action_count"
+                },
+                "b": {
+                 "type": "MinOver",
+                 "source": {
+                  "type": "Filter",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "ctx"
+                   },
+                   "edge_type": "has_candidate",
+                   "any_type": false
+                  },
+                  "var_name": "option",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "option"
+                    },
+                    "key": "hard_veto"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  }
+                 },
+                 "var_name": "x",
+                 "value": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "x"
+                  },
+                  "key": "action_count"
+                 },
+                 "default": {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                }
+               }
+              },
+              "var_name": "option",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "option"
+                },
+                "key": "intervention_magnitude"
+               },
+               "b": {
+                "type": "MinOver",
+                "source": {
+                 "type": "Filter",
+                 "source": {
+                  "type": "Filter",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "ctx"
+                   },
+                   "edge_type": "has_candidate",
+                   "any_type": false
+                  },
+                  "var_name": "option",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "option"
+                    },
+                    "key": "hard_veto"
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  }
+                 },
+                 "var_name": "option",
+                 "predicate": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "option"
+                   },
+                   "key": "action_count"
+                  },
+                  "b": {
+                   "type": "MinOver",
+                   "source": {
+                    "type": "Filter",
+                    "source": {
+                     "type": "Neighbours",
+                     "node": {
+                      "type": "Var",
+                      "name": "ctx"
+                     },
+                     "edge_type": "has_candidate",
+                     "any_type": false
+                    },
+                    "var_name": "option",
+                    "predicate": {
+                     "type": "Eq",
+                     "a": {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "option"
+                      },
+                      "key": "hard_veto"
+                     },
+                     "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                     }
+                    }
+                   },
+                   "var_name": "x",
+                   "value": {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "x"
+                    },
+                    "key": "action_count"
+                   },
+                   "default": {
+                    "type": "Lit",
+                    "value": 0.0
+                   }
+                  }
+                 }
+                },
+                "var_name": "x",
+                "value": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "x"
+                 },
+                 "key": "intervention_magnitude"
+                },
+                "default": {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               }
+              }
+             },
+             "var_name": "x",
+             "value": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "x"
+              },
+              "key": "net_value"
+             },
+             "default": {
+              "type": "Lit",
+              "value": 0.0
+             }
+            }
+           }
+          },
+          "var_name": "x",
+          "value": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "x"
+           },
+           "key": "decision_ordinal"
+          },
+          "default": {
+           "type": "Lit",
+           "value": 0.0
+          }
          }
         }
        },
        "var_name": "option",
        "value": {
-        "type": "Neg",
-        "arg": {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "option"
-         },
-         "key": "net_value"
-        }
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "option"
+        },
+        "key": "decision_ordinal"
        },
        "default": null
       }
@@ -683,14 +2106,24 @@
         "key": "name"
        }
       },
-      "net_value": {
+      "action_count": {
        "__term__": {
         "type": "Attr",
         "node": {
          "type": "Var",
          "name": "candidate"
         },
-        "key": "net_value"
+        "key": "action_count"
+       }
+      },
+      "intervention_magnitude": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "candidate"
+        },
+        "key": "intervention_magnitude"
        }
       },
       "status": "resolved"

@@ -25,7 +25,9 @@ primitive into the agent's own running .so. Its five guardrails are a
 commit gate; `domains/auto_approve.py` is a policy layer on top of that one
 gate.
 
-This module makes the distinction GENERAL: reversibility becomes FRAME DATA
+This module makes the distinction GENERAL: action classification remains frame
+data and only determines whether future-manifold projection evidence is required; it is not
+the decision objective. Reversibility becomes FRAME DATA
 (`seeds/reversibility_frame.json` -- action/effect kind -> reversible |
 committing, with the reason), and ANY action, not just runtime install,
 passes through the same shaped gate: reversible actions run free; committing
@@ -97,6 +99,7 @@ from __future__ import annotations
 
 import json
 import time
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Callable, Optional
 
@@ -311,33 +314,6 @@ def commit_gate(agent, action: Any, *, approver: Optional[str] = None,
     action_dict = action if isinstance(action, dict) else {"kind": action}
     kind = action_dict.get("kind")
 
-    # New graph-native path. The host remains the hard authorization boundary,
-    # but wait/refine/commit and thermodynamic comparison are graph cognition.
-    thermodynamic = action_dict.get("thermodynamic")
-    if thermodynamic is not None:
-        from domains.information_commitment import assess
-        resolved = assess(
-            agent,
-            commit=thermodynamic.get("commit") or {},
-            wait=thermodynamic.get("wait"),
-            refine=thermodynamic.get("refine"),
-            approver=approver,
-        )
-        return {
-            "allowed": bool(
-                resolved["decision"] == "commit" and resolved["authorized"]),
-            "reversible": False,
-            "kind": kind,
-            "reason": resolved["reason"],
-            "requires_approval": (
-                resolved["decision"] == "commit" and not resolved["authorized"]),
-            "gated": True,
-            "record": resolved["record"],
-            "decision": resolved["decision"],
-            "context": resolved["context"],
-            "candidate": resolved["candidate"],
-        }
-
     detail = classify_detail(kind)
     reversible = detail["category"] == REVERSIBLE
 
@@ -346,6 +322,62 @@ def commit_gate(agent, action: Any, *, approver: Optional[str] = None,
             "allowed": True, "reversible": True, "kind": kind,
             "reason": detail["reason"], "requires_approval": False,
             "gated": False, "record": None,
+        }
+
+    # Every committing action must pass the graph-native future-manifold gate.
+    # Classification only determines that evidence is required; risk is never
+    # folded into scalar utility and approval remains a separate policy layer.
+    risk = action_dict.get("risk")
+    if not isinstance(risk, Mapping):
+        record = _mint_commitment_record(
+            agent, kind=kind, allowed=False, approver=approver,
+            reason="future_manifold_evidence_required" if risk is None else "invalid_future_manifold_evidence", gated=True,
+        )
+        return {
+            "allowed": False, "reversible": False, "kind": kind,
+            "reason": "future_manifold_evidence_required" if risk is None else "invalid_future_manifold_evidence",
+            "requires_approval": True, "gated": True, "record": record,
+        }
+
+    from domains.information_commitment import assess
+    try:
+        resolved = assess(agent, manifold=risk.get("manifold"),
+                          commit=risk.get("commit"), wait=risk.get("wait"),
+                          refine=risk.get("refine"), approver=approver)
+    except (KeyError, TypeError, ValueError):
+        record = _mint_commitment_record(agent, kind=kind, allowed=False,
+            approver=approver, reason="invalid_future_manifold_evidence", gated=True)
+        return {"allowed": False, "reversible": False, "kind": kind,
+                "reason": "invalid_future_manifold_evidence", "requires_approval": True,
+                "gated": True, "record": record}
+    if resolved["decision"] != "commit":
+        record = _mint_commitment_record(
+            agent, kind=kind, allowed=False, approver=approver,
+            reason=f"future_manifold_risk:{resolved['decision'] or 'no_unique_decision'}",
+            gated=True,
+        )
+        return {
+            "allowed": False, "reversible": False, "kind": kind,
+            "reason": f"future_manifold_risk:{resolved['decision'] or 'no_unique_decision'}",
+            "requires_approval": False, "gated": True, "record": record,
+            "decision": resolved["decision"], "context": resolved["context"],
+            "candidate": resolved["candidate"],
+        }
+
+    # Candidate-level approval is a hard authorization requirement.  The
+    # outer policy may add approval requirements, but must never waive one
+    # carried by the selected graph candidate.
+    if not resolved["authorized"]:
+        record = _mint_commitment_record(
+            agent, kind=kind, allowed=False, approver=approver,
+            reason="external_approval_required", gated=True,
+        )
+        return {
+            "allowed": False, "reversible": False, "kind": kind,
+            "reason": "external_approval_required",
+            "requires_approval": True, "gated": True, "record": record,
+            "decision": resolved["decision"], "context": resolved["context"],
+            "candidate": resolved["candidate"],
         }
 
     # committing from here down.
@@ -377,5 +409,6 @@ def commit_gate(agent, action: Any, *, approver: Optional[str] = None,
     return {
         "allowed": permitted, "reversible": False, "kind": kind,
         "reason": why, "requires_approval": True, "gated": True,
-        "record": record,
+        "record": record, "decision": resolved["decision"],
+        "context": resolved["context"], "candidate": resolved["candidate"],
     }

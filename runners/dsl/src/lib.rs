@@ -136,6 +136,8 @@ pub mod effort_dial;
 #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
 mod full_stack_integration;
 pub mod term;
+/// Native Enigma crib admissibility kernel used by graph-resident solver rules.
+pub mod enigma;
 /// `term_variants` — GENERATED variant table for `TermNode`
 /// (`tools/gen_term_variants.py`). Backs the per-variant Term-evaluation
 /// counter; `NUM_TERM_VARIANTS` is the enum's own arity.

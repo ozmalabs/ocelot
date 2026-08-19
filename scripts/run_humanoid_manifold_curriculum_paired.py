@@ -1,0 +1,794 @@
+"""Train through the humanoid curriculum, then run a frozen paired evaluation."""
+from __future__ import annotations
+
+import argparse
+from copy import deepcopy
+import gc
+import hashlib
+import json
+from pathlib import Path
+import sys
+import time
+
+
+ROOT = Path(__file__).resolve().parents[1]
+for _path in (ROOT, ROOT / "runners" / "dsl" / "python"):
+    if str(_path) not in sys.path:
+        sys.path.insert(0, str(_path))
+
+from scripts.jabberwock_humanoid_walk import (
+    _run_arm,
+    developmental_curriculum_contract,
+)
+
+
+DEFAULT_PROTOCOL = ROOT / "protocols" / "humanoid_developmental_curriculum_v1.json"
+DEFAULT_LIBRARY = (
+    ROOT / "results" / "humanoid_future_manifold_curriculum"
+    / "trained_motor_library.json"
+)
+
+# These are deliberately finite checkpoints.  A staged run is a single-arm
+# probe/training pass; it must not silently turn into the paired experiment.
+STAGED_ACTION_BUDGETS = (48, 96, 192, 360)
+CAPABILITY_LIBRARY_SEMANTIC_TYPE = (
+    "frozen_output_null_developmental_capability_library"
+)
+MOTOR_LIBRARY_SEMANTIC_TYPE = "frozen_output_null_motor_library"
+
+
+def _digest(value: object) -> str:
+    encoded = json.dumps(
+        value, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _library_metadata(library: dict, protocol: dict) -> dict:
+    """Describe library semantics without changing old library files.
+
+    Older artifacts predate explicit metadata.  Their type is inferred from
+    their shape and marked as inferred; explicitly supplied metadata is still
+    checked and cannot disagree with the protocol.
+    """
+    explicit_type = library.get("semantic_type") or library.get(
+        "library_semantic_type"
+    )
+    if explicit_type:
+        semantic_type = str(explicit_type)
+        type_source = "declared"
+    elif library.get("developmental_capabilities"):
+        semantic_type = CAPABILITY_LIBRARY_SEMANTIC_TYPE
+        type_source = "inferred"
+    elif library.get("body_shapes"):
+        semantic_type = MOTOR_LIBRARY_SEMANTIC_TYPE
+        type_source = "inferred"
+    else:
+        semantic_type = "unknown"
+        type_source = "absent"
+
+    contract = library.get("developmental_curriculum_contract")
+    contract_digest = (
+        contract.get("ontology_sha256") if isinstance(contract, dict) else None
+    )
+    if contract is not None and contract_digest is None:
+        contract_digest = _digest(contract)
+    expected_contract = developmental_curriculum_contract()
+    expected_digest = expected_contract["ontology_sha256"]
+    return {
+        "semantic_type": semantic_type,
+        "semantic_type_source": type_source,
+        "curriculum_contract": contract,
+        "curriculum_contract_digest": contract_digest,
+        "expected_curriculum_contract_digest": expected_digest,
+        "curriculum_contract_present": contract is not None,
+        "curriculum_contract_matches": contract == expected_contract,
+        "body_shape_count": len(library.get("body_shapes") or []),
+        "developmental_capability_count": len(
+            library.get("developmental_capabilities") or []
+        ),
+        "motor_program_count": sum(
+            len(shape.get("programs") or [])
+            for shape in library.get("body_shapes") or []
+        ),
+    }
+
+
+def _read_library_metadata(path: Path, protocol: dict) -> dict:
+    """Read metadata without turning an incomplete staged artifact into an exception."""
+    metadata = {
+        "artifact_path": str(path),
+        "artifact_present": path.exists(),
+        "artifact_valid_json": False,
+    }
+    if not path.exists():
+        metadata.update({
+            "semantic_type": "unknown",
+            "semantic_type_source": "absent",
+            "curriculum_contract_present": False,
+            "curriculum_contract_matches": False,
+        })
+        return metadata
+    try:
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, TypeError, ValueError) as exc:
+        metadata.update({
+            "semantic_type": "unknown",
+            "semantic_type_source": "invalid",
+            "curriculum_contract_present": False,
+            "curriculum_contract_matches": False,
+            "artifact_error": str(exc),
+        })
+        return metadata
+    if not isinstance(loaded, dict):
+        metadata.update({
+            "semantic_type": "unknown",
+            "semantic_type_source": "invalid",
+            "curriculum_contract_present": False,
+            "curriculum_contract_matches": False,
+            "artifact_error": "library artifact JSON root is not an object",
+        })
+        return metadata
+    metadata.update(_library_metadata(loaded, protocol))
+    metadata["artifact_valid_json"] = True
+    return metadata
+
+
+def _metrics(run: dict) -> dict:
+    curriculum = run.get("curriculum") or {}
+    future_manifold = run.get("future_manifold") or {}
+    cognitive = run.get("cognitive_supervision") or {}
+    trace = run.get("trace") or []
+    actions_executed = run.get("actions_executed")
+    if actions_executed is None:
+        actions_executed = len(trace)
+
+    # _run_arm may publish these directly in a newer build.  The trace forms
+    # are accepted as a compatibility fallback for mocked/older builds.
+    gate_onset_action = run.get("first_bounds_ready_action")
+    if gate_onset_action is None:
+        gate_onset_action = run.get("manifold_gate_onset_action")
+    if gate_onset_action is None:
+        gate_onset_action = future_manifold.get("first_bounds_ready_action")
+    post_gate_action_count = run.get("post_gate_action_count")
+    if post_gate_action_count is None:
+        post_gate_action_count = future_manifold.get("post_gate_action_count")
+    if gate_onset_action is None:
+        ready_rows = [
+            row for row in trace
+            if float(row.get("manifold_bounds_ready", row.get(
+                "bounds_ready", 0
+            ))) > 0.5
+        ]
+        if ready_rows:
+            gate_onset_action = ready_rows[0].get("action")
+            if post_gate_action_count is None:
+                post_gate_action_count = len(ready_rows)
+    gate_evidence_present = (
+        gate_onset_action is not None and post_gate_action_count is not None
+    )
+    return {
+        "actions_executed": actions_executed,
+        "directed_progress": run.get("directed_progress", 0.0),
+        "first_fall_action": run.get("first_fall_action"),
+        "minimum_height": run.get("minimum_height", 0.0),
+        "lateral_offset": run.get("lateral_offset", 0.0),
+        "support_alternations": run.get("support_alternations", 0),
+        "compound_action_count": run.get("compound_action_count", 0),
+        "maximum_program_width": run.get(
+            "maximum_synthesized_motor_program_width", 0
+        ),
+        "curriculum": {
+            "stage_ordinal": curriculum.get("stage_ordinal", 0),
+            "stage_transition_count": curriculum.get(
+                "developmental_stage_transition_count", 0
+            ),
+            "mastery_count": curriculum.get("mastery_count", 0),
+            "goal": curriculum.get("developmental_goal", "inactive"),
+            "active_capability": curriculum.get(
+                "active_capability", "inactive"
+            ),
+            "exact_body_recall_count": curriculum.get(
+                "exact_body_recall_count", 0
+            ),
+            "cross_body_warm_start_count": curriculum.get(
+                "cross_body_warm_start_count", 0
+            ),
+            "developmental": curriculum.get("developmental", False),
+            "developmental_stages": curriculum.get(
+                "developmental_stages", []
+            ),
+            "locomotor_phenotype_count": curriculum.get(
+                "locomotor_phenotype_count", 0
+            ),
+            "verified_locomotor_basin_count": curriculum.get(
+                "verified_locomotor_basin_count", 0
+            ),
+            "locomotor_pareto_frontier_count": curriculum.get(
+                "locomotor_pareto_frontier_count", 0
+            ),
+            "retained_experience_count": curriculum.get(
+                "retained_experience_count", 0
+            ),
+            "caregiver_buffered_experience_count": curriculum.get(
+                "caregiver_buffered_experience_count", 0
+            ),
+            "unbuffered_experience_count": curriculum.get(
+                "unbuffered_experience_count", 0
+            ),
+            "sparse_support_ceiling": curriculum.get(
+                "sparse_support_ceiling", 0
+            ),
+            "program_trajectory": curriculum.get("program_trajectory"),
+            "development_effector_declared_count": curriculum.get(
+                "development_effector_declared_count", 0
+            ),
+            "development_effector_covered_count": curriculum.get(
+                "development_effector_covered_count", 0
+            ),
+            "development_effector_coverage_complete": curriculum.get(
+                "development_effector_coverage_complete", 0
+            ),
+            "development_effector_coverage_unmeasurable": curriculum.get(
+                "development_effector_coverage_unmeasurable", 0
+            ),
+            "runtime_body_schema_count": curriculum.get(
+                "runtime_body_schema_count", 0
+            ),
+            "runtime_body_affordance_count": curriculum.get(
+                "runtime_body_affordance_count", 0
+            ),
+            "runtime_raw_body_affordance_count": curriculum.get(
+                "runtime_raw_body_affordance_count", 0
+            ),
+            "all_body_schema_count": curriculum.get("all_body_schema_count", 0),
+            "all_body_affordance_count": curriculum.get(
+                "all_body_affordance_count", 0
+            ),
+            "all_raw_body_count": curriculum.get("all_raw_body_count", 0),
+            "all_raw_body_affordance_count": curriculum.get(
+                "all_raw_body_affordance_count", 0
+            ),
+            "active_capability_diagnostics": curriculum.get(
+                "active_capability_diagnostics", {}
+            ),
+            "developmental_frontier": curriculum.get(
+                "developmental_frontier", []
+            ),
+            "developmental_unresolved_prerequisites": curriculum.get(
+                "developmental_unresolved_prerequisites", []
+            ),
+            "self_learning_plan": curriculum.get("self_learning_plan"),
+        },
+        "future_manifold": future_manifold,
+        "future_manifold_gate_onset_action": gate_onset_action,
+        "post_gate_action_count": post_gate_action_count,
+        "gate_onset_evidence_present": gate_evidence_present,
+        "learning_safety_active": future_manifold.get(
+            "learning_safety_active"
+        ),
+        "cognitive_supervision": cognitive,
+        "body_shape_name": run.get("body_shape_name"),
+        "actuator_count": run.get("actuator_count"),
+        "motor_library_loaded_shape_count": run.get(
+            "motor_library_loaded_shape_count", 0
+        ),
+        "motor_library_loaded_program_count": run.get(
+            "motor_library_loaded_program_count", 0
+        ),
+        "motor_library_loaded_developmental_capability_count": run.get(
+            "motor_library_loaded_developmental_capability_count", 0
+        ),
+        "motor_library_saved_shape_count": run.get(
+            "motor_library_saved_shape_count", 0
+        ),
+        "motor_library_saved_program_count": run.get(
+            "motor_library_saved_program_count", 0
+        ),
+        "motor_library_saved_developmental_capability_count": run.get(
+            "motor_library_saved_developmental_capability_count", 0
+        ),
+        "calibration_digest": _digest(run.get("calibration_trace", [])),
+        "pre_locomotion_digest": _digest(run.get("pre_locomotion_state", {})),
+    }
+
+
+def _configure(protocol: dict, actions: int, enabled: float) -> dict:
+    configured = deepcopy(protocol)
+    configured["locomotion"]["actions"] = actions
+    configured["locomotion"]["modes"] = ["directed_walk"]
+    configured["locomotion"]["future_manifold_enabled"] = enabled
+    configured["locomotion"][
+        "future_manifold_temporal_anchors_enabled"
+    ] = enabled
+    return configured
+
+
+def _cognitive_invalid_reasons(metrics: dict) -> list[str]:
+    cognitive = metrics.get("cognitive_supervision") or {}
+    reasons = []
+    if not cognitive:
+        return ["cognitive_supervision_evidence_absent"]
+    if cognitive.get("experiment_halted_by_checkin", 0):
+        reasons.append("cognitive_checkin_terminal")
+    if cognitive.get("continuation_authority_at_end") != 1:
+        reasons.append("cognitive_continuation_authority_absent")
+    return reasons
+
+
+def _training_completion(
+    metrics: dict | None,
+    requested_actions: int,
+    *,
+    library_path: Path,
+) -> tuple[bool, list[str]]:
+    """Fail closed before a fresh, incomplete artifact reaches paired runs."""
+    reasons = []
+    if metrics is None:
+        return False, ["fresh_training_metrics_absent"]
+    if metrics.get("actions_executed") != requested_actions:
+        reasons.append("fresh_training_action_budget_not_completed")
+    reasons.extend(_cognitive_invalid_reasons(metrics))
+    if not library_path.exists():
+        reasons.append("fresh_training_library_artifact_absent")
+    if metrics.get("motor_library_saved_shape_count", 0) < 1:
+        reasons.append("fresh_training_library_shape_evidence_absent")
+    return not reasons, reasons
+
+
+def _pair_invalid_reasons(
+    baseline: dict,
+    treatment: dict,
+    *,
+    evaluation_actions: int,
+    calibration_identical: bool,
+    pre_locomotion_identical: bool,
+    library_metadata: dict,
+    protocol_digest: str,
+    treatment_protocol_digest: str,
+) -> list[str]:
+    """Return explicit reasons a paired result cannot support the claim."""
+    reasons = []
+    if baseline.get("actions_executed") != evaluation_actions or treatment.get(
+        "actions_executed"
+    ) != evaluation_actions:
+        reasons.append("curriculum_action_budget_not_completed")
+    if not calibration_identical:
+        reasons.append("paired_calibration_mismatch")
+    if not pre_locomotion_identical:
+        reasons.append("paired_pre_locomotion_state_mismatch")
+    if protocol_digest != treatment_protocol_digest:
+        reasons.append("paired_protocol_digest_mismatch")
+
+    baseline_future = baseline.get("future_manifold") or {}
+    treatment_future = treatment.get("future_manifold") or {}
+    if float(baseline_future.get("enabled", 0.0)) > 0.5:
+        reasons.append("baseline_manifold_gate_enabled")
+    if float(baseline_future.get("temporal_anchors_enabled", 0.0)) > 0.5:
+        reasons.append("baseline_temporal_anchors_enabled")
+    if float(baseline_future.get("bounds_ready", 0.0)) > 0.5:
+        reasons.append("baseline_manifold_bounds_ready")
+
+    treatment_gate_active = bool(
+        float(treatment_future.get("enabled", 0.0)) > 0.5
+        and float(treatment_future.get("temporal_anchors_enabled", 0.0)) > 0.5
+        and float(treatment_future.get("bounds_ready", 0.0)) > 0.5
+    )
+    if not treatment_gate_active:
+        reasons.append("locomotion_manifold_not_reached")
+    if treatment_future.get("bounds_provenance") != (
+        "receipt_grounded_phase_action_envelope"
+    ):
+        reasons.append("treatment_bounds_provenance_absent_or_mismatched")
+    if treatment.get("learning_safety_active") != 1:
+        reasons.append("learning_safety_not_active")
+
+    for label, metrics in (("baseline", baseline), ("treatment", treatment)):
+        reasons.extend(
+            f"{label}_{reason}" for reason in _cognitive_invalid_reasons(metrics)
+        )
+
+    curriculum = treatment.get("curriculum") or {}
+    if curriculum.get("goal") != "locomotion":
+        reasons.append("developmental_locomotion_goal_not_reached")
+
+    # Gate-onset evidence is required once a treatment claims activation.  It
+    # is optional for old/early probes whose gate is not yet reached.
+    if treatment_gate_active and not treatment.get("gate_onset_evidence_present"):
+        reasons.append("manifold_gate_onset_evidence_absent")
+    if treatment_gate_active and treatment.get("post_gate_action_count", 0) < 1:
+        reasons.append("manifold_post_gate_action_evidence_absent")
+
+    if library_metadata.get("semantic_type") == "unknown":
+        reasons.append("library_semantic_type_absent")
+    if not library_metadata.get("curriculum_contract_matches", True):
+        reasons.append("library_curriculum_contract_mismatch")
+    return reasons
+
+
+def _checkpoint(
+    metrics: dict,
+    *,
+    action_budget: int,
+    mode: str,
+    protocol_digest: str,
+    library_metadata: dict | None = None,
+    training_complete: bool | None = None,
+    training_invalid_reasons: list[str] | None = None,
+) -> dict:
+    """Summarize one single-arm milestone without launching a paired arm."""
+    curriculum = metrics.get("curriculum") or {}
+    future = metrics.get("future_manifold") or {}
+    goal = curriculum.get("goal", "inactive")
+    gate_ready = bool(
+        float(future.get("enabled", 0.0)) > 0.5
+        and float(future.get("temporal_anchors_enabled", 0.0)) > 0.5
+        and float(future.get("bounds_ready", 0.0)) > 0.5
+    )
+    if mode == "training" and training_complete is False:
+        milestone = "incomplete_training"
+        recommendation = "do_not_accept_artifact"
+    elif gate_ready:
+        milestone = "manifold_ready"
+        recommendation = "paired_evaluation_permitted"
+    elif goal == "locomotion":
+        milestone = "locomotion_reached"
+        recommendation = "advance_single_arm_probe_before_pairing"
+    elif curriculum.get("stage_ordinal", 0) > 0:
+        milestone = "curriculum_advancing"
+        recommendation = "continue_to_next_checkpoint"
+    else:
+        milestone = "pre_locomotion"
+        recommendation = "continue_to_next_checkpoint"
+    return {
+        "mode": mode,
+        "action_budget": action_budget,
+        "actions_executed": metrics.get("actions_executed", 0),
+        "protocol_digest": protocol_digest,
+        "library_metadata": library_metadata,
+        "training_complete": training_complete,
+        "training_invalid_reasons": training_invalid_reasons or [],
+        "milestone": milestone,
+        "recommendation": recommendation,
+        "stage_ordinal": curriculum.get("stage_ordinal", 0),
+        "stage_transition_count": curriculum.get("stage_transition_count", 0),
+        "mastery_count": curriculum.get("mastery_count", 0),
+        "goal": goal,
+        "gate_ready": gate_ready,
+        "gate_onset_action": metrics.get("future_manifold_gate_onset_action"),
+        "post_gate_action_count": metrics.get("post_gate_action_count"),
+        "cognitive_invalid_reasons": _cognitive_invalid_reasons(metrics),
+        "action_budget_complete": metrics.get("actions_executed", 0)
+        == action_budget,
+    }
+
+
+def run_staged(
+    protocol_path: Path,
+    *,
+    action_budget: int,
+    mode: str,
+    library_path: Path,
+    library_in: Path | None = None,
+) -> dict:
+    """Run exactly one arm at a finite checkpoint.
+
+    ``training`` may create a fresh library.  ``probe`` consumes an existing
+    library and enables the manifold switch.  Neither mode runs a baseline or
+    treatment pair, so a pre-locomotion checkpoint cannot be misreported as a
+    paired result.
+    """
+    if action_budget not in STAGED_ACTION_BUDGETS:
+        raise ValueError(
+            "staged action budget must be one of "
+            f"{STAGED_ACTION_BUDGETS!r}"
+        )
+    if mode not in {"training", "probe"}:
+        raise ValueError("staged mode must be 'training' or 'probe'")
+    if mode == "probe" and library_in is None:
+        raise ValueError("staged probe requires --library-in")
+    if mode == "training" and library_in is not None:
+        raise ValueError("staged training cannot consume --library-in")
+
+    protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
+    if not protocol.get("curriculum", {}).get("developmental", False):
+        raise ValueError("a developmental curriculum protocol is required")
+    configured = _configure(
+        protocol,
+        action_budget,
+        1.0 if mode == "probe" else 0.0,
+    )
+    started = time.perf_counter()
+    run = _run_arm(
+        configured,
+        "directed_walk",
+        motor_library=(
+            json.loads(library_in.read_text(encoding="utf-8"))
+            if library_in is not None else None
+        ),
+        motor_library_out=(library_path if mode == "training" else None),
+    )
+    metrics = _metrics(run)
+    training_complete = None
+    training_invalid_reasons: list[str] = []
+    if mode == "training":
+        training_complete, training_invalid_reasons = _training_completion(
+            metrics,
+            action_budget,
+            library_path=library_path,
+        )
+        # The artifact is deliberately retained even when this is false.  A
+        # staged checkpoint is diagnostic state; it is never allowed to erase
+        # evidence of a halted run.
+        library_metadata = _read_library_metadata(library_path, protocol)
+    else:
+        library_metadata = _read_library_metadata(library_in, protocol)
+    staged_result_valid = (
+        training_complete
+        if mode == "training"
+        else (
+            metrics["actions_executed"] == action_budget
+            and not _cognitive_invalid_reasons(metrics)
+        )
+    )
+    result = {
+        "experiment": "humanoid_future_manifold_curriculum_staged",
+        "protocol_path": str(protocol_path.resolve().relative_to(ROOT)),
+        "protocol_digest": _digest(protocol),
+        "seed": protocol["seed"],
+        "training_actions": action_budget if mode == "training" else None,
+        "evaluation_actions": action_budget if mode == "probe" else None,
+        "runtime_seconds": time.perf_counter() - started,
+        "mode": mode,
+        "library_in": str(library_in) if library_in is not None else None,
+        "library_out": str(library_path) if mode == "training" else None,
+        "library_metadata": library_metadata,
+        "staged_result_valid": staged_result_valid,
+        "training_complete": training_complete,
+        "training_invalid_reasons": training_invalid_reasons,
+        "metrics": metrics,
+    }
+    result["checkpoint"] = _checkpoint(
+        metrics,
+        action_budget=action_budget,
+        mode=mode,
+        protocol_digest=result["protocol_digest"],
+        library_metadata=library_metadata,
+        training_complete=training_complete,
+        training_invalid_reasons=training_invalid_reasons,
+    )
+    return result
+
+
+def run(
+    protocol_path: Path,
+    *,
+    training_actions: int,
+    evaluation_actions: int,
+    library_path: Path,
+    library_in: Path | None = None,
+) -> dict:
+    if training_actions < 1 or evaluation_actions < 1:
+        raise ValueError("training and evaluation actions must be positive")
+    protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
+    curriculum = protocol.get("curriculum")
+    if not curriculum or not curriculum.get("developmental", False):
+        raise ValueError("a developmental curriculum protocol is required")
+
+    protocol_digest = _digest(protocol)
+    curriculum_contract_digest = developmental_curriculum_contract()[
+        "ontology_sha256"
+    ]
+
+    if library_in is None:
+        training_protocol = _configure(protocol, training_actions, 0.0)
+        started = time.perf_counter()
+        training_run = _run_arm(
+            training_protocol,
+            "directed_walk",
+            motor_library_out=library_path,
+        )
+        training_seconds = time.perf_counter() - started
+        training_metrics = _metrics(training_run)
+        training_complete, training_invalid_reasons = _training_completion(
+            training_metrics,
+            training_actions,
+            library_path=library_path,
+        )
+        if not training_complete:
+            raise RuntimeError(
+                "fresh training artifact rejected: "
+                + ", ".join(training_invalid_reasons)
+            )
+        del training_run
+        gc.collect()
+        effective_library_path = library_path
+        training_source = "fresh_developmental_curriculum"
+    else:
+        effective_library_path = library_in
+        training_seconds = 0.0
+        training_metrics = None
+        training_source = "frozen_developmental_curriculum_artifact"
+
+    library_bytes = effective_library_path.read_bytes()
+    library_sha256 = hashlib.sha256(library_bytes).hexdigest()
+    motor_library = json.loads(library_bytes)
+    library_metadata = _library_metadata(motor_library, protocol)
+
+    baseline_protocol = _configure(protocol, evaluation_actions, 0.0)
+    treatment_protocol = _configure(protocol, evaluation_actions, 1.0)
+
+    started = time.perf_counter()
+    baseline_run = _run_arm(
+        baseline_protocol,
+        "directed_walk",
+        motor_library=motor_library,
+    )
+    baseline_seconds = time.perf_counter() - started
+    baseline_metrics = _metrics(baseline_run)
+    baseline_calibration = _digest(baseline_run["calibration_trace"])
+    baseline_pre_locomotion = _digest(baseline_run["pre_locomotion_state"])
+    del baseline_run
+    gc.collect()
+
+    started = time.perf_counter()
+    treatment_run = _run_arm(
+        treatment_protocol,
+        "directed_walk",
+        motor_library=motor_library,
+    )
+    treatment_seconds = time.perf_counter() - started
+    treatment_metrics = _metrics(treatment_run)
+    treatment_calibration = _digest(treatment_run["calibration_trace"])
+    treatment_pre_locomotion = _digest(
+        treatment_run["pre_locomotion_state"]
+    )
+
+    treatment_gate_active = bool(
+        treatment_metrics["future_manifold"].get("enabled", 0.0) > 0.5
+        and treatment_metrics["future_manifold"].get(
+            "temporal_anchors_enabled", 0.0
+        ) > 0.5
+        and treatment_metrics["future_manifold"].get("bounds_ready", 0.0)
+        > 0.5
+    )
+    invalid_reasons = _pair_invalid_reasons(
+        baseline_metrics,
+        treatment_metrics,
+        evaluation_actions=evaluation_actions,
+        calibration_identical=baseline_calibration == treatment_calibration,
+        pre_locomotion_identical=(
+            baseline_pre_locomotion == treatment_pre_locomotion
+        ),
+        library_metadata=library_metadata,
+        protocol_digest=protocol_digest,
+        treatment_protocol_digest=protocol_digest,
+    )
+    action_budget_completed = (
+        baseline_metrics["actions_executed"] == evaluation_actions
+        and treatment_metrics["actions_executed"] == evaluation_actions
+    )
+    manifold_test_valid = not invalid_reasons
+
+    return {
+        "experiment": "humanoid_future_manifold_curriculum_paired",
+        "manifold_test_valid": manifold_test_valid,
+        "invalid_reasons": invalid_reasons,
+        "action_budget_completed": action_budget_completed,
+        "protocol_path": str(protocol_path.resolve().relative_to(ROOT)),
+        "protocol_digest": protocol_digest,
+        "curriculum_contract_digest": curriculum_contract_digest,
+        "seed": protocol["seed"],
+        "training_actions": training_actions,
+        "evaluation_actions": evaluation_actions,
+        "training_source": training_source,
+        "training_complete": (
+            True if library_in is not None else training_complete
+        ),
+        "training_invalid_reasons": (
+            [] if library_in is not None else training_invalid_reasons
+        ),
+        "training_library": str(
+            effective_library_path.resolve().relative_to(ROOT)
+        ),
+        "training_library_sha256": library_sha256,
+        "training_library_metadata": library_metadata,
+        "training_runtime_seconds": training_seconds,
+        "training": training_metrics,
+        "calibration_identical": baseline_calibration == treatment_calibration,
+        "pre_locomotion_state_identical": (
+            baseline_pre_locomotion == treatment_pre_locomotion
+        ),
+        "baseline_runtime_seconds": baseline_seconds,
+        "treatment_runtime_seconds": treatment_seconds,
+        "baseline": baseline_metrics,
+        "treatment": treatment_metrics,
+        "delta": {
+            key: treatment_metrics[key] - baseline_metrics[key]
+            for key in (
+                "directed_progress",
+                "minimum_height",
+                "lateral_offset",
+                "support_alternations",
+                "compound_action_count",
+                "maximum_program_width",
+            )
+        },
+        "curriculum_delta": {
+            key: treatment_metrics["curriculum"][key]
+            - baseline_metrics["curriculum"][key]
+            for key in (
+                "stage_ordinal",
+                "stage_transition_count",
+                "mastery_count",
+                "exact_body_recall_count",
+                "cross_body_warm_start_count",
+            )
+        },
+        "treatment_gate_active": treatment_gate_active,
+        "gate_onset": {
+            "baseline_action": baseline_metrics.get(
+                "future_manifold_gate_onset_action"
+            ),
+            "treatment_action": treatment_metrics.get(
+                "future_manifold_gate_onset_action"
+            ),
+            "baseline_post_gate_action_count": baseline_metrics.get(
+                "post_gate_action_count"
+            ),
+            "treatment_post_gate_action_count": treatment_metrics.get(
+                "post_gate_action_count"
+            ),
+        },
+    }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--protocol", type=Path, default=DEFAULT_PROTOCOL)
+    parser.add_argument("--training-actions", type=int, default=360)
+    parser.add_argument("--evaluation-actions", type=int, default=360)
+    parser.add_argument("--library-out", type=Path, default=DEFAULT_LIBRARY)
+    parser.add_argument("--library-in", type=Path)
+    parser.add_argument("--json-out", type=Path)
+    parser.add_argument(
+        "--staged-mode",
+        choices=("training", "probe"),
+        help=(
+            "run one finite checkpoint arm instead of the paired experiment"
+        ),
+    )
+    parser.add_argument(
+        "--staged-actions",
+        type=int,
+        choices=STAGED_ACTION_BUDGETS,
+        default=48,
+        help="single-arm checkpoint budget (48, 96, 192, or 360)",
+    )
+    args = parser.parse_args()
+    if args.staged_mode is not None:
+        result = run_staged(
+            args.protocol,
+            action_budget=args.staged_actions,
+            mode=args.staged_mode,
+            library_path=args.library_out,
+            library_in=args.library_in,
+        )
+    else:
+        result = run(
+            args.protocol,
+            training_actions=args.training_actions,
+            evaluation_actions=args.evaluation_actions,
+            library_path=args.library_out,
+            library_in=args.library_in,
+        )
+    rendered = json.dumps(result, indent=2)
+    if args.json_out is not None:
+        args.json_out.parent.mkdir(parents=True, exist_ok=True)
+        args.json_out.write_text(rendered + "\n", encoding="utf-8")
+    print(rendered)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

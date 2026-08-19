@@ -5757,6 +5757,136 @@ class WorldAdapter:
         self._sa_producer = prod
         return prod or None
 
+    def _full_text_producer(self):
+        """Lazy-train Ocelot's general language producer for outbound speech.
+
+        The self-account producer deliberately contains first-person identity
+        examples (including ``I am``).  Outbound resident speech needs the
+        general grammar instead, so it has its own language-world cache and
+        cannot accidentally select self-account morphology for another
+        subject.  The training bank grounds the grammar once; frame-specific
+        vocabulary is added as lexical data by :meth:`full_text_for`.
+        """
+        producer = getattr(self, "_full_text_language_producer", None)
+        if producer is False:
+            return None
+        if producer is not None:
+            return producer
+        try:
+            import os as _os, sys as _sys
+            import substrate_rs as _srs
+            from domains.language_world import LanguageWorld, teacher_stub
+            from domains.language_production import LanguageProduction
+            _root = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+            if _root not in _sys.path:
+                _sys.path.insert(0, _root)
+            from scripts.language_test import training_bank
+
+            world = LanguageWorld(_srs._native.Substrate(), training_bank(),
+                                  teacher_stub)
+            world.run()
+            world.teacher_disabled = True
+            producer = LanguageProduction(world)
+        except Exception:
+            producer = False
+        self._full_text_language_producer = producer
+        return producer or None
+
+    # This is the public text boundary for cognition providers.  A provider
+    # may hold a structured communicative goal, but it must not turn that
+    # structure into prose in a domain adapter.  The Ocelot language faculty
+    # owns that last step and returns the text which can be sent to a person.
+    @staticmethod
+    def _full_text_value(value, *names):
+        if isinstance(value, dict):
+            for name in names:
+                if name in value:
+                    return value[name]
+        return value
+
+    @classmethod
+    def _full_text_frame(cls, meaning):
+        """Coerce a held semantic meaning into a language-production frame.
+
+        The graph/communication layer deliberately stores meanings as JSON so
+        they can be accounted for and taken up by another resident.  This
+        coercion is an Ocelot language-boundary operation, not a world or
+        scenario renderer.  Fully formed ``event/agent/patient`` frames pass
+        through unchanged; the relation-shaped form is only a generic
+        compatibility form for graph-native communicative goals.
+        """
+        if isinstance(meaning, dict) and any(
+                key in meaning for key in ("event", "agent", "patient", "location")):
+            frame = dict(meaning)
+            frame.setdefault("intent", "inform")
+            return frame
+        if not isinstance(meaning, dict) or not meaning:
+            return {"event": "say", "agent": "I", "patient": str(meaning),
+                    "tense": "present", "intent": "inform"}
+
+        keys = [key for key in meaning if key != "force"]
+        if not keys:
+            return {"event": "say", "agent": "I", "tense": "present",
+                    "intent": "inform"}
+        predicate = str(keys[0])
+        payload = meaning[predicate]
+
+        target = cls._full_text_value(payload, "of", "to", "from", "about")
+        frame = {"event": predicate, "agent": "I", "tense": "present",
+                 "intent": "ask" if predicate == "question" else "inform"}
+        if target is not None:
+            frame["patient"] = str(target)
+        return frame
+
+    @staticmethod
+    def _ground_full_text_words(world, frame):
+        """Make frame concepts available to Ocelot's existing lexicon."""
+        concepts = []
+        for role in ("event", "agent", "patient", "location", "recipient",
+                     "instrument", "source", "beneficiary", "topic"):
+            value = frame.get(role)
+            if isinstance(value, str) and value:
+                concepts.append(value)
+        concepts.extend(value for value in (frame.get("adjectives") or {}).values()
+                        if isinstance(value, str) and value)
+        for concept in concepts:
+            surface = concept.strip().rstrip(".!?")
+            if not surface:
+                continue
+            try:
+                if surface == "be":
+                    world._add_lex_entry("en", "is", "be", source="ocelot_full_text",
+                                         voice_feature="present")
+                else:
+                    world._add_lex_entry("en", surface.lower(), concept,
+                                         source="ocelot_full_text")
+            except Exception:
+                # Lexical grounding is opportunistic.  A pre-existing entry
+                # or an unfamiliar feature must not turn a speech act into a
+                # world failure; production will report no text if it cannot
+                # realise the frame.
+                continue
+
+    def full_text_for(self, meaning, *, language="en"):
+        """Return Ocelot's generated free-text realisation of a goal.
+
+        This is intentionally separate from :meth:`utterance_for`, whose
+        graph renderer is a structural/debug surface.  Callers receive only
+        the text produced by Ocelot's language faculty; the original meaning
+        remains the graph-resident raw accounting/uptake payload.
+        """
+        producer = self._full_text_producer()
+        if producer is None:
+            return None
+        frame = self._full_text_frame(meaning)
+        self._ground_full_text_words(producer.world, frame)
+        try:
+            result = producer.produce(language, frame) or {}
+        except Exception:
+            return None
+        text = result.get("overt_speech")
+        return str(text) if text else None
+
     def _self_account_frames(self, state):
         """Build goal frames FROM the real self-state: capability frames gated on real graph presence (it really
         modifies rules / grounds concepts this session), plus inventory frames for the categories it holds.
@@ -7499,6 +7629,7 @@ class WorldAdapter:
                 "recoverability": 1.0 if world.get("preview_safe", True) else 0.5,
                 "externality": 0.0,
             }
+        from domains.shape_tube import goal_manifold, goal_projection
         return assess(
             self,
             commit={
@@ -7506,12 +7637,12 @@ class WorldAdapter:
                 "expected_goal_work": float(footprint.pop("expected_goal_work", 1.0)),
                 "expected_information_gain": float(
                     footprint.pop("expected_information_gain", 0.0)),
-                "uncertainty": float(footprint.pop("uncertainty", 0.0)),
                 "requires_approval": float(footprint.pop("requires_approval", 0.0)),
-                "footprint": footprint,
+                "projection": goal_projection("world_action_goal", active=True, action_count=1, intervention_magnitude=1.0),
             },
-            wait={"delay_cost": 0.1},
-            refine={"refinement_cost": 1.0},
+            wait={"delay_cost": 0.1, "projection": goal_projection("world_action_goal", active=False, action_count=0, intervention_magnitude=0.0)},
+            refine={"refinement_cost": 1.0, "projection": goal_projection("world_action_goal", active=False, action_count=1, intervention_magnitude=0.5)},
+            manifold=goal_manifold("world_action_goal"),
             retain_trace=False,
         )
 
@@ -9416,14 +9547,22 @@ class WorldAdapter:
         return out
 
     def add_communicative_goal(self, meaning, kind: str = "inform",
-                               priority: float = 1.0):
+                               priority: float = 1.0, render_meaning=None):
         """A communicative goal: the agent intends the addressee to believe
         (`inform`) the `meaning`. Graph-resident — a CommunicativeGoal node
         carrying the meaning as JSON (so structured meanings round-trip)."""
         import json
-        gid = self.s.add_node("CommunicativeGoal", {
+        attrs = {
             "communicate_kind": kind, "meaning_json": json.dumps(meaning),
-            "priority": float(priority)})
+            "priority": float(priority),
+        }
+        # The raw meaning remains the accounting/uptake contract.  A
+        # cognition provider may additionally supply an Ocelot-native
+        # SemanticFrame for the language faculty; it is never substituted for
+        # the raw meaning in the graph goal.
+        if render_meaning is not None:
+            attrs["render_meaning_json"] = json.dumps(render_meaning)
+        gid = self.s.add_node("CommunicativeGoal", attrs)
         self.inner.add_edge_unchecked(self.agent, "has_goal", gid)
         return gid
 
@@ -9435,6 +9574,11 @@ class WorldAdapter:
         import json
         raw = self.s.node(gid)["attrs"].get("meaning_json")
         return json.loads(raw) if raw is not None else None
+
+    def _goal_render_meaning(self, gid):
+        import json
+        raw = self.s.node(gid)["attrs"].get("render_meaning_json")
+        return json.loads(raw) if raw is not None else self._goal_meaning(gid)
 
     def _believed(self, ad):
         return set(self.s.node(ad)["attrs"].get("believed_concepts") or [])
@@ -9455,12 +9599,17 @@ class WorldAdapter:
         self.inner.set_attr(ad, "believed_concepts", frozenset(believed))
         return believed
 
-    def _communicative_action(self):
+    def _communicative_action(self, utterance_renderer=None, *, full_text=False):
         """Speak AS goal-directed action: for each UNMET inform goal (the
         addressee doesn't yet believe every concept it mentions), render the
-        meaning to an utterance via the lexicon, model the addressee's uptake
-        (grow its believed_concepts), and return the utterance strings. Silent
-        (None) if nothing is unmet or there's no addressee."""
+        meaning to an utterance, model the addressee's uptake (grow its
+        believed_concepts), and return the utterance strings.  The default
+        renderer is the graph-resident relational renderer, retained for
+        structural meanings.  Cognition providers that own a richer voice may
+        supply their existing renderer here; ``full_text=True`` selects
+        Ocelot's own full-text language faculty.  This changes only surface
+        realization, never goal satisfaction or uptake. Silent (None) if
+        nothing is unmet or there's no addressee."""
         ad = self._addressee()
         if ad is None:
             return None
@@ -9472,7 +9621,17 @@ class WorldAdapter:
             concepts = self._meaning_concepts(meaning)
             if concepts <= believed:
                 continue                       # addressee already believes it
-            spoken.append(self.utterance_for(meaning))
+            if utterance_renderer is not None:
+                render = utterance_renderer
+            elif full_text:
+                render = self.full_text_for
+            else:
+                render = self.utterance_for
+            render_meaning = (self._goal_render_meaning(g)
+                              if full_text else meaning)
+            utterance = render(render_meaning)
+            if utterance:
+                spoken.append(str(utterance))
             believed |= concepts
             told |= concepts
         self._grow_believed_concepts(ad, told)

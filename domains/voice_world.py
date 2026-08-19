@@ -670,17 +670,16 @@ class VoiceWorld:
         samples, sr = got
         if play:
             from domains.information_commitment import assess
+            from domains.shape_tube import goal_manifold, goal_projection
             gate = assess(
                 self.wa,
                 commit={
                     "name": "voice_emit", "expected_goal_work": 1.0,
-                    "footprint": {
-                        "deleted_facts": 0.0, "overwritten_facts": 0.0,
-                        "recoverability": 0.0, "externality": 0.2,
-                    },
+                    "projection": goal_projection("voice_emit_goal", active=False, action_count=1, intervention_magnitude=1.0),
                 },
-                wait={"delay_cost": 0.1},
-                refine={"refinement_cost": 1.0},
+                wait={"delay_cost": 0.1, "projection": goal_projection("voice_emit_goal", active=False, action_count=0, intervention_magnitude=0.0)},
+                refine={"refinement_cost": 1.0, "projection": goal_projection("voice_emit_goal", active=False, action_count=1, intervention_magnitude=0.5)},
+                manifold=goal_manifold("voice_emit_goal"),
                 retain_trace=False,
             )
             if gate["decision"] == "commit" and gate["authorized"]:

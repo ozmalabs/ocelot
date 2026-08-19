@@ -63,6 +63,16 @@ def test_capability_graph_contains_branching_and_convergence():
 
 def test_floor_roll_requires_gravity_relative_transition_not_pose_twitch():
     generated = manifest()
+    side_lying = next(
+        capability
+        for capability in CAPABILITIES
+        if capability["name"] == "side_lying_transition"
+    )
+    assert side_lying["desired_body_state_signature"] == [
+        ["support_relation", "preserved"],
+        ["orientation_change", "quarter_turn"],
+    ]
+    assert side_lying["desired_orientation_units"] == 1
     rules = {row["name"]: row for row in generated["rules"]}
     tracking = json.dumps(
         rules["ed_track_situated_floor_orientation_trajectory"]
@@ -80,6 +90,9 @@ def test_floor_roll_requires_gravity_relative_transition_not_pose_twitch():
     assert "development_post_orientation_class" in tracking
     assert "trajectory_half_turn_complete" in tracking
     assert "supported_half_turn" in learning
+    assert learning.count("development_half_turn_transition") >= 2
+    assert learning.count("trajectory_origin_orientation_class") >= 2
+    assert "caregiver_protective_support_applied" in learning
 
 
 def test_consumed_receipts_leave_hot_edge_but_remain_auditable():
@@ -708,6 +721,7 @@ def test_no_canonical_pose_anatomy_or_direct_actuation_is_encoded():
 def test_output_null_capability_memory_survives_library_round_trip():
     from scripts.jabberwock_humanoid_walk import (
         MOTOR_LIBRARY_VERSION,
+        developmental_curriculum_contract,
         _motor_library_snapshot,
         _restore_motor_library,
     )
@@ -758,10 +772,16 @@ def test_output_null_capability_memory_survives_library_round_trip():
     )
     snapshot = json.loads(json.dumps(_motor_library_snapshot(source)))
     assert snapshot["version"] == MOTOR_LIBRARY_VERSION
+    assert snapshot["developmental_curriculum_contract"] == (
+        developmental_curriculum_contract()
+    )
     assert snapshot["developmental_capabilities"]
     assert snapshot["somatomotor_couplings"]
 
     restored = _restore_motor_library(target, snapshot)
+    assert restored["developmental_curriculum_contract_digest"] == (
+        snapshot["developmental_curriculum_contract"]["ontology_sha256"]
+    )
     assert restored["developmental_capability_count"] == 1
     assert restored["somatomotor_coupling_count"] == 1
     memories = target.inner.neighbours(
@@ -780,6 +800,47 @@ def test_output_null_capability_memory_survives_library_round_trip():
     assert coupling_attrs["output_authority"] == 0
     assert coupling_attrs["integer_native"] == 1
     assert coupling_attrs["productive_count"] == 5
+
+
+def test_developmental_library_contract_is_fail_closed_for_missing_or_stale_data():
+    from scripts.jabberwock_humanoid_walk import (
+        _motor_library_snapshot,
+        _restore_motor_library,
+    )
+    from substrate.world_adapter import WorldAdapter
+
+    try:
+        source = WorldAdapter(seeds=("embodied_development",))
+        target = WorldAdapter(seeds=("embodied_development",))
+    except RuntimeError as exc:
+        pytest.skip(f"native substrate unavailable: {exc}")
+
+    snapshot = _motor_library_snapshot(source)
+    missing = dict(snapshot)
+    missing.pop("developmental_curriculum_contract")
+    with pytest.raises(ValueError, match="missing developmental_curriculum_contract"):
+        _restore_motor_library(target, missing)
+
+    stale = json.loads(json.dumps(snapshot))
+    stale["developmental_curriculum_contract"]["ontology_sha256"] = "0" * 64
+    with pytest.raises(ValueError, match="curriculum contract mismatch"):
+        _restore_motor_library(target, stale)
+
+
+def test_preserved_legacy_humanoid_library_is_rejected_as_incompatible():
+    from scripts.jabberwock_humanoid_walk import _restore_motor_library
+    from substrate.world_adapter import WorldAdapter
+
+    artifact = ROOT / "results" / "humanoid_developmental_capability_library_v1.json"
+    if not artifact.exists():
+        pytest.skip("preserved legacy artifact is unavailable")
+    try:
+        target = WorldAdapter(seeds=("embodied_development",))
+    except RuntimeError as exc:
+        pytest.skip(f"native substrate unavailable: {exc}")
+    legacy = json.loads(artifact.read_text(encoding="utf-8"))
+    with pytest.raises(ValueError, match="missing developmental_curriculum_contract"):
+        _restore_motor_library(target, legacy)
 
 
 def test_partial_developmental_experience_round_trip_restores_evidence_not_mastery():

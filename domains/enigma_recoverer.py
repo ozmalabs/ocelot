@@ -99,6 +99,8 @@ def admissibility(decrypt_idx: List[int], lm: TrigramLM,
 def recover_level1(ciphertext: str, crib: str, crib_offset: int, lm: TrigramLM,
                    rotor_pool=("I", "II", "III"), ring=(0, 0, 0),
                    known_plug: str = "", topk: int = 3,
+                   reflector=REFLECTOR_B, rotor_count: int = 3,
+                   stationary_rotors=None,
                    verbose: bool = False):
     """Returns (best_settings, score, n_evaluated, brute_force_size, ranked).
     The feasible set = all rotor orders x all 26^3 start positions."""
@@ -106,24 +108,29 @@ def recover_level1(ciphertext: str, crib: str, crib_offset: int, lm: TrigramLM,
     best_score = -float("inf")
     ranked = []
     n_eval = 0
-    orders = list(itertools.permutations(rotor_pool))
-    brute = len(orders) * (N ** 3)
+    orders = list(itertools.permutations(rotor_pool, rotor_count))
+    if len(ring) != rotor_count:
+        raise ValueError("ring must contain one setting per searched rotor")
+    if stationary_rotors is None and rotor_count == 4:
+        stationary_rotors = 1
+    if rotor_count == 4 and stationary_rotors == 1:
+        orders = [order for order in orders if order[0] in {"BETA", "GAMMA"}]
+    brute = len(orders) * (N ** rotor_count)
     for order in orders:
-        for s0 in range(N):
-            for s1 in range(N):
-                for s2 in range(N):
-                    start = (s0, s1, s2)
-                    eng = Enigma.build(list(order), ring, start, known_plug)
-                    dec = eng.encrypt(ciphertext)   # symmetric: decrypt
-                    dec_idx = to_idx(dec)
-                    n_eval += 1
-                    sc = admissibility(dec_idx, lm, crib, crib_offset)
-                    if sc <= FLOOR:
-                        continue
-                    ranked.append((sc, order, start))
-                    if sc > best_score:
-                        best_score = sc
-                        best = Settings(order, ring, start, known_plug)
+        for start in itertools.product(range(N), repeat=rotor_count):
+            eng = Enigma.build(list(order), tuple(ring), start, known_plug,
+                               reflector, stationary_rotors)
+            dec = eng.decrypt(ciphertext)
+            dec_idx = to_idx(dec)
+            n_eval += 1
+            sc = admissibility(dec_idx, lm, crib, crib_offset)
+            if sc <= FLOOR:
+                continue
+            ranked.append((sc, order, start))
+            if sc > best_score:
+                best_score = sc
+                best = Settings(order, tuple(ring), start, known_plug, reflector,
+                                stationary_rotors)
     ranked.sort(key=lambda x: -x[0])
     return best, best_score, n_eval, brute, ranked[:topk]
 
@@ -148,30 +155,27 @@ def recover_level1(ciphertext: str, crib: str, crib_offset: int, lm: TrigramLM,
 # that rotor hypothesis at once). Constraint INTERSECTION carving the inadmissible
 # = weighted admissibility with hard excluders.
 # ---------------------------------------------------------------------------
-def _scrambler_perms(order, ring, start, ciphertext_len):
+def _scrambler_perms(order, ring, start, ciphertext_len,
+                     reflector=REFLECTOR_B, stationary_rotors=None):
     """E_i for each position i: the rotor+reflector permutation WITHOUT plugboard.
     A single Enigma (empty plugboard) is stepped once per position; at each
     position the FULL 26-letter scrambler permutation is read off in one pass by
     enciphering all 26 letters at the FROZEN rotor state (the model steps once per
     encrypt, so we snapshot the rotor positions and apply the path directly)."""
-    eng = Enigma.build(list(order), ring, start, "")
-    L, M, R = eng.rotors
-    refl = eng.reflector
+    eng = Enigma.build(list(order), tuple(ring), tuple(start), "", reflector,
+                       stationary_rotors)
     perms = []
     for i in range(ciphertext_len):
         eng._step()  # advance odometer to position i (1-indexed like encrypt)
         row = [0] * N
         for a in range(N):
-            c = a
-            c = R.encode_fwd(c); c = M.encode_fwd(c); c = L.encode_fwd(c)
-            c = refl[c]
-            c = L.encode_bwd(c); c = M.encode_bwd(c); c = R.encode_bwd(c)
-            row[a] = c
+            row[a] = eng._scramble(a)
         perms.append(row)
     return perms
 
 
-def bombe_test(order, ring, start, crib: str, ciphertext: str, crib_offset: int):
+def bombe_test(order, ring, start, crib: str, ciphertext: str, crib_offset: int,
+               reflector=REFLECTOR_B, stationary_rotors=None):
     """Try to find a self-consistent plugboard (steckering) for the crib under the
     rotor hypothesis. Returns (ok, recovered_plug_pairs, branches_tried,
     branches_contradicted). ok=False => reject this rotor hypothesis for ALL
@@ -181,7 +185,8 @@ def bombe_test(order, ring, start, crib: str, ciphertext: str, crib_offset: int)
     if len(c) < len(p):
         return False, None, 0, 0
     # scrambler perms at the crib positions
-    perms_all = _scrambler_perms(order, ring, start, crib_offset + len(p))
+    perms_all = _scrambler_perms(order, ring, start, crib_offset + len(p),
+                                 reflector, stationary_rotors)
     E = perms_all[crib_offset:crib_offset + len(p)]
 
     # Choose the most-connected letter in the crib as the Bombe's test letter.
@@ -257,7 +262,8 @@ def bombe_test(order, ring, start, crib: str, ciphertext: str, crib_offset: int)
 
 
 def complete_plugboard(order, ring, start, ciphertext: str, lm: "TrigramLM",
-                       partial_plug: str, max_extra_pairs: int = 6):
+                       partial_plug: str, max_extra_pairs: int = 6,
+                       reflector=REFLECTOR_B):
     """Once the Bombe has fixed the ROTORS (single survivor) + the crib-forced
     plug pairs, finish the plugboard by WEIGHTED ADMISSIBILITY: greedily add the
     plug pair that most raises the n-gram admissibility of the FULL decrypt, until
@@ -272,7 +278,8 @@ def complete_plugboard(order, ring, start, ciphertext: str, lm: "TrigramLM",
 
     def score(pairs):
         plug = " ".join(chr(a + A) + chr(b + A) for a, b in pairs)
-        dec = Settings(tuple(order), tuple(ring), tuple(start), plug).encrypt(ciphertext)
+        dec = Settings(tuple(order), tuple(ring), tuple(start), plug,
+                       reflector).encrypt(ciphertext)
         return lm.logprob(to_idx(dec))
 
     cur = list(fixed_pairs)

@@ -520,7 +520,9 @@ def reground(agent, detached: DetachedCollapse) -> dict:
 # the frame was needed to get this right.
 # ---------------------------------------------------------------------------
 def commit_imagination(agent, detached: DetachedCollapse, survivors: list, *,
-                        approver: Optional[str] = None, policy: Optional[dict] = None) -> dict:
+                        approver: Optional[str] = None, policy: Optional[dict] = None,
+                        projections: Optional[dict] = None,
+                        manifold: Optional[dict] = None) -> dict:
     """Write the given SURVIVOR `ImaginedConclusion` nodes' content into the
     live graph -- the COMMITTING half of the reversible-explore/committing
     split (`domains/commitment_gate.py`). `survivors` is normally
@@ -533,10 +535,30 @@ def commit_imagination(agent, detached: DetachedCollapse, survivors: list, *,
     approver and the default policy requires one) -- a `Commitment` record
     is still minted either way (see `commit_gate`)."""
     sub, native = _resolve(agent)
-    gate = commit_gate(agent, {"kind": _WRITEBACK_KIND,
-                                "imagination": _v(detached.imagination_node),
-                                "n_survivors": len(survivors)},
-                        approver=approver, policy=policy)
+    # No survivor means no content can be written: this is a true no-op and
+    # must not mint a commitment or invent a future-manifold measurement.
+    if not survivors:
+        return {"gate": {"allowed": True, "reason": "no_survivors_noop",
+                          "record": None}, "written": []}
+
+    action = {"kind": _WRITEBACK_KIND,
+              "imagination": _v(detached.imagination_node),
+              "n_survivors": len(survivors)}
+    # Epistemic survival is not a measurement of viable future trajectories.
+    # Nonempty writeback therefore requires an explicit manifold shape projection and
+    # policy from the caller; otherwise commit_gate fails closed.
+    if manifold is not None and projections is not None:
+        action["risk"] = {
+            "commit": {"name": _WRITEBACK_KIND,
+                        "expected_goal_work": float(len(survivors)),
+                        "projection": projections["commit"]},
+            "wait": {"name": "wait", "delay_cost": 0.1,
+                      "projection": projections["wait"]},
+            "refine": {"name": "refine", "refinement_cost": 0.2,
+                        "projection": projections["refine"]},
+            "manifold": manifold,
+        }
+    gate = commit_gate(agent, action, approver=approver, policy=policy)
     written: list = []
     if not gate["allowed"]:
         return {"gate": gate, "written": written}

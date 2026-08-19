@@ -94,6 +94,18 @@
     "type": "EmbodiedInverseKinematicQuery",
     "var": "query"
    }
+  },
+  {
+   "provenance": "humanoid_development:wave_local_command_index",
+   "src": {
+    "type": "SomatomotorWaveCell",
+    "var": "cell"
+   },
+   "edge_type": "indexes_humanoid_wave_local_command",
+   "tgt": {
+    "type": "HumanoidPhaseActionModel",
+    "var": "phase_model"
+   }
   }
  ],
  "rules": [
@@ -16281,6 +16293,152 @@
    ]
   },
   {
+   "name": "hdc_index_wave_cell_local_commands",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -94,
+   "batch": true,
+   "comment": "Cache the immutable topology join between a generic wave cell and body-local opaque commands. Receipt-derived rank, support phase, and actuator-group exclusion stay live at selection.",
+   "match": [
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "has_somatomotor_wave_field",
+     "field"
+    ],
+    [
+     "field",
+     "has_somatomotor_wave_cell",
+     "cell"
+    ],
+    [
+     "cell",
+     "represents_embodied_effector",
+     "cell_effector"
+    ],
+    [
+     "episode",
+     "has_humanoid_phase_action_model",
+     "candidate"
+    ],
+    [
+     "candidate",
+     "generalizes_humanoid_action_model",
+     "action_model"
+    ],
+    [
+     "action_model",
+     "models_embodied_effector",
+     "model_effector"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "action_model"
+         },
+         "key": "tonic_default"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cell_effector"
+         },
+         "key": "channel_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "model_effector"
+         },
+         "key": "channel_ordinal"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "cell"
+        },
+        "edge_type": "indexes_humanoid_wave_local_command",
+        "any_type": false
+       },
+       "var_name": "indexed_candidate",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Var",
+         "name": "indexed_candidate"
+        },
+        "b": {
+         "type": "Var",
+         "name": "candidate"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "cell",
+     "indexes_humanoid_wave_local_command",
+     "candidate"
+    ]
+   ]
+  },
+  {
    "name": "hdc_open_humanoid_program_from_somatomotor_wave",
    "area": "humanoid_sensorimotor_adaptation",
    "latency_class": "hard_realtime",
@@ -16673,8 +16831,8 @@
      "cell"
     ],
     [
-     "episode",
-     "has_humanoid_phase_action_model",
+     "cell",
+     "indexes_humanoid_wave_local_command",
      "candidate"
     ]
    ],
@@ -16788,9 +16946,9 @@
          "type": "Neighbours",
          "node": {
           "type": "Var",
-          "name": "episode"
+          "name": "cell"
          },
-         "edge_type": "has_humanoid_phase_action_model",
+         "edge_type": "indexes_humanoid_wave_local_command",
          "any_type": false
         },
         "var_name": "wave_candidate",
@@ -16830,111 +16988,6 @@
              {
               "type": "Lit",
               "value": 0
-             }
-            ]
-           }
-          },
-          {
-           "type": "Exists",
-           "source": {
-            "type": "Neighbours",
-            "node": {
-             "type": "Var",
-             "name": "wave_candidate"
-            },
-            "edge_type": "generalizes_humanoid_action_model",
-            "any_type": false
-           },
-           "var_name": "wave_action_model",
-           "predicate": {
-            "type": "And",
-            "items": [
-             {
-              "type": "Eq",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "wave_action_model"
-                 },
-                 "key": "tonic_default"
-                },
-                {
-                 "type": "Lit",
-                 "value": 0
-                }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
-             },
-             {
-              "type": "Exists",
-              "source": {
-               "type": "Neighbours",
-               "node": {
-                "type": "Var",
-                "name": "wave_action_model"
-               },
-               "edge_type": "models_embodied_effector",
-               "any_type": false
-              },
-              "var_name": "wave_model_effector",
-              "predicate": {
-               "type": "Exists",
-               "source": {
-                "type": "Neighbours",
-                "node": {
-                 "type": "Var",
-                 "name": "cell"
-                },
-                "edge_type": "represents_embodied_effector",
-                "any_type": false
-               },
-               "var_name": "wave_cell_effector",
-               "predicate": {
-                "type": "Eq",
-                "a": {
-                 "type": "Plus",
-                 "items": [
-                  {
-                   "type": "Attr",
-                   "node": {
-                    "type": "Var",
-                    "name": "wave_cell_effector"
-                   },
-                   "key": "channel_ordinal"
-                  },
-                  {
-                   "type": "Lit",
-                   "value": 0
-                  }
-                 ]
-                },
-                "b": {
-                 "type": "Plus",
-                 "items": [
-                  {
-                   "type": "Attr",
-                   "node": {
-                    "type": "Var",
-                    "name": "wave_model_effector"
-                   },
-                   "key": "channel_ordinal"
-                  },
-                  {
-                   "type": "Lit",
-                   "value": 0
-                  }
-                 ]
-                }
-               }
-              }
              }
             ]
            }
@@ -17015,9 +17068,9 @@
          "type": "Neighbours",
          "node": {
           "type": "Var",
-          "name": "episode"
+          "name": "cell"
          },
-         "edge_type": "has_humanoid_phase_action_model",
+         "edge_type": "indexes_humanoid_wave_local_command",
          "any_type": false
         },
         "var_name": "wave_candidate",
@@ -17057,111 +17110,6 @@
              {
               "type": "Lit",
               "value": 0
-             }
-            ]
-           }
-          },
-          {
-           "type": "Exists",
-           "source": {
-            "type": "Neighbours",
-            "node": {
-             "type": "Var",
-             "name": "wave_candidate"
-            },
-            "edge_type": "generalizes_humanoid_action_model",
-            "any_type": false
-           },
-           "var_name": "wave_action_model",
-           "predicate": {
-            "type": "And",
-            "items": [
-             {
-              "type": "Eq",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "wave_action_model"
-                 },
-                 "key": "tonic_default"
-                },
-                {
-                 "type": "Lit",
-                 "value": 0
-                }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
-             },
-             {
-              "type": "Exists",
-              "source": {
-               "type": "Neighbours",
-               "node": {
-                "type": "Var",
-                "name": "wave_action_model"
-               },
-               "edge_type": "models_embodied_effector",
-               "any_type": false
-              },
-              "var_name": "wave_model_effector",
-              "predicate": {
-               "type": "Exists",
-               "source": {
-                "type": "Neighbours",
-                "node": {
-                 "type": "Var",
-                 "name": "cell"
-                },
-                "edge_type": "represents_embodied_effector",
-                "any_type": false
-               },
-               "var_name": "wave_cell_effector",
-               "predicate": {
-                "type": "Eq",
-                "a": {
-                 "type": "Plus",
-                 "items": [
-                  {
-                   "type": "Attr",
-                   "node": {
-                    "type": "Var",
-                    "name": "wave_cell_effector"
-                   },
-                   "key": "channel_ordinal"
-                  },
-                  {
-                   "type": "Lit",
-                   "value": 0
-                  }
-                 ]
-                },
-                "b": {
-                 "type": "Plus",
-                 "items": [
-                  {
-                   "type": "Attr",
-                   "node": {
-                    "type": "Var",
-                    "name": "wave_model_effector"
-                   },
-                   "key": "channel_ordinal"
-                  },
-                  {
-                   "type": "Lit",
-                   "value": 0
-                  }
-                 ]
-                }
-               }
-              }
              }
             ]
            }
@@ -18072,9 +18020,9 @@
               "type": "Neighbours",
               "node": {
                "type": "Var",
-               "name": "episode"
+               "name": "unbound_cell"
               },
-              "edge_type": "has_humanoid_phase_action_model",
+              "edge_type": "indexes_humanoid_wave_local_command",
               "any_type": false
              },
              "var_name": "wave_candidate",
@@ -18114,111 +18062,6 @@
                   {
                    "type": "Lit",
                    "value": 0
-                  }
-                 ]
-                }
-               },
-               {
-                "type": "Exists",
-                "source": {
-                 "type": "Neighbours",
-                 "node": {
-                  "type": "Var",
-                  "name": "wave_candidate"
-                 },
-                 "edge_type": "generalizes_humanoid_action_model",
-                 "any_type": false
-                },
-                "var_name": "wave_action_model",
-                "predicate": {
-                 "type": "And",
-                 "items": [
-                  {
-                   "type": "Eq",
-                   "a": {
-                    "type": "Plus",
-                    "items": [
-                     {
-                      "type": "Attr",
-                      "node": {
-                       "type": "Var",
-                       "name": "wave_action_model"
-                      },
-                      "key": "tonic_default"
-                     },
-                     {
-                      "type": "Lit",
-                      "value": 0
-                     }
-                    ]
-                   },
-                   "b": {
-                    "type": "Lit",
-                    "value": 0
-                   }
-                  },
-                  {
-                   "type": "Exists",
-                   "source": {
-                    "type": "Neighbours",
-                    "node": {
-                     "type": "Var",
-                     "name": "wave_action_model"
-                    },
-                    "edge_type": "models_embodied_effector",
-                    "any_type": false
-                   },
-                   "var_name": "wave_model_effector",
-                   "predicate": {
-                    "type": "Exists",
-                    "source": {
-                     "type": "Neighbours",
-                     "node": {
-                      "type": "Var",
-                      "name": "unbound_cell"
-                     },
-                     "edge_type": "represents_embodied_effector",
-                     "any_type": false
-                    },
-                    "var_name": "wave_cell_effector",
-                    "predicate": {
-                     "type": "Eq",
-                     "a": {
-                      "type": "Plus",
-                      "items": [
-                       {
-                        "type": "Attr",
-                        "node": {
-                         "type": "Var",
-                         "name": "wave_cell_effector"
-                        },
-                        "key": "channel_ordinal"
-                       },
-                       {
-                        "type": "Lit",
-                        "value": 0
-                       }
-                      ]
-                     },
-                     "b": {
-                      "type": "Plus",
-                      "items": [
-                       {
-                        "type": "Attr",
-                        "node": {
-                         "type": "Var",
-                         "name": "wave_model_effector"
-                        },
-                        "key": "channel_ordinal"
-                       },
-                       {
-                        "type": "Lit",
-                        "value": 0
-                       }
-                      ]
-                     }
-                    }
-                   }
                   }
                  ]
                 }

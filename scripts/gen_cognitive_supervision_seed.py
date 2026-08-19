@@ -59,10 +59,53 @@ def processes_for_step():
     return Filter(
         Neighbours("episode", "has_cognitive_process"),
         "known_process",
-        Eq(Count(Filter(
-            Neighbours("known_process", "supervises_learning_plan_step"),
-            "known_step", Eq(V("known_step"), V("step")),
-        )), L(1)),
+        And(
+            Or(
+                Eq(A("known_process", "status"), L("monitoring")),
+                Eq(A("known_process", "status"), L("checking_in")),
+                And(
+                    Eq(A("known_process", "status"), L("replan_required")),
+                    Eq(P0("known_process", "replan_release_complete"), L(0)),
+                ),
+            ),
+            Eq(Count(Filter(
+                Neighbours("known_process", "supervises_learning_plan_step"),
+                "known_step", Eq(V("known_step"), V("step")),
+            )), L(1)),
+        ),
+    )
+
+
+def ready_plan_steps(plan="plan"):
+    return Filter(
+        Neighbours(plan, "has_learning_plan_step"),
+        "ready_step",
+        And(
+            Eq(A("ready_step", "status"), L("ready")),
+            Exists(
+                Neighbours("ready_step", "plans_learning_capability"),
+                "ready_instance",
+                Or(
+                    Eq(A("ready_instance", "status"), L("available")),
+                    Eq(A("ready_instance", "status"), L("warm_available")),
+                    Eq(A("ready_instance", "status"), L("retention_due")),
+                ),
+            ),
+        ),
+    )
+
+
+def replacement_ready_plan_steps(plan="plan", current="step"):
+    """Ready graph steps that can replace the currently supervised step.
+
+    A cognitive replan may release the current step only when this graph
+    relation/status query exposes a different ready future. Prerequisite-
+    blocked capabilities intentionally do not count as a replacement.
+    """
+    return Filter(
+        Neighbours(plan, "has_learning_plan_step"),
+        "replacement_step",
+        Eq(A("replacement_step", "status"), L("ready")),
     )
 
 
@@ -74,8 +117,8 @@ def attach_rule():
         "latency_class": "hard_realtime",
         "batch": False,
         "comment": "The process owns a strict integer lease and clock. The "
-        "situated evidence window supplies an initial check-in span, not a "
-        "global timeout.",
+        "situated evidence window is an evidence-unit span; check-ins are "
+        "scheduled from receipt/evidence progress, never cognitive epochs.",
         "match": [
             ["episode", "has_self_directed_learning_plan", "plan"],
             ["plan", "has_selected_learning_plan_step", "step"],
@@ -99,6 +142,11 @@ def attach_rule():
                 "renew_before_epoch": T(span),
                 "last_checkin_epoch": 0,
                 "next_checkin_epoch": T(span),
+                "last_checkin_evidence_units": T(P0("step", "evidence_spent_units")),
+                "next_checkin_evidence_units": T(Plus(
+                    P0("step", "evidence_spent_units"), span
+                )),
+                "checkin_span_evidence_units": T(span),
                 "checkin_span_units": T(span),
                 "baseline_effort_units": T(P0("step", "evidence_spent_units")),
                 "checkin_count": 0,
@@ -123,6 +171,11 @@ def attach_rule():
             ["add_edge", "process", "pursues_goal", "goal"],
             ["add_edge", "process", "supervises_goal", "goal"],
             ["set_attr", "episode", "cognitive_continuation_authority", 1],
+            # A newly selected step is a graph-owned replan continuation. It
+            # clears the prior check-in's terminal latch only when a fresh
+            # authorized process has actually been attached; no-future cases
+            # remain terminal because this rule cannot match there.
+            ["set_attr", "episode", "cognitive_checkin_terminal", 0],
         ],
     }
 
@@ -429,8 +482,8 @@ def scheduled_checkin_rule():
         ],
         "where": And(
             Eq(A("process", "status"), L("monitoring")),
-            Not(Lt(P0("policy", "cognitive_epoch"),
-                   P0("process", "renew_before_epoch"))),
+            Not(Lt(P0("step", "evidence_spent_units"),
+                   P0("process", "next_checkin_evidence_units"))),
         ),
         "effects": checkin_effects("approximate_time"),
     }
@@ -563,6 +616,7 @@ def continue_rule():
         "order": 10,
         "batch": False,
         "match": [
+            ["episode", "has_self_directed_learning_plan", "plan"],
             ["episode", "has_cognitive_process", "process"],
             ["process", "governed_by_cognitive_supervision_policy", "policy"],
             ["process", "has_reference_efficiency_window", "reference"],
@@ -575,13 +629,21 @@ def continue_rule():
         ],
         "where": And(
             Eq(A("checkin", "status"), L("open")),
-            Eq(P0("current", "dominated"), L(0)),
             Eq(Count(Neighbours("current", "has_pareto_value")),
                P0("profile", "dimension_count")),
-            Not(Exists(
-                Neighbours("profile", "has_pareto_candidate"),
-                "alternative", candidate_dominates_current(),
-            )),
+            Or(
+                Not(Exists(
+                    Neighbours("profile", "has_pareto_candidate"),
+                    "alternative", candidate_dominates_current(),
+                )),
+                And(
+                    Exists(
+                        Neighbours("profile", "has_pareto_candidate"),
+                        "alternative", candidate_dominates_current(),
+                    ),
+                    Eq(Count(replacement_ready_plan_steps()), L(0)),
+                ),
+            ),
             Gt(P0("checkin", "goal_progress_units"), L(0)),
         ),
         "effects": [
@@ -604,6 +666,13 @@ def continue_rule():
             ["set_attr", "process", "next_checkin_epoch", T(Plus(
                 P0("policy", "cognitive_epoch"), span
             ))],
+            ["set_attr", "process", "last_checkin_evidence_units", T(P0(
+                "step", "evidence_spent_units"
+            ))],
+            ["set_attr", "process", "next_checkin_evidence_units", T(Plus(
+                P0("step", "evidence_spent_units"), span
+            ))],
+            ["set_attr", "process", "checkin_span_evidence_units", T(span)],
             ["set_attr", "process", "checkin_span_units", T(span)],
             ["set_attr", "process", "baseline_effort_units", T(P0(
                 "step", "evidence_spent_units"
@@ -690,14 +759,19 @@ def dominated_replan_rule():
             ["process", "has_cognitive_checkin", "checkin"],
             ["checkin", "has_efficiency_pareto_profile", "profile"],
             ["profile", "has_incumbent_pareto_candidate", "current"],
-            ["current", "is_dominated_by_pareto_candidate", "alternative"],
+            ["profile", "has_pareto_candidate", "alternative"],
             ["process", "supervises_learning_plan_step", "step"],
         ],
         "where": And(
             Eq(A("checkin", "status"), L("open")),
             Gt(P0("checkin", "goal_progress_units"), L(0)),
+            candidate_dominates_current(),
+            Gt(Count(replacement_ready_plan_steps()), L(0)),
         ),
-        "effects": replan_effects(),
+        "effects": [
+            ["add_edge", "current", "is_dominated_by_pareto_candidate", "alternative"],
+            *replan_effects(),
+        ],
     }
 
 

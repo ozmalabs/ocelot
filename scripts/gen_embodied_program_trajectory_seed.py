@@ -81,16 +81,13 @@ def path_values(
 
 
 def open_trajectory_rule() -> dict:
-    situated_trajectories = Filter(
-        Neighbours("owner", "has_embodied_program_trajectory"),
-        "situated_trajectory",
-        Exists(
-            Neighbours(
-                "situated_trajectory", "starts_from_embodied_program"
-            ),
-            "trajectory_origin",
-            Eq(V("trajectory_origin"), V("current_program")),
-        ),
+    # The current program is the moving expansion frontier, not trajectory
+    # identity.  Keying uniqueness by it opened a fresh depth-one trajectory
+    # after every receipt, so a verified chain could never become order N.
+    # One owner holds one situated trajectory until its surrounding learning
+    # context explicitly retires it.
+    situated_trajectories = Neighbours(
+        "owner", "has_embodied_program_trajectory"
     )
     return {
         "name": "ept_open_situated_program_trajectory",

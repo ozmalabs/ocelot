@@ -1,190 +1,35 @@
-"""Thermodynamic wait/refine/commit is graph cognition, not host policy."""
-from __future__ import annotations
-
-import json
-import os
-
-import pytest
-
+"""Shape-residual future-manifold contracts."""
+import json, os, pytest
 pytest.importorskip("substrate_rs")
-
-from substrate.world_adapter import WorldAdapter  # noqa: E402
-from domains.information_commitment import assess  # noqa: E402
-from domains.commitment_gate import commit_gate  # noqa: E402
-
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-
+from substrate.world_adapter import WorldAdapter
+from domains.information_commitment import assess
+from domains.future_option_risk import evaluate_future_manifold
+ROOT=os.path.dirname(os.path.dirname(__file__))
 def _fresh():
-    agent = WorldAdapter(seeds=())
-    for name in ("cognitive_areas", "information_commitment"):
-        agent.inner.load_seed_manifest(
-            json.load(open(os.path.join(ROOT, "seeds", f"{name}.json"))),
-            agent.agent,
-        )
-    return agent
+ a=WorldAdapter(seeds=())
+ for n in ("cognitive_areas","information_commitment"): a.inner.load_seed_manifest(json.load(open(os.path.join(ROOT,"seeds",n+ ".json"))),a.agent)
+ return a
+def _slice(t, width=1, info=0, cells=None): return {"time":t,"cells":cells or {"core":{"weight":width,"information":info,"metadata":{}}},"links":[]}
+def _m(): return {"manifold_id":"m1","required_horizon":2,"minimum_width":1,"maximum_information_loss":0,"required_tube":[_slice(0),_slice(1),_slice(2)]}
+def _p(**kw): return {"manifold_id":"m1","action_count":0,"intervention_magnitude":0,"projected_tube":[_slice(0),_slice(1),_slice(2)],**kw}
+def _c(kind,**kw): return {"name":kind,"expected_goal_work":1,"projection":_p(),**kw}
+def test_shape_residual_vetoes_and_pure_order():
+ assert evaluate_future_manifold(_m(),_p(projected_tube=[_slice(0),_slice(1)])).reason=="insufficient_temporal_coverage"
+ assert evaluate_future_manifold(_m(),_p(projected_tube=[_slice(0),_slice(1),_slice(2,width=2)])).reason=="outside_future_manifold"
+ loss_m={**_m(),"required_tube":[_slice(0),_slice(1),_slice(2,info=1)]}
+ assert evaluate_future_manifold(loss_m,_p()).reason=="excess_information_loss"
+def test_objective_cannot_buy_shape_residual_violation():
+ bad=_p(projected_tube=[_slice(0),_slice(1),_slice(2,width=2)])
+ out=assess(_fresh(),manifold=_m(),wait=_c("wait"),refine=_c("refine"),commit=_c("commit",expected_goal_work=10**18,projection=bad))
+ assert out["decision"]=="wait"
 
-
-def _footprint(recoverability=0.0, deleted=0, overwritten=0, externality=0):
-    return {
-        "recoverability": recoverability, "deleted_facts": deleted,
-        "overwritten_facts": overwritten, "externality": externality,
-    }
-
-
-def test_high_uncertainty_makes_refinement_win():
-    agent = _fresh()
-    out = assess(
-        agent,
-        commit={
-            "name": "act", "expected_goal_work": 5, "uncertainty": 5,
-            "footprint": _footprint(recoverability=0.0),
-        },
-        wait={"preservation_value": 1},
-        refine={
-            "expected_information_gain": 5, "decision_relevance": 2,
-            "refinement_cost": 1,
-        },
-    )
-    assert out["decision"] == "refine" and out["authorized"]
-
-
-def test_high_information_destruction_makes_wait_win():
-    agent = _fresh()
-    out = assess(
-        agent,
-        commit={
-            "expected_goal_work": 4,
-            "footprint": _footprint(deleted=20, recoverability=0.0),
-        },
-        wait={"preservation_value": 6},
-        refine={"refinement_cost": 20},
-    )
-    assert out["decision"] == "wait"
-
-
-def test_deadline_and_opportunity_cost_can_make_commit_win():
-    agent = _fresh()
-    out = assess(
-        agent,
-        commit={
-            "expected_goal_work": 20, "uncertainty": 1,
-            "footprint": _footprint(overwritten=1, recoverability=0.5),
-        },
-        wait={"preservation_value": 4, "delay_cost": 20, "opportunity_cost": 10},
-        refine={
-            "expected_information_gain": 2, "decision_relevance": 1,
-            "refinement_cost": 15, "delay_cost": 15,
-        },
-    )
-    assert out["decision"] == "commit"
-
-
-def test_unknown_effect_footprint_fails_closed():
-    agent = _fresh()
-    out = assess(
-        agent,
-        commit={"expected_goal_work": 100},
-        wait={"preservation_value": 1},
-        refine={"refinement_cost": 10},
-    )
-    commit = out["alternatives"]["commit"]
-    attrs = agent.s.node(commit)["attrs"]
-    assert attrs["hard_veto"] == 1.0
-    assert attrs["veto_reason"] == "unknown_effect_footprint"
-    assert out["decision"] == "wait"
-
-
-def test_cognitive_commit_and_hard_host_approval_are_separate():
-    kwargs = dict(
-        commit={
-            "expected_goal_work": 20, "requires_approval": 1,
-            "footprint": _footprint(recoverability=1.0),
-        },
-        wait={"delay_cost": 5},
-        refine={"refinement_cost": 5},
-    )
-    refused = assess(_fresh(), **kwargs)
-    assert refused["decision"] == "commit"
-    assert refused["authorized"] is False
-    assert refused["reason"] == "external_approval_required"
-
-    passed = assess(_fresh(), approver="human", **kwargs)
-    assert passed["decision"] == "commit" and passed["authorized"]
-
-
-def test_every_resolution_leaves_a_durable_decision_record():
-    agent = _fresh()
-    out = assess(
-        agent,
-        commit={"expected_goal_work": 1, "footprint": _footprint(recoverability=1)},
-        wait={"preservation_value": 2},
-        refine={"refinement_cost": 3},
-    )
-    record = out["record"]
-    assert agent.s.node(record)["type"] == "CommitDecision"
-    dumped = agent.s.graph_to_dict()
-    assert any(n["type"] == "CommitDecision" for n in dumped["nodes"])
-
-
-def test_general_commitment_choke_point_delegates_to_graph_decision():
-    agent = _fresh()
-    result = commit_gate(agent, {
-        "kind": "world_action",
-        "thermodynamic": {
-            "commit": {
-                "expected_goal_work": 9,
-                "footprint": _footprint(recoverability=1),
-            },
-            "wait": {"delay_cost": 2},
-            "refine": {"refinement_cost": 2},
-        },
-    })
-    assert result["decision"] == "commit"
-    assert result["allowed"] is True
-    assert result["record"] is not None
-
-
-def test_busy_graph_history_cannot_alias_a_new_context_candidate_set():
-    """A decided context must not poison a later unique graph selection.
-
-    This is deliberately a persistent/busy graph rather than a fresh-agent
-    happy path.  The scheduler used to cache the selector's Filter from only
-    its predicate variables, omitting ``ctx`` from the Filter source.  The
-    first context's candidates could then be reused for the second context,
-    producing ``no_unique_decision`` despite distinct new scores.
-    """
-    agent = _fresh()
-    historical = agent.s.add_node("DecisionContext", {
-        "status": "decided", "decided": 1.0, "decision": "commit",
-    })
-    for kind, score in (("wait", -0.1), ("refine", 0.3), ("commit", 1.1)):
-        option = agent.s.add_node("CommitOption", {
-            "name": f"historical_{kind}",
-            "decision_kind": kind,
-            "hard_veto": 0.0,
-            "chosen": 1.0 if kind == "commit" else 0.0,
-            "net_value": score,
-        })
-        agent.inner.add_edge_unchecked(historical, "has_candidate", option)
-
-    out = assess(
-        agent,
-        commit={
-            "expected_goal_work": 1.25,
-            "footprint": _footprint(recoverability=1.0),
-        },
-        wait={"delay_cost": 0.1},
-        refine={
-            "expected_information_gain": 0.5,
-            "decision_relevance": 1.0,
-            "refinement_cost": 0.2,
-        },
-    )
-
-    assert {
-        kind: agent.s.node(node)["attrs"]["net_value"]
-        for kind, node in out["alternatives"].items()
-    } == pytest.approx({"wait": -0.1, "refine": 0.3, "commit": 1.25})
-    assert out["decision"] == "commit"
-    assert out["authorized"] is True
+def test_topology_only_escape_is_not_hidden_by_zero_width():
+ p=_p(projected_tube=[_slice(0),_slice(1),{**_slice(2),"cells":{"core":{"weight":1,"information":0,"metadata":{}},"extra":{"weight":0,"information":0,"metadata":{}}},"links":[{"source":"core","target":"extra","information":1}]}])
+ assert evaluate_future_manifold(_m(),p).reason=="outside_future_manifold"
+ out=assess(_fresh(),manifold=_m(),wait=_c("wait"),refine=_c("refine"),commit=_c("commit",expected_goal_work=10**18,projection=p))
+ assert out["decision"]=="wait"
+def test_lower_intervention_and_ordinal_are_deterministic():
+ out=assess(_fresh(),manifold=_m(),wait=_c("wait",projection=_p(intervention_magnitude=0.1)),refine=_c("refine",expected_goal_work=10**18,projection=_p(intervention_magnitude=1)),commit=_c("commit",expected_goal_work=10**19,projection=_p(intervention_magnitude=1)))
+ assert out["decision"]=="wait"
+def test_missing_projection_or_unvalidated_direct_graph_fails_closed():
+ with pytest.raises(ValueError): assess(_fresh(),manifold=_m(),wait={},refine=_c("refine"),commit=_c("commit"))

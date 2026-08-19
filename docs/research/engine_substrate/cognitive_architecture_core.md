@@ -28,6 +28,39 @@ distinct. Only grounded perceived events may become autobiographical episodes
 or revise predictions. A status label without a verified receipt cannot drive
 adaptive value learning.
 
+## Decision and risk architecture
+
+Irreversible or externally consequential actions are represented as co-present
+graph candidates: `wait`, `refine`, and `commit`. A decision establishes a
+context-specific future manifold. When an acceptable shape is defined, each
+candidate carries a projection of that shape. When only bounds are defined,
+as in the F-16 proving-ground experiment, each candidate instead supplies its
+own projected path through the bound tube. Execution chooses the minimum sufficient
+action/intervention that preserves the defined shape or keeps the projected
+path inside the bounds; goals
+only break equal-intervention ties. Width, information loss, and time bounds
+are explicit and changes are explicit transitions. Hard safety vetoes and
+external approval remain separate, non-tradeable host boundaries. The F-16 is
+one proving ground, not the scope of the architecture.
+
+The engine computes retained, lost, and escape residuals at every projected
+time slice rather than accepting scalar caller claims. The
+time/width/information-loss triangle bounds each residual, while path or shape
+coordinates and their topology links are preserved and audited. The current gate enforces
+the applicable containment residual within each assessment, not persisted lineage across
+assessments. Manifold momentum is nonphysical cross-decision continuity when
+longitudinal callers reuse an established manifold; identity or bounds changes
+must be represented as explicit transitions by those callers.
+
+Prediction is temporally foveated. A producer starts with the dense near
+field and spends further model time only while containment remains unresolved.
+Earliest bound crossing resolves immediately. Without a defined terminal
+shape, early path retention requires the held-action transition to reach an
+exact model fixed point; otherwise a computation ceiling is a fail-closed
+limit, never evidence of retention. The projection model is the graph's
+analysis-by-synthesis model; a plant or simulator outcome may update it only
+after the selected action and is never forked for candidate evaluation.
+
 ## Core seeds
 
 - `episodic_working_memory_core` implements contextual episodic binding,

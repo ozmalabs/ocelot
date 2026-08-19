@@ -26,6 +26,7 @@ import pytest
 import substrate_rs as srs
 
 from domains.imagination import DetachedCollapse, commit_imagination, imagine, reground
+from domains.shape_tube import goal_manifold, goal_projection
 
 _WHERE_UNGROUNDED_F = {
     "type": "And", "items": [
@@ -80,6 +81,17 @@ def _fact_with_anchor(s, value: str):
 @pytest.fixture
 def scratch():
     return srs.Substrate()
+
+
+_TEST_PROJECTIONS = {
+    "commit": goal_projection("test_writeback_goal", active=True,
+                               action_count=1, intervention_magnitude=1.0),
+    "wait": goal_projection("test_writeback_goal", active=False,
+                             action_count=0, intervention_magnitude=0.0),
+    "refine": goal_projection("test_writeback_goal", active=False,
+                               action_count=1, intervention_magnitude=0.5),
+}
+_TEST_MANIFOLD = goal_manifold("test_writeback_goal")
 
 
 # ---------------------------------------------------------------------------
@@ -269,7 +281,10 @@ def test_commit_imagination_gated_and_mints_commitment(scratch):
     assert refused["written"] == []
     assert len(list(s.nodes("Commitment"))) == 1   # refusal STILL audited
 
-    allowed = commit_imagination(s, dc, rg["survivors"], approver="test-approver")
+    allowed = commit_imagination(
+        s, dc, rg["survivors"], approver="test-approver",
+        projections=_TEST_PROJECTIONS,
+        manifold=_TEST_MANIFOLD)
     assert allowed["gate"]["allowed"] is True
     assert allowed["written"]
     assert len(list(s.nodes("Commitment"))) == 2
@@ -289,8 +304,11 @@ def test_commit_imagination_denylist_refuses_even_with_approver(scratch):
         "edges": [{"src": "h", "type": "contradicts", "tgt": f.value}],
     })
     rg = reground(s, dc)
-    res = commit_imagination(s, dc, rg["survivors"], approver="anyone",
-                              policy={"denylist": ["imagination_writeback"]})
+    res = commit_imagination(
+        s, dc, rg["survivors"], approver="anyone",
+        policy={"denylist": ["imagination_writeback"]},
+        projections=_TEST_PROJECTIONS,
+        manifold=_TEST_MANIFOLD)
     assert res["gate"]["allowed"] is False
     assert res["written"] == []
 
@@ -375,5 +393,8 @@ def test_reground_and_commit_guard_missing_ids(scratch):
     s._inner.remove_node(victim)
     rg = reground(s, dc)          # must not raise
     assert victim not in rg["survivors"] and victim not in rg["discarded"]
-    res = commit_imagination(s, dc, rg["survivors"], approver="x")  # must not raise
+    res = commit_imagination(
+        s, dc, rg["survivors"], approver="x",
+        projections=_TEST_PROJECTIONS,
+        manifold=_TEST_MANIFOLD)
     assert res["gate"]["allowed"] is True

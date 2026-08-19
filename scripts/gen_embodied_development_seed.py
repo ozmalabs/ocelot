@@ -123,6 +123,16 @@ CAPABILITIES = (
         "evidence": "supported_quarter_turn",
         "ecology": "floor",
         "human_analogue": "supine_to_side_lying",
+        # Define the acceptable body-relative manifold shape so the generic
+        # order-N motor-program machinery can preserve and extend a path
+        # across actions.  This is a consequence relation, not a pose or an
+        # authored actuator sequence; analysis by synthesis still discovers
+        # which opaque effectors realize it on the situated body.
+        "desired_body_state_signature": [
+            ["support_relation", "preserved"],
+            ["orientation_change", "quarter_turn"],
+        ],
+        "desired_orientation_units": 1,
         "requires": (
             "surface_contact_mapping",
             "antigravity_segmental_control",
@@ -406,7 +416,24 @@ def verified_locomotor_frontier():
     )
 def capability_success(instance="instance", receipt="receipt"):
     kind = A(instance, "evidence_kind")
-    supported = Gt(P0(receipt, "development_post_support_count"), L(0))
+    supported = Or(
+        Gt(P0(receipt, "development_post_support_count"), L(0)),
+        # Protective support is an observed exafferent force in the actual
+        # world, not developmental permission or child motor credit.  During
+        # safe learning it legitimately satisfies the support relation; the
+        # evidence-fading rule removes it before retention competence can be
+        # demonstrated independently.
+        Eq(P0(receipt, "caregiver_protective_support_applied"), L(1)),
+    )
+    trajectory_half_turn_reached = And(
+        Not(Eq(
+            P0(instance, "trajectory_origin_orientation_class"), L(0)
+        )),
+        Eq(
+            P0(receipt, "development_post_orientation_class"),
+            Neg(P0(instance, "trajectory_origin_orientation_class")),
+        ),
+    )
     return Or(
         And(
             Eq(kind, L("spontaneous_configuration_change")),
@@ -415,7 +442,20 @@ def capability_success(instance="instance", receipt="receipt"):
         ),
         And(
             Eq(kind, L("effector_coverage")),
-            Eq(P0("episode", "development_effector_coverage_complete"), L(1)),
+            # Coverage competence is accumulated one newly exercised body
+            # affordance at a time. Requiring whole-body completeness here
+            # made every partial survey receipt fail, so a body with more
+            # effectors than the retry window could never earn progress.
+            Or(
+                Gt(
+                    P0("episode", "development_effector_covered_count"),
+                    P0(instance, "effector_coverage_scored_count"),
+                ),
+                Eq(
+                    P0("episode", "development_effector_coverage_complete"),
+                    L(1),
+                ),
+            ),
             Eq(P0(receipt, "development_configuration_changed"), L(1)),
         ),
         And(
@@ -434,7 +474,25 @@ def capability_success(instance="instance", receipt="receipt"):
         And(
             Eq(kind, L("supported_quarter_turn")),
             supported,
-            Eq(P0(receipt, "development_quarter_turn_transition"), L(1)),
+            Or(
+                Eq(
+                    P0(receipt, "development_quarter_turn_transition"),
+                    L(1),
+                ),
+                # Orientation is continuous.  A supported transition from a
+                # gravity-relative class to its antipode necessarily crosses
+                # a perpendicular (side-lying) class even when the temporal
+                # receipt aperture samples only the two endpoints.  Preserve
+                # that entailed path evidence instead of falsely treating an
+                # overshooting half-turn as zero quarter-turn evidence.
+                Eq(P0(receipt, "development_half_turn_transition"), L(1)),
+                Eq(P0(instance, "trajectory_half_turn_complete"), L(1)),
+                # Tracker and learner can match on the same fixpoint pass.
+                # Read this receipt against the retained origin directly so
+                # the boundary is not lost to a one-pass attribute-update
+                # race after the learner advances its receipt sequence.
+                trajectory_half_turn_reached,
+            ),
         ),
         And(
             Eq(kind, L("supported_half_turn")),
@@ -442,6 +500,7 @@ def capability_success(instance="instance", receipt="receipt"):
             Or(
                 Eq(P0(receipt, "development_half_turn_transition"), L(1)),
                 Eq(P0(instance, "trajectory_half_turn_complete"), L(1)),
+                trajectory_half_turn_reached,
             ),
         ),
         And(
@@ -669,6 +728,7 @@ def instantiate_capability_rule():
                 "attempt_count": 0,
                 "success_count": 0,
                 "failure_count": 0,
+                "effector_coverage_scored_count": 0,
                 "retention_count": 0,
                 "last_receipt_seq": 0,
                 "activation_receipt_seq": 0,
@@ -1858,12 +1918,14 @@ def release_dominated_process_at_checkin_rule():
         "where": And(
             Eq(A("process", "status"), L("replan_required")),
             Eq(P0("process", "continuation_authority"), L(0)),
+            Eq(P0("process", "replan_release_complete"), L(0)),
         ),
         "effects": [
             ["del_edge", "episode", "has_active_embodied_developmental_capability", "instance"],
             ["del_edge", "plan", "has_selected_learning_plan_step", "step"],
             ["set_attr", "step", "status", "meta_suspended"],
             ["set_attr", "instance", "status", "meta_suspended"],
+            ["set_attr", "process", "replan_release_complete", 1],
             ["set_attr", "plan", "replan_count", T(Plus(
                 P0("plan", "replan_count"), L(1)
             ))],
@@ -2342,6 +2404,16 @@ def learn_receipt_rule():
                 L(0), Minus(window, attempts),
             ))],
             ["set_attr", "instance", "novelty", T(success)],
+            ["set_attr", "instance", "effector_coverage_scored_count", T(
+                If(
+                    Eq(
+                        A("instance", "evidence_kind"),
+                        L("effector_coverage"),
+                    ),
+                    P0("episode", "development_effector_covered_count"),
+                    P0("instance", "effector_coverage_scored_count"),
+                )
+            )],
             ["set_attr", "instance", "last_receipt_seq", T(
                 P0("receipt", "development_receipt_seq")
             )],
@@ -2849,6 +2921,10 @@ def open_retention_rule():
             # with it, a body whose window cannot be derived simply never opens
             # retention, which is the honest failure rather than a silent pass.
             declared("episode", "development_evidence_window"),
+            Or(
+                Not(Eq(A("instance", "evidence_kind"), L("effector_coverage"))),
+                Eq(P0("episode", "development_effector_coverage_complete"), L(1)),
+            ),
             Not(Lt(P0("instance", "attempt_count"),
                    P0("episode", "development_evidence_window"))),
             Not(Lt(P0("instance", "success_count"),
@@ -3086,6 +3162,9 @@ def store_partial_capability_experience_rule():
                 "attempt_count": T(P0("instance", "attempt_count")),
                 "success_count": T(P0("instance", "success_count")),
                 "failure_count": T(P0("instance", "failure_count")),
+                "effector_coverage_scored_count": T(P0(
+                    "instance", "effector_coverage_scored_count"
+                )),
                 "retention_pending": T(If(
                     Eq(A("instance", "status"), L("retention_due")),
                     L(1), L(0),
@@ -3141,6 +3220,8 @@ def update_partial_capability_experience_rule():
              T(P0("instance", "success_count"))],
             ["set_attr", "experience_memory", "failure_count",
              T(P0("instance", "failure_count"))],
+            ["set_attr", "experience_memory", "effector_coverage_scored_count",
+             T(P0("instance", "effector_coverage_scored_count"))],
             ["set_attr", "experience_memory", "retention_pending", T(If(
                 Eq(A("instance", "status"), L("retention_due")),
                 L(1), L(0),
@@ -3240,6 +3321,8 @@ def recall_exact_body_experience_rule():
              T(P0("experience_memory", "success_count"))],
             ["set_attr", "instance", "failure_count",
              T(P0("experience_memory", "failure_count"))],
+            ["set_attr", "instance", "effector_coverage_scored_count",
+             T(P0("experience_memory", "effector_coverage_scored_count"))],
             ["set_attr", "instance", "q",
              T(P0("experience_memory", "failure_count"))],
             ["set_attr", "instance", "status", T(If(
@@ -3771,8 +3854,8 @@ def effector_survey_coverage_rules():
     THE BODY ITSELF DECLARES has been exercised by at least one grounded
     receipt. Both halves are already in the graph and neither is invented here:
 
-      * declared -- `raw_body -has_opaque_embodied_actuator_affordance->`, the
-        body's own published actuator affordances;
+      * declared -- `body -has_opaque_embodied_actuator_affordance->`, the
+        body schema's published actuator affordances;
       * exercised -- a candidate that `models_opaque_affordance` an affordance
         and carries `experience_units > 0`, which is incremented only by
         `emb_retire_settled_motor_selection_and_reopen_pareto_frontier` against
@@ -3788,7 +3871,11 @@ def effector_survey_coverage_rules():
     is recorded as UNMEASURABLE rather than complete. A body with no declared
     effectors is not fully surveyed; there is nothing to survey it against.
     """
-    affordances = Neighbours("raw_body", "has_opaque_embodied_actuator_affordance")
+    affordances = Filter(
+        Neighbours("body", "has_opaque_embodied_actuator_affordance"),
+        "survey_affordance",
+        Eq(P0("survey_affordance", "tonic_default"), L(0)),
+    )
     declared_count = P0("episode", "development_effector_declared_count")
     covered_count = P0("episode", "development_effector_covered_count")
     return [
@@ -3805,14 +3892,31 @@ def effector_survey_coverage_rules():
                 "the candidate set, so re-firing rewrites the same flag."
             ),
             "match": [
-                ["raw_body", "has_opaque_embodied_actuator_affordance", "affordance"],
+                ["body", "has_opaque_embodied_actuator_affordance", "affordance"],
             ],
             "where": L(True),
             "effects": [
                 ["set_attr", "affordance", "exercised", T(If(
-                    Exists(InNeighbours("affordance", "models_opaque_affordance"),
-                           "candidate",
-                           Gt(P0("candidate", "experience_units"), L(0))),
+                    Or(
+                        Exists(
+                            InNeighbours(
+                                "affordance", "models_opaque_affordance"
+                            ),
+                            "candidate",
+                            Gt(P0("candidate", "experience_units"), L(0)),
+                        ),
+                        Exists(
+                            InNeighbours(
+                                "affordance",
+                                "exercises_opaque_embodied_actuator_affordance",
+                            ),
+                            "receipt",
+                            And(
+                                Eq(P0("receipt", "causal_receipt_closed"), L(1)),
+                                Eq(P0("receipt", "development_receipt_closed"), L(1)),
+                            ),
+                        ),
+                    ),
                     L(1), L(0),
                 ))],
             ],
@@ -3832,7 +3936,6 @@ def effector_survey_coverage_rules():
             "match": [
                 ["agent", "has_embodied_development_episode", "episode"],
                 ["episode", "has_embodied_body_schema", "body"],
-                ["body", "grounded_in_embodied_raw_body", "raw_body"],
             ],
             "where": L(True),
             "effects": [

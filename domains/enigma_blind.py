@@ -121,8 +121,10 @@ def index_of_coincidence(seq: List[int]) -> float:
 # need the rotor+reflector path; the Enigma model already does this with an
 # empty plugboard, so we reuse it directly (donkey-clean: same forward model).
 # ---------------------------------------------------------------------------
-def decrypt_no_plug(order, ring, start, ct_idx: List[int]) -> List[int]:
-    eng = Enigma.build(list(order), ring, start, "")
+def decrypt_no_plug(order, ring, start, ct_idx: List[int],
+                   reflector=REFLECTOR_B, stationary_rotors=None) -> List[int]:
+    eng = Enigma.build(list(order), tuple(ring), tuple(start), "", reflector,
+                       stationary_rotors)
     out = []
     for x in ct_idx:
         out.append(eng._encrypt_char(x))
@@ -130,9 +132,11 @@ def decrypt_no_plug(order, ring, start, ct_idx: List[int]) -> List[int]:
 
 
 def decrypt_with_plug(order, ring, start, plug_map: List[int],
-                      ct_idx: List[int]) -> List[int]:
+                      ct_idx: List[int], reflector=REFLECTOR_B,
+                      stationary_rotors=None) -> List[int]:
     """Decrypt with an explicit plugboard map (list[int] involution)."""
-    eng = Enigma.build(list(order), ring, start, "")
+    eng = Enigma.build(list(order), tuple(ring), tuple(start), "", reflector,
+                       stationary_rotors)
     eng.plugboard._map = plug_map
     out = []
     for x in ct_idx:
@@ -147,20 +151,16 @@ def decrypt_with_plug(order, ring, start, plug_map: List[int],
 # pure array indexing. Reuses the SAME forward model (Enigma stepped, path read
 # off the frozen rotor state) — donkey-clean, no new crypto.
 # ---------------------------------------------------------------------------
-def scrambler_perms(order, ring, start, length: int) -> List[List[int]]:
-    eng = Enigma.build(list(order), ring, start, "")
-    L, M, R = eng.rotors
-    refl = eng.reflector
+def scrambler_perms(order, ring, start, length: int,
+                    reflector=REFLECTOR_B, stationary_rotors=None) -> List[List[int]]:
+    eng = Enigma.build(list(order), tuple(ring), tuple(start), "", reflector,
+                       stationary_rotors)
     perms = []
     for _ in range(length):
         eng._step()
         row = [0] * N
         for a in range(N):
-            c = a
-            c = R.encode_fwd(c); c = M.encode_fwd(c); c = L.encode_fwd(c)
-            c = refl[c]
-            c = L.encode_bwd(c); c = M.encode_bwd(c); c = R.encode_bwd(c)
-            row[a] = c
+            row[a] = eng._scramble(a)
         perms.append(row)
     return perms
 
@@ -179,9 +179,11 @@ def decrypt_fast(perms: List[List[int]], plug_map: List[int],
 # NUMPY FAST PATH (exact-equivalent, just vectorised). Used to make the
 # plugboard hill-climb's millions of scores tractable on a CPU.
 # ---------------------------------------------------------------------------
-def np_perms(order, ring, start, length: int):
+def np_perms(order, ring, start, length: int, reflector=REFLECTOR_B,
+             stationary_rotors=None):
     import numpy as np
-    return np.asarray(scrambler_perms(order, ring, start, length), dtype=np.int64)
+    return np.asarray(scrambler_perms(order, ring, start, length, reflector,
+                                      stationary_rotors), dtype=np.int64)
 
 
 def np_score(E_np, plug_map_np, ct_np, table):
@@ -380,7 +382,8 @@ def stage_b(perms, ct_idx: List[int], lm: QuadgramLM,
 # Full blind recovery: Stage A -> Stage B over top rotor candidates.
 # ---------------------------------------------------------------------------
 def recover_blind(ciphertext: str, lm: QuadgramLM, rotor_pool=("I", "II", "III"),
-                  ring=(0, 0, 0), topk_ioc: int = 300, sharpen_pairs: int = 3,
+                  ring=None, rotor_count: int = 3, reflector=REFLECTOR_B,
+                  stationary_rotors=None, topk_ioc: int = 300, sharpen_pairs: int = 3,
                   topk_rotor: int = 3, max_pairs: int = 10, n_starts: int = 6,
                   rng: Optional[random.Random] = None):
     """Blind ciphertext-only recovery — the full two-stage attack.
@@ -402,8 +405,18 @@ def recover_blind(ciphertext: str, lm: QuadgramLM, rotor_pool=("I", "II", "III")
     L = len(ct_idx)
     ct_np = np.asarray(ct_idx, dtype=np.int64)
     table = lm.dense_table()
-    orders = list(itertools.permutations(rotor_pool))
-    brute = len(orders) * (N ** 3)
+    orders = list(itertools.permutations(rotor_pool, rotor_count))
+    if ring is None:
+        ring = (0,) * rotor_count
+    if len(ring) != rotor_count:
+        raise ValueError("ring must contain one setting per searched rotor")
+    if stationary_rotors is None and rotor_count == 4:
+        stationary_rotors = 1
+    if rotor_count == 4 and stationary_rotors == 1:
+        # An M4 key has a Greek stationary rotor in the left slot. Do not
+        # spend the search on invalid permutations with a stepping rotor there.
+        orders = [order for order in orders if order[0] in {"BETA", "GAMMA"}]
+    brute = len(orders) * (N ** rotor_count)
 
     # --- A1: coarse prune. The full 10-pair plugboard scrambles 20/26 letters,
     # so NEITHER IoC NOR the no-plug n-gram alone reliably ranks the true rotor
@@ -413,14 +426,12 @@ def recover_blind(ciphertext: str, lm: QuadgramLM, rotor_pool=("I", "II", "III")
     ioc_rows = []
     a_eval = 0
     for order in orders:
-        for s0 in range(N):
-            for s1 in range(N):
-                for s2 in range(N):
-                    start = (s0, s1, s2)
-                    dec = decrypt_no_plug(order, ring, start, ct_idx)
-                    ioc_rows.append((index_of_coincidence(dec), lm.score(dec),
-                                     order, start))
-                    a_eval += 1
+        for start in itertools.product(range(N), repeat=rotor_count):
+            dec = decrypt_no_plug(order, ring, start, ct_idx, reflector,
+                                  stationary_rotors)
+            ioc_rows.append((index_of_coincidence(dec), lm.score(dec),
+                             order, start))
+            a_eval += 1
     by_ioc = sorted(ioc_rows, key=lambda x: -x[0])[:topk_ioc]
     by_q = sorted(ioc_rows, key=lambda x: -x[1])[:topk_ioc]
     seen = set()
@@ -436,7 +447,7 @@ def recover_blind(ciphertext: str, lm: QuadgramLM, rotor_pool=("I", "II", "III")
     sharpened = []
     sharpen_evals = 0
     for ioc, order, start in survivors:
-        E_np = np_perms(order, ring, start, L)
+        E_np = np_perms(order, ring, start, L, reflector, stationary_rotors)
         m, sc, ev = hill_climb_np(E_np, ct_np, table, max_pairs=sharpen_pairs)
         sharpen_evals += ev
         sharpened.append((sc, ioc, order, start))
@@ -450,7 +461,7 @@ def recover_blind(ciphertext: str, lm: QuadgramLM, rotor_pool=("I", "II", "III")
     total_rescues = 0
     stalls = 0
     for (q, ioc, order, start) in cands:
-        E_np = np_perms(order, ring, start, L)
+        E_np = np_perms(order, ring, start, L, reflector, stationary_rotors)
         bmap, bscore, b_eval, rescues, empty_score = stage_b_np(
             E_np, ct_np, table, max_pairs=max_pairs, n_starts=n_starts, rng=rng)
         total_b_eval += b_eval
@@ -459,7 +470,8 @@ def recover_blind(ciphertext: str, lm: QuadgramLM, rotor_pool=("I", "II", "III")
             stalls += 1
         if bscore > best_score:
             best_score = bscore
-            best = dict(order=order, start=start, ring=ring,
+            best = dict(order=order, start=start, ring=ring, reflector=reflector,
+                        stationary_rotors=stationary_rotors,
                         plug_map=bmap, score=bscore, ioc=ioc)
     pairs = _pairs_of(best["plug_map"])
     plug_str = " ".join(chr(a + A) + chr(b + A) for a, b in pairs)

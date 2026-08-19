@@ -515,6 +515,7 @@ def scan_and_fetch(agent, *, http_get=None, max_bytes: int = 2_000_000,
             continue
 
         from domains.information_commitment import assess
+        from domains.shape_tube import goal_manifold, goal_projection
         gate = assess(
             agent,
             commit={
@@ -522,18 +523,12 @@ def scan_and_fetch(agent, *, http_get=None, max_bytes: int = 2_000_000,
                 "expected_information_gain": float(
                     a.get("expected_information_gain", 1.0)),
                 "expected_goal_work": float(a.get("expected_goal_work", 0.0)),
-                "uncertainty": float(a.get("consequence_uncertainty", 0.0)),
-                "footprint": {
-                    "deleted_facts": 0.0, "overwritten_facts": 0.0,
-                    "recoverability": 1.0,
-                    "externality": float(a.get("externality_cost", 0.0)),
-                },
+                "projection": goal_projection("http_fetch_goal", active=True, action_count=1, intervention_magnitude=1.0),
             },
-            wait={
-                "preservation_value": 0.0,
-                "delay_cost": float(a.get("delay_cost", 0.1)),
-            },
-            refine={"refinement_cost": 1.0},
+            wait={"delay_cost": float(a.get("delay_cost", 0.1)),
+                  "projection": goal_projection("http_fetch_goal", active=False, action_count=0, intervention_magnitude=0.0)},
+            refine={"refinement_cost": 1.0, "projection": goal_projection("http_fetch_goal", active=False, action_count=1, intervention_magnitude=0.5)},
+            manifold=goal_manifold("http_fetch_goal"),
         )
         I.set_attr(req, "commit_decision", gate["decision"] or "undetermined")
         if gate["decision"] != "commit" or not gate["authorized"]:

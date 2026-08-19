@@ -254,41 +254,13 @@
       "a": {
        "type": "Count",
        "source": {
-        "type": "Filter",
-        "source": {
-         "type": "Neighbours",
-         "node": {
-          "type": "Var",
-          "name": "owner"
-         },
-         "edge_type": "has_embodied_program_trajectory",
-         "any_type": false
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "owner"
         },
-        "var_name": "situated_trajectory",
-        "predicate": {
-         "type": "Exists",
-         "source": {
-          "type": "Neighbours",
-          "node": {
-           "type": "Var",
-           "name": "situated_trajectory"
-          },
-          "edge_type": "starts_from_embodied_program",
-          "any_type": false
-         },
-         "var_name": "trajectory_origin",
-         "predicate": {
-          "type": "Eq",
-          "a": {
-           "type": "Var",
-           "name": "trajectory_origin"
-          },
-          "b": {
-           "type": "Var",
-           "name": "current_program"
-          }
-         }
-        }
+        "edge_type": "has_embodied_program_trajectory",
+        "any_type": false
        }
       },
       "b": {

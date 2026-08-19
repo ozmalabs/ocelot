@@ -2,6 +2,7 @@
 from __future__ import annotations
 from substrate.seed_loader import manifest_for
 from domains.information_commitment import assess
+from domains.shape_tube import goal_manifold, goal_projection
 
 
 def _control_attrs(spec, ordinal):
@@ -84,18 +85,18 @@ class ControlBundleAdapter:
         tokens=tuple(self.s.node(c)["attrs"]["token"]
                      for c in self.inner.neighbours(bundle,"includes_control"))
         footprint=footprint_fn(tokens)
+        manifold = goal_manifold("control_bundle_goal")
         gate=assess(self.agent,
             commit={"name":"control_bundle",
                     "expected_goal_work":float(footprint.get("expected_goal_work",1.0)),
                     "expected_information_gain":float(footprint.get("expected_information_gain",0.0)),
-                    "uncertainty":float(footprint.get("uncertainty",0.0)),
-                    "footprint":{k:float(footprint.get(k,v)) for k,v in (
-                        ("deleted_facts",0.0),("overwritten_facts",0.0),
-                        ("recoverability",0.0),("externality",0.0))}},
-            wait={"delay_cost":0.1},
+                    "projection": goal_projection("control_bundle_goal", active=True, action_count=1, intervention_magnitude=1.0)},
+            wait={"delay_cost":0.1, "projection": goal_projection("control_bundle_goal", active=False, action_count=0, intervention_magnitude=0.0)},
             refine={"expected_information_gain":max(
                         0.0,float(footprint.get("uncertainty",0.0))),
-                    "decision_relevance":1.0,"refinement_cost":0.2},
+                    "decision_relevance":1.0,"refinement_cost":0.2,
+                    "projection": goal_projection("control_bundle_goal", active=False, action_count=1, intervention_magnitude=0.5)},
+            manifold=manifold,
             retain_trace=False)
         status="authorized" if gate["decision"]=="commit" and gate["authorized"] else "deferred"
         self.inner.set_attr(intent,"status",status)

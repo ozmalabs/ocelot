@@ -99,6 +99,32 @@ def _issued_trial(agent: WorldAdapter, episode: Any, request_seq: int) -> Any:
 
 
 def _trial_tokens(agent: WorldAdapter, trial: Any) -> tuple[str, ...]:
+    # Optional graph encoders and the body-only fallback publish final opaque
+    # command nodes.  Project those directly when present; this is a token
+    # boundary only, not a host-side control or adaptation decision.
+    for edge_type in ("has_temporal_command", "has_embodied_motor_command"):
+        commands = list(agent.inner.neighbours(trial, edge_type))
+        if not commands:
+            continue
+        commands.sort(
+            key=lambda command: (
+                float(agent.s.node(command)["attrs"]["actuator_group"]),
+                str(agent.s.node(command)["attrs"]["token"]),
+            )
+        )
+        groups = {
+            float(agent.s.node(command)["attrs"]["actuator_group"])
+            for command in commands
+        }
+        if len(groups) != len(commands):
+            raise RuntimeError(
+                "graph program commands one effector group more than once"
+            )
+        return tuple(
+            str(agent.s.node(command)["attrs"]["token"])
+            for command in commands
+        )
+
     members = list(
         agent.inner.neighbours(trial, "commands_embodied_effector_model")
     )

@@ -42,6 +42,27 @@ mutations, stop — you are writing the wrong thing.
 
 This file overrides any contrary habit. Read it before you write code.
 
+## Engine-wide decision and risk boundary
+
+For irreversible or externally consequential actions, graph cognition
+establishes a context-specific future manifold as a time-indexed shape tube and
+compares `wait`, `refine`, and `commit` projections against that exact tube.
+Execution chooses the minimum sufficient action/intervention that keeps the
+projected tube inside it; goals break equal-intervention ties. Width,
+information loss, and time bounds are explicit contract fields, and changing
+them is an explicit transition. Hard safety vetoes and external approval remain
+non-tradeable host boundaries. The F-16 is one proving ground, not the
+definition of this architecture.
+
+The engine computes retained, lost, and escape residual shapes at every
+projected time slice; callers do not replace that audit with scalar claims.
+The time/width/information-loss triangle bounds the residual, while full cells
+and topology links remain preserved and auditable. The current gate enforces
+this shape residual within each assessment; it does not persist lineage across
+assessments. Manifold momentum is nonphysical continuity when longitudinal
+callers reuse an established manifold, and those callers must represent any
+identity or bounds change as an explicit transition.
+
 ## The split
 
 ```

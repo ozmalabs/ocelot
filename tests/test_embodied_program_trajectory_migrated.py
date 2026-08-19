@@ -129,6 +129,26 @@ def test_graph_budget_alone_opens_order_two_path_and_changes_selection():
     assert selected == depth_two
 
 
+def test_moving_current_program_does_not_fragment_situated_trajectory():
+    agent, owner, trajectory, _ = _fixture(2, ())
+    programs = [
+        agent.s.add_node("FixtureProgram", {"ordinal": ordinal})
+        for ordinal in (10, 11)
+    ]
+    current = agent.inner.neighbours(owner, "has_current_embodied_program")[0]
+    agent.inner.remove_edge(owner, "has_current_embodied_program", current)
+    _edge(agent, owner, "has_current_embodied_program", programs[0])
+    agent.tick()
+    agent.inner.remove_edge(
+        owner, "has_current_embodied_program", programs[0]
+    )
+    _edge(agent, owner, "has_current_embodied_program", programs[1])
+    agent.tick()
+    assert agent.inner.neighbours(
+        owner, "has_embodied_program_trajectory"
+    ) == [trajectory]
+
+
 def test_pareto_refutes_only_dominated_paths_and_keeps_tradeoffs():
     agent, _, trajectory, transitions = _fixture(1, (
         {"source": 0, "target": 1, "pre_x": 0, "post_x": 10,

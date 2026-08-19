@@ -138,6 +138,52 @@ def _inverse_control_fixture() -> tuple[WorldAdapter, object]:
     return agent, episode
 
 
+def test_humanoid_future_manifold_gate_rejects_unsafe_candidate_but_off_is_legacy():
+    """Whole-body fallback is multi-frame only when explicitly enabled."""
+    agent, episode = _inverse_control_fixture()
+    policy = _one_node(agent, "HumanoidPolicy")
+    candidate = next(
+        model
+        for model in agent.inner.neighbours(
+            episode, "has_humanoid_phase_action_model"
+        )
+        if agent.s.node(model)["attrs"]["token"] == "motor_a"
+        and agent.s.node(model)["attrs"]["support_phase"] == 0.0
+    )
+
+    # The legacy composer accepts the selected support-local primitive.
+    term = {
+        "type": "MotorCompose",
+        "episode": {"type": "Var", "name": "ep"},
+        "policy": {"type": "Var", "name": "po"},
+        "candidate": {"type": "Var", "name": "candidate"},
+    }
+    bindings = {"ep": episode, "po": policy, "candidate": candidate}
+    assert agent.inner.evaluate(term, bindings)
+
+    # Supply complete learned anchors/bounds, then make the selected primitive
+    # leave the manifold before the final foveated frame.  The opt-in path
+    # must reject it rather than silently falling back to the legacy choice.
+    for key in (
+        "manifold_bound_dzx", "manifold_bound_dzy", "manifold_bound_dwx",
+        "manifold_bound_dwy", "manifold_bound_dvx", "manifold_bound_dvy",
+        "manifold_bound_dvz",
+    ):
+        agent.inner.set_attr(episode, key, 1.0)
+    agent.inner.set_attr(episode, "manifold_bounds_ready", 1.0)
+    for key in (
+        "anchor_z_x", "anchor_z_y", "anchor_wx", "anchor_wy",
+        "anchor_vx", "anchor_vy", "anchor_vz", "anchor_lateral_offset",
+    ):
+        agent.inner.set_attr(candidate, key, 0.0)
+    # It stays inside the bound at the sparse intermediate frame 8/10 and
+    # escapes only at the final frame, so a one-frame check would accept it.
+    agent.inner.set_attr(candidate, "mean_dzx", 1.1)
+    agent.inner.set_attr(policy, "future_manifold_enabled", 1.0)
+    agent.inner.set_attr(policy, "future_manifold_temporal_anchors_enabled", 1.0)
+    assert not agent.inner.evaluate(term, bindings)
+
+
 def _enable_recovery_measurements(agent, episode) -> None:
     for key, value in {
         "response_horizon_initialized": 1.0,

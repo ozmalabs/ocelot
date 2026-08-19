@@ -51,6 +51,7 @@
 | [`frication_raw.md`](frication_raw.md) | Frication channel WITHOUT HPSS — the raw-STFT revival |
 | [`frication_split.md`](frication_split.md) | Frication split — HPSS harmonic/percussive + a frication channel, fused by weighted-admissibility |
 | [`full_enigma_recovery.md`](full_enigma_recovery.md) | FULL-ENIGMA ciphertext-only (blind) recovery — credibility-ladder rung |
+| [`enigma_upgrade.md`](enigma_upgrade.md) | Enigma upgrade — current model and solver boundary |
 | [`function_shape_prior_work.md`](function_shape_prior_work.md) | function_shape — narrowing the search area via published prior work |
 | [`fusion_weighting.md`](fusion_weighting.md) | Fusion weighting — per-context reliability weighting of the multi-pronged fusion |
 | [`fuzzy_compare_smoothing.md`](fuzzy_compare_smoothing.md) | Fuzzy (smoothed, multi-scale) compare — toy low-res aliasing AND audio domain gap |

@@ -11,10 +11,10 @@
 //! comparisons everywhere, SmallVec env, contiguous arena) come from
 //! the Rust side; behaviour stays identical.
 
+use crate::argmin_tie;
 use crate::ext::Counters;
 use crate::graph::{NodeID, TypedGraph};
 use crate::selector_audit;
-use crate::argmin_tie;
 use crate::sym::{Interner, Sym};
 use crate::value::{cmp_value, SurfaceKind, Value};
 use rustc_hash::FxHashMap;
@@ -31,10 +31,19 @@ pub struct TermIdx(pub u32);
 #[derive(Clone, Debug)]
 pub enum TermNode {
     // --- bindings & access ---
-    Var { name: Sym },
-    Lit { value: Value },
-    TypeOf { node: TermIdx },
-    Attr { node: TermIdx, key: Sym },
+    Var {
+        name: Sym,
+    },
+    Lit {
+        value: Value,
+    },
+    TypeOf {
+        node: TermIdx,
+    },
+    Attr {
+        node: TermIdx,
+        key: Sym,
+    },
 
     /// Effectful tool-dispatch boundary — the engine's first effectful
     /// boundary Term. `tool` is an interned tool name (mirrors `Attr`'s
@@ -44,46 +53,123 @@ pub enum TermNode {
     /// engine-evaluated Term-tree (e.g. `Plus(UseTool("gcd",[48,36]), 1)`).
     /// Missing handler / handler error degrades to a safe default
     /// (`Int(0)`) — the evaluator never panics on the tool boundary.
-    UseTool { tool: Sym, args: Vec<TermIdx> },
+    UseTool {
+        tool: Sym,
+        args: Vec<TermIdx>,
+    },
 
     // --- collections ---
-    SetT { items: Vec<TermIdx> },
-    In { member: TermIdx, container: TermIdx },
+    SetT {
+        items: Vec<TermIdx>,
+    },
+    In {
+        member: TermIdx,
+        container: TermIdx,
+    },
 
     // --- comparators ---
-    Eq { a: TermIdx, b: TermIdx },
-    Lt { a: TermIdx, b: TermIdx },
-    Lte { a: TermIdx, b: TermIdx },
-    Gt { a: TermIdx, b: TermIdx },
-    Gte { a: TermIdx, b: TermIdx },
+    Eq {
+        a: TermIdx,
+        b: TermIdx,
+    },
+    Lt {
+        a: TermIdx,
+        b: TermIdx,
+    },
+    Lte {
+        a: TermIdx,
+        b: TermIdx,
+    },
+    Gt {
+        a: TermIdx,
+        b: TermIdx,
+    },
+    Gte {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     // --- graph traversal ---
     /// `edge_type` is `Sym::default()` to mean "any edge type".
-    ReachableFrom { node: TermIdx, edge_type: Sym, any_type: bool },
+    ReachableFrom {
+        node: TermIdx,
+        edge_type: Sym,
+        any_type: bool,
+    },
 
-    Neighbours { node: TermIdx, edge_type: Sym, any_type: bool },
+    Neighbours {
+        node: TermIdx,
+        edge_type: Sym,
+        any_type: bool,
+    },
     /// Slide-neighbours: from a grid cell, the up-to-4 cells exactly `slide` clear-floor steps away
     /// along the `neighbour` lattice (value==ground each step). On-demand oracle for foveated nav.
-    SlideNeighbours { cell: TermIdx, slide: TermIdx, ground: TermIdx },
-    InNeighbours { node: TermIdx, edge_type: Sym, any_type: bool },
-    MapNeighbours { source: TermIdx, edge_type: Sym, any_type: bool },
+    SlideNeighbours {
+        cell: TermIdx,
+        slide: TermIdx,
+        ground: TermIdx,
+    },
+    InNeighbours {
+        node: TermIdx,
+        edge_type: Sym,
+        any_type: bool,
+    },
+    MapNeighbours {
+        source: TermIdx,
+        edge_type: Sym,
+        any_type: bool,
+    },
 
     // --- reductions ---
-    Count { source: TermIdx },
-    Filter { source: TermIdx, var_name: Sym, predicate: TermIdx },
+    Count {
+        source: TermIdx,
+    },
+    Filter {
+        source: TermIdx,
+        var_name: Sym,
+        predicate: TermIdx,
+    },
     /// Ordered (list) twin of Filter — preserves source order + duplicates,
     /// returns a **`Value::List`** (ARC6 value layer; it returned a `Tuple`
     /// before there was a list). Its own reason for existing is to be
     /// "the faithful target for a Python LIST comprehension's `if`"
     /// (Filter returns a set), and in CPython `[x for x in t if p]` is a
     /// LIST even when `t` is a tuple. Added via the Layer-B self-extension loop.
-    FilterList { source: TermIdx, var_name: Sym, predicate: TermIdx },
-    Exists { source: TermIdx, var_name: Sym, predicate: TermIdx },
-    Sum { source: TermIdx, var_name: Sym, value: TermIdx },
-    Prod { source: TermIdx, var_name: Sym, value: TermIdx },
-    MinOver { source: TermIdx, var_name: Sym, value: TermIdx, default: Option<TermIdx> },
-    MaxOver { source: TermIdx, var_name: Sym, value: TermIdx, default: Option<TermIdx> },
-    Pick { source: TermIdx },
+    FilterList {
+        source: TermIdx,
+        var_name: Sym,
+        predicate: TermIdx,
+    },
+    Exists {
+        source: TermIdx,
+        var_name: Sym,
+        predicate: TermIdx,
+    },
+    Sum {
+        source: TermIdx,
+        var_name: Sym,
+        value: TermIdx,
+    },
+    Prod {
+        source: TermIdx,
+        var_name: Sym,
+        value: TermIdx,
+    },
+    MinOver {
+        source: TermIdx,
+        var_name: Sym,
+        value: TermIdx,
+        default: Option<TermIdx>,
+    },
+    MaxOver {
+        source: TermIdx,
+        var_name: Sym,
+        value: TermIdx,
+        default: Option<TermIdx>,
+    },
+    Pick {
+        source: TermIdx,
+    },
     /// PickUnique: Pick, but LOUD when the selection is AMBIGUOUS.
     ///
     /// `Pick` returns `iter().next()` — an arbitrary element — so a config read
@@ -96,30 +182,53 @@ pub enum TermNode {
     ///
     /// 0 or 1 elements behave EXACTLY as `Pick` (None / the element), so every
     /// committed result on a well-formed graph is byte-identical; >1 panics.
-    PickUnique { source: TermIdx },
+    PickUnique {
+        source: TermIdx,
+    },
 
     /// Tokenize a string by whitespace; returns Value::Tuple
     /// of (start, byte_len) Int pairs. Agent-built via babble loop.
-    Tokenize { text: TermIdx },
-    MorphHead { text: TermIdx },
-    MorphTail { text: TermIdx },
-    FinalToken { text: TermIdx },
+    Tokenize {
+        text: TermIdx,
+    },
+    MorphHead {
+        text: TermIdx,
+    },
+    MorphTail {
+        text: TermIdx,
+    },
+    FinalToken {
+        text: TermIdx,
+    },
     /// Tokenize2 — same as Tokenize. Agent-built via babble loop.
-    Tokenize2 { text: TermIdx },
+    Tokenize2 {
+        text: TermIdx,
+    },
     /// Read a file at `path` (a Str). Returns Value::Surface(Text, ...)
     /// with the file contents on success, or Value::None on any error.
     /// Agent-built via babble loop.
-    ReadFile { path: TermIdx },
+    ReadFile {
+        path: TermIdx,
+    },
     /// Find `needle` in `haystack` (both Strs). Returns Value::Int with the
     /// byte offset, or -1 if not found / non-string inputs. Agent-built.
-    StringIndexOf { haystack: TermIdx, needle: TermIdx },
+    StringIndexOf {
+        haystack: TermIdx,
+        needle: TermIdx,
+    },
     /// Byte-slice `s[start..end]`. `s` is a Str; start/end are Ints.
     /// Out-of-bounds clamps to 0..len. Returns Value::Surface(Text, ...).
     /// Non-string `s` returns an empty Text surface. Agent-built.
-    StringSlice { s: TermIdx, start: TermIdx, end: TermIdx },
+    StringSlice {
+        s: TermIdx,
+        start: TermIdx,
+        end: TermIdx,
+    },
     /// Concatenate Str / Surface(Text) `parts` into a single Text surface.
     /// Other value types are skipped. Agent-built via babble loop.
-    StringConcat { parts: Vec<TermIdx> },
+    StringConcat {
+        parts: Vec<TermIdx>,
+    },
 
     // -----------------------------------------------------------------
     // PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_REASSESSMENT_PREREG.md Rung 1
@@ -136,28 +245,40 @@ pub enum TermNode {
     /// pattern, inserting between every character, so no special case is
     /// needed). Non-string-like `text`/`old`/`new` -> an empty Text
     /// surface (the `StringSlice` refusal convention).
-    Replace { text: TermIdx, old: TermIdx, new: TermIdx },
+    Replace {
+        text: TermIdx,
+        old: TermIdx,
+        new: TermIdx,
+    },
     /// Python `str(value)` — coerce ANY Value to its Python-spelled
     /// string form (`prog_eval::py_str`, reused directly so this Term's
     /// spelling can never drift from the `ProgEval` interpreter's own
     /// `str()`/f-string rendering).  S5 ("Value -> string coercion", e.g.
     /// `Join` emitting `Int(4)` for a non-string element) is this Term
     /// composed with `StringConcat`.
-    Str { value: TermIdx },
+    Str {
+        value: TermIdx,
+    },
     /// `str.split(sep)` — `sep` evaluating to `Value::None` (or an
     /// empty/non-string value) falls back to Python's no-arg
     /// whitespace-split (never a trap: an enumerated candidate has no
     /// error channel, see `synth_enumerate.rs`'s module docs). Returns a
     /// `Value::List` of Surface(Text) parts, matching CPython's
     /// `str.split` list return.
-    Split { text: TermIdx, sep: TermIdx },
+    Split {
+        text: TermIdx,
+        sep: TermIdx,
+    },
     /// Count NON-OVERLAPPING occurrences of `sub` in `text`
     /// (`str.count`, ProgEval's own semantics ported directly: an empty
     /// `sub` counts as `char_count + 1`). Distinct from the already-
     /// shipped `Count` Term (sequence LENGTH, tier-0's
     /// `fix:StringAsSequence`) — this is substring occurrence counting
     /// (`STRUCTURAL_CEILING.md` task 172).
-    StrCount { text: TermIdx, sub: TermIdx },
+    StrCount {
+        text: TermIdx,
+        sub: TermIdx,
+    },
     /// Python's 2-arg `round(value, ndigits)`, round-half-to-even
     /// (`prog_eval::round_half_even_digits`, reused directly). Preserves
     /// Python's own type rule: `Int` input with `ndigits >= 0` returns
@@ -166,13 +287,18 @@ pub enum TermNode {
     /// `Value::as_i64` (so a Bool/Float ndigits behaves as it does
     /// everywhere else in this engine); non-numeric `value` -> the
     /// unevaluated `Value::None`.
-    Round { value: TermIdx, ndigits: TermIdx },
+    Round {
+        value: TermIdx,
+        ndigits: TermIdx,
+    },
     /// `reversed(seq)`, TYPE-PRESERVING: a `Str`/`Surface(Text)` reverses
     /// to text, a `Value::List` to a `List`, a `Value::Tuple` to a
     /// `Tuple` (CPython's own `l[::-1]` vs `t[::-1]` distinction, the
     /// same list/tuple identity the ARC6 value layer made possible).
     /// Non-reversible input passes through unchanged.
-    Reverse { seq: TermIdx },
+    Reverse {
+        seq: TermIdx,
+    },
     /// `[value for index, item in enumerate(source)]` — the (index,
     /// element) BINDER `STRUCTURAL_CEILING.md`'s S8 class names as the
     /// missing primitive (position is already an in-frame integer
@@ -183,12 +309,19 @@ pub enum TermNode {
     /// directly on `MapList`'s env-push/pop shape, generalised to two
     /// bound variables instead of one. Non-list-like `source` -> an
     /// empty `Value::List`.
-    IndexedMap { source: TermIdx, item_name: Sym, index_name: Sym, value: TermIdx },
+    IndexedMap {
+        source: TermIdx,
+        item_name: Sym,
+        index_name: Sym,
+        value: TermIdx,
+    },
     /// `str.capitalize()` — first character uppercased, the rest
     /// lowercased (ProgEval's `call_recv_oracle` "capitalize" arm,
     /// ported verbatim). Non-string-like `text` -> an empty Text
     /// surface.
-    Capitalize { text: TermIdx },
+    Capitalize {
+        text: TermIdx,
+    },
     /// Python `int(s)` for a string argument ONLY (the numeric-input
     /// arms of ProgEval's `"int"` extern — `Int`/`Float`/`Bool`/
     /// `Rational` truncation — are already reachable via the shipped
@@ -197,7 +330,9 @@ pub enum TermNode {
     /// Trimmed before parsing (CPython's own `int()` behaviour); a
     /// non-string-like or unparseable argument -> `Value::None` (never a
     /// panic — this engine's Term evaluator has no error channel).
-    ParseInt { text: TermIdx },
+    ParseInt {
+        text: TermIdx,
+    },
     /// General sequence slice `seq[start:stop]`, negative-index-correct
     /// (CPython's `PySlice_AdjustIndices` algorithm,
     /// `prog_eval::slice_indices`, reused directly — the fix for
@@ -214,7 +349,11 @@ pub enum TermNode {
     /// lands only after the other nine validate the "one Term, byte-
     /// identical regression sweep" workflow. Unsliceable input -> an
     /// empty Text surface.
-    Slice { seq: TermIdx, start: TermIdx, stop: TermIdx },
+    Slice {
+        seq: TermIdx,
+        start: TermIdx,
+        stop: TermIdx,
+    },
     /// `sorted(seq)`, ascending, via the already-shipped
     /// `cmp_value_lex` (the SAME comparator `Lt`/`Gt`/`Argmax`/`MinOver`/
     /// the `sorted`/`min`/`max` `ProgEval` externs already use —
@@ -229,7 +368,9 @@ pub enum TermNode {
     /// form. `Value::Set`/`Value::FrozenSet` pass through unchanged
     /// (already canonically ordered by construction). Non-sequence input
     /// passes through unchanged (the `Reverse` degrade precedent).
-    Sort { seq: TermIdx },
+    Sort {
+        seq: TermIdx,
+    },
     /// DictItems/SortBy rung (`PROGRAM_SYNTHESIS_DICTITEMS_SORTBY_PREREG.md`,
     /// task 475 `sort_counter`/`Counter.most_common()`): Python's
     /// `dict.items()` — a `Value::Dict` becomes a `Value::Tuple` of
@@ -238,7 +379,9 @@ pub enum TermNode {
     /// pool exactly like `Sort`/`Reverse` (zero new registration
     /// machinery). Non-Dict input passes through unchanged (the `Sort`/
     /// `Reverse` degrade precedent).
-    DictItems { seq: TermIdx },
+    DictItems {
+        seq: TermIdx,
+    },
     /// DictItems/SortBy rung: `sorted(source, key=lambda item: key(item))`
     /// — a STABLE sort of `source`'s elements by a PROJECTED key (the
     /// `item` binder evaluates `key` per element), keeping the ORIGINAL
@@ -250,7 +393,11 @@ pub enum TermNode {
     /// the same binder shape as `MapList`/`MapSet`/`IndexedMap`. Uses
     /// `cmp_value_lex` for the key comparison, the same comparator
     /// `Sort` already uses. Non-listlike source passes through unchanged.
-    SortBy { source: TermIdx, var_name: Sym, key: TermIdx },
+    SortBy {
+        source: TermIdx,
+        var_name: Sym,
+        key: TermIdx,
+    },
     /// GroupCount/DictMerge rung (`PROGRAM_SYNTHESIS_GROUPCOUNT_DICTMERGE_
     /// PREREG.md`, task 88 `freq_count` — Python's `Counter(seq)` /
     /// "get the frequency of all elements in a list, returned as a
@@ -265,7 +412,9 @@ pub enum TermNode {
     /// same key/count pairs regardless of build path. `Value::List`/
     /// `Value::Tuple` input only (the `Sort`/`Reverse` scope); non-listlike
     /// input passes through unchanged (the same degrade precedent).
-    GroupCount { seq: TermIdx },
+    GroupCount {
+        seq: TermIdx,
+    },
     /// GroupCount/DictMerge rung (task 87 `merge_dictionaries_three` —
     /// "merge three dictionaries into a single dictionary"): Python's
     /// `{**a, **b}` / `dict.update` — `b`'s entries win over `a`'s on a
@@ -280,7 +429,10 @@ pub enum TermNode {
     /// as `GroupCount`/`MkDict`. Non-Dict-Dict input degrades to `a`
     /// unchanged (never panics; mirrors this file's standing degrade
     /// convention for a type-mismatched operand).
-    DictMerge { a: TermIdx, b: TermIdx },
+    DictMerge {
+        a: TermIdx,
+        b: TermIdx,
+    },
     /// `ZIP_ELEMENTWISE` rung (`PROGRAM_SYNTHESIS_ZIP_ELEMENTWISE_PREREG.md`,
     /// an 8-task MBPP cluster — 259/261/273/282/399/401/429/445 — all
     /// needing Python's `zip(a, b)` paired with a per-pair binary
@@ -306,7 +458,13 @@ pub enum TermNode {
     /// sequence of `a`'s own kind (the `MapList`/`Reverse` degrade
     /// precedent: `av.snapshot()` is empty for a non-collection `Value`,
     /// so the loop simply never runs).
-    ZipWith { a: TermIdx, b: TermIdx, a_name: Sym, b_name: Sym, value: TermIdx },
+    ZipWith {
+        a: TermIdx,
+        b: TermIdx,
+        a_name: Sym,
+        b_name: Sym,
+        value: TermIdx,
+    },
     /// Verify that `term` (evaluated under bindings from `env`) equals
     /// `expected`. `env` should evaluate to a Value::Dict of
     /// (Str, Value) pairs — each entry is pushed onto the eval env
@@ -314,7 +472,11 @@ pub enum TermNode {
     /// `env` → empty bindings (term still evaluated). Returns
     /// Value::Bool(term_result == expected_result). The substrate's
     /// "does this Term-tree compute X" primitive.
-    Verify { term: TermIdx, env: TermIdx, expected: TermIdx },
+    Verify {
+        term: TermIdx,
+        env: TermIdx,
+        expected: TermIdx,
+    },
 
     /// Build a `Value::Dict` at evaluate time from an alternating
     /// (key, value, key, value, ...) list of child Terms. Each pair
@@ -327,7 +489,9 @@ pub enum TermNode {
     /// is dropped. This is the substrate's generic Term-tree
     /// composition primitive — rule effects compose Term-JSON-shaped
     /// Dicts at fire time with match-binding values spliced in.
-    MkDict { items: Vec<TermIdx> },
+    MkDict {
+        items: Vec<TermIdx>,
+    },
 
     /// Serialise `value` (any evaluated Value -- Dict/Tuple/scalars,
     /// typically built by `MkDict`/`Append`) to JSON text, returned as
@@ -345,7 +509,9 @@ pub enum TermNode {
     /// `null` (Term-JSON trees never carry either); Dict keys that
     /// aren't string-shaped serialise via their debug form, matching
     /// `MkDict`'s own key-shape leniency.
-    ToJsonString { value: TermIdx },
+    ToJsonString {
+        value: TermIdx,
+    },
 
     /// Inverse of `ToJsonString`: parse `text` (a Str or Surface(Text)
     /// holding JSON) into a graph-native `Value` tree -- JSON object ->
@@ -360,7 +526,9 @@ pub enum TermNode {
     /// `domains/reflective_faculty.py::_ensure_acting_rule_provenance`)
     /// back into Term-tree land for structural inspection/rewrite (see
     /// `ShiftThresholdLits`).
-    FromJsonString { text: TermIdx },
+    FromJsonString {
+        text: TermIdx,
+    },
 
     /// Deep-copy `tree` (a Value tree -- typically from `FromJsonString`,
     /// or a graph-native Rule node's own `effect`/`where` attr, which are
@@ -378,7 +546,10 @@ pub enum TermNode {
     /// graph-native primitive that was missing for a meta-rule to do the
     /// same rewrite itself instead of calling out to a host Python
     /// helper. `shift` coerces via `Value::as_f64`.
-    ShiftThresholdLits { tree: TermIdx, shift: TermIdx },
+    ShiftThresholdLits {
+        tree: TermIdx,
+        shift: TermIdx,
+    },
 
     /// Read a field out of a `Value::Dict` by key -- the Dict-VALUE twin
     /// of `Attr` (which only reads graph-Node attrs: `Attr(some_dict, k)`
@@ -393,7 +564,10 @@ pub enum TermNode {
     /// DictGet(parsed, L("match")), ...)`) -- reading a parsed rule's own
     /// `match`/`where`/`effects` fields back out of the `FromJsonString`
     /// result has no other route through the existing dialect.
-    DictGet { dict: TermIdx, key: TermIdx },
+    DictGet {
+        dict: TermIdx,
+        key: TermIdx,
+    },
 
     /// Deep-copy `tree` (a Value tree -- typically from `FromJsonString`,
     /// or a graph-native Rule node's own `effect`/`where` attr), and for
@@ -431,7 +605,12 @@ pub enum TermNode {
     /// NUMERIC VALUE by an arithmetic shift depending on which of two
     /// types the node is, not a same-shaped string-to-string field
     /// remap) -- not reimplemented in terms of this one.
-    RewriteTreeNodes { tree: TermIdx, type_filter: Option<TermIdx>, field: TermIdx, value_map: TermIdx },
+    RewriteTreeNodes {
+        tree: TermIdx,
+        type_filter: Option<TermIdx>,
+        field: TermIdx,
+        value_map: TermIdx,
+    },
 
     /// Collect every distinct `{"type":"Attr","key":<str>}` node's `key`
     /// value reachable inside `tree` (recursing into every Dict node's
@@ -459,7 +638,9 @@ pub enum TermNode {
     /// primitive `apply_swap_term_leaf`'s composition needed to go fully
     /// graph-native -- see `seeds/composer_experiment_graph.json`'s
     /// `compose_experiment_structure_graph` swap branch.
-    AttrKeyRanking { tree: TermIdx },
+    AttrKeyRanking {
+        tree: TermIdx,
+    },
 
     /// Observe the abstract structural SHAPE of `text` (a Str or
     /// Surface(Text)). Returns a `Value::Dict` whose keys are
@@ -481,7 +662,9 @@ pub enum TermNode {
     /// NOT a parser — a structural fingerprint that lets the
     /// substrate cluster "similar shapes" across surface formats
     /// (JSON / YAML / TOML / XML / etc.) for cumulative learning.
-    TextShape { text: TermIdx },
+    TextShape {
+        text: TermIdx,
+    },
 
     /// `FbFrameSeq` — the READ-ONLY half of the shared-memory
     /// framebuffer vision primitive (`framebuffer.rs` /
@@ -517,7 +700,9 @@ pub enum TermNode {
     /// Term IS real and testable today via a direct `evaluate()` call
     /// with an `EvalCtx` built with `.with_framebuffers(...)` —
     /// that's the wired, working surface.
-    FbFrameSeq { fb: TermIdx },
+    FbFrameSeq {
+        fb: TermIdx,
+    },
 
     /// `ChangeDetect` — the spatial face of vision's change-detect
     /// primitive: a dense image cross-correlated with a kernel
@@ -534,7 +719,11 @@ pub enum TermNode {
     /// ((w-kw)/stride+1)`, row-major, valid (non-padded)
     /// cross-correlation (no kernel flip — matches
     /// `scipy.signal.correlate2d(mode='valid')`).
-    ChangeDetect { image_vals: TermIdx, kernel_weights: TermIdx, dims: TermIdx },
+    ChangeDetect {
+        image_vals: TermIdx,
+        kernel_weights: TermIdx,
+        dims: TermIdx,
+    },
 
     /// `TemporalDiff` — the temporal face of change-detect: an
     /// elementwise event/motion stream between two same-shaped
@@ -544,7 +733,10 @@ pub enum TermNode {
     /// lists, NOT graph nodes. On a length mismatch returns
     /// `Value::None`. Returns a `Value::Tuple` of `f64` (same length
     /// as the inputs).
-    TemporalDiff { a_vals: TermIdx, b_vals: TermIdx },
+    TemporalDiff {
+        a_vals: TermIdx,
+        b_vals: TermIdx,
+    },
 
     /// `Foveate` — foveated (non-uniform) sampling: cortical
     /// magnification as data. `image_vals` = flat row-major image,
@@ -555,7 +747,11 @@ pub enum TermNode {
     /// out_h_f, out_w_f]` (the sampled grid flattened row-major,
     /// followed by the output height and width as floats). On a shape
     /// mismatch returns `Value::None`.
-    Foveate { image_vals: TermIdx, dims: TermIdx, geometry: TermIdx },
+    Foveate {
+        image_vals: TermIdx,
+        dims: TermIdx,
+        geometry: TermIdx,
+    },
 
     /// Return the ELEMENT of `source` for which `value` (evaluated
     /// under `var_name: element`) is maximum. Symmetric pair with
@@ -565,8 +761,18 @@ pub enum TermNode {
     /// given, else `Value::None`. Added in Phase 17b.3c.4 — the
     /// missing primitive for "pick the top-salience event" without
     /// the recompute-after-max workaround.
-    Argmax { source: TermIdx, var_name: Sym, value: TermIdx, default: Option<TermIdx> },
-    Argmin { source: TermIdx, var_name: Sym, value: TermIdx, default: Option<TermIdx> },
+    Argmax {
+        source: TermIdx,
+        var_name: Sym,
+        value: TermIdx,
+        default: Option<TermIdx>,
+    },
+    Argmin {
+        source: TermIdx,
+        var_name: Sym,
+        value: TermIdx,
+        default: Option<TermIdx>,
+    },
 
     /// Generic fold combinator — the kernel iteration primitive. Iterate
     /// `source`, binding each element to `var_name` and the running
@@ -576,7 +782,13 @@ pub enum TermNode {
     /// MaxOver / Argmax / Argmin / BitsAtAll / BitsWriteAll / Dot / Join
     /// / LEB128 / Lines / Bytes / Difference / etc. Added in the
     /// "shrink-to-kernel" arc (KERNEL_AUDIT.md).
-    Fold { source: TermIdx, var_name: Sym, acc_name: Sym, init: TermIdx, body: TermIdx },
+    Fold {
+        source: TermIdx,
+        var_name: Sym,
+        acc_name: Sym,
+        init: TermIdx,
+        body: TermIdx,
+    },
 
     // --- universal codec primitives (Phase 16b/16c) ---
     //
@@ -592,17 +804,25 @@ pub enum TermNode {
     // structure (Mp3Granule, H264Slice, JpegBlock, etc.) gives MP3
     // requantize, H.264 QP-bump, JPEG transcoding, Vorbis bitrate
     // change — all as graph data + Rules, not bespoke codec engineering.
-
     /// Read `n_bits` MSB-first from a Surface(Bytes) buffer starting at
     /// `bitpos`. Returns Int. `buffer` must evaluate to a Surface(Bytes);
     /// other types → None. `bitpos + n_bits` past end → None.
-    BitsAt { buffer: TermIdx, bitpos: TermIdx, n_bits: TermIdx },
+    BitsAt {
+        buffer: TermIdx,
+        bitpos: TermIdx,
+        n_bits: TermIdx,
+    },
 
     /// Write the low `n_bits` of `value` MSB-first into a fresh copy of
     /// `buffer` starting at `bitpos`. Returns Surface(Bytes) with the
     /// new bytes. If write extends past `buffer`'s end, the buffer is
     /// extended with zero-filled bytes. Out-of-range types → None.
-    BitsWrite { buffer: TermIdx, bitpos: TermIdx, value: TermIdx, n_bits: TermIdx },
+    BitsWrite {
+        buffer: TermIdx,
+        bitpos: TermIdx,
+        value: TermIdx,
+        n_bits: TermIdx,
+    },
 
     /// Vectorised BitsWrite — apply many bit-field writes to a single
     /// buffer in ONE copy. `writes` evaluates to a `Tuple` of `Tuple
@@ -610,14 +830,20 @@ pub enum TermNode {
     /// rewritten `Surface(Bytes)`. This is the form Rules naturally
     /// produce when walking a graph subtree (collect all writes, then
     /// apply); the per-call version is for ad-hoc edits.
-    BitsWriteAll { buffer: TermIdx, writes: TermIdx },
+    BitsWriteAll {
+        buffer: TermIdx,
+        writes: TermIdx,
+    },
 
     /// Vectorised BitsAt — read many bit-fields from `buffer` in ONE
     /// call. `reads` evaluates to a `Tuple` of `Tuple(bitpos, nbits)`
     /// pairs. Returns a `Tuple<Int, ...>` of the same arity. Avoids
     /// per-field Python↔runner round-trips for bulk parses (codec
     /// tables, multi-field walks).
-    BitsAtAll { buffer: TermIdx, reads: TermIdx },
+    BitsAtAll {
+        buffer: TermIdx,
+        reads: TermIdx,
+    },
 
     /// Universal Huffman pair decoder. Reads `n_pairs` value pairs from
     /// `buffer` starting at `bitpos`, using the graph-resident
@@ -626,13 +852,23 @@ pub enum TermNode {
     /// `Tuple(pairs_tuple, new_bitpos)`. The agent unpacks via Nth.
     /// Consumes HuffmanTable nodes minted by `seed_mp3_huffman_tables`
     /// (or any future codec's table-seed helper).
-    HuffmanDecodeStream { buffer: TermIdx, bitpos: TermIdx, table: TermIdx, n_pairs: TermIdx },
+    HuffmanDecodeStream {
+        buffer: TermIdx,
+        bitpos: TermIdx,
+        table: TermIdx,
+        n_pairs: TermIdx,
+    },
 
     /// Mirror of HuffmanDecodeStream. Writes a tuple of (x, y) pairs
     /// into a fresh buffer copy starting at `bitpos`, encoding each
     /// pair via the named HuffmanTable. Returns
     /// `Tuple(new_buffer, new_bitpos)`.
-    HuffmanEncodeStream { buffer: TermIdx, bitpos: TermIdx, pairs: TermIdx, table: TermIdx },
+    HuffmanEncodeStream {
+        buffer: TermIdx,
+        bitpos: TermIdx,
+        pairs: TermIdx,
+        table: TermIdx,
+    },
 
     /// Exp-Golomb decode (unsigned, ue(v) per ITU-T H.264 §9.1).
     /// Count leading zeros M; read 1-bit marker; read M more bits as
@@ -640,25 +876,43 @@ pub enum TermNode {
     /// integer used in H.264 / HEVC / VVC slice headers, macroblock
     /// types, SPS / PPS fields. Same primitive serves all of them.
     /// Returns `Tuple(value, new_bitpos)`.
-    ExpGolombDecode { buffer: TermIdx, bitpos: TermIdx },
+    ExpGolombDecode {
+        buffer: TermIdx,
+        bitpos: TermIdx,
+    },
 
     /// Exp-Golomb signed decode (se(v) per ITU-T H.264 §9.1.1).
     /// Reads ue(v) `k`, maps to signed: k=0 → 0, k=1 → 1, k=2 → -1,
     /// k=3 → 2, k=4 → -2, ... (k odd → +ceil(k/2); k even → -k/2).
     /// Returns `Tuple(value, new_bitpos)`.
-    ExpGolombDecodeSigned { buffer: TermIdx, bitpos: TermIdx },
+    ExpGolombDecodeSigned {
+        buffer: TermIdx,
+        bitpos: TermIdx,
+    },
 
     /// Exp-Golomb encode (mirror of ExpGolombDecode). Writes `value`
     /// as ue(v) into a fresh buffer copy at `bitpos`. Returns
     /// `Tuple(new_buffer, new_bitpos)`.
-    ExpGolombEncode { buffer: TermIdx, bitpos: TermIdx, value: TermIdx },
+    ExpGolombEncode {
+        buffer: TermIdx,
+        bitpos: TermIdx,
+        value: TermIdx,
+    },
 
     /// Exp-Golomb signed encode. Maps signed integer to unsigned per
     /// the inverse of se(v), then writes via ue(v).
-    ExpGolombEncodeSigned { buffer: TermIdx, bitpos: TermIdx, value: TermIdx },
+    ExpGolombEncodeSigned {
+        buffer: TermIdx,
+        bitpos: TermIdx,
+        value: TermIdx,
+    },
 
     // --- recursion / concept lookup ---
-    Holds { concept: Sym, node: Option<TermIdx>, node2: Option<TermIdx> },
+    Holds {
+        concept: Sym,
+        node: Option<TermIdx>,
+        node2: Option<TermIdx>,
+    },
 
     // --- graph-resident Term reflection (Paper Axiom 3) ---
     /// `node` evaluates to a NodeID; the runner walks that node as a
@@ -671,34 +925,74 @@ pub enum TermNode {
     /// effect can EvalSubgraph(Pick(Neighbours(emo, "sample_term")))
     /// to evaluate whatever per-Emotion sample Term the agent has
     /// installed.
-    EvalSubgraph { node: TermIdx },
+    EvalSubgraph {
+        node: TermIdx,
+    },
 
     // --- boolean ---
-    And { items: Vec<TermIdx> },
-    Or { items: Vec<TermIdx> },
-    Not { arg: TermIdx },
+    And {
+        items: Vec<TermIdx>,
+    },
+    Or {
+        items: Vec<TermIdx>,
+    },
+    Not {
+        arg: TermIdx,
+    },
 
     // --- arithmetic / scalar math ---
-    Abs { arg: TermIdx },
-    Neg { arg: TermIdx },
-    Plus { items: Vec<TermIdx> },
-    Minus { a: TermIdx, b: TermIdx },
-    Times { items: Vec<TermIdx> },
-    Div { a: TermIdx, b: TermIdx },
-    Mod { a: TermIdx, b: TermIdx },
-    Pow { a: TermIdx, b: TermIdx },
-    Sqrt { arg: TermIdx },
+    Abs {
+        arg: TermIdx,
+    },
+    Neg {
+        arg: TermIdx,
+    },
+    Plus {
+        items: Vec<TermIdx>,
+    },
+    Minus {
+        a: TermIdx,
+        b: TermIdx,
+    },
+    Times {
+        items: Vec<TermIdx>,
+    },
+    Div {
+        a: TermIdx,
+        b: TermIdx,
+    },
+    Mod {
+        a: TermIdx,
+        b: TermIdx,
+    },
+    Pow {
+        a: TermIdx,
+        b: TermIdx,
+    },
+    Sqrt {
+        arg: TermIdx,
+    },
     /// Natural logarithm of a scalar. `ln(x)` for x>0; for x<=0 returns
     /// `f64::NEG_INFINITY` (callers add their own epsilon guard on the world
     /// value, mirroring `Sqrt`'s 0.0-for-nonpositive convention). The
     /// transcendental the VTL-invariant (`log(F) - mean(log(F))`) rests on —
     /// not algebraically derivable from the existing arithmetic Terms.
-    Log { arg: TermIdx },
+    Log {
+        arg: TermIdx,
+    },
     /// Natural exponential of a scalar — the inverse of `Log`.
-    Exp { arg: TermIdx },
-    Min { items: Vec<TermIdx> },
-    Max { items: Vec<TermIdx> },
-    ArgMax { items: Vec<TermIdx> },
+    Exp {
+        arg: TermIdx,
+    },
+    Min {
+        items: Vec<TermIdx>,
+    },
+    Max {
+        items: Vec<TermIdx>,
+    },
+    ArgMax {
+        items: Vec<TermIdx>,
+    },
     /// Banded dynamic-time-warping distance between two feature
     /// trajectories. `a` and `b` each evaluate to a Tuple of frames,
     /// each frame a Tuple of band floats (frames x bands). Returns the
@@ -710,7 +1004,32 @@ pub enum TermNode {
     /// band, Euclidean per-frame). The AxS DECISION (argmax over
     /// candidate words of -DtwTo(...)) is composed in the graph; only
     /// this distance kernel is the Rust primitive.
-    DtwTo { a: TermIdx, b: TermIdx },
+    DtwTo {
+        a: TermIdx,
+        b: TermIdx,
+    },
+
+    /// EnigmaCrib — exact hard admissibility check for a graph-resident
+    /// Enigma candidate. The candidate node carries the machine settings,
+    /// ciphertext, crib, and offset as ordinary graph attributes; this
+    /// kernel only answers whether the crib is consistent. Language scoring
+    /// and candidate ranking remain graph composition above this predicate.
+    EnigmaCrib {
+        candidate: TermIdx,
+    },
+
+    /// EnigmaBombe — plugboard-independent hard admissibility. It asks
+    /// whether any involutive steckering can satisfy the crib for the
+    /// candidate rotor hypothesis, thereby rejecting whole rotor/start
+    /// classes without enumerating plugboards.
+    EnigmaBombe {
+        candidate: TermIdx,
+    },
+    /// EnigmaBombeWitness — returns one crib-forced partial plugboard as
+    /// text, for the mechanical completion stage after the hard filter.
+    EnigmaBombeWitness {
+        candidate: TermIdx,
+    },
 
     /// ApcEncode — the CONTEXT-PREDICTIVE FRONT-END encode (see `apc.rs`).
     /// Runs the learned autoregressive-predictive-coding context RNN(s)
@@ -724,7 +1043,13 @@ pub enum TermNode {
     /// full-context path encodes the whole utterance then slices). The
     /// TRAINING primitive is `apc::train` (a batch numeric loop invoked
     /// one-line from the world adapter); only this ENCODE is a Term.
-    ApcEncode { model: TermIdx, seq: TermIdx, start: TermIdx, end: TermIdx, out_len: TermIdx },
+    ApcEncode {
+        model: TermIdx,
+        seq: TermIdx,
+        start: TermIdx,
+        end: TermIdx,
+        out_len: TermIdx,
+    },
 
     /// PointSetDist — ORDER-INVARIANT shape distance: the symmetric Modified
     /// Hausdorff Distance (Dubuisson-Jain) between two point SETS (each a Tuple
@@ -734,7 +1059,10 @@ pub enum TermNode {
     /// variability across writers (the named Omniglot residual). The recognition
     /// DECISION (argmax over candidates of -PointSetDist) is composed in the graph;
     /// only this distance kernel is the Rust primitive. Binary {a,b}-shaped like DtwTo.
-    PointSetDist { a: TermIdx, b: TermIdx },
+    PointSetDist {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     /// MahalLeaf — the GENERATIVE LEAF of the recursive operator (BPL's per-primitive token model AS the
     /// base case, not an added cue). `a` = an observed leaf's points (flattened); `b` = the candidate
@@ -743,16 +1071,28 @@ pub enum TermNode {
     /// log-likelihood of the leaf under the primitive's diagonal Gaussian; the primitive's natural
     /// deformation directions cost little. Structure-preserving (a leaf stays a leaf; only its metric is
     /// learned + generative). Replaces PointSetDist at the bottom of the recursive descent.
-    MahalLeaf { a: TermIdx, b: TermIdx },
+    MahalLeaf {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     /// MahalFull — the FULL-COVARIANCE generative leaf (the BPL token model's covariance). `a` = an observed
     /// leaf's points (flattened, len d); `b` = a candidate leaf's model [mean (d) ++ precision (d*d, row-major)]
     /// — its nearest primitive's mean + full inverse-covariance. Returns the RMS Mahalanobis
     /// sqrt( (a-mean)^T P (a-mean) / d ): unlike MahalLeaf (diagonal), it scores CORRELATED deformation modes
     /// (points that move together) cheaply. The strengthened generative leaf the agent's residual called for.
-    MahalFull { a: TermIdx, b: TermIdx },
-    DeformGenMarginal { a: TermIdx, b: TermIdx },
-    DeformGen { a: TermIdx, b: TermIdx },
+    MahalFull {
+        a: TermIdx,
+        b: TermIdx,
+    },
+    DeformGenMarginal {
+        a: TermIdx,
+        b: TermIdx,
+    },
+    DeformGen {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     /// DeformDist — the BPL TOKEN-MODEL match: fit the candidate's written form to the observed
     /// mark with a small AFFINE deformation (affine-ICP) and score the order-invariant residual
@@ -761,7 +1101,10 @@ pub enum TermNode {
     /// (near-rigid, low residual) beats a wrong class (large penalised deformation, poor fit). The
     /// affine + ICP + the anisotropy penalty are the Rust primitive; the recognition DECISION
     /// (argmax over candidates of -DeformDist) is composed in the graph. Binary {a,b} like DtwTo.
-    DeformDist { a: TermIdx, b: TermIdx },
+    DeformDist {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     /// SmoothDeformDist — the "distortable canvas" (Learning from One and Only One Shot, 2022):
     /// a SMOOTH NON-RIGID deformation FIELD (free-form deformation on a multi-level control grid,
@@ -769,14 +1112,20 @@ pub enum TermNode {
     /// metric (residual-after-warp + the smooth field's magnitude). Replaces DeformDist's global
     /// affine: a local smooth warp the true class needs little of and a wrong class pays for. Same
     /// {a,b} shape; the smooth-field optimisation is the Rust primitive, the decision is the graph.
-    SmoothDeformDist { a: TermIdx, b: TermIdx },
+    SmoothDeformDist {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     /// TpsDeformDist — the PRINCIPLED smooth warp (thin-plate spline, Bookstein 1989 / Shape Contexts
     /// 2002): fit a regularised TPS to ICP correspondences and return residual + BENDING ENERGY
     /// (w^T K w, the non-affine distortion). The affine part (rotation/scale/shear) is FREE — only
     /// genuine bending costs. Replaces SmoothDeformDist's heuristic FFD + magnitude cost with the
     /// closed-form spline whose bending energy IS the distortion metric. Same {a,b} shape.
-    TpsDeformDist { a: TermIdx, b: TermIdx },
+    TpsDeformDist {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     /// SmoothDeformComponents — RUN 44 PHASE 2 (`deform_metric.rs`): decomposes
     /// `SmoothDeformDist`'s own free-form-deformation field into an AFFINE part
@@ -787,14 +1136,20 @@ pub enum TermNode {
     /// Same {a,b} shape as `SmoothDeformDist`/`TpsDeformDist`; `smooth_deform_dist` itself is
     /// UNCHANGED (this Term duplicates its fitting loop in its own module for working-tree
     /// isolation, see `deform_metric.rs`'s module doc).
-    SmoothDeformComponents { a: TermIdx, b: TermIdx },
+    SmoothDeformComponents {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     /// ShapeContextDist — the SHAPE CONTEXT descriptor + match (Belongie-Malik-Puzicha 2002): each
     /// point carries a LOG-POLAR histogram of the OTHER points' relative positions (a globally
     /// discriminative descriptor); the distance is the symmetric mean nearest chi-squared cost
     /// between the two shapes' point descriptors. Far richer than a holistic occupancy histogram.
     /// Same {a,b} shape; the descriptor + chi-squared match is the Rust primitive.
-    ShapeContextDist { a: TermIdx, b: TermIdx },
+    ShapeContextDist {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     /// EnclosedCount — the INK TOPOLOGY primitive (`ink_topology.rs`): given a list of strokes
     /// (each a list of `[x, y]` pen samples), rasterize the polylines, flood the background from
@@ -804,13 +1159,18 @@ pub enum TermNode {
     /// is. Returns a `Dict` (`holes`/`grid_w`/`grid_h`/`cell`/`n_samples`/`clamped`) — a caller
     /// reads one field via a held `DictGet`, never a Python decision. The raster resolution is
     /// NOT a parameter: it is the ink's OWN mean inter-sample arc step (§13 — see the module doc).
-    EnclosedCount { arg: TermIdx },
+    EnclosedCount {
+        arg: TermIdx,
+    },
 
     /// ScTpsDist — the FULL Shape-Contexts distance: shape-context descriptor CORRESPONDENCES (chi-
     /// squared matching) feeding a thin-plate-spline fit, distance = SC matching cost + bending
     /// energy. The descriptor supplies the good correspondences the bare TpsDeformDist (nearest-
     /// neighbour) lacked. Same {a,b} shape; the SC+TPS pipeline is the Rust primitive.
-    ScTpsDist { a: TermIdx, b: TermIdx },
+    ScTpsDist {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     /// BlendCover — the jabberwock's PORTMANTEAU kernel (it authored this).
     /// Three string children (unknown, a, b): returns in [0,1] how well the two
@@ -818,7 +1178,11 @@ pub enum TermNode {
     /// cover `unknown` — coverage minus seam-distortion, char shapes as a
     /// phoneme proxy. The two-word search / accept-by-margin DECISION is composed
     /// in the graph; only this fused-cover score is the Rust primitive (cf. DtwTo).
-    BlendCover { unknown: TermIdx, a: TermIdx, b: TermIdx },
+    BlendCover {
+        unknown: TermIdx,
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     /// Whiten — within-class WHITENING (the agent's matrix-primitive frozen edge,
     /// seeded then specified): a = within-class scatter matrix W (Tuple of Tuple of
@@ -826,13 +1190,19 @@ pub enum TermNode {
     /// (Cholesky), so distances become the Mahalanobis metric that suppresses the
     /// within-class (speaker) scatter directions. The matrix factorisation + solve
     /// the DSL cannot express. Binary {a,b}-shaped like DtwTo.
-    Whiten { a: TermIdx, b: TermIdx },
+    Whiten {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     /// WhitenMany — batch Whiten (the agent's perf realisation): a = W, b = data matrix
     /// X. Factors W = L L^T ONCE then forward-solves L y = x for every row, so the
     /// Cholesky is shared across rows (O(n^3 + m·n^2) not O(m·n^3)). Same math as
     /// Whiten, amortised. Binary {a,b}-shaped like Whiten.
-    WhitenMany { a: TermIdx, b: TermIdx },
+    WhitenMany {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     /// WithinScatter — the regularized within-class scatter matrix (the agent's
     /// covariance primitive, seeded then specified): a = data (Tuple of token vectors),
@@ -840,14 +1210,20 @@ pub enum TermNode {
     /// (x-μ_c)(x-μ_c)ᵀ, diagonal-shrunk — the matrix Whiten whitens by, making the
     /// cross-speaker pipeline fully native. Grouped mean-subtraction + outer-product
     /// accumulation the DSL cannot express. Binary {a,b}-shaped like DtwTo.
-    WithinScatter { a: TermIdx, b: TermIdx },
+    WithinScatter {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     /// BetweenScatter — the between-class scatter Sb = (1/N) Σ_c n_c (μ_c-μ)(μ_c-μ)ᵀ
     /// (the agent's between-scatter primitive, seeded then specified): a = data (Tuple
     /// of token vectors), b = group labels. The between-OBSERVED-group (e.g. speaker)
     /// scatter the nuisance-conditioned fix whitens by — one native op instead of
     /// St-Sw in numpy. Binary {a,b}-shaped like WithinScatter.
-    BetweenScatter { a: TermIdx, b: TermIdx },
+    BetweenScatter {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     /// XCorrPeak — the SNR-optimal MATCHED FILTER: peak normalised
     /// cross-correlation over a LAG SEARCH between two frames x bands
@@ -858,7 +1234,10 @@ pub enum TermNode {
     /// the kernel (peak-NCC SIMILARITY over lags, not banded-DTW DISTANCE).
     /// Authored via runtime_design (agent_specify_matched_filter +
     /// emit_primitive_rust, semantic_kind=trajectory_correlation_peak).
-    XCorrPeak { a: TermIdx, b: TermIdx },
+    XCorrPeak {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     // --- bitwise / integer ---
     //
@@ -869,63 +1248,130 @@ pub enum TermNode {
     // would call that poison, but the substrate's convention for
     // arithmetic edge cases is silent-zero — see Div/Mod).
     /// Bitwise AND. `BitAnd(a, b) := a & b`.
-    BitAnd { a: TermIdx, b: TermIdx },
+    BitAnd {
+        a: TermIdx,
+        b: TermIdx,
+    },
     /// Bitwise OR. `BitOr(a, b) := a | b`.
-    BitOr { a: TermIdx, b: TermIdx },
+    BitOr {
+        a: TermIdx,
+        b: TermIdx,
+    },
     /// Bitwise XOR. `BitXor(a, b) := a ^ b`.
-    BitXor { a: TermIdx, b: TermIdx },
+    BitXor {
+        a: TermIdx,
+        b: TermIdx,
+    },
     /// Shift-left. `Shl(a, b) := a << b` (i64 wrapping). b ∉ [0,63] → 0.
-    Shl { a: TermIdx, b: TermIdx },
+    Shl {
+        a: TermIdx,
+        b: TermIdx,
+    },
     /// Logical shift-right (unsigned). Fills with zeros.
     /// b ∉ [0,63] → 0.
-    Lshr { a: TermIdx, b: TermIdx },
+    Lshr {
+        a: TermIdx,
+        b: TermIdx,
+    },
     /// Arithmetic shift-right (signed). Fills with the sign bit.
     /// b ∉ [0,63] → 0 if a ≥ 0, else -1.
-    Ashr { a: TermIdx, b: TermIdx },
+    Ashr {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     /// Integer truncating division (signed). `IDiv(a, b) := a / b` with
     /// truncation toward zero — matches Rust's `i64::wrapping_div`
     /// (which matches C's `/` and LLVM's `sdiv`). Division by zero
     /// returns 0 (the substrate's silent-zero convention).
-    IDiv { a: TermIdx, b: TermIdx },
+    IDiv {
+        a: TermIdx,
+        b: TermIdx,
+    },
     /// Integer remainder (signed). `IRem(a, b) := a % b` matching
     /// Rust's `i64::wrapping_rem` and LLVM's `srem`. Remainder of
     /// zero divisor returns 0.
-    IRem { a: TermIdx, b: TermIdx },
+    IRem {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     // --- control ---
-    IfThenElse { cond: TermIdx, then: TermIdx, other: TermIdx },
+    IfThenElse {
+        cond: TermIdx,
+        then: TermIdx,
+        other: TermIdx,
+    },
 
     // --- geometry / N-D vectors ---
-    Vec_ { items: Vec<TermIdx> },
-    VecAdd { a: TermIdx, b: TermIdx },
-    VecSub { a: TermIdx, b: TermIdx },
-    Dot { a: TermIdx, b: TermIdx },
-    Magnitude { arg: TermIdx },
+    Vec_ {
+        items: Vec<TermIdx>,
+    },
+    VecAdd {
+        a: TermIdx,
+        b: TermIdx,
+    },
+    VecSub {
+        a: TermIdx,
+        b: TermIdx,
+    },
+    Dot {
+        a: TermIdx,
+        b: TermIdx,
+    },
+    Magnitude {
+        arg: TermIdx,
+    },
 
     // --- rotation / angle ---
-    Sin { arg: TermIdx },
-    Cos { arg: TermIdx },
-    Atan2 { y: TermIdx, x: TermIdx },
-    Bearing { arg: TermIdx },
-    Rotate { vec: TermIdx, angle: TermIdx },
-    AngleBetween { a: TermIdx, b: TermIdx },
+    Sin {
+        arg: TermIdx,
+    },
+    Cos {
+        arg: TermIdx,
+    },
+    Atan2 {
+        y: TermIdx,
+        x: TermIdx,
+    },
+    Bearing {
+        arg: TermIdx,
+    },
+    Rotate {
+        vec: TermIdx,
+        angle: TermIdx,
+    },
+    AngleBetween {
+        a: TermIdx,
+        b: TermIdx,
+    },
 
     // --- set algebra (Phase 7 ext) ---
     /// Union of two set-valued Terms — the merge of the two element
     /// sets, deduped. Closes the gap left by the Python DSL needing
     /// Filter+Exists to express union.
-    Union { a: TermIdx, b: TermIdx },
+    Union {
+        a: TermIdx,
+        b: TermIdx,
+    },
     /// Last element of an ordered sequence (None if empty). Added via Layer B —
     /// the last-element access an accumulator-dependent loop (collapse_runs) needs.
-    Last { seq: TermIdx },
+    Last {
+        seq: TermIdx,
+    },
     /// Element of `seq` at a DYNAMIC (Term-computed) index, Python-style negative
     /// indexing from the end; None if out of range. Added via Layer B — the
     /// dynamic / from-end indexing `Nth`'s static `as usize` index can't do.
-    IndexAt { seq: TermIdx, index: TermIdx },
+    IndexAt {
+        seq: TermIdx,
+        index: TermIdx,
+    },
     /// `seq` with `item` appended — ordered concat returning a Tuple. Added via
     /// Layer B — the ordered append an accumulator-building fold needs.
-    Append { seq: TermIdx, item: TermIdx },
+    Append {
+        seq: TermIdx,
+        item: TermIdx,
+    },
     /// `list` with the element at `index` removed, returning a NEW Tuple
     /// (order preserved). Python-style negative indexing from the end
     /// (same convention as `IndexAt`). An `index` that is out of range
@@ -939,31 +1385,55 @@ pub enum TermNode {
     /// `domains/edit_ops.py::apply_drop_match_edge` (drop
     /// `rule["match"][index]`) — a genuine gap, not a narrowing of an
     /// existing Term.
-    ListDrop { list: TermIdx, index: TermIdx },
+    ListDrop {
+        list: TermIdx,
+        index: TermIdx,
+    },
     /// Intersection — elements present in both.
-    Intersect { a: TermIdx, b: TermIdx },
+    Intersect {
+        a: TermIdx,
+        b: TermIdx,
+    },
     /// Difference — elements in `a` but not in `b`.
-    Difference { a: TermIdx, b: TermIdx },
+    Difference {
+        a: TermIdx,
+        b: TermIdx,
+    },
     /// Map a set element-wise to another set under `var_name`.
     /// Sum-shaped over the resulting Values — except the reduction is
     /// "collect into a frozenset" rather than "+=", so duplicate
     /// outputs collapse.
-    MapSet { source: TermIdx, var_name: Sym, value: TermIdx },
+    MapSet {
+        source: TermIdx,
+        var_name: Sym,
+        value: TermIdx,
+    },
     /// Ordered (list) twin of MapSet — preserves source order + duplicates,
     /// returns a **`Value::List`** (ARC6 value layer; see `FilterList`).
     /// The faithful target for a Python LIST comprehension's transform
     /// (MapSet returns a set). Added via the Layer-B self-extension loop.
-    MapList { source: TermIdx, var_name: Sym, value: TermIdx },
+    MapList {
+        source: TermIdx,
+        var_name: Sym,
+        value: TermIdx,
+    },
 
     // --- edge-attr DSL access (Phase 7 ext) ---
     /// Set of outgoing edge "handles" from `node`. The handle is a
     /// tuple `(src_nid, edge_type_str, tgt_nid)` — matches the
     /// canonical Python representation of an EdgeKey and lets
     /// downstream Terms (`EdgeAttr`, `Nth`, `Filter`) pick it apart.
-    Edges { node: TermIdx, edge_type: Sym, any_type: bool },
+    Edges {
+        node: TermIdx,
+        edge_type: Sym,
+        any_type: bool,
+    },
     /// Read an attr from a specific edge. `edge` evaluates to a triple
     /// `(src, edge_type, tgt)` (as Tuple Value); `key` is the attr name.
-    EdgeAttr { edge: TermIdx, key: Sym },
+    EdgeAttr {
+        edge: TermIdx,
+        key: Sym,
+    },
 
     /// Indexed attr lookup (Phase 7b). Returns the frozenset of nodes
     /// typed `node_type` whose `attr_key` attribute equals the value
@@ -971,13 +1441,19 @@ pub enum TermNode {
     /// declared via `Substrate::declare_attr_index`; otherwise the
     /// engine falls back to a linear scan (so the Term is always
     /// correct — declaring an index just makes it faster).
-    NodesWhere { node_type: Sym, attr_key: Sym, value: TermIdx },
+    NodesWhere {
+        node_type: Sym,
+        attr_key: Sym,
+        value: TermIdx,
+    },
 
     /// All nodes of a given type, as a frozenset — the unfiltered
     /// enumeration source for graph-wide aggregates (`Count`/`Filter`/
     /// `MapSet` over every node of a type). `NodesWhere` is the
     /// equality-filtered special case; this is the whole population.
-    NodesOfType { node_type: Sym },
+    NodesOfType {
+        node_type: Sym,
+    },
 
     /// Least-general generalization (anti-unification) over a collection
     /// of structured Values — the implied-rule induction operator. Where
@@ -987,7 +1463,10 @@ pub enum TermNode {
     /// and Sets/FrozenSets (the intersection — members always present).
     /// `wild` is the interned `"·?·"` marker, set at construction so the
     /// read-only evaluator can build the sentinel without interning.
-    AntiUnify { values: TermIdx, wild: Sym },
+    AntiUnify {
+        values: TermIdx,
+        wild: Sym,
+    },
 
     /// The MDL specificity of an induced pattern — how many leaf positions
     /// it FIXES (the twin of `domains/implied_rule.py::_fixed_count`). WILD
@@ -996,7 +1475,10 @@ pub enum TermNode {
     /// (a more-fixed rule is a stronger, more-compressive claim) and the
     /// quantity the keep-gate (`fixed ≥ min_fixed`) thresholds on. `wild`
     /// is the interned `"·?·"` marker, as in `AntiUnify`.
-    FixedCount { pattern: TermIdx, wild: Sym },
+    FixedCount {
+        pattern: TermIdx,
+        wild: Sym,
+    },
 
     /// Does an induced pattern COVER an instance? — the rule-application
     /// test, dual of `AntiUnify` (twin of `implied_rule.py::covers`). WILD
@@ -1006,7 +1488,11 @@ pub enum TermNode {
     /// a SUBSET of the instance; a scalar requires equality. This is how the
     /// agent decides a held `ImpliedRule` APPLIES to a fresh scenario (and,
     /// for a win-rule, whether the condition the score follows now holds).
-    Covers { pattern: TermIdx, instance: TermIdx, wild: Sym },
+    Covers {
+        pattern: TermIdx,
+        instance: TermIdx,
+        wild: Sym,
+    },
 
     /// `Covers` with the OUTER container read as a relation SET — the pattern's
     /// relations must ALL be covered by DISTINCT relations of the instance, and
@@ -1022,7 +1508,11 @@ pub enum TermNode {
     /// keeps its exact semantics; see `covers_open_value` for why the split is
     /// per-LEVEL rather than per-container, and for the engine precedent
     /// (`shape_decode::covers_relation`) it restores consistency with.
-    CoversOpen { pattern: TermIdx, instance: TermIdx, wild: Sym },
+    CoversOpen {
+        pattern: TermIdx,
+        instance: TermIdx,
+        wild: Sym,
+    },
 
     /// Anti-unification that RETAINS its WITNESSES — the lattice-MEET that also
     /// emits the DIFFERENCE. Evaluates `values` (a collection of structured
@@ -1033,7 +1523,10 @@ pub enum TermNode {
     /// instance. The residue `AntiUnify` discards, captured: the difference Y in
     /// "this is like X but with Y". `wild` is the `"·?·"` marker, as in
     /// `AntiUnify`. Additive twin of `AntiUnify` (which is left untouched).
-    AntiUnifyWitness { values: TermIdx, wild: Sym },
+    AntiUnifyWitness {
+        values: TermIdx,
+        wild: Sym,
+    },
 
     /// Apply a witness substitution — the lattice-JOIN direction. Evaluates
     /// `template` and `sigma` (a Dict of path→value, as a `sigmas` element of
@@ -1044,7 +1537,11 @@ pub enum TermNode {
     /// REALISES "X but with Y" (move DOWN the subsumption lattice) and inverts
     /// decompose. `wild` is the `"·?·"` marker. The constructive complement of
     /// the held matcher.
-    Substitute { template: TermIdx, sigma: TermIdx, wild: Sym },
+    Substitute {
+        template: TermIdx,
+        sigma: TermIdx,
+        wild: Sym,
+    },
 
     /// Unification — the lattice JOIN (lub), the constructive DUAL of `AntiUnify`
     /// (the MEET). Evaluates `values` (a collection of structured Values) and
@@ -1058,7 +1555,10 @@ pub enum TermNode {
     /// drop). The Fauconnier-Turner blend / Ontañón-Plaza amalgam over the generic
     /// `AntiUnify` already computes. `wild` is the `"·?·"` marker, as in
     /// `AntiUnify`. Additive; existing Terms untouched.
-    Unify { values: TermIdx, wild: Sym },
+    Unify {
+        values: TermIdx,
+        wild: Sym,
+    },
 
     /// Graded STRUCTURAL similarity in [0,1] — the SOFT-leaf twin of the exact
     /// `AntiUnify`/`Covers` structural compare. Evaluates `a` and `b` (two
@@ -1072,7 +1572,11 @@ pub enum TermNode {
     /// recognition-by-generation that survives variation WITHOUT drifting to a
     /// holistic learned similarity. `wild` is the `"·?·"` marker, as in
     /// `AntiUnify`. Additive; existing Terms untouched.
-    StructSim { a: TermIdx, b: TermIdx, wild: Sym },
+    StructSim {
+        a: TermIdx,
+        b: TermIdx,
+        wild: Sym,
+    },
 
     /// DEQUANTIZATION — the beam-search shape composer (native twin of
     /// `domains/reflective_faculty.py::compose_design_for_goal`). Shape
@@ -1173,7 +1677,13 @@ pub enum TermNode {
     /// seed-rule search composer would build for (`episode`, `policy`).
     /// Pure function of graph state; the term-tree composer it mirrors is
     /// gen_embodied_motor_program_seed.py's open/expand/close cascade.
-    MotorCompose { episode: TermIdx, policy: TermIdx, candidate: TermIdx },
+    MotorCompose {
+        episode: TermIdx,
+        policy: TermIdx,
+        candidate: TermIdx,
+    },
+
+    /// Compact graph-native two-slice learned future-manifold projection.
 
     /// `TransformDecode` — the "quantum delta" twin of `ShapeDecode`:
     /// recognises an observation relation-system as ONE HELD codebook
@@ -1847,7 +2357,12 @@ pub enum TermNode {
     /// is then `Argmax` over the root's first-action candidates of this value.
     /// `depth = 1` reduces to the immediate score (greedy), matching the
     /// default. The recursion is bounded by `depth`.
-    LookaheadValue { node: TermIdx, child_edge: Sym, score_key: Sym, depth: TermIdx },
+    LookaheadValue {
+        node: TermIdx,
+        child_edge: Sym,
+        score_key: Sym,
+        depth: TermIdx,
+    },
 
     /// Every scalar (type, key, value) triple across all nodes, as an ordered
     /// LIST (Tuple) preserving per-node occurrences — the attr-enumeration
@@ -1857,7 +2372,9 @@ pub enum TermNode {
     /// `_novelty_count`: `Count{FilterList{ScalarAttrTriples, t, ¬In{t, seen}}}`
     /// — a node-attr occurrence is novel iff its `(type,attr,value)` triple is
     /// not in the agent's seen-triple memory.
-    ScalarAttrTriples { skip_prefix: Sym },
+    ScalarAttrTriples {
+        skip_prefix: Sym,
+    },
 
     /// Dynamic attribute access: read `node`'s attr whose KEY is the string
     /// `name` evaluates to (vs `Attr`, whose key is a static `Sym`). The
@@ -1866,24 +2383,63 @@ pub enum TermNode {
     /// Rule serves a whole family of typed goals instead of a baked factory
     /// per (attr, value). None if `node` isn't a Node, `name` isn't a Str, or
     /// the attr is absent.
-    AttrByName { node: TermIdx, name: TermIdx },
+    AttrByName {
+        node: TermIdx,
+        name: TermIdx,
+    },
 
     // --- rendering: text + byte surfaces ---
-    Surface { kind: SurfaceKind, payload: Value },
-    Cat { items: Vec<TermIdx> },
-    Slot { name: Sym },
-    Join { separator: Option<TermIdx>, items: Option<TermIdx> },
-    Bytes { items: Vec<TermIdx> },
-    U8 { expr: Option<TermIdx> },
-    U16LE { expr: Option<TermIdx> },
-    U32LE { expr: Option<TermIdx> },
-    U64LE { expr: Option<TermIdx> },
-    LEB128 { expr: Option<TermIdx> },
-    Lines { items: Vec<TermIdx> },
-    Label { prefix: Sym },
-    Let { name: Sym, value: Option<TermIdx>, body: Option<TermIdx> },
-    Nth { items: Option<TermIdx>, index: i64 },
-    Render { term: Option<TermIdx>, lang: Option<TermIdx> },
+    Surface {
+        kind: SurfaceKind,
+        payload: Value,
+    },
+    Cat {
+        items: Vec<TermIdx>,
+    },
+    Slot {
+        name: Sym,
+    },
+    Join {
+        separator: Option<TermIdx>,
+        items: Option<TermIdx>,
+    },
+    Bytes {
+        items: Vec<TermIdx>,
+    },
+    U8 {
+        expr: Option<TermIdx>,
+    },
+    U16LE {
+        expr: Option<TermIdx>,
+    },
+    U32LE {
+        expr: Option<TermIdx>,
+    },
+    U64LE {
+        expr: Option<TermIdx>,
+    },
+    LEB128 {
+        expr: Option<TermIdx>,
+    },
+    Lines {
+        items: Vec<TermIdx>,
+    },
+    Label {
+        prefix: Sym,
+    },
+    Let {
+        name: Sym,
+        value: Option<TermIdx>,
+        body: Option<TermIdx>,
+    },
+    Nth {
+        items: Option<TermIdx>,
+        index: i64,
+    },
+    Render {
+        term: Option<TermIdx>,
+        lang: Option<TermIdx>,
+    },
     /// CODE-3 (writing is reading reversed): a FAITHFUL Python literal
     /// representation of a scalar `value` — the type-aware quoting a
     /// bare `Slot("value")` render binding can't do (Cat's `str()`
@@ -1894,8 +2450,12 @@ pub enum TermNode {
     /// template composes `LitRepr(value=Slot("value"))` in place of the
     /// bare Slot. Any non-scalar Value is an honest render gap (`None`),
     /// never approximated — see `python_repr` for the exact algorithm.
-    LitRepr { value: Option<TermIdx> },
-    ArgMin { items: Vec<TermIdx> },
+    LitRepr {
+        value: Option<TermIdx>,
+    },
+    ArgMin {
+        items: Vec<TermIdx>,
+    },
 
     /// GRAPH LAW #6 (trans-frame identity): domain-general READ-ONLY
     /// "same-thing-across-frames" correspondence. `prev`/`cur` each
@@ -2063,7 +2623,6 @@ pub enum TermNode {
         field: Sym,
     },
 
-
     /// `ArgminUnique` — **`Argmin`, BUT IT CAN SAY NO.**
     ///
     /// `VISION_REFUSAL_CAPACITY_RESULTS.md` §7 measured that `Argmin` **returned
@@ -2092,7 +2651,12 @@ pub enum TermNode {
     /// committed result reproduces byte-identically (§9). Arming it at a site
     /// requires that site's caller to be able to REPRESENT the null — see
     /// `VISION_ARGMIN_UNIQUE_RESULTS.md` arm C.
-    ArgminUnique { source: TermIdx, var_name: Sym, value: TermIdx, default: Option<TermIdx> },
+    ArgminUnique {
+        source: TermIdx,
+        var_name: Sym,
+        value: TermIdx,
+        default: Option<TermIdx>,
+    },
     /// `SupportInfer` — `TimeInfer`'s rigidity core with the APPEARANCE SLOTS
     /// TAKEN OUT OF THE VERDICT AND REPORTED SEPARATELY. A PARTITION, NOT A
     /// TOLERANCE: there is no slack parameter and nowhere to put one. The
@@ -2213,12 +2777,16 @@ pub enum TermNode {
     // are interned at parse time, the sound naming path); optional
     // identifiers use the `Sym::default()` sentinel (the
     // ReachableFrom/TrackIdentityCorrespondence convention).
-
     /// Statement sequence — a block body. Executes each statement in
     /// order under ProgEval; inert (`Value::None`) under `evaluate()`.
-    ProgSeq { stmts: Vec<TermIdx> },
+    ProgSeq {
+        stmts: Vec<TermIdx>,
+    },
     /// `name = value`. The program env binds `name` (a parse-time Sym).
-    ProgAssignVar { name: Sym, value: TermIdx },
+    ProgAssignVar {
+        name: Sym,
+        value: TermIdx,
+    },
     /// `name OP= value`. `op` is the lowercased Python ast op name:
     /// add/sub/mult/div/floordiv/mod/pow/lshift/rshift/bitand/bitor/
     /// bitxor. Numeric combination delegates to the matching DSL
@@ -2226,58 +2794,102 @@ pub enum TermNode {
     /// BitAnd/BitOr/BitXor semantics — documented divergences from
     /// CPython, e.g. div-by-zero → 0.0, apply here too); `add` also
     /// concatenates Str/Surface(Text) and Tuple values.
-    ProgAugAssign { name: Sym, op: Sym, value: TermIdx },
+    ProgAugAssign {
+        name: Sym,
+        op: Sym,
+        value: TermIdx,
+    },
     /// `a, b, c = value` — flat tuple unpack onto simple names. `value`
     /// must realise a Tuple of exactly `targets.len()` elements
     /// (trap `unpack:arity` otherwise). Nested targets are a parse
     /// residual, not representable here (honest scope cut).
-    ProgTupleUnpack { targets: Vec<Sym>, value: TermIdx },
+    ProgTupleUnpack {
+        targets: Vec<Sym>,
+        value: TermIdx,
+    },
     /// Statement-grain `if cond: then else: orelse`.
-    ProgIfStmt { cond: TermIdx, then: TermIdx, orelse: Option<TermIdx> },
+    ProgIfStmt {
+        cond: TermIdx,
+        then: TermIdx,
+        orelse: Option<TermIdx>,
+    },
     /// `for var in iter: body [else: orelse]` — orelse runs iff the loop
     /// was not broken (Python for-else). Each iteration charges fuel.
-    ProgForEach { var: Sym, iter: TermIdx, body: TermIdx, orelse: Option<TermIdx> },
+    ProgForEach {
+        var: Sym,
+        iter: TermIdx,
+        body: TermIdx,
+        orelse: Option<TermIdx>,
+    },
     /// `while cond: body [else: orelse]`. Semantically load-bearing for
     /// ProgEval despite low corpus mass (the P0-registered
     /// deviation-with-reason). Each iteration charges fuel — the
     /// in-frame integer axis; there is no wall clock anywhere.
-    ProgWhile { cond: TermIdx, body: TermIdx, orelse: Option<TermIdx> },
+    ProgWhile {
+        cond: TermIdx,
+        body: TermIdx,
+        orelse: Option<TermIdx>,
+    },
     /// `break` / `continue` — `kind` is the Sym "break" or "continue".
-    ProgLoopCtl { kind: Sym },
+    ProgLoopCtl {
+        kind: Sym,
+    },
     /// `return [value]`.
-    ProgReturn { value: Option<TermIdx> },
+    ProgReturn {
+        value: Option<TermIdx>,
+    },
     /// `try: body except [as exc_var]: handler`. Catches TRAPS raised in
     /// `body` (ProgRaise, extern misses, subscript/attr misses, ...);
     /// NEVER catches fuel exhaustion (fuel is not a trap — catching it
     /// would forge `halted`). `exc_var == Sym::default()` = unnamed;
     /// absent handler = catch-and-continue (`except: pass`). No
     /// finally, no typed except clauses (documented narrower scope).
-    ProgTryOr { body: TermIdx, exc_var: Sym, handler: Option<TermIdx> },
+    ProgTryOr {
+        body: TermIdx,
+        exc_var: Sym,
+        handler: Option<TermIdx>,
+    },
     /// `raise [exc]` — mints a trap `raise:<str(exc)>` (or `raise`).
     /// Semantics-only P1 inclusion (P0 deviation-with-reason twin of
     /// While): honest trap surfacing needs a native thrower.
-    ProgRaise { exc: Option<TermIdx> },
+    ProgRaise {
+        exc: Option<TermIdx>,
+    },
     /// `import module [as alias]` / `from module import names...`.
     /// Structural surface only: executes as a NO-OP under ProgEval (the
     /// binding is extern surface; any USE of an unbound imported name
     /// traps honestly at the use site — `name:<n>` / `extern:<n>`).
-    ProgImportStmt { module: Sym, alias: Sym, names: Vec<Sym> },
+    ProgImportStmt {
+        module: Sym,
+        alias: Sym,
+        names: Vec<Sym>,
+    },
     /// `obj[index] = value` — read-modify-write through an lvalue path
     /// rooted at a Var (chains of ProgSubscript/ProgAttrGet allowed;
     /// values are immutable, the path is rebuilt — NO aliasing, the
     /// documented divergence from CPython reference semantics).
-    ProgSubscriptSet { obj: TermIdx, index: TermIdx, value: TermIdx },
+    ProgSubscriptSet {
+        obj: TermIdx,
+        index: TermIdx,
+        value: TermIdx,
+    },
     /// `obj.attr = value` — record-field write, same lvalue machinery.
     /// Program records are Dict values (see ProgAttrGet).
-    ProgAttrSet { obj: TermIdx, attr: Sym, value: TermIdx },
+    ProgAttrSet {
+        obj: TermIdx,
+        attr: Sym,
+        value: TermIdx,
+    },
     /// One `def` parameter with an optional default. As a ProgEval
     /// statement it BINDS `name` from the incoming env if present, else
     /// from `default` (i.e. `def f(x=3)` called without `x`), else
     /// traps `param:<name>` — the honest missing-argument.
-    ProgDefFnParam { name: Sym, default: Option<TermIdx> },
+    ProgDefFnParam {
+        name: Sym,
+        default: Option<TermIdx>,
+    },
 
     // --- Program-IR expressions (evaluated only inside ProgEval) ---
-
     /// A call to an EXTERN callable — `name` is the callee as spelled
     /// (`len`, `math.sqrt`, `append`); `recv` is the receiver for
     /// method calls (`xs.append(1)` → recv=Var(xs), name="append").
@@ -2287,16 +2899,26 @@ pub enum TermNode {
     /// traps `extern:unimplemented:<name>`. NO shelling out, ever.
     /// Native oracle set: len/abs/min/max/range/sum/str/int/float/
     /// bool/sorted (the histogram's call_builtin mass).
-    ProgCallExtern { name: Sym, recv: Option<TermIdx>, args: Vec<TermIdx> },
+    ProgCallExtern {
+        name: Sym,
+        recv: Option<TermIdx>,
+        args: Vec<TermIdx>,
+    },
     /// Object-field read on a program VALUE: records are Dict values,
     /// `obj.attr` reads the pair whose key string-equals `attr` (trap
     /// `attr:<name>` on miss). Distinct from `Attr` (graph-node attr).
-    ProgAttrGet { obj: TermIdx, attr: Sym },
+    ProgAttrGet {
+        obj: TermIdx,
+        attr: Sym,
+    },
     /// Python subscript read: Tuple + Int (negative from the end; OOB
     /// traps `index:oob`), Dict + key (missing traps `key:<k>`),
     /// Surface(Text)/Str + Int → one-char Surface. Distinct from
     /// `IndexAt` (DSL list primitive, clamp/None conventions).
-    ProgSubscript { obj: TermIdx, index: TermIdx },
+    ProgSubscript {
+        obj: TermIdx,
+        index: TermIdx,
+    },
     /// Python slice read: `obj[start:stop:step]` over Tuple or
     /// Str/Surface(Text) (Q1 `slicing` family; Dict traps
     /// `slice:type`). Absent bounds follow Python's own defaults
@@ -2305,29 +2927,53 @@ pub enum TermNode {
     /// clamps, unlike `ProgSubscript`'s single-index read. Always
     /// realises as the SAME kind as `obj` (Tuple stays Tuple, a string
     /// stays Surface(Text)).
-    ProgSlice { obj: TermIdx, start: Option<TermIdx>, stop: Option<TermIdx>, step: Option<TermIdx> },
+    ProgSlice {
+        obj: TermIdx,
+        start: Option<TermIdx>,
+        stop: Option<TermIdx>,
+        step: Option<TermIdx>,
+    },
     /// Display literal: `kind` ∈ list/tuple/set/dict. For dict, `items`
     /// alternate key,value (the MkDict convention). Runtime realisation:
     /// list/tuple → Tuple (kind retained in IR for rendering), set →
     /// Set, dict → Dict (keys must be scalar; sorted by cmp_value).
-    ProgContainerLit { kind: Sym, items: Vec<TermIdx> },
+    ProgContainerLit {
+        kind: Sym,
+        items: Vec<TermIdx>,
+    },
     /// `[expr for var in source if cond]` — eager, ordered, → Tuple.
     /// Each iteration charges fuel (a comprehension IS a loop).
-    ProgComprehensionList { var: Sym, source: TermIdx, expr: TermIdx, cond: Option<TermIdx> },
+    ProgComprehensionList {
+        var: Sym,
+        source: TermIdx,
+        expr: TermIdx,
+        cond: Option<TermIdx>,
+    },
     /// `(expr for var in source if cond)` — SAME eager semantics, →
     /// Tuple (the generator is exhausted eagerly; the IR keeps the
     /// surface kind for rendering). Consumers like `sum(...)` agree
     /// with CPython because the realised sequence is identical.
-    ProgComprehensionGen { var: Sym, source: TermIdx, expr: TermIdx, cond: Option<TermIdx> },
+    ProgComprehensionGen {
+        var: Sym,
+        source: TermIdx,
+        expr: TermIdx,
+        cond: Option<TermIdx>,
+    },
     /// `a is b` / `a is not b`. Honest scope: None-identity (either
     /// side None → identity test against None) and Node-identity;
     /// anything else traps `is_op:unsupported` rather than
     /// approximating identity with `Eq` (the P0 §4 requirement).
-    ProgIsOp { a: TermIdx, b: TermIdx, negated: bool },
+    ProgIsOp {
+        a: TermIdx,
+        b: TermIdx,
+        negated: bool,
+    },
     /// f-string: parts are Lit(Str) segments and expressions; each part
     /// renders via `py_str` (Python `str()` spelling for scalars) and
     /// the whole concatenates to Surface(Text).
-    ProgFString { parts: Vec<TermIdx> },
+    ProgFString {
+        parts: Vec<TermIdx>,
+    },
 
     /// `ProgEval` — THE one pure fueled interpreter over the Program IR
     /// (plan §3.2). `prog` is either an INLINE `Prog*` subtree in this
@@ -2347,7 +2993,13 @@ pub enum TermNode {
     /// selects one key (the ShapeDecode selector convention). PURE:
     /// Dict in → Dict out, no substrate mutation, no I/O — engine in
     /// `prog_eval.rs`, this arm is a one-line handoff.
-    ProgEval { prog: TermIdx, env: Option<TermIdx>, oracles: Option<TermIdx>, fuel: i64, field: Sym },
+    ProgEval {
+        prog: TermIdx,
+        env: Option<TermIdx>,
+        oracles: Option<TermIdx>,
+        fuel: i64,
+        field: Sym,
+    },
 
     // --- Naming primitives (P1 deliverable 3) ---
     //
@@ -2361,18 +3013,20 @@ pub enum TermNode {
     // tests/test_prog_ir_migrated.py). Identifiers that arrive via
     // Term-JSON / seed data are interned at PARSE time (jsonio takes
     // `&mut Interner`) — that is the sound interning path.
-
     /// snake_case an identifier-ish string: lowercase, camel boundaries
     /// → `_`, non-alphanumeric runs → one `_`, trimmed/collapsed.
     /// Str/Surface(Text) in → Surface(Text) out; other → None (honest
     /// gap, never coerced).
-    SnakeCase { text: TermIdx },
+    SnakeCase {
+        text: TermIdx,
+    },
     /// Unicode-simple lowercase fold. Str/Surface(Text) in →
     /// Surface(Text) out; other → None.
-    CaseFold { text: TermIdx },
+    CaseFold {
+        text: TermIdx,
+    },
 
     // --- Program synthesis (P4-A) ---
-
     /// `Call{name,args}` — dispatch to a registry-resident, named,
     /// parameterized Term-tree template (`DERIVED_OPERATOR_TIER_
     /// RESULTS.md` §3.2, `DERIVED_OPERATOR_TIER_SLICE1_PREREG.md`): the
@@ -2391,7 +3045,10 @@ pub enum TermNode {
     /// precedent: built once, referenced many times, never a foreign
     /// arena). No registered entry for `name` (or no registry present
     /// at all) → `Value::None`, never a panic.
-    Call { name: Sym, args: Vec<TermIdx> },
+    Call {
+        name: Sym,
+        args: Vec<TermIdx>,
+    },
 
     /// `SynthEnumerate` — the bottom-up enumerative synthesizer
     /// (faithful port of `domains/generator.py::synthesize`, unguided
@@ -2475,6 +3132,14 @@ pub enum TermNode {
         dimension_key: Sym,
         verified_key: Sym,
         signed_value_key: Sym,
+    },
+    /// Compact graph-native learned two-slice future-manifold projection.
+    FutureManifoldProjection {
+        episode: TermIdx,
+        policy: TermIdx,
+        source: TermIdx,
+        addition: Option<TermIdx>,
+        field: Sym,
     },
 }
 
@@ -2808,14 +3473,12 @@ impl<'a> EvalCtx<'a> {
         self
     }
 
-    pub fn with_shape_cache(mut self,
-                             cache: &'a mut crate::shape::ShapeCache) -> Self {
+    pub fn with_shape_cache(mut self, cache: &'a mut crate::shape::ShapeCache) -> Self {
         self.shape_cache = Some(cache);
         self
     }
 
-    pub fn with_shape_target(mut self,
-                              target: crate::shape::Shape) -> Self {
+    pub fn with_shape_target(mut self, target: crate::shape::Shape) -> Self {
         self.shape_target = Some(target);
         self
     }
@@ -2848,8 +3511,11 @@ impl<'a> EvalCtx<'a> {
 /// kind isn't interned, no entry is registered, or the entry is a
 /// body-taker (which doesn't use this dispatch path). See DerivationRegistry doc.
 #[inline]
-fn lookup_value_taker_def(ctx: &mut EvalCtx, arena: &TermArena,
-                           kind_name: &str) -> Option<TermIdx> {
+fn lookup_value_taker_def(
+    ctx: &mut EvalCtx,
+    arena: &TermArena,
+    kind_name: &str,
+) -> Option<TermIdx> {
     let kind_sym = ctx.interner.lookup(kind_name)?;
     let def = match ctx.derivations?.get(&kind_sym)? {
         Derivation::ValueTaker(def) => *def,
@@ -2864,7 +3530,7 @@ fn lookup_value_taker_def(ctx: &mut EvalCtx, arena: &TermArena,
     if let Some(target) = ctx.shape_target {
         let def_shape = match ctx.shape_cache.as_deref_mut() {
             Some(cache) => cache.assess_and_cache(def, arena),
-            None        => crate::shape::assess_shape(def, arena),
+            None => crate::shape::assess_shape(def, arena),
         };
         if !crate::shape::shapes_compatible(&def_shape, &target) {
             if let Some(c) = ctx.counters.as_deref_mut() {
@@ -2881,8 +3547,13 @@ fn lookup_value_taker_def(ctx: &mut EvalCtx, arena: &TermArena,
 /// which synthesises a kernel Term in a tmp arena, then evaluates it.
 #[inline]
 fn is_body_taker_registered(ctx: &EvalCtx, kind_name: &str) -> bool {
-    let Some(kind_sym) = ctx.interner.lookup(kind_name) else { return false };
-    matches!(ctx.derivations.and_then(|d| d.get(&kind_sym)), Some(Derivation::BodyTaker))
+    let Some(kind_sym) = ctx.interner.lookup(kind_name) else {
+        return false;
+    };
+    matches!(
+        ctx.derivations.and_then(|d| d.get(&kind_sym)),
+        Some(Derivation::BodyTaker)
+    )
 }
 
 /// Deep-copy a Term subtree from `src` arena into `dst` arena, returning
@@ -2894,298 +3565,692 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
     let node = src.get(idx).clone();
     let copied = match node {
         // Leaves — no children to recurse on.
-        TermNode::Var { .. } | TermNode::Lit { .. } | TermNode::Slot { .. }
-        | TermNode::Label { .. } | TermNode::Surface { .. } => node,
+        TermNode::Var { .. }
+        | TermNode::Lit { .. }
+        | TermNode::Slot { .. }
+        | TermNode::Label { .. }
+        | TermNode::Surface { .. } => node,
 
         // Single-child Terms.
-        TermNode::TypeOf { node } => TermNode::TypeOf { node: copy_subtree(src, dst, node) },
-        TermNode::Attr { node, key } => TermNode::Attr { node: copy_subtree(src, dst, node), key },
+        TermNode::TypeOf { node } => TermNode::TypeOf {
+            node: copy_subtree(src, dst, node),
+        },
+        TermNode::Attr { node, key } => TermNode::Attr {
+            node: copy_subtree(src, dst, node),
+            key,
+        },
         TermNode::UseTool { tool, args } => TermNode::UseTool {
             tool,
             args: args.iter().map(|a| copy_subtree(src, dst, *a)).collect(),
         },
-        TermNode::ReachableFrom { node, edge_type, any_type } =>
-            TermNode::ReachableFrom { node: copy_subtree(src, dst, node), edge_type, any_type },
+        TermNode::ReachableFrom {
+            node,
+            edge_type,
+            any_type,
+        } => TermNode::ReachableFrom {
+            node: copy_subtree(src, dst, node),
+            edge_type,
+            any_type,
+        },
 
-        TermNode::Neighbours { node, edge_type, any_type } =>
-            TermNode::Neighbours { node: copy_subtree(src, dst, node), edge_type, any_type },
-        TermNode::SlideNeighbours { cell, slide, ground } =>
-            TermNode::SlideNeighbours { cell: copy_subtree(src, dst, cell), slide: copy_subtree(src, dst, slide), ground: copy_subtree(src, dst, ground) },
-        TermNode::InNeighbours { node, edge_type, any_type } =>
-            TermNode::InNeighbours { node: copy_subtree(src, dst, node), edge_type, any_type },
-        TermNode::MapNeighbours { source, edge_type, any_type } =>
-            TermNode::MapNeighbours { source: copy_subtree(src, dst, source), edge_type, any_type },
-        TermNode::Edges { node, edge_type, any_type } =>
-            TermNode::Edges { node: copy_subtree(src, dst, node), edge_type, any_type },
-        TermNode::EdgeAttr { edge, key } =>
-            TermNode::EdgeAttr { edge: copy_subtree(src, dst, edge), key },
-        TermNode::NodesWhere { node_type, attr_key, value } =>
-            TermNode::NodesWhere { node_type, attr_key, value: copy_subtree(src, dst, value) },
-        TermNode::NodesOfType { node_type } =>
-            TermNode::NodesOfType { node_type },
-        TermNode::AntiUnify { values, wild } =>
-            TermNode::AntiUnify { values: copy_subtree(src, dst, values), wild },
-        TermNode::FixedCount { pattern, wild } =>
-            TermNode::FixedCount { pattern: copy_subtree(src, dst, pattern), wild },
-        TermNode::Covers { pattern, instance, wild } =>
-            TermNode::Covers { pattern: copy_subtree(src, dst, pattern),
-                               instance: copy_subtree(src, dst, instance), wild },
-        TermNode::CoversOpen { pattern, instance, wild } =>
-            TermNode::CoversOpen { pattern: copy_subtree(src, dst, pattern),
-                                   instance: copy_subtree(src, dst, instance), wild },
-        TermNode::AntiUnifyWitness { values, wild } =>
-            TermNode::AntiUnifyWitness { values: copy_subtree(src, dst, values), wild },
-        TermNode::Substitute { template, sigma, wild } =>
-            TermNode::Substitute { template: copy_subtree(src, dst, template),
-                                   sigma: copy_subtree(src, dst, sigma), wild },
-        TermNode::Unify { values, wild } =>
-            TermNode::Unify { values: copy_subtree(src, dst, values), wild },
-        TermNode::StructSim { a, b, wild } =>
-            TermNode::StructSim { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b), wild },
-        TermNode::ShapeDecode { goal, codebook_type, exclude, codebook_scope, beam, max_steps, cand_k, budget, field, wild, wild_objects } =>
-            TermNode::ShapeDecode {
-                goal: copy_subtree(src, dst, goal),
-                codebook_type,
-                exclude: exclude.map(|e| copy_subtree(src, dst, e)),
-                codebook_scope: codebook_scope.map(|e| copy_subtree(src, dst, e)),
-                beam, max_steps, cand_k, budget, field, wild, wild_objects,
-            },
-        TermNode::MotorCompose { episode, policy, candidate } =>
-            TermNode::MotorCompose {
-                episode: copy_subtree(src, dst, episode),
-                policy: copy_subtree(src, dst, policy),
-                candidate: copy_subtree(src, dst, candidate),
-            },
-        TermNode::TransformDecode { goal, codebook_type, exclude, max_dims, field } =>
-            TermNode::TransformDecode {
-                goal: copy_subtree(src, dst, goal),
-                codebook_type,
-                exclude: exclude.map(|e| copy_subtree(src, dst, e)),
-                max_dims, field,
-            },
-        TermNode::NetForward { assemblage, inputs } =>
-            TermNode::NetForward {
-                assemblage: copy_subtree(src, dst, assemblage),
-                inputs: copy_subtree(src, dst, inputs),
-            },
-        TermNode::DimInfer { goal, codebook_type, exclude, generator_type, max_dims, field } =>
-            TermNode::DimInfer {
-                goal: copy_subtree(src, dst, goal),
-                codebook_type,
-                exclude: exclude.map(|e| copy_subtree(src, dst, e)),
-                generator_type, max_dims, field,
-            },
-        TermNode::GenInfer { goal, codebook_type, exclude, max_dims, field } =>
-            TermNode::GenInfer {
-                goal: copy_subtree(src, dst, goal),
-                codebook_type,
-                exclude: exclude.map(|e| copy_subtree(src, dst, e)),
-                max_dims, field,
-            },
-        TermNode::DepthInfer { sequence, codebook_type, max_b, field } =>
-            TermNode::DepthInfer {
-                sequence: copy_subtree(src, dst, sequence),
-                codebook_type, max_b, field,
-            },
-        TermNode::TimeInfer { sequence, codebook_type, max_b, field, max_steps, robust } =>
-            TermNode::TimeInfer {
-                sequence: copy_subtree(src, dst, sequence),
-                codebook_type, max_b, field, max_steps, robust,
-            },
-        TermNode::BlinkBridge { sequence, codebook_type, max_b, field } =>
-            TermNode::BlinkBridge {
-                sequence: copy_subtree(src, dst, sequence),
-                codebook_type, max_b, field,
-            },
-        TermNode::GapAbduce { sequence, codebook_type, max_b, field } =>
-            TermNode::GapAbduce {
-                sequence: copy_subtree(src, dst, sequence),
-                codebook_type, max_b, field,
-            },
-        TermNode::SupportInfer { sequence, codebook_type, field } =>
-            TermNode::SupportInfer {
-                sequence: copy_subtree(src, dst, sequence),
-                codebook_type, field,
-            },
-        TermNode::MotionEnergy { sequence, height, width, field } =>
-            TermNode::MotionEnergy {
-                sequence: copy_subtree(src, dst, sequence),
-                height, width, field,
-            },
-        TermNode::GapVerify { sequence, codebook_type, max_b, field } =>
-            TermNode::GapVerify {
-                sequence: copy_subtree(src, dst, sequence),
-                codebook_type, max_b, field,
-            },
-        TermNode::TransferDecode { goal } =>
-            TermNode::TransferDecode {
-                goal: copy_subtree(src, dst, goal),
-            },
-        TermNode::RecogniseShape { text } =>
-            TermNode::RecogniseShape {
-                text: copy_subtree(src, dst, text),
-            },
-        TermNode::MetaShapeMint { observation, obs_type, status_value, wild, field } =>
-            TermNode::MetaShapeMint {
-                observation: copy_subtree(src, dst, observation),
-                obs_type, status_value, wild, field,
-            },
+        TermNode::Neighbours {
+            node,
+            edge_type,
+            any_type,
+        } => TermNode::Neighbours {
+            node: copy_subtree(src, dst, node),
+            edge_type,
+            any_type,
+        },
+        TermNode::SlideNeighbours {
+            cell,
+            slide,
+            ground,
+        } => TermNode::SlideNeighbours {
+            cell: copy_subtree(src, dst, cell),
+            slide: copy_subtree(src, dst, slide),
+            ground: copy_subtree(src, dst, ground),
+        },
+        TermNode::InNeighbours {
+            node,
+            edge_type,
+            any_type,
+        } => TermNode::InNeighbours {
+            node: copy_subtree(src, dst, node),
+            edge_type,
+            any_type,
+        },
+        TermNode::MapNeighbours {
+            source,
+            edge_type,
+            any_type,
+        } => TermNode::MapNeighbours {
+            source: copy_subtree(src, dst, source),
+            edge_type,
+            any_type,
+        },
+        TermNode::Edges {
+            node,
+            edge_type,
+            any_type,
+        } => TermNode::Edges {
+            node: copy_subtree(src, dst, node),
+            edge_type,
+            any_type,
+        },
+        TermNode::EdgeAttr { edge, key } => TermNode::EdgeAttr {
+            edge: copy_subtree(src, dst, edge),
+            key,
+        },
+        TermNode::NodesWhere {
+            node_type,
+            attr_key,
+            value,
+        } => TermNode::NodesWhere {
+            node_type,
+            attr_key,
+            value: copy_subtree(src, dst, value),
+        },
+        TermNode::NodesOfType { node_type } => TermNode::NodesOfType { node_type },
+        TermNode::AntiUnify { values, wild } => TermNode::AntiUnify {
+            values: copy_subtree(src, dst, values),
+            wild,
+        },
+        TermNode::FixedCount { pattern, wild } => TermNode::FixedCount {
+            pattern: copy_subtree(src, dst, pattern),
+            wild,
+        },
+        TermNode::Covers {
+            pattern,
+            instance,
+            wild,
+        } => TermNode::Covers {
+            pattern: copy_subtree(src, dst, pattern),
+            instance: copy_subtree(src, dst, instance),
+            wild,
+        },
+        TermNode::CoversOpen {
+            pattern,
+            instance,
+            wild,
+        } => TermNode::CoversOpen {
+            pattern: copy_subtree(src, dst, pattern),
+            instance: copy_subtree(src, dst, instance),
+            wild,
+        },
+        TermNode::AntiUnifyWitness { values, wild } => TermNode::AntiUnifyWitness {
+            values: copy_subtree(src, dst, values),
+            wild,
+        },
+        TermNode::Substitute {
+            template,
+            sigma,
+            wild,
+        } => TermNode::Substitute {
+            template: copy_subtree(src, dst, template),
+            sigma: copy_subtree(src, dst, sigma),
+            wild,
+        },
+        TermNode::Unify { values, wild } => TermNode::Unify {
+            values: copy_subtree(src, dst, values),
+            wild,
+        },
+        TermNode::StructSim { a, b, wild } => TermNode::StructSim {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+            wild,
+        },
+        TermNode::ShapeDecode {
+            goal,
+            codebook_type,
+            exclude,
+            codebook_scope,
+            beam,
+            max_steps,
+            cand_k,
+            budget,
+            field,
+            wild,
+            wild_objects,
+        } => TermNode::ShapeDecode {
+            goal: copy_subtree(src, dst, goal),
+            codebook_type,
+            exclude: exclude.map(|e| copy_subtree(src, dst, e)),
+            codebook_scope: codebook_scope.map(|e| copy_subtree(src, dst, e)),
+            beam,
+            max_steps,
+            cand_k,
+            budget,
+            field,
+            wild,
+            wild_objects,
+        },
+        TermNode::MotorCompose {
+            episode,
+            policy,
+            candidate,
+        } => TermNode::MotorCompose {
+            episode: copy_subtree(src, dst, episode),
+            policy: copy_subtree(src, dst, policy),
+            candidate: copy_subtree(src, dst, candidate),
+        },
+        TermNode::FutureManifoldProjection {
+            episode,
+            policy,
+            source,
+            addition,
+            field,
+        } => TermNode::FutureManifoldProjection {
+            episode: copy_subtree(src, dst, episode),
+            policy: copy_subtree(src, dst, policy),
+            source: copy_subtree(src, dst, source),
+            addition: addition.map(|a| copy_subtree(src, dst, a)),
+            field,
+        },
+        TermNode::TransformDecode {
+            goal,
+            codebook_type,
+            exclude,
+            max_dims,
+            field,
+        } => TermNode::TransformDecode {
+            goal: copy_subtree(src, dst, goal),
+            codebook_type,
+            exclude: exclude.map(|e| copy_subtree(src, dst, e)),
+            max_dims,
+            field,
+        },
+        TermNode::NetForward { assemblage, inputs } => TermNode::NetForward {
+            assemblage: copy_subtree(src, dst, assemblage),
+            inputs: copy_subtree(src, dst, inputs),
+        },
+        TermNode::DimInfer {
+            goal,
+            codebook_type,
+            exclude,
+            generator_type,
+            max_dims,
+            field,
+        } => TermNode::DimInfer {
+            goal: copy_subtree(src, dst, goal),
+            codebook_type,
+            exclude: exclude.map(|e| copy_subtree(src, dst, e)),
+            generator_type,
+            max_dims,
+            field,
+        },
+        TermNode::GenInfer {
+            goal,
+            codebook_type,
+            exclude,
+            max_dims,
+            field,
+        } => TermNode::GenInfer {
+            goal: copy_subtree(src, dst, goal),
+            codebook_type,
+            exclude: exclude.map(|e| copy_subtree(src, dst, e)),
+            max_dims,
+            field,
+        },
+        TermNode::DepthInfer {
+            sequence,
+            codebook_type,
+            max_b,
+            field,
+        } => TermNode::DepthInfer {
+            sequence: copy_subtree(src, dst, sequence),
+            codebook_type,
+            max_b,
+            field,
+        },
+        TermNode::TimeInfer {
+            sequence,
+            codebook_type,
+            max_b,
+            field,
+            max_steps,
+            robust,
+        } => TermNode::TimeInfer {
+            sequence: copy_subtree(src, dst, sequence),
+            codebook_type,
+            max_b,
+            field,
+            max_steps,
+            robust,
+        },
+        TermNode::BlinkBridge {
+            sequence,
+            codebook_type,
+            max_b,
+            field,
+        } => TermNode::BlinkBridge {
+            sequence: copy_subtree(src, dst, sequence),
+            codebook_type,
+            max_b,
+            field,
+        },
+        TermNode::GapAbduce {
+            sequence,
+            codebook_type,
+            max_b,
+            field,
+        } => TermNode::GapAbduce {
+            sequence: copy_subtree(src, dst, sequence),
+            codebook_type,
+            max_b,
+            field,
+        },
+        TermNode::SupportInfer {
+            sequence,
+            codebook_type,
+            field,
+        } => TermNode::SupportInfer {
+            sequence: copy_subtree(src, dst, sequence),
+            codebook_type,
+            field,
+        },
+        TermNode::MotionEnergy {
+            sequence,
+            height,
+            width,
+            field,
+        } => TermNode::MotionEnergy {
+            sequence: copy_subtree(src, dst, sequence),
+            height,
+            width,
+            field,
+        },
+        TermNode::GapVerify {
+            sequence,
+            codebook_type,
+            max_b,
+            field,
+        } => TermNode::GapVerify {
+            sequence: copy_subtree(src, dst, sequence),
+            codebook_type,
+            max_b,
+            field,
+        },
+        TermNode::TransferDecode { goal } => TermNode::TransferDecode {
+            goal: copy_subtree(src, dst, goal),
+        },
+        TermNode::RecogniseShape { text } => TermNode::RecogniseShape {
+            text: copy_subtree(src, dst, text),
+        },
+        TermNode::MetaShapeMint {
+            observation,
+            obs_type,
+            status_value,
+            wild,
+            field,
+        } => TermNode::MetaShapeMint {
+            observation: copy_subtree(src, dst, observation),
+            obs_type,
+            status_value,
+            wild,
+            field,
+        },
         TermNode::StrokeQuantize {
-            points, segments, turn_bins, len_bins, grid, scale_bins, invariant_only, canonical_pose,
-            turn_edges, len_edges, emit_residual,
-            bounds, field, seg_sym, pose_x_sym, pose_y_sym, pose_o_sym, pose_s_sym,
+            points,
+            segments,
+            turn_bins,
+            len_bins,
+            grid,
+            scale_bins,
+            invariant_only,
+            canonical_pose,
+            turn_edges,
+            len_edges,
+            emit_residual,
+            bounds,
+            field,
+            seg_sym,
+            pose_x_sym,
+            pose_y_sym,
+            pose_o_sym,
+            pose_s_sym,
         } => TermNode::StrokeQuantize {
             points: copy_subtree(src, dst, points),
-            segments, turn_bins, len_bins, grid, scale_bins, invariant_only, canonical_pose,
+            segments,
+            turn_bins,
+            len_bins,
+            grid,
+            scale_bins,
+            invariant_only,
+            canonical_pose,
             turn_edges: turn_edges.map(|e| copy_subtree(src, dst, e)),
             len_edges: len_edges.map(|e| copy_subtree(src, dst, e)),
             emit_residual,
             bounds: bounds.map(|b| copy_subtree(src, dst, b)),
-            field, seg_sym, pose_x_sym, pose_y_sym, pose_o_sym, pose_s_sym,
+            field,
+            seg_sym,
+            pose_x_sym,
+            pose_y_sym,
+            pose_o_sym,
+            pose_s_sym,
         },
         TermNode::StrokeRender {
-            signature, n_points, apply_pose, turn_bins, len_bins, grid, scale_bins,
-            turn_edges, len_edges, bounds, field,
+            signature,
+            n_points,
+            apply_pose,
+            turn_bins,
+            len_bins,
+            grid,
+            scale_bins,
+            turn_edges,
+            len_edges,
+            bounds,
+            field,
         } => TermNode::StrokeRender {
-                signature: copy_subtree(src, dst, signature),
-                n_points, apply_pose, turn_bins, len_bins, grid, scale_bins,
-                turn_edges: turn_edges.map(|e| copy_subtree(src, dst, e)),
-                len_edges: len_edges.map(|e| copy_subtree(src, dst, e)),
-                bounds: bounds.map(|b| copy_subtree(src, dst, b)),
-                field,
-            },
-        TermNode::SigmaLognormalGenerate { primitives, start, t_start, t_end, n_points, field } =>
-            TermNode::SigmaLognormalGenerate {
-                primitives: copy_subtree(src, dst, primitives),
-                start: copy_subtree(src, dst, start),
-                t_start, t_end, n_points, field,
-            },
-        TermNode::LookaheadValue { node, child_edge, score_key, depth } =>
-            TermNode::LookaheadValue { node: copy_subtree(src, dst, node), child_edge, score_key,
-                                       depth: copy_subtree(src, dst, depth) },
-        TermNode::ScalarAttrTriples { skip_prefix } =>
-            TermNode::ScalarAttrTriples { skip_prefix },
-        TermNode::AttrByName { node, name } =>
-            TermNode::AttrByName { node: copy_subtree(src, dst, node),
-                                   name: copy_subtree(src, dst, name) },
-        TermNode::Count { source } =>
-            TermNode::Count { source: copy_subtree(src, dst, source) },
-        TermNode::Pick { source } =>
-            TermNode::Pick { source: copy_subtree(src, dst, source) },
-        TermNode::PickUnique { source } =>
-            TermNode::PickUnique { source: copy_subtree(src, dst, source) },
-        TermNode::EvalSubgraph { node } =>
-            TermNode::EvalSubgraph { node: copy_subtree(src, dst, node) },
-        TermNode::Not { arg } => TermNode::Not { arg: copy_subtree(src, dst, arg) },
-        TermNode::Abs { arg } => TermNode::Abs { arg: copy_subtree(src, dst, arg) },
-        TermNode::Neg { arg } => TermNode::Neg { arg: copy_subtree(src, dst, arg) },
-        TermNode::Sqrt { arg } => TermNode::Sqrt { arg: copy_subtree(src, dst, arg) },
-        TermNode::Log { arg } => TermNode::Log { arg: copy_subtree(src, dst, arg) },
-        TermNode::Exp { arg } => TermNode::Exp { arg: copy_subtree(src, dst, arg) },
-        TermNode::Magnitude { arg } => TermNode::Magnitude { arg: copy_subtree(src, dst, arg) },
-        TermNode::Sin { arg } => TermNode::Sin { arg: copy_subtree(src, dst, arg) },
-        TermNode::Cos { arg } => TermNode::Cos { arg: copy_subtree(src, dst, arg) },
-        TermNode::Bearing { arg } => TermNode::Bearing { arg: copy_subtree(src, dst, arg) },
+            signature: copy_subtree(src, dst, signature),
+            n_points,
+            apply_pose,
+            turn_bins,
+            len_bins,
+            grid,
+            scale_bins,
+            turn_edges: turn_edges.map(|e| copy_subtree(src, dst, e)),
+            len_edges: len_edges.map(|e| copy_subtree(src, dst, e)),
+            bounds: bounds.map(|b| copy_subtree(src, dst, b)),
+            field,
+        },
+        TermNode::SigmaLognormalGenerate {
+            primitives,
+            start,
+            t_start,
+            t_end,
+            n_points,
+            field,
+        } => TermNode::SigmaLognormalGenerate {
+            primitives: copy_subtree(src, dst, primitives),
+            start: copy_subtree(src, dst, start),
+            t_start,
+            t_end,
+            n_points,
+            field,
+        },
+        TermNode::LookaheadValue {
+            node,
+            child_edge,
+            score_key,
+            depth,
+        } => TermNode::LookaheadValue {
+            node: copy_subtree(src, dst, node),
+            child_edge,
+            score_key,
+            depth: copy_subtree(src, dst, depth),
+        },
+        TermNode::ScalarAttrTriples { skip_prefix } => TermNode::ScalarAttrTriples { skip_prefix },
+        TermNode::AttrByName { node, name } => TermNode::AttrByName {
+            node: copy_subtree(src, dst, node),
+            name: copy_subtree(src, dst, name),
+        },
+        TermNode::Count { source } => TermNode::Count {
+            source: copy_subtree(src, dst, source),
+        },
+        TermNode::Pick { source } => TermNode::Pick {
+            source: copy_subtree(src, dst, source),
+        },
+        TermNode::PickUnique { source } => TermNode::PickUnique {
+            source: copy_subtree(src, dst, source),
+        },
+        TermNode::EvalSubgraph { node } => TermNode::EvalSubgraph {
+            node: copy_subtree(src, dst, node),
+        },
+        TermNode::Not { arg } => TermNode::Not {
+            arg: copy_subtree(src, dst, arg),
+        },
+        TermNode::Abs { arg } => TermNode::Abs {
+            arg: copy_subtree(src, dst, arg),
+        },
+        TermNode::Neg { arg } => TermNode::Neg {
+            arg: copy_subtree(src, dst, arg),
+        },
+        TermNode::Sqrt { arg } => TermNode::Sqrt {
+            arg: copy_subtree(src, dst, arg),
+        },
+        TermNode::Log { arg } => TermNode::Log {
+            arg: copy_subtree(src, dst, arg),
+        },
+        TermNode::Exp { arg } => TermNode::Exp {
+            arg: copy_subtree(src, dst, arg),
+        },
+        TermNode::Magnitude { arg } => TermNode::Magnitude {
+            arg: copy_subtree(src, dst, arg),
+        },
+        TermNode::Sin { arg } => TermNode::Sin {
+            arg: copy_subtree(src, dst, arg),
+        },
+        TermNode::Cos { arg } => TermNode::Cos {
+            arg: copy_subtree(src, dst, arg),
+        },
+        TermNode::Bearing { arg } => TermNode::Bearing {
+            arg: copy_subtree(src, dst, arg),
+        },
 
         // n-ary items.
-        TermNode::SetT { items } =>
-            TermNode::SetT { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
-        TermNode::And { items } =>
-            TermNode::And { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
-        TermNode::Or { items } =>
-            TermNode::Or { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
-        TermNode::Plus { items } =>
-            TermNode::Plus { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
-        TermNode::Times { items } =>
-            TermNode::Times { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
-        TermNode::Min { items } =>
-            TermNode::Min { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
-        TermNode::Max { items } =>
-            TermNode::Max { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
-        TermNode::ArgMax { items } =>
-            TermNode::ArgMax { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
-        TermNode::ArgMin { items } =>
-            TermNode::ArgMin { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
-        TermNode::TrackIdentityCorrespondence { prev, cur, feature_key, category_key, extent_key, radius } =>
-            TermNode::TrackIdentityCorrespondence {
-                prev: copy_subtree(src, dst, prev),
-                cur: copy_subtree(src, dst, cur),
-                feature_key, category_key, extent_key,
-                radius: copy_subtree(src, dst, radius),
-            },
-        TermNode::Vec_ { items } =>
-            TermNode::Vec_ { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
-        TermNode::Cat { items } =>
-            TermNode::Cat { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
-        TermNode::Bytes { items } =>
-            TermNode::Bytes { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
-        TermNode::Lines { items } =>
-            TermNode::Lines { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
+        TermNode::SetT { items } => TermNode::SetT {
+            items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
+        },
+        TermNode::And { items } => TermNode::And {
+            items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
+        },
+        TermNode::Or { items } => TermNode::Or {
+            items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
+        },
+        TermNode::Plus { items } => TermNode::Plus {
+            items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
+        },
+        TermNode::Times { items } => TermNode::Times {
+            items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
+        },
+        TermNode::Min { items } => TermNode::Min {
+            items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
+        },
+        TermNode::Max { items } => TermNode::Max {
+            items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
+        },
+        TermNode::ArgMax { items } => TermNode::ArgMax {
+            items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
+        },
+        TermNode::ArgMin { items } => TermNode::ArgMin {
+            items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
+        },
+        TermNode::TrackIdentityCorrespondence {
+            prev,
+            cur,
+            feature_key,
+            category_key,
+            extent_key,
+            radius,
+        } => TermNode::TrackIdentityCorrespondence {
+            prev: copy_subtree(src, dst, prev),
+            cur: copy_subtree(src, dst, cur),
+            feature_key,
+            category_key,
+            extent_key,
+            radius: copy_subtree(src, dst, radius),
+        },
+        TermNode::Vec_ { items } => TermNode::Vec_ {
+            items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
+        },
+        TermNode::Cat { items } => TermNode::Cat {
+            items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
+        },
+        TermNode::Bytes { items } => TermNode::Bytes {
+            items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
+        },
+        TermNode::Lines { items } => TermNode::Lines {
+            items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
+        },
 
         // Binary.
-        TermNode::In { member, container } =>
-            TermNode::In { member: copy_subtree(src, dst, member), container: copy_subtree(src, dst, container) },
-        TermNode::Tokenize { text } => TermNode::Tokenize { text: copy_subtree(src, dst, text) },
-        TermNode::MorphHead { text } => TermNode::MorphHead { text: copy_subtree(src, dst, text) },
-        TermNode::MorphTail { text } => TermNode::MorphTail { text: copy_subtree(src, dst, text) },
-        TermNode::FinalToken { text } => TermNode::FinalToken { text: copy_subtree(src, dst, text) },
-        TermNode::Tokenize2 { text } => TermNode::Tokenize2 { text: copy_subtree(src, dst, text) },
-        TermNode::ReadFile { path } => TermNode::ReadFile { path: copy_subtree(src, dst, path) },
-        TermNode::StringIndexOf { haystack, needle } => TermNode::StringIndexOf { haystack: copy_subtree(src, dst, haystack), needle: copy_subtree(src, dst, needle) },
-        TermNode::StringSlice { s, start, end } => TermNode::StringSlice { s: copy_subtree(src, dst, s), start: copy_subtree(src, dst, start), end: copy_subtree(src, dst, end) },
-        TermNode::StringConcat { parts } => TermNode::StringConcat { parts: parts.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
+        TermNode::In { member, container } => TermNode::In {
+            member: copy_subtree(src, dst, member),
+            container: copy_subtree(src, dst, container),
+        },
+        TermNode::Tokenize { text } => TermNode::Tokenize {
+            text: copy_subtree(src, dst, text),
+        },
+        TermNode::MorphHead { text } => TermNode::MorphHead {
+            text: copy_subtree(src, dst, text),
+        },
+        TermNode::MorphTail { text } => TermNode::MorphTail {
+            text: copy_subtree(src, dst, text),
+        },
+        TermNode::FinalToken { text } => TermNode::FinalToken {
+            text: copy_subtree(src, dst, text),
+        },
+        TermNode::Tokenize2 { text } => TermNode::Tokenize2 {
+            text: copy_subtree(src, dst, text),
+        },
+        TermNode::ReadFile { path } => TermNode::ReadFile {
+            path: copy_subtree(src, dst, path),
+        },
+        TermNode::StringIndexOf { haystack, needle } => TermNode::StringIndexOf {
+            haystack: copy_subtree(src, dst, haystack),
+            needle: copy_subtree(src, dst, needle),
+        },
+        TermNode::StringSlice { s, start, end } => TermNode::StringSlice {
+            s: copy_subtree(src, dst, s),
+            start: copy_subtree(src, dst, start),
+            end: copy_subtree(src, dst, end),
+        },
+        TermNode::StringConcat { parts } => TermNode::StringConcat {
+            parts: parts.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
+        },
         // Rung 1 Tier-1 stdlib Term ports.
         TermNode::Replace { text, old, new } => TermNode::Replace {
-            text: copy_subtree(src, dst, text), old: copy_subtree(src, dst, old), new: copy_subtree(src, dst, new),
+            text: copy_subtree(src, dst, text),
+            old: copy_subtree(src, dst, old),
+            new: copy_subtree(src, dst, new),
         },
-        TermNode::Str { value } => TermNode::Str { value: copy_subtree(src, dst, value) },
-        TermNode::Split { text, sep } => TermNode::Split { text: copy_subtree(src, dst, text), sep: copy_subtree(src, dst, sep) },
-        TermNode::StrCount { text, sub } => TermNode::StrCount { text: copy_subtree(src, dst, text), sub: copy_subtree(src, dst, sub) },
-        TermNode::Round { value, ndigits } => TermNode::Round { value: copy_subtree(src, dst, value), ndigits: copy_subtree(src, dst, ndigits) },
-        TermNode::Reverse { seq } => TermNode::Reverse { seq: copy_subtree(src, dst, seq) },
-        TermNode::IndexedMap { source, item_name, index_name, value } => TermNode::IndexedMap {
-            source: copy_subtree(src, dst, source), item_name, index_name, value: copy_subtree(src, dst, value),
+        TermNode::Str { value } => TermNode::Str {
+            value: copy_subtree(src, dst, value),
         },
-        TermNode::Capitalize { text } => TermNode::Capitalize { text: copy_subtree(src, dst, text) },
-        TermNode::ParseInt { text } => TermNode::ParseInt { text: copy_subtree(src, dst, text) },
+        TermNode::Split { text, sep } => TermNode::Split {
+            text: copy_subtree(src, dst, text),
+            sep: copy_subtree(src, dst, sep),
+        },
+        TermNode::StrCount { text, sub } => TermNode::StrCount {
+            text: copy_subtree(src, dst, text),
+            sub: copy_subtree(src, dst, sub),
+        },
+        TermNode::Round { value, ndigits } => TermNode::Round {
+            value: copy_subtree(src, dst, value),
+            ndigits: copy_subtree(src, dst, ndigits),
+        },
+        TermNode::Reverse { seq } => TermNode::Reverse {
+            seq: copy_subtree(src, dst, seq),
+        },
+        TermNode::IndexedMap {
+            source,
+            item_name,
+            index_name,
+            value,
+        } => TermNode::IndexedMap {
+            source: copy_subtree(src, dst, source),
+            item_name,
+            index_name,
+            value: copy_subtree(src, dst, value),
+        },
+        TermNode::Capitalize { text } => TermNode::Capitalize {
+            text: copy_subtree(src, dst, text),
+        },
+        TermNode::ParseInt { text } => TermNode::ParseInt {
+            text: copy_subtree(src, dst, text),
+        },
         TermNode::Slice { seq, start, stop } => TermNode::Slice {
-            seq: copy_subtree(src, dst, seq), start: copy_subtree(src, dst, start), stop: copy_subtree(src, dst, stop),
+            seq: copy_subtree(src, dst, seq),
+            start: copy_subtree(src, dst, start),
+            stop: copy_subtree(src, dst, stop),
         },
-        TermNode::Sort { seq } => TermNode::Sort { seq: copy_subtree(src, dst, seq) },
-        TermNode::DictItems { seq } => TermNode::DictItems { seq: copy_subtree(src, dst, seq) },
-        TermNode::SortBy { source, var_name, key } => TermNode::SortBy {
-            source: copy_subtree(src, dst, source), var_name, key: copy_subtree(src, dst, key),
+        TermNode::Sort { seq } => TermNode::Sort {
+            seq: copy_subtree(src, dst, seq),
         },
-        TermNode::GroupCount { seq } => TermNode::GroupCount { seq: copy_subtree(src, dst, seq) },
+        TermNode::DictItems { seq } => TermNode::DictItems {
+            seq: copy_subtree(src, dst, seq),
+        },
+        TermNode::SortBy {
+            source,
+            var_name,
+            key,
+        } => TermNode::SortBy {
+            source: copy_subtree(src, dst, source),
+            var_name,
+            key: copy_subtree(src, dst, key),
+        },
+        TermNode::GroupCount { seq } => TermNode::GroupCount {
+            seq: copy_subtree(src, dst, seq),
+        },
         TermNode::DictMerge { a, b } => TermNode::DictMerge {
-            a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b),
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
         },
-        TermNode::ZipWith { a, b, a_name, b_name, value } => TermNode::ZipWith {
-            a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b),
-            a_name, b_name, value: copy_subtree(src, dst, value),
+        TermNode::ZipWith {
+            a,
+            b,
+            a_name,
+            b_name,
+            value,
+        } => TermNode::ZipWith {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+            a_name,
+            b_name,
+            value: copy_subtree(src, dst, value),
         },
-        TermNode::Verify { term, env, expected } => TermNode::Verify { term: copy_subtree(src, dst, term), env: copy_subtree(src, dst, env), expected: copy_subtree(src, dst, expected) },
-        TermNode::MkDict { items } =>
-            TermNode::MkDict { items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect() },
-        TermNode::ToJsonString { value } =>
-            TermNode::ToJsonString { value: copy_subtree(src, dst, value) },
-        TermNode::FromJsonString { text } =>
-            TermNode::FromJsonString { text: copy_subtree(src, dst, text) },
-        TermNode::ShiftThresholdLits { tree, shift } =>
-            TermNode::ShiftThresholdLits { tree: copy_subtree(src, dst, tree), shift: copy_subtree(src, dst, shift) },
-        TermNode::DictGet { dict, key } =>
-            TermNode::DictGet { dict: copy_subtree(src, dst, dict), key: copy_subtree(src, dst, key) },
-        TermNode::RewriteTreeNodes { tree, type_filter, field, value_map } =>
-            TermNode::RewriteTreeNodes {
-                tree: copy_subtree(src, dst, tree),
-                type_filter: type_filter.map(|t| copy_subtree(src, dst, t)),
-                field: copy_subtree(src, dst, field),
-                value_map: copy_subtree(src, dst, value_map),
-            },
-        TermNode::AttrKeyRanking { tree } => TermNode::AttrKeyRanking { tree: copy_subtree(src, dst, tree) },
-        TermNode::TextShape { text } => TermNode::TextShape { text: copy_subtree(src, dst, text) },
-        TermNode::FbFrameSeq { fb } => TermNode::FbFrameSeq { fb: copy_subtree(src, dst, fb) },
-        TermNode::ChangeDetect { image_vals, kernel_weights, dims } => TermNode::ChangeDetect {
+        TermNode::Verify {
+            term,
+            env,
+            expected,
+        } => TermNode::Verify {
+            term: copy_subtree(src, dst, term),
+            env: copy_subtree(src, dst, env),
+            expected: copy_subtree(src, dst, expected),
+        },
+        TermNode::MkDict { items } => TermNode::MkDict {
+            items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
+        },
+        TermNode::ToJsonString { value } => TermNode::ToJsonString {
+            value: copy_subtree(src, dst, value),
+        },
+        TermNode::FromJsonString { text } => TermNode::FromJsonString {
+            text: copy_subtree(src, dst, text),
+        },
+        TermNode::ShiftThresholdLits { tree, shift } => TermNode::ShiftThresholdLits {
+            tree: copy_subtree(src, dst, tree),
+            shift: copy_subtree(src, dst, shift),
+        },
+        TermNode::DictGet { dict, key } => TermNode::DictGet {
+            dict: copy_subtree(src, dst, dict),
+            key: copy_subtree(src, dst, key),
+        },
+        TermNode::RewriteTreeNodes {
+            tree,
+            type_filter,
+            field,
+            value_map,
+        } => TermNode::RewriteTreeNodes {
+            tree: copy_subtree(src, dst, tree),
+            type_filter: type_filter.map(|t| copy_subtree(src, dst, t)),
+            field: copy_subtree(src, dst, field),
+            value_map: copy_subtree(src, dst, value_map),
+        },
+        TermNode::AttrKeyRanking { tree } => TermNode::AttrKeyRanking {
+            tree: copy_subtree(src, dst, tree),
+        },
+        TermNode::TextShape { text } => TermNode::TextShape {
+            text: copy_subtree(src, dst, text),
+        },
+        TermNode::FbFrameSeq { fb } => TermNode::FbFrameSeq {
+            fb: copy_subtree(src, dst, fb),
+        },
+        TermNode::ChangeDetect {
+            image_vals,
+            kernel_weights,
+            dims,
+        } => TermNode::ChangeDetect {
             image_vals: copy_subtree(src, dst, image_vals),
             kernel_weights: copy_subtree(src, dst, kernel_weights),
             dims: copy_subtree(src, dst, dims),
@@ -3194,264 +4259,535 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
             a_vals: copy_subtree(src, dst, a_vals),
             b_vals: copy_subtree(src, dst, b_vals),
         },
-        TermNode::Foveate { image_vals, dims, geometry } => TermNode::Foveate {
+        TermNode::Foveate {
+            image_vals,
+            dims,
+            geometry,
+        } => TermNode::Foveate {
             image_vals: copy_subtree(src, dst, image_vals),
             dims: copy_subtree(src, dst, dims),
             geometry: copy_subtree(src, dst, geometry),
         },
-        TermNode::Eq { a, b } => TermNode::Eq { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Lt { a, b } => TermNode::Lt { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Lte { a, b } => TermNode::Lte { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Gt { a, b } => TermNode::Gt { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Gte { a, b } => TermNode::Gte { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Minus { a, b } => TermNode::Minus { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Div { a, b } => TermNode::Div { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::DtwTo { a, b } => TermNode::DtwTo { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::ApcEncode { model, seq, start, end, out_len } => TermNode::ApcEncode {
+        TermNode::Eq { a, b } => TermNode::Eq {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Lt { a, b } => TermNode::Lt {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Lte { a, b } => TermNode::Lte {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Gt { a, b } => TermNode::Gt {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Gte { a, b } => TermNode::Gte {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Minus { a, b } => TermNode::Minus {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Div { a, b } => TermNode::Div {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::DtwTo { a, b } => TermNode::DtwTo {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::EnigmaCrib { candidate } => TermNode::EnigmaCrib {
+            candidate: copy_subtree(src, dst, candidate),
+        },
+        TermNode::EnigmaBombe { candidate } => TermNode::EnigmaBombe {
+            candidate: copy_subtree(src, dst, candidate),
+        },
+        TermNode::EnigmaBombeWitness { candidate } => TermNode::EnigmaBombeWitness {
+            candidate: copy_subtree(src, dst, candidate),
+        },
+        TermNode::ApcEncode {
+            model,
+            seq,
+            start,
+            end,
+            out_len,
+        } => TermNode::ApcEncode {
             model: copy_subtree(src, dst, model),
             seq: copy_subtree(src, dst, seq),
             start: copy_subtree(src, dst, start),
             end: copy_subtree(src, dst, end),
             out_len: copy_subtree(src, dst, out_len),
         },
-        TermNode::PointSetDist { a, b } => TermNode::PointSetDist { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::MahalLeaf { a, b } => TermNode::MahalLeaf { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::MahalFull { a, b } => TermNode::MahalFull { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::DeformGenMarginal { a, b } => TermNode::DeformGenMarginal { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::DeformGen { a, b } => TermNode::DeformGen { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::DeformDist { a, b } => TermNode::DeformDist { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::SmoothDeformDist { a, b } => TermNode::SmoothDeformDist { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::TpsDeformDist { a, b } => TermNode::TpsDeformDist { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::SmoothDeformComponents { a, b } => TermNode::SmoothDeformComponents { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::ShapeContextDist { a, b } => TermNode::ShapeContextDist { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::EnclosedCount { arg } => TermNode::EnclosedCount { arg: copy_subtree(src, dst, arg) },
-        TermNode::ScTpsDist { a, b } => TermNode::ScTpsDist { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::BlendCover { unknown, a, b } => TermNode::BlendCover { unknown: copy_subtree(src, dst, unknown), a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Whiten { a, b } => TermNode::Whiten { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::WhitenMany { a, b } => TermNode::WhitenMany { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::WithinScatter { a, b } => TermNode::WithinScatter { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::BetweenScatter { a, b } => TermNode::BetweenScatter { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::XCorrPeak { a, b } => TermNode::XCorrPeak { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Mod { a, b } => TermNode::Mod { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Pow { a, b } => TermNode::Pow { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::BitAnd { a, b } => TermNode::BitAnd { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::BitOr { a, b } => TermNode::BitOr { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::BitXor { a, b } => TermNode::BitXor { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Shl { a, b } => TermNode::Shl { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Lshr { a, b } => TermNode::Lshr { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Ashr { a, b } => TermNode::Ashr { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::IDiv { a, b } => TermNode::IDiv { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::IRem { a, b } => TermNode::IRem { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::VecAdd { a, b } => TermNode::VecAdd { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::VecSub { a, b } => TermNode::VecSub { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Dot { a, b } => TermNode::Dot { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::AngleBetween { a, b } =>
-            TermNode::AngleBetween { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Union { a, b } => TermNode::Union { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Last { seq } => TermNode::Last { seq: copy_subtree(src, dst, seq) },
-        TermNode::IndexAt { seq, index } => TermNode::IndexAt { seq: copy_subtree(src, dst, seq), index: copy_subtree(src, dst, index) },
-        TermNode::ListDrop { list, index } => TermNode::ListDrop { list: copy_subtree(src, dst, list), index: copy_subtree(src, dst, index) },
-        TermNode::Append { seq, item } => TermNode::Append { seq: copy_subtree(src, dst, seq), item: copy_subtree(src, dst, item) },
-        TermNode::Intersect { a, b } =>
-            TermNode::Intersect { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Difference { a, b } =>
-            TermNode::Difference { a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b) },
-        TermNode::Atan2 { y, x } => TermNode::Atan2 { y: copy_subtree(src, dst, y), x: copy_subtree(src, dst, x) },
-        TermNode::Rotate { vec, angle } =>
-            TermNode::Rotate { vec: copy_subtree(src, dst, vec), angle: copy_subtree(src, dst, angle) },
+        TermNode::PointSetDist { a, b } => TermNode::PointSetDist {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::MahalLeaf { a, b } => TermNode::MahalLeaf {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::MahalFull { a, b } => TermNode::MahalFull {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::DeformGenMarginal { a, b } => TermNode::DeformGenMarginal {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::DeformGen { a, b } => TermNode::DeformGen {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::DeformDist { a, b } => TermNode::DeformDist {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::SmoothDeformDist { a, b } => TermNode::SmoothDeformDist {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::TpsDeformDist { a, b } => TermNode::TpsDeformDist {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::SmoothDeformComponents { a, b } => TermNode::SmoothDeformComponents {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::ShapeContextDist { a, b } => TermNode::ShapeContextDist {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::EnclosedCount { arg } => TermNode::EnclosedCount {
+            arg: copy_subtree(src, dst, arg),
+        },
+        TermNode::ScTpsDist { a, b } => TermNode::ScTpsDist {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::BlendCover { unknown, a, b } => TermNode::BlendCover {
+            unknown: copy_subtree(src, dst, unknown),
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Whiten { a, b } => TermNode::Whiten {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::WhitenMany { a, b } => TermNode::WhitenMany {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::WithinScatter { a, b } => TermNode::WithinScatter {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::BetweenScatter { a, b } => TermNode::BetweenScatter {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::XCorrPeak { a, b } => TermNode::XCorrPeak {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Mod { a, b } => TermNode::Mod {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Pow { a, b } => TermNode::Pow {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::BitAnd { a, b } => TermNode::BitAnd {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::BitOr { a, b } => TermNode::BitOr {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::BitXor { a, b } => TermNode::BitXor {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Shl { a, b } => TermNode::Shl {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Lshr { a, b } => TermNode::Lshr {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Ashr { a, b } => TermNode::Ashr {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::IDiv { a, b } => TermNode::IDiv {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::IRem { a, b } => TermNode::IRem {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::VecAdd { a, b } => TermNode::VecAdd {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::VecSub { a, b } => TermNode::VecSub {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Dot { a, b } => TermNode::Dot {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::AngleBetween { a, b } => TermNode::AngleBetween {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Union { a, b } => TermNode::Union {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Last { seq } => TermNode::Last {
+            seq: copy_subtree(src, dst, seq),
+        },
+        TermNode::IndexAt { seq, index } => TermNode::IndexAt {
+            seq: copy_subtree(src, dst, seq),
+            index: copy_subtree(src, dst, index),
+        },
+        TermNode::ListDrop { list, index } => TermNode::ListDrop {
+            list: copy_subtree(src, dst, list),
+            index: copy_subtree(src, dst, index),
+        },
+        TermNode::Append { seq, item } => TermNode::Append {
+            seq: copy_subtree(src, dst, seq),
+            item: copy_subtree(src, dst, item),
+        },
+        TermNode::Intersect { a, b } => TermNode::Intersect {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Difference { a, b } => TermNode::Difference {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::Atan2 { y, x } => TermNode::Atan2 {
+            y: copy_subtree(src, dst, y),
+            x: copy_subtree(src, dst, x),
+        },
+        TermNode::Rotate { vec, angle } => TermNode::Rotate {
+            vec: copy_subtree(src, dst, vec),
+            angle: copy_subtree(src, dst, angle),
+        },
 
         // Reductions with binders.
-        TermNode::Filter { source, var_name, predicate } =>
-            TermNode::Filter {
-                source: copy_subtree(src, dst, source), var_name,
-                predicate: copy_subtree(src, dst, predicate),
-            },
-        TermNode::FilterList { source, var_name, predicate } =>
-            TermNode::FilterList {
-                source: copy_subtree(src, dst, source), var_name,
-                predicate: copy_subtree(src, dst, predicate),
-            },
-        TermNode::Exists { source, var_name, predicate } =>
-            TermNode::Exists {
-                source: copy_subtree(src, dst, source), var_name,
-                predicate: copy_subtree(src, dst, predicate),
-            },
-        TermNode::Sum { source, var_name, value } =>
-            TermNode::Sum {
-                source: copy_subtree(src, dst, source), var_name,
-                value: copy_subtree(src, dst, value),
-            },
-        TermNode::Prod { source, var_name, value } =>
-            TermNode::Prod {
-                source: copy_subtree(src, dst, source), var_name,
-                value: copy_subtree(src, dst, value),
-            },
-        TermNode::MinOver { source, var_name, value, default } =>
-            TermNode::MinOver {
-                source: copy_subtree(src, dst, source), var_name,
-                value: copy_subtree(src, dst, value),
-                default: default.map(|d| copy_subtree(src, dst, d)),
-            },
-        TermNode::MaxOver { source, var_name, value, default } =>
-            TermNode::MaxOver {
-                source: copy_subtree(src, dst, source), var_name,
-                value: copy_subtree(src, dst, value),
-                default: default.map(|d| copy_subtree(src, dst, d)),
-            },
-        TermNode::Argmax { source, var_name, value, default } =>
-            TermNode::Argmax {
-                source: copy_subtree(src, dst, source), var_name,
-                value: copy_subtree(src, dst, value),
-                default: default.map(|d| copy_subtree(src, dst, d)),
-            },
-        TermNode::Argmin { source, var_name, value, default } =>
-            TermNode::Argmin {
-                source: copy_subtree(src, dst, source), var_name,
-                value: copy_subtree(src, dst, value),
-                default: default.map(|d| copy_subtree(src, dst, d)),
-            },
-        TermNode::ArgminUnique { source, var_name, value, default } =>
-            TermNode::ArgminUnique {
-                source: copy_subtree(src, dst, source), var_name,
-                value: copy_subtree(src, dst, value),
-                default: default.map(|d| copy_subtree(src, dst, d)),
-            },
-        TermNode::ArgminRefusal { source, var_name, value, refused } =>
-            TermNode::ArgminRefusal {
-                source: copy_subtree(src, dst, source), var_name,
-                value: copy_subtree(src, dst, value),
-                refused: refused.map(|d| copy_subtree(src, dst, d)),
-            },
+        TermNode::Filter {
+            source,
+            var_name,
+            predicate,
+        } => TermNode::Filter {
+            source: copy_subtree(src, dst, source),
+            var_name,
+            predicate: copy_subtree(src, dst, predicate),
+        },
+        TermNode::FilterList {
+            source,
+            var_name,
+            predicate,
+        } => TermNode::FilterList {
+            source: copy_subtree(src, dst, source),
+            var_name,
+            predicate: copy_subtree(src, dst, predicate),
+        },
+        TermNode::Exists {
+            source,
+            var_name,
+            predicate,
+        } => TermNode::Exists {
+            source: copy_subtree(src, dst, source),
+            var_name,
+            predicate: copy_subtree(src, dst, predicate),
+        },
+        TermNode::Sum {
+            source,
+            var_name,
+            value,
+        } => TermNode::Sum {
+            source: copy_subtree(src, dst, source),
+            var_name,
+            value: copy_subtree(src, dst, value),
+        },
+        TermNode::Prod {
+            source,
+            var_name,
+            value,
+        } => TermNode::Prod {
+            source: copy_subtree(src, dst, source),
+            var_name,
+            value: copy_subtree(src, dst, value),
+        },
+        TermNode::MinOver {
+            source,
+            var_name,
+            value,
+            default,
+        } => TermNode::MinOver {
+            source: copy_subtree(src, dst, source),
+            var_name,
+            value: copy_subtree(src, dst, value),
+            default: default.map(|d| copy_subtree(src, dst, d)),
+        },
+        TermNode::MaxOver {
+            source,
+            var_name,
+            value,
+            default,
+        } => TermNode::MaxOver {
+            source: copy_subtree(src, dst, source),
+            var_name,
+            value: copy_subtree(src, dst, value),
+            default: default.map(|d| copy_subtree(src, dst, d)),
+        },
+        TermNode::Argmax {
+            source,
+            var_name,
+            value,
+            default,
+        } => TermNode::Argmax {
+            source: copy_subtree(src, dst, source),
+            var_name,
+            value: copy_subtree(src, dst, value),
+            default: default.map(|d| copy_subtree(src, dst, d)),
+        },
+        TermNode::Argmin {
+            source,
+            var_name,
+            value,
+            default,
+        } => TermNode::Argmin {
+            source: copy_subtree(src, dst, source),
+            var_name,
+            value: copy_subtree(src, dst, value),
+            default: default.map(|d| copy_subtree(src, dst, d)),
+        },
+        TermNode::ArgminUnique {
+            source,
+            var_name,
+            value,
+            default,
+        } => TermNode::ArgminUnique {
+            source: copy_subtree(src, dst, source),
+            var_name,
+            value: copy_subtree(src, dst, value),
+            default: default.map(|d| copy_subtree(src, dst, d)),
+        },
+        TermNode::ArgminRefusal {
+            source,
+            var_name,
+            value,
+            refused,
+        } => TermNode::ArgminRefusal {
+            source: copy_subtree(src, dst, source),
+            var_name,
+            value: copy_subtree(src, dst, value),
+            refused: refused.map(|d| copy_subtree(src, dst, d)),
+        },
         // --- Program IR (P1) ---
-        TermNode::ProgSeq { stmts } =>
-            TermNode::ProgSeq { stmts: stmts.iter().map(|s| copy_subtree(src, dst, *s)).collect() },
-        TermNode::ProgAssignVar { name, value } =>
-            TermNode::ProgAssignVar { name, value: copy_subtree(src, dst, value) },
-        TermNode::ProgAugAssign { name, op, value } =>
-            TermNode::ProgAugAssign { name, op, value: copy_subtree(src, dst, value) },
-        TermNode::ProgTupleUnpack { targets, value } =>
-            TermNode::ProgTupleUnpack { targets, value: copy_subtree(src, dst, value) },
-        TermNode::ProgIfStmt { cond, then, orelse } =>
-            TermNode::ProgIfStmt {
-                cond: copy_subtree(src, dst, cond),
-                then: copy_subtree(src, dst, then),
-                orelse: orelse.map(|o| copy_subtree(src, dst, o)),
-            },
-        TermNode::ProgForEach { var, iter, body, orelse } =>
-            TermNode::ProgForEach {
-                var,
-                iter: copy_subtree(src, dst, iter),
-                body: copy_subtree(src, dst, body),
-                orelse: orelse.map(|o| copy_subtree(src, dst, o)),
-            },
-        TermNode::ProgWhile { cond, body, orelse } =>
-            TermNode::ProgWhile {
-                cond: copy_subtree(src, dst, cond),
-                body: copy_subtree(src, dst, body),
-                orelse: orelse.map(|o| copy_subtree(src, dst, o)),
-            },
+        TermNode::ProgSeq { stmts } => TermNode::ProgSeq {
+            stmts: stmts.iter().map(|s| copy_subtree(src, dst, *s)).collect(),
+        },
+        TermNode::ProgAssignVar { name, value } => TermNode::ProgAssignVar {
+            name,
+            value: copy_subtree(src, dst, value),
+        },
+        TermNode::ProgAugAssign { name, op, value } => TermNode::ProgAugAssign {
+            name,
+            op,
+            value: copy_subtree(src, dst, value),
+        },
+        TermNode::ProgTupleUnpack { targets, value } => TermNode::ProgTupleUnpack {
+            targets,
+            value: copy_subtree(src, dst, value),
+        },
+        TermNode::ProgIfStmt { cond, then, orelse } => TermNode::ProgIfStmt {
+            cond: copy_subtree(src, dst, cond),
+            then: copy_subtree(src, dst, then),
+            orelse: orelse.map(|o| copy_subtree(src, dst, o)),
+        },
+        TermNode::ProgForEach {
+            var,
+            iter,
+            body,
+            orelse,
+        } => TermNode::ProgForEach {
+            var,
+            iter: copy_subtree(src, dst, iter),
+            body: copy_subtree(src, dst, body),
+            orelse: orelse.map(|o| copy_subtree(src, dst, o)),
+        },
+        TermNode::ProgWhile { cond, body, orelse } => TermNode::ProgWhile {
+            cond: copy_subtree(src, dst, cond),
+            body: copy_subtree(src, dst, body),
+            orelse: orelse.map(|o| copy_subtree(src, dst, o)),
+        },
         TermNode::ProgLoopCtl { kind } => TermNode::ProgLoopCtl { kind },
-        TermNode::ProgReturn { value } =>
-            TermNode::ProgReturn { value: value.map(|v| copy_subtree(src, dst, v)) },
-        TermNode::ProgTryOr { body, exc_var, handler } =>
-            TermNode::ProgTryOr {
-                body: copy_subtree(src, dst, body),
-                exc_var,
-                handler: handler.map(|h| copy_subtree(src, dst, h)),
-            },
-        TermNode::ProgRaise { exc } =>
-            TermNode::ProgRaise { exc: exc.map(|e| copy_subtree(src, dst, e)) },
-        TermNode::ProgImportStmt { module, alias, names } =>
-            TermNode::ProgImportStmt { module, alias, names },
-        TermNode::ProgSubscriptSet { obj, index, value } =>
-            TermNode::ProgSubscriptSet {
-                obj: copy_subtree(src, dst, obj),
-                index: copy_subtree(src, dst, index),
-                value: copy_subtree(src, dst, value),
-            },
-        TermNode::ProgAttrSet { obj, attr, value } =>
-            TermNode::ProgAttrSet {
-                obj: copy_subtree(src, dst, obj),
-                attr,
-                value: copy_subtree(src, dst, value),
-            },
-        TermNode::ProgDefFnParam { name, default } =>
-            TermNode::ProgDefFnParam { name, default: default.map(|d| copy_subtree(src, dst, d)) },
-        TermNode::ProgCallExtern { name, recv, args } =>
-            TermNode::ProgCallExtern {
-                name,
-                recv: recv.map(|r| copy_subtree(src, dst, r)),
-                args: args.iter().map(|a| copy_subtree(src, dst, *a)).collect(),
-            },
-        TermNode::ProgAttrGet { obj, attr } =>
-            TermNode::ProgAttrGet { obj: copy_subtree(src, dst, obj), attr },
-        TermNode::ProgSubscript { obj, index } =>
-            TermNode::ProgSubscript {
-                obj: copy_subtree(src, dst, obj),
-                index: copy_subtree(src, dst, index),
-            },
-        TermNode::ProgSlice { obj, start, stop, step } =>
-            TermNode::ProgSlice {
-                obj: copy_subtree(src, dst, obj),
-                start: start.map(|s| copy_subtree(src, dst, s)),
-                stop: stop.map(|s| copy_subtree(src, dst, s)),
-                step: step.map(|s| copy_subtree(src, dst, s)),
-            },
-        TermNode::ProgContainerLit { kind, items } =>
-            TermNode::ProgContainerLit {
-                kind,
-                items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
-            },
-        TermNode::ProgComprehensionList { var, source, expr, cond } =>
-            TermNode::ProgComprehensionList {
-                var,
-                source: copy_subtree(src, dst, source),
-                expr: copy_subtree(src, dst, expr),
-                cond: cond.map(|c| copy_subtree(src, dst, c)),
-            },
-        TermNode::ProgComprehensionGen { var, source, expr, cond } =>
-            TermNode::ProgComprehensionGen {
-                var,
-                source: copy_subtree(src, dst, source),
-                expr: copy_subtree(src, dst, expr),
-                cond: cond.map(|c| copy_subtree(src, dst, c)),
-            },
-        TermNode::ProgIsOp { a, b, negated } =>
-            TermNode::ProgIsOp {
-                a: copy_subtree(src, dst, a),
-                b: copy_subtree(src, dst, b),
-                negated,
-            },
-        TermNode::ProgFString { parts } =>
-            TermNode::ProgFString { parts: parts.iter().map(|p| copy_subtree(src, dst, *p)).collect() },
-        TermNode::ProgEval { prog, env, oracles, fuel, field } =>
-            TermNode::ProgEval {
-                prog: copy_subtree(src, dst, prog),
-                env: env.map(|e| copy_subtree(src, dst, e)),
-                oracles: oracles.map(|o| copy_subtree(src, dst, o)),
-                fuel,
-                field,
-            },
-        TermNode::SnakeCase { text } => TermNode::SnakeCase { text: copy_subtree(src, dst, text) },
-        TermNode::CaseFold { text } => TermNode::CaseFold { text: copy_subtree(src, dst, text) },
-        TermNode::Call { name, args } =>
-            TermNode::Call { name, args: args.iter().map(|a| copy_subtree(src, dst, *a)).collect() },
-        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, exclude_ops, max_size, max_candidates, saturate_k, field } =>
-            TermNode::SynthEnumerate {
-                examples: copy_subtree(src, dst, examples),
-                ops: ops.map(|o| copy_subtree(src, dst, o)),
-                consts: consts.map(|c| copy_subtree(src, dst, c)),
-                exclude: exclude.map(|e| copy_subtree(src, dst, e)),
-                derived_ops: derived_ops.map(|d| copy_subtree(src, dst, d)),
-                exclude_ops: exclude_ops.map(|x| copy_subtree(src, dst, x)),
-                max_size,
-                max_candidates,
-                saturate_k,
-                field,
-            },
+        TermNode::ProgReturn { value } => TermNode::ProgReturn {
+            value: value.map(|v| copy_subtree(src, dst, v)),
+        },
+        TermNode::ProgTryOr {
+            body,
+            exc_var,
+            handler,
+        } => TermNode::ProgTryOr {
+            body: copy_subtree(src, dst, body),
+            exc_var,
+            handler: handler.map(|h| copy_subtree(src, dst, h)),
+        },
+        TermNode::ProgRaise { exc } => TermNode::ProgRaise {
+            exc: exc.map(|e| copy_subtree(src, dst, e)),
+        },
+        TermNode::ProgImportStmt {
+            module,
+            alias,
+            names,
+        } => TermNode::ProgImportStmt {
+            module,
+            alias,
+            names,
+        },
+        TermNode::ProgSubscriptSet { obj, index, value } => TermNode::ProgSubscriptSet {
+            obj: copy_subtree(src, dst, obj),
+            index: copy_subtree(src, dst, index),
+            value: copy_subtree(src, dst, value),
+        },
+        TermNode::ProgAttrSet { obj, attr, value } => TermNode::ProgAttrSet {
+            obj: copy_subtree(src, dst, obj),
+            attr,
+            value: copy_subtree(src, dst, value),
+        },
+        TermNode::ProgDefFnParam { name, default } => TermNode::ProgDefFnParam {
+            name,
+            default: default.map(|d| copy_subtree(src, dst, d)),
+        },
+        TermNode::ProgCallExtern { name, recv, args } => TermNode::ProgCallExtern {
+            name,
+            recv: recv.map(|r| copy_subtree(src, dst, r)),
+            args: args.iter().map(|a| copy_subtree(src, dst, *a)).collect(),
+        },
+        TermNode::ProgAttrGet { obj, attr } => TermNode::ProgAttrGet {
+            obj: copy_subtree(src, dst, obj),
+            attr,
+        },
+        TermNode::ProgSubscript { obj, index } => TermNode::ProgSubscript {
+            obj: copy_subtree(src, dst, obj),
+            index: copy_subtree(src, dst, index),
+        },
+        TermNode::ProgSlice {
+            obj,
+            start,
+            stop,
+            step,
+        } => TermNode::ProgSlice {
+            obj: copy_subtree(src, dst, obj),
+            start: start.map(|s| copy_subtree(src, dst, s)),
+            stop: stop.map(|s| copy_subtree(src, dst, s)),
+            step: step.map(|s| copy_subtree(src, dst, s)),
+        },
+        TermNode::ProgContainerLit { kind, items } => TermNode::ProgContainerLit {
+            kind,
+            items: items.iter().map(|i| copy_subtree(src, dst, *i)).collect(),
+        },
+        TermNode::ProgComprehensionList {
+            var,
+            source,
+            expr,
+            cond,
+        } => TermNode::ProgComprehensionList {
+            var,
+            source: copy_subtree(src, dst, source),
+            expr: copy_subtree(src, dst, expr),
+            cond: cond.map(|c| copy_subtree(src, dst, c)),
+        },
+        TermNode::ProgComprehensionGen {
+            var,
+            source,
+            expr,
+            cond,
+        } => TermNode::ProgComprehensionGen {
+            var,
+            source: copy_subtree(src, dst, source),
+            expr: copy_subtree(src, dst, expr),
+            cond: cond.map(|c| copy_subtree(src, dst, c)),
+        },
+        TermNode::ProgIsOp { a, b, negated } => TermNode::ProgIsOp {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+            negated,
+        },
+        TermNode::ProgFString { parts } => TermNode::ProgFString {
+            parts: parts.iter().map(|p| copy_subtree(src, dst, *p)).collect(),
+        },
+        TermNode::ProgEval {
+            prog,
+            env,
+            oracles,
+            fuel,
+            field,
+        } => TermNode::ProgEval {
+            prog: copy_subtree(src, dst, prog),
+            env: env.map(|e| copy_subtree(src, dst, e)),
+            oracles: oracles.map(|o| copy_subtree(src, dst, o)),
+            fuel,
+            field,
+        },
+        TermNode::SnakeCase { text } => TermNode::SnakeCase {
+            text: copy_subtree(src, dst, text),
+        },
+        TermNode::CaseFold { text } => TermNode::CaseFold {
+            text: copy_subtree(src, dst, text),
+        },
+        TermNode::Call { name, args } => TermNode::Call {
+            name,
+            args: args.iter().map(|a| copy_subtree(src, dst, *a)).collect(),
+        },
+        TermNode::SynthEnumerate {
+            examples,
+            ops,
+            consts,
+            exclude,
+            derived_ops,
+            exclude_ops,
+            max_size,
+            max_candidates,
+            saturate_k,
+            field,
+        } => TermNode::SynthEnumerate {
+            examples: copy_subtree(src, dst, examples),
+            ops: ops.map(|o| copy_subtree(src, dst, o)),
+            consts: consts.map(|c| copy_subtree(src, dst, c)),
+            exclude: exclude.map(|e| copy_subtree(src, dst, e)),
+            derived_ops: derived_ops.map(|d| copy_subtree(src, dst, d)),
+            exclude_ops: exclude_ops.map(|x| copy_subtree(src, dst, x)),
+            max_size,
+            max_candidates,
+            saturate_k,
+            field,
+        },
         TermNode::ParetoDominates {
-            candidate, alternative, dimension_count, value_edge, measure_edge,
-            dimension_key, verified_key, signed_value_key,
+            candidate,
+            alternative,
+            dimension_count,
+            value_edge,
+            measure_edge,
+            dimension_key,
+            verified_key,
+            signed_value_key,
         } => TermNode::ParetoDominates {
             candidate: copy_subtree(src, dst, candidate),
             alternative: copy_subtree(src, dst, alternative),
@@ -3462,124 +4798,168 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
             verified_key,
             signed_value_key,
         },
-        TermNode::MapSet { source, var_name, value } =>
-            TermNode::MapSet {
-                source: copy_subtree(src, dst, source), var_name,
-                value: copy_subtree(src, dst, value),
-            },
-        TermNode::MapList { source, var_name, value } =>
-            TermNode::MapList {
-                source: copy_subtree(src, dst, source), var_name,
-                value: copy_subtree(src, dst, value),
-            },
-        TermNode::Fold { source, var_name, acc_name, init, body } =>
-            TermNode::Fold {
-                source: copy_subtree(src, dst, source), var_name, acc_name,
-                init: copy_subtree(src, dst, init),
-                body: copy_subtree(src, dst, body),
-            },
-        TermNode::Holds { concept, node, node2 } =>
-            TermNode::Holds {
-                concept,
-                node: node.map(|n| copy_subtree(src, dst, n)),
-                node2: node2.map(|n| copy_subtree(src, dst, n)),
-            },
-        TermNode::IfThenElse { cond, then, other } =>
-            TermNode::IfThenElse {
-                cond: copy_subtree(src, dst, cond),
-                then: copy_subtree(src, dst, then),
-                other: copy_subtree(src, dst, other),
-            },
-        TermNode::Let { name, value, body } =>
-            TermNode::Let {
-                name,
-                value: value.map(|v| copy_subtree(src, dst, v)),
-                body: body.map(|b| copy_subtree(src, dst, b)),
-            },
+        TermNode::MapSet {
+            source,
+            var_name,
+            value,
+        } => TermNode::MapSet {
+            source: copy_subtree(src, dst, source),
+            var_name,
+            value: copy_subtree(src, dst, value),
+        },
+        TermNode::MapList {
+            source,
+            var_name,
+            value,
+        } => TermNode::MapList {
+            source: copy_subtree(src, dst, source),
+            var_name,
+            value: copy_subtree(src, dst, value),
+        },
+        TermNode::Fold {
+            source,
+            var_name,
+            acc_name,
+            init,
+            body,
+        } => TermNode::Fold {
+            source: copy_subtree(src, dst, source),
+            var_name,
+            acc_name,
+            init: copy_subtree(src, dst, init),
+            body: copy_subtree(src, dst, body),
+        },
+        TermNode::Holds {
+            concept,
+            node,
+            node2,
+        } => TermNode::Holds {
+            concept,
+            node: node.map(|n| copy_subtree(src, dst, n)),
+            node2: node2.map(|n| copy_subtree(src, dst, n)),
+        },
+        TermNode::IfThenElse { cond, then, other } => TermNode::IfThenElse {
+            cond: copy_subtree(src, dst, cond),
+            then: copy_subtree(src, dst, then),
+            other: copy_subtree(src, dst, other),
+        },
+        TermNode::Let { name, value, body } => TermNode::Let {
+            name,
+            value: value.map(|v| copy_subtree(src, dst, v)),
+            body: body.map(|b| copy_subtree(src, dst, b)),
+        },
 
         // Codec stream Terms — included for completeness so copy_subtree
         // is total over TermNode (we only USE it on body-taker expansions
         // today, but a total fn is the safer shape).
-        TermNode::BitsAt { buffer, bitpos, n_bits } =>
-            TermNode::BitsAt {
-                buffer: copy_subtree(src, dst, buffer),
-                bitpos: copy_subtree(src, dst, bitpos),
-                n_bits: copy_subtree(src, dst, n_bits),
-            },
-        TermNode::BitsWrite { buffer, bitpos, value, n_bits } =>
-            TermNode::BitsWrite {
-                buffer: copy_subtree(src, dst, buffer),
-                bitpos: copy_subtree(src, dst, bitpos),
-                value: copy_subtree(src, dst, value),
-                n_bits: copy_subtree(src, dst, n_bits),
-            },
-        TermNode::BitsAtAll { buffer, reads } =>
-            TermNode::BitsAtAll {
-                buffer: copy_subtree(src, dst, buffer),
-                reads: copy_subtree(src, dst, reads),
-            },
-        TermNode::BitsWriteAll { buffer, writes } =>
-            TermNode::BitsWriteAll {
-                buffer: copy_subtree(src, dst, buffer),
-                writes: copy_subtree(src, dst, writes),
-            },
-        TermNode::HuffmanDecodeStream { buffer, bitpos, table, n_pairs } =>
-            TermNode::HuffmanDecodeStream {
-                buffer: copy_subtree(src, dst, buffer),
-                bitpos: copy_subtree(src, dst, bitpos),
-                table: copy_subtree(src, dst, table),
-                n_pairs: copy_subtree(src, dst, n_pairs),
-            },
-        TermNode::HuffmanEncodeStream { buffer, bitpos, pairs, table } =>
-            TermNode::HuffmanEncodeStream {
-                buffer: copy_subtree(src, dst, buffer),
-                bitpos: copy_subtree(src, dst, bitpos),
-                pairs: copy_subtree(src, dst, pairs),
-                table: copy_subtree(src, dst, table),
-            },
-        TermNode::ExpGolombDecode { buffer, bitpos } =>
-            TermNode::ExpGolombDecode {
-                buffer: copy_subtree(src, dst, buffer),
-                bitpos: copy_subtree(src, dst, bitpos),
-            },
-        TermNode::ExpGolombDecodeSigned { buffer, bitpos } =>
-            TermNode::ExpGolombDecodeSigned {
-                buffer: copy_subtree(src, dst, buffer),
-                bitpos: copy_subtree(src, dst, bitpos),
-            },
-        TermNode::ExpGolombEncode { buffer, bitpos, value } =>
-            TermNode::ExpGolombEncode {
-                buffer: copy_subtree(src, dst, buffer),
-                bitpos: copy_subtree(src, dst, bitpos),
-                value: copy_subtree(src, dst, value),
-            },
-        TermNode::ExpGolombEncodeSigned { buffer, bitpos, value } =>
-            TermNode::ExpGolombEncodeSigned {
-                buffer: copy_subtree(src, dst, buffer),
-                bitpos: copy_subtree(src, dst, bitpos),
-                value: copy_subtree(src, dst, value),
-            },
+        TermNode::BitsAt {
+            buffer,
+            bitpos,
+            n_bits,
+        } => TermNode::BitsAt {
+            buffer: copy_subtree(src, dst, buffer),
+            bitpos: copy_subtree(src, dst, bitpos),
+            n_bits: copy_subtree(src, dst, n_bits),
+        },
+        TermNode::BitsWrite {
+            buffer,
+            bitpos,
+            value,
+            n_bits,
+        } => TermNode::BitsWrite {
+            buffer: copy_subtree(src, dst, buffer),
+            bitpos: copy_subtree(src, dst, bitpos),
+            value: copy_subtree(src, dst, value),
+            n_bits: copy_subtree(src, dst, n_bits),
+        },
+        TermNode::BitsAtAll { buffer, reads } => TermNode::BitsAtAll {
+            buffer: copy_subtree(src, dst, buffer),
+            reads: copy_subtree(src, dst, reads),
+        },
+        TermNode::BitsWriteAll { buffer, writes } => TermNode::BitsWriteAll {
+            buffer: copy_subtree(src, dst, buffer),
+            writes: copy_subtree(src, dst, writes),
+        },
+        TermNode::HuffmanDecodeStream {
+            buffer,
+            bitpos,
+            table,
+            n_pairs,
+        } => TermNode::HuffmanDecodeStream {
+            buffer: copy_subtree(src, dst, buffer),
+            bitpos: copy_subtree(src, dst, bitpos),
+            table: copy_subtree(src, dst, table),
+            n_pairs: copy_subtree(src, dst, n_pairs),
+        },
+        TermNode::HuffmanEncodeStream {
+            buffer,
+            bitpos,
+            pairs,
+            table,
+        } => TermNode::HuffmanEncodeStream {
+            buffer: copy_subtree(src, dst, buffer),
+            bitpos: copy_subtree(src, dst, bitpos),
+            pairs: copy_subtree(src, dst, pairs),
+            table: copy_subtree(src, dst, table),
+        },
+        TermNode::ExpGolombDecode { buffer, bitpos } => TermNode::ExpGolombDecode {
+            buffer: copy_subtree(src, dst, buffer),
+            bitpos: copy_subtree(src, dst, bitpos),
+        },
+        TermNode::ExpGolombDecodeSigned { buffer, bitpos } => TermNode::ExpGolombDecodeSigned {
+            buffer: copy_subtree(src, dst, buffer),
+            bitpos: copy_subtree(src, dst, bitpos),
+        },
+        TermNode::ExpGolombEncode {
+            buffer,
+            bitpos,
+            value,
+        } => TermNode::ExpGolombEncode {
+            buffer: copy_subtree(src, dst, buffer),
+            bitpos: copy_subtree(src, dst, bitpos),
+            value: copy_subtree(src, dst, value),
+        },
+        TermNode::ExpGolombEncodeSigned {
+            buffer,
+            bitpos,
+            value,
+        } => TermNode::ExpGolombEncodeSigned {
+            buffer: copy_subtree(src, dst, buffer),
+            bitpos: copy_subtree(src, dst, bitpos),
+            value: copy_subtree(src, dst, value),
+        },
 
         // Rendering Terms with optional children.
-        TermNode::Join { separator, items } =>
-            TermNode::Join {
-                separator: separator.map(|s| copy_subtree(src, dst, s)),
-                items: items.map(|i| copy_subtree(src, dst, i)),
-            },
-        TermNode::U8 { expr } => TermNode::U8 { expr: expr.map(|e| copy_subtree(src, dst, e)) },
-        TermNode::U16LE { expr } => TermNode::U16LE { expr: expr.map(|e| copy_subtree(src, dst, e)) },
-        TermNode::U32LE { expr } => TermNode::U32LE { expr: expr.map(|e| copy_subtree(src, dst, e)) },
-        TermNode::U64LE { expr } => TermNode::U64LE { expr: expr.map(|e| copy_subtree(src, dst, e)) },
-        TermNode::LEB128 { expr } => TermNode::LEB128 { expr: expr.map(|e| copy_subtree(src, dst, e)) },
-        TermNode::Nth { items, index } =>
-            TermNode::Nth { items: items.map(|i| copy_subtree(src, dst, i)), index },
-        TermNode::Render { term, lang } =>
-            TermNode::Render {
-                term: term.map(|t| copy_subtree(src, dst, t)),
-                lang: lang.map(|l| copy_subtree(src, dst, l)),
-            },
-        TermNode::LitRepr { value } =>
-            TermNode::LitRepr { value: value.map(|v| copy_subtree(src, dst, v)) },
+        TermNode::Join { separator, items } => TermNode::Join {
+            separator: separator.map(|s| copy_subtree(src, dst, s)),
+            items: items.map(|i| copy_subtree(src, dst, i)),
+        },
+        TermNode::U8 { expr } => TermNode::U8 {
+            expr: expr.map(|e| copy_subtree(src, dst, e)),
+        },
+        TermNode::U16LE { expr } => TermNode::U16LE {
+            expr: expr.map(|e| copy_subtree(src, dst, e)),
+        },
+        TermNode::U32LE { expr } => TermNode::U32LE {
+            expr: expr.map(|e| copy_subtree(src, dst, e)),
+        },
+        TermNode::U64LE { expr } => TermNode::U64LE {
+            expr: expr.map(|e| copy_subtree(src, dst, e)),
+        },
+        TermNode::LEB128 { expr } => TermNode::LEB128 {
+            expr: expr.map(|e| copy_subtree(src, dst, e)),
+        },
+        TermNode::Nth { items, index } => TermNode::Nth {
+            items: items.map(|i| copy_subtree(src, dst, i)),
+            index,
+        },
+        TermNode::Render { term, lang } => TermNode::Render {
+            term: term.map(|t| copy_subtree(src, dst, t)),
+            lang: lang.map(|l| copy_subtree(src, dst, l)),
+        },
+        TermNode::LitRepr { value } => TermNode::LitRepr {
+            value: value.map(|v| copy_subtree(src, dst, v)),
+        },
     };
     dst.add(copied)
 }
@@ -3604,30 +4984,50 @@ fn expand_count(src: &TermArena, tmp: &mut TermArena, ir: &Interner, source: Ter
     let source_t = copy_subtree(src, tmp, source);
     let e_sym = ir.lookup("_e").unwrap_or_default();
     let acc_sym = ir.lookup("_acc").unwrap_or_default();
-    let zero = tmp.add(TermNode::Lit { value: Value::Int(0) });
-    let one = tmp.add(TermNode::Lit { value: Value::Int(1) });
+    let zero = tmp.add(TermNode::Lit {
+        value: Value::Int(0),
+    });
+    let one = tmp.add(TermNode::Lit {
+        value: Value::Int(1),
+    });
     let acc_var = tmp.add(TermNode::Var { name: acc_sym });
-    let plus = tmp.add(TermNode::Plus { items: vec![acc_var, one] });
+    let plus = tmp.add(TermNode::Plus {
+        items: vec![acc_var, one],
+    });
     tmp.add(TermNode::Fold {
-        source: source_t, var_name: e_sym, acc_name: acc_sym,
-        init: zero, body: plus,
+        source: source_t,
+        var_name: e_sym,
+        acc_name: acc_sym,
+        init: zero,
+        body: plus,
     })
 }
 
 /// `Sum(source, var, value) := Fold(source, var, "_acc", Lit(0), Plus(Var("_acc"), value))`
 fn expand_sum(
-    src: &TermArena, tmp: &mut TermArena, ir: &Interner,
-    source: TermIdx, var_name: Sym, value: TermIdx,
+    src: &TermArena,
+    tmp: &mut TermArena,
+    ir: &Interner,
+    source: TermIdx,
+    var_name: Sym,
+    value: TermIdx,
 ) -> TermIdx {
     let source_t = copy_subtree(src, tmp, source);
     let value_t = copy_subtree(src, tmp, value);
     let acc_sym = ir.lookup("_acc").unwrap_or_default();
     let acc_var = tmp.add(TermNode::Var { name: acc_sym });
-    let init = tmp.add(TermNode::Lit { value: Value::Int(0) });
-    let plus = tmp.add(TermNode::Plus { items: vec![acc_var, value_t] });
+    let init = tmp.add(TermNode::Lit {
+        value: Value::Int(0),
+    });
+    let plus = tmp.add(TermNode::Plus {
+        items: vec![acc_var, value_t],
+    });
     tmp.add(TermNode::Fold {
-        source: source_t, var_name, acc_name: acc_sym,
-        init, body: plus,
+        source: source_t,
+        var_name,
+        acc_name: acc_sym,
+        init,
+        body: plus,
     })
 }
 
@@ -3702,13 +5102,13 @@ pub(crate) fn anti_unify_values(vals: &[Value], wild: &Value) -> Value {
     if vals.iter().all(|v| matches!(v, Value::Dict(_))) {
         let dicts: Vec<&Arc<[(Value, Value)]>> = vals
             .iter()
-            .map(|v| match v { Value::Dict(d) => d, _ => unreachable!() })
+            .map(|v| match v {
+                Value::Dict(d) => d,
+                _ => unreachable!(),
+            })
             .collect();
-        let mut shared: Vec<Value> =
-            dicts[0].iter().map(|(k, _)| k.clone()).collect();
-        shared.retain(|k| {
-            dicts[1..].iter().all(|d| d.iter().any(|(dk, _)| dk == k))
-        });
+        let mut shared: Vec<Value> = dicts[0].iter().map(|(k, _)| k.clone()).collect();
+        shared.retain(|k| dicts[1..].iter().all(|d| d.iter().any(|(dk, _)| dk == k)));
         shared.sort_by(cmp_value);
         let mut entries: Vec<(Value, Value)> = Vec::with_capacity(shared.len());
         for k in shared {
@@ -3721,10 +5121,16 @@ pub(crate) fn anti_unify_values(vals: &[Value], wild: &Value) -> Value {
         return Value::Dict(Arc::from(entries));
     }
     // all tuples of equal length → element-wise
-    if vals.iter().all(|v| matches!(v, Value::Tuple(_) | Value::List(_))) {
+    if vals
+        .iter()
+        .all(|v| matches!(v, Value::Tuple(_) | Value::List(_)))
+    {
         let tups: Vec<&Arc<SmallVec<[Value; 4]>>> = vals
             .iter()
-            .map(|v| match v { Value::Tuple(t) | Value::List(t) => t, _ => unreachable!() })
+            .map(|v| match v {
+                Value::Tuple(t) | Value::List(t) => t,
+                _ => unreachable!(),
+            })
             .collect();
         let n = tups[0].len();
         if tups.iter().all(|t| t.len() == n) {
@@ -3737,7 +5143,10 @@ pub(crate) fn anti_unify_values(vals: &[Value], wild: &Value) -> Value {
         }
     }
     // all sets/frozensets → the intersection (members always present)
-    if vals.iter().all(|v| matches!(v, Value::Set(_) | Value::FrozenSet(_))) {
+    if vals
+        .iter()
+        .all(|v| matches!(v, Value::Set(_) | Value::FrozenSet(_)))
+    {
         let getset = |v: &Value| -> Vec<Value> {
             match v {
                 Value::Set(s) | Value::FrozenSet(s) => s.to_vec(),
@@ -3765,30 +5174,36 @@ pub(crate) fn anti_unify_values(vals: &[Value], wild: &Value) -> Value {
 /// the subsumption lattice ("X but with Y"). Recursion mirrors
 /// `anti_unify_values` exactly (Dict over shared keys, Tuple element-wise,
 /// Set→intersection), threading `path`.
-fn anti_unify_witness_values(vals: &[Value], wild: &Value)
-    -> (Value, Vec<Vec<(Value, Value)>>) {
-    fn go(vals: &[Value], wild: &Value, path: &mut Vec<Value>,
-          subs: &mut [Vec<(Value, Value)>]) -> Value {
+fn anti_unify_witness_values(vals: &[Value], wild: &Value) -> (Value, Vec<Vec<(Value, Value)>>) {
+    fn go(
+        vals: &[Value],
+        wild: &Value,
+        path: &mut Vec<Value>,
+        subs: &mut [Vec<(Value, Value)>],
+    ) -> Value {
         if vals.is_empty() {
             return wild.clone();
         }
         let first = &vals[0];
         if vals[1..].iter().all(|v| v == first) {
-            return first.clone();             // agree → fixed, no witness
+            return first.clone(); // agree → fixed, no witness
         }
         // all dicts → generalise over shared keys
         if vals.iter().all(|v| matches!(v, Value::Dict(_))) {
-            let dicts: Vec<&Arc<[(Value, Value)]>> = vals.iter()
-                .map(|v| match v { Value::Dict(d) => d, _ => unreachable!() })
+            let dicts: Vec<&Arc<[(Value, Value)]>> = vals
+                .iter()
+                .map(|v| match v {
+                    Value::Dict(d) => d,
+                    _ => unreachable!(),
+                })
                 .collect();
-            let mut shared: Vec<Value> =
-                dicts[0].iter().map(|(k, _)| k.clone()).collect();
-            shared.retain(|k| dicts[1..].iter()
-                .all(|d| d.iter().any(|(dk, _)| dk == k)));
+            let mut shared: Vec<Value> = dicts[0].iter().map(|(k, _)| k.clone()).collect();
+            shared.retain(|k| dicts[1..].iter().all(|d| d.iter().any(|(dk, _)| dk == k)));
             shared.sort_by(cmp_value);
             let mut entries: Vec<(Value, Value)> = Vec::with_capacity(shared.len());
             for k in shared {
-                let col: Vec<Value> = dicts.iter()
+                let col: Vec<Value> = dicts
+                    .iter()
                     .map(|d| d.iter().find(|(dk, _)| *dk == k).unwrap().1.clone())
                     .collect();
                 path.push(k.clone());
@@ -3798,9 +5213,16 @@ fn anti_unify_witness_values(vals: &[Value], wild: &Value)
             return Value::Dict(Arc::from(entries));
         }
         // all tuples of equal length → element-wise
-        if vals.iter().all(|v| matches!(v, Value::Tuple(_) | Value::List(_))) {
-            let tups: Vec<&Arc<SmallVec<[Value; 4]>>> = vals.iter()
-                .map(|v| match v { Value::Tuple(t) | Value::List(t) => t, _ => unreachable!() })
+        if vals
+            .iter()
+            .all(|v| matches!(v, Value::Tuple(_) | Value::List(_)))
+        {
+            let tups: Vec<&Arc<SmallVec<[Value; 4]>>> = vals
+                .iter()
+                .map(|v| match v {
+                    Value::Tuple(t) | Value::List(t) => t,
+                    _ => unreachable!(),
+                })
                 .collect();
             let len = tups[0].len();
             if tups.iter().all(|t| t.len() == len) {
@@ -3817,9 +5239,15 @@ fn anti_unify_witness_values(vals: &[Value], wild: &Value)
         // all sets → the intersection; the witness per instance is the members
         // it carries beyond the shared core (a set has no positional slot, so
         // the differing members are recorded at this path as a frozenset).
-        if vals.iter().all(|v| matches!(v, Value::Set(_) | Value::FrozenSet(_))) {
+        if vals
+            .iter()
+            .all(|v| matches!(v, Value::Set(_) | Value::FrozenSet(_)))
+        {
             let getset = |v: &Value| -> Vec<Value> {
-                match v { Value::Set(s) | Value::FrozenSet(s) => s.to_vec(), _ => vec![] }
+                match v {
+                    Value::Set(s) | Value::FrozenSet(s) => s.to_vec(),
+                    _ => vec![],
+                }
             };
             let mut inter = getset(&vals[0]);
             for v in &vals[1..] {
@@ -3828,8 +5256,10 @@ fn anti_unify_witness_values(vals: &[Value], wild: &Value)
             }
             let p = Value::Tuple(Arc::new(SmallVec::from_vec(path.clone())));
             for (i, v) in vals.iter().enumerate() {
-                let extra: Vec<Value> = getset(v).into_iter()
-                    .filter(|x| !inter.iter().any(|y| y == x)).collect();
+                let extra: Vec<Value> = getset(v)
+                    .into_iter()
+                    .filter(|x| !inter.iter().any(|y| y == x))
+                    .collect();
                 if !extra.is_empty() {
                     subs[i].push((p.clone(), Value::make_frozenset(extra)));
                 }
@@ -3864,7 +5294,10 @@ fn substitute_value(template: &Value, sigma: &[(Value, Value)], wild: &Value) ->
     fn go(t: &Value, sigma: &[(Value, Value)], wild: &Value, path: &mut Vec<Value>) -> Value {
         if is_wild(t, wild) {
             let p = Value::Tuple(Arc::new(SmallVec::from_vec(path.clone())));
-            return match lookup(sigma, &p) { Some(v) => v.clone(), None => wild.clone() };
+            return match lookup(sigma, &p) {
+                Some(v) => v.clone(),
+                None => wild.clone(),
+            };
         }
         match t {
             Value::Tuple(items) | Value::List(items) => {
@@ -3874,7 +5307,7 @@ fn substitute_value(template: &Value, sigma: &[(Value, Value)], wild: &Value) ->
                     out.push(go(it, sigma, wild, path));
                     path.pop();
                 }
-                t.reseq(out)   // KIND-PRESERVING (see `Value::reseq`)
+                t.reseq(out) // KIND-PRESERVING (see `Value::reseq`)
             }
             Value::Dict(entries) => {
                 let mut out: Vec<(Value, Value)> = Vec::with_capacity(entries.len());
@@ -3891,7 +5324,9 @@ fn substitute_value(template: &Value, sigma: &[(Value, Value)], wild: &Value) ->
                 let mut members = s.to_vec();
                 if let Some(Value::Set(add) | Value::FrozenSet(add)) = lookup(sigma, &p) {
                     for x in add.iter() {
-                        if !members.iter().any(|y| y == x) { members.push(x.clone()); }
+                        if !members.iter().any(|y| y == x) {
+                            members.push(x.clone());
+                        }
                     }
                 }
                 Value::make_frozenset(members)
@@ -3935,23 +5370,30 @@ fn unify_values(vals: &[Value], wild: &Value) -> Value {
     }
     let first = concrete[0];
     if concrete[1..].iter().all(|v| *v == first) {
-        return first.clone();                 // all agree → fixed
+        return first.clone(); // all agree → fixed
     }
     // all dicts → unify over the UNION of keys (emergent: a key in one survives)
     if concrete.iter().all(|v| matches!(v, Value::Dict(_))) {
-        let dicts: Vec<&Arc<[(Value, Value)]>> = concrete.iter()
-            .map(|v| match v { Value::Dict(d) => d, _ => unreachable!() })
+        let dicts: Vec<&Arc<[(Value, Value)]>> = concrete
+            .iter()
+            .map(|v| match v {
+                Value::Dict(d) => d,
+                _ => unreachable!(),
+            })
             .collect();
         let mut keys: Vec<Value> = Vec::new();
         for d in &dicts {
             for (k, _) in d.iter() {
-                if !keys.iter().any(|x| x == k) { keys.push(k.clone()); }
+                if !keys.iter().any(|x| x == k) {
+                    keys.push(k.clone());
+                }
             }
         }
         keys.sort_by(cmp_value);
         let mut entries: Vec<(Value, Value)> = Vec::with_capacity(keys.len());
         for k in keys {
-            let col: Vec<Value> = dicts.iter()
+            let col: Vec<Value> = dicts
+                .iter()
                 .filter_map(|d| d.iter().find(|(dk, _)| *dk == k).map(|(_, v)| v.clone()))
                 .collect();
             entries.push((k.clone(), unify_values(&col, wild)));
@@ -3959,9 +5401,16 @@ fn unify_values(vals: &[Value], wild: &Value) -> Value {
         return Value::Dict(Arc::from(entries));
     }
     // all tuples of equal length → element-wise unify
-    if concrete.iter().all(|v| matches!(v, Value::Tuple(_) | Value::List(_))) {
-        let tups: Vec<&Arc<SmallVec<[Value; 4]>>> = concrete.iter()
-            .map(|v| match v { Value::Tuple(t) | Value::List(t) => t, _ => unreachable!() })
+    if concrete
+        .iter()
+        .all(|v| matches!(v, Value::Tuple(_) | Value::List(_)))
+    {
+        let tups: Vec<&Arc<SmallVec<[Value; 4]>>> = concrete
+            .iter()
+            .map(|v| match v {
+                Value::Tuple(t) | Value::List(t) => t,
+                _ => unreachable!(),
+            })
             .collect();
         let len = tups[0].len();
         if tups.iter().all(|t| t.len() == len) {
@@ -3974,11 +5423,21 @@ fn unify_values(vals: &[Value], wild: &Value) -> Value {
         }
     }
     // all sets → the UNION (both inputs' members)
-    if concrete.iter().all(|v| matches!(v, Value::Set(_) | Value::FrozenSet(_))) {
+    if concrete
+        .iter()
+        .all(|v| matches!(v, Value::Set(_) | Value::FrozenSet(_)))
+    {
         let mut members: Vec<Value> = Vec::new();
         for v in &concrete {
-            let s = match v { Value::Set(s) | Value::FrozenSet(s) => s.to_vec(), _ => vec![] };
-            for x in s { if !members.iter().any(|y| *y == x) { members.push(x); } }
+            let s = match v {
+                Value::Set(s) | Value::FrozenSet(s) => s.to_vec(),
+                _ => vec![],
+            };
+            for x in s {
+                if !members.iter().any(|y| *y == x) {
+                    members.push(x);
+                }
+            }
         }
         return Value::make_frozenset(members);
     }
@@ -3986,7 +5445,9 @@ fn unify_values(vals: &[Value], wild: &Value) -> Value {
     // frozenset (the emergent fused slot; surfaces the conflict, never drops it).
     let mut fused: Vec<Value> = Vec::new();
     for v in &concrete {
-        if !fused.iter().any(|y| y == *v) { fused.push((*v).clone()); }
+        if !fused.iter().any(|y| y == *v) {
+            fused.push((*v).clone());
+        }
     }
     Value::make_frozenset(fused)
 }
@@ -4021,7 +5482,11 @@ fn struct_sim_value(a: &Value, b: &Value, wild: &Value) -> f64 {
                         _ => return None,
                     }
                 }
-                if out.is_empty() { None } else { Some(out) }
+                if out.is_empty() {
+                    None
+                } else {
+                    Some(out)
+                }
             }
             _ => None,
         }
@@ -4048,16 +5513,24 @@ fn struct_sim_value(a: &Value, b: &Value, wild: &Value) -> f64 {
             }
         }
         let denom = da.len().max(db.len());
-        if denom == 0 { return 1.0; }
-        if shared == 0 { return 0.0; }
+        if denom == 0 {
+            return 1.0;
+        }
+        if shared == 0 {
+            return 0.0;
+        }
         return (acc / shared as f64) * (shared as f64 / denom as f64);
     }
     // tuples → mean over shared positions × coverage
     if let (Value::Tuple(ta) | Value::List(ta), Value::Tuple(tb) | Value::List(tb)) = (a, b) {
         let n = ta.len().min(tb.len());
         let denom = ta.len().max(tb.len());
-        if denom == 0 { return 1.0; }
-        if n == 0 { return 0.0; }
+        if denom == 0 {
+            return 1.0;
+        }
+        if n == 0 {
+            return 0.0;
+        }
         let mut acc = 0.0;
         for i in 0..n {
             acc += struct_sim_value(&ta[i], &tb[i], wild);
@@ -4066,15 +5539,21 @@ fn struct_sim_value(a: &Value, b: &Value, wild: &Value) -> f64 {
     }
     // sets → Jaccard-style soft overlap (best-match each member, symmetric mean)
     if let (Value::Set(sa) | Value::FrozenSet(sa), Value::Set(sb) | Value::FrozenSet(sb)) = (a, b) {
-        if sa.is_empty() && sb.is_empty() { return 1.0; }
-        if sa.is_empty() || sb.is_empty() { return 0.0; }
+        if sa.is_empty() && sb.is_empty() {
+            return 1.0;
+        }
+        if sa.is_empty() || sb.is_empty() {
+            return 0.0;
+        }
         let best = |xs: &[Value], ys: &[Value]| -> f64 {
             let mut tot = 0.0;
             for x in xs {
                 let mut m = 0.0;
                 for y in ys {
                     let s = struct_sim_value(x, y, wild);
-                    if s > m { m = s; }
+                    if s > m {
+                        m = s;
+                    }
                 }
                 tot += m;
             }
@@ -4083,7 +5562,11 @@ fn struct_sim_value(a: &Value, b: &Value, wild: &Value) -> f64 {
         return 0.5 * (best(sa, sb) + best(sb, sa));
     }
     // atoms (string/int/bool/node) → exact (the relational skeleton stays hard)
-    if a == b { 1.0 } else { 0.0 }
+    if a == b {
+        1.0
+    } else {
+        0.0
+    }
 }
 
 /// How many leaf positions an induced pattern FIXES — the native twin of
@@ -4098,17 +5581,21 @@ pub(crate) fn covers_value(pat: &Value, inst: &Value, wild: &Value) -> bool {
     match pat {
         Value::Dict(pd) => {
             let Value::Dict(id) = inst else { return false };
-            pd.iter().all(|(k, pv)| {
-                match id.iter().find(|(ik, _)| ik == k) {
+            pd.iter()
+                .all(|(k, pv)| match id.iter().find(|(ik, _)| ik == k) {
                     Some((_, iv)) => covers_value(pv, iv, wild),
                     None => false,
-                }
-            })
+                })
         }
         Value::Tuple(pt) | Value::List(pt) => {
-            let (Value::Tuple(it) | Value::List(it)) = inst else { return false };
+            let (Value::Tuple(it) | Value::List(it)) = inst else {
+                return false;
+            };
             pt.len() == it.len()
-                && pt.iter().zip(it.iter()).all(|(p, i)| covers_value(p, i, wild))
+                && pt
+                    .iter()
+                    .zip(it.iter())
+                    .all(|(p, i)| covers_value(p, i, wild))
         }
         Value::Set(ps) | Value::FrozenSet(ps) => {
             let is = match inst {
@@ -4170,10 +5657,7 @@ pub(crate) fn covers_open_value(pat: &Value, inst: &Value, wild: &Value) -> bool
         return true;
     }
     match (pat, inst) {
-        (
-            Value::Tuple(pt) | Value::List(pt),
-            Value::Tuple(it) | Value::List(it),
-        ) => {
+        (Value::Tuple(pt) | Value::List(pt), Value::Tuple(it) | Value::List(it)) => {
             if pt.len() > it.len() {
                 return false;
             }
@@ -4201,7 +5685,9 @@ pub(crate) fn covers_open_value(pat: &Value, inst: &Value, wild: &Value) -> bool
             // matched to a DISTINCT instance element.
             let mut matched: Vec<Option<usize>> = vec![None; it.len()];
             fn augment(
-                u: usize, adj: &[Vec<usize>], seen: &mut [bool],
+                u: usize,
+                adj: &[Vec<usize>],
+                seen: &mut [bool],
                 matched: &mut [Option<usize>],
             ) -> bool {
                 for &v in &adj[u] {
@@ -4235,7 +5721,11 @@ pub(crate) fn covers_open_value(pat: &Value, inst: &Value, wild: &Value) -> bool
 /// Backed-up lookahead value over a previewed game-tree subgraph — the
 /// recursive core of `_lookahead`, bounded by `depth`.
 fn lookahead_value(
-    graph: &TypedGraph, node: NodeID, child_edge: Sym, score_key: Sym, depth: i64,
+    graph: &TypedGraph,
+    node: NodeID,
+    child_edge: Sym,
+    score_key: Sym,
+    depth: i64,
 ) -> f64 {
     let score = graph
         .node(node)
@@ -4288,20 +5778,33 @@ fn value_to_json_for_string(v: &Value, interner: &Interner) -> serde_json::Value
         Value::None => J::Null,
         Value::Bool(b) => J::Bool(*b),
         Value::Int(n) => J::Number((*n).into()),
-        Value::Float(f) => serde_json::Number::from_f64(*f).map(J::Number).unwrap_or(J::Null),
+        Value::Float(f) => serde_json::Number::from_f64(*f)
+            .map(J::Number)
+            .unwrap_or(J::Null),
         // The boundary: `json.dumps` of a program value has no rational
         // JSON literal — it renders the same double a real Python float
         // would (e.g. `json.dumps(1/3)` -> `0.3333333333333333`).
-        Value::Rational(n, d) => {
-            serde_json::Number::from_f64(*n as f64 / *d as f64).map(J::Number).unwrap_or(J::Null)
-        }
+        Value::Rational(n, d) => serde_json::Number::from_f64(*n as f64 / *d as f64)
+            .map(J::Number)
+            .unwrap_or(J::Null),
         Value::Str(sym) => J::String(interner.resolve(*sym).to_string()),
-        Value::Surface(SurfaceKind::Text, bytes) => J::String(String::from_utf8_lossy(bytes).into_owned()),
+        Value::Surface(SurfaceKind::Text, bytes) => {
+            J::String(String::from_utf8_lossy(bytes).into_owned())
+        }
         Value::Surface(SurfaceKind::Bytes, _) => J::Null,
         Value::Node(_) => J::Null,
-        Value::Tuple(items) | Value::List(items) => J::Array(items.iter().map(|x| value_to_json_for_string(x, interner)).collect()),
-        Value::Set(items) | Value::FrozenSet(items) =>
-            J::Array(items.iter().map(|x| value_to_json_for_string(x, interner)).collect()),
+        Value::Tuple(items) | Value::List(items) => J::Array(
+            items
+                .iter()
+                .map(|x| value_to_json_for_string(x, interner))
+                .collect(),
+        ),
+        Value::Set(items) | Value::FrozenSet(items) => J::Array(
+            items
+                .iter()
+                .map(|x| value_to_json_for_string(x, interner))
+                .collect(),
+        ),
         Value::Dict(pairs) => {
             let mut obj = serde_json::Map::new();
             for (k, val) in pairs.iter() {
@@ -4332,12 +5835,21 @@ fn json_to_value(j: &serde_json::Value) -> Value {
             None => Value::Float(n.as_f64().unwrap_or(0.0)),
         },
         serde_json::Value::String(s) => Value::Surface(SurfaceKind::Text, Arc::from(s.as_bytes())),
-        serde_json::Value::Array(items) =>
-            Value::Tuple(Arc::new(items.iter().map(json_to_value).collect::<SmallVec<[Value; 4]>>())),
+        serde_json::Value::Array(items) => Value::Tuple(Arc::new(
+            items
+                .iter()
+                .map(json_to_value)
+                .collect::<SmallVec<[Value; 4]>>(),
+        )),
         serde_json::Value::Object(map) => {
             let mut pairs: Vec<(Value, Value)> = map
                 .iter()
-                .map(|(k, v)| (Value::Surface(SurfaceKind::Text, Arc::from(k.as_bytes())), json_to_value(v)))
+                .map(|(k, v)| {
+                    (
+                        Value::Surface(SurfaceKind::Text, Arc::from(k.as_bytes())),
+                        json_to_value(v),
+                    )
+                })
                 .collect();
             pairs.sort_by(|a, b| cmp_value(&a.0, &b.0));
             Value::Dict(Arc::from(pairs))
@@ -4357,13 +5869,20 @@ fn dict_get<'a>(pairs: &'a [(Value, Value)], key: &str, interner: &Interner) -> 
             Value::Surface(SurfaceKind::Text, b) => b.as_ref() == key.as_bytes(),
             _ => false,
         };
-        if matches { Some(v) } else { None }
+        if matches {
+            Some(v)
+        } else {
+            None
+        }
     })
 }
 
 /// Read a Dict's own `"type"` field as `&str`, string-like-coerced
 /// (`Str` or `Surface(Text)`) same as `dict_get`'s keys.
-fn dict_type_str<'a>(pairs: &'a [(Value, Value)], interner: &'a Interner) -> Option<std::borrow::Cow<'a, str>> {
+fn dict_type_str<'a>(
+    pairs: &'a [(Value, Value)],
+    interner: &'a Interner,
+) -> Option<std::borrow::Cow<'a, str>> {
     match dict_get(pairs, "type", interner)? {
         Value::Str(s) => Some(std::borrow::Cow::Borrowed(interner.resolve(*s))),
         Value::Surface(SurfaceKind::Text, b) => Some(String::from_utf8_lossy(b)),
@@ -4418,9 +5937,7 @@ pub(crate) fn str_like_owned(v: &Value, interner: &Interner) -> Option<String> {
 fn text_chars(v: &Value, interner: &Interner) -> Option<Vec<char>> {
     match v {
         Value::Str(s) => Some(interner.resolve(*s).chars().collect()),
-        Value::Surface(SurfaceKind::Text, b) => {
-            Some(String::from_utf8_lossy(b).chars().collect())
-        }
+        Value::Surface(SurfaceKind::Text, b) => Some(String::from_utf8_lossy(b).chars().collect()),
         _ => None,
     }
 }
@@ -4479,14 +5996,22 @@ pub(crate) fn snake_case_str(s: &str) -> String {
 /// resolved text so a `MkDict`-built (`Str`-keyed) Dict and a
 /// `FromJsonString`-parsed (`Surface`-keyed) Dict both work; falls back
 /// to plain `Value` equality for non-string-like keys.
-fn dict_get_by_value<'a>(pairs: &'a [(Value, Value)], key: &Value, interner: &Interner) -> Option<&'a Value> {
+fn dict_get_by_value<'a>(
+    pairs: &'a [(Value, Value)],
+    key: &Value,
+    interner: &Interner,
+) -> Option<&'a Value> {
     let key_s = str_like_owned(key, interner);
     pairs.iter().find_map(|(k, v)| {
         let matches = match (&key_s, str_like_owned(k, interner)) {
             (Some(a), Some(b)) => *a == b,
             _ => k == key,
         };
-        if matches { Some(v) } else { None }
+        if matches {
+            Some(v)
+        } else {
+            None
+        }
     })
 }
 
@@ -4517,9 +6042,15 @@ pub(crate) fn shift_threshold_lits_value(v: &Value, shift: f64, interner: &Inter
                         Value::Surface(SurfaceKind::Text, b) => b.as_ref() == b"b",
                         _ => false,
                     };
-                    if !is_b { return None; }
-                    let Value::Dict(bp) = val else { return None; };
-                    if dict_type_str(bp, interner).as_deref() != Some("Lit") { return None; }
+                    if !is_b {
+                        return None;
+                    }
+                    let Value::Dict(bp) = val else {
+                        return None;
+                    };
+                    if dict_type_str(bp, interner).as_deref() != Some("Lit") {
+                        return None;
+                    }
                     let num = match dict_get(bp, "value", interner)? {
                         Value::Int(n) => *n as f64,
                         Value::Float(f) => *f,
@@ -4534,7 +6065,11 @@ pub(crate) fn shift_threshold_lits_value(v: &Value, shift: f64, interner: &Inter
                                 Value::Surface(SurfaceKind::Text, b) => b.as_ref() == b"value",
                                 _ => false,
                             };
-                            if is_value_key { (bk.clone(), Value::Float(new_num)) } else { (bk.clone(), bv.clone()) }
+                            if is_value_key {
+                                (bk.clone(), Value::Float(new_num))
+                            } else {
+                                (bk.clone(), bv.clone())
+                            }
                         })
                         .collect();
                     Some(Value::Dict(Arc::from(new_bp)))
@@ -4546,15 +6081,24 @@ pub(crate) fn shift_threshold_lits_value(v: &Value, shift: f64, interner: &Inter
                             Value::Surface(SurfaceKind::Text, b) => b.as_ref() == b"b",
                             _ => false,
                         };
-                        if is_b { *val = new_b.clone(); }
+                        if is_b {
+                            *val = new_b.clone();
+                        }
                     }
                 }
             }
             Value::Dict(Arc::from(new_pairs))
         }
         Value::Tuple(items) | Value::List(items) =>
-            // KIND-PRESERVING (see `Value::reseq`)
-            v.reseq(items.iter().map(|x| shift_threshold_lits_value(x, shift, interner)).collect::<SmallVec<[Value; 4]>>()),
+        // KIND-PRESERVING (see `Value::reseq`)
+        {
+            v.reseq(
+                items
+                    .iter()
+                    .map(|x| shift_threshold_lits_value(x, shift, interner))
+                    .collect::<SmallVec<[Value; 4]>>(),
+            )
+        }
         other => other.clone(),
     }
 }
@@ -4585,7 +6129,12 @@ pub(crate) fn rewrite_tree_nodes_value(
         Value::Dict(pairs) => {
             let mut new_pairs: Vec<(Value, Value)> = pairs
                 .iter()
-                .map(|(k, val)| (k.clone(), rewrite_tree_nodes_value(val, type_filter, field, value_map, interner)))
+                .map(|(k, val)| {
+                    (
+                        k.clone(),
+                        rewrite_tree_nodes_value(val, type_filter, field, value_map, interner),
+                    )
+                })
                 .collect();
             let guard_ok = match type_filter {
                 Some(tf) => dict_type_str(&new_pairs, interner).as_deref() == Some(tf),
@@ -4593,12 +6142,19 @@ pub(crate) fn rewrite_tree_nodes_value(
             };
             if guard_ok {
                 let cur = new_pairs.iter().find_map(|(k, val)| {
-                    if key_is(k, field, interner) { Some(val.clone()) } else { None }
+                    if key_is(k, field, interner) {
+                        Some(val.clone())
+                    } else {
+                        None
+                    }
                 });
                 if let Some(cur_val) = cur {
-                    if let Some(new_val) = dict_get_by_value(value_map, &cur_val, interner).cloned() {
+                    if let Some(new_val) = dict_get_by_value(value_map, &cur_val, interner).cloned()
+                    {
                         for (k, val) in new_pairs.iter_mut() {
-                            if key_is(k, field, interner) { *val = new_val.clone(); }
+                            if key_is(k, field, interner) {
+                                *val = new_val.clone();
+                            }
                         }
                     }
                 }
@@ -4606,8 +6162,15 @@ pub(crate) fn rewrite_tree_nodes_value(
             Value::Dict(Arc::from(new_pairs))
         }
         Value::Tuple(items) | Value::List(items) =>
-            // KIND-PRESERVING (see `Value::reseq`)
-            v.reseq(items.iter().map(|x| rewrite_tree_nodes_value(x, type_filter, field, value_map, interner)).collect::<SmallVec<[Value; 4]>>()),
+        // KIND-PRESERVING (see `Value::reseq`)
+        {
+            v.reseq(
+                items
+                    .iter()
+                    .map(|x| rewrite_tree_nodes_value(x, type_filter, field, value_map, interner))
+                    .collect::<SmallVec<[Value; 4]>>(),
+            )
+        }
         other => other.clone(),
     }
 }
@@ -4707,7 +6270,13 @@ fn read_track_feature(
         }
         _ => (Vec::new(), false),
     };
-    TrackFeature { nid, category, features, extent, has_extent }
+    TrackFeature {
+        nid,
+        category,
+        features,
+        extent,
+        has_extent,
+    }
 }
 
 /// Euclidean distance over two feature vectors of possibly different
@@ -4732,7 +6301,11 @@ fn extent_overlap(a: &[Value], b: &[Value]) -> usize {
     let mut used = vec![false; b.len()];
     let mut count = 0usize;
     for av in a {
-        if let Some(j) = b.iter().enumerate().position(|(j, bv)| !used[j] && bv == av) {
+        if let Some(j) = b
+            .iter()
+            .enumerate()
+            .position(|(j, bv)| !used[j] && bv == av)
+        {
             used[j] = true;
             count += 1;
         }
@@ -4782,29 +6355,47 @@ pub fn track_identity_correspondence(
         if cur.has_extent {
             let mut best_ov = 0usize;
             for (pi, p) in priors.iter().enumerate() {
-                if used[pi] || !p.has_extent { continue; }
-                if category_key.is_some() && p.category != cur.category { continue; }
+                if used[pi] || !p.has_extent {
+                    continue;
+                }
+                if category_key.is_some() && p.category != cur.category {
+                    continue;
+                }
                 let ov = extent_overlap(&cur.extent, &p.extent);
-                if ov > best_ov { best_ov = ov; best = Some(pi); }
+                if ov > best_ov {
+                    best_ov = ov;
+                    best = Some(pi);
+                }
             }
             let ov_ok = best.is_some_and(|pi| {
                 let m = (cur.extent.len().min(priors[pi].extent.len())) as f64;
                 m > 0.0 && 2.0 * (best_ov as f64) >= m
             });
-            if !ov_ok { best = None; }
+            if !ov_ok {
+                best = None;
+            }
         }
         // Phase 2: nearest-feature-vector fallback within `radius`.
         if best.is_none() {
             let mut bd = f64::INFINITY;
             let mut bc: Option<usize> = None;
             for (pi, p) in priors.iter().enumerate() {
-                if used[pi] { continue; }
-                if category_key.is_some() && p.category != cur.category { continue; }
+                if used[pi] {
+                    continue;
+                }
+                if category_key.is_some() && p.category != cur.category {
+                    continue;
+                }
                 let d = feature_distance(&cur.features, &p.features);
-                if d < bd { bd = d; bc = Some(pi); }
+                if d < bd {
+                    bd = d;
+                    bc = Some(pi);
+                }
             }
             if let Some(pi) = bc {
-                if bd <= radius { best = Some(pi); }
+                if bd <= radius {
+                    best = Some(pi);
+                }
             }
         }
         if let Some(pi) = best {
@@ -4821,7 +6412,11 @@ pub fn track_identity_correspondence(
         .map(|(_, p)| p.nid)
         .collect();
 
-    TrackIdentityMatch { matched, births, deaths }
+    TrackIdentityMatch {
+        matched,
+        births,
+        deaths,
+    }
 }
 
 /// `Eq` with string-like coercion: a `Value::Str` (interned symbol) and a
@@ -4889,10 +6484,13 @@ fn eval_pareto_dominates(
             .neighbours(owner, Some(value_edge))
             .into_iter()
             .filter(|value| {
-                matches!(
-                    graph.node(*value).attrs.get(&verified_key),
-                    Some(Value::Int(1))
-                )
+                match graph.node(*value).attrs.get(&verified_key) {
+                    Some(Value::Int(1)) => true,
+                    // A generic bridge may carry its boolean/numeric marker
+                    // in the same scalar representation as its coordinates.
+                    Some(Value::Float(v)) => v.is_finite() && *v == 1.0,
+                    _ => false,
+                }
             })
             .collect()
     };
@@ -4903,14 +6501,31 @@ fn eval_pareto_dominates(
     {
         return false;
     }
-    // Integer cognition is a contract, not a coercion. Refuse a malformed
-    // vector instead of silently accepting a Float through `as_i64`.
-    if candidate_values.iter().chain(alternative_values.iter()).any(|value| {
-        !matches!(
-            graph.node(*value).attrs.get(&signed_value_key),
-            Some(Value::Int(_))
-        )
-    }) {
+    // Integer cognition is a contract, not a coercion.  Graph-native
+    // consumers sometimes publish an integral measurement through a scalar
+    // (for example, a control-regime bridge whose surrounding attrs are
+    // floating-point action quanta).  Admit only finite, exactly integral
+    // floats at this boundary; non-integral floats remain malformed rather
+    // than being silently truncated.
+    let as_integer = |value: NodeID| -> Option<i64> {
+        match graph.node(value).attrs.get(&signed_value_key) {
+            Some(Value::Int(v)) => Some(*v),
+            Some(Value::Float(v)) if v.is_finite() && v.fract() == 0.0 => {
+                let n = *v as i64;
+                if (n as f64) == *v {
+                    Some(n)
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    };
+    if candidate_values
+        .iter()
+        .chain(alternative_values.iter())
+        .any(|value| as_integer(*value).is_none())
+    {
         return false;
     }
 
@@ -4918,23 +6533,16 @@ fn eval_pareto_dominates(
     for candidate_value in candidate_values {
         let candidate_measures = graph.neighbours(candidate_value, Some(measure_edge));
         let candidate_ordinal = graph.node(candidate_value).attrs.get(&dimension_key);
-        let Value::Int(candidate_signed) = graph
-            .node(candidate_value)
-            .attrs
-            .get(&signed_value_key)
-            .expect("validated Pareto coordinate")
-        else {
+        let Some(candidate_signed) = as_integer(candidate_value) else {
             return false;
         };
         let mut no_worse_match = false;
         for alternative_value in alternative_values.iter().copied() {
             let alternative_measures = graph.neighbours(alternative_value, Some(measure_edge));
-            let same_dimension = if candidate_measures.is_empty()
-                && alternative_measures.is_empty()
+            let same_dimension = if candidate_measures.is_empty() && alternative_measures.is_empty()
             {
                 candidate_ordinal.is_some()
-                    && candidate_ordinal
-                        == graph.node(alternative_value).attrs.get(&dimension_key)
+                    && candidate_ordinal == graph.node(alternative_value).attrs.get(&dimension_key)
             } else {
                 candidate_measures
                     .iter()
@@ -4943,12 +6551,7 @@ fn eval_pareto_dominates(
             if !same_dimension {
                 continue;
             }
-            let Value::Int(alternative_signed) = graph
-                .node(alternative_value)
-                .attrs
-                .get(&signed_value_key)
-                .expect("validated Pareto coordinate")
-            else {
+            let Some(alternative_signed) = as_integer(alternative_value) else {
                 return false;
             };
             if alternative_signed >= candidate_signed {
@@ -5006,7 +6609,9 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
         TermNode::TypeOf { node } => {
             let v = evaluate(arena, *node, env, ctx);
             match v {
-                Value::Node(nid) if ctx.graph.has_node(nid) => Value::Str(ctx.graph.node(nid).type_),
+                Value::Node(nid) if ctx.graph.has_node(nid) => {
+                    Value::Str(ctx.graph.node(nid).type_)
+                }
                 _ => Value::None,
             }
         }
@@ -5042,8 +6647,7 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             // handler -> possibly back into the substrate). Missing handler
             // / handler error degrades to a safe default inside call_tool —
             // never panics the evaluator.
-            let arg_vals: Vec<Value> =
-                args.iter().map(|a| evaluate(arena, *a, env, ctx)).collect();
+            let arg_vals: Vec<Value> = args.iter().map(|a| evaluate(arena, *a, env, ctx)).collect();
             let name = ctx.interner.resolve(*tool);
             crate::tools::call_tool(name, &arg_vals, ctx.interner)
         }
@@ -5057,7 +6661,13 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
         }
 
         TermNode::In { member, container } => {
-            try_derivation!(ctx, arena, env, "In", [("member", *member), ("container", *container)]);
+            try_derivation!(
+                ctx,
+                arena,
+                env,
+                "In",
+                [("member", *member), ("container", *container)]
+            );
             let m = evaluate(arena, *member, env, ctx);
             let c = evaluate(arena, *container, env, ctx);
             // arc6 tier-0 `fix:StringAsSequence` — text-in-text is Python's
@@ -5066,9 +6676,10 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             // Tuple/Set/Dict container keeps the existing element scan, and a
             // non-text member in a text container stays `false` exactly as
             // before (Python raises there; the substrate no-ops).
-            if let (Some(hay), Some(needle)) =
-                (str_like_owned(&c, ctx.interner), str_like_owned(&m, ctx.interner))
-            {
+            if let (Some(hay), Some(needle)) = (
+                str_like_owned(&c, ctx.interner),
+                str_like_owned(&m, ctx.interner),
+            ) {
                 return Value::Bool(hay.contains(&needle));
             }
             Value::Bool(c.contains(&m))
@@ -5085,9 +6696,10 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             for tok in s.split_whitespace() {
                 let start = (tok.as_ptr() as usize) - base;
                 let len = tok.len();
-                positions.push(Value::Tuple(std::sync::Arc::new(
-                    smallvec::smallvec![Value::Int(start as i64), Value::Int(len as i64)]
-                )));
+                positions.push(Value::Tuple(std::sync::Arc::new(smallvec::smallvec![
+                    Value::Int(start as i64),
+                    Value::Int(len as i64)
+                ])));
             }
             Value::Tuple(std::sync::Arc::new(positions))
         }
@@ -5103,9 +6715,10 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             for tok in s.split_whitespace() {
                 let start = (tok.as_ptr() as usize) - base;
                 let len = tok.len();
-                positions.push(Value::Tuple(std::sync::Arc::new(
-                    smallvec::smallvec![Value::Int(start as i64), Value::Int(len as i64)]
-                )));
+                positions.push(Value::Tuple(std::sync::Arc::new(smallvec::smallvec![
+                    Value::Int(start as i64),
+                    Value::Int(len as i64)
+                ])));
             }
             Value::Tuple(std::sync::Arc::new(positions))
         }
@@ -5121,9 +6734,10 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             for tok in s.split_whitespace() {
                 let start = (tok.as_ptr() as usize) - base;
                 let len = tok.len();
-                positions.push(Value::Tuple(std::sync::Arc::new(
-                    smallvec::smallvec![Value::Int(start as i64), Value::Int(len as i64)]
-                )));
+                positions.push(Value::Tuple(std::sync::Arc::new(smallvec::smallvec![
+                    Value::Int(start as i64),
+                    Value::Int(len as i64)
+                ])));
             }
             Value::Tuple(std::sync::Arc::new(positions))
         }
@@ -5135,7 +6749,10 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             };
             let p = ctx.interner.resolve(sym);
             match std::fs::read_to_string(p) {
-                Ok(contents) => Value::Surface(SurfaceKind::Text, std::sync::Arc::from(contents.into_bytes())),
+                Ok(contents) => Value::Surface(
+                    SurfaceKind::Text,
+                    std::sync::Arc::from(contents.into_bytes()),
+                ),
                 Err(_) => Value::None,
             }
         }
@@ -5177,7 +6794,11 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             };
             let s_clamped = sr.max(0).min(len) as usize;
             let e_clamped = er.max(0).min(len) as usize;
-            let (lo, hi) = if s_clamped <= e_clamped { (s_clamped, e_clamped) } else { (s_clamped, s_clamped) };
+            let (lo, hi) = if s_clamped <= e_clamped {
+                (s_clamped, e_clamped)
+            } else {
+                (s_clamped, s_clamped)
+            };
             Value::Surface(SurfaceKind::Text, std::sync::Arc::from(&bytes[lo..hi]))
         }
 
@@ -5209,14 +6830,18 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             ) else {
                 return Value::Surface(SurfaceKind::Text, std::sync::Arc::from(&[][..]));
             };
-            Value::Surface(SurfaceKind::Text, std::sync::Arc::from(t.replace(o.as_str(), &n).into_bytes()))
+            Value::Surface(
+                SurfaceKind::Text,
+                std::sync::Arc::from(t.replace(o.as_str(), &n).into_bytes()),
+            )
         }
 
         TermNode::Str { value } => {
             let v = evaluate(arena, *value, env, ctx);
-            Value::Surface(SurfaceKind::Text, std::sync::Arc::from(
-                crate::prog_eval::py_str(&v, ctx.interner).into_bytes(),
-            ))
+            Value::Surface(
+                SurfaceKind::Text,
+                std::sync::Arc::from(crate::prog_eval::py_str(&v, ctx.interner).into_bytes()),
+            )
         }
 
         TermNode::Split { text, sep } => {
@@ -5245,7 +6870,10 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
         TermNode::StrCount { text, sub } => {
             let tv = evaluate(arena, *text, env, ctx);
             let sv = evaluate(arena, *sub, env, ctx);
-            let (Some(t), Some(s)) = (str_like_owned(&tv, ctx.interner), str_like_owned(&sv, ctx.interner)) else {
+            let (Some(t), Some(s)) = (
+                str_like_owned(&tv, ctx.interner),
+                str_like_owned(&sv, ctx.interner),
+            ) else {
                 return Value::Int(0);
             };
             let n = if s.is_empty() {
@@ -5261,13 +6889,22 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             let nd = evaluate(arena, *ndigits, env, ctx).as_i64() as i32;
             match v {
                 Value::Int(n) if nd >= 0 => Value::Int(n),
-                Value::Int(n) => Value::Int(crate::prog_eval::round_half_even_digits(n as f64, nd) as i64),
+                Value::Int(n) => {
+                    Value::Int(crate::prog_eval::round_half_even_digits(n as f64, nd) as i64)
+                }
                 Value::Float(f) => Value::Float(crate::prog_eval::round_half_even_digits(f, nd)),
                 Value::Bool(b) => {
                     let n = if b { 1 } else { 0 };
-                    if nd >= 0 { Value::Int(n) } else { Value::Int(crate::prog_eval::round_half_even_digits(n as f64, nd) as i64) }
+                    if nd >= 0 {
+                        Value::Int(n)
+                    } else {
+                        Value::Int(crate::prog_eval::round_half_even_digits(n as f64, nd) as i64)
+                    }
                 }
-                Value::Rational(n, d) => Value::Float(crate::prog_eval::round_half_even_digits(n as f64 / d as f64, nd)),
+                Value::Rational(n, d) => Value::Float(crate::prog_eval::round_half_even_digits(
+                    n as f64 / d as f64,
+                    nd,
+                )),
                 _ => Value::None,
             }
         }
@@ -5299,7 +6936,12 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             }
         }
 
-        TermNode::IndexedMap { source, item_name, index_name, value } => {
+        TermNode::IndexedMap {
+            source,
+            item_name,
+            index_name,
+            value,
+        } => {
             let s = evaluate(arena, *source, env, ctx);
             let snap = s.snapshot();
             let mut out: smallvec::SmallVec<[Value; 4]> = smallvec::smallvec![];
@@ -5342,8 +6984,16 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             let sv = evaluate(arena, *seq, env, ctx);
             let start_v = evaluate(arena, *start, env, ctx);
             let stop_v = evaluate(arena, *stop, env, ctx);
-            let start_i = match start_v { Value::Int(n) => Some(n), Value::None => None, other => Some(other.as_i64()) };
-            let stop_i = match stop_v { Value::Int(n) => Some(n), Value::None => None, other => Some(other.as_i64()) };
+            let start_i = match start_v {
+                Value::Int(n) => Some(n),
+                Value::None => None,
+                other => Some(other.as_i64()),
+            };
+            let stop_i = match stop_v {
+                Value::Int(n) => Some(n),
+                Value::None => None,
+                other => Some(other.as_i64()),
+            };
             match sv {
                 Value::Str(sym) => {
                     let chars: Vec<char> = ctx.interner.resolve(sym).chars().collect();
@@ -5363,13 +7013,15 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 Value::List(items) => {
                     let n = items.len() as i64;
                     let idxs = crate::prog_eval::slice_indices(n, start_i, stop_i, 1);
-                    let out: smallvec::SmallVec<[Value; 4]> = idxs.iter().map(|&i| items[i as usize].clone()).collect();
+                    let out: smallvec::SmallVec<[Value; 4]> =
+                        idxs.iter().map(|&i| items[i as usize].clone()).collect();
                     Value::List(std::sync::Arc::new(out))
                 }
                 Value::Tuple(items) => {
                     let n = items.len() as i64;
                     let idxs = crate::prog_eval::slice_indices(n, start_i, stop_i, 1);
-                    let out: smallvec::SmallVec<[Value; 4]> = idxs.iter().map(|&i| items[i as usize].clone()).collect();
+                    let out: smallvec::SmallVec<[Value; 4]> =
+                        idxs.iter().map(|&i| items[i as usize].clone()).collect();
                     Value::Tuple(std::sync::Arc::new(out))
                 }
                 _ => Value::Surface(SurfaceKind::Text, std::sync::Arc::from(&[][..])),
@@ -5417,7 +7069,11 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             }
         }
 
-        TermNode::SortBy { source, var_name, key } => {
+        TermNode::SortBy {
+            source,
+            var_name,
+            key,
+        } => {
             let s = evaluate(arena, *source, env, ctx);
             match s {
                 Value::List(items) => {
@@ -5500,7 +7156,13 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             }
         }
 
-        TermNode::ZipWith { a, b, a_name, b_name, value } => {
+        TermNode::ZipWith {
+            a,
+            b,
+            a_name,
+            b_name,
+            value,
+        } => {
             let av = evaluate(arena, *a, env, ctx);
             let bv = evaluate(arena, *b, env, ctx);
             let a_snap = av.snapshot();
@@ -5518,7 +7180,7 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             av.reseq(out)
         }
 
-TermNode::MorphHead { text } => {
+        TermNode::MorphHead { text } => {
             let v = evaluate(arena, *text, env, ctx);
             let s: String = match v {
                 Value::Str(sym) => ctx.interner.resolve(sym).to_string(),
@@ -5545,7 +7207,11 @@ TermNode::MorphHead { text } => {
             Value::Surface(SurfaceKind::Text, std::sync::Arc::from(tail.as_bytes()))
         }
 
-        TermNode::Verify { term, env: env_term, expected } => {
+        TermNode::Verify {
+            term,
+            env: env_term,
+            expected,
+        } => {
             let env_val = evaluate(arena, *env_term, env, ctx);
             let expected_val = evaluate(arena, *expected, env, ctx);
             // Push env bindings if env evaluated to a Dict.
@@ -5558,9 +7224,13 @@ TermNode::MorphHead { text } => {
                     }
                 }
                 n
-            } else { 0 };
+            } else {
+                0
+            };
             let term_val = evaluate(arena, *term, env, ctx);
-            for _ in 0..pushed { env.pop(); }
+            for _ in 0..pushed {
+                env.pop();
+            }
             Value::Bool(term_val == expected_val)
         }
 
@@ -5614,19 +7284,32 @@ TermNode::MorphHead { text } => {
 
         TermNode::DictGet { dict, key } => {
             let dv = evaluate(arena, *dict, env, ctx);
-            let Value::Dict(pairs) = dv else { return Value::None; };
+            let Value::Dict(pairs) = dv else {
+                return Value::None;
+            };
             let kv = evaluate(arena, *key, env, ctx);
-            dict_get_by_value(&pairs, &kv, ctx.interner).cloned().unwrap_or(Value::None)
+            dict_get_by_value(&pairs, &kv, ctx.interner)
+                .cloned()
+                .unwrap_or(Value::None)
         }
 
-        TermNode::RewriteTreeNodes { tree, type_filter, field, value_map } => {
+        TermNode::RewriteTreeNodes {
+            tree,
+            type_filter,
+            field,
+            value_map,
+        } => {
             let tv = evaluate(arena, *tree, env, ctx);
             let tf_v = type_filter.map(|t| evaluate(arena, t, env, ctx));
             let tf_s = tf_v.as_ref().and_then(|v| str_like_owned(v, ctx.interner));
             let field_v = evaluate(arena, *field, env, ctx);
-            let Some(field_s) = str_like_owned(&field_v, ctx.interner) else { return tv; };
+            let Some(field_s) = str_like_owned(&field_v, ctx.interner) else {
+                return tv;
+            };
             let vm_v = evaluate(arena, *value_map, env, ctx);
-            let Value::Dict(vm_pairs) = vm_v else { return tv; };
+            let Value::Dict(vm_pairs) = vm_v else {
+                return tv;
+            };
             rewrite_tree_nodes_value(&tv, tf_s.as_deref(), &field_s, &vm_pairs, ctx.interner)
         }
 
@@ -5640,9 +7323,7 @@ TermNode::MorphHead { text } => {
             let tv = evaluate(arena, *text, env, ctx);
             let s_owned: String = match &tv {
                 Value::Str(sym) => ctx.interner.resolve(*sym).to_string(),
-                Value::Surface(SurfaceKind::Text, b) => {
-                    String::from_utf8_lossy(b).into_owned()
-                }
+                Value::Surface(SurfaceKind::Text, b) => String::from_utf8_lossy(b).into_owned(),
                 _ => String::new(),
             };
             let bytes = s_owned.as_bytes();
@@ -5657,11 +7338,14 @@ TermNode::MorphHead { text } => {
             //   • track max depth, final balance
             let mut depth: i32 = 0;
             let mut max_depth: i32 = 0;
-            let mut brace_o = 0u32; let mut brace_c = 0u32;
-            let mut brack_o = 0u32; let mut brack_c = 0u32;
-            let mut angle_o = 0u32; let mut angle_c = 0u32;
-            let mut in_dq = false;   // inside double-quoted string
-            let mut in_sq = false;   // inside single-quoted string
+            let mut brace_o = 0u32;
+            let mut brace_c = 0u32;
+            let mut brack_o = 0u32;
+            let mut brack_c = 0u32;
+            let mut angle_o = 0u32;
+            let mut angle_c = 0u32;
+            let mut in_dq = false; // inside double-quoted string
+            let mut in_sq = false; // inside single-quoted string
             let mut has_quotes = false;
             let mut kv_seps: u32 = 0;
             let mut seq_seps: u32 = 0;
@@ -5680,36 +7364,64 @@ TermNode::MorphHead { text } => {
                 if !in_sq && c == b'"' {
                     has_quotes = true;
                     in_dq = !in_dq;
-                    i += 1; continue;
+                    i += 1;
+                    continue;
                 }
                 if !in_dq && c == b'\'' {
                     has_quotes = true;
                     in_sq = !in_sq;
-                    i += 1; continue;
+                    i += 1;
+                    continue;
                 }
 
                 if in_dq || in_sq {
                     if c == b'\n' {
-                        total_lines += 1; has_newline = true;
-                        at_line_start = true; prev_was_newline = true;
+                        total_lines += 1;
+                        has_newline = true;
+                        at_line_start = true;
+                        prev_was_newline = true;
                     } else {
-                        at_line_start = false; prev_was_newline = false;
+                        at_line_start = false;
+                        prev_was_newline = false;
                     }
-                    i += 1; continue;
+                    i += 1;
+                    continue;
                 }
 
                 match c {
-                    b'{' => { brace_o += 1; depth += 1; if depth > max_depth { max_depth = depth; } }
-                    b'}' => { brace_c += 1; depth -= 1; }
-                    b'[' => { brack_o += 1; depth += 1; if depth > max_depth { max_depth = depth; } }
-                    b']' => { brack_c += 1; depth -= 1; }
+                    b'{' => {
+                        brace_o += 1;
+                        depth += 1;
+                        if depth > max_depth {
+                            max_depth = depth;
+                        }
+                    }
+                    b'}' => {
+                        brace_c += 1;
+                        depth -= 1;
+                    }
+                    b'[' => {
+                        brack_o += 1;
+                        depth += 1;
+                        if depth > max_depth {
+                            max_depth = depth;
+                        }
+                    }
+                    b']' => {
+                        brack_c += 1;
+                        depth -= 1;
+                    }
                     b'<' => {
                         // Only treat `<` as an opening angle when it
                         // looks like a tag start (next byte is letter
                         // or `/`). Otherwise it's a comparison op.
                         let nxt = bytes.get(i + 1).copied().unwrap_or(0);
                         if nxt.is_ascii_alphabetic() || nxt == b'/' || nxt == b'!' || nxt == b'?' {
-                            angle_o += 1; depth += 1; if depth > max_depth { max_depth = depth; }
+                            angle_o += 1;
+                            depth += 1;
+                            if depth > max_depth {
+                                max_depth = depth;
+                            }
                         }
                     }
                     b'>' => {
@@ -5717,7 +7429,8 @@ TermNode::MorphHead { text } => {
                         // opening angle (avoids closing the wrong
                         // depth for arithmetic `>`).
                         if angle_o > angle_c {
-                            angle_c += 1; depth -= 1;
+                            angle_c += 1;
+                            depth -= 1;
                         }
                     }
                     b':' | b'=' => {
@@ -5726,8 +7439,14 @@ TermNode::MorphHead { text } => {
                         // Skip `==`, `:=`, `<=`, `>=`, `!=` (operators).
                         let prev = if i > 0 { bytes[i - 1] } else { 0 };
                         let nxt = bytes.get(i + 1).copied().unwrap_or(0);
-                        let is_op = (c == b'=' && (prev == b'=' || prev == b'!' || prev == b'<' || prev == b'>' || nxt == b'=' || prev == b':'))
-                                 || (c == b':' && nxt == b'=');
+                        let is_op = (c == b'='
+                            && (prev == b'='
+                                || prev == b'!'
+                                || prev == b'<'
+                                || prev == b'>'
+                                || nxt == b'='
+                                || prev == b':'))
+                            || (c == b':' && nxt == b'=');
                         if !is_op && (depth == 0 || depth == 1) {
                             kv_seps += 1;
                         }
@@ -5742,7 +7461,8 @@ TermNode::MorphHead { text } => {
                         total_lines += 1;
                         at_line_start = true;
                         prev_was_newline = true;
-                        i += 1; continue;
+                        i += 1;
+                        continue;
                     }
                     b'-' => {
                         // YAML-style "\n- item" sequence marker
@@ -5757,7 +7477,8 @@ TermNode::MorphHead { text } => {
                         if prev_was_newline {
                             indent_lines += 1;
                         }
-                        i += 1; continue;
+                        i += 1;
+                        continue;
                     }
                     _ => {}
                 }
@@ -5784,8 +7505,10 @@ TermNode::MorphHead { text } => {
                 "brackets"
             } else if angle_o >= 1 {
                 "angles"
-            } else if any_delim_open == 0 && any_delim_close == 0
-                     && has_newline && indent_lines >= 1
+            } else if any_delim_open == 0
+                && any_delim_close == 0
+                && has_newline
+                && indent_lines >= 1
             {
                 "indent"
             } else {
@@ -5861,9 +7584,7 @@ TermNode::MorphHead { text } => {
                 _ => "none",
             };
 
-            let starts_capital: bool = first_nws
-                .map(|b| b.is_ascii_uppercase())
-                .unwrap_or(false);
+            let starts_capital: bool = first_nws.map(|b| b.is_ascii_uppercase()).unwrap_or(false);
 
             let avg_token_length: i64 = if token_count > 0 {
                 (text_length as i64) / (token_count as i64)
@@ -6032,7 +7753,11 @@ TermNode::MorphHead { text } => {
             }
         }
 
-        TermNode::ChangeDetect { image_vals, kernel_weights, dims } => {
+        TermNode::ChangeDetect {
+            image_vals,
+            kernel_weights,
+            dims,
+        } => {
             let iv = evaluate(arena, *image_vals, env, ctx);
             let kv = evaluate(arena, *kernel_weights, env, ctx);
             let dv = evaluate(arena, *dims, env, ctx);
@@ -6049,9 +7774,9 @@ TermNode::MorphHead { text } => {
             } else {
                 let (h, w, kh, kw, stride) = (d[0], d[1], d[2], d[3], d[4]);
                 let resp = crate::vision_primitives::convolve(&img, h, w, &ker, kh, kw, stride);
-                Value::Tuple(std::sync::Arc::new(
-                    smallvec::SmallVec::from_iter(resp.into_iter().map(Value::Float)),
-                ))
+                Value::Tuple(std::sync::Arc::new(smallvec::SmallVec::from_iter(
+                    resp.into_iter().map(Value::Float),
+                )))
             }
         }
 
@@ -6064,13 +7789,17 @@ TermNode::MorphHead { text } => {
                 Value::None
             } else {
                 let resp = crate::vision_primitives::temporal_diff(&a, &b);
-                Value::Tuple(std::sync::Arc::new(
-                    smallvec::SmallVec::from_iter(resp.into_iter().map(Value::Float)),
-                ))
+                Value::Tuple(std::sync::Arc::new(smallvec::SmallVec::from_iter(
+                    resp.into_iter().map(Value::Float),
+                )))
             }
         }
 
-        TermNode::Foveate { image_vals, dims, geometry } => {
+        TermNode::Foveate {
+            image_vals,
+            dims,
+            geometry,
+        } => {
             let iv = evaluate(arena, *image_vals, env, ctx);
             let dv = evaluate(arena, *dims, env, ctx);
             let gv = evaluate(arena, *geometry, env, ctx);
@@ -6111,7 +7840,11 @@ TermNode::MorphHead { text } => {
             cmp_bool(arena, *a, *b, env, ctx, std::cmp::Ordering::Greater, true)
         }
 
-        TermNode::ReachableFrom { node, edge_type, any_type } => {
+        TermNode::ReachableFrom {
+            node,
+            edge_type,
+            any_type,
+        } => {
             let v = evaluate(arena, *node, env, ctx);
             let Value::Node(start) = v else {
                 return Value::make_frozenset(vec![]);
@@ -6136,7 +7869,11 @@ TermNode::MorphHead { text } => {
             Value::make_frozenset(visited.into_iter().map(Value::Node).collect::<Vec<_>>())
         }
 
-        TermNode::Neighbours { node, edge_type, any_type } => {
+        TermNode::Neighbours {
+            node,
+            edge_type,
+            any_type,
+        } => {
             let v = evaluate(arena, *node, env, ctx);
             let Value::Node(nid) = v else {
                 return Value::make_frozenset(vec![]);
@@ -6151,7 +7888,11 @@ TermNode::MorphHead { text } => {
             })
         }
 
-        TermNode::SlideNeighbours { cell, slide, ground } => {
+        TermNode::SlideNeighbours {
+            cell,
+            slide,
+            ground,
+        } => {
             let Value::Node(nid) = evaluate(arena, *cell, env, ctx) else {
                 return Value::make_frozenset(vec![]);
             };
@@ -6166,10 +7907,14 @@ TermNode::MorphHead { text } => {
                 _ => return Value::make_frozenset(vec![]),
             };
 
-            let (Some(neighbour_sym), Some(row_sym), Some(col_sym), Some(value_sym)) =
-                (ctx.interner.lookup("neighbour"), ctx.interner.lookup("row"),
-                 ctx.interner.lookup("col"), ctx.interner.lookup("value"))
-            else { return Value::make_frozenset(vec![]); };
+            let (Some(neighbour_sym), Some(row_sym), Some(col_sym), Some(value_sym)) = (
+                ctx.interner.lookup("neighbour"),
+                ctx.interner.lookup("row"),
+                ctx.interner.lookup("col"),
+                ctx.interner.lookup("value"),
+            ) else {
+                return Value::make_frozenset(vec![]);
+            };
 
             let as_i64 = |v: &Value| -> Option<i64> {
                 match v {
@@ -6186,43 +7931,65 @@ TermNode::MorphHead { text } => {
             };
 
             cached_neighbours(ctx, nid, value_sym, false, false, || {
-            let mut results: Vec<Value> = Vec::new();
-            for (dr, dc) in [(1i64, 0i64), (-1, 0), (0, 1), (0, -1)] {
-                let mut cur = nid;
-                let mut ok = true;
-                for _ in 0..k {
-                    let (cr, cc) = match read_rc(cur) {
-                        Some(p) => p,
-                        None => { ok = false; break; }
-                    };
-                    let target = (cr + dr, cc + dc);
-                    let mut next = None;
-                    for nb in ctx.graph.neighbours(cur, Some(neighbour_sym)) {
-                        if read_rc(nb) == Some(target) {
-                            next = Some(nb);
+                let mut results: Vec<Value> = Vec::new();
+                for (dr, dc) in [(1i64, 0i64), (-1, 0), (0, 1), (0, -1)] {
+                    let mut cur = nid;
+                    let mut ok = true;
+                    for _ in 0..k {
+                        let (cr, cc) = match read_rc(cur) {
+                            Some(p) => p,
+                            None => {
+                                ok = false;
+                                break;
+                            }
+                        };
+                        let target = (cr + dr, cc + dc);
+                        let mut next = None;
+                        for nb in ctx.graph.neighbours(cur, Some(neighbour_sym)) {
+                            if read_rc(nb) == Some(target) {
+                                next = Some(nb);
+                                break;
+                            }
+                        }
+                        let nb = match next {
+                            Some(n) => n,
+                            None => {
+                                ok = false;
+                                break;
+                            }
+                        };
+                        let val = match ctx
+                            .graph
+                            .node(nb)
+                            .attrs
+                            .get(&value_sym)
+                            .and_then(|v| as_i64(v))
+                        {
+                            Some(v) => v,
+                            None => {
+                                ok = false;
+                                break;
+                            }
+                        };
+                        if val != g {
+                            ok = false;
                             break;
                         }
+                        cur = nb;
                     }
-                    let nb = match next {
-                        Some(n) => n,
-                        None => { ok = false; break; }
-                    };
-                    let val = match ctx.graph.node(nb).attrs.get(&value_sym).and_then(|v| as_i64(v)) {
-                        Some(v) => v,
-                        None => { ok = false; break; }
-                    };
-                    if val != g { ok = false; break; }
-                    cur = nb;
+                    if ok && k > 0 {
+                        results.push(Value::Node(cur));
+                    }
                 }
-                if ok && k > 0 {
-                    results.push(Value::Node(cur));
-                }
-            }
-            results
+                results
             })
         }
 
-        TermNode::InNeighbours { node, edge_type, any_type } => {
+        TermNode::InNeighbours {
+            node,
+            edge_type,
+            any_type,
+        } => {
             let v = evaluate(arena, *node, env, ctx);
             let Value::Node(nid) = v else {
                 return Value::make_frozenset(vec![]);
@@ -6237,7 +8004,11 @@ TermNode::MorphHead { text } => {
             })
         }
 
-        TermNode::MapNeighbours { source, edge_type, any_type } => {
+        TermNode::MapNeighbours {
+            source,
+            edge_type,
+            any_type,
+        } => {
             let s = evaluate(arena, *source, env, ctx);
             let et = if *any_type { None } else { Some(*edge_type) };
             let mut out = Vec::new();
@@ -6268,7 +8039,11 @@ TermNode::MorphHead { text } => {
             Value::Int(s.len() as i64)
         }
 
-        TermNode::Filter { source, var_name, predicate } => {
+        TermNode::Filter {
+            source,
+            var_name,
+            predicate,
+        } => {
             // Memoize on the same shape Python does: id of this Term +
             // bindings of ALL its free vars (excluding the binder).  The
             // source matters as much as the predicate: for
@@ -6320,7 +8095,11 @@ TermNode::MorphHead { text } => {
 
         // Ordered twin of Filter: keep matching elements in source order (+ duplicates),
         // returns a LIST — list-comprehension `if`. (No memo cache; the value is order-bearing.)
-        TermNode::FilterList { source, var_name, predicate } => {
+        TermNode::FilterList {
+            source,
+            var_name,
+            predicate,
+        } => {
             let source_v = evaluate(arena, *source, env, ctx);
             let mut out: smallvec::SmallVec<[Value; 4]> = smallvec::smallvec![];
             let snap = source_v.snapshot();
@@ -6335,7 +8114,11 @@ TermNode::MorphHead { text } => {
             Value::List(std::sync::Arc::new(out))
         }
 
-        TermNode::Exists { source, var_name, predicate } => {
+        TermNode::Exists {
+            source,
+            var_name,
+            predicate,
+        } => {
             let source_v = evaluate(arena, *source, env, ctx);
             let snap = source_v.snapshot();
             // FALLBACK TRACE / H2. Record whether this Exists saw NOTHING AT
@@ -6354,11 +8137,15 @@ TermNode::MorphHead { text } => {
             Value::Bool(false)
         }
 
-        TermNode::Sum { source, var_name, value } => {
+        TermNode::Sum {
+            source,
+            var_name,
+            value,
+        } => {
             if is_body_taker_registered(ctx, "Sum") {
                 let mut tmp = TermArena::new();
-                let expanded = expand_sum(arena, &mut tmp, ctx.interner,
-                                          *source, *var_name, *value);
+                let expanded =
+                    expand_sum(arena, &mut tmp, ctx.interner, *source, *var_name, *value);
                 return evaluate(&tmp, expanded, env, ctx);
             }
             let source_v = evaluate(arena, *source, env, ctx);
@@ -6399,7 +8186,11 @@ TermNode::MorphHead { text } => {
             }
         }
 
-        TermNode::Prod { source, var_name, value } => {
+        TermNode::Prod {
+            source,
+            var_name,
+            value,
+        } => {
             let source_v = evaluate(arena, *source, env, ctx);
             let snap = source_v.snapshot();
             let mut all_int = true;
@@ -6433,12 +8224,18 @@ TermNode::MorphHead { text } => {
             }
         }
 
-        TermNode::MinOver { source, var_name, value, default } => {
-            min_or_max_over(arena, *source, *var_name, *value, *default, env, ctx, true)
-        }
-        TermNode::MaxOver { source, var_name, value, default } => {
-            min_or_max_over(arena, *source, *var_name, *value, *default, env, ctx, false)
-        }
+        TermNode::MinOver {
+            source,
+            var_name,
+            value,
+            default,
+        } => min_or_max_over(arena, *source, *var_name, *value, *default, env, ctx, true),
+        TermNode::MaxOver {
+            source,
+            var_name,
+            value,
+            default,
+        } => min_or_max_over(arena, *source, *var_name, *value, *default, env, ctx, false),
 
         TermNode::Pick { source } => {
             let s = evaluate(arena, *source, env, ctx);
@@ -6463,7 +8260,13 @@ TermNode::MorphHead { text } => {
             snap.iter().next().cloned().unwrap_or(Value::None)
         }
 
-        TermNode::Fold { source, var_name, acc_name, init, body } => {
+        TermNode::Fold {
+            source,
+            var_name,
+            acc_name,
+            init,
+            body,
+        } => {
             let source_v = evaluate(arena, *source, env, ctx);
             let mut acc = evaluate(arena, *init, env, ctx);
             let snap = source_v.snapshot();
@@ -6478,23 +8281,41 @@ TermNode::MorphHead { text } => {
             acc
         }
 
-        TermNode::Argmax { source, var_name, value, default } => {
-            argmin_or_argmax_over(arena, *source, *var_name, *value,
-                                   *default, env, ctx, false, false, None)
-        }
-        TermNode::Argmin { source, var_name, value, default } => {
-            argmin_or_argmax_over(arena, *source, *var_name, *value,
-                                   *default, env, ctx, true, false, None)
-        }
-        TermNode::ArgminUnique { source, var_name, value, default } => {
-            argmin_or_argmax_over(arena, *source, *var_name, *value,
-                                   *default, env, ctx, true, true, None)
-        }
-        TermNode::ArgminRefusal { source, var_name, value, refused } => {
+        TermNode::Argmax {
+            source,
+            var_name,
+            value,
+            default,
+        } => argmin_or_argmax_over(
+            arena, *source, *var_name, *value, *default, env, ctx, false, false, None,
+        ),
+        TermNode::Argmin {
+            source,
+            var_name,
+            value,
+            default,
+        } => argmin_or_argmax_over(
+            arena, *source, *var_name, *value, *default, env, ctx, true, false, None,
+        ),
+        TermNode::ArgminUnique {
+            source,
+            var_name,
+            value,
+            default,
+        } => argmin_or_argmax_over(
+            arena, *source, *var_name, *value, *default, env, ctx, true, true, None,
+        ),
+        TermNode::ArgminRefusal {
+            source,
+            var_name,
+            value,
+            refused,
+        } => {
             // Tie -> the `refused` token; empty source -> `Value::None` (no
             // `default`, so a tie and an empty source return DIFFERENT values).
-            argmin_or_argmax_over(arena, *source, *var_name, *value,
-                                   None, env, ctx, true, true, *refused)
+            argmin_or_argmax_over(
+                arena, *source, *var_name, *value, None, env, ctx, true, true, *refused,
+            )
         }
 
         // --- Program IR (P1): STRUCTURAL variants are INERT here. ---
@@ -6528,19 +8349,27 @@ TermNode::MorphHead { text } => {
         | TermNode::ProgIsOp { .. }
         | TermNode::ProgFString { .. } => Value::None,
 
-        TermNode::ProgEval { prog, env: env_t, oracles, fuel, field } => {
-            crate::prog_eval::eval_prog_eval(
-                arena, *prog, *env_t, *oracles, *fuel, *field, env, ctx,
-            )
-        }
+        TermNode::ProgEval {
+            prog,
+            env: env_t,
+            oracles,
+            fuel,
+            field,
+        } => crate::prog_eval::eval_prog_eval(
+            arena, *prog, *env_t, *oracles, *fuel, *field, env, ctx,
+        ),
 
         // --- Derived-operator tier: registry dispatch (`Derivation::
         // ValueTaker`'s exact bind-then-evaluate shape, copied nearly
         // verbatim, generalized to a runtime name + `local_sym`-safe
         // binding — see `Call`'s own doc and `EvalCtx::derived_ops`'s). ---
         TermNode::Call { name, args } => {
-            let Some(reg) = ctx.derived_ops.clone() else { return Value::None };
-            let Some(def) = reg.get(name) else { return Value::None };
+            let Some(reg) = ctx.derived_ops.clone() else {
+                return Value::None;
+            };
+            let Some(def) = reg.get(name) else {
+                return Value::None;
+            };
             let n = args.len().min(def.params.len());
             let mut pushed = 0usize;
             for (a, (pname, _pool)) in args.iter().zip(def.params.iter()).take(n) {
@@ -6556,16 +8385,42 @@ TermNode::MorphHead { text } => {
         }
 
         // --- Program synthesis (P4-A/Q1): one-line handoff. ---
-        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, exclude_ops, max_size, max_candidates, saturate_k, field } => {
-            crate::synth_enumerate::eval_synth_enumerate(
-                arena, *examples, *ops, *consts, *exclude, *derived_ops, *exclude_ops, *max_size, *max_candidates, *saturate_k, *field,
-                env, ctx,
-            )
-        }
+        TermNode::SynthEnumerate {
+            examples,
+            ops,
+            consts,
+            exclude,
+            derived_ops,
+            exclude_ops,
+            max_size,
+            max_candidates,
+            saturate_k,
+            field,
+        } => crate::synth_enumerate::eval_synth_enumerate(
+            arena,
+            *examples,
+            *ops,
+            *consts,
+            *exclude,
+            *derived_ops,
+            *exclude_ops,
+            *max_size,
+            *max_candidates,
+            *saturate_k,
+            *field,
+            env,
+            ctx,
+        ),
 
         TermNode::ParetoDominates {
-            candidate, alternative, dimension_count, value_edge, measure_edge,
-            dimension_key, verified_key, signed_value_key,
+            candidate,
+            alternative,
+            dimension_count,
+            value_edge,
+            measure_edge,
+            dimension_key,
+            verified_key,
+            signed_value_key,
         } => {
             let Value::Node(candidate) = evaluate(arena, *candidate, env, ctx) else {
                 return Value::Bool(false);
@@ -6575,6 +8430,16 @@ TermNode::MorphHead { text } => {
             };
             let dimensions = match evaluate(arena, *dimension_count, env, ctx) {
                 Value::Int(value) => value,
+                // Keep the Pareto contract integer-native while accepting an
+                // exactly integral scalar from generic control bridges.
+                Value::Float(value) if value.is_finite() && value.fract() == 0.0 => {
+                    let n = value as i64;
+                    if (n as f64) == value {
+                        n
+                    } else {
+                        return Value::Bool(false);
+                    }
+                }
                 _ => return Value::Bool(false),
             };
             Value::Bool(eval_pareto_dominates(
@@ -6594,30 +8459,48 @@ TermNode::MorphHead { text } => {
         TermNode::SnakeCase { text } => {
             let tv = evaluate(arena, *text, env, ctx);
             match str_like_owned(&tv, ctx.interner) {
-                Some(s) => Value::Surface(SurfaceKind::Text,
-                    std::sync::Arc::from(snake_case_str(&s).into_bytes().into_boxed_slice())),
+                Some(s) => Value::Surface(
+                    SurfaceKind::Text,
+                    std::sync::Arc::from(snake_case_str(&s).into_bytes().into_boxed_slice()),
+                ),
                 None => Value::None,
             }
         }
         TermNode::CaseFold { text } => {
             let tv = evaluate(arena, *text, env, ctx);
             match str_like_owned(&tv, ctx.interner) {
-                Some(s) => Value::Surface(SurfaceKind::Text,
-                    std::sync::Arc::from(s.to_lowercase().into_bytes().into_boxed_slice())),
+                Some(s) => Value::Surface(
+                    SurfaceKind::Text,
+                    std::sync::Arc::from(s.to_lowercase().into_bytes().into_boxed_slice()),
+                ),
                 None => Value::None,
             }
         }
 
-        TermNode::BitsAt { buffer, bitpos, n_bits } => {
+        TermNode::BitsAt {
+            buffer,
+            bitpos,
+            n_bits,
+        } => {
             let buf_v = evaluate(arena, *buffer, env, ctx);
             let bp_v = evaluate(arena, *bitpos, env, ctx);
             let nb_v = evaluate(arena, *n_bits, env, ctx);
-            let Value::Surface(_, bytes) = buf_v else { return Value::None; };
-            let Value::Int(bp) = bp_v else { return Value::None; };
-            let Value::Int(nb) = nb_v else { return Value::None; };
-            if bp < 0 || nb < 0 || nb > 64 { return Value::None; }
+            let Value::Surface(_, bytes) = buf_v else {
+                return Value::None;
+            };
+            let Value::Int(bp) = bp_v else {
+                return Value::None;
+            };
+            let Value::Int(nb) = nb_v else {
+                return Value::None;
+            };
+            if bp < 0 || nb < 0 || nb > 64 {
+                return Value::None;
+            }
             let end = bp as u64 + nb as u64;
-            if end > (bytes.len() as u64) * 8 { return Value::None; }
+            if end > (bytes.len() as u64) * 8 {
+                return Value::None;
+            }
             let mut acc: u64 = 0;
             for i in 0..(nb as u64) {
                 let abs = bp as u64 + i;
@@ -6628,16 +8511,31 @@ TermNode::MorphHead { text } => {
             Value::Int(acc as i64)
         }
 
-        TermNode::BitsWrite { buffer, bitpos, value, n_bits } => {
+        TermNode::BitsWrite {
+            buffer,
+            bitpos,
+            value,
+            n_bits,
+        } => {
             let buf_v = evaluate(arena, *buffer, env, ctx);
             let bp_v = evaluate(arena, *bitpos, env, ctx);
             let val_v = evaluate(arena, *value, env, ctx);
             let nb_v = evaluate(arena, *n_bits, env, ctx);
-            let Value::Surface(kind, bytes) = buf_v else { return Value::None; };
-            let Value::Int(bp) = bp_v else { return Value::None; };
-            let Value::Int(val) = val_v else { return Value::None; };
-            let Value::Int(nb) = nb_v else { return Value::None; };
-            if bp < 0 || nb < 0 || nb > 64 { return Value::None; }
+            let Value::Surface(kind, bytes) = buf_v else {
+                return Value::None;
+            };
+            let Value::Int(bp) = bp_v else {
+                return Value::None;
+            };
+            let Value::Int(val) = val_v else {
+                return Value::None;
+            };
+            let Value::Int(nb) = nb_v else {
+                return Value::None;
+            };
+            if bp < 0 || nb < 0 || nb > 64 {
+                return Value::None;
+            }
             let needed_bytes = ((bp as u64 + nb as u64 + 7) / 8) as usize;
             let mut new_bytes: Vec<u8> = bytes.iter().copied().collect();
             if needed_bytes > new_bytes.len() {
@@ -6645,7 +8543,7 @@ TermNode::MorphHead { text } => {
             }
             let raw_val = val as u64;
             for i in 0..(nb as u64) {
-                let bit = (raw_val >> ((nb as u64 - 1 - i))) & 1;
+                let bit = (raw_val >> (nb as u64 - 1 - i)) & 1;
                 let abs = bp as u64 + i;
                 let byte_idx = (abs >> 3) as usize;
                 let bit_idx = 7 - (abs & 7);
@@ -6662,18 +8560,34 @@ TermNode::MorphHead { text } => {
         TermNode::BitsAtAll { buffer, reads } => {
             let buf_v = evaluate(arena, *buffer, env, ctx);
             let reads_v = evaluate(arena, *reads, env, ctx);
-            let Value::Surface(_, bytes) = buf_v else { return Value::None; };
-            let (Value::Tuple(items) | Value::List(items)) = reads_v else { return Value::None; };
+            let Value::Surface(_, bytes) = buf_v else {
+                return Value::None;
+            };
+            let (Value::Tuple(items) | Value::List(items)) = reads_v else {
+                return Value::None;
+            };
             let mut out: smallvec::SmallVec<[Value; 4]> = smallvec::SmallVec::new();
             let total_bits = (bytes.len() as u64) * 8;
             for item in items.iter() {
-                let (Value::Tuple(pair) | Value::List(pair)) = item else { return Value::None; };
-                if pair.len() != 2 { return Value::None; }
-                let Value::Int(bp) = pair[0] else { return Value::None; };
-                let Value::Int(nb) = pair[1] else { return Value::None; };
-                if bp < 0 || nb < 0 || nb > 64 { return Value::None; }
+                let (Value::Tuple(pair) | Value::List(pair)) = item else {
+                    return Value::None;
+                };
+                if pair.len() != 2 {
+                    return Value::None;
+                }
+                let Value::Int(bp) = pair[0] else {
+                    return Value::None;
+                };
+                let Value::Int(nb) = pair[1] else {
+                    return Value::None;
+                };
+                if bp < 0 || nb < 0 || nb > 64 {
+                    return Value::None;
+                }
                 let end = bp as u64 + nb as u64;
-                if end > total_bits { return Value::None; }
+                if end > total_bits {
+                    return Value::None;
+                }
                 let mut acc: u64 = 0;
                 for i in 0..(nb as u64) {
                     let abs = bp as u64 + i;
@@ -6689,20 +8603,38 @@ TermNode::MorphHead { text } => {
         TermNode::BitsWriteAll { buffer, writes } => {
             let buf_v = evaluate(arena, *buffer, env, ctx);
             let writes_v = evaluate(arena, *writes, env, ctx);
-            let Value::Surface(kind, bytes) = buf_v else { return Value::None; };
-            let (Value::Tuple(items) | Value::List(items)) = writes_v else { return Value::None; };
+            let Value::Surface(kind, bytes) = buf_v else {
+                return Value::None;
+            };
+            let (Value::Tuple(items) | Value::List(items)) = writes_v else {
+                return Value::None;
+            };
             // First pass: validate + compute final buffer length.
             let mut max_byte: usize = bytes.len();
             let mut triples: Vec<(u64, u64, u64)> = Vec::with_capacity(items.len());
             for item in items.iter() {
-                let (Value::Tuple(triple) | Value::List(triple)) = item else { return Value::None; };
-                if triple.len() != 3 { return Value::None; }
-                let Value::Int(bp) = triple[0] else { return Value::None; };
-                let Value::Int(val) = triple[1] else { return Value::None; };
-                let Value::Int(nb) = triple[2] else { return Value::None; };
-                if bp < 0 || nb < 0 || nb > 64 { return Value::None; }
+                let (Value::Tuple(triple) | Value::List(triple)) = item else {
+                    return Value::None;
+                };
+                if triple.len() != 3 {
+                    return Value::None;
+                }
+                let Value::Int(bp) = triple[0] else {
+                    return Value::None;
+                };
+                let Value::Int(val) = triple[1] else {
+                    return Value::None;
+                };
+                let Value::Int(nb) = triple[2] else {
+                    return Value::None;
+                };
+                if bp < 0 || nb < 0 || nb > 64 {
+                    return Value::None;
+                }
                 let need = ((bp as u64 + nb as u64 + 7) / 8) as usize;
-                if need > max_byte { max_byte = need; }
+                if need > max_byte {
+                    max_byte = need;
+                }
                 triples.push((bp as u64, val as u64, nb as u64));
             }
             let mut new_bytes: Vec<u8> = bytes.iter().copied().collect();
@@ -6726,16 +8658,31 @@ TermNode::MorphHead { text } => {
             Value::Surface(kind, std::sync::Arc::from(new_bytes.into_boxed_slice()))
         }
 
-        TermNode::HuffmanDecodeStream { buffer, bitpos, table, n_pairs } => {
+        TermNode::HuffmanDecodeStream {
+            buffer,
+            bitpos,
+            table,
+            n_pairs,
+        } => {
             let buf_v = evaluate(arena, *buffer, env, ctx);
             let bp_v = evaluate(arena, *bitpos, env, ctx);
             let table_v = evaluate(arena, *table, env, ctx);
             let np_v = evaluate(arena, *n_pairs, env, ctx);
-            let Value::Surface(_, bytes) = buf_v else { return Value::None; };
-            let Value::Int(start_bp) = bp_v else { return Value::None; };
-            let Value::Node(table_nid) = table_v else { return Value::None; };
-            let Value::Int(n_pairs_n) = np_v else { return Value::None; };
-            if start_bp < 0 || n_pairs_n < 0 { return Value::None; }
+            let Value::Surface(_, bytes) = buf_v else {
+                return Value::None;
+            };
+            let Value::Int(start_bp) = bp_v else {
+                return Value::None;
+            };
+            let Value::Node(table_nid) = table_v else {
+                return Value::None;
+            };
+            let Value::Int(n_pairs_n) = np_v else {
+                return Value::None;
+            };
+            if start_bp < 0 || n_pairs_n < 0 {
+                return Value::None;
+            }
             // Pull codes, hlens, linbits, xlen from the HuffmanTable
             // node's attrs. Pure graph-data read — no per-codec
             // hardcoding.
@@ -6744,8 +8691,12 @@ TermNode::MorphHead { text } => {
             let hlens_sym = ctx.interner.lookup("hlens").unwrap_or(Sym::default());
             let linbits_sym = ctx.interner.lookup("linbits").unwrap_or(Sym::default());
             let xlen_sym = ctx.interner.lookup("xlen").unwrap_or(Sym::default());
-            let Some(Value::Surface(_, codes_bytes)) = node.attrs.get(&codes_sym).cloned() else { return Value::None; };
-            let Some(Value::Surface(_, hlens_bytes)) = node.attrs.get(&hlens_sym).cloned() else { return Value::None; };
+            let Some(Value::Surface(_, codes_bytes)) = node.attrs.get(&codes_sym).cloned() else {
+                return Value::None;
+            };
+            let Some(Value::Surface(_, hlens_bytes)) = node.attrs.get(&hlens_sym).cloned() else {
+                return Value::None;
+            };
             let linbits = match node.attrs.get(&linbits_sym) {
                 Some(Value::Int(n)) => *n as u32,
                 _ => 0,
@@ -6756,7 +8707,9 @@ TermNode::MorphHead { text } => {
             };
             // codes_bytes is little-endian u16 array; hlens_bytes is u8 array.
             let n_entries = codes_bytes.len() / 2;
-            if hlens_bytes.len() != n_entries { return Value::None; }
+            if hlens_bytes.len() != n_entries {
+                return Value::None;
+            }
             let codes: Vec<u32> = (0..n_entries)
                 .map(|i| (codes_bytes[i * 2] as u32) | ((codes_bytes[i * 2 + 1] as u32) << 8))
                 .collect();
@@ -6778,8 +8731,12 @@ TermNode::MorphHead { text } => {
                     bits_read += 1;
                     for i in 0..n_entries {
                         let ln = hlens_bytes[i];
-                        if ln != bits_read { continue; }
-                        if codes[i] != acc { continue; }
+                        if ln != bits_read {
+                            continue;
+                        }
+                        if codes[i] != acc {
+                            continue;
+                        }
                         let (x, y) = if dim > 0 {
                             ((i / dim) as u32, (i % dim) as u32)
                         } else {
@@ -6788,7 +8745,9 @@ TermNode::MorphHead { text } => {
                         found = Some((ln, x, y));
                         break;
                     }
-                    if found.is_some() { break; }
+                    if found.is_some() {
+                        break;
+                    }
                 }
                 let Some((_, mut x, mut y)) = found else {
                     return Value::None;
@@ -6798,7 +8757,9 @@ TermNode::MorphHead { text } => {
                 if linbits > 0 && x == 15 {
                     let mut extra: u32 = 0;
                     for _ in 0..linbits {
-                        if bp >= total_bits { return Value::None; }
+                        if bp >= total_bits {
+                            return Value::None;
+                        }
                         let byte = bytes[(bp >> 3) as usize];
                         let bit = (byte >> (7 - (bp & 7))) & 1;
                         extra = (extra << 1) | (bit as u32);
@@ -6809,7 +8770,9 @@ TermNode::MorphHead { text } => {
                 if linbits > 0 && y == 15 {
                     let mut extra: u32 = 0;
                     for _ in 0..linbits {
-                        if bp >= total_bits { return Value::None; }
+                        if bp >= total_bits {
+                            return Value::None;
+                        }
                         let byte = bytes[(bp >> 3) as usize];
                         let bit = (byte >> (7 - (bp & 7))) & 1;
                         extra = (extra << 1) | (bit as u32);
@@ -6821,18 +8784,26 @@ TermNode::MorphHead { text } => {
                 let mut x_signed = x as i64;
                 let mut y_signed = y as i64;
                 if x != 0 {
-                    if bp >= total_bits { return Value::None; }
+                    if bp >= total_bits {
+                        return Value::None;
+                    }
                     let byte = bytes[(bp >> 3) as usize];
                     let bit = (byte >> (7 - (bp & 7))) & 1;
                     bp += 1;
-                    if bit == 1 { x_signed = -x_signed; }
+                    if bit == 1 {
+                        x_signed = -x_signed;
+                    }
                 }
                 if y != 0 {
-                    if bp >= total_bits { return Value::None; }
+                    if bp >= total_bits {
+                        return Value::None;
+                    }
                     let byte = bytes[(bp >> 3) as usize];
                     let bit = (byte >> (7 - (bp & 7))) & 1;
                     bp += 1;
-                    if bit == 1 { y_signed = -y_signed; }
+                    if bit == 1 {
+                        y_signed = -y_signed;
+                    }
                 }
                 let pair = Value::Tuple(std::sync::Arc::new(smallvec::smallvec![
                     Value::Int(x_signed),
@@ -6851,12 +8822,20 @@ TermNode::MorphHead { text } => {
         TermNode::ExpGolombDecode { buffer, bitpos } => {
             let buf_v = evaluate(arena, *buffer, env, ctx);
             let bp_v = evaluate(arena, *bitpos, env, ctx);
-            let Value::Surface(_, bytes) = buf_v else { return Value::None; };
-            let Value::Int(start_bp) = bp_v else { return Value::None; };
-            if start_bp < 0 { return Value::None; }
+            let Value::Surface(_, bytes) = buf_v else {
+                return Value::None;
+            };
+            let Value::Int(start_bp) = bp_v else {
+                return Value::None;
+            };
+            if start_bp < 0 {
+                return Value::None;
+            }
             match exp_golomb_decode(&bytes, start_bp as u64) {
-                Some((val, new_bp)) => Value::Tuple(std::sync::Arc::new(
-                    smallvec::smallvec![Value::Int(val as i64), Value::Int(new_bp as i64)])),
+                Some((val, new_bp)) => Value::Tuple(std::sync::Arc::new(smallvec::smallvec![
+                    Value::Int(val as i64),
+                    Value::Int(new_bp as i64)
+                ])),
                 None => Value::None,
             }
         }
@@ -6864,9 +8843,15 @@ TermNode::MorphHead { text } => {
         TermNode::ExpGolombDecodeSigned { buffer, bitpos } => {
             let buf_v = evaluate(arena, *buffer, env, ctx);
             let bp_v = evaluate(arena, *bitpos, env, ctx);
-            let Value::Surface(_, bytes) = buf_v else { return Value::None; };
-            let Value::Int(start_bp) = bp_v else { return Value::None; };
-            if start_bp < 0 { return Value::None; }
+            let Value::Surface(_, bytes) = buf_v else {
+                return Value::None;
+            };
+            let Value::Int(start_bp) = bp_v else {
+                return Value::None;
+            };
+            if start_bp < 0 {
+                return Value::None;
+            }
             match exp_golomb_decode(&bytes, start_bp as u64) {
                 Some((uval, new_bp)) => {
                     let signed: i64 = if uval & 1 == 1 {
@@ -6875,20 +8860,34 @@ TermNode::MorphHead { text } => {
                         -((uval / 2) as i64)
                     };
                     Value::Tuple(std::sync::Arc::new(smallvec::smallvec![
-                        Value::Int(signed), Value::Int(new_bp as i64)]))
+                        Value::Int(signed),
+                        Value::Int(new_bp as i64)
+                    ]))
                 }
                 None => Value::None,
             }
         }
 
-        TermNode::ExpGolombEncode { buffer, bitpos, value } => {
+        TermNode::ExpGolombEncode {
+            buffer,
+            bitpos,
+            value,
+        } => {
             let buf_v = evaluate(arena, *buffer, env, ctx);
             let bp_v = evaluate(arena, *bitpos, env, ctx);
             let val_v = evaluate(arena, *value, env, ctx);
-            let Value::Surface(kind, bytes) = buf_v else { return Value::None; };
-            let Value::Int(start_bp) = bp_v else { return Value::None; };
-            let Value::Int(val) = val_v else { return Value::None; };
-            if start_bp < 0 || val < 0 { return Value::None; }
+            let Value::Surface(kind, bytes) = buf_v else {
+                return Value::None;
+            };
+            let Value::Int(start_bp) = bp_v else {
+                return Value::None;
+            };
+            let Value::Int(val) = val_v else {
+                return Value::None;
+            };
+            if start_bp < 0 || val < 0 {
+                return Value::None;
+            }
             let mut out_bytes: Vec<u8> = bytes.iter().copied().collect();
             let new_bp = exp_golomb_encode(&mut out_bytes, start_bp as u64, val as u64);
             Value::Tuple(std::sync::Arc::new(smallvec::smallvec![
@@ -6897,14 +8896,26 @@ TermNode::MorphHead { text } => {
             ]))
         }
 
-        TermNode::ExpGolombEncodeSigned { buffer, bitpos, value } => {
+        TermNode::ExpGolombEncodeSigned {
+            buffer,
+            bitpos,
+            value,
+        } => {
             let buf_v = evaluate(arena, *buffer, env, ctx);
             let bp_v = evaluate(arena, *bitpos, env, ctx);
             let val_v = evaluate(arena, *value, env, ctx);
-            let Value::Surface(kind, bytes) = buf_v else { return Value::None; };
-            let Value::Int(start_bp) = bp_v else { return Value::None; };
-            let Value::Int(val) = val_v else { return Value::None; };
-            if start_bp < 0 { return Value::None; }
+            let Value::Surface(kind, bytes) = buf_v else {
+                return Value::None;
+            };
+            let Value::Int(start_bp) = bp_v else {
+                return Value::None;
+            };
+            let Value::Int(val) = val_v else {
+                return Value::None;
+            };
+            if start_bp < 0 {
+                return Value::None;
+            }
             let uval: u64 = if val > 0 {
                 (val as u64) * 2 - 1
             } else {
@@ -6918,28 +8929,49 @@ TermNode::MorphHead { text } => {
             ]))
         }
 
-        TermNode::HuffmanEncodeStream { buffer, bitpos, pairs, table } => {
+        TermNode::HuffmanEncodeStream {
+            buffer,
+            bitpos,
+            pairs,
+            table,
+        } => {
             let buf_v = evaluate(arena, *buffer, env, ctx);
             let bp_v = evaluate(arena, *bitpos, env, ctx);
             let pairs_v = evaluate(arena, *pairs, env, ctx);
             let table_v = evaluate(arena, *table, env, ctx);
-            let Value::Surface(kind, bytes) = buf_v else { return Value::None; };
-            let Value::Int(start_bp) = bp_v else { return Value::None; };
-            let Value::Node(table_nid) = table_v else { return Value::None; };
-            let (Value::Tuple(pairs_tup) | Value::List(pairs_tup)) = pairs_v else { return Value::None; };
-            if start_bp < 0 { return Value::None; }
+            let Value::Surface(kind, bytes) = buf_v else {
+                return Value::None;
+            };
+            let Value::Int(start_bp) = bp_v else {
+                return Value::None;
+            };
+            let Value::Node(table_nid) = table_v else {
+                return Value::None;
+            };
+            let (Value::Tuple(pairs_tup) | Value::List(pairs_tup)) = pairs_v else {
+                return Value::None;
+            };
+            if start_bp < 0 {
+                return Value::None;
+            }
             let node = ctx.graph.node(table_nid);
             let codes_sym = ctx.interner.lookup("codes").unwrap_or(Sym::default());
             let hlens_sym = ctx.interner.lookup("hlens").unwrap_or(Sym::default());
             let linbits_sym = ctx.interner.lookup("linbits").unwrap_or(Sym::default());
-            let Some(Value::Surface(_, codes_bytes)) = node.attrs.get(&codes_sym).cloned() else { return Value::None; };
-            let Some(Value::Surface(_, hlens_bytes)) = node.attrs.get(&hlens_sym).cloned() else { return Value::None; };
+            let Some(Value::Surface(_, codes_bytes)) = node.attrs.get(&codes_sym).cloned() else {
+                return Value::None;
+            };
+            let Some(Value::Surface(_, hlens_bytes)) = node.attrs.get(&hlens_sym).cloned() else {
+                return Value::None;
+            };
             let linbits = match node.attrs.get(&linbits_sym) {
                 Some(Value::Int(n)) => *n as u32,
                 _ => 0,
             };
             let n_entries = codes_bytes.len() / 2;
-            if hlens_bytes.len() != n_entries { return Value::None; }
+            if hlens_bytes.len() != n_entries {
+                return Value::None;
+            }
             let codes: Vec<u32> = (0..n_entries)
                 .map(|i| (codes_bytes[i * 2] as u32) | ((codes_bytes[i * 2 + 1] as u32) << 8))
                 .collect();
@@ -6957,15 +8989,27 @@ TermNode::MorphHead { text } => {
                         out.resize(byte_idx + 1, 0);
                     }
                     let mask = 1u8 << bit_idx;
-                    if bit == 1 { out[byte_idx] |= mask; } else { out[byte_idx] &= !mask; }
+                    if bit == 1 {
+                        out[byte_idx] |= mask;
+                    } else {
+                        out[byte_idx] &= !mask;
+                    }
                     *bp_ref += 1;
                 }
             };
             for pv in pairs_tup.iter() {
-                let (Value::Tuple(p) | Value::List(p)) = pv else { return Value::None; };
-                if p.len() != 2 { return Value::None; }
-                let Value::Int(x) = p[0] else { return Value::None; };
-                let Value::Int(y) = p[1] else { return Value::None; };
+                let (Value::Tuple(p) | Value::List(p)) = pv else {
+                    return Value::None;
+                };
+                if p.len() != 2 {
+                    return Value::None;
+                }
+                let Value::Int(x) = p[0] else {
+                    return Value::None;
+                };
+                let Value::Int(y) = p[1] else {
+                    return Value::None;
+                };
                 let abs_x = x.unsigned_abs() as u32;
                 let abs_y = y.unsigned_abs() as u32;
                 let (huff_x, extra_x) = if linbits > 0 && abs_x >= 15 {
@@ -6978,17 +9022,39 @@ TermNode::MorphHead { text } => {
                 } else {
                     (abs_y, None)
                 };
-                let hx = if dim > 0 { std::cmp::min(huff_x, dim as u32 - 1) } else { huff_x };
-                let hy = if dim > 0 { std::cmp::min(huff_y, dim as u32 - 1) } else { huff_y };
-                let idx = if dim > 0 { (hx * dim as u32 + hy) as usize } else { hx as usize };
-                if idx >= n_entries { return Value::None; }
+                let hx = if dim > 0 {
+                    std::cmp::min(huff_x, dim as u32 - 1)
+                } else {
+                    huff_x
+                };
+                let hy = if dim > 0 {
+                    std::cmp::min(huff_y, dim as u32 - 1)
+                } else {
+                    huff_y
+                };
+                let idx = if dim > 0 {
+                    (hx * dim as u32 + hy) as usize
+                } else {
+                    hx as usize
+                };
+                if idx >= n_entries {
+                    return Value::None;
+                }
                 let code = codes[idx];
                 let ln = hlens_bytes[idx] as u32;
                 write_bits(&mut bp, &mut out_bytes, code as u64, ln);
-                if let Some(e) = extra_x { write_bits(&mut bp, &mut out_bytes, e as u64, linbits); }
-                if let Some(e) = extra_y { write_bits(&mut bp, &mut out_bytes, e as u64, linbits); }
-                if x != 0 { write_bits(&mut bp, &mut out_bytes, if x < 0 { 1 } else { 0 }, 1); }
-                if y != 0 { write_bits(&mut bp, &mut out_bytes, if y < 0 { 1 } else { 0 }, 1); }
+                if let Some(e) = extra_x {
+                    write_bits(&mut bp, &mut out_bytes, e as u64, linbits);
+                }
+                if let Some(e) = extra_y {
+                    write_bits(&mut bp, &mut out_bytes, e as u64, linbits);
+                }
+                if x != 0 {
+                    write_bits(&mut bp, &mut out_bytes, if x < 0 { 1 } else { 0 }, 1);
+                }
+                if y != 0 {
+                    write_bits(&mut bp, &mut out_bytes, if y < 0 { 1 } else { 0 }, 1);
+                }
             }
             Value::Tuple(std::sync::Arc::new(smallvec::smallvec![
                 Value::Surface(kind, std::sync::Arc::from(out_bytes.into_boxed_slice())),
@@ -7025,14 +9091,26 @@ TermNode::MorphHead { text } => {
             if let Some(chars) = text_chars(&s, ctx.interner) {
                 let n = chars.len() as i64;
                 let mut i = evaluate(arena, *index, env, ctx).as_i64();
-                if i < 0 { i += n; }
-                return if i < 0 || i >= n { Value::None } else { char_value(chars[i as usize]) };
+                if i < 0 {
+                    i += n;
+                }
+                return if i < 0 || i >= n {
+                    Value::None
+                } else {
+                    char_value(chars[i as usize])
+                };
             }
             let snap = s.snapshot();
             let n = snap.len() as i64;
             let mut i = evaluate(arena, *index, env, ctx).as_i64();
-            if i < 0 { i += n; }                    // Python-style from-end indexing
-            if i < 0 || i >= n { Value::None } else { snap[i as usize].clone() }
+            if i < 0 {
+                i += n;
+            } // Python-style from-end indexing
+            if i < 0 || i >= n {
+                Value::None
+            } else {
+                snap[i as usize].clone()
+            }
         }
         TermNode::Append { seq, item } => {
             let s = evaluate(arena, *seq, env, ctx);
@@ -7043,19 +9121,25 @@ TermNode::MorphHead { text } => {
             // Tuple, which is every pre-existing caller. Appending to a list
             // gives a list, exactly as `aug_combine`'s `+` does.
             let out = std::sync::Arc::new(out);
-            if matches!(s, Value::List(_)) { Value::List(out) } else { Value::Tuple(out) }
+            if matches!(s, Value::List(_)) {
+                Value::List(out)
+            } else {
+                Value::Tuple(out)
+            }
         }
         TermNode::ListDrop { list, index } => {
             let lv = evaluate(arena, *list, env, ctx);
             let snap = lv.snapshot();
             let n = snap.len() as i64;
             let mut i = evaluate(arena, *index, env, ctx).as_i64();
-            if i < 0 { i += n; }                    // Python-style from-end indexing, same as IndexAt
-            // Out-of-range (after adjustment): no-op -- return the elements
-            // unchanged, in order. The caller (a meta-rule's own where-clause,
-            // mirroring `apply_drop_match_edge`'s own inert check) decides
-            // whether an out-of-range/too-short drop is "inert" for its
-            // purposes; this Term only performs the mechanical removal.
+            if i < 0 {
+                i += n;
+            } // Python-style from-end indexing, same as IndexAt
+              // Out-of-range (after adjustment): no-op -- return the elements
+              // unchanged, in order. The caller (a meta-rule's own where-clause,
+              // mirroring `apply_drop_match_edge`'s own inert check) decides
+              // whether an out-of-range/too-short drop is "inert" for its
+              // purposes; this Term only performs the mechanical removal.
             let out: smallvec::SmallVec<[Value; 4]> = snap
                 .iter()
                 .enumerate()
@@ -7064,7 +9148,11 @@ TermNode::MorphHead { text } => {
                 .collect();
             // KIND-PRESERVING (ARC6) — see `Append`.
             let out = std::sync::Arc::new(out);
-            if matches!(lv, Value::List(_)) { Value::List(out) } else { Value::Tuple(out) }
+            if matches!(lv, Value::List(_)) {
+                Value::List(out)
+            } else {
+                Value::Tuple(out)
+            }
         }
         TermNode::Intersect { a, b } => {
             try_derivation!(ctx, arena, env, "Intersect", [("a", *a), ("b", *b)]);
@@ -7092,7 +9180,11 @@ TermNode::MorphHead { text } => {
                 .collect();
             Value::make_frozenset(out)
         }
-        TermNode::MapSet { source, var_name, value } => {
+        TermNode::MapSet {
+            source,
+            var_name,
+            value,
+        } => {
             let s = evaluate(arena, *source, env, ctx);
             let snap = s.snapshot();
             let mut out: Vec<Value> = Vec::with_capacity(snap.len());
@@ -7107,7 +9199,11 @@ TermNode::MorphHead { text } => {
 
         // Ordered twin of MapSet: same per-element evaluation, but collect into an
         // ORDERED LIST (preserves source order + duplicates) — list-comprehension transform.
-        TermNode::MapList { source, var_name, value } => {
+        TermNode::MapList {
+            source,
+            var_name,
+            value,
+        } => {
             let s = evaluate(arena, *source, env, ctx);
             let snap = s.snapshot();
             let mut out: smallvec::SmallVec<[Value; 4]> = smallvec::smallvec![];
@@ -7121,7 +9217,11 @@ TermNode::MorphHead { text } => {
         }
 
         // --- edge-attr DSL access (Phase 7 ext) ---
-        TermNode::Edges { node, edge_type, any_type } => {
+        TermNode::Edges {
+            node,
+            edge_type,
+            any_type,
+        } => {
             let v = evaluate(arena, *node, env, ctx);
             let Value::Node(nid) = v else {
                 return Value::make_frozenset(vec![]);
@@ -7142,7 +9242,11 @@ TermNode::MorphHead { text } => {
             }
             Value::make_frozenset(out)
         }
-        TermNode::NodesWhere { node_type, attr_key, value } => {
+        TermNode::NodesWhere {
+            node_type,
+            attr_key,
+            value,
+        } => {
             let v = evaluate(arena, *value, env, ctx);
             // Try the index. If declared, this is O(1+result); if not
             // declared, fall back to a linear scan so the Term is
@@ -7185,28 +9289,36 @@ TermNode::MorphHead { text } => {
                 Value::None => vec![],
                 other => vec![other.clone()],
             };
-            let wild_val = Value::Tuple(std::sync::Arc::new(
-                smallvec::smallvec![Value::Str(*wild)]));
+            let wild_val =
+                Value::Tuple(std::sync::Arc::new(smallvec::smallvec![Value::Str(*wild)]));
             anti_unify_values(&insts, &wild_val)
         }
         TermNode::FixedCount { pattern, wild } => {
             let p = evaluate(arena, *pattern, env, ctx);
-            let wild_val = Value::Tuple(std::sync::Arc::new(
-                smallvec::smallvec![Value::Str(*wild)]));
+            let wild_val =
+                Value::Tuple(std::sync::Arc::new(smallvec::smallvec![Value::Str(*wild)]));
             Value::Int(fixed_count_value(&p, &wild_val))
         }
-        TermNode::Covers { pattern, instance, wild } => {
+        TermNode::Covers {
+            pattern,
+            instance,
+            wild,
+        } => {
             let p = evaluate(arena, *pattern, env, ctx);
             let i = evaluate(arena, *instance, env, ctx);
-            let wild_val = Value::Tuple(std::sync::Arc::new(
-                smallvec::smallvec![Value::Str(*wild)]));
+            let wild_val =
+                Value::Tuple(std::sync::Arc::new(smallvec::smallvec![Value::Str(*wild)]));
             Value::Bool(covers_value(&p, &i, &wild_val))
         }
-        TermNode::CoversOpen { pattern, instance, wild } => {
+        TermNode::CoversOpen {
+            pattern,
+            instance,
+            wild,
+        } => {
             let p = evaluate(arena, *pattern, env, ctx);
             let i = evaluate(arena, *instance, env, ctx);
-            let wild_val = Value::Tuple(std::sync::Arc::new(
-                smallvec::smallvec![Value::Str(*wild)]));
+            let wild_val =
+                Value::Tuple(std::sync::Arc::new(smallvec::smallvec![Value::Str(*wild)]));
             Value::Bool(covers_open_value(&p, &i, &wild_val))
         }
         TermNode::AntiUnifyWitness { values, wild } => {
@@ -7217,12 +9329,13 @@ TermNode::MorphHead { text } => {
                 Value::None => vec![],
                 other => vec![other.clone()],
             };
-            let wild_val = Value::Tuple(std::sync::Arc::new(
-                smallvec::smallvec![Value::Str(*wild)]));
+            let wild_val =
+                Value::Tuple(std::sync::Arc::new(smallvec::smallvec![Value::Str(*wild)]));
             let (template, subs) = anti_unify_witness_values(&insts, &wild_val);
             // sigmas: one Dict (path→value) per instance, wrapped in a Tuple,
             // so the agent reads (template, (σ₁, σ₂, …)) graph-natively.
-            let sigmas: SmallVec<[Value; 4]> = subs.into_iter()
+            let sigmas: SmallVec<[Value; 4]> = subs
+                .into_iter()
                 .map(|pairs| {
                     let mut entries: Vec<(Value, Value)> = pairs;
                     entries.sort_by(|a, b| cmp_value(&a.0, &b.0));
@@ -7230,17 +9343,23 @@ TermNode::MorphHead { text } => {
                 })
                 .collect();
             Value::Tuple(std::sync::Arc::new(smallvec::smallvec![
-                template, Value::Tuple(std::sync::Arc::new(sigmas))]))
+                template,
+                Value::Tuple(std::sync::Arc::new(sigmas))
+            ]))
         }
-        TermNode::Substitute { template, sigma, wild } => {
+        TermNode::Substitute {
+            template,
+            sigma,
+            wild,
+        } => {
             let t = evaluate(arena, *template, env, ctx);
             let sg = evaluate(arena, *sigma, env, ctx);
             let pairs: Vec<(Value, Value)> = match &sg {
                 Value::Dict(d) => d.to_vec(),
                 _ => vec![],
             };
-            let wild_val = Value::Tuple(std::sync::Arc::new(
-                smallvec::smallvec![Value::Str(*wild)]));
+            let wild_val =
+                Value::Tuple(std::sync::Arc::new(smallvec::smallvec![Value::Str(*wild)]));
             substitute_value(&t, &pairs, &wild_val)
         }
         TermNode::Unify { values, wild } => {
@@ -7251,40 +9370,85 @@ TermNode::MorphHead { text } => {
                 Value::None => vec![],
                 other => vec![other.clone()],
             };
-            let wild_val = Value::Tuple(std::sync::Arc::new(
-                smallvec::smallvec![Value::Str(*wild)]));
+            let wild_val =
+                Value::Tuple(std::sync::Arc::new(smallvec::smallvec![Value::Str(*wild)]));
             unify_values(&insts, &wild_val)
         }
         TermNode::StructSim { a, b, wild } => {
             let av = evaluate(arena, *a, env, ctx);
             let bv = evaluate(arena, *b, env, ctx);
-            let wild_val = Value::Tuple(std::sync::Arc::new(
-                smallvec::smallvec![Value::Str(*wild)]));
+            let wild_val =
+                Value::Tuple(std::sync::Arc::new(smallvec::smallvec![Value::Str(*wild)]));
             Value::Float(struct_sim_value(&av, &bv, &wild_val))
         }
-        TermNode::ShapeDecode { goal, codebook_type, exclude, codebook_scope, beam, max_steps, cand_k, budget, field, wild, wild_objects } => {
+        TermNode::ShapeDecode {
+            goal,
+            codebook_type,
+            exclude,
+            codebook_scope,
+            beam,
+            max_steps,
+            cand_k,
+            budget,
+            field,
+            wild,
+            wild_objects,
+        } => {
             let goal_value = evaluate(arena, *goal, env, ctx);
-            let exclude_value = exclude.map(|idx| evaluate(arena, idx, env, ctx)).unwrap_or(Value::None);
-            let scope_value = codebook_scope.map(|idx| evaluate(arena, idx, env, ctx)).unwrap_or(Value::None);
+            let exclude_value = exclude
+                .map(|idx| evaluate(arena, idx, env, ctx))
+                .unwrap_or(Value::None);
+            let scope_value = codebook_scope
+                .map(|idx| evaluate(arena, idx, env, ctx))
+                .unwrap_or(Value::None);
             let key = sd_cache_key(
                 1,
                 &[goal_value, exclude_value, scope_value],
-                &[*beam, *max_steps, *cand_k, *budget, i64::from(*wild_objects)],
+                &[
+                    *beam,
+                    *max_steps,
+                    *cand_k,
+                    *budget,
+                    i64::from(*wild_objects),
+                ],
                 &[*codebook_type, *wild],
                 ctx.graph,
             );
-            if let Some(hit) = ctx.cache.as_deref().and_then(|cache| cache.sd_ops.get(&key)).cloned() {
+            if let Some(hit) = ctx
+                .cache
+                .as_deref()
+                .and_then(|cache| cache.sd_ops.get(&key))
+                .cloned()
+            {
                 return crate::shape_decode::select_cached_field(&hit, *field, ctx.interner);
             }
             let full = crate::shape_decode::eval_shape_decode(
-                arena, *goal, *codebook_type, *exclude, *codebook_scope, *beam, *max_steps, *cand_k, *budget,
-                Sym::default(), *wild, *wild_objects, env, ctx,
+                arena,
+                *goal,
+                *codebook_type,
+                *exclude,
+                *codebook_scope,
+                *beam,
+                *max_steps,
+                *cand_k,
+                *budget,
+                Sym::default(),
+                *wild,
+                *wild_objects,
+                env,
+                ctx,
             );
             let report = crate::shape_decode::select_cached_field(&full, *field, ctx.interner);
-            if let Some(cache) = ctx.cache.as_deref_mut() { cache.sd_ops.insert(key, full); }
+            if let Some(cache) = ctx.cache.as_deref_mut() {
+                cache.sd_ops.insert(key, full);
+            }
             report
         }
-        TermNode::MotorCompose { episode, policy, candidate } => {
+        TermNode::MotorCompose {
+            episode,
+            policy,
+            candidate,
+        } => {
             let Value::Node(ep) = evaluate(arena, *episode, env, ctx) else {
                 return Value::Int(0);
             };
@@ -7294,137 +9458,387 @@ TermNode::MorphHead { text } => {
             let Value::Node(ca) = evaluate(arena, *candidate, env, ctx) else {
                 return Value::Int(0);
             };
-            if crate::motor_compose::motor_compose_member(
-                ctx.graph, ctx.interner, ep, po, ca,
-            ) {
+            if crate::motor_compose::motor_compose_member(ctx.graph, ctx.interner, ep, po, ca) {
                 Value::Int(1)
             } else {
                 Value::Int(0)
             }
         }
-        TermNode::TransformDecode { goal, codebook_type, exclude, max_dims, field } => {
+        TermNode::FutureManifoldProjection {
+            episode,
+            policy,
+            source,
+            addition,
+            field,
+        } => {
+            let Value::Node(ep) = evaluate(arena, *episode, env, ctx) else {
+                return Value::Float(0.0);
+            };
+            let Value::Node(po) = evaluate(arena, *policy, env, ctx) else {
+                return Value::Float(0.0);
+            };
+            let Value::Node(src) = evaluate(arena, *source, env, ctx) else {
+                return Value::Float(0.0);
+            };
+            let add = addition.and_then(|a| match evaluate(arena, a, env, ctx) {
+                Value::Node(n) => Some(n),
+                _ => None,
+            });
+            crate::motor_compose::future_manifold_projection_field(
+                ctx.graph,
+                ctx.interner,
+                ep,
+                po,
+                src,
+                add,
+                *field,
+            )
+        }
+        TermNode::TransformDecode {
+            goal,
+            codebook_type,
+            exclude,
+            max_dims,
+            field,
+        } => {
             let goal_value = evaluate(arena, *goal, env, ctx);
-            let exclude_value = exclude.map(|idx| evaluate(arena, idx, env, ctx)).unwrap_or(Value::None);
-            let key = sd_cache_key(2, &[goal_value, exclude_value], &[*max_dims], &[*codebook_type], ctx.graph);
-            if let Some(hit) = ctx.cache.as_deref().and_then(|cache| cache.sd_ops.get(&key)).cloned() {
+            let exclude_value = exclude
+                .map(|idx| evaluate(arena, idx, env, ctx))
+                .unwrap_or(Value::None);
+            let key = sd_cache_key(
+                2,
+                &[goal_value, exclude_value],
+                &[*max_dims],
+                &[*codebook_type],
+                ctx.graph,
+            );
+            if let Some(hit) = ctx
+                .cache
+                .as_deref()
+                .and_then(|cache| cache.sd_ops.get(&key))
+                .cloned()
+            {
                 return crate::shape_decode::select_cached_field(&hit, *field, ctx.interner);
             }
             let full = crate::shape_decode::eval_transform_decode(
-                arena, *goal, *codebook_type, *exclude, *max_dims, Sym::default(), env, ctx,
+                arena,
+                *goal,
+                *codebook_type,
+                *exclude,
+                *max_dims,
+                Sym::default(),
+                env,
+                ctx,
             );
             let report = crate::shape_decode::select_cached_field(&full, *field, ctx.interner);
-            if let Some(cache) = ctx.cache.as_deref_mut() { cache.sd_ops.insert(key, full); }
+            if let Some(cache) = ctx.cache.as_deref_mut() {
+                cache.sd_ops.insert(key, full);
+            }
             report
         }
         TermNode::NetForward { assemblage, inputs } => {
             crate::net_forward::eval_net_forward(arena, *assemblage, *inputs, env, ctx)
         }
-        TermNode::DimInfer { goal, codebook_type, exclude, generator_type, max_dims, field } => {
+        TermNode::DimInfer {
+            goal,
+            codebook_type,
+            exclude,
+            generator_type,
+            max_dims,
+            field,
+        } => {
             let goal_value = evaluate(arena, *goal, env, ctx);
-            let exclude_value = exclude.map(|idx| evaluate(arena, idx, env, ctx)).unwrap_or(Value::None);
-            let key = sd_cache_key(3, &[goal_value, exclude_value], &[*max_dims], &[*codebook_type, *generator_type], ctx.graph);
-            if let Some(hit) = ctx.cache.as_deref().and_then(|cache| cache.sd_ops.get(&key)).cloned() {
+            let exclude_value = exclude
+                .map(|idx| evaluate(arena, idx, env, ctx))
+                .unwrap_or(Value::None);
+            let key = sd_cache_key(
+                3,
+                &[goal_value, exclude_value],
+                &[*max_dims],
+                &[*codebook_type, *generator_type],
+                ctx.graph,
+            );
+            if let Some(hit) = ctx
+                .cache
+                .as_deref()
+                .and_then(|cache| cache.sd_ops.get(&key))
+                .cloned()
+            {
                 return crate::shape_decode::select_cached_field(&hit, *field, ctx.interner);
             }
             let full = crate::shape_decode::eval_dim_infer(
-                arena, *goal, *codebook_type, *exclude, *generator_type, *max_dims, Sym::default(), env, ctx,
+                arena,
+                *goal,
+                *codebook_type,
+                *exclude,
+                *generator_type,
+                *max_dims,
+                Sym::default(),
+                env,
+                ctx,
             );
             let report = crate::shape_decode::select_cached_field(&full, *field, ctx.interner);
-            if let Some(cache) = ctx.cache.as_deref_mut() { cache.sd_ops.insert(key, full); }
+            if let Some(cache) = ctx.cache.as_deref_mut() {
+                cache.sd_ops.insert(key, full);
+            }
             report
         }
-        TermNode::GenInfer { goal, codebook_type, exclude, max_dims, field } => {
+        TermNode::GenInfer {
+            goal,
+            codebook_type,
+            exclude,
+            max_dims,
+            field,
+        } => {
             let goal_value = evaluate(arena, *goal, env, ctx);
-            let exclude_value = exclude.map(|idx| evaluate(arena, idx, env, ctx)).unwrap_or(Value::None);
-            let key = sd_cache_key(4, &[goal_value, exclude_value], &[*max_dims], &[*codebook_type], ctx.graph);
-            if let Some(hit) = ctx.cache.as_deref().and_then(|cache| cache.sd_ops.get(&key)).cloned() {
+            let exclude_value = exclude
+                .map(|idx| evaluate(arena, idx, env, ctx))
+                .unwrap_or(Value::None);
+            let key = sd_cache_key(
+                4,
+                &[goal_value, exclude_value],
+                &[*max_dims],
+                &[*codebook_type],
+                ctx.graph,
+            );
+            if let Some(hit) = ctx
+                .cache
+                .as_deref()
+                .and_then(|cache| cache.sd_ops.get(&key))
+                .cloned()
+            {
                 return crate::shape_decode::select_cached_field(&hit, *field, ctx.interner);
             }
             let full = crate::shape_decode::eval_gen_infer(
-                arena, *goal, *codebook_type, *exclude, *max_dims, Sym::default(), env, ctx,
+                arena,
+                *goal,
+                *codebook_type,
+                *exclude,
+                *max_dims,
+                Sym::default(),
+                env,
+                ctx,
             );
             let report = crate::shape_decode::select_cached_field(&full, *field, ctx.interner);
-            if let Some(cache) = ctx.cache.as_deref_mut() { cache.sd_ops.insert(key, full); }
+            if let Some(cache) = ctx.cache.as_deref_mut() {
+                cache.sd_ops.insert(key, full);
+            }
             report
         }
-        TermNode::TimeInfer { sequence, codebook_type, max_b, field, max_steps, robust } => {
-            crate::shape_decode::eval_time_infer(
-                arena, *sequence, *codebook_type, *max_b, *field, *max_steps, *robust, env, ctx,
-            )
-        }
-        TermNode::DepthInfer { sequence, codebook_type, max_b, field } => {
-            crate::shape_decode::eval_depth_infer(
-                arena, *sequence, *codebook_type, *max_b, *field, env, ctx,
-            )
-        }
-        TermNode::BlinkBridge { sequence, codebook_type, max_b, field } => {
-            crate::shape_decode::eval_blink_bridge(
-                arena, *sequence, *codebook_type, *max_b, *field, env, ctx,
-            )
-        }
-        TermNode::GapAbduce { sequence, codebook_type, max_b, field } => {
-            crate::shape_decode::eval_gap_abduce(
-                arena, *sequence, *codebook_type, *max_b, *field, env, ctx,
-            )
-        }
-        TermNode::GapVerify { sequence, codebook_type, max_b, field } => {
-            crate::shape_decode::eval_gap_verify(
-                arena, *sequence, *codebook_type, *max_b, *field, env, ctx,
-            )
-        }
-        TermNode::SupportInfer { sequence, codebook_type, field } => {
-            crate::shape_decode::eval_support_infer(
-                arena, *sequence, *codebook_type, *field, env, ctx,
-            )
-        }
-        TermNode::MotionEnergy { sequence, height, width, field } => {
-            crate::shape_decode::eval_motion_energy(
-                arena, *sequence, *height, *width, *field, env, ctx,
-            )
-        }
+        TermNode::TimeInfer {
+            sequence,
+            codebook_type,
+            max_b,
+            field,
+            max_steps,
+            robust,
+        } => crate::shape_decode::eval_time_infer(
+            arena,
+            *sequence,
+            *codebook_type,
+            *max_b,
+            *field,
+            *max_steps,
+            *robust,
+            env,
+            ctx,
+        ),
+        TermNode::DepthInfer {
+            sequence,
+            codebook_type,
+            max_b,
+            field,
+        } => crate::shape_decode::eval_depth_infer(
+            arena,
+            *sequence,
+            *codebook_type,
+            *max_b,
+            *field,
+            env,
+            ctx,
+        ),
+        TermNode::BlinkBridge {
+            sequence,
+            codebook_type,
+            max_b,
+            field,
+        } => crate::shape_decode::eval_blink_bridge(
+            arena,
+            *sequence,
+            *codebook_type,
+            *max_b,
+            *field,
+            env,
+            ctx,
+        ),
+        TermNode::GapAbduce {
+            sequence,
+            codebook_type,
+            max_b,
+            field,
+        } => crate::shape_decode::eval_gap_abduce(
+            arena,
+            *sequence,
+            *codebook_type,
+            *max_b,
+            *field,
+            env,
+            ctx,
+        ),
+        TermNode::GapVerify {
+            sequence,
+            codebook_type,
+            max_b,
+            field,
+        } => crate::shape_decode::eval_gap_verify(
+            arena,
+            *sequence,
+            *codebook_type,
+            *max_b,
+            *field,
+            env,
+            ctx,
+        ),
+        TermNode::SupportInfer {
+            sequence,
+            codebook_type,
+            field,
+        } => crate::shape_decode::eval_support_infer(
+            arena,
+            *sequence,
+            *codebook_type,
+            *field,
+            env,
+            ctx,
+        ),
+        TermNode::MotionEnergy {
+            sequence,
+            height,
+            width,
+            field,
+        } => crate::shape_decode::eval_motion_energy(
+            arena, *sequence, *height, *width, *field, env, ctx,
+        ),
         TermNode::TransferDecode { goal } => {
-            crate::shape_decode::eval_transfer_decode(
-                arena, *goal, env, ctx,
-            )
+            crate::shape_decode::eval_transfer_decode(arena, *goal, env, ctx)
         }
         TermNode::RecogniseShape { text } => {
-            crate::shape_decode::eval_recognise_shape(
-                arena, *text, env, ctx,
-            )
+            crate::shape_decode::eval_recognise_shape(arena, *text, env, ctx)
         }
-        TermNode::MetaShapeMint { observation, obs_type, status_value, wild, field } => {
-            crate::shape_decode::eval_meta_shape_mint(
-                arena, *observation, *obs_type, *status_value, *wild, *field, env, ctx,
-            )
-        }
+        TermNode::MetaShapeMint {
+            observation,
+            obs_type,
+            status_value,
+            wild,
+            field,
+        } => crate::shape_decode::eval_meta_shape_mint(
+            arena,
+            *observation,
+            *obs_type,
+            *status_value,
+            *wild,
+            *field,
+            env,
+            ctx,
+        ),
         TermNode::StrokeQuantize {
-            points, segments, turn_bins, len_bins, grid, scale_bins, invariant_only, canonical_pose,
-            turn_edges, len_edges, emit_residual,
-            bounds, field, seg_sym, pose_x_sym, pose_y_sym, pose_o_sym, pose_s_sym,
-        } => {
-            crate::strokes::eval_stroke_quantize(
-                arena, *points, *segments, *turn_bins, *len_bins, *grid, *scale_bins, *invariant_only,
-                *canonical_pose, *turn_edges, *len_edges, *emit_residual, *bounds, *field, *seg_sym,
-                *pose_x_sym, *pose_y_sym, *pose_o_sym, *pose_s_sym, env, ctx,
-            )
-        }
+            points,
+            segments,
+            turn_bins,
+            len_bins,
+            grid,
+            scale_bins,
+            invariant_only,
+            canonical_pose,
+            turn_edges,
+            len_edges,
+            emit_residual,
+            bounds,
+            field,
+            seg_sym,
+            pose_x_sym,
+            pose_y_sym,
+            pose_o_sym,
+            pose_s_sym,
+        } => crate::strokes::eval_stroke_quantize(
+            arena,
+            *points,
+            *segments,
+            *turn_bins,
+            *len_bins,
+            *grid,
+            *scale_bins,
+            *invariant_only,
+            *canonical_pose,
+            *turn_edges,
+            *len_edges,
+            *emit_residual,
+            *bounds,
+            *field,
+            *seg_sym,
+            *pose_x_sym,
+            *pose_y_sym,
+            *pose_o_sym,
+            *pose_s_sym,
+            env,
+            ctx,
+        ),
         TermNode::StrokeRender {
-            signature, n_points, apply_pose, turn_bins, len_bins, grid, scale_bins,
-            turn_edges, len_edges, bounds, field,
+            signature,
+            n_points,
+            apply_pose,
+            turn_bins,
+            len_bins,
+            grid,
+            scale_bins,
+            turn_edges,
+            len_edges,
+            bounds,
+            field,
+        } => crate::strokes::eval_stroke_render(
+            arena,
+            *signature,
+            *n_points,
+            *apply_pose,
+            *turn_bins,
+            *len_bins,
+            *grid,
+            *scale_bins,
+            *turn_edges,
+            *len_edges,
+            *bounds,
+            *field,
+            env,
+            ctx,
+        ),
+        TermNode::SigmaLognormalGenerate {
+            primitives,
+            start,
+            t_start,
+            t_end,
+            n_points,
+            field,
+        } => crate::sigma_lognormal::eval_sigma_lognormal_generate(
+            arena,
+            *primitives,
+            *start,
+            *t_start,
+            *t_end,
+            *n_points,
+            *field,
+            env,
+            ctx,
+        ),
+        TermNode::LookaheadValue {
+            node,
+            child_edge,
+            score_key,
+            depth,
         } => {
-            crate::strokes::eval_stroke_render(
-                arena, *signature, *n_points, *apply_pose, *turn_bins, *len_bins, *grid, *scale_bins,
-                *turn_edges, *len_edges, *bounds, *field, env, ctx,
-            )
-        }
-        TermNode::SigmaLognormalGenerate { primitives, start, t_start, t_end, n_points, field } => {
-            crate::sigma_lognormal::eval_sigma_lognormal_generate(
-                arena, *primitives, *start, *t_start, *t_end, *n_points, *field, env, ctx,
-            )
-        }
-        TermNode::LookaheadValue { node, child_edge, score_key, depth } => {
             let nv = evaluate(arena, *node, env, ctx);
-            let Value::Node(nid) = nv else { return Value::None; };
+            let Value::Node(nid) = nv else {
+                return Value::None;
+            };
             let d = evaluate(arena, *depth, env, ctx).as_i64();
             Value::Float(lookahead_value(ctx.graph, nid, *child_edge, *score_key, d))
         }
@@ -7439,7 +9853,9 @@ TermNode::MorphHead { text } => {
                 for (k, v) in nd.attrs.iter() {
                     if matches!(v, Value::Bool(_) | Value::Int(_) | Value::Str(_)) {
                         out.push(Value::Tuple(Arc::new(smallvec![
-                            Value::Str(nd.type_), Value::Str(*k), v.clone()
+                            Value::Str(nd.type_),
+                            Value::Str(*k),
+                            v.clone()
                         ])));
                     }
                 }
@@ -7448,7 +9864,9 @@ TermNode::MorphHead { text } => {
         }
         TermNode::AttrByName { node, name } => {
             let nv = evaluate(arena, *node, env, ctx);
-            let Value::Node(nid) = nv else { return Value::None; };
+            let Value::Node(nid) = nv else {
+                return Value::None;
+            };
             if !ctx.graph.has_node(nid) {
                 return Value::None;
             }
@@ -7494,7 +9912,11 @@ TermNode::MorphHead { text } => {
                 .unwrap_or(Value::None)
         }
 
-        TermNode::Holds { concept, node, node2 } => {
+        TermNode::Holds {
+            concept,
+            node,
+            node2,
+        } => {
             let Some(concepts) = ctx.concepts else {
                 return Value::None;
             };
@@ -7532,7 +9954,7 @@ TermNode::MorphHead { text } => {
             if let Some(target) = ctx.shape_target {
                 let def_shape = match ctx.shape_cache.as_deref_mut() {
                     Some(cache) => cache.assess_and_cache(def, arena),
-                    None        => crate::shape::assess_shape(def, arena),
+                    None => crate::shape::assess_shape(def, arena),
                 };
                 if !crate::shape::shapes_compatible(&def_shape, &target) {
                     if let Some(c) = ctx.counters.as_deref_mut() {
@@ -7555,9 +9977,7 @@ TermNode::MorphHead { text } => {
                 None
             };
             let cache_key = match (&nv, &n2v_opt) {
-                (Value::Node(n1), Some(Value::Node(n2))) => {
-                    Some((*concept, Some(*n1), Some(*n2)))
-                }
+                (Value::Node(n1), Some(Value::Node(n2))) => Some((*concept, Some(*n1), Some(*n2))),
                 (Value::Node(n1), None) => Some((*concept, Some(*n1), None)),
                 _ => None,
             };
@@ -7605,12 +10025,9 @@ TermNode::MorphHead { text } => {
                 return Value::None;
             }
             let mut tmp_arena = TermArena::new();
-            let Ok(sub_idx) = crate::reflect::term_from_subgraph(
-                ctx.graph,
-                ctx.interner,
-                nid,
-                &mut tmp_arena,
-            ) else {
+            let Ok(sub_idx) =
+                crate::reflect::term_from_subgraph(ctx.graph, ctx.interner, nid, &mut tmp_arena)
+            else {
                 return Value::None;
             };
             ctx.holds_depth += 1;
@@ -7660,9 +10077,10 @@ TermNode::MorphHead { text } => {
                 // every pre-existing case above/below is untouched.
                 // Reduced form stays reduced under |numerator|; overflow
                 // (only possible at i64::MIN) degrades to float, honestly.
-                Value::Rational(n, d) => {
-                    n.checked_abs().map(|an| Value::Rational(an, d)).unwrap_or_else(|| Value::Float(v.as_f64().abs()))
-                }
+                Value::Rational(n, d) => n
+                    .checked_abs()
+                    .map(|an| Value::Rational(an, d))
+                    .unwrap_or_else(|| Value::Float(v.as_f64().abs())),
                 _ => Value::Float(v.as_f64().abs()),
             }
         }
@@ -7671,25 +10089,43 @@ TermNode::MorphHead { text } => {
             match v {
                 Value::Int(n) => Value::Int(-n),
                 Value::Float(f) => Value::Float(-f),
-                Value::Rational(n, d) => {
-                    n.checked_neg().map(|nn| Value::Rational(nn, d)).unwrap_or_else(|| Value::Float(-v.as_f64()))
-                }
+                Value::Rational(n, d) => n
+                    .checked_neg()
+                    .map(|nn| Value::Rational(nn, d))
+                    .unwrap_or_else(|| Value::Float(-v.as_f64())),
                 _ => Value::Float(-v.as_f64()),
             }
         }
         TermNode::Plus { items } => numeric_variadic(
-            arena, items, env, ctx,
-            |a, b| a + b, |a, b| a + b, 0, 0.0,
+            arena,
+            items,
+            env,
+            ctx,
+            |a, b| a + b,
+            |a, b| a + b,
+            0,
+            0.0,
             crate::value::rational_add,
         ),
         TermNode::Times { items } => numeric_variadic(
-            arena, items, env, ctx,
-            |a, b| a.wrapping_mul(b), |a, b| a * b, 1, 1.0,
+            arena,
+            items,
+            env,
+            ctx,
+            |a, b| a.wrapping_mul(b),
+            |a, b| a * b,
+            1,
+            1.0,
             crate::value::rational_mul,
         ),
         TermNode::Minus { a, b } => numeric_binary(
-            arena, *a, *b, env, ctx,
-            |x, y| x.wrapping_sub(y), |x, y| x - y,
+            arena,
+            *a,
+            *b,
+            env,
+            ctx,
+            |x, y| x.wrapping_sub(y),
+            |x, y| x - y,
             crate::value::rational_sub,
         ),
         TermNode::Div { a, b } => {
@@ -7762,15 +10198,55 @@ TermNode::MorphHead { text } => {
             // ln(x) for x>0; x<=0 -> -inf (caller-side epsilon guards the world value).
             Value::Float(if v > 0.0 { v.ln() } else { f64::NEG_INFINITY })
         }
-        TermNode::Exp { arg } => {
-            Value::Float(evaluate(arena, *arg, env, ctx).as_f64().exp())
-        }
+        TermNode::Exp { arg } => Value::Float(evaluate(arena, *arg, env, ctx).as_f64().exp()),
         TermNode::DtwTo { a, b } => {
             let av = evaluate(arena, *a, env, ctx);
             let bv = evaluate(arena, *b, env, ctx);
             Value::Float(banded_dtw(&av, &bv, 8))
         }
-        TermNode::ApcEncode { model, seq, start, end, out_len } => {
+        TermNode::EnigmaCrib { candidate } => {
+            match evaluate(arena, *candidate, env, ctx) {
+                Value::Node(node) => Value::Bool(crate::enigma::crib_admissible(
+                    ctx.graph,
+                    node,
+                    ctx.interner,
+                )),
+                _ => Value::Bool(false),
+            }
+        }
+        TermNode::EnigmaBombe { candidate } => {
+            match evaluate(arena, *candidate, env, ctx) {
+                Value::Node(node) => Value::Bool(crate::enigma::bombe_admissible(
+                    ctx.graph,
+                    node,
+                    ctx.interner,
+                )),
+                _ => Value::Bool(false),
+            }
+        }
+        TermNode::EnigmaBombeWitness { candidate } => {
+            match evaluate(arena, *candidate, env, ctx) {
+                Value::Node(node) => match crate::enigma::bombe_witness(
+                    ctx.graph,
+                    node,
+                    ctx.interner,
+                ) {
+                    Some(witness) => Value::Surface(
+                        SurfaceKind::Text,
+                        Arc::from(witness.into_bytes().into_boxed_slice()),
+                    ),
+                    None => Value::None,
+                },
+                _ => Value::None,
+            }
+        }
+        TermNode::ApcEncode {
+            model,
+            seq,
+            start,
+            end,
+            out_len,
+        } => {
             let mv = evaluate(arena, *model, env, ctx);
             let sv = evaluate(arena, *seq, env, ctx);
             let start = evaluate(arena, *start, env, ctx).as_f64() as i64;
@@ -7782,7 +10258,9 @@ TermNode::MorphHead { text } => {
             let din = sv.iter().next().map(|f| f.iter().count()).unwrap_or(0);
             let mut seqf: Vec<f32> = Vec::with_capacity(tu * din);
             for frame in sv.iter() {
-                for x in frame.iter() { seqf.push(x.as_f64() as f32); }
+                for x in frame.iter() {
+                    seqf.push(x.as_f64() as f32);
+                }
             }
             let (out, rep) = crate::apc::encode(&modelv, &seqf, tu, din, start, end, out_len);
             if rep == 0 {
@@ -7791,7 +10269,9 @@ TermNode::MorphHead { text } => {
                 let mut frames: SmallVec<[Value; 4]> = SmallVec::new();
                 for o in 0..out_len {
                     let mut row: SmallVec<[Value; 4]> = SmallVec::new();
-                    for d in 0..rep { row.push(Value::Float(out[o * rep + d] as f64)); }
+                    for d in 0..rep {
+                        row.push(Value::Float(out[o * rep + d] as f64));
+                    }
                     frames.push(Value::Tuple(Arc::new(row)));
                 }
                 Value::Tuple(Arc::new(frames))
@@ -7900,28 +10380,47 @@ TermNode::MorphHead { text } => {
         TermNode::ArgMin { items } => numeric_argmin(arena, items, env, ctx),
         TermNode::ArgMax { items } => numeric_argmax(arena, items, env, ctx),
 
-        TermNode::TrackIdentityCorrespondence { prev, cur, feature_key, category_key, extent_key, radius } => {
+        TermNode::TrackIdentityCorrespondence {
+            prev,
+            cur,
+            feature_key,
+            category_key,
+            extent_key,
+            radius,
+        } => {
             let prev_v = evaluate(arena, *prev, env, ctx);
             let cur_v = evaluate(arena, *cur, env, ctx);
-            let prev_ids: Vec<NodeID> = prev_v.iter().filter_map(|v| match v {
-                Value::Node(n) => Some(*n),
-                _ => None,
-            }).collect();
-            let cur_ids: Vec<NodeID> = cur_v.iter().filter_map(|v| match v {
-                Value::Node(n) => Some(*n),
-                _ => None,
-            }).collect();
+            let prev_ids: Vec<NodeID> = prev_v
+                .iter()
+                .filter_map(|v| match v {
+                    Value::Node(n) => Some(*n),
+                    _ => None,
+                })
+                .collect();
+            let cur_ids: Vec<NodeID> = cur_v
+                .iter()
+                .filter_map(|v| match v {
+                    Value::Node(n) => Some(*n),
+                    _ => None,
+                })
+                .collect();
             let radius_v = evaluate(arena, *radius, env, ctx);
             let m = track_identity_correspondence(
-                ctx.graph, &prev_ids, &cur_ids, *feature_key, *category_key, *extent_key,
+                ctx.graph,
+                &prev_ids,
+                &cur_ids,
+                *feature_key,
+                *category_key,
+                *extent_key,
                 radius_v.as_f64(),
             );
-            let mk_key = |s: &str| -> Value {
-                Value::Surface(SurfaceKind::Text, Arc::from(s.as_bytes()))
-            };
-            let matched_v: SmallVec<[Value; 4]> = m.matched.into_iter().map(|(p, c)| {
-                Value::Tuple(Arc::new(smallvec![Value::Node(p), Value::Node(c)]))
-            }).collect();
+            let mk_key =
+                |s: &str| -> Value { Value::Surface(SurfaceKind::Text, Arc::from(s.as_bytes())) };
+            let matched_v: SmallVec<[Value; 4]> = m
+                .matched
+                .into_iter()
+                .map(|(p, c)| Value::Tuple(Arc::new(smallvec![Value::Node(p), Value::Node(c)])))
+                .collect();
             let births_v: SmallVec<[Value; 4]> = m.births.into_iter().map(Value::Node).collect();
             let deaths_v: SmallVec<[Value; 4]> = m.deaths.into_iter().map(Value::Node).collect();
             let mut pairs: Vec<(Value, Value)> = vec![
@@ -7944,8 +10443,11 @@ TermNode::MorphHead { text } => {
             let bv = evaluate(arena, *b, env, ctx);
             match (as_set_like(&av), as_set_like(&bv)) {
                 (Some(sa), Some(sb)) => {
-                    let out: Vec<Value> =
-                        sa.iter().filter(|x| sb.iter().any(|y| *x == y)).cloned().collect();
+                    let out: Vec<Value> = sa
+                        .iter()
+                        .filter(|x| sb.iter().any(|y| *x == y))
+                        .cloned()
+                        .collect();
                     set_result_like(&av, out)
                 }
                 _ => Value::Int(av.as_i64() & bv.as_i64()),
@@ -8079,14 +10581,21 @@ TermNode::MorphHead { text } => {
             Value::Float(y.atan2(x))
         }
         TermNode::Rotate { vec, angle } => {
-            try_derivation!(ctx, arena, env, "Rotate", [("vec", *vec), ("angle", *angle)]);
+            try_derivation!(
+                ctx,
+                arena,
+                env,
+                "Rotate",
+                [("vec", *vec), ("angle", *angle)]
+            );
             let v = evaluate(arena, *vec, env, ctx);
             let theta = evaluate(arena, *angle, env, ctx).as_f64();
             let (c, s) = (theta.cos(), theta.sin());
             let mut it = v.iter();
             let x = it.next().map(|v| v.as_f64()).unwrap_or(0.0);
             let y = it.next().map(|v| v.as_f64()).unwrap_or(0.0);
-            let out: SmallVec<[Value; 4]> = smallvec![Value::Float(x * c - y * s), Value::Float(x * s + y * c)];
+            let out: SmallVec<[Value; 4]> =
+                smallvec![Value::Float(x * c - y * s), Value::Float(x * s + y * c)];
             Value::Tuple(Arc::new(out))
         }
         TermNode::AngleBetween { a, b } => {
@@ -8121,13 +10630,20 @@ TermNode::MorphHead { text } => {
             // synthetic label tied to the prefix's Sym id. The
             // graph-resident renderer (Phase 6) supplies a real counter.
             let s = ctx.interner.resolve(*prefix);
-            Value::Surface(SurfaceKind::Text, Arc::from(format!(".L{}{}", s, prefix.0).as_bytes()))
+            Value::Surface(
+                SurfaceKind::Text,
+                Arc::from(format!(".L{}{}", s, prefix.0).as_bytes()),
+            )
         }
         TermNode::Cat { items } => cat_or_lines(arena, items, env, ctx, b""),
         TermNode::Lines { items } => cat_or_lines(arena, items, env, ctx, b"\n"),
         TermNode::Join { separator, items } => {
-            let Some(sep_idx) = separator else { return Value::None };
-            let Some(items_idx) = items else { return Value::None };
+            let Some(sep_idx) = separator else {
+                return Value::None;
+            };
+            let Some(items_idx) = items else {
+                return Value::None;
+            };
             let sep = evaluate(arena, *sep_idx, env, ctx);
             let seq = evaluate(arena, *items_idx, env, ctx);
             // Resolve the active render Language once (if any) so variadic
@@ -8233,8 +10749,12 @@ TermNode::MorphHead { text } => {
             Value::Surface(SurfaceKind::Bytes, Arc::from(out))
         }
         TermNode::Let { name, value, body } => {
-            let Some(v_idx) = value else { return Value::None };
-            let Some(body_idx) = body else { return Value::None };
+            let Some(v_idx) = value else {
+                return Value::None;
+            };
+            let Some(body_idx) = body else {
+                return Value::None;
+            };
             let v = evaluate(arena, *v_idx, env, ctx);
             env.push((*name, v));
             let r = evaluate(arena, *body_idx, env, ctx);
@@ -8242,9 +10762,15 @@ TermNode::MorphHead { text } => {
             r
         }
         TermNode::Nth { items, index } => {
-            let Some(items_idx) = items else { return Value::None };
+            let Some(items_idx) = items else {
+                return Value::None;
+            };
             let seq = evaluate(arena, *items_idx, env, ctx);
-            let picked = seq.iter().nth(*index as usize).cloned().unwrap_or(Value::None);
+            let picked = seq
+                .iter()
+                .nth(*index as usize)
+                .cloned()
+                .unwrap_or(Value::None);
             picked
         }
         TermNode::Render { term, lang } => {
@@ -8256,7 +10782,9 @@ TermNode::MorphHead { text } => {
             // evaluate the rule's `template` subgraph under that env — nested
             // Render(Slot) sub-terms recurse on the bound children. None on a
             // render gap (no matching rule). Shares the holds_depth budget.
-            let Some(t) = term else { return Value::None; };
+            let Some(t) = term else {
+                return Value::None;
+            };
             let Value::Node(src_nid) = evaluate(arena, *t, env, ctx) else {
                 return Value::None;
             };
@@ -8277,7 +10805,9 @@ TermNode::MorphHead { text } => {
             render_source_node(src_nid, lang_nid, env, ctx)
         }
         TermNode::LitRepr { value } => {
-            let Some(v_idx) = value else { return Value::None; };
+            let Some(v_idx) = value else {
+                return Value::None;
+            };
             let v = evaluate(arena, *v_idx, env, ctx);
             match python_repr(&v, ctx.interner) {
                 Some(s) => Value::Surface(SurfaceKind::Text, Arc::from(s.into_bytes())),
@@ -8300,13 +10830,23 @@ TermNode::MorphHead { text } => {
 fn python_repr(v: &Value, interner: &Interner) -> Option<String> {
     Some(match v {
         Value::None => "None".to_string(),
-        Value::Bool(b) => if *b { "True".to_string() } else { "False".to_string() },
+        Value::Bool(b) => {
+            if *b {
+                "True".to_string()
+            } else {
+                "False".to_string()
+            }
+        }
         Value::Int(n) => n.to_string(),
         Value::Float(f) => {
             if f.is_nan() {
                 "float('nan')".to_string()
             } else if f.is_infinite() {
-                if *f > 0.0 { "float('inf')".to_string() } else { "float('-inf')".to_string() }
+                if *f > 0.0 {
+                    "float('inf')".to_string()
+                } else {
+                    "float('-inf')".to_string()
+                }
             } else {
                 let s = f.to_string();
                 // Rust's f64 Display drops the trailing ".0" Python's
@@ -8320,7 +10860,11 @@ fn python_repr(v: &Value, interner: &Interner) -> Option<String> {
         }
         Value::Str(sym) => {
             let text = interner.resolve(*sym);
-            let quote = if text.contains('\'') && !text.contains('"') { '"' } else { '\'' };
+            let quote = if text.contains('\'') && !text.contains('"') {
+                '"'
+            } else {
+                '\''
+            };
             let mut out = String::with_capacity(text.len() + 2);
             out.push(quote);
             for ch in text.chars() {
@@ -8329,7 +10873,10 @@ fn python_repr(v: &Value, interner: &Interner) -> Option<String> {
                     '\n' => out.push_str("\\n"),
                     '\r' => out.push_str("\\r"),
                     '\t' => out.push_str("\\t"),
-                    c if c == quote => { out.push('\\'); out.push(c); }
+                    c if c == quote => {
+                        out.push('\\');
+                        out.push(c);
+                    }
                     c => out.push(c),
                 }
             }
@@ -8392,7 +10939,9 @@ fn render_source_node(
             };
             let index_key = ctx.interner.lookup("index");
             for nv in names {
-                let Value::Str(name_sym) = nv else { continue; };
+                let Value::Str(name_sym) = nv else {
+                    continue;
+                };
                 // Collect every `child.<name>` out-edge (target Node + its
                 // optional `index` edge-attr). A tuple-shaped (variadic)
                 // field has either multiple such edges or a single edge
@@ -8400,8 +10949,7 @@ fn render_source_node(
                 // exactly one edge with no `index`. We mirror reflect.rs:
                 // sort by index and bind the tuple to a Value::Tuple of the
                 // child Nodes; a lone unindexed child binds to one Node.
-                let edge_name =
-                    format!("child.{}", ctx.interner.resolve(name_sym));
+                let edge_name = format!("child.{}", ctx.interner.resolve(name_sym));
                 let bound: Option<Value> = ctx
                     .interner
                     .lookup(&edge_name)
@@ -8426,10 +10974,8 @@ fn render_source_node(
                             // Variadic / tuple-shaped field → ordered Tuple
                             // of child Nodes (index order, reflect.rs parity).
                             children.sort_by_key(|(i, _)| *i);
-                            let tup: SmallVec<[Value; 4]> = children
-                                .iter()
-                                .map(|(_, n)| Value::Node(*n))
-                                .collect();
+                            let tup: SmallVec<[Value; 4]> =
+                                children.iter().map(|(_, n)| Value::Node(*n)).collect();
                             Some(Value::Tuple(Arc::new(tup)))
                         } else {
                             // Single child Term.
@@ -8453,12 +10999,9 @@ fn render_source_node(
         let tmpls = ctx.graph.neighbours(rule_nid, Some(tmpl_key));
         if let Some(&tmpl_nid) = tmpls.first() {
             let mut tmp = TermArena::new();
-            if let Ok(sub) = crate::reflect::term_from_subgraph(
-                ctx.graph,
-                ctx.interner,
-                tmpl_nid,
-                &mut tmp,
-            ) {
+            if let Ok(sub) =
+                crate::reflect::term_from_subgraph(ctx.graph, ctx.interner, tmpl_nid, &mut tmp)
+            {
                 ctx.holds_depth += 1;
                 result = evaluate(&tmp, sub, env, ctx);
                 ctx.holds_depth -= 1;
@@ -8507,7 +11050,11 @@ fn cached_neighbours(
 ) -> Value {
     // Use Sym(0) (empty string) as the "any_type" cache key marker so
     // we don't have to bloat the cache key with an Option<Sym>.
-    let key = (nid, if any_type { Sym::default() } else { edge_type }, is_in);
+    let key = (
+        nid,
+        if any_type { Sym::default() } else { edge_type },
+        is_in,
+    );
     if let Some(cache) = ctx.cache.as_deref() {
         if let Some(hit) = cache.neighbours.get(&key) {
             if let Some(c) = ctx.counters.as_deref_mut() {
@@ -8639,17 +11186,17 @@ fn numeric_binary(
     let bv = evaluate(arena, b, env, ctx);
     if let (Value::Int(x), Value::Int(y)) = (&av, &bv) {
         Value::Int(int_op(*x, *y))
-    } else if let (Some(pa), Some(pb)) =
-        (crate::value::rational_parts(&av), crate::value::rational_parts(&bv))
-    {
+    } else if let (Some(pa), Some(pb)) = (
+        crate::value::rational_parts(&av),
+        crate::value::rational_parts(&bv),
+    ) {
         exact_op(pa, pb).unwrap_or_else(|| Value::Float(float_op(av.as_f64(), bv.as_f64())))
     } else {
         Value::Float(float_op(av.as_f64(), bv.as_f64()))
     }
 }
 
-fn numeric_argmin(arena: &TermArena, items: &[TermIdx],
-                 env: &mut Env, ctx: &mut EvalCtx) -> Value {
+fn numeric_argmin(arena: &TermArena, items: &[TermIdx], env: &mut Env, ctx: &mut EvalCtx) -> Value {
     // AUDIT (default OFF) — see `numeric_argmax` / `audit_index_selector`.
     let auditing = selector_audit::enabled();
     let mut best: Option<(usize, Value)> = None;
@@ -8658,9 +11205,16 @@ fn numeric_argmin(arena: &TermArena, items: &[TermIdx],
         // REPORTED-ORDER site (`ArgMin`): the winning INDEX this returns is
         // decided by this comparison — must be real lexicographic order for
         // string-valued items, not `cmp_value`'s boot-order.
-        let take = match &best { None => true, Some((_, cur)) =>
-            matches!(crate::value::cmp_value_lex(&v, cur, ctx.interner), std::cmp::Ordering::Less) };
-        if take { best = Some((i, v)); }
+        let take = match &best {
+            None => true,
+            Some((_, cur)) => matches!(
+                crate::value::cmp_value_lex(&v, cur, ctx.interner),
+                std::cmp::Ordering::Less
+            ),
+        };
+        if take {
+            best = Some((i, v));
+        }
     }
     if auditing {
         return audit_index_selector(arena, "ArgMin", items, best, env, ctx);
@@ -8698,12 +11252,7 @@ fn numeric_minmax(
     best.unwrap_or(Value::Int(0))
 }
 
-fn numeric_argmax(
-    arena: &TermArena,
-    items: &[TermIdx],
-    env: &mut Env,
-    ctx: &mut EvalCtx,
-) -> Value {
+fn numeric_argmax(arena: &TermArena, items: &[TermIdx], env: &mut Env, ctx: &mut EvalCtx) -> Value {
     // AUDIT (default OFF) — the index-selector arm of the same instrument.
     // `ArgMax { items }` has no binder and no `value` Term: it reduces a LIST of
     // Terms to the INDEX of the extremum. The invariant is the same one —
@@ -8749,7 +11298,11 @@ fn audit_index_selector(
         return Value::Int(0);
     };
     // POSITIVE CONTROL: return index 0 regardless (unreachable when off).
-    let returned = if selector_audit::fault_inject_first() { 0 } else { idx };
+    let returned = if selector_audit::fault_inject_first() {
+        0
+    } else {
+        idx
+    };
     let chosen = items[returned];
     if value_term_is_replayable(arena, chosen) {
         let winner_value = evaluate(arena, chosen, env, ctx);
@@ -8782,8 +11335,10 @@ fn audit_index_selector(
 /// Returns y = L^-1 x where W = L L^T (Cholesky), so ||y||^2 = x^T W^-1 x is the
 /// Mahalanobis metric that suppresses the within-class scatter directions.
 fn whiten_cholesky(w: &Value, x: &Value) -> Value {
-    let rows: Vec<Vec<f64>> = w.iter()
-        .map(|r| r.iter().map(|v| v.as_f64()).collect()).collect();
+    let rows: Vec<Vec<f64>> = w
+        .iter()
+        .map(|r| r.iter().map(|v| v.as_f64()).collect())
+        .collect();
     let xv: Vec<f64> = x.iter().map(|v| v.as_f64()).collect();
     let n = rows.len();
     if n == 0 || xv.len() != n || rows.iter().any(|r| r.len() != n) {
@@ -8794,7 +11349,9 @@ fn whiten_cholesky(w: &Value, x: &Value) -> Value {
     for i in 0..n {
         for j in 0..=i {
             let mut s = rows[i][j];
-            for k in 0..j { s -= l[i][k] * l[j][k]; }
+            for k in 0..j {
+                s -= l[i][k] * l[j][k];
+            }
             if i == j {
                 l[i][j] = if s > 1e-12 { s.sqrt() } else { 1e-6 };
             } else {
@@ -8807,30 +11364,42 @@ fn whiten_cholesky(w: &Value, x: &Value) -> Value {
     let mut y = vec![0.0f64; n];
     for i in 0..n {
         let mut s = xv[i];
-        for k in 0..i { s -= l[i][k] * y[k]; }
+        for k in 0..i {
+            s -= l[i][k] * y[k];
+        }
         let d = if l[i][i].abs() > 1e-12 { l[i][i] } else { 1e-6 };
         y[i] = s / d;
     }
     let mut out: smallvec::SmallVec<[Value; 4]> = smallvec::smallvec![];
-    for v in y { out.push(Value::Float(v)); }
+    for v in y {
+        out.push(Value::Float(v));
+    }
     Value::Tuple(std::sync::Arc::new(out))
 }
 
 /// whiten_many — batch Whiten: factor W = L L^T ONCE, forward-solve L y = x per row of
 /// X. The agent's perf realisation (the Cholesky is shared across rows).
 fn whiten_many(w: &Value, xs: &Value) -> Value {
-    let rows: Vec<Vec<f64>> = w.iter()
-        .map(|r| r.iter().map(|v| v.as_f64()).collect()).collect();
-    let xrows: Vec<Vec<f64>> = xs.iter()
-        .map(|r| r.iter().map(|v| v.as_f64()).collect()).collect();
+    let rows: Vec<Vec<f64>> = w
+        .iter()
+        .map(|r| r.iter().map(|v| v.as_f64()).collect())
+        .collect();
+    let xrows: Vec<Vec<f64>> = xs
+        .iter()
+        .map(|r| r.iter().map(|v| v.as_f64()).collect())
+        .collect();
     let n = rows.len();
-    if n == 0 || rows.iter().any(|r| r.len() != n) { return xs.clone(); }
+    if n == 0 || rows.iter().any(|r| r.len() != n) {
+        return xs.clone();
+    }
     // Cholesky ONCE: W = L L^T (lower), tiny floor for PD safety.
     let mut l = vec![vec![0.0f64; n]; n];
     for i in 0..n {
         for j in 0..=i {
             let mut s = rows[i][j];
-            for k in 0..j { s -= l[i][k] * l[j][k]; }
+            for k in 0..j {
+                s -= l[i][k] * l[j][k];
+            }
             if i == j {
                 l[i][j] = if s > 1e-12 { s.sqrt() } else { 1e-6 };
             } else {
@@ -8844,18 +11413,24 @@ fn whiten_many(w: &Value, xs: &Value) -> Value {
     for x in &xrows {
         let mut inner: smallvec::SmallVec<[Value; 4]> = smallvec::smallvec![];
         if x.len() != n {
-            for v in x { inner.push(Value::Float(*v)); }
+            for v in x {
+                inner.push(Value::Float(*v));
+            }
             out.push(Value::Tuple(std::sync::Arc::new(inner)));
             continue;
         }
         let mut y = vec![0.0f64; n];
         for i in 0..n {
             let mut s = x[i];
-            for k in 0..i { s -= l[i][k] * y[k]; }
+            for k in 0..i {
+                s -= l[i][k] * y[k];
+            }
             let d = if l[i][i].abs() > 1e-12 { l[i][i] } else { 1e-6 };
             y[i] = s / d;
         }
-        for v in y { inner.push(Value::Float(v)); }
+        for v in y {
+            inner.push(Value::Float(v));
+        }
         out.push(Value::Tuple(std::sync::Arc::new(inner)));
     }
     Value::Tuple(std::sync::Arc::new(out))
@@ -8865,46 +11440,73 @@ fn whiten_many(w: &Value, xs: &Value) -> Value {
 /// token vectors), labels = class labels (Tuple of Float). Returns the regularized
 /// within-class scatter W = avg over classes of (x-mu_c)(x-mu_c)^T (diagonal-shrunk).
 fn within_class_scatter(vecs: &Value, labels: &Value) -> Value {
-    let rows: Vec<Vec<f64>> = vecs.iter()
-        .map(|r| r.iter().map(|v| v.as_f64()).collect()).collect();
-    let labs: Vec<i64> = labels.iter()
-        .map(|v| v.as_f64().round() as i64).collect();
+    let rows: Vec<Vec<f64>> = vecs
+        .iter()
+        .map(|r| r.iter().map(|v| v.as_f64()).collect())
+        .collect();
+    let labs: Vec<i64> = labels.iter().map(|v| v.as_f64().round() as i64).collect();
     let n = rows.len();
-    let empty = || Value::Tuple(std::sync::Arc::new(
-        smallvec::SmallVec::<[Value; 4]>::new()));
-    if n == 0 || labs.len() != n { return empty(); }
+    let empty = || Value::Tuple(std::sync::Arc::new(smallvec::SmallVec::<[Value; 4]>::new()));
+    if n == 0 || labs.len() != n {
+        return empty();
+    }
     let d = rows[0].len();
-    if d == 0 || rows.iter().any(|r| r.len() != d) { return empty(); }
-    let mut classes = labs.clone(); classes.sort_unstable(); classes.dedup();
+    if d == 0 || rows.iter().any(|r| r.len() != d) {
+        return empty();
+    }
+    let mut classes = labs.clone();
+    classes.sort_unstable();
+    classes.dedup();
     let mut w = vec![vec![0.0f64; d]; d];
     for &c in &classes {
         let idx: Vec<usize> = (0..n).filter(|&i| labs[i] == c).collect();
-        if idx.is_empty() { continue; }
+        if idx.is_empty() {
+            continue;
+        }
         let m = idx.len() as f64;
         let mut mu = vec![0.0f64; d];
-        for &i in &idx { for k in 0..d { mu[k] += rows[i][k]; } }
-        for k in 0..d { mu[k] /= m; }
+        for &i in &idx {
+            for k in 0..d {
+                mu[k] += rows[i][k];
+            }
+        }
+        for k in 0..d {
+            mu[k] /= m;
+        }
         for &i in &idx {
             for a in 0..d {
                 let ca = rows[i][a] - mu[a];
-                for b in 0..d { w[a][b] += ca * (rows[i][b] - mu[b]); }
+                for b in 0..d {
+                    w[a][b] += ca * (rows[i][b] - mu[b]);
+                }
             }
         }
     }
     let nn = n as f64;
-    for a in 0..d { for b in 0..d { w[a][b] /= nn; } }
+    for a in 0..d {
+        for b in 0..d {
+            w[a][b] /= nn;
+        }
+    }
     // diagonal shrinkage (regularized covariance estimate)
     let s = 0.3f64;
-    let mut tr = 0.0; for a in 0..d { tr += w[a][a]; }
+    let mut tr = 0.0;
+    for a in 0..d {
+        tr += w[a][a];
+    }
     let lam = s * tr / (d as f64);
     for a in 0..d {
-        for b in 0..d { w[a][b] *= 1.0 - s; }
+        for b in 0..d {
+            w[a][b] *= 1.0 - s;
+        }
         w[a][a] += lam;
     }
     let mut outer: smallvec::SmallVec<[Value; 4]> = smallvec::smallvec![];
     for a in 0..d {
         let mut inner: smallvec::SmallVec<[Value; 4]> = smallvec::smallvec![];
-        for b in 0..d { inner.push(Value::Float(w[a][b])); }
+        for b in 0..d {
+            inner.push(Value::Float(w[a][b]));
+        }
         outer.push(Value::Tuple(std::sync::Arc::new(inner)));
     }
     Value::Tuple(std::sync::Arc::new(outer))
@@ -8914,36 +11516,66 @@ fn within_class_scatter(vecs: &Value, labels: &Value) -> Value {
 /// group labels. Returns Sb = (1/N) sum_c n_c (mu_c - mu)(mu_c - mu)^T (scatter of the
 /// group means about the global mean) — the between-observed-group nuisance scatter.
 fn between_class_scatter(vecs: &Value, labels: &Value) -> Value {
-    let rows: Vec<Vec<f64>> = vecs.iter()
-        .map(|r| r.iter().map(|v| v.as_f64()).collect()).collect();
-    let labs: Vec<i64> = labels.iter()
-        .map(|v| v.as_f64().round() as i64).collect();
+    let rows: Vec<Vec<f64>> = vecs
+        .iter()
+        .map(|r| r.iter().map(|v| v.as_f64()).collect())
+        .collect();
+    let labs: Vec<i64> = labels.iter().map(|v| v.as_f64().round() as i64).collect();
     let n = rows.len();
-    let empty = || Value::Tuple(std::sync::Arc::new(
-        smallvec::SmallVec::<[Value; 4]>::new()));
-    if n == 0 || labs.len() != n { return empty(); }
+    let empty = || Value::Tuple(std::sync::Arc::new(smallvec::SmallVec::<[Value; 4]>::new()));
+    if n == 0 || labs.len() != n {
+        return empty();
+    }
     let d = rows[0].len();
-    if d == 0 || rows.iter().any(|r| r.len() != d) { return empty(); }
+    if d == 0 || rows.iter().any(|r| r.len() != d) {
+        return empty();
+    }
     let mut gmu = vec![0.0f64; d];
-    for i in 0..n { for k in 0..d { gmu[k] += rows[i][k]; } }
-    for k in 0..d { gmu[k] /= n as f64; }
-    let mut classes = labs.clone(); classes.sort_unstable(); classes.dedup();
+    for i in 0..n {
+        for k in 0..d {
+            gmu[k] += rows[i][k];
+        }
+    }
+    for k in 0..d {
+        gmu[k] /= n as f64;
+    }
+    let mut classes = labs.clone();
+    classes.sort_unstable();
+    classes.dedup();
     let mut sb = vec![vec![0.0f64; d]; d];
     for &c in &classes {
         let idx: Vec<usize> = (0..n).filter(|&i| labs[i] == c).collect();
-        if idx.is_empty() { continue; }
+        if idx.is_empty() {
+            continue;
+        }
         let nc = idx.len() as f64;
         let mut mu = vec![0.0f64; d];
-        for &i in &idx { for k in 0..d { mu[k] += rows[i][k]; } }
-        for k in 0..d { mu[k] /= nc; }
+        for &i in &idx {
+            for k in 0..d {
+                mu[k] += rows[i][k];
+            }
+        }
+        for k in 0..d {
+            mu[k] /= nc;
+        }
         let diff: Vec<f64> = (0..d).map(|k| mu[k] - gmu[k]).collect();
-        for a in 0..d { for b in 0..d { sb[a][b] += nc * diff[a] * diff[b]; } }
+        for a in 0..d {
+            for b in 0..d {
+                sb[a][b] += nc * diff[a] * diff[b];
+            }
+        }
     }
-    for a in 0..d { for b in 0..d { sb[a][b] /= n as f64; } }
+    for a in 0..d {
+        for b in 0..d {
+            sb[a][b] /= n as f64;
+        }
+    }
     let mut outer: smallvec::SmallVec<[Value; 4]> = smallvec::smallvec![];
     for a in 0..d {
         let mut inner: smallvec::SmallVec<[Value; 4]> = smallvec::smallvec![];
-        for b in 0..d { inner.push(Value::Float(sb[a][b])); }
+        for b in 0..d {
+            inner.push(Value::Float(sb[a][b]));
+        }
         outer.push(Value::Tuple(std::sync::Arc::new(inner)));
     }
     Value::Tuple(std::sync::Arc::new(outer))
@@ -9104,7 +11736,7 @@ fn mahal_leaf(a: &Value, b: &Value) -> f64 {
         let d = (af[i] - bf[i]) * bf[n + i];
         s += d * d;
     }
-    (s / n as f64).sqrt()   // RMS Mahalanobis -> same scale as PointSetDist (so the marginal's exp() is well-conditioned)
+    (s / n as f64).sqrt() // RMS Mahalanobis -> same scale as PointSetDist (so the marginal's exp() is well-conditioned)
 }
 
 fn mahal_full(a: &Value, b: &Value) -> f64 {
@@ -9213,9 +11845,21 @@ fn inv3(m: &[[f64; 3]; 3]) -> Option<[[f64; 3]; 3]> {
     }
     let id = 1.0 / det;
     Some([
-        [(e * i - f * h) * id, (c * h - b * i) * id, (b * f - c * e) * id],
-        [(f * g - d * i) * id, (a * i - c * g) * id, (c * d - a * f) * id],
-        [(d * h - e * g) * id, (b * g - a * h) * id, (a * e - b * d) * id],
+        [
+            (e * i - f * h) * id,
+            (c * h - b * i) * id,
+            (b * f - c * e) * id,
+        ],
+        [
+            (f * g - d * i) * id,
+            (a * i - c * g) * id,
+            (c * d - a * f) * id,
+        ],
+        [
+            (d * h - e * g) * id,
+            (b * g - a * h) * id,
+            (a * e - b * d) * id,
+        ],
     ])
 }
 
@@ -9364,14 +12008,28 @@ fn smooth_deform_dist(a: &Value, b: &Value) -> f64 {
     };
     // bilinear cell (4 node indices + weights) for a point on a g x g grid spanning [-r, r].
     let cell = |x: f64, y: f64, g: usize| -> ([usize; 4], [f64; 4]) {
-        let gx = ((x + r) / (2.0 * r) * (g as f64 - 1.0)).max(0.0).min(g as f64 - 1.0);
-        let gy = ((y + r) / (2.0 * r) * (g as f64 - 1.0)).max(0.0).min(g as f64 - 1.0);
+        let gx = ((x + r) / (2.0 * r) * (g as f64 - 1.0))
+            .max(0.0)
+            .min(g as f64 - 1.0);
+        let gy = ((y + r) / (2.0 * r) * (g as f64 - 1.0))
+            .max(0.0)
+            .min(g as f64 - 1.0);
         let x0 = (gx.floor() as usize).min(g - 2);
         let y0 = (gy.floor() as usize).min(g - 2);
         let fx = gx - x0 as f64;
         let fy = gy - y0 as f64;
-        let idx = [y0 * g + x0, y0 * g + x0 + 1, (y0 + 1) * g + x0, (y0 + 1) * g + x0 + 1];
-        let w = [(1.0 - fx) * (1.0 - fy), fx * (1.0 - fy), (1.0 - fx) * fy, fx * fy];
+        let idx = [
+            y0 * g + x0,
+            y0 * g + x0 + 1,
+            (y0 + 1) * g + x0,
+            (y0 + 1) * g + x0 + 1,
+        ];
+        let w = [
+            (1.0 - fx) * (1.0 - fy),
+            fx * (1.0 - fy),
+            (1.0 - fx) * fy,
+            fx * fy,
+        ];
         (idx, w)
     };
     let step = 0.7;
@@ -9496,7 +12154,11 @@ fn tps_deform_dist(a: &Value, b: &Value) -> f64 {
     let n = p.len();
     let sz = n + 3;
     let u = |r2: f64| -> f64 {
-        if r2 <= 1e-12 { 0.0 } else { r2 * r2.ln() } // U(r) = r^2 log(r^2)
+        if r2 <= 1e-12 {
+            0.0
+        } else {
+            r2 * r2.ln()
+        } // U(r) = r^2 log(r^2)
     };
     // kernel K (n x n) and the TPS system L (sz x sz) = [K+lambda*I, P_aug; P_aug^T, 0].
     let mut kmat = vec![0.0f64; n * n];
@@ -9598,7 +12260,11 @@ fn shape_contexts(p: &[[f64; 2]], nr: usize, na: usize) -> Vec<Vec<f64>> {
             cnt += 1.0;
         }
     }
-    md = if cnt > 0.0 && md > 1e-9 { md / cnt } else { 1.0 };
+    md = if cnt > 0.0 && md > 1e-9 {
+        md / cnt
+    } else {
+        1.0
+    };
     let (r_min, r_max) = (0.125_f64, 2.0_f64);
     let (lrmin, lrmax) = (r_min.ln(), r_max.ln());
     let two_pi = 2.0 * std::f64::consts::PI;
@@ -9695,7 +12361,10 @@ fn shape_context_dist(a: &Value, b: &Value) -> f64 {
     for &deg in &[-20.0f64, 0.0, 20.0] {
         let th = deg.to_radians();
         let (c, s) = (th.cos(), th.sin());
-        let pr: Vec<[f64; 2]> = p.iter().map(|&[x, y]| [c * x - s * y, s * x + c * y]).collect();
+        let pr: Vec<[f64; 2]> = p
+            .iter()
+            .map(|&[x, y]| [c * x - s * y, s * x + c * y])
+            .collect();
         let hp = shape_contexts(&pr, nr, na);
         let d = 0.5 * (dir(&hp, &hq) + dir(&hq, &hp));
         if d < best {
@@ -9715,7 +12384,11 @@ fn tps_bending(src: &[[f64; 2]], tgt: &[[f64; 2]]) -> f64 {
     }
     let sz = n + 3;
     let uk = |r2: f64| -> f64 {
-        if r2 <= 1e-12 { 0.0 } else { r2 * r2.ln() }
+        if r2 <= 1e-12 {
+            0.0
+        } else {
+            r2 * r2.ln()
+        }
     };
     let mut kmat = vec![0.0f64; n * n];
     for i in 0..n {
@@ -9795,7 +12468,10 @@ fn sc_tps_dist(a: &Value, b: &Value) -> f64 {
     for &deg in &[-20.0f64, 0.0, 20.0] {
         let th = deg.to_radians();
         let (c, s) = (th.cos(), th.sin());
-        let pr: Vec<[f64; 2]> = p.iter().map(|&[x, y]| [c * x - s * y, s * x + c * y]).collect();
+        let pr: Vec<[f64; 2]> = p
+            .iter()
+            .map(|&[x, y]| [c * x - s * y, s * x + c * y])
+            .collect();
         let hp = shape_contexts(&pr, nr, na);
         let mut tgt = vec![[0.0f64; 2]; n];
         let mut sc = 0.0;
@@ -9835,17 +12511,19 @@ fn xcorr_peak(a: &Value, b: &Value, band: usize) -> f64 {
     let rb = rows(b);
     let na = ra.len() as isize;
     let nb = rb.len() as isize;
-    if na == 0 || nb == 0 { return 0.0; }
+    if na == 0 || nb == 0 {
+        return 0.0;
+    }
     // Per-frame correlation: dot of the two band vectors.
     let fdot = |fa: &Vec<f64>, fb: &Vec<f64>| -> f64 {
         let n = fa.len().min(fb.len());
         let mut s = 0.0;
-        for k in 0..n { s += fa[k] * fb[k]; }
+        for k in 0..n {
+            s += fa[k] * fb[k];
+        }
         s
     };
-    let fnorm2 = |fa: &Vec<f64>| -> f64 {
-        fa.iter().map(|x| x * x).sum::<f64>()
-    };
+    let fnorm2 = |fa: &Vec<f64>| -> f64 { fa.iter().map(|x| x * x).sum::<f64>() };
     let mut best = f64::NEG_INFINITY;
     let bl = band as isize;
     // Sweep integer lags L of b relative to a over [-band, band];
@@ -9856,18 +12534,28 @@ fn xcorr_peak(a: &Value, b: &Value, band: usize) -> f64 {
         let mut nb2 = 0.0;
         for i in 0..na {
             let j = i - lag;
-            if j < 0 || j >= nb { continue; }
+            if j < 0 || j >= nb {
+                continue;
+            }
             let fa = &ra[i as usize];
             let fb = &rb[j as usize];
             dot += fdot(fa, fb);
             na2 += fnorm2(fa);
             nb2 += fnorm2(fb);
         }
-        if na2 <= 0.0 || nb2 <= 0.0 { continue; }
+        if na2 <= 0.0 || nb2 <= 0.0 {
+            continue;
+        }
         let ncc = dot / (na2.sqrt() * nb2.sqrt());
-        if ncc > best { best = ncc; }
+        if ncc > best {
+            best = ncc;
+        }
     }
-    if best.is_finite() { best } else { 0.0 }
+    if best.is_finite() {
+        best
+    } else {
+        0.0
+    }
 }
 
 /// Is this value subtree safe to RE-EVALUATE for the selector audit?
@@ -10004,8 +12692,15 @@ fn min_or_max_over(
             };
             let selector = if want_min { "MinOver" } else { "MaxOver" };
             audit_binder_selector(
-                arena, selector, var_name, value, &elem, &returned,
-                n_candidates, env, ctx,
+                arena,
+                selector,
+                var_name,
+                value,
+                &elem,
+                &returned,
+                n_candidates,
+                env,
+                ctx,
             );
             return returned;
         }
@@ -10028,16 +12723,24 @@ fn exp_golomb_decode(bytes: &[u8], bp: u64) -> Option<(u64, u64)> {
     let mut p = bp;
     // Count leading zeros until 1-bit marker.
     loop {
-        if p >= total_bits { return None; }
+        if p >= total_bits {
+            return None;
+        }
         let byte = bytes[(p >> 3) as usize];
         let bit = (byte >> (7 - (p & 7))) & 1;
         p += 1;
-        if bit == 1 { break; }
+        if bit == 1 {
+            break;
+        }
         leading_zeros += 1;
-        if leading_zeros > 32 { return None; } // sanity cap
+        if leading_zeros > 32 {
+            return None;
+        } // sanity cap
     }
     // Read `leading_zeros` more bits as suffix.
-    if p + (leading_zeros as u64) > total_bits { return None; }
+    if p + (leading_zeros as u64) > total_bits {
+        return None;
+    }
     let mut suffix: u64 = 0;
     for _ in 0..leading_zeros {
         let byte = bytes[(p >> 3) as usize];
@@ -10066,11 +12769,17 @@ fn exp_golomb_encode(out: &mut Vec<u8>, bp: u64, value: u64) -> u64 {
             out.resize(byte_idx + 1, 0);
         }
         let mask = 1u8 << bit_idx;
-        if bit == 1 { out[byte_idx] |= mask; } else { out[byte_idx] &= !mask; }
+        if bit == 1 {
+            out[byte_idx] |= mask;
+        } else {
+            out[byte_idx] &= !mask;
+        }
         *p += 1;
     };
     // M leading zeros.
-    for _ in 0..m { write_bit(out, &mut p, 0); }
+    for _ in 0..m {
+        write_bit(out, &mut p, 0);
+    }
     // Write code_num MSB-first in (M+1) bits — the marker is the
     // MSB which is 1 (since code_num >= 2^M).
     for i in 0..(m + 1) {
@@ -10118,7 +12827,7 @@ fn argmin_or_argmax_over(
     let tie_tracking = tie_audit || require_unique;
     let s = evaluate(arena, source, env, ctx);
     let snap = s.snapshot();
-    let mut best: Option<(Value, Value)> = None;  // (value, element)
+    let mut best: Option<(Value, Value)> = None; // (value, element)
     let mut first_elem: Option<Value> = None;
     let mut n_candidates: usize = 0;
     // Candidates tied AT THE CURRENT EXTREMUM. Reset to 1 on a strict
@@ -10146,10 +12855,14 @@ fn argmin_or_argmax_over(
                 Some((cur_v, _)) => match crate::value::cmp_value_lex(&v, cur_v, ctx.interner) {
                     std::cmp::Ordering::Equal => n_at_best += 1,
                     std::cmp::Ordering::Less => {
-                        if want_min { n_at_best = 1; }
+                        if want_min {
+                            n_at_best = 1;
+                        }
                     }
                     std::cmp::Ordering::Greater => {
-                        if !want_min { n_at_best = 1; }
+                        if !want_min {
+                            n_at_best = 1;
+                        }
                     }
                 },
             }
@@ -10192,17 +12905,17 @@ fn argmin_or_argmax_over(
         // on every firing would be a real cost, and doing it on none would
         // leave the census unable to say WHERE (§12.1).
         if is_tie {
-            let key = crate::jsonio::term_to_json(arena, value, ctx.interner)
-                .to_string();
-            argmin_tie::note_site(
-                if want_min { "Argmin" } else { "Argmax" }, &key, true);
+            let key = crate::jsonio::term_to_json(arena, value, ctx.interner).to_string();
+            argmin_tie::note_site(if want_min { "Argmin" } else { "Argmax" }, &key, true);
         }
     }
     if require_unique {
         argmin_tie::note_unique_term_firing();
     }
     if refuse_on_tie && best.is_some() && n_at_best > 1 {
-        if tie_audit { argmin_tie::note_refusal(); }
+        if tie_audit {
+            argmin_tie::note_refusal();
+        }
         // A TIE = the uniqueness comparison matched nothing. `ArgminRefusal`
         // routes this to its DISTINCT token; every other caller (`refused_on_tie
         // == None`) falls back to `default`, byte-identical to `ArgminUnique`.
@@ -10230,8 +12943,15 @@ fn argmin_or_argmax_over(
             };
             let selector = if want_min { "Argmin" } else { "Argmax" };
             audit_binder_selector(
-                arena, selector, var_name, value, &returned, &recorded,
-                n_candidates, env, ctx,
+                arena,
+                selector,
+                var_name,
+                value,
+                &returned,
+                &recorded,
+                n_candidates,
+                env,
+                ctx,
             );
             return returned;
         }
@@ -10307,7 +13027,11 @@ fn cat_or_lines(
         }
         out.extend_from_slice(p);
     }
-    let kind = if any_bytes { SurfaceKind::Bytes } else { SurfaceKind::Text };
+    let kind = if any_bytes {
+        SurfaceKind::Bytes
+    } else {
+        SurfaceKind::Text
+    };
     Value::Surface(kind, Arc::from(out))
 }
 
@@ -10325,40 +13049,93 @@ pub fn free_vars(arena: &TermArena, idx: TermIdx, excluded: Option<Sym>) -> Smal
     out
 }
 
-fn collect_into(arena: &TermArena, idx: TermIdx, out: &mut SmallVec<[Sym; 8]>, excluded: Option<Sym>) {
+fn collect_into(
+    arena: &TermArena,
+    idx: TermIdx,
+    out: &mut SmallVec<[Sym; 8]>,
+    excluded: Option<Sym>,
+) {
     match arena.get(idx) {
         TermNode::Var { name } => {
             if excluded != Some(*name) {
                 out.push(*name);
             }
         }
-        TermNode::Filter { source, var_name, predicate }
-        | TermNode::FilterList { source, var_name, predicate }
-        | TermNode::Exists { source, var_name, predicate } => {
+        TermNode::Filter {
+            source,
+            var_name,
+            predicate,
+        }
+        | TermNode::FilterList {
+            source,
+            var_name,
+            predicate,
+        }
+        | TermNode::Exists {
+            source,
+            var_name,
+            predicate,
+        } => {
             collect_into(arena, *source, out, excluded);
             // Inside the predicate, var_name is shadowed.
             collect_into(arena, *predicate, out, Some(*var_name));
         }
-        TermNode::Sum { source, var_name, value }
-        | TermNode::Prod { source, var_name, value }
-        | TermNode::MapList { source, var_name, value }
-        | TermNode::MapSet { source, var_name, value } => {
+        TermNode::Sum {
+            source,
+            var_name,
+            value,
+        }
+        | TermNode::Prod {
+            source,
+            var_name,
+            value,
+        }
+        | TermNode::MapList {
+            source,
+            var_name,
+            value,
+        }
+        | TermNode::MapSet {
+            source,
+            var_name,
+            value,
+        } => {
             collect_into(arena, *source, out, excluded);
             collect_into(arena, *value, out, Some(*var_name));
         }
-        TermNode::SortBy { source, var_name, key } => {
+        TermNode::SortBy {
+            source,
+            var_name,
+            key,
+        } => {
             collect_into(arena, *source, out, excluded);
             collect_into(arena, *key, out, Some(*var_name));
         }
-        TermNode::MinOver { source, var_name, value, default }
-        | TermNode::MaxOver { source, var_name, value, default } => {
+        TermNode::MinOver {
+            source,
+            var_name,
+            value,
+            default,
+        }
+        | TermNode::MaxOver {
+            source,
+            var_name,
+            value,
+            default,
+        } => {
             collect_into(arena, *source, out, excluded);
             collect_into(arena, *value, out, Some(*var_name));
             if let Some(d) = default {
                 collect_into(arena, *d, out, excluded);
             }
         }
-        TermNode::Fold { source, var_name, acc_name, init, body } => {
+        TermNode::Fold {
+            source,
+            var_name,
+            acc_name,
+            init,
+            body,
+        } => {
             // Fold has two binders (var_name, acc_name) — both shadow
             // inside body. init evaluates in the outer scope.
             collect_into(arena, *source, out, excluded);
@@ -10400,26 +13177,59 @@ fn collect_into(arena: &TermArena, idx: TermIdx, out: &mut SmallVec<[Sym; 8]>, e
 pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
     let mut out: SmallVec<[TermIdx; 8]> = SmallVec::new();
     match node {
-        TermNode::Var { .. } | TermNode::Lit { .. } | TermNode::Slot { .. } | TermNode::Label { .. } | TermNode::Surface { .. } | TermNode::NodesOfType { .. } | TermNode::ScalarAttrTriples { .. } => {}
-        TermNode::TypeOf { node }
-        | TermNode::Attr { node, .. } => out.push(*node),
-        TermNode::SetT { items } | TermNode::And { items } | TermNode::Or { items }
-        | TermNode::Plus { items } | TermNode::Times { items }
-        | TermNode::Min { items } | TermNode::Max { items } | TermNode::ArgMax { items } | TermNode::ArgMin { items }
-        | TermNode::Vec_ { items } | TermNode::Cat { items }
-        | TermNode::Bytes { items } | TermNode::Lines { items } => out.extend(items.iter().copied()),
+        TermNode::Var { .. }
+        | TermNode::Lit { .. }
+        | TermNode::Slot { .. }
+        | TermNode::Label { .. }
+        | TermNode::Surface { .. }
+        | TermNode::NodesOfType { .. }
+        | TermNode::ScalarAttrTriples { .. } => {}
+        TermNode::TypeOf { node } | TermNode::Attr { node, .. } => out.push(*node),
+        TermNode::SetT { items }
+        | TermNode::And { items }
+        | TermNode::Or { items }
+        | TermNode::Plus { items }
+        | TermNode::Times { items }
+        | TermNode::Min { items }
+        | TermNode::Max { items }
+        | TermNode::ArgMax { items }
+        | TermNode::ArgMin { items }
+        | TermNode::Vec_ { items }
+        | TermNode::Cat { items }
+        | TermNode::Bytes { items }
+        | TermNode::Lines { items } => out.extend(items.iter().copied()),
         TermNode::UseTool { args, .. } => out.extend(args.iter().copied()),
-        TermNode::In { member, container } => { out.push(*member); out.push(*container); }
-        TermNode::ApcEncode { model, seq, start, end, out_len } => {
-            out.push(*model); out.push(*seq); out.push(*start); out.push(*end); out.push(*out_len);
+        TermNode::In { member, container } => {
+            out.push(*member);
+            out.push(*container);
         }
-        TermNode::Eq { a, b } | TermNode::Lt { a, b } | TermNode::Lte { a, b }
-        | TermNode::Gt { a, b } | TermNode::Gte { a, b }
-        | TermNode::Minus { a, b } | TermNode::Div { a, b } | TermNode::Mod { a, b }
+        TermNode::ApcEncode {
+            model,
+            seq,
+            start,
+            end,
+            out_len,
+        } => {
+            out.push(*model);
+            out.push(*seq);
+            out.push(*start);
+            out.push(*end);
+            out.push(*out_len);
+        }
+        TermNode::Eq { a, b }
+        | TermNode::Lt { a, b }
+        | TermNode::Lte { a, b }
+        | TermNode::Gt { a, b }
+        | TermNode::Gte { a, b }
+        | TermNode::Minus { a, b }
+        | TermNode::Div { a, b }
+        | TermNode::Mod { a, b }
         | TermNode::DtwTo { a, b }
         | TermNode::PointSetDist { a, b }
         | TermNode::MahalLeaf { a, b }
-        | TermNode::MahalFull { a, b } | TermNode::DeformGenMarginal { a, b } | TermNode::DeformGen { a, b }
+        | TermNode::MahalFull { a, b }
+        | TermNode::DeformGenMarginal { a, b }
+        | TermNode::DeformGen { a, b }
         | TermNode::DeformDist { a, b }
         | TermNode::SmoothDeformDist { a, b }
         | TermNode::TpsDeformDist { a, b }
@@ -10431,47 +13241,111 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         | TermNode::WhitenMany { a, b }
         | TermNode::WithinScatter { a, b }
         | TermNode::BetweenScatter { a, b }
-        | TermNode::Pow { a, b } | TermNode::VecAdd { a, b } | TermNode::VecSub { a, b }
-        | TermNode::Dot { a, b } | TermNode::AngleBetween { a, b }
-        | TermNode::BitAnd { a, b } | TermNode::BitOr { a, b } | TermNode::BitXor { a, b }
-        | TermNode::Shl { a, b } | TermNode::Lshr { a, b } | TermNode::Ashr { a, b }
-        | TermNode::IDiv { a, b } | TermNode::IRem { a, b }
-            => { out.push(*a); out.push(*b); }
-        TermNode::Atan2 { y, x } => { out.push(*y); out.push(*x); }
-        TermNode::Rotate { vec, angle } => { out.push(*vec); out.push(*angle); }
+        | TermNode::Pow { a, b }
+        | TermNode::VecAdd { a, b }
+        | TermNode::VecSub { a, b }
+        | TermNode::Dot { a, b }
+        | TermNode::AngleBetween { a, b }
+        | TermNode::BitAnd { a, b }
+        | TermNode::BitOr { a, b }
+        | TermNode::BitXor { a, b }
+        | TermNode::Shl { a, b }
+        | TermNode::Lshr { a, b }
+        | TermNode::Ashr { a, b }
+        | TermNode::IDiv { a, b }
+        | TermNode::IRem { a, b } => {
+            out.push(*a);
+            out.push(*b);
+        }
+        TermNode::EnigmaCrib { candidate } => out.push(*candidate),
+        TermNode::EnigmaBombe { candidate } => out.push(*candidate),
+        TermNode::EnigmaBombeWitness { candidate } => out.push(*candidate),
+        TermNode::Atan2 { y, x } => {
+            out.push(*y);
+            out.push(*x);
+        }
+        TermNode::Rotate { vec, angle } => {
+            out.push(*vec);
+            out.push(*angle);
+        }
         TermNode::Neighbours { node, .. } | TermNode::InNeighbours { node, .. } => out.push(*node),
         TermNode::ReachableFrom { node, .. } => out.push(*node),
 
-        TermNode::SlideNeighbours { cell, slide, ground } => { out.push(*cell); out.push(*slide); out.push(*ground); }
+        TermNode::SlideNeighbours {
+            cell,
+            slide,
+            ground,
+        } => {
+            out.push(*cell);
+            out.push(*slide);
+            out.push(*ground);
+        }
         TermNode::MapNeighbours { source, .. } => out.push(*source),
-        TermNode::Count { source } | TermNode::Pick { source }
-            | TermNode::PickUnique { source } => out.push(*source),
+        TermNode::Count { source }
+        | TermNode::Pick { source }
+        | TermNode::PickUnique { source } => out.push(*source),
         TermNode::Tokenize { text } => out.push(*text),
         TermNode::MorphHead { text } => out.push(*text),
         TermNode::MorphTail { text } => out.push(*text),
         TermNode::FinalToken { text } => out.push(*text),
         TermNode::Tokenize2 { text } => out.push(*text),
         TermNode::ReadFile { path } => out.push(*path),
-        TermNode::StringIndexOf { haystack, needle } => { out.push(*haystack); out.push(*needle); }
-        TermNode::StringSlice { s, start, end } => { out.push(*s); out.push(*start); out.push(*end); }
-        TermNode::BlendCover { unknown, a, b } => { out.push(*unknown); out.push(*a); out.push(*b); }
+        TermNode::StringIndexOf { haystack, needle } => {
+            out.push(*haystack);
+            out.push(*needle);
+        }
+        TermNode::StringSlice { s, start, end } => {
+            out.push(*s);
+            out.push(*start);
+            out.push(*end);
+        }
+        TermNode::BlendCover { unknown, a, b } => {
+            out.push(*unknown);
+            out.push(*a);
+            out.push(*b);
+        }
         TermNode::StringConcat { parts } => out.extend(parts.iter().copied()),
-        TermNode::Verify { term, env, expected } => { out.push(*term); out.push(*env); out.push(*expected); }
+        TermNode::Verify {
+            term,
+            env,
+            expected,
+        } => {
+            out.push(*term);
+            out.push(*env);
+            out.push(*expected);
+        }
         TermNode::MkDict { items } => out.extend(items.iter().copied()),
         TermNode::ToJsonString { value } => out.push(*value),
         TermNode::FromJsonString { text } => out.push(*text),
-        TermNode::ShiftThresholdLits { tree, shift } => { out.push(*tree); out.push(*shift); }
-        TermNode::DictGet { dict, key } => { out.push(*dict); out.push(*key); }
-        TermNode::RewriteTreeNodes { tree, type_filter, field, value_map } => {
+        TermNode::ShiftThresholdLits { tree, shift } => {
             out.push(*tree);
-            if let Some(t) = type_filter { out.push(*t); }
+            out.push(*shift);
+        }
+        TermNode::DictGet { dict, key } => {
+            out.push(*dict);
+            out.push(*key);
+        }
+        TermNode::RewriteTreeNodes {
+            tree,
+            type_filter,
+            field,
+            value_map,
+        } => {
+            out.push(*tree);
+            if let Some(t) = type_filter {
+                out.push(*t);
+            }
             out.push(*field);
             out.push(*value_map);
         }
         TermNode::AttrKeyRanking { tree } => out.push(*tree),
         TermNode::TextShape { text } => out.push(*text),
         TermNode::FbFrameSeq { fb } => out.push(*fb),
-        TermNode::ChangeDetect { image_vals, kernel_weights, dims } => {
+        TermNode::ChangeDetect {
+            image_vals,
+            kernel_weights,
+            dims,
+        } => {
             out.push(*image_vals);
             out.push(*kernel_weights);
             out.push(*dims);
@@ -10480,76 +13354,186 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
             out.push(*a_vals);
             out.push(*b_vals);
         }
-        TermNode::Foveate { image_vals, dims, geometry } => {
+        TermNode::Foveate {
+            image_vals,
+            dims,
+            geometry,
+        } => {
             out.push(*image_vals);
             out.push(*dims);
             out.push(*geometry);
         }
-        TermNode::Filter { source, predicate, .. }
-        | TermNode::FilterList { source, predicate, .. }
-        | TermNode::Exists { source, predicate, .. } => { out.push(*source); out.push(*predicate); }
-        TermNode::Sum { source, value, .. } | TermNode::Prod { source, value, .. } => { out.push(*source); out.push(*value); }
-        TermNode::MinOver { source, value, default, .. }
-        | TermNode::MaxOver { source, value, default, .. }
-        | TermNode::Argmin { source, value, default, .. }
-        | TermNode::ArgminUnique { source, value, default, .. }
-        | TermNode::Argmax { source, value, default, .. } => {
-            out.push(*source); out.push(*value);
-            if let Some(d) = default { out.push(*d); }
+        TermNode::Filter {
+            source, predicate, ..
         }
-        TermNode::ArgminRefusal { source, value, refused, .. } => {
-            out.push(*source); out.push(*value);
-            if let Some(r) = refused { out.push(*r); }
+        | TermNode::FilterList {
+            source, predicate, ..
         }
-        TermNode::Fold { source, init, body, .. } => {
-            out.push(*source); out.push(*init); out.push(*body);
+        | TermNode::Exists {
+            source, predicate, ..
+        } => {
+            out.push(*source);
+            out.push(*predicate);
+        }
+        TermNode::Sum { source, value, .. } | TermNode::Prod { source, value, .. } => {
+            out.push(*source);
+            out.push(*value);
+        }
+        TermNode::MinOver {
+            source,
+            value,
+            default,
+            ..
+        }
+        | TermNode::MaxOver {
+            source,
+            value,
+            default,
+            ..
+        }
+        | TermNode::Argmin {
+            source,
+            value,
+            default,
+            ..
+        }
+        | TermNode::ArgminUnique {
+            source,
+            value,
+            default,
+            ..
+        }
+        | TermNode::Argmax {
+            source,
+            value,
+            default,
+            ..
+        } => {
+            out.push(*source);
+            out.push(*value);
+            if let Some(d) = default {
+                out.push(*d);
+            }
+        }
+        TermNode::ArgminRefusal {
+            source,
+            value,
+            refused,
+            ..
+        } => {
+            out.push(*source);
+            out.push(*value);
+            if let Some(r) = refused {
+                out.push(*r);
+            }
+        }
+        TermNode::Fold {
+            source, init, body, ..
+        } => {
+            out.push(*source);
+            out.push(*init);
+            out.push(*body);
         }
         TermNode::Holds { node, node2, .. } => {
-            if let Some(n) = node { out.push(*n); }
-            if let Some(n) = node2 { out.push(*n); }
+            if let Some(n) = node {
+                out.push(*n);
+            }
+            if let Some(n) = node2 {
+                out.push(*n);
+            }
         }
         TermNode::EvalSubgraph { node } => out.push(*node),
         // --- universal codec primitives ---
-        TermNode::BitsAt { buffer, bitpos, n_bits } => {
-            out.push(*buffer); out.push(*bitpos); out.push(*n_bits);
+        TermNode::BitsAt {
+            buffer,
+            bitpos,
+            n_bits,
+        } => {
+            out.push(*buffer);
+            out.push(*bitpos);
+            out.push(*n_bits);
         }
-        TermNode::BitsWrite { buffer, bitpos, value, n_bits } => {
-            out.push(*buffer); out.push(*bitpos);
-            out.push(*value); out.push(*n_bits);
+        TermNode::BitsWrite {
+            buffer,
+            bitpos,
+            value,
+            n_bits,
+        } => {
+            out.push(*buffer);
+            out.push(*bitpos);
+            out.push(*value);
+            out.push(*n_bits);
         }
         TermNode::BitsWriteAll { buffer, writes } => {
-            out.push(*buffer); out.push(*writes);
+            out.push(*buffer);
+            out.push(*writes);
         }
         TermNode::BitsAtAll { buffer, reads } => {
-            out.push(*buffer); out.push(*reads);
+            out.push(*buffer);
+            out.push(*reads);
         }
-        TermNode::HuffmanDecodeStream { buffer, bitpos, table, n_pairs } => {
-            out.push(*buffer); out.push(*bitpos);
-            out.push(*table); out.push(*n_pairs);
+        TermNode::HuffmanDecodeStream {
+            buffer,
+            bitpos,
+            table,
+            n_pairs,
+        } => {
+            out.push(*buffer);
+            out.push(*bitpos);
+            out.push(*table);
+            out.push(*n_pairs);
         }
-        TermNode::HuffmanEncodeStream { buffer, bitpos, pairs, table } => {
-            out.push(*buffer); out.push(*bitpos);
-            out.push(*pairs); out.push(*table);
+        TermNode::HuffmanEncodeStream {
+            buffer,
+            bitpos,
+            pairs,
+            table,
+        } => {
+            out.push(*buffer);
+            out.push(*bitpos);
+            out.push(*pairs);
+            out.push(*table);
         }
         TermNode::ExpGolombDecode { buffer, bitpos }
         | TermNode::ExpGolombDecodeSigned { buffer, bitpos } => {
-            out.push(*buffer); out.push(*bitpos);
+            out.push(*buffer);
+            out.push(*bitpos);
         }
-        TermNode::ExpGolombEncode { buffer, bitpos, value }
-        | TermNode::ExpGolombEncodeSigned { buffer, bitpos, value } => {
-            out.push(*buffer); out.push(*bitpos); out.push(*value);
+        TermNode::ExpGolombEncode {
+            buffer,
+            bitpos,
+            value,
+        }
+        | TermNode::ExpGolombEncodeSigned {
+            buffer,
+            bitpos,
+            value,
+        } => {
+            out.push(*buffer);
+            out.push(*bitpos);
+            out.push(*value);
         }
         // --- set algebra (Phase 7 ext) ---
         TermNode::Union { a, b } | TermNode::Intersect { a, b } | TermNode::Difference { a, b } => {
-            out.push(*a); out.push(*b);
+            out.push(*a);
+            out.push(*b);
         }
         TermNode::Last { seq } => out.push(*seq),
-        TermNode::IndexAt { seq, index } => { out.push(*seq); out.push(*index); }
-        TermNode::ListDrop { list, index } => { out.push(*list); out.push(*index); }
-        TermNode::Append { seq, item } => { out.push(*seq); out.push(*item); }
-        TermNode::MapSet { source, value, .. }
-        | TermNode::MapList { source, value, .. } => {
-            out.push(*source); out.push(*value);
+        TermNode::IndexAt { seq, index } => {
+            out.push(*seq);
+            out.push(*index);
+        }
+        TermNode::ListDrop { list, index } => {
+            out.push(*list);
+            out.push(*index);
+        }
+        TermNode::Append { seq, item } => {
+            out.push(*seq);
+            out.push(*item);
+        }
+        TermNode::MapSet { source, value, .. } | TermNode::MapList { source, value, .. } => {
+            out.push(*source);
+            out.push(*value);
         }
         // --- edge-attr DSL (Phase 7 ext) ---
         TermNode::Edges { node, .. } => out.push(*node),
@@ -10557,27 +13541,77 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         // --- indexed lookup (Phase 7b) ---
         TermNode::NodesWhere { value, .. } => out.push(*value),
         TermNode::AntiUnify { values, .. } => out.push(*values),
-        TermNode::AttrByName { node, name } => { out.push(*node); out.push(*name); }
-        TermNode::FixedCount { pattern, .. } => out.push(*pattern),
-        TermNode::Covers { pattern, instance, .. } => { out.push(*pattern); out.push(*instance); }
-        TermNode::CoversOpen { pattern, instance, .. } => { out.push(*pattern); out.push(*instance); }
-        TermNode::AntiUnifyWitness { values, .. } => out.push(*values),
-        TermNode::Substitute { template, sigma, .. } => { out.push(*template); out.push(*sigma); }
-        TermNode::Unify { values, .. } => out.push(*values),
-        TermNode::StructSim { a, b, .. } => { out.push(*a); out.push(*b); }
-        TermNode::ShapeDecode { goal, exclude, codebook_scope, .. } => {
-            out.push(*goal);
-            if let Some(e) = exclude { out.push(*e); }
-            if let Some(sc) = codebook_scope { out.push(*sc); }
+        TermNode::AttrByName { node, name } => {
+            out.push(*node);
+            out.push(*name);
         }
-        TermNode::MotorCompose { episode, policy, candidate } => {
+        TermNode::FixedCount { pattern, .. } => out.push(*pattern),
+        TermNode::Covers {
+            pattern, instance, ..
+        } => {
+            out.push(*pattern);
+            out.push(*instance);
+        }
+        TermNode::CoversOpen {
+            pattern, instance, ..
+        } => {
+            out.push(*pattern);
+            out.push(*instance);
+        }
+        TermNode::AntiUnifyWitness { values, .. } => out.push(*values),
+        TermNode::Substitute {
+            template, sigma, ..
+        } => {
+            out.push(*template);
+            out.push(*sigma);
+        }
+        TermNode::Unify { values, .. } => out.push(*values),
+        TermNode::StructSim { a, b, .. } => {
+            out.push(*a);
+            out.push(*b);
+        }
+        TermNode::ShapeDecode {
+            goal,
+            exclude,
+            codebook_scope,
+            ..
+        } => {
+            out.push(*goal);
+            if let Some(e) = exclude {
+                out.push(*e);
+            }
+            if let Some(sc) = codebook_scope {
+                out.push(*sc);
+            }
+        }
+        TermNode::MotorCompose {
+            episode,
+            policy,
+            candidate,
+        } => {
             out.push(*episode);
             out.push(*policy);
             out.push(*candidate);
         }
+        TermNode::FutureManifoldProjection {
+            episode,
+            policy,
+            source,
+            addition,
+            ..
+        } => {
+            out.push(*episode);
+            out.push(*policy);
+            out.push(*source);
+            if let Some(a) = addition {
+                out.push(*a);
+            }
+        }
         TermNode::TransformDecode { goal, exclude, .. } => {
             out.push(*goal);
-            if let Some(e) = exclude { out.push(*e); }
+            if let Some(e) = exclude {
+                out.push(*e);
+            }
         }
         TermNode::NetForward { assemblage, inputs } => {
             out.push(*assemblage);
@@ -10585,11 +13619,15 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         }
         TermNode::DimInfer { goal, exclude, .. } => {
             out.push(*goal);
-            if let Some(e) = exclude { out.push(*e); }
+            if let Some(e) = exclude {
+                out.push(*e);
+            }
         }
         TermNode::GenInfer { goal, exclude, .. } => {
             out.push(*goal);
-            if let Some(e) = exclude { out.push(*e); }
+            if let Some(e) = exclude {
+                out.push(*e);
+            }
         }
         TermNode::TimeInfer { sequence, .. } => {
             out.push(*sequence);
@@ -10621,49 +13659,117 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         TermNode::MetaShapeMint { observation, .. } => {
             out.push(*observation);
         }
-        TermNode::StrokeQuantize { points, turn_edges, len_edges, bounds, .. } => {
+        TermNode::StrokeQuantize {
+            points,
+            turn_edges,
+            len_edges,
+            bounds,
+            ..
+        } => {
             out.push(*points);
-            if let Some(e) = turn_edges { out.push(*e); }
-            if let Some(e) = len_edges { out.push(*e); }
-            if let Some(b) = bounds { out.push(*b); }
+            if let Some(e) = turn_edges {
+                out.push(*e);
+            }
+            if let Some(e) = len_edges {
+                out.push(*e);
+            }
+            if let Some(b) = bounds {
+                out.push(*b);
+            }
         }
-        TermNode::StrokeRender { signature, turn_edges, len_edges, bounds, .. } => {
+        TermNode::StrokeRender {
+            signature,
+            turn_edges,
+            len_edges,
+            bounds,
+            ..
+        } => {
             out.push(*signature);
-            if let Some(e) = turn_edges { out.push(*e); }
-            if let Some(e) = len_edges { out.push(*e); }
-            if let Some(b) = bounds { out.push(*b); }
+            if let Some(e) = turn_edges {
+                out.push(*e);
+            }
+            if let Some(e) = len_edges {
+                out.push(*e);
+            }
+            if let Some(b) = bounds {
+                out.push(*b);
+            }
         }
-        TermNode::SigmaLognormalGenerate { primitives, start, .. } => {
+        TermNode::SigmaLognormalGenerate {
+            primitives, start, ..
+        } => {
             out.push(*primitives);
             out.push(*start);
         }
-        TermNode::LookaheadValue { node, depth, .. } => { out.push(*node); out.push(*depth); }
-        TermNode::Not { arg } | TermNode::Abs { arg } | TermNode::Neg { arg }
-        | TermNode::EnclosedCount { arg }
-        | TermNode::Sqrt { arg } | TermNode::Log { arg } | TermNode::Exp { arg }
-        | TermNode::Magnitude { arg }
-        | TermNode::Sin { arg } | TermNode::Cos { arg } | TermNode::Bearing { arg } => out.push(*arg),
-        TermNode::IfThenElse { cond, then, other } => { out.push(*cond); out.push(*then); out.push(*other); }
-        TermNode::Join { separator, items } => {
-            if let Some(s) = separator { out.push(*s); }
-            if let Some(i) = items { out.push(*i); }
+        TermNode::LookaheadValue { node, depth, .. } => {
+            out.push(*node);
+            out.push(*depth);
         }
-        TermNode::U8 { expr } | TermNode::U16LE { expr } | TermNode::U32LE { expr }
-        | TermNode::U64LE { expr } | TermNode::LEB128 { expr } => {
-            if let Some(e) = expr { out.push(*e); }
+        TermNode::Not { arg }
+        | TermNode::Abs { arg }
+        | TermNode::Neg { arg }
+        | TermNode::EnclosedCount { arg }
+        | TermNode::Sqrt { arg }
+        | TermNode::Log { arg }
+        | TermNode::Exp { arg }
+        | TermNode::Magnitude { arg }
+        | TermNode::Sin { arg }
+        | TermNode::Cos { arg }
+        | TermNode::Bearing { arg } => out.push(*arg),
+        TermNode::IfThenElse { cond, then, other } => {
+            out.push(*cond);
+            out.push(*then);
+            out.push(*other);
+        }
+        TermNode::Join { separator, items } => {
+            if let Some(s) = separator {
+                out.push(*s);
+            }
+            if let Some(i) = items {
+                out.push(*i);
+            }
+        }
+        TermNode::U8 { expr }
+        | TermNode::U16LE { expr }
+        | TermNode::U32LE { expr }
+        | TermNode::U64LE { expr }
+        | TermNode::LEB128 { expr } => {
+            if let Some(e) = expr {
+                out.push(*e);
+            }
         }
         TermNode::Let { value, body, .. } => {
-            if let Some(v) = value { out.push(*v); }
-            if let Some(b) = body { out.push(*b); }
+            if let Some(v) = value {
+                out.push(*v);
+            }
+            if let Some(b) = body {
+                out.push(*b);
+            }
         }
-        TermNode::Nth { items, .. } => { if let Some(i) = items { out.push(*i); } }
+        TermNode::Nth { items, .. } => {
+            if let Some(i) = items {
+                out.push(*i);
+            }
+        }
         TermNode::Render { term, lang } => {
-            if let Some(t) = term { out.push(*t); }
-            if let Some(l) = lang { out.push(*l); }
+            if let Some(t) = term {
+                out.push(*t);
+            }
+            if let Some(l) = lang {
+                out.push(*l);
+            }
         }
-        TermNode::LitRepr { value } => { if let Some(v) = value { out.push(*v); } }
-        TermNode::TrackIdentityCorrespondence { prev, cur, radius, .. } => {
-            out.push(*prev); out.push(*cur); out.push(*radius);
+        TermNode::LitRepr { value } => {
+            if let Some(v) = value {
+                out.push(*v);
+            }
+        }
+        TermNode::TrackIdentityCorrespondence {
+            prev, cur, radius, ..
+        } => {
+            out.push(*prev);
+            out.push(*cur);
+            out.push(*radius);
         }
         // --- Program IR (P1) ---
         TermNode::ProgSeq { stmts } => out.extend(stmts.iter().copied()),
@@ -10671,86 +13777,201 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         | TermNode::ProgAugAssign { value, .. }
         | TermNode::ProgTupleUnpack { value, .. } => out.push(*value),
         TermNode::ProgIfStmt { cond, then, orelse } => {
-            out.push(*cond); out.push(*then);
-            if let Some(o) = orelse { out.push(*o); }
+            out.push(*cond);
+            out.push(*then);
+            if let Some(o) = orelse {
+                out.push(*o);
+            }
         }
-        TermNode::ProgForEach { iter, body, orelse, .. } => {
-            out.push(*iter); out.push(*body);
-            if let Some(o) = orelse { out.push(*o); }
+        TermNode::ProgForEach {
+            iter, body, orelse, ..
+        } => {
+            out.push(*iter);
+            out.push(*body);
+            if let Some(o) = orelse {
+                out.push(*o);
+            }
         }
         TermNode::ProgWhile { cond, body, orelse } => {
-            out.push(*cond); out.push(*body);
-            if let Some(o) = orelse { out.push(*o); }
+            out.push(*cond);
+            out.push(*body);
+            if let Some(o) = orelse {
+                out.push(*o);
+            }
         }
         TermNode::ProgLoopCtl { .. } | TermNode::ProgImportStmt { .. } => {}
-        TermNode::ProgReturn { value } => { if let Some(v) = value { out.push(*v); } }
+        TermNode::ProgReturn { value } => {
+            if let Some(v) = value {
+                out.push(*v);
+            }
+        }
         TermNode::ProgTryOr { body, handler, .. } => {
             out.push(*body);
-            if let Some(h) = handler { out.push(*h); }
+            if let Some(h) = handler {
+                out.push(*h);
+            }
         }
-        TermNode::ProgRaise { exc } => { if let Some(e) = exc { out.push(*e); } }
+        TermNode::ProgRaise { exc } => {
+            if let Some(e) = exc {
+                out.push(*e);
+            }
+        }
         TermNode::ProgSubscriptSet { obj, index, value } => {
-            out.push(*obj); out.push(*index); out.push(*value);
+            out.push(*obj);
+            out.push(*index);
+            out.push(*value);
         }
-        TermNode::ProgAttrSet { obj, value, .. } => { out.push(*obj); out.push(*value); }
-        TermNode::ProgDefFnParam { default, .. } => { if let Some(d) = default { out.push(*d); } }
+        TermNode::ProgAttrSet { obj, value, .. } => {
+            out.push(*obj);
+            out.push(*value);
+        }
+        TermNode::ProgDefFnParam { default, .. } => {
+            if let Some(d) = default {
+                out.push(*d);
+            }
+        }
         TermNode::ProgCallExtern { recv, args, .. } => {
-            if let Some(r) = recv { out.push(*r); }
+            if let Some(r) = recv {
+                out.push(*r);
+            }
             out.extend(args.iter().copied());
         }
         TermNode::ProgAttrGet { obj, .. } => out.push(*obj),
-        TermNode::ProgSubscript { obj, index } => { out.push(*obj); out.push(*index); }
-        TermNode::ProgSlice { obj, start, stop, step } => {
+        TermNode::ProgSubscript { obj, index } => {
             out.push(*obj);
-            if let Some(s) = start { out.push(*s); }
-            if let Some(s) = stop { out.push(*s); }
-            if let Some(s) = step { out.push(*s); }
+            out.push(*index);
+        }
+        TermNode::ProgSlice {
+            obj,
+            start,
+            stop,
+            step,
+        } => {
+            out.push(*obj);
+            if let Some(s) = start {
+                out.push(*s);
+            }
+            if let Some(s) = stop {
+                out.push(*s);
+            }
+            if let Some(s) = step {
+                out.push(*s);
+            }
         }
         TermNode::ProgContainerLit { items, .. } => out.extend(items.iter().copied()),
-        TermNode::ProgComprehensionList { source, expr, cond, .. }
-        | TermNode::ProgComprehensionGen { source, expr, cond, .. } => {
-            out.push(*source); out.push(*expr);
-            if let Some(c) = cond { out.push(*c); }
+        TermNode::ProgComprehensionList {
+            source, expr, cond, ..
         }
-        TermNode::ProgIsOp { a, b, .. } => { out.push(*a); out.push(*b); }
+        | TermNode::ProgComprehensionGen {
+            source, expr, cond, ..
+        } => {
+            out.push(*source);
+            out.push(*expr);
+            if let Some(c) = cond {
+                out.push(*c);
+            }
+        }
+        TermNode::ProgIsOp { a, b, .. } => {
+            out.push(*a);
+            out.push(*b);
+        }
         TermNode::ProgFString { parts } => out.extend(parts.iter().copied()),
-        TermNode::ProgEval { prog, env, oracles, .. } => {
+        TermNode::ProgEval {
+            prog, env, oracles, ..
+        } => {
             out.push(*prog);
-            if let Some(e) = env { out.push(*e); }
-            if let Some(o) = oracles { out.push(*o); }
+            if let Some(e) = env {
+                out.push(*e);
+            }
+            if let Some(o) = oracles {
+                out.push(*o);
+            }
         }
         TermNode::SnakeCase { text } | TermNode::CaseFold { text } => out.push(*text),
         TermNode::Call { args, .. } => out.extend(args.iter().copied()),
-        TermNode::SynthEnumerate { examples, ops, consts, exclude, derived_ops, exclude_ops, .. } => {
+        TermNode::SynthEnumerate {
+            examples,
+            ops,
+            consts,
+            exclude,
+            derived_ops,
+            exclude_ops,
+            ..
+        } => {
             out.push(*examples);
-            if let Some(o) = ops { out.push(*o); }
-            if let Some(c) = consts { out.push(*c); }
-            if let Some(e) = exclude { out.push(*e); }
-            if let Some(d) = derived_ops { out.push(*d); }
-            if let Some(x) = exclude_ops { out.push(*x); }
+            if let Some(o) = ops {
+                out.push(*o);
+            }
+            if let Some(c) = consts {
+                out.push(*c);
+            }
+            if let Some(e) = exclude {
+                out.push(*e);
+            }
+            if let Some(d) = derived_ops {
+                out.push(*d);
+            }
+            if let Some(x) = exclude_ops {
+                out.push(*x);
+            }
         }
-        TermNode::ParetoDominates { candidate, alternative, dimension_count, .. } => {
+        TermNode::ParetoDominates {
+            candidate,
+            alternative,
+            dimension_count,
+            ..
+        } => {
             out.push(*candidate);
             out.push(*alternative);
             out.push(*dimension_count);
         }
         // Rung 1 Tier-1 stdlib Term ports.
-        TermNode::Replace { text, old, new } => { out.push(*text); out.push(*old); out.push(*new); }
+        TermNode::Replace { text, old, new } => {
+            out.push(*text);
+            out.push(*old);
+            out.push(*new);
+        }
         TermNode::Str { value } => out.push(*value),
-        TermNode::Split { text, sep } => { out.push(*text); out.push(*sep); }
-        TermNode::StrCount { text, sub } => { out.push(*text); out.push(*sub); }
-        TermNode::Round { value, ndigits } => { out.push(*value); out.push(*ndigits); }
+        TermNode::Split { text, sep } => {
+            out.push(*text);
+            out.push(*sep);
+        }
+        TermNode::StrCount { text, sub } => {
+            out.push(*text);
+            out.push(*sub);
+        }
+        TermNode::Round { value, ndigits } => {
+            out.push(*value);
+            out.push(*ndigits);
+        }
         TermNode::Reverse { seq } => out.push(*seq),
-        TermNode::IndexedMap { source, value, .. } => { out.push(*source); out.push(*value); }
+        TermNode::IndexedMap { source, value, .. } => {
+            out.push(*source);
+            out.push(*value);
+        }
         TermNode::Capitalize { text } => out.push(*text),
         TermNode::ParseInt { text } => out.push(*text),
-        TermNode::Slice { seq, start, stop } => { out.push(*seq); out.push(*start); out.push(*stop); }
+        TermNode::Slice { seq, start, stop } => {
+            out.push(*seq);
+            out.push(*start);
+            out.push(*stop);
+        }
         TermNode::Sort { seq } => out.push(*seq),
         TermNode::DictItems { seq } => out.push(*seq),
-        TermNode::SortBy { source, key, .. } => { out.push(*source); out.push(*key); }
+        TermNode::SortBy { source, key, .. } => {
+            out.push(*source);
+            out.push(*key);
+        }
         TermNode::GroupCount { seq } => out.push(*seq),
-        TermNode::DictMerge { a, b } => { out.push(*a); out.push(*b); }
-        TermNode::ZipWith { a, b, value, .. } => { out.push(*a); out.push(*b); out.push(*value); }
+        TermNode::DictMerge { a, b } => {
+            out.push(*a);
+            out.push(*b);
+        }
+        TermNode::ZipWith { a, b, value, .. } => {
+            out.push(*a);
+            out.push(*b);
+            out.push(*value);
+        }
     }
     out
 }
@@ -10764,14 +13985,18 @@ mod tests {
     #[test]
     fn arena_round_trip() {
         let mut a = TermArena::new();
-        let i = a.add(TermNode::Lit { value: Value::Int(42) });
+        let i = a.add(TermNode::Lit {
+            value: Value::Int(42),
+        });
         assert!(matches!(a.get(i), TermNode::Lit { .. }));
     }
 
     #[test]
     fn lit_evaluates() {
         let mut a = TermArena::new();
-        let i = a.add(TermNode::Lit { value: Value::Int(7) });
+        let i = a.add(TermNode::Lit {
+            value: Value::Int(7),
+        });
         let g = TypedGraph::new();
         let ir = Interner::new();
         let mut env: Env = SmallVec::new();
@@ -10806,7 +14031,9 @@ mod tests {
                 None => wild.clone(),
             };
             let pv = Value::Str(ir.intern(p));
-            out.push(Value::List(std::sync::Arc::new(smallvec::smallvec![pv, val])));
+            out.push(Value::List(std::sync::Arc::new(smallvec::smallvec![
+                pv, val
+            ])));
         }
         Value::List(std::sync::Arc::new(out))
     }
@@ -10827,13 +14054,16 @@ mod tests {
         let wild = co_wild(&mut ir);
         let pattern = co_sig(&mut ir, CO_HELD);
         // The k+1 observation: the same four relations plus one extra attr.
-        let inst = co_sig(&mut ir, &[
-            ("buyer", Some("gary")),
-            ("is_a", Some("traderecord")),
-            ("lot", Some("13")),
-            ("note", Some("anything")),
-            ("seller", Some("hank")),
-        ]);
+        let inst = co_sig(
+            &mut ir,
+            &[
+                ("buyer", Some("gary")),
+                ("is_a", Some("traderecord")),
+                ("lot", Some("13")),
+                ("note", Some("anything")),
+                ("seller", Some("hank")),
+            ],
+        );
         assert!(covers_open_value(&pattern, &inst, &wild));
         // ... and the SHARED primitive is unchanged: `Covers` still refuses it.
         assert!(!covers_value(&pattern, &inst, &wild));
@@ -10844,12 +14074,15 @@ mod tests {
         let mut ir = Interner::new();
         let wild = co_wild(&mut ir);
         let pattern = co_sig(&mut ir, CO_HELD);
-        let inst = co_sig(&mut ir, &[
-            ("buyer", Some("alice")),
-            ("is_a", Some("traderecord")),
-            ("lot", Some("7")),
-            ("seller", Some("bob")),
-        ]);
+        let inst = co_sig(
+            &mut ir,
+            &[
+                ("buyer", Some("alice")),
+                ("is_a", Some("traderecord")),
+                ("lot", Some("7")),
+                ("seller", Some("bob")),
+            ],
+        );
         assert!(covers_open_value(&pattern, &inst, &wild));
         assert!(covers_value(&pattern, &inst, &wild));
     }
@@ -10862,11 +14095,14 @@ mod tests {
         // `seller` absent — a strict SUBSET. Open arity must be
         // superset-tolerant only; this is the bar separating a fix from a
         // weakening.
-        let inst = co_sig(&mut ir, &[
-            ("buyer", Some("alice")),
-            ("is_a", Some("traderecord")),
-            ("lot", Some("7")),
-        ]);
+        let inst = co_sig(
+            &mut ir,
+            &[
+                ("buyer", Some("alice")),
+                ("is_a", Some("traderecord")),
+                ("lot", Some("7")),
+            ],
+        );
         assert!(!covers_open_value(&pattern, &inst, &wild));
     }
 
@@ -10875,13 +14111,16 @@ mod tests {
         let mut ir = Interner::new();
         let wild = co_wild(&mut ir);
         let pattern = co_sig(&mut ir, CO_HELD);
-        let inst = co_sig(&mut ir, &[
-            ("definition", Some("a held generalisation")),
-            ("domain", Some("engine")),
-            ("is_a", Some("concept")),
-            ("name", Some("shape")),
-            ("source", Some("seed")),
-        ]);
+        let inst = co_sig(
+            &mut ir,
+            &[
+                ("definition", Some("a held generalisation")),
+                ("domain", Some("engine")),
+                ("is_a", Some("concept")),
+                ("name", Some("shape")),
+                ("source", Some("seed")),
+            ],
+        );
         assert!(!covers_open_value(&pattern, &inst, &wild));
     }
 
@@ -10906,20 +14145,23 @@ mod tests {
         // Two IDENTICAL pattern relations against ONE matching instance
         // relation: a per-element existential would accept; an injective
         // matching refuses.
-        let pattern = co_sig(&mut ir, &[
-            ("buyer", Some("alice")),
-            ("buyer", Some("alice")),
-        ]);
-        let one = co_sig(&mut ir, &[
-            ("buyer", Some("alice")),
-            ("is_a", Some("traderecord")),
-        ]);
+        let pattern = co_sig(
+            &mut ir,
+            &[("buyer", Some("alice")), ("buyer", Some("alice"))],
+        );
+        let one = co_sig(
+            &mut ir,
+            &[("buyer", Some("alice")), ("is_a", Some("traderecord"))],
+        );
         assert!(!covers_open_value(&pattern, &one, &wild));
-        let two = co_sig(&mut ir, &[
-            ("buyer", Some("alice")),
-            ("buyer", Some("alice")),
-            ("is_a", Some("traderecord")),
-        ]);
+        let two = co_sig(
+            &mut ir,
+            &[
+                ("buyer", Some("alice")),
+                ("buyer", Some("alice")),
+                ("is_a", Some("traderecord")),
+            ],
+        );
         assert!(covers_open_value(&pattern, &two, &wild));
     }
 
@@ -10958,10 +14200,18 @@ mod tests {
     fn covers_open_term_round_trips_through_json() {
         let mut a = TermArena::new();
         let mut ir = Interner::new();
-        let p = a.add(TermNode::Lit { value: Value::Int(1) });
-        let i = a.add(TermNode::Lit { value: Value::Int(1) });
+        let p = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let i = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
         let w = ir.intern("·?·");
-        let t = a.add(TermNode::CoversOpen { pattern: p, instance: i, wild: w });
+        let t = a.add(TermNode::CoversOpen {
+            pattern: p,
+            instance: i,
+            wild: w,
+        });
         let json = crate::jsonio::term_to_json(&a, t, &ir);
         assert_eq!(json["type"], serde_json::json!("CoversOpen"));
         let mut b = TermArena::new();
@@ -10989,19 +14239,35 @@ mod tests {
         let mut ir = Interner::new();
         let sym_a = ir.intern("a");
         let sym_b = ir.intern("b");
-        let ka = a.add(TermNode::Lit { value: Value::Str(sym_a) });
-        let va = a.add(TermNode::Lit { value: Value::Int(1) });
-        let kb = a.add(TermNode::Lit { value: Value::Str(sym_b) });
-        let part_x = a.add(TermNode::Lit { value: Value::Str(ir.intern("x")) });
-        let part_y = a.add(TermNode::Lit { value: Value::Str(ir.intern("y")) });
-        let concat = a.add(TermNode::StringConcat { parts: vec![part_x, part_y] });
-        let dict = a.add(TermNode::MkDict { items: vec![ka, va, kb, concat] });
+        let ka = a.add(TermNode::Lit {
+            value: Value::Str(sym_a),
+        });
+        let va = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let kb = a.add(TermNode::Lit {
+            value: Value::Str(sym_b),
+        });
+        let part_x = a.add(TermNode::Lit {
+            value: Value::Str(ir.intern("x")),
+        });
+        let part_y = a.add(TermNode::Lit {
+            value: Value::Str(ir.intern("y")),
+        });
+        let concat = a.add(TermNode::StringConcat {
+            parts: vec![part_x, part_y],
+        });
+        let dict = a.add(TermNode::MkDict {
+            items: vec![ka, va, kb, concat],
+        });
         let tojson = a.add(TermNode::ToJsonString { value: dict });
 
         let mut env: Env = SmallVec::new();
         let mut ctx = fresh_ctx(&g, &ir);
         let out = evaluate(&a, tojson, &mut env, &mut ctx);
-        let Value::Surface(SurfaceKind::Text, bytes) = out else { panic!("expected Surface(Text)") };
+        let Value::Surface(SurfaceKind::Text, bytes) = out else {
+            panic!("expected Surface(Text)")
+        };
         let s = String::from_utf8(bytes.to_vec()).unwrap();
         let parsed: serde_json::Value = serde_json::from_str(&s).unwrap();
         assert_eq!(parsed, serde_json::json!({"a": 1, "b": "xy"}));
@@ -11015,18 +14281,28 @@ mod tests {
         let text = a.add(TermNode::Lit {
             value: Value::Surface(
                 SurfaceKind::Text,
-                Arc::from(br#"{"type":"Lt","a":{"type":"Var","name":"x"},"b":{"type":"Lit","value":3}}"#.as_slice()),
+                Arc::from(
+                    br#"{"type":"Lt","a":{"type":"Var","name":"x"},"b":{"type":"Lit","value":3}}"#
+                        .as_slice(),
+                ),
             ),
         });
         let parsed = a.add(TermNode::FromJsonString { text });
         let mut env: Env = SmallVec::new();
         let mut ctx = fresh_ctx(&g, &ir);
         let out = evaluate(&a, parsed, &mut env, &mut ctx);
-        let Value::Dict(pairs) = out else { panic!("expected Dict") };
+        let Value::Dict(pairs) = out else {
+            panic!("expected Dict")
+        };
         let ty = dict_get(&pairs, "type", &ir).unwrap();
-        assert_eq!(ty, &Value::Surface(SurfaceKind::Text, Arc::from(b"Lt".as_slice())));
+        assert_eq!(
+            ty,
+            &Value::Surface(SurfaceKind::Text, Arc::from(b"Lt".as_slice()))
+        );
         let b = dict_get(&pairs, "b", &ir).unwrap();
-        let Value::Dict(bp) = b else { panic!("expected nested Dict") };
+        let Value::Dict(bp) = b else {
+            panic!("expected nested Dict")
+        };
         let v = dict_get(bp, "value", &ir).unwrap();
         assert_eq!(v, &Value::Int(3));
     }
@@ -11039,55 +14315,122 @@ mod tests {
         let mut a = TermArena::new();
         let g = TypedGraph::new();
         let mut ir = Interner::new();
-        let mk_cmp = |a: &mut TermArena, ir: &mut Interner, ty: &str, var: &str, lit_type: &str, val: Value| -> TermIdx {
-            let type_k = a.add(TermNode::Lit { value: Value::Str(ir.intern("type")) });
-            let type_v = a.add(TermNode::Lit { value: Value::Str(ir.intern(ty)) });
-            let a_k = a.add(TermNode::Lit { value: Value::Str(ir.intern("a")) });
-            let var_type_k = a.add(TermNode::Lit { value: Value::Str(ir.intern("type")) });
-            let var_type_v = a.add(TermNode::Lit { value: Value::Str(ir.intern("Var")) });
-            let var_name_k = a.add(TermNode::Lit { value: Value::Str(ir.intern("name")) });
-            let var_name_v = a.add(TermNode::Lit { value: Value::Str(ir.intern(var)) });
-            let a_v = a.add(TermNode::MkDict { items: vec![var_type_k, var_type_v, var_name_k, var_name_v] });
-            let b_k = a.add(TermNode::Lit { value: Value::Str(ir.intern("b")) });
-            let lit_type_k = a.add(TermNode::Lit { value: Value::Str(ir.intern("type")) });
-            let lit_type_v = a.add(TermNode::Lit { value: Value::Str(ir.intern(lit_type)) });
-            let lit_val_k = a.add(TermNode::Lit { value: Value::Str(ir.intern("value")) });
+        let mk_cmp = |a: &mut TermArena,
+                      ir: &mut Interner,
+                      ty: &str,
+                      var: &str,
+                      lit_type: &str,
+                      val: Value|
+         -> TermIdx {
+            let type_k = a.add(TermNode::Lit {
+                value: Value::Str(ir.intern("type")),
+            });
+            let type_v = a.add(TermNode::Lit {
+                value: Value::Str(ir.intern(ty)),
+            });
+            let a_k = a.add(TermNode::Lit {
+                value: Value::Str(ir.intern("a")),
+            });
+            let var_type_k = a.add(TermNode::Lit {
+                value: Value::Str(ir.intern("type")),
+            });
+            let var_type_v = a.add(TermNode::Lit {
+                value: Value::Str(ir.intern("Var")),
+            });
+            let var_name_k = a.add(TermNode::Lit {
+                value: Value::Str(ir.intern("name")),
+            });
+            let var_name_v = a.add(TermNode::Lit {
+                value: Value::Str(ir.intern(var)),
+            });
+            let a_v = a.add(TermNode::MkDict {
+                items: vec![var_type_k, var_type_v, var_name_k, var_name_v],
+            });
+            let b_k = a.add(TermNode::Lit {
+                value: Value::Str(ir.intern("b")),
+            });
+            let lit_type_k = a.add(TermNode::Lit {
+                value: Value::Str(ir.intern("type")),
+            });
+            let lit_type_v = a.add(TermNode::Lit {
+                value: Value::Str(ir.intern(lit_type)),
+            });
+            let lit_val_k = a.add(TermNode::Lit {
+                value: Value::Str(ir.intern("value")),
+            });
             let lit_val_v = a.add(TermNode::Lit { value: val });
-            let b_v = a.add(TermNode::MkDict { items: vec![lit_type_k, lit_type_v, lit_val_k, lit_val_v] });
-            a.add(TermNode::MkDict { items: vec![type_k, type_v, a_k, a_v, b_k, b_v] })
+            let b_v = a.add(TermNode::MkDict {
+                items: vec![lit_type_k, lit_type_v, lit_val_k, lit_val_v],
+            });
+            a.add(TermNode::MkDict {
+                items: vec![type_k, type_v, a_k, a_v, b_k, b_v],
+            })
         };
         let lt_node = mk_cmp(&mut a, &mut ir, "Lt", "x", "Lit", Value::Float(5.0));
         let gt_node = mk_cmp(&mut a, &mut ir, "Gt", "y", "Lit", Value::Float(-2.0));
         let eq_node = mk_cmp(&mut a, &mut ir, "Eq", "z", "Lit", Value::Float(9.0));
-        let items_type_k = a.add(TermNode::Lit { value: Value::Str(ir.intern("type")) });
-        let items_type_v = a.add(TermNode::Lit { value: Value::Str(ir.intern("And")) });
-        let items_k = a.add(TermNode::Lit { value: Value::Str(ir.intern("items")) });
+        let items_type_k = a.add(TermNode::Lit {
+            value: Value::Str(ir.intern("type")),
+        });
+        let items_type_v = a.add(TermNode::Lit {
+            value: Value::Str(ir.intern("And")),
+        });
+        let items_k = a.add(TermNode::Lit {
+            value: Value::Str(ir.intern("items")),
+        });
         // "items" as an array-shaped Term value: build via nested Append
         // over an empty tuple literal (matches the composer's own AP/EMPTY_TUPLE
         // convention in tests/test_rule_minting_dialect.py).
-        let empty = a.add(TermNode::Lit { value: Value::Tuple(Arc::new(SmallVec::new())) });
-        let ap1 = a.add(TermNode::Append { seq: empty, item: lt_node });
-        let ap2 = a.add(TermNode::Append { seq: ap1, item: gt_node });
-        let ap3 = a.add(TermNode::Append { seq: ap2, item: eq_node });
-        let and_node = a.add(TermNode::MkDict { items: vec![items_type_k, items_type_v, items_k, ap3] });
+        let empty = a.add(TermNode::Lit {
+            value: Value::Tuple(Arc::new(SmallVec::new())),
+        });
+        let ap1 = a.add(TermNode::Append {
+            seq: empty,
+            item: lt_node,
+        });
+        let ap2 = a.add(TermNode::Append {
+            seq: ap1,
+            item: gt_node,
+        });
+        let ap3 = a.add(TermNode::Append {
+            seq: ap2,
+            item: eq_node,
+        });
+        let and_node = a.add(TermNode::MkDict {
+            items: vec![items_type_k, items_type_v, items_k, ap3],
+        });
 
-        let shift_lit = a.add(TermNode::Lit { value: Value::Float(1.5) });
-        let shifted = a.add(TermNode::ShiftThresholdLits { tree: and_node, shift: shift_lit });
+        let shift_lit = a.add(TermNode::Lit {
+            value: Value::Float(1.5),
+        });
+        let shifted = a.add(TermNode::ShiftThresholdLits {
+            tree: and_node,
+            shift: shift_lit,
+        });
 
         let mut env: Env = SmallVec::new();
         let mut ctx = fresh_ctx(&g, &ir);
         let out = evaluate(&a, shifted, &mut env, &mut ctx);
-        let Value::Dict(pairs) = out else { panic!("expected Dict") };
-        let (Value::Tuple(items) | Value::List(items)) = dict_get(&pairs, "items", &ir).unwrap() else { panic!("expected Tuple") };
+        let Value::Dict(pairs) = out else {
+            panic!("expected Dict")
+        };
+        let (Value::Tuple(items) | Value::List(items)) = dict_get(&pairs, "items", &ir).unwrap()
+        else {
+            panic!("expected Tuple")
+        };
         assert_eq!(items.len(), 3);
         let get_b_value = |v: &Value| -> Value {
-            let Value::Dict(p) = v else { panic!("expected Dict") };
-            let Value::Dict(b) = dict_get(p, "b", &ir).unwrap() else { panic!("expected Dict") };
+            let Value::Dict(p) = v else {
+                panic!("expected Dict")
+            };
+            let Value::Dict(b) = dict_get(p, "b", &ir).unwrap() else {
+                panic!("expected Dict")
+            };
             dict_get(b, "value", &ir).unwrap().clone()
         };
-        assert_eq!(get_b_value(&items[0]), Value::Float(3.5));   // Lt: 5.0 - 1.5
-        assert_eq!(get_b_value(&items[1]), Value::Float(-0.5));  // Gt: -2.0 + 1.5
-        assert_eq!(get_b_value(&items[2]), Value::Float(9.0));   // Eq: untouched
+        assert_eq!(get_b_value(&items[0]), Value::Float(3.5)); // Lt: 5.0 - 1.5
+        assert_eq!(get_b_value(&items[1]), Value::Float(-0.5)); // Gt: -2.0 + 1.5
+        assert_eq!(get_b_value(&items[2]), Value::Float(9.0)); // Eq: untouched
     }
 
     #[test]
@@ -11103,29 +14446,57 @@ mod tests {
         let sym_nope = ir.intern("nope");
 
         // Str-keyed (MkDict-built): DictGet(MkDict("k", 42), "k") == 42.
-        let k_lit = a.add(TermNode::Lit { value: Value::Str(sym_k) });
-        let v_lit = a.add(TermNode::Lit { value: Value::Int(42) });
-        let mkdict = a.add(TermNode::MkDict { items: vec![k_lit, v_lit] });
-        let key_query = a.add(TermNode::Lit { value: Value::Str(sym_k) });
-        let get1 = a.add(TermNode::DictGet { dict: mkdict, key: key_query });
+        let k_lit = a.add(TermNode::Lit {
+            value: Value::Str(sym_k),
+        });
+        let v_lit = a.add(TermNode::Lit {
+            value: Value::Int(42),
+        });
+        let mkdict = a.add(TermNode::MkDict {
+            items: vec![k_lit, v_lit],
+        });
+        let key_query = a.add(TermNode::Lit {
+            value: Value::Str(sym_k),
+        });
+        let get1 = a.add(TermNode::DictGet {
+            dict: mkdict,
+            key: key_query,
+        });
 
         let mut env: Env = SmallVec::new();
         let mut ctx = fresh_ctx(&g, &ir);
         assert_eq!(evaluate(&a, get1, &mut env, &mut ctx), Value::Int(42));
 
         // Surface-keyed (FromJsonString-parsed): DictGet(parsed, "k") == 42.
-        let text = a.add(TermNode::Lit { value: Value::Str(sym_json) });
+        let text = a.add(TermNode::Lit {
+            value: Value::Str(sym_json),
+        });
         let parsed = a.add(TermNode::FromJsonString { text });
-        let key_query2 = a.add(TermNode::Lit { value: Value::Str(sym_k) });
-        let get2 = a.add(TermNode::DictGet { dict: parsed, key: key_query2 });
+        let key_query2 = a.add(TermNode::Lit {
+            value: Value::Str(sym_k),
+        });
+        let get2 = a.add(TermNode::DictGet {
+            dict: parsed,
+            key: key_query2,
+        });
         assert_eq!(evaluate(&a, get2, &mut env, &mut ctx), Value::Int(42));
 
         // Missing key -> None; non-Dict input -> None.
-        let missing_key = a.add(TermNode::Lit { value: Value::Str(sym_nope) });
-        let get3 = a.add(TermNode::DictGet { dict: mkdict, key: missing_key });
+        let missing_key = a.add(TermNode::Lit {
+            value: Value::Str(sym_nope),
+        });
+        let get3 = a.add(TermNode::DictGet {
+            dict: mkdict,
+            key: missing_key,
+        });
         assert_eq!(evaluate(&a, get3, &mut env, &mut ctx), Value::None);
-        let not_a_dict = a.add(TermNode::Lit { value: Value::Int(1) });
-        let get4 = a.add(TermNode::DictGet { dict: not_a_dict, key: k_lit });
+        let not_a_dict = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let get4 = a.add(TermNode::DictGet {
+            dict: not_a_dict,
+            key: k_lit,
+        });
         assert_eq!(evaluate(&a, get4, &mut env, &mut ctx), Value::None);
     }
 
@@ -11142,26 +14513,44 @@ mod tests {
         let vm_json = ir.intern(r#"{"Lt":"Gt","Gt":"Lt","Lte":"Gte","Gte":"Lte"}"#);
         let type_sym = ir.intern("type");
 
-        let text = a.add(TermNode::Lit { value: Value::Str(tree_json) });
+        let text = a.add(TermNode::Lit {
+            value: Value::Str(tree_json),
+        });
         let tree = a.add(TermNode::FromJsonString { text });
-        let vm_text = a.add(TermNode::Lit { value: Value::Str(vm_json) });
+        let vm_text = a.add(TermNode::Lit {
+            value: Value::Str(vm_json),
+        });
         let value_map = a.add(TermNode::FromJsonString { text: vm_text });
-        let field = a.add(TermNode::Lit { value: Value::Str(type_sym) });
-        let rewrite = a.add(TermNode::RewriteTreeNodes { tree, type_filter: None, field, value_map });
+        let field = a.add(TermNode::Lit {
+            value: Value::Str(type_sym),
+        });
+        let rewrite = a.add(TermNode::RewriteTreeNodes {
+            tree,
+            type_filter: None,
+            field,
+            value_map,
+        });
 
         let mut env: Env = SmallVec::new();
         let mut ctx = fresh_ctx(&g, &ir);
         let out = evaluate(&a, rewrite, &mut env, &mut ctx);
-        let Value::Dict(pairs) = out else { panic!("expected Dict") };
-        let (Value::Tuple(items) | Value::List(items)) = dict_get(&pairs, "items", &ir).unwrap() else { panic!("expected Tuple") };
+        let Value::Dict(pairs) = out else {
+            panic!("expected Dict")
+        };
+        let (Value::Tuple(items) | Value::List(items)) = dict_get(&pairs, "items", &ir).unwrap()
+        else {
+            panic!("expected Tuple")
+        };
         assert_eq!(items.len(), 3);
         let get_type = |v: &Value| -> String {
-            let Value::Dict(p) = v else { panic!("expected Dict") };
+            let Value::Dict(p) = v else {
+                panic!("expected Dict")
+            };
             dict_type_str(p, &ir).unwrap().into_owned()
         };
-        assert_eq!(get_type(&items[0]), "Gt");   // Lt -> Gt
-        assert_eq!(get_type(&items[1]), "Lt");   // Gt -> Lt
-        assert_eq!(get_type(&items[2]), "Eq");   // untouched (not in value_map)
+        assert_eq!(get_type(&items[0]), "Gt"); // Lt -> Gt
+        assert_eq!(get_type(&items[1]), "Lt"); // Gt -> Lt
+        assert_eq!(get_type(&items[2]), "Eq"); // untouched (not in value_map)
     }
 
     #[test]
@@ -11178,37 +14567,67 @@ mod tests {
         let key_sym = ir.intern("key");
         let attr_type_sym = ir.intern("Attr");
 
-        let text1 = a.add(TermNode::Lit { value: Value::Str(attr_json) });
+        let text1 = a.add(TermNode::Lit {
+            value: Value::Str(attr_json),
+        });
         let tree1 = a.add(TermNode::FromJsonString { text: text1 });
-        let vm_text1 = a.add(TermNode::Lit { value: Value::Str(vm_json) });
+        let vm_text1 = a.add(TermNode::Lit {
+            value: Value::Str(vm_json),
+        });
         let value_map1 = a.add(TermNode::FromJsonString { text: vm_text1 });
-        let field1 = a.add(TermNode::Lit { value: Value::Str(key_sym) });
-        let type_filter1 = a.add(TermNode::Lit { value: Value::Str(attr_type_sym) });
+        let field1 = a.add(TermNode::Lit {
+            value: Value::Str(key_sym),
+        });
+        let type_filter1 = a.add(TermNode::Lit {
+            value: Value::Str(attr_type_sym),
+        });
         let rewrite1 = a.add(TermNode::RewriteTreeNodes {
-            tree: tree1, type_filter: Some(type_filter1), field: field1, value_map: value_map1,
+            tree: tree1,
+            type_filter: Some(type_filter1),
+            field: field1,
+            value_map: value_map1,
         });
 
         let mut env: Env = SmallVec::new();
         let mut ctx = fresh_ctx(&g, &ir);
         let out1 = evaluate(&a, rewrite1, &mut env, &mut ctx);
-        let Value::Dict(p1) = out1 else { panic!("expected Dict") };
-        assert_eq!(dict_get(&p1, "key", &ir).unwrap(),
-                   &Value::Surface(SurfaceKind::Text, Arc::from(b"col".as_slice())));
+        let Value::Dict(p1) = out1 else {
+            panic!("expected Dict")
+        };
+        assert_eq!(
+            dict_get(&p1, "key", &ir).unwrap(),
+            &Value::Surface(SurfaceKind::Text, Arc::from(b"col".as_slice()))
+        );
 
-        let text2 = a.add(TermNode::Lit { value: Value::Str(other_json) });
+        let text2 = a.add(TermNode::Lit {
+            value: Value::Str(other_json),
+        });
         let tree2 = a.add(TermNode::FromJsonString { text: text2 });
-        let vm_text2 = a.add(TermNode::Lit { value: Value::Str(vm_json) });
+        let vm_text2 = a.add(TermNode::Lit {
+            value: Value::Str(vm_json),
+        });
         let value_map2 = a.add(TermNode::FromJsonString { text: vm_text2 });
-        let field2 = a.add(TermNode::Lit { value: Value::Str(key_sym) });
-        let type_filter2 = a.add(TermNode::Lit { value: Value::Str(attr_type_sym) });
+        let field2 = a.add(TermNode::Lit {
+            value: Value::Str(key_sym),
+        });
+        let type_filter2 = a.add(TermNode::Lit {
+            value: Value::Str(attr_type_sym),
+        });
         let rewrite2 = a.add(TermNode::RewriteTreeNodes {
-            tree: tree2, type_filter: Some(type_filter2), field: field2, value_map: value_map2,
+            tree: tree2,
+            type_filter: Some(type_filter2),
+            field: field2,
+            value_map: value_map2,
         });
         let out2 = evaluate(&a, rewrite2, &mut env, &mut ctx);
-        let Value::Dict(p2) = out2 else { panic!("expected Dict") };
-        assert_eq!(dict_get(&p2, "key", &ir).unwrap(),
-                   &Value::Surface(SurfaceKind::Text, Arc::from(b"row".as_slice())),
-                   "type_filter='Attr' guard: a NotAttr node's 'key' field must stay untouched");
+        let Value::Dict(p2) = out2 else {
+            panic!("expected Dict")
+        };
+        assert_eq!(
+            dict_get(&p2, "key", &ir).unwrap(),
+            &Value::Surface(SurfaceKind::Text, Arc::from(b"row".as_slice())),
+            "type_filter='Attr' guard: a NotAttr node's 'key' field must stay untouched"
+        );
     }
 
     #[test]
@@ -11233,20 +14652,30 @@ mod tests {
                 {"type":"Eq","a":{"type":"NotAttr","key":"row"},"b":1}
             ]}"#,
         );
-        let text = a.add(TermNode::Lit { value: Value::Str(tree_json) });
+        let text = a.add(TermNode::Lit {
+            value: Value::Str(tree_json),
+        });
         let tree = a.add(TermNode::FromJsonString { text });
         let ranking = a.add(TermNode::AttrKeyRanking { tree });
 
         let mut env: Env = SmallVec::new();
         let mut ctx = fresh_ctx(&g, &ir);
         let out = evaluate(&a, ranking, &mut env, &mut ctx);
-        let (Value::Tuple(pairs) | Value::List(pairs)) = out else { panic!("expected Tuple") };
+        let (Value::Tuple(pairs) | Value::List(pairs)) = out else {
+            panic!("expected Tuple")
+        };
         let decoded: Vec<(String, i64)> = pairs
             .iter()
             .map(|p| {
-                let (Value::Tuple(kv) | Value::List(kv)) = p else { panic!("expected pair Tuple") };
-                let Value::Surface(SurfaceKind::Text, k) = &kv[0] else { panic!("expected Surface key") };
-                let Value::Int(c) = &kv[1] else { panic!("expected Int count") };
+                let (Value::Tuple(kv) | Value::List(kv)) = p else {
+                    panic!("expected pair Tuple")
+                };
+                let Value::Surface(SurfaceKind::Text, k) = &kv[0] else {
+                    panic!("expected Surface key")
+                };
+                let Value::Int(c) = &kv[1] else {
+                    panic!("expected Int count")
+                };
                 (String::from_utf8_lossy(k).into_owned(), *c)
             })
             .collect();
@@ -11275,22 +14704,33 @@ mod tests {
                 {"type":"Attr","node":{"type":"Var","name":"n"},"key":"mid"}
             ]}"#,
         );
-        let text = a.add(TermNode::Lit { value: Value::Str(tree_json) });
+        let text = a.add(TermNode::Lit {
+            value: Value::Str(tree_json),
+        });
         let tree = a.add(TermNode::FromJsonString { text });
         let ranking = a.add(TermNode::AttrKeyRanking { tree });
         let mut env: Env = SmallVec::new();
         let mut ctx = fresh_ctx(&g, &ir);
         let out = evaluate(&a, ranking, &mut env, &mut ctx);
-        let (Value::Tuple(pairs) | Value::List(pairs)) = out else { panic!("expected Tuple") };
+        let (Value::Tuple(pairs) | Value::List(pairs)) = out else {
+            panic!("expected Tuple")
+        };
         let keys: Vec<String> = pairs
             .iter()
             .map(|p| {
-                let (Value::Tuple(kv) | Value::List(kv)) = p else { panic!("expected pair Tuple") };
-                let Value::Surface(SurfaceKind::Text, k) = &kv[0] else { panic!("expected Surface key") };
+                let (Value::Tuple(kv) | Value::List(kv)) = p else {
+                    panic!("expected pair Tuple")
+                };
+                let Value::Surface(SurfaceKind::Text, k) = &kv[0] else {
+                    panic!("expected Surface key")
+                };
                 String::from_utf8_lossy(k).into_owned()
             })
             .collect();
-        assert_eq!(keys, vec!["alpha".to_string(), "mid".to_string(), "zeta".to_string()]);
+        assert_eq!(
+            keys,
+            vec!["alpha".to_string(), "mid".to_string(), "zeta".to_string()]
+        );
     }
 
     #[test]
@@ -11299,38 +14739,74 @@ mod tests {
         let g = TypedGraph::new();
         let ir = Interner::new();
         let list = a.add(TermNode::Lit {
-            value: Value::Tuple(Arc::new(smallvec![Value::Int(10), Value::Int(20), Value::Int(30)])),
+            value: Value::Tuple(Arc::new(smallvec![
+                Value::Int(10),
+                Value::Int(20),
+                Value::Int(30)
+            ])),
         });
         let mut env: Env = SmallVec::new();
         let mut ctx = fresh_ctx(&g, &ir);
 
-        let idx1 = a.add(TermNode::Lit { value: Value::Int(1) });
+        let idx1 = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
         let drop1 = a.add(TermNode::ListDrop { list, index: idx1 });
-        assert_eq!(evaluate(&a, drop1, &mut env, &mut ctx),
-                   Value::Tuple(Arc::new(smallvec![Value::Int(10), Value::Int(30)])));
+        assert_eq!(
+            evaluate(&a, drop1, &mut env, &mut ctx),
+            Value::Tuple(Arc::new(smallvec![Value::Int(10), Value::Int(30)]))
+        );
 
         // Negative index counts from the end (same convention as IndexAt).
-        let idx_neg = a.add(TermNode::Lit { value: Value::Int(-1) });
-        let drop_neg = a.add(TermNode::ListDrop { list, index: idx_neg });
-        assert_eq!(evaluate(&a, drop_neg, &mut env, &mut ctx),
-                   Value::Tuple(Arc::new(smallvec![Value::Int(10), Value::Int(20)])));
+        let idx_neg = a.add(TermNode::Lit {
+            value: Value::Int(-1),
+        });
+        let drop_neg = a.add(TermNode::ListDrop {
+            list,
+            index: idx_neg,
+        });
+        assert_eq!(
+            evaluate(&a, drop_neg, &mut env, &mut ctx),
+            Value::Tuple(Arc::new(smallvec![Value::Int(10), Value::Int(20)]))
+        );
 
         // Out-of-range index (after adjustment) is a mechanical no-op --
         // elements come back unchanged. The "would this leave the rule with
         // <1 match edge" business rule is NOT this Term's concern (see
         // TermNode::ListDrop's doc comment) -- that's the composer's guard.
-        let idx_oob = a.add(TermNode::Lit { value: Value::Int(99) });
-        let drop_oob = a.add(TermNode::ListDrop { list, index: idx_oob });
-        assert_eq!(evaluate(&a, drop_oob, &mut env, &mut ctx),
-                   Value::Tuple(Arc::new(smallvec![Value::Int(10), Value::Int(20), Value::Int(30)])));
+        let idx_oob = a.add(TermNode::Lit {
+            value: Value::Int(99),
+        });
+        let drop_oob = a.add(TermNode::ListDrop {
+            list,
+            index: idx_oob,
+        });
+        assert_eq!(
+            evaluate(&a, drop_oob, &mut env, &mut ctx),
+            Value::Tuple(Arc::new(smallvec![
+                Value::Int(10),
+                Value::Int(20),
+                Value::Int(30)
+            ]))
+        );
 
         // Dropping the ONLY element of a 1-tuple IS mechanically valid
         // (index 0 is in-range) -- the Term has no opinion about whether
         // that leaves a semantically sane rule.
-        let single = a.add(TermNode::Lit { value: Value::Tuple(Arc::new(smallvec![Value::Int(7)])) });
-        let idx0 = a.add(TermNode::Lit { value: Value::Int(0) });
-        let drop_single = a.add(TermNode::ListDrop { list: single, index: idx0 });
-        assert_eq!(evaluate(&a, drop_single, &mut env, &mut ctx), Value::Tuple(Arc::new(SmallVec::new())));
+        let single = a.add(TermNode::Lit {
+            value: Value::Tuple(Arc::new(smallvec![Value::Int(7)])),
+        });
+        let idx0 = a.add(TermNode::Lit {
+            value: Value::Int(0),
+        });
+        let drop_single = a.add(TermNode::ListDrop {
+            list: single,
+            index: idx0,
+        });
+        assert_eq!(
+            evaluate(&a, drop_single, &mut env, &mut ctx),
+            Value::Tuple(Arc::new(SmallVec::new()))
+        );
     }
 
     #[test]
@@ -11340,11 +14816,20 @@ mod tests {
         let mut a = TermArena::new();
         let g = TypedGraph::new();
         let mut ir = Interner::new();
-        let k_lit = a.add(TermNode::Lit { value: Value::Str(ir.intern("k")) });
-        let v_lit = a.add(TermNode::Lit { value: Value::Int(42) });
-        let mkdict = a.add(TermNode::MkDict { items: vec![k_lit, v_lit] });
+        let k_lit = a.add(TermNode::Lit {
+            value: Value::Str(ir.intern("k")),
+        });
+        let v_lit = a.add(TermNode::Lit {
+            value: Value::Int(42),
+        });
+        let mkdict = a.add(TermNode::MkDict {
+            items: vec![k_lit, v_lit],
+        });
         let key_sym = ir.intern("k");
-        let attr_read = a.add(TermNode::Attr { node: mkdict, key: key_sym });
+        let attr_read = a.add(TermNode::Attr {
+            node: mkdict,
+            key: key_sym,
+        });
         let mut env: Env = SmallVec::new();
         let mut ctx = fresh_ctx(&g, &ir);
         assert_eq!(evaluate(&a, attr_read, &mut env, &mut ctx), Value::None);
@@ -11390,7 +14875,9 @@ mod tests {
         {
             use std::io::Write;
             let mut f = std::fs::OpenOptions::new()
-                .create(true).write(true).truncate(true)
+                .create(true)
+                .write(true)
+                .truncate(true)
                 .open(&path)
                 .expect("create /dev/shm test file (skip this test if /dev/shm is unavailable)");
             let mut buf = vec![0u8; total_len];
@@ -11404,15 +14891,17 @@ mod tests {
             f.write_all(&buf).unwrap();
         }
 
-        let handle = crate::framebuffer::FbHandle::open(&name)
-            .expect("open the /dev/shm file just created");
+        let handle =
+            crate::framebuffer::FbHandle::open(&name).expect("open the /dev/shm file just created");
         let mut fbs: FxMap<u32, crate::framebuffer::FbHandle> = FxMap::default();
         fbs.insert(7, handle);
 
         let mut a = TermArena::new();
         let g = TypedGraph::new();
         let ir = Interner::new();
-        let fb_lit = a.add(TermNode::Lit { value: Value::Int(7) });
+        let fb_lit = a.add(TermNode::Lit {
+            value: Value::Int(7),
+        });
         let term = a.add(TermNode::FbFrameSeq { fb: fb_lit });
         let mut env: Env = SmallVec::new();
 
@@ -11428,9 +14917,14 @@ mod tests {
         assert_eq!(evaluate(&a, term, &mut env, &mut ctx_wired), Value::Int(99));
 
         // Unknown fb_id -> None even when threaded.
-        let missing_lit = a.add(TermNode::Lit { value: Value::Int(404) });
+        let missing_lit = a.add(TermNode::Lit {
+            value: Value::Int(404),
+        });
         let missing_term = a.add(TermNode::FbFrameSeq { fb: missing_lit });
-        assert_eq!(evaluate(&a, missing_term, &mut env, &mut ctx_wired), Value::None);
+        assert_eq!(
+            evaluate(&a, missing_term, &mut env, &mut ctx_wired),
+            Value::None
+        );
 
         drop(ctx_wired);
         drop(fbs);
@@ -11465,18 +14959,34 @@ mod tests {
         let a1 = g.insert_node(alive, FxHashMap::default());
         let a2 = g.insert_node(alive, FxHashMap::default());
         let d1 = g.insert_node(cell, FxHashMap::default());
-        g.insert_edge(me_node, adj, a1, FxHashMap::default()).unwrap();
-        g.insert_edge(me_node, adj, a2, FxHashMap::default()).unwrap();
-        g.insert_edge(me_node, adj, d1, FxHashMap::default()).unwrap();
+        g.insert_edge(me_node, adj, a1, FxHashMap::default())
+            .unwrap();
+        g.insert_edge(me_node, adj, a2, FxHashMap::default())
+            .unwrap();
+        g.insert_edge(me_node, adj, d1, FxHashMap::default())
+            .unwrap();
 
         // Count(Filter(Neighbours(Var(me), 'adjacent_to'), n, Eq(TypeOf(Var n), Lit 'AliveCell')))
         let me = a.add(TermNode::Var { name: me_var });
-        let nbrs = a.add(TermNode::Neighbours { node: me, edge_type: adj, any_type: false });
+        let nbrs = a.add(TermNode::Neighbours {
+            node: me,
+            edge_type: adj,
+            any_type: false,
+        });
         let n_var_t = a.add(TermNode::Var { name: n_var });
         let type_n = a.add(TermNode::TypeOf { node: n_var_t });
-        let lit_alive = a.add(TermNode::Lit { value: Value::Str(alive) });
-        let eq = a.add(TermNode::Eq { a: type_n, b: lit_alive });
-        let filt = a.add(TermNode::Filter { source: nbrs, var_name: n_var, predicate: eq });
+        let lit_alive = a.add(TermNode::Lit {
+            value: Value::Str(alive),
+        });
+        let eq = a.add(TermNode::Eq {
+            a: type_n,
+            b: lit_alive,
+        });
+        let filt = a.add(TermNode::Filter {
+            source: nbrs,
+            var_name: n_var,
+            predicate: eq,
+        });
         let count = a.add(TermNode::Count { source: filt });
 
         let mut env: Env = smallvec![(me_var, Value::Node(me_node))];
@@ -11491,14 +15001,30 @@ mod tests {
         let g = TypedGraph::new();
 
         // If 3 < 5 then 1+2 else 99
-        let l3 = a.add(TermNode::Lit { value: Value::Int(3) });
-        let l5 = a.add(TermNode::Lit { value: Value::Int(5) });
+        let l3 = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let l5 = a.add(TermNode::Lit {
+            value: Value::Int(5),
+        });
         let lt = a.add(TermNode::Lt { a: l3, b: l5 });
-        let l1 = a.add(TermNode::Lit { value: Value::Int(1) });
-        let l2 = a.add(TermNode::Lit { value: Value::Int(2) });
-        let plus = a.add(TermNode::Plus { items: vec![l1, l2] });
-        let l99 = a.add(TermNode::Lit { value: Value::Int(99) });
-        let ite = a.add(TermNode::IfThenElse { cond: lt, then: plus, other: l99 });
+        let l1 = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let l2 = a.add(TermNode::Lit {
+            value: Value::Int(2),
+        });
+        let plus = a.add(TermNode::Plus {
+            items: vec![l1, l2],
+        });
+        let l99 = a.add(TermNode::Lit {
+            value: Value::Int(99),
+        });
+        let ite = a.add(TermNode::IfThenElse {
+            cond: lt,
+            then: plus,
+            other: l99,
+        });
         let mut env: Env = SmallVec::new();
         let mut ctx = EvalCtx::new(&g, &ir);
         assert_eq!(evaluate(&a, ite, &mut env, &mut ctx), Value::Int(3));
@@ -11514,10 +15040,15 @@ mod tests {
         let me = ir.intern("me");
         let me_node = g.insert_node(t, FxHashMap::default());
         let p = g.insert_node(t, FxHashMap::default());
-        g.insert_edge(me_node, adj, p, FxHashMap::default()).unwrap();
+        g.insert_edge(me_node, adj, p, FxHashMap::default())
+            .unwrap();
 
         let me_t = a.add(TermNode::Var { name: me });
-        let nb = a.add(TermNode::Neighbours { node: me_t, edge_type: adj, any_type: false });
+        let nb = a.add(TermNode::Neighbours {
+            node: me_t,
+            edge_type: adj,
+            any_type: false,
+        });
 
         let mut env: Env = smallvec![(me, Value::Node(me_node))];
         let mut cache = EvalCache::default();
@@ -11546,16 +15077,24 @@ mod tests {
         let ctx_b = g.insert_node(context_t, FxHashMap::default());
         let cand_a = g.insert_node(candidate_t, FxHashMap::default());
         let cand_b = g.insert_node(candidate_t, FxHashMap::default());
-        g.insert_edge(ctx_a, has_candidate, cand_a, FxHashMap::default()).unwrap();
-        g.insert_edge(ctx_b, has_candidate, cand_b, FxHashMap::default()).unwrap();
+        g.insert_edge(ctx_a, has_candidate, cand_a, FxHashMap::default())
+            .unwrap();
+        g.insert_edge(ctx_b, has_candidate, cand_b, FxHashMap::default())
+            .unwrap();
 
         let ctx = a.add(TermNode::Var { name: ctx_var });
         let neighbours = a.add(TermNode::Neighbours {
-            node: ctx, edge_type: has_candidate, any_type: false,
+            node: ctx,
+            edge_type: has_candidate,
+            any_type: false,
         });
-        let yes = a.add(TermNode::Lit { value: Value::Bool(true) });
+        let yes = a.add(TermNode::Lit {
+            value: Value::Bool(true),
+        });
         let filter = a.add(TermNode::Filter {
-            source: neighbours, var_name: option_var, predicate: yes,
+            source: neighbours,
+            var_name: option_var,
+            predicate: yes,
         });
 
         let mut cache = EvalCache::default();
@@ -11582,14 +15121,26 @@ mod tests {
         let is_positive = ir.intern("is_positive");
 
         let x_var = a.add(TermNode::Var { name: x });
-        let zero = a.add(TermNode::Lit { value: Value::Int(0) });
+        let zero = a.add(TermNode::Lit {
+            value: Value::Int(0),
+        });
         let eq = a.add(TermNode::Eq { a: x_var, b: zero });
         let _ = is_zero; // is_zero definition is just `eq` Term
 
         // is_positive: if Holds(is_zero, x) then 0 else 1
-        let holds = a.add(TermNode::Holds { concept: is_zero, node: Some(x_var), node2: None });
-        let one = a.add(TermNode::Lit { value: Value::Int(1) });
-        let ite = a.add(TermNode::IfThenElse { cond: holds, then: zero, other: one });
+        let holds = a.add(TermNode::Holds {
+            concept: is_zero,
+            node: Some(x_var),
+            node2: None,
+        });
+        let one = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let ite = a.add(TermNode::IfThenElse {
+            cond: holds,
+            then: zero,
+            other: one,
+        });
         let _ = is_positive;
 
         let mut concepts: ConceptResolver = FxHashMap::default();
@@ -11599,7 +15150,11 @@ mod tests {
         let mut env: Env = smallvec![(x, Value::Int(5))];
         let mut ctx = EvalCtx::new(&g, &ir).with_concepts(&concepts);
         // Holds(is_positive, x=5) -> if Holds(is_zero, 5) then 0 else 1 -> if false then 0 else 1 -> 1
-        let outer = a.add(TermNode::Holds { concept: is_positive, node: Some(x_var), node2: None });
+        let outer = a.add(TermNode::Holds {
+            concept: is_positive,
+            node: Some(x_var),
+            node2: None,
+        });
         assert_eq!(evaluate(&a, outer, &mut env, &mut ctx), Value::Int(1));
     }
 
@@ -11620,8 +15175,13 @@ mod tests {
         let x = ir.intern("x");
         let x_var = a.add(TermNode::Var { name: x });
         let type_x = a.add(TermNode::TypeOf { node: x_var });
-        let lit_marked = a.add(TermNode::Lit { value: Value::Str(marked_t) });
-        let body = a.add(TermNode::Eq { a: type_x, b: lit_marked });
+        let lit_marked = a.add(TermNode::Lit {
+            value: Value::Str(marked_t),
+        });
+        let body = a.add(TermNode::Eq {
+            a: type_x,
+            b: lit_marked,
+        });
 
         let mut concepts: ConceptResolver = FxHashMap::default();
         concepts.insert(marks, body);
@@ -11632,19 +15192,36 @@ mod tests {
             .with_concepts(&concepts)
             .with_cache(&mut cache);
 
-        let n_marked_lit = a.add(TermNode::Lit { value: Value::Node(n_marked) });
-        let n_unmarked_lit = a.add(TermNode::Lit { value: Value::Node(n_unmarked) });
+        let n_marked_lit = a.add(TermNode::Lit {
+            value: Value::Node(n_marked),
+        });
+        let n_unmarked_lit = a.add(TermNode::Lit {
+            value: Value::Node(n_unmarked),
+        });
         let holds_marked = a.add(TermNode::Holds {
-            concept: marks, node: Some(n_marked_lit), node2: None,
+            concept: marks,
+            node: Some(n_marked_lit),
+            node2: None,
         });
         let holds_unmarked = a.add(TermNode::Holds {
-            concept: marks, node: Some(n_unmarked_lit), node2: None,
+            concept: marks,
+            node: Some(n_unmarked_lit),
+            node2: None,
         });
 
         // First call evaluates fully; second call hits the cache.
-        assert_eq!(evaluate(&a, holds_marked, &mut env, &mut ctx), Value::Bool(true));
-        assert_eq!(evaluate(&a, holds_marked, &mut env, &mut ctx), Value::Bool(true));
-        assert_eq!(evaluate(&a, holds_unmarked, &mut env, &mut ctx), Value::Bool(false));
+        assert_eq!(
+            evaluate(&a, holds_marked, &mut env, &mut ctx),
+            Value::Bool(true)
+        );
+        assert_eq!(
+            evaluate(&a, holds_marked, &mut env, &mut ctx),
+            Value::Bool(true)
+        );
+        assert_eq!(
+            evaluate(&a, holds_unmarked, &mut env, &mut ctx),
+            Value::Bool(false)
+        );
         // Cache should now hold both entries.
         assert_eq!(ctx.cache.as_ref().unwrap().holds.len(), 2);
     }
@@ -11656,12 +15233,24 @@ mod tests {
         let g = TypedGraph::new();
         let n = ir.intern("n");
         // Sum(SetT(1, 2, 3), n, Var(n))  → 6
-        let one = a.add(TermNode::Lit { value: Value::Int(1) });
-        let two = a.add(TermNode::Lit { value: Value::Int(2) });
-        let three = a.add(TermNode::Lit { value: Value::Int(3) });
-        let set = a.add(TermNode::SetT { items: vec![one, two, three] });
+        let one = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let two = a.add(TermNode::Lit {
+            value: Value::Int(2),
+        });
+        let three = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let set = a.add(TermNode::SetT {
+            items: vec![one, two, three],
+        });
         let n_t = a.add(TermNode::Var { name: n });
-        let sum = a.add(TermNode::Sum { source: set, var_name: n, value: n_t });
+        let sum = a.add(TermNode::Sum {
+            source: set,
+            var_name: n,
+            value: n_t,
+        });
         let mut env: Env = SmallVec::new();
         let mut ctx = EvalCtx::new(&g, &ir);
         assert_eq!(evaluate(&a, sum, &mut env, &mut ctx), Value::Int(6));
@@ -11672,9 +15261,15 @@ mod tests {
         let mut a = TermArena::new();
         let ir = Interner::new();
         let g = TypedGraph::new();
-        let three = a.add(TermNode::Lit { value: Value::Int(3) });
-        let four = a.add(TermNode::Lit { value: Value::Int(4) });
-        let vec = a.add(TermNode::Vec_ { items: vec![three, four] });
+        let three = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let four = a.add(TermNode::Lit {
+            value: Value::Int(4),
+        });
+        let vec = a.add(TermNode::Vec_ {
+            items: vec![three, four],
+        });
         let mag = a.add(TermNode::Magnitude { arg: vec });
         let mut env: Env = SmallVec::new();
         let mut ctx = EvalCtx::new(&g, &ir);
@@ -11686,25 +15281,48 @@ mod tests {
         let mut a = TermArena::new();
         let mut i = Interner::new();
         let g = TypedGraph::new();
-        let one = a.add(TermNode::Lit { value: Value::Int(1) });
-        let two = a.add(TermNode::Lit { value: Value::Int(2) });
-        let three = a.add(TermNode::Lit { value: Value::Int(3) });
-        let four = a.add(TermNode::Lit { value: Value::Int(4) });
-        let s1 = a.add(TermNode::SetT { items: vec![one, two, three] });
-        let s2 = a.add(TermNode::SetT { items: vec![two, three, four] });
+        let one = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let two = a.add(TermNode::Lit {
+            value: Value::Int(2),
+        });
+        let three = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let four = a.add(TermNode::Lit {
+            value: Value::Int(4),
+        });
+        let s1 = a.add(TermNode::SetT {
+            items: vec![one, two, three],
+        });
+        let s2 = a.add(TermNode::SetT {
+            items: vec![two, three, four],
+        });
         let union = a.add(TermNode::Union { a: s1, b: s2 });
         let inter = a.add(TermNode::Intersect { a: s1, b: s2 });
         let diff = a.add(TermNode::Difference { a: s1, b: s2 });
         // Pre-intern "n" before building ctx so the borrow stays immutable.
         let n_var = i.intern("n");
         let n_t = a.add(TermNode::Var { name: n_var });
-        let sq = a.add(TermNode::Times { items: vec![n_t, n_t] });
-        let mapset = a.add(TermNode::MapSet { source: s1, var_name: n_var, value: sq });
+        let sq = a.add(TermNode::Times {
+            items: vec![n_t, n_t],
+        });
+        let mapset = a.add(TermNode::MapSet {
+            source: s1,
+            var_name: n_var,
+            value: sq,
+        });
         let mut env: Env = SmallVec::new();
         let mut ctx = EvalCtx::new(&g, &i);
         assert_eq!(
             evaluate(&a, union, &mut env, &mut ctx),
-            Value::make_frozenset(vec![Value::Int(1), Value::Int(2), Value::Int(3), Value::Int(4)])
+            Value::make_frozenset(vec![
+                Value::Int(1),
+                Value::Int(2),
+                Value::Int(3),
+                Value::Int(4)
+            ])
         );
         assert_eq!(
             evaluate(&a, inter, &mut env, &mut ctx),
@@ -11750,7 +15368,10 @@ mod tests {
         });
         let e_var = interner.intern("e");
         let e_t = arena.add(TermNode::Var { name: e_var });
-        let ea = arena.add(TermNode::EdgeAttr { edge: e_t, key: weight });
+        let ea = arena.add(TermNode::EdgeAttr {
+            edge: e_t,
+            key: weight,
+        });
         let sum = arena.add(TermNode::Sum {
             source: edges,
             var_name: e_var,
@@ -11777,7 +15398,11 @@ mod tests {
         let n_t = a.add(TermNode::Var { name: n });
         // Filter(Var(x), n, Eq(Var(n), Var(x)))  — free vars: {x}
         let eq = a.add(TermNode::Eq { a: n_t, b: x_t });
-        let filt = a.add(TermNode::Filter { source: x_t, var_name: n, predicate: eq });
+        let filt = a.add(TermNode::Filter {
+            source: x_t,
+            var_name: n,
+            predicate: eq,
+        });
         let fv = free_vars(&a, filt, None);
         assert_eq!(fv.as_slice(), &[x]);
     }
@@ -11792,16 +15417,32 @@ mod tests {
         let g = TypedGraph::new();
         let e = ir.intern("e");
         let acc = ir.intern("acc");
-        let one = a.add(TermNode::Lit { value: Value::Int(1) });
-        let two = a.add(TermNode::Lit { value: Value::Int(2) });
-        let three = a.add(TermNode::Lit { value: Value::Int(3) });
-        let set = a.add(TermNode::SetT { items: vec![one, two, three] });
+        let one = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let two = a.add(TermNode::Lit {
+            value: Value::Int(2),
+        });
+        let three = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let set = a.add(TermNode::SetT {
+            items: vec![one, two, three],
+        });
         let acc_t = a.add(TermNode::Var { name: acc });
         let e_t = a.add(TermNode::Var { name: e });
-        let init = a.add(TermNode::Lit { value: Value::Int(0) });
-        let body = a.add(TermNode::Plus { items: vec![acc_t, e_t] });
+        let init = a.add(TermNode::Lit {
+            value: Value::Int(0),
+        });
+        let body = a.add(TermNode::Plus {
+            items: vec![acc_t, e_t],
+        });
         let fold = a.add(TermNode::Fold {
-            source: set, var_name: e, acc_name: acc, init, body,
+            source: set,
+            var_name: e,
+            acc_name: acc,
+            init,
+            body,
         });
         let mut env: Env = SmallVec::new();
         let mut ctx = EvalCtx::new(&g, &ir);
@@ -11817,9 +15458,15 @@ mod tests {
         let acc = ir.intern("acc");
         let empty = a.add(TermNode::SetT { items: vec![] });
         let acc_t = a.add(TermNode::Var { name: acc });
-        let init = a.add(TermNode::Lit { value: Value::Int(42) });
+        let init = a.add(TermNode::Lit {
+            value: Value::Int(42),
+        });
         let fold = a.add(TermNode::Fold {
-            source: empty, var_name: e, acc_name: acc, init, body: acc_t,
+            source: empty,
+            var_name: e,
+            acc_name: acc,
+            init,
+            body: acc_t,
         });
         let mut env: Env = SmallVec::new();
         let mut ctx = EvalCtx::new(&g, &ir);
@@ -11845,8 +15492,12 @@ mod tests {
         let mut derivs: DerivationRegistry = FxHashMap::default();
         derivs.insert(gt_sym, Derivation::ValueTaker(lt_ba));
 
-        let l5 = a.add(TermNode::Lit { value: Value::Int(5) });
-        let l3 = a.add(TermNode::Lit { value: Value::Int(3) });
+        let l5 = a.add(TermNode::Lit {
+            value: Value::Int(5),
+        });
+        let l3 = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
         let gt = a.add(TermNode::Gt { a: l5, b: l3 });
 
         let mut env: Env = SmallVec::new();
@@ -11875,15 +15526,21 @@ mod tests {
         let b_var = a.add(TermNode::Var { name: b_sym });
         let lt_ab = a.add(TermNode::Lt { a: a_var, b: b_var });
         let eq_ab = a.add(TermNode::Eq { a: a_var, b: b_var });
-        let or = a.add(TermNode::Or { items: vec![lt_ab, eq_ab] });
+        let or = a.add(TermNode::Or {
+            items: vec![lt_ab, eq_ab],
+        });
 
         let mut derivs: DerivationRegistry = FxHashMap::default();
         derivs.insert(lte_sym, Derivation::ValueTaker(or));
 
         // Three cases: a<b, a==b, a>b.
         for (av, bv, expected) in [(3, 5, true), (5, 5, true), (7, 5, false)] {
-            let la = a.add(TermNode::Lit { value: Value::Int(av) });
-            let lb = a.add(TermNode::Lit { value: Value::Int(bv) });
+            let la = a.add(TermNode::Lit {
+                value: Value::Int(av),
+            });
+            let lb = a.add(TermNode::Lit {
+                value: Value::Int(bv),
+            });
             let lte = a.add(TermNode::Lte { a: la, b: lb });
             let mut env: Env = SmallVec::new();
             let mut ctx = EvalCtx::new(&g, &ir).with_derivations(&derivs);
@@ -11907,16 +15564,26 @@ mod tests {
         let arg_sym = ir.intern("arg");
 
         let arg_var = a.add(TermNode::Var { name: arg_sym });
-        let nth_y = a.add(TermNode::Nth { items: Some(arg_var), index: 1 });
-        let nth_x = a.add(TermNode::Nth { items: Some(arg_var), index: 0 });
+        let nth_y = a.add(TermNode::Nth {
+            items: Some(arg_var),
+            index: 1,
+        });
+        let nth_x = a.add(TermNode::Nth {
+            items: Some(arg_var),
+            index: 0,
+        });
         let atan = a.add(TermNode::Atan2 { y: nth_y, x: nth_x });
 
         let mut derivs: DerivationRegistry = FxHashMap::default();
         derivs.insert(bearing_sym, Derivation::ValueTaker(atan));
 
         // Bearing((3.0, 4.0))  — should match atan2(4.0, 3.0).
-        let x = a.add(TermNode::Lit { value: Value::Float(3.0) });
-        let y = a.add(TermNode::Lit { value: Value::Float(4.0) });
+        let x = a.add(TermNode::Lit {
+            value: Value::Float(3.0),
+        });
+        let y = a.add(TermNode::Lit {
+            value: Value::Float(4.0),
+        });
         let vec = a.add(TermNode::Vec_ { items: vec![x, y] });
         let bearing = a.add(TermNode::Bearing { arg: vec });
 
@@ -11942,8 +15609,12 @@ mod tests {
         let mut a = TermArena::new();
         let ir = Interner::new();
         let g = TypedGraph::new();
-        let l5 = a.add(TermNode::Lit { value: Value::Int(5) });
-        let l3 = a.add(TermNode::Lit { value: Value::Int(3) });
+        let l5 = a.add(TermNode::Lit {
+            value: Value::Int(5),
+        });
+        let l3 = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
         let gt = a.add(TermNode::Gt { a: l5, b: l3 });
 
         let derivs: DerivationRegistry = FxHashMap::default();
@@ -11965,25 +15636,47 @@ mod tests {
         let e_sym = ir.intern("_e");
 
         let member_var = a.add(TermNode::Var { name: member_sym });
-        let container_var = a.add(TermNode::Var { name: container_sym });
+        let container_var = a.add(TermNode::Var {
+            name: container_sym,
+        });
         let e_var = a.add(TermNode::Var { name: e_sym });
-        let eq = a.add(TermNode::Eq { a: e_var, b: member_var });
+        let eq = a.add(TermNode::Eq {
+            a: e_var,
+            b: member_var,
+        });
         let exists = a.add(TermNode::Exists {
-            source: container_var, var_name: e_sym, predicate: eq,
+            source: container_var,
+            var_name: e_sym,
+            predicate: eq,
         });
 
         let mut derivs: DerivationRegistry = FxHashMap::default();
         derivs.insert(in_sym, Derivation::ValueTaker(exists));
 
-        let l2 = a.add(TermNode::Lit { value: Value::Int(2) });
-        let l9 = a.add(TermNode::Lit { value: Value::Int(9) });
-        let one = a.add(TermNode::Lit { value: Value::Int(1) });
-        let two = a.add(TermNode::Lit { value: Value::Int(2) });
-        let three = a.add(TermNode::Lit { value: Value::Int(3) });
-        let set = a.add(TermNode::SetT { items: vec![one, two, three] });
+        let l2 = a.add(TermNode::Lit {
+            value: Value::Int(2),
+        });
+        let l9 = a.add(TermNode::Lit {
+            value: Value::Int(9),
+        });
+        let one = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let two = a.add(TermNode::Lit {
+            value: Value::Int(2),
+        });
+        let three = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let set = a.add(TermNode::SetT {
+            items: vec![one, two, three],
+        });
 
         for (m, expected) in [(l2, true), (l9, false)] {
-            let in_t = a.add(TermNode::In { member: m, container: set });
+            let in_t = a.add(TermNode::In {
+                member: m,
+                container: set,
+            });
             let mut env: Env = SmallVec::new();
             let mut ctx = EvalCtx::new(&g, &ir).with_derivations(&derivs);
             let via_def = evaluate(&a, in_t, &mut env, &mut ctx);
@@ -12004,15 +15697,24 @@ mod tests {
         let arg_sym = ir.intern("arg");
 
         let arg_var = a.add(TermNode::Var { name: arg_sym });
-        let dot = a.add(TermNode::Dot { a: arg_var, b: arg_var });
+        let dot = a.add(TermNode::Dot {
+            a: arg_var,
+            b: arg_var,
+        });
         let sqrt = a.add(TermNode::Sqrt { arg: dot });
 
         let mut derivs: DerivationRegistry = FxHashMap::default();
         derivs.insert(mag_sym, Derivation::ValueTaker(sqrt));
 
-        let three = a.add(TermNode::Lit { value: Value::Int(3) });
-        let four = a.add(TermNode::Lit { value: Value::Int(4) });
-        let vec = a.add(TermNode::Vec_ { items: vec![three, four] });
+        let three = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let four = a.add(TermNode::Lit {
+            value: Value::Int(4),
+        });
+        let vec = a.add(TermNode::Vec_ {
+            items: vec![three, four],
+        });
         let mag = a.add(TermNode::Magnitude { arg: vec });
 
         let mut env: Env = SmallVec::new();
@@ -12044,12 +15746,28 @@ mod tests {
 
         let a_var = a.add(TermNode::Var { name: a_sym });
         let b_var = a.add(TermNode::Var { name: b_sym });
-        let a0 = a.add(TermNode::Nth { items: Some(a_var), index: 0 });
-        let a1 = a.add(TermNode::Nth { items: Some(a_var), index: 1 });
-        let b0 = a.add(TermNode::Nth { items: Some(b_var), index: 0 });
-        let b1 = a.add(TermNode::Nth { items: Some(b_var), index: 1 });
-        let a0b1 = a.add(TermNode::Times { items: vec![a0, b1] });
-        let a1b0 = a.add(TermNode::Times { items: vec![a1, b0] });
+        let a0 = a.add(TermNode::Nth {
+            items: Some(a_var),
+            index: 0,
+        });
+        let a1 = a.add(TermNode::Nth {
+            items: Some(a_var),
+            index: 1,
+        });
+        let b0 = a.add(TermNode::Nth {
+            items: Some(b_var),
+            index: 0,
+        });
+        let b1 = a.add(TermNode::Nth {
+            items: Some(b_var),
+            index: 1,
+        });
+        let a0b1 = a.add(TermNode::Times {
+            items: vec![a0, b1],
+        });
+        let a1b0 = a.add(TermNode::Times {
+            items: vec![a1, b0],
+        });
         let cross = a.add(TermNode::Minus { a: a0b1, b: a1b0 });
         let dot = a.add(TermNode::Dot { a: a_var, b: b_var });
         let atan = a.add(TermNode::Atan2 { y: cross, x: dot });
@@ -12058,10 +15776,18 @@ mod tests {
         derivs.insert(ab_sym, Derivation::ValueTaker(atan));
 
         // a = (1, 0), b = (0, 1) → angle = π/2.
-        let one = a.add(TermNode::Lit { value: Value::Float(1.0) });
-        let zero = a.add(TermNode::Lit { value: Value::Float(0.0) });
-        let va = a.add(TermNode::Vec_ { items: vec![one, zero] });
-        let vb = a.add(TermNode::Vec_ { items: vec![zero, one] });
+        let one = a.add(TermNode::Lit {
+            value: Value::Float(1.0),
+        });
+        let zero = a.add(TermNode::Lit {
+            value: Value::Float(0.0),
+        });
+        let va = a.add(TermNode::Vec_ {
+            items: vec![one, zero],
+        });
+        let vb = a.add(TermNode::Vec_ {
+            items: vec![zero, one],
+        });
         let ab = a.add(TermNode::AngleBetween { a: va, b: vb });
 
         let mut env: Env = SmallVec::new();
@@ -12093,20 +15819,37 @@ mod tests {
         let a_var = a.add(TermNode::Var { name: a_sym });
         let b_var = a.add(TermNode::Var { name: b_sym });
         let e_var = a.add(TermNode::Var { name: e_sym });
-        let in_e = a.add(TermNode::In { member: e_var, container: b_var });
+        let in_e = a.add(TermNode::In {
+            member: e_var,
+            container: b_var,
+        });
         let filt = a.add(TermNode::Filter {
-            source: a_var, var_name: e_sym, predicate: in_e,
+            source: a_var,
+            var_name: e_sym,
+            predicate: in_e,
         });
 
         let mut derivs: DerivationRegistry = FxHashMap::default();
         derivs.insert(intersect_sym, Derivation::ValueTaker(filt));
 
-        let one = a.add(TermNode::Lit { value: Value::Int(1) });
-        let two = a.add(TermNode::Lit { value: Value::Int(2) });
-        let three = a.add(TermNode::Lit { value: Value::Int(3) });
-        let four = a.add(TermNode::Lit { value: Value::Int(4) });
-        let set_a = a.add(TermNode::SetT { items: vec![one, two, three] });
-        let set_b = a.add(TermNode::SetT { items: vec![two, three, four] });
+        let one = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let two = a.add(TermNode::Lit {
+            value: Value::Int(2),
+        });
+        let three = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let four = a.add(TermNode::Lit {
+            value: Value::Int(4),
+        });
+        let set_a = a.add(TermNode::SetT {
+            items: vec![one, two, three],
+        });
+        let set_b = a.add(TermNode::SetT {
+            items: vec![two, three, four],
+        });
         let inter = a.add(TermNode::Intersect { a: set_a, b: set_b });
 
         let mut env: Env = SmallVec::new();
@@ -12117,10 +15860,13 @@ mod tests {
 
         assert_eq!(via_def, via_native);
         // Both should be {2, 3}.
-        let items: Vec<i64> = via_def.iter().filter_map(|v| match v {
-            Value::Int(n) => Some(*n),
-            _ => None,
-        }).collect();
+        let items: Vec<i64> = via_def
+            .iter()
+            .filter_map(|v| match v {
+                Value::Int(n) => Some(*n),
+                _ => None,
+            })
+            .collect();
         let mut sorted = items.clone();
         sorted.sort();
         assert_eq!(sorted, vec![2, 3]);
@@ -12140,21 +15886,38 @@ mod tests {
         let a_var = a.add(TermNode::Var { name: a_sym });
         let b_var = a.add(TermNode::Var { name: b_sym });
         let e_var = a.add(TermNode::Var { name: e_sym });
-        let in_e = a.add(TermNode::In { member: e_var, container: b_var });
+        let in_e = a.add(TermNode::In {
+            member: e_var,
+            container: b_var,
+        });
         let not_in = a.add(TermNode::Not { arg: in_e });
         let filt = a.add(TermNode::Filter {
-            source: a_var, var_name: e_sym, predicate: not_in,
+            source: a_var,
+            var_name: e_sym,
+            predicate: not_in,
         });
 
         let mut derivs: DerivationRegistry = FxHashMap::default();
         derivs.insert(diff_sym, Derivation::ValueTaker(filt));
 
-        let one = a.add(TermNode::Lit { value: Value::Int(1) });
-        let two = a.add(TermNode::Lit { value: Value::Int(2) });
-        let three = a.add(TermNode::Lit { value: Value::Int(3) });
-        let four = a.add(TermNode::Lit { value: Value::Int(4) });
-        let set_a = a.add(TermNode::SetT { items: vec![one, two, three] });
-        let set_b = a.add(TermNode::SetT { items: vec![two, three, four] });
+        let one = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let two = a.add(TermNode::Lit {
+            value: Value::Int(2),
+        });
+        let three = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let four = a.add(TermNode::Lit {
+            value: Value::Int(4),
+        });
+        let set_a = a.add(TermNode::SetT {
+            items: vec![one, two, three],
+        });
+        let set_b = a.add(TermNode::SetT {
+            items: vec![two, three, four],
+        });
         let diff = a.add(TermNode::Difference { a: set_a, b: set_b });
 
         let mut env: Env = SmallVec::new();
@@ -12164,10 +15927,13 @@ mod tests {
         let via_native = evaluate(&a, diff, &mut env, &mut ctx_native);
 
         assert_eq!(via_def, via_native);
-        let items: Vec<i64> = via_def.iter().filter_map(|v| match v {
-            Value::Int(n) => Some(*n),
-            _ => None,
-        }).collect();
+        let items: Vec<i64> = via_def
+            .iter()
+            .filter_map(|v| match v {
+                Value::Int(n) => Some(*n),
+                _ => None,
+            })
+            .collect();
         assert_eq!(items, vec![1]);
     }
 
@@ -12183,11 +15949,21 @@ mod tests {
         ir.intern("_e");
         ir.intern("_acc");
 
-        let one = a.add(TermNode::Lit { value: Value::Int(1) });
-        let two = a.add(TermNode::Lit { value: Value::Int(2) });
-        let three = a.add(TermNode::Lit { value: Value::Int(3) });
-        let four = a.add(TermNode::Lit { value: Value::Int(4) });
-        let set = a.add(TermNode::SetT { items: vec![one, two, three, four] });
+        let one = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let two = a.add(TermNode::Lit {
+            value: Value::Int(2),
+        });
+        let three = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let four = a.add(TermNode::Lit {
+            value: Value::Int(4),
+        });
+        let set = a.add(TermNode::SetT {
+            items: vec![one, two, three, four],
+        });
         let cnt = a.add(TermNode::Count { source: set });
 
         let mut derivs: DerivationRegistry = FxHashMap::default();
@@ -12216,13 +15992,27 @@ mod tests {
         let n_sym = ir.intern("n");
         ir.intern("_acc");
 
-        let one = a.add(TermNode::Lit { value: Value::Int(1) });
-        let two = a.add(TermNode::Lit { value: Value::Int(2) });
-        let three = a.add(TermNode::Lit { value: Value::Int(3) });
-        let set = a.add(TermNode::SetT { items: vec![one, two, three] });
+        let one = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let two = a.add(TermNode::Lit {
+            value: Value::Int(2),
+        });
+        let three = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let set = a.add(TermNode::SetT {
+            items: vec![one, two, three],
+        });
         let n_var = a.add(TermNode::Var { name: n_sym });
-        let n_sq = a.add(TermNode::Times { items: vec![n_var, n_var] });
-        let sum = a.add(TermNode::Sum { source: set, var_name: n_sym, value: n_sq });
+        let n_sq = a.add(TermNode::Times {
+            items: vec![n_var, n_var],
+        });
+        let sum = a.add(TermNode::Sum {
+            source: set,
+            var_name: n_sym,
+            value: n_sq,
+        });
 
         let mut derivs: DerivationRegistry = FxHashMap::default();
         derivs.insert(sum_sym, Derivation::BodyTaker);
@@ -12261,8 +16051,12 @@ mod tests {
         let mut derivs: DerivationRegistry = FxHashMap::default();
         derivs.insert(gt_sym, Derivation::ValueTaker(wrong));
 
-        let l5 = a.add(TermNode::Lit { value: Value::Int(5) });
-        let l3 = a.add(TermNode::Lit { value: Value::Int(3) });
+        let l5 = a.add(TermNode::Lit {
+            value: Value::Int(5),
+        });
+        let l3 = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
         let gt = a.add(TermNode::Gt { a: l5, b: l3 });
 
         // With derivation installed: dispatches to Lt(5,3) = false.
@@ -12287,7 +16081,13 @@ mod tests {
     // (non-visual domain: N-dim feature-space entities, no pixels).
     // ------------------------------------------------------------------
 
-    fn mk_node(g: &mut TypedGraph, ir: &mut Interner, ty: &str, feat: Vec<f64>, cat: Option<i64>) -> NodeID {
+    fn mk_node(
+        g: &mut TypedGraph,
+        ir: &mut Interner,
+        ty: &str,
+        feat: Vec<f64>,
+        cat: Option<i64>,
+    ) -> NodeID {
         let t = ir.intern(ty);
         let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
         let fk = ir.intern("feat");
@@ -12370,9 +16170,27 @@ mod tests {
         // hardcoded to 2D pixel centroids.
         let mut g = TypedGraph::new();
         let mut ir = Interner::new();
-        let p0 = mk_node(&mut g, &mut ir, "Entity", vec![1.0, 2.0, 3.0, 4.0, 5.0], None);
-        let p1 = mk_node(&mut g, &mut ir, "Entity", vec![-1.0, -2.0, -3.0, -4.0, -5.0], None);
-        let c0 = mk_node(&mut g, &mut ir, "Entity", vec![1.1, 2.1, 3.1, 3.9, 5.1], None);
+        let p0 = mk_node(
+            &mut g,
+            &mut ir,
+            "Entity",
+            vec![1.0, 2.0, 3.0, 4.0, 5.0],
+            None,
+        );
+        let p1 = mk_node(
+            &mut g,
+            &mut ir,
+            "Entity",
+            vec![-1.0, -2.0, -3.0, -4.0, -5.0],
+            None,
+        );
+        let c0 = mk_node(
+            &mut g,
+            &mut ir,
+            "Entity",
+            vec![1.1, 2.1, 3.1, 3.9, 5.1],
+            None,
+        );
         let feat_key = ir.intern("feat");
         let m = track_identity_correspondence(&g, &[p0, p1], &[c0], feat_key, None, None, 1.0);
         assert_eq!(m.matched, vec![(p0, c0)]);
@@ -12392,25 +16210,51 @@ mod tests {
         let ty = ir.intern("Entity");
 
         let mut p0_attrs: FxHashMap<Sym, Value> = FxHashMap::default();
-        p0_attrs.insert(feat_key, Value::Tuple(Arc::new(smallvec![Value::Float(0.0), Value::Float(0.0)])));
-        p0_attrs.insert(extent_key, Value::make_frozenset(vec![Value::Int(1), Value::Int(2), Value::Int(3)]));
+        p0_attrs.insert(
+            feat_key,
+            Value::Tuple(Arc::new(smallvec![Value::Float(0.0), Value::Float(0.0)])),
+        );
+        p0_attrs.insert(
+            extent_key,
+            Value::make_frozenset(vec![Value::Int(1), Value::Int(2), Value::Int(3)]),
+        );
         let p0 = g.insert_node(ty, p0_attrs);
 
         let mut p1_attrs: FxHashMap<Sym, Value> = FxHashMap::default();
         // p1 is numerically CLOSER to c0 than p0 is.
-        p1_attrs.insert(feat_key, Value::Tuple(Arc::new(smallvec![Value::Float(0.2), Value::Float(0.2)])));
-        p1_attrs.insert(extent_key, Value::make_frozenset(vec![Value::Int(9), Value::Int(8)]));
+        p1_attrs.insert(
+            feat_key,
+            Value::Tuple(Arc::new(smallvec![Value::Float(0.2), Value::Float(0.2)])),
+        );
+        p1_attrs.insert(
+            extent_key,
+            Value::make_frozenset(vec![Value::Int(9), Value::Int(8)]),
+        );
         let p1 = g.insert_node(ty, p1_attrs);
 
         let mut c0_attrs: FxHashMap<Sym, Value> = FxHashMap::default();
-        c0_attrs.insert(feat_key, Value::Tuple(Arc::new(smallvec![Value::Float(5.0), Value::Float(5.0)])));
-        c0_attrs.insert(extent_key, Value::make_frozenset(vec![Value::Int(1), Value::Int(2)]));
+        c0_attrs.insert(
+            feat_key,
+            Value::Tuple(Arc::new(smallvec![Value::Float(5.0), Value::Float(5.0)])),
+        );
+        c0_attrs.insert(
+            extent_key,
+            Value::make_frozenset(vec![Value::Int(1), Value::Int(2)]),
+        );
         let c0 = g.insert_node(ty, c0_attrs);
 
         // Huge radius so the distance-fallback alone would also match
         // SOMETHING — the assertion is about WHICH prior wins, not
         // whether a match happens at all.
-        let m = track_identity_correspondence(&g, &[p0, p1], &[c0], feat_key, None, Some(extent_key), 100.0);
+        let m = track_identity_correspondence(
+            &g,
+            &[p0, p1],
+            &[c0],
+            feat_key,
+            None,
+            Some(extent_key),
+            100.0,
+        );
         assert_eq!(m.matched, vec![(p0, c0)]);
     }
 
@@ -12438,20 +16282,37 @@ mod tests {
         let ty = ir.intern("GaitAttractor");
         let name_key = ir.intern("name");
         let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
-        attrs.insert(name_key, Value::Surface(SurfaceKind::Text, Arc::from(&b"walking"[..])));
+        attrs.insert(
+            name_key,
+            Value::Surface(SurfaceKind::Text, Arc::from(&b"walking"[..])),
+        );
         let node = g.insert_node(ty, attrs);
 
         let missing_key = ir.intern("ordinal");
-        let zero = a.add(TermNode::Lit { value: Value::Float(0.0) });
-        let node_lit = a.add(TermNode::Lit { value: Value::Node(node) });
+        let zero = a.add(TermNode::Lit {
+            value: Value::Float(0.0),
+        });
+        let node_lit = a.add(TermNode::Lit {
+            value: Value::Node(node),
+        });
 
         // P0(node, "ordinal") -- the attr is ABSENT.
-        let absent_attr = a.add(TermNode::Attr { node: node_lit, key: missing_key });
-        let p0_absent = a.add(TermNode::Plus { items: vec![absent_attr, zero] });
+        let absent_attr = a.add(TermNode::Attr {
+            node: node_lit,
+            key: missing_key,
+        });
+        let p0_absent = a.add(TermNode::Plus {
+            items: vec![absent_attr, zero],
+        });
 
         // P0(node, "name") -- the attr is PRESENT and is a String.
-        let string_attr = a.add(TermNode::Attr { node: node_lit, key: name_key });
-        let p0_string = a.add(TermNode::Plus { items: vec![string_attr, zero] });
+        let string_attr = a.add(TermNode::Attr {
+            node: node_lit,
+            key: name_key,
+        });
+        let p0_string = a.add(TermNode::Plus {
+            items: vec![string_attr, zero],
+        });
 
         // --- absence: yields 0, counts NOTHING ---
         let mut counters = crate::ext::Counters::new();
@@ -12474,7 +16335,8 @@ mod tests {
             evaluate(&a, p0_string, &mut env, &mut ctx)
         };
         assert_eq!(
-            string_value.as_f64(), 0.0,
+            string_value.as_f64(),
+            0.0,
             "value semantics UNCHANGED: a present string still contributes the \
              identity, so every existing seed is byte-identical",
         );
@@ -12494,29 +16356,54 @@ mod tests {
         let c1 = mk_node(&mut g, &mut ir, "Entity", vec![50.0, 50.0], None);
         let feat_key = ir.intern("feat");
 
-        let prev = a.add(TermNode::Lit { value: Value::make_frozenset(vec![Value::Node(p0)]) });
-        let cur = a.add(TermNode::Lit { value: Value::make_frozenset(vec![Value::Node(c0), Value::Node(c1)]) });
-        let radius = a.add(TermNode::Lit { value: Value::Float(1.0) });
+        let prev = a.add(TermNode::Lit {
+            value: Value::make_frozenset(vec![Value::Node(p0)]),
+        });
+        let cur = a.add(TermNode::Lit {
+            value: Value::make_frozenset(vec![Value::Node(c0), Value::Node(c1)]),
+        });
+        let radius = a.add(TermNode::Lit {
+            value: Value::Float(1.0),
+        });
         let term = a.add(TermNode::TrackIdentityCorrespondence {
-            prev, cur, feature_key: feat_key, category_key: None, extent_key: None, radius,
+            prev,
+            cur,
+            feature_key: feat_key,
+            category_key: None,
+            extent_key: None,
+            radius,
         });
 
         let mut env: Env = SmallVec::new();
         let mut ctx = EvalCtx::new(&g, &ir);
         let out = evaluate(&a, term, &mut env, &mut ctx);
-        let Value::Dict(pairs) = out else { panic!("expected Dict, got {:?}", out) };
+        let Value::Dict(pairs) = out else {
+            panic!("expected Dict, got {:?}", out)
+        };
         let get = |k: &str| -> &Value {
             let key = Value::Surface(SurfaceKind::Text, Arc::from(k.as_bytes()));
-            &pairs.iter().find(|(pk, _)| *pk == key).expect("key present").1
+            &pairs
+                .iter()
+                .find(|(pk, _)| *pk == key)
+                .expect("key present")
+                .1
         };
-        let (Value::Tuple(matched) | Value::List(matched)) = get("matched") else { panic!("expected Tuple") };
+        let (Value::Tuple(matched) | Value::List(matched)) = get("matched") else {
+            panic!("expected Tuple")
+        };
         assert_eq!(matched.len(), 1);
-        let (Value::Tuple(pair) | Value::List(pair)) = &matched[0] else { panic!("expected pair Tuple") };
+        let (Value::Tuple(pair) | Value::List(pair)) = &matched[0] else {
+            panic!("expected pair Tuple")
+        };
         assert_eq!(pair[0], Value::Node(p0));
         assert_eq!(pair[1], Value::Node(c0));
-        let (Value::Tuple(births) | Value::List(births)) = get("births") else { panic!("expected Tuple") };
+        let (Value::Tuple(births) | Value::List(births)) = get("births") else {
+            panic!("expected Tuple")
+        };
         assert_eq!(births.to_vec(), vec![Value::Node(c1)]);
-        let (Value::Tuple(deaths) | Value::List(deaths)) = get("deaths") else { panic!("expected Tuple") };
+        let (Value::Tuple(deaths) | Value::List(deaths)) = get("deaths") else {
+            panic!("expected Tuple")
+        };
         assert!(deaths.is_empty());
 
         // Read-only: evaluating the Term must not have mutated the graph
@@ -12551,7 +16438,6 @@ fn first_morph_boundary(s: &str) -> Option<(usize, usize)> {
     }
     None
 }
-
 
 fn deform_gen(a: &Value, b: &Value) -> f64 {
     let mut q: Vec<f64> = Vec::new();
@@ -12642,7 +16528,6 @@ fn deform_gen(a: &Value, b: &Value) -> f64 {
     }
     (residual.max(0.0) / d as f64).sqrt()
 }
-
 
 fn deform_gen_marginal(a: &Value, b: &Value) -> f64 {
     let mut q: Vec<f64> = Vec::new();

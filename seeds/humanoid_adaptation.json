@@ -25,6 +25,14 @@
     "gait_surprise_confirmation_receipts": 0.0,
     "shared_motor_collapse_enabled": 1.0,
     "native_humanoid_composition_enabled": 1.0,
+    "future_manifold_enabled": 0.0,
+    "future_manifold_temporal_anchors_enabled": 0.0,
+    "future_manifold_local_refinement_enabled": 0.0,
+    "future_manifold_projection_budget": 16.0,
+    "future_manifold_physical_horizon": 0.0,
+    "future_manifold_anchor_growth": 2.0,
+    "future_manifold_max_shape_order": 1.0,
+    "future_manifold_max_refinements": 16.0,
     "support_geometry_preview_authority": 0.0,
     "persistent_task_residual_authority": 0.0,
     "takeoff_motor_compression_authority": 1.0
@@ -1157,6 +1165,15 @@
     "mean_aerial_occupancy": 0.0,
     "mean_double_support_occupancy": 0.0
    }
+  },
+  {
+   "local_id": 42,
+   "type": "SystemTwoTaskSet",
+   "attrs": {
+    "area": "humanoid_motor_plan_hint_routing",
+    "enabled": 1,
+    "provenance_kind": "on_demand_plan_hint_routing"
+   }
   }
  ],
  "edges": [
@@ -1929,6 +1946,16 @@
     "local": 41
    },
    "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_humanoid_motor_plan_hint_routing_task_set",
+   "tgt": {
+    "local": 42
+   },
+   "attrs": {}
   }
  ],
  "productions": [
@@ -1942,6 +1969,18 @@
    "tgt": {
     "type": "HumanoidPolicy",
     "var": "policy"
+   }
+  },
+  {
+   "provenance": "humanoid_adaptation:plan_hint_routing_tasks",
+   "src": {
+    "type": "Agent",
+    "var": "agent"
+   },
+   "edge_type": "has_humanoid_motor_plan_hint_routing_task_set",
+   "tgt": {
+    "type": "SystemTwoTaskSet",
+    "var": "routing_tasks"
    }
   },
   {
@@ -2098,6 +2137,18 @@
    "tgt": {
     "type": "EmbodiedMotorRoutingShape",
     "var": "routing_shape"
+   }
+  },
+  {
+   "provenance": "humanoid_adaptation:unrouted_grounded_motor_program",
+   "src": {
+    "type": "HumanoidEpisode",
+    "var": "episode"
+   },
+   "edge_type": "has_unrouted_grounded_humanoid_motor_program",
+   "tgt": {
+    "type": "HumanoidMotorProgram",
+    "var": "program"
    }
   },
   {
@@ -4452,6 +4503,192 @@
      "program",
      "realizes_embodied_motor_routing_shape",
      "shape"
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_unrouted_grounded_humanoid_motor_program",
+     "program"
+    ]
+   ]
+  },
+  {
+   "name": "ha_request_grounded_program_routing",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "batch": true,
+   "comment": "A newly indexed grounded program recruits only the plan-hint routing sheet. The quadratic shape decoders therefore run at a relevant graph event, never on unrelated motor receipts.",
+   "match": [
+    [
+     "agent",
+     "has_humanoid_motor_plan_hint_routing_task_set",
+     "routing_tasks"
+    ],
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "has_unrouted_grounded_humanoid_motor_program",
+     "program"
+    ],
+    [
+     "program",
+     "realizes_embodied_motor_routing_shape",
+     "routing_shape"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "program"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "grounded"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "program"
+         },
+         "key": "motor_plan_hint_routing_requested"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "episode"
+        },
+        "edge_type": "considers_humanoid_motor_plan_hint",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "escalation",
+     "SystemTwoEscalation",
+     {
+      "status": "requested",
+      "reason": "new_grounded_motor_program_hint_routing",
+      "epoch": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "episode"
+          },
+          "key": "state_seq"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "provenance_kind": "graph_authored_plan_hint_routing"
+     }
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "about_context",
+     "program"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "recruits_task_set",
+     "routing_tasks"
+    ],
+    [
+     "set_attr",
+     "program",
+     "motor_plan_hint_routing_requested",
+     1.0
+    ],
+    [
+     "del_edge",
+     "episode",
+     "has_unrouted_grounded_humanoid_motor_program",
+     "program"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "motor_plan_hint_escalation_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "motor_plan_hint_escalation_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
     ]
    ]
   },
@@ -4721,7 +4958,7 @@
   },
   {
    "name": "ha_bind_motor_plan_hint_stage_search_basin",
-   "area": "embodied_sensorimotor",
+   "area": "humanoid_motor_plan_hint_routing",
    "latency_class": "background",
    "batch": true,
    "comment": "A stage may point System 2 toward a locally grounded program with the same relation shape. This edge is evidence about where to search, never actuator authority.",
@@ -4745,6 +4982,11 @@
      "episode",
      "has_humanoid_motor_program",
      "program"
+    ],
+    [
+     "program",
+     "realizes_embodied_motor_routing_shape",
+     "routing_shape"
     ]
    ],
    "where": {
@@ -5000,7 +5242,7 @@
   },
   {
    "name": "ha_route_abstract_motor_plan_hint_stage_basin",
-   "area": "embodied_sensorimotor",
+   "area": "humanoid_motor_plan_hint_routing",
    "latency_class": "background",
    "batch": false,
    "comment": "Biological and robotics priors share only task-context and task-phase relations with body-local programs. ShapeDecode routes those abstract stages into improving search basins; exact tokens and actuator authority remain local and receipt-gated.",
@@ -5024,6 +5266,11 @@
      "episode",
      "has_humanoid_motor_program",
      "program"
+    ],
+    [
+     "program",
+     "realizes_embodied_motor_routing_shape",
+     "routing_shape"
     ]
    ],
    "where": {
@@ -284712,6 +284959,1894 @@
          "value": 1.0
         }
        ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ha_materialize_generic_learning_safety_context",
+   "area": "generic_future_option_risk",
+   "latency_class": "hard_realtime",
+   "comment": "Publish graph-owned recovery evidence before the native future-manifold gate evaluates a candidate.  Relaxation budgets are declared context units, never host-selected multipliers.",
+   "match": [
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "projects_embodied_development",
+     "development"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Count",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "episode"
+      },
+      "edge_type": "has_learning_safety_context",
+      "any_type": false
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0.0
+    }
+   },
+   "effects": [
+    [
+     "add_node",
+     "safety",
+     "LearningSafetyContext",
+     {
+      "verified": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "development"
+              },
+              "key": "safe_learning_environment_declared"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          },
+          {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "development"
+                },
+                "key": "embodiment_reset_reachable"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0.5
+             }
+            },
+            {
+             "type": "And",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "development"
+                  },
+                  "key": "protective_support_available"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.5
+               }
+              },
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "development"
+                  },
+                  "key": "protective_support_effectiveness"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0.0
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      },
+      "reset_reachable": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "development"
+          },
+          "key": "embodiment_reset_reachable"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "reset_cost_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "development"
+          },
+          "key": "embodiment_reset_cost_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "protective_support_available": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "development"
+          },
+          "key": "protective_support_available"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "protective_support_effectiveness": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "development"
+          },
+          "key": "protective_support_effectiveness"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "recovery_path_count": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "development"
+            },
+            "key": "embodiment_reset_reachable"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "development"
+            },
+            "key": "protective_support_available"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "required_horizon_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "development"
+          },
+          "key": "safe_learning_required_horizon_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "minimum_width_relaxation": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "development"
+          },
+          "key": "safe_learning_minimum_width_relaxation"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "information_loss_allowance": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "development"
+          },
+          "key": "safe_learning_information_loss_allowance"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_learning_safety_context",
+     "safety"
+    ]
+   ]
+  },
+  {
+   "name": "ha_establish_future_manifold_bounds",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_humanoid_policy",
+     "policy"
+    ],
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "policy"
+         },
+         "key": "future_manifold_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "policy"
+         },
+         "key": "future_manifold_temporal_anchors_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "phase_adaptation_complete"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "key": "developmental_curriculum_active"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "developmental_goal"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "locomotion"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "manifold_bounds_ready"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "edge_type": "has_humanoid_phase_action_model",
+         "any_type": false
+        },
+        "var_name": "candidate",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "initialized"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "experience_count"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "episode",
+     "manifold_bound_dzx",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "edge_type": "has_humanoid_phase_action_model",
+         "any_type": false
+        },
+        "var_name": "candidate",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "initialized"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "experience_count"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "candidate",
+       "value": {
+        "type": "Abs",
+        "arg": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "candidate"
+           },
+           "key": "mean_dzx"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "manifold_bound_dzy",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "edge_type": "has_humanoid_phase_action_model",
+         "any_type": false
+        },
+        "var_name": "candidate",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "initialized"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "experience_count"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "candidate",
+       "value": {
+        "type": "Abs",
+        "arg": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "candidate"
+           },
+           "key": "mean_dzy"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "manifold_bound_dwx",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "edge_type": "has_humanoid_phase_action_model",
+         "any_type": false
+        },
+        "var_name": "candidate",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "initialized"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "experience_count"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "candidate",
+       "value": {
+        "type": "Abs",
+        "arg": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "candidate"
+           },
+           "key": "mean_dwx"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "manifold_bound_dwy",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "edge_type": "has_humanoid_phase_action_model",
+         "any_type": false
+        },
+        "var_name": "candidate",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "initialized"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "experience_count"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "candidate",
+       "value": {
+        "type": "Abs",
+        "arg": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "candidate"
+           },
+           "key": "mean_dwy"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "manifold_bound_dvx",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "edge_type": "has_humanoid_phase_action_model",
+         "any_type": false
+        },
+        "var_name": "candidate",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "initialized"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "experience_count"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "candidate",
+       "value": {
+        "type": "Abs",
+        "arg": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "candidate"
+           },
+           "key": "mean_dvx"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "manifold_bound_dvy",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "edge_type": "has_humanoid_phase_action_model",
+         "any_type": false
+        },
+        "var_name": "candidate",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "initialized"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "experience_count"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "candidate",
+       "value": {
+        "type": "Abs",
+        "arg": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "candidate"
+           },
+           "key": "mean_dvy"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "manifold_bound_dvz",
+     {
+      "__term__": {
+       "type": "MaxOver",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "edge_type": "has_humanoid_phase_action_model",
+         "any_type": false
+        },
+        "var_name": "candidate",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "initialized"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.5
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "candidate"
+              },
+              "key": "experience_count"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         ]
+        }
+       },
+       "var_name": "candidate",
+       "value": {
+        "type": "Abs",
+        "arg": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "candidate"
+           },
+           "key": "mean_dvz"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       },
+       "default": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "manifold_bounds_ready",
+     1.0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "manifold_bounds_provenance",
+     "receipt_grounded_phase_action_envelope"
+    ]
+   ]
+  },
+  {
+   "name": "ha_stamp_future_manifold_audit_contract",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_humanoid_policy",
+     "policy"
+    ],
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "has_humanoid_motor_program",
+     "program"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "program"
+         },
+         "key": "future_manifold_audit_initialized"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "program"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "building"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "program"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "ready"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "program",
+     "future_manifold_audit_initialized",
+     1.0
+    ],
+    [
+     "set_attr",
+     "program",
+     "future_manifold_policy_enabled",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "future_manifold_enabled"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "program",
+     "future_manifold_temporal_anchors_enabled",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "policy"
+             },
+             "key": "future_manifold_enabled"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "policy"
+             },
+             "key": "future_manifold_temporal_anchors_enabled"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "program",
+     "future_manifold_local_refinement_enabled",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "policy"
+             },
+             "key": "future_manifold_enabled"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "policy"
+             },
+             "key": "future_manifold_local_refinement_enabled"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.5
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "program",
+     "future_manifold_anchor_schedule",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "future_manifold_enabled"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "dense_1_2_3_loglog_far"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "disabled"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "program",
+     "future_manifold_risk_gate",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "future_manifold_enabled"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "multi_frame"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "disabled"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "program",
+     "future_manifold_projection_resolved",
+     0.0
+    ],
+    [
+     "set_attr",
+     "program",
+     "future_manifold_projection_reason",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "future_manifold_enabled"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "pending"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "disabled"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "program",
+     "future_manifold_projection_budget",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "policy"
+         },
+         "key": "future_manifold_projection_budget"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "program",
+     "future_manifold_physical_horizon",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "response_frames"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "program",
+     "future_manifold_anchor_budget",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "policy"
+         },
+         "key": "future_manifold_projection_budget"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "program",
+     "future_manifold_refinement_budget",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "policy"
+         },
+         "key": "future_manifold_max_refinements"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "program",
+     "future_manifold_shape_order_budget",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "policy"
+         },
+         "key": "future_manifold_max_shape_order"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "program",
+     "future_manifold_multi_frame_risk_required",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "future_manifold_enabled"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.5
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0.0
+       }
       }
      }
     ]

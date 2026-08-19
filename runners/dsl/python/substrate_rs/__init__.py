@@ -545,6 +545,16 @@ def Sqrt(arg: Term) -> Term:          return Term("Sqrt", arg=arg)
 def Log(arg: Term) -> Term:           return Term("Log", arg=arg)   # ln(x); x<=0 -> -inf
 def Exp(arg: Term) -> Term:           return Term("Exp", arg=arg)   # e**x (inverse of Log)
 
+# Enigma recovery — hard graph-admissibility kernels. The candidate is a
+# graph NodeID bound by a rule/filter variable; machine settings and crib
+# data remain ordinary candidate attrs.
+def EnigmaCrib(candidate: Term) -> Term:
+    return Term("EnigmaCrib", candidate=candidate)
+def EnigmaBombe(candidate: Term) -> Term:
+    return Term("EnigmaBombe", candidate=candidate)
+def EnigmaBombeWitness(candidate: Term) -> Term:
+    return Term("EnigmaBombeWitness", candidate=candidate)
+
 # Bitwise integer ops on i64. Shift counts outside [0, 63] yield 0
 # (or -1 for Ashr on negative `a`) — matches the Div/Mod fallback
 # convention. LLVM-shift-by-overshift = poison, this substrate's
@@ -1210,6 +1220,7 @@ __all__ = [
     "ExpGolombEncode", "ExpGolombEncodeSigned",
     "And", "Or", "Not",
     "Abs", "Neg", "Plus", "Minus", "Times", "Div", "Mod", "Pow", "Sqrt", "Log", "Exp", "Min", "Max",
+    "EnigmaCrib", "EnigmaBombe", "EnigmaBombeWitness",
     "BitAnd", "BitOr", "BitXor", "Shl", "Lshr", "Ashr", "IDiv", "IRem",
     "IfThenElse",
     "Vec", "VecAdd", "VecSub", "Dot", "Magnitude",

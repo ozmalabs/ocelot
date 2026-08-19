@@ -188,6 +188,16 @@ def Max(*items):
     return {"type": "Max", "items": list(items)}
 
 
+def MaxOver(source, var_name, value, default):
+    return {
+        "type": "MaxOver",
+        "source": source,
+        "var_name": var_name,
+        "value": value,
+        "default": default,
+    }
+
+
 def Min(*items):
     return {"type": "Min", "items": list(items)}
 
@@ -997,6 +1007,10 @@ def bind_motor_plan_hint_stage_basin_rule():
             ["episode", "considers_humanoid_motor_plan_hint", "hint"],
             ["hint", "has_embodied_motor_plan_hint_stage", "stage"],
             ["episode", "has_humanoid_motor_program", "program"],
+            [
+                "program", "realizes_embodied_motor_routing_shape",
+                "routing_shape",
+            ],
         ],
         "where": And(
             Eq(PI0("hint", "output_authority"), L(0)),
@@ -1082,6 +1096,10 @@ def bind_abstract_plan_hint_stage_basin_rule():
             ["episode", "considers_humanoid_motor_plan_hint", "hint"],
             ["hint", "has_embodied_motor_plan_hint_stage", "stage"],
             ["episode", "has_humanoid_motor_program", "program"],
+            [
+                "program", "realizes_embodied_motor_routing_shape",
+                "routing_shape",
+            ],
         ],
         "where": And(
             Eq(PI0("hint", "output_authority"), L(0)),
@@ -1161,10 +1179,78 @@ def classify_grounded_program_routing_shape_rule():
                 A("program", "motor_task_phase"),
             ),
         ),
-        "effects": [[
-            "add_edge", "program",
-            "realizes_embodied_motor_routing_shape", "shape",
-        ]],
+        "effects": [
+            [
+                "add_edge", "program",
+                "realizes_embodied_motor_routing_shape", "shape",
+            ],
+            [
+                "add_edge", "episode",
+                "has_unrouted_grounded_humanoid_motor_program", "program",
+            ],
+        ],
+    }
+
+
+def request_grounded_program_routing_rule():
+    """Run the expensive hint decoder once when a new program can use it."""
+    return {
+        "name": "ha_request_grounded_program_routing",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "batch": True,
+        "comment": "A newly indexed grounded program recruits only the "
+        "plan-hint routing sheet. The quadratic shape decoders therefore run "
+        "at a relevant graph event, never on unrelated motor receipts.",
+        "match": [
+            [
+                "agent", "has_humanoid_motor_plan_hint_routing_task_set",
+                "routing_tasks",
+            ],
+            ["agent", "has_humanoid_episode", "episode"],
+            [
+                "episode", "has_unrouted_grounded_humanoid_motor_program",
+                "program",
+            ],
+            [
+                "program", "realizes_embodied_motor_routing_shape",
+                "routing_shape",
+            ],
+        ],
+        "where": And(
+            Eq(A("program", "status"), L("grounded")),
+            Eq(P0("program", "motor_plan_hint_routing_requested"), L(0.0)),
+            Gt(Count(Neighbours(
+                "episode", "considers_humanoid_motor_plan_hint"
+            )), L(0)),
+        ),
+        "effects": [
+            ["add_node", "escalation", "SystemTwoEscalation", {
+                "status": "requested",
+                "reason": "new_grounded_motor_program_hint_routing",
+                "epoch": T(P0("episode", "state_seq")),
+                "provenance_kind": "graph_authored_plan_hint_routing",
+            }],
+            ["add_edge", "escalation", "about_context", "program"],
+            [
+                "add_edge", "escalation", "recruits_task_set",
+                "routing_tasks",
+            ],
+            [
+                "set_attr", "program",
+                "motor_plan_hint_routing_requested", 1.0,
+            ],
+            [
+                "del_edge", "episode",
+                "has_unrouted_grounded_humanoid_motor_program", "program",
+            ],
+            ["set_attr", "episode", "motor_plan_hint_escalation_count", T(
+                Plus(
+                    P0("episode", "motor_plan_hint_escalation_count"),
+                    L(1.0),
+                )
+            )],
+        ],
     }
 
 
@@ -6180,6 +6266,166 @@ def choose_walking_rule():
                     L(0.0),
                 ),
             ))],
+        ],
+    }
+
+
+def stamp_future_manifold_audit_contract_rule():
+    """Copy the opt-in multi-frame risk contract onto each motor program.
+
+    This is intentionally only graph bookkeeping.  The native projection
+    evaluator owns certification/rejection; the disabled branch must remain
+    the legacy humanoid selector and therefore records ``disabled`` without
+    evaluating any future path.
+    """
+    enabled = Gt(P0("policy", "future_manifold_enabled"), L(0.5))
+    return {
+        "name": "ha_stamp_future_manifold_audit_contract",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "match": [
+            ["agent", "has_humanoid_policy", "policy"],
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "has_humanoid_motor_program", "program"],
+        ],
+        "where": And(
+            Eq(P0("program", "future_manifold_audit_initialized"), L(0.0)),
+            Or(
+                Eq(A("program", "status"), L("building")),
+                Eq(A("program", "status"), L("ready")),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "program", "future_manifold_audit_initialized", 1.0],
+            ["set_attr", "program", "future_manifold_policy_enabled", T(If(enabled, L(1.0), L(0.0)))],
+            ["set_attr", "program", "future_manifold_temporal_anchors_enabled", T(If(And(enabled, Gt(P0("policy", "future_manifold_temporal_anchors_enabled"), L(0.5))), L(1.0), L(0.0)))],
+            ["set_attr", "program", "future_manifold_local_refinement_enabled", T(If(And(enabled, Gt(P0("policy", "future_manifold_local_refinement_enabled"), L(0.5))), L(1.0), L(0.0)))],
+            ["set_attr", "program", "future_manifold_anchor_schedule", T(If(enabled, L("dense_1_2_3_loglog_far"), L("disabled")))],
+            ["set_attr", "program", "future_manifold_risk_gate", T(If(enabled, L("multi_frame"), L("disabled")))],
+            ["set_attr", "program", "future_manifold_projection_resolved", 0.0],
+            ["set_attr", "program", "future_manifold_projection_reason", T(If(enabled, L("pending"), L("disabled")))],
+            ["set_attr", "program", "future_manifold_projection_budget", T(P0("policy", "future_manifold_projection_budget"))],
+            ["set_attr", "program", "future_manifold_physical_horizon", T(P0("episode", "response_frames"))],
+            ["set_attr", "program", "future_manifold_anchor_budget", T(P0("policy", "future_manifold_projection_budget"))],
+            ["set_attr", "program", "future_manifold_refinement_budget", T(P0("policy", "future_manifold_max_refinements"))],
+            ["set_attr", "program", "future_manifold_shape_order_budget", T(P0("policy", "future_manifold_max_shape_order"))],
+            ["set_attr", "program", "future_manifold_multi_frame_risk_required", T(If(enabled, L(1.0), L(0.0)))],
+        ],
+    }
+
+
+def materialize_learning_safety_context_rule():
+    """Publish recoverability evidence for the generic risk gate.
+
+    This is a graph contract, not a host-side override.  The context remains
+    present when incomplete so diagnostics can distinguish an unsafe or
+    undeclared environment from a missing projection.
+    """
+    development = "development"
+    verified = And(
+        Gt(P0(development, "safe_learning_environment_declared"), L(0.5)),
+        Or(
+            Gt(P0(development, "embodiment_reset_reachable"), L(0.5)),
+            And(
+                Gt(P0(development, "protective_support_available"), L(0.5)),
+                Gt(P0(development, "protective_support_effectiveness"), L(0.0)),
+            ),
+        ),
+    )
+    return {
+        "name": "ha_materialize_generic_learning_safety_context",
+        "area": "generic_future_option_risk",
+        "latency_class": "hard_realtime",
+        "comment": "Publish graph-owned recovery evidence before the native "
+        "future-manifold gate evaluates a candidate.  Relaxation budgets are "
+        "declared context units, never host-selected multipliers.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "projects_embodied_development", development],
+        ],
+        "where": Eq(Count(Neighbours("episode", "has_learning_safety_context")), L(0.0)),
+        "effects": [
+            ["add_node", "safety", "LearningSafetyContext", {
+                "verified": T(If(verified, L(1.0), L(0.0))),
+                "reset_reachable": T(P0(development, "embodiment_reset_reachable")),
+                "reset_cost_units": T(P0(development, "embodiment_reset_cost_units")),
+                "protective_support_available": T(P0(development, "protective_support_available")),
+                "protective_support_effectiveness": T(P0(development, "protective_support_effectiveness")),
+                "recovery_path_count": T(Plus(
+                    P0(development, "embodiment_reset_reachable"),
+                    P0(development, "protective_support_available"),
+                )),
+                "required_horizon_units": T(P0(development, "safe_learning_required_horizon_units")),
+                "minimum_width_relaxation": T(P0(development, "safe_learning_minimum_width_relaxation")),
+                "information_loss_allowance": T(P0(development, "safe_learning_information_loss_allowance")),
+                "integer_native": 1,
+                "output_authority": 0,
+            }],
+            ["add_edge", "episode", "has_learning_safety_context", "safety"],
+        ],
+    }
+
+
+def establish_future_manifold_bounds_rule():
+    """Derive the initial acceptable path tube from receipt-learned effects.
+
+    The host supplies no limits and sees no candidate prediction.  Once the
+    support-conditioned phase alphabet is familiar, the graph takes the
+    componentwise envelope of its initialized, receipt-grounded local models.
+    This licenses singleton-scale motion while requiring compound programs to
+    preserve the same learned path width.
+    """
+    models = Filter(
+        Neighbours("episode", "has_humanoid_phase_action_model"),
+        "candidate",
+        And(
+            Gt(P0("candidate", "initialized"), L(0.5)),
+            Gt(P0("candidate", "experience_count"), L(0.0)),
+        ),
+    )
+    bounds = {
+        key: MaxOver(
+            models,
+            "candidate",
+            Abs(P0("candidate", f"mean_{key}")),
+            L(0.0),
+        )
+        for key in ("dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz")
+    }
+    locomotion_competence_ready = Or(
+        Gt(P0("episode", "phase_adaptation_complete"), L(0.5)),
+        And(
+            Gt(P0("episode", "developmental_curriculum_active"), L(0.5)),
+            Eq(A("episode", "developmental_goal"), L("locomotion")),
+        ),
+    )
+    return {
+        "name": "ha_establish_future_manifold_bounds",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "match": [
+            ["agent", "has_humanoid_policy", "policy"],
+            ["agent", "has_humanoid_episode", "episode"],
+        ],
+        "where": And(
+            Gt(P0("policy", "future_manifold_enabled"), L(0.5)),
+            Gt(P0("policy", "future_manifold_temporal_anchors_enabled"), L(0.5)),
+            locomotion_competence_ready,
+            Eq(P0("episode", "manifold_bounds_ready"), L(0.0)),
+            Gt(Count(models), L(0.0)),
+        ),
+        "effects": [
+            *[
+                ["set_attr", "episode", f"manifold_bound_{key}", T(bound)]
+                for key, bound in bounds.items()
+            ],
+            ["set_attr", "episode", "manifold_bounds_ready", 1.0],
+            [
+                "set_attr",
+                "episode",
+                "manifold_bounds_provenance",
+                "receipt_grounded_phase_action_envelope",
+            ],
         ],
     }
 
@@ -15037,6 +15283,9 @@ HUMANOID_BACKGROUND_RULES = {
     "ha_consolidate_equivalent_motor_program",
     "ha_consolidate_motor_sequence_transition",
     "ha_expose_motor_decision_option",
+}
+
+HUMANOID_ON_DEMAND_HINT_RULES = {
     "ha_bind_motor_plan_hint_stage_search_basin",
     "ha_route_abstract_motor_plan_hint_stage_basin",
 }
@@ -15052,7 +15301,11 @@ def apply_biological_schedule(manifest_dict):
     sensing, viability, action release, safety withdrawal, and bounded
     episode/bootstrap bookkeeping.
     """
-    known = HUMANOID_SOFT_REALTIME_RULES | HUMANOID_BACKGROUND_RULES
+    known = (
+        HUMANOID_SOFT_REALTIME_RULES
+        | HUMANOID_BACKGROUND_RULES
+        | HUMANOID_ON_DEMAND_HINT_RULES
+    )
     authored = {rule["name"] for rule in manifest_dict["rules"]}
     missing = known - authored
     if missing:
@@ -15063,6 +15316,9 @@ def apply_biological_schedule(manifest_dict):
             rule["latency_class"] = "soft_realtime"
         elif rule["name"] in HUMANOID_BACKGROUND_RULES:
             rule["area"] = "embodied_sensorimotor"
+            rule["latency_class"] = "background"
+        elif rule["name"] in HUMANOID_ON_DEMAND_HINT_RULES:
+            rule["area"] = "humanoid_motor_plan_hint_routing"
             rule["latency_class"] = "background"
     return manifest_dict
 
@@ -15177,6 +15433,9 @@ def manifest():
             viability_numerator,
         ) in enumerate(residual_regime_rows)
     ]
+    motor_plan_hint_task_local_id = (
+        first_residual_local_id + len(residual_regime_rows)
+    )
     return apply_biological_schedule({
         "id": "humanoid_adaptation",
         "version": "1.6.0",
@@ -15209,6 +15468,18 @@ def manifest():
                     "gait_surprise_confirmation_receipts": 0.0,
                     "shared_motor_collapse_enabled": 1.0,
                     "native_humanoid_composition_enabled": 1.0,
+                    # Whole-body future-manifold fallback is deliberately
+                    # opt-in.  The ordinary support-local humanoid selector
+                    # remains the exact gate-off baseline until a runtime
+                    # agent explicitly enables multi-frame certification.
+                    "future_manifold_enabled": 0.0,
+                    "future_manifold_temporal_anchors_enabled": 0.0,
+                    "future_manifold_local_refinement_enabled": 0.0,
+                    "future_manifold_projection_budget": 16.0,
+                    "future_manifold_physical_horizon": 0.0,
+                    "future_manifold_anchor_growth": 2.0,
+                    "future_manifold_max_shape_order": 1.0,
+                    "future_manifold_max_refinements": 16.0,
                     "support_geometry_preview_authority": 0.0,
                     "persistent_task_residual_authority": 0.0,
                     "takeoff_motor_compression_authority": 1.0,
@@ -15216,6 +15487,15 @@ def manifest():
             },
             *gait_attractor_nodes,
             *residual_regime_nodes,
+            {
+                "local_id": motor_plan_hint_task_local_id,
+                "type": "SystemTwoTaskSet",
+                "attrs": {
+                    "area": "humanoid_motor_plan_hint_routing",
+                    "enabled": 1,
+                    "provenance_kind": "on_demand_plan_hint_routing",
+                },
+            },
         ],
         "edges": [
             {
@@ -15259,6 +15539,12 @@ def manifest():
                     _,
                 ) in enumerate(residual_regime_rows)
             ],
+            {
+                "src": {"role": "agent_root"},
+                "type": "has_humanoid_motor_plan_hint_routing_task_set",
+                "tgt": {"local": motor_plan_hint_task_local_id},
+                "attrs": {},
+            },
         ],
         "productions": [
             {
@@ -15266,6 +15552,17 @@ def manifest():
                 "src": {"type": "Agent", "var": "agent"},
                 "edge_type": "has_humanoid_policy",
                 "tgt": {"type": "HumanoidPolicy", "var": "policy"},
+            },
+            {
+                "provenance": "humanoid_adaptation:plan_hint_routing_tasks",
+                "src": {"type": "Agent", "var": "agent"},
+                "edge_type": (
+                    "has_humanoid_motor_plan_hint_routing_task_set"
+                ),
+                "tgt": {
+                    "type": "SystemTwoTaskSet",
+                    "var": "routing_tasks",
+                },
             },
             {
                 "provenance": "humanoid_adaptation:agent_episode",
@@ -15385,6 +15682,16 @@ def manifest():
                     "type": "EmbodiedMotorRoutingShape",
                     "var": "routing_shape",
                 },
+            },
+            {
+                "provenance": (
+                    "humanoid_adaptation:unrouted_grounded_motor_program"
+                ),
+                "src": {"type": "HumanoidEpisode", "var": "episode"},
+                "edge_type": (
+                    "has_unrouted_grounded_humanoid_motor_program"
+                ),
+                "tgt": {"type": "HumanoidMotorProgram", "var": "program"},
             },
             {
                 "provenance": "humanoid_adaptation:motor_consequence_shape",
@@ -15948,6 +16255,7 @@ def manifest():
             select_motor_plan_task_context_rule(),
             consider_motor_plan_hint_rule(),
             classify_grounded_program_routing_shape_rule(),
+            request_grounded_program_routing_rule(),
             classify_grounded_program_consequence_shape_rule(),
             bind_indexed_bootstrap_stage_basin_rule(),
             bind_motor_plan_hint_stage_basin_rule(),
@@ -16010,6 +16318,9 @@ def manifest():
             release_prepared_motor_sequence_rule(),
             recall_motor_memory_rule(),
             release_prepared_motor_memory_rule(),
+            materialize_learning_safety_context_rule(),
+            establish_future_manifold_bounds_rule(),
+            stamp_future_manifold_audit_contract_rule(),
             choose_walking_rule(),
             resume_motor_program_rule(),
             select_compound_curiosity_candidate_rule(),

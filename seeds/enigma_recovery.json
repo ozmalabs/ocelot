@@ -1,0 +1,58 @@
+{
+  "id": "enigma_recovery",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "Γ-backed hard admissibility for graph-resident Enigma crib hypotheses. The native EnigmaCrib term performs exact machine consistency; these rules mark survivors before any language scoring.",
+  "nodes": [],
+  "edges": [],
+  "productions": [
+    {
+      "provenance": "seed:enigma_recovery:problem_has_candidate-0",
+      "src": {"type": "EnigmaProblem", "var": "problem"},
+      "edge_type": "has_candidate",
+      "tgt": {"type": "EnigmaCandidate", "var": "candidate"}
+    },
+    {
+      "provenance": "seed:enigma_recovery:problem_has_bombe_candidate-1",
+      "src": {"type": "EnigmaProblem", "var": "problem"},
+      "edge_type": "has_candidate",
+      "tgt": {"type": "EnigmaBombeCandidate", "var": "candidate"}
+    },
+    {
+      "provenance": "seed:enigma_recovery:problem_crib_scan-2",
+      "src": {"type": "EnigmaProblem", "var": "problem"},
+      "edge_type": "run_crib_scan",
+      "tgt": {"type": "EnigmaCribScan", "var": "scan"}
+    },
+    {
+      "provenance": "seed:enigma_recovery:problem_bombe_scan-3",
+      "src": {"type": "EnigmaProblem", "var": "problem"},
+      "edge_type": "run_bombe_scan",
+      "tgt": {"type": "EnigmaBombeScan", "var": "scan"}
+    }
+  ],
+  "rules": [
+    {
+      "name": "enigma_crib_filter",
+      "comment": "Filter is evaluated by the Rust Γ engine over graph-resident candidates; the resulting NodeID set is the hard admissible frontier.",
+      "match_type": "EnigmaCribScan",
+      "match": [["problem", "run_crib_scan", "scan"]],
+      "where": {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "problem"}, "key": "scan_complete"}, "b": {"type": "Lit", "value": true}}},
+      "effects": [
+        ["set_attr", "problem", "admissible_candidates", {"__term__": {"type": "Filter", "source": {"type": "NodesOfType", "node_type": "EnigmaCandidate"}, "var_name": "candidate", "predicate": {"type": "EnigmaCrib", "candidate": {"type": "Var", "name": "candidate"}}}}],
+        ["set_attr", "problem", "scan_complete", true]
+      ]
+    },
+    {
+      "name": "enigma_bombe_filter",
+      "comment": "The native Bombe predicate rejects whole rotor/start hypotheses inside one graph Filter before Python plugboard completion.",
+      "match_type": "EnigmaBombeScan",
+      "match": [["problem", "run_bombe_scan", "scan"]],
+      "where": {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "problem"}, "key": "scan_complete"}, "b": {"type": "Lit", "value": true}}},
+      "effects": [
+        ["set_attr", "problem", "bombe_witnesses", {"__term__": {"type": "MapList", "source": {"type": "NodesOfType", "node_type": "EnigmaBombeCandidate"}, "var_name": "candidate", "value": {"type": "Vec", "items": [{"type": "Var", "name": "candidate"}, {"type": "EnigmaBombeWitness", "candidate": {"type": "Var", "name": "candidate"}}]}}}],
+        ["set_attr", "problem", "scan_complete", true]
+      ]
+    }
+  ]
+}

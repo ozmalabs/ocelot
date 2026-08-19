@@ -303,9 +303,10 @@ def install_proposal(agent, proposal_id, *, approver: str = "web",
 
     # Cognitive commitment is distinct from the hard guardrails above: those
     # cannot be traded away. Only after they pass does the graph compare
-    # commit against waiting/refinement using the concrete touched-file
-    # footprint; the supplied approver remains a hard host authorization.
+    # commit against waiting/refinement using the normalized future-manifold
+    # projection; the supplied approver remains a hard host authorization.
     from domains.information_commitment import assess
+    from domains.shape_tube import goal_manifold, goal_projection
     commitment = assess(
         agent,
         commit={
@@ -313,17 +314,13 @@ def install_proposal(agent, proposal_id, *, approver: str = "web",
             "expected_goal_work": float(prop_attrs.get("expected_goal_work", 10.0)),
             "expected_information_gain": float(
                 prop_attrs.get("expected_information_gain", 1.0)),
-            "uncertainty": float(prop_attrs.get("consequence_uncertainty", 0.0)),
             "requires_approval": 1.0,
-            "footprint": {
-                "deleted_facts": 0.0,
-                "overwritten_facts": float(len(touched_files)),
-                "recoverability": 0.5,
-                "externality": 1.0,
-            },
+            "projection": goal_projection("runtime_install_goal", active=True, action_count=1, intervention_magnitude=1.0),
         },
-        wait={"delay_cost": 1.0, "opportunity_cost": 1.0},
-        refine={"refinement_cost": 2.0},
+        wait={"delay_cost": 1.0, "opportunity_cost": 1.0,
+              "projection": goal_projection("runtime_install_goal", active=False, action_count=0, intervention_magnitude=0.0)},
+        refine={"refinement_cost": 2.0, "projection": goal_projection("runtime_install_goal", active=False, action_count=1, intervention_magnitude=0.5)},
+        manifold=goal_manifold("runtime_install_goal"),
         approver=approver,
     )
     if commitment["decision"] != "commit" or not commitment["authorized"]:

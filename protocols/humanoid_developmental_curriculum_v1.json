@@ -13,7 +13,8 @@
     "joint_twitch_radians": 0.085,
     "maximum_joint_force": 50.0,
     "position_gain": 0.3,
-    "velocity_gain": 1.0
+    "velocity_gain": 1.0,
+    "reset_available": true
   },
   "calibration": {
     "samples_per_non_tonic_actuator": 1,
@@ -24,7 +25,15 @@
     "selection": "graph_receipt_gated_capability_successor",
     "initial_fixture": "supported_supine_floor_exploration",
     "support_observation": "all_tactile_contacts_plus_legacy_distal_pair",
-    "authority": "current_stage_goal_only"
+    "authority": "current_stage_goal_only",
+    "safe_learning_environment": true,
+    "caregiver_scaffolding": true,
+    "caregiver_scaffolding_mode": "contingent",
+    "protective_support_available": true,
+    "protective_support_effectiveness": 1.0,
+    "safe_learning_required_horizon_units": 1,
+    "safe_learning_minimum_width_relaxation": 1.0,
+    "safe_learning_information_loss_allowance": 1.0
   },
   "locomotion": {
     "actions": 360,

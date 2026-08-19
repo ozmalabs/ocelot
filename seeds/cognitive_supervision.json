@@ -267,7 +267,7 @@
    "area": "cognitive_supervision",
    "latency_class": "hard_realtime",
    "batch": false,
-   "comment": "The process owns a strict integer lease and clock. The situated evidence window supplies an initial check-in span, not a global timeout.",
+   "comment": "The process owns a strict integer lease and clock. The situated evidence window is an evidence-unit span; check-ins are scheduled from receipt/evidence progress, never cognitive epochs.",
    "match": [
     [
      "episode",
@@ -306,37 +306,121 @@
       },
       "var_name": "known_process",
       "predicate": {
-       "type": "Eq",
-       "a": {
-        "type": "Count",
-        "source": {
-         "type": "Filter",
-         "source": {
-          "type": "Neighbours",
-          "node": {
-           "type": "Var",
-           "name": "known_process"
+       "type": "And",
+       "items": [
+        {
+         "type": "Or",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "known_process"
+            },
+            "key": "status"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "monitoring"
+           }
           },
-          "edge_type": "supervises_learning_plan_step"
-         },
-         "var_name": "known_step",
-         "predicate": {
-          "type": "Eq",
-          "a": {
-           "type": "Var",
-           "name": "known_step"
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "known_process"
+            },
+            "key": "status"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "checking_in"
+           }
           },
-          "b": {
-           "type": "Var",
-           "name": "step"
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "known_process"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "replan_required"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "known_process"
+                },
+                "key": "replan_release_complete"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           ]
           }
+         ]
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Count",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "known_process"
+            },
+            "edge_type": "supervises_learning_plan_step"
+           },
+           "var_name": "known_step",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "known_step"
+            },
+            "b": {
+             "type": "Var",
+             "name": "step"
+            }
+           }
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
          }
         }
-       },
-       "b": {
-        "type": "Lit",
-        "value": 1
-       }
+       ]
       }
      }
     },
@@ -397,6 +481,103 @@
       },
       "last_checkin_epoch": 0,
       "next_checkin_epoch": {
+       "__term__": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Lit",
+          "value": 1
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "key": "development_evidence_window"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "last_checkin_evidence_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "step"
+          },
+          "key": "evidence_spent_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "next_checkin_evidence_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "step"
+            },
+            "key": "evidence_spent_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 1
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "episode"
+              },
+              "key": "development_evidence_window"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "checkin_span_evidence_units": {
        "__term__": {
         "type": "Max",
         "items": [
@@ -543,6 +724,12 @@
      "episode",
      "cognitive_continuation_authority",
      1
+    ],
+    [
+     "set_attr",
+     "episode",
+     "cognitive_checkin_terminal",
+     0
     ]
    ]
   },
@@ -881,9 +1068,9 @@
           "type": "Attr",
           "node": {
            "type": "Var",
-           "name": "policy"
+           "name": "step"
           },
-          "key": "cognitive_epoch"
+          "key": "evidence_spent_units"
          },
          {
           "type": "Lit",
@@ -900,7 +1087,7 @@
            "type": "Var",
            "name": "process"
           },
-          "key": "renew_before_epoch"
+          "key": "next_checkin_evidence_units"
          },
          {
           "type": "Lit",
@@ -2752,6 +2939,11 @@
    "match": [
     [
      "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "episode",
      "has_cognitive_process",
      "process"
     ],
@@ -2817,30 +3009,6 @@
      {
       "type": "Eq",
       "a": {
-       "type": "Plus",
-       "items": [
-        {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "current"
-         },
-         "key": "dominated"
-        },
-        {
-         "type": "Lit",
-         "value": 0
-        }
-       ]
-      },
-      "b": {
-       "type": "Lit",
-       "value": 0
-      }
-     },
-     {
-      "type": "Eq",
-      "a": {
        "type": "Count",
        "source": {
         "type": "Neighbours",
@@ -2870,33 +3038,550 @@
       }
      },
      {
-      "type": "Not",
-      "arg": {
-       "type": "Exists",
-       "source": {
-        "type": "Neighbours",
-        "node": {
-         "type": "Var",
-         "name": "profile"
-        },
-        "edge_type": "has_pareto_candidate"
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "profile"
+          },
+          "edge_type": "has_pareto_candidate"
+         },
+         "var_name": "alternative",
+         "predicate": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Eq",
+             "a": {
+              "type": "Var",
+              "name": "alternative"
+             },
+             "b": {
+              "type": "Var",
+              "name": "current"
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Count",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "current"
+               },
+               "edge_type": "has_pareto_value"
+              },
+              "var_name": "current_value",
+              "predicate": {
+               "type": "Exists",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "alternative"
+                },
+                "edge_type": "has_pareto_value"
+               },
+               "var_name": "alternative_value",
+               "predicate": {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Exists",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "current_value"
+                   },
+                   "edge_type": "measures_goal"
+                  },
+                  "var_name": "dimension_goal",
+                  "predicate": {
+                   "type": "Exists",
+                   "source": {
+                    "type": "Neighbours",
+                    "node": {
+                     "type": "Var",
+                     "name": "alternative_value"
+                    },
+                    "edge_type": "measures_goal"
+                   },
+                   "var_name": "alternative_goal",
+                   "predicate": {
+                    "type": "Eq",
+                    "a": {
+                     "type": "Var",
+                     "name": "dimension_goal"
+                    },
+                    "b": {
+                     "type": "Var",
+                     "name": "alternative_goal"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "type": "Not",
+                  "arg": {
+                   "type": "Lt",
+                   "a": {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "alternative_value"
+                      },
+                      "key": "signed_value"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    ]
+                   },
+                   "b": {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "current_value"
+                      },
+                      "key": "signed_value"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    ]
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "profile"
+               },
+               "key": "dimension_count"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Count",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "current"
+               },
+               "edge_type": "has_pareto_value"
+              },
+              "var_name": "current_value",
+              "predicate": {
+               "type": "Exists",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "alternative"
+                },
+                "edge_type": "has_pareto_value"
+               },
+               "var_name": "alternative_value",
+               "predicate": {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Exists",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "current_value"
+                   },
+                   "edge_type": "measures_goal"
+                  },
+                  "var_name": "dimension_goal",
+                  "predicate": {
+                   "type": "Exists",
+                   "source": {
+                    "type": "Neighbours",
+                    "node": {
+                     "type": "Var",
+                     "name": "alternative_value"
+                    },
+                    "edge_type": "measures_goal"
+                   },
+                   "var_name": "alternative_goal",
+                   "predicate": {
+                    "type": "Eq",
+                    "a": {
+                     "type": "Var",
+                     "name": "dimension_goal"
+                    },
+                    "b": {
+                     "type": "Var",
+                     "name": "alternative_goal"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "type": "Gt",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "alternative_value"
+                     },
+                     "key": "signed_value"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "current_value"
+                     },
+                     "key": "signed_value"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         }
+        }
        },
-       "var_name": "alternative",
-       "predicate": {
+       {
         "type": "And",
         "items": [
          {
-          "type": "Not",
-          "arg": {
-           "type": "Eq",
-           "a": {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
             "type": "Var",
-            "name": "alternative"
+            "name": "profile"
            },
-           "b": {
-            "type": "Var",
-            "name": "current"
-           }
+           "edge_type": "has_pareto_candidate"
+          },
+          "var_name": "alternative",
+          "predicate": {
+           "type": "And",
+           "items": [
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Eq",
+              "a": {
+               "type": "Var",
+               "name": "alternative"
+              },
+              "b": {
+               "type": "Var",
+               "name": "current"
+              }
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Count",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "current"
+                },
+                "edge_type": "has_pareto_value"
+               },
+               "var_name": "current_value",
+               "predicate": {
+                "type": "Exists",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "alternative"
+                 },
+                 "edge_type": "has_pareto_value"
+                },
+                "var_name": "alternative_value",
+                "predicate": {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Exists",
+                   "source": {
+                    "type": "Neighbours",
+                    "node": {
+                     "type": "Var",
+                     "name": "current_value"
+                    },
+                    "edge_type": "measures_goal"
+                   },
+                   "var_name": "dimension_goal",
+                   "predicate": {
+                    "type": "Exists",
+                    "source": {
+                     "type": "Neighbours",
+                     "node": {
+                      "type": "Var",
+                      "name": "alternative_value"
+                     },
+                     "edge_type": "measures_goal"
+                    },
+                    "var_name": "alternative_goal",
+                    "predicate": {
+                     "type": "Eq",
+                     "a": {
+                      "type": "Var",
+                      "name": "dimension_goal"
+                     },
+                     "b": {
+                      "type": "Var",
+                      "name": "alternative_goal"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "type": "Not",
+                   "arg": {
+                    "type": "Lt",
+                    "a": {
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "alternative_value"
+                       },
+                       "key": "signed_value"
+                      },
+                      {
+                       "type": "Lit",
+                       "value": 0
+                      }
+                     ]
+                    },
+                    "b": {
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "current_value"
+                       },
+                       "key": "signed_value"
+                      },
+                      {
+                       "type": "Lit",
+                       "value": 0
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              }
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "profile"
+                },
+                "key": "dimension_count"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Count",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "current"
+                },
+                "edge_type": "has_pareto_value"
+               },
+               "var_name": "current_value",
+               "predicate": {
+                "type": "Exists",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "alternative"
+                 },
+                 "edge_type": "has_pareto_value"
+                },
+                "var_name": "alternative_value",
+                "predicate": {
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Exists",
+                   "source": {
+                    "type": "Neighbours",
+                    "node": {
+                     "type": "Var",
+                     "name": "current_value"
+                    },
+                    "edge_type": "measures_goal"
+                   },
+                   "var_name": "dimension_goal",
+                   "predicate": {
+                    "type": "Exists",
+                    "source": {
+                     "type": "Neighbours",
+                     "node": {
+                      "type": "Var",
+                      "name": "alternative_value"
+                     },
+                     "edge_type": "measures_goal"
+                    },
+                    "var_name": "alternative_goal",
+                    "predicate": {
+                     "type": "Eq",
+                     "a": {
+                      "type": "Var",
+                      "name": "dimension_goal"
+                     },
+                     "b": {
+                      "type": "Var",
+                      "name": "alternative_goal"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "type": "Gt",
+                   "a": {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "alternative_value"
+                      },
+                      "key": "signed_value"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    ]
+                   },
+                   "b": {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "current_value"
+                      },
+                      "key": "signed_value"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    ]
+                   }
+                  }
+                 ]
+                }
+               }
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           ]
           }
          },
          {
@@ -2909,225 +3594,24 @@
              "type": "Neighbours",
              "node": {
               "type": "Var",
-              "name": "current"
+              "name": "plan"
              },
-             "edge_type": "has_pareto_value"
+             "edge_type": "has_learning_plan_step"
             },
-            "var_name": "current_value",
+            "var_name": "replacement_step",
             "predicate": {
-             "type": "Exists",
-             "source": {
-              "type": "Neighbours",
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
               "node": {
                "type": "Var",
-               "name": "alternative"
+               "name": "replacement_step"
               },
-              "edge_type": "has_pareto_value"
+              "key": "status"
              },
-             "var_name": "alternative_value",
-             "predicate": {
-              "type": "And",
-              "items": [
-               {
-                "type": "Exists",
-                "source": {
-                 "type": "Neighbours",
-                 "node": {
-                  "type": "Var",
-                  "name": "current_value"
-                 },
-                 "edge_type": "measures_goal"
-                },
-                "var_name": "dimension_goal",
-                "predicate": {
-                 "type": "Exists",
-                 "source": {
-                  "type": "Neighbours",
-                  "node": {
-                   "type": "Var",
-                   "name": "alternative_value"
-                  },
-                  "edge_type": "measures_goal"
-                 },
-                 "var_name": "alternative_goal",
-                 "predicate": {
-                  "type": "Eq",
-                  "a": {
-                   "type": "Var",
-                   "name": "dimension_goal"
-                  },
-                  "b": {
-                   "type": "Var",
-                   "name": "alternative_goal"
-                  }
-                 }
-                }
-               },
-               {
-                "type": "Not",
-                "arg": {
-                 "type": "Lt",
-                 "a": {
-                  "type": "Plus",
-                  "items": [
-                   {
-                    "type": "Attr",
-                    "node": {
-                     "type": "Var",
-                     "name": "alternative_value"
-                    },
-                    "key": "signed_value"
-                   },
-                   {
-                    "type": "Lit",
-                    "value": 0
-                   }
-                  ]
-                 },
-                 "b": {
-                  "type": "Plus",
-                  "items": [
-                   {
-                    "type": "Attr",
-                    "node": {
-                     "type": "Var",
-                     "name": "current_value"
-                    },
-                    "key": "signed_value"
-                   },
-                   {
-                    "type": "Lit",
-                    "value": 0
-                   }
-                  ]
-                 }
-                }
-               }
-              ]
-             }
-            }
-           }
-          },
-          "b": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "profile"
-             },
-             "key": "dimension_count"
-            },
-            {
-             "type": "Lit",
-             "value": 0
-            }
-           ]
-          }
-         },
-         {
-          "type": "Gt",
-          "a": {
-           "type": "Count",
-           "source": {
-            "type": "Filter",
-            "source": {
-             "type": "Neighbours",
-             "node": {
-              "type": "Var",
-              "name": "current"
-             },
-             "edge_type": "has_pareto_value"
-            },
-            "var_name": "current_value",
-            "predicate": {
-             "type": "Exists",
-             "source": {
-              "type": "Neighbours",
-              "node": {
-               "type": "Var",
-               "name": "alternative"
-              },
-              "edge_type": "has_pareto_value"
-             },
-             "var_name": "alternative_value",
-             "predicate": {
-              "type": "And",
-              "items": [
-               {
-                "type": "Exists",
-                "source": {
-                 "type": "Neighbours",
-                 "node": {
-                  "type": "Var",
-                  "name": "current_value"
-                 },
-                 "edge_type": "measures_goal"
-                },
-                "var_name": "dimension_goal",
-                "predicate": {
-                 "type": "Exists",
-                 "source": {
-                  "type": "Neighbours",
-                  "node": {
-                   "type": "Var",
-                   "name": "alternative_value"
-                  },
-                  "edge_type": "measures_goal"
-                 },
-                 "var_name": "alternative_goal",
-                 "predicate": {
-                  "type": "Eq",
-                  "a": {
-                   "type": "Var",
-                   "name": "dimension_goal"
-                  },
-                  "b": {
-                   "type": "Var",
-                   "name": "alternative_goal"
-                  }
-                 }
-                }
-               },
-               {
-                "type": "Gt",
-                "a": {
-                 "type": "Plus",
-                 "items": [
-                  {
-                   "type": "Attr",
-                   "node": {
-                    "type": "Var",
-                    "name": "alternative_value"
-                   },
-                   "key": "signed_value"
-                  },
-                  {
-                   "type": "Lit",
-                   "value": 0
-                  }
-                 ]
-                },
-                "b": {
-                 "type": "Plus",
-                 "items": [
-                  {
-                   "type": "Attr",
-                   "node": {
-                    "type": "Var",
-                    "name": "current_value"
-                   },
-                   "key": "signed_value"
-                  },
-                  {
-                   "type": "Lit",
-                   "value": 0
-                  }
-                 ]
-                }
-               }
-              ]
+             "b": {
+              "type": "Lit",
+              "value": "ready"
              }
             }
            }
@@ -3139,7 +3623,7 @@
          }
         ]
        }
-      }
+      ]
      },
      {
       "type": "Gt",
@@ -3370,6 +3854,118 @@
              "value": 0
             }
            ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "process",
+     "last_checkin_evidence_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "step"
+         },
+         "key": "evidence_spent_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "process",
+     "next_checkin_evidence_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "step"
+           },
+           "key": "evidence_spent_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 1
+          },
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "key": "development_evidence_window"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "process",
+     "checkin_span_evidence_units",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 1
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "development_evidence_window"
+          },
+          {
+           "type": "Lit",
+           "value": 0
           }
          ]
         }
@@ -3727,8 +4323,8 @@
      "current"
     ],
     [
-     "current",
-     "is_dominated_by_pareto_candidate",
+     "profile",
+     "has_pareto_candidate",
      "alternative"
     ],
     [
@@ -3778,10 +4374,310 @@
        "type": "Lit",
        "value": 0
       }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Var",
+          "name": "alternative"
+         },
+         "b": {
+          "type": "Var",
+          "name": "current"
+         }
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "current"
+           },
+           "edge_type": "has_pareto_value"
+          },
+          "var_name": "current_value",
+          "predicate": {
+           "type": "Exists",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "alternative"
+            },
+            "edge_type": "has_pareto_value"
+           },
+           "var_name": "alternative_value",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Exists",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "current_value"
+               },
+               "edge_type": "measures_goal"
+              },
+              "var_name": "dimension_goal",
+              "predicate": {
+               "type": "Exists",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "alternative_value"
+                },
+                "edge_type": "measures_goal"
+               },
+               "var_name": "alternative_goal",
+               "predicate": {
+                "type": "Eq",
+                "a": {
+                 "type": "Var",
+                 "name": "dimension_goal"
+                },
+                "b": {
+                 "type": "Var",
+                 "name": "alternative_goal"
+                }
+               }
+              }
+             },
+             {
+              "type": "Not",
+              "arg": {
+               "type": "Lt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "alternative_value"
+                  },
+                  "key": "signed_value"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "current_value"
+                  },
+                  "key": "signed_value"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               }
+              }
+             }
+            ]
+           }
+          }
+         }
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "profile"
+           },
+           "key": "dimension_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "current"
+           },
+           "edge_type": "has_pareto_value"
+          },
+          "var_name": "current_value",
+          "predicate": {
+           "type": "Exists",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "alternative"
+            },
+            "edge_type": "has_pareto_value"
+           },
+           "var_name": "alternative_value",
+           "predicate": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Exists",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "current_value"
+               },
+               "edge_type": "measures_goal"
+              },
+              "var_name": "dimension_goal",
+              "predicate": {
+               "type": "Exists",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "alternative_value"
+                },
+                "edge_type": "measures_goal"
+               },
+               "var_name": "alternative_goal",
+               "predicate": {
+                "type": "Eq",
+                "a": {
+                 "type": "Var",
+                 "name": "dimension_goal"
+                },
+                "b": {
+                 "type": "Var",
+                 "name": "alternative_goal"
+                }
+               }
+              }
+             },
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "alternative_value"
+                 },
+                 "key": "signed_value"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "current_value"
+                 },
+                 "key": "signed_value"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              }
+             }
+            ]
+           }
+          }
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "plan"
+         },
+         "edge_type": "has_learning_plan_step"
+        },
+        "var_name": "replacement_step",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "replacement_step"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "ready"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
      }
     ]
    },
    "effects": [
+    [
+     "add_edge",
+     "current",
+     "is_dominated_by_pareto_candidate",
+     "alternative"
+    ],
     [
      "add_node",
      "residual",

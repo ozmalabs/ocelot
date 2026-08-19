@@ -91,8 +91,11 @@ def test_humanoid_loads_bootstraps_through_normal_hint_shape_pipeline():
         "ha_route_abstract_motor_plan_hint_stage_basin",
     ):
         assert rules[name]["latency_class"] == "background"
-        assert rules[name]["area"] == "embodied_sensorimotor"
+        assert rules[name]["area"] == "humanoid_motor_plan_hint_routing"
         _assert_no_float(rules[name])
+    assert rules["ha_request_grounded_program_routing"][
+        "latency_class"
+    ] == "hard_realtime"
     grounding = next(
         rule for rule in humanoid["rules"]
         if rule["name"] == "ha_ground_synthesized_motor_program_from_receipt"
@@ -144,7 +147,7 @@ def test_humanoid_dependency_materializes_bootstraps_in_the_graph():
     ) for stage in stages)
 
 
-def test_cold_grounded_program_enters_search_and_consequence_indexes_without_system_two():
+def test_cold_grounded_program_recruits_scoped_hint_routing_once():
     try:
         agent = WorldAdapter(seeds=("humanoid_adaptation",))
     except RuntimeError as exc:
@@ -199,4 +202,11 @@ def test_cold_grounded_program_enters_search_and_consequence_indexes_without_sys
     )
     attrs = agent.s.node(episode)["attrs"]
     assert attrs["motor_plan_hint_count"] > 0.0
-    assert attrs["motor_plan_hint_escalation_count"] == 0.0
+    assert attrs["motor_plan_hint_escalation_count"] == 1.0
+    assert agent.s.node(program)["attrs"][
+        "motor_plan_hint_routing_requested"
+    ] == 1.0
+    agent.tick()
+    assert agent.s.node(episode)["attrs"][
+        "motor_plan_hint_escalation_count"
+    ] == 1.0

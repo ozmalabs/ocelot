@@ -108,6 +108,38 @@ def test_motor_program_synthesis_and_horizon_adaptation_are_graph_native():
     assert "approved" in learner
 
 
+def test_humanoid_future_manifold_fallback_is_opt_in_and_multi_frame():
+    seed = json.loads(
+        (ROOT / "seeds" / "humanoid_adaptation.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    policy = next(
+        node for node in seed["nodes"] if node["type"] == "HumanoidPolicy"
+    )
+    attrs = policy["attrs"]
+    assert attrs["future_manifold_enabled"] == 0.0
+    assert attrs["future_manifold_temporal_anchors_enabled"] == 0.0
+    assert attrs["future_manifold_local_refinement_enabled"] == 0.0
+    assert attrs["future_manifold_projection_budget"] == 16.0
+    assert attrs["future_manifold_max_shape_order"] == 1.0
+
+    rule = next(
+        rule for rule in seed["rules"]
+        if rule["name"] == "ha_stamp_future_manifold_audit_contract"
+    )
+    encoded = json.dumps(rule)
+    assert "future_manifold_risk_gate" in encoded
+    assert "dense_1_2_3_loglog_far" in encoded
+    assert "future_manifold_physical_horizon" in encoded
+    assert "multi_frame" in encoded
+    assert "disabled" in encoded
+    assert "future_manifold_multi_frame_risk_required" in encoded
+    # The contract is audit-only; the native fallback owns candidate rejection
+    # and must not turn the disabled path into a hidden alternate selector.
+    assert rule["latency_class"] == "hard_realtime"
+
+
 def test_live_humanoid_bench_boundary_when_configured():
     simulator = os.environ.get("HUMANOID_BENCH_ROOT")
     if simulator is None:

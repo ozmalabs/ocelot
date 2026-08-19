@@ -4,6 +4,21 @@
 
 ## Documents
 
+The current engine-wide decision contract is: graph cognition establishes a
+future manifold as a time-indexed shape tube and compares `wait`/`refine`/`commit`
+projections using deterministic least-action selection; width, information loss,
+and time bounds are explicit transitions. Hard safety and external approval
+remain non-tradeable host boundaries. Domain experiments are historical records
+and do not redefine this contract.
+
+Residuals are computed by the engine at every projected time slice as retained,
+lost, and escape shapes. The time/width/information-loss triangle bounds those
+residuals without collapsing the audited cell and topology-link structure. The
+current gate enforces residuals within each assessment, not persisted lineage
+across assessments. Manifold momentum is nonphysical continuity when
+longitudinal callers reuse an established manifold; identity/bounds changes
+must be represented as explicit transitions.
+
 | file | title |
 |---|---|
 | [`ASYNC_COGNITIVE_CORE_RESULTS.md`](ASYNC_COGNITIVE_CORE_RESULTS.md) | Graph-native asynchronous cognitive core — implementation result |
@@ -22,6 +37,7 @@
 | [`ENGINE_WINNER_VALUE_RESULTS.md`](ENGINE_WINNER_VALUE_RESULTS.md) | ENGINE INSTRUMENTATION — THE WINNER'S OWN VALUE — RESULTS |
 | [`GAMMA_SEARCH_COMPLETENESS_CEILING.md`](GAMMA_SEARCH_COMPLETENESS_CEILING.md) | Γ search-completeness ceiling — three probes on the sd loop, Γ's weight, and the composer's beam |
 | [`GAMMA_SEARCH_COMPLETENESS_FIXES.md`](GAMMA_SEARCH_COMPLETENESS_FIXES.md) | Γ search-completeness fixes — Bug 1 (label bias) and Bug 2 (beam completeness) |
+| [`FUTURE_MANIFOLD_LOG_ORDER_DESIGN.md`](FUTURE_MANIFOLD_LOG_ORDER_DESIGN.md) | Log-time, adaptive order-N future-manifold projection contract |
 | [`GENERIC_ORDER_N_PREREG.md`](GENERIC_ORDER_N_PREREG.md) | DIMENSION-GENERIC ORDER-N — pre-registration |
 | [`GENERIC_ORDER_N_RESULTS.md`](GENERIC_ORDER_N_RESULTS.md) | DIMENSION-GENERIC ORDER-N — results |
 | [`GRAPH_INTERROGATE.md`](GRAPH_INTERROGATE.md) | graph_interrogate — the "ASK" counterpart to the graph visualiser's "LOOK" |

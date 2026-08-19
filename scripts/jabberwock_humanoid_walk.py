@@ -23,6 +23,9 @@ from domains.pybullet_humanoid_world import (  # noqa: E402
     HumanoidBodyConfiguration,
     PyBulletHumanoidWorld,
 )
+from domains.pybullet_humanoid_trial_transducer import (  # noqa: E402
+    PyBulletHumanoidTrialTransducer,
+)
 from domains.humanoid_kinematics_study import (  # noqa: E402
     install_opaque_kinematic_topology,
     summarize_kinematics_study,
@@ -44,6 +47,9 @@ from domains.embodied_motor_shapes import (  # noqa: E402
     motor_program_shape_signature,
 )
 from domains import faculty_autogenesis  # noqa: E402
+from scripts.gen_embodied_development_seed import (  # noqa: E402
+    CAPABILITIES,
+)
 from scripts.jabberwock_humanoid_adaptation import (  # noqa: E402
     _body_axis_tilt,
     _close_action,
@@ -59,6 +65,63 @@ from substrate.world_adapter import WorldAdapter  # noqa: E402
 
 DEFAULT_PROTOCOL = ROOT / "protocols" / "humanoid_walking_v1.json"
 MOTOR_LIBRARY_VERSION = 12
+DEVELOPMENTAL_CURRICULUM_CONTRACT_VERSION = 1
+
+
+def developmental_curriculum_contract() -> dict[str, Any]:
+    """Return the exact developmental ontology this runner can consume.
+
+    Capability names are ordered because their ordinals are part of the
+    graph's curriculum frontier.  The digest covers every ontology field that
+    determines capability identity or graph reachability; a library from an
+    older curriculum must never be partially recalled by name coincidence.
+    """
+    ontology = [
+        {
+            "name": row["name"],
+            "goal": row["goal"],
+            "evidence_kind": row["evidence"],
+            "ecology": row["ecology"],
+            "requires": list(row["requires"]),
+        }
+        for row in CAPABILITIES
+    ]
+    encoded = json.dumps(
+        ontology,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    ).encode("utf-8")
+    return {
+        "schema_version": DEVELOPMENTAL_CURRICULUM_CONTRACT_VERSION,
+        "capability_names": [row["name"] for row in ontology],
+        "ontology_sha256": hashlib.sha256(encoded).hexdigest(),
+    }
+
+
+def _validate_developmental_curriculum_contract(
+    library: dict[str, Any],
+) -> dict[str, Any]:
+    expected = developmental_curriculum_contract()
+    supplied = library.get("developmental_curriculum_contract")
+    if supplied is None:
+        raise ValueError(
+            "incompatible humanoid developmental library: "
+            "missing developmental_curriculum_contract"
+        )
+    if not isinstance(supplied, dict):
+        raise ValueError(
+            "incompatible humanoid developmental library: "
+            "developmental_curriculum_contract is not an object"
+        )
+    for key in ("schema_version", "capability_names", "ontology_sha256"):
+        if supplied.get(key) != expected[key]:
+            raise ValueError(
+                "incompatible humanoid developmental library: curriculum "
+                f"contract mismatch for {key}; expected "
+                f"{expected[key]!r}, got {supplied.get(key)!r}"
+            )
+    return expected
 
 
 # PER-TERM COST DECOMPOSITION -- observability only, mechanical read.
@@ -128,9 +191,16 @@ def _cost_term_summary() -> dict[str, object]:
     }
 
 
-def _tick_agent(agent: WorldAdapter) -> None:
+def _tick_agent(
+    agent: WorldAdapter,
+    *,
+    service_system_two: bool = False,
+) -> None:
     """Tick cognition and service graph-requested faculty construction I/O."""
-    agent.tick()
+    if service_system_two:
+        agent.dual_process_tick()
+    else:
+        agent.tick()
     _sample_cost_terms()
     # A status-keyed I/O service check, not a host decision: the graph has
     # already requested synthesis. Once every need is terminal, ordinary
@@ -192,6 +262,14 @@ def _cognitive_continuation_authorised(
     authority = attrs.get("continuation_authority")
     generation = attrs.get("lease_generation")
     renew_before = attrs.get("renew_before_epoch")
+    next_evidence = attrs.get("next_checkin_evidence_units")
+    steps = agent.inner.neighbours(
+        process, "supervises_learning_plan_step"
+    )
+    evidence = (
+        agent.s.node(steps[0])["attrs"].get("evidence_spent_units")
+        if len(steps) == 1 else None
+    )
     epoch = policy_attrs.get("cognitive_epoch")
     enabled = policy_attrs.get("enabled")
     return (
@@ -202,7 +280,9 @@ def _cognitive_continuation_authorised(
         and type(epoch) is int
         and type(enabled) is int
         and enabled == 1
-        and epoch < renew_before
+        and type(next_evidence) is int
+        and type(evidence) is int
+        and evidence < next_evidence
     )
 
 
@@ -279,6 +359,78 @@ def _development_progress_snapshot(
                 agent, episode, development_context
             )
         ),
+    }
+
+
+def _developmental_frontier_diagnostics(
+    agent: WorldAdapter,
+    development_context,
+) -> dict[str, Any]:
+    """Expose the graph frontier and its first blocking prerequisites."""
+    if development_context is None:
+        return {
+            "active": None,
+            "frontier": [],
+            "unresolved_prerequisites": [],
+        }
+
+    capabilities = list(agent.inner.neighbours(
+        development_context,
+        "has_embodied_developmental_capability",
+    ))
+    rows = []
+    for capability in capabilities:
+        attrs = agent.s.node(capability)["attrs"]
+        prerequisites = list(agent.inner.neighbours(
+            capability,
+            "requires_embodied_developmental_capability",
+        ))
+        unresolved = [
+            str(agent.s.node(prerequisite)["attrs"].get("name", "unknown"))
+            for prerequisite in prerequisites
+            if agent.s.node(prerequisite)["attrs"].get("status") != "mastered"
+        ]
+        rows.append({
+            "name": str(attrs.get("name", "unknown")),
+            "ordinal": int(attrs.get("ordinal", 0)),
+            "status": str(attrs.get("status", "unknown")),
+            "attempt_count": int(attrs.get("attempt_count", 0)),
+            "success_count": int(attrs.get("success_count", 0)),
+            "failure_count": int(attrs.get("failure_count", 0)),
+            "retention_count": int(attrs.get("retention_count", 0)),
+            "activation_receipt_seq": int(attrs.get(
+                "activation_receipt_seq", 0
+            )),
+            "retention_start_seq": int(attrs.get("retention_start_seq", 0)),
+            "warm_start_requires_verification": int(attrs.get(
+                "warm_start_requires_verification", 0
+            )),
+            "unresolved_prerequisites": sorted(unresolved),
+        })
+    rows.sort(key=lambda row: (row["ordinal"], row["name"]))
+    active = [
+        row for row in rows
+        if row["status"] == "active"
+    ]
+    frontier = [
+        row for row in rows
+        if row["status"] in {"available", "warm_available", "retention_due"}
+        and not row["unresolved_prerequisites"]
+    ]
+    unresolved = [
+        {
+            "name": row["name"],
+            "ordinal": row["ordinal"],
+            "status": row["status"],
+            "prerequisites": row["unresolved_prerequisites"],
+        }
+        for row in rows
+        if row["unresolved_prerequisites"]
+    ]
+    return {
+        "active": active[0] if len(active) == 1 else None,
+        "frontier": frontier,
+        "unresolved_prerequisites": unresolved,
     }
 
 
@@ -506,10 +658,13 @@ def _run_caregiver_scaffold(
 def _restore_motor_library(
     agent: WorldAdapter,
     library: dict[str, Any] | None,
-) -> dict[str, int]:
+) -> dict[str, Any]:
     """Mechanically restore graph facts; graph rules decide their use."""
     if library is None:
         return {"shape_count": 0, "program_count": 0}
+    developmental_contract = _validate_developmental_curriculum_contract(
+        library
+    )
     if library.get("version") not in {
         3, 4, 5, 6, 7, 8, 9, 10, 11, MOTOR_LIBRARY_VERSION,
     }:
@@ -915,6 +1070,15 @@ def _restore_motor_library(
     restored = {
         "shape_count": shape_count,
         "program_count": program_count,
+        "developmental_curriculum_contract_version": developmental_contract[
+            "schema_version"
+        ],
+        "developmental_curriculum_contract_digest": developmental_contract[
+            "ontology_sha256"
+        ],
+        "developmental_curriculum_contract_capability_count": len(
+            developmental_contract["capability_names"]
+        ),
     }
     if plan_hint_count:
         restored["plan_hint_count"] = plan_hint_count
@@ -1549,6 +1713,9 @@ def _motor_library_snapshot(
     ))
     return {
         "version": MOTOR_LIBRARY_VERSION,
+        "developmental_curriculum_contract": (
+            developmental_curriculum_contract()
+        ),
         "body_shapes": body_shapes,
         "plan_hints": plan_hints,
         "developmental_capabilities": developmental_capabilities,
@@ -1682,7 +1849,10 @@ def _run_arm(
         ))
     if curriculum is not None:
         if developmental_curriculum:
-            seed_names.append("humanoid_developmental_curriculum")
+            seed_names.extend((
+                "humanoid_developmental_curriculum",
+                "embodied_body_ingest",
+            ))
         else:
             seed_names.append("humanoid_coordination_curriculum")
         if curriculum.get("kinematics_study", False):
@@ -1737,6 +1907,27 @@ def _run_arm(
         policy,
         "persistent_task_residual_authority",
         persistent_task_residual_authority,
+    )
+    future_manifold_enabled = float(
+        locomotion.get("future_manifold_enabled", 0.0)
+    )
+    temporal_anchors_enabled = float(
+        locomotion.get("future_manifold_temporal_anchors_enabled", 0.0)
+    )
+    for name, value in (
+        ("future_manifold_enabled", future_manifold_enabled),
+        (
+            "future_manifold_temporal_anchors_enabled",
+            temporal_anchors_enabled,
+        ),
+    ):
+        if value not in (0.0, 1.0):
+            raise ValueError(f"{name} must be 0.0 or 1.0")
+        agent.inner.set_attr(policy, name, value)
+    agent.inner.set_attr(
+        policy,
+        "future_manifold_local_refinement_enabled",
+        temporal_anchors_enabled,
     )
     target_directed_progress_m = float(
         locomotion.get("target_directed_progress_m", 3.0)
@@ -1866,6 +2057,14 @@ def _run_arm(
             "response_horizon_initialized": 0.0,
             "nominal_response_frames": 0.0,
             "response_frames": 0.0,
+            "manifold_bounds_ready": 0.0,
+            "manifold_bound_dzx": 0.0,
+            "manifold_bound_dzy": 0.0,
+            "manifold_bound_dwx": 0.0,
+            "manifold_bound_dwy": 0.0,
+            "manifold_bound_dvx": 0.0,
+            "manifold_bound_dvy": 0.0,
+            "manifold_bound_dvz": 0.0,
             "topology_focused_response_count": 0.0,
             "motor_primary_ready": 0.0,
             "selected_primary_context_id": 0.0,
@@ -2079,9 +2278,25 @@ def _run_arm(
         _edge(agent, agent.agent, "has_humanoid_episode", episode)
         development_context = None
         if developmental_curriculum:
-            development_context = agent.s.add_node(
-                "EmbodiedDevelopmentEpisode",
-                {
+            attached_transducer = PyBulletHumanoidTrialTransducer.for_attached_world(
+                configuration,
+                world,
+                seed=int(protocol["seed"]),
+            )
+            attached_transducer.publish_body_world_capabilities(agent)
+            _tick_agent(agent)
+            situated_development_contexts = [
+                node
+                for node in agent.s.nodes("EmbodiedDevelopmentEpisode")
+                if agent.s.node(node)["attrs"].get("status") == "situated_ready"
+            ]
+            if len(situated_development_contexts) != 1:
+                raise RuntimeError(
+                    "body ingest must materialize exactly one situated "
+                    "development episode"
+                )
+            development_context = situated_development_contexts[0]
+            development_attrs = {
                     "body_capability_signature": tuple(
                         observation["body_capability_signature"]
                     ),
@@ -2101,8 +2316,37 @@ def _run_arm(
                     "embodiment_reset_available": int(
                         protocol["body"].get("reset_available", True)
                     ),
+                    "embodiment_reset_reachable": int(
+                        protocol["body"].get("reset_available", True)
+                    ),
                     "embodiment_reset_cost_units": int(
-                        configuration.settling_frames
+                        protocol["body"].get(
+                            "reset_cost_units", configuration.settling_frames
+                        )
+                    ),
+                    "caregiver_scaffolding_declared": int(
+                        curriculum.get("caregiver_scaffolding", False)
+                    ),
+                    "caregiver_scaffolding_mode": curriculum.get(
+                        "caregiver_scaffolding_mode", "undeclared"
+                    ),
+                    "protective_support_available": int(
+                        curriculum.get("protective_support_available", False)
+                    ),
+                    "protective_support_effectiveness": float(
+                        curriculum.get("protective_support_effectiveness", 0.0)
+                    ),
+                    "safe_learning_required_horizon_units": int(
+                        curriculum.get("safe_learning_required_horizon_units", 1)
+                    ),
+                    "safe_learning_minimum_width_relaxation": float(
+                        curriculum.get("safe_learning_minimum_width_relaxation", 0.0)
+                    ),
+                    "safe_learning_information_loss_allowance": float(
+                        curriculum.get("safe_learning_information_loss_allowance", 0.0)
+                    ),
+                    "safe_learning_environment_declared": int(
+                        curriculum.get("safe_learning_environment", False)
                     ),
                     "last_body_reset_cost_units": 0,
                     "embodiment_reset_cost_total_units": 0,
@@ -2120,14 +2364,11 @@ def _run_arm(
                     "cognitive_checkin_terminal": 0,
                     "output_authority": 0,
                     "integer_native": 1,
-                },
-            )
-            _edge(
-                agent,
-                agent.agent,
-                "has_embodied_development_episode",
-                development_context,
-            )
+                }
+            for attr_name, attr_value in development_attrs.items():
+                agent.inner.set_attr(
+                    development_context, attr_name, attr_value
+                )
             _edge(
                 agent,
                 episode,
@@ -2834,11 +3075,6 @@ def _run_arm(
         if development_context is not None:
             agent.inner.set_attr(
                 development_context,
-                "development_effector_coverage_complete",
-                1,
-            )
-            agent.inner.set_attr(
-                development_context,
                 "development_learning_active",
                 1,
             )
@@ -3065,7 +3301,11 @@ def _run_arm(
             if not _cognitive_continuation_authorised(
                 agent, episode, development_context
             ):
-                _tick_agent(agent)
+                # The graph withdrew action authority and requested a
+                # System-Two Pareto check-in.  Service that declared task set
+                # without emitting a body command; the graph alone renews or
+                # withholds the lease.
+                _tick_agent(agent, service_system_two=True)
                 if not _cognitive_continuation_authorised(
                     agent, episode, development_context
                 ):
@@ -3542,6 +3782,17 @@ def _run_arm(
             if development_context is not None
             else {}
         )
+        developmental_diagnostics = _developmental_frontier_diagnostics(
+            agent,
+            development_context,
+        )
+        safety_context_nodes = agent.inner.neighbours(
+            episode, "has_learning_safety_context"
+        )
+        safety_context = (
+            dict(agent.s.node(safety_context_nodes[0])["attrs"])
+            if len(safety_context_nodes) == 1 else {}
+        )
         self_learning_plan_summary = None
         if development_context is not None:
             learning_plans = agent.inner.neighbours(
@@ -3850,16 +4101,28 @@ def _run_arm(
             if len(active_developmental_capabilities) == 1
             else "inactive"
         )
+        # Trajectories are durable experimental evidence.  Reporting only
+        # those owned by the capability that happens to remain active at the
+        # final tick made a suspension/mastery erase their observability and
+        # previously reported a false zero after order-N work had run.
+        situated_developmental_capabilities = (
+            agent.inner.neighbours(
+                development_context,
+                "has_embodied_developmental_capability",
+            )
+            if development_context is not None
+            else []
+        )
         program_trajectory_nodes = list({
             trajectory
-            for capability in active_developmental_capabilities
+            for capability in situated_developmental_capabilities
             for trajectory in agent.inner.neighbours(
                 capability, "has_embodied_program_trajectory"
             )
         })
         program_transition_nodes = list({
             transition
-            for capability in active_developmental_capabilities
+            for capability in situated_developmental_capabilities
             for transition in agent.inner.neighbours(
                 capability, "has_embodied_program_transition"
             )
@@ -3901,9 +4164,9 @@ def _run_arm(
             ), default=0),
             "completed_replay_count": sum(
                 int(agent.s.node(capability)["attrs"].get(
-                    "program_trajectory_replay_count", 0
+                    "trajectory_replay_count", 0
                 ))
-                for capability in active_developmental_capabilities
+                for capability in situated_developmental_capabilities
             ),
         }
         locomotor_phenotype_rows = []
@@ -4231,8 +4494,81 @@ def _run_arm(
                 )
             )
             effector_assembly_rows.append(attrs)
+    current_developmental_contract = developmental_curriculum_contract()
+    runtime_body_schemas = agent.inner.neighbours(
+        episode, "has_embodied_body_schema"
+    )
+    runtime_raw_bodies = [
+        raw_body
+        for body_schema in runtime_body_schemas
+        for raw_body in agent.inner.neighbours(
+            body_schema, "grounded_in_embodied_raw_body"
+        )
+    ]
+    all_body_schemas = list(agent.s.nodes("EmbodiedBodySchema"))
+    all_raw_bodies = list(agent.s.nodes("EmbodiedRawBodyObservation"))
     result = {
         "mode": mode,
+        "developmental_curriculum_contract": current_developmental_contract,
+        "developmental_curriculum_contract_digest": (
+            current_developmental_contract["ontology_sha256"]
+        ),
+        "future_manifold": {
+            "enabled": final_policy.get("future_manifold_enabled", 0.0),
+            "temporal_anchors_enabled": final_policy.get(
+                "future_manifold_temporal_anchors_enabled", 0.0
+            ),
+            "bounds_ready": final.get("manifold_bounds_ready", 0.0),
+            "bounds_provenance": final.get(
+                "manifold_bounds_provenance", "unavailable"
+            ),
+            "bounds": {
+                key: final.get(f"manifold_bound_{key}", 0.0)
+                for key in (
+                    "dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz"
+                )
+            },
+            "learning_safety_context": {
+                key: safety_context.get(key, 0)
+                for key in (
+                    "verified", "reset_reachable", "reset_cost_units",
+                    "protective_support_available",
+                    "protective_support_effectiveness",
+                    "recovery_path_count",
+                )
+            },
+            "learning_safety_active": int(
+                safety_context.get("verified", 0) > 0.5
+                and (
+                    safety_context.get("reset_reachable", 0) > 0.5
+                    or (
+                        safety_context.get("protective_support_available", 0) > 0.5
+                        and safety_context.get(
+                            "protective_support_effectiveness", 0
+                        ) > 0.0
+                    )
+                )
+            ),
+            "applied_relaxation": {
+                key: safety_context.get(key, 0)
+                for key in (
+                    "required_horizon_units",
+                    "minimum_width_relaxation",
+                    "information_loss_allowance",
+                )
+            },
+            "applied_bounds": {
+                "required_horizon_units": safety_context.get(
+                    "required_horizon_units", 1
+                ),
+                "minimum_width_relaxation": safety_context.get(
+                    "minimum_width_relaxation", 0
+                ),
+                "information_loss_allowance": safety_context.get(
+                    "information_loss_allowance", 0
+                ),
+            },
+        },
         "policy_owner": "rust_graph",
         "trajectory_architecture": (
             "persistent_residual_support_preview"
@@ -4282,6 +4618,37 @@ def _run_arm(
             "experiment_halted_by_checkin": development_final.get(
                 "cognitive_checkin_terminal", 0
             ),
+            "halt_reason": (
+                "cognitive_checkin_terminal"
+                if development_final.get("cognitive_checkin_terminal", 0)
+                else "none"
+            ),
+            "processes": [
+                {
+                    key: agent.s.node(process)["attrs"].get(key)
+                    for key in (
+                        "status",
+                        "continuation_authority",
+                        "lease_generation",
+                        "renew_before_epoch",
+                        "next_checkin_epoch",
+                        "last_checkin_evidence_units",
+                        "next_checkin_evidence_units",
+                        "checkin_span_evidence_units",
+                        "checkin_count",
+                    )
+                }
+                for process in agent.s.nodes("CognitiveProcess")
+            ],
+            "policies": [
+                {
+                    key: agent.s.node(policy_node)["attrs"].get(key)
+                    for key in ("enabled", "cognitive_epoch")
+                }
+                for policy_node in agent.s.nodes(
+                    "CognitiveSupervisionPolicy"
+                )
+            ],
         },
         "locomotion_residual_m_graph_assessment": final[
             "locomotion_residual_m"
@@ -4364,6 +4731,71 @@ def _run_arm(
                 ),
                 "challenges": curriculum_challenge_rows,
                 "developmental": developmental_curriculum,
+                "developmental_curriculum_contract": (
+                    current_developmental_contract
+                ),
+                "developmental_curriculum_contract_digest": (
+                    restored_library.get(
+                        "developmental_curriculum_contract_digest",
+                        current_developmental_contract["ontology_sha256"],
+                    )
+                ),
+                "developmental_library_restored_memory_count": (
+                    restored_library.get("developmental_capability_count", 0)
+                    + restored_library.get("developmental_experience_count", 0)
+                ),
+                "development_effector_declared_count": development_final.get(
+                    "development_effector_declared_count", 0
+                ),
+                "development_effector_covered_count": development_final.get(
+                    "development_effector_covered_count", 0
+                ),
+                "development_effector_coverage_complete": development_final.get(
+                    "development_effector_coverage_complete", 0
+                ),
+                "development_effector_coverage_unmeasurable": development_final.get(
+                    "development_effector_coverage_unmeasurable", 0
+                ),
+                "runtime_body_schema_count": len(runtime_body_schemas),
+                "runtime_body_affordance_count": sum(
+                    len(agent.inner.neighbours(
+                        body_schema,
+                        "has_opaque_embodied_actuator_affordance",
+                    ))
+                    for body_schema in runtime_body_schemas
+                ),
+                "runtime_raw_body_affordance_count": sum(
+                    len(agent.inner.neighbours(
+                        raw_body,
+                        "has_opaque_embodied_actuator_affordance",
+                    ))
+                    for raw_body in runtime_raw_bodies
+                ),
+                "all_body_schema_count": len(all_body_schemas),
+                "all_body_affordance_count": sum(
+                    len(agent.inner.neighbours(
+                        body_schema,
+                        "has_opaque_embodied_actuator_affordance",
+                    ))
+                    for body_schema in all_body_schemas
+                ),
+                "all_raw_body_count": len(all_raw_bodies),
+                "all_raw_body_affordance_count": sum(
+                    len(agent.inner.neighbours(
+                        raw_body,
+                        "has_opaque_embodied_actuator_affordance",
+                    ))
+                    for raw_body in all_raw_bodies
+                ),
+                "active_capability_diagnostics": developmental_diagnostics[
+                    "active"
+                ],
+                "developmental_frontier": developmental_diagnostics[
+                    "frontier"
+                ],
+                "developmental_unresolved_prerequisites": (
+                    developmental_diagnostics["unresolved_prerequisites"]
+                ),
                 "developmental_goal": final.get(
                     "developmental_goal",
                     development_final.get(

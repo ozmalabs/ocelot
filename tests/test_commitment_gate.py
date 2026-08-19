@@ -42,6 +42,24 @@ from domains import commitment_gate as cg                 # noqa: E402
 from domains import proposal_install as pinstall           # noqa: E402
 
 
+def _risk(*, goal=1.0, requires_approval=0.0):
+    tube = [{"time": t, "cells": {"core": {"weight": 1, "information": 0, "metadata": {}}}, "links": []} for t in range(3)]
+    projection = {"manifold_id": "m1", "projected_tube": tube,
+                  "action_count": 0, "intervention_magnitude": 0}
+    return {
+        "manifold": {"manifold_id": "m1", "required_horizon": 2,
+                      "minimum_width": 1, "maximum_information_loss": 0,
+                      "required_tube": tube},
+        "commit": {"name": "commit", "expected_goal_work": goal,
+                   "requires_approval": requires_approval,
+                   "projection": projection},
+        "wait": {"name": "wait", "delay_cost": 1.0,
+                 "projection": projection},
+        "refine": {"name": "refine", "refinement_cost": 2.0,
+                   "projection": projection},
+    }
+
+
 # ---------------------------------------------------------------------------
 # (a) frame data / classification
 # ---------------------------------------------------------------------------
@@ -103,7 +121,7 @@ def test_reversible_action_bare_string_kind_also_works():
 
 def test_committing_action_refused_with_no_approver():
     s = srs.Substrate()
-    result = cg.commit_gate(s, {"kind": "del_node"})
+    result = cg.commit_gate(s, {"kind": "del_node", "risk": _risk()})
     assert result["allowed"] is False
     assert result["reversible"] is False
     assert result["gated"] is True
@@ -118,7 +136,7 @@ def test_committing_action_refused_with_no_approver():
 
 def test_committing_action_refused_by_denylist_even_with_approver():
     s = srs.Substrate()
-    result = cg.commit_gate(s, {"kind": "del_node"}, approver="pytest",
+    result = cg.commit_gate(s, {"kind": "del_node", "risk": _risk()}, approver="pytest",
                              policy={"denylist": ["del_node"]})
     assert result["allowed"] is False
     assert "denylist" in result["reason"]
@@ -126,7 +144,7 @@ def test_committing_action_refused_by_denylist_even_with_approver():
 
 def test_committing_action_allowed_under_explicit_policy():
     s = srs.Substrate()
-    result = cg.commit_gate(s, {"kind": "del_node"}, approver="pytest",
+    result = cg.commit_gate(s, {"kind": "del_node", "risk": _risk()}, approver="pytest",
                              policy={"allowlist": ["del_node"]})
     assert result["allowed"] is True
     assert result["gated"] is True
@@ -143,7 +161,7 @@ def test_external_action_kinds_are_gated_committing():
     task calls out, not just the in-graph effect kinds."""
     s = srs.Substrate()
     for kind in ("browser_apply", "arc_apply", "http_get", "voice_emit"):
-        result = cg.commit_gate(s, {"kind": kind})
+        result = cg.commit_gate(s, {"kind": kind, "risk": _risk()})
         assert result["allowed"] is False, f"{kind} should be refused with no approver"
         assert result["reversible"] is False, f"{kind} should classify committing"
 
@@ -176,7 +194,7 @@ def test_c_subsumption_deny_case_matches_install_proposal(monkeypatch):
         raise AssertionError("must not construct PrimitiveExtension for a failed proposal")
     monkeypatch.setattr(pinstall, "PrimitiveExtension", _boom)
 
-    gate_result = cg.commit_gate(s, {"kind": "runtime_install", "proposal_id": prop_id},
+    gate_result = cg.commit_gate(s, {"kind": "runtime_install", "proposal_id": prop_id, "risk": _risk()},
                                   approver="pytest")
     oracle_result = pinstall.install_proposal(s, prop_id, approver="pytest")
 
@@ -213,7 +231,7 @@ def test_c_subsumption_allow_case_matches_install_proposal(monkeypatch):
     monkeypatch.setattr(pinstall, "teach",
                         lambda agent, type_, attrs, **kw: taught.append((type_, attrs)))
 
-    gate_result = cg.commit_gate(s, {"kind": "runtime_install", "proposal_id": prop_id},
+    gate_result = cg.commit_gate(s, {"kind": "runtime_install", "proposal_id": prop_id, "risk": _risk()},
                                   approver="pytest")
     oracle_result = pinstall.install_proposal(s, prop_id, approver="pytest")
 
@@ -226,7 +244,7 @@ def test_c_subsumption_already_installed_matches_install_proposal():
     s = srs.Substrate()
     prop_id = _spec_and_proposal(s, status="validated", installed=True)
 
-    gate_result = cg.commit_gate(s, {"kind": "runtime_install", "proposal_id": prop_id},
+    gate_result = cg.commit_gate(s, {"kind": "runtime_install", "proposal_id": prop_id, "risk": _risk()},
                                   approver="pytest")
     oracle_result = pinstall.install_proposal(s, prop_id, approver="pytest")
 
@@ -290,7 +308,7 @@ def test_e_commitment_record_only_for_passed_commit():
     refused_ids_before = set(_commitment_nodes(s))
 
     # a passed committing action: a record is minted and marked allowed=True.
-    passed = cg.commit_gate(s, {"kind": "del_node"}, approver="pytest",
+    passed = cg.commit_gate(s, {"kind": "del_node", "risk": _risk()}, approver="pytest",
                              policy={"allowlist": ["del_node"]})
     assert passed["record"] is not None
     passed_ids_after = set(_commitment_nodes(s))
@@ -303,6 +321,47 @@ def test_e_commitment_record_only_for_passed_commit():
     refused_rec = s.node(refused["record"])["attrs"]
     assert refused_rec["allowed"] is False
     assert refused_rec["reversible"] is False
+
+
+def test_manifold_action_key_delegates_future_manifold_gate_and_approval_separately():
+    s = srs.Substrate()
+    risk = _risk(goal=100, requires_approval=1)
+    result = cg.commit_gate(s, {"kind": "world_action", "risk": risk})
+    assert result["decision"] == "commit"
+    assert result["allowed"] is False
+
+
+def test_shape_information_loss_is_not_traded_for_goal_utility():
+    s = srs.Substrate()
+    risk = _risk(goal=10000)
+    lost_tube = list(risk["commit"]["projection"]["projected_tube"])
+    lost_tube[-1] = {"time": 2, "cells": {}, "links": []}
+    risk["commit"]["projection"] = dict(risk["commit"]["projection"],
+                                           projected_tube=lost_tube)
+    result = cg.commit_gate(s, {"kind": "world_action", "risk": risk})
+    assert result["decision"] == "wait"
+
+
+def test_candidate_approval_cannot_be_waived_by_outer_policy():
+    s = srs.Substrate()
+    risk = _risk(goal=100, requires_approval=1)
+
+    result = cg.commit_gate(
+        s, {"kind": "world_action", "risk": risk},
+        policy={"require_approver": False},
+    )
+
+    assert result["decision"] == "commit"
+    assert result["allowed"] is False
+    assert result["reason"] == "external_approval_required"
+    assert result["record"] is not None
+    assert s.node(result["record"])["attrs"]["allowed"] is False
+
+    approved = cg.commit_gate(
+        s, {"kind": "world_action", "risk": risk},
+        approver="pytest", policy={"require_approver": False},
+    )
+    assert approved["allowed"] is True
 
 
 # ---------------------------------------------------------------------------

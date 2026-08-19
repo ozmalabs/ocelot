@@ -26,6 +26,8 @@ import os
 import re
 from pathlib import Path
 from typing import Any, Callable, Optional
+from domains.information_commitment import assess
+from domains.shape_tube import goal_manifold, goal_projection
 
 ROOT = Path(__file__).resolve().parent.parent
 SEEDS = ROOT / "seeds"
@@ -196,19 +198,16 @@ def teach(agent, type_: str, attrs: dict, *,
 
     local_id = 1 + max([n.get("local_id", -1) for n in m["nodes"]], default=-1)
     m["nodes"].append({"local_id": local_id, "type": type_, "attrs": attrs})
-    from domains.information_commitment import assess
     gate = assess(
         agent,
         commit={
             "name": "teach_to_disk", "expected_goal_work": 2.0,
             "expected_information_gain": 1.0,
-            "footprint": {
-                "deleted_facts": 0.0, "overwritten_facts": 1.0,
-                "recoverability": 0.5, "externality": 0.0,
-            },
+            "projection": goal_projection("teach_to_disk_goal", active=True, action_count=1, intervention_magnitude=1.0),
         },
-        wait={"delay_cost": 0.1},
-        refine={"refinement_cost": 1.0},
+        wait={"delay_cost": 0.1, "projection": goal_projection("teach_to_disk_goal", active=False, action_count=0, intervention_magnitude=0.0)},
+        refine={"refinement_cost": 1.0, "projection": goal_projection("teach_to_disk_goal", active=False, action_count=1, intervention_magnitude=0.5)},
+        manifold=goal_manifold("teach_to_disk_goal"),
         retain_trace=False,
     )
     if gate["decision"] != "commit" or not gate["authorized"]:

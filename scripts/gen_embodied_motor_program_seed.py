@@ -33,6 +33,22 @@ FLOW_FEATURES = (
     "flow_vertical",
     "power_state",
 )
+CONTEXT_DELTAS = FLOW_FEATURES
+# A deliberately finite unroll keeps the graph contract bounded.  It is not a
+# physical horizon: each slice is an A-B-S projection of receipt-learned
+# context deltas, and the audit reports when this support is exhausted.
+FUTURE_MANIFOLD_PROJECTION_BUDGET = 16
+FUTURE_MANIFOLD_PATH_FIXED_POINT_RUN = 1
+FUTURE_MANIFOLD_PHYSICAL_HORIZON = 256
+# Temporal foveation is opt-in.  The runtime treats these as graph-owned
+# policy data (not a host schedule): dense anchors cover 1,2,3,4,8,16, then
+# log-log-far anchors then grow by four; ambiguous intervals may be locally
+# refined under the same budget.
+FUTURE_MANIFOLD_TEMPORAL_ANCHORS_ENABLED = 0
+FUTURE_MANIFOLD_ANCHOR_GROWTH = 2
+FUTURE_MANIFOLD_MAX_SHAPE_ORDER = 1
+FUTURE_MANIFOLD_MAX_REFINEMENTS = 16
+FUTURE_MANIFOLD_ENCLOSURE_WIDTH_FLOOR = 0
 ALL_CONSEQUENCES = tuple(dict.fromkeys(
     (*COMPONENTS, "drag", "energy", *STRUCTURAL_LOADS)
 ))
@@ -99,6 +115,17 @@ def MinOver(source, var_name, value, default):
 
 def Min(*items):
     return {"type": "Min", "items": list(items)}
+
+
+def MaxOver(source, var_name, value, default):
+    """Maximum value over a graph collection (the graph-native twin of MinOver)."""
+    return {
+        "type": "MaxOver",
+        "source": source,
+        "var_name": var_name,
+        "value": value,
+        "default": default,
+    }
 
 
 def Sin(arg):
@@ -345,8 +372,30 @@ def outcome_observation(key, var="outcome"):
     raise ValueError(f"unknown motor consequence {key!r}")
 
 
-def model_prediction(var, key):
+def outcome_context_delta(feature, var="outcome"):
+    return P0(var, f"observed_context_delta_{feature}")
+
+
+def _projected_position(var, steps):
+    position = P0(var, "state_effector_position")
+    for _ in range(max(0, int(steps))):
+        error = Minus(P0(var, "specified_command_level"), position)
+        maximum = P0(var, "specified_maximum_position_change_per_action")
+        change = If(
+            Gt(Abs(error), maximum),
+            If(Gt(error, L(0.0)), maximum, Times(L(-1.0), maximum)),
+            error,
+        )
+        position = Plus(position, change)
+    return position
+
+
+def _model_prediction(var, key, context=None, projection_step=0):
     """Receipt-learned local prediction over vector flow and power state."""
+    context = context or {}
+    def context_value(feature):
+        return context.get(feature, P0("episode", f"state_{feature}"))
+
     learned_prediction = Plus(
         P0(var, f"mean_{key}"),
         If(
@@ -358,7 +407,7 @@ def model_prediction(var, key):
                 Times(
                     P0(var, f"flow_gain_{key}"),
                     Minus(
-                        P0("episode", "state_flow_speed_squared"),
+                        context.get("flow_speed_squared", P0("episode", "state_flow_speed_squared")),
                         P0(var, "mean_flow_speed_squared"),
                     ),
                 ),
@@ -366,7 +415,7 @@ def model_prediction(var, key):
                     Times(
                         P0(var, f"{feature}_gain_{key}"),
                         Minus(
-                            P0("episode", f"state_{feature}"),
+                            context_value(feature),
                             P0(var, f"mean_{feature}"),
                         ),
                     )
@@ -376,6 +425,7 @@ def model_prediction(var, key):
             L(0.0),
         ),
     )
+    projected_position = context.get("state_effector_position", _projected_position(var, projection_step))
     position_error = Minus(
         P0(var, "specified_command_level"),
         P0(var, "state_effector_position"),
@@ -392,9 +442,9 @@ def model_prediction(var, key):
         ),
         position_error,
     )
-    predicted_position = Plus(
-        P0(var, "state_effector_position"),
-        bounded_position_change,
+    predicted_position = (
+        projected_position if projection_step > 0
+        else Plus(projected_position, bounded_position_change)
     )
     specification_prediction = Plus(
         P0(var, f"specified_passive_mean_{key}"),
@@ -412,6 +462,115 @@ def model_prediction(var, key):
         specification_prediction,
         learned_prediction,
     )
+
+
+def model_prediction(var, key):
+    return _model_prediction(var, key)
+
+
+def model_prediction_at_context(var, key, context, projection_step=0):
+    """Predict from a synthetic context made only from learned receipts."""
+    return _model_prediction(var, key, context, projection_step)
+
+
+def context_delta_prediction(var, feature, context):
+    """One learned context transition; no plant/model-oracle access."""
+    value = P0(var, f"mean_context_delta_{feature}")
+    for conditioning in FLOW_FEATURES:
+        value = Plus(value, Times(
+            P0(var, f"context_delta_gain_{feature}_{conditioning}"),
+            Minus(
+                context.get(conditioning, P0("episode", f"state_{conditioning}")),
+                P0(var, f"mean_{conditioning}"),
+            ),
+        ))
+    return value
+
+
+def group_context_transition_peers(var="model"):
+    """Receipt-grounded peers sharing an actuator group with ``var``.
+
+    This is a generic bootstrap for a cold command-level model.  It shares
+    only transition evidence already learned from ordinary singleton
+    receipts; it never manufactures a transition for a group with no such
+    receipt.
+    """
+    return Filter(
+        MODELS,
+        "peer",
+        And(
+            Eq(P0("peer", "actuator_group"), P0(var, "actuator_group")),
+            Gt(P0("peer", "context_delta_experience_count"), L(0.0)),
+        ),
+    )
+
+
+def share_group_context_transition_rule():
+    """Bootstrap cold siblings from deterministic group-level receipt evidence."""
+    peers = group_context_transition_peers()
+    peer_count = Count(peers)
+    effects = [
+        ["set_attr", "model", "context_delta_experience_count", T(peer_count)],
+    ]
+    # Average the learned transition model over same-group peers.  The
+    # aggregation is deterministic because graph collection order is not used
+    # as a tie-break and all members contribute symmetrically.
+    for feature in CONTEXT_DELTAS:
+        effects.append(["set_attr", "model", f"mean_context_delta_{feature}", T(
+            Div(Sum(peers, "peer", P0("peer", f"mean_context_delta_{feature}")), peer_count)
+        )])
+        for conditioning in FLOW_FEATURES:
+            effects.append(["set_attr", "model", f"context_delta_gain_{feature}_{conditioning}", T(
+                Div(Sum(peers, "peer", P0("peer", f"context_delta_gain_{feature}_{conditioning}")), peer_count)
+            )])
+    for feature in FLOW_FEATURES:
+        effects.append(["set_attr", "model", f"mean_{feature}", T(
+            Div(Sum(peers, "peer", P0("peer", f"mean_{feature}")), peer_count)
+        )])
+    return {
+        "name": "emp_share_group_context_transition_evidence",
+        "area": "embodied_motor_program_plasticity",
+        "latency_class": "soft_realtime",
+        "batch": True,
+        "comment": (
+            "A cold command-level model may use averaged same-group transition "
+            "evidence from ordinary receipts; an unevidenced group remains unsupported."
+        ),
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_effector_model", "model"],
+        ],
+        "where": And(
+            Eq(P0("model", "context_delta_experience_count"), L(0.0)),
+            Gt(peer_count, L(0.0)),
+        ),
+        "effects": effects,
+    }
+
+
+def baseline_context_delta_at_context(feature, context):
+    references = Filter(
+        MODELS, "reference",
+        And(Lt(P0("reference", "activation_magnitude"), L(0.5)),
+            Gt(P0("reference", "context_delta_experience_count"), L(0.0))),
+    )
+    return If(
+        Gt(Count(references), L(0.0)),
+        Div(Sum(references, "reference", context_delta_prediction("reference", feature, context)), Count(references)),
+        L(0.0),
+    )
+
+
+def composed_context_delta(source, feature, context, addition=None):
+    baseline = baseline_context_delta_at_context(feature, context)
+    value = Plus(
+        baseline,
+        Sum(members(source), "member", Minus(context_delta_prediction("member", feature, context), baseline)),
+    )
+    if addition is not None:
+        value = Plus(value, Minus(context_delta_prediction(addition, feature, context), baseline))
+    return value
 
 
 def structural_model_prediction(var, key):
@@ -473,7 +632,7 @@ def members(plan="plan"):
     return Neighbours(plan, "includes_embodied_effector_model")
 
 
-def baseline_prediction(key):
+def baseline_prediction_at_context(key, context=None):
     references = Filter(
         MODELS,
         "reference",
@@ -488,12 +647,16 @@ def baseline_prediction(key):
             Sum(
                 references,
                 "reference",
-                model_prediction("reference", key),
+                model_prediction_at_context("reference", key, context or {}),
             ),
             Count(references),
         ),
         L(0.0),
     )
+
+
+def baseline_prediction(key):
+    return baseline_prediction_at_context(key)
 
 
 def prediction(source, key, addition=None):
@@ -512,6 +675,137 @@ def prediction(source, key, addition=None):
             Minus(model_prediction(addition, key), baseline),
         )
     return value
+
+
+def prediction_at_context(source, key, context, addition=None, projection_step=0):
+    baseline = baseline_prediction_at_context(key, context)
+    value = Plus(
+        baseline,
+        Sum(
+            members(source),
+            "member",
+            Minus(model_prediction_at_context("member", key, context, projection_step), baseline),
+        ),
+    )
+    if addition is not None:
+        value = Plus(
+            value,
+            Minus(model_prediction_at_context(addition, key, context, projection_step), baseline),
+        )
+    return value
+
+
+def _synthetic_context(source, step, addition=None):
+    """Unroll receipt-learned context transitions for one bounded slice."""
+    context = {feature: P0("episode", f"state_{feature}") for feature in FLOW_FEATURES}
+    for _ in range(step):
+        next_context = {}
+        for feature in FLOW_FEATURES:
+            delta = composed_context_delta(source, feature, context, addition)
+            next_context[feature] = Plus(context[feature], delta)
+        # This is a derived coordinate of the learned context, not a plant
+        # query or a physical forward model.
+        next_context["flow_speed_squared"] = Plus(*(
+            Times(next_context[feature], next_context[feature])
+            for feature in FLOW_FEATURES[:3]
+        ))
+        context = next_context
+    if "flow_speed_squared" not in context:
+        context["flow_speed_squared"] = Plus(*(
+            Times(context[feature], context[feature])
+            for feature in FLOW_FEATURES[:3]
+        ))
+    return context
+
+
+def _projection_supported(source, addition=None):
+    specified_transition_prior = And(
+        Gt(P0("member", "specified_actuator_dynamics_enabled"), L(0.5)),
+        Gt(P0("member", "specified_effect_prior_confidence"), L(0.5)),
+        Gt(P0("member", "specified_maximum_position_change_per_action"), L(0.0)),
+    )
+    checks = [Gt(P0("member", "experience_count"), L(0.0))]
+    # Every transition is receipt-derived; no delta evidence means unresolved.
+    checks.append(Or(
+        Gt(P0("member", "context_delta_experience_count"), L(0.0)),
+        specified_transition_prior,
+    ))
+    support = And(*checks)
+    supported = Not(Exists(members(source), "member", Not(support)))
+    if addition is not None:
+        supported = And(
+            supported,
+            Gt(P0(addition, "experience_count"), L(0.0)),
+            Or(
+                Gt(P0(addition, "context_delta_experience_count"), L(0.0)),
+                And(
+                    Gt(P0(addition, "specified_actuator_dynamics_enabled"), L(0.5)),
+                    Gt(P0(addition, "specified_effect_prior_confidence"), L(0.5)),
+                    Gt(P0(addition, "specified_maximum_position_change_per_action"), L(0.0)),
+                ),
+            ),
+        )
+    return supported
+
+
+def manifold_projection_loss(source="plan", step=1, addition=None):
+    context = _synthetic_context(source, step, addition)
+    terms = []
+    for key in COMPONENTS:
+        residual = Abs(Minus(
+            P0("episode", f"target_{key}"),
+            prediction_at_context(source, key, context, addition, step),
+        ))
+        terms.append(If(And(
+            Gt(P0("policy", f"{key}_weight"), L(0.0)),
+            Gt(residual, P0("episode", f"manifold_bound_{key}")),
+        ), L(1.0), L(0.0)))
+    return Plus(*terms)
+
+
+def manifold_projection_horizon(source="plan", addition=None):
+    return native_future_projection(source, addition, "horizon")
+
+
+def manifold_projection_horizon_legacy(source="plan", addition=None):
+    """Earliest supported loss; all-retained paths stop unresolved at budget."""
+    horizon = L(float(FUTURE_MANIFOLD_PROJECTION_BUDGET))
+    for step in reversed(range(1, FUTURE_MANIFOLD_PROJECTION_BUDGET + 1)):
+        current = _synthetic_context(source, step, addition)
+        previous = _synthetic_context(source, step - 1, addition)
+        no_progress = And(
+            *(Eq(current[feature], previous[feature]) for feature in FLOW_FEATURES),
+            Not(Exists(members(source), "member", Not(Eq(
+                _projected_position("member", step),
+                _projected_position("member", step - 1),
+            )))),
+            Eq(_projected_position(addition, step), _projected_position(addition, step - 1)) if addition is not None else Eq(L(0.0), L(0.0)),
+        )
+        horizon = If(
+            Or(Gt(manifold_projection_loss(source, step, addition), L(0.0)), no_progress),
+            L(float(step)), horizon,
+        )
+    return horizon
+
+
+def manifold_projection_axis_lost(source, key, addition=None):
+    return Not(Gt(native_future_projection(source, addition, f"retained_{key}"), L(0.5)))
+
+
+def manifold_projection_axis_lost_legacy(source, key, addition=None):
+    horizon = manifold_projection_horizon(source, addition)
+    values = []
+    for step in range(1, FUTURE_MANIFOLD_PROJECTION_BUDGET + 1):
+        context = _synthetic_context(source, step, addition)
+        residual = Abs(Minus(P0("episode", f"target_{key}"), prediction_at_context(source, key, context, addition, step)))
+        values.append(If(Eq(horizon, L(float(step))), Gt(residual, P0("episode", f"manifold_bound_{key}")), L(False)))
+    return Or(*values)
+
+
+def manifold_projection_loss_at_decision(source="plan", addition=None):
+    horizon = manifold_projection_horizon(source, addition)
+    terms = [If(Eq(horizon, L(float(step))), manifold_projection_loss(source, step, addition), L(0.0)) for step in range(1, FUTURE_MANIFOLD_PROJECTION_BUDGET + 1)]
+    return Plus(*terms)
 
 
 def structural_program_admissible(source, addition=None):
@@ -643,6 +937,14 @@ def available_models(plan="plan"):
                 ),
             )),
         ),
+    )
+
+
+def composition_width_available(source="plan"):
+    """Whether one more member may be added under the declared width cap."""
+    return Or(
+        Not(Gt(P0("episode", "maximum_program_width"), L(0.0))),
+        Lt(P0(source, "member_count"), P0("episode", "maximum_program_width")),
     )
 
 
@@ -1025,6 +1327,9 @@ def calibration_program_effects(primary, source):
             "experience_count": 0.0,
             **{f"mean_{key}": 0.0 for key in ALL_CONSEQUENCES},
             **{f"flow_gain_{key}": 0.0 for key in ALL_CONSEQUENCES},
+            **{f"mean_context_delta_{feature}": 0.0 for feature in CONTEXT_DELTAS},
+            **{f"context_delta_gain_{feature}_{conditioning}": 0.0 for feature in CONTEXT_DELTAS for conditioning in FLOW_FEATURES},
+            "context_delta_experience_count": 0.0,
             "mean_flow_speed_squared": 0.0,
             **{f"mean_{feature}": 0.0 for feature in FLOW_FEATURES},
             "last_learning_seq": 0.0,
@@ -1041,6 +1346,7 @@ def calibration_program_effects(primary, source):
             "includes_embodied_effector_model",
             primary,
         ],
+        *future_manifold_audit_effects("program"),
         [
             "add_edge",
             "episode",
@@ -1216,8 +1522,32 @@ def derive_active_rate_stabilization_targets_rule():
     )
 
     def attitude_correction(axis):
+        target_angle = P0("episode", f"target_{axis}_angle")
+        if axis == "pitch":
+            # During aerodynamic departure recovery, holding the ordinary
+            # attitude target (usually level body pitch) while separately
+            # lowering alpha commands a persistent nose-down flight path.
+            # A generic recovery target is instead an alpha-aligned pitch:
+            # with no outer-loop flight-path reference, this preserves the
+            # current zero-flight-path objective while the alpha loop exits
+            # the departure.  The condition is entirely capability/episode
+            # driven and applies to any plant exposing these state channels;
+            # it is not an F-16 command or surface rule.
+            target_angle = If(
+                And(
+                    Gt(
+                        P0(
+                            "episode",
+                            "active_angle_of_attack_recovery",
+                        ),
+                        L(0.5),
+                    ),
+                ),
+                P0("episode", "target_recovery_alpha_radians"),
+                target_angle,
+            )
         difference = Minus(
-            P0("episode", f"target_{axis}_angle"),
+            target_angle,
             P0("episode", f"state_{axis}_angle"),
         )
         angular_error = (
@@ -1588,6 +1918,7 @@ def reuse_internalized_program_rule():
             ),
             Gt(P0("program", "experience_count"), L(0.0)),
             structural_program_admissible("program"),
+            manifold_reuse_allowed("program"),
         ),
         "effects": [
             ["set_attr", "program", "request_seq", T(
@@ -1680,6 +2011,7 @@ def async_release_trusted_default_rule():
                 P0("episode", "async_trust_epoch"),
             )),
             structural_program_admissible("program"),
+            manifold_reuse_allowed("program"),
         ),
         "effects": [
             ["set_attr", "program", "request_seq", T(
@@ -2623,6 +2955,241 @@ def render_first_enabled():
     )
 
 
+def future_manifold_enabled():
+    return Gt(P0("policy", "future_manifold_enabled"), L(0.5))
+
+
+def future_manifold_bounds_active():
+    return And(
+        future_manifold_enabled(),
+        Gt(P0("episode", "manifold_bounds_ready"), L(0.5)),
+    )
+
+
+def future_manifold_supported():
+    """The treatment is ordinary interpreted search only; unsupported paths fail closed."""
+    return And(
+        future_manifold_bounds_active(),
+        Not(native_composition_enabled()),
+        Not(render_first_enabled()),
+        Not(Gt(P0("policy", "parallel_factorized_composition_enabled"), L(0.5))),
+    )
+
+
+def future_manifold_establishing():
+    return And(
+        future_manifold_enabled(),
+        Not(Gt(P0("episode", "manifold_bounds_ready"), L(0.5))),
+        Not(Gt(P0("episode", "program_request_seq"), P0("policy", "future_manifold_establish_until_seq"))),
+    )
+
+
+def ordinary_composer_allowed():
+    return Or(Not(future_manifold_enabled()), future_manifold_establishing(), future_manifold_supported())
+
+
+def native_future_projection(source="plan", addition=None, field="loss"):
+    term = {"type": "FutureManifoldProjection", "episode": V("episode"), "policy": V("policy"), "source": V(source), "field": field}
+    if addition is not None:
+        term["addition"] = V(addition)
+    return term
+
+
+def manifold_loss(source="plan", addition=None):
+    return native_future_projection(source, addition, "loss")
+
+
+def manifold_loss_legacy(source="plan", addition=None):
+    projected = manifold_projection_loss_at_decision(source, addition)
+    terms = []
+    for key in COMPONENTS:
+        predicted = Abs(Minus(P0("episode", f"target_{key}"), prediction(source, key, addition)))
+        terms.append(If(And(Gt(P0("policy", f"{key}_weight"), L(0.0)), Gt(predicted, P0("episode", f"manifold_bound_{key}"))), L(1.0), L(0.0)))
+    immediate = Plus(*terms)
+    return If(And(future_manifold_supported(), _projection_supported(source, addition)), projected, immediate)
+
+
+def manifold_protected_count():
+    return Plus(*(If(Gt(P0("policy", f"{key}_weight"), L(0.0)), L(1.0), L(0.0)) for key in COMPONENTS))
+
+
+def manifold_information_loss(source="plan", addition=None):
+    return native_future_projection(source, addition, "information_loss")
+    lost = manifold_loss(source, addition)
+    retained = Minus(manifold_protected_count(), lost)
+    # Complete topology on protected component cells: every lost cell removes
+    # its incident unordered links, counted as C(n,2)-C(r,2).
+    return Plus(lost, Minus(
+        Div(Times(manifold_protected_count(), Minus(manifold_protected_count(), L(1.0))), L(2.0)),
+        Div(Times(retained, Minus(retained, L(1.0))), L(2.0)),
+    ))
+
+
+def manifold_retained_width(source="plan", addition=None):
+    return native_future_projection(source, addition, "retained_width")
+    terms = []
+    for key in COMPONENTS:
+        terms.append(If(And(Gt(P0("policy", f"{key}_weight"), L(0.0)), Not(manifold_projection_axis_lost(source, key, addition))), L(1.0), L(0.0)))
+    return Plus(*terms)
+
+
+def manifold_filter(source, var="candidate", addition=None):
+    return Or(
+        Not(future_manifold_supported()),
+        And(
+            Gt(native_future_projection(source, addition, "support"), L(0.5)),
+            Gt(native_future_projection(source, addition, "resolved"), L(0.5)),
+            Eq(manifold_loss(source, addition), L(0.0)),
+        ),
+    )
+
+
+def manifold_reuse_allowed(source="program"):
+    """A held default must earn a fresh certificate in the current state.
+
+    Establishment programs predate the learned bounds, and their old audit is
+    not authority to cross the risk gate later.  Unsupported, unresolved, or
+    lossy defaults fall through to fresh composition, where all complete
+    alternatives can be compared and a forced minimum-loss transition can be
+    recorded if necessary.
+    """
+    return Or(
+        Not(future_manifold_bounds_active()),
+        And(
+            Gt(native_future_projection(source, None, "support"), L(0.5)),
+            Gt(native_future_projection(source, None, "resolved"), L(0.5)),
+            Eq(manifold_loss(source), L(0.0)),
+        ),
+    )
+
+
+def manifold_min_loss(source, candidates):
+    return MinOver(candidates, "candidate", manifold_loss(source, "candidate"), L(0.0))
+
+
+def future_manifold_audit_effects(source):
+    """Stamp the graph-only risk report on every program release path."""
+    # `If` is lazy in the evaluator.  Disabled programs receive inert audit
+    # defaults without invoking projection, preserving the gate-off identity
+    # all the way through publication rather than only during selection.
+    gated = lambda value, default=0.0: If(
+        future_manifold_enabled(), value, L(default)
+    )
+    support = gated(native_future_projection(source, None, "support"))
+    supported = Gt(support, L(0.5))
+    resolved = gated(native_future_projection(source, None, "resolved"))
+    loss = gated(manifold_loss(source))
+    horizon = gated(manifold_projection_horizon(source))
+    termination_code = gated(native_future_projection(source, None, "termination_code"))
+    epistemic_probe = Or(
+        Eq(A(source, "source"), L("factorized_calibration")),
+        Eq(A(source, "source"), L("graph_requested_flow_excitation")),
+    )
+    return [
+        ["set_attr", source, "manifold_retained_width", T(gated(manifold_retained_width(source)))],
+        ["set_attr", source, "manifold_information_loss", T(gated(manifold_information_loss(source)))],
+        ["set_attr", source, "manifold_forced_transition", T(If(Gt(loss, L(0.0)), L(1.0), L(0.0)))],
+        ["set_attr", source, "manifold_horizon", T(horizon)],
+        ["set_attr", source, "manifold_projection_resolved", T(resolved)],
+        ["set_attr", source, "manifold_projection_termination_code", T(termination_code)],
+        ["set_attr", source, "manifold_projection_reason", T(If(
+            Not(future_manifold_enabled()),
+            L("disabled"),
+            If(
+            Not(supported),
+            L("support_unavailable"),
+            If(
+                Gt(loss, L(0.0)),
+                L("earliest_decisive_loss"),
+                If(
+                    Eq(termination_code, L(6.0)),
+                    L("certified_horizon"),
+                If(
+                    And(Gt(resolved, L(0.5)), epistemic_probe),
+                    L("epistemic_action_boundary"),
+                    If(Gt(resolved, L(0.5)), L("path_transition_fixed_point"), L("budget_exhausted_unresolved")),
+                ),
+                ),
+            ),
+            ),
+        ))],
+        ["set_attr", source, "manifold_projection_horizon", T(horizon)],
+        ["set_attr", source, "manifold_projection_support", T(support)],
+        ["set_attr", source, "manifold_projection_budget", T(gated(L(float(FUTURE_MANIFOLD_PROJECTION_BUDGET))))],
+        ["set_attr", source, "manifold_physical_horizon", T(gated(P0("policy", "future_manifold_physical_horizon")))],
+        ["set_attr", source, "manifold_projection_phase", T(If(future_manifold_establishing(), L("establishing"), L("post_establishment")))],
+        ["set_attr", source, "manifold_phase", T(If(future_manifold_establishing(), L("establishing"), L("post_establishment")))],
+        ["set_attr", source, "projection_policy", T(If(
+            epistemic_probe, L("single_action_probe"), L("hold_program")
+        ))],
+        ["set_attr", source, "projection_target_policy", "hold_current_target"],
+        ["set_attr", source, "projection_time_bound", f"adaptive_up_to_{FUTURE_MANIFOLD_PROJECTION_BUDGET}_action_slices"],
+        # The fields below are an audit contract, not authority.  They remain
+        # inert when the manifold gate is disabled and let runtime agents
+        # report sparse anchors/refinement without host-side interpretation.
+        ["set_attr", source, "manifold_anchor_schedule", T(If(
+            future_manifold_enabled(),
+            L("dense_1_2_3_loglog_far"),
+            L("disabled"),
+        ))],
+        ["set_attr", source, "manifold_anchor_count", T(gated(
+            native_future_projection(source, None, "anchor_count")
+        ))],
+        ["set_attr", source, "manifold_refinement_count", T(gated(
+            native_future_projection(source, None, "refinement_count")
+        ))],
+        ["set_attr", source, "manifold_certified_interval_count", T(gated(
+            native_future_projection(source, None, "certified_interval_count")
+        ))],
+        ["set_attr", source, "manifold_ambiguous_interval_count", T(gated(
+            native_future_projection(source, None, "ambiguous_interval_count")
+        ))],
+        ["set_attr", source, "manifold_max_enclosure_width", T(gated(
+            native_future_projection(source, None, "max_enclosure_width")
+        ))],
+        ["set_attr", source, "manifold_max_shape_order", T(gated(
+            native_future_projection(source, None, "max_shape_order")
+        ))],
+        ["set_attr", source, "manifold_earliest_decisive_tick", T(gated(
+            native_future_projection(source, None, "earliest_decisive_tick")
+        ))],
+        ["set_attr", source, "manifold_anchor_budget", T(gated(
+            L(float(FUTURE_MANIFOLD_PROJECTION_BUDGET))
+        ))],
+        ["set_attr", source, "manifold_refinement_budget", T(gated(
+            L(float(FUTURE_MANIFOLD_MAX_REFINEMENTS))
+        ))],
+        ["set_attr", source, "manifold_shape_order_budget", T(gated(
+            L(float(FUTURE_MANIFOLD_MAX_SHAPE_ORDER))
+        ))],
+        *[["set_attr", source, f"manifold_retained_{key}", T(gated(If(And(Gt(P0("policy", f"{key}_weight"), L(0.0)), Not(manifold_projection_axis_lost(source, key))), L(1.0), L(0.0))))] for key in COMPONENTS],
+    ]
+
+
+def establish_future_manifold_rule():
+    """Learn deterministic component bounds only from ready programs in-window."""
+    return {
+        "name": "emp_establish_future_manifold_from_ready_program",
+        "area": "embodied_motor_program",
+        "latency_class": "soft_realtime",
+        "match": [["agent", "has_embodied_motor_program_policy", "policy"],
+                  ["agent", "has_embodied_motor_program_episode", "episode"],
+                  ["episode", "has_embodied_motor_program", "program"]],
+        "where": And(
+            future_manifold_enabled(),
+            Eq(A("program", "status"), L("ready")),
+            Eq(A("program", "source"), L("analysis_by_synthesis")),
+            Not(Lt(P0("program", "request_seq"), P0("policy", "future_manifold_establish_from_seq"))),
+            Not(Gt(P0("program", "request_seq"), P0("policy", "future_manifold_establish_until_seq"))),
+        ),
+        "effects": [
+            *[["set_attr", "program", f"manifold_predicted_residual_{key}", T(Abs(Minus(P0("episode", f"target_{key}"), prediction("program", key))))] for key in COMPONENTS],
+            *[["set_attr", "episode", f"manifold_bound_{key}", T(Max(P0("episode", f"manifold_bound_{key}"), Abs(Minus(P0("episode", f"target_{key}"), prediction("program", key)))))] for key in COMPONENTS],
+            ["set_attr", "episode", "manifold_bounds_ready", T(If(Not(Lt(P0("program", "request_seq"), P0("policy", "future_manifold_establish_until_seq"))), L(1.0), P0("episode", "manifold_bounds_ready")))],
+        ],
+    }
+
+
 def open_synthesized_program_rule():
     eligible = Filter(
         MODELS,
@@ -2631,10 +3198,23 @@ def open_synthesized_program_rule():
             Gt(P0("candidate", "experience_count"), L(0.5)),
             Gt(P0("candidate", "available"), L(0.5)),
             structural_model_admissible("candidate"),
+            ordinary_composer_allowed(),
+        ),
+    )
+    supported_eligible = Filter(eligible, "candidate", Or(Not(future_manifold_supported()), _projection_supported("candidate", "candidate")))
+    minimum_loss = MinOver(supported_eligible, "candidate", manifold_loss("candidate", "candidate"), L(0.0))
+    shape_eligible = Filter(
+        eligible, "candidate",
+        Or(
+            Not(future_manifold_supported()),
+            And(
+                _projection_supported("candidate"),
+                And(_projection_supported("candidate", "candidate"), Eq(manifold_loss("candidate", "candidate"), minimum_loss)),
+            ),
         ),
     )
     best = Argmin(
-        eligible,
+        shape_eligible,
         "candidate",
         singleton_cost("candidate"),
         V("episode"),
@@ -2683,7 +3263,7 @@ def open_synthesized_program_rule():
                     ),
                 ),
             ),
-            Gt(Count(eligible), L(0.0)),
+            Gt(Count(shape_eligible), L(0.0)),
             Eq(P0("primary", "ordinal"), AO(best, "ordinal")),
         ),
         "effects": [
@@ -2704,6 +3284,9 @@ def open_synthesized_program_rule():
                 "experience_count": 0.0,
                 **{f"mean_{key}": 0.0 for key in ALL_CONSEQUENCES},
                 **{f"flow_gain_{key}": 0.0 for key in ALL_CONSEQUENCES},
+                **{f"mean_context_delta_{feature}": 0.0 for feature in CONTEXT_DELTAS},
+                **{f"context_delta_gain_{feature}_{conditioning}": 0.0 for feature in CONTEXT_DELTAS for conditioning in FLOW_FEATURES},
+                "context_delta_experience_count": 0.0,
                 "mean_flow_speed_squared": 0.0,
                 **{f"mean_{feature}": 0.0 for feature in FLOW_FEATURES},
                 "last_learning_seq": 0.0,
@@ -2743,7 +3326,10 @@ def open_synthesized_program_rule():
 
 
 def expand_program_rule():
-    available = available_models()
+    available = Filter(available_models(), "candidate", Or(
+        Not(future_manifold_supported()),
+        And(composition_width_available("plan"), _projection_supported("plan", "candidate"), Lt(manifold_loss("plan", "candidate"), manifold_loss("plan"))),
+    ))
     best = Argmin(
         available,
         "candidate",
@@ -2763,19 +3349,14 @@ def expand_program_rule():
             ["episode", "has_embodied_effector_model", "candidate"],
         ],
         "where": And(
+            ordinary_composer_allowed(),
             Not(Gt(
                 P0("policy", "parallel_factorized_composition_enabled"),
                 L(0.5),
             )),
             Eq(A("plan", "status"), L("building")),
             Eq(P0("plan", "synthesis_yield_required"), L(0.0)),
-            Or(
-                Not(Gt(P0("episode", "maximum_program_width"), L(0.0))),
-                Lt(
-                    P0("plan", "member_count"),
-                    P0("episode", "maximum_program_width"),
-                ),
-            ),
+            composition_width_available("plan"),
             Eq(P0("candidate", "ordinal"), AO(best, "ordinal")),
             Lt(
                 Plus(
@@ -2837,12 +3418,14 @@ def expand_factorized_groups_in_parallel_rule():
             ["episode", "has_embodied_effector_model", "candidate"],
         ],
         "where": And(
+            Not(future_manifold_enabled()),
             Gt(
                 P0("policy", "parallel_factorized_composition_enabled"),
                 L(0.5),
             ),
             Eq(A("plan", "status"), L("building")),
             Eq(P0("plan", "synthesis_yield_required"), L(0.0)),
+            composition_width_available("plan"),
             Gt(Count(same_group), L(0.0)),
             Eq(P0("candidate", "ordinal"), AO(best_in_group, "ordinal")),
             Lt(
@@ -2915,7 +3498,10 @@ def resume_program_rule():
 
 
 def close_program_rule():
-    available = available_models()
+    available = Filter(available_models(), "candidate", Or(
+        Not(future_manifold_supported()),
+        And(composition_width_available("plan"), _projection_supported("plan", "candidate"), Lt(manifold_loss("plan", "candidate"), manifold_loss("plan"))),
+    ))
     return {
         "name": "emp_abs_close_embodied_motor_program",
         "area": "embodied_motor_program",
@@ -2928,6 +3514,7 @@ def close_program_rule():
             ["episode", "resumes_embodied_motor_program", "plan"],
         ],
         "where": And(
+            ordinary_composer_allowed(),
             Eq(A("plan", "status"), L("building")),
             Eq(P0("plan", "synthesis_yield_required"), L(0.0)),
             # Under asynchronous synthesis, a build completing after the
@@ -2955,6 +3542,7 @@ def close_program_rule():
         "effects": [
             ["set_attr", "plan", "status", "ready"],
             ["set_attr", "plan", "available", 1.0],
+            *future_manifold_audit_effects("plan"),
             # A build that spanned requests (async background) arms with the
             # CURRENT request stamped, else the same-tick option retirement
             # deletes it and leaves an armed decision with no options
@@ -3157,6 +3745,9 @@ def render_open_program_rule():
                 "experience_count": 0.0,
                 **{f"mean_{key}": 0.0 for key in ALL_CONSEQUENCES},
                 **{f"flow_gain_{key}": 0.0 for key in ALL_CONSEQUENCES},
+                **{f"mean_context_delta_{feature}": 0.0 for feature in CONTEXT_DELTAS},
+                **{f"context_delta_gain_{feature}_{conditioning}": 0.0 for feature in CONTEXT_DELTAS for conditioning in FLOW_FEATURES},
+                "context_delta_experience_count": 0.0,
                 "mean_flow_speed_squared": 0.0,
                 **{f"mean_{feature}": 0.0 for feature in FLOW_FEATURES},
                 "last_learning_seq": 0.0,
@@ -3263,6 +3854,7 @@ def render_close_program_rule():
             ["set_attr", "plan", "status", "ready"],
             ["set_attr", "plan", "available", 1.0],
             ["set_attr", "plan", "member_count", T(Count(members("plan")))],
+            *future_manifold_audit_effects("plan"),
             ["set_attr", "plan", "grounded_value", T(
                 Minus(L(0.0), program_cost("plan"))
             )],
@@ -3332,6 +3924,406 @@ def open_program_trial_rule():
     }
 
 
+def _temporal_group_models(group_var="model"):
+    """All declared command levels for one opaque effector group."""
+    return Filter(
+        MODELS,
+        "peer",
+        Eq(
+            P0("peer", "actuator_group"),
+            P0(group_var, "actuator_group"),
+        ),
+    )
+
+
+def _temporal_states(group_var="model"):
+    """The persistent graph state for one opaque effector channel."""
+    return Filter(
+        Neighbours("episode", "has_temporal_command_state"),
+        "state",
+        Eq(
+            P0("state", "actuator_group"),
+            P0(group_var, "actuator_group"),
+        ),
+    )
+
+
+def _temporal_group_representative(group_var="model"):
+    return Argmin(
+        _temporal_group_models(group_var),
+        "peer",
+        P0("peer", "ordinal"),
+        V("episode"),
+    )
+
+
+def _temporal_request_level(var="requested"):
+    """Use a declared continuous request, falling back to the model level."""
+    return If(
+        Gt(P0(var, "temporal_request_declared"), L(0.5)),
+        P0(var, "temporal_request_level"),
+        P0(var, "specified_command_level"),
+    )
+
+
+def temporal_command_state_rule():
+    """Create one residual accumulator per declared opaque effector group.
+
+    The rule is deliberately absent-inert.  A consumer opts in by setting
+    ``temporal_command_encoding_enabled`` on its episode (or policy); no
+    command alphabet, morphology, or vehicle vocabulary is introduced here.
+    Choosing the ordinal-minimum model as the representative makes creation
+    unique even when a group exposes many command levels.
+    """
+    states = _temporal_states("model")
+    representative = _temporal_group_representative("model")
+    return {
+        "name": "emp_open_temporal_command_state",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": -20,
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_effector_model", "model"],
+        ],
+        "where": And(
+            Or(
+                Gt(P0("policy", "temporal_command_encoding_enabled"), L(0.5)),
+                Gt(P0("episode", "temporal_command_encoding_enabled"), L(0.5)),
+            ),
+            Eq(P0("model", "ordinal"), AO(representative, "ordinal")),
+            Eq(Count(states), L(0.0)),
+        ),
+        "effects": [
+            ["add_node", "state", "EmbodiedTemporalCommandState", {
+                "actuator_group": T(P0("model", "actuator_group")),
+                "residual": 0.0,
+                "last_request": 0.0,
+                "last_command": 0.0,
+                "step": 0.0,
+            }],
+            [
+                "add_edge",
+                "episode",
+                "has_temporal_command_state",
+                "state",
+            ],
+        ],
+    }
+
+
+def temporal_command_reset_rule():
+    """Reset all graph-held accumulators when the consumer starts a replay."""
+    return {
+        "name": "emp_reset_temporal_command_state",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": -21,
+        "batch": True,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_temporal_command_state", "state"],
+        ],
+        "where": And(
+            Or(
+                Gt(P0("policy", "temporal_command_encoding_enabled"), L(0.5)),
+                Gt(P0("episode", "temporal_command_encoding_enabled"), L(0.5)),
+            ),
+            Gt(P0("episode", "temporal_command_reset"), L(0.5)),
+        ),
+        "effects": [
+            ["set_attr", "state", "residual", 0.0],
+            ["set_attr", "state", "last_request", 0.0],
+            ["set_attr", "state", "last_command", 0.0],
+            ["set_attr", "state", "step", 0.0],
+            ["set_attr", "episode", "temporal_command_reset", 0.0],
+        ],
+    }
+
+
+def _temporal_commandable_members(trial="trial"):
+    return Filter(
+        Neighbours(trial, "commands_embodied_effector_model"),
+        "member",
+        Not(Gt(P0("member", "never_commanded"), L(0.5))),
+    )
+
+
+def temporal_encode_trial_member_rule():
+    """Sigma-delta encode one selected continuous request in graph terms.
+
+    The alphabet is the set of declared model command levels in the same
+    actuator group.  The selected request plus the graph-held residual is
+    clamped, nearest-quantised, and emitted as another model member; the new
+    residual is written back to the group state.  The lower command wins exact
+    ties through the second Argmin over the minimum-distance subset.
+    """
+    states = _temporal_states("requested")
+    group_models = _temporal_group_models("requested")
+    lower = MinOver(
+        group_models,
+        "peer",
+        P0("peer", "specified_command_level"),
+        L(0.0),
+    )
+    upper = MaxOver(
+        group_models,
+        "peer",
+        P0("peer", "specified_command_level"),
+        L(0.0),
+    )
+    request = Clamp(
+        _temporal_request_level("requested"),
+        lower,
+        upper,
+    )
+    target = Clamp(
+        Plus(request, P0("state", "residual")),
+        lower,
+        upper,
+    )
+    distance = Abs(Minus(
+        P0("peer", "specified_command_level"),
+        target,
+    ))
+    nearest_distance = MinOver(group_models, "peer", distance, L(0.0))
+    nearest = Filter(
+        group_models,
+        "near",
+        Not(Gt(
+            Abs(Minus(
+                P0("near", "specified_command_level"),
+                target,
+            )),
+            nearest_distance,
+        )),
+    )
+    emitted = Argmin(
+        nearest,
+        "near",
+        P0("near", "specified_command_level"),
+        V("requested"),
+    )
+    return {
+        "name": "emp_temporal_encode_embodied_motor_trial_member",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": 1,
+        "batch": True,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_motor_program_trial", "trial"],
+            [
+                "trial",
+                "commands_embodied_effector_model",
+                "requested",
+            ],
+            [
+                "episode",
+                "has_temporal_command_state",
+                "state",
+            ],
+        ],
+        "where": And(
+            Or(
+                Gt(P0("policy", "temporal_command_encoding_enabled"), L(0.5)),
+                Gt(P0("episode", "temporal_command_encoding_enabled"), L(0.5)),
+            ),
+            Eq(A("trial", "status"), L("temporal_encoding")),
+            Not(Gt(P0("requested", "never_commanded"), L(0.5))),
+            Eq(
+                P0("state", "actuator_group"),
+                P0("requested", "actuator_group"),
+            ),
+            Not(Exists(
+                Neighbours("trial", "temporal_encodes_model"),
+                "encoded",
+                Eq(V("encoded"), V("requested")),
+            )),
+        ),
+        "effects": [
+            # Edge endpoints are match variables in the graph effect IR, so
+            # the selected alphabet member is represented by a fresh command
+            # node whose token is computed from `emitted`.  This keeps the
+            # decision graph-native while the host only transduces its result.
+            ["add_node", "command", "EmbodiedTemporalCommand", {
+                "token": T(AO(emitted, "token")),
+                "actuator_group": T(AO(emitted, "actuator_group")),
+                "command_level": T(AO(emitted, "specified_command_level")),
+                "request_level": T(request),
+            }],
+            [
+                "add_edge",
+                "trial",
+                "has_temporal_command",
+                "command",
+            ],
+            ["add_edge", "trial", "temporal_encodes_model", "requested"],
+            ["set_attr", "state", "last_request", T(request)],
+            ["set_attr", "state", "last_command", T(
+                AO(emitted, "specified_command_level")
+            )],
+            ["set_attr", "state", "residual", T(
+                Minus(target, AO(emitted, "specified_command_level"))
+            )],
+            ["set_attr", "state", "step", T(
+                Plus(P0("state", "step"), L(1.0))
+            )],
+        ],
+    }
+
+
+def close_temporal_command_trial_rule():
+    """Release a temporally encoded trial only after every channel is done."""
+    members = _temporal_commandable_members("trial")
+    unencoded = Exists(
+        members,
+        "member",
+        Not(Exists(
+            Neighbours("trial", "temporal_encodes_model"),
+            "encoded",
+            Eq(V("encoded"), V("member")),
+        )),
+    )
+    return {
+        "name": "emp_close_temporal_embodied_motor_trial",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": 2,
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_motor_program_trial", "trial"],
+        ],
+        "where": And(
+            Or(
+                Gt(P0("policy", "temporal_command_encoding_enabled"), L(0.5)),
+                Gt(P0("episode", "temporal_command_encoding_enabled"), L(0.5)),
+            ),
+            Eq(A("trial", "status"), L("temporal_encoding")),
+            Not(unencoded),
+        ),
+        "effects": [
+            ["set_attr", "trial", "status", "issued"],
+            ["set_attr", "episode", "action_ready", 1.0],
+        ],
+    }
+
+
+def temporal_emit_neutral_for_empty_trial_rule():
+    """Keep a body-only program executable without host-side token policy.
+
+    Some generic plants include an observed, never-commanded body contributor
+    as the complete selected program.  It has no command alphabet of its own;
+    the graph therefore emits the stable neutral command from group zero so a
+    simulator boundary never receives an empty token tuple.
+    """
+    members = _temporal_commandable_members("trial")
+    neutral_models = Filter(
+        MODELS,
+        "neutral",
+        And(
+            Not(Gt(P0("neutral", "never_commanded"), L(0.5))),
+            Eq(P0("neutral", "actuator_group"), L(0.0)),
+            Not(Gt(Abs(P0("neutral", "specified_command_level")), L(1e-12))),
+        ),
+    )
+    neutral = Argmin(
+        neutral_models,
+        "neutral",
+        P0("neutral", "ordinal"),
+        V("episode"),
+    )
+    return {
+        "name": "emp_temporal_emit_neutral_for_empty_trial",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": 1,
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_motor_program_trial", "trial"],
+        ],
+        "where": And(
+            Or(
+                Gt(P0("policy", "temporal_command_encoding_enabled"), L(0.5)),
+                Gt(P0("episode", "temporal_command_encoding_enabled"), L(0.5)),
+            ),
+            Eq(A("trial", "status"), L("temporal_encoding")),
+            Eq(Count(members), L(0.0)),
+            Eq(Count(Neighbours("trial", "has_temporal_command")), L(0.0)),
+        ),
+        "effects": [
+            ["add_node", "command", "EmbodiedTemporalCommand", {
+                "token": T(AO(neutral, "token")),
+                "actuator_group": T(AO(neutral, "actuator_group")),
+                "command_level": T(AO(neutral, "specified_command_level")),
+                "request_level": 0.0,
+                "neutral_fallback": 1.0,
+            }],
+            ["add_edge", "trial", "has_temporal_command", "command"],
+        ],
+    }
+
+
+def emit_neutral_for_empty_trial_rule():
+    """Emit a graph-neutral command for any body-only motor program.
+
+    Body contributors are valid program members but are not simulator tokens.
+    A selected body-only program therefore still needs the graph's declared
+    neutral command before the generic host boundary can transduce it.  This
+    rule is independent of temporal encoding and keeps that invariant true
+    for every opaque plant.
+    """
+    members = _temporal_commandable_members("trial")
+    neutral_models = Filter(
+        MODELS,
+        "neutral",
+        And(
+            Not(Gt(P0("neutral", "never_commanded"), L(0.5))),
+            Eq(P0("neutral", "actuator_group"), L(0.0)),
+            Not(Gt(Abs(P0("neutral", "specified_command_level")), L(1e-12))),
+        ),
+    )
+    neutral = Argmin(
+        neutral_models,
+        "neutral",
+        P0("neutral", "ordinal"),
+        V("episode"),
+    )
+    return {
+        "name": "emp_emit_neutral_for_empty_motor_trial",
+        "area": "embodied_motor_program",
+        "latency_class": "hard_realtime",
+        "order": 1,
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_motor_program_episode", "episode"],
+            ["episode", "has_embodied_motor_program_trial", "trial"],
+        ],
+        "where": And(
+            Eq(A("trial", "status"), L("issued")),
+            Eq(Count(members), L(0.0)),
+            Eq(Count(Neighbours("trial", "has_embodied_motor_command")), L(0.0)),
+        ),
+        "effects": [
+            ["add_node", "command", "EmbodiedMotorCommand", {
+                "token": T(AO(neutral, "token")),
+                "actuator_group": T(AO(neutral, "actuator_group")),
+                "command_level": T(AO(neutral, "specified_command_level")),
+                "neutral_fallback": 1.0,
+            }],
+            ["add_edge", "trial", "has_embodied_motor_command", "command"],
+        ],
+    }
+
+
 def copy_trial_members_rule():
     """Copy a program's members onto the trial that will enact it.
 
@@ -3364,6 +4356,8 @@ def copy_trial_members_rule():
         "latency_class": "hard_realtime",
         "batch": True,
         "match": [
+            ["agent", "has_embodied_motor_program_policy", "policy"],
+            ["agent", "has_embodied_motor_program_episode", "episode"],
             ["episode", "has_embodied_motor_program_trial", "trial"],
             ["trial", "enacts_embodied_motor_program", "program"],
             ["program", "includes_embodied_effector_model", "member"],
@@ -3387,8 +4381,22 @@ def copy_trial_members_rule():
                 "commands_embodied_effector_model",
                 "member",
             ],
-            ["set_attr", "trial", "status", "issued"],
-            ["set_attr", "episode", "action_ready", 1.0],
+            ["set_attr", "trial", "status", T(If(
+                Or(
+                    Gt(P0("policy", "temporal_command_encoding_enabled"), L(0.5)),
+                    Gt(P0("episode", "temporal_command_encoding_enabled"), L(0.5)),
+                ),
+                L("temporal_encoding"),
+                L("issued"),
+            ))],
+            ["set_attr", "episode", "action_ready", T(If(
+                Or(
+                    Gt(P0("policy", "temporal_command_encoding_enabled"), L(0.5)),
+                    Gt(P0("episode", "temporal_command_encoding_enabled"), L(0.5)),
+                ),
+                L(0.0),
+                L(1.0),
+            ))],
         ],
     }
 
@@ -3482,6 +4490,11 @@ def fork_regime_local_model_rule():
     for feature in FLOW_FEATURES:
         attrs[f"mean_{feature}"] = T(P0("model", f"mean_{feature}"))
         attrs[f"{feature}_variance_sum"] = 0.0
+    for feature in CONTEXT_DELTAS:
+        attrs[f"mean_context_delta_{feature}"] = T(P0("model", f"mean_context_delta_{feature}"))
+        for conditioning in FLOW_FEATURES:
+            attrs[f"context_delta_gain_{feature}_{conditioning}"] = T(P0("model", f"context_delta_gain_{feature}_{conditioning}"))
+    attrs["context_delta_experience_count"] = T(P0("model", "context_delta_experience_count"))
     return {
         "name": "emp_fork_regime_local_model",
         "area": "embodied_motor_program_plasticity",
@@ -3852,6 +4865,32 @@ def learn_primitive_rule():
                 T(next_feature_variance),
             ],
         ])
+    # Context transitions are learned from the dedicated receipt fields and
+    # remain distinct from consequence residuals.
+    for feature in CONTEXT_DELTAS:
+        observation = outcome_context_delta(feature)
+        next_mean = Plus(
+            P0("model", f"mean_context_delta_{feature}"),
+            Times(learning_rate, Minus(observation, P0("model", f"mean_context_delta_{feature}"))),
+        )
+        effects.append(["set_attr", "model", f"mean_context_delta_{feature}", T(next_mean)])
+        for conditioning in FLOW_FEATURES:
+            covariance = Plus(
+                P0("model", f"context_delta_covariance_{feature}_{conditioning}"),
+                Times(
+                    Minus(pre_flow_feature(conditioning), P0("model", f"mean_{conditioning}")),
+                    Minus(observation, next_mean),
+                ),
+            )
+            effects.extend([
+                ["set_attr", "model", f"context_delta_covariance_{feature}_{conditioning}", T(covariance)],
+                ["set_attr", "model", f"context_delta_gain_{feature}_{conditioning}", T(If(
+                    Gt(P0("model", f"{conditioning}_variance_sum"), L(0.0)),
+                    Div(covariance, P0("model", f"{conditioning}_variance_sum")),
+                    L(0.0),
+                ))],
+            ])
+    effects.append(["set_attr", "model", "context_delta_experience_count", T(count)])
     return {
         "name": "emp_learn_factorized_effector_from_exact_receipt",
         "area": "embodied_motor_program_plasticity",
@@ -4099,12 +5138,10 @@ def close_receipt_rule():
             ],
         ],
     }
-
-
 def manifest():
     return {
         "id": "embodied_motor_program",
-        "version": "1.20.0",
+        "version": "1.25.0",
         "depends_on": [
             "embodied_pareto_profile",
             "motor_decision_collapse",
@@ -4122,7 +5159,9 @@ def manifest():
         "indexed BY TYPE AND SHAPE in an EmbodiedMotorProgramShape codebook "
         "(one relation per member: actuator group as predicate, integer "
         "command ordinal as coordinate), grown and collapsed behind the "
-        "action and re-armed by motor_codebook_epoch.",
+        "action and re-armed by motor_codebook_epoch. Optional graph-native "
+        "temporal command encoding carries quantisation residuals per opaque "
+        "effector group and is disabled unless explicitly enabled.",
         "nodes": [{
             "local_id": 1,
             "type": "EmbodiedMotorProgramPolicy",
@@ -4137,6 +5176,17 @@ def manifest():
                 "contextual_effector_prediction_enabled": 1.0,
                 "parallel_factorized_composition_enabled": 0.0,
                 "minimum_composition_improvement": 0.000001,
+                "future_manifold_enabled": 0.0,
+                "future_manifold_establish_from_seq": 1.0,
+                "future_manifold_establish_until_seq": 0.0,
+                "future_manifold_projection_budget": float(FUTURE_MANIFOLD_PROJECTION_BUDGET),
+                "future_manifold_path_fixed_point_run": float(FUTURE_MANIFOLD_PATH_FIXED_POINT_RUN),
+                "future_manifold_physical_horizon": float(FUTURE_MANIFOLD_PHYSICAL_HORIZON),
+                "future_manifold_temporal_anchors_enabled": float(FUTURE_MANIFOLD_TEMPORAL_ANCHORS_ENABLED),
+                "future_manifold_anchor_growth": float(FUTURE_MANIFOLD_ANCHOR_GROWTH),
+                "future_manifold_max_shape_order": float(FUTURE_MANIFOLD_MAX_SHAPE_ORDER),
+                "future_manifold_max_refinements": float(FUTURE_MANIFOLD_MAX_REFINEMENTS),
+                "future_manifold_enclosure_width_floor": float(FUTURE_MANIFOLD_ENCLOSURE_WIDTH_FLOOR),
                 "forward_weight": 1.0,
                 "lateral_weight": 1.0,
                 "turn_weight": 1.0,
@@ -4144,6 +5194,7 @@ def manifest():
                 "drag_weight": 0.01,
                 "energy_weight": 0.001,
                 "activation_weight": 0.02,
+                "temporal_command_encoding_enabled": 0.0,
             },
         }],
         "edges": [{
@@ -4210,12 +5261,63 @@ def manifest():
                 "edge_type": "has_embodied_motor_program_trial",
                 "tgt": {"type": "EmbodiedMotorProgramTrial", "var": "trial"},
             },
+            {
+                "provenance": "embodied_motor_program:temporal_state",
+                "src": {"type": "EmbodiedMotorProgramEpisode", "var": "episode"},
+                "edge_type": "has_temporal_command_state",
+                "tgt": {"type": "EmbodiedTemporalCommandState", "var": "state"},
+            },
+            {
+                "provenance": "embodied_motor_program:temporal_encoded_member",
+                "src": {"type": "EmbodiedMotorProgramTrial", "var": "trial"},
+                "edge_type": "temporal_encodes_model",
+                "tgt": {"type": "EmbodiedEffectorModel", "var": "model"},
+            },
+            {
+                "provenance": "embodied_motor_program:temporal_command",
+                "src": {"type": "EmbodiedMotorProgramTrial", "var": "trial"},
+                "edge_type": "has_temporal_command",
+                "tgt": {"type": "EmbodiedTemporalCommand", "var": "command"},
+            },
+            {
+                "provenance": "embodied_motor_program:neutral_command",
+                "src": {"type": "EmbodiedMotorProgramTrial", "var": "trial"},
+                "edge_type": "has_embodied_motor_command",
+                "tgt": {"type": "EmbodiedMotorCommand", "var": "command"},
+            },
+            {
+                "provenance": "embodied_motor_program:bridge_issued_command",
+                "src": {"type": "EmbodiedMotorProgramTrial", "var": "trial"},
+                "edge_type": "has_control_issued_command",
+                "tgt": {"type": "ControlIssuedCompoundCommand", "var": "issued"},
+            },
+            {
+                "provenance": "embodied_motor_program:bridge_opaque_command",
+                "src": {"type": "ControlIssuedCompoundCommand", "var": "issued"},
+                "edge_type": "has_control_opaque_command",
+                "tgt": {"type": "ControlOpaqueCommand", "var": "command"},
+            },
+            {
+                "provenance": "embodied_motor_program:bridge_observed_delta",
+                "src": {"type": "EmbodiedMotorProgramTrial", "var": "trial"},
+                "edge_type": "has_control_observed_delta",
+                "tgt": {"type": "ControlObservedStateDelta", "var": "observed"},
+            },
+            {
+                "provenance": "embodied_motor_program:bridge_axis_receipt",
+                "src": {"type": "ControlObservedStateDelta", "var": "observed"},
+                "edge_type": "has_control_axis_receipt",
+                "tgt": {"type": "ControlAxisReceipt", "var": "axis"},
+            },
         ],
         "rules": [
+            temporal_command_state_rule(),
+            temporal_command_reset_rule(),
             gate_distal_goals_during_aerodynamic_departure_rule(),
             derive_active_rate_stabilization_targets_rule(),
             complete_specification_prior_initialization_rule(),
             retire_old_options_rule(),
+            share_group_context_transition_rule(),
             open_flow_excitation_program_rule(),
             open_calibration_program_rule(),
             complete_calibration_rule(),
@@ -4233,8 +5335,13 @@ def manifest():
             reconcile_program_width_rule(),
             resume_program_rule(),
             close_program_rule(),
+            establish_future_manifold_rule(),
             open_program_trial_rule(),
             copy_trial_members_rule(),
+            emit_neutral_for_empty_trial_rule(),
+            temporal_encode_trial_member_rule(),
+            temporal_emit_neutral_for_empty_trial_rule(),
+            close_temporal_command_trial_rule(),
             share_slope_across_command_levels_rule(),
             learn_uncommanded_contributor_rule(),
             learn_unmovable_contributor_rule(),

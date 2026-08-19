@@ -973,6 +973,20 @@ def _close_action(
     }
     outcome = agent.s.add_node("HumanoidTransition", outcome_attrs)
     _edge(agent, trial, "has_humanoid_transition", outcome)
+    if receipt_verified:
+        exercised_tokens = set(expected_tokens)
+        for affordance in agent.s.nodes(
+            "EmbodiedOpaqueActuatorAffordance"
+        ):
+            if agent.s.node(affordance)["attrs"].get(
+                "opaque_token"
+            ) in exercised_tokens:
+                _edge(
+                    agent,
+                    outcome,
+                    "exercises_opaque_embodied_actuator_affordance",
+                    affordance,
+                )
     development_contexts = agent.inner.neighbours(
         episode,
         "projects_embodied_development",

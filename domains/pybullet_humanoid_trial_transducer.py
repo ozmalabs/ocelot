@@ -320,6 +320,26 @@ class PyBulletHumanoidTrialTransducer:
         )
 
     @classmethod
+    def for_attached_world(
+        cls,
+        configuration: HumanoidBodyConfiguration,
+        world: PyBulletHumanoidWorld,
+        *,
+        seed: int = 0,
+    ) -> "PyBulletHumanoidTrialTransducer":
+        """Bind the transducer to an already-owned simulator world.
+
+        The caller retains lifecycle ownership. This is the analysis-by-
+        synthesis path used when a runner already has the one physical world;
+        it must not fork a second simulator merely to publish body facts.
+        """
+        attached = object.__new__(cls)
+        object.__setattr__(attached, "configuration", configuration)
+        object.__setattr__(attached, "seed", int(seed))
+        object.__setattr__(attached, "world", world)
+        return attached
+
+    @classmethod
     def from_protocol(
         cls,
         protocol_path: str | Path,

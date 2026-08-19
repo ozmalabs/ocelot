@@ -8,13 +8,17 @@ import pytest
 from domains.embodied_motor_hint_priors import seeded_motor_plan_hints
 from domains.embodied_motor_shapes import motor_program_shape_signature
 from scripts.harvest_humanoid_subprograms import harvest_libraries
-from scripts.jabberwock_humanoid_walk import _restore_motor_library
+from scripts.jabberwock_humanoid_walk import (
+    _restore_motor_library,
+    developmental_curriculum_contract,
+)
 from substrate.world_adapter import WorldAdapter
 
 
 def _library(programs):
     return {
         "version": 4,
+        "developmental_curriculum_contract": developmental_curriculum_contract(),
         "body_shapes": [{
             "attrs": {"name": "shape:a", "signature": [["body"]]},
             "programs": programs,
@@ -153,6 +157,7 @@ def test_graph_plan_hint_recruits_search_index_without_releasing_action():
     )
     library = {
         "version": 5,
+        "developmental_curriculum_contract": developmental_curriculum_contract(),
         "body_shapes": [],
         "plan_hints": [{
             "attrs": {
@@ -213,9 +218,12 @@ def test_graph_plan_hint_recruits_search_index_without_releasing_action():
     assert program in agent.inner.neighbours(
         episode, "has_humanoid_motor_program_search_index"
     )
-    assert agent.inner.neighbours(
+    assert program in agent.inner.neighbours(
         episode, "has_humanoid_motor_program_basin_seed"
-    ) == []
+    )
+    assert agent.s.node(episode)["attrs"][
+        "motor_plan_hint_escalation_count"
+    ] == 1.0
     assert agent.s.node(episode)["attrs"]["action_ready"] == 0.0
 
 
@@ -226,6 +234,7 @@ def test_graph_recruits_plan_hints_for_the_active_task_context():
         pytest.skip(f"native substrate unavailable: {exc}")
     library = {
         "version": 5,
+        "developmental_curriculum_contract": developmental_curriculum_contract(),
         "body_shapes": [],
         "plan_hints": [
             {
