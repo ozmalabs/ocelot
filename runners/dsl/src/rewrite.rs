@@ -1507,8 +1507,26 @@ pub fn apply_rule_full(
                 }
                 let key = EdgeKey { src: s, edge_type: *edge_type, tgt: t };
                 let pre_exists = graph.has_edge(s, *edge_type, t);
-                let _ = graph.insert_edge(s, *edge_type, t, attr_map);
-                if !pre_exists {
+                // The Result was previously discarded. `insert_edge` fails when
+                // an endpoint is absent, which is reachable inside one firing
+                // (an earlier effect may have deleted the node this one binds).
+                // Discarding it credited `progressed` and pushed an undo step
+                // for a mutation that never happened — see `effect_audit.rs`.
+                let inserted = graph.insert_edge(s, *edge_type, t, attr_map);
+                let failed = inserted.is_err();
+                if failed {
+                    crate::effect_audit::record_failed_edge_insert(!pre_exists, || {
+                        format!(
+                            "AddEdge rule={:?} src={:?} edge_type={:?} tgt={:?} err={:?}",
+                            rule.name, s, edge_type, t, inserted
+                        )
+                    });
+                }
+                // Default is byte-identical to the previous behaviour: the
+                // correction is opt-in until the counter says how often the
+                // path fires (VISION_PROTOCOL §9).
+                let suppress = failed && crate::effect_audit::correct_failed_effects();
+                if !pre_exists && !suppress {
                     progressed = true;
                     if record_undo {
                         undo.push(UndoStep::AddedEdge(key));
@@ -2606,6 +2624,132 @@ fn collect_batch_bindings_parallel(
         bindings.extend(partition);
     }
     Some(bindings)
+}
+
+#[cfg(test)]
+mod effect_audit_tests {
+    use super::*;
+
+    /// The counters are process-global statics, so these tests must not run
+    /// concurrently with one another.
+    static AUDIT_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+    /// Build the reachable failure, ISOLATED so the only effect under test is
+    /// the failing insert.
+    ///
+    /// The first version of this test put `DelNode` and `AddEdge` in one
+    /// rule and asserted on `out.progressed`. That was wrong: `DelNode` is
+    /// itself real progress, so the outcome was true for a reason unrelated
+    /// to the insert. Here the deletion happens first, in its own firing, and
+    /// the rule under test carries only the `AddEdge` whose target is by then
+    /// a dangling `NodeID` — `insert_edge` returns `Err(MissingTgt)` and the
+    /// firing has nothing else that could credit progress.
+    fn dangling_link() -> (TypedGraph, Interner, TermArena, RewriteRule, Binding) {
+        let (mut g, mut i, a) = (TypedGraph::new(), Interner::new(), TermArena::new());
+        let ty = i.intern("Thing");
+        let link = i.intern("link");
+        let src = g.insert_node(ty, FxHashMap::default());
+        let doomed = g.insert_node(ty, FxHashMap::default());
+        g.delete_node(doomed);
+        let s_var = i.intern("s");
+        let d_var = i.intern("d");
+        let rule = RewriteRule {
+            name: i.intern("dangling_link"),
+            match_edges: vec![],
+            where_: None,
+            effects: vec![Effect::AddEdge {
+                src_var: s_var,
+                edge_type: link,
+                tgt_var: d_var,
+                attrs: vec![],
+            }],
+            ..Default::default()
+        };
+        let mut b: Binding = FxHashMap::default();
+        b.insert(s_var, src);
+        b.insert(d_var, doomed);
+        (g, i, a, rule, b)
+    }
+
+    /// RED: the failure is real, is counted, and is counted as false progress.
+    #[test]
+    fn failed_edge_insert_is_counted_as_false_progress() {
+        let _guard = AUDIT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        crate::effect_audit::reset();
+        crate::effect_audit::set_correct_failed_effects(false);
+        let (mut g, mut i, mut a, rule, b) = dangling_link();
+        let out = apply_rule_full(
+            &rule, &b, &mut a, &mut g, &mut i, None, None, None, true,
+        );
+        let (failed, false_progress, row) = crate::effect_audit::stats();
+        assert_eq!(failed, 1, "the discarded Err must be counted");
+        assert_eq!(false_progress, 1, "it must be counted as false progress");
+        assert!(row.is_some(), "the first failure must be retained verbatim");
+        // The pre-existing behaviour is preserved exactly while the correction
+        // is off: progress is still (wrongly) credited.
+        assert!(out.progressed, "default must stay byte-identical to before");
+        crate::effect_audit::reset();
+    }
+
+    /// GREEN: with the correction enabled, no progress is credited for a
+    /// mutation that did not happen.
+    #[test]
+    fn correction_withholds_progress_for_a_failed_insert() {
+        let _guard = AUDIT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        crate::effect_audit::reset();
+        crate::effect_audit::set_correct_failed_effects(true);
+        let (mut g, mut i, mut a, rule, b) = dangling_link();
+        let out = apply_rule_full(
+            &rule, &b, &mut a, &mut g, &mut i, None, None, None, true,
+        );
+        let (failed, false_progress, _) = crate::effect_audit::stats();
+        assert_eq!(failed, 1);
+        assert_eq!(false_progress, 1, "still counted; only the credit changes");
+        assert!(
+            !out.progressed,
+            "a failed insert is not progress when the correction is on"
+        );
+        crate::effect_audit::set_correct_failed_effects(false);
+        crate::effect_audit::reset();
+    }
+
+    /// The instrument must not fire on a healthy insert.
+    #[test]
+    fn healthy_insert_does_not_fire_the_detector() {
+        let _guard = AUDIT_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        crate::effect_audit::reset();
+        let (mut g, mut i, mut a) = (TypedGraph::new(), Interner::new(), TermArena::new());
+        let ty = i.intern("Thing");
+        let link = i.intern("link");
+        let s = g.insert_node(ty, FxHashMap::default());
+        let t = g.insert_node(ty, FxHashMap::default());
+        let s_var = i.intern("s");
+        let t_var = i.intern("t");
+        let rule = RewriteRule {
+            name: i.intern("healthy_link"),
+            match_edges: vec![],
+            where_: None,
+            effects: vec![Effect::AddEdge {
+                src_var: s_var,
+                edge_type: link,
+                tgt_var: t_var,
+                attrs: vec![],
+            }],
+            ..Default::default()
+        };
+        let mut b: Binding = FxHashMap::default();
+        b.insert(s_var, s);
+        b.insert(t_var, t);
+        let out = apply_rule_full(
+            &rule, &b, &mut a, &mut g, &mut i, None, None, None, true,
+        );
+        let (failed, false_progress, _) = crate::effect_audit::stats();
+        assert_eq!(failed, 0, "no failure on a well-formed insert");
+        assert_eq!(false_progress, 0);
+        assert!(out.progressed);
+        assert!(g.has_edge(s, link, t));
+        crate::effect_audit::reset();
+    }
 }
 
 #[cfg(test)]

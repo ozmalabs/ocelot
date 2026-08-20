@@ -149,6 +149,12 @@ pub mod term_variants;
 /// LOCAL, SINGLE-ROW contradiction. Default OFF (VISION_PROTOCOL §9).
 pub mod selector_audit;
 pub mod argmin_tie;
+/// `effect_audit` — the failed-effect instrument. `apply_rule_full` discarded
+/// the result of `insert_edge`, so an insert that failed on a missing endpoint
+/// was silent AND credited false progress to the fixpoint. Counting is
+/// unconditional; the behavioural correction is opt-in and default OFF
+/// (VISION_PROTOCOL §9).
+pub mod effect_audit;
 /// `scale_audit` — the three-way scale-wall decomposition instrument.
 /// `VISION_VIDEO_PROBE_RESULTS.md` measured the wall (exponent 1.887, 164 h per
 /// 1080p frame) and named it "PyO3 then O(N²)" — two causes, with a plausible
