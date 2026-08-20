@@ -277,3 +277,198 @@ pub fn projection_field(
     };
     Some(Value::Float(value))
 }
+
+/// One candidate's audited deformation, as a member of a reachable set.
+///
+/// This is deliberately a RECORD, not a score. `μ` — the measure over a
+/// reachable deformation set — is grounding-open in the theory, and picking
+/// one here would install a scalar where a represented structure belongs.
+#[derive(Debug, Clone, PartialEq)]
+pub struct DeformationRecord {
+    /// The candidate node whose projected continuation was audited.
+    pub candidate: NodeID,
+    /// Whether the audit was supported at all (fail-closed if not).
+    pub support: bool,
+    /// Whether the requested projection was completely audited.
+    pub resolved: bool,
+    /// Cells that left the episode's allowed tube.
+    pub loss: f64,
+    /// Cells whose retention could not be established.
+    pub information_loss: f64,
+    /// Dimensions still inside tolerance at the audited horizon.
+    pub retained_width: f64,
+    /// Earliest tick at which the outcome was decided, when one exists.
+    pub earliest_decisive_tick: f64,
+}
+
+/// The reachable deformation SET over a supplied candidate family.
+///
+/// # What this is, and what it is not
+///
+/// The theory defines narrativium as `N(𝒳,T) = μ_𝒳(ℛ^T(𝒳))` — a measure over
+/// the set of consequential deformation reachable from here. This function
+/// builds `ℛ`, and only `ℛ`. It does not apply `μ`, does not sum, does not
+/// average, and does not return a scalar: those are the grounding's business,
+/// and the theory is explicit that `μ` is left open.
+///
+/// # This is the ADMISSIBLE bound, not selectable reachability
+///
+/// The theory distinguishes sharply between what is admissible and what is
+/// actually *selectable*: "an always-admissible but never-selected candidate
+/// contributes no realised reachability." Selecting requires the feasible-set
+/// machinery — a joint feasible family over subsets, a represented valuation,
+/// and a set-tie rule — none of which exists in this substrate today (see
+/// `docs/research/theory_convergence/GRAPHIC_EQUALISATION_V22_SUBSTRATE_GAP.md`).
+///
+/// So what this returns is an UPPER BOUND on the reachable set. A later rung
+/// that builds selection must narrow it; a caller that treats this as
+/// selectable reachability is overstating its own capability. That distinction
+/// is the reason this returns records rather than a number — a scalar here
+/// would silently launder the bound into a measurement.
+///
+/// # Composition
+///
+/// The two primitives this joins have different input shapes, which is why
+/// they were never joined: `Substrate::admissible_moves` enumerates
+/// *type-level* moves with Γ weights, while the projection audit needs a
+/// candidate that already carries a projected continuation. Bridging them
+/// requires a per-move projector, which is domain grounding rather than
+/// substrate. This function therefore takes candidates that already carry
+/// their continuation, and leaves Γ-filtering to the caller that knows how
+/// its moves become trajectories.
+///
+/// Takes `&mut Interner` because it interns its own field names: a caller
+/// working on a fresh graph will not have interned `"support"` and friends,
+/// and a `lookup`-only version silently reports every field as zero — i.e.
+/// reports a supported audit as unsupported, with no error.
+pub fn reachable_deformation_set(
+    graph: &TypedGraph,
+    interner: &mut Interner,
+    episode: NodeID,
+    policy: NodeID,
+    candidates: &[NodeID],
+) -> Vec<DeformationRecord> {
+    let (support, resolved, loss, info, width, decisive) = (
+        interner.intern("support"),
+        interner.intern("resolved"),
+        interner.intern("loss"),
+        interner.intern("information_loss"),
+        interner.intern("retained_width"),
+        interner.intern("earliest_decisive_tick"),
+    );
+    let interner = &*interner;
+    let read = |cand: NodeID, field: Sym| -> f64 {
+        projection_field(graph, interner, episode, policy, cand, None, field)
+            .and_then(|v| match v {
+                Value::Float(x) => Some(x),
+                Value::Int(i) => Some(i as f64),
+                _ => None,
+            })
+            .unwrap_or(0.0)
+    };
+    candidates
+        .iter()
+        .map(|&candidate| DeformationRecord {
+            candidate,
+            support: read(candidate, support) != 0.0,
+            resolved: read(candidate, resolved) != 0.0,
+            loss: read(candidate, loss),
+            information_loss: read(candidate, info),
+            retained_width: read(candidate, width),
+            earliest_decisive_tick: read(candidate, decisive),
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod reachable_set_tests {
+    use super::*;
+    use rustc_hash::FxHashMap;
+
+    /// Build an episode with a flat target tube and two candidates: one whose
+    /// projected continuation stays inside tolerance, one that leaves it.
+    fn bench() -> (TypedGraph, Interner, NodeID, NodeID, NodeID, NodeID) {
+        let mut g = TypedGraph::new();
+        let mut i = Interner::new();
+        let ty = i.intern("N");
+        let vals = i.intern("future_manifold_values");
+        let tgt = i.intern("future_manifold_target");
+        let bnd = i.intern("future_manifold_bounds");
+        let budget = i.intern("future_manifold_projection_budget");
+        let horizon = i.intern("future_manifold_physical_horizon");
+
+        let slice = |xs: &[f64]| {
+            let sv: smallvec::SmallVec<[Value; 4]> =
+                xs.iter().map(|x| Value::Float(*x)).collect();
+            Value::Tuple(std::sync::Arc::new(sv))
+        };
+        let traj = |rows: &[&[f64]]| {
+            let sv: smallvec::SmallVec<[Value; 4]> =
+                rows.iter().map(|r| slice(r)).collect();
+            Value::Tuple(std::sync::Arc::new(sv))
+        };
+
+        let episode = g.insert_node(ty, FxHashMap::default());
+        g.set_node_attr(episode, tgt, traj(&[&[0.0], &[0.0], &[0.0]]));
+        g.set_node_attr(episode, bnd, traj(&[&[1.0], &[1.0], &[1.0]]));
+
+        let policy = g.insert_node(ty, FxHashMap::default());
+        g.set_node_attr(policy, budget, Value::Float(8.0));
+        g.set_node_attr(policy, horizon, Value::Float(3.0));
+
+        // Inside tolerance at every tick.
+        let held = g.insert_node(ty, FxHashMap::default());
+        g.set_node_attr(held, vals, traj(&[&[0.0], &[0.2], &[0.1]]));
+        // Leaves the tube at the last tick.
+        let escaping = g.insert_node(ty, FxHashMap::default());
+        g.set_node_attr(escaping, vals, traj(&[&[0.0], &[0.2], &[9.0]]));
+
+        (g, i, episode, policy, held, escaping)
+    }
+
+    /// The set is per-candidate and DISCRIMINATES: a candidate that leaves the
+    /// tube must not report the same deformation as one that stays in it.
+    /// Without this the "set" would be a list of identical rows and the
+    /// composition would be decorative.
+    #[test]
+    fn set_discriminates_retained_from_escaping() {
+        let (g, mut i, episode, policy, held, escaping) = bench();
+        let set = reachable_deformation_set(&g, &mut i, episode, policy, &[held, escaping]);
+        assert_eq!(set.len(), 2, "one record per candidate");
+        assert_eq!(set[0].candidate, held);
+        assert_eq!(set[1].candidate, escaping);
+        assert!(set[0].support && set[1].support, "both audits supported");
+        assert_eq!(set[0].loss, 0.0, "the held candidate stays inside tolerance");
+        assert!(
+            set[1].loss > 0.0,
+            "the escaping candidate must register loss; got {:?}",
+            set[1]
+        );
+    }
+
+    /// An empty candidate family yields an empty set, not a zero measurement.
+    /// This is the distinction the record type exists to preserve: nothing
+    /// reachable is not the same fact as reachable-but-measured-zero.
+    #[test]
+    fn empty_candidate_family_yields_an_empty_set() {
+        let (g, mut i, episode, policy, _held, _escaping) = bench();
+        let set = reachable_deformation_set(&g, &mut i, episode, policy, &[]);
+        assert!(set.is_empty(), "no candidates means no set members");
+    }
+
+    /// Fail-closed: a candidate carrying no projected continuation is reported
+    /// as unsupported rather than silently contributing a zero-loss row.
+    #[test]
+    fn candidate_without_a_continuation_is_unsupported() {
+        let (mut g, mut i, episode, policy, held, _escaping) = bench();
+        let ty = g.node(held).type_;
+        let bare = g.insert_node(ty, FxHashMap::default());
+        let set = reachable_deformation_set(&g, &mut i, episode, policy, &[bare]);
+        assert_eq!(set.len(), 1);
+        assert!(
+            !set[0].support,
+            "a candidate with no trajectory must fail closed, got {:?}",
+            set[0]
+        );
+    }
+}
