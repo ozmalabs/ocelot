@@ -2295,11 +2295,20 @@ pub(crate) fn eval_dim_infer(
     // BEFORE any of the work those determinants drive. Gated on the scale
     // audit, which is OFF by default (PROTOCOL §9), so the cost on every
     // committed path is one relaxed atomic load and no allocation.
-    if crate::scale_audit::enabled() {
-        crate::scale_audit::dim_infer_args(
-            encode_dim_infer_args(&parts, &generators, &goal, max_dims, field, false),
-            encode_dim_infer_args(&parts, &generators, &goal, max_dims, field, true),
-        );
+    // The witness is the sound path: attribution belongs to THIS call, so a
+    // concurrent decode cannot contribute to it. The global scale_audit
+    // counters remain for whole-process cost measurement, which is what they
+    // are for; they are not a per-call measurement, and a caller needing one
+    // attaches a witness.
+    if ctx.dim_infer_witness.is_some() || crate::scale_audit::enabled() {
+        let ordered = encode_dim_infer_args(&parts, &generators, &goal, max_dims, field, false);
+        let unordered = encode_dim_infer_args(&parts, &generators, &goal, max_dims, field, true);
+        if let Some(w) = ctx.dim_infer_witness.as_deref_mut() {
+            w.record(ordered.clone(), unordered.clone());
+        }
+        if crate::scale_audit::enabled() {
+            crate::scale_audit::dim_infer_args(ordered, unordered);
+        }
     }
 
     let mut sorted_o = goal.clone();
@@ -7354,6 +7363,54 @@ mod dim_infer_tests {
         evaluate(&a, idx, &mut env, &mut ctx)
     }
 
+    /// `run`, with this invocation's own argument attribution recorded into
+    /// `w`. Touches nothing global, so it is correct under a parallel harness
+    /// and needs no lock.
+    #[allow(clippy::too_many_arguments)]
+    fn run_witnessed(
+        g: &TypedGraph,
+        ir: &mut Interner,
+        goal: Value,
+        codebook_type: Sym,
+        generator_type: Sym,
+        max_dims: i64,
+        field: &str,
+        w: &mut crate::term::DimInferWitness,
+    ) -> Value {
+        let mut a = TermArena::new();
+        let goal_t = a.add(TermNode::Lit { value: goal });
+        let field_sym = if field.is_empty() { Sym::default() } else { ir.intern(field) };
+        let idx = a.add(TermNode::DimInfer {
+            goal: goal_t, codebook_type, exclude: None, generator_type, max_dims, field: field_sym,
+        });
+        let mut env: Env = Env::new();
+        let mut ctx = EvalCtx::new(g, ir).with_dim_infer_witness(w);
+        evaluate(&a, idx, &mut env, &mut ctx)
+    }
+
+    /// Run `n` witnessed decodes and return
+    /// `(calls, distinct_ordered, distinct_unordered)` from that witness.
+    ///
+    /// Replaces a predecessor that enabled a PROCESS-GLOBAL audit, ran the
+    /// decodes, and snapshotted global counters. That is a measurement of
+    /// these decodes only if nothing else in the process decodes during the
+    /// window — which this harness violates routinely, because sibling tests
+    /// decode in parallel and increment the same counters. Measured: 22/22
+    /// serial, 19-20/22 under default threading, varying run to run on
+    /// identical code. The module-local mutex gave false assurance, serialising
+    /// only the six tests that took it and not the thirty-nine that decode
+    /// freely.
+    fn witnessed<F: FnMut(usize, &mut crate::term::DimInferWitness)>(
+        n: usize,
+        mut each: F,
+    ) -> (u64, u64, u64) {
+        let mut w = crate::term::DimInferWitness::default();
+        for i in 0..n {
+            each(i, &mut w);
+        }
+        (w.calls() as u64, w.distinct_ordered() as u64, w.distinct_unordered() as u64)
+    }
+
     /// The shared asymmetric-tromino fixture: an "L" of 3 red cells at
     /// `(0,0) (0,1) (1,0)`. Asymmetric under 90-degree rotation (all four
     /// of k=0..3 land on a DISTINCT cell set — hand-verified), which is
@@ -7930,8 +7987,8 @@ mod dim_infer_tests {
             cell(&mut ir, 0, 0, "red"), cell(&mut ir, 0, 1, "red"), cell(&mut ir, 1, 1, "red"),
         ]);
 
-        let (calls, ord, unord) = audited(7, |_| {
-            run(&g, &mut ir, goal.clone(), t, gt, 2, "");
+        let (calls, ord, unord) = witnessed(7, |_, w| {
+            run_witnessed(&g, &mut ir, goal.clone(), t, gt, 2, "", w);
         });
         assert_eq!(calls, 7, "the recording site must see every invocation");
         assert_eq!(ord, 1, "seven IDENTICAL argument sets are ONE distinct tuple");
@@ -7963,8 +8020,8 @@ mod dim_infer_tests {
             })
             .collect();
 
-        let (calls, ord, unord) = audited(7, |i| {
-            run(&g, &mut ir, goals[i].clone(), t, gt, 2, "");
+        let (calls, ord, unord) = witnessed(7, |i, w| {
+            run_witnessed(&g, &mut ir, goals[i].clone(), t, gt, 2, "", w);
         });
         assert_eq!(calls, 7);
         assert_eq!(ord, 7, "seven DIFFERENT goals are seven distinct tuples");
@@ -7996,10 +8053,12 @@ mod dim_infer_tests {
             cell(&mut ir, 0, 0, "red"), cell(&mut ir, 0, 1, "red"), cell(&mut ir, 1, 1, "red"),
         ]);
 
-        crate::scale_audit::set_enabled(true);
-        crate::scale_audit::reset();
+        // ONE witness across the seven growth steps: the codebook changes
+        // between decodes, so the distinctness being asserted is a property of
+        // this sequence and of nothing else in the process.
+        let mut w = crate::term::DimInferWitness::default();
         for i in 0..7i64 {
-            run(&g, &mut ir, goal.clone(), t, gt, 2, "");
+            run_witnessed(&g, &mut ir, goal.clone(), t, gt, 2, "", &mut w);
             // grow the codebook by one part — the mint the sd loop performs
             let grown = tuple_of(vec![
                 cell(&mut ir, i + 10, 0, "blue"), cell(&mut ir, i + 10, 1, "blue"),
@@ -8007,18 +8066,14 @@ mod dim_infer_tests {
             let name = format!("Grown{}", i);
             add_part(&mut g, &mut ir, t, &name, grown, &["pred", "coord:r", "coord:c", "val"]);
         }
-        let m: std::collections::HashMap<String, u64> =
-            crate::scale_audit::snapshot().into_iter().collect();
-        crate::scale_audit::set_enabled(false);
-        crate::scale_audit::reset();
 
-        assert_eq!(m["dim_infer_arg_calls"], 7);
+        assert_eq!(w.calls(), 7);
         assert_eq!(
-            m["dim_infer_arg_distinct_ordered"], 7,
+            w.distinct_ordered(), 7,
             "codebook growth MUST change the encoding — this is the mechanism the \
              irreducibility hypothesis rests on, and an encoder blind to it cannot rule"
         );
-        assert_eq!(m["dim_infer_arg_distinct_unordered"], 7);
+        assert_eq!(w.distinct_unordered(), 7);
     }
 
     /// D-SWEEP — the G5 series. `J` distinct-goal decodes for `J` in 1..=7
@@ -8047,8 +8102,8 @@ mod dim_infer_tests {
 
         let mut sweep = Vec::new();
         for j in 1..=7usize {
-            let (_c, ord, _u) = audited(j, |i| {
-                run(&g, &mut ir, goals[i].clone(), t, gt, 2, "");
+            let (_c, ord, _u) = witnessed(j, |i, w| {
+                run_witnessed(&g, &mut ir, goals[i].clone(), t, gt, 2, "", w);
             });
             sweep.push(ord);
         }
@@ -8056,8 +8111,8 @@ mod dim_infer_tests {
 
         let mut control = Vec::new();
         for _ in 0..7 {
-            let (_c, ord, _u) = audited(1, |i| {
-                run(&g, &mut ir, goals[i].clone(), t, gt, 2, "");
+            let (_c, ord, _u) = witnessed(1, |i, w| {
+                run_witnessed(&g, &mut ir, goals[i].clone(), t, gt, 2, "", w);
             });
             control.push(ord);
         }

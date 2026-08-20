@@ -3375,6 +3375,75 @@ pub struct DerivedOpDef {
 pub type DerivedOpRegistry = FxHashMap<Sym, DerivedOpDef>;
 
 /// Evaluator state passed through every recursive call. Holds the
+/// Argument attribution for `DimInfer`, carried BY THE CALL rather than
+/// published to a process-global side channel.
+///
+/// # Why this exists
+///
+/// The distinct-argument measurement (`VISION_DIM_INFER_ARGS_PREREG.md`) was
+/// originally recorded into `scale_audit`'s process-global counters: a caller
+/// flipped a global enable, ran decodes, and snapshotted globals. That reading
+/// is only correct if nothing else in the process decodes during the window,
+/// which is not a property any caller can guarantee — and in the test harness
+/// it is routinely false, because sibling tests run decodes concurrently and
+/// increment the same counters. The measurement was therefore silently
+/// contaminated rather than wrong-and-loud.
+///
+/// A witness attached to the evaluation context cannot be contaminated: two
+/// concurrent decodes hold two contexts, and each records only what its own
+/// call did. This is the same shape as the provenance witness in the boundary
+/// theory — attribution retained through the operation instead of in shared
+/// state — and it makes the failure mode structurally impossible rather than
+/// merely detectable.
+#[derive(Debug, Default, Clone, PartialEq)]
+pub struct DimInferWitness {
+    /// Exact canonical ORDERED argument encodings, one per invocation, in
+    /// invocation order. Attempt order genuinely affects the answer, so this
+    /// is the complete determinant set.
+    pub ordered: Vec<Vec<u8>>,
+    /// The UNORDERED (canonically sorted) encodings. Codebook load order is a
+    /// graph-iteration fact that can churn with no semantic change, so this is
+    /// the lower bound on distinctness.
+    pub unordered: Vec<Vec<u8>>,
+}
+
+impl DimInferWitness {
+    /// Invocations that reached the recording site.
+    pub fn calls(&self) -> usize {
+        self.ordered.len()
+    }
+
+    /// Distinct ordered encodings. Exact, not hashed: a hash collision would
+    /// UNDER-count distinctness and bias the reading toward "re-derivation",
+    /// which is the more interesting answer and therefore the one that must
+    /// not be reachable by accident.
+    pub fn distinct_ordered(&self) -> usize {
+        let mut seen: Vec<&Vec<u8>> = Vec::new();
+        for e in &self.ordered {
+            if !seen.iter().any(|s| *s == e) {
+                seen.push(e);
+            }
+        }
+        seen.len()
+    }
+
+    /// Distinct unordered encodings — the lower bound.
+    pub fn distinct_unordered(&self) -> usize {
+        let mut seen: Vec<&Vec<u8>> = Vec::new();
+        for e in &self.unordered {
+            if !seen.iter().any(|s| *s == e) {
+                seen.push(e);
+            }
+        }
+        seen.len()
+    }
+
+    pub fn record(&mut self, ordered: Vec<u8>, unordered: Vec<u8>) {
+        self.ordered.push(ordered);
+        self.unordered.push(unordered);
+    }
+}
+
 /// graph + interner + optional cache + concept resolver + a depth
 /// guard (matches Python's `_holds_depth`).
 pub struct EvalCtx<'a> {
@@ -3428,6 +3497,11 @@ pub struct EvalCtx<'a> {
     /// constructing `EvalCtx` directly, e.g. a test or a future
     /// primitive, can exercise it).
     pub framebuffers: Option<&'a rustc_hash::FxHashMap<u32, crate::framebuffer::FbHandle>>,
+    /// Optional per-call `DimInfer` argument attribution. `None` (the default)
+    /// records nothing and costs nothing. When `Some`, the decode appends its
+    /// own arguments here, so the reading belongs to this evaluation and no
+    /// concurrent evaluation can contribute to it.
+    pub dim_infer_witness: Option<&'a mut DimInferWitness>,
     /// Optional registry for `Call{name,args}` dispatch
     /// (`DERIVED_OPERATOR_TIER_SLICE1_PREREG.md`'s own "design decisions"
     /// section). `Arc`, NOT a borrowed `&'a DerivedOpRegistry` — a
@@ -3462,7 +3536,15 @@ impl<'a> EvalCtx<'a> {
             shape_cache: None,
             derived_ops: None,
             framebuffers: None,
+            dim_infer_witness: None,
         }
+    }
+
+    /// Attach a `DimInferWitness` so this evaluation records its own
+    /// `DimInfer` arguments instead of relying on process-global counters.
+    pub fn with_dim_infer_witness(mut self, w: &'a mut DimInferWitness) -> Self {
+        self.dim_infer_witness = Some(w);
+        self
     }
 
     pub fn with_framebuffers(
