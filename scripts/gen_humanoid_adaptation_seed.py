@@ -6322,23 +6322,17 @@ def materialize_learning_safety_context_rule():
     undeclared environment from a missing projection.
     """
     development = "development"
-    verified = And(
-        Gt(P0(development, "safe_learning_environment_declared"), L(0.5)),
-        Or(
-            Gt(P0(development, "embodiment_reset_reachable"), L(0.5)),
-            And(
-                Gt(P0(development, "protective_support_available"), L(0.5)),
-                Gt(P0(development, "protective_support_effectiveness"), L(0.0)),
-            ),
-        ),
+    verified = Gt(
+        P0(development, "safe_learning_environment_declared"), L(0.5)
     )
     return {
         "name": "ha_materialize_generic_learning_safety_context",
         "area": "generic_future_option_risk",
         "latency_class": "hard_realtime",
         "comment": "Publish graph-owned recovery evidence before the native "
-        "future-manifold gate evaluates a candidate.  Relaxation budgets are "
-        "declared context units, never host-selected multipliers.",
+        "future-manifold gate evaluates a candidate. Exploration budgets are "
+        "ceilings: current support, load, pose, recovery latency and horizon "
+        "determine the dimension-specific fraction actually available.",
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
             ["episode", "projects_embodied_development", development],
@@ -6358,6 +6352,8 @@ def materialize_learning_safety_context_rule():
                 "required_horizon_units": T(P0(development, "safe_learning_required_horizon_units")),
                 "minimum_width_relaxation": T(P0(development, "safe_learning_minimum_width_relaxation")),
                 "information_loss_allowance": T(P0(development, "safe_learning_information_loss_allowance")),
+                "exploration_width_budget": T(P0(development, "safe_learning_minimum_width_relaxation")),
+                "exploration_information_budget": T(P0(development, "safe_learning_information_loss_allowance")),
                 "integer_native": 1,
                 "output_authority": 0,
             }],
@@ -6392,12 +6388,18 @@ def establish_future_manifold_bounds_rule():
         )
         for key in ("dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz")
     }
-    locomotion_competence_ready = Or(
+    safe_learning_projection_ready = Exists(
+        Neighbours("episode", "has_learning_safety_context"),
+        "learning_safety",
+        Eq(P0("learning_safety", "verified"), L(1.0)),
+    )
+    projection_context_ready = Or(
         Gt(P0("episode", "phase_adaptation_complete"), L(0.5)),
         And(
             Gt(P0("episode", "developmental_curriculum_active"), L(0.5)),
             Eq(A("episode", "developmental_goal"), L("locomotion")),
         ),
+        safe_learning_projection_ready,
     )
     return {
         "name": "ha_establish_future_manifold_bounds",
@@ -6410,7 +6412,7 @@ def establish_future_manifold_bounds_rule():
         "where": And(
             Gt(P0("policy", "future_manifold_enabled"), L(0.5)),
             Gt(P0("policy", "future_manifold_temporal_anchors_enabled"), L(0.5)),
-            locomotion_competence_ready,
+            projection_context_ready,
             Eq(P0("episode", "manifold_bounds_ready"), L(0.0)),
             Gt(Count(models), L(0.0)),
         ),
@@ -15478,9 +15480,15 @@ def manifest():
                     "future_manifold_projection_budget": 16.0,
                     "future_manifold_physical_horizon": 0.0,
                     "future_manifold_anchor_growth": 2.0,
-                    "future_manifold_max_shape_order": 1.0,
-                    "future_manifold_max_refinements": 16.0,
-                    "support_geometry_preview_authority": 0.0,
+            "future_manifold_max_shape_order": 1.0,
+            "future_manifold_max_refinements": 16.0,
+            # One unchanged projected tick is sufficient to close a local
+            # developmental replay certificate.  The native evaluator still
+            # extends or refines when the state moves; this only supplies the
+            # previously missing termination contract for the temporally
+            # foveated path.
+            "future_manifold_path_fixed_point_run": 1.0,
+            "support_geometry_preview_authority": 0.0,
                     "persistent_task_residual_authority": 0.0,
                     "takeoff_motor_compression_authority": 1.0,
                 },

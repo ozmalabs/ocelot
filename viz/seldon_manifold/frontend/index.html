@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Seldon Manifold</title>
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <aside class="console">
+    <div class="console-scroll">
+      <header class="brand">
+        <h1>Seldon&nbsp;Manifold</h1>
+        <p class="subtitle">reachable&#8209;future instrument</p>
+        <p class="epigraph">realised history &rarr; narrative &rarr; momentum &rarr; future orientation</p>
+      </header>
+
+      <section class="group">
+        <h2>Projections</h2>
+        <div class="legend" id="legend">
+          <button class="chip" data-id="target" type="button">
+            <span class="dot" data-color="target"></span>
+            <span class="chip-text">
+              <span class="label">Target</span>
+              <span class="status">acceptable manifold</span>
+            </span>
+          </button>
+          <button class="chip" data-id="wait" type="button">
+            <span class="dot" data-color="wait"></span>
+            <span class="chip-text">
+              <span class="label">Wait <span class="tag">narrative default</span></span>
+              <span class="status" id="status-wait">&mdash;</span>
+            </span>
+          </button>
+          <button class="chip" data-id="refine" type="button">
+            <span class="dot" data-color="refine"></span>
+            <span class="chip-text">
+              <span class="label">Refine</span>
+              <span class="status" id="status-refine">&mdash;</span>
+            </span>
+          </button>
+          <button class="chip" data-id="commit" type="button">
+            <span class="dot" data-color="commit"></span>
+            <span class="chip-text">
+              <span class="label">Commit</span>
+              <span class="status" id="status-commit">&mdash;</span>
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2>Controls</h2>
+        <div class="controls" id="controls">
+          <label class="slider" data-param="wait_lateral">
+            <span class="slabel"><span>Momentum (wait drift)</span><span class="sval">0.55</span></span>
+            <input type="range" min="0.1" max="1.4" step="0.01" value="0.55" />
+          </label>
+          <label class="slider" data-param="refine_gain">
+            <span class="slabel"><span>Refine gain</span><span class="sval">2.2</span></span>
+            <input type="range" min="0.4" max="6" step="0.05" value="2.2" />
+          </label>
+          <label class="slider" data-param="commit_gain">
+            <span class="slabel"><span>Commit gain</span><span class="sval">5.0</span></span>
+            <input type="range" min="0.6" max="10" step="0.05" value="5.0" />
+          </label>
+          <label class="slider" data-param="tol_lateral">
+            <span class="slabel"><span>Tolerance (lateral)</span><span class="sval">0.35</span></span>
+            <input type="range" min="0.05" max="1.0" step="0.01" value="0.35" />
+          </label>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2>Muchness</h2>
+        <div class="much-figure">
+          <canvas id="much-chart" width="600" height="120" aria-label="Muchness and reachable muchness over the horizon"></canvas>
+          <div class="much-legend">
+            <span class="mkey"><span class="mdot good"></span>reachable</span>
+            <span class="mkey"><span class="mdot lost"></span>outside goal</span>
+          </div>
+          <div class="much-readout" id="much-readout"></div>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2>Basins</h2>
+        <div class="legend" id="basin-legend">
+          <button class="chip" data-basin="acceptable" type="button">
+            <span class="dot" data-color="good"></span>
+            <span class="chip-text">
+              <span class="label">Acceptable</span>
+              <span class="status" id="basin-acceptable-status">&mdash;</span>
+            </span>
+          </button>
+          <button class="chip" data-basin="momentum" type="button">
+            <span class="dot" data-color="critical"></span>
+            <span class="chip-text">
+              <span class="label">Momentum (unmanaged)</span>
+              <span class="status" id="basin-momentum-status">&mdash;</span>
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <section class="group readout" id="readout"></section>
+
+      <section class="group note">
+        <p><strong>Tube width</strong> is predictive uncertainty still retained. <strong>Muchness</strong> is the total of it — every admissible projection's tube, summed; <strong>reachable muchness</strong> is the part of that also inside the acceptable manifold. A <strong>basin</strong> is where the tubes settle by the horizon's end &mdash; the goal, or the unmanaged momentum default.</p>
+        <p class="hint">drag to orbit &middot; scroll to zoom &middot; hover a path or basin</p>
+      </section>
+
+      <footer class="foot">
+        <span id="engine-note">audited live &middot; FutureManifoldProjection, runners/dsl/src/future_manifold.rs</span>
+      </footer>
+    </div>
+  </aside>
+
+  <main>
+    <canvas id="stars"></canvas>
+    <canvas id="scene"></canvas>
+
+    <div class="hud">
+      <button class="hud-btn" id="btn-collapse" type="button" title="Hide panel" aria-label="Hide panel">
+        <svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><line x1="9.5" y1="4.5" x2="9.5" y2="19.5"/><path d="M14.5 9.5 L11.5 12 L14.5 14.5"/></svg>
+      </button>
+      <button class="hud-btn" id="btn-fullscreen" type="button" title="Fullscreen" aria-label="Toggle fullscreen">
+        <svg id="icon-fullscreen" viewBox="0 0 24 24"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/></svg>
+      </button>
+    </div>
+
+    <button class="reveal-tab" id="btn-reveal" type="button" title="Show panel" aria-label="Show panel">
+      <svg viewBox="0 0 24 24"><path d="M9.5 4.5 L14.5 12 L9.5 19.5"/></svg>
+    </button>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

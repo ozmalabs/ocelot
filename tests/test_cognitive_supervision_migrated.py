@@ -5,6 +5,9 @@ import json
 from pathlib import Path
 
 from scripts.gen_cognitive_supervision_seed import manifest
+from scripts.jabberwock_humanoid_walk import (
+    _cognitive_continuation_authorised,
+)
 from substrate.world_adapter import WorldAdapter
 
 
@@ -144,8 +147,27 @@ def test_cognitive_supervision_rules_refresh_on_checkpoint_resume():
     assert "cognitive_supervision" in daemon._REFRESHABLE_SEEDS
 
 
-def test_unproductive_window_is_dominated_and_cannot_continue():
+def test_unproductive_window_preserves_only_viable_future():
     agent, episode, plan, step, instance, process = _fixture(span=4)
+    _advance(
+        agent, step, instance,
+        epoch=4, effort=4, success=0, failure=1,
+    )
+
+    checkin = list(agent.s.nodes("CognitiveCheckIn"))[0]
+    assert agent.s.node(checkin)["attrs"]["status"] == "continued"
+    assert agent.s.node(process)["attrs"]["status"] == "monitoring"
+    assert agent.s.node(episode)["attrs"][
+        "cognitive_continuation_authority"
+    ] == 1
+    assert agent.inner.neighbours(step, "has_learning_plan_residual") == []
+
+
+def test_unproductive_window_replans_when_replacement_future_exists():
+    agent, episode, plan, step, instance, process = _fixture(span=4)
+    replacement = agent.s.add_node("LearningPlanStep", {"status": "ready"})
+    _edge(agent, plan, "has_learning_plan_step", replacement)
+
     _advance(
         agent, step, instance,
         epoch=4, effort=4, success=0, failure=1,
@@ -218,6 +240,91 @@ def test_new_graph_selected_step_attaches_process_and_clears_terminal_latch():
     replacement_attrs = agent.s.node(replacement_processes[0])["attrs"]
     assert replacement_attrs["status"] == "monitoring"
     assert replacement_attrs["continuation_authority"] == 1
+
+
+def test_exhausted_frontier_reopens_timed_suspension_but_not_surprise():
+    agent = WorldAdapter(seeds=("embodied_development",))
+    episode = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "development_learning_active": 1,
+        "development_evidence_window": 4,
+        "latest_development_receipt_seq": 0,
+        "cognitive_continuation_authority": 0,
+        "cognitive_checkin_terminal": 1,
+    })
+    plan = agent.s.add_node("LearningPlan", {"status": "active"})
+    step = agent.s.add_node("LearningPlanStep", {
+        "status": "meta_suspended", "ordinal": 3,
+    })
+    instance = agent.s.add_node("EmbodiedSituatedDevelopmentalCapability", {
+        "status": "meta_suspended", "ordinal": 3,
+    })
+    process = agent.s.add_node("CognitiveProcess", {
+        "status": "replan_required", "continuation_authority": 0,
+        "replan_release_complete": 1,
+    })
+    checkin = agent.s.add_node("CognitiveCheckIn", {
+        "status": "replan_required", "reason": "approximate_time",
+    })
+    for source, edge_type, target in (
+        (episode, "has_self_directed_learning_plan", plan),
+        (plan, "has_learning_plan_step", step),
+        (step, "plans_learning_capability", instance),
+        (episode, "has_cognitive_process", process),
+        (process, "supervises_learning_plan_step", step),
+        (process, "has_cognitive_checkin", checkin),
+    ):
+        _edge(agent, source, edge_type, target)
+
+    agent.tick(max_steps=100)
+
+    assert agent.s.node(process)["attrs"]["status"] == "frontier_exhausted"
+    assert agent.s.node(step)["attrs"]["status"] != "meta_suspended"
+    assert agent.s.node(instance)["attrs"]["status"] != "meta_suspended"
+
+    # A structural surprise is not merely a stale preference and remains held.
+    agent.inner.set_attr(step, "status", "meta_suspended")
+    agent.inner.set_attr(instance, "status", "meta_suspended")
+    agent.inner.set_attr(process, "status", "replan_required")
+    agent.inner.set_attr(checkin, "reason", "outside_expected_bounds")
+    agent.tick(max_steps=100)
+    assert agent.s.node(process)["attrs"]["status"] == "replan_required"
+    assert agent.s.node(step)["attrs"]["status"] == "meta_suspended"
+
+
+def test_retired_process_cannot_shadow_replacement_lease_owner():
+    agent = WorldAdapter(seeds=("cognitive_supervision",))
+    episode = agent.s.add_node("Node", {})
+    context = agent.s.add_node("EmbodiedDevelopmentEpisode", {})
+    plan = agent.s.add_node("LearningPlan", {})
+    step = agent.s.add_node("LearningPlanStep", {
+        "evidence_spent_units": 65,
+    })
+    retired = agent.s.add_node("CognitiveProcess", {
+        "status": "frontier_exhausted", "continuation_authority": 0,
+        "replan_release_complete": 1,
+    })
+    current = agent.s.add_node("CognitiveProcess", {
+        "status": "monitoring", "continuation_authority": 1,
+        "lease_generation": 0, "renew_before_epoch": 21,
+        "next_checkin_evidence_units": 86,
+    })
+    policy = agent.s.add_node("CognitiveSupervisionPolicy", {
+        "enabled": 1, "cognitive_epoch": 14,
+    })
+    for source, edge_type, target in (
+        (context, "has_self_directed_learning_plan", plan),
+        (plan, "has_selected_learning_plan_step", step),
+        (context, "has_cognitive_process", retired),
+        (retired, "supervises_learning_plan_step", step),
+        (context, "has_cognitive_process", current),
+        (current, "supervises_learning_plan_step", step),
+        (current, "governed_by_cognitive_supervision_policy", policy),
+    ):
+        _edge(agent, source, edge_type, target)
+
+    assert _cognitive_continuation_authorised(
+        agent, episode, context
+    ) is True
 
 
 def test_productive_replan_selects_ready_alternative_after_suspended_step():
@@ -339,9 +446,17 @@ def test_productive_replan_selects_ready_alternative_after_suspended_step():
 
 def test_verified_learning_safety_context_alone_does_not_revive_held_process():
     agent, episode, _, step, instance, process = _fixture(span=4)
+    signal = agent.s.add_node("CognitiveProcessSignal", {
+        "kind": "embodiment_integrity",
+        "observed_units": 1,
+        "expected_lower_units": 0,
+        "expected_upper_units": 0,
+        "supervision_processed": 0,
+    })
+    _edge(agent, process, "observes_process_signal", signal)
     _advance(
         agent, step, instance,
-        epoch=4, effort=4, success=0, failure=1,
+        epoch=1, effort=1, success=0, failure=1,
     )
     safety = agent.s.add_node("LearningSafetyContext", {
         "verified": 1, "reset_reachable": 1, "reset_cost_units": 1,
@@ -423,10 +538,10 @@ def test_cognitive_clock_does_not_check_in_without_evidence_progress():
 
     checkin = list(agent.s.nodes("CognitiveCheckIn"))[0]
     assert agent.s.node(checkin)["attrs"]["reason"] == "approximate_time"
-    assert agent.s.node(checkin)["attrs"]["status"] == "replan_required"
+    assert agent.s.node(checkin)["attrs"]["status"] == "continued"
     assert agent.s.node(episode)["attrs"][
         "cognitive_continuation_authority"
-    ] == 0
+    ] == 1
 
 
 def test_signal_inside_expected_envelope_does_not_preempt_lease():

@@ -32,6 +32,7 @@ from scripts.gen_humanoid_adaptation_seed import (  # noqa: E402
     Neg,
     Neighbours,
     Not,
+    Or,
     PI0,
     Plus,
     T,
@@ -109,7 +110,11 @@ def open_trajectory_rule() -> dict:
                 "kind": "embodied_program_trajectory",
                 "dimension_count": 4,
                 "horizon": T(P0("budget", "trajectory_horizon")),
+                "minimum_selection_depth": T(Max(
+                    L(1), P0("budget", "trajectory_minimum_selection_depth")
+                )),
                 "expansion_count": 0,
+                "selection_enabled": 1,
                 "output_authority": 0,
                 "integer_native": 1,
             }],
@@ -134,13 +139,12 @@ def mint_base_path_rule() -> dict:
         "coordinates and costs remain separate Pareto dimensions.",
         "match": [
             ["owner", "has_embodied_program_trajectory", "trajectory"],
-            ["owner", "has_current_embodied_program", "origin_program"],
-            ["trajectory", "starts_from_embodied_program", "origin_program"],
             ["owner", "has_embodied_program_transition", "transition"],
             ["transition", "starts_from_embodied_program", "origin_program"],
             ["transition", "continues_with_embodied_program", "terminal_program"],
         ],
         "where": And(
+            Eq(P0("trajectory", "selection_enabled"), L(1)),
             Eq(P0("transition", "verified"), L(1)),
             Eq(Count(Neighbours(
                 "transition", "has_embodied_program_base_path"
@@ -242,8 +246,6 @@ def extend_path_rule() -> dict:
         "only while the situated graph horizon remains open.",
         "match": [
             ["owner", "has_embodied_program_trajectory", "trajectory"],
-            ["owner", "has_current_embodied_program", "origin_program"],
-            ["trajectory", "starts_from_embodied_program", "origin_program"],
             ["trajectory", "has_pareto_candidate", "parent"],
             ["parent", "starts_with_embodied_program_transition", "first_transition"],
             ["parent", "starts_from_embodied_program", "origin_program"],
@@ -253,6 +255,7 @@ def extend_path_rule() -> dict:
             ["transition", "continues_with_embodied_program", "terminal_program"],
         ],
         "where": And(
+            Eq(P0("trajectory", "selection_enabled"), L(1)),
             Eq(A("parent", "kind"), L("embodied_program_path")),
             Eq(P0("parent", "verified"), L(1)),
             Eq(P0("transition", "verified"), L(1)),
@@ -370,12 +373,60 @@ def inherit_path_program_rule() -> dict:
 
 
 def select_frontier_path_rule() -> dict:
+    def has_next_transition_from_current(path_var: str) -> dict:
+        return Or(
+            Exists(
+                Neighbours(path_var, "contains_embodied_program_transition"),
+                "path_next_transition",
+                Exists(
+                    Neighbours(
+                        "path_next_transition", "starts_from_embodied_program"
+                    ),
+                    "path_next_source",
+                    Eq(V("path_next_source"), V("current_program")),
+                ),
+            ),
+            Exists(
+                Neighbours(
+                    "owner", "has_current_embodied_program_transition_source"
+                ),
+                "current_transition_source",
+                Exists(
+                    Neighbours(
+                        path_var, "contains_embodied_program_transition"
+                    ),
+                    "path_state_transition",
+                    And(
+                        Eq(
+                            V("path_state_transition"),
+                            V("current_transition_source"),
+                        ),
+                        Not(Exists(
+                            Neighbours(
+                                path_var,
+                                "manifold_blocked_from_embodied_program_transition",
+                            ),
+                            "blocked_state_transition",
+                            Eq(
+                                V("blocked_state_transition"),
+                                V("current_transition_source"),
+                            ),
+                        )),
+                    ),
+                ),
+            ),
+        )
+
     frontier = Filter(
         Neighbours("trajectory", "has_pareto_candidate"),
         "frontier_path",
         And(
             Eq(A("frontier_path", "kind"), L("embodied_program_path")),
             Eq(P0("frontier_path", "verified"), L(1)),
+            Not(Lt(
+                P0("frontier_path", "depth"),
+                P0("trajectory", "minimum_selection_depth"),
+            )),
             Gt(P0("frontier_path", "orientation_span_units"), L(0)),
             Eq(
                 Count(Neighbours(
@@ -389,11 +440,7 @@ def select_frontier_path_rule() -> dict:
                 )),
                 Plus(P0("frontier_path", "depth"), L(1)),
             ),
-            Exists(
-                Neighbours("frontier_path", "starts_from_embodied_program"),
-                "path_origin",
-                Eq(V("path_origin"), V("current_program")),
-            ),
+            has_next_transition_from_current("frontier_path"),
             Eq(Count(Neighbours(
                 "frontier_path", "is_dominated_by_pareto_candidate"
             )), L(0)),
@@ -428,6 +475,7 @@ def select_frontier_path_rule() -> dict:
             ["trajectory", "has_pareto_candidate", "path"],
         ],
         "where": And(
+            Eq(P0("trajectory", "selection_enabled"), L(1)),
             Gt(Count(frontier), L(0)),
             Eq(V("path"), selected),
             Eq(Count(Neighbours(
@@ -474,6 +522,14 @@ def manifest() -> dict:
         ("last", "ParetoCandidate", "ends_with_embodied_program_transition", "Node"),
         ("selected", "Node", "has_selected_embodied_program_path", "ParetoCandidate"),
         ("current", "Node", "has_current_embodied_program", "Node"),
+        (
+            "current_transition_source", "Node",
+            "has_current_embodied_program_transition_source", "Node",
+        ),
+        (
+            "manifold_blocked_transition", "ParetoCandidate",
+            "manifold_blocked_from_embodied_program_transition", "Node",
+        ),
         ("path_transition", "ParetoCandidate", "contains_embodied_program_transition", "Node"),
         ("path_program", "ParetoCandidate", "contains_embodied_program", "Node"),
     )

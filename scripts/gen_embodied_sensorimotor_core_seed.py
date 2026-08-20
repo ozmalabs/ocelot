@@ -1287,7 +1287,10 @@ def publish_network_mode_sample_rule():
             ["agent", "has_allostatic_error", "error"],
             ["error", "forecasted_from", "forecast"],
         ],
-        "where": Eq(Count(samples), L(0.0)),
+        "where": And(
+            Eq(P0("outcome", "network_mode_sample_published"), L(0.0)),
+            Eq(Count(samples), L(0.0)),
+        ),
         "effects": [
             ["add_node", "sample", "NetworkModeSample", {
                 "epoch": T(sequence("outcome")),
@@ -1304,6 +1307,7 @@ def publish_network_mode_sample_rule():
             }],
             ["add_edge", "agent", "has_network_mode_sample", "sample"],
             ["add_edge", "outcome", "has_embodied_network_mode_sample", "sample"],
+            ["set_attr", "outcome", "network_mode_sample_published", 1.0],
         ],
     }
 

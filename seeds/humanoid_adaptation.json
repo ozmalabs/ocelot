@@ -33,6 +33,7 @@
     "future_manifold_anchor_growth": 2.0,
     "future_manifold_max_shape_order": 1.0,
     "future_manifold_max_refinements": 16.0,
+    "future_manifold_path_fixed_point_run": 1.0,
     "support_geometry_preview_authority": 0.0,
     "persistent_task_residual_authority": 0.0,
     "takeoff_motor_compression_authority": 1.0
@@ -284968,7 +284969,7 @@
    "name": "ha_materialize_generic_learning_safety_context",
    "area": "generic_future_option_risk",
    "latency_class": "hard_realtime",
-   "comment": "Publish graph-owned recovery evidence before the native future-manifold gate evaluates a candidate.  Relaxation budgets are declared context units, never host-selected multipliers.",
+   "comment": "Publish graph-owned recovery evidence before the native future-manifold gate evaluates a candidate. Exploration budgets are ceilings: current support, load, pose, recovery latency and horizon determine the dimension-specific fraction actually available.",
    "match": [
     [
      "agent",
@@ -285010,115 +285011,28 @@
        "__term__": {
         "type": "IfThenElse",
         "cond": {
-         "type": "And",
-         "items": [
-          {
-           "type": "Gt",
-           "a": {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "development"
-              },
-              "key": "safe_learning_environment_declared"
-             },
-             {
-              "type": "Lit",
-              "value": 0.0
-             }
-            ]
-           },
-           "b": {
-            "type": "Lit",
-            "value": 0.5
-           }
-          },
-          {
-           "type": "Or",
-           "items": [
-            {
-             "type": "Gt",
-             "a": {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "development"
-                },
-                "key": "embodiment_reset_reachable"
-               },
-               {
-                "type": "Lit",
-                "value": 0.0
-               }
-              ]
-             },
-             "b": {
-              "type": "Lit",
-              "value": 0.5
-             }
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "development"
             },
-            {
-             "type": "And",
-             "items": [
-              {
-               "type": "Gt",
-               "a": {
-                "type": "Plus",
-                "items": [
-                 {
-                  "type": "Attr",
-                  "node": {
-                   "type": "Var",
-                   "name": "development"
-                  },
-                  "key": "protective_support_available"
-                 },
-                 {
-                  "type": "Lit",
-                  "value": 0.0
-                 }
-                ]
-               },
-               "b": {
-                "type": "Lit",
-                "value": 0.5
-               }
-              },
-              {
-               "type": "Gt",
-               "a": {
-                "type": "Plus",
-                "items": [
-                 {
-                  "type": "Attr",
-                  "node": {
-                   "type": "Var",
-                   "name": "development"
-                  },
-                  "key": "protective_support_effectiveness"
-                 },
-                 {
-                  "type": "Lit",
-                  "value": 0.0
-                 }
-                ]
-               },
-               "b": {
-                "type": "Lit",
-                "value": 0.0
-               }
-              }
-             ]
-            }
-           ]
-          }
-         ]
+            "key": "safe_learning_environment_declared"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
         },
         "then": {
          "type": "Lit",
@@ -285304,6 +285218,44 @@
         ]
        }
       },
+      "exploration_width_budget": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "development"
+          },
+          "key": "safe_learning_minimum_width_relaxation"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "exploration_information_budget": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "development"
+          },
+          "key": "safe_learning_information_loss_allowance"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
       "integer_native": 1,
       "output_authority": 0
      }
@@ -285453,6 +285405,43 @@
           }
          }
         ]
+       },
+       {
+        "type": "Exists",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "edge_type": "has_learning_safety_context",
+         "any_type": false
+        },
+        "var_name": "learning_safety",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "learning_safety"
+            },
+            "key": "verified"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
        }
       ]
      },

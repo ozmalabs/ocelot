@@ -9484,15 +9484,21 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 Value::Node(n) => Some(n),
                 _ => None,
             });
-            crate::motor_compose::future_manifold_projection_field(
-                ctx.graph,
-                ctx.interner,
-                ep,
-                po,
-                src,
-                add,
-                *field,
-            )
+            if let Some(value) = crate::future_manifold::projection_field(
+                ctx.graph, ctx.interner, ep, po, src, add, *field,
+            ) {
+                value
+            } else {
+                crate::motor_compose::future_manifold_projection_field(
+                    ctx.graph,
+                    ctx.interner,
+                    ep,
+                    po,
+                    src,
+                    add,
+                    *field,
+                )
+            }
         }
         TermNode::TransformDecode {
             goal,

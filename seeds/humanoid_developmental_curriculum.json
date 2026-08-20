@@ -96,6 +96,18 @@
    }
   },
   {
+   "provenance": "humanoid_development:trajectory_state_source",
+   "src": {
+    "type": "EmbodiedSituatedDevelopmentalCapability",
+    "var": "capability"
+   },
+   "edge_type": "has_current_embodied_program_transition_source",
+   "tgt": {
+    "type": "Node",
+    "var": "transition"
+   }
+  },
+  {
    "provenance": "humanoid_development:wave_local_command_index",
    "src": {
     "type": "SomatomotorWaveCell",
@@ -4672,6 +4684,119 @@
    ]
   },
   {
+   "name": "hdc_restore_reactivated_program_trajectory_to_hot_frontier",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -111,
+   "batch": true,
+   "comment": "A suspended stable trajectory re-enters generic selection only when its capability is genuinely available or active again.",
+   "match": [
+    [
+     "development",
+     "has_embodied_developmental_capability",
+     "capability"
+    ],
+    [
+     "capability",
+     "has_embodied_program_trajectory",
+     "trajectory"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trajectory"
+         },
+         "key": "selection_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "capability"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "active"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "capability"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "available"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "capability"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "retention_due"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "trajectory",
+     "selection_enabled",
+     1
+    ],
+    [
+     "set_attr",
+     "trajectory",
+     "status",
+     "active"
+    ]
+   ]
+  },
+  {
    "name": "hdc_request_generic_order_n_program_trajectory",
    "area": "humanoid_sensorimotor_adaptation",
    "latency_class": "hard_realtime",
@@ -4849,23 +4974,60 @@
      "trajectory_horizon",
      {
       "__term__": {
-       "type": "Plus",
-       "items": [
-        {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "development"
-         },
-         "key": "development_evidence_window"
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "development"
+           },
+           "key": "development_evidence_window"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
         },
-        {
+        "b": {
          "type": "Lit",
-         "value": 0
+         "value": 2
         }
-       ]
+       },
+       "then": {
+        "type": "Lit",
+        "value": 2
+       },
+       "other": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "development"
+          },
+          "key": "development_evidence_window"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
       }
      }
+    ],
+    [
+     "set_attr",
+     "development",
+     "trajectory_minimum_selection_depth",
+     2
     ],
     [
      "add_edge",
@@ -5070,7 +5232,7 @@
    "name": "hdc_replay_selected_order_n_program_path",
    "area": "humanoid_sensorimotor_adaptation",
    "latency_class": "hard_realtime",
-   "order": -107,
+   "order": -106,
    "batch": false,
    "comment": "System 2 selects an output-null arbitrary-order path; each hard-real-time collapse releases only its next already-grounded compound program through the existing trial and receipt machinery.",
    "match": [
@@ -5078,6 +5240,11 @@
      "agent",
      "has_humanoid_episode",
      "episode"
+    ],
+    [
+     "agent",
+     "has_humanoid_policy",
+     "policy"
     ],
     [
      "episode",
@@ -5095,19 +5262,14 @@
      "path"
     ],
     [
-     "capability",
-     "has_current_embodied_program",
-     "current"
-    ],
-    [
      "path",
      "contains_embodied_program_transition",
      "transition"
     ],
     [
-     "transition",
-     "starts_from_embodied_program",
-     "current"
+     "capability",
+     "has_current_embodied_program_transition_source",
+     "transition"
     ],
     [
      "transition",
@@ -5302,6 +5464,141 @@
       ]
      },
      {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "policy"
+              },
+              "key": "future_manifold_enabled"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "episode"
+              },
+              "key": "manifold_bounds_ready"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         ]
+        }
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "FutureManifoldProjection",
+           "episode": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "policy": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "source": {
+            "type": "Var",
+            "name": "memory"
+           },
+           "field": "support"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "FutureManifoldProjection",
+           "episode": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "policy": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "source": {
+            "type": "Var",
+            "name": "memory"
+           },
+           "field": "resolved"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "FutureManifoldProjection",
+           "episode": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "policy": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "source": {
+            "type": "Var",
+            "name": "memory"
+           },
+           "field": "information_loss"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
       "type": "Gt",
       "a": {
        "type": "Count",
@@ -5467,6 +5764,192 @@
      "memory",
      "open_residual_count",
      1
+    ],
+    [
+     "set_attr",
+     "path",
+     "trajectory_replay_issued_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_support",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "future_manifold_enabled"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "FutureManifoldProjection",
+        "episode": {
+         "type": "Var",
+         "name": "episode"
+        },
+        "policy": {
+         "type": "Var",
+         "name": "policy"
+        },
+        "source": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "field": "support"
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_resolved",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "future_manifold_enabled"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "FutureManifoldProjection",
+        "episode": {
+         "type": "Var",
+         "name": "episode"
+        },
+        "policy": {
+         "type": "Var",
+         "name": "policy"
+        },
+        "source": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "field": "resolved"
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_loss",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "future_manifold_enabled"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "FutureManifoldProjection",
+        "episode": {
+         "type": "Var",
+         "name": "episode"
+        },
+        "policy": {
+         "type": "Var",
+         "name": "policy"
+        },
+        "source": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "field": "loss"
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
     ],
     [
      "add_edge",
@@ -21226,6 +21709,1681 @@
    ]
   },
   {
+   "name": "hdc_clear_stale_trajectory_state_source",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": 94,
+   "batch": true,
+   "comment": "A program node is an action, not the body's state. Withdraw transition sources whose learned pre-state no longer matches the latest categorical physical receipt or whose next program no longer preserves the current future manifold.",
+   "match": [
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ],
+    [
+     "agent",
+     "has_humanoid_policy",
+     "policy"
+    ],
+    [
+     "episode",
+     "projects_embodied_development",
+     "development"
+    ],
+    [
+     "development",
+     "has_active_embodied_developmental_capability",
+     "capability"
+    ],
+    [
+     "capability",
+     "has_current_embodied_program_transition_source",
+     "transition"
+    ],
+    [
+     "transition",
+     "continues_with_embodied_program",
+     "memory"
+    ],
+    [
+     "episode",
+     "has_humanoid_motor_trial",
+     "trial"
+    ],
+    [
+     "trial",
+     "has_humanoid_transition",
+     "outcome"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trial"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "development"
+         },
+         "key": "latest_development_receipt_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "pre_orientation_class"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "outcome"
+            },
+            "key": "development_post_orientation_class"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Or",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "policy"
+                 },
+                 "key": "future_manifold_enabled"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "episode"
+                 },
+                 "key": "manifold_bounds_ready"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            ]
+           }
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Gt",
+             "a": {
+              "type": "FutureManifoldProjection",
+              "episode": {
+               "type": "Var",
+               "name": "episode"
+              },
+              "policy": {
+               "type": "Var",
+               "name": "policy"
+              },
+              "source": {
+               "type": "Var",
+               "name": "memory"
+              },
+              "field": "support"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "FutureManifoldProjection",
+              "episode": {
+               "type": "Var",
+               "name": "episode"
+              },
+              "policy": {
+               "type": "Var",
+               "name": "policy"
+              },
+              "source": {
+               "type": "Var",
+               "name": "memory"
+              },
+              "field": "resolved"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "FutureManifoldProjection",
+              "episode": {
+               "type": "Var",
+               "name": "episode"
+              },
+              "policy": {
+               "type": "Var",
+               "name": "policy"
+              },
+              "source": {
+               "type": "Var",
+               "name": "memory"
+              },
+              "field": "information_loss"
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           ]
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "capability",
+     "has_current_embodied_program_transition_source",
+     "transition"
+    ]
+   ]
+  },
+  {
+   "name": "hdc_bind_trajectory_state_source_from_latest_receipt",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": 95,
+   "batch": true,
+   "comment": "Re-anchor every learned transition matching the latest categorical receipt, but publish only next programs admitted by the native analysis-by-synthesis future projection. Batch publication lets the generic selector compare all viable current continuations.",
+   "match": [
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ],
+    [
+     "agent",
+     "has_humanoid_policy",
+     "policy"
+    ],
+    [
+     "episode",
+     "projects_embodied_development",
+     "development"
+    ],
+    [
+     "development",
+     "has_active_embodied_developmental_capability",
+     "capability"
+    ],
+    [
+     "capability",
+     "has_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "transition",
+     "continues_with_embodied_program",
+     "memory"
+    ],
+    [
+     "episode",
+     "has_humanoid_motor_trial",
+     "trial"
+    ],
+    [
+     "trial",
+     "has_humanoid_transition",
+     "outcome"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "transition"
+         },
+         "key": "verified"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trial"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "development"
+         },
+         "key": "latest_development_receipt_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "transition"
+         },
+         "key": "pre_orientation_class"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "outcome"
+         },
+         "key": "development_post_orientation_class"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "policy"
+              },
+              "key": "future_manifold_enabled"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "episode"
+              },
+              "key": "manifold_bounds_ready"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         ]
+        }
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "FutureManifoldProjection",
+           "episode": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "policy": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "source": {
+            "type": "Var",
+            "name": "memory"
+           },
+           "field": "support"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "FutureManifoldProjection",
+           "episode": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "policy": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "source": {
+            "type": "Var",
+            "name": "memory"
+           },
+           "field": "resolved"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "FutureManifoldProjection",
+           "episode": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "policy": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "source": {
+            "type": "Var",
+            "name": "memory"
+           },
+           "field": "information_loss"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "capability"
+        },
+        "edge_type": "has_current_embodied_program_transition_source",
+        "any_type": false
+       },
+       "var_name": "known_state_source",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Var",
+         "name": "known_state_source"
+        },
+        "b": {
+         "type": "Var",
+         "name": "transition"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "capability",
+     "has_current_embodied_program_transition_source",
+     "transition"
+    ]
+   ]
+  },
+  {
+   "name": "hdc_clear_selected_trajectory_without_current_state_source",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": 96,
+   "batch": true,
+   "comment": "A selected path is live only while at least one of its transitions is admissible from the latest receipt-grounded state. The path remains retained evidence after its selection edge clears.",
+   "match": [
+    [
+     "capability",
+     "has_selected_embodied_program_path",
+     "path"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "capability"
+      },
+      "edge_type": "has_current_embodied_program_transition_source",
+      "any_type": false
+     },
+     "var_name": "current_source",
+     "predicate": {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "path"
+       },
+       "edge_type": "contains_embodied_program_transition",
+       "any_type": false
+      },
+      "var_name": "path_source",
+      "predicate": {
+       "type": "Eq",
+       "a": {
+        "type": "Var",
+        "name": "path_source"
+       },
+       "b": {
+        "type": "Var",
+        "name": "current_source"
+       }
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "del_edge",
+     "capability",
+     "has_selected_embodied_program_path",
+     "path"
+    ]
+   ]
+  },
+  {
+   "name": "hdc_audit_selected_trajectory_manifold_gate",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -108,
+   "batch": false,
+   "comment": "Publish the exact graph-native projection verdict that permits or blocks a selected path's next program. Audit has no actuator or completion authority.",
+   "match": [
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ],
+    [
+     "agent",
+     "has_humanoid_policy",
+     "policy"
+    ],
+    [
+     "episode",
+     "projects_embodied_development",
+     "development"
+    ],
+    [
+     "development",
+     "has_embodied_developmental_capability",
+     "capability"
+    ],
+    [
+     "capability",
+     "has_selected_embodied_program_path",
+     "path"
+    ],
+    [
+     "path",
+     "contains_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "capability",
+     "has_current_embodied_program_transition_source",
+     "transition"
+    ],
+    [
+     "transition",
+     "continues_with_embodied_program",
+     "memory"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "policy"
+         },
+         "key": "future_manifold_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "key": "last_manifold_audit_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "path",
+     "last_manifold_audit_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_support",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "support"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_resolved",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "resolved"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_loss",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "loss"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_information_loss",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "information_loss"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_horizon",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "horizon"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_anchor_count",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "anchor_count"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_refinement_count",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "refinement_count"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_termination_code",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "termination_code"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_exploration_authority",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "exploration_authority"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_situated_support_0",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "situated_support_0"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_situated_support_1",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "situated_support_1"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_situated_support_2",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "situated_support_2"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_situated_support_3",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "situated_support_3"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_situated_support_4",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "situated_support_4"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_situated_support_5",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "situated_support_5"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_situated_support_6",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "situated_support_6"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_applied_bound_0",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "applied_bound_0"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_applied_bound_1",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "applied_bound_1"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_applied_bound_2",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "applied_bound_2"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_applied_bound_3",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "applied_bound_3"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_applied_bound_4",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "applied_bound_4"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_applied_bound_5",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "applied_bound_5"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_applied_bound_6",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "field": "applied_bound_6"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "hdc_reject_selected_trajectory_in_current_manifold_context",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -107,
+   "batch": false,
+   "comment": "A failed projection refutes this path only from the current receipt-grounded transition source. The generic selector may choose another frontier path; no actuator authority is created.",
+   "match": [
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ],
+    [
+     "agent",
+     "has_humanoid_policy",
+     "policy"
+    ],
+    [
+     "episode",
+     "projects_embodied_development",
+     "development"
+    ],
+    [
+     "development",
+     "has_embodied_developmental_capability",
+     "capability"
+    ],
+    [
+     "capability",
+     "has_selected_embodied_program_path",
+     "path"
+    ],
+    [
+     "path",
+     "contains_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "capability",
+     "has_current_embodied_program_transition_source",
+     "transition"
+    ],
+    [
+     "transition",
+     "continues_with_embodied_program",
+     "memory"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "policy"
+         },
+         "key": "future_manifold_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "key": "last_manifold_audit_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Or",
+       "items": [
+        {
+         "type": "Not",
+         "arg": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "policy"
+               },
+               "key": "future_manifold_enabled"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "episode"
+               },
+               "key": "manifold_bounds_ready"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         }
+        },
+        {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "FutureManifoldProjection",
+            "episode": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "policy": {
+             "type": "Var",
+             "name": "policy"
+            },
+            "source": {
+             "type": "Var",
+             "name": "memory"
+            },
+            "field": "support"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "FutureManifoldProjection",
+            "episode": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "policy": {
+             "type": "Var",
+             "name": "policy"
+            },
+            "source": {
+             "type": "Var",
+             "name": "memory"
+            },
+            "field": "resolved"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "FutureManifoldProjection",
+            "episode": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "policy": {
+             "type": "Var",
+             "name": "policy"
+            },
+            "source": {
+             "type": "Var",
+             "name": "memory"
+            },
+            "field": "information_loss"
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "edge_type": "manifold_blocked_from_embodied_program_transition",
+         "any_type": false
+        },
+        "var_name": "known_blocked_source",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Var",
+          "name": "known_blocked_source"
+         },
+         "b": {
+          "type": "Var",
+          "name": "transition"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "path",
+     "manifold_blocked_from_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "del_edge",
+     "capability",
+     "has_selected_embodied_program_path",
+     "path"
+    ],
+    [
+     "set_attr",
+     "path",
+     "manifold_rejection_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "path"
+           },
+           "key": "manifold_rejection_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
    "name": "hdc_complete_selected_order_n_program_path_from_receipt_context",
    "area": "humanoid_sensorimotor_adaptation",
    "latency_class": "hard_realtime",
@@ -21264,28 +23422,107 @@
     ]
    ],
    "where": {
-    "type": "Gt",
-    "a": {
-     "type": "Plus",
-     "items": [
-      {
-       "type": "Attr",
-       "node": {
-        "type": "Var",
-        "name": "path"
-       },
-       "key": "depth"
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "key": "depth"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
       },
-      {
+      "b": {
        "type": "Lit",
-       "value": 0
+       "value": 1
       }
-     ]
-    },
-    "b": {
-     "type": "Lit",
-     "value": 1
-    }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "key": "trajectory_replay_issued_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "key": "trajectory_replay_completed_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "development"
+         },
+         "key": "latest_development_receipt_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "key": "trajectory_replay_issued_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
    },
    "effects": [
     [
@@ -21329,6 +23566,30 @@
     ],
     [
      "set_attr",
+     "path",
+     "trajectory_replay_completed_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "key": "trajectory_replay_issued_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
      "capability",
      "trajectory_replay_count",
      {
@@ -21357,6 +23618,185 @@
          "value": 1
         }
        ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "hdc_archive_selected_trajectory_after_capability_mastery",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": 92,
+   "batch": true,
+   "comment": "Mastery closes the capability's practice question. Retain its path and audit facts, but remove the live selection edge so it cannot compete with the next developmental capability.",
+   "match": [
+    [
+     "development",
+     "has_embodied_developmental_capability",
+     "capability"
+    ],
+    [
+     "capability",
+     "has_selected_embodied_program_path",
+     "path"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "capability"
+     },
+     "key": "status"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "mastered"
+    }
+   },
+   "effects": [
+    [
+     "del_edge",
+     "capability",
+     "has_selected_embodied_program_path",
+     "path"
+    ],
+    [
+     "set_attr",
+     "path",
+     "selection_archive_reason",
+     "capability_mastered"
+    ]
+   ]
+  },
+  {
+   "name": "hdc_park_inactive_program_trajectory_off_hot_frontier",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": 93,
+   "batch": true,
+   "comment": "Mastered and meta-suspended capabilities retain one stable trajectory identity and every evidence node, while disabling its generic expansion and selection work.",
+   "match": [
+    [
+     "development",
+     "has_embodied_developmental_capability",
+     "capability"
+    ],
+    [
+     "capability",
+     "has_embodied_program_trajectory",
+     "trajectory"
+    ]
+   ],
+   "where": {
+    "type": "Or",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "trajectory"
+           },
+           "key": "selection_enabled"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "capability"
+           },
+           "key": "status"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "mastered"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "capability"
+           },
+           "key": "status"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "meta_suspended"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "trajectory",
+     "selection_enabled",
+     0
+    ],
+    [
+     "set_attr",
+     "trajectory",
+     "status",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "capability"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "mastered"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "archived"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "suspended"
+       }
       }
      }
     ]

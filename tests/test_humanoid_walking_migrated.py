@@ -430,6 +430,60 @@ def _held_motor_library(signature):
     }
 
 
+def test_continuation_coalesces_repeated_shape_and_hint_generations():
+    from scripts.jabberwock_humanoid_walk import (
+        _motor_library_snapshot,
+        _restore_motor_library,
+    )
+
+    signature = (("body", 3, 2, 1),)
+    library = _held_motor_library(signature)
+    older_shape = library["body_shapes"][0]
+    newer_shape = json.loads(json.dumps(older_shape))
+    newer_shape["attrs"]["signature"] = signature
+    newer_shape["programs"][0]["attrs"]["experience_count"] = 9.0
+    older_shape["residual_regimes"] = [{
+        "ordinal": 0.0,
+        "sample_count": 3.0,
+    }]
+    newer_shape["residual_regimes"] = [{
+        "ordinal": 0.0,
+        "sample_count": 11.0,
+    }]
+    library["body_shapes"].append(newer_shape)
+    hint = {
+        "attrs": {"name": "same_hint", "output_authority": 0},
+        "stages": [{
+            "attrs": {
+                "ordinal": 0.0,
+                "output_authority": 0,
+            },
+        }],
+    }
+    library["plan_hints"] = [hint, json.loads(json.dumps(hint))]
+
+    agent, _ = _motor_library_fixture(signature)
+    restored = _restore_motor_library(agent, library)
+    assert restored["shape_count"] == 1
+    assert restored["program_count"] == 1
+    assert restored["residual_regime_memory_count"] == 1
+    assert restored["plan_hint_count"] == 1
+
+    snapshot = _motor_library_snapshot(agent)
+    assert len(snapshot["body_shapes"]) == 1
+    assert len(snapshot["body_shapes"][0]["programs"]) == 1
+    assert snapshot["body_shapes"][0]["programs"][0]["attrs"][
+        "experience_count"
+    ] == 9.0
+    assert snapshot["body_shapes"][0]["residual_regimes"][0][
+        "sample_count"
+    ] == 11.0
+    assert sum(
+        row["attrs"].get("name") == "same_hint"
+        for row in snapshot["plan_hints"]
+    ) == 1
+
+
 def test_shape_library_persists_gait_sweep_between_lifetimes():
     seed = json.loads(SEED.read_text(encoding="utf-8"))
     rules = {rule["name"] for rule in seed["rules"]}

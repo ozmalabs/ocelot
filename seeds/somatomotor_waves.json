@@ -23,6 +23,18 @@
    }
   },
   {
+   "provenance": "somatomotor_waves:archived_program",
+   "src": {
+    "type": "SomatomotorWaveField",
+    "var": "field"
+   },
+   "edge_type": "archives_somatomotor_wave_program",
+   "tgt": {
+    "type": "SomatomotorWaveProgram",
+    "var": "program"
+   }
+  },
+  {
    "provenance": "somatomotor_waves:cell",
    "src": {
     "type": "SomatomotorWaveField",
@@ -7479,28 +7491,70 @@
             }
            },
            {
-            "type": "Eq",
-            "a": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "episode"
-               },
-               "key": "development_effector_coverage_complete"
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "episode"
+                 },
+                 "key": "development_effector_covered_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
               },
-              {
-               "type": "Lit",
-               "value": 0
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "instance"
+                 },
+                 "key": "effector_coverage_scored_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
               }
-             ]
-            },
-            "b": {
-             "type": "Lit",
-             "value": 1
-            }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "episode"
+                 },
+                 "key": "development_effector_coverage_complete"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
            },
            {
             "type": "Eq",
@@ -7635,28 +7689,57 @@
             }
            },
            {
-            "type": "Gt",
-            "a": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "receipt"
-               },
-               "key": "development_post_support_count"
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
               },
-              {
+              "b": {
                "type": "Lit",
                "value": 0
               }
-             ]
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
            },
            {
             "type": "Gt",
@@ -7703,52 +7786,206 @@
             }
            },
            {
-            "type": "Gt",
-            "a": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "receipt"
-               },
-               "key": "development_post_support_count"
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
               },
-              {
+              "b": {
                "type": "Lit",
                "value": 0
               }
-             ]
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
            },
            {
-            "type": "Eq",
-            "a": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "receipt"
-               },
-               "key": "development_quarter_turn_transition"
+            "type": "Or",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "development_quarter_turn_transition"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
               },
-              {
+              "b": {
                "type": "Lit",
-               "value": 0
+               "value": 1
               }
-             ]
-            },
-            "b": {
-             "type": "Lit",
-             "value": 1
-            }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "development_half_turn_transition"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "instance"
+                 },
+                 "key": "trajectory_half_turn_complete"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             },
+             {
+              "type": "And",
+              "items": [
+               {
+                "type": "Not",
+                "arg": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "instance"
+                    },
+                    "key": "trajectory_origin_orientation_class"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_orientation_class"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Neg",
+                 "arg": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "instance"
+                    },
+                    "key": "trajectory_origin_orientation_class"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  ]
+                 }
+                }
+               }
+              ]
+             }
+            ]
            }
           ]
          },
@@ -7771,28 +8008,57 @@
             }
            },
            {
-            "type": "Gt",
-            "a": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "receipt"
-               },
-               "key": "development_post_support_count"
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
               },
-              {
+              "b": {
                "type": "Lit",
                "value": 0
               }
-             ]
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
            },
            {
             "type": "Or",
@@ -7844,6 +8110,78 @@
                "type": "Lit",
                "value": 1
               }
+             },
+             {
+              "type": "And",
+              "items": [
+               {
+                "type": "Not",
+                "arg": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "instance"
+                    },
+                    "key": "trajectory_origin_orientation_class"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_orientation_class"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Neg",
+                 "arg": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "instance"
+                    },
+                    "key": "trajectory_origin_orientation_class"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  ]
+                 }
+                }
+               }
+              ]
              }
             ]
            }
@@ -7941,28 +8279,57 @@
             }
            },
            {
-            "type": "Gt",
-            "a": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "receipt"
-               },
-               "key": "development_post_support_count"
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
               },
-              {
+              "b": {
                "type": "Lit",
                "value": 0
               }
-             ]
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
            },
            {
             "type": "Eq",
@@ -8033,28 +8400,57 @@
             }
            },
            {
-            "type": "Gt",
-            "a": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "receipt"
-               },
-               "key": "development_post_support_count"
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
               },
-              {
+              "b": {
                "type": "Lit",
                "value": 0
               }
-             ]
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
            },
            {
             "type": "Gt",
@@ -8101,28 +8497,57 @@
             }
            },
            {
-            "type": "Gt",
-            "a": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "receipt"
-               },
-               "key": "development_post_support_count"
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
               },
-              {
+              "b": {
                "type": "Lit",
                "value": 0
               }
-             ]
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
            },
            {
             "type": "Gt",
@@ -8169,28 +8594,57 @@
             }
            },
            {
-            "type": "Gt",
-            "a": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "receipt"
-               },
-               "key": "development_post_support_count"
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
               },
-              {
+              "b": {
                "type": "Lit",
                "value": 0
               }
-             ]
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
            },
            {
             "type": "Eq",
@@ -8353,28 +8807,57 @@
             }
            },
            {
-            "type": "Gt",
-            "a": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "receipt"
-               },
-               "key": "development_post_support_count"
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
               },
-              {
+              "b": {
                "type": "Lit",
                "value": 0
               }
-             ]
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
            },
            {
             "type": "Gt",
@@ -8445,28 +8928,57 @@
             }
            },
            {
-            "type": "Gt",
-            "a": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "receipt"
-               },
-               "key": "development_post_support_count"
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
               },
-              {
+              "b": {
                "type": "Lit",
                "value": 0
               }
-             ]
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
            },
            {
             "type": "Gt",
@@ -9070,28 +9582,70 @@
               }
              },
              {
-              "type": "Eq",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "episode"
-                 },
-                 "key": "development_effector_coverage_complete"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "episode"
+                   },
+                   "key": "development_effector_covered_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
-                 "type": "Lit",
-                 "value": 0
+                "b": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "instance"
+                   },
+                   "key": "effector_coverage_scored_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 1
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "episode"
+                   },
+                   "key": "development_effector_coverage_complete"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Eq",
@@ -9226,28 +9780,57 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Gt",
@@ -9294,52 +9877,206 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
-              "type": "Eq",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_quarter_turn_transition"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_quarter_turn_transition"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
-                 "value": 0
+                 "value": 1
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 1
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_half_turn_transition"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "instance"
+                   },
+                   "key": "trajectory_half_turn_complete"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               },
+               {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Not",
+                  "arg": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "instance"
+                      },
+                      "key": "trajectory_origin_orientation_class"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    ]
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  }
+                 },
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "receipt"
+                     },
+                     "key": "development_post_orientation_class"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Neg",
+                   "arg": {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "instance"
+                      },
+                      "key": "trajectory_origin_orientation_class"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    ]
+                   }
+                  }
+                 }
+                ]
+               }
+              ]
              }
             ]
            },
@@ -9362,28 +10099,57 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Or",
@@ -9435,6 +10201,78 @@
                  "type": "Lit",
                  "value": 1
                 }
+               },
+               {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Not",
+                  "arg": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "instance"
+                      },
+                      "key": "trajectory_origin_orientation_class"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    ]
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  }
+                 },
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "receipt"
+                     },
+                     "key": "development_post_orientation_class"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Neg",
+                   "arg": {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "instance"
+                      },
+                      "key": "trajectory_origin_orientation_class"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    ]
+                   }
+                  }
+                 }
+                ]
                }
               ]
              }
@@ -9532,28 +10370,57 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Eq",
@@ -9624,28 +10491,57 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Gt",
@@ -9692,28 +10588,57 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Gt",
@@ -9760,28 +10685,57 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Eq",
@@ -9944,28 +10898,57 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Gt",
@@ -10036,28 +11019,57 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Gt",
@@ -10612,28 +11624,70 @@
               }
              },
              {
-              "type": "Eq",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "episode"
-                 },
-                 "key": "development_effector_coverage_complete"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "episode"
+                   },
+                   "key": "development_effector_covered_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
-                 "type": "Lit",
-                 "value": 0
+                "b": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "instance"
+                   },
+                   "key": "effector_coverage_scored_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 1
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "episode"
+                   },
+                   "key": "development_effector_coverage_complete"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Eq",
@@ -10768,28 +11822,57 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Gt",
@@ -10836,52 +11919,206 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
-              "type": "Eq",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_quarter_turn_transition"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_quarter_turn_transition"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
-                 "value": 0
+                 "value": 1
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 1
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_half_turn_transition"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "instance"
+                   },
+                   "key": "trajectory_half_turn_complete"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               },
+               {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Not",
+                  "arg": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "instance"
+                      },
+                      "key": "trajectory_origin_orientation_class"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    ]
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  }
+                 },
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "receipt"
+                     },
+                     "key": "development_post_orientation_class"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Neg",
+                   "arg": {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "instance"
+                      },
+                      "key": "trajectory_origin_orientation_class"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    ]
+                   }
+                  }
+                 }
+                ]
+               }
+              ]
              }
             ]
            },
@@ -10904,28 +12141,57 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Or",
@@ -10977,6 +12243,78 @@
                  "type": "Lit",
                  "value": 1
                 }
+               },
+               {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Not",
+                  "arg": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "instance"
+                      },
+                      "key": "trajectory_origin_orientation_class"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    ]
+                   },
+                   "b": {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  }
+                 },
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "receipt"
+                     },
+                     "key": "development_post_orientation_class"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Neg",
+                   "arg": {
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "instance"
+                      },
+                      "key": "trajectory_origin_orientation_class"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    ]
+                   }
+                  }
+                 }
+                ]
                }
               ]
              }
@@ -11074,28 +12412,57 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Eq",
@@ -11166,28 +12533,57 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Gt",
@@ -11234,28 +12630,57 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Gt",
@@ -11302,28 +12727,57 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Eq",
@@ -11486,28 +12940,57 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Gt",
@@ -11578,28 +13061,57 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "receipt"
-                 },
-                 "key": "development_post_support_count"
+              "type": "Or",
+              "items": [
+               {
+                "type": "Gt",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "development_post_support_count"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
                 },
-                {
+                "b": {
                  "type": "Lit",
                  "value": 0
                 }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                   },
+                   "key": "caregiver_protective_support_applied"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              },
              {
               "type": "Gt",
@@ -12348,6 +13860,79 @@
        ]
       }
      }
+    ]
+   ]
+  },
+  {
+   "name": "smw_archive_receipt_processed_wave_program",
+   "area": "embodied_somatomotor_waves",
+   "latency_class": "hard_realtime",
+   "order": 83,
+   "batch": true,
+   "comment": "A verified wave program remains causal evidence, but it is no longer part of the active field frontier. Keeping historical programs on the active edge made every subsequent action rescan the entire developmental history.",
+   "match": [
+    [
+     "field",
+     "has_somatomotor_wave_program",
+     "program"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "program"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "experienced"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "program"
+         },
+         "key": "receipt_processed"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "field",
+     "has_somatomotor_wave_program",
+     "program"
+    ],
+    [
+     "add_edge",
+     "field",
+     "archives_somatomotor_wave_program",
+     "program"
     ]
    ]
   }

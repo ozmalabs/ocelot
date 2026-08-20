@@ -180,6 +180,16 @@ CAPABILITIES = (
         "evidence": "supported_translation",
         "ecology": "floor",
         "human_analogue": "prone_reaching_and_pivoting",
+        # State the acceptable consequence manifold, not a limb sequence:
+        # contact support must remain available while body-relative
+        # translation accumulates, and incidental rotation must remain
+        # bounded.  The situated AbS model still discovers the opaque
+        # effectors and the generic trajectory faculty chooses the path.
+        "desired_body_state_signature": [
+            ["support_relation", "preserved"],
+            ["directed_translation", "increasing"],
+            ["orientation_change", "bounded"],
+        ],
         "requires": (
             "reversible_configuration_control",
             "prone_forelimb_support",
@@ -214,6 +224,15 @@ CAPABILITIES = (
         "evidence": "translated_support_cycle",
         "ecology": "floor",
         "human_analogue": "commando_crawling",
+        # A crawl is an extended support/translation manifold.  This states
+        # its body-relative invariants while leaving cadence, limb ordering,
+        # and actuator recruitment to learned analysis by synthesis.
+        "desired_body_state_signature": [
+            ["support_topology_change", "cyclic"],
+            ["directed_translation", "increasing"],
+            ["height_energy_relation", "bounded"],
+            ["orientation_change", "bounded"],
+        ],
         "requires": (
             "prone_reach_and_pivot",
             "reversible_configuration_control",
@@ -1994,6 +2013,55 @@ def reopen_process_released_capability_rule():
             ["set_attr", "instance", "status", "available"],
             ["set_attr", "step", "status", "ready"],
             ["set_attr", "instance", "released_from_meta_suspension", 1],
+        ],
+    }
+
+
+def retire_time_window_replan_when_frontier_exhausted_rule():
+    """Reassess a timed suspension after every alternative is exhausted.
+
+    A zero-yield evidence window can prefer another ready experiment, but that
+    preference is contextual rather than permanent.  Once no selected or
+    ready plan step remains, retaining the old replan latch would erase the
+    last reachable future.  Structural-envelope departures are deliberately
+    excluded: those remain terminal until their physical premise changes.
+    """
+    ready_steps = Filter(
+        Neighbours("plan", "has_learning_plan_step"),
+        "ready_step",
+        Eq(A("ready_step", "status"), L("ready")),
+    )
+    return {
+        "name": "ed_retire_time_window_replan_when_frontier_exhausted",
+        "area": "general_cognition",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "comment": "Exhausting every alternate experiment changes the future "
+        "manifold. Retire an ordinary time-window replan so its suspended "
+        "path can re-enter the Pareto frontier; explicit envelope departures "
+        "remain held.",
+        "match": [
+            ["episode", "has_self_directed_learning_plan", "plan"],
+            ["plan", "has_learning_plan_step", "step"],
+            ["step", "plans_learning_capability", "instance"],
+            ["episode", "has_cognitive_process", "process"],
+            ["process", "supervises_learning_plan_step", "step"],
+            ["process", "has_cognitive_checkin", "checkin"],
+        ],
+        "where": And(
+            Eq(A("step", "status"), L("meta_suspended")),
+            Eq(A("instance", "status"), L("meta_suspended")),
+            Eq(A("process", "status"), L("replan_required")),
+            Eq(P0("process", "replan_release_complete"), L(1)),
+            Eq(A("checkin", "reason"), L("approximate_time")),
+            Eq(Count(Neighbours(
+                "plan", "has_selected_learning_plan_step"
+            )), L(0)),
+            Eq(Count(ready_steps), L(0)),
+        ),
+        "effects": [
+            ["set_attr", "process", "status", "frontier_exhausted"],
+            ["set_attr", "checkin", "status", "frontier_reassessment"],
         ],
     }
 
@@ -4560,6 +4628,7 @@ def manifest() -> dict:
             archive_learning_decision_candidate_rule(),
             publish_structural_surprise_to_cognitive_process_rule(),
             release_dominated_process_at_checkin_rule(),
+            retire_time_window_replan_when_frontier_exhausted_rule(),
             reopen_process_released_capability_rule(),
             detect_reversal_rule(),
             track_floor_orientation_trajectory_rule(),

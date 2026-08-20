@@ -365,9 +365,29 @@ def test_physical_proposal_knowledge_survives_motor_library_round_trip():
         source, source.agent,
         "has_motor_proposal_counterexample", counterexample,
     )
+    humanoid_shape = source.s.add_node("HumanoidBodyShapeSignature", {
+        "name": "fixture_humanoid_shape",
+        "signature": (("link_count", 8),),
+    })
+    residual = source.s.add_node("HumanoidResidualRegimeMemory", {
+        "ordinal": 0.0,
+        "sample_count": 1.0,
+    })
+    _edge(
+        source, source.agent,
+        "has_humanoid_body_shape_library", humanoid_shape,
+    )
+    _edge(
+        source, humanoid_shape,
+        "stores_humanoid_residual_regime_memory", residual,
+    )
 
     snapshot = json.loads(json.dumps(_motor_library_snapshot(source)))
     assert snapshot["version"] == MOTOR_LIBRARY_VERSION
+    assert len(snapshot["body_shapes"]) == 1
+    assert snapshot["body_shapes"][0]["attrs"]["name"] == (
+        "fixture_humanoid_shape"
+    )
     assert len(snapshot["motor_proposal_shape_memories"]) == 1
     assert len(snapshot["motor_proposal_counterexamples"]) == 1
 

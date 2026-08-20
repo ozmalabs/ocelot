@@ -174,6 +174,34 @@ def test_manifest_reuses_existing_adaptive_and_default_mode_cores():
     assert not any("python" in rule.get("comment", "").lower() for rule in manifest["rules"])
 
 
+def test_pruned_network_sample_is_not_republished_from_old_receipt():
+    agent, episode, model = _fixture()
+    _, outcome, _ = _motor_receipt(
+        agent,
+        episode,
+        model,
+        epoch=2,
+        pre_x=0.0,
+        post_x=0.1,
+        sensed_post_x=0.1,
+    )
+    samples = agent.inner.neighbours(
+        outcome, "has_embodied_network_mode_sample"
+    )
+    assert len(samples) == 1
+    assert agent.s.node(outcome)["attrs"][
+        "network_mode_sample_published"
+    ] == 1.0
+
+    # Default-mode retention may delete the transient sample. The receipt's
+    # durable publication fact must prevent a delete/recreate fixed-point loop.
+    agent.inner.remove_node(samples[0])
+    agent.tick()
+    assert agent.inner.neighbours(
+        outcome, "has_embodied_network_mode_sample"
+    ) == []
+
+
 def test_mechanical_transducer_has_explicit_noise_and_sample_latency():
     config = SensorimotorSensorConfiguration(
         position_noise_std=0.1,

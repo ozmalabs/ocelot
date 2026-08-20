@@ -201,6 +201,12 @@ def test_topology_generates_a_travelling_compound_wave_and_reafference():
     agent.tick()
 
     assert agent.s.node(first_program)["attrs"]["status"] == "experienced"
+    assert first_program not in agent.inner.neighbours(
+        field, "has_somatomotor_wave_program"
+    )
+    assert first_program in agent.inner.neighbours(
+        field, "archives_somatomotor_wave_program"
+    )
     assert agent.s.node(field)["attrs"]["verified_reafference_count"] == 1
     first_members = agent.inner.neighbours(
         first_program, "includes_somatomotor_wave_cell"

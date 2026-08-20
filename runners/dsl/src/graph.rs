@@ -169,6 +169,12 @@ fn empty_attrs_ref() -> &'static Attrs {
 /// `_insert_edge` / `_delete_*`; public mutation flows through
 /// `Substrate` (Π) so the admissibility check fires.
 pub struct TypedGraph {
+    /// Monotonic content revision. Every mutable graph access or successful
+    /// structural mutation advances this counter, allowing pure native
+    /// analyses to validate memoized results in O(1). The counter is
+    /// deliberately conservative: a mutation outside an analysis' read set
+    /// may cause a miss, but no mutation can leave a stale hit.
+    mutation_version: u64,
     /// Slab of nodes — Option so freed slots can be reused without
     /// invalidating existing NodeID handles that nobody holds anymore.
     nodes: Vec<Option<NodeData>>,
@@ -307,6 +313,7 @@ pub struct TypedGraph {
 impl TypedGraph {
     pub fn new() -> Self {
         Self {
+            mutation_version: 0,
             nodes: Vec::with_capacity(256),
             node_freelist: Vec::new(),
             edges: Vec::with_capacity(512),
@@ -477,6 +484,17 @@ impl TypedGraph {
 
     // --- queries ---
 
+    /// Current graph-content revision for conservative native memoization.
+    #[inline]
+    pub fn mutation_version(&self) -> u64 {
+        self.mutation_version
+    }
+
+    #[inline]
+    fn bump_mutation_version(&mut self) {
+        self.mutation_version = self.mutation_version.wrapping_add(1);
+    }
+
     pub fn node(&self, nid: NodeID) -> &NodeData {
         self.nodes[nid.0 as usize]
             .as_ref()
@@ -484,6 +502,7 @@ impl TypedGraph {
     }
 
     pub fn node_mut(&mut self, nid: NodeID) -> &mut NodeData {
+        self.bump_mutation_version();
         self.nodes[nid.0 as usize]
             .as_mut()
             .expect("node id refers to a freed slot")
@@ -608,6 +627,7 @@ impl TypedGraph {
     // --- mutation (gated through Substrate / Π) ---
 
     pub fn insert_node(&mut self, type_: Sym, attrs: impl Into<Attrs>) -> NodeID {
+        self.bump_mutation_version();
         let attrs: Attrs = attrs.into();
         // Snapshot attrs for indexing before we move them into the slab.
         let attrs_for_index = attrs.clone();
@@ -652,6 +672,7 @@ impl TypedGraph {
         if !self.has_node(tgt) {
             return Err(EdgeInsertError::MissingTgt(tgt));
         }
+        self.bump_mutation_version();
         let store_attrs = |idx: EdgeIdx, this: &mut Self, attrs: Attrs| {
             if attrs.is_empty() {
                 this.edge_attrs.remove(&idx);
@@ -692,6 +713,7 @@ impl TypedGraph {
     pub fn delete_edge(&mut self, idx: EdgeIdx) -> Option<EdgeData> {
         let slot = self.edges.get_mut(idx.0 as usize)?;
         let data = slot.take()?;
+        self.bump_mutation_version();
         let key = data.key();
         // Remove from every index. SmallVec.retain is O(n) but n is tiny;
         // for the giant-adjacency edge case a swap_remove pattern would
@@ -732,6 +754,7 @@ impl TypedGraph {
     /// entry if none exists yet — call `set_edge_attr_clear` after
     /// removing all attrs if you want to free the entry.
     pub fn edge_attrs_mut(&mut self, idx: EdgeIdx) -> &mut Attrs {
+        self.bump_mutation_version();
         self.edge_attrs.entry(idx).or_default()
     }
 
@@ -750,6 +773,7 @@ impl TypedGraph {
             self.delete_edge(e);
         }
         let data = self.nodes[nid.0 as usize].take()?;
+        self.bump_mutation_version();
         // Remove from the by_type index. Same retain rationale.
         if let Some(v) = self.by_type.get_mut(&data.type_) {
             v.retain(|n| *n != nid);
@@ -946,6 +970,7 @@ impl TypedGraph {
         type_: Sym,
         attrs: impl Into<Attrs>,
     ) {
+        self.bump_mutation_version();
         let idx = nid.0 as usize;
         while self.nodes.len() <= idx {
             self.nodes.push(None);
@@ -997,6 +1022,26 @@ mod tests {
         assert_eq!(g.node(nid).type_, alive);
         assert_eq!(g.nodes_of_type(alive), vec![nid]);
         assert_eq!(g.node_count(), 1);
+    }
+
+    #[test]
+    fn mutation_version_is_stable_on_reads_and_advances_on_writes() {
+        let (mut g, mut i) = setup();
+        let cell = i.intern("Cell");
+        let state = i.intern("state");
+        let edge = i.intern("next");
+        let initial = g.mutation_version();
+        let a = g.insert_node(cell, FxHashMap::default());
+        let after_insert = g.mutation_version();
+        assert!(after_insert > initial);
+        let _ = g.node(a);
+        assert_eq!(g.mutation_version(), after_insert);
+        g.set_node_attr(a, state, Value::Int(1));
+        let after_attr = g.mutation_version();
+        assert!(after_attr > after_insert);
+        let b = g.insert_node(cell, FxHashMap::default());
+        g.insert_edge(a, edge, b, FxHashMap::default()).unwrap();
+        assert!(g.mutation_version() > after_attr);
     }
 
     #[test]

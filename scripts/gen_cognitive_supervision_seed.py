@@ -644,7 +644,18 @@ def continue_rule():
                     Eq(Count(replacement_ready_plan_steps()), L(0)),
                 ),
             ),
-            Gt(P0("checkin", "goal_progress_units"), L(0)),
+            # A flat window may justify changing paths only when another
+            # admissible path actually exists.  With no ready replacement,
+            # withdrawing the lease would collapse the future manifold to
+            # the empty set; preserve the sole viable path and gather the
+            # next evidence window instead.
+            Or(
+                Gt(P0("checkin", "goal_progress_units"), L(0)),
+                And(
+                    Eq(A("checkin", "reason"), L("approximate_time")),
+                    Eq(Count(replacement_ready_plan_steps()), L(0)),
+                ),
+            ),
         ),
         "effects": [
             ["del_edge", "process", "has_reference_efficiency_window", "reference"],
@@ -796,6 +807,10 @@ def unproductive_replan_rule():
             Eq(Count(Neighbours("current", "has_pareto_value")),
                P0("profile", "dimension_count")),
             Not(Gt(P0("checkin", "goal_progress_units"), L(0))),
+            Or(
+                Gt(Count(replacement_ready_plan_steps()), L(0)),
+                Eq(A("checkin", "reason"), L("outside_expected_bounds")),
+            ),
         ),
         "effects": replan_effects(),
     }

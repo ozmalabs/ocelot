@@ -108,6 +108,22 @@ def test_humanoid_loads_bootstraps_through_normal_hint_shape_pipeline():
     assert "motor_task_phase" in encoded
 
 
+def test_verified_safe_learning_can_establish_developmental_manifold_bounds():
+    humanoid = json.loads(
+        (ROOT / "seeds" / "humanoid_adaptation.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    rule = next(
+        row for row in humanoid["rules"]
+        if row["name"] == "ha_establish_future_manifold_bounds"
+    )
+    encoded = json.dumps(rule["where"])
+    assert "has_learning_safety_context" in encoded
+    assert '"verified"' in encoded
+    assert "developmental_goal" in encoded
+
+
 def test_no_seed_contains_commands_joint_identity_or_global_home():
     text = SEED.read_text(encoding="utf-8").lower()
     for forbidden in (

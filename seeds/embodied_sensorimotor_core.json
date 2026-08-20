@@ -32545,23 +32545,52 @@
     ]
    ],
    "where": {
-    "type": "Eq",
-    "a": {
-     "type": "Count",
-     "source": {
-      "type": "Neighbours",
-      "node": {
-       "type": "Var",
-       "name": "outcome"
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "outcome"
+         },
+         "key": "network_mode_sample_published"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
       },
-      "edge_type": "has_embodied_network_mode_sample",
-      "any_type": false
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "outcome"
+        },
+        "edge_type": "has_embodied_network_mode_sample",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
      }
-    },
-    "b": {
-     "type": "Lit",
-     "value": 0.0
-    }
+    ]
    },
    "effects": [
     [
@@ -32806,6 +32835,12 @@
      "outcome",
      "has_embodied_network_mode_sample",
      "sample"
+    ],
+    [
+     "set_attr",
+     "outcome",
+     "network_mode_sample_published",
+     1.0
     ]
    ]
   },

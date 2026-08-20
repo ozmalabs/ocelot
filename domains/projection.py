@@ -28,6 +28,9 @@ finite vocabulary. ANY modality with a renderer/sensor pair instantiates it:
 
   * SPEECH   : config = articulatory gesture trajectory; signal = audio.
                forward = source-filter synthesis; invert = formant-DTW + d_A.
+               The semiotic layer uses the same contract with an
+               `AcousticSign`'s time-indexed trajectory as the projected
+               configuration; it returns sign evidence, never a word.
   * VISION   : config = shape/pose/scene graph; signal = pixels.
                forward = a renderer; invert = recognition over the same model.
   * MOTOR    : config = joint trajectory; signal = sensed motion/contact.
@@ -355,7 +358,96 @@ def speech_projection(AG, recogniser, prong="fused"):
     return Projection(name="speech", forward=fwd, inverse=inv)
 
 
+# ============================================================================
+#  SPEECH SEMIOTIC PROJECTION — the top-down sign manifold
+# ============================================================================
+
+def speech_semiotic_projection(substrate, lexicon_nid, bounds, *,
+                               projection_budget=None,
+                               physical_horizon=None):
+    """Return the sign-level forward/inverse projection.
+
+    ``project(sign_nid)`` runs the candidate sign's graph-resident predicted
+    trajectory forward.  ``invert(observed_trajectory)`` audits every
+    trajectory-bearing ``AcousticSign`` in the lexicon against that observed
+    tube and returns evidence for each sign.
+
+    This is the top-down semiotic path: a held sign projects a possible
+    continuation, and the incoming acoustic shape constrains it.  The inverse
+    deliberately returns a collection of sign reports rather than a winner,
+    word, segment, denotation, or commitment.  A later graph process may act
+    when its own event condition occurs.
+    """
+    from substrate_rs import speech as _speech
+
+    inner = substrate._inner if hasattr(substrate, "_inner") else substrate
+    bound_rows = np.asarray(bounds, dtype=np.float32).tolist()
+
+    def forward(sign_nid, **_kwargs):
+        attrs = inner.node(sign_nid)["attrs"]
+        values = attrs.get("future_manifold_values")
+        if not isinstance(values, list):
+            raise ValueError("AcousticSign has no future manifold trajectory")
+        return np.asarray(values, dtype=np.float32)
+
+    def inverse(observed_trajectory):
+        return _speech.report_sign_future_manifolds(
+            substrate, lexicon_nid,
+            np.asarray(observed_trajectory, dtype=np.float32).tolist(),
+            bound_rows,
+            projection_budget=projection_budget,
+            physical_horizon=physical_horizon,
+        )
+
+    return Projection(name="speech-semiotic", forward=forward, inverse=inverse)
+
+
+def speech_semiotic_sequence_projection(substrate, lexicon_nid, bounds, *,
+                                        projection_budget=None,
+                                        max_paths=256):
+    """Return the bidirectional projection for a continuous sign path.
+
+    The forward direction concatenates graph-resident sign trajectories.  The
+    inverse direction recovers sign paths by testing those trajectories at
+    every possible stream offset and following ``continues_to`` relations.
+    The only intervals it returns are temporal support intervals induced by
+    the signs; no word or segment boundaries are an input to either direction.
+    """
+    from substrate_rs import speech as _speech
+
+    inner = substrate._inner if hasattr(substrate, "_inner") else substrate
+    bound_rows = np.asarray(bounds, dtype=np.float32).tolist()
+
+    def forward(signs, **_kwargs):
+        rows = []
+        for sign_nid in signs:
+            values = inner.node(sign_nid)["attrs"].get("future_manifold_values")
+            if not isinstance(values, list) or not values:
+                raise ValueError("AcousticSign has no future manifold trajectory")
+            rows.extend(values)
+        return np.asarray(rows, dtype=np.float32)
+
+    def inverse(observed_trajectory):
+        observed = np.asarray(observed_trajectory, dtype=np.float32).tolist()
+        if len(bound_rows) == 1 and len(observed) != 1:
+            active_bounds = bound_rows * len(observed)
+        else:
+            active_bounds = bound_rows
+        return _speech.recover_sign_sequence(
+            substrate, lexicon_nid, observed, active_bounds,
+            projection_budget=projection_budget,
+            max_paths=max_paths,
+        )
+
+    return Projection(
+        name="speech-semiotic-sequence",
+        forward=forward,
+        inverse=inverse,
+    )
+
+
 __all__ = [
     "Projection", "build_speech_forward", "build_speech_invert",
-    "speech_projection",
+    "speech_projection", "speech_semiotic_projection",
+    "speech_semiotic_sequence_projection",
 ]

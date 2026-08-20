@@ -208,6 +208,7 @@ fn active_humanoid_basin_members(
     members
 }
 
+#[allow(dead_code)]
 fn humanoid_composition_input_signature(
     graph: &TypedGraph,
     interner: &Interner,
@@ -1637,7 +1638,16 @@ impl<'a> HumanoidComposer<'a> {
         Some(frames)
     }
 
-    fn manifold_bounds(&self) -> Option<[f64; 7]> {
+    fn manifold_bounds(&self, projected_frame: f64) -> Option<[f64; 7]> {
+        let safety = learning_safety_evidence(self.graph, self.interner, self.episode);
+        let support = situation_support_field(
+            self.graph,
+            self.interner,
+            self.episode,
+            self.policy,
+            projected_frame,
+            true,
+        );
         let mut bounds = [0.0; 7];
         for (index, key) in HUMANOID_KEYS.iter().enumerate() {
             let symbol = self.interner.lookup(&format!("manifold_bound_{key}"))?;
@@ -1649,15 +1659,21 @@ impl<'a> HumanoidComposer<'a> {
             if !value.is_finite() || value < 0.0 {
                 return None;
             }
-            bounds[index] = value;
+            bounds[index] = safety.bound(value, support.weights[index]);
         }
         Some(bounds)
     }
 
     fn manifold_anchor_present(&self, node: NodeID) -> bool {
         [
-            "anchor_z_x", "anchor_z_y", "anchor_wx", "anchor_wy", "anchor_vx",
-            "anchor_vy", "anchor_vz", "anchor_lateral_offset",
+            "anchor_z_x",
+            "anchor_z_y",
+            "anchor_wx",
+            "anchor_wy",
+            "anchor_vx",
+            "anchor_vy",
+            "anchor_vz",
+            "anchor_lateral_offset",
         ]
         .iter()
         .all(|key| {
@@ -1725,11 +1741,11 @@ impl<'a> HumanoidComposer<'a> {
     /// escalation or higher-order authority.
     fn manifold_path(&self, members: &[usize]) -> Option<(f64, f64)> {
         let frames = self.manifold_foveated_frames()?;
-        let bounds = self.manifold_bounds()?;
         let effect = self.manifold_effect(members)?;
         let horizon = *frames.last()?;
         let mut anchor_loss = 0.0;
         for frame in frames {
+            let bounds = self.manifold_bounds(frame)?;
             let fraction = frame / horizon;
             let escaped = (0..7)
                 .filter(|key| fraction * effect[*key].abs() > bounds[*key])
@@ -1747,7 +1763,12 @@ impl<'a> HumanoidComposer<'a> {
                     fattr(self.graph, self.interner, model.node, "anchor_vx"),
                     fattr(self.graph, self.interner, model.node, "anchor_vy"),
                     fattr(self.graph, self.interner, model.node, "anchor_vz"),
-                    fattr(self.graph, self.interner, model.node, "anchor_lateral_offset"),
+                    fattr(
+                        self.graph,
+                        self.interner,
+                        model.node,
+                        "anchor_lateral_offset",
+                    ),
                 ];
                 let projected = [
                     fraction * effect[0],
@@ -1769,7 +1790,12 @@ impl<'a> HumanoidComposer<'a> {
     }
 
     fn compose_manifold(&self) -> Vec<usize> {
-        let token = sattr(self.graph, self.interner, self.episode, "selected_primary_token");
+        let token = sattr(
+            self.graph,
+            self.interner,
+            self.episode,
+            "selected_primary_token",
+        );
         let context = self.ep("selected_primary_context_id");
         let mut viable: Vec<(usize, f64, f64)> = self
             .models
@@ -1780,8 +1806,11 @@ impl<'a> HumanoidComposer<'a> {
             })
             .filter_map(|(index, _)| {
                 let (anchor_loss, escaped) = self.manifold_path(&[index])?;
-                (escaped == 0.0 && anchor_loss.is_finite())
-                    .then_some((index, anchor_loss, self.cost(&[index], None)))
+                (escaped == 0.0 && anchor_loss.is_finite()).then_some((
+                    index,
+                    anchor_loss,
+                    self.cost(&[index], None),
+                ))
             })
             .collect();
         viable.sort_by(|a, b| {
@@ -1792,41 +1821,83 @@ impl<'a> HumanoidComposer<'a> {
         let Some((primary, _, _)) = viable.first().copied() else {
             return Vec::new();
         };
+        // Operationally, stop at the least admissible action. During situated
+        // learning an addition is admissible only when it opens a consequence
+        // dimension that the current program does not represent. This makes
+        // exploration proportional to recoverability and new information,
+        // with a structural seven-axis ceiling instead of task-cost-driven
+        // program growth.
         let mut plan = vec![primary];
-        if !self.expansion_allowed() {
-            return plan;
-        }
-        loop {
-            let current = self.cost(&plan, None);
-            let mut best: Option<(usize, f64, f64)> = None;
-            for index in 0..self.models.len() {
-                if plan.contains(&index)
-                    || !self.active(index)
-                    || plan
-                        .iter()
-                        .any(|member| self.models[*member].group == self.models[index].group)
-                {
-                    continue;
-                }
-                let mut proposed = plan.clone();
-                proposed.push(index);
-                let Some((anchor_loss, escaped)) = self.manifold_path(&proposed) else {
-                    continue;
-                };
-                let cost = self.cost(&plan, Some(index));
-                if escaped != 0.0 || !anchor_loss.is_finite() || !(cost < current) {
-                    continue;
-                }
-                if best.map_or(true, |(_, old_anchor, old_cost)| {
-                    (anchor_loss, cost) < (old_anchor, old_cost)
-                }) {
-                    best = Some((index, anchor_loss, cost));
+        let horizon = self
+            .manifold_foveated_frames()
+            .and_then(|frames| frames.last().copied())
+            .unwrap_or(0.0);
+        let support = situation_support_field(
+            self.graph,
+            self.interner,
+            self.episode,
+            self.policy,
+            horizon,
+            true,
+        );
+        let safety = learning_safety_evidence(self.graph, self.interner, self.episode);
+        if safety.active() && support.weights.iter().any(|weight| *weight > 0.0) {
+            let mut covered = [false; 7];
+            if let Some(effect) = self.manifold_effect(&plan) {
+                for key in 0..7 {
+                    covered[key] = effect[key].abs() > 0.0;
                 }
             }
-            let Some((candidate, _, _)) = best else {
-                break;
-            };
-            plan.push(candidate);
+            loop {
+                let mut best: Option<(usize, usize, f64, f64)> = None;
+                for index in 0..self.models.len() {
+                    if plan.contains(&index)
+                        || !self.active(index)
+                        || plan
+                            .iter()
+                            .any(|member| self.models[*member].group == self.models[index].group)
+                    {
+                        continue;
+                    }
+                    let newly_covered = (0..7)
+                        .filter(|key| {
+                            !covered[*key]
+                                && support.weights[*key] > 0.0
+                                && self.models[index].effect[*key].abs() > 0.0
+                                && self.models[index].effect[*key].abs()
+                                    <= safety.minimum_width_relaxation * support.weights[*key]
+                        })
+                        .count();
+                    if newly_covered == 0 {
+                        continue;
+                    }
+                    let mut candidate_plan = plan.clone();
+                    candidate_plan.push(index);
+                    let Some((anchor_loss, escaped)) = self.manifold_path(&candidate_plan) else {
+                        continue;
+                    };
+                    if escaped > 0.0 || !anchor_loss.is_finite() {
+                        continue;
+                    }
+                    let cost = self.cost(&candidate_plan, None);
+                    if best.map_or(true, |old| {
+                        newly_covered > old.1
+                            || (newly_covered == old.1
+                                && (anchor_loss, cost, index) < (old.2, old.3, old.0))
+                    }) {
+                        best = Some((index, newly_covered, anchor_loss, cost));
+                    }
+                }
+                let Some((candidate, _, _, _)) = best else {
+                    break;
+                };
+                plan.push(candidate);
+                if let Some(effect) = self.manifold_effect(&plan) {
+                    for key in 0..7 {
+                        covered[key] |= effect[key].abs() > 0.0;
+                    }
+                }
+            }
         }
         let _ = self.cost(&plan, None);
         plan
@@ -1945,13 +2016,11 @@ pub fn motor_compose_member(
             graph_address: graph as *const TypedGraph as usize,
             episode,
             policy,
-            input_signature: humanoid_composition_input_signature(
-                graph,
-                interner,
-                episode,
-                policy,
-                &model_nodes,
-            ),
+            // TypedGraph advances this revision at every mutation choke
+            // point. It is a conservative, exact O(1) invalidator; unlike
+            // the old content hash, validating each candidate no longer
+            // rescans every model, capability and synergy.
+            input_signature: graph.mutation_version(),
             request_seq: fattr(graph, interner, episode, "request_seq").to_bits(),
             state_seq: fattr(graph, interner, episode, "state_seq").to_bits(),
             primary_token: sattr(graph, interner, episode, "selected_primary_token"),
@@ -2084,20 +2153,72 @@ pub fn future_manifold_projection_field(
     let mut members = member_edge
         .map(|e| graph.neighbours(source, Some(e)))
         .unwrap_or_default();
+    // Generic trajectory replay may certify a previously grounded humanoid
+    // program rather than a just-open generic composition plan.  Both are
+    // analysis-by-synthesis model collections; only their held edge vocabulary
+    // differs.  Prefer the generic edge and fall back to the body-local phase
+    // model edge so no simulator/world rollout enters projection.
+    let mut humanoid_program = false;
+    if members.is_empty() {
+        members = interner
+            .lookup("includes_humanoid_phase_action_model")
+            .map(|e| graph.neighbours(source, Some(e)))
+            .unwrap_or_default();
+        humanoid_program = !members.is_empty()
+            && interner
+                .lookup("has_humanoid_phase_action_model")
+                .is_some_and(|edge| !graph.neighbours(episode, Some(edge)).is_empty());
+    }
     if let Some(a) = addition {
         if !members.contains(&a) {
             members.push(a);
         }
     }
     let name = interner.resolve(field);
+    if humanoid_program {
+        let report = cached_future_humanoid_manifold_projection_for_members(
+            graph, interner, episode, policy, &members,
+        );
+        return Value::Float(report.field(name));
+    }
     let source_kind = sattr(graph, interner, source, "source");
     let epistemic_probe = source_kind == interner.lookup("factorized_calibration")
         || source_kind == interner.lookup("graph_requested_flow_excitation");
     let report = future_manifold_projection_for_members(
-        graph, interner, episode, policy, &members, epistemic_probe);
+        graph,
+        interner,
+        episode,
+        policy,
+        &members,
+        epistemic_probe,
+    );
     Value::Float(report.field(name))
 }
 
+fn future_manifold_episode_models(
+    graph: &TypedGraph,
+    interner: &Interner,
+    episode: NodeID,
+) -> Vec<NodeID> {
+    let mut models = interner
+        .lookup("has_embodied_effector_model")
+        .map(|edge| graph.neighbours(episode, Some(edge)))
+        .unwrap_or_default();
+    // Humanoid phase-action models are the body-local vocabulary for the
+    // same learned analysis-by-synthesis evidence.  A humanoid episode does
+    // not duplicate those nodes under the generic edge, so projection must
+    // use the same fallback for its neutral reference population that it
+    // uses for a program's active members.
+    if models.is_empty() {
+        models = interner
+            .lookup("has_humanoid_phase_action_model")
+            .map(|edge| graph.neighbours(episode, Some(edge)))
+            .unwrap_or_default();
+    }
+    models
+}
+
+#[derive(Clone)]
 struct FutureProjectionReport {
     support: bool,
     resolved: bool,
@@ -2114,6 +2235,28 @@ struct FutureProjectionReport {
     max_shape_order: f64,
     earliest_decisive_tick: f64,
     retained: [f64; 7],
+    situated_support: [f64; 7],
+    applied_bounds: [f64; 7],
+}
+
+#[derive(Clone)]
+struct HumanoidProjectionCache {
+    graph_address: usize,
+    episode: NodeID,
+    policy: NodeID,
+    input_signature: u64,
+    members: Vec<NodeID>,
+    report: FutureProjectionReport,
+}
+
+thread_local! {
+    /// A release predicate and its audit effects request support, resolution,
+    /// loss and information loss separately for the same grounded program.
+    /// Those fields are one projection, not four independent simulations.
+    /// Cache the complete immutable report and invalidate it from the same
+    /// learned-model/bounds/context signature used by native composition.
+    static HUMANOID_PROJECTION_CACHE: RefCell<Option<HumanoidProjectionCache>> =
+        const { RefCell::new(None) };
 }
 
 impl FutureProjectionReport {
@@ -2145,6 +2288,14 @@ impl FutureProjectionReport {
             "max_enclosure_width" => self.max_enclosure_width,
             "max_shape_order" => self.max_shape_order,
             "earliest_decisive_tick" => self.earliest_decisive_tick,
+            "exploration_authority" => self
+                .situated_support
+                .iter()
+                .copied()
+                .reduce(f64::min)
+                .unwrap_or(0.0),
+            "situated_support_forward" => self.situated_support[0],
+            "applied_bound_forward" => self.applied_bounds[0],
             "retained_width" => {
                 if self.support {
                     self.retained.iter().sum()
@@ -2159,8 +2310,177 @@ impl FutureProjectionReport {
                 .find(|(i, _)| COMPONENTS[*i] == &key[9..])
                 .map(|(_, value)| *value)
                 .unwrap_or(0.0),
+            key if key.starts_with("situated_support_") => key[17..]
+                .parse::<usize>()
+                .ok()
+                .and_then(|index| self.situated_support.get(index))
+                .copied()
+                .unwrap_or(0.0),
+            key if key.starts_with("applied_bound_") => key[14..]
+                .parse::<usize>()
+                .ok()
+                .and_then(|index| self.applied_bounds.get(index))
+                .copied()
+                .unwrap_or(0.0),
             _ => 0.0,
         }
+    }
+}
+
+fn support_observability(
+    graph: &TypedGraph,
+    interner: &Interner,
+    episode: NodeID,
+    policy: NodeID,
+    horizon: f64,
+    humanoid_axes: bool,
+) -> ([f64; 7], [f64; 7]) {
+    let safety = learning_safety_evidence(graph, interner, episode);
+    let field = situation_support_field(graph, interner, episode, policy, horizon, humanoid_axes);
+    let mut bounds = [0.0; 7];
+    let keys = if humanoid_axes {
+        &HUMANOID_KEYS
+    } else {
+        &COMPONENTS
+    };
+    for (index, key) in keys.iter().enumerate() {
+        bounds[index] = safety.bound(
+            fattr(graph, interner, episode, &format!("manifold_bound_{key}")),
+            field.weights[index],
+        );
+    }
+    (field.weights, bounds)
+}
+
+fn cached_future_humanoid_manifold_projection_for_members(
+    graph: &TypedGraph,
+    interner: &Interner,
+    episode: NodeID,
+    policy: NodeID,
+    member_nodes: &[NodeID],
+) -> FutureProjectionReport {
+    let mut all_models = interner
+        .lookup("has_humanoid_phase_action_model")
+        .map(|edge| graph.neighbours(episode, Some(edge)))
+        .unwrap_or_default();
+    all_models.sort_unstable();
+    let mut members = member_nodes.to_vec();
+    members.sort_unstable();
+    members.dedup();
+    let input_signature = graph.mutation_version();
+    let graph_address = graph as *const TypedGraph as usize;
+    if let Some(report) = HUMANOID_PROJECTION_CACHE.with(|slot| {
+        let slot = slot.borrow();
+        slot.as_ref()
+            .filter(|cached| {
+                cached.graph_address == graph_address
+                    && cached.episode == episode
+                    && cached.policy == policy
+                    && cached.input_signature == input_signature
+                    && cached.members == members
+            })
+            .map(|cached| cached.report.clone())
+    }) {
+        return report;
+    }
+    let report =
+        future_humanoid_manifold_projection_for_members(graph, interner, episode, policy, &members);
+    HUMANOID_PROJECTION_CACHE.with(|slot| {
+        *slot.borrow_mut() = Some(HumanoidProjectionCache {
+            graph_address,
+            episode,
+            policy,
+            input_signature,
+            members,
+            report: report.clone(),
+        });
+    });
+    report
+}
+
+fn future_humanoid_manifold_projection_for_members(
+    graph: &TypedGraph,
+    interner: &Interner,
+    episode: NodeID,
+    policy: NodeID,
+    member_nodes: &[NodeID],
+) -> FutureProjectionReport {
+    let all_models = interner
+        .lookup("has_humanoid_phase_action_model")
+        .map(|edge| graph.neighbours(episode, Some(edge)))
+        .unwrap_or_default();
+    let composer = HumanoidComposer::build(graph, interner, episode, policy, &all_models);
+    // A retained program names opaque action semantics, not a frozen
+    // context-node identity.  Rebind each historical member to the currently
+    // active learned phase model with the same token and effector group.
+    // HumanoidComposer::active already performs nearest-context selection;
+    // this is graph-native model recontextualization, not a plant rollout.
+    let members: Vec<usize> = member_nodes
+        .iter()
+        .filter_map(|node| {
+            let token = sattr(graph, interner, *node, "token");
+            let group = fattr(graph, interner, *node, "actuator_group");
+            all_models.iter().enumerate().find_map(|(index, known)| {
+                (composer.active(index)
+                    && sattr(graph, interner, *known, "token") == token
+                    && fattr(graph, interner, *known, "actuator_group") == group)
+                    .then_some(index)
+            })
+        })
+        .collect();
+    let frames = composer.manifold_foveated_frames();
+    let path = if members.len() == member_nodes.len() {
+        composer.manifold_path(&members)
+    } else {
+        None
+    };
+    let safety = learning_safety_evidence(graph, interner, episode);
+    let horizon = frames
+        .as_ref()
+        .and_then(|anchors| anchors.last().copied())
+        .unwrap_or(0.0);
+    let situated_support = situation_support_field(graph, interner, episode, policy, horizon, true);
+    let information_authority = situated_support
+        .weights
+        .iter()
+        .copied()
+        .reduce(f64::min)
+        .unwrap_or(0.0);
+    let (support, resolved, loss, raw_information_loss, termination_code) = match path {
+        Some((shape_residual, escaped)) if shape_residual.is_finite() => {
+            (true, true, escaped, escaped, 6.0)
+        }
+        Some((_shape_residual, escaped)) if escaped > 0.0 => (true, true, escaped, escaped, 1.0),
+        _ => (false, false, 0.0, 0.0, 4.0),
+    };
+    let information_loss =
+        (raw_information_loss - safety.information_loss_allowance * information_authority).max(0.0);
+    let anchor_count = frames.as_ref().map_or(0.0, |anchors| anchors.len() as f64);
+    let retained_value = if support && loss <= 0.0 { 1.0 } else { 0.0 };
+    let (report_support, applied_bounds) =
+        support_observability(graph, interner, episode, policy, horizon, true);
+    FutureProjectionReport {
+        support,
+        resolved,
+        termination_code,
+        horizon,
+        budget: fattr(graph, interner, policy, "future_manifold_projection_budget"),
+        loss,
+        information_loss,
+        anchor_count,
+        refinement_count: 0.0,
+        certified_interval_count: if support && loss <= 0.0 {
+            anchor_count
+        } else {
+            0.0
+        },
+        ambiguous_interval_count: 0.0,
+        max_enclosure_width: 0.0,
+        max_shape_order: if anchor_count > 1.0 { 1.0 } else { 0.0 },
+        earliest_decisive_tick: if loss > 0.0 { horizon } else { 0.0 },
+        retained: [retained_value; 7],
+        situated_support: report_support,
+        applied_bounds,
     }
 }
 
@@ -2185,28 +2505,162 @@ struct LearningSafetyEvidence {
     required_horizon_units: i32,
     minimum_width_relaxation: f64,
     information_loss_allowance: f64,
+    recovery_path_count: f64,
 }
 
 impl LearningSafetyEvidence {
     fn active(self) -> bool {
+        self.verified
+    }
+
+    fn recovery_boundary_available(self) -> bool {
         self.verified
             && (self.reset_reachable
                 || (self.protective_support_available
                     && self.protective_support_effectiveness > 0.0))
     }
 
-    fn bound(self, base: f64) -> f64 {
-        if self.active() {
-            base + self.minimum_width_relaxation
-                * if self.reset_reachable {
-                    1.0
-                } else {
-                    self.protective_support_effectiveness
-                }
-        } else {
-            base
-        }
+    fn bound(self, base: f64, situated_support: f64) -> f64 {
+        base + self.minimum_width_relaxation * situated_support.clamp(0.0, 1.0)
     }
+}
+
+/// Dimension-specific recoverability of the future set at a projected time.
+///
+/// A safe-learning declaration only makes the declared budgets available. It
+/// does not itself widen the manifold.  Widening is earned from the body's
+/// current load-bearing contacts, upright margin, independently reachable
+/// recovery paths, reset latency, and caregiver effectiveness.  Contact-bound
+/// support decays outside the graph-declared near horizon; reset and caregiver
+/// paths remain available because they describe futures rather than the
+/// current pose.
+#[derive(Clone, Copy, Default)]
+struct SituationSupportField {
+    weights: [f64; 7],
+}
+
+fn support_union(a: f64, b: f64) -> f64 {
+    1.0 - (1.0 - a.clamp(0.0, 1.0)) * (1.0 - b.clamp(0.0, 1.0))
+}
+
+fn situation_support_field(
+    graph: &TypedGraph,
+    interner: &Interner,
+    episode: NodeID,
+    policy: NodeID,
+    projected_tick: f64,
+    humanoid_axes: bool,
+) -> SituationSupportField {
+    let safety = learning_safety_evidence(graph, interner, episode);
+    if !safety.active() {
+        return SituationSupportField::default();
+    }
+
+    let support_0 = fattr(graph, interner, episode, "state_support_0_force").max(0.0);
+    let support_1 = fattr(graph, interner, episode, "state_support_1_force").max(0.0);
+    let observed_supports = (support_0 > 0.0) as u8 as f64 + (support_1 > 0.0) as u8 as f64;
+    let active_supports =
+        fattr(graph, interner, episode, "active_support_count").max(observed_supports);
+    let sensor_count = fattr(graph, interner, episode, "support_sensor_count")
+        .max(observed_supports)
+        .max(1.0);
+    let topology = (active_supports / sensor_count).clamp(0.0, 1.0);
+
+    let body_weight = fattr(graph, interner, episode, "body_mass")
+        * fattr(graph, interner, policy, "gravity_acceleration");
+    let total_force =
+        fattr(graph, interner, episode, "state_contact_force_newtons").max(support_0 + support_1);
+    let load_bearing = if body_weight.is_finite() && body_weight > 0.0 {
+        (total_force / body_weight).clamp(0.0, 1.0)
+    } else {
+        topology
+    };
+
+    let qx = fattr(graph, interner, episode, "state_qx");
+    let qy = fattr(graph, interner, episode, "state_qy");
+    let upright_margin = (1.0 - 2.0 * (qx * qx + qy * qy)).clamp(0.0, 1.0);
+    let near_horizon = safety.required_horizon_units.max(1) as f64;
+    let temporal_persistence = (near_horizon / projected_tick.max(near_horizon)).clamp(0.0, 1.0);
+
+    let path_count = safety.recovery_path_count.max(
+        safety.reset_reachable as u8 as f64 + safety.protective_support_available as u8 as f64,
+    );
+    let path_diversity = if path_count > 0.0 {
+        path_count / (path_count + 1.0)
+    } else {
+        0.0
+    };
+    let reset_recovery = if safety.reset_reachable {
+        projected_tick.max(near_horizon)
+            / (projected_tick.max(near_horizon) + safety.reset_cost_units)
+    } else {
+        0.0
+    };
+    let caregiver_engaged = fattr(
+        graph,
+        interner,
+        episode,
+        "caregiver_protective_support_requested",
+    ) > 0.5
+        || fattr(
+            graph,
+            interner,
+            episode,
+            "caregiver_scaffold_session_active",
+        ) > 0.5;
+    let caregiver = if safety.protective_support_available && caregiver_engaged {
+        safety.protective_support_effectiveness
+    } else {
+        0.0
+    };
+    let persistent_recovery = support_union(caregiver, reset_recovery * path_diversity);
+    let horizontal = support_union(persistent_recovery, topology * temporal_persistence);
+    let vertical = support_union(
+        persistent_recovery,
+        topology.max(load_bearing) * temporal_persistence,
+    );
+    let orientation = support_union(
+        persistent_recovery,
+        topology * upright_margin * temporal_persistence,
+    );
+
+    let weights = if humanoid_axes {
+        [
+            orientation,
+            orientation,
+            orientation,
+            orientation,
+            horizontal,
+            horizontal,
+            vertical,
+        ]
+    } else {
+        [
+            horizontal,
+            horizontal,
+            vertical,
+            orientation,
+            orientation,
+            orientation,
+            vertical,
+        ]
+    };
+    SituationSupportField { weights }
+}
+
+fn protected_support_authority(
+    graph: &TypedGraph,
+    interner: &Interner,
+    policy: NodeID,
+    field: SituationSupportField,
+) -> f64 {
+    COMPONENTS
+        .iter()
+        .enumerate()
+        .filter(|(_, key)| fattr(graph, interner, policy, &format!("{key}_weight")) > 0.0)
+        .map(|(index, _)| field.weights[index])
+        .reduce(f64::min)
+        .unwrap_or(0.0)
 }
 
 fn learning_safety_evidence(
@@ -2224,8 +2678,12 @@ fn learning_safety_evidence(
         verified: fattr(graph, interner, context, "verified") > 0.5,
         reset_reachable: fattr(graph, interner, context, "reset_reachable") > 0.5,
         reset_cost_units: fattr(graph, interner, context, "reset_cost_units"),
-        protective_support_available:
-            fattr(graph, interner, context, "protective_support_available") > 0.5,
+        protective_support_available: fattr(
+            graph,
+            interner,
+            context,
+            "protective_support_available",
+        ) > 0.5,
         protective_support_effectiveness: fattr(
             graph,
             interner,
@@ -2233,28 +2691,28 @@ fn learning_safety_evidence(
             "protective_support_effectiveness",
         )
         .clamp(0.0, 1.0),
-        required_horizon_units: fattr(
-            graph,
-            interner,
-            context,
-            "required_horizon_units",
-        )
-        .max(0.0)
-        .round() as i32,
-        minimum_width_relaxation: fattr(
-            graph,
-            interner,
-            context,
-            "minimum_width_relaxation",
-        )
-        .max(0.0),
-        information_loss_allowance: fattr(
-            graph,
-            interner,
-            context,
-            "information_loss_allowance",
-        )
-        .max(0.0),
+        required_horizon_units: fattr(graph, interner, context, "required_horizon_units")
+            .max(0.0)
+            .round() as i32,
+        minimum_width_relaxation: {
+            let budget = fattr(graph, interner, context, "exploration_width_budget");
+            if budget > 0.0 {
+                budget
+            } else {
+                fattr(graph, interner, context, "minimum_width_relaxation")
+            }
+            .max(0.0)
+        },
+        information_loss_allowance: {
+            let budget = fattr(graph, interner, context, "exploration_information_budget");
+            if budget > 0.0 {
+                budget
+            } else {
+                fattr(graph, interner, context, "information_loss_allowance")
+            }
+            .max(0.0)
+        },
+        recovery_path_count: fattr(graph, interner, context, "recovery_path_count").max(0.0),
     };
     if evidence.reset_cost_units.is_finite()
         && evidence.reset_cost_units >= 0.0
@@ -2316,12 +2774,7 @@ fn projection_step_state(
                                 FLOW_FEATURES[j], FLOW_FEATURES[k]
                             ),
                         ) * (old_context[k]
-                            - fattr(
-                                graph,
-                                interner,
-                                *m,
-                                &format!("mean_{}", FLOW_FEATURES[k]),
-                            ));
+                            - fattr(graph, interner, *m, &format!("mean_{}", FLOW_FEATURES[k])));
                     }
                     delta
                 })
@@ -2347,14 +2800,12 @@ fn projection_step_state(
                         graph,
                         interner,
                         *m,
-                        &format!("context_delta_gain_{}_{}", FLOW_FEATURES[j], FLOW_FEATURES[k]),
+                        &format!(
+                            "context_delta_gain_{}_{}",
+                            FLOW_FEATURES[j], FLOW_FEATURES[k]
+                        ),
                     ) * (old_context[k]
-                        - fattr(
-                            graph,
-                            interner,
-                            *m,
-                            &format!("mean_{}", FLOW_FEATURES[k]),
-                        ));
+                        - fattr(graph, interner, *m, &format!("mean_{}", FLOW_FEATURES[k])));
                 }
                 delta - baseline_delta[j]
             })
@@ -2375,7 +2826,11 @@ fn projection_step_state(
         }
         let error = target - state.positions[i];
         state.positions[i] += if error.abs() > max_change {
-            if error > 0.0 { max_change } else { -max_change }
+            if error > 0.0 {
+                max_change
+            } else {
+                -max_change
+            }
         } else {
             error
         };
@@ -2393,7 +2848,11 @@ fn projection_step_state(
         }
         let error = target - state.reference_positions[i];
         state.reference_positions[i] += if error.abs() > max_change {
-            if error > 0.0 { max_change } else { -max_change }
+            if error > 0.0 {
+                max_change
+            } else {
+                -max_change
+            }
         } else {
             error
         };
@@ -2410,7 +2869,12 @@ fn projection_predictions(
     references: &[NodeID],
     members: &[NodeID],
 ) -> Option<[f64; 7]> {
-    let contextual = fattr(graph, interner, policy, "contextual_effector_prediction_enabled") > 0.5;
+    let contextual = fattr(
+        graph,
+        interner,
+        policy,
+        "contextual_effector_prediction_enabled",
+    ) > 0.5;
     let mut predicted = [0.0f64; 7];
     for (ci, key) in COMPONENTS.iter().enumerate() {
         if fattr(graph, interner, policy, &format!("{key}_weight")) <= 0.0 {
@@ -2427,7 +2891,12 @@ fn projection_predictions(
                 ) > 0.0;
             if specified {
                 return fattr(graph, interner, m, &format!("specified_passive_mean_{key}"))
-                    + fattr(graph, interner, m, &format!("specified_position_gain_{key}")) * pos;
+                    + fattr(
+                        graph,
+                        interner,
+                        m,
+                        &format!("specified_position_gain_{key}"),
+                    ) * pos;
             }
             let mut learned = fattr(graph, interner, m, &format!("mean_{key}"));
             if contextual {
@@ -2498,12 +2967,7 @@ fn projection_context_once(
                             FLOW_FEATURES[j], FLOW_FEATURES[k]
                         ),
                     ) * (old_context[k]
-                        - fattr(
-                            graph,
-                            interner,
-                            *m,
-                            &format!("mean_{}", FLOW_FEATURES[k]),
-                        ));
+                        - fattr(graph, interner, *m, &format!("mean_{}", FLOW_FEATURES[k])));
                 }
                 delta
             })
@@ -2528,14 +2992,12 @@ fn projection_context_once(
                         graph,
                         interner,
                         *m,
-                        &format!("context_delta_gain_{}_{}", FLOW_FEATURES[j], FLOW_FEATURES[k]),
+                        &format!(
+                            "context_delta_gain_{}_{}",
+                            FLOW_FEATURES[j], FLOW_FEATURES[k]
+                        ),
                     ) * (old_context[k]
-                        - fattr(
-                            graph,
-                            interner,
-                            *m,
-                            &format!("mean_{}", FLOW_FEATURES[k]),
-                        ));
+                        - fattr(graph, interner, *m, &format!("mean_{}", FLOW_FEATURES[k])));
                 }
                 delta - baseline_delta[j]
             })
@@ -2580,21 +3042,13 @@ fn projection_affine_power(
     let mut base_bias = bias;
     while exponent > 0 {
         if exponent & 1 == 1 {
-            (result_matrix, result_bias) = projection_affine_compose(
-                base_matrix,
-                base_bias,
-                result_matrix,
-                result_bias,
-            );
+            (result_matrix, result_bias) =
+                projection_affine_compose(base_matrix, base_bias, result_matrix, result_bias);
         }
         exponent >>= 1;
         if exponent > 0 {
-            (base_matrix, base_bias) = projection_affine_compose(
-                base_matrix,
-                base_bias,
-                base_matrix,
-                base_bias,
-            );
+            (base_matrix, base_bias) =
+                projection_affine_compose(base_matrix, base_bias, base_matrix, base_bias);
         }
     }
     (result_matrix, result_bias)
@@ -2658,14 +3112,24 @@ fn projection_prediction_intervals(
     references: &[NodeID],
     members: &[NodeID],
 ) -> Option<[(f64, f64); 7]> {
-    let contextual = fattr(graph, interner, policy, "contextual_effector_prediction_enabled") > 0.5;
+    let contextual = fattr(
+        graph,
+        interner,
+        policy,
+        "contextual_effector_prediction_enabled",
+    ) > 0.5;
     let mut predicted = [(0.0, 0.0); 7];
     for (ci, key) in COMPONENTS.iter().enumerate() {
         if fattr(graph, interner, policy, &format!("{key}_weight")) <= 0.0 {
             continue;
         }
         let predict = |model: NodeID, position: (f64, f64)| -> (f64, f64) {
-            let specified = fattr(graph, interner, model, "specified_actuator_dynamics_enabled") > 0.5
+            let specified = fattr(
+                graph,
+                interner,
+                model,
+                "specified_actuator_dynamics_enabled",
+            ) > 0.5
                 && fattr(graph, interner, model, "specified_effect_prior_confidence") > 0.5
                 && fattr(
                     graph,
@@ -2676,12 +3140,27 @@ fn projection_prediction_intervals(
             if specified {
                 return projection_interval_add(
                     (
-                        fattr(graph, interner, model, &format!("specified_passive_mean_{key}")),
-                        fattr(graph, interner, model, &format!("specified_passive_mean_{key}")),
+                        fattr(
+                            graph,
+                            interner,
+                            model,
+                            &format!("specified_passive_mean_{key}"),
+                        ),
+                        fattr(
+                            graph,
+                            interner,
+                            model,
+                            &format!("specified_passive_mean_{key}"),
+                        ),
                     ),
                     projection_interval_scale(
                         position,
-                        fattr(graph, interner, model, &format!("specified_position_gain_{key}")),
+                        fattr(
+                            graph,
+                            interner,
+                            model,
+                            &format!("specified_position_gain_{key}"),
+                        ),
                     ),
                 );
             }
@@ -2747,17 +3226,26 @@ fn projection_prediction_intervals(
             .enumerate()
             .map(|(i, model)| predict(*model, reference_positions[i]))
             .fold((0.0, 0.0), projection_interval_add);
-        let baseline = (baseline.0 / references.len().max(1) as f64, baseline.1 / references.len().max(1) as f64);
+        let baseline = (
+            baseline.0 / references.len().max(1) as f64,
+            baseline.1 / references.len().max(1) as f64,
+        );
         let mut value = baseline;
         for (i, model) in members.iter().enumerate() {
-            value = projection_interval_add(value, projection_interval_add(
-                predict(*model, positions[i]),
-                projection_interval_scale(baseline, -1.0),
-            ));
+            value = projection_interval_add(
+                value,
+                projection_interval_add(
+                    predict(*model, positions[i]),
+                    projection_interval_scale(baseline, -1.0),
+                ),
+            );
         }
         predicted[ci] = value;
     }
-    if predicted.iter().all(|(lo, hi)| lo.is_finite() && hi.is_finite()) {
+    if predicted
+        .iter()
+        .all(|(lo, hi)| lo.is_finite() && hi.is_finite())
+    {
         Some(predicted)
     } else {
         None
@@ -2776,17 +3264,13 @@ fn projection_certify_interval_sparse(
     members: &[NodeID],
 ) -> ProjectionIntervalResult {
     let safety = learning_safety_evidence(graph, interner, episode);
+    let situated_support =
+        situation_support_field(graph, interner, episode, policy, end_tick as f64, false);
     let ticks = end_tick - start_tick;
     if ticks == 1 {
         let mut end_state = start_state.clone();
-        let step_valid = projection_step_state(
-            graph,
-            interner,
-            policy,
-            &mut end_state,
-            references,
-            members,
-        );
+        let step_valid =
+            projection_step_state(graph, interner, policy, &mut end_state, references, members);
         if !step_valid || !projection_state_finite(&end_state) {
             return ProjectionIntervalResult {
                 end_state,
@@ -2814,18 +3298,33 @@ fn projection_certify_interval_sparse(
         let mut retained = [0.0; 7];
         let mut loss = None;
         for ci in 0..7 {
-            if fattr(graph, interner, policy, &format!("{}_weight", COMPONENTS[ci])) <= 0.0 {
+            if fattr(
+                graph,
+                interner,
+                policy,
+                &format!("{}_weight", COMPONENTS[ci]),
+            ) <= 0.0
+            {
                 continue;
             }
-            let residual = (fattr(graph, interner, episode, &format!("target_{}", COMPONENTS[ci]))
-                - predicted[ci])
-                .abs();
-            if residual > safety.bound(fattr(
+            let residual = (fattr(
                 graph,
                 interner,
                 episode,
-                &format!("manifold_bound_{}", COMPONENTS[ci]),
-            )) {
+                &format!("target_{}", COMPONENTS[ci]),
+            ) - predicted[ci])
+                .abs();
+            if residual
+                > safety.bound(
+                    fattr(
+                        graph,
+                        interner,
+                        episode,
+                        &format!("manifold_bound_{}", COMPONENTS[ci]),
+                    ),
+                    situated_support.weights[ci],
+                )
+            {
                 loss = Some((end_tick, loss.map_or(1, |(_, count)| count + 1)));
             } else {
                 retained[ci] = 1.0;
@@ -2983,16 +3482,30 @@ fn projection_certify_interval_sparse(
     let mut ambiguous = false;
     let mut width: f64 = 0.0;
     for ci in 0..7 {
-        if fattr(graph, interner, policy, &format!("{}_weight", COMPONENTS[ci])) <= 0.0 {
+        if fattr(
+            graph,
+            interner,
+            policy,
+            &format!("{}_weight", COMPONENTS[ci]),
+        ) <= 0.0
+        {
             continue;
         }
-        let target = fattr(graph, interner, episode, &format!("target_{}", COMPONENTS[ci]));
-        let bound = safety.bound(fattr(
+        let target = fattr(
             graph,
             interner,
             episode,
-            &format!("manifold_bound_{}", COMPONENTS[ci]),
-        ));
+            &format!("target_{}", COMPONENTS[ci]),
+        );
+        let bound = safety.bound(
+            fattr(
+                graph,
+                interner,
+                episode,
+                &format!("manifold_bound_{}", COMPONENTS[ci]),
+            ),
+            situated_support.weights[ci],
+        );
         let (lo, hi) = predicted[ci];
         width = width.max(hi - lo);
         let residual_lo = if target < lo {
@@ -3063,6 +3576,8 @@ fn projection_certify_interval_legacy(
     members: &[NodeID],
 ) -> ProjectionIntervalResult {
     let safety = learning_safety_evidence(graph, interner, episode);
+    let situated_support =
+        situation_support_field(graph, interner, episode, policy, end_tick as f64, false);
     let mut state = start_state.clone();
     let mut minima = [f64::INFINITY; 7];
     let mut maxima = [f64::NEG_INFINITY; 7];
@@ -3091,7 +3606,12 @@ fn projection_certify_interval_legacy(
             .zip(maxima.iter())
             .enumerate()
             .filter(|(i, _)| {
-                fattr(graph, interner, policy, &format!("{}_weight", COMPONENTS[*i])) > 0.0
+                fattr(
+                    graph,
+                    interner,
+                    policy,
+                    &format!("{}_weight", COMPONENTS[*i]),
+                ) > 0.0
             })
             .map(|(_, (lo, hi))| hi - lo)
             .fold(0.0, f64::max)
@@ -3114,16 +3634,30 @@ fn projection_certify_interval_legacy(
     let mut certain_loss: Option<(i32, usize)> = None;
     let mut ambiguous = false;
     for ci in 0..7 {
-        if fattr(graph, interner, policy, &format!("{}_weight", COMPONENTS[ci])) <= 0.0 {
+        if fattr(
+            graph,
+            interner,
+            policy,
+            &format!("{}_weight", COMPONENTS[ci]),
+        ) <= 0.0
+        {
             continue;
         }
-        let target = fattr(graph, interner, episode, &format!("target_{}", COMPONENTS[ci]));
-        let bound = safety.bound(fattr(
+        let target = fattr(
             graph,
             interner,
             episode,
-            &format!("manifold_bound_{}", COMPONENTS[ci]),
-        ));
+            &format!("target_{}", COMPONENTS[ci]),
+        );
+        let bound = safety.bound(
+            fattr(
+                graph,
+                interner,
+                episode,
+                &format!("manifold_bound_{}", COMPONENTS[ci]),
+            ),
+            situated_support.weights[ci],
+        );
         let residual_lo = if target < minima[ci] {
             (target - minima[ci]).abs()
         } else if target > maxima[ci] {
@@ -3175,7 +3709,13 @@ fn future_manifold_projection_for_members(
     // The temporal-anchor contract is opt-in.  Keep the historical dense
     // projector as the exact compatibility path for policies that have not
     // enabled it; this also keeps absent seed attributes gate-off inert.
-    if fattr(graph, interner, policy, "future_manifold_temporal_anchors_enabled") > 0.5 {
+    if fattr(
+        graph,
+        interner,
+        policy,
+        "future_manifold_temporal_anchors_enabled",
+    ) > 0.5
+    {
         future_manifold_projection_for_members_foveated(
             graph,
             interner,
@@ -3234,10 +3774,7 @@ fn future_manifold_projection_for_members_legacy(
         fattr(graph, interner, episode, "state_flow_vertical"),
         fattr(graph, interner, episode, "state_power_state"),
     ];
-    let all_models = interner
-        .lookup("has_embodied_effector_model")
-        .map(|e| graph.neighbours(episode, Some(e)))
-        .unwrap_or_default();
+    let all_models = future_manifold_episode_models(graph, interner, episode);
     let references: Vec<NodeID> = all_models
         .iter()
         .copied()
@@ -3469,12 +4006,14 @@ fn future_manifold_projection_for_members_legacy(
             }
             let residual =
                 (fattr(graph, interner, episode, &format!("target_{key}")) - prediction).abs();
-            if residual > safety.bound(fattr(
-                graph,
-                interner,
-                episode,
-                &format!("manifold_bound_{key}"),
-            )) {
+            let situated_support =
+                situation_support_field(graph, interner, episode, policy, step as f64, false);
+            if residual
+                > safety.bound(
+                    fattr(graph, interner, episode, &format!("manifold_bound_{key}")),
+                    situated_support.weights[ci],
+                )
+            {
                 step_loss += 1.0;
                 retained[ci] = 0.0;
             } else {
@@ -3525,7 +4064,7 @@ fn future_manifold_projection_for_members_legacy(
     }
     if support
         && !resolved
-        && safety.active()
+        && safety.recovery_boundary_available()
         && horizon >= safety.required_horizon_units as f64
         && loss <= 0.0
     {
@@ -3540,11 +4079,18 @@ fn future_manifold_projection_for_members_legacy(
         retained = [0.0; 7];
     }
     let retained_cells = retained.iter().sum::<f64>();
+    let information_authority = protected_support_authority(
+        graph,
+        interner,
+        policy,
+        situation_support_field(graph, interner, episode, policy, horizon, false),
+    );
     let information_loss = (loss
         + (protected * (protected - 1.0) - retained_cells * (retained_cells - 1.0)) / 2.0
-        - safety.information_loss_allowance
-            * if safety.active() { 1.0 } else { 0.0 })
+        - safety.information_loss_allowance * information_authority)
         .max(0.0);
+    let (situated_support, applied_bounds) =
+        support_observability(graph, interner, episode, policy, horizon, false);
     FutureProjectionReport {
         support,
         resolved,
@@ -3561,6 +4107,8 @@ fn future_manifold_projection_for_members_legacy(
         max_shape_order: 0.0,
         earliest_decisive_tick: 0.0,
         retained,
+        situated_support,
+        applied_bounds,
     }
 }
 
@@ -3609,8 +4157,7 @@ fn future_manifold_projection_for_members_foveated(
     let physical_valid = physical_horizon >= 1
         && physical_horizon <= 4096
         && physical_raw.is_finite()
-        && (physical_raw <= 0.0
-            || (physical_raw - physical_horizon as f64).abs() < f64::EPSILON);
+        && (physical_raw <= 0.0 || (physical_raw - physical_horizon as f64).abs() < f64::EPSILON);
     let fixed_run_raw = fattr(
         graph,
         interner,
@@ -3633,10 +4180,7 @@ fn future_manifold_projection_for_members_foveated(
         fattr(graph, interner, episode, "state_flow_vertical"),
         fattr(graph, interner, episode, "state_power_state"),
     ];
-    let all_models = interner
-        .lookup("has_embodied_effector_model")
-        .map(|edge| graph.neighbours(episode, Some(edge)))
-        .unwrap_or_default();
+    let all_models = future_manifold_episode_models(graph, interner, episode);
     let references: Vec<NodeID> = all_models
         .iter()
         .copied()
@@ -3674,8 +4218,12 @@ fn future_manifold_projection_for_members_foveated(
         && members.iter().all(|model| {
             fattr(graph, interner, *model, "experience_count") > 0.0
                 && (fattr(graph, interner, *model, "context_delta_experience_count") > 0.0
-                    || (fattr(graph, interner, *model, "specified_actuator_dynamics_enabled")
-                        > 0.5
+                    || (fattr(
+                        graph,
+                        interner,
+                        *model,
+                        "specified_actuator_dynamics_enabled",
+                    ) > 0.5
                         && fattr(graph, interner, *model, "specified_effect_prior_confidence")
                             > 0.5
                         && fattr(
@@ -3870,11 +4418,7 @@ fn future_manifold_projection_for_members_foveated(
     // (otherwise current_tick would still be short of the horizon), so the
     // bounded result is resolved even without a fixed point.  Preserve the
     // historical unresolved code for budget-only horizons.
-    if support
-        && !resolved
-        && explicit_physical_horizon
-        && current_tick >= physical_horizon
-    {
+    if support && !resolved && explicit_physical_horizon && current_tick >= physical_horizon {
         resolved = true;
         termination_code = 6.0;
         horizon = physical_horizon as f64;
@@ -3889,7 +4433,7 @@ fn future_manifold_projection_for_members_foveated(
     }
     if support
         && !resolved
-        && safety.active()
+        && safety.recovery_boundary_available()
         && horizon >= safety.required_horizon_units as f64
         && loss <= 0.0
     {
@@ -3900,11 +4444,18 @@ fn future_manifold_projection_for_members_foveated(
         termination_code = 7.0;
     }
     let retained_cells = retained.iter().sum::<f64>();
+    let information_authority = protected_support_authority(
+        graph,
+        interner,
+        policy,
+        situation_support_field(graph, interner, episode, policy, horizon, false),
+    );
     let information_loss = (loss
         + (protected * (protected - 1.0) - retained_cells * (retained_cells - 1.0)) / 2.0
-        - safety.information_loss_allowance
-            * if safety.active() { 1.0 } else { 0.0 })
+        - safety.information_loss_allowance * information_authority)
         .max(0.0);
+    let (situated_support, applied_bounds) =
+        support_observability(graph, interner, episode, policy, horizon, false);
     FutureProjectionReport {
         support,
         resolved,
@@ -3921,5 +4472,7 @@ fn future_manifold_projection_for_members_foveated(
         max_shape_order,
         earliest_decisive_tick,
         retained,
+        situated_support,
+        applied_bounds,
     }
 }

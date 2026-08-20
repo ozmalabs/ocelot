@@ -101,9 +101,104 @@ def _value(agent, episode, policy, source, field, *, addition=None):
         raise
 
 
+def _learning_safety(agent, episode, **overrides):
+    attrs = {
+        "verified": 1.0,
+        "reset_reachable": 0.0,
+        "reset_cost_units": 1000.0,
+        "protective_support_available": 0.0,
+        "protective_support_effectiveness": 0.0,
+        "recovery_path_count": 0.0,
+        "required_horizon_units": 4.0,
+        "exploration_width_budget": 1.0,
+        "exploration_information_budget": 1.0,
+    }
+    attrs.update(overrides)
+    safety = agent.s.add_node("LearningSafetyContext", attrs)
+    _edge(agent, episode, "has_learning_safety_context", safety)
+    return safety
+
+
+def test_learning_exploration_is_situated_by_support_and_projected_time():
+    """A declaration supplies a budget; the current recovery field spends it."""
+    agent, ep, policy, source = _bench(member_forward=1.2, bound=1.0)
+    safety = _learning_safety(agent, ep)
+    for key, value in {
+        "body_mass": 10.0,
+        "state_qx": 0.0,
+        "state_qy": 0.0,
+        "support_sensor_count": 1.0,
+        "active_support_count": 1.0,
+        "state_support_0_force": 100.0,
+        "state_contact_force_newtons": 100.0,
+    }.items():
+        agent.inner.set_attr(ep, key, value)
+    agent.inner.set_attr(policy, "gravity_acceleration", 10.0)
+    agent.inner.set_attr(policy, "future_manifold_path_fixed_point_run", 15.0)
+
+    near_authority = float(_value(
+        agent, ep, policy, source, "exploration_authority"
+    ))
+    near_bound = float(_value(agent, ep, policy, source, "applied_bound_0"))
+    assert float(_value(agent, ep, policy, source, "loss")) == 0.0
+    assert near_authority > 0.2
+    assert near_bound > 1.2
+
+    # The same contact observation cannot license an arbitrarily distant
+    # future: outside the declared near horizon its contribution decays.
+    agent.inner.set_attr(policy, "future_manifold_physical_horizon", 64.0)
+    agent.inner.set_attr(policy, "future_manifold_projection_budget", 64.0)
+    agent.inner.set_attr(policy, "future_manifold_path_fixed_point_run", 63.0)
+    assert float(_value(agent, ep, policy, source, "loss")) == 1.0
+
+    # Removing actual support tightens immediately even though the declared
+    # safe-learning context and its budgets are unchanged.
+    agent.inner.set_attr(policy, "future_manifold_physical_horizon", 16.0)
+    agent.inner.set_attr(policy, "future_manifold_projection_budget", 16.0)
+    agent.inner.set_attr(policy, "future_manifold_path_fixed_point_run", 15.0)
+    agent.inner.set_attr(ep, "active_support_count", 0.0)
+    agent.inner.set_attr(ep, "state_support_0_force", 0.0)
+    agent.inner.set_attr(ep, "state_contact_force_newtons", 0.0)
+    unsupported_bound = float(_value(
+        agent, ep, policy, source, "applied_bound_0"
+    ))
+    assert unsupported_bound < near_bound
+    assert float(_value(agent, ep, policy, source, "loss")) == 1.0
+    assert unsupported_bound == float(_value(
+        agent, ep, policy, source, "applied_bound_0"
+    ))
+
+    # Availability is not engagement. A declared caregiver contributes only
+    # when the graph requests that support for this situated attempt.
+    agent.inner.set_attr(safety, "protective_support_available", 1.0)
+    agent.inner.set_attr(safety, "protective_support_effectiveness", 1.0)
+    assert float(_value(
+        agent, ep, policy, source, "applied_bound_0"
+    )) == unsupported_bound
+    agent.inner.set_attr(ep, "caregiver_protective_support_requested", 1.0)
+    assert float(_value(agent, ep, policy, source, "applied_bound_0")) == 2.0
+    assert float(_value(agent, ep, policy, source, "loss")) == 0.0
+
+
 def _motor_members(agent, episode, policy):
     chosen = set()
     for candidate in agent.inner.neighbours(episode, "has_embodied_effector_model"):
+        verdict = agent.inner.evaluate({
+            "type": "MotorCompose",
+            "episode": {"type": "Var", "name": "ep"},
+            "policy": {"type": "Var", "name": "po"},
+            "candidate": {"type": "Var", "name": "candidate"},
+        }, {"ep": episode, "po": policy, "candidate": candidate})
+        if verdict:
+            chosen.add(str(agent.s.node(candidate)["attrs"].get("token")))
+    return chosen
+
+
+def _humanoid_motor_members(agent, episode, policy):
+    chosen = set()
+    for candidate in agent.inner.neighbours(
+        episode, "has_humanoid_phase_action_model"
+    ):
         verdict = agent.inner.evaluate({
             "type": "MotorCompose",
             "episode": {"type": "Var", "name": "ep"},
@@ -124,6 +219,77 @@ def test_projection_reports_horizon_loss_and_retention():
     assert float(_value(agent, ep, policy, source, "resolved")) == 1.0
     assert float(_value(agent, ep, policy, source, "horizon")) == 1.0
     assert float(_value(agent, ep, policy, source, "termination_code")) == 2.0
+
+
+def test_projection_accepts_grounded_humanoid_phase_program_membership():
+    agent, ep, policy, source = _bench(member_forward=0.0, bound=1.0)
+    member = agent.inner.neighbours(
+        source, "includes_embodied_effector_model"
+    )[0]
+    agent.inner.remove_edge(
+        source, "includes_embodied_effector_model", member
+    )
+    _edge(
+        agent, source, "includes_humanoid_phase_action_model", member
+    )
+    assert float(_value(agent, ep, policy, source, "support")) == 1.0
+    assert float(_value(agent, ep, policy, source, "resolved")) == 1.0
+    assert float(_value(agent, ep, policy, source, "loss")) == 0.0
+
+def test_projection_uses_humanoid_phase_models_as_reference_population():
+    agent, ep, policy, source = _bench(member_forward=0.0, bound=1.0)
+    models = list(agent.inner.neighbours(ep, "has_embodied_effector_model"))
+    for ordinal, model in enumerate(models):
+        agent.inner.remove_edge(ep, "has_embodied_effector_model", model)
+        _edge(agent, ep, "has_humanoid_phase_action_model", model)
+        for key, value in {
+            "token": f"phase-{ordinal}",
+            "ordinal": float(ordinal),
+            "actuator_group": float(ordinal),
+            "support_phase": 0.0,
+            "context_id": 0.0,
+            "initialized": 1.0,
+            "mean_input_energy_joules": 0.0,
+            "context_grounded": 1.0,
+            **{f"mean_{key}": 0.0 for key in (
+                "dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz",
+            )},
+            **{f"anchor_{key}": 0.0 for key in (
+                "z_x", "z_y", "wx", "wy", "vx", "vy", "vz",
+            )},
+            "anchor_lateral_offset": 0.0,
+        }.items():
+            agent.inner.set_attr(model, key, value)
+    member = agent.inner.neighbours(
+        source, "includes_embodied_effector_model"
+    )[0]
+    agent.inner.remove_edge(
+        source, "includes_embodied_effector_model", member
+    )
+    _edge(agent, source, "includes_humanoid_phase_action_model", member)
+    agent.inner.set_attr(ep, "current_support_phase", 0.0)
+    agent.inner.set_attr(ep, "response_frames", 2.0)
+    agent.inner.set_attr(ep, "manifold_bounds_ready", 1.0)
+    for key in ("dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz"):
+        agent.inner.set_attr(ep, f"manifold_bound_{key}", 1.0)
+
+    assert float(_value(agent, ep, policy, source, "support")) == 1.0
+    assert float(_value(agent, ep, policy, source, "resolved")) == 1.0
+    assert float(_value(agent, ep, policy, source, "loss")) == 0.0
+
+    historical_attrs = dict(agent.s.node(member)["attrs"])
+    historical_attrs["context_id"] = 99.0
+    historical = agent.s.add_node(
+        "HumanoidPhaseActionModel", historical_attrs
+    )
+    agent.inner.remove_edge(
+        source, "includes_humanoid_phase_action_model", member
+    )
+    _edge(
+        agent, source, "includes_humanoid_phase_action_model", historical
+    )
+    assert float(_value(agent, ep, policy, source, "support")) == 1.0
+    assert float(_value(agent, ep, policy, source, "resolved")) == 1.0
 
 
 def test_projection_changes_with_learned_member_delta_and_neutral_reference():
@@ -352,3 +518,82 @@ def test_native_composer_projects_complete_candidates_only_when_gate_is_active()
     assert _motor_members(agent, episode, policy) == {"drifting"}
     agent.inner.set_attr(policy, "future_manifold_enabled", 1.0)
     assert _motor_members(agent, episode, policy) == {"retained"}
+
+
+def test_humanoid_risk_gate_stops_at_least_admissible_intervention():
+    """Task improvement cannot widen an already-preserved future path."""
+    try:
+        agent = WorldAdapter(seeds=("humanoid_adaptation",))
+    except RuntimeError as exc:
+        pytest.skip(str(exc))
+    root = agent.agent
+    policy = agent.inner.neighbours(root, "has_humanoid_policy")[0]
+    for key, value in {
+        "native_humanoid_composition_enabled": 1.0,
+        "future_manifold_temporal_anchors_enabled": 1.0,
+        "target_froude_speed": 0.0,
+        "persistent_task_residual_authority": 0.0,
+        "support_geometry_preview_authority": 0.0,
+        "takeoff_motor_compression_authority": 0.0,
+        "gravity_acceleration": 9.81,
+        "support_phase_prior_strength": 1.0,
+    }.items():
+        agent.inner.set_attr(policy, key, value)
+    episode_attrs = {
+        "request_seq": 1.0, "state_seq": 1.0,
+        "selected_primary_token": "primary",
+        "selected_primary_context_id": 0.0,
+        "current_support_phase": 0.0,
+        "response_frames": 2.0,
+        "manifold_bounds_ready": 1.0,
+        "standing_reference_z": 1.0,
+        "state_qx": 0.0, "state_qy": 0.0,
+        "state_qz": 0.0, "state_qw": 1.0,
+        "locomotion_drive_active": 1.0,
+        "heading_x": 1.0,
+        **{f"manifold_bound_{key}": 2.0 for key in (
+            "dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz",
+        )},
+    }
+    episode = agent.s.add_node("HumanoidEpisode", episode_attrs)
+    _edge(agent, root, "has_humanoid_episode", episode)
+    common = {
+        "support_phase": 0.0, "context_id": 0.0,
+        "initialized": 1.0, "mean_input_energy_joules": 0.0,
+        **{f"mean_{key}": 0.0 for key in (
+            "dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz",
+        )},
+        **{f"anchor_{key}": 0.0 for key in (
+            "z_x", "z_y", "wx", "wy", "vx", "vy", "vz",
+        )},
+        "anchor_lateral_offset": 0.0,
+    }
+    primary = agent.s.add_node("HumanoidPhaseActionModel", {
+        **common, "token": "primary", "ordinal": 1.0,
+        "actuator_group": 1.0, "mean_dvx": 1.0,
+    })
+    cancellation = agent.s.add_node("HumanoidPhaseActionModel", {
+        **common, "token": "cancellation", "ordinal": 2.0,
+        "actuator_group": 2.0, "mean_dvx": -1.0,
+    })
+    for model in (primary, cancellation):
+        _edge(agent, episode, "has_humanoid_phase_action_model", model)
+    synergy = agent.s.add_node("HumanoidSynergyModel", {
+        "token_a": "primary", "token_b": "cancellation",
+        "ordinal": 1.0, "approved": 1.0,
+        **{f"residual_{key}": 0.0 for key in (
+            "dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz",
+        )},
+    })
+    _edge(agent, episode, "has_humanoid_synergy_model", synergy)
+    plan = agent.s.add_node("HumanoidMotorProgram", {
+        "request_seq": 1.0, "allow_expansion": 1.0,
+    })
+    _edge(agent, episode, "has_active_humanoid_motor_program", plan)
+
+    agent.inner.set_attr(policy, "future_manifold_enabled", 0.0)
+    assert _humanoid_motor_members(agent, episode, policy) == {
+        "primary", "cancellation",
+    }
+    agent.inner.set_attr(policy, "future_manifold_enabled", 1.0)
+    assert _humanoid_motor_members(agent, episode, policy) == {"primary"}

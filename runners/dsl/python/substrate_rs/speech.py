@@ -18,10 +18,11 @@ Peirce's three-part sign maps onto the substrate's existing pieces:
 
 The pipeline
 ------------
-1. **Detect** speech segments in an audio stream using the native
+1. **Detect** acoustic activity windows in an audio stream using the native
    codec hints we already extract (Opus SILK mode regions; MP3
-   short-block clusters as word-boundary candidates; energy
-   thresholding via the bitrate profile). No ASR.
+   short-block clusters; energy thresholding via the bitrate profile). These
+   are I/O extraction windows only, not linguistic boundaries or commitment
+   points. No ASR.
 2. **Extract** a per-utterance feature vector by running the
    :mod:`substrate_rs.audio` cochlear bank on the decoded segment
    and summarising per-band energy over time windows.
@@ -73,6 +74,7 @@ HAS_ENTRY = "has_entry"            # Lexicon → AcousticSign
 HEARD_AS = "heard_as"              # Utterance → AcousticSign (matched/acquired)
 DENOTES = "denotes"                # AcousticSign → Concept (Peirce: sign → object)
 FROM_STREAM = "from_stream"        # Utterance → AudioStream provenance
+CONTINUES_TO = "continues_to"      # AcousticSign → possible next AcousticSign
 
 
 def _native(s):
@@ -112,6 +114,8 @@ def seed_speech_grammar(s, namespace: str | None = None) -> int:
     # We declare ONE permissive production using the bare "Concept"
     # type name; callers using a different type can add their own.
     _perm(ACOUSTIC_SIGN, DENOTES, "Concept", "speech:sign_denotes_concept")
+    _perm(ACOUSTIC_SIGN, CONTINUES_TO, ACOUSTIC_SIGN,
+          "speech:sign_continues_to_sign")
     _perm(UTTERANCE, FROM_STREAM, _audio.AUDIO_STREAM,
           "speech:utt_from_stream")
 
@@ -511,6 +515,55 @@ def extract_features(
     return features.flatten()
 
 
+def extract_trajectory(
+    s,
+    utterance_nid,
+    *,
+    n_bands: int = 16,
+    n_frames: int = 16,
+    fs: int = 22050,
+    cochlea_bank: list | None = None,
+) -> list[list[float]]:
+    """Return the sign's time-indexed cochlear shape.
+
+    This is the temporal counterpart of :func:`extract_features`.  It is
+    deliberately still a sign form, not a word/phoneme label: each row is
+    one observed acoustic slice that a future-manifold caller can compare
+    with a candidate sign's predicted continuation.
+    """
+    inner = _native(s)
+    stream_nid = next(iter(inner.neighbours(utterance_nid, FROM_STREAM)), None)
+    if stream_nid is None:
+        return []
+    n_codec_frames = int(inner.node(utterance_nid)["attrs"].get("n_frames", 0))
+    start_idx = int(inner.node(utterance_nid)["attrs"].get("frame_index_start", 0))
+    samples = _decode_utterance_samples(s, stream_nid, start_idx, n_codec_frames)
+    if samples is None or len(samples) == 0:
+        return []
+    if samples.ndim > 1:
+        samples = samples.mean(axis=1)
+    if cochlea_bank is None:
+        cochlea_bank = _audio.cochlea(s, n_bands=n_bands, fs=fs)
+    buf_nid = _audio.audio_from_array(s, samples, sample_rate=fs)
+    responses = _audio.a1_responses(s, buf_nid, cochlea_bank)
+    out = np.zeros((n_frames, len(cochlea_bank)), dtype=np.float32)
+    for band, response_nid in enumerate(responses):
+        response = _audio.audio_to_array(s, response_nid).astype(np.float32)
+        if response.ndim > 1:
+            response = response.mean(axis=1)
+        if len(response) == 0:
+            continue
+        window_len = max(1, len(response) // n_frames)
+        for frame in range(n_frames):
+            segment = response[frame * window_len:(frame + 1) * window_len]
+            if len(segment):
+                out[frame, band] = float(np.sqrt(np.mean(segment ** 2)))
+    norm = float(np.linalg.norm(out))
+    if norm > 1e-8:
+        out /= norm
+    return out.tolist()
+
+
 def _decode_utterance_samples(s, stream_nid, start_idx: int,
                               n_frames: int) -> Optional[np.ndarray]:
     """Decode a contiguous range of audio frames into a numpy array.
@@ -557,6 +610,7 @@ def acquire_sign(
     label: str | None = None,
     threshold: float | None = None,
     origin: str = "acquired",
+    trajectory: list[list[float]] | None = None,
 ) -> tuple[Any, bool]:
     """Match `features` against existing AcousticSigns in the
     lexicon. If a sign matches above the lexicon's discrimination
@@ -603,6 +657,22 @@ def acquire_sign(
         inner.set_attr(best_match, "hearings", n + 1)
         inner.set_attr(best_match, "last_similarity",
                        float(round(best_sim, 4)))
+        if trajectory:
+            # Keep the sign's forward form as a running temporal centroid.
+            # Shape mismatch is an honest replacement: unlike a word label,
+            # a sign's time grid is allowed to change with the observation.
+            old_t = attrs.get("future_manifold_values")
+            if isinstance(old_t, list) and len(old_t) == len(trajectory):
+                try:
+                    old = np.asarray(old_t, dtype=np.float32)
+                    new = np.asarray(trajectory, dtype=np.float32)
+                    if old.shape == new.shape:
+                        hearings = max(n, 1)
+                        trajectory = ((old * hearings + new) / (hearings + 1)).tolist()
+                except (TypeError, ValueError):
+                    pass
+            inner.set_attr(best_match, "future_manifold_values", trajectory)
+            inner.set_attr(best_match, "future_manifold_trajectory_length", len(trajectory))
         return best_match, False
     # Mint a new sign.
     sign = inner.add_node(ACOUSTIC_SIGN, {
@@ -612,6 +682,9 @@ def acquire_sign(
         "hearings": 1,
         "origin": origin,
     })
+    if trajectory:
+        inner.set_attr(sign, "future_manifold_values", trajectory)
+        inner.set_attr(sign, "future_manifold_trajectory_length", len(trajectory))
     inner.add_edge(lexicon_nid, HAS_ENTRY, sign)
     # Update the lexicon's count.
     cur = int(inner.node(lexicon_nid)["attrs"].get("n_signs", 0))
@@ -714,13 +787,277 @@ def ingest_speech(
         f = extract_features(
             s, u, n_bands=n_bands, n_time_windows=n_time_windows,
             fs=fs, cochlea_bank=cochlea_bank)
+        trajectory = extract_trajectory(
+            s, u, n_bands=n_bands, n_frames=n_time_windows,
+            fs=fs, cochlea_bank=cochlea_bank)
         if feature_transform is not None:
             f = feature_transform(f)
-        sign, is_new = acquire_sign(s, lexicon_nid, f, threshold=threshold)
+        sign, is_new = acquire_sign(
+            s, lexicon_nid, f, threshold=threshold, trajectory=trajectory)
         if sign is not None:
             inner.add_edge(u, HEARD_AS, sign)
         out.append((u, sign, is_new))
     return out
+
+
+def project_sign_future_manifold(
+    s,
+    sign_nid,
+    observed_trajectory: list[list[float]],
+    bounds: list[list[float]],
+    *,
+    projection_budget: int | None = None,
+    physical_horizon: int | None = None,
+) -> dict[str, float] | None:
+    """Audit one AcousticSign against the observed future sign shape.
+
+    The sign is the recovered object.  This function produces manifold
+    evidence only; it does not choose a word, segment, denotation, or commit.
+    The candidate sign carries its forward continuation in
+    ``future_manifold_values``.  The observed continuation and its admissible
+    tube are graph inputs to the modality-independent Rust projector.
+    """
+    inner = _native(s)
+    attrs = inner.node(sign_nid)["attrs"]
+    predicted = attrs.get("future_manifold_values")
+    if not isinstance(predicted, list):
+        return None
+    if not observed_trajectory or not bounds:
+        return None
+    horizon = int(physical_horizon or len(observed_trajectory))
+    budget = int(projection_budget or horizon)
+    episode = inner.add_node("SpeechFutureManifoldEpisode", {
+        "future_manifold_target": observed_trajectory,
+        "future_manifold_bounds": bounds,
+    })
+    policy = inner.add_node("SpeechFutureManifoldPolicy", {
+        "future_manifold_projection_budget": float(budget),
+        "future_manifold_physical_horizon": float(horizon),
+    })
+    fields = (
+        "support", "resolved", "termination_code", "horizon", "budget",
+        "loss", "information_loss", "retained_width", "anchor_count",
+        "refinement_count", "certified_interval_count",
+        "ambiguous_interval_count", "max_enclosure_width",
+        "max_shape_order", "earliest_decisive_tick",
+    )
+    reports = {}
+    for field in fields:
+        term = {
+            "type": "FutureManifoldProjection",
+            "episode": {"type": "Var", "name": "episode"},
+            "policy": {"type": "Var", "name": "policy"},
+            "source": {"type": "Var", "name": "sign"},
+            "field": field,
+        }
+        reports[field] = float(inner.evaluate(
+            term, {"episode": episode, "policy": policy, "sign": sign_nid}))
+    return reports
+
+
+def report_sign_future_manifolds(
+    s,
+    lexicon_nid,
+    observed_trajectory: list[list[float]],
+    bounds: list[list[float]],
+    *,
+    projection_budget: int | None = None,
+    physical_horizon: int | None = None,
+) -> list[tuple[Any, dict[str, float]]]:
+    """Return evidence for every trajectory-bearing sign in a lexicon.
+
+    The returned collection is intentionally not ranked or collapsed.  The
+    graph's later sign-recovery process owns what happens with retained and
+    escaped candidates.
+    """
+    reports = []
+    for sign in lexicon_signs(s, lexicon_nid):
+        report = project_sign_future_manifold(
+            s, sign, observed_trajectory, bounds,
+            projection_budget=projection_budget,
+            physical_horizon=physical_horizon,
+        )
+        if report is not None:
+            reports.append((sign, report))
+    return reports
+
+
+def link_sign_continuation(s, source_sign, target_sign) -> None:
+    """Record a graph-level continuation possibility between two signs.
+
+    This is a semiotic relation, not a word or segment relation.  It narrows
+    sequence hypotheses after a sign manifold has supplied a viable temporal
+    match.  If a sign has no continuation edges, the open lexicon remains the
+    fallback candidate set.
+    """
+    _native(s).add_edge(source_sign, CONTINUES_TO, target_sign)
+
+
+def recover_sign_sequence(
+    s,
+    lexicon_nid,
+    observed_trajectory: list[list[float]],
+    bounds: list[list[float]],
+    *,
+    projection_budget: int | None = None,
+    max_paths: int = 256,
+) -> dict[str, Any]:
+    """Recover a continuous stream as a path of signs.
+
+    Candidate signs are tested at every possible stream start.  A match is
+    admitted only when the candidate's whole learned trajectory is supported
+    by the corresponding acoustic slice; its start and end ticks therefore
+    come from the sign manifold itself.  No word, phoneme, silence, or segment
+    boundary is supplied.
+
+    The returned ``events`` are sign-level temporal events.  ``paths`` are
+    graph-consistent sequences that cover the stream from tick zero to its end;
+    ``matches`` exposes all locally supported sign hypotheses, including ones
+    that do not participate in a complete path.  This keeps ambiguity visible
+    instead of turning a local match into a word-level winner.
+    """
+    if len(observed_trajectory) != len(bounds) or max_paths <= 0:
+        return {"matches": [], "paths": [], "truncated": False}
+
+    inner = _native(s)
+    signs = lexicon_signs(s, lexicon_nid)
+    candidates = []
+    for sign in signs:
+        values = inner.node(sign)["attrs"].get("future_manifold_values")
+        if isinstance(values, list) and values:
+            candidates.append((sign, values))
+
+    matches_by_start: dict[int, list[dict[str, Any]]] = {}
+    matches = []
+    stream_length = len(observed_trajectory)
+    for start in range(stream_length):
+        for sign, values in candidates:
+            length = len(values)
+            end = start + length
+            if end > stream_length:
+                continue
+            report = project_sign_future_manifold(
+                s, sign,
+                observed_trajectory[start:end], bounds[start:end],
+                projection_budget=projection_budget,
+                physical_horizon=length,
+            )
+            if report is None:
+                continue
+            if (
+                report.get("support") != 1.0
+                or report.get("resolved") != 1.0
+                or report.get("loss") != 0.0
+                or report.get("horizon") != float(length)
+            ):
+                continue
+            match = {
+                "sign": sign,
+                "start_tick": float(start),
+                "end_tick": float(end),
+                "report": report,
+            }
+            matches_by_start.setdefault(start, []).append(match)
+            matches.append(match)
+
+    def successors(sign):
+        linked = inner.neighbours(sign, CONTINUES_TO)
+        return linked if linked else signs
+
+    # A path is extended only when the next sign starts exactly where the
+    # previous sign's supported trajectory ends.  That adjacency is inferred
+    # from the manifolds; it is not an externally declared word boundary.
+    paths = []
+    frontier = [
+        [{"sign": match["sign"], "start_tick": match["start_tick"],
+          "end_tick": match["end_tick"], "report": match["report"]}]
+        for match in matches_by_start.get(0, [])
+    ]
+    truncated = False
+    while frontier:
+        next_frontier = []
+        for path in frontier:
+            end = int(path[-1]["end_tick"])
+            if end == stream_length:
+                paths.append(path)
+                if len(paths) >= max_paths:
+                    truncated = bool(next_frontier or frontier)
+                    break
+                continue
+            for match in matches_by_start.get(end, []):
+                if match["sign"] not in successors(path[-1]["sign"]):
+                    continue
+                next_frontier.append(path + [{
+                    "sign": match["sign"],
+                    "start_tick": match["start_tick"],
+                    "end_tick": match["end_tick"],
+                    "report": match["report"],
+                }])
+                if len(next_frontier) + len(paths) >= max_paths:
+                    truncated = True
+                    break
+            if truncated:
+                break
+        if truncated or not next_frontier:
+            break
+        frontier = next_frontier
+
+    return {
+        "matches": matches,
+        "paths": [{
+            "signs": [event["sign"] for event in path],
+            "events": path,
+            "start_tick": path[0]["start_tick"],
+            "end_tick": path[-1]["end_tick"],
+        } for path in paths],
+        "truncated": truncated,
+    }
+
+
+def recover_sign_stream(
+    s,
+    lexicon_nid,
+    observed_trajectory: list[list[float]],
+    bounds: list[list[float]],
+    *,
+    projection_budget: int | None = None,
+) -> list[dict[str, Any]]:
+    """Project and audit a continuous acoustic trajectory one tick at a time.
+
+    Each entry is a time-indexed sign-evidence snapshot.  The observed prefix
+    may end in the middle of any linguistic unit; no word, phoneme, segment,
+    or silence boundary is consulted.  ``reports`` remains a collection of
+    sign reports.  ``retained_signs`` are still inside their projected tube
+    at that tick; ``escaped_signs`` are candidates whose prediction first left
+    the observed tube.  Neither list is a commitment or a sentence decode.
+    """
+    if len(observed_trajectory) != len(bounds):
+        return []
+    timeline = []
+    for end in range(1, len(observed_trajectory) + 1):
+        reports = report_sign_future_manifolds(
+            s, lexicon_nid,
+            observed_trajectory[:end], bounds[:end],
+            projection_budget=projection_budget,
+            physical_horizon=end,
+        )
+        escaped = [
+            sign for sign, report in reports
+            if report.get("earliest_decisive_tick") == float(end)
+        ]
+        retained = [
+            sign for sign, report in reports
+            if report.get("support") == 1.0
+            and report.get("loss") == 0.0
+            and report.get("retained_width", 0.0) > 0.0
+        ]
+        timeline.append({
+            "time": float(end),
+            "reports": reports,
+            "retained_signs": retained,
+            "escaped_signs": escaped,
+        })
+    return timeline
 
 
 # --- Diagnostics -------------------------------------------------------
@@ -755,12 +1092,15 @@ def lexicon_grounded_fraction(s, lexicon_nid) -> float:
 
 __all__ = [
     "LEXICON", "ACOUSTIC_SIGN", "UTTERANCE",
-    "HAS_ENTRY", "HEARD_AS", "DENOTES", "FROM_STREAM",
+    "HAS_ENTRY", "HEARD_AS", "DENOTES", "FROM_STREAM", "CONTINUES_TO",
     "seed_speech_grammar",
     "open_lexicon", "lexicon_signs", "lexicon_describe",
     "detect_utterances", "extract_features",
+    "extract_trajectory",
     "acquire_sign", "match_sign",
     "ground_sign", "denoted_concepts",
     "ingest_speech",
+    "project_sign_future_manifold", "report_sign_future_manifolds",
+    "link_sign_continuation", "recover_sign_sequence", "recover_sign_stream",
     "sign_describe", "lexicon_grounded_fraction",
 ]

@@ -171,6 +171,10 @@ pub mod shape_decode;
 /// pure native function (same split as `shape_decode`): the Term answers
 /// membership; seed rules own when to compose and how to assemble.
 pub mod motor_compose;
+/// Modality-independent future-manifold projection over graph-resident
+/// time-indexed shape slices. Domain-specific projectors may remain as
+/// adapters, but the audit/gate contract lives here.
+pub mod future_manifold;
 
 /// `ProgEval` — the pure fueled interpreter over the Program IR
 /// (PROGRAM_SYNTHESIS_PLAN.md §3.2). Module-per-engine precedent.

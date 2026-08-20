@@ -248,6 +248,17 @@ def _cognitive_continuation_authorised(
         if selected_steps.intersection(agent.inner.neighbours(
             process, "supervises_learning_plan_step"
         ))
+        and (
+            agent.s.node(process)["attrs"].get("status")
+            in {"monitoring", "checking_in"}
+            or (
+                agent.s.node(process)["attrs"].get("status")
+                == "replan_required"
+                and agent.s.node(process)["attrs"].get(
+                    "replan_release_complete", 0
+                ) != 1
+            )
+        )
     ]
     if len(active_processes) != 1:
         return False
@@ -379,12 +390,48 @@ def _developmental_frontier_diagnostics(
         "has_embodied_developmental_capability",
     ))
     rows = []
+    evidence_window = int(
+        agent.s.node(development_context)["attrs"].get(
+            "development_evidence_window", 0
+        )
+    )
     for capability in capabilities:
         attrs = agent.s.node(capability)["attrs"]
         prerequisites = list(agent.inner.neighbours(
             capability,
             "requires_embodied_developmental_capability",
         ))
+        contexts = list(agent.inner.neighbours(
+            capability, "has_embodied_developmental_context"
+        ))
+        trajectories = list(agent.inner.neighbours(
+            capability, "has_embodied_program_trajectory"
+        ))
+        paths = list({
+            path
+            for trajectory in trajectories
+            for path in agent.inner.neighbours(
+                trajectory, "has_pareto_candidate"
+            )
+        })
+        transitions = list(agent.inner.neighbours(
+            capability, "has_embodied_program_transition"
+        ))
+        current_transition_sources = set(agent.inner.neighbours(
+            capability,
+            "has_current_embodied_program_transition_source",
+        ))
+        current_context_paths = [
+            path
+            for path in paths
+            if current_transition_sources.intersection(
+                agent.inner.neighbours(
+                    path, "contains_embodied_program_transition"
+                )
+            )
+        ]
+        attempts = int(attrs.get("attempt_count", 0))
+        successes = int(attrs.get("success_count", 0))
         unresolved = [
             str(agent.s.node(prerequisite)["attrs"].get("name", "unknown"))
             for prerequisite in prerequisites
@@ -394,10 +441,37 @@ def _developmental_frontier_diagnostics(
             "name": str(attrs.get("name", "unknown")),
             "ordinal": int(attrs.get("ordinal", 0)),
             "status": str(attrs.get("status", "unknown")),
-            "attempt_count": int(attrs.get("attempt_count", 0)),
-            "success_count": int(attrs.get("success_count", 0)),
+            "attempt_count": attempts,
+            "success_count": successes,
             "failure_count": int(attrs.get("failure_count", 0)),
             "retention_count": int(attrs.get("retention_count", 0)),
+            "evidence_window": evidence_window,
+            "attempts_remaining": max(0, evidence_window - attempts),
+            "successes_remaining": max(0, evidence_window - successes),
+            "context_count": len(contexts),
+            "contexts_required": len(prerequisites) + 1,
+            "contexts_remaining": max(
+                0, len(prerequisites) + 1 - len(contexts)
+            ),
+            "desired_relation_count": len(
+                attrs.get("desired_body_state_signature") or ()
+            ),
+            "trajectory_count": len(trajectories),
+            "verified_transition_count": len(transitions),
+            "manifold_admissible_current_transition_count": len(
+                current_transition_sources
+            ),
+            "trajectory_path_count": len(paths),
+            "current_context_trajectory_path_count": len(
+                current_context_paths
+            ),
+            "maximum_trajectory_depth": max((
+                int(agent.s.node(path)["attrs"].get("depth", 0))
+                for path in paths
+            ), default=0),
+            "trajectory_replay_count": int(attrs.get(
+                "trajectory_replay_count", 0
+            )),
             "activation_receipt_seq": int(attrs.get(
                 "activation_receipt_seq", 0
             )),
@@ -466,6 +540,116 @@ def _restore_library_attrs(row: dict[str, Any]) -> dict[str, Any]:
         if key == "signature" or key.endswith("_signature"):
             attrs[key] = _restore_signature_value(attrs[key])
     return attrs
+
+
+def _library_row_preference(row: dict[str, Any]) -> tuple[Any, ...]:
+    """Prefer the most evidenced copy of one persisted semantic fact."""
+    attrs = row.get("attrs", row)
+    evidence = sum(
+        float(attrs.get(key, 0) or 0)
+        for key in (
+            "experience_count",
+            "sample_count",
+            "success_count",
+            "productive_count",
+            "request_seq",
+        )
+    )
+    return (
+        int(attrs.get("updated_in_lifetime", 0) or 0),
+        evidence,
+        len(attrs.get("signature", ()) or ()),
+        len(row.get("members", ()) or ()),
+        len(row.get("stages", ()) or ()),
+        len(row.get("actions", ()) or ()),
+        json.dumps(row, sort_keys=True, separators=(",", ":")),
+    )
+
+
+def _coalesce_library_rows(
+    rows: list[dict[str, Any]],
+    identity_fields: tuple[str, ...],
+) -> list[dict[str, Any]]:
+    """Collapse repeated persisted facts without collapsing distinct facts."""
+    selected: dict[tuple[str, str], dict[str, Any]] = {}
+    for row in rows:
+        attrs = row.get("attrs", row)
+        identity = None
+        for field in identity_fields:
+            value = attrs.get(field)
+            if value is not None:
+                identity = (
+                    field,
+                    json.dumps(value, sort_keys=True, separators=(",", ":")),
+                )
+                break
+        if identity is None:
+            identity = (
+                "row",
+                json.dumps(row, sort_keys=True, separators=(",", ":")),
+            )
+        previous = selected.get(identity)
+        if previous is None or _library_row_preference(row) > (
+            _library_row_preference(previous)
+        ):
+            selected[identity] = row
+    # Dict replacement preserves the first semantic fact's position.  The
+    # inputs are already deterministically ordered, so replacing its value
+    # retains domain order (notably trajectory and residual ordinals).
+    return list(selected.values())
+
+
+def _coalesce_body_shape_rows(
+    rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Merge repeated lifetimes of the same physical body shape.
+
+    A continuation reloads a retained shape and the current lifetime also
+    recognizes that shape.  Persisting both graph nodes made every generation
+    multiply identical priors and eventually turned learning into an
+    ever-growing search.  Merge by shape identity while retaining the most
+    evidenced copy of each nested memory.
+    """
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for row in rows:
+        attrs = row.get("attrs", {})
+        identity_value = attrs.get("name", attrs.get("signature"))
+        identity = json.dumps(
+            identity_value, sort_keys=True, separators=(",", ":")
+        )
+        grouped.setdefault(identity, []).append(row)
+
+    merged = []
+    child_identities = {
+        "programs": ("name", "signature", "ordinal"),
+        "motor_transitions": ("name", "signature", "ordinal"),
+        "coordination_challenges": ("name", "signature", "ordinal"),
+        "residual_regimes": ("name", "signature", "ordinal"),
+        "recovery_basins": (
+            "name", "configuration_shape", "signature", "ordinal"
+        ),
+    }
+    for duplicates in grouped.values():
+        preferred = max(duplicates, key=_library_row_preference)
+        combined = {"attrs": dict(preferred.get("attrs", {}))}
+        for collection, identity_fields in child_identities.items():
+            children = [
+                child
+                for duplicate in duplicates
+                for child in duplicate.get(collection, ())
+            ]
+            combined[collection] = _coalesce_library_rows(
+                children, identity_fields
+            )
+        merged.append(combined)
+    merged.sort(key=lambda row: str(row["attrs"].get("name", "")))
+    return merged
+
+
+def _coalesce_plan_hint_rows(
+    rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    return _coalesce_library_rows(rows, ("name", "signature", "ordinal"))
 
 
 def _run_caregiver_scaffold(
@@ -690,7 +874,9 @@ def _restore_motor_library(
     motor_proposal_body_shape_memory_count = 0
     motor_proposal_counterexample_count = 0
     shapes_by_name = {}
-    for shape_row in library.get("body_shapes", []):
+    for shape_row in _coalesce_body_shape_rows(
+        library.get("body_shapes", [])
+    ):
         shape_attrs = _restore_library_attrs(shape_row)
         shape_attrs["source"] = "library"
         shape = agent.s.add_node(
@@ -835,7 +1021,7 @@ def _restore_motor_library(
                 )
     plan_hint_count = 0
     plan_hint_stage_count = 0
-    for hint_row in library.get("plan_hints", []):
+    for hint_row in _coalesce_plan_hint_rows(library.get("plan_hints", [])):
         hint_attrs = _restore_library_attrs(hint_row)
         if hint_attrs.get("output_authority", 0) != 0:
             raise ValueError("motor plan hints must be output-null")
@@ -1485,7 +1671,7 @@ def _motor_library_snapshot(
                 "residual_regimes": residual_regimes,
                 "recovery_basins": recovery_basins,
             })
-    body_shapes.sort(key=lambda row: str(row["attrs"]["name"]))
+    body_shapes = _coalesce_body_shape_rows(body_shapes)
     plan_hints = []
     for hint in agent.inner.neighbours(
         agent.agent, "has_embodied_motor_plan_hint_library"
@@ -1506,7 +1692,7 @@ def _motor_library_snapshot(
             }})
         stages.sort(key=lambda row: float(row["attrs"].get("ordinal", 0.0)))
         plan_hints.append({"attrs": hint_attrs, "stages": stages})
-    plan_hints.sort(key=lambda row: str(row["attrs"]["name"]))
+    plan_hints = _coalesce_plan_hint_rows(plan_hints)
     developmental_capabilities = []
     for memory in agent.inner.neighbours(
         agent.agent,
@@ -1659,7 +1845,7 @@ def _motor_library_snapshot(
             raise ValueError("motor proposal shape memories must be output-null")
         if attrs.get("integer_native", 1) != 1:
             raise ValueError("motor proposal shape memories must be integer-native")
-        body_shapes = []
+        proposal_body_shapes = []
         for body in agent.inner.neighbours(
             memory, "has_motor_proposal_body_shape_memory"
         ):
@@ -1676,11 +1862,13 @@ def _motor_library_snapshot(
                 raise ValueError(
                     "motor proposal body memories must be integer-native"
                 )
-            body_shapes.append({"attrs": body_attrs})
-        body_shapes.sort(key=lambda row: str(row["attrs"].get("name", "")))
+            proposal_body_shapes.append({"attrs": body_attrs})
+        proposal_body_shapes.sort(
+            key=lambda row: str(row["attrs"].get("name", ""))
+        )
         motor_proposal_shape_memories.append({
             "attrs": attrs,
-            "body_shapes": body_shapes,
+            "body_shapes": proposal_body_shapes,
         })
     motor_proposal_shape_memories.sort(
         key=lambda row: str(row["attrs"].get("name", ""))
@@ -2277,6 +2465,7 @@ def _run_arm(
         })
         _edge(agent, agent.agent, "has_humanoid_episode", episode)
         development_context = None
+        selected_program_path_rows = []
         if developmental_curriculum:
             attached_transducer = PyBulletHumanoidTrialTransducer.for_attached_world(
                 configuration,
@@ -3422,6 +3611,15 @@ def _run_arm(
                 body_reset_before_action = True
             request_seq += 1
             before = observation
+            # Stamp the state that governs this decision, not the state after
+            # its receipt. Bounds can become ready while `_close_action`
+            # processes the receipt; calling that action gated would be one
+            # action too early and makes post-gate width unverifiable.
+            manifold_bounds_ready_before_action = float(
+                agent.s.node(episode)["attrs"].get(
+                    "manifold_bounds_ready", 0.0
+                )
+            )
             token, trial, decision = _request_action(
                 agent,
                 episode,
@@ -3566,6 +3764,9 @@ def _run_arm(
                 ],
                 "motor_tokens": list(after["last_actuator_tokens"]),
                 "motor_bundle_width": len(after["last_actuator_tokens"]),
+                "manifold_bounds_ready": (
+                    manifold_bounds_ready_before_action
+                ),
                 "motor_weight_a": float(
                     decision.get("selected_motor_weight_a", 1.0)
                 ),
@@ -4006,6 +4207,10 @@ def _run_arm(
             wave_programs = agent.inner.neighbours(
                 wave_field, "has_somatomotor_wave_program"
             )
+            archived_wave_programs = agent.inner.neighbours(
+                wave_field, "archives_somatomotor_wave_program"
+            )
+            all_wave_programs = wave_programs + archived_wave_programs
             wave_couplings = {
                 coupling
                 for cell in wave_cells
@@ -4022,12 +4227,14 @@ def _run_arm(
                 ),
                 "cell_count": len(wave_cells),
                 "coupling_count": len(wave_couplings),
-                "program_count": len(wave_programs),
+                "program_count": len(all_wave_programs),
+                "active_program_count": len(wave_programs),
+                "archived_program_count": len(archived_wave_programs),
                 "compound_program_count": sum(
                     int(agent.s.node(program)["attrs"].get(
                         "wavefront_width", 0
                     )) > 1
-                    for program in wave_programs
+                    for program in all_wave_programs
                 ),
                 "maximum_wavefront_width": max(
                     (
@@ -4120,6 +4327,13 @@ def _run_arm(
                 capability, "has_embodied_program_trajectory"
             )
         })
+        active_program_trajectory_nodes = [
+            trajectory
+            for trajectory in program_trajectory_nodes
+            if int(agent.s.node(trajectory)["attrs"].get(
+                "selection_enabled", 1
+            )) == 1
+        ]
         program_transition_nodes = list({
             transition
             for capability in situated_developmental_capabilities
@@ -4136,13 +4350,106 @@ def _run_arm(
         })
         selected_program_path_nodes = list({
             path
-            for capability in active_developmental_capabilities
+            for capability in situated_developmental_capabilities
             for path in agent.inner.neighbours(
                 capability, "has_selected_embodied_program_path"
             )
         })
+        selected_program_path_rows = []
+        for capability in situated_developmental_capabilities:
+            capability_attrs = agent.s.node(capability)["attrs"]
+            for path in agent.inner.neighbours(
+                capability, "has_selected_embodied_program_path"
+            ):
+                path_attrs = agent.s.node(path)["attrs"]
+                path_transitions = set(agent.inner.neighbours(
+                    path, "contains_embodied_program_transition"
+                ))
+                current_sources = set(agent.inner.neighbours(
+                    capability,
+                    "has_current_embodied_program_transition_source",
+                ))
+                next_programs = [
+                    program
+                    for transition in sorted(path_transitions & current_sources)
+                    for program in agent.inner.neighbours(
+                        transition, "continues_with_embodied_program"
+                    )
+                ]
+                phase_members = [
+                    member
+                    for program in next_programs
+                    for member in agent.inner.neighbours(
+                        program, "includes_humanoid_phase_action_model"
+                    )
+                ]
+                selected_program_path_rows.append({
+                    "capability": capability_attrs.get(
+                        "name", "unknown"
+                    ),
+                    "capability_status": capability_attrs.get(
+                        "status", "unknown"
+                    ),
+                    "reassess_after": sorted(
+                        str(agent.s.node(required)["attrs"].get(
+                            "name", "unknown"
+                        ))
+                        for required in agent.inner.neighbours(
+                            capability,
+                            "reassess_after_learning_capability",
+                        )
+                    ),
+                    "depth": int(path_attrs.get("depth", 0)),
+                    "trajectory_replay_issued_seq": int(path_attrs.get(
+                        "trajectory_replay_issued_seq", 0
+                    )),
+                    "next_program_count": len(next_programs),
+                    "phase_member_count": len(phase_members),
+                    "minimum_member_experience_count": min((
+                        float(agent.s.node(member)["attrs"].get(
+                            "experience_count", 0.0
+                        ))
+                        for member in phase_members
+                    ), default=0.0),
+                    "minimum_member_context_delta_experience_count": min((
+                        float(agent.s.node(member)["attrs"].get(
+                            "context_delta_experience_count", 0.0
+                        ))
+                        for member in phase_members
+                    ), default=0.0),
+                    **{
+                        field: path_attrs.get(
+                            f"last_manifold_projection_{field}"
+                        )
+                        for field in (
+                            "support", "resolved", "loss",
+                            "information_loss", "horizon", "anchor_count",
+                            "refinement_count", "termination_code",
+                            "exploration_authority",
+                            *(f"situated_support_{index}"
+                              for index in range(7)),
+                            *(f"applied_bound_{index}"
+                              for index in range(7)),
+                        )
+                    },
+                })
+        selected_program_path_rows.sort(key=lambda row: (
+            str(row["capability"]), int(row["depth"])
+        ))
+        episode_effector_models = agent.inner.neighbours(
+            episode, "has_embodied_effector_model"
+        )
+        if not episode_effector_models:
+            episode_effector_models = agent.inner.neighbours(
+                episode, "has_humanoid_phase_action_model"
+            )
         program_trajectory_report = {
             "trajectory_count": len(program_trajectory_nodes),
+            "active_trajectory_count": len(active_program_trajectory_nodes),
+            "parked_trajectory_count": (
+                len(program_trajectory_nodes)
+                - len(active_program_trajectory_nodes)
+            ),
             "verified_transition_count": len(program_transition_nodes),
             "path_count": len(program_path_nodes),
             "maximum_path_depth": max((
@@ -4150,6 +4457,29 @@ def _run_arm(
                 for path in program_path_nodes
             ), default=0),
             "selected_path_count": len(selected_program_path_nodes),
+            "selected_paths": selected_program_path_rows,
+            "manifold_rejection_count": sum(
+                int(agent.s.node(path)["attrs"].get(
+                    "manifold_rejection_count", 0
+                ))
+                for path in program_path_nodes
+            ),
+            "contextually_blocked_path_count": sum(
+                bool(agent.inner.neighbours(
+                    path,
+                    "manifold_blocked_from_embodied_program_transition",
+                ))
+                for path in program_path_nodes
+            ),
+            "projection_reference_model_count": sum(
+                float(agent.s.node(model)["attrs"].get(
+                    "activation_magnitude", 0.0
+                )) < 0.5
+                and float(agent.s.node(model)["attrs"].get(
+                    "context_delta_experience_count", 0.0
+                )) > 0.0
+                for model in episode_effector_models
+            ),
             "maximum_expansion_count": max((
                 int(agent.s.node(trajectory)["attrs"].get(
                     "expansion_count", 0
@@ -4474,6 +4804,18 @@ def _run_arm(
     compound_action_count = sum(
         row["motor_bundle_width"] > 1 for row in trace
     )
+    post_gate_rows = [
+        row
+        for row in trace
+        if float(row.get("manifold_bounds_ready", 0.0)) > 0.5
+    ]
+    first_bounds_ready_action = (
+        post_gate_rows[0]["action"] if post_gate_rows else None
+    )
+    maximum_post_gate_motor_program_width = max(
+        (int(row["motor_bundle_width"]) for row in post_gate_rows),
+        default=0,
+    )
     combined_collapse_rows = [
         row
         for row in trace
@@ -4507,6 +4849,15 @@ def _run_arm(
     ]
     all_body_schemas = list(agent.s.nodes("EmbodiedBodySchema"))
     all_raw_bodies = list(agent.s.nodes("EmbodiedRawBodyObservation"))
+    situated_projection_rows = [
+        row for row in selected_program_path_rows
+        if row.get("exploration_authority") is not None
+    ]
+    latest_situated_projection = max(
+        situated_projection_rows,
+        key=lambda row: int(row.get("trajectory_replay_issued_seq", 0)),
+        default={},
+    )
     result = {
         "mode": mode,
         "developmental_curriculum_contract": current_developmental_contract,
@@ -4539,37 +4890,37 @@ def _run_arm(
             },
             "learning_safety_active": int(
                 safety_context.get("verified", 0) > 0.5
-                and (
-                    safety_context.get("reset_reachable", 0) > 0.5
-                    or (
-                        safety_context.get("protective_support_available", 0) > 0.5
-                        and safety_context.get(
-                            "protective_support_effectiveness", 0
-                        ) > 0.0
-                    )
-                )
             ),
-            "applied_relaxation": {
+            "declared_exploration_budgets": {
                 key: safety_context.get(key, 0)
                 for key in (
                     "required_horizon_units",
-                    "minimum_width_relaxation",
-                    "information_loss_allowance",
+                    "exploration_width_budget",
+                    "exploration_information_budget",
                 )
             },
-            "applied_bounds": {
-                "required_horizon_units": safety_context.get(
-                    "required_horizon_units", 1
+            "latest_situated_projection": {
+                "exploration_authority": latest_situated_projection.get(
+                    "exploration_authority", 0.0
                 ),
-                "minimum_width_relaxation": safety_context.get(
-                    "minimum_width_relaxation", 0
-                ),
-                "information_loss_allowance": safety_context.get(
-                    "information_loss_allowance", 0
-                ),
+                "support_field": [
+                    latest_situated_projection.get(
+                        f"situated_support_{index}", 0.0
+                    ) for index in range(7)
+                ],
+                "applied_bounds": [
+                    latest_situated_projection.get(
+                        f"applied_bound_{index}", 0.0
+                    ) for index in range(7)
+                ],
             },
         },
         "policy_owner": "rust_graph",
+        "first_bounds_ready_action": first_bounds_ready_action,
+        "post_gate_action_count": len(post_gate_rows),
+        "maximum_post_gate_motor_program_width": (
+            maximum_post_gate_motor_program_width
+        ),
         "trajectory_architecture": (
             "persistent_residual_support_preview"
             if persistent_task_residual_authority == 1.0
@@ -4972,10 +5323,12 @@ def _run_arm(
             "last_compound_decision_count"
         ],
         "minimum_response_frames": min(
-            row["response_frames"] for row in trace
+            (row["response_frames"] for row in trace),
+            default=0,
         ),
         "maximum_response_frames": max(
-            row["response_frames"] for row in trace
+            (row["response_frames"] for row in trace),
+            default=0,
         ),
         "simulated_locomotion_seconds": sum(
             row["response_frames"] for row in trace
@@ -4983,7 +5336,7 @@ def _run_arm(
         "mean_realized_motor_command_rate_hz": (
             len(trace)
             / (
-                sum(row["response_frames"] for row in trace)
+                max(1, sum(row["response_frames"] for row in trace))
                 * configuration.time_step
             )
         ),
@@ -5012,7 +5365,8 @@ def _run_arm(
             for row in motor_program_rows
         ),
         "maximum_motor_bundle_width": max(
-            row["motor_bundle_width"] for row in trace
+            (row["motor_bundle_width"] for row in trace),
+            default=0,
         ),
         "effector_assembly_count": len(effector_assembly_rows),
         "learned_effector_assembly_count": sum(

@@ -11,7 +11,11 @@ PROTOCOL = runner.ROOT / "protocols" / "humanoid_developmental_curriculum_v1.jso
 
 
 def _raw_run(*, treatment: bool, ready: bool = True) -> dict:
-    trace = [{"action": 7, "manifold_bounds_ready": 1}] if ready else []
+    trace = [{
+        "action": 7,
+        "manifold_bounds_ready": 1,
+        "motor_bundle_width": 1,
+    }] if ready else []
     return {
         "trace": trace,
         "directed_progress": 0.2,
@@ -64,6 +68,9 @@ def test_metrics_keep_legacy_defaults_and_extract_gate_trace():
     assert metrics["curriculum"]["stage_ordinal"] == 13
     assert metrics["future_manifold_gate_onset_action"] == 7
     assert metrics["post_gate_action_count"] == 1
+    assert metrics["maximum_post_gate_program_width"] == 1
+    assert metrics["body_reset_count"] == 0
+    assert metrics["body_reset_scenarios"] == []
     assert metrics["gate_onset_evidence_present"] is True
     assert metrics["motor_library_loaded_developmental_capability_count"] == 15
     assert metrics["curriculum"]["active_capability_diagnostics"] == {
@@ -191,6 +198,25 @@ def test_checkpoint_refuses_to_claim_pair_before_locomotion():
     assert checkpoint["gate_ready"] is False
 
 
+def test_checkpoint_does_not_pair_on_manifold_readiness_before_locomotion():
+    metrics = runner._metrics(_raw_run(treatment=True, ready=True))
+    metrics["curriculum"]["stage_ordinal"] = 8
+    metrics["curriculum"]["goal"] = "orientation_change"
+
+    checkpoint = runner._checkpoint(
+        metrics,
+        action_budget=1,
+        mode="probe",
+        protocol_digest="digest",
+    )
+
+    assert checkpoint["gate_ready"] is True
+    assert checkpoint["milestone"] == "manifold_ready_pre_locomotion"
+    assert checkpoint["recommendation"] == (
+        "continue_curriculum_before_pairing"
+    )
+
+
 def test_staged_mode_runs_one_arm_and_records_checkpoint(monkeypatch, tmp_path):
     calls = []
 
@@ -269,6 +295,58 @@ def test_staged_training_halt_is_fail_closed_but_preserves_null_artifact(
     assert result["checkpoint"]["recommendation"] == "do_not_accept_artifact"
 
 
+def test_staged_continuation_loads_one_generation_and_writes_the_next(
+    monkeypatch, tmp_path
+):
+    input_path = tmp_path / "generation-1.json"
+    output_path = tmp_path / "generation-2.json"
+    retained = {
+        "developmental_capabilities": [{"name": "retained"}],
+        "developmental_curriculum_contract": (
+            runner.developmental_curriculum_contract()
+        ),
+    }
+    input_path.write_text(json.dumps(retained), encoding="utf-8")
+
+    def continuing_run(
+        protocol, mode, *, motor_library=None, motor_library_out=None
+    ):
+        assert protocol["locomotion"]["future_manifold_enabled"] == 1.0
+        assert motor_library == retained
+        assert motor_library_out == output_path
+        motor_library_out.write_text(json.dumps({
+            **retained,
+            "developmental_capabilities": [
+                *retained["developmental_capabilities"],
+                {"name": "new"},
+            ],
+        }), encoding="utf-8")
+        result = _raw_run(treatment=True, ready=False)
+        result["trace"] = [{"action": n} for n in range(48)]
+        result["motor_library_saved_shape_count"] = 1
+        return result
+
+    monkeypatch.setattr(runner, "_run_arm", continuing_run)
+    result = runner.run_staged(
+        PROTOCOL,
+        action_budget=48,
+        mode="continue",
+        library_path=output_path,
+        library_in=input_path,
+    )
+
+    assert json.loads(input_path.read_text(encoding="utf-8")) == retained
+    assert len(json.loads(output_path.read_text(
+        encoding="utf-8"
+    ))["developmental_capabilities"]) == 2
+    assert result["staged_result_valid"] is True
+    assert result["training_complete"] is True
+    assert result["input_library_metadata"][
+        "curriculum_contract_matches"
+    ] is True
+    assert result["checkpoint"]["mode"] == "continue"
+
+
 def test_staged_budget_and_probe_requirements_are_deterministic(tmp_path):
     with pytest.raises(ValueError, match="one of"):
         runner.run_staged(
@@ -283,4 +361,25 @@ def test_staged_budget_and_probe_requirements_are_deterministic(tmp_path):
             action_budget=48,
             mode="probe",
             library_path=tmp_path / "library.json",
+        )
+    with pytest.raises(ValueError, match="requires --library-in"):
+        runner.run_staged(
+            PROTOCOL,
+            action_budget=48,
+            mode="continue",
+            library_path=tmp_path / "next.json",
+        )
+    library_path = tmp_path / "same.json"
+    library_path.write_text(json.dumps({
+        "developmental_curriculum_contract": (
+            runner.developmental_curriculum_contract()
+        ),
+    }), encoding="utf-8")
+    with pytest.raises(ValueError, match="distinct input and output"):
+        runner.run_staged(
+            PROTOCOL,
+            action_budget=48,
+            mode="continue",
+            library_path=library_path,
+            library_in=library_path,
         )

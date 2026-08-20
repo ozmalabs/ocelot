@@ -72,6 +72,27 @@ def test_floor_roll_requires_gravity_relative_transition_not_pose_twitch():
         ["support_relation", "preserved"],
         ["orientation_change", "quarter_turn"],
     ]
+    prone = next(
+        capability
+        for capability in CAPABILITIES
+        if capability["name"] == "prone_reach_and_pivot"
+    )
+    assert prone["desired_body_state_signature"] == [
+        ["support_relation", "preserved"],
+        ["directed_translation", "increasing"],
+        ["orientation_change", "bounded"],
+    ]
+    crawling = next(
+        capability
+        for capability in CAPABILITIES
+        if capability["name"] == "belly_crawling"
+    )
+    assert crawling["desired_body_state_signature"] == [
+        ["support_topology_change", "cyclic"],
+        ["directed_translation", "increasing"],
+        ["height_energy_relation", "bounded"],
+        ["orientation_change", "bounded"],
+    ]
     assert side_lying["desired_orientation_units"] == 1
     rules = {row["name"]: row for row in generated["rules"]}
     tracking = json.dumps(

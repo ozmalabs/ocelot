@@ -123,6 +123,7 @@ def test_humanoid_future_manifold_fallback_is_opt_in_and_multi_frame():
     assert attrs["future_manifold_local_refinement_enabled"] == 0.0
     assert attrs["future_manifold_projection_budget"] == 16.0
     assert attrs["future_manifold_max_shape_order"] == 1.0
+    assert attrs["future_manifold_path_fixed_point_run"] == 1.0
 
     rule = next(
         rule for rule in seed["rules"]

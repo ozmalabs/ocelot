@@ -89,6 +89,7 @@ def test_seed_is_reproducible_generic_integer_and_output_null():
     ):
         assert forbidden not in encoded
     assert '"output_authority": 0' in encoded
+    assert "manifold_blocked_from_embodied_program_transition" in encoded
     assert generated["depends_on"] == ["cognitive_pareto"]
 
 
@@ -143,10 +144,64 @@ def test_moving_current_program_does_not_fragment_situated_trajectory():
         owner, "has_current_embodied_program", programs[0]
     )
     _edge(agent, owner, "has_current_embodied_program", programs[1])
+    origin = agent.inner.neighbours(
+        trajectory, "starts_from_embodied_program"
+    )[0]
+    transition = agent.s.add_node("FixtureTransition", {
+        "verified": 1,
+        "pre_orientation_class": 1,
+        "post_orientation_class": 1,
+        "pre_state_axis_x_units": 0,
+        "pre_state_axis_y_units": 0,
+        "pre_state_axis_z_units": 0,
+        "post_state_axis_x_units": 10,
+        "post_state_axis_y_units": 0,
+        "post_state_axis_z_units": 0,
+        "boundary_transition_count": 0,
+        "energy_units": 1,
+        "peak_load_units": 1,
+    })
+    _edge(agent, owner, "has_embodied_program_transition", transition)
+    _edge(agent, transition, "starts_from_embodied_program", origin)
+    _edge(
+        agent, transition, "continues_with_embodied_program", programs[0]
+    )
     agent.tick()
     assert agent.inner.neighbours(
         owner, "has_embodied_program_trajectory"
     ) == [trajectory]
+    assert len(agent.inner.neighbours(
+        transition, "has_embodied_program_base_path"
+    )) == 1
+
+
+def test_frontier_remains_replayable_from_an_internal_current_program():
+    agent, owner, trajectory, transitions = _fixture(2, (
+        {"source": 0, "target": 1, "pre_x": 0, "post_x": 10,
+         "energy": 1},
+        {"source": 1, "target": 2, "pre_x": 10, "post_x": 20,
+         "energy": 1},
+    ))
+    selected = agent.inner.neighbours(
+        owner, "has_selected_embodied_program_path"
+    )[0]
+    agent.inner.remove_edge(
+        owner, "has_selected_embodied_program_path", selected
+    )
+    current = agent.inner.neighbours(
+        owner, "has_current_embodied_program"
+    )[0]
+    middle = agent.inner.neighbours(
+        transitions[0], "continues_with_embodied_program"
+    )[0]
+    agent.inner.remove_edge(owner, "has_current_embodied_program", current)
+    _edge(agent, owner, "has_current_embodied_program", middle)
+    agent.tick()
+    replayable = agent.inner.neighbours(
+        owner, "has_selected_embodied_program_path"
+    )
+    assert len(replayable) == 1
+    assert agent.s.node(replayable[0])["attrs"]["depth"] == 2
 
 
 def test_pareto_refutes_only_dominated_paths_and_keeps_tradeoffs():

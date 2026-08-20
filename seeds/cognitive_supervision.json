@@ -3626,28 +3626,90 @@
       ]
      },
      {
-      "type": "Gt",
-      "a": {
-       "type": "Plus",
-       "items": [
-        {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "checkin"
-         },
-         "key": "goal_progress_units"
+      "type": "Or",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "checkin"
+           },
+           "key": "goal_progress_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
         },
-        {
+        "b": {
          "type": "Lit",
          "value": 0
         }
-       ]
-      },
-      "b": {
-       "type": "Lit",
-       "value": 0
-      }
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "checkin"
+           },
+           "key": "reason"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "approximate_time"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Count",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "plan"
+             },
+             "edge_type": "has_learning_plan_step"
+            },
+            "var_name": "replacement_step",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "replacement_step"
+              },
+              "key": "status"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "ready"
+             }
+            }
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        ]
+       }
+      ]
      }
     ]
    },
@@ -4941,6 +5003,63 @@
         "value": 0
        }
       }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "plan"
+           },
+           "edge_type": "has_learning_plan_step"
+          },
+          "var_name": "replacement_step",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "replacement_step"
+            },
+            "key": "status"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "ready"
+           }
+          }
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "checkin"
+         },
+         "key": "reason"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "outside_expected_bounds"
+        }
+       }
+      ]
      }
     ]
    },

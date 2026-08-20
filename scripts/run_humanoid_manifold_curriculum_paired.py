@@ -175,8 +175,24 @@ def _metrics(run: dict) -> dict:
         "lateral_offset": run.get("lateral_offset", 0.0),
         "support_alternations": run.get("support_alternations", 0),
         "compound_action_count": run.get("compound_action_count", 0),
+        "body_reset_count": len(run.get("body_reset_records") or []),
+        "body_reset_scenarios": [
+            row.get("selected_reset_scenario")
+            for row in (run.get("body_reset_records") or [])
+        ],
         "maximum_program_width": run.get(
             "maximum_synthesized_motor_program_width", 0
+        ),
+        "maximum_post_gate_program_width": run.get(
+            "maximum_post_gate_motor_program_width",
+            max(
+                (
+                    int(row.get("motor_bundle_width", 0))
+                    for row in trace
+                    if float(row.get("manifold_bounds_ready", 0.0)) > 0.5
+                ),
+                default=0,
+            ),
         ),
         "curriculum": {
             "stage_ordinal": curriculum.get("stage_ordinal", 0),
@@ -425,12 +441,15 @@ def _checkpoint(
         and float(future.get("temporal_anchors_enabled", 0.0)) > 0.5
         and float(future.get("bounds_ready", 0.0)) > 0.5
     )
-    if mode == "training" and training_complete is False:
+    if mode in {"training", "continue"} and training_complete is False:
         milestone = "incomplete_training"
         recommendation = "do_not_accept_artifact"
-    elif gate_ready:
+    elif gate_ready and goal == "locomotion":
         milestone = "manifold_ready"
         recommendation = "paired_evaluation_permitted"
+    elif gate_ready:
+        milestone = "manifold_ready_pre_locomotion"
+        recommendation = "continue_curriculum_before_pairing"
     elif goal == "locomotion":
         milestone = "locomotion_reached"
         recommendation = "advance_single_arm_probe_before_pairing"
@@ -473,45 +492,65 @@ def run_staged(
 ) -> dict:
     """Run exactly one arm at a finite checkpoint.
 
-    ``training`` may create a fresh library.  ``probe`` consumes an existing
-    library and enables the manifold switch.  Neither mode runs a baseline or
-    treatment pair, so a pre-locomotion checkpoint cannot be misreported as a
-    paired result.
+    ``training`` creates a fresh library. ``continue`` consumes one retained
+    library, enables the situated manifold gate, and writes a distinct next
+    generation. ``probe`` consumes a library without updating it. No mode runs
+    a baseline/treatment pair, so a checkpoint cannot be misreported as one.
     """
     if action_budget not in STAGED_ACTION_BUDGETS:
         raise ValueError(
             "staged action budget must be one of "
             f"{STAGED_ACTION_BUDGETS!r}"
         )
-    if mode not in {"training", "probe"}:
-        raise ValueError("staged mode must be 'training' or 'probe'")
-    if mode == "probe" and library_in is None:
-        raise ValueError("staged probe requires --library-in")
+    if mode not in {"training", "continue", "probe"}:
+        raise ValueError(
+            "staged mode must be 'training', 'continue', or 'probe'"
+        )
+    if mode in {"continue", "probe"} and library_in is None:
+        raise ValueError(f"staged {mode} requires --library-in")
     if mode == "training" and library_in is not None:
         raise ValueError("staged training cannot consume --library-in")
+    if (
+        mode == "continue"
+        and library_in is not None
+        and library_in.resolve() == library_path.resolve()
+    ):
+        raise ValueError(
+            "staged continuation requires distinct input and output libraries"
+        )
 
     protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
     if not protocol.get("curriculum", {}).get("developmental", False):
         raise ValueError("a developmental curriculum protocol is required")
+    retained_library = None
+    input_library_metadata = None
+    if library_in is not None:
+        retained_library = json.loads(library_in.read_text(encoding="utf-8"))
+        if not isinstance(retained_library, dict):
+            raise ValueError("retained motor library must be a JSON object")
+        input_library_metadata = _library_metadata(retained_library, protocol)
+        if not input_library_metadata.get("curriculum_contract_matches", False):
+            raise ValueError(
+                "retained motor library curriculum contract does not match"
+            )
     configured = _configure(
         protocol,
         action_budget,
-        1.0 if mode == "probe" else 0.0,
+        0.0 if mode == "training" else 1.0,
     )
     started = time.perf_counter()
     run = _run_arm(
         configured,
         "directed_walk",
-        motor_library=(
-            json.loads(library_in.read_text(encoding="utf-8"))
-            if library_in is not None else None
+        motor_library=retained_library,
+        motor_library_out=(
+            library_path if mode in {"training", "continue"} else None
         ),
-        motor_library_out=(library_path if mode == "training" else None),
     )
     metrics = _metrics(run)
     training_complete = None
     training_invalid_reasons: list[str] = []
-    if mode == "training":
+    if mode in {"training", "continue"}:
         training_complete, training_invalid_reasons = _training_completion(
             metrics,
             action_budget,
@@ -525,7 +564,7 @@ def run_staged(
         library_metadata = _read_library_metadata(library_in, protocol)
     staged_result_valid = (
         training_complete
-        if mode == "training"
+        if mode in {"training", "continue"}
         else (
             metrics["actions_executed"] == action_budget
             and not _cognitive_invalid_reasons(metrics)
@@ -536,12 +575,17 @@ def run_staged(
         "protocol_path": str(protocol_path.resolve().relative_to(ROOT)),
         "protocol_digest": _digest(protocol),
         "seed": protocol["seed"],
-        "training_actions": action_budget if mode == "training" else None,
+        "training_actions": (
+            action_budget if mode in {"training", "continue"} else None
+        ),
         "evaluation_actions": action_budget if mode == "probe" else None,
         "runtime_seconds": time.perf_counter() - started,
         "mode": mode,
         "library_in": str(library_in) if library_in is not None else None,
-        "library_out": str(library_path) if mode == "training" else None,
+        "library_out": (
+            str(library_path) if mode in {"training", "continue"} else None
+        ),
+        "input_library_metadata": input_library_metadata,
         "library_metadata": library_metadata,
         "staged_result_valid": staged_result_valid,
         "training_complete": training_complete,
@@ -753,7 +797,7 @@ def main() -> int:
     parser.add_argument("--json-out", type=Path)
     parser.add_argument(
         "--staged-mode",
-        choices=("training", "probe"),
+        choices=("training", "continue", "probe"),
         help=(
             "run one finite checkpoint arm instead of the paired experiment"
         ),

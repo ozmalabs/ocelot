@@ -179,6 +179,30 @@
    }
   },
   {
+   "provenance": "embodied_program_trajectory:current_transition_source",
+   "src": {
+    "type": "Node",
+    "var": "src"
+   },
+   "edge_type": "has_current_embodied_program_transition_source",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "embodied_program_trajectory:manifold_blocked_transition",
+   "src": {
+    "type": "ParetoCandidate",
+    "var": "src"
+   },
+   "edge_type": "manifold_blocked_from_embodied_program_transition",
+   "tgt": {
+    "type": "Node",
+    "var": "tgt"
+   }
+  },
+  {
    "provenance": "embodied_program_trajectory:path_transition",
    "src": {
     "type": "ParetoCandidate",
@@ -297,7 +321,36 @@
         ]
        }
       },
+      "minimum_selection_depth": {
+       "__term__": {
+        "type": "Max",
+        "items": [
+         {
+          "type": "Lit",
+          "value": 1
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "budget"
+            },
+            "key": "trajectory_minimum_selection_depth"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
       "expansion_count": 0,
+      "selection_enabled": 1,
       "output_authority": 0,
       "integer_native": 1
      }
@@ -336,16 +389,6 @@
     ],
     [
      "owner",
-     "has_current_embodied_program",
-     "origin_program"
-    ],
-    [
-     "trajectory",
-     "starts_from_embodied_program",
-     "origin_program"
-    ],
-    [
-     "owner",
      "has_embodied_program_transition",
      "transition"
     ],
@@ -363,6 +406,30 @@
    "where": {
     "type": "And",
     "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trajectory"
+         },
+         "key": "selection_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
      {
       "type": "Eq",
       "a": {
@@ -1266,16 +1333,6 @@
      "trajectory"
     ],
     [
-     "owner",
-     "has_current_embodied_program",
-     "origin_program"
-    ],
-    [
-     "trajectory",
-     "starts_from_embodied_program",
-     "origin_program"
-    ],
-    [
      "trajectory",
      "has_pareto_candidate",
      "parent"
@@ -1314,6 +1371,30 @@
    "where": {
     "type": "And",
     "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trajectory"
+         },
+         "key": "selection_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
      {
       "type": "Eq",
       "a": {
@@ -2903,6 +2984,30 @@
     "type": "And",
     "items": [
      {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trajectory"
+         },
+         "key": "selection_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
       "type": "Gt",
       "a": {
        "type": "Count",
@@ -2958,6 +3063,46 @@
            "b": {
             "type": "Lit",
             "value": 1
+           }
+          },
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Lt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frontier_path"
+               },
+               "key": "depth"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "trajectory"
+               },
+               "key": "minimum_selection_depth"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            }
            }
           },
           {
@@ -3058,28 +3203,115 @@
            }
           },
           {
-           "type": "Exists",
-           "source": {
-            "type": "Neighbours",
-            "node": {
-             "type": "Var",
-             "name": "frontier_path"
+           "type": "Or",
+           "items": [
+            {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "frontier_path"
+              },
+              "edge_type": "contains_embodied_program_transition",
+              "any_type": false
+             },
+             "var_name": "path_next_transition",
+             "predicate": {
+              "type": "Exists",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "path_next_transition"
+               },
+               "edge_type": "starts_from_embodied_program",
+               "any_type": false
+              },
+              "var_name": "path_next_source",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Var",
+                "name": "path_next_source"
+               },
+               "b": {
+                "type": "Var",
+                "name": "current_program"
+               }
+              }
+             }
             },
-            "edge_type": "starts_from_embodied_program",
-            "any_type": false
-           },
-           "var_name": "path_origin",
-           "predicate": {
-            "type": "Eq",
-            "a": {
-             "type": "Var",
-             "name": "path_origin"
-            },
-            "b": {
-             "type": "Var",
-             "name": "current_program"
+            {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "owner"
+              },
+              "edge_type": "has_current_embodied_program_transition_source",
+              "any_type": false
+             },
+             "var_name": "current_transition_source",
+             "predicate": {
+              "type": "Exists",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "frontier_path"
+               },
+               "edge_type": "contains_embodied_program_transition",
+               "any_type": false
+              },
+              "var_name": "path_state_transition",
+              "predicate": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Var",
+                  "name": "path_state_transition"
+                 },
+                 "b": {
+                  "type": "Var",
+                  "name": "current_transition_source"
+                 }
+                },
+                {
+                 "type": "Not",
+                 "arg": {
+                  "type": "Exists",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "frontier_path"
+                   },
+                   "edge_type": "manifold_blocked_from_embodied_program_transition",
+                   "any_type": false
+                  },
+                  "var_name": "blocked_state_transition",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Var",
+                    "name": "blocked_state_transition"
+                   },
+                   "b": {
+                    "type": "Var",
+                    "name": "current_transition_source"
+                   }
+                  }
+                 }
+                }
+               ]
+              }
+             }
             }
-           }
+           ]
           },
           {
            "type": "Eq",
@@ -3172,6 +3404,46 @@
            }
           },
           {
+           "type": "Not",
+           "arg": {
+            "type": "Lt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frontier_path"
+               },
+               "key": "depth"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "trajectory"
+               },
+               "key": "minimum_selection_depth"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            }
+           }
+          },
+          {
            "type": "Gt",
            "a": {
             "type": "Plus",
@@ -3269,28 +3541,115 @@
            }
           },
           {
-           "type": "Exists",
-           "source": {
-            "type": "Neighbours",
-            "node": {
-             "type": "Var",
-             "name": "frontier_path"
+           "type": "Or",
+           "items": [
+            {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "frontier_path"
+              },
+              "edge_type": "contains_embodied_program_transition",
+              "any_type": false
+             },
+             "var_name": "path_next_transition",
+             "predicate": {
+              "type": "Exists",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "path_next_transition"
+               },
+               "edge_type": "starts_from_embodied_program",
+               "any_type": false
+              },
+              "var_name": "path_next_source",
+              "predicate": {
+               "type": "Eq",
+               "a": {
+                "type": "Var",
+                "name": "path_next_source"
+               },
+               "b": {
+                "type": "Var",
+                "name": "current_program"
+               }
+              }
+             }
             },
-            "edge_type": "starts_from_embodied_program",
-            "any_type": false
-           },
-           "var_name": "path_origin",
-           "predicate": {
-            "type": "Eq",
-            "a": {
-             "type": "Var",
-             "name": "path_origin"
-            },
-            "b": {
-             "type": "Var",
-             "name": "current_program"
+            {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "owner"
+              },
+              "edge_type": "has_current_embodied_program_transition_source",
+              "any_type": false
+             },
+             "var_name": "current_transition_source",
+             "predicate": {
+              "type": "Exists",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "frontier_path"
+               },
+               "edge_type": "contains_embodied_program_transition",
+               "any_type": false
+              },
+              "var_name": "path_state_transition",
+              "predicate": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Var",
+                  "name": "path_state_transition"
+                 },
+                 "b": {
+                  "type": "Var",
+                  "name": "current_transition_source"
+                 }
+                },
+                {
+                 "type": "Not",
+                 "arg": {
+                  "type": "Exists",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "frontier_path"
+                   },
+                   "edge_type": "manifold_blocked_from_embodied_program_transition",
+                   "any_type": false
+                  },
+                  "var_name": "blocked_state_transition",
+                  "predicate": {
+                   "type": "Eq",
+                   "a": {
+                    "type": "Var",
+                    "name": "blocked_state_transition"
+                   },
+                   "b": {
+                    "type": "Var",
+                    "name": "current_transition_source"
+                   }
+                  }
+                 }
+                }
+               ]
+              }
+             }
             }
-           }
+           ]
           },
           {
            "type": "Eq",

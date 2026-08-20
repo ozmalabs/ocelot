@@ -1219,6 +1219,34 @@ def close_reafference_rule():
     }
 
 
+def archive_experienced_wave_program_rule():
+    return {
+        "name": "smw_archive_receipt_processed_wave_program",
+        "area": "embodied_somatomotor_waves",
+        "latency_class": "hard_realtime",
+        "order": 83,
+        "batch": True,
+        "comment": "A verified wave program remains causal evidence, but it "
+        "is no longer part of the active field frontier. Keeping historical "
+        "programs on the active edge made every subsequent action rescan the "
+        "entire developmental history.",
+        "match": [[
+            "field", "has_somatomotor_wave_program", "program"
+        ]],
+        "where": And(
+            Eq(A("program", "status"), L("experienced")),
+            Eq(P0("program", "receipt_processed"), L(1)),
+        ),
+        "effects": [
+            ["del_edge", "field", "has_somatomotor_wave_program", "program"],
+            [
+                "add_edge", "field",
+                "archives_somatomotor_wave_program", "program",
+            ],
+        ],
+    }
+
+
 def manifest() -> dict:
     return {
         "id": "somatomotor_waves",
@@ -1238,6 +1266,12 @@ def manifest() -> dict:
                 "src": {"type": "Unknown", "var": "episode"},
                 "edge_type": "has_somatomotor_wave_field",
                 "tgt": {"type": "SomatomotorWaveField", "var": "field"},
+            },
+            {
+                "provenance": "somatomotor_waves:archived_program",
+                "src": {"type": "SomatomotorWaveField", "var": "field"},
+                "edge_type": "archives_somatomotor_wave_program",
+                "tgt": {"type": "SomatomotorWaveProgram", "var": "program"},
             },
             {
                 "provenance": "somatomotor_waves:cell",
@@ -1283,6 +1317,7 @@ def manifest() -> dict:
             learn_reafference_rule(),
             learn_coupling_reafference_rule(),
             close_reafference_rule(),
+            archive_experienced_wave_program_rule(),
         ],
     }
 

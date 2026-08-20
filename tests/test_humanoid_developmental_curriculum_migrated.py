@@ -44,9 +44,16 @@ def test_humanoid_seed_is_an_integer_output_null_bridge():
     assert "arbitrary_width_orientation_escape_bundle" in text
     assert "best_escape_command_per_effector_group" in text
     assert "request_generic_order_n_program_trajectory" in text
+    assert "trajectory_minimum_selection_depth" in text
     assert "publish_verified_motor_transition_to_generic_trajectory" in text
     assert "mint_receipt_grounded_developmental_program_transition" in text
     assert "replay_selected_order_n_program_path" in text
+    assert "reject_selected_trajectory_in_current_manifold_context" in text
+    assert "archive_selected_trajectory_after_capability_mastery" in text
+    assert "park_inactive_program_trajectory_off_hot_frontier" in text
+    assert "restore_reactivated_program_trajectory_to_hot_frontier" in text
+    assert "clear_selected_trajectory_without_current_state_source" in text
+    assert "futuremanifoldprojection" in text
     assert "open_goal_relative_inverse_kinematic_bootstrap" in text
     assert "knows_embodied_inverse_kinematics" in text
     assert "home" not in text
@@ -154,6 +161,46 @@ def test_normal_receipts_teach_integer_task_space_forward_consequences():
     assert not any(isinstance(value, float) for value in attrs.values())
 
 
+def test_latest_receipt_reanchors_trajectory_by_categorical_body_state():
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
+    episode = agent.s.add_node("HumanoidEpisode", {})
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "latest_development_receipt_seq": 5,
+    })
+    capability = agent.s.add_node(
+        "EmbodiedSituatedDevelopmentalCapability", {}
+    )
+    transition = agent.s.add_node("EmbodiedProgramTransition", {
+        "verified": 1,
+        "pre_orientation_class": 2,
+    })
+    memory = agent.s.add_node("HumanoidMotorProgram", {})
+    trial = agent.s.add_node("HumanoidMotorTrial", {"request_seq": 5})
+    outcome = agent.s.add_node("HumanoidTransition", {
+        "development_post_orientation_class": 2,
+    })
+    _edge(agent, agent.agent, "has_humanoid_episode", episode)
+    _edge(agent, episode, "projects_embodied_development", development)
+    _edge(
+        agent, development,
+        "has_active_embodied_developmental_capability", capability,
+    )
+    _edge(
+        agent, capability, "has_embodied_program_transition", transition
+    )
+    _edge(
+        agent, transition, "continues_with_embodied_program", memory
+    )
+    _edge(agent, episode, "has_humanoid_motor_trial", trial)
+    _edge(agent, trial, "has_humanoid_transition", outcome)
+    agent.tick()
+    assert agent.inner.neighbours(
+        capability, "has_current_embodied_program_transition_source"
+    ) == [transition]
+
+
 def test_generic_order_n_path_releases_only_its_next_compound_program():
     from substrate.world_adapter import WorldAdapter
 
@@ -226,6 +273,7 @@ def test_generic_order_n_path_releases_only_its_next_compound_program():
         capability, "has_embodied_program_trajectory"
     )[0]
 
+    transitions = []
     for ordinal, (source, target, pre_x, post_x, boundary) in enumerate((
         (0, 1, 0, 60, 0),
         (1, 2, 60, 100, 1),
@@ -246,6 +294,7 @@ def test_generic_order_n_path_releases_only_its_next_compound_program():
             "peak_load_units": 1,
             "response_frames": 1,
         })
+        transitions.append(transition)
         _edge(
             agent, capability,
             "has_embodied_program_transition", transition,
@@ -258,6 +307,11 @@ def test_generic_order_n_path_releases_only_its_next_compound_program():
             agent, transition,
             "continues_with_embodied_program", programs[target],
         )
+
+    _edge(
+        agent, capability,
+        "has_current_embodied_program_transition_source", transitions[0],
+    )
 
     task_set = agent.s.add_node("SystemTwoTaskSet", {
         "area": "embodied_program_trajectory", "enabled": 1,
@@ -290,6 +344,9 @@ def test_generic_order_n_path_releases_only_its_next_compound_program():
     assert attrs["selected_collapse_kind"] == (
         "developmental_order_n_trajectory"
     )
+    assert agent.s.node(capability)["attrs"].get(
+        "trajectory_replay_count", 0
+    ) == 0
 
 
 def test_physics_question_synthesizes_unseen_arbitrary_width_compound_before_release():

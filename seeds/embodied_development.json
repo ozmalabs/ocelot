@@ -282,7 +282,20 @@
     "evidence_kind": "supported_translation",
     "developmental_ecology": "floor",
     "human_analogue": "prone_reaching_and_pivoting",
-    "desired_body_state_signature": null,
+    "desired_body_state_signature": [
+     [
+      "support_relation",
+      "preserved"
+     ],
+     [
+      "directed_translation",
+      "increasing"
+     ],
+     [
+      "orientation_change",
+      "bounded"
+     ]
+    ],
     "desired_orientation_units": 0,
     "clinical_milestone": 0,
     "optional_route": 0,
@@ -366,7 +379,24 @@
     "evidence_kind": "translated_support_cycle",
     "developmental_ecology": "floor",
     "human_analogue": "commando_crawling",
-    "desired_body_state_signature": null,
+    "desired_body_state_signature": [
+     [
+      "support_topology_change",
+      "cyclic"
+     ],
+     [
+      "directed_translation",
+      "increasing"
+     ],
+     [
+      "height_energy_relation",
+      "bounded"
+     ],
+     [
+      "orientation_change",
+      "bounded"
+     ]
+    ],
     "desired_orientation_units": 0,
     "clinical_milestone": 0,
     "optional_route": 0,
@@ -6908,6 +6938,205 @@
        ]
       }
      }
+    ]
+   ]
+  },
+  {
+   "name": "ed_retire_time_window_replan_when_frontier_exhausted",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "comment": "Exhausting every alternate experiment changes the future manifold. Retire an ordinary time-window replan so its suspended path can re-enter the Pareto frontier; explicit envelope departures remain held.",
+   "match": [
+    [
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "plan",
+     "has_learning_plan_step",
+     "step"
+    ],
+    [
+     "step",
+     "plans_learning_capability",
+     "instance"
+    ],
+    [
+     "episode",
+     "has_cognitive_process",
+     "process"
+    ],
+    [
+     "process",
+     "supervises_learning_plan_step",
+     "step"
+    ],
+    [
+     "process",
+     "has_cognitive_checkin",
+     "checkin"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "step"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "meta_suspended"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "instance"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "meta_suspended"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "process"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "replan_required"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "process"
+         },
+         "key": "replan_release_complete"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "checkin"
+       },
+       "key": "reason"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "approximate_time"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "plan"
+        },
+        "edge_type": "has_selected_learning_plan_step",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "plan"
+         },
+         "edge_type": "has_learning_plan_step",
+         "any_type": false
+        },
+        "var_name": "ready_step",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ready_step"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "ready"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "process",
+     "status",
+     "frontier_exhausted"
+    ],
+    [
+     "set_attr",
+     "checkin",
+     "status",
+     "frontier_reassessment"
     ]
    ]
   },

@@ -44,6 +44,35 @@ from scripts.gen_humanoid_adaptation_seed import (  # noqa: E402
 P0 = PI0
 
 
+def trajectory_manifold_projection(source: str, field: str):
+    """Project a grounded program with the graph's learned AbS model only."""
+    return {
+        "type": "FutureManifoldProjection",
+        "episode": V("episode"),
+        "policy": V("policy"),
+        "source": V(source),
+        "field": field,
+    }
+
+
+def trajectory_manifold_release_allowed(source: str = "memory"):
+    gate_active = And(
+        Gt(P0("policy", "future_manifold_enabled"), L(0)),
+        Gt(P0("episode", "manifold_bounds_ready"), L(0)),
+    )
+    return Or(
+        Not(gate_active),
+        And(
+            Gt(trajectory_manifold_projection(source, "support"), L(0)),
+            Gt(trajectory_manifold_projection(source, "resolved"), L(0)),
+            Eq(
+                trajectory_manifold_projection(source, "information_loss"),
+                L(0),
+            ),
+        ),
+    )
+
+
 def integer_node_attr(node, key):
     return Plus(AO(node, key), L(0))
 
@@ -1666,8 +1695,16 @@ def request_generic_program_trajectory_rule():
                 "recruits_task_set", "trajectory_pareto_tasks",
             ],
             ["set_attr", "development", "trajectory_horizon", T(
-                P0("development", "development_evidence_window")
+                If(
+                    Gt(P0("development", "development_evidence_window"), L(2)),
+                    L(2),
+                    P0("development", "development_evidence_window"),
+                )
             )],
+            [
+                "set_attr", "development",
+                "trajectory_minimum_selection_depth", 2,
+            ],
             [
                 "add_edge", "capability",
                 "requests_embodied_program_trajectory", "development",
@@ -2064,6 +2101,248 @@ def bind_generic_program_context_from_latest_receipt_rule():
     }
 
 
+def clear_stale_trajectory_state_source_rule():
+    return {
+        "name": "hdc_clear_stale_trajectory_state_source",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 94,
+        "batch": True,
+        "comment": "A program node is an action, not the body's state. "
+        "Withdraw transition sources whose learned pre-state no longer "
+        "matches the latest categorical physical receipt or whose next "
+        "program no longer preserves the current future manifold.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_policy", "policy"],
+            ["episode", "projects_embodied_development", "development"],
+            ["development", "has_active_embodied_developmental_capability", "capability"],
+            [
+                "capability",
+                "has_current_embodied_program_transition_source",
+                "transition",
+            ],
+            ["transition", "continues_with_embodied_program", "memory"],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "has_humanoid_transition", "outcome"],
+        ],
+        "where": And(
+            Eq(
+                P0("trial", "request_seq"),
+                P0("development", "latest_development_receipt_seq"),
+            ),
+            Or(
+                Not(Eq(
+                    P0("transition", "pre_orientation_class"),
+                    P0("outcome", "development_post_orientation_class"),
+                )),
+                Not(trajectory_manifold_release_allowed("memory")),
+            ),
+        ),
+        "effects": [[
+            "del_edge", "capability",
+            "has_current_embodied_program_transition_source", "transition",
+        ]],
+    }
+
+
+def bind_trajectory_state_source_from_latest_receipt_rule():
+    current_sources = Neighbours(
+        "capability", "has_current_embodied_program_transition_source"
+    )
+    return {
+        "name": "hdc_bind_trajectory_state_source_from_latest_receipt",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 95,
+        "batch": True,
+        "comment": "Re-anchor every learned transition matching the latest "
+        "categorical receipt, but publish only next programs admitted by the "
+        "native analysis-by-synthesis future projection. Batch publication "
+        "lets the generic selector compare all viable current continuations.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_policy", "policy"],
+            ["episode", "projects_embodied_development", "development"],
+            ["development", "has_active_embodied_developmental_capability", "capability"],
+            [
+                "capability", "has_embodied_program_transition", "transition"
+            ],
+            ["transition", "continues_with_embodied_program", "memory"],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "has_humanoid_transition", "outcome"],
+        ],
+        "where": And(
+            Eq(P0("transition", "verified"), L(1)),
+            Eq(
+                P0("trial", "request_seq"),
+                P0("development", "latest_development_receipt_seq"),
+            ),
+            Eq(
+                P0("transition", "pre_orientation_class"),
+                P0("outcome", "development_post_orientation_class"),
+            ),
+            trajectory_manifold_release_allowed("memory"),
+            Not(Exists(
+                current_sources,
+                "known_state_source",
+                Eq(V("known_state_source"), V("transition")),
+            )),
+        ),
+        "effects": [[
+            "add_edge", "capability",
+            "has_current_embodied_program_transition_source", "transition",
+        ]],
+    }
+
+
+def audit_selected_trajectory_manifold_rule():
+    return {
+        "name": "hdc_audit_selected_trajectory_manifold_gate",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -108,
+        "batch": False,
+        "comment": "Publish the exact graph-native projection verdict that "
+        "permits or blocks a selected path's next program. Audit has no "
+        "actuator or completion authority.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_policy", "policy"],
+            ["episode", "projects_embodied_development", "development"],
+            ["development", "has_embodied_developmental_capability", "capability"],
+            ["capability", "has_selected_embodied_program_path", "path"],
+            ["path", "contains_embodied_program_transition", "transition"],
+            [
+                "capability",
+                "has_current_embodied_program_transition_source",
+                "transition",
+            ],
+            ["transition", "continues_with_embodied_program", "memory"],
+        ],
+        "where": And(
+            Gt(P0("policy", "future_manifold_enabled"), L(0)),
+            Lt(
+                P0("path", "last_manifold_audit_seq"),
+                P0("episode", "request_seq"),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "path", "last_manifold_audit_seq", T(
+                P0("episode", "request_seq")
+            )],
+            *[
+                [
+                    "set_attr", "path", f"last_manifold_projection_{field}",
+                    T(trajectory_manifold_projection("memory", field)),
+                ]
+                for field in (
+                    "support", "resolved", "loss", "information_loss",
+                    "horizon", "anchor_count", "refinement_count",
+                    "termination_code", "exploration_authority",
+                    *(f"situated_support_{index}" for index in range(7)),
+                    *(f"applied_bound_{index}" for index in range(7)),
+                )
+            ],
+        ],
+    }
+
+
+def reject_selected_trajectory_manifold_rule():
+    return {
+        "name": "hdc_reject_selected_trajectory_in_current_manifold_context",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -107,
+        "batch": False,
+        "comment": "A failed projection refutes this path only from the "
+        "current receipt-grounded transition source. The generic selector "
+        "may choose another frontier path; no actuator authority is created.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_policy", "policy"],
+            ["episode", "projects_embodied_development", "development"],
+            [
+                "development",
+                "has_embodied_developmental_capability",
+                "capability",
+            ],
+            ["capability", "has_selected_embodied_program_path", "path"],
+            ["path", "contains_embodied_program_transition", "transition"],
+            [
+                "capability",
+                "has_current_embodied_program_transition_source",
+                "transition",
+            ],
+            ["transition", "continues_with_embodied_program", "memory"],
+        ],
+        "where": And(
+            Gt(P0("policy", "future_manifold_enabled"), L(0)),
+            Eq(
+                P0("path", "last_manifold_audit_seq"),
+                P0("episode", "request_seq"),
+            ),
+            Not(trajectory_manifold_release_allowed("memory")),
+            Eq(Count(Filter(
+                Neighbours(
+                    "path",
+                    "manifold_blocked_from_embodied_program_transition",
+                ),
+                "known_blocked_source",
+                Eq(V("known_blocked_source"), V("transition")),
+            )), L(0)),
+        ),
+        "effects": [
+            [
+                "add_edge", "path",
+                "manifold_blocked_from_embodied_program_transition",
+                "transition",
+            ],
+            [
+                "del_edge", "capability",
+                "has_selected_embodied_program_path", "path",
+            ],
+            ["set_attr", "path", "manifold_rejection_count", T(Plus(
+                P0("path", "manifold_rejection_count"), L(1)
+            ))],
+        ],
+    }
+
+
+def clear_selected_trajectory_without_current_source_rule():
+    current_sources = Neighbours(
+        "capability", "has_current_embodied_program_transition_source"
+    )
+    return {
+        "name": "hdc_clear_selected_trajectory_without_current_state_source",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 96,
+        "batch": True,
+        "comment": "A selected path is live only while at least one of its "
+        "transitions is admissible from the latest receipt-grounded state. "
+        "The path remains retained evidence after its selection edge clears.",
+        "match": [
+            ["capability", "has_selected_embodied_program_path", "path"],
+        ],
+        "where": Not(Exists(
+            current_sources,
+            "current_source",
+            Exists(
+                Neighbours(
+                    "path", "contains_embodied_program_transition"
+                ),
+                "path_source",
+                Eq(V("path_source"), V("current_source")),
+            ),
+        )),
+        "effects": [[
+            "del_edge", "capability",
+            "has_selected_embodied_program_path", "path",
+        ]],
+    }
+
+
 def replay_selected_order_n_program_path_rule():
     members = Neighbours("memory", "includes_humanoid_phase_action_model")
     primary = Filter(
@@ -2089,19 +2368,23 @@ def replay_selected_order_n_program_path_rule():
         "name": "hdc_replay_selected_order_n_program_path",
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
-        "order": -107,
+        "order": -106,
         "batch": False,
         "comment": "System 2 selects an output-null arbitrary-order path; "
         "each hard-real-time collapse releases only its next already-grounded "
         "compound program through the existing trial and receipt machinery.",
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_policy", "policy"],
             ["episode", "projects_embodied_development", "development"],
             ["development", "has_active_embodied_developmental_capability", "capability"],
             ["capability", "has_selected_embodied_program_path", "path"],
-            ["capability", "has_current_embodied_program", "current"],
             ["path", "contains_embodied_program_transition", "transition"],
-            ["transition", "starts_from_embodied_program", "current"],
+            [
+                "capability",
+                "has_current_embodied_program_transition_source",
+                "transition",
+            ],
             ["transition", "continues_with_embodied_program", "memory"],
         ],
         "where": And(
@@ -2121,6 +2404,7 @@ def replay_selected_order_n_program_path_rule():
                     ), L(1)),
                 ),
             ),
+            trajectory_manifold_release_allowed("memory"),
             Gt(Count(primary), L(0)),
             Gt(P0("episode", "request_seq"), P0("episode", "decision_seq")),
             Eq(P0("episode", "action_ready"), L(0)),
@@ -2135,6 +2419,24 @@ def replay_selected_order_n_program_path_rule():
             )],
             ["set_attr", "memory", "collapse_kind", "developmental_order_n_trajectory"],
             ["set_attr", "memory", "open_residual_count", 1],
+            ["set_attr", "path", "trajectory_replay_issued_seq", T(
+                P0("episode", "request_seq")
+            )],
+            ["set_attr", "path", "last_manifold_projection_support", T(If(
+                Gt(P0("policy", "future_manifold_enabled"), L(0)),
+                trajectory_manifold_projection("memory", "support"),
+                L(0),
+            ))],
+            ["set_attr", "path", "last_manifold_projection_resolved", T(If(
+                Gt(P0("policy", "future_manifold_enabled"), L(0)),
+                trajectory_manifold_projection("memory", "resolved"),
+                L(0),
+            ))],
+            ["set_attr", "path", "last_manifold_projection_loss", T(If(
+                Gt(P0("policy", "future_manifold_enabled"), L(0)),
+                trajectory_manifold_projection("memory", "loss"),
+                L(0),
+            ))],
             ["add_edge", "episode", "has_ready_humanoid_motor_program", "memory"],
             ["set_attr", "episode", "selected_token", T(A("memory", "primary_token"))],
             ["set_attr", "episode", "selected_secondary_token", T(
@@ -2175,7 +2477,17 @@ def complete_selected_order_n_program_path_rule():
             ["path", "continues_with_embodied_program", "terminal"],
             ["capability", "has_current_embodied_program", "terminal"],
         ],
-        "where": Gt(P0("path", "depth"), L(1)),
+        "where": And(
+            Gt(P0("path", "depth"), L(1)),
+            Gt(
+                P0("path", "trajectory_replay_issued_seq"),
+                P0("path", "trajectory_replay_completed_seq"),
+            ),
+            Eq(
+                P0("development", "latest_development_receipt_seq"),
+                P0("path", "trajectory_replay_issued_seq"),
+            ),
+        ),
         "effects": [
             [
                 "del_edge", "capability",
@@ -2184,9 +2496,99 @@ def complete_selected_order_n_program_path_rule():
             ["set_attr", "path", "replay_count", T(Plus(
                 P0("path", "replay_count"), L(1)
             ))],
+            ["set_attr", "path", "trajectory_replay_completed_seq", T(
+                P0("path", "trajectory_replay_issued_seq")
+            )],
             ["set_attr", "capability", "trajectory_replay_count", T(Plus(
                 P0("capability", "trajectory_replay_count"), L(1)
             ))],
+        ],
+    }
+
+
+def archive_selected_trajectory_after_capability_mastery_rule():
+    return {
+        "name": "hdc_archive_selected_trajectory_after_capability_mastery",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 92,
+        "batch": True,
+        "comment": "Mastery closes the capability's practice question. "
+        "Retain its path and audit facts, but remove the live selection edge "
+        "so it cannot compete with the next developmental capability.",
+        "match": [
+            ["development", "has_embodied_developmental_capability", "capability"],
+            ["capability", "has_selected_embodied_program_path", "path"],
+        ],
+        "where": Eq(A("capability", "status"), L("mastered")),
+        "effects": [
+            [
+                "del_edge", "capability",
+                "has_selected_embodied_program_path", "path",
+            ],
+            ["set_attr", "path", "selection_archive_reason", "capability_mastered"],
+        ],
+    }
+
+
+def park_inactive_program_trajectory_rule():
+    return {
+        "name": "hdc_park_inactive_program_trajectory_off_hot_frontier",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 93,
+        "batch": True,
+        "comment": "Mastered and meta-suspended capabilities retain one "
+        "stable trajectory identity and every evidence node, while disabling "
+        "its generic expansion and selection work.",
+        "match": [
+            ["development", "has_embodied_developmental_capability", "capability"],
+            ["capability", "has_embodied_program_trajectory", "trajectory"],
+        ],
+        "where": Or(
+            And(
+                Eq(P0("trajectory", "selection_enabled"), L(1)),
+                Or(
+                    Eq(A("capability", "status"), L("mastered")),
+                    Eq(A("capability", "status"), L("meta_suspended")),
+                ),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "trajectory", "selection_enabled", 0],
+            ["set_attr", "trajectory", "status", T(If(
+                Eq(A("capability", "status"), L("mastered")),
+                L("archived"),
+                L("suspended"),
+            ))],
+        ],
+    }
+
+
+def restore_reactivated_program_trajectory_rule():
+    return {
+        "name": "hdc_restore_reactivated_program_trajectory_to_hot_frontier",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -111,
+        "batch": True,
+        "comment": "A suspended stable trajectory re-enters generic selection "
+        "only when its capability is genuinely available or active again.",
+        "match": [
+            ["development", "has_embodied_developmental_capability", "capability"],
+            ["capability", "has_embodied_program_trajectory", "trajectory"],
+        ],
+        "where": And(
+            Eq(P0("trajectory", "selection_enabled"), L(0)),
+            Or(
+                Eq(A("capability", "status"), L("active")),
+                Eq(A("capability", "status"), L("available")),
+                Eq(A("capability", "status"), L("retention_due")),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "trajectory", "selection_enabled", 1],
+            ["set_attr", "trajectory", "status", "active"],
         ],
     }
 
@@ -3074,6 +3476,17 @@ def manifest() -> dict:
                 "tgt": {"type": "EmbodiedInverseKinematicQuery", "var": "query"},
             },
             {
+                "provenance": "humanoid_development:trajectory_state_source",
+                "src": {
+                    "type": "EmbodiedSituatedDevelopmentalCapability",
+                    "var": "capability",
+                },
+                "edge_type": (
+                    "has_current_embodied_program_transition_source"
+                ),
+                "tgt": {"type": "Node", "var": "transition"},
+            },
+            {
                 "provenance": "humanoid_development:wave_local_command_index",
                 "src": {"type": "SomatomotorWaveCell", "var": "cell"},
                 "edge_type": "indexes_humanoid_wave_local_command",
@@ -3093,6 +3506,7 @@ def manifest() -> dict:
             release_stale_recovery_program_rule(),
             release_stale_recovery_basin_rule(),
             hold_pre_locomotor_residual_rule(),
+            restore_reactivated_program_trajectory_rule(),
             request_generic_program_trajectory_rule(),
             clear_stale_generic_program_context_rule(),
             bind_generic_program_context_rule(),
@@ -3126,7 +3540,14 @@ def manifest() -> dict:
             mint_developmental_program_transition_rule(),
             clear_generic_program_context_from_latest_receipt_rule(),
             bind_generic_program_context_from_latest_receipt_rule(),
+            clear_stale_trajectory_state_source_rule(),
+            bind_trajectory_state_source_from_latest_receipt_rule(),
+            clear_selected_trajectory_without_current_source_rule(),
+            audit_selected_trajectory_manifold_rule(),
+            reject_selected_trajectory_manifold_rule(),
             complete_selected_order_n_program_path_rule(),
+            archive_selected_trajectory_after_capability_mastery_rule(),
+            park_inactive_program_trajectory_rule(),
         ],
     }
 
