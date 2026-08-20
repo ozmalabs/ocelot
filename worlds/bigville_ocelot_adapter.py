@@ -362,6 +362,15 @@ class BigvilleOcelotResident:
 
         self._emotion_hub = self.s.add_node(
             "EmotionHub", {"name": f"emotion:{self.name}"})
+        # TERMINOLOGY COLLISION: "Supergraph" here is a per-resident VALUATION WEIGHT
+        # container — how much this resident weights other residents' fulfilment (a
+        # social_game node the EmotionHub is member_of). In the theory papers
+        # (~/law_of_graphic_equalisation_recursive_v22.tex), "SUPERGRAPH identity"
+        # (ι_{W:G}) means the identity relation under which a CONTAINING FRAME
+        # individuates a situated instance — explicitly NOT a container object and
+        # explicitly NOT a pointer held by the child. Unrelated mechanisms; neither is
+        # evidence for the other. See docs/research/theory_convergence/
+        # GRAPHIC_EQUALISATION_V22_SUBSTRATE_GAP.md §10.
         supergraph = self.s.add_node(
             "Supergraph", {"name": f"social_game:{self.name}"})
         self._affective_state = next(

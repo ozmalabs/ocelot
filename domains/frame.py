@@ -45,6 +45,15 @@ caller without one (an agent-less faculty path) uses the frame's VALUE twin — 
   * a {dim: log_weight} dict — the value form; `agent` may be None.
 
 DONKEY=0: no fit, no gradient, no LM — arithmetic over graph data.
+
+TERMINOLOGY COLLISION: "Frame" here is the physics-style reference frame defined above
+(a set of dimensions with relative weighting, used for value computation). In the theory
+papers (~/law_of_narrative_inertia_v2.tex, ~/law_of_graphic_equalisation_recursive_v22.tex),
+a "frame" is an INDIVIDUATING CONTAINING WORLD — the thing that assigns instance identity,
+supplies a boundary, holds a Narrative about a situated graph, and can terminate that
+instance's identity independently of other frames. Unrelated mechanisms; neither is evidence
+for the other. See docs/research/theory_convergence/GRAPHIC_EQUALISATION_V22_SUBSTRATE_GAP.md
+§10.
 """
 from __future__ import annotations
 
