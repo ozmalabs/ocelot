@@ -4,6 +4,29 @@
 the instrument documents as byte-identical to the pre-rung engine: a tie still returns
 the first-encountered extremum. This is a census, not an intervention.
 
+## HEADLINE CORRECTION — the 64% figure is a conversation artefact
+
+**Read this before quoting any number from this document.** The 64.19% below was measured
+on one workload of 148 firings. Four further workloads, measured afterwards
+(§Multi-workload census), give a total of **2,041 ties in 174,750 firings — 1.17%**:
+
+| workload | firings | ties | rate |
+|---|---|---|---|
+| conversation | 148 | 95 | **64.19%** |
+| ARC (transform / decompose / magnitude) | 159,813 | 645 | 0.40% |
+| ls20 (see / mapnav) | 13,256 | 1,187 | 8.95% |
+| quanta navigation | 1,523 | 114 | 7.49% |
+| embodied | 10 | 0 | 0.00% |
+| **total** | **174,750** | **2,041** | **1.17%** |
+
+The conversational workload is **three orders of magnitude smaller** than ARC and its rate
+is 160× higher. Its figure is dominated by a single site firing 90 times. Quoting 64.19%
+as *the* tie rate would be wrong by a factor of ~55.
+
+The original document carried the caveat "one workload, conversation paths only". The
+caveat was correct and insufficient: a caveat that a reader can skip past is not the same
+as a number they cannot misread. The correction is therefore at the top, not in a section.
+
 ## Why this was run
 
 `docs/research/theory_convergence/GRAPHIC_EQUALISATION_V22_SUBSTRATE_GAP.md` §7 recorded
@@ -126,6 +149,41 @@ constant on every candidate it sees, so it cannot rank them.
   probably more.**
 - *Anything about `refuse_min`/`refuse_all`.* Not run. Whether refusing on non-uniqueness
   reproduces the committed bench is a separate, unmeasured question.
+
+## Multi-workload census
+
+Run with the same instrument and mode, one pytest invocation per domain, counters reset at
+session start and read at session end (`scratchpad/tie_plugin.py`).
+
+| workload | tests | firings | ties | rate | pick-any idiom | genuine |
+|---|---|---|---|---|---|---|
+| conversation | — | 148 | 95 | 64.19% | — | — |
+| ARC | 84 | 159,813 | 645 | 0.40% | 387 | 258 |
+| ls20 | 17 | 13,256 | 1,187 | 8.95% | 0 | 1,187 |
+| quanta navigation | 8 | 1,523 | 114 | 7.49% | 0 | 114 |
+| embodied | 31 | 10 | 0 | 0.00% | 0 | 0 |
+| **total** | | **174,750** | **2,041** | **1.17%** | | |
+
+"pick-any idiom" counts ties at a selector whose entire `value` term is a `Lit` — the
+`Argmin(…, 0)` "does any element exist" form the static census identified. Those ties are
+by design and are separated rather than folded into the headline. In ARC they are 60% of
+all ties; genuine ties there are 258 in 159,813 firings — **0.16%**.
+
+Two observations that matter more than the aggregate:
+
+1. **Tie rate is a property of the workload, not of the engine.** It spans 0% to 64%
+   across five workloads of the same system. Any single-workload figure — including the
+   one this document originally led with — describes that workload.
+
+2. **`ls20` and `quanta` tie at ~8% with zero idiom ties**, so those are all genuine
+   non-unique extrema on spatial/perceptual paths. That is the population worth looking at
+   next if anyone wants to know whether ties are ever consequential: bigger than
+   conversation's by an order of magnitude, and not explained away as a deliberate
+   pick-any.
+
+The `refuse_all` result in `DECISION_LAYER_PREREG.md` §4 — refusing every tie changed no
+reply — was measured on the **conversation** workload only. It has not been run against
+ARC, ls20 or quanta, and this census gives no reason to assume it transfers.
 
 ## Consequence for the gap review
 

@@ -195,9 +195,12 @@ binding that progresses wins (`rewrite.rs:2213`).
 v22 requires determinism **and** non-semantic enumeration order simultaneously. Ocelot satisfies the
 first *by means of* violating the second.
 
-**Measured, 2026-08-21** (`docs/research/engine_substrate/ARGMIN_TIE_CENSUS_RESULTS.md`): on a
-five-utterance conversational workload with the full seed set, **95 of 148 selector firings (64.19%)
-are exact ties resolved by enumeration order**. Four distinct sites tie; one — `Argmax` over
+**Measured, 2026-08-21** (`docs/research/engine_substrate/ARGMIN_TIE_CENSUS_RESULTS.md`): across
+five workloads, **2,041 of 174,750 selector firings (1.17%) are exact ties resolved by enumeration
+order** — but the rate is a property of the workload, not the engine, ranging from 0% (embodied)
+through 0.40% (ARC, 159,813 firings) and ~8-9% (ls20, quanta) to **64.19% on a five-utterance
+conversation of only 148 firings**. The conversational figure was measured first and is a 55×
+outlier; it is corrected at the head of the results doc rather than left to be quoted. Four distinct sites tie; one — `Argmax` over
 `ranked_source.salience` in `default_mode_mint_episode_context` — accounts for 90 of the 95, and
 ties on 90 of 90 firings because every message-derived episode is minted with a hardcoded
 `salience: 1.0` (`memory_core.json::rule_episode_from_message`). An `Argmax` over a constant cannot

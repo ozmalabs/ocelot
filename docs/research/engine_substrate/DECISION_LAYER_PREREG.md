@@ -32,14 +32,17 @@ speculatively.
 
 | measurement | value | source |
 |---|---|---|
-| selector tie rate, conversational workload | **95/148 = 64.19%** | `ARGMIN_TIE_CENSUS_RESULTS.md` |
+| selector tie rate, five workloads | **2,041/174,750 = 1.17%** | `ARGMIN_TIE_CENSUS_RESULTS.md` |
+| …same, conversation only (55× outlier) | 95/148 = 64.19% | ibid. |
 | dominant tied site | 90/90, ranks by a hardcoded `salience: 1.0` | ibid., §CORRECTION |
 | failed-effect path, same workload | **0 firings** | `effect_audit`, this document §4 |
 | Rust unit suite, parallel | 787/787, 8 consecutive runs | `5b57272` |
 
-**What the tie rate licenses:** that order-decided outcomes are common, not hypothetical,
-on at least one real workload. That is the case for SET-TIE semantics being worth
-specifying.
+**What the tie rate licenses:** that order-decided outcomes occur on real workloads. It no
+longer licenses "common": at 1.17% across 174,750 firings, and 0.40% on the largest
+workload measured, they are *rare*. The 64.19% figure this prereg was originally written
+against is a conversation-only outlier, and the case for SET-TIE semantics is
+correspondingly weaker than when Stage B was drafted.
 
 **What it does not license:** any claim that the ties are producing *wrong answers*. The
 instrument counts exact non-uniqueness, not incorrect outcomes. At the dominant site
