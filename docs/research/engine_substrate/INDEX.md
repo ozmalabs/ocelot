@@ -1,6 +1,6 @@
 # engine_substrate — index
 
-74 documents.
+75 documents.
 
 ## Documents
 
@@ -21,6 +21,7 @@ must be represented as explicit transitions.
 
 | file | title |
 |---|---|
+| [`CONSTANT_RANKING_SELECTOR_CENSUS.md`](CONSTANT_RANKING_SELECTOR_CENSUS.md) | Constant-ranking selector census — a null over 1491 seed selectors that retires the seed-data rung proposed one section earlier; the salience case is path-dependent, not structural. |
 | [`DECISION_LAYER_PREREG.md`](DECISION_LAYER_PREREG.md) | Decision layer — preregistration for non-mutating proposal construction then feasible-set selection, with the two cheap measurements run first: refusing every tie changes no reply, and the failed-effect path never fires. |
 | [`ARGMIN_TIE_CENSUS_RESULTS.md`](ARGMIN_TIE_CENSUS_RESULTS.md) | Argmin/Argmax tie census — measured on live seed-driven decision paths: 95 of 148 selector firings are exact ties broken by enumeration order, and the dominant site ranks on an attribute that is never set. |
 | [`ASYNC_COGNITIVE_CORE_RESULTS.md`](ASYNC_COGNITIVE_CORE_RESULTS.md) | Graph-native asynchronous cognitive core — implementation result |

@@ -205,8 +205,18 @@ days rather than an engine change costing weeks.
 
 That possibility is no longer merely likely: **the `refuse_all` run in §4 supports it
 directly.** Refusing all 36 ties changed no reply. If a broader slice reproduces that, the
-selection layer is solving a problem this corpus does not have, and the rung to run
+selection layer is solving a problem this corpus does not have.
+
+**RETRACTION, same session.** This paragraph originally continued: *"and the rung to run
 instead is fixing rules that rank by constants — a seed-data change costing days rather
-than an engine change costing weeks. Stage A is defensible on its own terms
+than an engine change costing weeks."* That recommendation rested on a single instance and
+**does not survive a census of the corpus**
+(`CONSTANT_RANKING_SELECTOR_CENSUS.md`): of 1491 selectors, the 68 literal-ranked ones are
+a deliberate "pick any element" idiom, **zero** rank an attribute that every writer sets
+literally, and the 8 ranking attributes no seed rule writes are all written by world
+adapters and at least one discriminates correctly. The `salience` case is path-dependent
+rather than structural, and therefore not statically detectable at all. There is no
+constant-ranking rung to run. The measurement that would actually extend this finding is a
+*runtime* tie census across non-conversational workloads — hours, not days. Stage A is defensible on its own terms
 regardless (immutable derivation is correctness, not optimisation). Stage B is not yet
 justified by measurement, and this prereg does not claim it is.
