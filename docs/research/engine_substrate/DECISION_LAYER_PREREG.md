@@ -133,6 +133,19 @@ back a firing. Stage A is closer to *keeping* something already built than to bu
 
 ### B.4 NO-GO conditions, fixed now
 
+> **TRIGGERED. Stage B does not proceed as drafted.** See
+> `TIE_CONSEQUENTIALITY_RESULTS.md`. `refuse_all` on the ls20 + quanta slice fails **7 of
+> 25 tests**, all of them routing. On a lattice, equal-cost alternatives are the norm, and
+> enumeration order has been silently supplying the navigation tie-break. A SET-TIE is a
+> refusal to choose; routing requires a choice. Building Stage B on this corpus would
+> remove the ability to navigate.
+>
+> The theory is not thereby wrong — v22 requires ties be resolved by *represented*
+> structure rather than by order. That work is **seed-data, not engine**: give the
+> navigation rules an explicit tie-break (canonical direction, lowest coordinate, held
+> heading) so something written down decides. Stage B becomes viable only after that, and
+> is out of scope until it exists.
+
 - If `refuse_all` on the current engine shows that refusing ties breaks a large fraction of
   the bench, the seed corpus depends on order-decided outcomes far more than the census
   suggests, and the honest response is to report that and stop — not to build selection on
@@ -159,9 +172,11 @@ Two measurements would sharpen this prereg and neither requires building anythin
    36 selections refused outright, and downstream rules that depended on those winners
    never fire — and the observable output does not move.
 
-   **B.4's first NO-GO is therefore not triggered, and §5's falsifier is supported.** On
-   this workload the ties are not consequential: nothing downstream depended on which
-   tied candidate won. That is evidence *against* the value of Stage B, not for it, and
+   **On this workload** the ties are not consequential: nothing downstream depended on
+   which tied candidate won. **This does not hold generally** — the same probe on ls20 +
+   quanta fails 7 of 25 tests, all routing (`TIE_CONSEQUENTIALITY_RESULTS.md`), which does
+   trigger B.4. Conversation was simply the workload with the fewest symmetric
+   alternatives. That is evidence *against* the value of Stage B, not for it, and
    it was obtained for the cost of running a mode that already existed.
 
    Limits, stated because the result is strong enough to be over-read: five replies, one
