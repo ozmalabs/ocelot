@@ -1,6 +1,6 @@
 # FIGURES — the plan for the papers and the book
 
-**Status: plan. Nothing here is drawn yet.** The five formal papers currently
+**Status: plan, with four figures drawn.** See § "Built so far" below. The five formal papers currently
 contain **zero figures** (no `includegraphics`, no TikZ), and the book has none
 because it has no chapters yet. This document says what each needs, where the
 data for it already lives, and the one rule that governs all of them.
@@ -114,10 +114,64 @@ belief forming over time), `results/doom_ingraph_map/map_frame_*.png` (ch. 7),
    `admissible_moves`). Drawing it as if it were instrumented would be the
    defect ch. 15 catalogues, in picture form.
 
+## Built so far
+
+| id | figure | file | generator | source data |
+|---|---|---|---|---|
+| **PAPER-01-1** | the collapse dynamic | `papers/figures/fig01_collapse_dynamic.pdf` | `fig01_collapse_dynamic.tex` (+ `-body.tex`, `\input`-able into the paper) | — (conceptual) |
+| **EYE-1** | Troxler fading, replicated | `book/figures/eye_1_troxler.svg` | `fig_troxler_fade.py` | `results/troxler_confirm.json` |
+| **EMO-1** | the marshmallow confound, both directions | `book/figures/emotion_1_marshmallow_confound.svg` | `fig_marshmallow_confound.py` | `results/marshmallow_delay/results.json` |
+| **EMO-2** | Harlow on equal drive weights | `book/figures/emotion_2_harlow.svg` | `fig_harlow_preference.py` | `results/harlow_d1.json` |
+
+**Toolchain, chosen deliberately.** There is no matplotlib in this tree, and
+adding a plotting dependency to draw twenty figures is a worse trade than
+`book/figures/svgplot.py` — ~250 lines of stdlib emitting vector SVG. Figures
+are theme-aware (one render reads correctly on paper and on a dark screen),
+have no install step, and diff as text. Paper diagrams are TikZ, so they live
+in the `.tex` source and set their type in the paper's own font.
+
+Preview a figure while drafting:
+
+```
+google-chrome --headless --disable-gpu --screenshot=/tmp/f.png \
+  --window-size=800,600 --default-background-color=FFFFFFFF book/figures/<f>.svg
+pdflatex papers/figures/fig01_collapse_dynamic.tex   # paper diagrams
+```
+
+**Two errors this pass caught, both worth recording** because they are the
+figure-side versions of defects this project already catalogues:
+
+1. **EYE-1 first draft plotted `μ_endo` on a contrast axis.** μ_endo is a
+   per-cell *response* setpoint; contrast fades to zero *because* every cell
+   arrives at it. Plotting it as a contrast value was a category error of
+   exactly the "number in the wrong frame" kind — caught by rendering the
+   figure and reading it, not by any check. The redraw puts `μ_endo` on its own
+   response axis beside `stab_mean_resp_final`, where the two coincide, which
+   is the actual mechanism.
+2. **PAPER-01-1 first draft drew the unrealised candidates as arrows into
+   `G_{t+1}`**, implying they contribute to the successor. They do not — that
+   is the whole content of collapse. They now terminate in `×`, labelled
+   *admissible, not realised*.
+
+**The rule this suggests, added to the ones above:** *render every figure and
+read it before believing it.* A figure is an instrument, and this tree's own
+standing lesson is that instruments need positive controls too.
+
 ## Order of work
 
-1. **Paper 01's collapse diagram** — one figure, used by a paper and the book.
-2. **Class B ch. 1 figures** — the eye's data is committed and unplotted, and
-   ch. 1 is the first chapter drafted.
-3. The remaining paper conceptual diagrams, as each paper is revised.
+1. ~~Paper 01's collapse diagram~~ — **done** (PAPER-01-1).
+2. **Class B ch. 1 figures** — Troxler is **done** (EYE-1). Next: the Weber
+   invariance gap and the drift α crossover (locate their results files first —
+   they are cited in `THE_EYE.md` §1 but not yet traced to a committed path),
+   then depth-from-velocity-variation and the N=2/N=3 stereo control, whose
+   data is committed (`results/depth_measure.json`,
+   `results/stereo_measure.json`).
+3. The remaining paper conceptual diagrams, as each paper is revised — paper
+   05's executor round is the next most useful.
 4. Class C selection, per chapter, while drafting.
+
+**A note on what the eye data supports.** `depth_measure.json` and
+`stereo_measure.json` record verdicts and minted-dimension structures rather
+than dense curves — so those figures are *control matrices* (what minted, what
+refused, 0/400 on shuffle), not scatter plots. That is the honest shape for
+them: the claim in both cases is about refusal to hallucinate.
