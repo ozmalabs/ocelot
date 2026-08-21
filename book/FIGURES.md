@@ -1,7 +1,8 @@
 # FIGURES — the plan for the papers and the book
 
-**Status: plan, with eleven figures drawn — chapter 1's set is complete.**
-See § "Built so far" below. The five formal papers currently
+**Status: plan, with twelve figures drawn.** Chapter 1's set is complete
+(eight, plus a Class C selection); paper 01's set is complete; paper 05 and the
+book's two most-cited conceptual diagrams are drawn. See § "Built so far". The five formal papers currently
 contain **zero figures** (no `includegraphics`, no TikZ), and the book has none
 because it has no chapters yet. This document says what each needs, where the
 data for it already lives, and the one rule that governs all of them.
@@ -131,6 +132,10 @@ Remaining candidates for later chapters: `results/held_surface/`,
 | id | figure | file | generator | source data |
 |---|---|---|---|---|
 | **PAPER-01-1** | the collapse dynamic | `papers/figures/fig01_collapse_dynamic.pdf` | `fig01_collapse_dynamic.tex` (+ `-body.tex`, `\input`-able into the paper) | — (conceptual) |
+| **PAPER-01-2** | the situated graph and its boundary | `papers/figures/fig01_boundary.pdf` | `fig01_boundary.tex` (+ `-body.tex`) | — (conceptual) |
+| **PAPER-05-1** | one synchronous executor round | `papers/figures/fig05_executor_round.pdf` | `fig05_executor_round.tex` (+ `-body.tex`) | — (conceptual) |
+| **SD-1** | the growth ladder, Occam-ordered | `book/figures/sd_1_ladder.svg` | `fig_sd_ladder.py` | — (conceptual) |
+| **FR-1** | in-frame integer, cross-frame continuum | `book/figures/frame_1_invariant.svg` | `fig_frame_invariant.py` | — (conceptual) |
 | **EYE-1** | Troxler fading, replicated | `book/figures/eye_1_troxler.svg` | `fig_troxler_fade.py` | `results/troxler_confirm.json` |
 | **EYE-2** | illumination invariance, log vs linear | `book/figures/eye_2_invariance.svg` | `fig_eye_invariance.py` | `results/eye_confirm.log` (H1) |
 | **EYE-3** | Weber–Fechner, predicted then measured | `book/figures/eye_3_weber.svg` | `fig_eye_weber.py` | `results/eye_confirm.log` (H2) |
@@ -201,9 +206,18 @@ standing lesson is that instruments need positive controls too.
    drawn** (EYE-6, EYE-7, EYE-8). The scaling wall (1317 → 137.8 ms) already
    has a plot in `results/eye_timing/scaling.png` (Class C — select, don't
    redraw), which closes chapter 1's figure set.
-3. The remaining paper conceptual diagrams, as each paper is revised — paper
-   05's executor round is the next most useful.
-4. ~~Class C selection for chapter 1~~ — **done**
+3. Paper conceptual diagrams — **paper 01 is complete** (collapse dynamic,
+   boundary; the residual-delta figure folded into the collapse diagram rather
+   than drawn separately, since it is the same arrow) and **paper 05's
+   executor round is drawn**. Remaining: paper 02's shape tube and reachability
+   compression, paper 03's narrative dimension, paper 04's budget and horizon —
+   all four are THEORY figures and must be captioned as such, per the
+   no-figure-of-an-unbuilt-mechanism rule below.
+4. Book conceptual diagrams — **SD-1 (the ladder) and FR-1 (the frame
+   invariant) are drawn**, the two that the most chapters cite. Remaining:
+   shape-vs-rule (ch. 3), the two unbounded axes (ch. 2 + epilogue), the
+   introduction's ten-box chain, and the part-structure page.
+5. ~~Class C selection for chapter 1~~ — **done**
    (`book/figures/CLASS_C_CH1.md`). Class C selection for the remaining
    chapters, while drafting each.
 

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="496" viewBox="0 0 780 496" role="img"><style>
+:root{--ink:#16181d;--muted:#5b6270;--rule:#c8cdd6;--arm-a:#1f6f8b;
+--arm-b:#b4531f;--accent:#2f7d4f;--null:#8a8f99;--bg:transparent}
+@media (prefers-color-scheme:dark){:root{--ink:#e6e8ec;--muted:#9aa1ae;
+--rule:#3a4049;--arm-a:#5fb6d4;--arm-b:#e08a52;--accent:#6fc08d;--null:#767c86}}
+text{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+fill:var(--ink)}
+.lbl{font-size:12px}.tick{font-size:11px;fill:var(--muted)}
+.ttl{font-size:15px;font-weight:600}.sub{font-size:12px;fill:var(--muted)}
+.cap{font-size:11px;fill:var(--muted)}
+.note{font-size:11.5px;fill:var(--muted)}
+.val{font-size:11.5px;font-weight:600}
+</style>
+<text x="46.00" y="34.00" class="ttl" text-anchor="start">The growth ladder, in the order it is tried</text>
+<text x="46.00" y="50.00" class="sub" text-anchor="start">Each rung is attempted only when the one above it fails — cheapest explanation first</text>
+<rect x="46.00" y="74.00" width="688.00" height="50.00" rx="3" fill="var(--arm-a)" fill-opacity="0.07" stroke="none"/>
+<line x1="46.00" y1="74.00" x2="46.00" y2="124.00" stroke="var(--arm-a)" stroke-width="2.6" stroke-linecap="round"/>
+<circle cx="72.00" cy="94.00" r="11" fill="none" fill-opacity="1.0" stroke="var(--arm-a)" stroke-width="1.6"/>
+<text x="72.00" y="98.00" class="val" text-anchor="middle">1</text>
+<text x="96.00" y="92.00" class="lbl" text-anchor="start">recognise</text>
+<text x="96.00" y="108.00" class="note" text-anchor="start">the observation is already in the codebook</text>
+<text x="722.00" y="92.00" class="val" text-anchor="end" fill="var(--muted)">nothing is added</text>
+<text x="722.00" y="108.00" class="note" text-anchor="end">sd_recognize</text>
+<line x1="72.00" y1="126.00" x2="72.00" y2="134.00" stroke="var(--muted)" stroke-width="1.2" stroke-linecap="round"/>
+<text x="86.00" y="135.00" class="note" text-anchor="start" fill="var(--muted)">residual survives — try the next rung</text>
+<rect x="46.00" y="140.00" width="688.00" height="50.00" rx="3" fill="var(--arm-a)" fill-opacity="0.07" stroke="none"/>
+<line x1="46.00" y1="140.00" x2="46.00" y2="190.00" stroke="var(--arm-a)" stroke-width="2.6" stroke-linecap="round"/>
+<circle cx="72.00" cy="160.00" r="11" fill="none" fill-opacity="1.0" stroke="var(--arm-a)" stroke-width="1.6"/>
+<text x="72.00" y="164.00" class="val" text-anchor="middle">2</text>
+<text x="96.00" y="158.00" class="lbl" text-anchor="start">transform in the basis</text>
+<text x="96.00" y="174.00" class="note" text-anchor="start">ONE uniform step along a dimension it already has</text>
+<text x="722.00" y="158.00" class="val" text-anchor="end">a Transform{dim, delta}</text>
+<text x="722.00" y="174.00" class="note" text-anchor="end">sd_transform_decode</text>
+<line x1="72.00" y1="192.00" x2="72.00" y2="200.00" stroke="var(--muted)" stroke-width="1.2" stroke-linecap="round"/>
+<text x="86.00" y="201.00" class="note" text-anchor="start" fill="var(--muted)">residual survives — try the next rung</text>
+<rect x="46.00" y="206.00" width="688.00" height="62.00" rx="3" fill="var(--arm-a)" fill-opacity="0.07" stroke="none"/>
+<line x1="46.00" y1="206.00" x2="46.00" y2="268.00" stroke="var(--arm-a)" stroke-width="2.6" stroke-linecap="round"/>
+<circle cx="72.00" cy="226.00" r="11" fill="none" fill-opacity="1.0" stroke="var(--arm-a)" stroke-width="1.6"/>
+<text x="72.00" y="230.00" class="val" text-anchor="middle">3</text>
+<text x="96.00" y="224.00" class="lbl" text-anchor="start">infer a dimension</text>
+<text x="96.00" y="240.00" class="note" text-anchor="start">the residual is coupled across dims it can see —</text>
+<text x="96.00" y="254.00" class="note" text-anchor="start">explicable only by one it does not yet have</text>
+<text x="722.00" y="224.00" class="val" text-anchor="end">a LatentDimension</text>
+<text x="722.00" y="240.00" class="note" text-anchor="end">sd_infer_dimension</text>
+<line x1="72.00" y1="270.00" x2="72.00" y2="278.00" stroke="var(--muted)" stroke-width="1.2" stroke-linecap="round"/>
+<text x="86.00" y="279.00" class="note" text-anchor="start" fill="var(--muted)">residual survives — try the next rung</text>
+<rect x="46.00" y="284.00" width="688.00" height="50.00" rx="3" fill="var(--arm-b)" fill-opacity="0.07" stroke="none"/>
+<line x1="46.00" y1="284.00" x2="46.00" y2="334.00" stroke="var(--arm-b)" stroke-width="2.6" stroke-linecap="round"/>
+<circle cx="72.00" cy="304.00" r="11" fill="none" fill-opacity="1.0" stroke="var(--arm-b)" stroke-width="1.6"/>
+<text x="72.00" y="308.00" class="val" text-anchor="middle">4</text>
+<text x="96.00" y="302.00" class="lbl" text-anchor="start">mint novelty</text>
+<text x="96.00" y="318.00" class="note" text-anchor="start">nothing shorter than a new quantum fits</text>
+<text x="722.00" y="302.00" class="val" text-anchor="end">a CapabilityAxis quantum</text>
+<text x="722.00" y="318.00" class="note" text-anchor="end">sd_mint_quantum</text>
+<line x1="46.00" y1="356.00" x2="734.00" y2="356.00" stroke="var(--rule)" stroke-width="0.8" stroke-linecap="round"/>
+<text x="46.00" y="378.00" class="lbl" text-anchor="start">Why the ORDER is the design</text>
+<text x="46.00" y="398.00" class="note" text-anchor="start">A loop that minted first would explain everything and learn nothing — every variation would become</text>
+<text x="46.00" y="413.00" class="note" text-anchor="start">a new entry, and the codebook would grow without ever compressing. Minting last makes novelty the</text>
+<text x="46.00" y="428.00" class="note" text-anchor="start">residual of three cheaper readings, so what gets added is what genuinely did not fit. Measured: a</text>
+<text x="46.00" y="443.00" class="note" text-anchor="start">rotated tromino mints ZERO (rung 2 reads it), a scrambled one mints EXACTLY ONE.</text>
+<text x="46.00" y="478.00" class="cap" text-anchor="start">Conceptual figure — no data behind it. Mechanism: runners/dsl/src/shape_decode.rs, seeds/shape_decode_loop.json · generator: fig_sd_ladder.py</text>
+</svg>

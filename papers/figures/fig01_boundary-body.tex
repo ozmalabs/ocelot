@@ -1,0 +1,47 @@
+\begin{tikzpicture}[
+  >={Stealth[length=2.4mm]},
+  gbox/.style={draw, rounded corners=2pt, minimum width=34mm,
+               minimum height=22mm, font=\small},
+  wbox/.style={draw, dashed, rounded corners=3pt, font=\small},
+  lbl/.style={font=\scriptsize, inner sep=1.6pt},
+  leg/.style={font=\scriptsize, inner sep=1pt, align=left},
+  self/.style={->, thick},
+  outward/.style={->, thick},
+  inb/.style={->, very thick},
+]
+% --- the situated graph ------------------------------------------------
+\node[gbox] (g) {$G=(g,r,\Gamma_G)$};
+\node[lbl, below=1.2mm of g] {situated graph};
+
+% self-originated transformation: the loop Gamma governs
+\draw[self] ($(g.north west)+(6mm,0)$)
+  to[out=110,in=70,looseness=3.0] ($(g.north east)+(-6mm,0)$);
+\node[lbl, align=right, anchor=east] at ($(g.north west)+(-3mm,9mm)$)
+  {self-originated transformation\\[-0.4mm]
+   {\scriptsize$\Gamma_G$ governs this, and only this}};
+
+% --- the boundary ------------------------------------------------------
+\coordinate (bx) at ($(g.east)+(20mm,0)$);
+\draw[thick, gray] ($(bx)+(0,14mm)$) -- ($(bx)+(0,-14mm)$);
+\node[lbl, gray, above] at ($(bx)+(0,14mm)$) {$\mathcal{B}_{W:G}$};
+\node[lbl, gray, below, align=center] at ($(bx)+(0,-14mm)$)
+  {the boundary};
+
+% --- the containing frame ---------------------------------------------
+\node[wbox, minimum width=30mm, minimum height=22mm]
+  (w) at ($(bx)+(24mm,0)$) {$W$};
+\node[lbl, below=1.2mm of w] {containing frame};
+
+% two legs, and they are different causal legs
+\draw[outward] ($(g.east)+(0,5mm)$) -- ($(w.west)+(0,5mm)$)
+  node[lbl, midway, above] {outward influence};
+\draw[inb] ($(w.west)+(0,-5mm)$) -- ($(g.east)+(0,-5mm)$)
+  node[lbl, midway, below] {inbound world forcing};
+
+% --- the proposition, stated where it bites ---------------------------
+\node[leg, below=13mm of g.south east, anchor=north west, xshift=-14mm]
+  (note)
+  {$\Gamma_G$ is \emph{self-governance}, not armour: it constrains what $G$
+   may do to itself,\\
+   and gives $G$ no veto over what $W$ does to it. The three are distinct.};
+\end{tikzpicture}

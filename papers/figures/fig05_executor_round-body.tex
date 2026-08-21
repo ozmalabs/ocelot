@@ -1,0 +1,54 @@
+\begin{tikzpicture}[
+  >={Stealth[length=2.4mm]},
+  stage/.style={draw, rounded corners=1.6pt, minimum width=25mm,
+                minimum height=11mm, font=\small, align=center, inner sep=2pt},
+  rule/.style={draw, rounded corners=1pt, minimum width=13mm,
+               minimum height=5.6mm, font=\scriptsize, fill=black!3},
+  lbl/.style={font=\scriptsize, inner sep=1.6pt},
+  note/.style={font=\scriptsize, inner sep=1.6pt, align=left},
+  flow/.style={->, thick},
+]
+% --- the immutable antecedent base ------------------------------------
+\node[stage] (base) {$\widetilde g^{(k)}$\\[-0.5mm]{\scriptsize antecedent base}};
+\node[lbl, above=1.2mm of base, align=center]
+  {immutable for the whole round};
+
+% --- the rules, all reading the SAME base ------------------------------
+\node[rule] (r1) at ($(base.east)+(24mm,10mm)$) {rule $\rho_1$};
+\node[rule] (r2) at ($(base.east)+(24mm,2mm)$) {rule $\rho_2$};
+\node[rule] (r3) at ($(base.east)+(24mm,-6mm)$) {rule $\rho_3$};
+\node[lbl] at ($(base.east)+(24mm,-13mm)$) {$\vdots$};
+
+\foreach \r in {r1,r2,r3}{\draw[flow] (base.east) -- (\r.west);}
+
+% --- the barrier: same-round writes are not readable -------------------
+\coordinate (bar) at ($(base.east)+(41mm,0)$);
+\draw[very thick, gray, dash pattern=on 1.6mm off 1.2mm]
+  ($(bar)+(0,17mm)$) -- ($(bar)+(0,-17mm)$);
+\node[lbl, gray, align=center] at ($(bar)+(0,20mm)$)
+  {same-round writes\\are not visible};
+
+% --- fresh effect set --------------------------------------------------
+\node[stage] (eff) at ($(bar)+(22mm,0)$)
+  {$E^{(k)}$\\[-0.5mm]{\scriptsize typed proposal effects}};
+\foreach \r in {r1,r2,r3}{\draw[flow, gray] (\r.east) -- (eff.west);}
+
+% --- deterministic merge ----------------------------------------------
+\node[stage] (merge) at ($(eff.east)+(26mm,0)$)
+  {$D^{(k)}\sqcup_D E^{(k)}$\\[-0.5mm]{\scriptsize deterministic merge}};
+\draw[flow] (eff) -- (merge);
+\node[note, below=1.4mm of merge, align=center]
+  {compatible effects merge;\\incompatibility is explicit};
+
+% --- closure and the round boundary ------------------------------------
+\node[stage] (next) at ($(merge.east)+(26mm,0)$)
+  {$D^{(k+1)}$\\[-0.5mm]{\scriptsize next round's deltas}};
+\draw[flow] (merge) -- (next);
+
+\draw[flow, rounded corners=3pt]
+  (next.south) -- ++(0,-14mm) -| (base.south);
+\node[lbl, below=13.4mm of next, xshift=-45mm]
+  {repeat to least fixed point $D^{*}=\operatorname{lfp}(F)$ --- independent of
+   rule enumeration order};
+
+\end{tikzpicture}
