@@ -10,9 +10,10 @@
 | **`BOOK_DOSSIERS.md`** | per-chapter claim + measured evidence + honest gaps | before drafting a chapter |
 | **`FIGURES.md`** | what every figure must show, where its data already lives, and the generator rule | before drawing anything |
 
-`chapters/` holds the drafts. **Six drafted, ~15,700 words**: the front matter
-(`00_how_to_read_the_numbers.md`), chapters 1–4 (Parts I and II complete), and
-chapter 16 (`16_preregistration.md`). Filenames carry the book chapter number;
+`chapters/` holds the drafts. **Seven drafted, ~18,900 words**: the front matter
+(`00_how_to_read_the_numbers.md`), chapters 1–4 (Parts I and II complete),
+chapter 12 (`12_coercive_control.md`) and chapter 16
+(`16_preregistration.md`). Filenames carry the book chapter number;
 `BOOK_DOSSIERS.md` maps those to source-artefact numbers. `figures/` holds
 book figures: **a committed generator script plus its output**, never an output
 alone.
@@ -46,7 +47,6 @@ it.
 
 ## Housekeeping
 
-Six chapters drafted; everything else is plan. Next per `BOOK_PLAN.md`
-§ "Reading order vs drafting order": chapter 12 (coercive control) — drafted
-early despite sitting late, while the method chapter's discipline is fresh —
-then chapters 5, 6 and 7.
+Seven chapters drafted; everything else is plan. Next per `BOOK_PLAN.md`
+§ "Reading order vs drafting order": chapters 5, 6 and 7 (one-shot characters,
+speech, space) — the next three most-instrumented capability arcs.
