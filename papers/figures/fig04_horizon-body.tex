@@ -1,0 +1,50 @@
+\begin{tikzpicture}[
+  >={Stealth[length=2.4mm]},
+  lbl/.style={font=\scriptsize, inner sep=1.6pt},
+  box/.style={draw, rounded corners=1.6pt, minimum width=46mm,
+              minimum height=13mm, font=\small, align=center, inner sep=2.5pt},
+  x=1mm, y=1mm,
+]
+% --- the two quantities, side by side, on ONE dimension ----------------
+\node[box] (N) at (0,14)
+  {$N_{W:G}(\mathcal{X},T)$\\[-0.6mm]{\scriptsize what the deformation
+   can reach}};
+\node[box] (C) at (0,-14)
+  {$C_{\mathrm{rev}}(\Delta\mathcal{N})$\\[-0.6mm]{\scriptsize what revising the
+   Narrative costs}};
+
+% the common comparison dimension -- the precondition, drawn as one
+\draw[thick, gray] (36,22) -- (36,-22);
+\node[lbl, gray, align=center, anchor=south] at (36,22.5)
+  {a common\\comparison dimension};
+\node[lbl, gray, anchor=north, align=center] at (36,-22.5)
+  {both instantiated here,\\or there is no horizon at all};
+
+\draw[->, thick] (N.east) -- (34,14);
+\draw[->, thick] (C.east) -- (34,-14);
+
+% --- the horizon: the equality -----------------------------------------
+\node[box, minimum width=52mm, minimum height=17mm] (H) at (76,0)
+  {$N_{W:G}(\mathcal{X},T)=C_{\mathrm{rev}}(\Delta\mathcal{N})$\\[-0.4mm]
+   {\scriptsize the Narrative horizon}};
+\draw[->, thick] (38,14) .. controls (44,14) and (44,4) .. (49.4,3);
+\draw[->, thick] (38,-14) .. controls (44,-14) and (44,-4) .. (49.4,-3);
+
+\node[lbl, anchor=west, align=left] at (104,0)
+  {an \emph{equality relation},\\not a stored budget};
+
+% --- what it is not -----------------------------------------------------
+\node[lbl, anchor=north west, align=left] at (-26,-34)
+  {\textbf{Two things this figure refuses to draw.} There is no number line
+   here, and no arrow accumulating along one.\\
+   A sequence of expenditures cannot be summed to predict a later
+   measurement --- so a path integral of a per-tick term\\
+   is not an approximation of this quantity, it is a different quantity.
+   And no cross-frame accounting: the equality holds\\
+   only where both sides are instantiated on one dimension, which is a
+   precondition, not a formality.\\[1.4mm]
+   \textbf{THEORY FIGURE.} Nothing here is instrumented. The only occurrence of
+   this construct in the reference tree computes\\
+   a cumulative per-tick sum in host arithmetic and disclaims itself as such
+   --- it is the thing this diagram says not to build.};
+\end{tikzpicture}

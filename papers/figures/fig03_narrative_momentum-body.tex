@@ -1,0 +1,52 @@
+\begin{tikzpicture}[
+  >={Stealth[length=2.4mm]},
+  lbl/.style={font=\scriptsize, inner sep=1.6pt},
+  state/.style={draw, circle, minimum size=5.4mm, inner sep=0pt,
+                font=\scriptsize},
+  x=1mm, y=1mm,
+]
+% --- realised history, carried as structure ----------------------------
+\foreach \i/\x in {0/0, 1/17, 2/34, 3/51}{
+  \node[state, fill=black!7] (h\i) at (\x,0) {};
+}
+\foreach \i/\j in {0/1, 1/2, 2/3}{\draw[->, thick] (h\i) -- (h\j);}
+\node[lbl, below=1.6mm of h0, align=center] {realised history};
+\node[lbl, below=1.6mm of h3, align=center] {now};
+\node[lbl, above=3.4mm of h1, align=center]
+  {the relations this history left behind are still \emph{there}};
+
+% --- the cone of continuations, biased along p -------------------------
+\begin{scope}[shift={(51,0)}]
+  \fill[black!8] (0,0) .. controls (14,7) and (26,11) .. (40,13)
+    -- (40,-13) .. controls (26,-11) and (14,-7) .. (0,0) -- cycle;
+  \fill[black!20] (0,0) .. controls (14,2) and (26,4) .. (40,5)
+    -- (40,-5) .. controls (26,-4) and (14,-2) .. (0,0) -- cycle;
+\end{scope}
+\node[lbl, anchor=west, align=left] at (95,11)
+  {subsequent reachable\\geometry};
+\node[lbl, anchor=west, align=left] at (95,-6)
+  {\emph{retains} a component\\aligned with the\\continuation the\\Narrative
+   represents};
+
+% --- the momentum vector, drawn ON the cone it biases -----------------
+\draw[->, very thick] (h3) -- ++(22,0);
+\node[lbl] at (64,5.5) {$\widehat{\mathbf p}_t$ --- retained direction};
+
+% --- redirection --------------------------------------------------------
+\draw[->, thick, dashed] (h3) .. controls (62,-10) and (74,-20) .. (86,-26);
+\node[lbl, anchor=west, align=left] at (60,-30)
+  {material redirection requires an interaction that changes the relations
+   carrying the operative history ---\\
+   it is not achieved by intending a different continuation};
+
+% --- the recursion, stated ---------------------------------------------
+\node[lbl, anchor=north west, align=left] at (-4,-40)
+  {\textbf{The recursion.} history survives as structure $\Rightarrow$ history
+   enters the next possibility relation.\\[1mm]
+   \textbf{THEORY FIGURE.} The law is deterministic. The ensemble statistic
+   the paper offers for empirical work measures an\\
+   observer's population-level evidence across cases where the observer does
+   not represent every determining\\
+   dimension --- it does not add stochasticity to the law, and nothing here is
+   a picture of a measurement.};
+\end{tikzpicture}

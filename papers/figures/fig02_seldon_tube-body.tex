@@ -1,0 +1,57 @@
+\begin{tikzpicture}[
+  >={Stealth[length=2.4mm]},
+  lbl/.style={font=\scriptsize, inner sep=1.6pt},
+  hist/.style={thick},
+  x=1mm, y=1mm,
+]
+% --- the reachable set, widening with horizon --------------------------
+\fill[black!8]
+  (0,0)
+  .. controls (26,10) and (52,20) .. (78,26)
+  -- (78,-26)
+  .. controls (52,-20) and (26,-10) .. (0,0) -- cycle;
+\node[lbl, anchor=west] at (80,24) {$\mathcal{S}_{h,\rho}(\mathcal{F}_t)$};
+\node[lbl, anchor=west, align=left] at (80,17)
+  {reachable at\\resolution $\rho$};
+
+% --- the acceptable subset --------------------------------------------
+\fill[black!22]
+  (0,0)
+  .. controls (26,4) and (52,9) .. (78,12)
+  -- (78,-13)
+  .. controls (52,-9) and (26,-4) .. (0,0) -- cycle;
+\node[lbl, anchor=west] at (80,4) {$\mathcal{G}_{h,\rho}(\mathcal{F}_t)\subseteq\mathcal{S}$};
+\node[lbl, anchor=west, align=left] at (80,-3)
+  {acceptable:\\goals, viability,\\risk bounds};
+
+% --- the present frame -------------------------------------------------
+\fill (0,0) circle (1.1);
+\node[lbl, below left=0.5mm and 0mm of {(0,0)}] {$\mathcal{F}_t$};
+\node[lbl, above left=0.5mm and 0mm of {(0,0)}, align=right] {the\\present};
+
+% --- two continuations -------------------------------------------------
+\draw[hist] (0,0) .. controls (30,2) and (54,4) .. (78,5);
+\node[lbl, anchor=west, black] at (78.5,5.6) {};
+\node[lbl] at (40,7.5) {no-intervention continuation};
+
+\draw[hist, dashed] (0,0) .. controls (28,-8) and (52,-16) .. (78,-22);
+\node[lbl] at (44,-19) {a continuation that leaves $\mathcal{G}$};
+
+% --- the horizon axis --------------------------------------------------
+\draw[->] (0,-32) -- (84,-32);
+\node[lbl] at (70,-36) {horizon $h$};
+\foreach \x in {0,26,52,78}{\draw (\x,-31) -- (\x,-33);}
+
+% --- the proposition, where it bites ----------------------------------
+\node[lbl, anchor=north west, align=left] at (-4,-38)
+  {\textbf{Minimum intervention.} If the no-intervention continuation stays
+   inside $\mathcal{G}$ over the decision horizon, and every\\
+   non-trivial intervention has non-negative cost, then intervening cannot
+   dominate simply by preserving acceptability.\\[1mm]
+   \textbf{THEORY FIGURE.} The reachable set drawn here is not instrumented in
+   the reference substrate: one call site audits ONE\\
+   candidate trajectory, and the admissible-move enumeration is never composed
+   with a deformation metric. Until they are\\
+   joined, this geometry is a claim about what such a composition would
+   compute --- not a picture of a measurement.};
+\end{tikzpicture}

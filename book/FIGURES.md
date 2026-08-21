@@ -1,8 +1,10 @@
 # FIGURES — the plan for the papers and the book
 
-**Status: plan, with twelve figures drawn.** Chapter 1's set is complete
-(eight, plus a Class C selection); paper 01's set is complete; paper 05 and the
-book's two most-cited conceptual diagrams are drawn. See § "Built so far". The five formal papers currently
+**Status: plan, with nineteen figures drawn — every conceptual diagram in it
+is done.** Chapter 1's set is complete (eight, plus a Class C selection); all
+five papers have their diagrams; the book's six conceptual figures are drawn.
+What remains is per-chapter data figures for chapters 5–13, drawn as each
+chapter is drafted. See § "Built so far". The five formal papers currently
 contain **zero figures** (no `includegraphics`, no TikZ), and the book has none
 because it has no chapters yet. This document says what each needs, where the
 data for it already lives, and the one rule that governs all of them.
@@ -121,11 +123,14 @@ Remaining candidates for later chapters: `results/held_surface/`,
    bar chart of point estimates is exactly the defect run 15 corrected — five
    deltas that were noise. Error bars are not decoration here; they are the
    finding.
-2. **No figure of a mechanism that isn't built.** Paper 02's tube diagram is a
-   *theory* figure and must be captioned as one, because the composition that
-   would make it measurable does not exist yet (`future_manifold.rs` ×
-   `admissible_moves`). Drawing it as if it were instrumented would be the
-   defect ch. 15 catalogues, in picture form.
+2. **No figure of a mechanism that isn't built.** Papers 02–04's diagrams are
+   *theory* figures, and they say so **on the figure**, not only in a caption
+   a typesetter might drop: the reachable set in PAPER-02-1 is not
+   instrumented (`future_manifold.rs` audits ONE candidate; `admissible_moves`
+   is never composed with a deformation metric), and PAPER-04-1 states that
+   the only occurrence of its construct in this tree computes a forbidden
+   cumulative sum in host arithmetic. Drawing either as if it were measured
+   would be the defect ch. 15 catalogues, in picture form.
 
 ## Built so far
 
@@ -136,6 +141,12 @@ Remaining candidates for later chapters: `results/held_surface/`,
 | **PAPER-05-1** | one synchronous executor round | `papers/figures/fig05_executor_round.pdf` | `fig05_executor_round.tex` (+ `-body.tex`) | — (conceptual) |
 | **SD-1** | the growth ladder, Occam-ordered | `book/figures/sd_1_ladder.svg` | `fig_sd_ladder.py` | — (conceptual) |
 | **FR-1** | in-frame integer, cross-frame continuum | `book/figures/frame_1_invariant.svg` | `fig_frame_invariant.py` | — (conceptual) |
+| **PAPER-02-1** | the Seldon manifold, its acceptable subset, minimum intervention | `papers/figures/fig02_seldon_tube.pdf` | `fig02_seldon_tube.tex` | — (**theory**) |
+| **PAPER-03-1** | narrative momentum and what redirection costs | `papers/figures/fig03_narrative_momentum.pdf` | `fig03_narrative_momentum.tex` | — (**theory**) |
+| **PAPER-04-1** | the Narrative horizon as an equality relation | `papers/figures/fig04_horizon.pdf` | `fig04_horizon.tex` | — (**theory**) |
+| **SR-1** | shape and rule: two axes, not two candidates | `book/figures/shape_1_two_axes.svg` | `fig_shape_and_rule.py` | — (conceptual) |
+| **FR-2** | two orthogonal unbounded directions | `book/figures/frame_2_two_axes.svg` | `fig_two_axes.py` | — (conceptual) |
+| **IN-1** | the chain, meeting to collapse | `book/figures/intro_1_chain.svg` | `fig_intro_chain.py` | — (conceptual) |
 | **EYE-1** | Troxler fading, replicated | `book/figures/eye_1_troxler.svg` | `fig_troxler_fade.py` | `results/troxler_confirm.json` |
 | **EYE-2** | illumination invariance, log vs linear | `book/figures/eye_2_invariance.svg` | `fig_eye_invariance.py` | `results/eye_confirm.log` (H1) |
 | **EYE-3** | Weber–Fechner, predicted then measured | `book/figures/eye_3_weber.svg` | `fig_eye_weber.py` | `results/eye_confirm.log` (H2) |
@@ -206,17 +217,21 @@ standing lesson is that instruments need positive controls too.
    drawn** (EYE-6, EYE-7, EYE-8). The scaling wall (1317 → 137.8 ms) already
    has a plot in `results/eye_timing/scaling.png` (Class C — select, don't
    redraw), which closes chapter 1's figure set.
-3. Paper conceptual diagrams — **paper 01 is complete** (collapse dynamic,
+3. ~~Paper conceptual diagrams~~ — **all five papers now have theirs.**
+   Papers 02, 03 and 04 are marked **THEORY** on the figure itself, not only
+   in a caption, because those mechanisms are not instrumented. Paper 01 is
+   complete (collapse dynamic,
    boundary; the residual-delta figure folded into the collapse diagram rather
    than drawn separately, since it is the same arrow) and **paper 05's
    executor round is drawn**. Remaining: paper 02's shape tube and reachability
-   compression, paper 03's narrative dimension, paper 04's budget and horizon —
-   all four are THEORY figures and must be captioned as such, per the
-   no-figure-of-an-unbuilt-mechanism rule below.
-4. Book conceptual diagrams — **SD-1 (the ladder) and FR-1 (the frame
-   invariant) are drawn**, the two that the most chapters cite. Remaining:
-   shape-vs-rule (ch. 3), the two unbounded axes (ch. 2 + epilogue), the
-   introduction's ten-box chain, and the part-structure page.
+   compression is the one deliberately NOT drawn: it would need the composed
+   reachability the substrate does not have, and drawing a compression of a
+   set nothing computes would be a picture of an unbuilt mechanism twice over.
+4. ~~Book conceptual diagrams~~ — **done**: SD-1 (the ladder), FR-1 (the
+   frame invariant), SR-1 (shape vs rule), FR-2 (the two unbounded axes),
+   IN-1 (the introduction's chain). The part-structure page is deliberately
+   deferred until the chapters exist — a diagram of a table of contents that
+   may still move is a maintenance burden, not a figure.
 5. ~~Class C selection for chapter 1~~ — **done**
    (`book/figures/CLASS_C_CH1.md`). Class C selection for the remaining
    chapters, while drafting each.
