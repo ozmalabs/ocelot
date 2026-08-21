@@ -1,6 +1,7 @@
 # FIGURES — the plan for the papers and the book
 
-**Status: plan, with four figures drawn.** See § "Built so far" below. The five formal papers currently
+**Status: plan, with eight figures drawn — chapter 1's set is complete.**
+See § "Built so far" below. The five formal papers currently
 contain **zero figures** (no `includegraphics`, no TikZ), and the book has none
 because it has no chapters yet. This document says what each needs, where the
 data for it already lives, and the one rule that governs all of them.
@@ -120,8 +121,17 @@ belief forming over time), `results/doom_ingraph_map/map_frame_*.png` (ch. 7),
 |---|---|---|---|---|
 | **PAPER-01-1** | the collapse dynamic | `papers/figures/fig01_collapse_dynamic.pdf` | `fig01_collapse_dynamic.tex` (+ `-body.tex`, `\input`-able into the paper) | — (conceptual) |
 | **EYE-1** | Troxler fading, replicated | `book/figures/eye_1_troxler.svg` | `fig_troxler_fade.py` | `results/troxler_confirm.json` |
+| **EYE-2** | illumination invariance, log vs linear | `book/figures/eye_2_invariance.svg` | `fig_eye_invariance.py` | `results/eye_confirm.log` (H1) |
+| **EYE-3** | Weber–Fechner, predicted then measured | `book/figures/eye_3_weber.svg` | `fig_eye_weber.py` | `results/eye_confirm.log` (H2) |
+| **EYE-4** | the drift crossover, and its ablation | `book/figures/eye_4_drift.svg` | `fig_eye_drift.py` | `results/eye_confirm.log` (H3) |
+| **EYE-5** | depth and stereo: the refusal matrix | `book/figures/eye_5_depth_controls.svg` | `fig_eye_depth_controls.py` | `results/depth_measure.json`, `results/stereo_measure.json` |
 | **EMO-1** | the marshmallow confound, both directions | `book/figures/emotion_1_marshmallow_confound.svg` | `fig_marshmallow_confound.py` | `results/marshmallow_delay/results.json` |
 | **EMO-2** | Harlow on equal drive weights | `book/figures/emotion_2_harlow.svg` | `fig_harlow_preference.py` | `results/harlow_d1.json` |
+
+`book/figures/eye_confirm.py` parses `results/eye_confirm.log` — the eye's
+confirmatory block (prereg committed **before** the run, seeds 11000–11999,
+n=12) — and three figures read it. Means, CI95s and percentages are taken as
+recorded; nothing is recomputed.
 
 **Toolchain, chosen deliberately.** There is no matplotlib in this tree, and
 adding a plotting dependency to draw twenty figures is a worse trade than
@@ -160,12 +170,15 @@ standing lesson is that instruments need positive controls too.
 ## Order of work
 
 1. ~~Paper 01's collapse diagram~~ — **done** (PAPER-01-1).
-2. **Class B ch. 1 figures** — Troxler is **done** (EYE-1). Next: the Weber
-   invariance gap and the drift α crossover (locate their results files first —
-   they are cited in `THE_EYE.md` §1 but not yet traced to a committed path),
-   then depth-from-velocity-variation and the N=2/N=3 stereo control, whose
-   data is committed (`results/depth_measure.json`,
-   `results/stereo_measure.json`).
+2. ~~Class B ch. 1 figures~~ — **done** (EYE-1 … EYE-5). The Weber and drift
+   data turned out to be traceable after all: `results/eye_confirm.log` holds
+   H1–H4 with CI95s and, crucially, the ablated and linear control arms.
+   Remaining ch. 1 gaps, both needing their data located first: the
+   centre-surround emergence figures (CS 1.0839, σ_ON,ON 1.627 vs σ_ON,OFF
+   3.264) and retinal-wave structure (entropy 0.195 vs 0.000), and the
+   DC-blob eigenspectrum behind the cortex null. The scaling wall
+   (1317 → 137.8 ms) already has a plot in `results/eye_timing/scaling.png`
+   (Class C — select, don't redraw).
 3. The remaining paper conceptual diagrams, as each paper is revised — paper
    05's executor round is the next most useful.
 4. Class C selection, per chapter, while drafting.

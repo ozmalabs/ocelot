@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="574" viewBox="0 0 780 574" role="img"><style>
+:root{--ink:#16181d;--muted:#5b6270;--rule:#c8cdd6;--arm-a:#1f6f8b;
+--arm-b:#b4531f;--accent:#2f7d4f;--null:#8a8f99;--bg:transparent}
+@media (prefers-color-scheme:dark){:root{--ink:#e6e8ec;--muted:#9aa1ae;
+--rule:#3a4049;--arm-a:#5fb6d4;--arm-b:#e08a52;--accent:#6fc08d;--null:#767c86}}
+text{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+fill:var(--ink)}
+.lbl{font-size:12px}.tick{font-size:11px;fill:var(--muted)}
+.ttl{font-size:15px;font-weight:600}.sub{font-size:12px;fill:var(--muted)}
+.cap{font-size:11px;fill:var(--muted)}
+.note{font-size:11.5px;fill:var(--muted)}
+.val{font-size:11.5px;font-weight:600}
+</style>
+<text x="46.00" y="34.00" class="ttl" text-anchor="start">Depth is discovered — and refused where it isn&#x27;t there</text>
+<text x="46.00" y="50.00" class="sub" text-anchor="start">One operation, two frame sources: one eye over ticks, and N eyes at one instant</text>
+<text x="46.00" y="76.00" class="lbl" text-anchor="start">ONE MOVING EYE  ·  depth from motion</text>
+<rect x="46.00" y="88.00" width="688.00" height="30.00" rx="2" fill="var(--null)" fill-opacity="0.08" stroke="none"/>
+<line x1="46.00" y1="88.00" x2="46.00" y2="118.00" stroke="var(--null)" stroke-width="2.4" stroke-linecap="round"/>
+<text x="56.00" y="101.00" class="lbl" text-anchor="start">a flat scene</text>
+<text x="56.00" y="114.00" class="note" text-anchor="start">one surface, one velocity</text>
+<text x="724.00" y="101.00" class="val" text-anchor="end" fill="var(--muted)">mints nothing</text>
+<text x="724.00" y="114.00" class="note" text-anchor="end">correct: nothing to explain</text>
+<rect x="46.00" y="126.00" width="688.00" height="30.00" rx="2" fill="var(--null)" fill-opacity="0.08" stroke="none"/>
+<line x1="46.00" y1="126.00" x2="46.00" y2="156.00" stroke="var(--null)" stroke-width="2.4" stroke-linecap="round"/>
+<text x="56.00" y="139.00" class="lbl" text-anchor="start">a multi-colour scene at ONE velocity</text>
+<text x="56.00" y="152.00" class="note" text-anchor="start">many regions, no velocity variation</text>
+<text x="724.00" y="139.00" class="val" text-anchor="end" fill="var(--muted)">mints nothing</text>
+<text x="724.00" y="152.00" class="note" text-anchor="end">correct: depth is not region presence</text>
+<rect x="46.00" y="164.00" width="688.00" height="30.00" rx="2" fill="var(--arm-a)" fill-opacity="0.08" stroke="none"/>
+<line x1="46.00" y1="164.00" x2="46.00" y2="194.00" stroke="var(--arm-a)" stroke-width="2.4" stroke-linecap="round"/>
+<text x="56.00" y="177.00" class="lbl" text-anchor="start">a scene with real depth</text>
+<text x="56.00" y="190.00" class="note" text-anchor="start">2 layers, velocities [[2, 0], [1, 0]]</text>
+<text x="724.00" y="177.00" class="val" text-anchor="end">mints latent:depth</text>
+<text x="724.00" y="190.00" class="note" text-anchor="end">MDL 36 → 13  (2.769×)</text>
+<rect x="46.00" y="202.00" width="688.00" height="30.00" rx="2" fill="var(--null)" fill-opacity="0.08" stroke="none"/>
+<line x1="46.00" y1="202.00" x2="46.00" y2="232.00" stroke="var(--null)" stroke-width="2.4" stroke-linecap="round"/>
+<text x="56.00" y="215.00" class="lbl" text-anchor="start">400 random shuffles of that same scene</text>
+<text x="56.00" y="228.00" class="note" text-anchor="start">window K = 8</text>
+<text x="724.00" y="215.00" class="val" text-anchor="end" fill="var(--muted)">mints nothing</text>
+<text x="724.00" y="228.00" class="note" text-anchor="end">0/400 spurious mints</text>
+<text x="46.00" y="258.00" class="lbl" text-anchor="start">N EYES AT ONE INSTANT  ·  the SAME Term, unchanged</text>
+<rect x="46.00" y="270.00" width="688.00" height="30.00" rx="2" fill="var(--null)" fill-opacity="0.08" stroke="none"/>
+<line x1="46.00" y1="270.00" x2="46.00" y2="300.00" stroke="var(--null)" stroke-width="2.4" stroke-linecap="round"/>
+<text x="56.00" y="283.00" class="lbl" text-anchor="start">one disparity, at N = 2 and at N = 3</text>
+<text x="56.00" y="296.00" class="note" text-anchor="start">many surfaces, no disparity variation</text>
+<text x="724.00" y="283.00" class="val" text-anchor="end" fill="var(--muted)">mints nothing</text>
+<text x="724.00" y="296.00" class="note" text-anchor="end">correct: not from multiple eyes</text>
+<rect x="46.00" y="308.00" width="688.00" height="30.00" rx="2" fill="var(--null)" fill-opacity="0.08" stroke="none"/>
+<line x1="46.00" y1="308.00" x2="46.00" y2="338.00" stroke="var(--null)" stroke-width="2.4" stroke-linecap="round"/>
+<text x="56.00" y="321.00" class="lbl" text-anchor="start">zero disparity — a scene at infinity</text>
+<text x="56.00" y="334.00" class="note" text-anchor="start">N = 3</text>
+<text x="724.00" y="321.00" class="val" text-anchor="end" fill="var(--muted)">mints nothing</text>
+<text x="724.00" y="334.00" class="note" text-anchor="end">correct: nothing to order</text>
+<rect x="46.00" y="346.00" width="688.00" height="30.00" rx="2" fill="var(--arm-a)" fill-opacity="0.08" stroke="none"/>
+<line x1="46.00" y1="346.00" x2="46.00" y2="376.00" stroke="var(--arm-a)" stroke-width="2.4" stroke-linecap="round"/>
+<text x="56.00" y="359.00" class="lbl" text-anchor="start">real disparity variation</text>
+<text x="56.00" y="372.00" class="note" text-anchor="start">eye count read from the graph: 2 and 3</text>
+<text x="724.00" y="359.00" class="val" text-anchor="end">mints latent:depth</text>
+<text x="724.00" y="372.00" class="note" text-anchor="end">same ordering as the motion arm</text>
+<rect x="46.00" y="384.00" width="688.00" height="30.00" rx="2" fill="var(--null)" fill-opacity="0.08" stroke="none"/>
+<line x1="46.00" y1="384.00" x2="46.00" y2="414.00" stroke="var(--null)" stroke-width="2.4" stroke-linecap="round"/>
+<text x="56.00" y="397.00" class="lbl" text-anchor="start">400 random shuffles</text>
+<text x="56.00" y="410.00" class="note" text-anchor="start">disparity structure destroyed</text>
+<text x="724.00" y="397.00" class="val" text-anchor="end" fill="var(--muted)">mints nothing</text>
+<text x="724.00" y="410.00" class="note" text-anchor="end">0/400 spurious mints</text>
+<line x1="46.00" y1="428.00" x2="734.00" y2="428.00" stroke="var(--rule)" stroke-width="0.8" stroke-linecap="round"/>
+<text x="46.00" y="450.00" class="lbl" text-anchor="start">Eyes and ticks are the same resource</text>
+<text x="46.00" y="470.00" class="note" text-anchor="start">DepthInfer generalised across frame-source with an EMPTY source diff: fed N eyes at one instant</text>
+<text x="46.00" y="485.00" class="note" text-anchor="start">instead of one eye over ticks, the unchanged Term mints the same dimension, in the same order. It was</text>
+<text x="46.00" y="500.00" class="note" text-anchor="start">built for N and never for 2 — the eye count falls out of Count(Eye hubs), with no literal anywhere —</text>
+<text x="46.00" y="515.00" class="note" text-anchor="start">and N = 3 rejects what N = 2 would hallucinate.</text>
+<text x="46.00" y="538.00" class="note" text-anchor="start">Held additively, not chosen between: stereo grounds in 1 tick where motion needs 6 —</text>
+<text x="46.00" y="552.00" class="note" text-anchor="start">same dimension, quicker, and more precise with more baselines. You never pick parallax OR stereopsis.</text>
+<text x="46.00" y="572.00" class="cap" text-anchor="start">Sources: results/depth_measure.json, results/stereo_measure.json · generator: book/figures/fig_eye_depth_controls.py</text>
+</svg>
