@@ -90,11 +90,13 @@ the **diagnostic**: it is where the other terms cancel and the missing term beco
 visible. Ocelot already carries both halves and no wire between them — `qf_relax` relaxes
 through a per-portal `cost` attribute, and `EmotionParams`/`mood`/`affect_coupling` exist,
 with **zero** references to any of them anywhere in `quanta_navigation.json`.
-The work that would make Stage B viable is therefore **seed-data, not engine**: give the
-navigation rules an explicit tie-break — a canonical direction preference, a
-lowest-coordinate rule, a held heading — so that ties are resolved by something written
-down. Until that exists, order is the policy, and replacing it with a refusal removes
-capability.
+The work that would make Stage B viable is therefore **seed-data, not engine**. An earlier
+draft of this paragraph proposed an explicit arbitrary tie-break — canonical direction,
+lowest coordinate, held heading. That is superseded: those are *further unmotivated
+conventions*, differing from enumeration order only in being written down, and the human
+evidence says the deciding quantity is a weighted felt cost rather than a convention at
+all. Until something of that kind exists, order is the policy, and replacing it with a
+refusal removes capability.
 
 ## What this does not establish
 
