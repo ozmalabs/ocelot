@@ -10,8 +10,9 @@
 | **`BOOK_DOSSIERS.md`** | per-chapter claim + measured evidence + honest gaps | before drafting a chapter |
 | **`FIGURES.md`** | what every figure must show, where its data already lives, and the generator rule | before drawing anything |
 
-`chapters/` holds the drafts. **Chapter 1 (`01_the_eye.md`) is drafted** —
-~5,900 words, against the eight EYE figures and the Class C selection. `figures/` holds
+`chapters/` holds the drafts. **Chapters 1–4 are drafted** (~12,500 words):
+the eye, the frame invariant, shape and rule, dynamic quantisation — Part I and
+Part II complete. `figures/` holds
 book figures: **a committed generator script plus its output**, never an output
 alone.
 
@@ -44,7 +45,7 @@ it.
 
 ## Housekeeping
 
-Chapter 1 is drafted; everything else is plan. Next per `BOOK_PLAN.md`
-§ "Reading order vs drafting order": chapters 2, 3 and 4 (the frame invariant,
-shape and rule, dynamic quantisation) — written *after* the chapter that needs
-them, which is the point of drafting the eye first.
+Chapters 1–4 are drafted; everything else is plan. Next per `BOOK_PLAN.md`
+§ "Reading order vs drafting order": chapter 16 (preregistration as method) and
+the front matter, while chapter 1's retractions are fresh — then chapter 12
+(coercive control), then 5, 6, 7.
