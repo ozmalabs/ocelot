@@ -195,9 +195,20 @@ binding that progresses wins (`rewrite.rs:2213`).
 v22 requires determinism **and** non-semantic enumeration order simultaneously. Ocelot satisfies the
 first *by means of* violating the second.
 
-The engine has already measured this on itself. `runners/dsl/src/argmin_tie.rs:5-15` quotes a prior
-measurement verbatim: *"`Argmin` returned a winner from FIVE IDENTICAL CANDIDATES ... on all 200
-draws."* `ArgminUnique`/`ArgminRefusal` exist and refuse on exact non-uniqueness with no epsilon —
+**Measured, 2026-08-21** (`docs/research/engine_substrate/ARGMIN_TIE_CENSUS_RESULTS.md`): on a
+five-utterance conversational workload with the full seed set, **95 of 148 selector firings (64.19%)
+are exact ties resolved by enumeration order**. Four distinct sites tie; one — `Argmax` over
+`ranked_source.salience` in `default_mode_mint_goal_context` — accounts for 90 of the 95, and ties
+on 90 of 90 firings because `salience` is **unset on every goal it ranks**. That selector does not
+rank; it returns the first-encountered goal while presenting as a salience ranking. So order is not
+merely *how* determinism is achieved here — on this workload it is the primary decider in a majority
+of firings and the only decider at the dominant site. Caveats in the results doc: one workload,
+conversation paths only, and the instrument reaches `Argmin`/`Argmax` Terms but not rule-order
+scanning or first-binding-wins, so the true order-dependence is at least this and probably more.
+
+The engine had already measured a version of this on itself. `runners/dsl/src/argmin_tie.rs:5-15`
+quotes a prior measurement verbatim: *"`Argmin` returned a winner from FIVE IDENTICAL CANDIDATES ...
+on all 200 draws."* `ArgminUnique`/`ArgminRefusal` exist and refuse on exact non-uniqueness with no epsilon —
 matching v22's exact-equality requirement — but they are opt-in per Term, default `MODE_OFF`, return
 `Value::None` rather than a represented tied set, and the module header records that they cover
 "185 CONFIGURATION reads and ZERO VERDICT reads." **The instrument exists and is not wired to the
