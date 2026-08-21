@@ -80,6 +80,16 @@ routing requires a choice.
 
 That does not make the theory wrong; it makes the missing piece visible. v22's own answer
 is that a tie must be resolved by *represented* structure rather than by order or retry.
+
+**What that represented structure should be is worked out in
+`AFFECT_WEIGHTED_ROUTE_VALUATION_DESIGN.md`, and the answer reframes this result.** Human
+route choice between equal-length options is a *weighted valuation with a felt-cost term*,
+not a distance calculation with a tie-break attached — and the weight can be large enough
+that feeling overrules distance outright. On that reading a tie is not the phenomenon but
+the **diagnostic**: it is where the other terms cancel and the missing term becomes
+visible. Ocelot already carries both halves and no wire between them — `qf_relax` relaxes
+through a per-portal `cost` attribute, and `EmotionParams`/`mood`/`affect_coupling` exist,
+with **zero** references to any of them anywhere in `quanta_navigation.json`.
 The work that would make Stage B viable is therefore **seed-data, not engine**: give the
 navigation rules an explicit tie-break — a canonical direction preference, a
 lowest-coordinate rule, a held heading — so that ties are resolved by something written
