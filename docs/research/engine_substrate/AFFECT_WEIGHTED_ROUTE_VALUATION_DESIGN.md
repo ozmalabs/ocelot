@@ -72,7 +72,34 @@ only because that state is unrepresented in the observer's frame. What DDM calls
 **the residual of an unrepresented frame** — precisely the thing this substrate exists to
 make representable.
 
-## 3. Weighted, and sometimes dominant
+## 3. The everyday proof, which needs no tie at all
+
+**I will drive the longer route to avoid stop/start traffic.**
+
+That one sentence does more work than the experimental literature above, because there is
+no tie in it. The chosen route is strictly longer, so distance-minimisation is not being
+*tie-broken*, it is being **overruled**. Every measurement in this repo located the missing
+term at ties, because ties are where it becomes visible; this is the same term operating in
+the clear.
+
+It settles three things at once:
+
+- **Distance is not the objective.** A model that minimises distance and consults something
+  else only on exact ties cannot produce this choice at all.
+- **The deciding quantity is felt, not geometric.** Stop/start is not necessarily slower.
+  What is worse about it is attention load, jerk, and irritation — an appraisal, not a
+  measurement of the road.
+- **The weight can exceed the geometric term.** Which is §4's claim, demonstrated by a
+  commuter rather than argued from effect sizes.
+
+A sceptic can rename the felt term "non-distance cost" — fuel, attention, time-variance —
+and the design consequence is unchanged: **the substrate needs a represented term that is
+not geometry.** The affective reading is the stronger one because the preference varies
+between people in ways that do not track any objective cost, and because most drivers
+cannot state the exchange rate they are applying. But nothing below depends on winning that
+argument.
+
+## 4. Weighted, and sometimes dominant
 
 The critical structural point, and the reason "tie-break" is the wrong frame:
 
@@ -85,7 +112,7 @@ So affect is not a last-resort arbiter invoked when reason is silent. It is a te
 valuation at all times, whose visibility happens to peak when the other terms cancel. That
 is why ties were where we found it: **ties are the diagnostic, not the phenomenon.**
 
-## 4. What ocelot has today — measured
+## 5. What ocelot has today — measured
 
 `seeds/quanta_navigation.json`, 14 rules, `depends_on: [navigation_modes, affordance_basis]`:
 
@@ -104,7 +131,7 @@ the affect-coupling arc landed in the commit immediately preceding this work.
 
 **So the substrate already has both halves and no wire between them.**
 
-## 5. The proposal
+## 6. The proposal
 
 Feed a disposition-weighted term into `portal.cost`, rather than adding a bespoke
 navigation heuristic or a tie-break rule.
@@ -129,7 +156,7 @@ The substrate should **not** copy the human residual. Humans have irreducible-in
 variability; priors-plus-disposition gives determinism *and* inspectability, which is
 better than the thing being modelled, not worse.
 
-## 6. Cheap probes, before anything is built
+## 7. Cheap probes, before anything is built
 
 1. **Can a navigation rule read `EmotionParams` at all?** Measured above: no seed reference
    exists, but the dependency closure may still permit it. Establish whether
@@ -144,11 +171,20 @@ better than the thing being modelled, not worse.
    produces better, worse, or merely different routes is unmeasured, and probe 2 would
    begin to answer it.
 
-## 7. What would falsify this
+## 8. What would falsify this
 
 - **If `portal.cost` cannot express the effect** — e.g. the flood requires non-negative
   costs and the interesting dispositional effects are attractive rather than repulsive —
   the insertion point is wrong even if the theory is right.
+- **If the felt cost is not additive, the flood cannot carry it.** `qf_relax` accumulates
+  `portal.cost` through `Plus`, and Bellman/Dijkstra relaxation requires additive,
+  non-negative edge costs for its optimality guarantee. Stop/start count is plausibly
+  additive per junction, but the *felt* quantity may well be superlinear — ten stops worse
+  than twice five — or a gestalt property of the whole route rather than a sum over hops.
+  **This is the most likely failure mode of the proposal**, and it is a stronger objection
+  than the sign problem above: a superlinear cost does not merely mis-rank routes, it
+  invalidates the flood's optimality. If it holds, the felt term belongs at route-scoring
+  grain rather than inside the relaxation, and the insertion point moves.
 - **If disposition is too slow-moving to differentiate portals within one route decision**,
   it can weight a whole route but not choose between adjacent hops, and the term belongs at
   a coarser grain than the flood.
@@ -156,7 +192,7 @@ better than the thing being modelled, not worse.
   doing something better than a principled term would, which would be a genuinely
   interesting result and should be reported rather than tuned away.
 
-## 8. What is not claimed
+## 9. What is not claimed
 
 - That affect is the *only* missing term. Effort appraisal covers the measured human
   factors; familiarity, fluency and risk are plausibly separate and untested here.
