@@ -1,0 +1,348 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage{natbib}
+\usepackage[margin=1in]{geometry}
+\newtheorem{axiom}{Axiom}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{hypothesis}[definition]{Hypothesis}
+\newtheorem{corollary}[definition]{Corollary}
+\theoremstyle{remark}\newtheorem*{remark}{Remark}
+\newcommand{\Poss}{\mathcal{P}}
+\newcommand{\Coll}{\mathcal{C}}
+\newcommand{\Hist}{\mathcal{H}}
+\title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
+\author{Matthew Parslow\\Independent Researcher}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+This paper states a minimal recursive theory of realised change. Its primitive graph is
+\[\boxed{G=(g,r,\Gamma),}\]
+where $g$ is represented state, $r$ is operative transformation structure, and $\Gamma$ is the admissibility grammar. Nothing in graphhood requires a world model, prediction, goals, valuation, agency, Narrative, or cognition. The central dynamical structure is
+\[\boxed{G_t\longrightarrow\Poss(G_t)\xrightarrow{\Coll_t}G_{t+1},}\]
+where present structure determines admissible possibility and collapse produces one realised continuation. The realised successor becomes the antecedent of the next step.
+
+A situated graph meets containing structure through a boundary. World-caused change is not vetoed by the graph's self-admissibility grammar: $\Gamma$ governs graph-originated transformation, not the containing world's ability to alter the graph. Where a containing frame no longer admits an identity-preserving continuation, that situated identity terminates rather than becoming an ill-formed state. Identity and persistence are therefore frame-relative relations, while any represented SELF identity inside $g$ remains ordinary graph content and may be copied.
+
+The theory requires only discrete distinctions at the operative frame. This is a sufficiency claim, not an assertion that an ultimate containing supergraph cannot be continuous. Continuity may remain a useful or fundamental grounding; it is simply not required as a primitive by the present theory.
+\end{abstract}
+
+\section{Scope and epistemic status}
+This paper contains the smallest set of commitments required for the later theory. It distinguishes axioms and definitions, deductive consequences, groundings into existing theories, and empirical hypotheses. It deliberately excludes executor design, rule scheduling, proposal records, retry protocols, valuation algorithms, and controller architecture.
+
+\section{Axiom $-1$: relativity of grounding}
+\setcounter{axiom}{-2}
+\begin{axiom}[Relativity of grounding]
+There is no operational view from nowhere. Every distinction, measurement, identity relation, admissibility judgement, and represented quantity is made in some frame. Frames may represent one another, but no quantity used by the theory requires a frame-independent evaluator.
+\end{axiom}
+\begin{remark}
+This removes a privileged frame, not determinacy. Within a frame, relations may be exact, restrictive, comparable, and falsifiable. The standpoint is structurally consonant with relational formulations in physics, especially relational quantum mechanics, in which physical facts are indexed to interactions rather than assigned from a privileged observer-independent state description \citep{rovelli1996}. The present axiom is broader and is not derived from that programme.
+\end{remark}
+
+\section{The minimal graph}
+\begin{definition}[Graph]
+A graph is
+\[\boxed{G=(g,r,\Gamma),}\]
+where $g$ is represented state, $r$ is operative transformation structure, and $\Gamma$ is the admissibility grammar governing graph-originated transformations.
+\end{definition}
+No parent pointer, world model, affordance catalogue, Narrative, Prospect, Value, or self-model is primitive. Such structures may exist in $g$ when the graph actually represents them.
+
+\begin{proposition}[Minimal graph sufficiency]
+Any additional structure required only by a particular capability class is represented content or grounding, not a primitive of graphhood, unless a graph lacking it cannot participate in the basic realised transition relation.
+\end{proposition}
+
+\section{Discrete sufficiency}
+\begin{hypothesis}[Discrete sufficiency]
+Every quantity required internally by the present substrate can be represented by discrete distinguishable states at the operative frame and resolution.
+\end{hypothesis}
+A convenient coordinate is an integer index $n\in\mathbb Z$ with grounding
+\[x=\phi_{\mathcal F}(n).\]
+The map may be nonlinear, nonuniform, state-dependent, and dynamically re-quantised. Thus ``integer-valued'' means discretely indexed, not globally unit-spaced.
+
+\begin{proposition}[Arbitrary refinement does not imply continuity]
+A dimension may admit arbitrarily fine or dynamically changing quantisation without requiring the theory to posit realised values at every real-valued intermediate point.
+\end{proposition}
+\begin{remark}
+A continuous containing supergraph is neither required nor excluded. Existing continuous physical theories may ground or contain this substrate without contradiction.
+\end{remark}
+
+\section{Admissible possibility}
+Let $\Poss(G_t)$ denote the structured family of immediate continuations admitted by the present graph and its current relations.
+\begin{definition}[Admissible continuation]
+A continuation $\delta$ belongs to $\Poss(G_t)$ iff it is expressible in the current graph vocabulary, satisfies the relevant antecedent conditions, and is admissible under the operative grammar for the transformation class in question.
+\end{definition}
+The theory does not require a particular algorithm for constructing $\Poss(G_t)$. This extensional separation between graph transformation as a mathematical relation and any particular rewriting algorithm follows the general discipline of algebraic graph transformation, where rewrite rules and admissible transformations can be studied independently of one concrete executor \citep{ehrig2006}.
+
+\begin{definition}[Partial transformation]
+Write
+\[G\oplus\delta\rightharpoonup G'\]
+for the partial realised transformation relation. Undefinedness means that $\delta$ does not produce a structurally valid successor under the stated conditions. No ontological \textsc{FAIL} state is required.
+\end{definition}
+
+\section{Collapse and realised history}
+\begin{definition}[Collapse]
+Collapse is the frame-relative passage from a pre-realisation possibility structure to realised continuation:
+\[\boxed{\Coll_t:\Poss(G_t)\rightsquigarrow G_{t+1}.}\]
+It is not identified with deliberative choice.
+\end{definition}
+The term is inherited from quantum measurement theory, where a formal distinction is made between a pre-measurement state and the realised measurement record; the historical lineage includes the von Neumann measurement scheme and later relative-state formulations \citep{vonneumann1955,everett1957}. This paper does not claim that every grounding reproduces the full quantum formalism; it claims that the possibility-to-realisation distinction is load-bearing.
+
+\begin{definition}[History]
+The realised history of a frame is
+\[\Hist=G_0\xrightarrow{\Coll_0}G_1\xrightarrow{\Coll_1}G_2\rightarrow\cdots.\]
+\end{definition}
+
+\section{The Law of Graphic Equalisation}
+\begin{hypothesis}[Law of Graphic Equalisation]
+For realised graph $G_t$, present graph structure determines admissible continuation structure $\Poss(G_t)$. Interaction and collapse realise successor $G_{t+1}$, and that realised successor becomes the antecedent graph for the next local transition. Recursive dynamics are generated by repeated equalisation between present represented structure, admissible transformation, containing constraints, and realised continuation.
+\end{hypothesis}
+Thus
+\[\boxed{G_t\rightarrow\Poss(G_t)\xrightarrow{\Coll_t}G_{t+1}\rightarrow\Poss(G_{t+1})\xrightarrow{\Coll_{t+1}}G_{t+2}\rightarrow\cdots.}\]
+
+\section{The antecedent-state principle}
+\begin{proposition}[Antecedent-state principle]
+The conditions under which a transition is admissible are functions of its antecedent state. A consequence that exists only because a transition has occurred cannot retroactively serve as an antecedent cause of that same transition.
+\end{proposition}
+\begin{corollary}[No self-authorisation from future state]
+A reflective transformation of $r$ or $\Gamma$ may alter the successor graph, but newly installed structure cannot authorise the transition by which it first comes into existence.
+\end{corollary}
+
+\section{Recursion and reflection}
+\begin{definition}[Reflective graph]
+A graph is reflective over structure $X\subseteq G$ when $X$ is represented in the graph and graph-originated transformations may take that representation as an operand.
+\end{definition}
+\begin{theorem}[The grammar is the loop]
+If $\Gamma$ is represented as graph structure and admits transformations whose operand is that representation of $\Gamma$, then the resulting recursion is not a separate loop acting on the grammar. The grammar acting on itself is the loop.
+\end{theorem}
+\begin{proof}
+The transition $\Gamma_t\rightarrow\Gamma_{t+1}$ is itself a graph transition licensed from the antecedent graph. No additional external operator is required to create the recursion. The self-applicable grammar and the compound loop are therefore two descriptions of the same transition structure. Computational reflection provides direct prior art for systems that represent and operate on their own interpreter or meta-level structure \citep{smith1982,maes1987}. The identity claim made here---that the self-applicable grammar and the recursive loop are the same structure at two descriptions---is the stronger claim of this paper.
+\end{proof}
+
+\section{Situated graphs and world boundaries}
+\begin{definition}[World boundary]
+A boundary $\mathcal B_{W:G}$ is the relation through which containing frame $W$ can alter situated graph $G$ and through which graph-originated deformation can participate in interactions represented by $W$.
+\end{definition}
+A graph need not contain a pointer to $W$; containment belongs to the containing frame.
+
+\begin{proposition}[Admissibility is self-governance, not armour]
+$\Gamma_G$ constrains graph-originated transformations of $G$. It does not give $G$ a veto over world-caused change represented through $\mathcal B_{W:G}$.
+\end{proposition}
+Hence
+\[\boxed{\text{self-originated transformation}\neq\text{outward influence}\neq\text{inbound world forcing}.}\]
+
+\section{Residual}
+Suppose a frame represents expected or attempted deformation $\delta^P$ and collapse yields realised deformation $\delta^R$.
+\begin{definition}[Residual]
+The residual is
+\[\boxed{\epsilon=\delta^R\ominus\delta^P,}\]
+where $\ominus$ is the grounding's difference relation preserving relevant discrepancy.
+\end{definition}
+Residual is mismatch, not diagnosis. Complete non-realisation may therefore return the whole attempted deformation as residual.
+
+\begin{proposition}[No implicit historical state]
+A previous success, failure, attempt, or residual has no later causal force merely because it occurred. It affects later dynamics only insofar as its consequences are present in later graph or boundary state.
+\end{proposition}
+Thus a graph with no feedback machinery can derive the same failed transformation repeatedly. This is compatible with the classical control-theoretic distinction between plant dynamics and feedback: a controller changes future action only insofar as measured error is coupled back into its state or control law \citep{wiener1948,ashby1956}.
+
+\section{SELF and SUPERGRAPH identity}
+\begin{definition}[SELF identity]
+SELF identity is optional represented content inside $g$ by which a graph identifies itself.
+\end{definition}
+\begin{definition}[SUPERGRAPH identity]
+For graph $G$ individuated in frame $W$,
+\[\iota_{W:G}=\operatorname{Id}_W(G)\]
+is the identity relation under which $W$ tracks that situated instance.
+\end{definition}
+SELF and SUPERGRAPH identity are distinct types. A copy can preserve SELF identity while receiving a new SUPERGRAPH identity, and one SUPERGRAPH identity may persist through extensive changes to internal state and self-description.
+
+\begin{theorem}[No frame-free identity]
+The substrate alone does not determine whether two represented instances are the same graph independently of an individuating frame.
+\end{theorem}
+
+\section{Termination}
+\begin{definition}[Frame-relative termination]
+A situated identity $\iota_{W:G}$ terminates when the realised world transition admits no successor that $W$ continues to individuate under that identity.
+\end{definition}
+Termination is not successful refusal of world forcing. Nor need it erase copied SELF identity. If $G$ is individuated by several frames, it may terminate in one and continue in another.
+
+\section{First-class higher-frame quantities}
+\begin{proposition}[Higher-frame first-class structure]
+A quantity concerning $G$ may be absent from $G$ while existing as ordinary first-class state in containing frame $W$ that represents the relation from which the quantity is defined.
+\end{proposition}
+This is the basis on which later papers introduce Narrative, standing, ownership, and other relational quantities without bloating the primitive graph.
+
+\section{Causal order and local time}
+Realised collapse induces an ordinal event order
+\[e_0\prec e_1\prec e_2\prec\cdots.\]
+Cross-boundary interaction adds only represented causal relations.
+\begin{proposition}[Ordinal sufficiency]
+The substrate supplies causal order but requires no primitive real-valued metric duration.
+\end{proposition}
+Metric time is a grounding, e.g.
+\[\theta:\mathcal H_G\to\mathbb R,\qquad e_a\prec e_b\Rightarrow\theta(e_a)<\theta(e_b).\]
+The separation between a primitive causal partial order and additional metric structure has a close analogue in causal-set approaches to spacetime \citep{bombelli1987}. The present substrate does not assume causal-set dynamics; the citation marks the established precedent for keeping order and metric distinct.
+
+\section{Determinism and apparent stochasticity}\label{sec:determinism}
+
+\begin{proposition}[Graph-law determinism]\label{prop:determinism}
+For a fully specified antecedent configuration---including the graph state, operative transformation structure, admissibility grammar, and every causally operative containing relation relevant to the collapse---the realised continuation is determined:
+\[
+\boxed{
+\left(G_t,\mathcal R_t^{\mathrm{causal}}\right)
+\mapsto
+G_{t+1}.
+}
+\]
+The Graph Law contains no primitive random actualisation operator.
+\end{proposition}
+
+Apparent stochasticity arises when a frame does not represent all of the causally operative dimensions or relations required to determine the realised continuation. A probability distribution may then be an appropriate model of that frame's uncertainty, but the probability belongs to the incomplete representation rather than to the substrate transition itself. Treating probability as a representation of incomplete information has a long statistical-mechanical and Bayesian lineage \citep{jaynes1957}.
+
+Thus
+\[
+\boxed{
+\text{stochastic observation}
+=
+\text{deterministic dynamics viewed through unresolved causal structure}.
+}
+\]
+
+Two repetitions that are identical only on the dimensions available to a lower frame need not be identical antecedent configurations in the containing frame. Observed outcome variation therefore does not by itself imply fundamental randomness; it demonstrates only that the observing frame lacks a determining distinction.
+
+Deterministic quantum models demonstrate that empirical quantum statistics do not by themselves force fundamental stochasticity: Bohm's hidden-variable construction is explicitly deterministic, while Bell's theorem rules out the local hidden-variable class rather than determinism as such \citep{bohm1952,bell1964}. Kochen--Specker further constrains noncontextual value assignments \citep{kochen1967}. Graphic Equalisation does not identify itself with Bohmian mechanics; these results establish only that determinism must be distinguished from locality and noncontextuality.
+
+A stochastic law may be bolted onto a grounding as an epistemic predictive model over unresolved continuations. Doing so is an additional modelling layer:
+\[
+\text{deterministic Graph Law}
+\longrightarrow
+\text{frame-limited uncertainty model},
+\]
+not a modification of the Graph Law into a stochastic substrate.
+
+\section{Relationship to existing theories}\label{sec:existing-theories}
+Graphic Equalisation is not proposed as a replacement for established theories. It is intended to sit beneath or beside them as a substrate description. A grounding may add continuous geometry, conservation laws, quantum amplitudes, relativistic metrics, biological mechanisms, institutional rules, or probabilistic models of unresolved lower-frame observations. In particular, relational quantum mechanics \citep{rovelli1996}, Everettian relative-state quantum mechanics \citep{everett1957}, and deterministic Bohmian mechanics \citep{bohm1952} make mutually different commitments while remaining compatible with large parts of standard quantum phenomenology; this paper does not require choosing among those complete physical models at the substrate-definition stage. Such additions do not alter Proposition~\ref{prop:determinism}: within the Graph Law, realised transition remains deterministic once the causally complete antecedent configuration is specified.
+
+The substrate claim remains
+\[
+\boxed{\text{represented state}\rightarrow\text{admissible possibility}\rightarrow\text{collapse}\rightarrow\text{realised state}.}
+\]
+
+\section{Positioning and prior art}\label{sec:prior-art}
+
+The individual ingredients of Graphic Equalisation have substantial prior art. The proposed contribution is their conjunction at one minimal substrate level and the additional distinctions forced by making that conjunction executable.
+
+\paragraph{Graph rewriting and typed transformation.} Algebraic graph transformation provides mature formalisms for typed graphs, rule application, partiality, and structural consistency \citep{ehrig2006}. Graphic Equalisation adopts graph transformation as substrate vocabulary but makes frame-relative boundary forcing, collapse, and identity part of the same dynamical account.
+
+\paragraph{Reflection and self-modification.} Computational reflection establishes that a system can represent and modify meta-level structure governing its own execution \citep{smith1982,maes1987}. The specific identity ``the grammar acting on itself is the loop'' is the present paper's claim, not a result attributed to those sources.
+
+\paragraph{Cybernetics and feedback.} Classical cybernetics and control theory distinguish open-loop dynamics from systems in which error is returned into subsequent control \citep{wiener1948,ashby1956}. The residual construction generalises the same causal distinction: mismatch changes later action only where it survives as represented state.
+
+\paragraph{Quantum measurement and relational description.} The separation of pre-realisation state from realised measurement record is standard in the measurement problem \citep{vonneumann1955}. Everett's relative-state formulation and Rovelli's relational quantum mechanics provide important precedents for refusing a single privileged observer-independent account of all facts \citep{everett1957,rovelli1996}. Graphic Equalisation uses these as neighbouring structures rather than deriving itself from any one interpretation.
+
+\paragraph{Deterministic quantum theories.} Bohm's 1952 model is a direct proof of principle that deterministic dynamics can reproduce nonrelativistic quantum predictions when supplemented by additional state \citep{bohm1952}. Bell \citep{bell1964} and Kochen--Specker \citep{kochen1967} impose decisive constraints on local and noncontextual hidden-variable theories. Consequently, the determinism claim in Proposition~\ref{prop:determinism} should be read as a commitment requiring an adequate nonlocal/contextual grounding where quantum phenomena demand it, not as a revival of unconstrained classical hidden variables.
+
+\paragraph{Causal order.} Causal-set theory supplies a well-developed example in which causal order is taken as primitive while continuum metric structure is additional or emergent \citep{bombelli1987}. Graphic Equalisation makes only the weaker substrate claim that ordinal causal order does not itself entail a real-valued metric time.
+
+\paragraph{Information and minimum description.} The preference for the smallest sufficient ontology follows the same methodological direction as information-theoretic and minimum-description-length approaches: do not introduce representational structure that buys no additional explanatory or predictive distinction \citep{shannon1948,rissanen1978}. This motivates but does not prove the Discrete Sufficiency Hypothesis.
+
+\section{Falsifiability commitments}
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Minimal graph sufficiency.} Fails if basic realised graph dynamics require a primitive beyond $(g,r,\Gamma)$ rather than represented or relational structure.
+\item \textbf{Discrete sufficiency.} Fails if a claimed observable consequence cannot be preserved by any discrete representation, including dynamically varying quantisation, but is preserved by a genuinely non-discrete primitive.
+\item \textbf{Antecedent-state principle.} Fails if a realised transition can require as antecedent a fact that exists only as consequence of that same transition, absent prior fixed-point structure.
+\item \textbf{Graph-law determinism.} Fails if two genuinely identical, causally complete antecedent configurations produce different realised successors without any additional causally operative distinction. Variation observed only from a frame that omits determining dimensions does not constitute such a falsification.
+\item \textbf{Admissibility is not armour.} Fails if self-admissibility must constrain arbitrary containing-world forcing.
+\item \textbf{No implicit historical state.} Fails if an unrepresented past event alters later transition structure despite leaving no causal trace in graph or boundary state.
+\item \textbf{Frame-relative identity.} Fails if sameness and persistence are derivable from $(g,r,\Gamma)$ alone without individuation.
+\item \textbf{Higher-frame first-class structure.} Fails if a containing graph cannot possess ordinary relational state about a lower graph unless the same quantity is primitive inside the lower graph.
+\end{enumerate}
+
+\section{Conclusion}
+The theory is deliberately small. A graph need not know what it is, where it is, what will happen, or what it wants. Present structure determines admissible continuation; interaction and collapse produce realised history; realised history changes the antecedent from which subsequent possibility is generated.
+
+Recursion requires no external homunculus. Where the grammar acts on its own represented structure, the grammar is the loop. World forcing is not self-action, residual is discrepancy rather than diagnosis, history matters only where it survives as present structure, and identity exists only under individuation by a frame.
+
+\begin{thebibliography}{99}
+
+\bibitem[Ashby(1956)]{ashby1956}
+W.~Ross Ashby.
+\newblock \emph{An Introduction to Cybernetics}.
+\newblock Chapman \& Hall, London, 1956.
+
+\bibitem[Bell(1964)]{bell1964}
+John S. Bell.
+\newblock On the Einstein Podolsky Rosen paradox.
+\newblock \emph{Physics Physique Fizika}, 1:195--200, 1964.
+
+\bibitem[Bohm(1952)]{bohm1952}
+David Bohm.
+\newblock A suggested interpretation of the quantum theory in terms of ``hidden'' variables. I and II.
+\newblock \emph{Physical Review}, 85:166--193, 1952.
+
+\bibitem[Bombelli et~al.(1987)Bombelli, Lee, Meyer, and Sorkin]{bombelli1987}
+Luca Bombelli, Joohan Lee, David Meyer, and Rafael D. Sorkin.
+\newblock Space-time as a causal set.
+\newblock \emph{Physical Review Letters}, 59:521--524, 1987.
+
+\bibitem[Ehrig et~al.(2006)Ehrig, Ehrig, Prange, and Taentzer]{ehrig2006}
+Hartmut Ehrig, Karsten Ehrig, Ulrike Prange, and Gabriele Taentzer.
+\newblock \emph{Fundamentals of Algebraic Graph Transformation}.
+\newblock Springer, Berlin, 2006.
+
+\bibitem[Everett(1957)]{everett1957}
+Hugh Everett III.
+\newblock ``Relative state'' formulation of quantum mechanics.
+\newblock \emph{Reviews of Modern Physics}, 29:454--462, 1957.
+
+\bibitem[Jaynes(1957)]{jaynes1957}
+E. T. Jaynes.
+\newblock Information theory and statistical mechanics.
+\newblock \emph{Physical Review}, 106:620--630, 1957.
+
+\bibitem[Kochen and Specker(1967)]{kochen1967}
+Simon Kochen and Ernst P. Specker.
+\newblock The problem of hidden variables in quantum mechanics.
+\newblock \emph{Journal of Mathematics and Mechanics}, 17:59--87, 1967.
+
+\bibitem[Maes(1987)]{maes1987}
+Pattie Maes.
+\newblock Concepts and experiments in computational reflection.
+\newblock In \emph{Proceedings of OOPSLA '87}, 1987.
+
+\bibitem[Rissanen(1978)]{rissanen1978}
+Jorma Rissanen.
+\newblock Modeling by shortest data description.
+\newblock \emph{Automatica}, 14:465--471, 1978.
+
+\bibitem[Rovelli(1996)]{rovelli1996}
+Carlo Rovelli.
+\newblock Relational quantum mechanics.
+\newblock \emph{International Journal of Theoretical Physics}, 35:1637--1678, 1996.
+
+\bibitem[Shannon(1948)]{shannon1948}
+Claude E. Shannon.
+\newblock A mathematical theory of communication.
+\newblock \emph{Bell System Technical Journal}, 27:379--423, 623--656, 1948.
+
+\bibitem[Smith(1982)]{smith1982}
+Brian Cantwell Smith.
+\newblock \emph{Reflection and Semantics in a Procedural Language}.
+\newblock MIT Laboratory for Computer Science, 1982.
+
+\bibitem[von Neumann(1955)]{vonneumann1955}
+John von Neumann.
+\newblock \emph{Mathematical Foundations of Quantum Mechanics}.
+\newblock Princeton University Press, Princeton, 1955. English translation of the 1932 German edition.
+
+\bibitem[Wiener(1948)]{wiener1948}
+Norbert Wiener.
+\newblock \emph{Cybernetics: Or Control and Communication in the Animal and the Machine}.
+\newblock MIT Press, Cambridge, MA, 1948.
+
+\end{thebibliography}
+
+\end{document}

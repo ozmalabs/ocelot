@@ -1,0 +1,420 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage[numbers,sort&compress]{natbib}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{hypothesis}[definition]{Hypothesis}
+\newtheorem{corollary}[definition]{Corollary}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\newcommand{\Narr}{\mathcal N}
+\newcommand{\Much}{\mathcal M}
+\newcommand{\Frame}{\mathcal F}
+\newcommand{\Null}{\mathrm{NULL}}
+
+\title{Narrativium --- Theory\\
+\large Frame-Relative Capacity for Consequential Deformation}
+\author{Matthew Parslow\\Independent Researcher}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This paper develops Narrativium as a measurable, frame-relative capacity for consequential deformation. It is not a conserved substance and is not identical to optionality, energy, effort, action, momentum, or success. It measures which consequential deformations remain reachable from a configuration in a specified frame and deformation class, and assigns a discrete measure only where the corresponding capacity dimension is instantiated.
+
+A crucial distinction separates measurement from expenditure. Narrativium $N$ is a state measurement made at a configuration; cost $c$ attending a realised transition is a flow. Spending causes change but does not determine the sign of the subsequent measurement. A transition may spend Narrativium and leave the resulting frame with more, less, or the same measured capacity. Narrativium may also change, appear, or cease to be defined without any transition of the represented graph when a containing frame changes the relations that make a deformation class reachable.
+
+Combining Narrativium with Narrative yields a revision horizon only where both the capacity dimension and the relevant revision-cost dimension exist on a common comparison scale. The horizon is a controllability boundary, not an immediate failure boundary.
+\end{abstract}
+
+\section{Dependencies and scope}\label{sec:dependencies}
+
+Graphic Equalisation supplies realised transition, frame-relative individuation, deterministic collapse, and the distinction between a missing dimension and a zero value. Seldon Manifolds supplies reachable future geometry. Narrative Momentum supplies first-class history-bearing structure and directional persistence.
+
+Narrativium asks:
+\[
+\boxed{\text{what consequential deformation is reachable from this configuration, in this frame, for this deformation class?}}
+\]
+
+The closest established mathematical neighbours are controllability in control theory \citep{kalman1960control}, viability and reachable-set theory \citep{aubin1991viability,aubin1990survey}, and capability-oriented accounts that distinguish resources from what those resources make possible \citep{sen1985commodities}. The present contribution is the frame-typed synthesis, the explicit separation of measurement from expenditure, and its use in Narrative revision.
+
+\section{Deformation classes and dimensions}\label{sec:deformation-class}
+
+Narrativium is not defined without a deformation class. Let $\mathcal X$ be a class of consequential deformation and $T$ a target relation or region.
+
+\begin{definition}[Reachable deformation set]\label{def:reachable-deformation}
+\[
+\mathcal R_{W:G}^T(\mathcal X)
+=
+\left\{
+\Delta_{\mathcal X}(G,Y):
+Y\text{ is reachable under the stated deterministic transition and boundary relations}
+\right\}.
+\]
+\end{definition}
+
+This is a reachable-set construction in the broad control-theoretic sense \citep{kalman1960control,aubin1991viability}, but the set is explicitly typed by frame and deformation class.
+
+\begin{definition}[Narrativium dimension]\label{def:n-dimension}
+The Narrativium dimension for $(W:G,\mathcal X,T)$ exists iff the frame represents a measure over distinguishable members or regions of $\mathcal R_{W:G}^T(\mathcal X)$. If that relation is absent, Narrativium for the class is undefined:
+\[
+N_{W:G}(\mathcal X,T)=\Null.
+\]
+\end{definition}
+
+Thus
+\[
+\boxed{\Null\neq 0.}
+\]
+If the dimension exists, zero may be a legitimate measured value. If the dimension does not exist, there is no value to compare.
+
+Terminal outcomes may be included or excluded depending on $\mathcal X$; the choice must be explicit.
+
+\section{Narrativium}\label{sec:narrativium}
+
+\begin{definition}[Narrativium]\label{def:narrativium}
+Where the Narrativium dimension exists,
+\[
+\boxed{
+N_{W:G}(\mathcal X,T)
+=
+\mu_{\mathcal X}
+\left(
+\mathcal R_{W:G}^T(\mathcal X)
+\right),
+}
+\]
+where $\mu_{\mathcal X}$ is a frame- and grounding-supplied discrete measure over distinguishable reachable deformation.
+\end{definition}
+
+The measure is integer-indexed at operative resolution. Different frames and deformation classes need not share a unit, origin, or scale. A grounding may map the integer index into an arbitrary dimensional scale.
+
+\begin{remark}
+Narrativium does not claim that all control-theoretic reachability measures are integer-valued in their conventional formulations. The claim is that the distinctions required by this substrate can be represented discretely; continuous measures may be used as groundings or effective descriptions.
+\end{remark}
+
+\section{Narrativium is not Muchness}\label{sec:not-muchness}
+
+\[
+\boxed{
+\Much=\text{how much distinguishable future remains},
+\qquad
+N=\text{how much consequential deformation is reachable}.
+}
+\]
+
+This parallels the classical distinction between the size of a state/viability region and controllability over that region \citep{kalman1960control,aubin1991viability}. A system may have high Muchness and low Narrativium or the reverse.
+
+The distinction is also analogous to Sen's separation between possession of commodities and substantive capability: what matters is not merely what is present, but what states or functionings are actually reachable with it \citep{sen1985commodities}. This is an analogy, not an identity.
+
+\section{Measurement and expenditure}\label{sec:measurement-expenditure}
+
+\begin{definition}[Expenditure]\label{def:expenditure}
+For a realised transition
+\[
+G\xRightarrow[T]{}Y,
+\]
+let
+\[
+c_{W:G}(G\xRightarrow[T]{}Y)
+\]
+be the grounding-supplied expenditure attending that transition, where the corresponding cost dimension exists.
+\end{definition}
+
+Measurement and expenditure are different types:
+\[
+\boxed{
+c>0
+\;\nRightarrow\;
+N_{\mathrm{after}}<N_{\mathrm{before}}.
+}
+\]
+
+\begin{proposition}[No general conservation law]\label{prop:no-conservation}
+The substrate implies no equation
+\[
+N_{t+1}=N_t-c.
+\]
+\end{proposition}
+
+\begin{proposition}[No general path integration]\label{prop:no-path}
+Past expenditures cannot in general be summed to recover a later Narrativium measurement.
+\end{proposition}
+
+\begin{proposition}[Spend-and-gain]\label{prop:spend-gain}
+A positive-cost transition may produce a configuration with greater measured Narrativium on the same instantiated comparison dimension.
+\end{proposition}
+
+This is ordinary in control: expenditure can move a system into a state from which a larger region becomes reachable. The distinction between resource consumption and reachable capability is therefore structurally familiar even though the present terminology is new.
+
+\section{Feasibility}\label{sec:feasibility}
+
+Where a grounding instantiates compatible cost and Narrativium dimensions, it may define a comparison
+\[
+\boxed{
+c_{W:G}(G\xRightarrow[T]{}Y)
+\preceq
+N_{W:G}(\mathcal X,T).
+}
+\]
+
+This is a same-configuration feasibility gate, not a balance equation. Classical controllability asks whether a state is reachable under the available input structure \citep{kalman1960control}; viability theory asks whether trajectories can remain within constrained regions \citep{aubin1991viability}. Narrativium generalises the same shape to a frame-relative deformation class without importing a universal metric.
+
+\section{Conferral, revocation, and dimensional change}\label{sec:conferral}
+
+\begin{proposition}[Conferral and revocation]\label{prop:conferral}
+Narrativium may change while the represented graph does not:
+\[
+\Delta g=0
+\]
+while the value of an existing Narrativium dimension changes, or while that dimension itself is instantiated or ceases to exist in the containing frame.
+\end{proposition}
+
+Standing, licence, recognised authority, credit, access, or world realisability can change what a graph can consequentially deform without changing the graph itself. This is structurally close to sociological accounts in which social capital exists in relations and institutional recognition rather than as a substance stored inside an actor \citep{bourdieu1986forms,coleman1988social}.
+
+If a licence is revoked, for example, the relevant action-capacity dimension may disappear rather than merely taking a very negative or zero value. The NULL/value distinction is therefore load-bearing here.
+
+\section{No cross-frame accounting}\label{sec:cross-frame}
+
+If $G$ is individuated by $W_1$ and $W_2$, then
+\[
+N_{W_1:G}
+\quad\text{and}\quad
+N_{W_2:G}
+\]
+are independently typed quantities.
+
+\begin{proposition}[No cross-frame sum]\label{prop:no-sum}
+No frame-free addition
+\[
+N_{W_1:G}+N_{W_2:G}
+\]
+is defined unless some containing grounding explicitly instantiates a common comparison dimension.
+\end{proposition}
+
+This is stronger than saying that units differ. The common dimension itself may be absent.
+
+\section{Replenishment modes}\label{sec:replenishment}
+
+Different groundings may increase Narrativium by structurally different mechanisms.
+
+\begin{description}[leftmargin=*,style=nextline]
+\item[Acquisition.] A transition changes the configuration so that additional deformation becomes reachable.
+\item[Conferral.] Another frame instantiates or enlarges a relation such as authority, access, standing, or credit \citep{bourdieu1986forms,coleman1988social}.
+\item[Work against a field.] In a mechanical grounding, work changes configuration and therefore the later set of mechanically reachable states; classical potential energy is a standard configuration-dependent quantity \citep{goldstein2002mechanics}.
+\item[Cessation.] Some groundings can regain future capability through a represented no-intervention interval. This is not a ``null action'': the no-intervention alternative is an instantiated alternative with consequences.
+\end{description}
+
+Their differences are evidence against treating Narrativium as one conserved substance.
+
+\section{Narrative revision cost}\label{sec:revision-cost}
+
+\begin{definition}[Narrative revision-cost dimension]\label{def:revision-cost-dimension}
+For a specified material revision $\Delta\Narr$, a revision-cost dimension exists only if the revision itself is represented as a reachable deformation class and the frame supplies a compatible cost relation over candidate interventions.
+\end{definition}
+
+If the revision is not expressible or the cost relation is not instantiated, then
+\[
+C_{\mathrm{rev}}(\Delta\Narr)=\Null,
+\]
+not $+\infty$.
+
+\begin{definition}[Minimum Narrative revision cost]\label{def:revision-cost}
+Where the revision-cost dimension exists,
+\[
+\boxed{
+C_{\mathrm{rev}}
+(\Delta\Narr\mid G_t,\Gamma_t,W)
+=
+\min
+\left\{
+c_W(u):
+u\text{ can realise the required }\Delta\Narr
+\right\}.
+}
+\]
+\end{definition}
+
+Because the substrate is discrete, $\min$ is the natural operator on a finite or well-founded represented candidate class. A grounding with a continuous effective description may use an infimum, but that is not required by the substrate.
+
+\section{The Narrative horizon}\label{sec:horizon}
+
+\begin{definition}[Narrative horizon]\label{def:horizon}
+For a specified revision class, a Narrative horizon exists only where both
+\[
+N_{W:G}(\mathcal X,T)
+\quad\text{and}\quad
+C_{\mathrm{rev}}(\Delta\Narr)
+\]
+are instantiated on a common comparison dimension. The horizon is the equality relation
+\[
+\boxed{
+N_{W:G}(\mathcal X,T)
+=
+C_{\mathrm{rev}}(\Delta\Narr).
+}
+\]
+\end{definition}
+
+The three cases are therefore relational rather than ratio-based:
+\[
+\begin{aligned}
+N &\succ C_{\mathrm{rev}}
+&&\Rightarrow \text{the stated revision remains reachable with residual capacity},\\
+N &= C_{\mathrm{rev}}
+&&\Rightarrow \text{the frame lies on the Narrative horizon},\\
+N &\prec C_{\mathrm{rev}}
+&&\Rightarrow \text{the stated revision exceeds current reachable capacity}.
+\end{aligned}
+\]
+
+If either dimension is NULL, none of these comparisons is licensed. In particular, an absent revision class is not ``infinitely expensive''; it is not in the comparison domain.
+
+\begin{proposition}[Post-horizon fragility]\label{prop:post-horizon}
+If
+\[
+N\prec C_{\mathrm{rev}}
+\]
+on an instantiated common comparison dimension, the specified Narrative revision is not reachable in the present frame under the stated deformation class.
+\end{proposition}
+
+The horizon is a controllability boundary, not a failure boundary. This connects naturally to viability theory, where loss of membership in a viability kernel can precede the later constraint violation that makes failure externally visible \citep{aubin1991viability,aubin2011newdirections}.
+
+\section{Horizon and delayed collapse}\label{sec:delayed-collapse}
+
+Let $t_H$ be Narrative-horizon crossing and $t_C$ observable material collapse or divergence in the same frame.
+
+\begin{hypothesis}[Delayed failure]\label{hyp:delayed-failure}
+For system classes that can continue routine operation after losing access to a necessary adaptation,
+\[
+\boxed{
+t_H<t_C
+}
+\]
+occurs in a substantial class of failure trajectories.
+\end{hypothesis}
+
+The delay exists because existing Narrative may remain compatible with the containing graph after the capacity to revise it has been lost. This is structurally related to resilience theory's distinction between present persistence and the size of disturbance a system can absorb before reorganising \citep{holling1973resilience}, although the quantities are not identified.
+
+\section{Power and agility}\label{sec:power-agility}
+
+Because neither a universal origin nor a universal unit is assumed, agility is not defined by a substrate-level ratio $N/C_{\mathrm{rev}}$.
+
+Where a grounding supplies a common ordered dimension, define agility ordinally by the margin between available Narrativium and required revision cost:
+\[
+\boxed{
+A_{\Frame}
+=
+\operatorname{Margin}_{\Frame}
+\left(
+N_{W:G},
+C_{\mathrm{rev}}(\Delta\Narr)
+\right).
+}
+\]
+
+Only the ordering of this margin is substrate-relevant unless the grounding supplies more structure. A frame may therefore possess enormous capacity to deform external structure while being unable to materially rewrite its own established Narrative.
+
+\section{Groundings and prior art}\label{sec:groundings}
+
+\paragraph{Control and viability.}
+Controllability asks what states can be reached under admissible inputs \citep{kalman1960control}; viability theory asks what constrained states can continue to be maintained \citep{aubin1990survey,aubin1991viability}. Narrativium is closest to these traditions mathematically, but is explicitly frame-relative, deformation-class typed, and separated from expenditure.
+
+\paragraph{Capability approach.}
+Sen's capability approach distinguishes resources or commodities from the substantive set of states and activities they make achievable \citep{sen1985commodities}. Narrativium shares that structural separation while making it a dynamical, frame-relative reachable-deformation measure.
+
+\paragraph{Potential energy.}
+Classical mechanics provides a special grounding in which configuration-relative potential energy participates in a conserved energy accounting under appropriate assumptions \citep{goldstein2002mechanics}. That special accounting must not be promoted to a law of Narrativium generally.
+
+\paragraph{Social capital.}
+Bourdieu and Coleman both treat social capital as relationally conferred capability embedded in networks and institutions \citep{bourdieu1986forms,coleman1988social}. This is a direct structural precedent for Narrativium changing because a containing frame changes its relations to the represented graph.
+
+\paragraph{Resilience.}
+Holling's distinction between stability and resilience provides a predecessor for the idea that routine performance can remain intact while the capacity to absorb or adapt to disturbance has already contracted \citep{holling1973resilience}. The Narrative horizon gives that shape a specific comparison between available deformation and revision requirement.
+
+\section{Falsifiability commitments}\label{sec:falsifiability}
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Deformation-class typing.} Fails if one scalar value can represent all deformation classes without losing distinctions where one capability is exhausted and another remains.
+\item \textbf{Dimension/value typing.} Fails if absence of a capacity or revision relation must be represented by an ordinary value on the same dimension rather than by the dimension being undefined.
+\item \textbf{Measurement/expenditure distinction.} Fails if every grounding requires expenditure to equal the fall in measured Narrativium.
+\item \textbf{Spend-and-gain.} Fails if positive expenditure leading to greater measured future capacity is structurally impossible in every grounding.
+\item \textbf{Conferral/revocation.} Fails if Narrativium can change only through transition of the represented graph.
+\item \textbf{No cross-frame accounting.} Fails if distinct individuating frames necessarily supply a common Narrativium dimension and unit without explicit grounding.
+\item \textbf{Narrative horizon.} Fails if a certified revision whose minimum compatible cost exceeds current Narrativium is nevertheless realised under the same frame, deformation class, and accounting.
+\item \textbf{Delayed failure.} Fails for a claimed system class if Narrative-horizon crossing never precedes observable divergence.
+\end{enumerate}
+
+\section{Conclusion}\label{sec:conclusion}
+
+Narrativium is not a tank. It is a frame-relative measurement of consequential deformation reachable from a configuration:
+\[
+\boxed{
+N
+=
+\mu(\text{reachable deformation})
+}
+\]
+where the corresponding dimension exists.
+
+Spending changes configuration; the resulting configuration is measured again. It may have more capacity, less capacity, the same capacity, or a differently instantiated capacity dimension. Other frames may alter that dimension without changing the represented graph at all.
+
+Combined with Narrative, Narrativium supplies a revision horizon only where available capacity and required revision cost are jointly comparable. That horizon marks the point at which a necessary future adaptation can become unreachable even though present behaviour still appears normal.
+
+\bibliographystyle{plainnat}
+\begin{thebibliography}{99}
+
+\bibitem[Aubin(1990)]{aubin1990survey}
+Jean-Pierre Aubin.
+\newblock A survey of viability theory.
+\newblock \emph{SIAM Journal on Control and Optimization}, 28(4):749--788, 1990.
+
+\bibitem[Aubin(1991)]{aubin1991viability}
+Jean-Pierre Aubin.
+\newblock \emph{Viability Theory}.
+\newblock Birkh\"auser, Boston, 1991.
+
+\bibitem[Aubin et~al.(2011)Aubin, Bayen, and Saint-Pierre]{aubin2011newdirections}
+Jean-Pierre Aubin, Alexandre~M. Bayen, and Patrick Saint-Pierre.
+\newblock \emph{Viability Theory: New Directions}.
+\newblock Springer, Berlin, 2011.
+
+\bibitem[Bourdieu(1986)]{bourdieu1986forms}
+Pierre Bourdieu.
+\newblock The forms of capital.
+\newblock In John~G. Richardson, editor, \emph{Handbook of Theory and Research for the Sociology of Education}, pages 241--258. Greenwood, New York, 1986.
+
+\bibitem[Coleman(1988)]{coleman1988social}
+James~S. Coleman.
+\newblock Social capital in the creation of human capital.
+\newblock \emph{American Journal of Sociology}, 94:S95--S120, 1988.
+
+\bibitem[Goldstein et~al.(2002)Goldstein, Poole, and Safko]{goldstein2002mechanics}
+Herbert Goldstein, Charles Poole, and John Safko.
+\newblock \emph{Classical Mechanics}.
+\newblock Addison Wesley, 3rd edition, 2002.
+
+\bibitem[Holling(1973)]{holling1973resilience}
+C.~S. Holling.
+\newblock Resilience and stability of ecological systems.
+\newblock \emph{Annual Review of Ecology and Systematics}, 4:1--23, 1973.
+
+\bibitem[Kalman(1960)]{kalman1960control}
+R.~E. Kalman.
+\newblock Contributions to the theory of optimal control.
+\newblock \emph{Bolet\'in de la Sociedad Matem\'atica Mexicana}, 5:102--119, 1960.
+
+\bibitem[Sen(1985)]{sen1985commodities}
+Amartya Sen.
+\newblock \emph{Commodities and Capabilities}.
+\newblock North-Holland, Amsterdam, 1985.
+
+\end{thebibliography}
+
+\end{document}

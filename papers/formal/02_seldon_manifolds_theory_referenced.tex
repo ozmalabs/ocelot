@@ -1,0 +1,428 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage[round,authoryear]{natbib}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{hypothesis}[definition]{Hypothesis}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{corollary}[definition]{Corollary}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\newcommand{\Frame}{\mathcal F}
+\newcommand{\Seldon}{\mathcal S}
+\newcommand{\Goal}{\mathcal G}
+\newcommand{\Much}{\mathcal M}
+\newcommand{\Aset}{\mathcal A}
+\newcommand{\Hist}{\mathcal H}
+\newcommand{\Qrho}{\mathcal Q_{\rho}}
+
+\title{Seldon Manifolds --- Theory\\\large The Geometry of Reachable Futures}
+\author{Matthew Parslow\\Independent Researcher}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Graphic Equalisation requires only admissible continuation and deterministic collapse. It does not require a graph or containing frame to represent unrealised futures as an object. This paper studies the additional structure that appears when a frame represents the futures that remain distinguishably reachable under counterfactual admissible interventions and represented future boundary conditions. The resulting object is the \emph{Seldon manifold}: a frame-relative, horizon-relative, resolution-relative representation of reachable future state or history.
+
+The construction is deterministic at substrate level. A Seldon manifold is not a probability distribution over multiple outcomes of one causally complete antecedent. It is a representation of different deterministic continuations obtained under different admissible interventions, future interactions, or unresolved containing conditions represented by the frame. If all causally relevant future conditions and interventions are fixed, the represented continuation collapses to one trajectory.
+
+The manifold need not be smooth or continuous; ``manifold'' denotes structured reachable geometry. Its dimensions are instantiated only where represented, its values are discrete at operative resolution, and its quantisation may change dynamically. Goals, where represented, define acceptable subsets; Muchness measures retained distinguishable future possibility; irreversibility removes reachable distinctions; and control deforms the reachable geometry. No primitive is added to graphhood.
+\end{abstract}
+
+\section{Scope and relationship to prior work}\label{sec:scope}
+
+Reachable sets, viability kernels, capture basins, invariant sets, dynamic programming, and model-predictive control are established parts of control theory and applied mathematics \citep{bellman1957,aubin1990,aubin1991,mitchell2005,rawlings2017}. Hamilton--Jacobi reachability in particular treats sets of states that can be reached or avoided under nonlinear and hybrid dynamics rather than privileging a single forecast trajectory \citep{mitchell2005,bansal2017}. Viability theory distinguishes states from which constraints can continue to be satisfied under admissible control \citep{aubin1990,aubin1991}.
+
+The Seldon-manifold construction does not claim those ideas as new. Its contribution is the placement of reachable-set structure inside the Graphic Equalisation frame architecture: reachability is explicitly frame-relative, recursively generated from the graph law, discretely represented at operative resolution, able to gain or lose represented dimensions, and separated from both collapse and Narrativium. ``Seldon manifold'' names that combined object and its role in the wider theory.
+
+\section{Dependency on Graphic Equalisation}\label{sec:dependency}
+
+Let
+\[
+G_t=(g_t,r_t,\Gamma_t)
+\]
+be a realised graph in individuating frame $W_k$, and write
+\[
+\Frame_{k,t}=(G_t,W_k).
+\]
+Graphic Equalisation supplies a deterministic realised transition once the causally complete antecedent configuration is fixed. It also distinguishes immediate admissible possibility from realised collapse:
+\[
+G_t\longrightarrow\Aset(\Frame_t)\xrightarrow{\mathcal C_t}G_{t+1}.
+\]
+
+This paper asks what follows when a frame represents recursively reachable continuations over a horizon rather than only the realised next step.
+
+\section{Determinism and counterfactual reachability}\label{sec:determinism}
+
+\begin{proposition}[Deterministic reachability]\label{prop:det-reach}
+A Seldon manifold does not require stochastic substrate dynamics. For a fixed causally complete antecedent configuration and a fixed future sequence of admissible interventions and containing interactions, Graphic Equalisation yields one realised continuation. Multiple points or histories in a Seldon manifold correspond to different counterfactual future conditions represented by the frame, not multiple random outcomes of one identical complete cause.
+\end{proposition}
+
+Let $\mathbf u=(u_t,\ldots,u_{t+h-1})$ denote an admissible intervention sequence and $\mathbf b=(b_t,\ldots,b_{t+h-1})$ a represented sequence of future boundary conditions or containing interactions. For a deterministic transition law $T$, a future history is generated recursively by
+\[
+G_{j+1}=T(G_j,u_j,b_j).
+\]
+The frame need not know which $\mathbf b$ will be realised. Its uncertainty about that sequence may be represented probabilistically if useful, but probability is an epistemic overlay on the reachable family rather than a primitive of the Graph Law.
+
+\begin{corollary}[Singleton under complete fixing]\label{cor:singleton}
+If the frame fixes the causally complete antecedent, all future interventions, and all causally operative future containing conditions over horizon $h$, then the Seldon manifold contains one distinguishable continuation at that resolution.
+\end{corollary}
+
+This distinction is important because classical reachability and viability theory often permit disturbances, controls, or differential inclusions to generate sets of possible states \citep{aubin1991,mitchell2005}. The Seldon construction can represent the same set-valued geometry without interpreting that set as fundamental stochasticity.
+
+\section{Dimensions, values, and resolution}\label{sec:dimensions}
+
+\begin{definition}[Represented dimension]\label{def:dimension}
+A dimension $D$ of a Seldon representation exists in frame $\Frame$ only where the frame instantiates the relation needed to distinguish values along $D$. If that relation is absent, $D$ is undefined in that frame; it is not present with value zero.
+\end{definition}
+
+Thus
+\[
+D:\operatorname{NULL}\longrightarrow D\in\Frame
+\]
+is a dimensional instantiation, whereas
+\[
+D=0
+\]
+is a value statement made only after $D$ exists. This preserves the dimension/value distinction established by Graphic Equalisation.
+
+\begin{definition}[Resolution]\label{def:resolution}
+Resolution $\rho$ specifies which distinctions on instantiated dimensions the frame currently treats as distinguishable in represented future structure.
+\end{definition}
+
+Resolution is discrete but may vary dynamically:
+\[
+\rho=\rho(x,h,t,D).
+\]
+No globally fixed lattice, common scale, or continuous coordinate system is assumed. A grounding may map integer state indices into arbitrary physical scales.
+
+Let $\sim_{\rho}$ denote ``indistinguishable at resolution $\rho$''. The quotient
+\[
+\Qrho(X)=X/{\sim_{\rho}}
+\]
+collects states or histories into the distinctions the frame can currently resolve.
+
+\section{The Seldon manifold}\label{sec:seldon}
+
+\begin{definition}[Seldon manifold]\label{def:seldon}
+For frame $\Frame_t$, horizon $h$, and resolution $\rho$, the Seldon manifold
+\[
+\boxed{\Seldon_{h,\rho}(\Frame_t)}
+\]
+is the structured representation, at resolution $\rho$, of future states or histories reachable from $\Frame_t$ over horizon $h$ under the admissible counterfactual intervention sequences and represented future containing conditions carried by that frame.
+\end{definition}
+
+Equivalently, if $\mathcal U_{t:h}$ is the represented family of admissible intervention sequences and $\mathcal B_{t:h}$ the represented family of future boundary-condition sequences, then schematically
+\[
+\boxed{
+\Seldon_{h,\rho}(\Frame_t)
+=
+\Qrho\!\left(
+\left\{
+\Hist_{t:t+h}(\mathbf u,\mathbf b):
+\mathbf u\in\mathcal U_{t:h},\;
+\mathbf b\in\mathcal B_{t:h}
+\right\}
+\right).
+}
+\]
+
+The term \emph{manifold} is operational rather than differential-geometric. Depending on the grounding, $\Seldon$ may be represented as a reachable set, graph, viability kernel, capture basin, branching history structure, automaton, cell complex, or another object preserving the relevant reachability relations. Viability kernels and reachable sets are therefore direct mathematical predecessors \citep{aubin1990,aubin1991,szolnoki2000,mitchell2005}.
+
+\begin{proposition}[Immediate possibility is not future geometry]\label{prop:local-vs-manifold}
+$\Gamma_t$ constrains local admissibility, whereas $\Seldon_{h,\rho}(\Frame_t)$ represents recursively reachable structure over a non-zero horizon. The two coincide only in a grounding where the chosen horizon and representation reduce reachability to one local transition.
+\end{proposition}
+
+\section{Projection and recursion}\label{sec:projection}
+
+The Seldon manifold may be viewed as a projection of recursively composed admissible transitions, but the future transition structure must be generated from each counterfactual successor rather than read as though the actual future were already known. Thus a schematic recursion is
+\[
+\Seldon_{h+1,\rho}(\Frame_t)
+=
+\Qrho\!\left(
+\bigcup_{\delta\in\Aset(\Frame_t)}
+\operatorname{Extend}
+\left(
+\delta,
+\Seldon_{h,\rho}(\Frame_{t+1}^{(\delta)})
+\right)
+\right),
+\]
+with boundary contingencies included in $\delta$ or in the successor frame as required by the grounding.
+
+This is extensional. It does not require an implementation to enumerate every individual trajectory. Dynamic programming already exploits recursive state structure rather than recomputing complete histories independently \citep{bellman1957}; set-based reachability methods similarly represent families of trajectories through shared geometric structure \citep{mitchell2005,bansal2017}.
+
+\section{Dynamic quantisation and temporal foveation}\label{sec:foveation}
+
+\begin{hypothesis}[Adaptive resolution]\label{hyp:adaptive-resolution}
+For bounded representation, an effective future model assigns finer distinction where additional resolution materially changes reachable, acceptable, or controllable outcomes, and coarser distinction where refinement would not alter any operative decision.
+\end{hypothesis}
+
+Thus $\rho(x,h,D)$ may increase where unresolved distinctions become decision-relevant. Near and distant horizons may use different quantisation, as may relevant and irrelevant spatial, causal, or conceptual regions. New dimensions may also be instantiated when a previously absent distinction becomes operative; this is not a change from value zero but a change in representational dimension.
+
+Adaptive mesh refinement provides an established computational analogue: resolution is recursively concentrated where local error estimates justify the additional cost \citep{berger1984}. The Seldon hypothesis differs in criterion---decision relevance rather than numerical truncation error---but shares the principle that uniform resolution is not mandatory.
+
+\section{Reachability rather than point prediction}\label{sec:prediction}
+
+Point prediction seeks
+\[
+\widehat{\Frame}_{t+h}\approx\Frame_{t+h}.
+\]
+The Seldon formulation instead asks which futures remain reachable under the represented counterfactual family:
+\[
+\Frame_{t+h}\in\Seldon_{h,\rho}(\Frame_t).
+\]
+
+This emphasis is close to viability and Hamilton--Jacobi reachability, where the central objects are sets of states that can remain safe, reach targets, or avoid undesirable regions under admissible inputs \citep{aubin1991,mitchell2005,bansal2017}. A point forecast can still be useful, but it is a statistic or selected continuation over the reachable structure rather than the primary object.
+
+\section{Acceptable futures}\label{sec:acceptable}
+
+Goals are optional represented capabilities.
+
+\begin{definition}[Acceptable manifold]\label{def:acceptable}
+Where a frame represents goals, viability conditions, risk bounds, or constraints,
+\[
+\boxed{\Goal_{h,\rho}(\Frame_t)\subseteq\Seldon_{h,\rho}(\Frame_t)}
+\]
+is the subset of reachable futures satisfying them.
+\end{definition}
+
+This overlaps directly with viability kernels and feasible regions in constrained control and model-predictive control \citep{aubin1991,rawlings2017,cunis2021}. The Seldon terminology is broader because the acceptable subset may be defined over any represented future distinctions, not only a conventional continuous state space.
+
+\begin{proposition}[Minimum intervention in a safe interior]\label{prop:min-intervention}
+Suppose the represented no-intervention alternative exists and its continuation remains within the acceptable manifold over the decision horizon. If every non-trivial intervention has non-negative cost and no independent objective rewards intervention itself, then a positive-cost intervention cannot dominate the no-intervention alternative solely by preserving acceptability.
+\end{proposition}
+
+\begin{remark}
+``No intervention'' here is an instantiated alternative with a defined consequence. It is not NULL. The proposition therefore does not identify absence with a zero-valued action.
+\end{remark}
+
+\section{Goal direction}\label{sec:goal-direction}
+
+Where local direction is meaningful, let $\mathbf g_t$ be a represented preferred direction through the acceptable region. A grounding may write
+\[
+\mathbf v_{\Seldon}\cdot\mathbf g_t>0
+\]
+for progress. No differentiable structure is required by the substrate; a graph grounding may instead use an ordering or directed edge relation.
+
+\section{Muchness}\label{sec:muchness}
+
+\begin{definition}[Muchness]\label{def:muchness}
+Muchness
+\[
+\boxed{\Much(\Frame_t;h,\rho)\in\mathbb Z}
+\]
+is a frame-relative discrete measure of materially distinguishable future possibility retained within $\Seldon_{h,\rho}(\Frame_t)$.
+\end{definition}
+
+A grounding supplies a discrete measure
+\[
+\mu_{\Much}:\Qrho(\Seldon)\rightarrow\mathbb Z
+\]
+that preserves the distinctions relevant to the claimed domain. It may count distinguishable states, equivalence classes, connected reachable regions, retained capability classes, or use another integer index. Muchness therefore measures \emph{how much distinguishable future remains}, not how strongly the frame can alter that future.
+
+\begin{proposition}[Resolution and dimension dependence]\label{prop:muchness-resolution}
+Muchness is not meaningful without the frame, represented dimensions, horizon, and resolution that determine which future distinctions exist and which count as distinct.
+\end{proposition}
+
+The term \emph{Muchness} and its role are specific to this framework. Classical reachable-set and viability theory provide the geometry from which such a measure can be constructed but do not identify this quantity under that name.
+
+\section{Irreversibility}\label{sec:irreversibility}
+
+\begin{definition}[Irreversible contraction]\label{def:irreversible}
+An intervention is irreversible relative to frame, horizon, dimensions, and resolution when it makes previously distinguishable valuable future regions unreachable and no admissible continuation within the stated horizon restores them.
+\end{definition}
+
+Where the Muchness dimension is instantiated before and after the intervention, a simple discrete contraction measure is
+\[
+I_{\Frame}(u)=\max\!\left(0,\Much_t-\Much_{t+1}^{(u)}\right).
+\]
+Here $0$ is a legitimate value on an existing irreversibility dimension; it does not denote absence of the dimension.
+
+The option value of preserving reversible choices under uncertain future information has a long history in economics \citep{arrow1974,henry1974,dixit1994}. The present definition is more primitive: it identifies irreversibility structurally with loss of reachable distinctions. No substrate-level probability distribution is required. If a frame overlays probabilities on unresolved future conditions, an expected irreversibility statistic is an epistemic derived quantity, not part of the deterministic Graph Law.
+
+\begin{proposition}[Reversibility preference]\label{prop:reversibility}
+If two interventions achieve the same represented objective to equivalent tolerance and otherwise differ only in that one preserves a strict superset of potentially valuable future distinctions, any represented valuation assigning non-negative value to retained optionality weakly prefers the more reversible intervention.
+\end{proposition}
+
+\section{Control as manifold deformation}\label{sec:control}
+
+\begin{definition}[Control]\label{def:control}
+Where intervention is represented, control is deformation of reachable future geometry:
+\[
+u:\Seldon\mapsto\Seldon'.
+\]
+\end{definition}
+
+A controller need not predict one exact future trajectory. It may succeed by deforming reachable geometry so that realised collapse remains inside an acceptable region while preserving useful future distinctions. This set-oriented view is close to viability regulation, reachability-based safety control, and constrained model-predictive control \citep{aubin1991,mitchell2005,rawlings2017,cunis2021}.
+
+\section{Competing deformation}\label{sec:competing}
+
+Several processes may shape one shared Seldon manifold. A local additive approximation
+\[
+\Delta\Seldon\approx\sum_i\Delta\Seldon_i
+\]
+may be useful where interactions are approximately separable. More generally,
+\[
+\Delta\Seldon=\Phi(u_1,\ldots,u_n;G,\Gamma,W).
+\]
+Dynamic-game reachability provides established mathematics for reachable sets under interacting or adversarial controls \citep{mitchell2005}. The Seldon statement is more general and does not require zero-sum or game-theoretic valuation.
+
+This shared-arena case differs from one graph individuated by several frames: each individuating frame carries its own represented dimensions, resolution, and reachable geometry unless a containing relation explicitly couples them.
+
+\section{Reachability compression}\label{sec:compression}
+
+Let $\{\gamma_i\}$ be an explicit family of trajectories.
+
+\begin{hypothesis}[Reachability compression]\label{hyp:compression}
+For task classes in which many trajectories are equivalent with respect to the operative distinctions at resolution $\rho$, a representation of their shared reachable geometry can have lower decision-relevant description complexity than explicit trajectory enumeration:
+\[
+L(\Seldon)\ll L(\{\gamma_i\}).
+\]
+\end{hypothesis}
+
+This hypothesis is compatible with the general minimum-description-length principle that useful models exploit shared regularity rather than restating each observation independently \citep{rissanen1978}. It is also reflected constructively in set-based reachability methods, which compute or approximate reachable regions without storing every individual trajectory \citep{mitchell2005,maidens2013}. The stronger claim that Seldon representations systematically achieve lower \emph{decision-relevant} description cost is specific to this paper and remains falsifiable.
+
+\section{Relationship to Narrativium and Narrative}\label{sec:downstream}
+
+The present paper distinguishes retained future possibility from future-shaping capacity:
+\[
+\boxed{
+\Much=\text{retained distinguishable future possibility},
+\qquad
+N=\text{capacity to deform it}.
+}
+\]
+Narrativium is developed separately. Narrative is also unnecessary for defining $\Seldon$, but where a containing frame carries operative history-bearing state, that state may orient the manifold; this is the subject of Narrative Momentum.
+
+\section{Positioning and novelty}\label{sec:positioning}
+
+The paper's relationship to established work can be summarised as follows.
+
+\begin{description}[leftmargin=*,style=nextline]
+\item[Established prior art.] Reachable sets, viability kernels, invariant and capture sets, dynamic programming, model-predictive feasible sets, Hamilton--Jacobi reachability, adaptive numerical resolution, and option value under irreversibility are established \citep{bellman1957,aubin1991,mitchell2005,berger1984,arrow1974,rawlings2017}.
+\item[Structural synthesis.] The Seldon manifold treats these set-valued future structures as a frame-relative representation generated downstream of deterministic Graphic Equalisation and evaluated only on instantiated dimensions at operative discrete resolution.
+\item[Specific contributions.] The terminology and formal roles of the Seldon manifold and Muchness; the explicit separation of local admissibility, counterfactual reachable geometry, deterministic collapse, Muchness, and Narrativium; dimension-instantiation discipline (NULL is not zero); and the decision-relevant reachability-compression hypothesis are claims of this framework.
+\end{description}
+
+\section{Falsifiability commitments}\label{sec:falsifiability}
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Deterministic counterfactual typing.} Fails if the Seldon construction requires multiple fundamentally random realised outcomes from one causally complete antecedent rather than multiple deterministic continuations under differing represented future conditions.
+\item \textbf{Reachability utility.} Fails for a claimed task class if reachable geometry cannot preserve distinctions needed for prediction or control that trajectory-level representation preserves.
+\item \textbf{Dimension/value typing.} Fails if an absent future dimension must be represented as the numerical value zero rather than remaining undefined until instantiated.
+\item \textbf{Adaptive resolution.} Fails as an efficiency hypothesis if decision-directed refinement gives no advantage over uniform refinement in the claimed class.
+\item \textbf{Muchness distinction.} Fails if retained distinguishable possibility and capacity to deform that possibility cannot be independently varied in any grounding.
+\item \textbf{Irreversibility.} Fails for a claimed grounding if supposedly deleted reachable distinctions are always restorable without crossing an additional constraint or expending additional compatible capability.
+\item \textbf{Reachability compression.} Fails if explicit trajectory representations consistently achieve equal or lower decision-relevant description cost for the claimed task families.
+\end{enumerate}
+
+\section{Conclusion}\label{sec:conclusion}
+
+Graphic Equalisation supplies deterministic admissible continuation and collapse. The Seldon manifold is the structured geometry of unrealised counterfactual continuation that remains reachable:
+\[
+\boxed{
+\Gamma
+\rightarrow
+\text{admissible possibility}
+\rightarrow
+\Seldon
+\rightarrow
+\text{reachable geometry}
+\xrightarrow{\mathcal C}
+\text{realised history}.
+}
+\]
+
+The distinction between reachable geometry and realised history is essential: the manifold contains counterfactual futures because the frame has not fixed all future interventions and containing conditions, not because the Graph Law is stochastic.
+
+The future, in this framework, is not primarily a destination. It is a reachable geometry.
+
+\begin{thebibliography}{99}
+
+\bibitem[Arrow and Fisher(1974)]{arrow1974}
+Kenneth J. Arrow and Anthony C. Fisher.
+\newblock Environmental preservation, uncertainty, and irreversibility.
+\newblock \emph{The Quarterly Journal of Economics}, 88(2):312--319, 1974.
+\newblock doi:10.2307/1883074.
+
+\bibitem[Aubin(1990)]{aubin1990}
+Jean-Pierre Aubin.
+\newblock A survey of viability theory.
+\newblock \emph{SIAM Journal on Control and Optimization}, 28(4):749--788, 1990.
+\newblock doi:10.1137/0328044.
+
+\bibitem[Aubin(1991)]{aubin1991}
+Jean-Pierre Aubin.
+\newblock \emph{Viability Theory}.
+\newblock Birkh\"auser, Boston, 1991.
+
+\bibitem[Bansal et~al.(2017)Bansal, Chen, Herbert, and Tomlin]{bansal2017}
+Somil Bansal, Mo Chen, Sylvia Herbert, and Claire J. Tomlin.
+\newblock Hamilton--Jacobi reachability: A brief overview and recent advances.
+\newblock In \emph{2017 IEEE 56th Annual Conference on Decision and Control}, pages 2242--2253, 2017.
+
+\bibitem[Bellman(1957)]{bellman1957}
+Richard Bellman.
+\newblock \emph{Dynamic Programming}.
+\newblock Princeton University Press, Princeton, 1957.
+
+\bibitem[Berger and Oliger(1984)]{berger1984}
+Marsha J. Berger and Joseph Oliger.
+\newblock Adaptive mesh refinement for hyperbolic partial differential equations.
+\newblock \emph{Journal of Computational Physics}, 53(3):484--512, 1984.
+\newblock doi:10.1016/0021-9991(84)90073-1.
+
+\bibitem[Cunis and Kolmanovsky(2021)]{cunis2021}
+Torbj\o rn Cunis and Ilya Kolmanovsky.
+\newblock Viability, viscosity, and storage functions in model-predictive control with terminal constraints.
+\newblock \emph{Automatica}, 131:109748, 2021.
+
+\bibitem[Dixit and Pindyck(1994)]{dixit1994}
+Avinash K. Dixit and Robert S. Pindyck.
+\newblock \emph{Investment under Uncertainty}.
+\newblock Princeton University Press, Princeton, 1994.
+
+\bibitem[Henry(1974)]{henry1974}
+Claude Henry.
+\newblock Investment decisions under uncertainty: The ``irreversibility effect.''
+\newblock \emph{American Economic Review}, 64(6):1006--1012, 1974.
+
+\bibitem[Maidens et~al.(2013)Maidens, Kaynama, Mitchell, Oishi, and Dumont]{maidens2013}
+John N. Maidens, Shahab Kaynama, Ian M. Mitchell, Meeko M. K. Oishi, and Guy A. Dumont.
+\newblock Lagrangian methods for approximating the viability kernel in high-dimensional systems.
+\newblock \emph{Automatica}, 49(7):2017--2029, 2013.
+\newblock doi:10.1016/j.automatica.2013.03.020.
+
+\bibitem[Mitchell et~al.(2005)Mitchell, Bayen, and Tomlin]{mitchell2005}
+Ian M. Mitchell, Alexandre M. Bayen, and Claire J. Tomlin.
+\newblock A time-dependent Hamilton--Jacobi formulation of reachable sets for continuous dynamic games.
+\newblock \emph{IEEE Transactions on Automatic Control}, 50(7):947--957, 2005.
+\newblock doi:10.1109/TAC.2005.851439.
+
+\bibitem[Rawlings et~al.(2017)Rawlings, Mayne, and Diehl]{rawlings2017}
+James B. Rawlings, David Q. Mayne, and Moritz M. Diehl.
+\newblock \emph{Model Predictive Control: Theory, Computation, and Design}.
+\newblock Nob Hill Publishing, 2nd edition, 2017.
+
+\bibitem[Rissanen(1978)]{rissanen1978}
+Jorma Rissanen.
+\newblock Modeling by shortest data description.
+\newblock \emph{Automatica}, 14(5):465--471, 1978.
+\newblock doi:10.1016/0005-1098(78)90005-5.
+
+\bibitem[Szolnoki(2000)]{szolnoki2000}
+Dietmar Szolnoki.
+\newblock Viability kernels and control sets.
+\newblock \emph{ESAIM: Control, Optimisation and Calculus of Variations}, 5:175--185, 2000.
+
+\end{thebibliography}
+
+\end{document}

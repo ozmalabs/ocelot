@@ -1,0 +1,528 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage[numbers,sort&compress]{natbib}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{corollary}[definition]{Corollary}
+\newcommand{\Frame}{\mathcal F}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\title{A Constructive Realisation of Graphic Equalisation\\
+\large Deterministic Proposal Closure, Boundary Interaction, and Reference Execution Semantics}
+\author{Matthew Parslow\\Independent Researcher}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The companion theory of Graphic Equalisation is stated extensionally: a realised graph induces admissible continuations, interaction constrains those continuations, and collapse produces realised history. The theory does not require a particular executor.
+
+This paper gives one constructive reference realisation. It specifies synchronous rule closure over an immutable antecedent base, provisional identity handling, typed well-formedness predicates, deterministic compatible merge, local and world-directed target decomposition, optional represented valuation, boundary exposure, provenance-preserving residual construction, and conditions for order-independent least-fixed-point closure. The construction is both executable semantics and experimental apparatus: implementation forced ambiguous prose to resolve into explicit causal choices.
+
+No claim is made that nature literally executes these algorithms. The claim is that, under the stated conditions, this construction realises the abstract deterministic dynamics reproducibly.
+\end{abstract}
+
+\section{Separation from the theory}\label{sec:separation}
+
+The theory defines
+\[
+G_t\rightarrow\mathcal P(G_t)\xrightarrow{\mathcal C_t}G_{t+1}.
+\]
+
+This paper constructs one finite executable representation of $\mathcal P(G_t)$ and one deterministic graph/world execution semantics. Proposal records, synchronous rounds, provisional identifiers, explicit merge functions, \textsc{FAIL} values, causal collection cuts, and executor tie handling are implementation-specific.
+
+The distinction follows a standard separation in semantics between an extensional relation and one operational procedure that computes or realises it. Fixed-point semantics for recursive rule systems provide a particularly close computational precedent \citep{tarski1955,cousot1977,ceri1989}.
+
+\section{Graph deltas and rewrite semantics}\label{sec:deltas}
+
+Let
+\[
+G=(g,r,\Gamma)
+\]
+and let a realised graph delta be
+\[
+\Delta G=(\Delta G^+,\Delta G^-).
+\]
+
+Define
+\[
+G\oplus\Delta G
+=
+(G\setminus\Delta G^-)\cup\Delta G^+
+\]
+when $\operatorname{WF}(G,\Delta G)$ holds.
+
+A software implementation may expose
+\[
+\operatorname{AtomicApply}(G,\Delta G)=
+\begin{cases}
+G\oplus\Delta G,&\operatorname{WF}(G,\Delta G),\\
+\operatorname{FAIL},&\text{otherwise},
+\end{cases}
+\]
+but \textsc{FAIL} is an implementation result, not a theory-level state.
+
+This extensional add/remove representation sits within the broad tradition of algebraic graph transformation, where graph rewriting and its applicability conditions are given explicit mathematical semantics \citep{corradini1997,ehrig2006}.
+
+\section{ADD/REMOVE completeness}\label{sec:add-remove}
+
+Typed mutations reduce extensionally to
+\[
+\Pi_G=\{\operatorname{ADD},\operatorname{REMOVE}\}.
+\]
+
+\begin{theorem}[Finite graph rewrite completeness]\label{thm:add-remove}
+For every pair of finite graph states $G$ and $H$, a finite sequence of ADD and REMOVE operations transforms $G$ into $H$.
+\end{theorem}
+
+\begin{proof}
+Remove every represented fact in $G\setminus H$ and add every represented fact in $H\setminus G$.
+\end{proof}
+
+The theorem is intentionally weak: it establishes representational completeness for finite extensional graph state, not efficiency, confluence, or semantic preservation.
+
+\section{Guarded proposals}\label{sec:proposals}
+
+A reference proposal is
+\[
+\pi=\nu\mathbf a.(P_G,P_{\mathcal B},\mathcal D),
+\]
+where $P_G$ is a source-local antecedent condition, $P_{\mathcal B}$ an optional boundary-language precondition, $\mathbf a$ a finite set of provisional identities, and $\mathcal D$ a finite transformation term.
+
+Proposal objects are implementation artefacts representing possible deformations. They are not substrate primitives.
+
+\section{Proposal construction function}\label{sec:closure-function}
+
+The formal implementation replaces the code-oriented name \texttt{run\_rules} with
+\[
+\boxed{
+\operatorname{ProposalClosure}
+(g^{\mathrm{base}},r,\Gamma)
+=
+D^*.
+}
+\]
+
+A concrete codebase may retain any convenient function name.
+
+For one invocation,
+\[
+g^{\mathrm{base}}=g_t^I
+\]
+is immutable. Let
+\[
+D^{(0)}=\varnothing
+\]
+and define
+\[
+\operatorname{Frontier}^+(D)
+=
+\{f:f\text{ is a completed positive proposal fact in }D\}.
+\]
+
+Here $\varnothing$ is an ordinary value of the instantiated set-valued closure dimension: it means ``the current proposal family contains no members.'' It is not the NULL/non-existence state discussed in the theory papers.
+
+The symbolic matching view is
+\[
+\widetilde g^{(k)}
+=
+g^{\mathrm{base}}
+\boxplus
+\operatorname{Frontier}^+(D^{(k)}),
+\qquad
+g\boxplus F\neq g\oplus F.
+\]
+
+\section{Synchronous rounds and antecedence}\label{sec:rounds}
+
+Every rule in round $k$ reads the same $\widetilde g^{(k)}$ and writes to a fresh $E^{(k)}$. Same-round writes are not visible. After the round,
+\[
+D^{(k+1)}
+=
+D^{(k)}\sqcup_D E^{(k)},
+\]
+with deterministic merge over compatible effects and explicit incompatibility otherwise.
+
+This is one constructive realisation of the theory-level antecedent-state principle. Comparable staged semantics appear in rule evaluation and deductive databases, where immediate-consequence operators repeatedly extend a fact set until closure \citep{ceri1989}.
+
+\section{Least-fixed-point closure}\label{sec:lfp}
+
+Let
+\[
+F_{g^{\mathrm{base}},r,\Gamma}
+\]
+be the synchronous proposal operator.
+
+\begin{theorem}[Order-independent proposal closure]\label{thm:lfp}
+If
+\[
+D_a\subseteq D_b
+\Rightarrow
+F(D_a)\subseteq F(D_b),
+\]
+positive derivation is monotone, admissibility is base-stable or monotone proposal-sensitive, merge is deterministic on compatible effects, and fresh-name invention is appropriately stratified, then
+\[
+\boxed{
+D^*
+=
+\operatorname{lfp}
+\left(
+F_{g^{\mathrm{base}},r,\Gamma}
+\right)
+}
+\]
+is independent of rule enumeration order.
+\end{theorem}
+
+The existence of least fixed points for monotone operators on complete lattices is classical \citep{tarski1955}; fixed-point semantics are foundational in denotational semantics and abstract interpretation \citep{cousot1977}, and least-fixed-point evaluation is standard for positive recursive rule systems \citep{ceri1989}.
+
+The theorem above adds implementation-specific conditions needed for this executor's proposal language and merge semantics. Finite termination additionally requires a finite active domain or represented stopping/freshness conditions.
+
+\section{Removal and freshness stratification}\label{sec:stratification}
+
+Proposed removals remain effects during monotone positive closure and do not retract premises that enabled their own derivation in the same unstratified closure.
+
+A fresh-name minting site may not become recursively self-enabling solely through identities minted from that site.
+
+These restrictions preserve the monotone conditions under which the least-fixed-point construction in Theorem~\ref{thm:lfp} applies. Non-monotone rule languages require additional semantics rather than being silently treated as positive closure.
+
+\section{Typed well-formedness}\label{sec:wf}
+
+The executor distinguishes:
+
+\begin{description}[leftmargin=*,style=nextline]
+\item[$\operatorname{WF}(g,\Delta)$] realised delta validity.
+\item[$\operatorname{WF}_{\mathrm{sym}}(g,S)$] source-symbolic coherence before identity resolution.
+\item[$\operatorname{WF}_{\mathrm{app}}(g,S)$] existence of a valid realised local image.
+\item[$\operatorname{WF}_{\mathrm{rel}}(S)$] coherent translation to boundary vocabulary.
+\item[$\operatorname{WF}_{\mathrm{seq}}(S^L,S^A)$] coherent local/outward sequencing.
+\item[$\operatorname{WF}^W_{\mathrm{sym}}(W,S)$] world-side symbolic coherence.
+\item[$\operatorname{WF}_{\mathrm{decision}}(g,S)$] joint source-decision validity.
+\end{description}
+
+These predicates validate different object types and cannot be substituted merely because they share a name. Typed application conditions and gluing constraints are likewise central in algebraic graph transformation \citep{corradini1997,ehrig2006}.
+
+\section{Targets and atomicity}\label{sec:atomicity}
+
+Each effect has one target:
+\[
+\tau:V\rightarrow
+\{\mathrm{local}\}
+\cup
+\{\mathrm{world}_k:W_k\in\mathcal W(G)\}.
+\]
+
+Mixed-target families are decomposed into same-target candidates connected by dependency edges.
+
+\begin{proposition}[Boundary-scoped atomicity]\label{prop:boundary-atomicity}
+In this reference semantics, one primitive atomic realised commit is scoped to one realised boundary. Effects that must succeed or fail together must therefore either be represented at a common realised boundary or be implemented by an additional coordination protocol.
+\end{proposition}
+
+This is not a claim that distributed atomicity is impossible in computer systems. Transaction-processing systems explicitly construct distributed atomicity by adding commit protocols, logging, recovery, and coordination machinery \citep{gray1993}. The proposition states that such machinery is \emph{additional represented structure}; distributed atomicity is not free at the primitive boundary layer.
+
+\section{Boundary identity publication}\label{sec:publication}
+
+For source-private identity $x$ needed at boundary $\mathcal B_k$,
+\[
+\eta_{G\rightarrow\mathcal B_k}:
+\operatorname{Id}_G
+\rightharpoonup
+\operatorname{Handle}_{\mathcal B_k}.
+\]
+
+Then
+\[
+\text{realise }x
+\prec
+\text{publish }h_x
+\prec
+\text{expose dependent deformation}.
+\]
+
+An identity may be public in one boundary vocabulary and private in another.
+
+The ordering is causal rather than merely chronological. Lamport's ``happened-before'' relation and event-structure semantics are standard precedents for representing causal partial order without requiring a single global time sequence \citep{lamport1978,winskel1987}.
+
+\section{Optional source decision}\label{sec:decision}
+
+The theory does not require valuation. For graphs that represent alternatives, define readiness at causal collection cut $\chi_{G,t}$:
+\[
+\operatorname{ready}_{G,t}(\pi)
+\iff
+\forall d\in\operatorname{Prereq}(\pi),
+\operatorname{resolved}(d)\preceq\chi_{G,t}.
+\]
+
+A feasible family
+\[
+\mathfrak F_{G,t}^{\mathrm{decision}}
+\]
+is formed from represented admissibility and typed well-formedness.
+
+Where valuation exists,
+\[
+s_{G,t}^{\mathrm{decision}}(S)
+=
+\operatorname{Value}
+\left(
+S^L,
+\operatorname{Prospect}_{G,t}(S^A)
+\right),
+\]
+and
+\[
+\mathcal M_{G,t}^{\mathrm{decision}}
+=
+\arg\max_{S\in\mathfrak F_{G,t}^{\mathrm{decision}}}
+s_{G,t}^{\mathrm{decision}}(S).
+\]
+
+The deterministic reference executor does not break exact ties by hidden randomness or enumeration order.
+
+\section{Relative weighting}\label{sec:weighting}
+
+Where the optional decision layer uses weights, those weights must follow the theory's relative-weighting discipline. No operation possesses an absolute substrate weight.
+
+For candidate deformations $\delta_i,\delta_j$ in the same instantiated comparison context, define
+\[
+\omega_{\Frame,t}(\delta_i,\delta_j)
+=
+w_{\Frame,t}(\delta_i)-w_{\Frame,t}(\delta_j).
+\]
+
+A scalar representation $w$ is only a gauge representative:
+\[
+w_{\Frame,t}(\delta)
+\sim
+w_{\Frame,t}(\delta)+c
+\]
+for any common offset $c$ applied to the active comparison family.
+
+An inadmissible or absent candidate is not assigned $0$, $-\infty$, or any other extreme weight; its weight dimension is not instantiated in that comparison.
+
+\section{Component-scoped ties}\label{sec:ties}
+
+A represented coupling graph records dependency, incompatibility, non-factorisable admissibility, prospect interaction, or valuation interaction.
+
+Independent components resolve separately only when feasibility, prospect composition, and valuation genuinely factorise. Hence
+\[
+\boxed{
+\text{tie scope}
+=
+\text{represented decision-coupling scope}.
+}
+\]
+
+This is a deterministic decomposition rule. Re-evaluation without changed represented state does not break an exact tie.
+
+\section{World-directed deformation}\label{sec:exposure}
+
+A selected outward candidate is translated into boundary language by exposure:
+\[
+\bar\pi=\operatorname{Expose}_G(\pi).
+\]
+
+Exposure is event-local. The reference executor creates no substrate-level persistent request object with intrinsic pending, retry, cancellation, acknowledgement, or expiry.
+
+Persistence, where required, is explicit graph/world state. Message queues, leases, retries, acknowledgements, and transaction protocols may all be added as represented structures; they are not implicit in exposure itself.
+
+\section{World interaction and determinism}\label{sec:world}
+
+At world interaction event $e$,
+\[
+B_{W,e}
+=
+B_{W,e}^{\mathrm{self}}
+\cup
+\bigcup_j
+B_{G_j\rightarrow W,e}^{\mathrm{exposed}}
+\cup
+B_{W,e}^{\mathrm{external}}.
+\]
+
+A graph-world recursively uses deterministic resolution. More generally, the reference implementation assumes that a causally complete antecedent configuration determines the realised successor, in accordance with the Graph Law.
+
+An implementation may nevertheless attach a stochastic \emph{observation model} to an incompletely represented external frame. Such a model expresses uncertainty over unresolved determining dimensions:
+\[
+\boxed{
+\text{stochastic observation model}
+\neq
+\text{stochastic substrate transition}.
+}
+\]
+
+No hidden random source may be inserted into an executor that is claimed to implement the deterministic Graph Law. If a deliberately stochastic simulator is used for convenience, that randomness is an explicit extra modelling assumption rather than part of the reference semantics.
+
+\section{Provenance and residual}\label{sec:residual}
+
+Boundary merge returns realised delta plus a transient provenance witness.
+
+For proposed and realised deltas
+\[
+\Delta^P=(P^+,P^-),
+\qquad
+\Delta^R=(R^+,R^-),
+\]
+define
+\[
+\boxed{
+\Delta^R\ominus\Delta^P
+=
+\left(
+R^+\setminus P^+,
+R^-\setminus P^-,
+P^+\setminus R^+,
+P^-\setminus R^-
+\right).
+}
+\]
+
+If
+\[
+\Delta^R=(\varnothing,\varnothing),
+\]
+the residual contains the entire unrealised proposal image. Here the empty delta is a legitimate value of an instantiated delta structure; it is not NULL.
+
+Residual is mismatch, not diagnosis. Provenance merely permits the implementation to attribute that mismatch to contributing proposal sources.
+
+\section{Input integration}\label{sec:input}
+
+Reference input is
+\[
+I_t=(d_t,\epsilon_t,K_t),
+\]
+separating direct data, residual, and represented precision/freshness metadata.
+
+$\operatorname{Integrate}_G$ produces the post-input antecedent base for the next closure. World-caused integration is not checked against self-admissibility as though the graph could veto the world.
+
+The distinction between externally caused input and internally selected output is part of the theory; the tuple above is one implementation encoding of it.
+
+\section{Conformance tests}\label{sec:tests}
+
+A reference implementation should test:
+
+\begin{enumerate}[leftmargin=*]
+\item enumeration-order invariance under the assumptions of Theorem~\ref{thm:lfp};
+\item same-round non-readability;
+\item monotone frontier growth where monotonicity is claimed;
+\item removal and freshness stratification;
+\item deterministic compatible merge;
+\item correct boundary identity publication;
+\item absence of accidental cross-boundary atomicity;
+\item stable exact-tie behaviour;
+\item gauge invariance of relative weighting under common offsets;
+\item absence of a numeric weight for candidates outside the comparison domain;
+\item provenance-preserving residual;
+\item full-proposal residual under complete non-realisation;
+\item frame-local termination;
+\item absence of hidden executor stochasticity;
+\item reproducibility of realised successors for identical causally complete antecedent configurations.
+\end{enumerate}
+
+\section{What implementation taught the theory}\label{sec:lessons}
+
+The constructive work forced distinctions that survive replacement of this executor:
+
+\begin{enumerate}[leftmargin=*]
+\item antecedent state is distinct from consequences of the current transition;
+\item self-admissibility cannot function as armour against world-caused change;
+\item outward action and inbound observation are different causal legs;
+\item identity must be frame-typed;
+\item failed interaction requires no persistent attempt object;
+\item residual is mismatch and need not contain explanation;
+\item previous failure changes later dynamics only if consequences survive in state;
+\item distinct boundaries cannot be silently treated as one primitive atomic transaction;
+\item higher-frame quantities may be first-class without being primitives of the lower graph;
+\item absent dimensions must not be represented by zero or an extreme numeric sentinel;
+\item apparent stochasticity belongs to incomplete observation, not to the deterministic Graph Law.
+\end{enumerate}
+
+\section{Positioning and prior art}\label{sec:prior-art}
+
+\paragraph{Graph rewriting.}
+Algebraic graph transformation supplies mature semantics for graph rewrite rules, applicability, conflicts, and compositionality \citep{corradini1997,ehrig2006}. The present executor uses a simpler extensional ADD/REMOVE representation because its purpose is to realise the companion theory, not to replace the graph-transformation literature.
+
+\paragraph{Fixed-point semantics.}
+Knaster--Tarski supplies least and greatest fixed points for monotone operators on complete lattices \citep{tarski1955}. Abstract interpretation and deductive-database semantics make fixed-point construction operational in program analysis and recursive rule evaluation \citep{cousot1977,ceri1989}. The present contribution is the particular decomposition into immutable antecedent base, positive symbolic frontier, typed proposal effects, deterministic merge, and boundary execution required by Graphic Equalisation.
+
+\paragraph{Causality and concurrency.}
+Lamport's event ordering and Winskel's event structures provide standard models in which causal precedence is a partial order rather than a global clock \citep{lamport1978,winskel1987}. The reference executor's causal cuts and publication-before-exposure ordering belong to that tradition.
+
+\paragraph{Atomicity and distributed transactions.}
+Transaction processing demonstrates that atomicity across distributed resources can be constructed, but only by adding protocols and recovery structure \citep{gray1993}. This is consistent with Proposition~\ref{prop:boundary-atomicity}: cross-boundary atomicity is representable, but it is not primitive.
+
+\paragraph{Novelty.}
+The individual implementation techniques are therefore largely established. The contribution of this paper is their disciplined composition as one reference realisation of the Graphic Equalisation substrate, plus the record of which theoretical distinctions became necessary when the implementation was forced to close.
+
+\section{Conclusion}\label{sec:conclusion}
+
+This construction is one way to compute and realise Graphic Equalisation. It is intentionally more specific than the theory:
+\[
+\boxed{
+\text{theory}
+\rightarrow
+\text{constructive implementation}
+\rightarrow
+\text{edge cases}
+\rightarrow
+\text{stronger theory}.
+}
+\]
+
+The implementation is both an executable reference and an experimental apparatus for formal clarification, without being mistaken for the ontology it helped reveal.
+
+\bibliographystyle{plainnat}
+\begin{thebibliography}{99}
+
+\bibitem[Ceri et~al.(1989)Ceri, Gottlob, and Tanca]{ceri1989}
+Stefano Ceri, Georg Gottlob, and Letizia Tanca.
+\newblock \emph{What You Always Wanted to Know About Datalog (And Never Dared to Ask)}.
+\newblock IEEE Transactions on Knowledge and Data Engineering, 1(1):146--166, 1989.
+
+\bibitem[Corradini et~al.(1997)Corradini, Montanari, Rossi, Ehrig, Heckel, and L\"owe]{corradini1997}
+Andrea Corradini, Ugo Montanari, Francesca Rossi, Hartmut Ehrig, Reiko Heckel, and Michael L\"owe.
+\newblock Algebraic approaches to graph transformation, Part I: Basic concepts and double pushout approach.
+\newblock In Grzegorz Rozenberg, editor, \emph{Handbook of Graph Grammars and Computing by Graph Transformation, Volume 1: Foundations}, pages 163--245. World Scientific, 1997.
+
+\bibitem[Cousot and Cousot(1977)]{cousot1977}
+Patrick Cousot and Radhia Cousot.
+\newblock Abstract interpretation: A unified lattice model for static analysis of programs by construction or approximation of fixpoints.
+\newblock In \emph{Proceedings of the 4th ACM SIGACT-SIGPLAN Symposium on Principles of Programming Languages}, pages 238--252, 1977.
+
+\bibitem[Ehrig et~al.(2006)Ehrig, Ehrig, Prange, and Taentzer]{ehrig2006}
+Hartmut Ehrig, Karsten Ehrig, Ulrike Prange, and Gabriele Taentzer.
+\newblock \emph{Fundamentals of Algebraic Graph Transformation}.
+\newblock Springer, Berlin, 2006.
+
+\bibitem[Gray and Reuter(1993)]{gray1993}
+Jim Gray and Andreas Reuter.
+\newblock \emph{Transaction Processing: Concepts and Techniques}.
+\newblock Morgan Kaufmann, San Mateo, 1993.
+
+\bibitem[Lamport(1978)]{lamport1978}
+Leslie Lamport.
+\newblock Time, clocks, and the ordering of events in a distributed system.
+\newblock \emph{Communications of the ACM}, 21(7):558--565, 1978.
+
+\bibitem[Tarski(1955)]{tarski1955}
+Alfred Tarski.
+\newblock A lattice-theoretical fixpoint theorem and its applications.
+\newblock \emph{Pacific Journal of Mathematics}, 5(2):285--309, 1955.
+
+\bibitem[Winskel(1987)]{winskel1987}
+Glynn Winskel.
+\newblock Event structures.
+\newblock In Wilfried Brauer, Wolfgang Reisig, and Grzegorz Rozenberg, editors,
+\newblock \emph{Petri Nets: Applications and Relationships to Other Models of Concurrency},
+\newblock Lecture Notes in Computer Science 255, pages 325--392. Springer, 1987.
+
+\end{thebibliography}
+
+\end{document}
