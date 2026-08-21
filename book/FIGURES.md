@@ -1,6 +1,6 @@
 # FIGURES — the plan for the papers and the book
 
-**Status: plan, with eight figures drawn — chapter 1's set is complete.**
+**Status: plan, with eleven figures drawn — chapter 1's set is complete.**
 See § "Built so far" below. The five formal papers currently
 contain **zero figures** (no `includegraphics`, no TikZ), and the book has none
 because it has no chapters yet. This document says what each needs, where the
@@ -125,6 +125,9 @@ belief forming over time), `results/doom_ingraph_map/map_frame_*.png` (ch. 7),
 | **EYE-3** | Weber–Fechner, predicted then measured | `book/figures/eye_3_weber.svg` | `fig_eye_weber.py` | `results/eye_confirm.log` (H2) |
 | **EYE-4** | the drift crossover, and its ablation | `book/figures/eye_4_drift.svg` | `fig_eye_drift.py` | `results/eye_confirm.log` (H3) |
 | **EYE-5** | depth and stereo: the refusal matrix | `book/figures/eye_5_depth_controls.svg` | `fig_eye_depth_controls.py` | `results/depth_measure.json`, `results/stereo_measure.json` |
+| **EYE-6** | centre-surround, emerged from a zero init | `book/figures/eye_6_centre_surround.svg` | `fig_eye_centre_surround.py` | `results/rung7_confirm.log` |
+| **EYE-7** | the waves: globally isotropic, locally oriented | `book/figures/eye_7_waves.svg` | `fig_eye_waves.py` | `results/waveiso_confirm.json` |
+| **EYE-8** | the eigenspectrum — why Oja cannot see it | `book/figures/eye_8_eigenspectrum.svg` | `fig_eye_eigenspectrum.py` | `results/waveiso_confirm.json` |
 | **EMO-1** | the marshmallow confound, both directions | `book/figures/emotion_1_marshmallow_confound.svg` | `fig_marshmallow_confound.py` | `results/marshmallow_delay/results.json` |
 | **EMO-2** | Harlow on equal drive weights | `book/figures/emotion_2_harlow.svg` | `fig_harlow_preference.py` | `results/harlow_d1.json` |
 
@@ -176,12 +179,24 @@ standing lesson is that instruments need positive controls too.
    Remaining ch. 1 gaps, both needing their data located first: the
    centre-surround emergence figures (CS 1.0839, σ_ON,ON 1.627 vs σ_ON,OFF
    3.264) and retinal-wave structure (entropy 0.195 vs 0.000), and the
-   DC-blob eigenspectrum behind the cortex null. The scaling wall
-   (1317 → 137.8 ms) already has a plot in `results/eye_timing/scaling.png`
-   (Class C — select, don't redraw).
+   DC-blob eigenspectrum behind the cortex null — **all three located and
+   drawn** (EYE-6, EYE-7, EYE-8). The scaling wall (1317 → 137.8 ms) already
+   has a plot in `results/eye_timing/scaling.png` (Class C — select, don't
+   redraw), which closes chapter 1's figure set.
 3. The remaining paper conceptual diagrams, as each paper is revised — paper
    05's executor round is the next most useful.
 4. Class C selection, per chapter, while drafting.
+
+**Where the eye's remaining data was hiding.** `THE_EYE.md` §1 states the
+centre-surround and retinal-wave numbers without citing a path, and the two
+sit in different places: centre-surround in `results/rung7_confirm.log` (the
+one pre-registered confirmatory run, η frozen, Bonferroni across five tests),
+and the waves in `results/waveiso_confirm.json` with committed runners
+`scripts/waveiso_{lib,calibrate,pilot,confirm}.py`. Both turned out to be
+richer than the summary line suggested — rung 7 carries Miller's
+spatial-dependence reading and Atick & Redlich's SNR predictions as separate
+gated hypotheses, and waveiso carries four control arms plus full per-seed
+eigenspectra, which is what made EYE-8 possible at all.
 
 **A note on what the eye data supports.** `depth_measure.json` and
 `stereo_measure.json` record verdicts and minted-dimension structures rather
