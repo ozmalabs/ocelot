@@ -94,10 +94,21 @@ committed results sitting unplotted. **This is the first drawing work to do.**
 ## Class C — figures that already exist and need only selection
 
 ~110 PNGs under `results/`. Do not redraw these; pick, caption, and cite.
-Strongest candidates: `results/doom_eye/contact_sheet.png` and
-`doom_eye/curves.png` (prologue), `results/eye_view/*` (ch. 1),
-`results/held_surface/`, `results/splat_over_time/` (contact sheets showing a
-belief forming over time), `results/doom_ingraph_map/map_frame_*.png` (ch. 7),
+**Chapter 1's selection is done: `book/figures/CLASS_C_CH1.md`** (five
+selected, one rejected, each with provenance and generator).
+
+**One rule changed as a result of doing it.** `git ls-files 'results/**.png'`
+returns **zero** — none of those ~110 PNGs is tracked. They are run artefacts,
+not committed evidence, so a Class C figure cannot be referenced by path in a
+manuscript: the path may be empty on any other machine. **Class C therefore
+inherits the generator rule rather than being exempt from it** — a selected
+figure is admissible only if a committed script can remake it, and when a
+chapter is typeset the PNG is copied into `book/figures/selected/` and
+committed, with its generator named beside it.
+
+Remaining candidates for later chapters: `results/held_surface/`,
+`results/splat_over_time/` (contact sheets of a belief forming over time),
+`results/doom_ingraph_map/map_frame_*.png` (ch. 7),
 `results/cascade_ink/reconstruction.png` (ch. 5),
 `results/staleness_decay/power_law.png`, `results/modulator_emergence/`.
 
@@ -166,7 +177,14 @@ figure-side versions of defects this project already catalogues:
    is the whole content of collapse. They now terminate in `×`, labelled
    *admissible, not realised*.
 
-**The rule this suggests, added to the ones above:** *render every figure and
+**A third error, caught the same way, during the Class C pass:** `FIGURES.md`
+listed `results/eye_timing/scaling.png` as the FFI-wall plot on the strength of
+its filename. Opening it showed a **prune ablation** instead — a different and
+more interesting result (without pruning, each tick costs more than the last),
+but not the one it had been filed as. The FFI wall has no committed plot at
+all. *A figure identified from its filename is an unread figure.*
+
+**The rule these suggest, added to the ones above:** *render every figure and
 read it before believing it.* A figure is an instrument, and this tree's own
 standing lesson is that instruments need positive controls too.
 
@@ -185,7 +203,9 @@ standing lesson is that instruments need positive controls too.
    redraw), which closes chapter 1's figure set.
 3. The remaining paper conceptual diagrams, as each paper is revised — paper
    05's executor round is the next most useful.
-4. Class C selection, per chapter, while drafting.
+4. ~~Class C selection for chapter 1~~ — **done**
+   (`book/figures/CLASS_C_CH1.md`). Class C selection for the remaining
+   chapters, while drafting each.
 
 **Where the eye's remaining data was hiding.** `THE_EYE.md` §1 states the
 centre-surround and retinal-wave numbers without citing a path, and the two
