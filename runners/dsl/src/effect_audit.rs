@@ -34,12 +34,13 @@
 //! never executes. A coverage gap must be a number, not an assumption.
 //!
 //! The behavioural correction — withholding `progressed` and the undo step on
-//! a failed insert — is gated behind [`correct_failed_effects`] and defaults
-//! **OFF**, per VISION_PROTOCOL §9 (defaults preserve committed results) and
-//! the `*_unsound` flag precedent in `substrate.rs`. Today's default is
-//! byte-identical to the previous behaviour. Flipping it is a separate,
-//! measured change: run with counting on, find whether the path fires at all,
-//! and only then decide.
+//! a failed insert — is gated behind [`correct_failed_effects`]. It landed
+//! **OFF**, per VISION_PROTOCOL §9, and was flipped **ON** only after the
+//! measurement said the path does not fire: zero failed inserts and zero false
+//! progress across a conversational workload and a 47-test rule-heavy slice
+//! (`DECISION_LAYER_PREREG.md` §4.2). Because the corrected branch is reachable
+//! only when an insert actually fails, a measured zero makes enabling it inert
+//! on those paths by construction rather than by observation.
 //!
 //! # Testing the detector
 //!
@@ -66,7 +67,13 @@ static FIRST_ROW: Mutex<Option<String>> = Mutex::new(None);
 
 /// When true, a failed insert withholds `progressed` and the undo step.
 /// **Default false** — see the module note.
-static CORRECT: AtomicBool = AtomicBool::new(false);
+/// **Default ON as of the measurement in `DECISION_LAYER_PREREG.md` §4.2.** Measured
+/// zero failed inserts and zero false progress across a conversational workload and a
+/// 47-test rule-heavy slice, so enabling the correction changes no exercised behaviour
+/// while removing a source of spurious fixpoint iteration. `rewrite.rs`'s red test still
+/// proves the path fires when an effect list deletes an endpoint, so this is "no seed
+/// rule does that today", not "unreachable".
+static CORRECT: AtomicBool = AtomicBool::new(true);
 
 /// Record a failed edge insertion. `false_progress` is true when the caller
 /// would otherwise have credited progress for it.

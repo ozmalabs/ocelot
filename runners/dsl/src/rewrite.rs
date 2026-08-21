@@ -1522,9 +1522,9 @@ pub fn apply_rule_full(
                         )
                     });
                 }
-                // Default is byte-identical to the previous behaviour: the
-                // correction is opt-in until the counter says how often the
-                // path fires (VISION_PROTOCOL §9).
+                // The correction landed opt-in and was enabled by default once
+                // the counter measured the path at zero on real workloads; see
+                // effect_audit's module note.
                 let suppress = failed && crate::effect_audit::correct_failed_effects();
                 if !pre_exists && !suppress {
                     progressed = true;
@@ -2685,9 +2685,10 @@ mod effect_audit_tests {
         assert_eq!(failed, 1, "the discarded Err must be counted");
         assert_eq!(false_progress, 1, "it must be counted as false progress");
         assert!(row.is_some(), "the first failure must be retained verbatim");
-        // The pre-existing behaviour is preserved exactly while the correction
-        // is off: progress is still (wrongly) credited.
-        assert!(out.progressed, "default must stay byte-identical to before");
+        // With the correction explicitly off, the pre-existing behaviour is
+        // preserved exactly: progress is still (wrongly) credited. This pins the
+        // old semantics so the flag's two states stay distinguishable.
+        assert!(out.progressed, "correction off must reproduce the old behaviour");
         crate::effect_audit::reset();
     }
 

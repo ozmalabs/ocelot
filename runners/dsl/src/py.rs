@@ -10717,6 +10717,37 @@ fn selector_audit_reset() {
 /// selector path — one extra value evaluation per firing, i.e. 1/N for a
 /// selector over N candidates. Counted, not wall-clock: deterministic and
 /// load-independent.
+/// `{failed_edge_inserts, false_progress, first_row, correction_enabled}`.
+///
+/// `failed_edge_inserts` counts `AddEdge` effects whose `insert_edge` returned
+/// `Err` and was discarded by the applier. `false_progress` is the subset that
+/// ALSO credited `progressed` and pushed an undo step for a mutation that never
+/// happened — the count that matters for fixpoint behaviour, since a rule that
+/// always fails this way always claims progress.
+#[pyfunction]
+fn effect_audit_stats(py: Python<'_>) -> PyResult<PyObject> {
+    let (failed, false_progress, first_row) = crate::effect_audit::stats();
+    let d = PyDict::new_bound(py);
+    d.set_item("failed_edge_inserts", failed)?;
+    d.set_item("false_progress", false_progress)?;
+    d.set_item("first_row", first_row)?;
+    d.set_item("correction_enabled", crate::effect_audit::correct_failed_effects())?;
+    Ok(d.into())
+}
+
+#[pyfunction]
+fn effect_audit_reset() {
+    crate::effect_audit::reset();
+}
+
+/// Enable the behavioural correction: a failed insert withholds `progressed`
+/// and the undo step. Default OFF — committed results are byte-identical with
+/// it off (VISION_PROTOCOL §9).
+#[pyfunction]
+fn effect_audit_set_correction(on: bool) {
+    crate::effect_audit::set_correct_failed_effects(on);
+}
+
 #[pyfunction]
 fn selector_audit_stats(py: Python<'_>) -> PyResult<PyObject> {
     let (firings, candidates, skipped, disagreements, empty, first_row) =
@@ -10905,6 +10936,9 @@ pub(crate) fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(selector_audit_fault_inject, m)?)?;
     m.add_function(wrap_pyfunction!(selector_audit_reset, m)?)?;
     m.add_function(wrap_pyfunction!(selector_audit_stats, m)?)?;
+    m.add_function(wrap_pyfunction!(effect_audit_stats, m)?)?;
+    m.add_function(wrap_pyfunction!(effect_audit_reset, m)?)?;
+    m.add_function(wrap_pyfunction!(effect_audit_set_correction, m)?)?;
     m.add_function(wrap_pyfunction!(argmin_tie_enable, m)?)?;
     m.add_function(wrap_pyfunction!(argmin_tie_reset, m)?)?;
     m.add_function(wrap_pyfunction!(argmin_tie_stats, m)?)?;
