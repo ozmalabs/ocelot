@@ -198,9 +198,12 @@ first *by means of* violating the second.
 **Measured, 2026-08-21** (`docs/research/engine_substrate/ARGMIN_TIE_CENSUS_RESULTS.md`): on a
 five-utterance conversational workload with the full seed set, **95 of 148 selector firings (64.19%)
 are exact ties resolved by enumeration order**. Four distinct sites tie; one — `Argmax` over
-`ranked_source.salience` in `default_mode_mint_goal_context` — accounts for 90 of the 95, and ties
-on 90 of 90 firings because `salience` is **unset on every goal it ranks**. That selector does not
-rank; it returns the first-encountered goal while presenting as a salience ranking. So order is not
+`ranked_source.salience` in `default_mode_mint_episode_context` — accounts for 90 of the 95, and
+ties on 90 of 90 firings because every message-derived episode is minted with a hardcoded
+`salience: 1.0` (`memory_core.json::rule_episode_from_message`). An `Argmax` over a constant cannot
+rank: it returns the first-encountered consolidated episode while presenting as a salience ranking.
+(An earlier version of this paragraph named the wrong rule and reported the attribute as unset; both
+errors are corrected and recorded in the results doc's §CORRECTION rather than silently edited.) So order is not
 merely *how* determinism is achieved here — on this workload it is the primary decider in a majority
 of firings and the only decider at the dominant site. Caveats in the results doc: one workload,
 conversation paths only, and the instrument reaches `Argmin`/`Argmax` Terms but not rule-order

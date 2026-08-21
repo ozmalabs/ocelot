@@ -49,48 +49,75 @@ so a site maps back to the rule that authored it):
 
 | selector | value term | firings | ties |
 |---|---|---|---|
-| `Argmax` | `ranked_source.salience` | 90 | **90** |
+| `Argmax` | `ranked_source.salience` (`default_mode_mint_episode_context`) | 90 | **90** |
 | `Argmax` | recovery/threshold composite | — | — |
 | `Argmax` | `AntiUnify` pattern | — | — |
 | `Argmin` | `x.priority` | 1 | 1 |
 
 Four distinct tied sites. One dominates.
 
-## The dominant site is not a tie between equals
+## CORRECTION (same day, before any downstream use)
 
-`Argmax` over `ranked_source.salience` ties on **90 of 90** firings. The obvious reading —
-several goals that happen to be equally salient — is wrong. Measured directly:
+**The first version of this section was wrong twice, and is corrected here rather than
+silently edited.** It named the wrong rule and drew the wrong conclusion from evidence
+about the wrong nodes. Both errors came from the same mistake: I read a site's
+`value_term` off the census, assumed which rule authored it, and measured the node set
+that assumption implied instead of the one the selector actually reads.
 
+What was published:
+
+> `Argmax` over `ranked_source.salience` in `default_mode_mint_goal_context` ties on 90 of
+> 90 firings because `salience` is **unset on every candidate**… two goals, both `None`.
+
+What is true:
+
+1. **Wrong rule.** Two rules in `seeds/default_mode_core.json` bind `ranked_source`.
+   `default_mode_mint_goal_context` ranks by `{"type":"Lit","value":0.0}` — a constant, so
+   it ties *by construction and by design*: it is a "pick any unresolved goal" written as
+   an `Argmax`. The salience selector is **`default_mode_mint_episode_context`**.
+2. **Wrong node set.** That selector ranges over `agent -recorded_episode->` filtered to
+   `consolidated == true` — **episodes, not goals**. The published measurement read
+   `has_goal` neighbours, which the selector never looks at.
+3. **Wrong diagnosis.** Measured on the correct set: **5 consolidated episodes, all with
+   `salience = 1.0`.** Salience is not unset. It is *uniform*.
+
+## The dominant site: a constant where a ranking was intended
+
+`Argmax` over `ranked_source.salience` in `default_mode_mint_episode_context` ties on
+**90 of 90** firings. Not because the attribute is missing, but because
+`seeds/memory_core.json::rule_episode_from_message` mints every message-derived episode
+with
+
+```json
+"salience": {"__term__": {"value": 1.0, "type": "Lit"}}
 ```
-goal count: 2
-salience values: [(None, 2)]
-sample: [('answer_topic', None), ('communicate', None)]
-```
 
-`salience` is **unset on every candidate**. The selector in
-`seeds/default_mode_core.json::default_mode_mint_goal_context` ranks goals by an attribute
-that is never populated on those goals, so every comparison is between two missing values.
-It does not rank. It selects the first-encountered goal, while presenting as a salience
-ranking.
+a hardcoded literal. Every episode of that kind therefore carries identical salience by
+construction, and an `Argmax` over a constant cannot rank. The selector returns the
+first-encountered consolidated episode while presenting as a salience ranking.
 
-13 rules across the seed corpus write *a* `salience` attribute — `pattern_salience`,
-`mark_feature_salience`, `photon_column_synthesizes_retinal_percept`, and others — but on
-episodes, features, patterns and retinal percepts, not on the `Goal` nodes this rule
-ranks. Whether some other workload populates `Goal.salience` is **not established here**;
-what is established is that this workload's goals have none and the selector still fires.
+This is milder than the retracted claim in one respect — the attribute is populated, so
+nothing is reading a `None` — and identical in the respect that matters: **the ranking is
+vacuous, and the outcome is decided by enumeration order.** It is also an instance of this
+repo's own standing pattern, a scalar written where a shape belongs.
+
+Other rules *do* derive salience from a real quantity — `episodic_bind_observed_event_once`
+and `working_memory_output_gate` both set it from an `Attr` rather than a literal. Those
+paths are not exercised by a conversational workload, so whether salience differentiates
+episodes elsewhere is **open and unmeasured here**.
 
 ## What this does and does not establish
 
 **Establishes:** the tie rate on this workload is 64.19% of 148 firings; four sites tie;
-one site accounts for 90 of the 95 ties and ranks on an unpopulated attribute.
+one site accounts for 90 of the 95 ties and ranks by an attribute that is a hardcoded
+constant on every candidate it sees, so it cannot rank them.
 
 **Does not establish:**
 
 - *That ties are wrong answers.* The instrument counts exact non-uniqueness at the
   extremum, not incorrect outcomes. Where candidates are genuinely interchangeable, a tie
-  is harmless. Where they are not — the salience site — order is deciding something it
-  should not, but this census does not show a downstream error, only that nothing is
-  ranking.
+  is harmless. At the salience site nothing is ranking, so order decides — but this census
+  does not show a downstream error, only the absence of ranking.
 - *A rate for the system.* One workload, conversation paths only. Motor, vision, program
   synthesis and humanoid paths are unexercised, and their selector populations differ.
 - *Total coverage.* The instrument reaches `Argmin`/`Argmax` Terms. Selection also happens
@@ -102,8 +129,8 @@ one site accounts for 90 of the 95 ties and ranks on an unpopulated attribute.
 
 ## Consequence for the gap review
 
-§7 of the gap review can be updated from "unmeasured" to the figure above, with its
-caveats. The sharper point it should carry: the substrate's determinism is not merely
+§7 of the gap review is updated from "unmeasured" to the figure above, with its caveats
+and the correction in §CORRECTION. The sharper point it should carry: the substrate's determinism is not merely
 *achieved through* semantic enumeration order — on this workload, order is the **primary**
 decider in a majority of selector firings, and at the dominant site it is the **only**
 decider.
