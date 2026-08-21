@@ -156,22 +156,124 @@ The substrate should **not** copy the human residual. Humans have irreducible-in
 variability; priors-plus-disposition gives determinism *and* inspectability, which is
 better than the thing being modelled, not worse.
 
-## 7. Cheap probes, before anything is built
+## 7. Cheaper mechanisms, one per layer — and the revision they force
 
-1. **Can a navigation rule read `EmotionParams` at all?** Measured above: no seed reference
-   exists, but the dependency closure may still permit it. Establish whether
-   `quanta_navigation` can match an affect node without a new dependency edge. Minutes.
-2. **Does a hand-set `portal.cost` asymmetry break the observed ties?** Set an artificial
-   per-portal cost on one of the tied routing fixtures and re-run the `refuse_all` probe.
-   If ties vanish, the channel is sufficient and no new machinery is needed. This is the
-   single highest-value experiment here and it requires no new code.
-3. **Does route quality move?** The open question from `TIE_CONSEQUENTIALITY_RESULTS.md`:
-   the routing tests assert specific routes and currently pass, so enumeration order
-   produces acceptable answers on those fixtures. Whether a *different* deciding rule
-   produces better, worse, or merely different routes is unmeasured, and probe 2 would
-   begin to answer it.
+Humans are the *most expensive* solution to this problem. Simpler organisms solve it too,
+and as the organism simplifies the tie-break **migrates outward**, away from valuation.
 
-## 8. What would falsify this
+| organism | mechanism | where the tie-break lives |
+|---|---|---|
+| human | affect-weighted valuation | internal representation |
+| ant colony | pheromone autocatalysis | the environment |
+| woodlouse | bilaterally asymmetrical leg movements | the body |
+| *E. coli* | run-and-tumble on a temporal derivative | nowhere — alternatives are never represented |
+
+***E. coli* never faces the tie.** It is too short to sense a spatial gradient, so it
+cannot compare two directions because it cannot perceive two directions
+([PubMed](https://pubmed.ncbi.nlm.nih.gov/22169400/)). It runs, holds a ~3–4 s memory in
+receptor methylation, and suppresses the next tumble when things improve
+([PLOS Comp Biol](https://journals.plos.org/ploscompbiol/article?id=10.1371%2Fjournal.pcbi.1000735)).
+The comparison is performed *by moving through the world*.
+
+**The woodlouse stores it in its legs.** Turn alternation — forced left, then right — is
+explained by BALM, bilaterally asymmetrical leg movements arising mechanically from
+negotiating the curve
+([Springer](https://link.springer.com/content/pdf/10.3758/BF03200018.pdf)). The memory of
+the last turn is body state, not representation. **A different body therefore breaks ties
+differently with no representational difference at all** — which is this project's
+"same capability, two bodies" thesis arriving from biology, at zero cognitive cost.
+
+**The ant colony stores it in the world.** On Deneubourg's double bridge, each ant chooses
+probabilistically on pheromone and deposits more; positive feedback amplifies an initial
+random fluctuation through a pitchfork bifurcation and the colony converges on one
+arbitrary branch
+([Argentine ant trail rules](https://www.diva-portal.org/smash/get/diva2:552388/FULLTEXT01.pdf)).
+No individual decides. The individual is stochastic; the colony is decisive.
+
+**The revision this forces.** §6 proposed the human mechanism for a problem sitting near
+the bottom of the ladder. v22's own layering — graph ⊂ world-modelling ⊂ predictive ⊂
+deliberative — predicts a cheaper answer at each lower rung, and biology supplies exactly
+one per rung. Two of them are directly available here:
+
+- **Bacterial**: do not select among tied portals at all. Act, and re-flood on residual.
+  This *is* v22's boundary semantics already — observation is input, and error is exposed
+  by realised mismatch rather than prevented by a pre-check. *E. coli* cannot pre-check; it
+  must act to sample.
+- **Stigmergic**: accumulate traversal cost on portals. CLAUDE.md already records that the
+  map is *"a persistent observation BELIEF"*, so the world-resident surface exists. Same
+  insertion point as §6, far cheaper source term, and no new dependency between navigation
+  and the affect seeds.
+
+## 8. Why the felt term is optional at the substrate and required at the target
+
+The felt term is **optional for graphhood** — a rock has none, and *E. coli* routes without
+one. It is **required for what this substrate is for**, and the sharpest statement of why is
+social:
+
+> A full social simulation means some people use the paths, and some cut them.
+
+Heterogeneous disposition is not a decoration on the simulation; it is the phenomenon.
+Route choice that is uniform across residents produces a town where nobody has a
+character, and — more importantly — **produces the wrong infrastructure**.
+
+The two mechanisms compose, and neither suffices alone:
+
+- **Stigmergy alone** gives homogeneous convergence. Every agent identical, one trail, the
+  double-bridge result.
+- **Disposition alone** gives heterogeneity with no accumulation. Some cut, some do not,
+  and nothing persists.
+- **Together** they give **desire paths**: the impatient cut the corner, the cut is
+  recorded as reduced cost, the reduced cost recruits the less impatient, and a path exists
+  that no one planned. The infrastructure is an emergent readout of the population's
+  distribution of disposition.
+
+This is formalised precedent, not speculation. Helbing, Keltsch and Molnár's active walker
+model ([Nature 388:47–50](https://www.nature.com/articles/40353),
+[Phys. Rev. E 56:2527](https://link.aps.org/doi/10.1103/PhysRevE.56.2527)) reproduces
+observed large-scale trail geometry from exactly this feedback — walkers seek comfort and
+avoid detours, trails attract walkers, walkers improve trails. And it carries the detail
+that makes the heterogeneity claim concrete: **ants produce dendritic trail systems while
+pedestrians produce minimal-detour systems.** Same stigmergic mechanism, different agents,
+different emergent geometry.
+
+**This gives the design a falsifiable prediction rather than only a rationale.** A bigville
+with heterogeneous dispositions and stigmergic portal cost should produce desire paths:
+shortcuts at corners, disused paved routes, and a trail geometry that shifts if the
+disposition distribution shifts. If it produces uniform routing, or paths that never form,
+the composition is wrong. (Noting the test bed is partly absent: the bigville
+implementation was extracted in `5065fb8`, so this prediction is currently unrunnable here
+without reinstating it.)
+
+## 9. Cheap probes, in order
+
+**Stigmergic first.** It is the cheapest mechanism on the §7 ladder that still resolves
+ties, it needs no new dependency between navigation and the affect seeds, and it exercises
+the same `portal.cost` channel the affective version would use. If it works, it establishes
+the channel is sufficient *before* anything argues about disposition.
+
+1. **Does a hand-set `portal.cost` asymmetry break the observed ties?** Set an artificial
+   per-portal cost on one tied routing fixture and re-run the `refuse_all` probe. If the
+   ties vanish, the channel carries a tie-break and no new machinery is required. **No new
+   code.** This is the gate for everything below it.
+2. **Does traversal accumulation produce a trail?** Increment (or decrement) `portal.cost`
+   on traversal and run a repeated-navigation fixture. The double-bridge prediction is
+   convergence onto one of two equal routes; the null is that costs accumulate without
+   changing any route, which would mean the flood is insensitive at the magnitudes
+   involved. Needs a rule, not an engine change.
+3. **Is the felt cost additive?** The §10 falsifier that matters most. Test whether a
+   superlinear penalty — ten stops worse than twice five — can be expressed through
+   `qf_relax`'s `Plus` at all. If it cannot, the insertion point moves to route-scoring
+   grain and probes 1–2 remain valid while §6 does not.
+4. **Can a navigation rule read `EmotionParams`?** Only once 1–3 have established the
+   channel works. No seed reference exists today; whether the dependency closure permits
+   the match without a new edge is unmeasured. Minutes, but pointless before the channel is
+   proven.
+5. **Does route quality move?** The open question from `TIE_CONSEQUENTIALITY_RESULTS.md`.
+   The routing tests assert specific routes and pass, so enumeration order produces
+   acceptable answers on those fixtures; whether a principled rule produces better, worse,
+   or merely different routes is unmeasured. Probes 1–2 begin to answer it.
+
+## 10. What would falsify this
 
 - **If `portal.cost` cannot express the effect** — e.g. the flood requires non-negative
   costs and the interesting dispositional effects are attractive rather than repulsive —
@@ -192,7 +294,7 @@ better than the thing being modelled, not worse.
   doing something better than a principled term would, which would be a genuinely
   interesting result and should be reported rather than tuned away.
 
-## 9. What is not claimed
+## 11. What is not claimed
 
 - That affect is the *only* missing term. Effort appraisal covers the measured human
   factors; familiarity, fluency and risk are plausibly separate and untested here.
