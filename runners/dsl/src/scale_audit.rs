@@ -394,13 +394,78 @@ fn init_from_env() {
 /// The one hot-path read. `false` by default, so the disabled cost is a single
 /// relaxed load per instrumented site.
 #[inline(always)]
+thread_local! {
+    /// Per-thread enablement. See `set_enabled_for_thread`.
+    static THREAD_ENABLED: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
 pub fn enabled() -> bool {
+    if THREAD_ENABLED.with(|c| c.get()) {
+        return true;
+    }
     init_from_env();
     MODE.load(Ordering::Relaxed) != MODE_OFF
 }
 
+/// Enable recording FOR THE CALLING THREAD ONLY.
+///
+/// `set_enabled` flips a process-global mode, which is right for a real
+/// measurement run and wrong for a test: every other thread in the process
+/// starts recording into the same counters, so the reading measures whatever
+/// the harness happened to be doing concurrently. Guarding the ENABLERS does
+/// not fix that — the contributors are not the enablers, and there are ~780 of
+/// them in this binary.
+///
+/// Thread enablement plus `exclusive()` is sound in-process: the guard
+/// serialises the enabling tests against each other, and thread scope excludes
+/// everyone else. Both are required; neither suffices alone.
+///
+/// Caveat, stated because it is a real limit and not a footnote: work a
+/// measured call farms out to other threads (rayon) is NOT recorded under this
+/// mode. It is therefore correct for the synthetic, single-threaded assertions
+/// in this module's tests and NOT a substitute for `set_enabled` when
+/// measuring real whole-process cost.
+pub fn set_enabled_for_thread(on: bool) {
+    THREAD_ENABLED.with(|c| c.set(on));
+}
+
 /// Test-facing setter (the harness's §6.1 zero-when-off gate flips this rather
 /// than relying on process env, so ON and OFF are measurable in one process).
+/// EXCLUSIVE ACCESS for anything that enables, resets, or snapshots this
+/// instrument.
+///
+/// # Why a lock here and a witness elsewhere
+///
+/// These counters measure the process: FFI crossings, candidate enumeration,
+/// per-variant Term evaluations. That is what they are FOR, so the reading is
+/// only meaningful if it covers everything the process did — which means
+/// storage cannot be made private per caller without destroying the
+/// measurement. A whole-process measurement needs EXCLUSIVE ACCESS.
+///
+/// Contrast `DimInferWitness` (`term.rs`), which replaced this instrument for
+/// the per-call distinct-argument measurement. That reading is a property of
+/// ONE call, so attribution belongs with the call and private storage is
+/// exactly right. Two different measurements, two different correct
+/// mechanisms; the mistake was using process-global storage for the per-call
+/// one.
+///
+/// # The invariant this guard depends on
+///
+/// It is sound only while EVERY enabler takes it. A lock covering some
+/// enablers is worse than none, because it looks handled: the predecessor of
+/// this arrangement was a module-local mutex in `dim_infer_tests` that
+/// serialised six tests while thirty-nine others in the same module recorded
+/// freely, and the gate failed intermittently for a year's worth of runs
+/// without anyone reading it as contamination.
+///
+/// Current enablers: this module's own tests, the residual
+/// `shape_decode` audit-silence test, and `py.rs`'s Python-facing setter
+/// (production, never concurrent with tests). If you add one, take this guard.
+pub fn exclusive() -> std::sync::MutexGuard<'static, ()> {
+    static EXCLUSIVE: Mutex<()> = Mutex::new(());
+    EXCLUSIVE.lock().unwrap_or_else(|e| e.into_inner())
+}
+
 pub fn set_enabled(on: bool) {
     init_from_env();
     MODE.store(if on { MODE_ON } else { MODE_OFF }, Ordering::Relaxed);
@@ -722,6 +787,7 @@ mod tests {
     /// committed result (PROTOCOL §9).
     #[test]
     fn disabled_counts_nothing() {
+        let _x = super::exclusive();
         set_enabled(false);
         reset();
         ffi(100, 100);
@@ -738,7 +804,8 @@ mod tests {
     /// A counter that has only ever been seen to move has not been tested.
     #[test]
     fn known_counts_are_exact() {
-        set_enabled(true);
+        let _x = super::exclusive();
+        set_enabled_for_thread(true);
         reset();
         begin_epoch();
         begin_rule_enumeration(0);
@@ -761,7 +828,7 @@ mod tests {
             m["cand_enum_scan"] + m["cand_enum_local"] + m["cand_enum_hinted"],
             m["cand_enum"]
         );
-        set_enabled(false);
+        set_enabled_for_thread(false);
         reset();
     }
 
@@ -770,6 +837,7 @@ mod tests {
     /// thread-local is touched either.
     #[test]
     fn term_counters_are_inert_when_disabled() {
+        let _x = super::exclusive();
         set_enabled(false);
         reset();
         let g = term_eval(0);
@@ -785,7 +853,8 @@ mod tests {
     /// integers, per variant, and units attribute to the INNERMOST variant.
     #[test]
     fn term_units_attribute_to_the_innermost_variant() {
-        set_enabled(true);
+        let _x = super::exclusive();
+        set_enabled_for_thread(true);
         reset();
         {
             let _outer = term_eval(0); // Var
@@ -804,7 +873,7 @@ mod tests {
         assert_eq!(m["term_evals_total"], 2);
         assert_eq!(m["term_units_total"], 14);
         assert_eq!(m["term_units_unattributed"], 0);
-        set_enabled(false);
+        set_enabled_for_thread(false);
         reset();
     }
 
@@ -812,13 +881,14 @@ mod tests {
     /// silently dropped and not misfiled onto whichever variant ran last.
     #[test]
     fn units_outside_any_evaluation_are_reported_not_hidden() {
-        set_enabled(true);
+        let _x = super::exclusive();
+        set_enabled_for_thread(true);
         reset();
         term_units(9);
         let m: std::collections::HashMap<String, u64> = snapshot().into_iter().collect();
         assert_eq!(m["term_units_unattributed"], 9);
         assert_eq!(m["term_units_total"], 0);
-        set_enabled(false);
+        set_enabled_for_thread(false);
         reset();
     }
 
@@ -829,6 +899,7 @@ mod tests {
     /// `NUM_TERM_VARIANTS` comes FROM (PROTOCOL §13: it falls out).
     #[test]
     fn variant_table_covers_the_enum() {
+        let _x = super::exclusive();
         assert_eq!(TERM_VARIANT_NAMES.len(), NUM_TERM_VARIANTS);
         assert_eq!(TERM_EVALS.len(), NUM_TERM_VARIANTS);
         assert_eq!(TERM_UNITS.len(), NUM_TERM_VARIANTS);
@@ -846,13 +917,14 @@ mod tests {
     /// confusion that lets a missing instrument read as a clean result.
     #[test]
     fn totals_are_always_emitted_even_when_every_cell_is_zero() {
-        set_enabled(true);
+        let _x = super::exclusive();
+        set_enabled_for_thread(true);
         reset();
         let m: std::collections::HashMap<String, u64> = snapshot().into_iter().collect();
         assert_eq!(m["term_evals_total"], 0);
         assert_eq!(m["term_units_total"], 0);
         assert!(!m.contains_key("term_eval:Var"), "zero cells are not emitted");
-        set_enabled(false);
+        set_enabled_for_thread(false);
         reset();
     }
 
@@ -861,7 +933,8 @@ mod tests {
     /// may have changed between Python calls.
     #[test]
     fn epoch_rearms_first_repeat() {
-        set_enabled(true);
+        let _x = super::exclusive();
+        set_enabled_for_thread(true);
         reset();
         begin_epoch();
         begin_rule_enumeration(4);
@@ -873,7 +946,7 @@ mod tests {
         assert_eq!(m["cand_enum_first"], 10, "a new epoch must re-arm FIRST");
         assert_eq!(m["cand_enum_repeat"], 0);
         assert_eq!(m["epochs"], 2);
-        set_enabled(false);
+        set_enabled_for_thread(false);
         reset();
     }
 }

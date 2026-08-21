@@ -7946,24 +7946,6 @@ mod dim_infer_tests {
         AUDIT_TESTS.lock().unwrap_or_else(|e| e.into_inner())
     }
 
-    /// Run `n` decodes with the audit ON and return
-    /// `(calls, distinct_ordered, distinct_unordered)`.
-    fn audited<F: FnMut(usize)>(n: usize, mut each: F) -> (u64, u64, u64) {
-        crate::scale_audit::set_enabled(true);
-        crate::scale_audit::reset();
-        for i in 0..n {
-            each(i);
-        }
-        let m: std::collections::HashMap<String, u64> =
-            crate::scale_audit::snapshot().into_iter().collect();
-        crate::scale_audit::set_enabled(false);
-        crate::scale_audit::reset();
-        (
-            m["dim_infer_arg_calls"],
-            m["dim_infer_arg_distinct_ordered"],
-            m["dim_infer_arg_distinct_unordered"],
-        )
-    }
 
     /// D-RED — the COLLAPSE DETECTOR. Seven evaluations of the same decode
     /// against an unchanged graph. Ground truth, declared in the prereg
@@ -8178,6 +8160,9 @@ mod dim_infer_tests {
         add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[1, 2, 3]);
         let goal = tuple_of(vec![cell(&mut ir, 0, 0, "red"), cell(&mut ir, 0, 1, "red")]);
 
+        // Reads process-global counters, so it needs the instrument's
+        // exclusive guard; see scale_audit::exclusive().
+        let _x = crate::scale_audit::exclusive();
         crate::scale_audit::set_enabled(false);
         crate::scale_audit::reset();
         for _ in 0..5 {
