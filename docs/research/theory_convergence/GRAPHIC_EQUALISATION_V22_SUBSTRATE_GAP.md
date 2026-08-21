@@ -245,6 +245,15 @@ So the honest statement is not "ocelot lacks two groundings." It is that **ocelo
 validated them, and they now live elsewhere** — which matters both for where to look for prior art
 and for what any future claim of novelty here would have to contend with.
 
+**CORRECTION (same session).** "Elsewhere" is `~/ozmadev/bigville`, a live sibling repository of
+184 seeds, and this section originally implied the work survived only as prereg docs and
+docstrings. It does not. `bigville_loop_reputation.json`, `bigville_drama_social.json` and
+`bigville_stress.json` are all present and intact, so the conferral grounding for social capital
+and the allostatic-load grounding for spoons are both **available, not lost**. The repository also
+carries `bigville_move_nav.json` and `bigville_move_energy.json`, making it a runnable test bed for
+the desire-path prediction in `AFFECT_WEIGHTED_ROUTE_VALUATION_DESIGN.md` §8 — where it is measured
+and found to route every resident identically, because hop cost is a hardcoded `Lit 1`.
+
 ---
 
 ## 9. Overridden agent findings, recorded

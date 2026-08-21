@@ -237,12 +237,43 @@ pedestrians produce minimal-detour systems.** Same stigmergic mechanism, differe
 different emergent geometry.
 
 **This gives the design a falsifiable prediction rather than only a rationale.** A bigville
-with heterogeneous dispositions and stigmergic portal cost should produce desire paths:
-shortcuts at corners, disused paved routes, and a trail geometry that shifts if the
-disposition distribution shifts. If it produces uniform routing, or paths that never form,
-the composition is wrong. (Noting the test bed is partly absent: the bigville
-implementation was extracted in `5065fb8`, so this prediction is currently unrunnable here
-without reinstating it.)
+with heterogeneous dispositions and stigmergic cost should produce desire paths: shortcuts
+at corners, disused formal routes, and a trail geometry that shifts if the disposition
+distribution shifts. If it produces uniform routing, or paths that never form, the
+composition is wrong.
+
+### The test bed exists, and it is measured
+
+Bigville was extracted from this repo in `5065fb8` but lives at `~/ozmadev/bigville` — 184
+seeds, including `bigville_loop_reputation.json`, `bigville_drama_social.json` and
+`bigville_stress.json`, all of which earlier notes in this repo recorded as lost. It also
+carries movement: `bigville_move_nav.json` (3 rules) and `bigville_move_energy.json`.
+
+Measured there, and it is the same defect this document is about:
+
+- **`mv_relax` floods with a hardcoded hop cost of `Lit 1`.** Every edge costs exactly one,
+  for every resident: `gdist = neighbour.gdist + 0 + 1`.
+- **`mv_pick_hop` is an `Argmin`** over `Neighbours(cur, "adj")` by `gdist`. On a lattice
+  with uniform cost that ties constantly, and enumeration order decides — the identical
+  finding to `TIE_CONSEQUENTIALITY_RESULTS.md`, now in the social simulation.
+- **Per-resident attributes that should differentiate already exist and vary**: `energy`,
+  `hunger`, `energy_cost`, `weight`, `slow_on`, `budget_flat`.
+- **None of them reach `gdist`.** Only three rules touch it, all in the nav seed.
+
+So a tired, hungry, heavy resident pays exactly what a fresh one pays, and **every resident
+routes identically**. The desire path is not unimplemented; it is *structurally impossible*,
+because nothing can make one resident's shortcut cheaper than another's. The energy
+grounding is spent by moving (`mv_deplete`) and gates whether you may move
+(`mv_energy_budget`) but never influences *which way* you go.
+
+The missing wire is one multiplication: a per-resident factor on the hop cost. That is the
+same `Lit`-where-a-quantity-belongs defect as `rule_episode_from_message`'s
+`salience: 1.0`, in a different seed, with the inputs already present.
+
+**This also corrects an earlier claim in this repo.** The gap review recorded the social
+capital and spoons groundings as extracted and effectively lost, surviving only as prose.
+They are not lost; they are in a sibling repository, with the conferral-shaped reputation
+model and the allostatic-load stress model both intact.
 
 ## 9. Cheap probes, in order
 
