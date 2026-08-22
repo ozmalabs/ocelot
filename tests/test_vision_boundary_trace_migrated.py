@@ -309,3 +309,60 @@ def test_same_shape_gives_one_signature_and_a_different_shape_does_not():
     sig_c = _signature(s, rects[0])
     assert sig_a == sig_b, "same shape, different pose -> signatures must match"
     assert sig_a != sig_c, "square and rectangle must not share a signature"
+
+
+def test_a_region_contour_goes_through_the_sd_loop(monkeypatch):
+    """A region boundary reaches the substrate's OWN codebook, not just a
+    signature comparison.
+
+    Mint a quantum from one square's contour; a DIFFERENT region of the same
+    shape must then be recognised against it BY NAME, and a genuinely different
+    shape must leave a residual (partial coverage, no name) — which is the
+    condition `sd_mint_quantum` fires on. That is the whole reason a contour
+    beats a label: three regions under `mo_flood` are three unrelated integers
+    and there is nothing to recognise.
+
+    `OZMA_SEED_PERSIST_DISABLED` is `teach`'s own guard: it keeps the live-graph
+    install (which is what `ShapeDecode` reads) and skips only the write into
+    the real seed dir. Stubbing `teach` instead removes the node as well, which
+    silently makes this test inert."""
+    import domains.stroke_codebook as sk
+    monkeypatch.setenv("OZMA_SEED_PERSIST_DISABLED", "1")
+
+    V = np.zeros((16, 16, 2))
+    V[2:5, 2:5, 1] = 9.0
+    V[2:5, 10:13, 1] = 9.0
+    V[9:12, 2:8, 1] = 9.0
+
+    s, _ = _rim_run(V)
+    contours = _crossing_contours(s)
+    squares = [pts for size, pts in contours.values() if size == 9]
+    rects = [pts for size, pts in contours.values() if size == 18]
+    assert len(squares) == 2 and len(rects) == 1
+
+    nat = s._inner
+
+    def covered(points):
+        sig = sk._quantize(nat, points, segments=sk.DEFAULT_SEGMENTS,
+                           turn_bins=sk.DEFAULT_TURN_BINS,
+                           len_bins=sk.DEFAULT_LEN_BINS, grid=sk.DEFAULT_GRID,
+                           scale_bins=sk.DEFAULT_SCALE_BINS,
+                           canonical_pose=True)["signature"]
+        base = {"goal": {"type": "Lit", "value": sig}, "beam": 1, "max_steps": 1,
+                "cand_k": 1, "wild_objects": False, "type": "ShapeDecode"}
+        return (int(nat.evaluate({**base, "field": "covered_count"}, {}) or 0),
+                nat.evaluate({**base, "field": "covered_by"}, {}))
+
+    # nothing held yet -> nothing recognised (guards against a vacuous pass)
+    assert covered(squares[1]) == (0, None)
+
+    grown = sk.grow_stroke_quantum(s, squares[0], "region_square")
+    assert grown["node"] is not None, "mint did not install a node"
+
+    count_b, name_b = covered(squares[1])
+    assert name_b == "region_square", f"same shape not recognised: {(count_b, name_b)}"
+    assert count_b == grown["signature_relations"]
+
+    count_c, name_c = covered(rects[0])
+    assert name_c is None, "a different shape must not be recognised as the square"
+    assert 0 < count_c < count_b, f"expected a partial residual, got {count_c}"
