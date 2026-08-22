@@ -454,8 +454,53 @@ So the scorecard, measured rather than assumed:
 | scale | **fails** (grid quantisation) | **recovered** |
 | rotation | fails (no canonical loop origin) | fails (no orientation normalisation) |
 
-Rung 0 is demonstrated. Scale belongs to the verdict layer and works there. Rotation needs a
-derived loop origin/orientation and is unbuilt.
+Rung 0 is demonstrated. Scale belongs to the verdict layer and works there.
+
+### Rotation is TWO failures, and one of them no comparator can fix
+
+The rotation result above used a 3x6 and a 6x3 rectangle — a 90-degree rotation, which is EXACT
+on a lattice. So that failure was the comparator, not the grid. The sharper claim is the general
+one: **on a grid, rotating a shape changes the shape.** Measured — one 9 x 4.5 rectangle
+rasterised at five angles:
+
+| deg | cells | contour pts | perimeter / sqrt(area) |
+|---|---|---|---|
+| 0 | 45 | 28 | 4.17 |
+| 15 | 41 | 32 | 5.00 |
+| 30 | 41 | 32 | 5.00 |
+| 45 | 45 | 36 | **5.37** |
+| 90 | 45 | 28 | 4.17 |
+
+The same rectangle occupies a **different number of cells** (45 vs 41, ~9%) and its boundary
+**inflates 29%** by 45 degrees, where the staircase is maximal. 0 and 90 are identical, confirming
+that axis-aligned rotations are exact and the grid is blameless for those. **So the input to any
+comparator is not rotation-covariant**, and no distance function operating on grid-extracted
+contours can be rotation-invariant, because the thing it is given has already changed.
+
+The distances then separate the two effects, and the ordering is the informative part:
+
+```
+ScTpsDist against the 0-degree contour:
+   15 deg  0.0794      30 deg  0.1127      45 deg  0.2592      90 deg  0.3922
+```
+
+**90 degrees scores WORST — with a pixel-identical footprint to 0 degrees.** The grid did nothing
+to it; the comparator simply cannot see through orientation. So both failures are real and they
+are independent:
+
+- a **representation** failure, irreducible by better comparison: 15/30/45 degrees are genuinely
+  different rasters of one rectangle;
+- a **comparator** failure, currently the LARGER of the two: 90 degrees is the same raster and
+  scores furthest of all.
+
+Fixing either alone leaves the other. And the representation half is the one that says the grid
+is the wrong object: a boundary is a curve, the lattice is the apparatus that sampled it, and a
+contour read off cell centres is a rendering artifact being compared to another rendering
+artifact. The de-gridding step already appeared once in this document without being named as
+one — simplifying region 0 from 17 vertices to 5 discarded exactly the staircase, and the note
+there was that 12 of the 17 were "grid quantisation noise". Fitting the boundary as a continuous
+curve at sub-cell resolution, rather than reading it off cell centres, is what that implies and
+is unbuilt.
 
 The test uses `teach`'s own `OZMA_SEED_PERSIST_DISABLED` guard, which keeps the live-graph
 install and skips only the seed-dir write. Stubbing `teach` instead — the first attempt — also
