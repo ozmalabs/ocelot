@@ -545,3 +545,56 @@ def test_factoring_pose_out_fixes_the_comparators_orientation_blindness():
         f"pose-aligned same-shape {max(same):.4f} must beat different-shape {diff:.4f}")
     # and the alignment must not simply collapse everything
     assert diff > 0.05, f"different shapes collapsed to {diff:.4f}"
+
+
+def _pose_candidates_in_graph(s, agent, q):
+    """Publish the residual pose candidates as graph DATA. Mechanical: applying
+    a 2x2 symmetry to a point list is geometry, not a decision."""
+    B = _canonical_pose(q)
+    nodes = []
+    for i, S in enumerate(_POSE_CANDIDATES):
+        pts = [[float(x), float(y)] for x, y in (B @ S.T)]
+        n = s.add_node("PoseCandidate", {"idx": float(i), "points": pts})
+        s.add_edge_unchecked(agent, "pose_candidate", n)
+        nodes.append(n)
+    return nodes
+
+
+def test_the_pose_verdict_is_one_held_term_not_a_python_loop():
+    """The CHOICE among candidate poses belongs to the graph.
+
+    `_pose_aligned_dist` above loops in Python and takes a min — composition in
+    Python, which is exactly what this project forbids. The same verdict is one
+    Term over held data:
+
+        Attr(Argmin(Neighbours(agent, "pose_candidate"), pc,
+                    ScTpsDist(observed, pc.points)), "idx")
+
+    The adapter still computes the candidate geometry (mechanical); the graph
+    decides which one wins. This asserts the two agree, so the Python version is
+    demonstrably replaceable rather than merely similar."""
+    rect0 = _largest_contour(_rim_run(_rotated_rect(0))[0])
+    rect90 = _largest_contour(_rim_run(_rotated_rect(90))[0])
+
+    s, _ = _rim_run(_rotated_rect(0))
+    agent = s.add_node("Agent", {})
+    _pose_candidates_in_graph(s, agent, rect90)
+
+    observed = [[float(x), float(y)] for x, y in _canonical_pose(rect0)]
+    term = {"type": "Attr",
+            "node": {"type": "Argmin",
+                     "source": {"type": "Neighbours",
+                                "node": {"type": "Var", "name": "agent"},
+                                "edge_type": "pose_candidate", "any_type": False},
+                     "var_name": "pc",
+                     "value": {"type": "ScTpsDist",
+                               "a": {"type": "Lit", "value": observed},
+                               "b": {"type": "Attr",
+                                     "node": {"type": "Var", "name": "pc"},
+                                     "key": "points"}}},
+            "key": "idx"}
+    graph_choice = s._inner.evaluate(term, {"agent": agent})
+
+    _, python_choice = _pose_aligned_dist(s, rect0, rect90)
+    assert int(graph_choice) == int(python_choice), (
+        f"graph chose {graph_choice}, python loop chose {python_choice}")
