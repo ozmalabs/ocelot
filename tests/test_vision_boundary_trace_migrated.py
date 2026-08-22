@@ -267,6 +267,27 @@ def _crossing_contours(s):
     return out
 
 
+def _is_closed(s, points):
+    """A contour is closed when its first and last crossings are linked. Read
+    from the graph, not inferred from the point list."""
+    if len(points) < 3:
+        return False
+    by_pos = {}
+    for x in s.nodes("Crossing"):
+        cs = list(s.neighbours(x, "separates"))
+        if len(cs) != 2:
+            continue
+        a = [s.node(c)["attrs"] for c in cs]
+        by_pos[((float(a[0]["ccol"]) + float(a[1]["ccol"])) / 2.0,
+                (float(a[0]["crow"]) + float(a[1]["crow"])) / 2.0)] = x
+    first, last = by_pos.get(tuple(points[0])), by_pos.get(tuple(points[-1]))
+    if first is None or last is None:
+        return False
+    linked = {n.value for n in s.neighbours(last, "next_crossing")} | \
+             {n.value for n in s.in_neighbours(last, "next_crossing")}
+    return first.value in linked
+
+
 def _signature(s, points, segments=8):
     return s._inner.evaluate(
         {"type": "StrokeQuantize",
@@ -366,3 +387,57 @@ def test_a_region_contour_goes_through_the_sd_loop(monkeypatch):
     count_c, name_c = covered(rects[0])
     assert name_c is None, "a different shape must not be recognised as the square"
     assert 0 < count_c < count_b, f"expected a partial residual, got {count_c}"
+
+
+def test_a_clipped_region_declines_to_claim_the_whole_shape(monkeypatch):
+    """`unknown = absence, first-class`, at the boundary layer.
+
+    A region running off the observed field is genuinely unbounded IN THAT
+    OBSERVATION, so `bt_disagree` mints no crossing along the field edge and the
+    contour is OPEN. That is correct rather than missing: closing it — by
+    minting a virtual `Outside` and joining the border cells to it — would
+    manufacture a boundary nothing observed, and would let a partial view assert
+    it had seen a whole square.
+
+    What must hold instead is that the partial view produces a RESIDUAL. The
+    same 3x3 square, once interior and once clipped by the top edge: the
+    interior one closes and is recognised by name; the clipped one covers
+    partially and is recognised as NOTHING."""
+    import domains.stroke_codebook as sk
+    monkeypatch.setenv("OZMA_SEED_PERSIST_DISABLED", "1")
+
+    V = np.zeros((16, 16, 2))
+    V[5:8, 5:8, 1] = 9.0        # interior
+    V[0:3, 12:15, 1] = 9.0      # clipped by the top edge
+
+    s, _ = _rim_run(V)
+    nine = [(pts, closed) for size, pts, closed in
+            ((sz, p, _is_closed(s, p)) for sz, p in _crossing_contours(s).values())
+            if size == 9]
+    closed = [p for p, c in nine if c]
+    open_ = [p for p, c in nine if not c]
+    assert len(closed) == 1 and len(open_) == 1, (
+        f"expected one closed and one open 9-cell region, got "
+        f"{len(closed)} / {len(open_)}")
+
+    nat = s._inner
+
+    def covered(points):
+        sig = sk._quantize(nat, points, segments=sk.DEFAULT_SEGMENTS,
+                           turn_bins=sk.DEFAULT_TURN_BINS,
+                           len_bins=sk.DEFAULT_LEN_BINS, grid=sk.DEFAULT_GRID,
+                           scale_bins=sk.DEFAULT_SCALE_BINS,
+                           canonical_pose=True)["signature"]
+        base = {"goal": {"type": "Lit", "value": sig}, "beam": 1, "max_steps": 1,
+                "cand_k": 1, "wild_objects": False, "type": "ShapeDecode"}
+        return (int(nat.evaluate({**base, "field": "covered_count"}, {}) or 0),
+                nat.evaluate({**base, "field": "covered_by"}, {}))
+
+    grown = sk.grow_stroke_quantum(s, closed[0], "closed_square")
+    full_count, full_name = covered(closed[0])
+    assert full_name == "closed_square" and full_count == grown["signature_relations"]
+
+    part_count, part_name = covered(open_[0])
+    assert part_name is None, "a clipped view must not claim to be the whole shape"
+    assert 0 < part_count < full_count, (
+        f"expected a partial residual, got {part_count} of {full_count}")
