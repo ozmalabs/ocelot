@@ -773,6 +773,28 @@ recover what was dropped. Measured on the same 21 observations:
 | **rendered orbit** | **67%** | **86%** | **95%** |
 
 **The orbit keeps the truth in the top three 95% of the time.** As a proposer it is close enough
+
+> **RE-CHECKED ON CORRECTED CONTOURS, AND THIS CLAIM DOES NOT SURVIVE AS STATED.** The table above
+> was measured before the `bt_chain_perpendicular` fix AND with absolute `ScTpsDist`, a
+> rotation-VARIANT comparison. Re-run with corrected extraction and the canonical L2 turning-
+> function metric, same 25 off-manifold observations:
+>
+> | held | cov@1 | cov@2 | cov@3 |
+> |---|---|---|---|
+> | one stored exemplar | **100%** | 100% | 100% |
+> | rendered orbit | **100%** | 100% | 100% |
+>
+> Both saturate, so the test can no longer tell them apart — and the reason is theoretical rather
+> than lucky: **the turning function is rotation-invariant by construction, so an orbit of
+> rotations collapses toward a point in that representation and a single exemplar already covers
+> it.** Most of what the orbit was buying was compensation for a metric that could not see through
+> rotation.
+>
+> It is NOT redundant in principle, and the measurement says so: the worst within-orbit spread
+> (0.3916, `ell`) still EXCEEDS the closest between-shape distance (0.3346, rect vs ellipse), so a
+> harder test could separate them. I have not run one that does. What stands is the coverage
+> ARGUMENT — accuracy is recoverable downstream and coverage is not — not the specific advantage
+> claimed for the orbit here.
 essentially always, even where its top-1 is wrong a third of the time.
 
 And context does convert it. The cheapest context available is MORE LOOKS — several observations
