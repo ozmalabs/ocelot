@@ -303,11 +303,46 @@ crossing.** A cell on a straight boundary has a single disagreeing neighbour, so
 cracks along that boundary lie between DIFFERENT pairs of cells and share no cell at all. They
 share a **corner**.
 
-So the successor needs the lattice vertex reified as well, and linking crossings through corners
-needs coordinate arithmetic the seed deliberately does not carry (`bt_border_rim` already reads
-its extent from `field.H`/`field.W` rather than a constant, and a doubled-lattice corner index
-would put a bare `2` in a seed whose own gate forbids one). **Named, and left unbuilt rather than
-approximated by a convention** — which is the whole point of the section above it.
+The corner turned out NOT to need reifying, and no coordinate arithmetic was required. Two
+collinear cracks `x = (A|B)` and `y = (C|D)` are consecutive exactly when the cells correspond
+ACROSS them — `A neighbour C` and `B neighbour D` — which is pure adjacency: no lattice index, no
+doubled grid, no bare `2`, no angle sort. The corner is IMPLIED by the correspondence. Cracks
+that turn a corner share the cell they turn around, which is what the removed rule got right;
+its failure was being the only rule, so the collinear majority went unlinked.
+
+`bt_chain_collinear` + `bt_chain_perpendicular` (v1.3.0):
+
+| | degree-2 | isolated | saddles (deg>2) |
+|---|---|---|---|
+| share-a-cell only (removed) | 12/60 = 20% | **34** | 9 |
+| both rules | **39/60 = 65%** | **0** | 15 |
+
+Zero isolated crossings, and the residual degree-3/4 are genuine saddles left VISIBLE as degree
+rather than resolved by a hidden convention. Filtered to a single region's boundary they vanish
+entirely — the branches are between regions.
+
+### The contour closes, and the shape is recognised
+
+Walking `next_crossing` per region: a 3x3 interior blob yields a **closed 12-crossing contour**,
+exactly its perimeter, with no start convention, no heading and no turn preference anywhere in
+the walk. Regions touching the field edge yield OPEN arcs, which is correct rather than broken:
+`bt_disagree` needs a `neighbour` edge, so a field-edge cell has no crossing — closing those
+would require an "outside" to be representable, which it is not.
+
+And the §4 claim is now established rather than asserted. Two identical 3x3 squares at different
+positions, plus a 3x6 rectangle, quantised through `StrokeQuantize` with `invariant_only`:
+
+```
+square A  12 pts  bbox 3x3  sig (0,0)(1,0)(2,1)(3,0)(4,1)(5,0)(6,1)(7,0)
+square B  12 pts  bbox 3x3  sig (0,0)(1,0)(2,1)(3,0)(4,1)(5,0)(6,1)(7,0)   <- identical
+rectangle 18 pts  bbox 6x3  sig (0,0)(1,0)(2,1)(3,2)(4,2)(5,0)(6,0)(7,2)   <- differs
+```
+
+**Same shape, one signature, differing only by pose; different shape, different signature.**
+That is the thing a label field cannot express at all — three regions under `mo_flood` are three
+unrelated integers. Both halves are gated, and the bbox is asserted non-degenerate, because an
+equality assertion alone cannot distinguish this from the three straight lines that matched
+vacuously earlier in this section.
 - **A defect this chain caught, recorded because it nearly passed as a success.** Before
   `bt_border_rim` (v1.1.0), a region running off the edge of the field had an OPEN rim:
   `bt_disagree` can only mark a crossing where a `neighbour` edge exists, and border cells have

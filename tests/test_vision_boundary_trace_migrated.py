@@ -203,3 +203,109 @@ def test_crossings_are_one_node_per_disagreement_and_idempotent():
     before = len(crossings)
     s.tick(200_000)
     assert len(list(s.nodes("Crossing"))) == before, "mint is not idempotent"
+
+
+def _crossing_contours(s):
+    """Walk `next_crossing` per region -> ordered contours. Mechanical.
+
+    Unlike the rim-CELL walk this needs no start convention, no initial heading
+    and no turn preference: crossings chain through `bt_chain_collinear` and
+    `bt_chain_perpendicular`, and a crossing of degree > 2 is a real saddle
+    rather than a place a convention has to decide."""
+    cells = list(s.nodes("MCell"))
+    cutset = {(c.value, n.value) for c in cells for n in s.neighbours(c, "cuts")}
+    par = {c.value: c.value for c in cells}
+
+    def find(x):
+        while par[x] != x:
+            par[x] = par[par[x]]
+            x = par[x]
+        return x
+
+    for c in cells:
+        for n in s.neighbours(c, "neighbour"):
+            if (c.value, n.value) not in cutset:
+                a, b = find(c.value), find(n.value)
+                if a != b:
+                    par[max(a, b)] = min(a, b)
+    region_of = {c.value: find(c.value) for c in cells}
+    sizes = collections.Counter(region_of.values())
+
+    pos, sides = {}, {}
+    for x in s.nodes("Crossing"):
+        cs = list(s.neighbours(x, "separates"))
+        if len(cs) != 2:
+            continue
+        a = [s.node(c)["attrs"] for c in cs]
+        pos[x.value] = ((float(a[0]["ccol"]) + float(a[1]["ccol"])) / 2.0,
+                        (float(a[0]["crow"]) + float(a[1]["crow"])) / 2.0)
+        sides[x.value] = {region_of[c.value] for c in cs}
+    adj = collections.defaultdict(set)
+    for x in s.nodes("Crossing"):
+        for n in s.neighbours(x, "next_crossing"):
+            adj[x.value].add(n.value)
+            adj[n.value].add(x.value)
+
+    out = {}
+    for reg in sizes:
+        mine = [k for k, v in sides.items() if reg in v]
+        if len(mine) < 4:
+            continue
+        sub = {k: (adj[k] & set(mine)) for k in mine}
+        start = min(sub, key=lambda k: (pos[k][1], pos[k][0]))
+        order, cur, prev = [start], start, None
+        while True:
+            cands = [n for n in sorted(sub[cur]) if n != prev]
+            if not cands:
+                break
+            nxt = cands[0]
+            if nxt == start or nxt in order:
+                break
+            order.append(nxt)
+            prev, cur = cur, nxt
+        out[reg] = (sizes[reg], [pos[i] for i in order])
+    return out
+
+
+def _signature(s, points, segments=8):
+    return s._inner.evaluate(
+        {"type": "StrokeQuantize",
+         "points": {"type": "Lit", "value": [[float(a), float(b)] for a, b in points]},
+         "segments": segments, "turn_bins": 8, "len_bins": 4,
+         "grid": 8, "scale_bins": 4, "invariant_only": True}, {})["signature"]
+
+
+def test_same_shape_gives_one_signature_and_a_different_shape_does_not():
+    """THE PAYOFF a contour has and a label field cannot have.
+
+    Two identical squares at different positions must quantise to the SAME
+    invariant signature -- one held shape differing by pose, which is what the
+    sd loop is built to exploit. A rectangle must NOT match them.
+
+    Both halves are asserted deliberately. An earlier version of this chain
+    reported all regions matching, and it was three DEGENERATE straight-line
+    contours matching vacuously (`WHY_FLOODS_EXIST.md`); an equality assertion
+    on its own cannot tell that apart from success."""
+    V = np.zeros((16, 16, 2))
+    V[2:5, 2:5, 1] = 9.0       # square A
+    V[2:5, 10:13, 1] = 9.0     # square B, translated
+    V[9:12, 2:8, 1] = 9.0      # rectangle C
+
+    s, _ = _rim_run(V)
+    contours = _crossing_contours(s)
+
+    squares = [pts for size, pts in contours.values() if size == 9]
+    rects = [pts for size, pts in contours.values() if size == 18]
+    assert len(squares) == 2, f"expected two 9-cell squares, got {len(squares)}"
+    assert len(rects) == 1, f"expected one 18-cell rectangle, got {len(rects)}"
+
+    # the contours must be real closed loops, not degenerate segments
+    for pts in squares + rects:
+        w = max(p[0] for p in pts) - min(p[0] for p in pts)
+        h = max(p[1] for p in pts) - min(p[1] for p in pts)
+        assert w > 0 and h > 0, f"degenerate contour, bbox {w}x{h}"
+
+    sig_a, sig_b = (_signature(s, p) for p in squares)
+    sig_c = _signature(s, rects[0])
+    assert sig_a == sig_b, "same shape, different pose -> signatures must match"
+    assert sig_a != sig_c, "square and rectangle must not share a signature"
