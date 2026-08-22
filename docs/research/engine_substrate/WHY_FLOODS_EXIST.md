@@ -471,8 +471,12 @@ rasterised at five angles:
 | 45 | 45 | 36 | **5.37** |
 | 90 | 45 | 28 | 4.17 |
 
-The same rectangle occupies a **different number of cells** (45 vs 41, ~9%) and its boundary
-**inflates 29%** by 45 degrees, where the staircase is maximal. 0 and 90 are identical, confirming
+The same rectangle occupies a **different number of cells** (45 vs 41, ~9%) and its contour needs
+**29% more sample points** at 45 degrees, where the staircase is maximal. **Correction:** an
+earlier version of this paragraph called that a 29% *perimeter* inflation. It is not — that
+column is contour POINT COUNT over sqrt(area). Measured as actual polygon perimeter the figure is
+stable, 3.97 to 4.27 (about +/-4%): the staircase adds samples, not length. The grid damage to
+this shape is real but smaller than first reported. 0 and 90 are identical, confirming
 that axis-aligned rotations are exact and the grid is blameless for those. **So the input to any
 comparator is not rotation-covariant**, and no distance function operating on grid-extracted
 contours can be rotation-invariant, because the thing it is given has already changed.
@@ -499,8 +503,45 @@ contour read off cell centres is a rendering artifact being compared to another 
 artifact. The de-gridding step already appeared once in this document without being named as
 one — simplifying region 0 from 17 vertices to 5 discarded exactly the staircase, and the note
 there was that 12 of the 17 were "grid quantisation noise". Fitting the boundary as a continuous
-curve at sub-cell resolution, rather than reading it off cell centres, is what that implies and
-is unbuilt.
+curve at sub-cell resolution, rather than reading it off cell centres, is what that implies.
+
+### Sub-cell fitting, built — and it cannot recover what sampling threw away
+
+Every crossing so far sat at `t = 0.5` between two cell centres: a magic number, and the
+staircase's direct cause. The position is derivable instead — the boundary is where deviation
+from the region's own motion reaches `mtol`, and linear interpolation between two samples locates
+that level, giving a real `t` in (0,1). That is exactly the sort of non-integer quantity the
+frame rule permits: it lives in the map from the observation lattice to the boundary, not inside
+the lattice.
+
+Measured on the same five angles, `ScTpsDist` against the 0-degree contour:
+
+| deg | hard mask: midpoint -> sub-cell | soft edge: midpoint -> sub-cell |
+|---|---|---|
+| 15 | 0.0794 -> 0.0757 | 0.1437 -> **0.1300** |
+| 30 | 0.1127 -> 0.1189 | 0.1960 -> **0.1412** (−28%) |
+| 45 | 0.2592 -> 0.2777 | 0.3004 -> 0.3220 |
+| 90 | 0.3922 -> 0.4403 | 0.6323 -> **0.5266** |
+
+**On a hard mask it does nothing**, and the reason is the point. With a binary field
+(`0` or `9`, no gradient) the interpolation is degenerate: `d_in = 0`, `d_out = 9`, so `t = 1/9`
+at EVERY crossing — a uniform inward shift, an ~8% smaller perimeter, and not one step of the
+staircase removed. **A hard mask contains no sub-cell information**, so no fitting can recover
+where in the cell the edge actually lay. That is an information limit, not an implementation gap.
+
+**On a soft edge it helps**, modestly and unevenly: supersampling gives cells straddling the
+boundary partial coverage — the sub-cell information a blurred or anti-aliased observation
+carries — and the fit then improves 3 of 4 angles, best 28% at 30 degrees, while worsening 45.
+
+So the sharpened version of "the grid is the wrong thing": **the damage is done at SAMPLING time,
+not at contour-extraction time.** You cannot de-grid afterwards if the sampling already discarded
+the sub-cell evidence. Where the observation retains it, fitting recovers part of the loss; where
+it does not, the staircase is the honest answer and the contour should not pretend otherwise.
+
+And sub-cell fitting is not a rotation fix. The dominant term throughout remains the comparator's
+orientation blindness — 90 degrees, whose raster is identical to 0, still scores worst in every
+column above. **Not landed as a default**: nothing in the tree emits contours in production yet,
+and a mixed result should not become the committed geometry on the strength of one synthetic.
 
 The test uses `teach`'s own `OZMA_SEED_PERSIST_DISABLED` guard, which keeps the live-graph
 install and skips only the seed-dir write. Stubbing `teach` instead — the first attempt — also
