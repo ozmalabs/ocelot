@@ -46,6 +46,16 @@ what edge is *allowed to exist*, and admissible moves are returned as a set with
 weights — chapter 14. This is how the substrate represents what a system may do:
 as a generated set, not as a filter applied to one.
 
+These two are the **native loop**, and they are what makes the audit in this
+chapter possible at all. A census of scalars is only meaningful against
+something they could have been instead.
+
+Which is also the method that produced it. Force every subsystem through those
+two primitives, and whatever resists is either a limitation of the framework —
+fix the framework — or an inherited convention that nobody examined because it
+is how the thing is done elsewhere. §15.4a is both at once, and separating them
+is what made it actionable.
+
 So the standing question, for every new subsystem:
 
 > Before adding a rate, a threshold, a fixed weight, or a rule whose effects

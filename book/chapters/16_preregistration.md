@@ -168,6 +168,65 @@ that produced it was never committed. The number could not be attributed to any
 code that existed. Whether it was correct became unanswerable, which is a
 stronger reason to discard it than being wrong.
 
+### Force it through the native loop, and triage what resists
+
+The rules so far are about not fooling yourself once you have a result. This one
+is about generating work, and it is the single most productive thing in this
+project's method.
+
+**Force every capability through the substrate's own loop.** No host-language
+control flow, no borrowed model in the decision path, no subsystem that works by
+being exempt. Then watch what resists — because whatever will not go through is
+one of exactly two things:
+
+> **(a) A limitation of the framework** — in which case fix the framework.
+>
+> **(b) Implemented the wrong way**, and almost always because *that is how it
+> is done* somewhere else.
+
+The value is not in the constraint. It is in the triage. **Neither category is
+"leave it alone."** A vague sense that something is awkward becomes a claim you
+have to make and defend — which one is it? — and each answer has a different
+fix. (a) means the substrate is missing a primitive and you go and add it. (b)
+means an inherited convention is doing the thinking, and you go and find out
+what the native form would be.
+
+This project's architecture rule is that forcing function written down: agent
+logic lives in graph rules and engine primitives, and the host language does
+nothing but translate the outside world in and out. Every time that rule refuses
+something, it has produced a triage question.
+
+**Category (b) is the more interesting one**, because it is invisible from
+inside. An inherited convention does not present as a decision; it presents as
+the obvious way. The clearest case in this book is chapter 1's eye. Machine
+vision starts from a rectangular array of RGB values updated frame by frame,
+because that is how cameras work and how every library expects to be handed a
+picture — and the whole apparatus that follows, the fixed edge kernels and
+corner detectors and blurs, exists to recover structure from that format. Forced
+through the native loop, none of it survived: what came out was integer photon
+packets with wavelengths, populations of receptors with their own adaptation,
+opponent channels synthesised only when every receptor in a column has settled,
+and an output that reports *change* rather than a picture. The RGB eye still
+exists in the tree, deprecated, for callers that need the old behaviour.
+
+Nobody would have found that by improving the RGB eye. It was not a worse
+implementation of the same thing; it was a different thing, and the forcing
+function is what made the difference visible.
+
+**Category (a) is the honest escape hatch, and can be abused**, so the
+discipline is to state it. Chapter 15's flood is (a) and (b) at once: the
+substrate's effect vocabulary has no merge operation, so a global identity can
+only be diffused into its members — a real framework limitation — *and* the
+resulting label-equality membership is the conventional way to mark connected
+components, which is what stopped anyone asking. Saying which part is which is
+what turned a working subsystem into an actionable finding.
+
+One boundary. This dichotomy applies to things that **resist** native
+implementation. A capability that goes through the loop cleanly and then fails
+is not a misfit — it is a result, and chapter 1's cortex null is the example:
+native, measured, and negative for an arithmetic reason. Do not use (a) to
+explain away a null.
+
 ### Ablate: the second step, pointed at code
 
 The habit underneath several of these rules is one procedure with two steps.

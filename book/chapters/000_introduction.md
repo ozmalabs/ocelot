@@ -106,6 +106,31 @@ So the method and the mechanism are one operation at different grains, and that
 is the tightest connection this book contains between how the work was done and
 what the work is.
 
+### And the thing that generates the work
+
+The two steps tell you whether a claim is carrying weight. They do not tell you
+what to look at next, and for that there is a second habit, which is the one
+that actually produced most of this book.
+
+**Force everything through the substrate's own loop.** Then whatever resists is
+one of exactly two things: **a limitation of the framework**, in which case fix
+the framework; or **implemented the wrong way**, which almost always means it
+was inherited — *that is just how it is done.*
+
+The point is the triage rather than the constraint. Neither answer is "leave
+it", so a vague sense that something is awkward turns into a question you have
+to answer and a fix that follows from the answer.
+
+The second category is the one worth hunting, because it is invisible from the
+inside: an inherited convention does not present as a decision, it presents as
+the obvious way. RGB pixels are the clearest example in this book. Nobody
+argued for a rectangular array of colour values updated frame by frame; it is
+how cameras work, and everything downstream exists to recover the structure that
+format threw away. Forced through the native loop, none of it survived — what
+came out was photons, receptor populations, and a signal that reports change
+rather than a picture. That is chapter 1, and I would never have found it by
+improving the old eye.
+
 ### What it cost me to believe one word
 
 It took about ten passes to mean "everything".

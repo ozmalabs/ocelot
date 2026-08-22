@@ -215,6 +215,22 @@ planet" — take it away; anything break? No. Ten times, each removal costing
 nothing, until what remained was the claim that had been meant all along. The
 word did not get bigger. The description got shorter.
 
+**There is a second habit, and it is the one that generates work.** The two
+steps evaluate a claim you already have. The forcing function produces claims:
+*force everything through the substrate's own loop, and triage what resists.*
+Whatever will not go through is either **(a)** a limitation of the framework —
+fix the framework — or **(b)** implemented the wrong way, almost always because
+it was inherited. Neither answer is "leave it", which is the whole value: a
+vague awkwardness becomes a question with a fix attached.
+
+The introduction should carry this alongside the two steps, and should use the
+photon eye as its example, because category (b) is invisible from inside and RGB
+is the case every reader already believes is neutral. It is also worth naming
+that this project's architecture rule *is* the forcing function written down —
+agent logic in graph rules and engine primitives, host language only for
+translating the world in and out — so every refusal by that rule is a triage
+question already asked.
+
 **Step 2 is what the book calls an ablation.** Chapter 1 removes the
 self-avoiding term from the drift and the long-lag crossover dies — so that term
 was carrying it. Chapter 3 *deletes* a tiebreak and a residual appears where

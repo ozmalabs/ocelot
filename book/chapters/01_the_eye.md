@@ -47,6 +47,29 @@ fails to predict.
 This is an **eye**: a retina, an oculomotor system, and the early dimensional
 inference an eye feeds. It is not a visual cortex.
 
+It is also not a camera, and that is the more consequential of the two, because
+nobody thinks a camera is controversial.
+
+Machine vision begins from a rectangular array of RGB values, updated frame by
+frame. Not because anyone argued for it — because that is how cameras work, how
+every library expects to be handed a picture, and how it has been done for
+decades. Nearly everything downstream exists to recover structure from that
+format: fixed edge kernels, corner detectors, blurs, all of it reconstructing
+what the format discarded on the way in.
+
+This eye was built by refusing that. The substrate has one loop — decode against
+what you hold, act on the residual — and the constraint applied here was that
+sight must go through it rather than around it. What survived was not a better
+array of pixels. It was integer photon packets with wavelengths; populations of
+receptors, each with its own adaptation state; opponent channels synthesised
+only once every receptor in a column has settled; and an output that reports
+*change* rather than a picture. The earlier RGB eye still exists in the tree,
+marked deprecated, for callers that need the old behaviour.
+
+That was not an improvement to the old eye. It is a different object, and the
+difference only became visible once the format was no longer allowed to be
+assumed.
+
 The scoping matters more than it might appear, and it is worth being blunt
 about why. "Vision" is a word that promises the whole visual system, and a
 chapter promising that would have to treat this chapter's largest negative
