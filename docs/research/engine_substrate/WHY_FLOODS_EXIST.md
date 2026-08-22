@@ -674,6 +674,48 @@ The full series, on 5 shapes x 7 angles:
 result.** Coordinate-free helps at the margin and only when the contour is a valid simple closed
 curve — and 9 of 32 extractions are not one, accumulating ~0 total turning instead of 2pi.
 
+### The answer is not a shape, it is a MANIFOLD
+
+Every measurement above compares two rasterisations as if they were two objects. They are two
+POINTS ON ONE FAMILY — the orbit of a single object under the transform group. What should be
+held is not a picture but a **generator**, and recognition is **membership in the reachable set**,
+not equality with a stored sample.
+
+That also dissolves the grid problem instead of fighting it, and the mechanism is structural
+rather than statistical. **The staircase is not removable — ten measurements say so — but it IS
+REPRODUCIBLE.** Render the hypothesis through the SAME sampling the observation went through and
+both sides carry the same damage, so it cancels. Measured: when a candidate angle matches the
+observed angle, the distance is **exactly 0.0000**, because the render and the observation are
+the same raster. Comparing against a stored picture fights the grid; comparing against a rendered
+hypothesis never encounters it.
+
+This is the repo's own AbS result — `StrokeRender` as `StrokeQuantize`'s exact inverse,
+*propose, render, compare* — arriving independently at region boundaries.
+
+Apples-to-apples, 5-way nearest-hypothesis classification of observations at angles no hypothesis
+was stored at (7/22/38/53/68 degrees, none in the candidate set):
+
+| held representation | correct |
+|---|---|
+| ONE stored exemplar (a picture at 0 degrees) | 11/21 = 52% |
+| RENDERED ORBIT (a generator, sampled) | **14/21 = 67%** |
+| chance | 20% |
+
+**Power, stated rather than buried:** n=21, so one observation is 4.8pp and the 15pp delta is
+3.1x the per-episode step — right at this repo's own bar for what counts as a result. Supporting,
+not established.
+
+Two further facts the orbit view makes visible, which the shape view could not:
+
+- **The orbit is QUANTISED by the sampling.** A 6x6 square rotated 7 degrees rasterises
+  *identically* to 0 degrees — the rotation is below the grid's resolving power. The family is
+  not a continuum in observation space but a finite set of distinct rasters, and asking which
+  member an observation IS becomes a well-posed discrete question.
+- **The first version of this test scored 100% and was a tautology.** The candidate angles
+  contained the observed angles exactly, so the "render" WAS the observation byte-for-byte. Moving
+  the observations off the candidate grid dropped it to 59%. A perfect score is the strongest
+  signal available that the test is measuring itself.
+
 **So the intrinsic representation is right and the extraction is the blocker.** Vertices and
 angles carry no frame, exactly as intended; but a stable vertex SET cannot be recovered from a
 lattice raster at this resolution, because the staircase invents and destroys corners as the
