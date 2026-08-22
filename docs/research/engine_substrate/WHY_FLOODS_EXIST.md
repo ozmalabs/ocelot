@@ -580,9 +580,26 @@ distance is the 30-degree case, whose raster genuinely differs (41 cells against
 irreducible half of the earlier decomposition, now isolated rather than confounded with the
 comparator.
 
-The Python here is the demonstration. The graph-native form is an `Argmin` over held pose
-candidates with `ScTpsDist` as the value — every piece of which already exists as a Term — and
-that is unbuilt.
+### And the verdict is ONE held Term, not a Python loop
+
+The alignment above loops in Python and takes a min — composition in Python, which is precisely
+what this project forbids. It is not necessary. The candidate poses are graph DATA
+(`PoseCandidate` nodes holding transformed point lists; applying a 2x2 symmetry to a point list
+is mechanical geometry, adapter work), and the whole verdict is a single Term over them:
+
+```
+Attr(Argmin(Neighbours(agent, "pose_candidate"), pc,
+            ScTpsDist(observed, pc.points)), "idx")
+```
+
+`ScTpsDist` accepts an `Attr` as its argument, so a held point list feeds the comparator
+directly — no marshalling, no loop, and the winning candidate's `idx` IS the pose delta the
+caller wanted. Gated by parity: the Term and the Python loop select the same candidate on the
+0-vs-90-degree contours, so the Python version is demonstrably replaceable rather than merely
+analogous.
+
+The split this lands on is the architecture's own: **the adapter computes the candidate geometry,
+the graph decides which candidate wins.**
 
 The test uses `teach`'s own `OZMA_SEED_PERSIST_DISABLED` guard, which keeps the live-graph
 install and skips only the seed-dir write. Stubbing `teach` instead — the first attempt — also
