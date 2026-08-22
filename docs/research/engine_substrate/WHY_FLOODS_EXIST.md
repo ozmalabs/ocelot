@@ -239,6 +239,43 @@ indifferent.
 size, **output invariant under `stage_a_enable`**, and the no-new-constant check. Mutation-tested
 — inverting the boundary predicate fails the partition test, so the gate bites.
 
+## 6c. Against the eye: the two pipelines are complements
+
+`seeds/vision_border_ownership.json` is the same problem solved the other way round, and the
+comparison is exact:
+
+| | eye (`vision_border_ownership`) | crossings (this work) |
+|---|---|---|
+| region identity | `bo_label` — an identity flood | components via `cuts`, no diffusion |
+| surroundedness | `bo_bgflood` — floods inward from the frame along equal-value adjacency, O(diameter) | "does this component contain a frame cell" — one read |
+| perimeter | `bo_rim` — `Count(Filter(NodesOfType(Cell), …))`, an O(N) scan **per cell** | count the component's crossings, one hop |
+| **figure/ground polarity** | **`bo_own` — a DIRECTED boundary owning its figure** | **absent** |
+
+So the eye has the one thing this work lacks, and pays for it with two floods and a scan. But
+**surroundedness is just "does this component touch the frame"**, which the crossing construction
+already answers without diffusion — so `bo_own`'s polarity is SEPARABLE from the flood that
+currently pays for it. That is the synthesis: crossings for the boundary, ownership for the
+polarity, neither flood.
+
+Polarity is worth having on its own terms — it distinguishes a figure from a hole and makes the
+boundary directed. **What it did NOT buy was the speedup I expected.** Orienting each contour so
+the owned side is consistently on the left, then dropping the reversal search from the turning
+metric:
+
+| | error |
+|---|---|
+| plain contour, reversal searched | **6.6%** |
+| plain contour, no reversal search | 7.7% |
+| ownership-oriented, no reversal search | 7.7% |
+
+The mechanism engaged — 9 of 35 contours were flipped to a consistent sense — so this is not an
+inert instrument. The reason it does not substitute is that **the reversal search is not fixing
+orientation, it is supplying REFLECTION invariance**, which is a separate axis: 58 of 105
+within-shape pairs match better reversed, far too many to be traversal inconsistency, and
+explained instead by these shapes being mirror-symmetric themselves so the two senses tie. Losing
+that invariance costs 1.1pp.
+
+## 6b. PRIOR ART
 ## 6b. PRIOR ART — nearly all of this is textbook, and one match is exact
 
 Recorded because the document above reads like discovery and mostly is not. Each mechanism, with
