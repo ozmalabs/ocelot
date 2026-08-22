@@ -770,6 +770,23 @@ So the missing piece was not a better metric or a better representation: it was 
 candidate set must BE the reachable set. Sampling a discrete family on an arbitrary grid puts
 candidates where no member exists and leaves gaps where members do.
 
+### Landed as a gate
+
+The coverage measurements above are research and stay in this document — each observation is a
+full rasterise-and-settle, so they run in minutes. The MECHANISM is gated, at a scale that runs
+in ~1s (`test_orbit_recognition_snaps_to_distinct_members_and_decides_in_the_graph`), and it
+pins all three findings at once:
+
+- **snapping**: 180 angles must collapse to a smaller distinct-raster set, deduped before
+  settling so only genuinely different members cost work;
+- **off-manifold**: the observation is 15% larger than anything held and at an angle nothing was
+  stored at, so the test cannot pass by containing its own answer — the on-manifold version
+  scored 100% and was measuring its own construction;
+- **graph-native verdict**: the decision is one `Argmin` over `OrbitMember` nodes with
+  `ScTpsDist` as the value, not a Python `min`.
+
+Mutation-checked: inverting the expected verdict fails the test.
+
 That ceiling is the architectural point: **coverage is the bound on what any amount of context
 can reach.** Accuracy is recoverable downstream; coverage is not. It is also the same shape as
 this repo's Omniglot finding, where coverage@5 of 53.8% was the measured bottleneck and re-rank

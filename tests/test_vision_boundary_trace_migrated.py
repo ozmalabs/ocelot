@@ -630,3 +630,108 @@ def test_pose_alignment_works_exactly_where_the_lattice_is_faithful():
     assert oblique > 5 * max(exact, 1e-3), (
         f"the oblique residual is grid damage and must remain visible: "
         f"exact {exact:.4f} vs worst oblique {oblique:.4f}")
+
+
+# --- orbit recognition: the held thing is a GENERATOR, not a picture ----------
+#
+# A shape observed at one orientation and the same shape at another are two
+# points on ONE FAMILY. Comparing rasterisations directly fights the lattice --
+# a rotation changes the raster, and no metric undoes that (measured at length in
+# WHY_FLOODS_EXIST.md). Rendering the hypothesis through the SAME sampling makes
+# the damage cancel instead, because both sides carry it.
+#
+# The orbit is DISCRETE: many angles collapse to one raster below the lattice's
+# resolving power, so the candidate set is enumerated and deduped rather than
+# sampled on an arbitrary angular grid.
+
+def _small_raster(fn, deg, n=13):
+    import math
+    t = math.radians(deg)
+    ct, st = math.cos(-t), math.sin(-t)
+    cx = cy = n / 2.0 - 0.5
+    V = np.zeros((n, n, 2))
+    for r in range(n):
+        for c in range(n):
+            dx, dy = c - cx, r - cy
+            u, v = dx * ct - dy * st, dx * st + dy * ct
+            if fn(u, v):
+                V[r, c, 1] = 9.0
+    return V
+
+
+def _orbit(fn, cap=16):
+    """Distinct rasters of one generator, deduped BEFORE settling so only
+    genuinely different members cost work. `cap` bounds test runtime; the
+    coverage measurements in the doc use the full sweep."""
+    import hashlib
+    seen, out = set(), []
+    for a in range(0, 180):
+        V = _small_raster(fn, a)
+        k = hashlib.sha1((V[:, :, 1] > 0).tobytes()).hexdigest()
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append((a, V))
+        if len(out) >= cap:
+            break
+    return out
+
+
+def test_orbit_recognition_snaps_to_distinct_members_and_decides_in_the_graph():
+    """Three things at once, each of which was a separate finding:
+
+      * SNAPPING -- 180 angles collapse to far fewer distinct rasters, so the
+        candidate set is the reachable set rather than an arbitrary grid;
+      * the observation is OFF-manifold (scaled), so this cannot pass by
+        containing the answer exactly -- the on-manifold version of this test
+        scored 100% and was measuring its own construction;
+      * the VERDICT is one held Argmin over candidate nodes, not a Python min.
+    """
+    bar = lambda u, v: abs(u) <= 3.5 and abs(v) <= 1.5
+    cross = lambda u, v: (abs(u) <= 3.5 and abs(v) <= 1.0) or (abs(u) <= 1.0 and abs(v) <= 3.5)
+
+    orbits = {"bar": _orbit(bar), "cross": _orbit(cross)}
+    for name, members in orbits.items():
+        assert len(members) < 180, f"{name}: dedup did nothing"
+        assert len(members) >= 4, f"{name}: orbit collapsed to {len(members)}"
+
+    s, _ = _rim_run(_small_raster(bar, 0))
+    agent = s.add_node("Agent", {})
+    held = {}
+    for name, members in orbits.items():
+        for a, V in members:
+            sub, _ = _rim_run(V)
+            pts = _largest_contour(sub)
+            if pts is None or len(pts) < 6:
+                continue
+            n = s.add_node("OrbitMember",
+                           {"shape": name, "angle": float(a),
+                            "points": [[float(x), float(y)] for x, y in pts]})
+            s.add_edge_unchecked(agent, "orbit_member", n)
+            held.setdefault(name, 0)
+            held[name] += 1
+    assert held.get("bar", 0) >= 3 and held.get("cross", 0) >= 3
+
+    # OFF-manifold observation: 15% larger than anything held, at an angle
+    # nothing was stored at exactly.
+    obs_fn = lambda u, v: bar(u / 1.15, v / 1.15)
+    obs_sub, _ = _rim_run(_small_raster(obs_fn, 37))
+    obs = _largest_contour(obs_sub)
+    assert obs is not None and len(obs) >= 6
+
+    # THE VERDICT: one Argmin over held candidates, value = ScTpsDist.
+    term = {"type": "Attr",
+            "node": {"type": "Argmin",
+                     "source": {"type": "Neighbours",
+                                "node": {"type": "Var", "name": "agent"},
+                                "edge_type": "orbit_member", "any_type": False},
+                     "var_name": "m",
+                     "value": {"type": "ScTpsDist",
+                               "a": {"type": "Lit",
+                                     "value": [[float(x), float(y)] for x, y in obs]},
+                               "b": {"type": "Attr",
+                                     "node": {"type": "Var", "name": "m"},
+                                     "key": "points"}}},
+            "key": "shape"}
+    won = s._inner.evaluate(term, {"agent": agent})
+    assert won == "bar", f"orbit verdict chose {won!r}, expected 'bar'"
