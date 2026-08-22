@@ -1,7 +1,7 @@
 # FIGURES — the plan for the papers and the book
 
-**Status: plan, with nineteen figures drawn — every conceptual diagram in it
-is done.** Chapter 1's set is complete (eight, plus a Class C selection); all
+**Status: plan, with twenty figures drawn — every conceptual diagram in it is
+done, and paper 02's two are now wired into the paper itself.** Chapter 1's set is complete (eight, plus a Class C selection); all
 five papers have their diagrams; the book's six conceptual figures are drawn.
 What remains is per-chapter data figures for chapters 5–13, drawn as each
 chapter is drafted. See § "Built so far". The five formal papers currently
@@ -142,6 +142,7 @@ Remaining candidates for later chapters: `results/held_surface/`,
 | **SD-1** | the growth ladder, Occam-ordered | `book/figures/sd_1_ladder.svg` | `fig_sd_ladder.py` | — (conceptual) |
 | **FR-1** | in-frame integer, cross-frame continuum | `book/figures/frame_1_invariant.svg` | `fig_frame_invariant.py` | — (conceptual) |
 | **PAPER-02-1** | the Seldon manifold, its acceptable subset, minimum intervention | `papers/figures/fig02_seldon_tube.pdf` | `fig02_seldon_tube.tex` | — (**theory**) |
+| **PAPER-02-2** | the ordinary picture of time against the causal picture | `papers/figures/fig02_tilt.pdf` | `fig02_tilt.tex` | — (**theory**) |
 | **PAPER-03-1** | narrative momentum and what redirection costs | `papers/figures/fig03_narrative_momentum.pdf` | `fig03_narrative_momentum.tex` | — (**theory**) |
 | **PAPER-04-1** | the Narrative horizon as an equality relation | `papers/figures/fig04_horizon.pdf` | `fig04_horizon.tex` | — (**theory**) |
 | **SR-1** | shape and rule: two axes, not two candidates | `book/figures/shape_1_two_axes.svg` | `fig_shape_and_rule.py` | — (conceptual) |
@@ -169,6 +170,17 @@ adding a plotting dependency to draw twenty figures is a worse trade than
 are theme-aware (one render reads correctly on paper and on a dark screen),
 have no install step, and diff as text. Paper diagrams are TikZ, so they live
 in the `.tex` source and set their type in the paper's own font.
+
+**PAPER-02-2 is the one to look at if you read only one.** Two panels: the
+ordinary picture — past frames drawn as though still extant, future frames drawn
+as though already there, neither of which any frame holds — against the causal
+picture, where *now* is the only extant thing, the manifold ahead is
+determinable continuations represented now, and the additional determining
+structure comes off at 45° as containing frames rather than backwards as
+retained history. The right panel's forward axis is labelled **succession, the
+ratchet** rather than time, because under the sharpened claim the substrate has
+no time dimension: succession is a relation between realised collapses, and a
+time dimension is what an inferring frame constructs to represent it.
 
 Preview a figure while drafting:
 
