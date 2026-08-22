@@ -856,6 +856,57 @@ the sampling can actually resolve, which is derivable rather than chosen, and as
 fidelity from a hard raster buys fragments (the same conclusion the sub-cell section reached from
 the other direction).
 
+#### FOLDING, not bisecting — bisection still chooses a split
+
+Bisection picks a split point and "into two" is a chosen number. **Folding picks nothing**:
+compare the shape against shifts of ITSELF and read off where it coincides. What survives is the
+FUNDAMENTAL DOMAIN plus the fold group, both measured. It is also the exact sense in which a
+circle has one point — every rotation maps a circle to itself, so its fundamental domain is a
+single point and the description is "this point, repeated".
+
+The instrument is already built: the turning function psi(s), periodic and free of position,
+rotation and scale, compared against cyclic shifts of itself. Scoring integer candidate ORDERS
+(a true N-fold shape coincides at every multiple of M/N, so the score is the worst of those)
+rather than thresholding the profile:
+
+| shape | N=2 | N=3 | N=4 | N=5 | verdict |
+|---|---|---|---|---|---|
+| square | 0.00 | 0.89 | **0.00** | 0.96 | 4-fold |
+| circle | 0.00 | 0.83 | **0.00** | 0.71 | 4-fold |
+| ellipse | **0.00** | 0.84 | 0.75 | 0.89 | 2-fold |
+| triangle | 0.99 | **0.32** | 0.99 | 0.97 | 3-fold |
+| pentagon | 0.95 | 0.96 | 0.95 | **0.51** | 5-fold |
+
+**All five correct**, reading the LARGEST N with a near-zero score — a 4-fold shape is also
+2-fold, so the smallest coincidence is a subgroup and reporting it was my error, not the
+detector's. A first attempt thresholded the self-distance profile at `0.12 * max`, which is
+itself a magic number and duly failed: it matched shift +/-1 on every shape, which is smoothness
+rather than symmetry.
+
+**The circle reads 4-fold, not continuous, and that is correct** — a circle rasterised on a
+square lattice IS 4-fold symmetric. The detector reports the observation, not the intent.
+
+#### Folding tracks IRREGULAR shapes, not just symmetric ones
+
+Folding a shape against itself finds symmetry; folding one observation against the NEXT finds
+correspondence, and that needs no symmetry at all. The cyclic shift minimising the distance IS the
+motion between looks — no feature matching, no point-correspondence search, cost linear in the
+boundary description rather than quadratic in points.
+
+Measured on irregular blobs (random radial lobes, no symmetry to exploit):
+
+| rotation between looks | median angular error | best-shift residual vs mean |
+|---|---|---|
+| large (23, 57 degrees) | 48.2 degrees | 0.28-1.14 vs 0.53-1.30 — no clear minimum |
+| frame-to-frame (3-12 degrees) | **11.2 degrees** | 2-3x below mean — a real minimum |
+
+Chance is ~90 degrees, and one fold-match costs **2.8 ms** over a 78-point boundary.
+
+Large jumps fail for the reason everything else in this document fails: a blob rotated 23 degrees
+is a DIFFERENT RASTER. Frame to frame it works, coarsely — the error is comparable to the
+rotation itself, so this is a proposer and not a decider, which by the coverage argument above is
+the win rather than the consolation.
+
 An intermediate version of the bisector also cut the closed curve at the worst point AND its
 ANTIPODE (`i + n/2`) — an invented convention, which on a triangle sliced a straight side in half.
 Cutting at the single worst point turns the closed curve into one open curve and needs no second
