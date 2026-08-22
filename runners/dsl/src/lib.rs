@@ -155,6 +155,7 @@ pub mod argmin_tie;
 /// unconditional; the behavioural correction is opt-in and default OFF
 /// (VISION_PROTOCOL §9).
 pub mod effect_audit;
+pub mod stage_a;
 /// `scale_audit` — the three-way scale-wall decomposition instrument.
 /// `VISION_VIDEO_PROBE_RESULTS.md` measured the wall (exponent 1.887, 164 h per
 /// 1080p frame) and named it "PyO3 then O(N²)" — two causes, with a plausible

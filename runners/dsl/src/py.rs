@@ -10735,6 +10735,123 @@ fn effect_audit_stats(py: Python<'_>) -> PyResult<PyObject> {
     Ok(d.into())
 }
 
+/// Probe-exactness instrument: does the cold path's apply-then-undo restore the
+/// graph exactly? Returns `(probes_checked, probes_dirty, dirty_rule_names)`.
+/// The rule list is an ENUMERATION — Stage A's NO-GO condition is a semantic
+/// delta that cannot be listed rule-by-rule.
+#[pyfunction]
+fn probe_exactness_stats(py: Python<'_>) -> PyResult<PyObject> {
+    let (checked, dirty, rules) = crate::effect_audit::probe_stats();
+    let d = PyDict::new_bound(py);
+    d.set_item("probes_checked", checked)?;
+    d.set_item("probes_dirty", dirty)?;
+    d.set_item("dirty_rules", rules)?;
+    d.set_item("enabled", crate::effect_audit::probe_exactness())?;
+    Ok(d.into())
+}
+
+/// Arm the probe-exactness check. OFF by default: it hashes the whole graph
+/// twice per rolled-back binding.
+#[pyfunction]
+fn probe_exactness_enable(on: bool) {
+    crate::effect_audit::set_probe_exactness(on);
+}
+
+#[pyfunction]
+fn probe_exactness_reset() {
+    crate::effect_audit::probe_reset();
+}
+
+/// Rules that commit MORE THAN ONE binding in a single drain, so a later
+/// binding evaluated against an earlier one's writes. This is the population
+/// Stage A's immutable-base change would affect, and `DECISION_LAYER_PREREG.md`
+/// fixes a NO-GO at more than 20 of them — so it is a LIST, not a count.
+#[pyfunction]
+fn same_round_visibility_stats(py: Python<'_>) -> PyResult<PyObject> {
+    let (drains, rules) = crate::effect_audit::multi_binding_stats();
+    let d = PyDict::new_bound(py);
+    d.set_item("multi_binding_drains", drains)?;
+    d.set_item("rules", rules)?;
+    d.set_item("rule_count", rules_len(&crate::effect_audit::multi_binding_stats().1))?;
+    Ok(d.into())
+}
+
+fn rules_len(v: &[(String, u64)]) -> usize { v.len() }
+
+#[pyfunction]
+fn same_round_visibility_reset() {
+    crate::effect_audit::multi_binding_reset();
+}
+
+/// Stage A: derive each drain against ONE immutable base and apply the
+/// resulting proposals at a single boundary. Default OFF and byte-identical
+/// when off — see `stage_a.rs` for why this landed as a mode to measure with
+/// rather than as a fix.
+#[pyfunction]
+fn stage_a_enable(on: bool) {
+    crate::stage_a::set_enabled(on);
+}
+
+#[pyfunction]
+fn stage_a_stats(py: Python<'_>) -> PyResult<PyObject> {
+    let (proposals, writes, excluded) = crate::stage_a::stats();
+    let d = PyDict::new_bound(py);
+    d.set_item("proposals", proposals)?;
+    d.set_item("writes", writes)?;
+    d.set_item("excluded_drains", excluded)?;
+    d.set_item("conflict_fallbacks", crate::stage_a::conflict_fallbacks())?;
+    d.set_item("enabled", crate::stage_a::enabled())?;
+    Ok(d.into())
+}
+
+#[pyfunction]
+fn stage_a_reset() {
+    crate::stage_a::reset();
+}
+
+/// Stage A COMPARE mode: derive each drain both ways and record rules whose
+/// write lists differ. Behaviour is unchanged (the committed result is what
+/// stays); this measures the prereg's actual NO-GO quantity — rules whose
+/// behaviour CHANGES — rather than the at-risk upper bound.
+#[pyfunction]
+fn stage_a_compare_enable(on: bool) {
+    crate::stage_a::set_compare_mode(on);
+}
+
+#[pyfunction]
+fn stage_a_compare_stats(py: Python<'_>) -> PyResult<PyObject> {
+    let (compared, diverged, rules) = crate::stage_a::compare_stats();
+    let d = PyDict::new_bound(py);
+    d.set_item("compared_drains", compared)?;
+    d.set_item("diverged_drains", diverged)?;
+    d.set_item("diverged_rules", rules)?;
+    let (unsound, unsound_rules) = crate::stage_a::unsound_stats();
+    d.set_item("unsound_drains", unsound)?;
+    d.set_item("unsound_rules", unsound_rules)?;
+    Ok(d.into())
+}
+
+/// Worked examples of divergence, `(rule, stage_a_writes, committed_writes)`.
+#[pyfunction]
+fn stage_a_compare_samples() -> Vec<(String, String, String)> {
+    crate::stage_a::compare_samples()
+}
+
+#[pyfunction]
+fn stage_a_compare_reset() {
+    crate::stage_a::compare_reset();
+}
+
+/// The engine's own canonical whole-graph hash — the same one opt-in cycle
+/// detection compares against history. Exposed so a byte-identity gate can be
+/// written against the engine's notion of state rather than a Python
+/// re-serialisation of it (which picks up object reprs and dict order).
+#[pyfunction]
+fn graph_state_fingerprint(sub: &PySubstrate) -> u64 {
+    let guard = sub.inner.lock().expect("substrate mutex poisoned");
+    guard.graph.state_fingerprint()
+}
+
 #[pyfunction]
 fn effect_audit_reset() {
     crate::effect_audit::reset();
@@ -10937,6 +11054,19 @@ pub(crate) fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(selector_audit_reset, m)?)?;
     m.add_function(wrap_pyfunction!(selector_audit_stats, m)?)?;
     m.add_function(wrap_pyfunction!(effect_audit_stats, m)?)?;
+    m.add_function(wrap_pyfunction!(probe_exactness_stats, m)?)?;
+    m.add_function(wrap_pyfunction!(probe_exactness_enable, m)?)?;
+    m.add_function(wrap_pyfunction!(probe_exactness_reset, m)?)?;
+    m.add_function(wrap_pyfunction!(same_round_visibility_stats, m)?)?;
+    m.add_function(wrap_pyfunction!(same_round_visibility_reset, m)?)?;
+    m.add_function(wrap_pyfunction!(stage_a_enable, m)?)?;
+    m.add_function(wrap_pyfunction!(stage_a_stats, m)?)?;
+    m.add_function(wrap_pyfunction!(stage_a_reset, m)?)?;
+    m.add_function(wrap_pyfunction!(stage_a_compare_enable, m)?)?;
+    m.add_function(wrap_pyfunction!(stage_a_compare_stats, m)?)?;
+    m.add_function(wrap_pyfunction!(stage_a_compare_reset, m)?)?;
+    m.add_function(wrap_pyfunction!(stage_a_compare_samples, m)?)?;
+    m.add_function(wrap_pyfunction!(graph_state_fingerprint, m)?)?;
     m.add_function(wrap_pyfunction!(effect_audit_reset, m)?)?;
     m.add_function(wrap_pyfunction!(effect_audit_set_correction, m)?)?;
     m.add_function(wrap_pyfunction!(argmin_tie_enable, m)?)?;

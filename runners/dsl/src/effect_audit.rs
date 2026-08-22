@@ -115,3 +115,124 @@ pub fn reset() {
         *slot = None;
     }
 }
+
+// ---------------------------------------------------------------------------
+// PROBE EXACTNESS — is derivation already non-mutating?
+//
+// `run_rules`' cold path decides whether a binding progresses by APPLYING it
+// and undoing when it did not (`rewrite.rs`). `DECISION_LAYER_PREREG.md` Stage
+// A calls that mutate-during-derivation and proposes rebuilding the applier
+// around an immutable base.
+//
+// Whether that rebuild is warranted turns on ONE fact nobody had measured:
+// bindings are collected BEFORE any apply, so enumeration is already immutable,
+// and the only cross-binding exposure left is whether `undo_apply` restores the
+// graph EXACTLY. If it does, derivation is already effectively non-mutating and
+// Stage A's case rests on the proposal-as-value, not on correctness. If it does
+// not, there is a live state-corruption bug and the priority inverts.
+//
+// So: fingerprint before the probe apply, fingerprint after the undo, compare.
+// `state_fingerprint` is the same whole-graph hash cycle detection trusts.
+// OFF by default — it hashes the entire graph twice per rolled-back binding,
+// which is far too expensive for the committed loop. This is an instrument, not
+// a mode.
+static PROBE_EXACTNESS: AtomicBool = AtomicBool::new(false);
+static PROBES_CHECKED: AtomicU64 = AtomicU64::new(0);
+static PROBES_DIRTY: AtomicU64 = AtomicU64::new(0);
+/// Every rule whose rollback failed to restore the graph, deduped, in
+/// first-seen order. An ENUMERATION, not a count: the prereg's own NO-GO
+/// condition is that a semantic delta which cannot be listed rule-by-rule kills
+/// the stage, and this repo's retracted-baseline lesson says a characterisation
+/// can be held while a list has to be read.
+static DIRTY_RULES: Mutex<Vec<String>> = Mutex::new(Vec::new());
+
+pub fn probe_exactness() -> bool {
+    PROBE_EXACTNESS.load(Ordering::Relaxed)
+}
+
+pub fn set_probe_exactness(on: bool) {
+    PROBE_EXACTNESS.store(on, Ordering::Relaxed);
+}
+
+/// Record one rolled-back probe. `before`/`after` are whole-graph fingerprints
+/// taken immediately before the speculative apply and immediately after the
+/// undo.
+pub fn record_probe_rollback(before: u64, after: u64, rule: impl FnOnce() -> String) {
+    PROBES_CHECKED.fetch_add(1, Ordering::Relaxed);
+    if before == after {
+        return;
+    }
+    PROBES_DIRTY.fetch_add(1, Ordering::Relaxed);
+    if let Ok(mut names) = DIRTY_RULES.lock() {
+        let name = rule();
+        if !names.iter().any(|n| n == &name) {
+            names.push(name);
+        }
+    }
+}
+
+/// `(probes_checked, probes_dirty, dirty_rule_names)`.
+pub fn probe_stats() -> (u64, u64, Vec<String>) {
+    (
+        PROBES_CHECKED.load(Ordering::Relaxed),
+        PROBES_DIRTY.load(Ordering::Relaxed),
+        DIRTY_RULES.lock().map(|n| n.clone()).unwrap_or_default(),
+    )
+}
+
+pub fn probe_reset() {
+    PROBES_CHECKED.store(0, Ordering::Relaxed);
+    PROBES_DIRTY.store(0, Ordering::Relaxed);
+    if let Ok(mut names) = DIRTY_RULES.lock() {
+        names.clear();
+    }
+}
+
+// ---------------------------------------------------------------------------
+// SAME-ROUND VISIBILITY — the population Stage A would actually change.
+//
+// The probe-exactness measurement above found rollback exact on every probe, so
+// apply-then-undo is wasteful rather than wrong. What genuinely mutates during
+// derivation is the drain loop in `Substrate`: it applies EVERY progressing
+// binding of a rule without breaking, so binding N+1's effect terms evaluate
+// against binding N's committed writes.
+//
+// Stage A would make each pass derive against one immutable base, which changes
+// behaviour for exactly those rules that drain more than one progressing
+// binding in a single pass. `DECISION_LAYER_PREREG.md` §A.4 fixes the NO-GO at
+// more than 20 such rules, so this counts them BY NAME.
+//
+// A rule appearing here is at RISK, not necessarily changed: two bindings may
+// touch disjoint state and be order-independent. This is the upper bound on the
+// affected population, which is the right thing to check a NO-GO against.
+static MULTI_BINDING_RULES: Mutex<Vec<(String, u64)>> = Mutex::new(Vec::new());
+static MULTI_BINDING_DRAINS: AtomicU64 = AtomicU64::new(0);
+
+/// One drain of `rule` committed `n` progressing bindings (only called for n>=2).
+pub fn record_multi_binding_drain(rule: &str, n: u64) {
+    MULTI_BINDING_DRAINS.fetch_add(1, Ordering::Relaxed);
+    if let Ok(mut rows) = MULTI_BINDING_RULES.lock() {
+        if let Some(row) = rows.iter_mut().find(|(name, _)| name == rule) {
+            if n > row.1 {
+                row.1 = n;
+            }
+        } else {
+            rows.push((rule.to_string(), n));
+        }
+    }
+}
+
+/// `(drains, [(rule_name, max_bindings_in_one_drain)])`.
+pub fn multi_binding_stats() -> (u64, Vec<(String, u64)>) {
+    (
+        MULTI_BINDING_DRAINS.load(Ordering::Relaxed),
+        MULTI_BINDING_RULES.lock().map(|r| r.clone()).unwrap_or_default(),
+    )
+}
+
+pub fn multi_binding_reset() {
+    MULTI_BINDING_DRAINS.store(0, Ordering::Relaxed);
+    if let Ok(mut rows) = MULTI_BINDING_RULES.lock() {
+        rows.clear();
+    }
+}

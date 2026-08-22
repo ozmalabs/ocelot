@@ -26,6 +26,36 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+# WHICH PYTHON — resolved HERE, before the build, and fatal if absent.
+#
+# The build-record step at the bottom used to invoke a bare `python`, which is
+# not guaranteed to exist: on a box carrying only `python3` it exits 127, and
+# under `set -e` that aborts the script AFTER the .so has already been
+# installed. The result is a binary NEWER than its own provenance record, so
+# `build_is_stale` then refuses to measure -- 102 test files erroring out with
+# what reads like a test problem when it is a build problem. Measured, in this
+# tree, after ~8 rebuilds that all reported "== installed:" and looked fine.
+#
+# Failing up front instead means the worst case is a build that did not start,
+# rather than an engine installed without the record that makes it usable.
+# `PYTHON=... scripts/engine_build.sh` overrides the search.
+PY=""
+for cand in "${PYTHON:-}" python3 python; do
+  [ -n "$cand" ] || continue
+  if command -v "$cand" >/dev/null 2>&1; then PY="$cand"; break; fi
+done
+if [ -n "${PYTHON:-}" ] && [ "$PY" != "${PYTHON:-}" ]; then
+  echo "!! PYTHON=${PYTHON} is not executable; using '$PY' instead" >&2
+fi
+if [ -z "$PY" ]; then
+  echo "!! no python interpreter found (tried \$PYTHON, python3, python)" >&2
+  echo "!! refusing to build: the engine would install WITHOUT its build record," >&2
+  echo "!! and provenance would then refuse to measure anywhere." >&2
+  exit 1
+fi
+echo "== build-record interpreter: $PY ($($PY -V 2>&1))"
+
 cd "$ROOT/runners/dsl" || exit 1
 
 echo "== building this tree's engine: $(pwd)"
@@ -45,9 +75,9 @@ cd "$ROOT"
 # answer from mtimes, which a `git checkout` rewrites in arbitrary order —
 # 85 false "STALE" accusations in a freshly created worktree, refusing to
 # measure in 88 test files on an engine that was exactly the committed one.
-python -c "import sys; sys.path.insert(0, '.'); \
+"$PY" -c "import sys; sys.path.insert(0, '.'); \
 from domains.engine_provenance import record_build; \
 print('== build record:', record_build())"
 
-python domains/engine_provenance.py
-echo "== verify:  python -m pytest tests/test_engine_provenance_migrated.py -q"
+"$PY" domains/engine_provenance.py
+echo "== verify:  $PY -m pytest tests/test_engine_provenance_migrated.py -q"

@@ -1,0 +1,258 @@
+{
+ "id": "vision_boundary_trace",
+ "version": "1.0.0",
+ "depends_on": [
+  "vision_motion_group"
+ ],
+ "description": "REGION BOUNDARY AS A SUBGRAPH, not a label field. `vision_motion_group` establishes which cells group together by DIFFUSING a label (`mo_flood`), which needs one pass per hop and represents membership as equality of a number. This seed derives the same partition's BOUNDARY instead, from the same pairwise predicate, with no diffusion at all: an edge disagrees or it does not, and that is decidable locally in one pass. The rim of a region is then an ordinary subgraph -- `rim_next` edges between adjacent boundary cells of the same region -- which a reader traverses to emit a contour. A contour is a path, and a path is what StrokeQuantize turns into a held shape; a label is recognisable as nothing. Reuses the field's own tolerance (`mtol`, broadcast by mo_tol_broadcast) -- no new threshold enters here.",
+ "microtheory": "vision",
+ "nodes": [],
+ "edges": [],
+ "productions": [],
+ "rules": [
+  {
+   "name": "bt_disagree",
+   "comment": "A `neighbour` pair whose motion vectors differ by MORE than the field's own tolerance is a boundary crossing. Purely pairwise: no closure, no diffusion, and the same Magnitude(VecSub(...)) mo_pair_diff already computes. Fires once per crossing -- the edge insert is idempotent, so a settled field reports no progress.",
+   "match": [
+    [
+     "R",
+     "neighbour",
+     "n"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "key": "marm",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "MotionParams"
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "mtol_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Magnitude",
+       "arg": {
+        "type": "VecSub",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "n"
+         },
+         "key": "v"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "v"
+        }
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "mtol"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "R",
+     "cuts",
+     "n"
+    ]
+   ]
+  },
+  {
+   "name": "bt_boundary_cell",
+   "comment": "A cell on the rim: it has at least one crossing. Marked as an attribute so later rules can match rim-to-rim without re-deriving the predicate.",
+   "match": [
+    [
+     "R",
+     "cuts",
+     "n"
+    ]
+   ],
+   "where": {
+    "type": "Lt",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "R"
+     },
+     "key": "on_rim"
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0.5
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "on_rim",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "bt_rim_link",
+   "comment": "Chain the rim. Two ADJACENT cells that are both on the rim and that AGREE with each other are consecutive on the same region's boundary, so they are linked. Following `rim_next` is a read-time traversal -- the contour exists as a path in the graph, not as a number replicated across an interior.",
+   "match": [
+    [
+     "R",
+     "neighbour",
+     "n"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "key": "marm",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "MotionParams"
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "mtol_done"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "on_rim"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "n"
+       },
+       "key": "on_rim"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "Magnitude",
+       "arg": {
+        "type": "VecSub",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "n"
+         },
+         "key": "v"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "v"
+        }
+       }
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "mtol"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "R",
+     "rim_next",
+     "n"
+    ]
+   ]
+  }
+ ]
+}

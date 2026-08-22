@@ -244,6 +244,22 @@ composition is wrong.
 
 ### The test bed exists, and it is measured
 
+> **CORRECTED TWICE — the site named below is dead code, and the first fix went into the
+> wrong backend.** See `DESIRE_PATH_PRECONDITION_RESULTS.md`. (1) Every statement below about
+> `bigville_move_nav.json` truly describes that JSON, but **those rules never execute**:
+> bigville's `load_seed_manifest` retains manifests *"without executing an external rule
+> engine"*, `settle()` is a documented no-op, and no test imports the move world. "Every
+> resident routes identically" holds there because nobody routes at all — a static read of
+> seed JSON reported as a property of a running system. (2) Bigville has pluggable backends;
+> `cheap` is the default game-AI one and routing belongs to the **ocelot** backend. The wire
+> landed in `seeds/bigville_actor_decision.json::oa_choose_option`, whose `Plus(score, Lit 0.0)`
+> was the same empty slot as `mv_relax`'s `Lit 1`, and whose affordances already carried an
+> unread per-terrain `stamina_multiplier` (path 0.65 < grass 1.00 < tree 2.00 < water 4.00).
+> Selection is now `score - gain * stamina_multiplier * (1 - stamina_reserve)`: zero at full
+> reserve, so rested residents are unchanged, and cut-across thresholds spread 0.0 → 8.1 with
+> depletion where they were uniformly 0.0. The rule is validated by execution on ocelot's Rust
+> engine, 30/30 against the Python fallback.
+
 Bigville was extracted from this repo in `5065fb8` but lives at `~/ozmadev/bigville` — 184
 seeds, including `bigville_loop_reputation.json`, `bigville_drama_social.json` and
 `bigville_stress.json`, all of which earlier notes in this repo recorded as lost. It also
