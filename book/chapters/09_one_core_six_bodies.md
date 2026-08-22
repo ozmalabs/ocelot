@@ -184,7 +184,7 @@ templates have zero output authority — they inform, they do not command.
 
 ### Where it has actually got to
 
-As of the most recent run in the record: **active stage ordinal 3**, three
+As of the most recent run in the record [BODY-1]: **active stage ordinal 3**, three
 demonstrated capabilities, three demonstrated human analogues, and **zero
 clinical milestones.** The active capability is reversible configuration
 control; the human analogue is repeated reversible limb action; the ecology is

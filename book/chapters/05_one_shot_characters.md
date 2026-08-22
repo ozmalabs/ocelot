@@ -83,7 +83,7 @@ n = 400 and intervals computed rather than eyeballed. Two things came back.
 **The four-alphabet evaluation had been an easy subset.** The honest ceiling at
 power is **26.8% [22.6, 31.3]** — not 37.5%.
 
-**Every post-composition delta in the arc was noise.** Analysis-by-synthesis
+**Every post-composition delta in the arc was noise** [CHAR-1]. Analysis-by-synthesis
 +3.7, dwell scheduling +1.3, appearance +2.5, higher-order relations −3.8,
 sub-strokes −1.2. At power, **all arms sit inside each other's intervals**. Each
 of those deltas was one to three episodes of difference on a small evaluation

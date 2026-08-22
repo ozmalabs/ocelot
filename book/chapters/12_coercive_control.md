@@ -101,7 +101,8 @@ configurations.
 
 ## 12.3 The dyad
 
-Five rungs, each with a control that could have failed.
+Five rungs, each with a control that could have failed. [CC-1] sets out all
+fifteen at once.
 
 **R1 — the bond strengthens under intermittency.** Three arms at identical dose:
 intermittent harm-and-affection, consistent affection, consistent harm. Bond

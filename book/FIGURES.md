@@ -1,7 +1,8 @@
 # FIGURES — the plan for the papers and the book
 
-**Status: plan, with twenty figures drawn — every conceptual diagram in it is
-done, and paper 02's two are now wired into the paper itself.** Chapter 1's set is complete (eight, plus a Class C selection); all
+**Status: twenty-five figures drawn. Every conceptual diagram is done, paper
+02's two are wired into the paper, and the Class B data figures now cover
+chapters 1, 5, 7, 9, 10, 12 and 13.** Chapter 1's set is complete (eight, plus a Class C selection); all
 five papers have their diagrams; the book's six conceptual figures are drawn.
 What remains is per-chapter data figures for chapters 5–13, drawn as each
 chapter is drafted. See § "Built so far". The five formal papers currently
@@ -158,6 +159,11 @@ Remaining candidates for later chapters: `results/held_surface/`,
 | **EYE-8** | the eigenspectrum — why Oja cannot see it | `book/figures/eye_8_eigenspectrum.svg` | `fig_eye_eigenspectrum.py` | `results/waveiso_confirm.json` |
 | **EMO-1** | the marshmallow confound, both directions | `book/figures/emotion_1_marshmallow_confound.svg` | `fig_marshmallow_confound.py` | `results/marshmallow_delay/results.json` |
 | **EMO-2** | Harlow on equal drive weights | `book/figures/emotion_2_harlow.svg` | `fig_harlow_preference.py` | `results/harlow_d1.json` |
+| **CHAR-1** | the arc as reported vs the arc at power | `book/figures/char_1_arc.svg` | `fig_char_arc.py` | `results/omniglot_gate_run15_power_b.log`, `run16_reconcile.log` |
+| **SPACE-1** | convergence, and the surprise-only gate that would miss it | `book/figures/space_1_convergence.svg` | `fig_space_convergence.py` | `LS20_UNDERSTANDING_RESULTS.md` (block 221000) |
+| **BODY-1** | where the humanoid is on its own curriculum | `book/figures/body_1_development.svg` | `fig_humanoid_development.py` | `results/humanoid_child_somatomotor_waves_cold_v8.json` |
+| **CC-1** | fifteen rungs, four scoping lines | `book/figures/cc_1_rungs.svg` | `fig_abuse_rungs.py` | `ABUSIVE_RELATIONSHIPS_LINE_SUMMARY.md` |
+| **TOWN-1** | a path forms, and un-forms | `book/figures/town_1_wear.svg` | `fig_town_wear.py` | `TERRAIN_WEAR_STIGMERGY_RESULTS.md` §2 |
 
 `book/figures/eye_confirm.py` parses `results/eye_confirm.log` — the eye's
 confirmatory block (prereg committed **before** the run, seeds 11000–11999,
@@ -229,6 +235,16 @@ standing lesson is that instruments need positive controls too.
    drawn** (EYE-6, EYE-7, EYE-8). The scaling wall (1317 → 137.8 ms) already
    has a plot in `results/eye_timing/scaling.png` (Class C — select, don't
    redraw), which closes chapter 1's figure set.
+**A correction the SPACE-1 figure forced.** Chapter 7 had said surprise and
+model accuracy move *in lockstep*. They do not: accuracy **ramps** (one more
+station per cycle) and surprise **steps** (flat at 1.0 until every station is
+modelled, then zero). More importantly, the chapter had described a failure mode
+— a system that stops being surprised for the wrong reason — as a hypothetical
+worry, when the record contains it **measured**: under heavy noise, accuracy
+goes to zero while surprise still self-converges, because the agent confidently
+re-predicts its own wrong recognition. A surprise-only gate passes that run. The
+figure and the chapter now both lead with it.
+
 3. ~~Paper conceptual diagrams~~ — **all five papers now have theirs.**
    Papers 02, 03 and 04 are marked **THEORY** on the figure itself, not only
    in a caption, because those mechanisms are not instrumented. Paper 01 is

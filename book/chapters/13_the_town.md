@@ -104,7 +104,7 @@ actually wants to set.
 **One enactment site.** Footfall hooks where residents arrive, not in every
 caller that happens to move someone.
 
-Measured, on one grass cell: forty crossings take wear from 0 to 1.0 and the
+Measured, on one grass cell [TOWN-1]: forty crossings take wear from 0 to 1.0 and the
 terrain becomes path, with the movement cost falling smoothly along the way
 rather than jumping at the end. Four hundred idle turns take it back to grass.
 

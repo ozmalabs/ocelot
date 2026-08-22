@@ -47,21 +47,34 @@ chapter 8. Unrelated.)*
 The framing the record states directly: **winning is a side effect of
 understanding — the true victory is knowledge.**
 
-That is easy to say and normally unfalsifiable, so it was measured. In a world
-where stations apply transformations the agent has to work out, two quantities
-were tracked as the agent explored: its *surprise* — prediction minus
-observation — and the accuracy of its model of which station does what.
+That is easy to say and normally unfalsifiable, so it was measured. Two
+quantities were tracked as the agent explored a world whose stations apply
+transformations it has to work out: its *surprise* — prediction minus
+observation — and the accuracy of its model against ground truth [SPACE-1].
 
-Surprise falls from 1.0 to 0.0. Model accuracy rises from near zero to 1.0. And
-they move **in lockstep**, with surprise reaching zero exactly at the cycle
-where every station has been modelled.
+The two have **different shapes**, and that is the first thing worth noticing.
+Model accuracy **ramps**: 0.17, 0.33, 0.50, 0.67, 0.83, 1.0, one more station
+modelled each cycle. Surprise **steps**: it sits at 1.0 until *every* station is
+modelled and then drops to zero and stays there. Six stations, six cycles to
+cover them, and the run is deterministic — zero variance across 25 episodes,
+because the underlying recognition is.
 
-That is what a curiosity-driven world model converging on ground truth looks
-like, and it is distinguishable from a policy that has learned to win. A policy
-that wins can have any internal state at all. This one's internal state tracks
-the world, and the surprise curve is the evidence — because surprise going to
-zero *while accuracy is still low* would have been the signature of a system
-that had stopped being surprised for the wrong reason.
+So this is a curiosity-driven world model converging on ground truth, and it is
+distinguishable from a policy that has learned to win. A policy that wins can
+have any internal state at all.
+
+**And then the part that makes it evidence rather than a curve.** The obvious
+worry about a surprise metric is that a system could stop being surprised for
+the wrong reason — by confidently re-predicting its own mistake. That is not a
+hypothetical here. It was measured. Degrade the perception badly enough and
+**accuracy goes to zero while surprise still converges to zero**: the agent
+learns nothing, re-predicts its own wrong recognition, and reports no surprise
+at all.
+
+A surprise-only gate passes that run. The accuracy gate catches it. Which means
+the clean result above is trustworthy *because* its instrument has been shown
+failing — chapter 16's positive-control discipline, arriving in a chapter about
+navigation.
 
 ---
 
@@ -164,10 +177,11 @@ find it.
 
 ## 7.6 What would falsify this
 
-- **The understanding claim.** If surprise can be driven to zero on a world the
-  agent's model does *not* track — a system that has stopped being surprised
-  without having learned — the lockstep in §7.1 is coincidence rather than
-  evidence.
+- **The understanding claim.** The failure mode is not hypothetical — §7.1
+  reports it under heavy noise. What would falsify the claim is the *clean* case
+  behaving the same way: model accuracy that does not track the stations
+  actually modelled, or a surprise step that arrives before the model is
+  complete.
 - **Absence as a state.** If per-body decoding over one belief can be shown to
   lose information that per-body maps retain, the central representational
   decision is wrong.
