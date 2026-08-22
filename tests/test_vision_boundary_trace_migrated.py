@@ -441,3 +441,107 @@ def test_a_clipped_region_declines_to_claim_the_whole_shape(monkeypatch):
     assert part_name is None, "a clipped view must not claim to be the whole shape"
     assert 0 < part_count < full_count, (
         f"expected a partial residual, got {part_count} of {full_count}")
+
+
+def _canonical_pose(pts):
+    """Centre a contour and rotate its principal axis onto +x.
+
+    A stroke inherits an orientation from the writing direction; a closed
+    contour has none, so one must be DERIVED. Scale is deliberately left alone:
+    SC+TPS already normalises it (measured), so only orientation is removed."""
+    import math
+    P = np.array(pts, dtype=float)
+    P = P - P.mean(axis=0)
+    w, v = np.linalg.eigh(np.cov(P.T))
+    axis = v[:, int(np.argmax(w))]
+    a = math.atan2(axis[1], axis[0])
+    ca, sa = math.cos(-a), math.sin(-a)
+    return P @ np.array([[ca, -sa], [sa, ca]]).T
+
+
+#: The residual symmetry a principal axis cannot resolve: the axis is defined up
+#: to sign, and reflection is not fixed by second moments at all. Four discrete
+#: candidates, so the verdict is an Argmin over them and the winner IS the pose
+#: delta -- rung 1's "one held shape plus a transform", not a fudge factor.
+_POSE_CANDIDATES = [np.array([[1, 0], [0, 1]], float),
+                    np.array([[-1, 0], [0, -1]], float),
+                    np.array([[1, 0], [0, -1]], float),
+                    np.array([[-1, 0], [0, 1]], float)]
+
+
+def _pose_aligned_dist(s, p, q):
+    """Minimum ScTpsDist once orientation is factored out. Returns (dist, which)."""
+    A, B = _canonical_pose(p), _canonical_pose(q)
+    best, arg = None, None
+    for i, S in enumerate(_POSE_CANDIDATES):
+        d = s._inner.evaluate(
+            {"type": "ScTpsDist",
+             "a": {"type": "Lit", "value": [[float(x), float(y)] for x, y in A]},
+             "b": {"type": "Lit", "value": [[float(x), float(y)] for x, y in (B @ S.T)]}}, {})
+        if best is None or d < best:
+            best, arg = d, i
+    return best, arg
+
+
+def _rotated_rect(deg, n=25, w=9.0, h=4.5):
+    import math
+    t = math.radians(deg)
+    ct, st = math.cos(-t), math.sin(-t)
+    cx = cy = n / 2.0 - 0.5
+    V = np.zeros((n, n, 2))
+    for r in range(n):
+        for c in range(n):
+            dx, dy = c - cx, r - cy
+            u, v = dx * ct - dy * st, dx * st + dy * ct
+            if abs(u) <= w / 2 and abs(v) <= h / 2:
+                V[r, c, 1] = 9.0
+    return V
+
+
+def _largest_contour(s):
+    best = None
+    for size, pts in _crossing_contours(s).values():
+        if best is None or (size > best[0] and size < 400):
+            best = (size, pts)
+    return best[1]
+
+
+def test_factoring_pose_out_fixes_the_comparators_orientation_blindness():
+    """A rotated shape must not read as further away than a different shape.
+
+    `ScTpsDist` normalises scale but not orientation, so a 90-degree rotation --
+    whose raster is pixel-identical to the original on a lattice -- scored
+    FURTHER (0.39) than a genuinely different shape (0.15). That is worse than
+    unhandled. Orientation is a POSE dimension, and the sd loop already treats it
+    as one; deriving a canonical orientation from the contour's own principal
+    axis and taking the Argmin over the residual discrete symmetry removes it.
+
+    Asserted BOTH ways: rotations of one shape must collapse, and a different
+    shape must NOT be collapsed by the same alignment."""
+    contours = {deg: _largest_contour(_rim_run(_rotated_rect(deg))[0])
+                for deg in (0, 45, 90)}
+
+    square = np.zeros((25, 25, 2))
+    square[10:16, 10:16, 1] = 9.0
+    sq = _largest_contour(_rim_run(square)[0])
+
+    s, _ = _rim_run(_rotated_rect(0))
+
+    def raw(p, q):
+        return s._inner.evaluate(
+            {"type": "ScTpsDist",
+             "a": {"type": "Lit", "value": [[float(a), float(b)] for a, b in p]},
+             "b": {"type": "Lit", "value": [[float(a), float(b)] for a, b in q]}}, {})
+
+    # the defect this fixes: raw distance ranks a rotated SAME shape worse than
+    # a different one
+    assert raw(contours[0], contours[90]) > raw(contours[0], sq), (
+        "expected the raw comparator to be orientation-blind; if this fails the "
+        "premise of the test has changed")
+
+    same = [_pose_aligned_dist(s, contours[0], contours[d])[0] for d in contours]
+    diff, _ = _pose_aligned_dist(s, contours[0], sq)
+    assert max(same) < diff, (
+        f"pose-aligned same-shape {max(same):.4f} must beat different-shape {diff:.4f}")
+    # and the alignment must not simply collapse everything
+    assert diff > 0.05, f"different shapes collapsed to {diff:.4f}"
