@@ -239,6 +239,41 @@ indifferent.
 size, **output invariant under `stage_a_enable`**, and the no-new-constant check. Mutation-tested
 — inverting the boundary predicate fails the partition test, so the gate bites.
 
+## 6b. PRIOR ART — nearly all of this is textbook, and one match is exact
+
+Recorded because the document above reads like discovery and mostly is not. Each mechanism, with
+its actual name:
+
+| used here | known as |
+|---|---|
+| turning function psi(s), compared over cyclic shift and constant offset | **Arkin, Chew, Huttenlocher, Kedem & Mitchell (1991)**, *An Efficiently Computable Metric for Comparing Polygonal Shapes*, IEEE TPAMI 13(3) — the L2 distance between turning functions, invariant to translation, rotation and scale, O(mn log mn). This is not an analogue of what I built; it **is** what I built. |
+| boundary as `cuts` between cells, chained into a contour | crack following / Moore boundary tracing / Freeman chain codes — standard contour extraction |
+| RDP polyline simplification | Ramer (1972), Douglas & Peucker (1973) |
+| `ScTpsDist` | shape contexts + TPS, Belongie, Malik & Puzicha (2002) — already a Term in this substrate |
+| render the hypothesis through the same sampling, compare | analysis-by-synthesis / render-and-compare / vision as inverse graphics; also this repo's own AbS rung |
+| holding a generator and recognising orbit membership | group-equivariant recognition; orbits under a transform group |
+| fold order from self-similarity of the turning function | symmetry detection by autocorrelation of a shape signature |
+| dead ends as hairpins; solving by collapsing them | **dead-end filling**, a standard maze algorithm; and wall-following |
+
+Two specifics worth flagging rather than glossing:
+
+- **The maze failure was a known precondition, not a bug.** Wall-following is guaranteed only when
+  the maze is *simply connected* — all walls joined to each other or to the outer boundary. My test
+  maze had free-floating interior blocks, so its free space was multiply connected, its boundary was
+  several cycles, and one trace covered 36 of 72 crossings. That is the documented limit of the
+  method, arrived at the slow way.
+- **The Wikipedia maze-solving article states the boundary result directly**: *"By grouping together
+  connected components of the maze walls, the boundaries between these are precisely the
+  solutions."* That is the same claim as this document's crossing-boundary construction, in one
+  sentence.
+
+**What is NOT inherited from that literature** is the part specific to this substrate, and it is
+the part worth keeping: which of these primitives the engine already held and had never composed
+(`ScTpsDist`, `DtwTo`, `StrokeQuantize`, the sd loop); that `mo_flood` diffuses a label where a
+boundary would do, with pass counts measured both ways; that Stage A dies on exactly that flood;
+the coverage figures for generator-vs-exemplar on this engine; and the chaining defect that only a
+turning boundary exposes. The mechanisms are borrowed. The measurements are not.
+
 ## 7. What this does not establish
 
 - **The chain now RUNS, and is only partly successful.** rim -> ordered contour ->
