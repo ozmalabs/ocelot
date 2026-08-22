@@ -211,6 +211,45 @@ Chapter 1's centre-surround run shows the discipline working: it includes an
 analytic control split that must score exactly zero, and it scores 4.4 × 10⁻¹⁶.
 The floor is measured before the result above it is believed.
 
+### A suite is not a proof, and sometimes it cannot be one
+
+One rung in this project established something sharper than any rule above, and
+it did so by failing three times in a row without anything going red.
+
+The change was to how rules derive proposals. Three separate defects arose
+during it: an instrument that silently flattened a conditional insert into an
+unconditional one, a plausible-looking refinement of a merge relation, and an
+unsound version of that relation that missed 35 of 49 known divergences.
+
+**All three passed every test in the suite, in both modes.** What caught each of
+them was a purpose-built falsifier or a direct soundness measurement — something
+written specifically to try to break that specific claim.
+
+And when the full bench finally did discriminate, it did so by a margin that
+shows why the suite could not be trusted here: 149 failures with the change off,
+151 with it on, out of nearly eight thousand tests. Two tests. **The failure sets
+differed**, which is the only reason the difference was visible at all — a count
+would have shown 149 against 151 and told you nothing about whether the same
+tests were failing.
+
+That is chapter 15's baseline rule, arriving from the other direction. A count
+can be held while its contents change. Here the contents changed by two, and the
+two were the entire result.
+
+The transferable finding is the rung's own summary: **the bench cannot certify
+this change.** Some changes are not the kind of thing a regression suite can
+answer, and knowing which is a judgement the suite cannot make for you.
+
+There is a second lesson in the same rung, and it is about how the first
+conclusion was wrong. The rung originally concluded that the change caused a
+duplicate-concept regression, and drew an architectural verdict from it — that a
+piece of deferred theoretical machinery was load-bearing after all. That was
+retracted the same session: the defect was in the *instrument*, a one-line loss
+of information, and with it fixed the delta was empty. The wrong conclusion is
+left standing in the document above the right one, and the reason given is worth
+copying: **a plausible architectural verdict was reached from what was actually
+an instrument bug**, and that is the more instructive half.
+
 ### Synthetic-proven mechanism is not benchmark value
 
 A mechanism demonstrated on constructed data has been shown to work. It has not

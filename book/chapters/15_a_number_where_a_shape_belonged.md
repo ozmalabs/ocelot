@@ -141,6 +141,62 @@ subject matter is structural comparison.
 
 ---
 
+## 15.4a The clearest instance: a label where a boundary belonged
+
+The audit above finds scalars standing in for the two primitives. This section
+is the case where one was found by accident, and where the shaped alternative
+was then built and measured — which makes it the only fully-closed instance in
+the chapter.
+
+A field of cells has to be grouped into regions. The mechanism is a **flood**: a
+rule spreads a label outward, each cell taking the smallest label among its
+similar neighbours, until a region has one identity.
+
+**Membership is therefore equality of a number.** A cell belongs to a region
+because its label matches. Which has two consequences nobody wrote down: reading
+membership means scanning every cell in the field, and *establishing* it means
+diffusing a value outward one hop at a time.
+
+The reason this went unexamined is the reason chapter 14 gives. The substrate's
+effect vocabulary is thirteen operations, and **every one of them is a local
+write.** There is no merge, no union — no way for a rule to say *these two
+regions are now one*. A component is a global object, so with local writes only,
+its identity can only be replicated into every member and diffused. The flood is
+not a bad choice within that vocabulary. It is what that vocabulary leaves.
+
+**The shaped alternative** keeps the boundary as structure instead of the
+interior as a value: mark which neighbour relations *disagree*, chain the cells
+along that edge, and read membership as the components remaining once those cuts
+are removed. Three rules, no new engine primitives, no new constants.
+
+Measured against the flood:
+
+- **Same partition**, bit-identical, on synthetic strips and on a real 18×18
+  field — 13 regions, identical sets. This is a representation change, not a
+  different grouping, and the gate asserts it.
+- **Cost stops tracking size.** Three sweeps at 8 cells, at 32, at 64, at 128.
+- **And cost stops depending on the derivation mode**, which is the property
+  that matters and the one that was invisible until something broke.
+
+The last point deserves the space. The change that exposed all this was
+unrelated — an experiment in deriving proposals against a frozen base, so rules
+could not see each other's writes mid-round. It **failed**, and it failed here:
+the flood degraded to one hop per pass and a motion object 108 cells across
+collapsed to 3. Which revealed that **the flood's speed had rested entirely on
+same-round visibility** — later cells reading labels earlier cells had just
+written. Nothing had ever stated that dependency. The boundary representation is
+indifferent to it, because it never reads what a sibling wrote.
+
+Two honest limits, both from the source document, which retracted two of its own
+claims while establishing this. **Boundary tracing does not fix chaining** — a
+threshold on a pairwise difference is not transitive, so any method that groups
+by "adjacent and similar" chains identically, and that was measured rather than
+assumed. Chaining is a property of the relation, not of the algorithm closing
+it. And **nothing has replaced the flood**: the boundary is derived alongside the
+label field, no rule was removed, and the contour is built but not yet ordered,
+quantised, or decoded — which is the entire reason a contour beats a label, and
+it is designed and unbuilt.
+
 ## 15.5 The live bug, stated plainly
 
 One confirmed site is not a design debt but a defect that corrupts silently, and

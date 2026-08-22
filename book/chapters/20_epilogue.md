@@ -47,11 +47,45 @@ So the ending is a **cut**. Chosen, and named as chosen.
 Here is what was live the week I stopped writing, which seems more useful than a
 summary.
 
-An effect-audit mechanism was in flight in the engine. A separate piece of work —
-a non-mutating proposal construction — had been built behind a flag, measured,
-and **left switched off**, because its own measurement said the semantic delta
-was a regression rather than the improvement it was designed to be. The flag is
-still off. The document explaining why is longer than the implementation.
+An effect-audit mechanism was in flight in the engine. And a piece of work
+called Stage A — a way of deriving every proposal against one frozen base rather
+than letting rules see each other's writes mid-round — had been built behind a
+flag, measured, and **falsified.** The flag is off. The document explaining why
+is much longer than the implementation, and it contains a retraction of its own
+first conclusion.
+
+That failure is the better closing image, because of what it bought.
+
+Stage A died on a *flood*: a rule that spreads a label outward across a field of
+cells until a region has one identity. Freezing the derivation base slowed it to
+one hop per pass, and a motion object 108 cells across collapsed to 3. Two tests
+failed that had never failed.
+
+Which exposed something nobody had known was true. **The flood's speed rested
+entirely on rules seeing each other's writes within a round** — later cells
+reading labels earlier cells had just written. Nothing had ever stated that
+dependency; it was load-bearing and invisible, and it took an unrelated change
+to reveal it.
+
+So the question stopped being "why did Stage A fail" and became "is a flood the
+right operation at all". And there, measured: the flood computes the **right
+partition by a wrong-shaped representation.** Membership in a region is *equality
+of a number* — a cell belongs because its label matches — so reading membership
+means scanning every cell in the field, and establishing it means diffusing a
+value outward step by step.
+
+The alternative is to trace the boundary and keep it as structure: mark which
+neighbour relations disagree, chain the cells along that edge, and read
+membership as what remains when those cuts are removed. Same partition,
+bit-identical. Three sweeps instead of four — and, the property that actually
+matters, **three sweeps at every size, and under either derivation mode**, where
+the flood goes 4, 18, 34, 66 as the field grows under the frozen base.
+
+None of which rescues Stage A. It is still falsified, and the document says so in
+its own closing section. But a change that fails and, in failing, exposes a
+hidden dependency and relocates a representation from a number to a shape has
+done more than most changes that work. Chapter 15's thesis, arrived at from the
+opposite direction: the defect was a label where a boundary belonged.
 
 In a sibling repository, residents of a small town were wearing paths across
 grass, and the wear was behaving in both directions.
