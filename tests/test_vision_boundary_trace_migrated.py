@@ -735,3 +735,47 @@ def test_orbit_recognition_snaps_to_distinct_members_and_decides_in_the_graph():
             "key": "shape"}
     won = s._inner.evaluate(term, {"agent": agent})
     assert won == "bar", f"orbit verdict chose {won!r}, expected 'bar'"
+
+
+def _rim_degrees(s, region_cells=None):
+    """Degree of every boundary crossing in the rim graph. A closed rim is a
+    CYCLE, so every crossing must have exactly two neighbours."""
+    adj = collections.defaultdict(set)
+    for x in s.nodes("Crossing"):
+        for n in s.neighbours(x, "next_crossing"):
+            adj[x.value].add(n.value)
+            adj[n.value].add(x.value)
+    return collections.Counter(len(adj[x.value]) for x in s.nodes("Crossing"))
+
+
+def test_a_diagonal_boundary_chains_into_a_clean_cycle():
+    """`bt_chain_perpendicular` must link crossings on ADJACENT sides of a shared
+    cell, never on opposite sides.
+
+    Linking every pair at a shared cell also links the two on OPPOSITE sides,
+    which is a chord across the rim rather than a rim step. It shows up only on
+    boundaries that turn — a rasterised circle came out with 8 of 100 crossings
+    at degree 3, and a contour walk took the chord and closed a loop half the
+    figure's size (bbox 12x13 for a radius-12 circle) while an axis-aligned
+    square was unaffected.
+
+    So the circle is the case that must be asserted; a square passes either way
+    and would not have caught it."""
+    n, r = 33, 9.0
+    circle = lambda u, v: u * u + v * v <= r * r
+    square = lambda u, v: abs(u) <= r and abs(v) <= r
+
+    for name, fn in (("circle", circle), ("square", square)):
+        s, _ = _rim_run(_small_raster(fn, 0, n=n))
+        deg = _rim_degrees(s)
+        assert set(deg) == {2}, (
+            f"{name}: rim is not a clean cycle, degrees {dict(sorted(deg.items()))}")
+
+    # and the circle's contour must span the figure, not a chord-shortcut loop
+    s, _ = _rim_run(_small_raster(circle, 0, n=n))
+    pts = _largest_contour(s)
+    assert pts is not None
+    w = max(p[0] for p in pts) - min(p[0] for p in pts)
+    h = max(p[1] for p in pts) - min(p[1] for p in pts)
+    assert w > 1.5 * r and h > 1.5 * r, (
+        f"circle contour spans {w:.0f}x{h:.0f}, expected about {2*r:.0f} square")
