@@ -15,6 +15,25 @@ belongs in its own later paper; these notes are its theoretical foundation.
 
 ---
 
+## Applied to the papers
+
+All five compile. Section labels added where cross-references needed them.
+
+| note | paper | what landed |
+|---|---|---|
+| **§2, §25** epistemic boundary | 01 § Scope | New *Epistemic boundary* paragraph: the theory does not specify pre-relational existence and begins where distinguishable relational structure is representable. `? ⇢ observable relational structure ⇒ graph representation`, with the dashed arrow marked as the part not claimed, and the sentence that closes the over-reading: *the theory is not the claim that reality is fundamentally graph-shaped.* |
+| **§3** discreteness | 01 § Discrete sufficiency | New remark separating **discrete sufficiency** from **fundamental discreteness**, with their falsifiers stated apart — one decidable in-frame, the other concerning a fact the epistemic boundary places outside reach, *which is why it is not asserted*. |
+| **§1, §24** time | 01 § new *Time is not primitive* | `T = NULL` as a dimension absent rather than set to zero; the ratchet as what makes a time dimension meaningful; the `? ⇢ G → T:NULL→T` schematic; and a remark that the order of exposition is deliberate — collapse is stated before time because collapse is what makes time available. |
+| **§4, §5, §8, §9, §10, §11** | 01 § new *The present, and three states of a dimension* | `NULL ≠ unknown ≠ resolved` as a definition; the present defined structurally as `U_F = 0`; *determinable ≠ determined*; causally sufficient **present** structure replacing complete-antecedent-state-in-time; and the strengthened history principle as a corollary. The determinism section now reads through these. |
+| **§14, §15** standing | 02 § new *Standing of the construction* | Two remarks placed **before** the definitions, because the strong reading is the natural one: the ratchet does not require an observer, and manifolds/unknown counts/Narrative/Narrativium are first-class only in frames instantiating the relations that define them. *Nature does not have to run a Seldon manifold in order to evolve.* |
+| **§4, §6, §7, §16** | 02 § new *Unresolved structure, and the present as a limit* | `U_F(h)` as unknown count with NULL excluded; the present as its zero; `D_F(h) → 1` as observer-relative determinability; the remark that **it is incorrect to say the universe becomes more deterministic** — determinism does not vary, the observer's determinability does; and blind spots as *directly resolved ≠ unresolved ≠ occluded but inferable*. |
+| **§12, §13** | 02 § new *Causal depth is not temporal distance* | The tilt stated as a proposition rather than a metaphor: succession plus structural depth, ~45° rather than 90°, with depth supplied by **superframes** rather than retained snapshots — because a theory locating determination in earlier temporal states would require access to a past no frame holds. |
+| **§18, §19** momentum | 03 § new *Momentum is present structure* | Momentum as a currently instantiated structural consequence of prior change, with the remark that Narrative momentum therefore needs no defence as a metaphor borrowed from mechanics: both are instances of one form. |
+| **§15** | 04 § Dependencies | Standing remark: Narrativium is first-class only where its relations are instantiated, its absence is not a deficiency, and the paper's claim is conditional in form. |
+| **§9, §10** | 05 § World interaction | Remark that the executor's "antecedent" base is **present structure**, not retained history: the executor holds no stack of earlier states and needs none, and reproducibility is stated over causally sufficient present structure rather than agreement of histories. |
+
+---
+
 ## Applied to drafted chapters
 
 | note | what changed | where |

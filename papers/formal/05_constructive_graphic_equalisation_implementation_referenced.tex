@@ -349,6 +349,10 @@ B_{W,e}^{\mathrm{external}}.
 
 A graph-world recursively uses deterministic resolution. More generally, the reference implementation assumes that a causally complete antecedent configuration determines the realised successor, in accordance with the Graph Law.
 
+\begin{remark}[The antecedent base is present structure]\label{rem:base-is-present}
+``Antecedent'' here names the immutable base a round reads, not a retained temporal history. Consistently with the Graph Law's history principle, prior rounds influence a closure only where their consequences survive in the base being read; the executor holds no stack of earlier graph states and requires none. Reproducibility is therefore stated over causally sufficient \emph{present} structure --- identical bases yield identical realised successors --- and not over an agreement of histories.
+\end{remark}
+
 An implementation may nevertheless attach a stochastic \emph{observation model} to an incompletely represented external frame. Such a model expresses uncertainty over unresolved determining dimensions:
 \[
 \boxed{

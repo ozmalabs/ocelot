@@ -77,6 +77,20 @@ If the frame fixes the causally complete antecedent, all future interventions, a
 
 This distinction is important because classical reachability and viability theory often permit disturbances, controls, or differential inclusions to generate sets of possible states \citep{aubin1991,mitchell2005}. The Seldon construction can represent the same set-valued geometry without interpreting that set as fundamental stochasticity.
 
+\section{Standing of the construction}\label{sec:standing}
+
+Before the definitions, a boundary on what is being claimed, because the natural reading of what follows is stronger than the position of this paper.
+
+\begin{remark}[The ratchet does not require an observer]\label{rem:ratchet-first}
+The temporal ratchet of Graphic Equalisation --- persistent directed succession through successive collapses --- exists independently of any frame representing it. Seldon manifolds are \emph{optional observer or agent machinery} for representing reachable unresolved continuations. Nature does not have to run a Seldon manifold in order to evolve.
+\end{remark}
+
+\begin{remark}[Higher machinery is frame-relative, not substrate-required]\label{rem:optional-machinery}
+The same holds of every construct in this paper and its successors: manifolds, unknown counts, inferred futures, Narrative, and Narrativium are first-class quantities \emph{only in frames that instantiate the relations defining them}. They are not universal substrate requirements, and their absence from a frame is not a deficiency of that frame's dynamics.
+\end{remark}
+
+These remarks are load-bearing for the falsifiability commitments in Section~\ref{sec:falsifiability}: a claim about what an agent's representation supports is not a claim about what the world must contain.
+
 \section{Dimensions, values, and resolution}\label{sec:dimensions}
 
 \begin{definition}[Represented dimension]\label{def:dimension}
@@ -168,6 +182,54 @@ For bounded representation, an effective future model assigns finer distinction 
 Thus $\rho(x,h,D)$ may increase where unresolved distinctions become decision-relevant. Near and distant horizons may use different quantisation, as may relevant and irrelevant spatial, causal, or conceptual regions. New dimensions may also be instantiated when a previously absent distinction becomes operative; this is not a change from value zero but a change in representational dimension.
 
 Adaptive mesh refinement provides an established computational analogue: resolution is recursively concentrated where local error estimates justify the additional cost \citep{berger1984}. The Seldon hypothesis differs in criterion---decision relevance rather than numerical truncation error---but shares the principle that uniform resolution is not mandatory.
+
+\section{Unresolved structure, and the present as a limit}\label{sec:unresolved}
+
+Graphic Equalisation distinguishes three states of a dimension in a frame: NULL (not instantiated), unknown (instantiated, unresolved in projection), and resolved. That distinction is what the horizon-dependence of a Seldon manifold is actually about.
+
+\begin{definition}[Unknown count]\label{def:unknown-count}
+For frame $\Frame$ and projected horizon $h$, let
+\[
+U_{\Frame}(h)
+\]
+be the number, or more generally the structure, of instantiated-but-unresolved variables in the frame's projection at that horizon. NULL dimensions are excluded: they are not unresolved variables.
+\end{definition}
+
+\begin{proposition}[The present is $U_{\Frame}=0$]\label{prop:present-limit}
+The present is the collapse boundary at which every instantiated unknown relevant to that collapse has resolved,
+\[
+\boxed{U_{\Frame}=0,}
+\]
+and as the projected horizon approaches the present,
+\[
+U_{\Frame}(h)\longrightarrow 0 .
+\]
+\end{proposition}
+
+Future distance in a Seldon manifold is therefore not merely geometric resolution. The operative quantity is unresolved structure.
+
+\begin{definition}[Observer-relative determinability]\label{def:determinability}
+Let $D_{\Frame}(h)$ be the fraction, or measure, of determining structure resolved in-frame at horizon $h$, with
+\[
+\lim_{h\to0^{+}}D_{\Frame}(h)=1,
+\qquad
+D_{\Frame}(0)=1 .
+\]
+\end{definition}
+
+\begin{remark}[What is changing, and what is not]\label{rem:not-more-deterministic}
+The Graph Law is deterministic throughout, at every horizon. What varies with $h$ is how much determining structure is \emph{resolved in-frame}. It is therefore incorrect to say that the universe becomes more deterministic as the present is approached; determinism is not a quantity that varies. The observer's determinability does.
+\end{remark}
+
+Consistently with Graphic Equalisation's distinction between \emph{determinable} and \emph{determined}, a continuation may be fully determinable from present structure without having been realised. The manifold represents determinable continuations; collapse produces determined ones.
+
+\begin{definition}[Blind spot]\label{def:blind-spot}
+A frame may fail to observe a projected region directly while still constraining its continuation through relations around it. Three states must therefore be distinguished:
+\[
+\boxed{\text{directly resolved}\;\neq\;\text{unresolved}\;\neq\;\text{occluded but inferable}.}
+\]
+\end{definition}
+A blind spot is a limitation of access, not a hole in reality, and an occluded-but-inferable region is not epistemically equivalent to an unapproached one. Collapsing the two discards the surrounding constraint.
 
 \section{Reachability rather than point prediction}\label{sec:prediction}
 
@@ -311,6 +373,30 @@ The paper's relationship to established work can be summarised as follows.
 \item[Structural synthesis.] The Seldon manifold treats these set-valued future structures as a frame-relative representation generated downstream of deterministic Graphic Equalisation and evaluated only on instantiated dimensions at operative discrete resolution.
 \item[Specific contributions.] The terminology and formal roles of the Seldon manifold and Muchness; the explicit separation of local admissibility, counterfactual reachable geometry, deterministic collapse, Muchness, and Narrativium; dimension-instantiation discipline (NULL is not zero); and the decision-relevant reachability-compression hypothesis are claims of this framework.
 \end{description}
+
+\section{Causal depth is not temporal distance}\label{sec:depth}
+
+The ordinary picture of time,
+\[
+\text{history}\rightarrow\text{now}\rightarrow\text{future},
+\]
+is misleading as a picture of what determines a continuation, and the correction is structural rather than presentational.
+
+Determination has two components. One is the \emph{temporal ratchet}: succession through realised collapses, which is what makes a time dimension meaningful at all. The other is \emph{structural depth}: relations instantiated in containing frames, which are present now and are not earlier in time.
+
+\begin{remark}[The tilt]\label{rem:tilt}
+Replacing time by structure entirely would be a $90^{\circ}$ rotation of the causal picture and is not what is claimed. The correct adjustment is closer to a $45^{\circ}$ change of causal vector: succession still runs, and additional determining structure is reached by depth rather than by reaching further back.
+\end{remark}
+
+\begin{proposition}[Depth comes from superframes, not from historical frames]\label{prop:superframes}
+Where a continuation is determinable beyond what $\Frame_0$ resolves, the additional determining structure is supplied by containing frames
+\[
+\Frame_0\subset\Frame_1\subset\Frame_2\subset\cdots,
+\]
+potentially without a privileged terminal frame. It is \emph{not} supplied by retained temporal snapshots: by Graphic Equalisation's history principle, past states influence the present only where they survive as present structure.
+\end{proposition}
+
+This matters for what an explanation is permitted to assume. A theory that located determining structure in earlier temporal states would require arbitrarily deep access to a past that no frame holds. Locating it in containing frames requires only structure that is instantiated now.
 
 \section{Falsifiability commitments}\label{sec:falsifiability}
 

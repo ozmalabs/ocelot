@@ -34,6 +34,15 @@ The theory requires only discrete distinctions at the operative frame. This is a
 \section{Scope and epistemic status}
 This paper contains the smallest set of commitments required for the later theory. It distinguishes axioms and definitions, deductive consequences, groundings into existing theories, and empirical hypotheses. It deliberately excludes executor design, rule scheduling, proposal records, retry protocols, valuation algorithms, and controller architecture.
 
+\paragraph{Epistemic boundary.}
+This theory does not attempt to specify the intrinsic nature of pre-relational existence. It begins at the first level at which distinguishable relational structure is scientifically representable. The move it makes is
+\[
+\boxed{?\;\dashrightarrow\;\text{observable relational structure}\;\Longrightarrow\;\text{graph representation},}
+\]
+and the dashed arrow marks what is \emph{not} claimed. The pre-graph substrate may be continuous, discrete, purely mathematical, or unclassifiable from any frame available here; the theory asserts nothing about it. What is asserted begins at the second arrow: \emph{where} distinguishable relational structure is representable, it admits graph representation and the dynamics below govern it.
+
+This boundary is stated because a stronger reading is available and is not the position of this paper. The theory is not the claim that reality is fundamentally graph-shaped.
+
 \section{Axiom $-1$: relativity of grounding}
 \setcounter{axiom}{-2}
 \begin{axiom}[Relativity of grounding]
@@ -70,6 +79,10 @@ A dimension may admit arbitrarily fine or dynamically changing quantisation with
 A continuous containing supergraph is neither required nor excluded. Existing continuous physical theories may ground or contain this substrate without contradiction.
 \end{remark}
 
+\begin{remark}[Discrete sufficiency is not fundamental discreteness]
+These are distinct claims with distinct falsifiers and must not be conflated. \emph{Discrete sufficiency} is the claim above: observable consequences internal to the substrate can be represented discretely, at the operative frame and resolution, without loss. \emph{Fundamental discreteness} would be the claim that the containing or pre-relational substrate is itself discrete, and this paper does not make it. Discrete sufficiency fails if some observable consequence cannot be so represented without loss --- a claim decidable in-frame. Fundamental discreteness would concern a fact about the pre-graph substrate that the epistemic boundary above places outside the theory's reach, which is precisely why it is not asserted.
+\end{remark}
+
 \section{Admissible possibility}
 Let $\Poss(G_t)$ denote the structured family of immediate continuations admitted by the present graph and its current relations.
 \begin{definition}[Admissible continuation]
@@ -83,7 +96,7 @@ Write
 for the partial realised transformation relation. Undefinedness means that $\delta$ does not produce a structurally valid successor under the stated conditions. No ontological \textsc{FAIL} state is required.
 \end{definition}
 
-\section{Collapse and realised history}
+\section{Collapse and realised history}\label{sec:collapse-law}
 \begin{definition}[Collapse]
 Collapse is the frame-relative passage from a pre-realisation possibility structure to realised continuation:
 \[\boxed{\Coll_t:\Poss(G_t)\rightsquigarrow G_{t+1}.}\]
@@ -175,6 +188,66 @@ A quantity concerning $G$ may be absent from $G$ while existing as ordinary firs
 \end{proposition}
 This is the basis on which later papers introduce Narrative, standing, ownership, and other relational quantities without bloating the primitive graph.
 
+\section{Time is not primitive}\label{sec:time-not-primitive}
+Nothing above requires a temporal dimension to be instantiated. Existence does not require time, and a frame may contain existence with no temporal dimension instantiated at all:
+\[
+T=\mathrm{NULL}.
+\]
+This is not the assertion that $t=0$ before time exists; a NULL dimension is absent, not set to a value.
+
+A time dimension becomes meaningful only where there is \emph{persistent directed succession}: a ratchet of distinguishable change. The transition relation of Section~\ref{sec:collapse-law} is such a ratchet, which is why time is available to frames governed by it and is not presupposed by it. Informally: something exists; something changes in a persistent, directed way; a ratchet exists; therefore a time dimension becomes meaningful. Schematically, and without pretending to explain the first arrow,
+\[
+?\;\dashrightarrow\;G
+\;\xrightarrow{\;\text{persistent directed transformation}\;}\;
+T:\mathrm{NULL}\to T.
+\]
+
+\begin{remark}
+The order of exposition is therefore deliberate. Collapse is stated before time because collapse is what makes time available, not because time is a background against which collapse occurs.
+\end{remark}
+
+\section{The present, and three states of a dimension}\label{sec:present}
+\begin{definition}[Three states]
+For a frame $\mathcal F$, a dimension is in exactly one of three states:
+\[
+\boxed{\mathrm{NULL}\neq\mathrm{unknown}\neq\mathrm{resolved}.}
+\]
+\emph{NULL}: the dimension is not instantiated. \emph{Unknown}: the dimension is instantiated and its value is unresolved in the frame's projection. \emph{Resolved}: a realised value.
+\end{definition}
+These are operationally distinct, not terminological variants. An unresolved value is something the frame may act to resolve; a NULL dimension is not something it can look for.
+
+\begin{definition}[The present, structurally]\label{def:present}
+Within a frame, the present is the collapse boundary at which every instantiated unknown relevant to that collapse has resolved:
+\[
+\boxed{U_{\mathcal F}=0.}
+\]
+NULL dimensions are excluded from the unknown count; they are not unresolved variables.
+\end{definition}
+The present is therefore defined structurally rather than as a point on a primitive time axis, which is required given Section~\ref{sec:time-not-primitive}.
+
+\begin{proposition}[Determinable is not determined]\label{prop:determinable}
+A continuation may be completely determinable from present structure without having been realised:
+\[
+\boxed{\text{determinable}\neq\text{determined}.}
+\]
+``Determined'' is reserved for what has collapsed into realised history.
+\end{proposition}
+
+\begin{proposition}[Causally sufficient present structure]\label{prop:present-sufficiency}
+The determining condition is structure instantiated \emph{now}, including relevant containing-frame relations:
+\[
+\boxed{\text{same causally sufficient present structure}\Rightarrow\text{same realised continuation}.}
+\]
+\end{proposition}
+This replaces any formulation requiring a complete antecedent state \emph{in time}. Only the present exists in a frame; past states need not remain extant, and the future is not an extant region lying ahead of the present. The future consists of reachable or determinable continuations represented now.
+
+\begin{corollary}[History principle, strengthened]\label{cor:history}
+\[
+\boxed{\text{history matters only where it survives as present structure}.}
+\]
+The past is surviving consequence instantiated now, not a stack of still-existing historical frames.
+\end{corollary}
+
 \section{Causal order and local time}
 Realised collapse induces an ordinal event order
 \[e_0\prec e_1\prec e_2\prec\cdots.\]
@@ -199,6 +272,8 @@ G_{t+1}.
 \]
 The Graph Law contains no primitive random actualisation operator.
 \end{proposition}
+
+Proposition~\ref{prop:determinism} is to be read through Proposition~\ref{prop:present-sufficiency}: the antecedent configuration is causally sufficient \emph{present} structure, not a retained temporal history. Determinism is a relation between present structure and realised continuation, and Proposition~\ref{prop:determinable} keeps it from being overstated --- a determinable continuation is not thereby a determined one.
 
 Apparent stochasticity arises when a frame does not represent all of the causally operative dimensions or relations required to determine the realised continuation. A probability distribution may then be an appropriate model of that frame's uncertainty, but the probability belongs to the incomplete representation rather than to the substrate transition itself. Treating probability as a representation of incomplete information has a long statistical-mechanical and Bayesian lineage \citep{jaynes1957}.
 
