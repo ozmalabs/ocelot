@@ -733,7 +733,44 @@ of the same object at different angles, evidence summed, no single look needing 
 representations improve with context — that is what context is for — but the orbit starts higher
 and stays ahead, and it converges toward its own coverage ceiling rather than past it.
 
-That ceiling is the architectural point: **cov@3 = 95% is the bound on what any amount of context
+### SNAPPING: enumerate the orbit, do not sample it
+
+The candidate set was spaced every 15 degrees — an arbitrary grid laid over a family that is not
+continuous in observation space. The orbit is DISCRETE, and its cardinality is set by the
+sampling, not by angular precision. Sweeping one degree at a time and deduping on the raster
+gives the reachable set exactly:
+
+| shape | 180 angles collapse to |
+|---|---|
+| square_6 | **9** distinct rasters |
+| ellipse | 40 |
+| rect_9x4.5 | 56 |
+| ell | 104 |
+| triangle | 122 |
+
+A 6x6 square has nine distinguishable orientations at this resolution — it is symmetric AND
+small, so almost every rotation is below the lattice's resolving power. Deduping happens on the
+raster before settling, so only genuinely distinct members cost work.
+
+With candidates snapped to that set:
+
+| candidates | cov@1 | cov@2 | cov@3 |
+|---|---|---|---|
+| 15-degree grid | 67% | 86% | 95% |
+| **snapped, observation ON the manifold** | 100% | 100% | 100% |
+| **snapped, observation OFF the manifold** | **74%** | **91%** | **100%** |
+
+The on-manifold row is near-tautological and is reported as such: a 1-degree sweep contains the
+observation's own angle, so 21/21 match at distance exactly 0. It establishes the ceiling, not
+the capability. **The off-manifold row is the real result** — the observation is 8% larger than
+anything held, so only 1 of 23 has an exact match, and snapping still gains +7pp at rank 1 and
+closes coverage@3 to 100%.
+
+So the missing piece was not a better metric or a better representation: it was that the
+candidate set must BE the reachable set. Sampling a discrete family on an arbitrary grid puts
+candidates where no member exists and leaves gaps where members do.
+
+That ceiling is the architectural point: **coverage is the bound on what any amount of context
 can reach.** Accuracy is recoverable downstream; coverage is not. It is also the same shape as
 this repo's Omniglot finding, where coverage@5 of 53.8% was the measured bottleneck and re-rank
 converted ~70% of the cases where the true exemplar was present at all.
