@@ -705,6 +705,39 @@ was stored at (7/22/38/53/68 degrees, none in the candidate set):
 3.1x the per-episode step — right at this repo's own bar for what counts as a result. Supporting,
 not established.
 
+### A close-enough guess that context can improve IS a win
+
+Hard 5-way accuracy is the wrong question to ask a proposal layer. The right one is whether the
+truth SURVIVES into a small candidate set, because a later stage can convert that and cannot
+recover what was dropped. Measured on the same 21 observations:
+
+| held | cov@1 | cov@2 | cov@3 |
+|---|---|---|---|
+| one stored exemplar | 52% | 62% | 71% |
+| **rendered orbit** | **67%** | **86%** | **95%** |
+
+**The orbit keeps the truth in the top three 95% of the time.** As a proposer it is close enough
+essentially always, even where its top-1 is wrong a third of the time.
+
+And context does convert it. The cheapest context available is MORE LOOKS — several observations
+of the same object at different angles, evidence summed, no single look needing to be right
+(every subset of L looks is a trial, so the trial count scales rather than sitting at n=5):
+
+| looks | trials | exemplar | orbit |
+|---|---|---|---|
+| 1 | 21 | 52% | 67% |
+| 2 | 40 | 68% | **82%** |
+| 3 | 40 | 75% | **88%** |
+
+**67% to 88% on three looks**, with the orbit holding +13 to +15pp at every level. Both
+representations improve with context — that is what context is for — but the orbit starts higher
+and stays ahead, and it converges toward its own coverage ceiling rather than past it.
+
+That ceiling is the architectural point: **cov@3 = 95% is the bound on what any amount of context
+can reach.** Accuracy is recoverable downstream; coverage is not. It is also the same shape as
+this repo's Omniglot finding, where coverage@5 of 53.8% was the measured bottleneck and re-rank
+converted ~70% of the cases where the true exemplar was present at all.
+
 Two further facts the orbit view makes visible, which the shape view could not:
 
 - **The orbit is QUANTISED by the sampling.** A 6x6 square rotated 7 degrees rasterises
