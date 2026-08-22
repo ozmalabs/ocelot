@@ -820,8 +820,48 @@ Fitted directly — greedy segmentation of a contour into maximal line and arc p
 | triangle | 92 | 2 arcs + 3 lines | 5 — minimal is 3 |
 
 **A square is recovered as exactly four lines, and a circle as one arc, from 100 boundary points
-each.** The program is the shape; the point list was the sampling. The circle's trailing `line` is
-a wrap remnant — the greedy fit does not fold its last piece back into its first.
+each.** The program is the shape; the point list was the sampling.
+
+#### BISECT rather than walk
+
+Greedy fitting extends a piece forward from an arbitrary start, so the segmentation depends on
+where the walk began — an absolute reference smuggled back in — and it cannot fold its final
+piece into its first, which is exactly the circle's trailing `line`. **Bisection splits at the
+point of maximum deviation**, a property of the curve rather than of the traversal, and is
+coarse-to-fine: try the whole closed curve as ONE primitive first and split only where the
+residual demands. That is the substrate's own decode/residual/refine shape, and it yields a valid
+description at every depth instead of only at the end.
+
+| primitive | greedy | bisect | minimal |
+|---|---|---|---|
+| square | 4 line | 4 line | 4 |
+| circle | 1 arc + 1 line | **1 arc** | 1 |
+| triangle | 2 arc + 3 line | 6 line | 3 |
+
+Bisection gets the circle exactly right and the wrap remnant disappears, ties on the square, and
+is WORSE on the triangle. Reported rather than tuned away.
+
+**The tolerance is not a magic number — it is the observation resolution.** Sweeping it:
+
+| tol (cells) | square | circle | triangle |
+|---|---|---|---|
+| 0.6 | 4 line | **4 arc** | 6 line |
+| 0.9 | 4 line | **1 arc** | 6 line |
+| 1.2 | 4 line | 1 arc | 6 line |
+| 1.6 | 4 line | 1 arc | 1 arc + 3 line |
+
+Below about one cell the circle FRAGMENTS into four arcs — the fit is chasing staircase noise
+that carries no information. At one cell and above it is a single arc. So the knob is set by what
+the sampling can actually resolve, which is derivable rather than chosen, and asking for sub-cell
+fidelity from a hard raster buys fragments (the same conclusion the sub-cell section reached from
+the other direction).
+
+An intermediate version of the bisector also cut the closed curve at the worst point AND its
+ANTIPODE (`i + n/2`) — an invented convention, which on a triangle sliced a straight side in half.
+Cutting at the single worst point turns the closed curve into one open curve and needs no second
+point. It did not change the triangle's count, so the antipode was not the cause there; the
+triangle's cost is unattributed, and the "three corners furthest from the centroid" diagnostic
+written to attribute it returned two ADJACENT indices and is itself broken.
 
 (A second fitter bug, also caught by the output rather than by reading: the arc scan started at
 three points, `arc_err` needs four to fit anything, so it returned its sentinel on the first
