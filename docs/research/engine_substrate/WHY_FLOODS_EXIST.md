@@ -770,6 +770,35 @@ So the missing piece was not a better metric or a better representation: it was 
 candidate set must BE the reachable set. Sampling a discrete family on an arbitrary grid puts
 candidates where no member exists and leaves gaps where members do.
 
+### When does the manifold matter? A better sensor makes it matter MORE
+
+If the orbit's advantage were merely compensation for a coarse lattice, it should shrink as
+resolution rises — a finer grid renders a rotation more faithfully, so one stored picture should
+start to suffice. Measured across four grid resolutions, 3 shapes x 5 off-manifold angles per row
+(15 observations, so one observation is 6.7pp):
+
+| grid | orbit sizes | exemplar cov@1 | orbit cov@1 | delta |
+|---|---|---|---|---|
+| 13 | [44, 14, 24] | 64% | 79% | +15 |
+| 19 | [72, 34, 28] | 73% | **100%** | +27 |
+| 25 | [108, 52, 72] | 80% | 87% | +7 |
+| 33 | [156, 74, 104] | 47% | **93%** | **+46** |
+
+**The opposite happens.** The exemplar does not improve with resolution and is WORST at the
+finest grid tested, while the orbit stays at 93%. The mechanism is in the second column: orbit
+size grows monotonically with resolution (44 -> 72 -> 108 -> 156 for one shape), because a finer
+lattice RESOLVES MORE OF THE ORBIT — rotations that collapsed to one raster at grid 13 become
+distinct at grid 33. So one stored exemplar covers a shrinking fraction of a growing family.
+
+**A better sensor increases the need for a generator rather than removing it.** That is the
+opposite of the intuition that finer sampling makes matching easier, and it follows directly from
+the orbit being discrete: resolution does not reduce the damage, it increases the number of
+distinguishable members you must cover.
+
+Honest limits: 15 observations per row, so the non-monotone exemplar column (64/73/80/47) carries
+real noise, and the orbit advantage — present at every resolution, +7 to +46pp — is the claim,
+not the individual figures. One shape family, one comparator.
+
 ### Landed as a gate
 
 The coverage measurements above are research and stay in this document — each observation is a
