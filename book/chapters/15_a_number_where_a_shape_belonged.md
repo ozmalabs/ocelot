@@ -189,8 +189,9 @@ Measured against the flood:
   that matters and the one that was invisible until something broke.
 
 The last point deserves the space. The change that exposed all this was
-unrelated — an experiment in deriving proposals against a frozen base, so rules
-could not see each other's writes mid-round. It **failed**, and it failed here:
+unrelated — an experiment called Stage A, deriving proposals against a frozen
+base so that rules could not see each other's writes mid-round. It **failed**,
+and it failed here:
 the flood degraded to one hop per pass and a motion object 108 cells across
 collapsed to 3. Which revealed that **the flood's speed had rested entirely on
 same-round visibility** — later cells reading labels earlier cells had just

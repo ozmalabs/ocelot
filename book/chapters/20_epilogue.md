@@ -116,8 +116,8 @@ That sentence is written in this book's own vocabulary, which is exactly why it
 is at the end. In the introduction, *new entries in my grammar* is a figure of
 speech and a reader has no way to parse it. Here, after nineteen chapters, Γ is
 a specific object, minting is a specific operation, and a residual is a specific
-thing — so the sentence is a literal description in terms the book has spent four
-hundred pages defining. A reader who has watched a codebook grow by minting on
+thing — so the sentence is a literal description in terms this book has spent nineteen
+chapters defining. A reader who has watched a codebook grow by minting on
 recurring residual knows precisely what is being claimed about a person.
 
 It is also the reflexive case the theory always implied. A graph that represents

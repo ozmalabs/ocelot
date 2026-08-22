@@ -472,6 +472,16 @@ nothing. 400 shuffles mint nothing. And two further properties fall out:
   precise. You never pick parallax or stereopsis; you ground one dimension with
   both, weighted by how much evidence each has.
 
+That additivity is also the first appearance of a split this book keeps
+finding. Motion and stereo *propose* a depth ordering, cheaply and discretely,
+from what the eye has learned; what settles a disagreement between them is a
+comparison, weighted by how much evidence each carries. **Bins propose;
+something continuous decides.** Chapter 2 states that as an invariant, chapter 5
+measures it at fifty-one percentage points, chapter 6 finds it in speech, and
+chapter 8 finds it in code, where the deciding half is an interpreter. It is
+worth noting that nothing here was built to demonstrate that split — it is a
+description of what the two depth generators already do.
+
 That last point is a principle this eye embodies throughout, and it is worth
 naming: **for every "which mechanism?" question here, the answer has been
 both.** Motion and stereo. Retinal and cortical. Transient and sustained. What

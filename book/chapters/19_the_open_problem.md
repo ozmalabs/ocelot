@@ -117,8 +117,9 @@ frame-real, determinability is structure-real, and they are statements about
 different frames.
 
 Whether that is a satisfying answer is not something this book can settle. What
-it can say is that the position is forced by commitments made for unrelated
-reasons, seventeen chapters earlier, rather than adopted because it was
+it can say is that the position is forced by commitments made in Part V for
+entirely unrelated reasons — a standpoint axiom and a determinism proposition,
+neither written with free will in view — rather than adopted because it was
 comfortable.
 
 ---

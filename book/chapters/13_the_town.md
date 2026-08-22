@@ -47,6 +47,15 @@ outcome changes.
 edges, and — chapter 12 again — active severing and ordinary drift are
 super-additive.
 
+And underneath all three, one rule. A resident deciding anything — where to
+walk, whether to trade, whom to believe — does it by selecting among candidate
+appraisals by total value. That is the same template chapter 10 uses for a child
+deciding whether to wait for a second marshmallow, and the same one chapter 12
+uses, unmodified, as its control for whether concealment requires intent. Not an
+analogy between three models: **one rule, doing developmental, clinical and
+civic work.** A town of a hundred residents is that rule, a hundred times, with
+different held values.
+
 The town is what makes those social rather than stipulated. An experiment that
 declares "the network believes X" has assumed its result. One where belief
 arrives through the same gossip machinery the town runs anyway has not.

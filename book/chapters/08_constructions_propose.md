@@ -47,10 +47,11 @@ Code arrives in a language. There are five here — Python, Rust, Lua, x86-64 vi
 an LLVM chain, and LLVM IR itself — and each reads into **one hub statement
 representation** and can be written back out from it.
 
-Chapter 2's invariant is the reason that is not merely convenient. A language is
-a frame. The hub is a frame. The reader and writer are maps between them, and
-everything cross-frame lives in those maps rather than in either side's own
-structure. So the codebook of §8.3 is learned once, over the hub, rather than
+Chapter 2's invariant is the reason that is not merely convenient, and it
+applies here in its literal form: *is this value in a frame, or between frames?*
+A language is a frame. The hub is a frame. The readers and writers are the maps
+between them — so everything language-specific lives in a map, and nothing
+language-specific is allowed into either side's own structure. So the codebook of §8.3 is learned once, over the hub, rather than
 five times over five syntaxes — and a construction learned from Python is
 available when the target is Lua, because what was learned was a shape in the
 hub rather than a pattern in a language.

@@ -275,8 +275,8 @@ The floor is measured before the result above it is believed.
 One rung in this project established something sharper than any rule above, and
 it did so by failing three times in a row without anything going red.
 
-The change was to how rules derive proposals. Three separate defects arose
-during it: an instrument that silently flattened a conditional insert into an
+The change — Stage A, the same one chapter 15 §15.4a and the epilogue take up —
+was to how rules derive proposals. Three separate defects arose during it: an instrument that silently flattened a conditional insert into an
 unconditional one, a plausible-looking refinement of a merge relation, and an
 unsound version of that relation that missed 35 of 49 known divergences.
 

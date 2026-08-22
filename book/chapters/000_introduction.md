@@ -236,8 +236,8 @@ The book is arranged the way the work happened rather than the way a paper is
 arranged. An eye comes first, then the theory that eye forced, then the same
 loop in eight more places, then the people, and only then the smallest statement
 of what all of it was an instance of. The axioms are in Part V, near the end, and
-they are there deliberately: after fourteen capabilities have grown out of one
-loop, a formalism reads as compression rather than as homework.
+they are there deliberately: after ten capabilities have grown out of one loop,
+a formalism reads as compression rather than as homework.
 
 Three things before you start. Every number here has a preregistration behind it
 and an interval attached. Every retraction is in the body of the chapter where

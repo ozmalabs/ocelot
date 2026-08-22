@@ -12,7 +12,7 @@ between two people, a town.
 
 **This chapter is the smallest statement of what all of that was an instance
 of.** It is placed here, near the end, rather than at the beginning — because a
-reader who has watched fourteen capabilities grow from one loop meets a
+reader who has watched ten capabilities grow from one loop meets a
 formalism as *compression*, and that is the only way axioms are ever pleasant to
 read.
 
