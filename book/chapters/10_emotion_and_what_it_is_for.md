@@ -63,6 +63,26 @@ the fast affect core and modulating it. A one-node addition was replaced by a
 small structural correction, which is the recurring shape of this thread's
 progress.
 
+And it was measured with the strongest control in this chapter [C7]. Mood is
+net-beneficial exactly where environmental returns *persist*: in a
+regime-switching world the with-minus-without cumulative reward is **+0.564
+[+0.266, +0.855]**, an interval clear of zero. In an i.i.d. world built from the
+**same multiset of returns, permuted**, it is **−2.029 [−2.391, −1.660]** —
+mood actively hurts.
+
+That second arm is what makes the first one a result. The two worlds have
+identical marginal distributions and differ only in whether returns persist, so
+nothing about the reward landscape can explain the gap. And it is a *failable*
+control that failed in the honest direction: a mechanism claimed to track trend
+should be useless or harmful where there is no trend, and it is.
+
+The same run makes the point a second way. The momentum signal rises on a good
+run and falls on a bad one, separating by **+1.50**; feed it the **same values
+shuffled** and the separation collapses to **+0.032**, with an interval
+containing zero. Momentum is tracking the trend, not the values — which is what
+distinguishes a momentum layer from a running average, and is exactly what the
+structural correction above was claiming.
+
 *Where you locate a cause is a residual.* Attribution — internal or external,
 stable or transient — is modelled as what the current model could not absorb.
 Which is this book's spine appearing inside a person: the same object that mints
@@ -179,6 +199,11 @@ choosing to conceal. That is not an analogy; it is the same rule.
   way the factorial design cannot separate, §10.4 demonstrates less than it
   claims. The null controls are the current evidence against that, and they are
   the thing to attack.
+- **Mood's persistence dependence.** The claim rests on two worlds with
+  identical marginals differing only in persistence. If a third world with
+  matched marginals *and* matched persistence shows the same benefit gap, the
+  mechanism is responding to something the two arms happen to differ in rather
+  than to persistence.
 - **The posture.** If any of the seven load-bearing ideas turns out to be
   contested rather than canonical, the chapter's framing — re-deriving, not
   discovering — needs revising in the direction of *more* caution, not less.

@@ -72,6 +72,46 @@ occupies the same position in the loop as a belief grounding on itself.
 Every prediction registered in advance held, cleanly and monotonically, against
 a matched control. Eight of eight gates.
 
+### Three results the failure regimes are usually reported without
+
+The three forms above are the diagnosis. The next three are what the same run
+says about how the mechanism *behaves*, and they matter more [C8].
+
+**It folds; it does not slide.** Hold reality friction fixed and vary the
+confirmer's strength, and the outcome does not degrade gradually. It sits at
+*corrects* — 0.0, 0.2, 0.4 — and then at 0.5 it is *delusion*, and stays there
+through 1.5. A single boundary, monotone on both sides. The same shape appears
+in the friction parameter, with its own single threshold.
+
+That is a regime change rather than a scripted switch, and the run's own
+anti-plant check is the reason to believe it: each arm was *free* to do the
+other thing. Friction was free to self-ground under disconfirmation and did not.
+The no-friction arm was free to correct on its own and did not.
+
+**It recovers, and faster when the grounding is stronger.** Escape time falls
+monotonically as the grounding source strengthens: 46 ticks, then 26, 18, 12, 9,
+7, 5, 4, 2. Which turns the whole chapter around. These are not descriptions of
+a state a system falls into; they are descriptions of a *loop*, and a loop with
+a weak external channel is a loop you can strengthen. The failure regime has an
+exit, and the exit's cost is measurable.
+
+**And two agents are enough to sustain it with nothing outside them.** Two
+beliefs, each acting as the other's confirmer, with no external anchor at all:
+both settle in the wrong basin and stay. Then ground **one** of them — and
+*both* collapse to truth.
+
+The mechanism is scale-agnostic. One person and a mirroring tool, a dyad, a
+larger group: the structure that holds a wrong belief in place is a **closed
+confirmation loop**, and the size of the loop is not what matters. What matters
+is whether it is closed. Puncture it anywhere and it unwinds.
+
+That last result is worth holding next to chapter 12, because the two threads
+share no code and reached the same finding. There, in an eight-node network,
+converting a single node into someone who believes the victim measurably slowed
+the drift of nodes it was **not connected to**. Here, in a two-agent loop,
+grounding one agent recovers both. One anchored participant is sufficient, and
+neither result was built to demonstrate the other.
+
 **What this does not say.** It does not say the running agent went psychotic.
 It says the grounding loop, in a failure regime, produces the shapes the
 literature describes — which is a claim about the model, not about the system's
@@ -141,6 +181,13 @@ reading, not measurement, and are named as such.
 - **The bifurcation.** If the standing/persist/travel structure can be produced
   by a lattice with no correspondence to the mechanism claimed, the reproduction
   is generic dynamics rather than a model of anything specific.
+- **The fold.** A single-boundary monotone transition is a strong claim about a
+  parameter nobody tuned. If finer sampling around either threshold reveals a
+  gradual slope, or a second boundary, the regime-change reading weakens to a
+  steep response.
+- **The closed-loop result.** If a two-agent loop can be shown to recover
+  *without* an external anchor — from internal dynamics alone — then closure is
+  not what sustains it, and the scale-agnostic claim goes with it.
 - **The register itself.** If any claim in this chapter is read — or has been
   written — as clinical, that is a defect in the chapter rather than in the
   reader, and it should be corrected toward more caution.

@@ -47,8 +47,10 @@ control that makes the first panel mean something. Feed the same values in a
 shuffled order and the momentum signal goes to zero. Mood is tracking the
 trend, not the values.*
 
-**Note for the writer:** this is the chapter's best available instance of a
-matched control, and chapter 10's text does not currently cite it.
+**Status: taken up.** Chapter 10 now reports both arms with their intervals and
+says why the second is what makes the first a result — identical marginals,
+differing only in persistence, and a failable control that failed in the honest
+direction.
 
 ### C8 — psychosis as a grounding failure mode (chapter 11)
 **File** `results/psychosis_demo/psychosis_demo.png` ·
@@ -82,8 +84,13 @@ at network scale, where one believing agent changes what unconnected nodes
 believe.*
 
 **That cross-reference is the reason to select this figure**, and chapter 11
-should carry it: N4's unscripted finding and this panel are the same result in
-two different threads.
+now carries it: N4's unscripted finding and this panel are the same result in
+two different threads, reached by lines that share no code.
+
+**Status: taken up.** Chapter 11 has a new section on all three — the fold with
+its single monotone boundary, recovery with its escape-time series, and the
+two-agent closed loop — plus two new falsifiers covering the fold's boundary and
+the closure claim.
 
 ### C9, C10 — the seizure bifurcation (chapter 11)
 **Files** `results/seizure_engine_figure.png`,
