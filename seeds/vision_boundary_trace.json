@@ -1,6 +1,6 @@
 {
  "id": "vision_boundary_trace",
- "version": "1.0.0",
+ "version": "1.1.0",
  "depends_on": [
   "vision_motion_group"
  ],
@@ -124,6 +124,150 @@
      "type": "Lit",
      "value": 0.5
     }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "R",
+     "on_rim",
+     1.0
+    ]
+   ]
+  },
+  {
+   "name": "bt_border_rim",
+   "comment": "THE FIELD EDGE IS A BOUNDARY TOO. `bt_disagree` can only mark a crossing where a `neighbour` edge EXISTS, so a region running off the edge of the field had an OPEN rim -- measured: the three parallax regions traced as straight vertical lines with zero width, whose quantized signatures then matched each other vacuously. A cell on the field's own perimeter is on the rim by construction. The extent comes from the field's H/W, never a constant here.",
+   "match": [
+    [
+     "field",
+     "has_cell",
+     "R"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "key": "marm",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "MotionParams"
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "on_rim"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Lte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "crow"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       {
+        "type": "Lte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "ccol"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "crow"
+        },
+        "b": {
+         "type": "Minus",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "field"
+          },
+          "key": "H"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       },
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "R"
+         },
+         "key": "ccol"
+        },
+        "b": {
+         "type": "Minus",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "field"
+          },
+          "key": "W"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       }
+      ]
+     }
+    ]
    },
    "effects": [
     [
