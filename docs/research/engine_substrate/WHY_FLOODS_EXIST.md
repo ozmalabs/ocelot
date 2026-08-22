@@ -245,9 +245,44 @@ size, **output invariant under `stage_a_enable`**, and the no-new-constant check
   `StrokeQuantize` -> signature works end to end: the largest region traces a 44-point ring and
   quantises to a signature with real turns (`(seg,1,2,0) (seg,4,2,0) (seg,5,2,0)`). Two of the
   three large regions still dead-end after 5-6 points despite carrying 43 rim cells each. The
-  failure is in the *traversal*, which is adapter geometry, not in the rim subgraph.
-  **Ordering a rim subgraph into a canonical cycle at junctions is unsolved here**, and is the
-  honest blocker on the whole payoff — a signature is only as good as the walk that produced it.
+  failure is in the rim subgraph itself, and the first diagnosis of it was wrong — see below.
+
+### The walk's direction is a magic number, and it was NOT the blocker
+
+The traversal picked its next cell by "most clockwise turn from the incoming heading", with an
+arbitrary start cell and an arbitrary initial heading. Three conventions, none derived from
+anything — the same defect `TIE_CONSEQUENTIALITY_RESULTS.md` names as *enumeration order
+silently implementing a policy nobody wrote*, reappearing in my own adapter.
+
+But measured, on the same scene, it is also nearly **inert**:
+
+```
+rim cells: 140
+   degree 0:  14   <- dead end
+   degree 1:  11   <- dead end
+   degree 2: 114
+   degree 3:   1   <- ambiguous, the convention decides
+```
+
+**One cell in 140 is ambiguous.** The convention is real magic and decided a single case, while
+being blamed for the whole failure. The actual blocker is the 25 cells of degree < 2: a closed
+curve has every cell at degree 2, so the rim is not a curve.
+
+Breaking those down by the region they belong to: **10** are the ten single-cell regions, which
+is correct by construction — a 1-cell region has no rim curve. **14** are in the 115-cell region
+whose walk stopped after 5 points, and **1** in the 91-cell region.
+
+The cause is structural, not a tuning problem. Every adjacent pair INSIDE a region agrees by
+construction — that is what made it one region — so `bt_rim_link`'s predicate cannot be what
+fails. It fails because **a boundary turns diagonally and `neighbour` is 4-connected**: the next
+cell along a staircase rim is diagonal, and no 4-connected edge can chain it.
+
+**The principled fix is not a better convention, it is the right element.** A boundary is
+BETWEEN cells, not on them: the 60 `cuts` crossings are the boundary, and there are fewer of
+them than the 140 rim cells that approximate it (2.33 rim cells per crossing). Reified as nodes,
+two crossings are consecutive when they share a cell, which is expressible as an ordinary match
+(`[a cuts b], [a cuts c]`) and needs no angle sort and no connectivity convention. That is the
+next build, and it is unbuilt.
 - **A defect this chain caught, recorded because it nearly passed as a success.** Before
   `bt_border_rim` (v1.1.0), a region running off the edge of the field had an OPEN rim:
   `bt_disagree` can only mark a crossing where a `neighbour` edge exists, and border cells have
