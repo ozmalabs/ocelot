@@ -176,3 +176,30 @@ def test_seed_introduces_no_new_constant():
     walk(blob["rules"])
     assert set(lits) <= {0.5, 0.0, 1.0}, f"unexpected literal in seed: {sorted(set(lits))}"
     assert json.dumps(blob["rules"]).count('"mtol"') >= 2, "tolerance must come from the field"
+
+
+def test_crossings_are_one_node_per_disagreement_and_idempotent():
+    """`bt_mint_crossing` reifies the boundary itself: one `Crossing` per
+    disagreeing pair, not per directed `cuts` edge.
+
+    `cuts` is symmetric because the predicate is, so the naive mint would emit
+    two nodes per boundary. The `Lt(R.cid, n.cid)` guard makes one ordering
+    canonical and `add_node_if_absent` keyed on (lo, hi) makes re-firing a
+    no-op, so this asserts BOTH: the count matches the undirected pair count,
+    and a second settle adds nothing."""
+    V = _blocks(16)
+    s, _ = _rim_run(V)
+
+    pairs = {frozenset((c.value, n.value))
+             for c in s.nodes("MCell") for n in s.neighbours(c, "cuts")}
+    crossings = list(s.nodes("Crossing"))
+    assert len(crossings) == len(pairs), (
+        f"{len(crossings)} Crossing nodes for {len(pairs)} disagreeing pairs")
+
+    # every crossing separates exactly the two cells it was minted from
+    for x in crossings:
+        assert len(s.neighbours(x, "separates")) == 2
+
+    before = len(crossings)
+    s.tick(200_000)
+    assert len(list(s.nodes("Crossing"))) == before, "mint is not idempotent"
