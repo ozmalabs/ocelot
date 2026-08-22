@@ -409,10 +409,53 @@ observation-resolution, not canonicalisation, and no re-indexing of the sequence
 it is the same *"pin a continuous parameter only to observational resolution"* limit this repo's
 frame/continuum rule already states.
 
-So the honest position is: a contour reaches the codebook and is recognised under translation;
-rotation needs a canonical loop origin that does not exist yet; scale is bounded by grid
-resolution. Naming which of the ladder's four rungs actually transfer is the next measurement,
-and only rung 0 (exact recognise) is demonstrated.
+### The grid is not a property of the boundary, and the continuous verdict shows it
+
+The scale failure above is a GRID artifact, not a fact about the shapes: a small square's
+corners quantise blunter than a large one's because the sampling lattice is coarser relative to
+the object, and a human looking at the same two squares does not see a lattice at all. This
+repo's frame/continuum rule already says where that belongs — **in-frame is integer, non-integer
+math is CROSS-FRAME** — so comparing a shape to a rescaled or rotated one is a comparison
+BETWEEN frames, and settling it with an integer signature computed INSIDE one grid frame is
+using the wrong instrument. Run 16 measured the same thing on Omniglot (26.8% -> 73.5%) and
+named it: **bins propose, continuous decides.** The rotation/scale failure above is that lesson
+recurring, with me on the wrong side of it.
+
+Measured on the same four contours, with the held continuous comparators:
+
+| | `ScTpsDist` | `PointSetDist` |
+|---|---|---|
+| A vs A (identity) | 0.0000 | 0.0000 |
+| C vs D (**same**, 2x scale) | **0.0885** | 10.2183 |
+| A vs C (different) | 0.2587 | 8.7107 |
+| B vs D (different) | 0.2450 | 7.3164 |
+| A vs B (**same**, rotated 90) | **0.4463** | 7.0127 |
+
+**Scale is recovered.** SC+TPS puts the 2x-scaled square nearly 3x closer than either genuinely
+different pair — the grid artifact that defeated the integer signature dissolves under a
+cross-frame comparison, which is precisely what the rule predicts. `PointSetDist` separates
+nothing, as expected of a raw point distance with no normalisation; the descriptor is doing the
+work, not the continuity alone.
+
+**Rotation is recovered by neither, and is worse than unhandled**: a rotated SAME shape scores
+FURTHER (0.4463) than two genuinely different shapes (0.25). Shape contexts normalise scale but
+not orientation. So rotation is not a comparator problem to be fixed by a better distance — it
+is a POSE dimension, which is exactly how the sd loop already treats it (`StrokeQuantize` stores
+`pose_o` as a separate single-slot relation, codebook entries held at `canonical_pose`). A
+rotated contour should present as one held shape plus a `pose_o` delta — rung 1 — and the
+missing piece is a canonical orientation for a loop, which for a stroke comes free from the
+writing direction.
+
+So the scorecard, measured rather than assumed:
+
+| transform | integer signature (in-frame) | continuous verdict (cross-frame) |
+|---|---|---|
+| translation | recognised | recognised |
+| scale | **fails** (grid quantisation) | **recovered** |
+| rotation | fails (no canonical loop origin) | fails (no orientation normalisation) |
+
+Rung 0 is demonstrated. Scale belongs to the verdict layer and works there. Rotation needs a
+derived loop origin/orientation and is unbuilt.
 
 The test uses `teach`'s own `OZMA_SEED_PERSIST_DISABLED` guard, which keeps the live-graph
 install and skips only the seed-dir write. Stubbing `teach` instead — the first attempt — also
