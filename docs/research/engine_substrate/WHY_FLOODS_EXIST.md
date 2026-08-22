@@ -869,6 +869,24 @@ lattice RESOLVES MORE OF THE ORBIT — rotations that collapsed to one raster at
 distinct at grid 33. So one stored exemplar covers a shrinking fraction of a growing family.
 
 **A better sensor increases the need for a generator rather than removing it.** That is the
+
+> **RETRACTED.** This was measured with absolute `ScTpsDist`, a rotation-VARIANT comparison, on
+> pre-fix contours. Its own stated mechanism predicts the retraction: if the effect is that a finer
+> lattice resolves more orbit members, then under a rotation-INVARIANT representation those members
+> collapse to nearly one signature and the effect must vanish. Re-run with the canonical L2
+> turning-function metric:
+>
+> | grid | distinct rasters | exemplar | orbit |
+> |---|---|---|---|
+> | 13 | [44, 14, 24] | 87% | 100% |
+> | 19 | [72, 34, 28] | **100%** | 93% |
+> | 25 | [108, 52, 72] | **100%** | 100% |
+> | 33 | [156, 74, 104] | **100%** | 100% |
+>
+> **The exemplar IMPROVES with resolution and then holds**, rather than collapsing to 47%. The
+> orbit's dip at grid 19 is one observation of fifteen. So the opposite of the claim is what the
+> evidence supports: with an invariant representation a better sensor makes a single exemplar
+> SUFFICIENT, and the generator is not needed for rotation at all.
 opposite of the intuition that finer sampling makes matching easier, and it follows directly from
 the orbit being discrete: resolution does not reduce the damage, it increases the number of
 distinguishable members you must cover.
