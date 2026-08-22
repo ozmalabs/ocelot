@@ -1,6 +1,6 @@
 {
  "id": "vision_boundary_trace",
- "version": "1.1.0",
+ "version": "1.2.0",
  "depends_on": [
   "vision_motion_group"
  ],
@@ -394,6 +394,100 @@
      "add_edge",
      "R",
      "rim_next",
+     "n"
+    ]
+   ]
+  },
+  {
+   "name": "bt_mint_crossing",
+   "comment": "THE BOUNDARY IS BETWEEN CELLS, SO REIFY IT AS A NODE. A `cuts` edge says two cells disagree; the BOUNDARY is the thing between them, and until it is a node it cannot be chained, addressed, or carried. Measured motivation: approximating the boundary by the CELLS beside it gave 140 rim cells for 60 crossings, and the rim was not a curve -- 25 cells of degree < 2, because a boundary turns DIAGONALLY while `neighbour` is 4-connected and no 4-connected edge can chain a staircase step. A crossing has no such problem: it is one object per disagreement. `cuts` is symmetric (the predicate is), so the pair would mint twice; the `Lt(R.cid, n.cid)` guard makes ONE of the two orderings canonical, and `add_node_if_absent` keyed on (lo, hi) makes the mint idempotent under re-firing.  SUCCESSOR IS NOT BUILT HERE, and the reason is measured. The obvious rule -- two crossings that share a CELL are consecutive -- was written, run, and removed: it yields 20% degree-2 against the rim-cell version's 81%, because 84 of the 98 boundary cells carry exactly ONE crossing. A cell on a straight boundary has one disagreeing neighbour, so consecutive cracks along it sit between DIFFERENT pairs of cells and share no cell. They share a CORNER. Expressing that needs the lattice vertex reified too, which needs coordinate arithmetic this seed deliberately does not carry -- so the successor relation is named and left unbuilt rather than approximated by a convention.",
+   "match": [
+    [
+     "R",
+     "cuts",
+     "n"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "key": "marm",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "MotionParams"
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "R"
+       },
+       "key": "cid"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "n"
+       },
+       "key": "cid"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "x",
+     "Crossing",
+     {
+      "lo": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "R"
+        },
+        "key": "cid"
+       }
+      },
+      "hi": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "n"
+        },
+        "key": "cid"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "x",
+     "separates",
+     "R"
+    ],
+    [
+     "add_edge",
+     "x",
+     "separates",
      "n"
     ]
    ]

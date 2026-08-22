@@ -279,10 +279,35 @@ cell along a staircase rim is diagonal, and no 4-connected edge can chain it.
 
 **The principled fix is not a better convention, it is the right element.** A boundary is
 BETWEEN cells, not on them: the 60 `cuts` crossings are the boundary, and there are fewer of
-them than the 140 rim cells that approximate it (2.33 rim cells per crossing). Reified as nodes,
-two crossings are consecutive when they share a cell, which is expressible as an ordinary match
-(`[a cuts b], [a cuts c]`) and needs no angle sort and no connectivity convention. That is the
-next build, and it is unbuilt.
+them than the 140 rim cells that approximate it (2.33 rim cells per crossing).
+
+### BUILT: the crossings. NOT built: their successor, and the reason is measured
+
+`bt_mint_crossing` (v1.2.0) reifies each disagreement as a `Crossing` node with `separates`
+edges to both cells. `cuts` is symmetric because the predicate is, so the naive mint emits two
+nodes per boundary; a `Lt(R.cid, n.cid)` guard makes one ordering canonical and
+`add_node_if_absent` keyed on `(lo, hi)` makes re-firing a no-op. **60 crossings for 60
+disagreeing pairs, exact and idempotent**, gated.
+
+The successor relation was then written the obvious way — *two crossings that share a cell are
+consecutive*, an ordinary match with no angle sort anywhere — run, measured, and **removed**:
+
+```
+next_crossing degree:  0:34   1:5   2:12   3:5   4:4
+degree-2 fraction: 12/60 = 20%      (the rim-cell version it replaced: 81%)
+crossings per cell:  1: 84 cells    2: 6    3: 8
+```
+
+Worse than what it replaced, and the census says why: **84 boundary cells carry exactly ONE
+crossing.** A cell on a straight boundary has a single disagreeing neighbour, so consecutive
+cracks along that boundary lie between DIFFERENT pairs of cells and share no cell at all. They
+share a **corner**.
+
+So the successor needs the lattice vertex reified as well, and linking crossings through corners
+needs coordinate arithmetic the seed deliberately does not carry (`bt_border_rim` already reads
+its extent from `field.H`/`field.W` rather than a constant, and a doubled-lattice corner index
+would put a bare `2` in a seed whose own gate forbids one). **Named, and left unbuilt rather than
+approximated by a convention** — which is the whole point of the section above it.
 - **A defect this chain caught, recorded because it nearly passed as a success.** Before
   `bt_border_rim` (v1.1.0), a region running off the edge of the field had an OPEN rim:
   `bt_disagree` can only mark a crossing where a `neighbour` edge exists, and border cells have
