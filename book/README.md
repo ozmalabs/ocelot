@@ -10,9 +10,14 @@
 | **`BOOK_DOSSIERS.md`** | per-chapter claim + measured evidence + honest gaps | before drafting a chapter |
 | **`FIGURES.md`** | what every figure must show, where its data already lives, and the generator rule | before drawing anything |
 
-`chapters/` holds the drafts. **Twenty drafted, ~39,700 words**: the front
-matter (`00_how_to_read_the_numbers.md`) and chapters 1–19 — **all seven parts
-complete**. Remaining: the introduction, prologue and epilogue. Filenames carry the book chapter number;
+`chapters/` holds the drafts. **THE FULL BOOK IS DRAFTED — 23 files, ~44,000
+words**: introduction, prologue, front matter, nineteen chapters and an
+epilogue. Filenames sort in reading order (`000_` … `20_`); `BOOK_DOSSIERS.md`
+maps chapter numbers to source-artefact numbers.
+
+What remains is revision, not drafting: a consistency pass across chapters, the
+per-chapter data figures for chapters 5–13 and the Class C selections for them,
+and the pending Part VII items in `THEORY_REVISIONS.md`. Filenames carry the book chapter number;
 `BOOK_DOSSIERS.md` maps those to source-artefact numbers. `figures/` holds
 book figures: **a committed generator script plus its output**, never an output
 alone.
@@ -46,6 +51,7 @@ it.
 
 ## Housekeeping
 
-All nineteen chapters are drafted. Remaining: the **introduction** (the chain,
-the method), the **prologue** (Life, chess, Doom) and the **epilogue** (there is
-no natural ending) — which draft together and last, per `BOOK_PLAN.md`.
+A complete first draft exists. Next passes, in order of value: (1) read it
+end to end for consistency, since chapters were drafted out of reading order and
+the theory changed underneath three of them; (2) the remaining data figures;
+(3) the Part VII pending items.
