@@ -343,6 +343,28 @@ That is the thing a label field cannot express at all — three regions under `m
 unrelated integers. Both halves are gated, and the bbox is asserted non-degenerate, because an
 equality assertion alone cannot distinguish this from the three straight lines that matched
 vacuously earlier in this section.
+
+### And the contour reaches the substrate's own codebook
+
+Signature equality is weaker than recognition. Run through `grow_stroke_quantum` and
+`ShapeDecode` — the sd loop's actual machinery, not a comparison:
+
+```
+square B before any mint  : covered = (0,  None)          <- nothing held, nothing recognised
+mint from square A        : node installed, 16 signature relations
+square B after the mint   : covered = (16, 'region_square')   <- a DIFFERENT region, recognised by name
+rectangle after the mint  : covered = (9,  None)          <- partial: a residual, unnamed
+```
+
+A region boundary is therefore an ordinary citizen of the codebook: recognised when it matches
+a held quantum, and producing exactly the partial-coverage residual `sd_mint_quantum` fires on
+when it does not. The full ladder — recognise, transform-in-basis, infer-dimension, mint — is
+the one already built for ink, and a contour is the same kind of object it consumes.
+
+The test uses `teach`'s own `OZMA_SEED_PERSIST_DISABLED` guard, which keeps the live-graph
+install and skips only the seed-dir write. Stubbing `teach` instead — the first attempt — also
+removes the node `ShapeDecode` has to read, and the probe then reported `covered=(0, None)`
+everywhere while looking like a clean negative result.
 - **A defect this chain caught, recorded because it nearly passed as a success.** Before
   `bt_border_rim` (v1.1.0), a region running off the edge of the field had an OPEN rim:
   `bt_disagree` can only mark a crossing where a `neighbour` edge exists, and border cells have
