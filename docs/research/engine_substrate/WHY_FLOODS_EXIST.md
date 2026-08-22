@@ -574,11 +574,44 @@ DIFFERENT shape, aligned  : 0.1486     -> separates
 Before alignment the 90-degree SAME shape (0.3922) ranked worse than a genuinely different one
 (0.1486) — actively misleading, not merely blind.
 
-Two honest limits. **The margin is thin**: 0.1127 against 0.1486 is 1.3x, on one synthetic pair.
-And **the residual IS the grid damage** — after orientation is removed, the worst same-shape
-distance is the 30-degree case, whose raster genuinely differs (41 cells against 45). That is the
-irreducible half of the earlier decomposition, now isolated rather than confounded with the
-comparator.
+### POWERED, and the thin margin does not survive
+
+The margin above — 0.1127 against 0.1486, 1.3x — was **one synthetic pair**, which is exactly
+what this repo's own rule (*power the gate before the endgame*) exists to catch. Measured properly
+across 5 shapes x 7 angles, 32 contours, 88 same-shape and 408 different-shape pairs:
+
+```
+within-shape  : median 0.2205   max 0.5995
+between-shape : median 0.3383   min 0.0594
+74 of 88 within-shape distances exceed the SMALLEST between-shape distance
+best single threshold misclassifies 14.3%
+```
+
+**It does not separate.** Nor is that an artifact of two awkward shapes: excluding the
+rotationally symmetric square (whose principal axis is degenerate, so canonicalisation has
+nothing to find) leaves 18.8% error, and excluding the rect/ellipse pair as well still leaves
+14.1%.
+
+The cause is complete and it inverts the decomposition above. Within-shape distance is explained
+almost entirely by **how far the rotation sits from an exact lattice rotation**:
+
+| offset from a multiple of 90 | pairs | median distance |
+|---|---|---|
+| 0 (exact) | 4 | **0.0026** |
+| 15 | 34 | 0.1463 |
+| 30 | 33 | 0.2926 |
+| 45 | 17 | 0.3093 |
+
+**85x between exact and oblique, monotone in offset.** So pose alignment works essentially
+perfectly where the lattice renders the rotation faithfully, and the entire residual is grid
+damage — which at 45 degrees exceeds most between-shape distances outright.
+
+**CORRECTION.** An earlier version of this section concluded that the comparator was "the larger
+of the two" failures. That was measured on the single 0-vs-90 pair — **the one case with zero grid
+damage**, since a 90-degree rotation is exact on a lattice. It is precisely the wrong basis for
+that comparison. Powered across real angles the ordering reverses: **the grid is the dominant
+term**, the comparator fix is real but only exposes it, and no comparator can recover a rotation
+the lattice has already destroyed.
 
 ### And the verdict is ONE held Term, not a Python loop
 

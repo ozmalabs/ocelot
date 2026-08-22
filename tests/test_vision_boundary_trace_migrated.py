@@ -598,3 +598,35 @@ def test_the_pose_verdict_is_one_held_term_not_a_python_loop():
     _, python_choice = _pose_aligned_dist(s, rect0, rect90)
     assert int(graph_choice) == int(python_choice), (
         f"graph chose {graph_choice}, python loop chose {python_choice}")
+
+
+def test_pose_alignment_works_exactly_where_the_lattice_is_faithful():
+    """The boundary of what the representation can do, asserted as a boundary.
+
+    Pose alignment removes orientation, and where the lattice renders a rotation
+    EXACTLY (multiples of 90 degrees) the same shape then aligns to ~0. Where it
+    does not — oblique angles, where the staircase is real — a large residual
+    remains that no comparator can remove, because the two rasters are genuinely
+    different shapes.
+
+    Measured across 5 shapes x 7 angles (88 same-shape pairs): median distance
+    0.0026 at exact lattice rotations against 0.2250 oblique, an 85x ratio,
+    monotone in how far the angle sits from a multiple of 90. This pins both
+    halves so neither can silently regress: the fix must keep working, and the
+    limit must stay honest."""
+    rects = {deg: _largest_contour(_rim_run(_rotated_rect(deg))[0])
+             for deg in (0, 15, 30, 45, 90)}
+    s, _ = _rim_run(_rotated_rect(0))
+
+    exact, _ = _pose_aligned_dist(s, rects[0], rects[90])
+    # take the WORST oblique angle, not an arbitrary one: a single angle is not
+    # the claim, and 45 degrees happens to align unusually well for a rectangle
+    # (0.023) while the population median at that offset is 0.309.
+    oblique = max(_pose_aligned_dist(s, rects[0], rects[d])[0]
+                  for d in (15, 30, 45))
+
+    assert exact < 0.05, (
+        f"an exact lattice rotation must align to ~0, got {exact:.4f}")
+    assert oblique > 5 * max(exact, 1e-3), (
+        f"the oblique residual is grid damage and must remain visible: "
+        f"exact {exact:.4f} vs worst oblique {oblique:.4f}")
