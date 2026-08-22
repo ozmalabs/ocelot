@@ -188,22 +188,57 @@ A quantity concerning $G$ may be absent from $G$ while existing as ordinary firs
 \end{proposition}
 This is the basis on which later papers introduce Narrative, standing, ownership, and other relational quantities without bloating the primitive graph.
 
-\section{Time is not primitive}\label{sec:time-not-primitive}
-Nothing above requires a temporal dimension to be instantiated. Existence does not require time, and a frame may contain existence with no temporal dimension instantiated at all:
-\[
-T=\mathrm{NULL}.
-\]
-This is not the assertion that $t=0$ before time exists; a NULL dimension is absent, not set to a value.
+\section{Time is not a dimension of the substrate}\label{sec:time-not-primitive}
 
-A time dimension becomes meaningful only where there is \emph{persistent directed succession}: a ratchet of distinguishable change. The transition relation of Section~\ref{sec:collapse-law} is such a ratchet, which is why time is available to frames governed by it and is not presupposed by it. Informally: something exists; something changes in a persistent, directed way; a ratchet exists; therefore a time dimension becomes meaningful. Schematically, and without pretending to explain the first arrow,
+The claim here is stronger than non-primitivity, and stating the weaker version invites the wrong reading. It is not that time is nonlinear, or differently shaped, or emergent-but-still-there. It is that
+
+\begin{axiom}[No substrate time dimension]\label{ax:no-time}
+\emph{Time is not a first-class dimension of the substrate.} What the substrate has is the ratchet: persistent directed succession through realised collapses, which induces the ordinal event order of Section~\ref{sec:causal-order}. A time dimension exists only where a frame instantiates one \emph{to represent} that succession.
+\end{axiom}
+
+\begin{proposition}[Time is observer machinery]\label{prop:time-observer}
+For a frame $\mathcal F$,
+\[
+\boxed{T\in\mathcal F \iff \mathcal F \text{ instantiates the relation representing succession.}}
+\]
+Otherwise $T=\mathrm{NULL}$ in that frame: absent, not set to a value. A substrate frame that realises continuations without representing succession has no temporal dimension at all, and nothing about its dynamics is thereby incomplete.
+\end{proposition}
+
+The distinction that carries the axiom is between \emph{succession} and \emph{time}. Succession is a relation between realised collapses and is substrate-level. Time is a represented dimension, and representing something requires a frame that represents it. Only an agent --- in the minimal sense of a frame that instantiates the representing relation --- observes time.
+
+Schematically, and without pretending to explain the first arrow,
 \[
 ?\;\dashrightarrow\;G
 \;\xrightarrow{\;\text{persistent directed transformation}\;}\;
-T:\mathrm{NULL}\to T.
+\text{ratchet}
+\;\xrightarrow{\;\text{a frame represents it}\;}\;
+T\in\mathcal F .
 \]
+The second arrow is substrate dynamics. The third is representation, and it is optional.
+
+\begin{proposition}[Time is inferred, not observed]\label{prop:time-inferred}
+No collapse presents a temporal coordinate. Succession is a relation \emph{between} realised states, and a relation between states is not a datum of any one of them. A frame therefore acquires a time dimension only by \emph{inferring} it from the relations among what it holds. Consequently
+\[
+\boxed{\text{a frame observes time}\;\Longrightarrow\;\text{that frame is capable of inference.}}
+\]
+\end{proposition}
+
+\begin{corollary}[Reactive frames have succession and no time]\label{cor:reactive}
+A frame that transforms under the Graph Law without inferring relations among its held states participates fully in the ratchet and has $T=\mathrm{NULL}$. Nothing in its dynamics is thereby impaired: succession is what the substrate supplies, and time is what an inferring frame constructs from it.
+\end{corollary}
+
+This orders two capabilities that are usually treated as independent. Inference is not a faculty a temporal agent happens to have; it is the precondition for being a temporal agent at all. It also grades: the temporal structure a frame holds is bounded by the inferential structure it can construct, so ``how much time'' a frame has is a question about its inference and not about the world.
+
+\begin{remark}[Consistency with ordinal sufficiency]
+This is the sharp form of the proposition in Section~\ref{sec:causal-order}: the substrate supplies causal order and requires no primitive real-valued metric duration. Axiom~\ref{ax:no-time} goes further than withholding the metric --- it withholds the dimension. Metric time is then a grounding \emph{of a represented dimension}, which is a second construction on top of a first, and neither is substrate structure.
+\end{remark}
 
 \begin{remark}
-The order of exposition is therefore deliberate. Collapse is stated before time because collapse is what makes time available, not because time is a background against which collapse occurs.
+The order of exposition is therefore deliberate. Collapse is stated before time because collapse is what a representing frame has to work with, not because time is a background against which collapse occurs.
+\end{remark}
+
+\begin{remark}[Empirical instance]
+This is measurable rather than merely stipulative, and it has been measured. A perceptual system given ordered frames and no temporal coordinate infers a transition generator carrying one frame to the next, and the integer count of applications \emph{is} the time axis it then holds; given the same frames shuffled, it infers none. The dimension was not supplied to it and does not exist in the observations --- it exists in the map between them, once something constructs it. Notably, the mechanism that constructs it is the system's general \emph{dimension-inference} machinery, not a temporal faculty: time is minted by the same operation that mints any other unobserved dimension, which is Proposition~\ref{prop:time-inferred} in implementation.
 \end{remark}
 
 \section{The present, and three states of a dimension}\label{sec:present}
@@ -248,7 +283,7 @@ This replaces any formulation requiring a complete antecedent state \emph{in tim
 The past is surviving consequence instantiated now, not a stack of still-existing historical frames.
 \end{corollary}
 
-\section{Causal order and local time}
+\section{Causal order and local time}\label{sec:causal-order}
 Realised collapse induces an ordinal event order
 \[e_0\prec e_1\prec e_2\prec\cdots.\]
 Cross-boundary interaction adds only represented causal relations.

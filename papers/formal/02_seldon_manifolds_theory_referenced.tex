@@ -3,6 +3,9 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,hyperref,enumitem,microtype}
 \usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds,patterns}
 \usepackage[round,authoryear]{natbib}
 
 \newtheorem{definition}{Definition}[section]
@@ -82,7 +85,11 @@ This distinction is important because classical reachability and viability theor
 Before the definitions, a boundary on what is being claimed, because the natural reading of what follows is stronger than the position of this paper.
 
 \begin{remark}[The ratchet does not require an observer]\label{rem:ratchet-first}
-The temporal ratchet of Graphic Equalisation --- persistent directed succession through successive collapses --- exists independently of any frame representing it. Seldon manifolds are \emph{optional observer or agent machinery} for representing reachable unresolved continuations. Nature does not have to run a Seldon manifold in order to evolve.
+The ratchet of Graphic Equalisation --- persistent directed succession through successive collapses --- exists independently of any frame representing it. Seldon manifolds are \emph{optional observer or agent machinery} for representing reachable unresolved continuations. Nature does not have to run a Seldon manifold in order to evolve.
+\end{remark}
+
+\begin{remark}[The horizon is doubly observer-relative]\label{rem:horizon-observer}
+The horizon $h$ is not a substrate quantity. By Graphic Equalisation's Axiom on time, the substrate has succession and no time dimension; a temporal dimension exists only where a frame instantiates one to represent that succession. So $h$ is measured in a dimension the observing frame constructed, and indexes a manifold the same frame constructed. Both the ruler and the thing measured are observer machinery, and neither is a claim about what the world contains.
 \end{remark}
 
 \begin{remark}[Higher machinery is frame-relative, not substrate-required]\label{rem:optional-machinery}
@@ -258,6 +265,8 @@ is the subset of reachable futures satisfying them.
 
 This overlaps directly with viability kernels and feasible regions in constrained control and model-predictive control \citep{aubin1991,rawlings2017,cunis2021}. The Seldon terminology is broader because the acceptable subset may be defined over any represented future distinctions, not only a conventional continuous state space.
 
+Figure~\ref{fig:tube} draws the construction.
+
 \begin{proposition}[Minimum intervention in a safe interior]\label{prop:min-intervention}
 Suppose the represented no-intervention alternative exists and its continuation remains within the acceptable manifold over the decision horizon. If every non-trivial intervention has non-negative cost and no independent objective rewards intervention itself, then a positive-cost intervention cannot dominate the no-intervention alternative solely by preserving acceptability.
 \end{proposition}
@@ -265,6 +274,15 @@ Suppose the represented no-intervention alternative exists and its continuation 
 \begin{remark}
 ``No intervention'' here is an instantiated alternative with a defined consequence. It is not NULL. The proposition therefore does not identify absence with a zero-valued action.
 \end{remark}
+
+\begin{figure}[t]
+\centering
+\resizebox{\textwidth}{!}{\input{../figures/fig02_seldon_tube-body}}
+\caption{The Seldon manifold, its acceptable subset, and the minimum-intervention
+proposition. The reachable set is a representation a frame may construct
+(Remark~\ref{rem:ratchet-first}), not a structure the world contains.}
+\label{fig:tube}
+\end{figure}
 
 \section{Goal direction}\label{sec:goal-direction}
 
@@ -384,6 +402,8 @@ is misleading as a picture of what determines a continuation, and the correction
 
 Determination has two components. One is the \emph{temporal ratchet}: succession through realised collapses, which is what makes a time dimension meaningful at all. The other is \emph{structural depth}: relations instantiated in containing frames, which are present now and are not earlier in time.
 
+Figure~\ref{fig:tilt} contrasts the two pictures directly.
+
 \begin{remark}[The tilt]\label{rem:tilt}
 Replacing time by structure entirely would be a $90^{\circ}$ rotation of the causal picture and is not what is claimed. The correct adjustment is closer to a $45^{\circ}$ change of causal vector: succession still runs, and additional determining structure is reached by depth rather than by reaching further back.
 \end{remark}
@@ -395,6 +415,17 @@ Where a continuation is determinable beyond what $\Frame_0$ resolves, the additi
 \]
 potentially without a privileged terminal frame. It is \emph{not} supplied by retained temporal snapshots: by Graphic Equalisation's history principle, past states influence the present only where they survive as present structure.
 \end{proposition}
+
+\begin{figure}[t]
+\centering
+\resizebox{\textwidth}{!}{\input{../figures/fig02_tilt-body}}
+\caption{The ordinary picture of time against the causal picture. Left: past
+states drawn as though still extant and the future drawn as a region already
+there --- neither of which any frame holds. Right: succession forward,
+structural depth through containing frames at roughly $45^{\circ}$, and the
+manifold as observer machinery ahead of the present.}
+\label{fig:tilt}
+\end{figure}
 
 This matters for what an explanation is permitted to assume. A theory that located determining structure in earlier temporal states would require arbitrarily deep access to a past that no frame holds. Locating it in containing frames requires only structure that is instantiated now.
 

@@ -77,6 +77,13 @@ reflections, the multiplicative and modular bases of chapter 2 — and if one
 fits, a `LatentDimension` is minted. The dimension set is itself dynamic:
 quanta *of* dimensions.
 
+This rung is load-bearing well beyond its size, and chapter 14 collects on it:
+**time is minted here.** A system is not handed a temporal coordinate by any
+observation — succession is a relation between states, not a property of one —
+so a time axis has to be *inferred*, and this is the operation that infers it.
+Which means the capacity for time is downstream of the capacity for inference,
+and a system without this rung has succession and no time at all.
+
 **Rung 4 — mint novelty.** Only when all three fail. A new codebook entry, a
 genuinely new shape.
 

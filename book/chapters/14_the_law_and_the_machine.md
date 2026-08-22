@@ -113,19 +113,60 @@ rather than arriving.
 The graph the rules read is the graph as it was, not as it is becoming. Chapter
 4's fixpoint is this; §14.6 is how an implementation is forced to make it true.
 
-**Time is not a primitive of any of this.** Nothing above requires a temporal
-dimension to be instantiated. Existence does not require time; what produces a
-time dimension is *persistent directed succession* — a ratchet of
-distinguishable change, which the transition relation above is. Informally:
-something exists; something changes in a persistent directed way; a ratchet
-exists; therefore a time dimension becomes meaningful. Chapter 1's eye minted
-exactly that axis from exactly that condition, which is why it could mint it at
-all — and why shuffled frames minted nothing.
+**And time is not a dimension of any of this.**
 
-Which is also why this chapter states collapse before it states time. **Collapse
-is what makes time available**, not a thing that happens against time as a
-background. An absent temporal dimension is `NULL` — not instantiated — rather
-than set to zero, and that distinction is the next one.
+The weak version of that claim — time is not primitive, time is emergent, time
+is differently shaped than it looks — invites the wrong reading, so here is the
+strong one. **The substrate has succession. It does not have time.** What is
+substrate-level is the ratchet: realised collapses, one after another, inducing
+an order. A *time dimension* is something a frame instantiates in order to
+represent that succession, and a frame that realises continuations without
+representing succession has no temporal dimension at all — not a degenerate one,
+not one set to zero. NULL.
+
+Which is to say: **only an agent observes time.** Not in a mystical sense — in
+the minimal, checkable sense that representing something requires something that
+represents it. Succession is a relation between collapses. Time is a
+representation of that relation, and representations live in frames.
+
+And there is a mechanism behind that, which sharpens it into something with
+consequences. **Time is an *inferred* dimension.** No collapse hands over a
+temporal coordinate; succession is a relation *between* realised states, and a
+relation between states is not a datum of any one of them. So a frame does not
+receive time — it infers it, from the relations among what it holds.
+
+Therefore:
+
+> **To observe time, a system must be capable of inference.**
+
+That orders two capacities usually treated as independent. Inference is not
+something a temporal agent happens to be able to do; it is the *precondition*
+for being a temporal agent at all. A purely reactive system — transforming under
+the law, participating fully in the ratchet, inferring nothing — has succession
+and no time. Nothing about its dynamics is impaired by that. It simply has no
+temporal dimension, because it built none.
+
+It also grades. The temporal structure a frame holds is bounded by the
+inferential structure it can construct, so *how much time a system has* is a
+question about its inference, not about the world.
+
+Chapter 1 is the measured instance, and it is worth going back for. The eye was
+given ordered frames and no temporal coordinate. What it inferred was a
+transition generator carrying one frame to the next, and *the integer count of
+applications is the time axis* — minted, held, and used to predict a frame it
+had never seen. Shuffled frames minted nothing.
+
+And the mechanism that minted it was not a clock, a timer, or anything temporal.
+It was the eye's general dimension-inference machinery — chapter 4's third rung,
+the one that mints a dimension when a residual is explicable only by one the
+system does not yet have. **Time was minted by the same operation that mints any
+other unobserved dimension.** Which is the proposition above, in code. The dimension was not in the
+observations. It was constructed by something looking at them, which is the
+claim, measured, in one experiment.
+
+Which is also why this chapter states collapse before it states time. Collapse
+is what a representing frame has to work with, not a thing that happens against
+time as a background.
 
 **And the present is structural, not a point on an axis.** A dimension in a
 frame is in one of three states, and they are operationally different:

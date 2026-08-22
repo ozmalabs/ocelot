@@ -361,6 +361,21 @@ contains it. It lives in the map between frames, and it is an integer because
 applying a transformation a fractional number of times is not something the
 observation supports.
 
+It is worth being blunt about what that means, because chapter 14 makes it a
+commitment and this is the measurement behind it. **The eye was not given time.
+It inferred one.** No observation it received carried a temporal coordinate —
+succession is a relation *between* observations, and a relation between things
+is not a property of any one of them. So the axis had to be constructed, and the
+machinery that constructed it was not a clock or a timer: it was the eye's
+general dimension-inference machinery, the same operation that mints depth.
+
+Which orders two capabilities that are usually treated as separate. A system
+that cannot infer does not have a slow or poor sense of time. It has none —
+succession happens to it, and nothing represents that succession. Time is
+downstream of inference, and this experiment is where that stops being a
+philosophical position and becomes a thing you can switch off and measure: mint
+with ordered frames, nothing with shuffled ones.
+
 Measured, ordered motion mints a time axis and compresses: description length
 28 → 7. The minted axis then predicts a frame the eye was never shown —
 applying the generator seven times reproduces the seventh frame exactly.

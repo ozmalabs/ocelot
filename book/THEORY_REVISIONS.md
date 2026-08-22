@@ -15,6 +15,51 @@ belongs in its own later paper; these notes are its theoretical foundation.
 
 ---
 
+## The sharpening after the notes
+
+Two clarifications arrived after the notes were applied, and both strengthen
+item §1 past what it said. Recorded here because the note's own wording ("time
+is not primitive", "a time dimension becomes meaningful") is weaker than the
+position and would otherwise be re-derived from the notes later.
+
+**1. Time as a first-class dimension does not exist. Only an agent observes
+time.** Not "time is nonlinear", not "time is differently shaped", not
+"emergent but still there". The substrate has the **ratchet** — succession
+through realised collapses, inducing an order. A *time dimension* exists only
+where a frame instantiates one to represent that succession. Landed as
+Axiom (*No substrate time dimension*) and a proposition in paper 01
+§ "Time is not a dimension of the substrate", with the section retitled from
+"Time is not primitive".
+
+**2. Time is an inferred dimension — therefore observing time requires the
+capacity for inference.** This is the mechanism under (1). No collapse presents
+a temporal coordinate, because succession is a relation *between* realised
+states and a relation is not a datum of any one of them. So a frame does not
+receive time; it infers it. Landed as *Time is inferred, not observed* with the
+corollary that **reactive frames have succession and `T = NULL`**, and nothing
+about their dynamics is impaired by it.
+
+Two consequences worth keeping:
+
+- **It orders two capacities usually treated as independent.** Inference is not
+  a faculty a temporal agent happens to have; it is the precondition for being
+  one. And it grades — how much time a frame holds is bounded by the inferential
+  structure it can build, which makes it a question about the frame rather than
+  about the world.
+- **The empirical instance was already in chapter 1 and had not been read this
+  way.** The eye receives ordered frames and no temporal coordinate, and mints a
+  time axis as the integer count of applications of an inferred generator —
+  using its *general dimension-inference machinery*, chapter 4's third rung, not
+  anything temporal. Shuffled frames mint nothing. That is the whole claim, run
+  as an experiment, in a system built for seeing.
+
+Applied to: paper 01 (axiom, two propositions, corollary, empirical remark),
+paper 02 (the horizon is doubly observer-relative — both the ruler and the thing
+measured are constructed), ch. 14, ch. 4 (rung 3 named as where time is minted),
+ch. 1 (what the minted axis demonstrates).
+
+---
+
 ## Applied to the papers
 
 All five compile. Section labels added where cross-references needed them.

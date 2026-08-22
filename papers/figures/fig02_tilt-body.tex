@@ -1,0 +1,93 @@
+\begin{tikzpicture}[
+  >={Stealth[length=2.2mm]},
+  now/.style={draw, very thick, minimum size=11mm, inner sep=0pt},
+  past/.style={draw, fill=black!12, minimum size=9mm, inner sep=0pt},
+  fut/.style={draw, dotted, minimum size=9mm, inner sep=0pt},
+  sup/.style={draw, dashed, minimum size=11mm, inner sep=0pt},
+  lbl/.style={font=\scriptsize, inner sep=1.5pt},
+  hd/.style={font=\small\bfseries, inner sep=2pt},
+  note/.style={font=\scriptsize, align=left, inner sep=2pt},
+  x=1mm, y=1mm,
+]
+
+%% ======================= LEFT: the ordinary picture ====================
+\begin{scope}
+  \node[hd, anchor=west] at (-34,40) {The ordinary picture};
+  \node[lbl, anchor=west] at (-34,33) {history $\rightarrow$ now $\rightarrow$ future};
+
+  \foreach \x in {-30,-19,-8}{\node[past] at (\x,0) {};}
+  \node[now] (n) at (4,0) {};
+  \node[lbl, below=1.4mm of n] {now};
+  \foreach \x in {16,27,38}{\node[fut] at (\x,0) {};}
+
+  \draw[->, thick] (-36,-13) -- (44,-13);
+  \node[lbl] at (4,-17.5) {time};
+
+  \node[lbl] at (-19,-21) {drawn as if still extant};
+  \node[lbl] at (27,-21) {drawn as if already there};
+
+  \node[note, anchor=north west] at (-36,-27)
+    {This picture asserts two things without saying so:\\
+     that past states persist somewhere to the left, and\\
+     that the future is a region ahead waiting to be reached.\\
+     Neither is available to any frame.};
+\end{scope}
+
+%% ======================= RIGHT: the causal picture =====================
+\begin{scope}[shift={(104,0)}]
+  \node[hd, anchor=west] at (-26,40) {The causal picture};
+  \node[lbl, anchor=west] at (-26,33) {succession, plus structural depth};
+
+  \node[now] (n2) at (0,0) {};
+  \node[lbl, above=1.4mm of n2] {now};
+
+  % --- the manifold ahead ---------------------------------------------
+  \fill[black!8] (6.5,0) .. controls (20,5) and (33,10) .. (46,14)
+    -- (46,-14) .. controls (33,-10) and (20,-5) .. (6.5,0) -- cycle;
+  \fill[black!20] (6.5,0) .. controls (20,2) and (33,4) .. (46,5)
+    -- (46,-6) .. controls (33,-4) and (20,-2) .. (6.5,0) -- cycle;
+  \node[lbl, anchor=west] at (49,12) {Seldon manifold};
+  \node[note, anchor=west] at (49,3)
+    {determinable continuations,\\represented \emph{now}};
+  \node[lbl, anchor=west] at (49,-8) {$U_{\mathcal F}(h)\to0$ as $h\to0$};
+
+  % --- where the past would be: nothing --------------------------------
+  \draw[gray, dashed] (-7,0) -- (-30,0);
+  \node[gray] at (-19,0) {\scriptsize$\times$};
+  \node[note, anchor=south, gray] at (-19,3)
+    {no retained frames};
+
+  % --- superframes, down-left at 45 degrees ----------------------------
+  \foreach \i/\d in {1/17, 2/32, 3/47}{
+    \node[sup] (s\i) at (-\d*0.7071,-\d*0.7071) {};
+    \node[lbl, anchor=west] at ($(s\i.east)+(2,0)$) {$\mathcal F_\i$};
+  }
+  \draw[->, thick, shorten >=1.4mm, shorten <=1.4mm] (n2) -- (s1);
+  \draw[->, thick, shorten >=1.4mm, shorten <=1.4mm] (s1) -- (s2);
+  \draw[->, thick, shorten >=1.4mm, shorten <=1.4mm] (s2) -- (s3);
+
+  % --- the tilt, marked between the two rays ---------------------------
+  \draw[gray, ->] (-9,0) arc (180:225:9);
+  \node[lbl, gray, anchor=north east] at (-8.4,-2.4) {$45^{\circ}$};
+
+  \node[note, anchor=north west] at (-46,-42)
+    {superframes $\;\mathcal F_0\subset\mathcal F_1\subset\mathcal F_2\subset\cdots$\\
+     containing structure, instantiated \emph{now},\\
+     possibly with no terminal frame};
+\end{scope}
+
+%% ======================= shared caption ================================
+\node[note, anchor=north west] at (-36,-62)
+  {\textbf{The tilt.} Replacing time by structure entirely would be a
+   $90^{\circ}$ rotation, and is not the claim. Succession still runs: the ratchet\\
+   through successive collapses is what makes a time dimension meaningful at
+   all. What changes is where the \emph{additional} determining\\
+   structure is found --- in containing frames, instantiated now, rather than
+   in temporal states that no longer exist. Roughly a\\
+   $45^{\circ}$ change of causal vector, not a $90^{\circ}$ replacement of time
+   by structure.\\[1.2mm]
+   \textbf{THEORY FIGURE.} The manifold is observer machinery --- a
+   representation a frame may construct, not a structure the world contains.\\
+   The ratchet runs without it. Nothing in this diagram is instrumented in the
+   reference substrate.};
+\end{tikzpicture}
