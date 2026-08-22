@@ -816,11 +816,17 @@ Fitted directly — greedy segmentation of a contour into maximal line and arc p
 | primitive | contour points | program | pieces |
 |---|---|---|---|
 | square | 100 | **4 lines** | 4 — minimal |
-| triangle | 89 | 5 lines | 5 — should be 3 |
-| circle | 27 | — | **extraction INVALID** |
+| circle | 100 | **1 arc** + 1 line | 2 — minimal is 1 |
+| triangle | 92 | 2 arcs + 3 lines | 5 — minimal is 3 |
 
-**A square is recovered as exactly four lines from 100 boundary points.** The program is the
-shape; the point list was the sampling.
+**A square is recovered as exactly four lines, and a circle as one arc, from 100 boundary points
+each.** The program is the shape; the point list was the sampling. The circle's trailing `line` is
+a wrap remnant — the greedy fit does not fold its last piece back into its first.
+
+(A second fitter bug, also caught by the output rather than by reading: the arc scan started at
+three points, `arc_err` needs four to fit anything, so it returned its sentinel on the first
+candidate and never extended — a circle came back as **8 lines**. Arcs now start scanning at their
+own minimum length.)
 
 And program length is a **direct measure of grid damage**, far sharper than any distance: the
 triangle's slanted sides staircase, so each splits into two pieces instead of one, and the excess
@@ -828,12 +834,21 @@ is countable. A perfect extraction yields the minimal program; every extra piece
 
 Two failures, both now flagged rather than silent:
 
-- **The circle contour is invalid** — 27 points, bbox 12x13 for a RADIUS-12 figure, i.e. half the
-  boundary. A smooth boundary is diagonal almost everywhere, and the crossing chain does not close
-  around it. Taking the longest cycle over all starts did not fix it, so the gap is in the
-  chaining rules, not the walk. The earlier `residual2.py` run reported distances against this
-  contour and was therefore measuring nothing; a validity check (total turning ~2pi AND bbox
-  consistent with the generator) now runs before any fit.
+- **The circle contour was invalid** — 27 points, bbox 12x13 for a RADIUS-12 figure, i.e. half
+  the boundary. **FIXED, and the first diagnosis of it was wrong.** I attributed it to "the
+  chaining rules, not the walk"; measuring the rim graph showed the chaining was almost right —
+  one connected component, 100 crossings, 92 of them already at degree 2. The fault was the 8 at
+  degree **3**. `bt_chain_perpendicular` linked EVERY pair of crossings at a shared cell,
+  including the two on OPPOSITE sides, which is a chord across the rim rather than a rim step;
+  the walk took the chord and closed a loop half the figure's size. Two crossings are consecutive
+  only when they sit on ADJACENT sides, and that is expressible without coordinates: the other
+  two cells are diagonal exactly when they share a SECOND common neighbour besides the shared
+  cell (the fourth corner of the 2x2 block), where opposite cells share only the one. With that
+  guard the circle's rim is degree 2 everywhere, one component — a clean cycle (v1.4.0).
+
+  The bug was invisible on axis-aligned shapes: the square measured degree 2 everywhere both
+  before and after, so only a boundary that TURNS exposes it. The gate therefore asserts on the
+  circle, and is mutation-checked by restoring the all-pairs rule.
 - **The first fitter returned four ARCS for a square.** It tested line-then-arc at each extent, so
   the greedy ran past a corner — an arc can bend around one and a line cannot. Preferring
   whichever piece explains MORE, tie to line, gives four lines.
