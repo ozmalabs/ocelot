@@ -104,6 +104,15 @@ term: history surviving as structure, and thereby entering the next possibility
 relation. The path is the town's memory of where people went, and it changes
 where they go next.
 
+And it is worth being precise about what kind of claim that is, because the
+word invites a weaker reading. **This is not a metaphor borrowed from
+mechanics.** Momentum, in the sense Part V gives it, is not history carried
+forward through time — it is a *currently instantiated* structural consequence
+of prior change, constraining what can happen next. The worn ground is exactly
+that: nothing about the past crossings persists, and nobody remembers them. What
+persists is a compacted cell. Ordinary momentum and narrative momentum have the
+same form, and differ in which relations carry the surviving structure.
+
 ---
 
 ## 13.3 The uncomfortable finding

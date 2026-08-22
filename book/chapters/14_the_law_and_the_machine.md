@@ -122,6 +122,24 @@ exists; therefore a time dimension becomes meaningful. Chapter 1's eye minted
 exactly that axis from exactly that condition, which is why it could mint it at
 all — and why shuffled frames minted nothing.
 
+Which is also why this chapter states collapse before it states time. **Collapse
+is what makes time available**, not a thing that happens against time as a
+background. An absent temporal dimension is `NULL` — not instantiated — rather
+than set to zero, and that distinction is the next one.
+
+**And the present is structural, not a point on an axis.** A dimension in a
+frame is in one of three states, and they are operationally different:
+
+> **NULL ≠ unknown ≠ resolved.** *NULL*: the dimension is not instantiated.
+> *Unknown*: instantiated, value unresolved. *Resolved*: a realised value.
+
+The present is then the collapse boundary at which every instantiated unknown
+relevant to that collapse has resolved — written **U = 0**, with NULL dimensions
+excluded from the count because they are not unresolved variables. Chapter 7
+uses exactly this distinction to say what an unvisited cell is: unknown, not
+NULL. The agent can go and resolve an unknown; there is nothing to look for
+where a dimension is absent.
+
 **Residual is what the realised successor did not absorb.** Not an error, not a
 diagnosis — a *mismatch*, and one that need contain no explanation of itself.
 Chapter 3 argued that residual is the only admissible channel for growth;
@@ -180,6 +198,13 @@ world.
 Two distinctions keep the determinism from being overclaimed, and both are about
 words that are easy to use loosely.
 
+**Determinism does not vary; determinability does.** It is tempting to say that
+the world becomes more deterministic as the present is approached, and it is
+wrong. The law is deterministic at every horizon. What changes with distance is
+how much determining structure is *resolved in the observing frame* — an
+observer-relative quantity that rises to one at the present, while the dynamics
+underneath it never moved.
+
 **Determinable is not determined.** A continuation may be entirely determinable
 from present structure and *not yet realised*. "Determined" belongs to what has
 collapsed into realised history; everything ahead of the collapse boundary is at
@@ -206,7 +231,10 @@ distinctions that only became visible when something had to actually run
 [PAPER-05-1].
 
 **A round.** Every rule in a round reads the same immutable antecedent base and
-writes into a fresh effect set. **Same-round writes are not visible.** That
+writes into a fresh effect set. *Antecedent* here names the base being read, not
+a retained history: the executor holds no stack of earlier graph states and
+requires none, which is §14.6's history principle showing up as an
+implementation property rather than a philosophical one. **Same-round writes are not visible.** That
 barrier is the antecedent-state principle of §14.3, made mechanical: without it,
 rule order silently becomes semantics.
 
@@ -236,7 +264,8 @@ same-round non-readability, monotone frontier growth, stratification,
 deterministic merge, boundary publication, absence of accidental cross-boundary
 atomicity, stable tie behaviour, gauge invariance, provenance-preserving
 residual, frame-local termination, absence of hidden executor stochasticity, and
-reproducibility of realised successors from identical antecedents.
+reproducibility of realised successors from identical antecedents — stated over
+causally sufficient *present* structure, not over an agreement of histories.
 
 That list is the useful part of having built the machine. It is what "obeys the
 law" means operationally, and it is checkable.

@@ -70,6 +70,27 @@ imprecise about what it was arguing *for*.
 
 ---
 
+### Chapters re-aligned after the papers changed
+
+The papers were revised after Parts I–VI were drafted, so the drafted chapters
+were brought back into line with the more precise formulations:
+
+- **ch. 14** gains the exposition-order line (*collapse is what makes time
+  available*), the three-state definition and the structural present (**U = 0**,
+  NULL excluded from the count), the correction that **determinism does not vary
+  — determinability does**, and the executor's antecedent base named as present
+  structure with reproducibility stated over it rather than over agreement of
+  histories.
+- **ch. 13** now says explicitly that narrative momentum is **not a metaphor
+  borrowed from mechanics**: the worn ground is a currently instantiated
+  consequence — nothing about the past crossings persists and nobody remembers
+  them; what persists is a compacted cell.
+- **ch. 2** gains a parenthetical pointing at the third state, so its
+  extensive-frontier passage no longer reads as if *unknown* were the only
+  alternative to a resolved value.
+
+---
+
 ## Pending — for chapters not yet drafted
 
 **Chapter 17 (Seldon manifolds)** takes the largest share:
@@ -108,9 +129,13 @@ structurally determinable from sufficiently deep present-frame or superframe
 structure. This preserves both sides of the dichotomy rather than eliminating
 either, and it belongs with the composition that is named-and-unbuilt.
 
-**Figures.** PAPER-02-1's caption should adopt §14/§15's framing — the tube is
-observer machinery, not a thing nature runs — which strengthens the existing
-THEORY-FIGURE marking rather than replacing it.
+**Figures.** ~~PAPER-02-1's caption should adopt §14/§15's framing.~~ **Done** —
+the figure now carries an *OBSERVER MACHINERY* block above its THEORY-FIGURE
+block: a representation a frame may construct rather than a structure the world
+contains, with the ratchet running without it, horizon distance as unresolved
+structure rather than geometric distance, and the law deterministic at every *h*.
+Two blocks rather than one, because they say different things — the first bounds
+what the object *is*, the second bounds what has been *built*.
 
 ---
 
