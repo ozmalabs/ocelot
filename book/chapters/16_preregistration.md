@@ -168,6 +168,35 @@ that produced it was never committed. The number could not be attributed to any
 code that existed. Whether it was correct became unanswerable, which is a
 stronger reason to discard it than being wrong.
 
+### Ablate: the second step, pointed at code
+
+The habit underneath several of these rules is one procedure with two steps.
+First: *what assumptions are being made that aren't being said?* Second — and
+this is the step that makes it a method rather than a list of caveats — *what
+can be taken away, and what happens if it does?*
+
+Applied to a claim, step 2 is a rewrite. Applied to a system, it is an
+**ablation**, and it is why several results in this book are stated as removals
+rather than additions:
+
+- Chapter 1 removes the self-avoiding term from the eye's drift, and the
+  long-lag crossover dies. So that term was carrying it.
+- Chapter 3 *deletes* a tiebreak, and a residual appears where none had ever
+  appeared. So the tiebreak had been destroying information rather than
+  resolving it.
+- Chapter 10 ablates a drive, and a preference falls to zero at zero interval
+  width. So nothing else was quietly supplying that behaviour.
+- Chapter 12 requires that every rung's mechanism already exist for another
+  reason. Which is step 2 as a *precondition*: if the phenomenon needs a
+  component built for it, the component was the result.
+
+The connection worth making explicit: this is the same criterion the substrate
+itself uses to decide whether an observation deserves a codebook entry — mint if
+and only if it compresses. **Minimum description length, applied to a theory,
+to a system, and to a sentence, is the same operation.** A claim that can be
+removed with no observable loss was description length rather than content, and
+a mechanism that can be removed with no measurable loss was never the mechanism.
+
 ### Positive-control the reader, not just the arm
 
 The sixteen inert instruments. It is standard to include a control *arm* — a

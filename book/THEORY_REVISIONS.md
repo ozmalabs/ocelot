@@ -95,11 +95,32 @@ THEORY-FIGURE marking rather than replacing it.
 
 ---
 
-## One note for the book's own register
+## Why these revisions all point the same way
 
 Several of these revisions move claims in the direction of *claiming less*: the
 substrate is not asserted to be discrete, reality is not asserted to be a graph,
 the universe is not said to become more deterministic, and higher machinery is
-not a universal requirement. That direction is worth preserving in the prose
-wherever a chapter has to choose, because the over-strong reading is always the
-available one and is what a hostile reader will assume was meant.
+not a universal requirement.
+
+**That is not modesty. It is MDL, and it is the method that produced the theory
+being run on the theory.** The procedure has two steps:
+
+> 1. What assumptions have been made that aren't being said?
+> 2. What can be taken away — and what happens if it does?
+
+Every revision above is a completed step 2. *Fundamental discreteness* was
+removed and no observable consequence went with it, so it was never load-bearing
+— only discrete **sufficiency** was. *Reality is graph-shaped* was removed and
+the dynamics still generate everything they generated before, so the claim was
+carrying nothing but exposure. *Seldon manifolds as substrate requirement* was
+removed and the ratchet still runs, which is how you find out the manifolds were
+observer machinery all along.
+
+Where a removal *does* cost something, that is the useful outcome rather than a
+failure: it locates what the theory actually needs. The revisions that survived
+are the load-bearing ones.
+
+So the direction is worth preserving in the prose wherever a chapter has to
+choose — not because the over-strong reading is what a hostile reader will assume
+was meant, though it is, but because **a claim that can be removed without
+observable loss was description length, not content.**

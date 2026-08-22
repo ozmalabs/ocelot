@@ -150,8 +150,30 @@ the same question asked again (see below):
 
 ### The method, which is the introduction's real content
 
-The chain above is *what* happened. **This is how**, and it is one question
-asked over and over: **"what are the unnamed assumptions here?"**
+The chain above is *what* happened. **This is how**, and it is two steps, run
+over and over:
+
+> **1. What assumptions have been made that aren't being said?**
+> **2. What can be taken away — and what happens if it does?**
+
+Both steps matter and the second is the one usually skipped. Step 1 alone
+produces a list of caveats. Step 2 is what makes it a procedure: take the
+assumption out, and find out whether anything observable was resting on it.
+If nothing was, the claim just got shorter at no cost. If something was, you have
+located what the thing actually needs.
+
+**This is minimum description length, run on your own beliefs.** Not as an
+analogy — as the same criterion the substrate uses to decide whether an
+observation is worth a new codebook entry (chapter 4: mint if and only if it
+compresses; *noise does not exist, only signals you have not grounded*). The
+question "is this real or am I imagining structure" has no observer-independent
+answer. The question "does removing it cost anything" has a computable one.
+
+Which means **the author's method and the substrate's growth mechanism are the
+same operation**, and the introduction should say so plainly, because it is the
+book's tightest single connection between how the work was done and what the
+work is. Step 1 finds the residual — the part of a statement its words did not
+cover. Step 2 tests whether the residual was load-bearing.
 
 Not asked once per problem — asked repeatedly, of the answer, until the answer
 stops changing. It is a fixpoint procedure run on one's own beliefs, and the
@@ -186,6 +208,22 @@ sd loop's own growth condition — mint when the residual *recurs*, not when it
 first appears — running in a person before it ran in code. The introduction
 should not apologise for taking ten passes; it should point out that a system
 that minted on the first pass would have hallucinated.
+
+**And every scope word was a step-2 removal.** "Everything in computing" —
+take the qualifier away; does anything observable break? No. "Everything on the
+planet" — take it away; anything break? No. Ten times, each removal costing
+nothing, until what remained was the claim that had been meant all along. The
+word did not get bigger. The description got shorter.
+
+**Step 2 is what the book calls an ablation.** Chapter 1 removes the
+self-avoiding term from the drift and the long-lag crossover dies — so that term
+was carrying it. Chapter 3 *deletes* a tiebreak and a residual appears where
+there had been none — so the tiebreak had been destroying information. Chapter
+10 ablates a drive and a preference goes to zero at zero interval width — so
+nothing else was quietly supplying it. Those are not three techniques. They are
+step 2, institutionalised, pointed at code instead of at sentences. The
+introduction should name that, because it is what makes the method transferable
+rather than a personal habit.
 
 **And it is the book's antagonist, from the other side.** A number standing
 where a shape belonged is *always* an unnamed assumption: `1/n` asserts

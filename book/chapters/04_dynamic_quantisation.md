@@ -83,6 +83,14 @@ genuinely new shape.
 The order is Occam's razor made operational: try the cheapest description first,
 and add to the codebook only what three cheaper readings could not absorb.
 
+Stated as a criterion rather than a ladder: **mint if and only if it
+compresses.** Which is minimum description length, and it is worth noticing that
+this is the same test the *author* of this substrate runs on claims — name the
+assumption, remove it, and see whether anything observable was resting on it.
+The loop applies it to observations; chapter 16 applies it to results; the
+introduction describes it being applied, ten times over, to a single word. One
+operation, three grains.
+
 Its consequence is measurable rather than rhetorical. A rotated tromino mints
 **zero** — rung 2 reads it as a step along an axis already held. A scrambled one
 mints **exactly one**. A loop that minted first would have minted in both cases,
