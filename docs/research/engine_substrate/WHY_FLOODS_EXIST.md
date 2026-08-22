@@ -325,9 +325,29 @@ entirely — the branches are between regions.
 
 Walking `next_crossing` per region: a 3x3 interior blob yields a **closed 12-crossing contour**,
 exactly its perimeter, with no start convention, no heading and no turn preference anywhere in
-the walk. Regions touching the field edge yield OPEN arcs, which is correct rather than broken:
-`bt_disagree` needs a `neighbour` edge, so a field-edge cell has no crossing — closing those
-would require an "outside" to be representable, which it is not.
+the walk.
+
+### Open contours at the field edge are CORRECT, and were nearly "fixed"
+
+Regions touching the field edge yield OPEN arcs, because `bt_disagree` needs a `neighbour` edge
+and a field-edge cell has none. The obvious next move is to mint a virtual `Outside` and join
+the border cells to it, closing every contour. **That would be wrong**, and it is this repo's own
+principle that says so: *unknown = absence, first-class*. A region running off the observed field
+is genuinely unbounded IN THAT OBSERVATION; closing its contour manufactures a boundary nothing
+observed, and lets a partial view assert it has seen a whole object.
+
+What must hold instead is that a partial view produces a RESIDUAL. Measured — the same 3x3
+square, once interior and once clipped by the top edge:
+
+```
+interior  : 12-pt CLOSED contour  ->  covered (16, 'closed_square')
+clipped   :  9-pt OPEN   contour  ->  covered (7,  None)
+```
+
+**The clipped region declines to claim it is the square.** It covers partially and is recognised
+as nothing — which is exactly the residual the ladder acts on, whether by refining or by minting.
+So the open contour is not a gap in the representation; it is the representation being honest
+about the extent of the observation, and the "fix" was measured out rather than built.
 
 And the §4 claim is now established rather than asserted. Two identical 3x3 squares at different
 positions, plus a 3x6 rectangle, quantised through `StrokeQuantize` with `invariant_only`:
