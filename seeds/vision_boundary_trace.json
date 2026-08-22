@@ -1,6 +1,6 @@
 {
  "id": "vision_boundary_trace",
- "version": "1.2.0",
+ "version": "1.3.0",
  "depends_on": [
   "vision_motion_group"
  ],
@@ -489,6 +489,162 @@
      "x",
      "separates",
      "n"
+    ]
+   ]
+  },
+  {
+   "name": "bt_chain_collinear",
+   "comment": "CONSECUTIVE CRACKS ALONG A STRAIGHT BOUNDARY, with no coordinates. Measured: 84 of the 98 boundary cells carry exactly ONE crossing, so consecutive cracks there lie between DIFFERENT pairs of cells and share no cell -- which is why the share-a-cell rule alone scored 20% degree-2 and was removed. Two collinear cracks x=(A|B) and y=(C|D) are consecutive exactly when the cells correspond across them: A adjacent to C AND B adjacent to D. That is pure adjacency -- no lattice index, no doubled grid, no bare 2, and no angle sort. The corner they share is IMPLIED by the correspondence rather than reified.",
+   "match": [
+    [
+     "x",
+     "separates",
+     "A"
+    ],
+    [
+     "x",
+     "separates",
+     "B"
+    ],
+    [
+     "y",
+     "separates",
+     "C"
+    ],
+    [
+     "y",
+     "separates",
+     "D"
+    ],
+    [
+     "A",
+     "neighbour",
+     "C"
+    ],
+    [
+     "B",
+     "neighbour",
+     "D"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "key": "marm",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "MotionParams"
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Var",
+        "name": "x"
+       },
+       "b": {
+        "type": "Var",
+        "name": "y"
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Var",
+        "name": "A"
+       },
+       "b": {
+        "type": "Var",
+        "name": "B"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "x",
+     "next_crossing",
+     "y"
+    ]
+   ]
+  },
+  {
+   "name": "bt_chain_perpendicular",
+   "comment": "CRACKS THAT TURN A CORNER share the cell they turn around. This is the case the removed share-a-cell rule got RIGHT; its failure was being the only rule, so the collinear majority went unlinked. Where a cell carries more than two crossings the successor is genuinely ambiguous (the marching-squares saddle) and this links every pair, so the ambiguity appears as crossing DEGREE in the graph rather than being resolved by a hidden convention.",
+   "match": [
+    [
+     "x",
+     "separates",
+     "c"
+    ],
+    [
+     "y",
+     "separates",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "key": "marm",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "MotionParams"
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Var",
+        "name": "x"
+       },
+       "b": {
+        "type": "Var",
+        "name": "y"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "x",
+     "next_crossing",
+     "y"
     ]
    ]
   }
