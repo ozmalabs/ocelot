@@ -241,10 +241,25 @@ size, **output invariant under `stage_a_enable`**, and the no-new-constant check
 
 ## 7. What this does not establish
 
-- **The contour is not yet emitted, quantised, or recognised.** `rim_next` is built and
-  traversable, but nothing orders it into a polyline, runs it through `StrokeQuantize`, or
-  decodes it against the held codebook. That chain — the entire reason a contour beats a label —
-  is designed and unbuilt. The vertex measurements in §4 were made in Python, off-graph.
+- **The chain now RUNS, and is only partly successful.** rim -> ordered contour ->
+  `StrokeQuantize` -> signature works end to end: the largest region traces a 44-point ring and
+  quantises to a signature with real turns (`(seg,1,2,0) (seg,4,2,0) (seg,5,2,0)`). Two of the
+  three large regions still dead-end after 5-6 points despite carrying 43 rim cells each. The
+  failure is in the *traversal*, which is adapter geometry, not in the rim subgraph.
+  **Ordering a rim subgraph into a canonical cycle at junctions is unsolved here**, and is the
+  honest blocker on the whole payoff — a signature is only as good as the walk that produced it.
+- **A defect this chain caught, recorded because it nearly passed as a success.** Before
+  `bt_border_rim` (v1.1.0), a region running off the edge of the field had an OPEN rim:
+  `bt_disagree` can only mark a crossing where a `neighbour` edge exists, and border cells have
+  no neighbour beyond the edge. All three regions then traced as straight vertical lines of zero
+  width, and their signatures came back **identical** — which reads exactly like the hoped-for
+  result ("one shape under three poses") and is in fact three degenerate lines matching
+  vacuously. It was caught only by printing the contour geometry instead of trusting the
+  comparison. With the border rule the same test reports 2 distinct signatures of 3, and the two
+  that still match are precisely the two whose walk fails.
+- **Nothing has been decoded against the codebook.** `ShapeDecode` has not been run on these
+  signatures, so the §4 claim — that the three regions are one shape under transform — remains
+  unestablished. The vertex measurements in §4 were made in Python, off-graph.
 - **Nothing replaces `mo_flood`.** The seed derives the rim ALONGSIDE the label field; no rule
   was removed and `mo_mint` still counts members by scanning on `mlabel`.
 - **`bt_rim_link` links rim cells pairwise, which is not the same as an ordered cycle.** Holes,
