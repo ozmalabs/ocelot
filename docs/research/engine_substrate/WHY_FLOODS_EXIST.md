@@ -799,6 +799,50 @@ Honest limits: 15 observations per row, so the non-monotone exemplar column (64/
 real noise, and the orbit advantage — present at every resolution, +7 to +46pp — is the claim,
 not the individual figures. One shape family, one comparator.
 
+### A circle has one point: shapes are PROGRAMS, and the codebook is tiny
+
+The orbit enumeration above stores 156 rasters of a square. That is the wrong cost model, and
+the reason is the same "bytes not shape" error one level up: **a slightly deformed square is not a
+different shape, it is a square with a residual.** So the codebook should hold a handful of
+PRIMITIVES, and everything else is (primitive, pose, residual). A pie chart is not ten bite
+shapes; it is a circle with blocks taken out of it.
+
+That also says what a primitive IS: a **program** of straight and curved connections, not a point
+list. **A circle has one point** — one arc, constant curvature, closed. A square has four lines.
+Storing 100 boundary samples for a square and 27 for a circle is storing the sampling.
+
+Fitted directly — greedy segmentation of a contour into maximal line and arc pieces:
+
+| primitive | contour points | program | pieces |
+|---|---|---|---|
+| square | 100 | **4 lines** | 4 — minimal |
+| triangle | 89 | 5 lines | 5 — should be 3 |
+| circle | 27 | — | **extraction INVALID** |
+
+**A square is recovered as exactly four lines from 100 boundary points.** The program is the
+shape; the point list was the sampling.
+
+And program length is a **direct measure of grid damage**, far sharper than any distance: the
+triangle's slanted sides staircase, so each splits into two pieces instead of one, and the excess
+is countable. A perfect extraction yields the minimal program; every extra piece is an artifact.
+
+Two failures, both now flagged rather than silent:
+
+- **The circle contour is invalid** — 27 points, bbox 12x13 for a RADIUS-12 figure, i.e. half the
+  boundary. A smooth boundary is diagonal almost everywhere, and the crossing chain does not close
+  around it. Taking the longest cycle over all starts did not fix it, so the gap is in the
+  chaining rules, not the walk. The earlier `residual2.py` run reported distances against this
+  contour and was therefore measuring nothing; a validity check (total turning ~2pi AND bbox
+  consistent with the generator) now runs before any fit.
+- **The first fitter returned four ARCS for a square.** It tested line-then-arc at each extent, so
+  the greedy ran past a corner — an arc can bend around one and a line cannot. Preferring
+  whichever piece explains MORE, tie to line, gives four lines.
+
+What this implies and does not: the codebook of programs is small by construction, and a deformed
+square should decode as square-plus-residual rather than as a new entry. That last step is
+**not measured** — the residual comparison it needs was run against the invalid circle contour and
+has to be redone once smooth boundaries extract.
+
 ### Landed as a gate
 
 The coverage measurements above are research and stay in this document — each observation is a
