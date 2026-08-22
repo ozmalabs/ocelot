@@ -709,6 +709,27 @@ The full series, on 5 shapes x 7 angles:
 result.** Coordinate-free helps at the margin and only when the contour is a valid simple closed
 curve — and 9 of 32 extractions are not one, accumulating ~0 total turning instead of 2pi.
 
+> **SUPERSEDED — the null was an extraction artifact.** Every figure in the table above was
+> measured BEFORE the `bt_chain_perpendicular` adjacent-sides fix, when a boundary that turned
+> produced chord shortcuts and roughly a third of the contours were invalid. Re-run on corrected
+> extraction, 35 contours instead of 32, same 5 shapes x 7 angles, 595 pairs:
+>
+> | representation | misclassified |
+> |---|---|
+> | absolute coordinates, `ScTpsDist` | 12.8% |
+> | turning function, L1 (my variant) | 8.2% |
+> | turning function, **L2 — Arkin et al. as defined** | **6.6%** |
+>
+> **Coordinate-free beats absolute by roughly 2x**, which is what the theory says and what the
+> broken contours were hiding. Two corrections compound: the chaining fix alone took the turning
+> function from 14.9% to 8.2%, and then using the metric as its authors define it took it to 6.6%.
+>
+> My variant minimised **L1** while still subtracting the **L2-optimal** offset — the closed-form
+> mean difference is optimal for the squared norm, not the absolute one, so the offset I removed
+> was not the best one for the quantity I was measuring. That is the direct payoff of checking the
+> prior art rather than continuing to re-derive: the canonical form was better than my variant,
+> and the reason was a norm/offset mismatch I would not have found by inspection.
+
 ### The answer is not a shape, it is a MANIFOLD
 
 Every measurement above compares two rasterisations as if they were two objects. They are two
