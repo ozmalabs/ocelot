@@ -606,6 +606,42 @@ almost entirely by **how far the rotation sits from an exact lattice rotation**:
 perfectly where the lattice renders the rotation faithfully, and the entire residual is grid
 damage — which at 45 degrees exceeds most between-shape distances outright.
 
+### The absolute frame was still smuggled in — and removing it does not save it either
+
+Everything above compares dense point lists in CELL COORDINATES and then asks a point-set metric
+to undo the frame. That still carries an absolute reference. A closed contour's intrinsic content
+is a cyclic sequence of **(turn, edge length)**: translation does not appear because no positions
+are stored, rotation does not appear because turns are relative to the previous edge, scale is
+one global factor removed by normalising against the perimeter, and the only residual freedom is
+where the cycle starts and which way it runs. That is also what `StrokeQuantize`'s `seg`
+relations always were — and they were being fed absolute points.
+
+Built and measured on the same 5 shapes x 7 angles:
+
+| representation | pairs | misclassified |
+|---|---|---|
+| absolute points, `ScTpsDist` | 496 | 14.3% |
+| intrinsic (turn, length), equal vertex counts only | 65 | **4.6%** |
+| intrinsic, held `DtwTo` over ALL pairs | 276 | **15.9%** |
+
+The middle row is a **3x improvement that does not survive its own coverage**. Requiring equal
+vertex counts silently skipped 71 of 88 within-shape pairs — and those are exactly the hard ones,
+because **vertex extraction is itself unstable under rotation**: the same rectangle simplifies to
+`[4, 6, 6, 4, 6, 3, 4]` vertices across seven angles. Comparing only the pairs where extraction
+happened to agree is an easy subset by construction, and this repo's standing rule says the
+subset is part of the claim. Using the held `DtwTo`, which tolerates differing lengths, restores
+the hard cases and the advantage evaporates.
+
+**So the intrinsic representation is right and the extraction is the blocker.** Vertices and
+angles carry no frame, exactly as intended; but a stable vertex SET cannot be recovered from a
+lattice raster at this resolution, because the staircase invents and destroys corners as the
+shape turns. The root cause is unchanged from the section below — it has simply been pushed from
+the metric into the vertex set, which is where it was always going to end up.
+
+(The two intrinsic rows cover 24 of the 32 contours: some contours simplified below three
+vertices and produced no intrinsic signature at all, so the populations are not perfectly
+matched to the 496-pair baseline.)
+
 **CORRECTION.** An earlier version of this section concluded that the comparator was "the larger
 of the two" failures. That was measured on the single 0-vs-90 pair — **the one case with zero grid
 damage**, since a 90-degree rotation is exact on a lattice. It is precisely the wrong basis for
