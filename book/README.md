@@ -10,9 +10,9 @@
 | **`BOOK_DOSSIERS.md`** | per-chapter claim + measured evidence + honest gaps | before drafting a chapter |
 | **`FIGURES.md`** | what every figure must show, where its data already lives, and the generator rule | before drawing anything |
 
-`chapters/` holds the drafts. **Fifteen drafted, ~30,800 words**: the front
-matter (`00_how_to_read_the_numbers.md`), chapters 1–13 (Parts I–IV complete)
-and chapter 16 (`16_preregistration.md`). Filenames carry the book chapter number;
+`chapters/` holds the drafts. **Seventeen drafted, ~34,300 words**: the front
+matter (`00_how_to_read_the_numbers.md`) and chapters 1–16 — Parts I through VI
+complete. Filenames carry the book chapter number;
 `BOOK_DOSSIERS.md` maps those to source-artefact numbers. `figures/` holds
 book figures: **a committed generator script plus its output**, never an output
 alone.
@@ -46,6 +46,6 @@ it.
 
 ## Housekeeping
 
-Fifteen chapters drafted; Parts I–IV are complete. Remaining: 14 (the law and
-the executor), 15 (the audit), 17–19 (Part VII), then the introduction,
-prologue and epilogue last — they draft together, per `BOOK_PLAN.md`.
+Parts I–VI are drafted. Remaining: 17–19 (Part VII — Seldon, narrative
+momentum and narrativium, the open problem), then the introduction, prologue
+and epilogue last, which draft together per `BOOK_PLAN.md`.
