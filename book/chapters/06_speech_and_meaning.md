@@ -124,6 +124,15 @@ inspectable. What it is not is a controlled demonstration that the order is
 forced. To show that you would need to attempt the stages out of order and fail,
 and that experiment has not been run.
 
+There is a second instance, in a modality that shares no code with this one.
+Chapter 9's humanoid runs a developmental curriculum with the same shape — first
+capability is spontaneous general movement, because variability is the data;
+stages as an overlapping dependency graph rather than an age clock; achievement
+requiring repeated success across more contexts than its prerequisites plus a
+delayed retention probe. It is much earlier in its arc than this one, and it is
+therefore the better test: this chapter's order can be read as hindsight over a
+completed traversal, and that one cannot, because it has not finished.
+
 ---
 
 ## 6.4 The self-directed loop

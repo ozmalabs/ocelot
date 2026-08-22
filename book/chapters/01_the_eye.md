@@ -215,6 +215,14 @@ What the waves *are*, measured properly, turns out to be the most consequential
 fact in this chapter, and it is deferred to §1.5 because it only becomes
 consequential once something tries to learn from them.
 
+One forward note, because it is the strongest recurrence in this book and it was
+not planned. The motor system in chapter 9 has the same thing: an excitable
+sheet over the body's own discovered effector topology, ignited by homeostatic
+deprivation, travelling one mechanical hop per epoch, with overlapping fronts
+collapsing into a single motor program. Structured spontaneous activity before
+the function it prepares, in a modality that shares no code with this one.
+Neither was transplanted from the other.
+
 ### Centre-surround, from a zero start
 
 Lateral inhibition — a centre that excites and a surround that suppresses — is
