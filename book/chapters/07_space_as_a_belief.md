@@ -13,10 +13,23 @@ structure has a slot and the slot must contain a value.
 
 **This chapter is about not filling it.**
 
-The map here is a *belief*, and in a belief, **unknown is absence** — a
-first-class state, distinct from empty and distinct from occupied. The agent
-does not hold a grid with unknowns marked; it holds what it has observed, plus
-the fact that this is not everything.
+The map here is a *belief*, and in a belief, **unknown is a state in its own
+right** — distinct from empty and distinct from occupied. The agent does not
+hold a grid with unknowns filled in; it holds what it has observed, plus the
+fact that this is not everything.
+
+The theory's own vocabulary makes a three-way distinction here, and it is worth
+having before the chapter uses it:
+
+> **NULL ≠ unknown ≠ resolved.** *NULL* is a dimension that is absent — not
+> instantiated at all. *Unknown* is a dimension that exists but whose value is
+> unresolved. *Resolved* is a realised value.
+
+An unvisited cell is **unknown**, not NULL: the spatial dimensions are
+instantiated, and what is missing is the value. The distinction matters because
+the two behave differently under projection — an unresolved value is something
+the agent can go and resolve, and a NULL dimension is not something it can look
+for.
 
 That sounds like a representational nicety. It is the load-bearing decision in
 the chapter, and everything else — routing per body, decoding only where you are
@@ -56,7 +69,7 @@ that had stopped being surprised for the wrong reason.
 
 The reframe, stated as it applies.
 
-**Unknown is absence.** Not a default value. When a world hands over its entire
+**Unknown is a state, not a default value.** When a world hands over its entire
 map at load time, that is the *degenerate* case — the case where the belief
 happens to be complete — rather than the normal one the representation was
 designed around. Most worlds are not like that, and a representation that
@@ -161,6 +174,14 @@ find it.
 - **Foveation.** The unretained out-of-focus quanta of §7.5 are the obvious
   place for this to fail. A task requiring a route through a region the agent
   once decoded and has since looked away from would expose it.
+
+  There is a third state the current implementation does not distinguish, and
+  naming it says where the fix goes: **directly resolved ≠ unresolved ≠ occluded
+  but inferable.** A region the agent cannot currently see, but whose contents
+  are constrained by what surrounds it, is not in the same epistemic position as
+  one it has never approached. A blind spot is a limitation of access rather
+  than a hole in the world, and a belief that collapses the two loses the
+  constraint.
 - **Per-dimension resolution.** If uniform refinement matches per-dimension
   splitting on a powered comparison, the added machinery is not earning itself.
 

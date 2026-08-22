@@ -25,6 +25,21 @@ engineered around. It is the constraint that explains the rest of the design.
 An eye that only reports change must move, or it has nothing to say. Once it
 moves, everything else in this chapter follows.
 
+It also fixes what kind of thing this eye is. **It does not transmit an image.**
+There is no absolute picture being sent onward and no privileged zero against
+which brightness is measured. What the eye maintains is a relational state it
+has constructed, and what it propagates is the *failure of that state to explain
+the photons arriving* — the residual, again, at the front of the system rather
+than the back. Reference here is **generated, not assumed**, and it is
+continuously reconstructed; the eye's own resting level is derived per cell from
+that cell's activity (§1.2) rather than imported from anywhere.
+
+Which is why zero activity after adaptation is not a perceptual origin. It is a
+legitimate value of an instantiated signal dimension, and the difference is not
+pedantry: an eye with an absolute zero has somewhere to fall back to, and this
+one does not. It has only what it currently predicts and what it currently
+fails to predict.
+
 ---
 
 ## 1.1 What this is, and what it is not
@@ -267,6 +282,13 @@ from itself. Contrast does not decay because the signal is being lost; contrast
 goes to zero because every cell arrives at its own resting value and the sheet
 becomes *uniform*. A uniform sheet has no contrast. The fade is a consequence of
 the adaptation mechanism reaching its target, not a decay term someone added.
+
+That is perception as an equalisation process rather than a reconstruction. The
+sheet is not producing a picture and then losing it; it is holding a relational
+state against incoming photon relations, and when those relations stop changing
+the state has nothing left to correct. Motion, edges, occlusion and novelty are
+then all the same kind of thing — graph change — rather than features computed
+frame by frame.
 
 **Second, the control.** All of that would be equally consistent with the sheet
 simply dying. It does not: 100% of cells in the stabilised arm are alive at the

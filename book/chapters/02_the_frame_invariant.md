@@ -53,10 +53,25 @@ grounded observation that recovers a coordinate finer than the bin it arrived
 in — not because the machinery is crude, but because the information was never
 carried.
 
-So the integer lattice is not a coarse approximation to a continuous truth that
-better instruments would reveal. **Within a frame, it is the whole of what is
+So the integer lattice is not a coarse approximation *within the frame* to
+something the frame also contains. **Within a frame, it is the whole of what is
 there.** Sampling is not something that happens *to* grounding; it is what
 grounding is.
+
+**And this is the point at which the claim must be kept narrow**, because the
+obvious over-reading is available and wrong. What is claimed is **discrete
+sufficiency**: every quantity the substrate requires internally can be
+represented by discrete distinguishable states at the operative frame and
+resolution, without loss of observable consequence. What is **not** claimed is
+that the containing or pre-relational substrate is itself discrete. It may be
+continuous, or discrete, or something not classifiable from any frame available
+here; continuity may remain a useful or even fundamental grounding. It is simply
+not required as a primitive.
+
+The two claims sound similar and differ completely in what would falsify them.
+Discrete sufficiency fails if some observable consequence cannot be represented
+discretely without loss. Fundamental discreteness would fail on a fact about
+reality that this theory has no way to reach — which is why it is not asserted.
 
 The engine enforces this, and the enforcement is worth looking at because it
 reads as a bug and is not. The function that reads coordinates out of an

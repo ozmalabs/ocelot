@@ -20,7 +20,29 @@ Nothing in this chapter is new. Everything in it has already been used.
 
 ---
 
-## 14.1 The standpoint, before the definitions
+## 14.1 Where the theory starts, and where it declines to
+
+Before the standpoint, a boundary — because the theory is routinely read as
+claiming more than it does.
+
+**This theory does not attempt to specify the intrinsic nature of
+pre-relational existence.** It begins at the first level at which distinguishable
+relational structure is representable, and says nothing about what is underneath
+that. The pre-graph substrate may be continuous, discrete, purely mathematical,
+or unclassifiable from any frame available to us. The move being made is:
+
+> **? ⇢ observable relational structure ⇒ graph representation.**
+
+The dashed arrow is the part not claimed. What follows the second arrow is the
+theory; what precedes the first is outside it.
+
+This matters because "everything is a graph" is available as a reading and is
+not the claim. The claim is that *where there is distinguishable relational
+structure, that structure is representable as a graph, and the dynamics below
+govern it.* A reader who takes the stronger version will find the theory
+overreaching, correctly, about something it did not say.
+
+## 14.2 The standpoint
 
 One commitment comes before the graph, and it is the kind that is easy to agree
 with and then quietly violate.
@@ -47,7 +69,7 @@ resonance without deriving anything from it.
 
 ---
 
-## 14.2 The graph
+## 14.3 The graph
 
 A graph is three things:
 
@@ -68,7 +90,7 @@ lack is participation in the transition relation below.
 
 ---
 
-## 14.3 The one move
+## 14.4 The one move
 
 Everything happens by one operation, applied repeatedly [PAPER-01-1]:
 
@@ -91,6 +113,15 @@ rather than arriving.
 The graph the rules read is the graph as it was, not as it is becoming. Chapter
 4's fixpoint is this; §14.6 is how an implementation is forced to make it true.
 
+**Time is not a primitive of any of this.** Nothing above requires a temporal
+dimension to be instantiated. Existence does not require time; what produces a
+time dimension is *persistent directed succession* — a ratchet of
+distinguishable change, which the transition relation above is. Informally:
+something exists; something changes in a persistent directed way; a ratchet
+exists; therefore a time dimension becomes meaningful. Chapter 1's eye minted
+exactly that axis from exactly that condition, which is why it could mint it at
+all — and why shuffled frames minted nothing.
+
 **Residual is what the realised successor did not absorb.** Not an error, not a
 diagnosis — a *mismatch*, and one that need contain no explanation of itself.
 Chapter 3 argued that residual is the only admissible channel for growth;
@@ -101,7 +132,7 @@ so thinly.
 
 ---
 
-## 14.4 Boundaries, and what admissibility is not
+## 14.5 Boundaries, and what admissibility is not
 
 A graph that is *situated* meets its containing frame through a boundary
 [PAPER-01-2]. And the proposition that boundary exists to state is the one most
@@ -131,7 +162,7 @@ theory declines to make selfhood special, and the epilogue collects on that.
 
 ---
 
-## 14.5 Determinism, and where the randomness went
+## 14.6 Determinism, and where the randomness went
 
 The law is deterministic. Systems that obey it look stochastic all the time.
 
@@ -146,9 +177,28 @@ observer's population-level evidence rather than adding noise to a mechanism,
 and why chapter 7's surprise curve is a property of a model rather than of a
 world.
 
+Two distinctions keep the determinism from being overclaimed, and both are about
+words that are easy to use loosely.
+
+**Determinable is not determined.** A continuation may be entirely determinable
+from present structure and *not yet realised*. "Determined" belongs to what has
+collapsed into realised history; everything ahead of the collapse boundary is at
+most determinable. The future is not an extant region lying to the right of now,
+waiting to be reached — it is the set of continuations represented, now, as
+reachable.
+
+**And what does the determining is present structure, not a past.** The
+condition is *causally sufficient present structure*, including whatever
+containing-frame relations are relevant: identical causally sufficient present
+structure implies identical realised continuation. Past states are not required
+to remain extant for this to hold, because **history matters only where it
+survives as present structure**. That is not a weakening. It is what makes the
+claim checkable — a stack of still-existing historical frames is not something
+any frame has access to, and a theory that required one would be unusable.
+
 ---
 
-## 14.6 One machine that obeys it
+## 14.7 One machine that obeys it
 
 A theory of this shape can be satisfied by many executors. Paper 05 builds one,
 and the value of having built it is not the executor — it is the list of
@@ -179,7 +229,7 @@ comparison domain. Chapter 15 is about what happens when that discipline lapses.
 
 **Input is separated into three things**: direct data, residual, and represented
 precision or freshness. World-caused integration is not checked against
-self-admissibility, per §14.4 — the graph does not get to refuse what happened.
+self-admissibility, per §14.5 — the graph does not get to refuse what happened.
 
 The paper also states its own conformance tests: enumeration-order invariance,
 same-round non-readability, monotone frontier growth, stratification,
@@ -193,7 +243,7 @@ law" means operationally, and it is checkable.
 
 ---
 
-## 14.7 What implementation taught the theory
+## 14.8 What implementation taught the theory
 
 The distinctions the construction forced, which survive replacement of this
 particular executor. Several have already done work in this book:
@@ -206,7 +256,11 @@ particular executor. Several have already done work in this book:
 - residual is mismatch and need not contain explanation;
 - previous failure changes later dynamics only if its consequences survive in
   state — which is chapter 12's traumatic-bond mechanism stated abstractly, and
-  Part VII's narrative momentum stated early;
+  Part VII's narrative momentum stated early. Momentum, on this reading, is not
+  history carried forward through time: it is a *currently instantiated*
+  structural consequence of prior change, constraining what can happen next.
+  Ordinary momentum and narrative momentum then have the same form rather than
+  one being a metaphor borrowed from the other;
 - distinct boundaries cannot be silently treated as one atomic transaction;
 - higher-frame quantities may be first-class without being primitives of the
   lower graph;
@@ -219,19 +273,19 @@ underspecified in eleven places, and saying so is more useful than the eleven.
 
 ---
 
-## 14.8 What would falsify this
+## 14.9 What would falsify this
 
 The papers state their own commitments; these are the ones this book has
 exposed most.
 
 - **Minimal graph sufficiency.** If some capability demonstrated in Parts I–IV
   turns out to require a primitive not in (g, r, Γ) — something that cannot be
-  content — the austerity claim of §14.2 fails.
+  content — the austerity claim of §14.3 fails.
 - **Order-independence.** Its conditions are stated. A rule set meeting them
   whose fixpoint depends on enumeration order would falsify the closure theorem
   as applied here, and is mechanically testable.
 - **The three legs.** If self-governance can be shown to function as armour in
-  some configuration — Γ actually vetoing world-caused change — §14.4 is wrong
+  some configuration — Γ actually vetoing world-caused change — §14.5 is wrong
   in the direction that matters most.
 - **Determinism.** If a realised successor differs across runs from an identical,
   causally complete antecedent configuration, there is hidden stochasticity in

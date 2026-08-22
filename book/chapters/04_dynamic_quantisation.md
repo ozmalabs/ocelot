@@ -149,8 +149,9 @@ Applying the loop to space required one reframe and produced several
 consequences worth stating, because they generalise.
 
 **The map is a belief, not a grid.** What the agent holds is a persistent
-observation belief in which **unknown is absence** — first-class, per chapter 2,
-rather than a default zero. A world that hands over its whole map at load time
+observation belief in which **unknown is a state in its own right** — not a
+default zero, and distinct from a dimension that is absent altogether
+(chapter 7 makes the three-way distinction). A world that hands over its whole map at load time
 is then the degenerate case rather than the normal one.
 
 **Quanta are decoded per body.** Spatial boxes are decoded from that belief
