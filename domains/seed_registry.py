@@ -1627,6 +1627,27 @@ REGISTRY.register(Seed(
 ))
 
 REGISTRY.register(Seed(
+    id="vision_boundary_trace", version="1.0.0",
+    depends_on=("vision_motion_group",),
+    installer=_installer_from_manifest("vision_boundary_trace"),
+    description="REGION BOUNDARY AS A SUBGRAPH, not a label field. "
+                "vision_motion_group settles grouping by DIFFUSING a label "
+                "(mo_flood), which costs one pass per hop and represents "
+                "membership as equality of a number — so reading membership "
+                "back is a scan of every cell, and freezing the derivation base "
+                "stalls the diffusion (this is what falsified Stage A). This "
+                "seed derives the SAME partition's boundary from the SAME "
+                "pairwise predicate with no diffusion: an edge crosses a "
+                "boundary or it does not, decidable locally. The rim is then an "
+                "ordinary subgraph (rim_next), traversed at read time to emit a "
+                "contour — and a contour is a path, which is what StrokeQuantize "
+                "turns into a held shape the sd loop can recognise, transform "
+                "and mint. A label is recognisable as nothing. Reuses the "
+                "field's own mtol; no new constant. marm=0.0 default => inert. "
+                "WHY_FLOODS_EXIST.md.",
+))
+
+REGISTRY.register(Seed(
     id="parallax_efference", version="1.0.0",
     depends_on=("vision_motion_group",),
     installer=_installer_from_manifest("parallax_efference"),

@@ -1405,6 +1405,11 @@ where
 /// transitive-closure-shaped rewrite systems.
 pub struct ApplyOutcome {
     pub undo: Vec<UndoStep>,
+    /// Index into `rule.effects` of the effect that produced each `undo` step,
+    /// parallel to `undo`. Lets a caller recover a forward delta that preserves
+    /// each effect's own semantics — notably whether an inserted node came from
+    /// a conditional `AddNodeIfAbsent` or an unconditional `AddNode`.
+    pub undo_src: Vec<u32>,
     pub progressed: bool,
     /// Concept definitions produced by `Effect::DefineConcept` during
     /// this apply. The applier collects (name, term) pairs here rather
@@ -1489,9 +1494,22 @@ pub fn apply_rule_full(
     cache.as_deref_mut().unwrap().clear_sd_ops();
     let mut b: Binding = binding.clone();
     let mut undo: Vec<UndoStep> = Vec::new();
+    // Which EFFECT produced each undo step, parallel to `undo`. A proposal has
+    // to know this: `AddNodeIfAbsent` and `AddNode` both emit
+    // `UndoStep::AddedNode`, so a forward delta reconstructed from the undo log
+    // alone cannot tell a CONDITIONAL insert from an unconditional one and will
+    // silently flatten the condition away (`stage_a.rs`).
+    //
+    // Filled at the TOP of each iteration for the PREVIOUS effect, and once
+    // more after the loop — several effect arms `continue`, so attributing at
+    // the bottom would desync the two vectors on exactly those paths.
+    let mut undo_src: Vec<u32> = Vec::new();
+    let mut cur_effect: u32 = 0;
     let mut progressed = false;
     let mut pending_concepts: Vec<(Sym, TermIdx)> = Vec::new();
-    for effect in &rule.effects {
+    for (effect_idx, effect) in rule.effects.iter().enumerate() {
+        undo_src.resize(undo.len(), cur_effect);
+        cur_effect = effect_idx as u32;
         if let Some(c) = cache.as_deref_mut() {
             c.clear_traversal();
         }
@@ -1963,7 +1981,8 @@ pub fn apply_rule_full(
             c.insert(*name_sym, *term_idx);
         }
     }
-    ApplyOutcome { undo, progressed, pending_concepts }
+    undo_src.resize(undo.len(), cur_effect);
+    ApplyOutcome { undo, undo_src, progressed, pending_concepts }
 }
 
 /// Inverse of `apply_rule` with `record_undo: true`. Replays the
@@ -2211,6 +2230,17 @@ pub fn run_rules_opts(
                 // know if it progresses. Cheapest path: do the apply
                 // with record_undo=true, check progress, and if it
                 // didn't progress, undo. If it did progress, keep it.
+                //
+                // Bindings were ALL collected above before any apply, so
+                // enumeration reads an unmutated graph. The only way a
+                // rolled-back probe can reach the next binding is if the undo
+                // below is inexact — which `effect_audit::probe_exactness`
+                // measures rather than assumes.
+                let fp_before = if crate::effect_audit::probe_exactness() {
+                    Some(graph.state_fingerprint())
+                } else {
+                    None
+                };
                 let outcome = apply_rule_full(
                     rule, &b, arena, graph, interner, concepts.as_deref_mut(), framebuffers, cache.as_deref_mut(), true,
                 );
@@ -2223,6 +2253,13 @@ pub fn run_rules_opts(
                     // is the typical case). Then try the next.
                     crate::scale_audit::apply_probe_rollback();
                     undo_apply(outcome.undo, graph);
+                    if let Some(before) = fp_before {
+                        crate::effect_audit::record_probe_rollback(
+                            before,
+                            graph.state_fingerprint(),
+                            || interner.resolve(rule.name).to_string(),
+                        );
+                    }
                 }
             }
             if found_progressing.is_some() {

@@ -3773,23 +3773,147 @@ impl Substrate {
                     if bindings.is_empty() { "*** ZERO: the WHERE filtered every binding (where is FALSE) — NOT a cursor problem ***" } else { "(where passed for some binding -> will apply)" });
             }
             let mut res = false;
+            // How many bindings this drain actually COMMITS. Two or more means
+            // later bindings evaluated against earlier ones' writes — the
+            // same-round visibility Stage A would remove. See
+            // `effect_audit::record_multi_binding_drain`.
+            let mut progressed_here: u64 = 0;
+            // STAGE A staging area — empty and untouched when the flag is off.
+            let compare_here = crate::stage_a::compare_mode()
+                && crate::stage_a::rule_is_derivable(&rule);
+            let stage_a_here = crate::stage_a::enabled()
+                && crate::stage_a::rule_is_derivable(&rule);
+            if crate::stage_a::enabled() && !stage_a_here {
+                crate::stage_a::note_excluded_drain();
+            }
+            let mut proposals: Vec<crate::stage_a::Proposal> = Vec::new();
+            let mut committed: Vec<crate::stage_a::Proposal> = Vec::new();
+            // STAGE A: derive the whole drain against the untouched base, then
+            // ask whether the resulting proposals are jointly applicable. If two
+            // of them write the same place they were each computed blind to the
+            // other, so the set is NOT independent and the sequential committed
+            // path below runs instead. Deriving first and undoing leaves the
+            // graph exactly where it started either way.
+            let mut stage_a_committed = false;
+            if stage_a_here {
+                let mut derived: Vec<crate::stage_a::Proposal> = Vec::new();
+                let mut seen: rustc_hash::FxHashSet<
+                    smallvec::SmallVec<[(Sym, NodeID); 8]>> = Default::default();
+                for b in &bindings {
+                    if !seen.insert(self.binding_key(&rule, b)) {
+                        continue;
+                    }
+                    let out = crate::rewrite::apply_rule_full(
+                        &rule, b, &mut self.terms, &mut self.graph,
+                        &mut self.interner, Some(&mut self.concepts),
+                        Some(&self.framebuffers), None, true,
+                    );
+                    if out.progressed {
+                        derived.push(crate::stage_a::capture(
+                            &rule, &out.undo, &out.undo_src, &self.graph, true));
+                    }
+                    crate::rewrite::undo_apply(out.undo, &mut self.graph);
+                }
+                if crate::stage_a::conflicts(&derived) {
+                    crate::stage_a::note_conflict_fallback();
+                } else if !derived.is_empty() {
+                    for proposal in &derived {
+                        crate::stage_a::commit(proposal, &mut self.graph);
+                    }
+                    progressed_here += derived.len() as u64;
+                    res = true;
+                    stage_a_committed = true;
+                }
+            }
+            // Compare mode derives the Stage A proposals FIRST, against the
+            // untouched base, undoes them, and then lets the committed loop run
+            // normally below — so the graph ends up exactly where it would have.
+            if compare_here {
+                let mut derived: Vec<crate::stage_a::Proposal> = Vec::new();
+                let mut seen: rustc_hash::FxHashSet<
+                    smallvec::SmallVec<[(Sym, NodeID); 8]>> = Default::default();
+                for b in &bindings {
+                    if !seen.insert(self.binding_key(&rule, b)) {
+                        continue;
+                    }
+                    let out = crate::rewrite::apply_rule_full(
+                        &rule, b, &mut self.terms, &mut self.graph,
+                        &mut self.interner, Some(&mut self.concepts),
+                        Some(&self.framebuffers), None, true,
+                    );
+                    if out.progressed {
+                        derived.push(crate::stage_a::capture(
+                            &rule, &out.undo, &out.undo_src, &self.graph, true));
+                    }
+                    crate::rewrite::undo_apply(out.undo, &mut self.graph);
+                }
+                proposals = derived;
+            }
             let mut seen_bindings: rustc_hash::FxHashSet<
                 smallvec::SmallVec<[(Sym, NodeID); 8]>> = Default::default();
             for b in bindings {
+                if stage_a_committed {
+                    break;
+                }
                 let canon = self.binding_key(&rule, &b);
                 if !seen_bindings.insert(canon) {
                     continue;
                 }
+                // See `effect_audit::probe_exactness`. This is the LIVE drain
+                // path (the `rewrite.rs` cold path is the other one), and it is
+                // the stronger case: on progress it does not break, so a later
+                // binding evaluates against earlier bindings' COMMITTED writes.
+                // The fingerprint pair below measures only the rolled-back
+                // probes — whether a non-progressing binding leaves the graph
+                // exactly as it found it.
+                let fp_before = if crate::effect_audit::probe_exactness() {
+                    Some(self.graph.state_fingerprint())
+                } else {
+                    None
+                };
                 let outcome = crate::rewrite::apply_rule_full(
                     &rule, &b, &mut self.terms, &mut self.graph,
                     &mut self.interner, Some(&mut self.concepts), Some(&self.framebuffers), None, true,
                 );
+                // STAGE A: derive against ONE immutable base. Capture the
+                // firing's forward delta, then undo it so the NEXT binding
+                // evaluates against the same graph this one did; the collected
+                // proposals are applied together after the loop. When the flag
+                // is off, or the rule can delete a node (undo cannot restore
+                // one), this branch is skipped entirely and the committed
+                // drain below runs byte-unchanged.
                 if outcome.progressed {
+                    if compare_here {
+                        // Committed path: capture what THIS firing produced with
+                        // earlier bindings' writes visible, and leave it applied.
+                        committed.push(crate::stage_a::capture(
+                            &rule, &outcome.undo, &outcome.undo_src, &self.graph, true));
+                    }
                     res = true;
+                    progressed_here += 1;
                 } else {
                     crate::scale_audit::apply_probe_rollback();
                     crate::rewrite::undo_apply(outcome.undo, &mut self.graph);
+                    if let Some(before) = fp_before {
+                        let after = self.graph.state_fingerprint();
+                        let name = self.interner.resolve(rule.name).to_string();
+                        crate::effect_audit::record_probe_rollback(before, after, || name);
+                    }
                 }
+            }
+            if compare_here {
+                let name = self.interner.resolve(rule.name).to_string();
+                crate::stage_a::record_comparison(&name, &proposals, &committed);
+                proposals.clear();
+            }
+            // The single application boundary: every proposal derived above was
+            // derived against the same base, and they land here in order.
+            for proposal in &proposals {
+                crate::stage_a::commit(proposal, &mut self.graph);
+            }
+            if progressed_here >= 2 {
+                let name = self.interner.resolve(rule.name).to_string();
+                crate::effect_audit::record_multi_binding_drain(&name, progressed_here);
             }
             // After draining, re-establish cursors for any
             // edge_type this rule reads so the next visit
