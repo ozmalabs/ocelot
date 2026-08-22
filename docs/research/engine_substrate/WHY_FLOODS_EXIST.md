@@ -378,8 +378,41 @@ rectangle after the mint  : covered = (9,  None)          <- partial: a residual
 
 A region boundary is therefore an ordinary citizen of the codebook: recognised when it matches
 a held quantum, and producing exactly the partial-coverage residual `sd_mint_quantum` fires on
-when it does not. The full ladder — recognise, transform-in-basis, infer-dimension, mint — is
-the one already built for ink, and a contour is the same kind of object it consumes.
+when it does not.
+
+### But the ink ladder does NOT transfer unchanged — measured
+
+An earlier version of this section said the ladder built for ink "applies to a contour
+unchanged". **That is too strong and is corrected here.** Translation transfers; rotation and
+scale do not, and the two fail for different reasons:
+
+```
+3x6 rectangle (minted)      -> (16, 'rect_3x6')   control
+the same rotated 90 degrees -> ( 8,  None)        NOT recognised
+3x3 square (minted)         -> (16, 'square_3x3') control
+the same at 2x scale (6x6)  -> (11,  None)        NOT recognised
+```
+
+**Rotation fails because a loop has no canonical start.** The rotated rectangle carries the
+SAME MULTISET of turn quanta as the original — the shape content is identical — but no cyclic
+shift aligns the two sequences, because the walk begins at a different corner and may run the
+opposite way round. `StrokeQuantize` was built for STROKES, which have a pen-down start and a
+direction; a closed region boundary has neither. A signature that is a sequence needs a
+canonical origin, and for a loop that has to be *derived* (extremal turn, say) rather than
+inherited from the writing order. This is a real structural difference between a stroke and a
+contour, and it is not a wiring mistake.
+
+**Scale fails for an unrelated and less fixable reason.** The 3x3 and 6x6 squares differ even in
+their turn MULTISET (bins `2` versus `3`): a small square's corners are proportionally blunter
+on a discrete grid than a large one's, so the quantised turn profile genuinely differs. That is
+observation-resolution, not canonicalisation, and no re-indexing of the sequence recovers it —
+it is the same *"pin a continuous parameter only to observational resolution"* limit this repo's
+frame/continuum rule already states.
+
+So the honest position is: a contour reaches the codebook and is recognised under translation;
+rotation needs a canonical loop origin that does not exist yet; scale is bounded by grid
+resolution. Naming which of the ladder's four rungs actually transfer is the next measurement,
+and only rung 0 (exact recognise) is demonstrated.
 
 The test uses `teach`'s own `OZMA_SEED_PERSIST_DISABLED` guard, which keeps the live-graph
 install and skips only the seed-dir write. Stubbing `teach` instead — the first attempt — also
