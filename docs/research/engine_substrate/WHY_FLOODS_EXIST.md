@@ -632,6 +632,48 @@ happened to agree is an easy subset by construction, and this repo's standing ru
 subset is part of the claim. Using the held `DtwTo`, which tolerates differing lengths, restores
 the hard cases and the advantage evaporates.
 
+### Same SHAPE, not same bytes — the turning function, and an honest null
+
+Requiring equal vertex counts is demanding BYTE correspondence, not shape identity: a straight
+edge sampled with two points or twenty is the same edge, and a spurious collinear vertex has
+turn ~0 and contributes nothing. The object blind to that is the cumulative **turning function**
+phi(s) — turn accumulated against normalised arc length. Inserting a collinear vertex does not
+change it at all; rotation is a constant offset; scale vanishes under arc-length normalisation;
+the residual freedom is a cyclic shift. No vertex extraction, no RDP, no threshold on what counts
+as a corner.
+
+Built, with two implementation bugs found by control rather than by inspection — the closing turn
+was dropped (so phi never reached 2pi) and a non-periodic ramp was being smoothed with circular
+padding. Corrected, the controls look spectacular:
+
+```
+self                : 0.0000
+rect@0 vs rect@90   : 0.0281      (exact lattice rotation)
+rect@0 vs rect@45   : 0.0293      (oblique, maximal staircase)
+rect@0 vs square@0  : 0.2348      (different shape, 8x)
+```
+
+45 degrees as close as 90 degrees — the grid damage apparently gone.
+
+**It is not.** Those are the two BEST pairs for that shape; the rectangle's median across all its
+valid pairs is **0.1864**, six times worse. Quoting the controls as the result would have been the
+same single-sample error this document has already recorded twice.
+
+The full series, on 5 shapes x 7 angles:
+
+| representation | coverage | misclassified |
+|---|---|---|
+| absolute points, `ScTpsDist` | 496 pairs | 14.3% |
+| intrinsic, equal vertex counts only | 65 (26%) | 4.6% — invalid subset |
+| intrinsic + held `DtwTo`, all | 276 | 15.9% |
+| turning function, all | 496 | 14.9% |
+| turning function, closed curves only | 253 | **13.0%** |
+| turning function, reliably-extracted shapes | 136 | 19.9% |
+
+**No representation tried removes the grid damage, and the spread between them (13–16%) is not a
+result.** Coordinate-free helps at the margin and only when the contour is a valid simple closed
+curve — and 9 of 32 extractions are not one, accumulating ~0 total turning instead of 2pi.
+
 **So the intrinsic representation is right and the extraction is the blocker.** Vertices and
 angles carry no frame, exactly as intended; but a stable vertex SET cannot be recovered from a
 lattice raster at this resolution, because the staircase invents and destroys corners as the
