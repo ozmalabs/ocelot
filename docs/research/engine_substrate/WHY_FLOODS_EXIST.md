@@ -538,10 +538,51 @@ not at contour-extraction time.** You cannot de-grid afterwards if the sampling 
 the sub-cell evidence. Where the observation retains it, fitting recovers part of the loss; where
 it does not, the staircase is the honest answer and the contour should not pretend otherwise.
 
-And sub-cell fitting is not a rotation fix. The dominant term throughout remains the comparator's
-orientation blindness — 90 degrees, whose raster is identical to 0, still scores worst in every
-column above. **Not landed as a default**: nothing in the tree emits contours in production yet,
-and a mixed result should not become the committed geometry on the strength of one synthetic.
+And sub-cell fitting is not a rotation fix. **Not landed as a default**: nothing in the tree
+emits contours in production yet, and a mixed result should not become the committed geometry on
+the strength of one synthetic.
+
+### FIXED: factoring pose out, rather than asking the distance to absorb it
+
+The dominant term throughout was the comparator, not the grid — 90 degrees, whose raster is
+pixel-identical to 0, scored worst in every column above. `ScTpsDist` normalises scale but not
+orientation, and asking for a rotation-invariant *distance* is the wrong request: **orientation is
+a POSE dimension**, which is exactly how the sd loop already treats it (`pose_o` as its own
+single-slot relation, codebook entries at `canonical_pose`). A stroke inherits its orientation
+from the writing direction; a closed contour must DERIVE one.
+
+Principal axis supplies it, up to the residue a second moment cannot fix — the axis is defined
+only up to sign, and reflection not at all. That residue is four discrete candidates, so the
+verdict is an `Argmin` over them and **the winning candidate IS the pose delta**: one held shape
+plus a transform, rung 1, not a fudge factor. Bins propose the candidate poses; the continuous
+distance decides among them.
+
+| deg | raw | pose-aligned |
+|---|---|---|
+| 15 | 0.0794 | 0.0680 |
+| 30 | 0.1127 | 0.1127 |
+| 45 | 0.2592 | **0.0234** |
+| 90 | 0.3922 | **0.0053** |
+
+90 degrees improves **74x** and 45 degrees **11x**. More importantly the ordering is repaired:
+
+```
+worst SAME-shape, aligned : 0.1127
+DIFFERENT shape, aligned  : 0.1486     -> separates
+```
+
+Before alignment the 90-degree SAME shape (0.3922) ranked worse than a genuinely different one
+(0.1486) — actively misleading, not merely blind.
+
+Two honest limits. **The margin is thin**: 0.1127 against 0.1486 is 1.3x, on one synthetic pair.
+And **the residual IS the grid damage** — after orientation is removed, the worst same-shape
+distance is the 30-degree case, whose raster genuinely differs (41 cells against 45). That is the
+irreducible half of the earlier decomposition, now isolated rather than confounded with the
+comparator.
+
+The Python here is the demonstration. The graph-native form is an `Argmin` over held pose
+candidates with `ScTpsDist` as the value — every piece of which already exists as a Term — and
+that is unbuilt.
 
 The test uses `teach`'s own `OZMA_SEED_PERSIST_DISABLED` guard, which keeps the live-graph
 install and skips only the seed-dir write. Stubbing `teach` instead — the first attempt — also
