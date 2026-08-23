@@ -6966,52 +6966,21 @@
      "trajectory_horizon",
      {
       "__term__": {
-       "type": "IfThenElse",
-       "cond": {
-        "type": "Gt",
-        "a": {
-         "type": "Plus",
-         "items": [
-          {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "development"
-           },
-           "key": "development_evidence_window"
-          },
-          {
-           "type": "Lit",
-           "value": 0
-          }
-         ]
-        },
-        "b": {
-         "type": "Lit",
-         "value": 2
-        }
-       },
-       "then": {
-        "type": "Lit",
-        "value": 2
-       },
-       "other": {
-        "type": "Plus",
-        "items": [
-         {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "development"
-          },
-          "key": "development_evidence_window"
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "development"
          },
-         {
-          "type": "Lit",
-          "value": 0
-         }
-        ]
-       }
+         "key": "development_evidence_window"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
       }
      }
     ],

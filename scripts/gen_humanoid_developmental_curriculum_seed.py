@@ -2229,11 +2229,7 @@ def request_generic_program_trajectory_rule():
                 "recruits_task_set", "trajectory_pareto_tasks",
             ],
             ["set_attr", "development", "trajectory_horizon", T(
-                If(
-                    Gt(P0("development", "development_evidence_window"), L(2)),
-                    L(2),
-                    P0("development", "development_evidence_window"),
-                )
+                P0("development", "development_evidence_window")
             )],
             [
                 "set_attr", "development",

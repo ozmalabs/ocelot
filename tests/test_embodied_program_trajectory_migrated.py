@@ -178,6 +178,40 @@ def test_moving_current_program_does_not_fragment_situated_trajectory():
     )) == 1
 
 
+def test_existing_trajectory_deepens_when_evidence_budget_grows():
+    agent, owner, trajectory, _ = _fixture(1, (
+        {"source": 0, "target": 1, "pre_x": 0, "post_x": 10,
+         "energy": 1},
+        {"source": 1, "target": 2, "pre_x": 10, "post_x": 20,
+         "energy": 1},
+        {"source": 2, "target": 3, "pre_x": 20, "post_x": 30,
+         "energy": 1},
+    ))
+    assert max(
+        agent.s.node(path)["attrs"]["depth"]
+        for path in agent.inner.neighbours(
+            trajectory, "has_pareto_candidate"
+        )
+    ) == 1
+
+    budget = agent.inner.neighbours(
+        trajectory, "uses_embodied_program_budget"
+    )[0]
+    agent.inner.set_attr(budget, "trajectory_horizon", 3)
+    agent.tick()
+
+    assert agent.inner.neighbours(
+        owner, "has_embodied_program_trajectory"
+    ) == [trajectory]
+    assert agent.s.node(trajectory)["attrs"]["horizon"] == 3
+    assert max(
+        agent.s.node(path)["attrs"]["depth"]
+        for path in agent.inner.neighbours(
+            trajectory, "has_pareto_candidate"
+        )
+    ) == 3
+
+
 def test_frontier_remains_replayable_from_an_internal_current_program():
     agent, owner, trajectory, transitions = _fixture(2, (
         {"source": 0, "target": 1, "pre_x": 0, "post_x": 10,

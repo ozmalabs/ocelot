@@ -381,6 +381,144 @@
    ]
   },
   {
+   "name": "ept_refresh_situated_trajectory_horizon_from_budget",
+   "area": "embodied_program_trajectory",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "comment": "An existing trajectory deepens as its situated evidence window grows. The owner retains one trajectory identity; only the graph-held expansion horizon changes.",
+   "match": [
+    [
+     "owner",
+     "has_embodied_program_trajectory",
+     "trajectory"
+    ],
+    [
+     "trajectory",
+     "uses_embodied_program_budget",
+     "budget"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trajectory"
+         },
+         "key": "selection_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "budget"
+         },
+         "key": "trajectory_horizon"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "trajectory"
+          },
+          "key": "horizon"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "budget"
+          },
+          "key": "trajectory_horizon"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "trajectory",
+     "horizon",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "budget"
+         },
+         "key": "trajectory_horizon"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
    "name": "ept_mint_verified_order_one_path",
    "area": "embodied_program_trajectory",
    "latency_class": "soft_realtime",
