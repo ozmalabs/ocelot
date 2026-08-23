@@ -621,13 +621,6 @@ def select_frontier_path_rule() -> dict:
             Eq(Count(Neighbours(
                 "owner", "has_selected_embodied_program_path"
             )), L(0)),
-            Not(Eq(
-                P0(
-                    "trajectory",
-                    "last_foveation_deepening_expansion_count",
-                ),
-                P0("trajectory", "expansion_count"),
-            )),
         ),
         "effects": [
             ["add_edge", "owner", "has_selected_embodied_program_path", "path"],
@@ -688,15 +681,29 @@ def retract_refuted_selection_rule() -> dict:
 
 
 def deepen_exhausted_trajectory_rule() -> dict:
+    blocked_local_paths = Filter(
+        Neighbours("trajectory", "has_pareto_candidate"),
+        "blocked_local_path",
+        And(
+            Eq(
+                P0("blocked_local_path", "depth"),
+                P0("trajectory", "active_expansion_horizon"),
+            ),
+            Gt(Count(Neighbours(
+                "blocked_local_path",
+                "manifold_blocked_from_embodied_program_transition",
+            )), L(0)),
+        ),
+    )
     return {
         "name": "ept_deepen_trajectory_after_local_frontier_exhaustion",
         "area": "embodied_program_trajectory",
         "latency_class": "soft_realtime",
         "batch": False,
         "comment": "Temporal foveation holds farther futures as potential. "
-        "Expose one additional order after selection finds no live local "
-        "path, and continue only if that newly constructed layer is also "
-        "exhausted.",
+        "Expose one additional order only after the manifold explicitly "
+        "blocks a path at the active depth; deeper orders require their own "
+        "new local block evidence.",
         "match": [
             ["owner", "has_embodied_program_trajectory", "trajectory"],
             ["owner", "has_current_embodied_program", "current_program"],
@@ -710,6 +717,14 @@ def deepen_exhausted_trajectory_rule() -> dict:
             Eq(Count(Neighbours(
                 "owner", "has_selected_embodied_program_path"
             )), L(0)),
+            Gt(Count(blocked_local_paths), L(0)),
+            Not(Eq(
+                P0(
+                    "trajectory",
+                    "last_foveation_deepening_expansion_count",
+                ),
+                P0("trajectory", "expansion_count"),
+            )),
         ),
         "effects": [[
             "set_attr", "trajectory", "active_expansion_horizon", T(
