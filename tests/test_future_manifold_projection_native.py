@@ -773,6 +773,14 @@ def test_humanoid_takeoff_projects_flat_intermediate_actions_to_improving_order_
         agent, development,
         "has_active_embodied_developmental_capability", capability,
     )
+    safety = agent.s.add_node("LearningSafetyContext", {
+        "verified": 1.0,
+        "reset_reachable": 1.0,
+        "reset_cost_units": 1.0,
+        "required_horizon_units": 1.0,
+        "protective_support_available": 1.0,
+    })
+    _edge(agent, episode, "has_learning_safety_context", safety)
     common = {
         "support_phase": 0.0, "context_id": 0.0,
         "initialized": 1.0, "mean_input_energy_joules": 0.0,
@@ -792,6 +800,7 @@ def test_humanoid_takeoff_projects_flat_intermediate_actions_to_improving_order_
         })
         _edge(agent, episode, "has_humanoid_phase_action_model", model)
         models.append(model)
+    ungrounded = None
     for ordinal, (left, right) in enumerate((
         ("primary", "flat_a"),
         ("primary", "flat_b"),
@@ -800,16 +809,32 @@ def test_humanoid_takeoff_projects_flat_intermediate_actions_to_improving_order_
         synergy = agent.s.add_node("HumanoidSynergyModel", {
             "token_a": left, "token_b": right,
             "ordinal": float(ordinal), "approved": 1.0,
+            "experience_count": (
+                0.0 if (left, right) == ("primary", "flat_a") else 1.0
+            ),
             **{f"residual_{key}": (
                 3.0 if key == "dvz" and left == "flat_a" else 0.0
             ) for key in ("dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz")},
         })
         _edge(agent, episode, "has_humanoid_synergy_model", synergy)
+        if (left, right) == ("primary", "flat_a"):
+            ungrounded = synergy
     plan = agent.s.add_node("HumanoidMotorProgram", {
         "request_seq": 1.0, "allow_expansion": 1.0,
     })
     _edge(agent, episode, "has_active_humanoid_motor_program", plan)
 
+    # The unknown pair is the only information-gaining probe. Its receipt is
+    # identifiable, so the composer stops at width two even though evidence
+    # permits order three.
+    assert _humanoid_motor_members(agent, episode, policy) == {
+        "primary", "flat_a",
+    }
+    assert ungrounded is not None
+    agent.inner.set_attr(ungrounded, "experience_count", 1.0)
+
+    # Once the lower-order basis is grounded, the terminal order-three shape
+    # can justify crossing the locally flat intermediate step.
     assert _humanoid_motor_members(agent, episode, policy) == {
         "primary", "flat_a", "flat_b",
     }
