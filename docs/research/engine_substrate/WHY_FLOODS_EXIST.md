@@ -729,6 +729,41 @@ midpoint by better than 2x, asserted as a RATIO so it cannot go stale; and — t
 **accuracy holding on a raised background AND beside a second object at a different value**, which
 is exactly what the three discarded anchors failed. 24/24 green.
 
+### The chain-after-filter residual, narrowed — and one repair refuted
+
+The residual recorded as "at super x8 only 26 of 108 surviving crossings chain into one cycle" is
+real but much narrower than that phrasing suggests. Measured across raster levels, on the true
+crossings only:
+
+| raster | true | deg 0 | deg 1 | deg 2 | deg >2 | components | largest |
+|---|---|---|---|---|---|---|---|
+| hard mask | 116 | 0 | 0 | **116** | 0 | **1** | 116 |
+| super x2 | 116 | 0 | 0 | **116** | 0 | **1** | 116 |
+| super x4 | 108 | 0 | 0 | **108** | 0 | **1** | 108 |
+| super x8 | 108 | 4 | 8 | 96 | 0 | 8 | 26 |
+
+**Hard, x2 and x4 are perfect** — 100% degree-2, a single cycle, nothing to repair. Only x8 breaks,
+and there 12 of 108 crossings (11%) are under-connected. The cause is that at x8 some segments have
+a TWO-cell band, so the cell-pair correspondence `bt_chain_collinear` needs (`A neighbour C` AND
+`B neighbour D`) no longer holds across the gap.
+
+**A repair was proposed, measured, and REFUTED.** Link two true crossings whose FIGURE cells are
+lattice neighbours — weaker than cell-pair correspondence, so it should still link across a 2-cell
+band. It fails both ways at once:
+
+| raster | | deg 2 | deg >2 | components |
+|---|---|---|---|---|
+| hard mask | as-is | **116** | 0 | 1 |
+| hard mask | with repair | 68 | **48** | 1 |
+| super x8 | as-is | 96 | 0 | 8 |
+| super x8 | with repair | 64 | 32 | **8** |
+
+It OVER-links where the chain was already perfect — a hard mask loses 48 crossings to degree > 2,
+destroying exactly the unambiguous-successor property the two chaining rules were built to give —
+and it does not reach the broken crossings at all: the isolated ones stay isolated and the component
+count does not move. Figure-cell adjacency is both too permissive and insufficient. Not built, and
+recorded so the next attempt does not retry it.
+
 **Still not built:** `bt_disagree` remains a pairwise threshold. Two residuals stand: at super x8 only 26 of the 108 surviving crossings chain into one cycle
 (the chaining rules link true crossings to dropped ones, and the chain is not re-derived among the
 survivors), and the rectangle's cell count drops 65 -> 33 under supersampling because the boundary
