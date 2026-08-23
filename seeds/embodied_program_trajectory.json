@@ -321,6 +321,56 @@
         ]
        }
       },
+      "active_expansion_horizon": {
+       "__term__": {
+        "type": "Min",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "budget"
+            },
+            "key": "trajectory_horizon"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 1
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "budget"
+              },
+              "key": "trajectory_minimum_selection_depth"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      },
       "minimum_selection_depth": {
        "__term__": {
         "type": "Max",
@@ -350,6 +400,7 @@
        }
       },
       "expansion_count": 0,
+      "last_foveation_deepening_expansion_count": -1,
       "selection_count": 0,
       "selected_task_progress_units": 0,
       "selected_capability_evidence_units": 0,
@@ -511,6 +562,52 @@
         {
          "type": "Lit",
          "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "trajectory",
+     "active_expansion_horizon",
+     {
+      "__term__": {
+       "type": "Min",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "trajectory"
+           },
+           "key": "active_expansion_horizon"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "budget"
+           },
+           "key": "trajectory_horizon"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
         }
        ]
       }
@@ -1775,7 +1872,7 @@
           "type": "Var",
           "name": "trajectory"
          },
-         "key": "horizon"
+         "key": "active_expansion_horizon"
         },
         {
          "type": "Lit",
@@ -1815,7 +1912,7 @@
             "type": "Var",
             "name": "trajectory"
            },
-           "key": "horizon"
+           "key": "active_expansion_horizon"
           },
           {
            "type": "Lit",
@@ -1864,7 +1961,7 @@
             "type": "Var",
             "name": "trajectory"
            },
-           "key": "horizon"
+           "key": "active_expansion_horizon"
           },
           {
            "type": "Lit",
@@ -2599,7 +2696,7 @@
             "type": "Var",
             "name": "trajectory"
            },
-           "key": "horizon"
+           "key": "active_expansion_horizon"
           },
           {
            "type": "Lit",
@@ -5427,6 +5524,46 @@
        "type": "Lit",
        "value": 0
       }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "trajectory"
+          },
+          "key": "last_foveation_deepening_expansion_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "trajectory"
+          },
+          "key": "expansion_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
      }
     ]
    },
@@ -5670,6 +5807,202 @@
           "name": "path"
          },
          "key": "current_state_shape_residual_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "ept_deepen_trajectory_after_local_frontier_exhaustion",
+   "area": "embodied_program_trajectory",
+   "latency_class": "soft_realtime",
+   "batch": false,
+   "comment": "Temporal foveation holds farther futures as potential. Expose one additional order after selection finds no live local path, and continue only if that newly constructed layer is also exhausted.",
+   "match": [
+    [
+     "owner",
+     "has_embodied_program_trajectory",
+     "trajectory"
+    ],
+    [
+     "owner",
+     "has_current_embodied_program",
+     "current_program"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trajectory"
+         },
+         "key": "selection_enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trajectory"
+         },
+         "key": "active_expansion_horizon"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trajectory"
+         },
+         "key": "horizon"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "owner"
+        },
+        "edge_type": "has_selected_embodied_program_path",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "trajectory",
+     "active_expansion_horizon",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "trajectory"
+           },
+           "key": "active_expansion_horizon"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "trajectory",
+     "foveation_deepening_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "trajectory"
+           },
+           "key": "foveation_deepening_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "trajectory",
+     "last_foveation_deepening_expansion_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trajectory"
+         },
+         "key": "expansion_count"
         },
         {
          "type": "Lit",

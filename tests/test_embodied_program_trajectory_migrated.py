@@ -179,7 +179,7 @@ def test_moving_current_program_does_not_fragment_situated_trajectory():
     )) == 1
 
 
-def test_existing_trajectory_deepens_when_evidence_budget_grows():
+def test_existing_trajectory_deepens_lazily_when_local_frontier_exhausts():
     agent, owner, trajectory, _ = _fixture(1, (
         {"source": 0, "target": 1, "pre_x": 0, "post_x": 10,
          "energy": 1},
@@ -205,6 +205,28 @@ def test_existing_trajectory_deepens_when_evidence_budget_grows():
         owner, "has_embodied_program_trajectory"
     ) == [trajectory]
     assert agent.s.node(trajectory)["attrs"]["horizon"] == 3
+    assert agent.s.node(trajectory)["attrs"][
+        "active_expansion_horizon"
+    ] == 1
+    assert max(
+        agent.s.node(path)["attrs"]["depth"]
+        for path in agent.inner.neighbours(
+            trajectory, "has_pareto_candidate"
+        )
+    ) == 1
+
+    counterexample = agent.s.add_node("FixtureCounterexample", {})
+    for path in agent.inner.neighbours(
+        trajectory, "has_pareto_candidate"
+    ):
+        _edge(
+            agent, path,
+            "is_dominated_by_pareto_candidate", counterexample,
+        )
+    agent.tick()
+    assert agent.s.node(trajectory)["attrs"][
+        "active_expansion_horizon"
+    ] == 3
     assert max(
         agent.s.node(path)["attrs"]["depth"]
         for path in agent.inner.neighbours(
