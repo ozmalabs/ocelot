@@ -508,8 +508,35 @@ Both divergence shapes reduce to that one predicate:
 | PROPAGATION (§5f) | off ANOTHER node — a neighbour, another bound var | `mo_flood`, `qf_relax` |
 | FOLD (§5c, "this one is real") | off the SAME node, across bindings | `adaptive_control_assign_discounted_credit`, `ept_extend_path_with_compatible_verified_transition` |
 
-Measured over the 3740 seed rules on the attribute half alone: **550 refused (14.7%)** — and every
-rule this document names that lives in a seed is among the refused, all four checked explicitly.
+**The refusal is much broader than first reported, and the number is worth having exactly.** An
+earlier draft of this section said 14.7% of seed rules. That figure counted only reads inside
+EFFECT ARGS; the engine's own `read_set` also includes the WHERE clause, and a guard that reads the
+key an effect writes is just as much a dependency. Recounted against the predicate as implemented:
+
+| | rules | share |
+|---|---|---|
+| genuine read-write dependency | 1637 | **43.5%** |
+| opaque read only (`reads_any`: `TypeOf`, `AttrByName`, `EvalSubgraph`, `any_type` walks) | 34 | 0.9% |
+| **refused** | **1643** | **43.7%** |
+| still available to Stage B | 2121 | 56.3% |
+
+Two things follow, and the second is the more interesting.
+
+**The refusal is not conservatism.** Under 1% of it is "the read set cannot be trusted"; over 99%
+is a dependency actually present in the rule. Tightening the analysis would buy almost nothing.
+
+**Nearly half this substrate's rules read what they write** — which is §5f's own claim ("floods are
+not a corner case in this substrate; label/distance propagation is how this engine does spatial
+reasoning") stated as a measurement rather than an impression. 30 seeds are refused ENTIRELY,
+including `vision_eye` (27/27), `embodied_adaptation`, `aerial_adaptation`, `capability_graph` and
+`vision_waves`. **Stage B would be blind to those subsystems**, and that is the real price of
+Stage A, not the runtime overhead — which §6 already measured at nothing.
+
+Every rule this document names that lives in a seed is among the refused, all four checked
+explicitly.
+
+*The rule figures above are a static mirror of the predicate computed from the seed JSON, not the
+engine's own count; the drain figures below are the engine's, read from `stage_a_stats()`.*
 The intersection is taken over ALL key kinds, not just attributes, because the same argument
 applies to structure: **95 seed rules (2.5%) MATCH and ADD the same edge type**, which is
 transitive closure, and under Stage A each binding reads the base — one hop per pass, the flood's
