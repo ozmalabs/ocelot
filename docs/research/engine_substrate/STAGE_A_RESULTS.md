@@ -541,9 +541,25 @@ falsifier and left the silent under-count in place.
 
 **HONEST LIMITS, all three structural rather than incidental:**
 
-- **Sufficient, not complete.** This refuses on a syntactic property of one rule's own effects. It
-  does NOT see a CROSS-RULE dependency — rule A writes `K`, rule B reads `K` within the same
-  drain. Such a pair would still be speculated on.
+- ~~**Does not see a CROSS-RULE dependency.**~~ **WITHDRAWN — measured, and the phrasing was
+  confused.** A drain IS one rule (`attempt_one_rule(&mut self, rule_idx)`), and Stage A's staging
+  is scoped inside it, so "rule A and rule B in the same drain" does not name anything: B's drain
+  begins after A's has committed. Stage A removes INTRA-drain, SAME-rule visibility and nothing
+  else, which is exactly why a per-rule predicate suffices. Gated by
+  `test_cross_rule_dependence_is_not_a_stage_a_hazard` — B reads precisely what A writes, both
+  modes agree (`k=25/25, done=25/25, steps=2`).
+
+  **The first probe of this was INERT and nearly produced a wrong conclusion.** It wrote both rules
+  the natural way, with idempotence guards — and an idempotence guard reads the key it writes, so
+  BOTH rules were refused, Stage A never ran, and the modes agreed vacuously at
+  `proposals=0, excluded=138`. **An agreement measured with zero proposals says nothing about
+  Stage A at all.** The fixture had to separate read from write across NODES to be derivable. That
+  trap now has its own gate (`test_a_probe_that_means_to_exercise_stage_a_must_actually_do_so`),
+  because it will recur: the ordinary way to write an idempotent rule is the way that gets refused.
+
+- **Sufficient, not complete.** The predicate is syntactic and per-rule. It refuses on the
+  intersection of two OVER-APPROXIMATED sets, so it declines rules whose reads and writes could
+  never actually meet on the same node.
 - ~~**Term-resident rules only**, per `mv_relax`.~~ **WITHDRAWN — the premise was false.**
   `mv_relax` does not live in `substrate.rs`; it appears there only inside a COMMENT, and the
   name occurs in no `.json` and no `.py` anywhere in the tree. This document named it as one of
