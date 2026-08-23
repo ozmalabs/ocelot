@@ -975,6 +975,7 @@ struct HumanoidSynergy {
     token_b: Option<Sym>,
     ordinal: f64,
     approved: bool,
+    experience_count: f64,
     residual: [f64; 7],
 }
 
@@ -1185,6 +1186,7 @@ impl<'a> HumanoidComposer<'a> {
                 token_b: sattr(graph, interner, *node, "token_b"),
                 ordinal: fattr(graph, interner, *node, "ordinal"),
                 approved: fattr(graph, interner, *node, "approved") > 0.5,
+                experience_count: fattr(graph, interner, *node, "experience_count"),
                 residual: std::array::from_fn(|i| {
                     fattr(
                         graph,
@@ -1939,6 +1941,42 @@ impl<'a> HumanoidComposer<'a> {
         // normal-effort program.  This preserves meaningful exploration
         // without treating target order itself as output authority.
         let target_order = self.takeoff_exploration_target_order();
+
+        // Compress epistemic width one identifiable relation at a time.  A
+        // two-member receipt has exactly one interaction residual, whereas a
+        // wider novel mixture cannot assign its error without inventing
+        // credit.  Supported learning may therefore spend effort on one
+        // previously unseen pair; once observed, its information gain is zero
+        // and another relation (or ordinary task action) must win.
+        let safety = learning_safety_evidence(self.graph, self.interner, self.episode);
+        if plan.len() == 1 && target_order > 1 && safety.active() {
+            let primary = plan[0];
+            let mut epistemic: Option<(usize, f64)> = None;
+            for index in 0..self.models.len() {
+                if !self.admissible_new_member(&plan, index) {
+                    continue;
+                }
+                let Some(synergy) = self.synergy(primary, index) else {
+                    continue;
+                };
+                if synergy.experience_count > 0.0 {
+                    continue;
+                }
+                let mut candidate = plan.clone();
+                candidate.push(index);
+                if !self.manifold_program_admissible(&candidate) {
+                    continue;
+                }
+                let cost = self.cost(&candidate, None);
+                if epistemic.map_or(true, |old| (cost, index) < (old.1, old.0)) {
+                    epistemic = Some((index, cost));
+                }
+            }
+            if let Some((candidate, _)) = epistemic {
+                plan.push(candidate);
+            }
+        }
+
         while plan.len() < target_order {
             let current_cost = self.cost(&plan, None);
             let mut best_rollout: Option<(usize, f64)> = None;
@@ -1948,7 +1986,9 @@ impl<'a> HumanoidComposer<'a> {
                 }
                 let mut rollout = plan.clone();
                 rollout.push(first);
-                if !self.manifold_program_admissible(&rollout) {
+                if !self.manifold_program_admissible(&rollout)
+                    || !self.program_interactions_grounded(&rollout)
+                {
                     continue;
                 }
                 while rollout.len() < target_order {
@@ -1959,7 +1999,9 @@ impl<'a> HumanoidComposer<'a> {
                         }
                         let mut projected = rollout.clone();
                         projected.push(index);
-                        if !self.manifold_program_admissible(&projected) {
+                        if !self.manifold_program_admissible(&projected)
+                            || !self.program_interactions_grounded(&projected)
+                        {
                             continue;
                         }
                         let cost = self.cost(&projected, None);
@@ -2078,6 +2120,20 @@ impl<'a> HumanoidComposer<'a> {
     fn manifold_program_admissible(&self, plan: &[usize]) -> bool {
         self.manifold_path(plan)
             .is_some_and(|(anchor_loss, escaped, _, _)| escaped == 0.0 && anchor_loss.is_finite())
+    }
+
+    fn program_interactions_grounded(&self, plan: &[usize]) -> bool {
+        for left in 0..plan.len() {
+            for right in left + 1..plan.len() {
+                if !self
+                    .synergy(plan[left], plan[right])
+                    .is_some_and(|synergy| synergy.experience_count > 0.0)
+                {
+                    return false;
+                }
+            }
+        }
+        true
     }
 
     fn takeoff_exploration_target_order(&self) -> usize {
