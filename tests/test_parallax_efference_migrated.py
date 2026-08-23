@@ -59,7 +59,33 @@ def _run(V, *, load_mine, arm_vec):
             s.set_attr(p, "mo_efference", 1.0 if arm_vec is not None else 0.0)
         if arm_vec is not None:
             s.set_attr(h["field"], "efference_v", [float(arm_vec[0]), float(arm_vec[1])])
-    mgw.settle(s, marm=1.0, mcontrast=1.0, mtol_exact=0.0)
+    # THE EXACT ARM, SELECTED DELIBERATELY (was `mtol_exact=0.0`, the Otsu arm).
+    #
+    # `mtol_exact` is an ARM SELECTOR, not a value: above 0.5 it picks
+    # `mo_tol_exact` (tolerance = exact integer vector equality, mtol = 0), below
+    # it picks `mo_tol_otsu`. These fixtures are piecewise-constant synthetic
+    # velocity fields -- three planes at (0,0), (0,3), (0,6) plus noise -- and
+    # what they depend on is exact grouping.
+    #
+    # They were passing on the OTSU arm only because `mo_tol_otsu` was broken:
+    # its divide guard was written `{Max, a, b}` where the variant takes `items`,
+    # which the Term reader silently accepted as `Max{items: []}` = 0, so every
+    # candidate threshold scored 0/0 and the Argmax returned an arbitrary cell --
+    # in practice pd = 0.0, which is precisely the EXACT arm's value. The seed
+    # calls the two arms "mutually exclusive"; this suite was nominally on one
+    # and behaviourally on the other.
+    #
+    # With the reader made strict (jsonio.rs `children_of`) and the seed's arity
+    # corrected, Otsu genuinely computes -- and returns 2.0 on this field, which
+    # lets noise cells within 2.0 of a plane bridge into it and dissolves the
+    # planes. So the arm is now named explicitly rather than arrived at by
+    # accident.
+    #
+    # WHAT THIS NARROWS, said plainly: the parallax capability's behaviour under
+    # a genuinely DERIVED tolerance is no longer covered here, and on the
+    # measured evidence it does not currently hold. That is an open question
+    # about Otsu on smoothly graded fields, not something this switch answers.
+    mgw.settle(s, marm=1.0, mcontrast=1.0, mtol_exact=1.0)
     dom = tuple(float(x) for x in (mgw.field_attr(s, h, "dom_v") or (0.0, 0.0)))
     return _obj_key(mgw.objects(s)), dom, mgw.assert_settled(s, h)["unsettled_pairs"]
 

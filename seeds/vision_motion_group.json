@@ -131,7 +131,7 @@
   },
   {
    "name": "mo_tol_otsu",
-   "comment": "\u00a713 -- THE TOLERANCE IS NOT A NUMBER IN THIS FILE. It is the `pd` of a cell the graph picked, by Otsu's between-class criterion over the field's OWN adjacent-pair vector-difference distribution. Fires only once every cell has been measured (the zero-pending guard), so the fixpoint orders the layers with no adapter sequencing. THE INHERITED HONEST LIMIT, pre-registered rather than discovered afterwards: Otsu has no NULL HYPOTHESIS -- it returns a split on any distribution, including a field with no motion structure in it at all. The stills and noise arms exist to measure exactly that.",
+   "comment": "\u00a713 -- THE TOLERANCE IS NOT A NUMBER IN THIS FILE. It is the `pd` of a cell the graph picked, by Otsu's between-class criterion over the field's OWN adjacent-pair vector-difference distribution. Fires only once every cell has been measured (the zero-pending guard), so the fixpoint orders the layers with no adapter sequencing. THE INHERITED HONEST LIMIT, pre-registered rather than discovered afterwards: Otsu has no NULL HYPOTHESIS -- it returns a split on any distribution, including a field with no motion structure in it at all. The stills and noise arms exist to measure exactly that.\n\nARITY CORRECTED 2026-08-23. `Min`/`Max` take `items: Vec`; this guard was written as `{type: Max, a: <counts>, b: 1.0}`, which the Term reader used to accept as `Max { items: [] }` -- evaluating to 0. The guard was therefore always 0, every candidate threshold's between-class variance divided by zero, the `Argmax` ranged over all-equal values, and the rule returned an ARBITRARY cell's `pd` rather than an Otsu split. The reader is now strict about a missing list field (jsonio.rs `children_of`), so this had to be corrected for the rule to install at all.\n\nCONSEQUENCE, FLAGGED NOT SETTLED: the rule now genuinely computes Otsu, and Otsu ASSUMES BIMODALITY. On the hard-mask fixtures the old arbitrary answer (0.0) coincided with the correct split for a bimodal {0, 9} distribution, so nothing changed. On a smoothly GRADED field it does not coincide -- a supersampled disc with pd values {0, 0.56, 3.38, 5.62, 6.75, 8.44, 9.0} gives 0.0 before and 3.375 after -- and a parallax depth field is graded, not bimodal, so the split it returns there merges near and far surfaces. The seed's own pre-registered limit above ('Otsu has no NULL HYPOTHESIS') is exactly this. What the tolerance should BE for graded fields is a design question, not a deserialiser one.",
    "match_type": null,
    "match": [
     [
@@ -548,75 +548,77 @@
          },
          "b": {
           "type": "Max",
-          "a": {
-           "type": "Times",
-           "items": [
-            {
-             "type": "Count",
-             "source": {
-              "type": "Filter",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Count",
               "source": {
-               "type": "NodesOfType",
-               "node_type": "MCell"
-              },
-              "var_name": "z",
-              "predicate": {
-               "type": "Lte",
-               "a": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "z"
-                },
-                "key": "pd"
+               "type": "Filter",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "MCell"
                },
-               "b": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "t"
+               "var_name": "z",
+               "predicate": {
+                "type": "Lte",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "z"
+                 },
+                 "key": "pd"
                 },
-                "key": "pd"
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "t"
+                 },
+                 "key": "pd"
+                }
+               }
+              }
+             },
+             {
+              "type": "Count",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "MCell"
+               },
+               "var_name": "z",
+               "predicate": {
+                "type": "Gt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "z"
+                 },
+                 "key": "pd"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "t"
+                 },
+                 "key": "pd"
+                }
                }
               }
              }
-            },
-            {
-             "type": "Count",
-             "source": {
-              "type": "Filter",
-              "source": {
-               "type": "NodesOfType",
-               "node_type": "MCell"
-              },
-              "var_name": "z",
-              "predicate": {
-               "type": "Gt",
-               "a": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "z"
-                },
-                "key": "pd"
-               },
-               "b": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "t"
-                },
-                "key": "pd"
-               }
-              }
-             }
-            }
-           ]
-          },
-          "b": {
-           "type": "Lit",
-           "value": 1.0
-          }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           }
+          ]
          }
         },
         "default": null
