@@ -779,3 +779,118 @@ def test_a_diagonal_boundary_chains_into_a_clean_cycle():
     h = max(p[1] for p in pts) - min(p[1] for p in pts)
     assert w > 1.5 * r and h > 1.5 * r, (
         f"circle contour spans {w:.0f}x{h:.0f}, expected about {2*r:.0f} square")
+
+
+def _disc(R):
+    return lambda u, v: u * u + v * v <= R * R
+
+
+def _scene(spec, n=25):
+    """Paint concentric shapes; later entries overwrite earlier ones."""
+    V = np.zeros((n, n, 2))
+    cx = cy = n / 2.0 - 0.5
+    for fn, val in spec:
+        for r in range(n):
+            for c in range(n):
+                if fn(c - cx, r - cy):
+                    V[r, c, 1] = val
+    return V
+
+
+def _cycles(s):
+    """Boundary cycles from the CROSSING graph alone — it is degree 2
+    everywhere, so its components are the cycles and finding them is a walk of
+    O(perimeter), not a flood over O(area)."""
+    at = {c.value: s.node(c)["attrs"] for c in s.nodes("MCell")}
+    pos, own = {}, {}
+    for x in s.nodes("Crossing"):
+        cs = list(s.neighbours(x, "separates"))
+        if len(cs) != 2:
+            continue
+        a = [at[cs[0].value], at[cs[1].value]]
+        pos[x.value] = ((float(a[0]["ccol"]) + float(a[1]["ccol"])) / 2.0,
+                        (float(a[0]["crow"]) + float(a[1]["crow"])) / 2.0)
+        o = list(s.neighbours(x, "owns_figure"))
+        if o:
+            own[x.value] = (float(at[o[0].value]["ccol"]), float(at[o[0].value]["crow"]))
+    adj = collections.defaultdict(set)
+    for x in s.nodes("Crossing"):
+        for n_ in s.neighbours(x, "next_crossing"):
+            adj[x.value].add(n_.value)
+            adj[n_.value].add(x.value)
+    seen, out = set(), []
+    for k in pos:
+        if k in seen:
+            continue
+        order, cur, prev = [k], k, None
+        seen.add(k)
+        while True:
+            cands = [c for c in sorted(adj[cur]) if c != prev and c in pos and c not in seen]
+            if not cands:
+                break
+            nxt = cands[0]
+            seen.add(nxt)
+            order.append(nxt)
+            prev, cur = cur, nxt
+        if len(order) >= 6:
+            out.append(order)
+    return out, pos, own
+
+
+def _oriented_turning(cyc, pos, own):
+    """Total turning of a cycle, oriented by OWNERSHIP: walk so the owned side
+    is on the left. Without that step the sign reports the walk direction, which
+    the node-id tie-break makes arbitrary."""
+    import math
+    if cyc[0] not in own:
+        return None
+    p0 = np.array(pos[cyc[0]], float)
+    step = np.array(pos[cyc[1 % len(cyc)]], float) - p0
+    to_fig = np.array(own[cyc[0]], float) - p0
+    if float(step[0] * to_fig[1] - step[1] * to_fig[0]) < 0:
+        cyc = cyc[::-1]
+    P = [np.array(pos[i], float) for i in cyc]
+    m = len(P)
+    e = [P[(i + 1) % m] - P[i] for i in range(m)]
+    a = np.array([math.atan2(x[1], x[0]) for x in e])
+    d = a - np.roll(a, 1)
+    d = (d + math.pi) % (2 * math.pi) - math.pi
+    return float(np.sum(d))
+
+
+def test_border_ownership_is_local_and_gives_figure_hole_polarity():
+    """`bt_own` supplies the one thing the crossing construction lacked — a
+    DIRECTED boundary owning its figure — without the flood the eye pays for it
+    with.
+
+    `vision_border_ownership` reaches ownership through `bo_bgflood`,
+    surroundedness as inward reachability from the frame, which costs a pass per
+    hop. A crossing already holds both its cells, so wherever figure and ground
+    differ in strength the ownership is decidable AT THE CROSSING.
+
+    Asserted end to end: every crossing owns exactly one side, it is the
+    stronger one, and orienting each boundary cycle by that ownership makes an
+    annulus read +2pi on its outer boundary and -2pi on its hole. The hole is
+    the case that matters — a disc alone passes under any consistent
+    convention."""
+    import math
+
+    V = _scene([(_disc(9.0), 9.0), (_disc(4.0), 0.0)])
+    s, _ = _rim_run(V)
+    at = {c.value: s.node(c)["attrs"] for c in s.nodes("MCell")}
+
+    crossings = list(s.nodes("Crossing"))
+    assert crossings, "no crossings minted"
+    for x in crossings:
+        owned = list(s.neighbours(x, "owns_figure"))
+        assert len(owned) == 1, f"crossing owns {len(owned)} sides, expected 1"
+        cs = list(s.neighbours(x, "separates"))
+        mags = {c.value: float(np.linalg.norm([float(v) for v in at[c.value]["v"]]))
+                for c in cs}
+        assert owned[0].value == max(mags, key=mags.get), "ownership is not the stronger side"
+
+    cycles, pos, own = _cycles(s)
+    turns = [t for t in (_oriented_turning(c, pos, own) for c in cycles) if t is not None]
+    assert len(turns) >= 2, f"expected an outer boundary and a hole, got {len(turns)} cycles"
+    assert any(t > 5.0 for t in turns), f"no figure (+2pi) boundary: {turns}"
+    assert any(t < -5.0 for t in turns), f"no hole (-2pi) boundary: {turns}"
