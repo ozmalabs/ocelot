@@ -18,8 +18,21 @@
 //!   than guessed.
 //! * `source.future_manifold_widths` — optional additional predictive width,
 //!   same shape; this is the source's own tube, not a host-side margin.
+//! * `episode.future_manifold_ideal_effort` and
+//!   `source.future_manifold_effort` — optional dimensionless learned
+//!   normal-case and projected effort ratios. Domain adapters obtain the ratio
+//!   by dividing expenditure by a situated characteristic effort scale.
+//!   Effort above the ideal is admissible only when
+//!   the candidate compresses represented time, width, or information loss.
+//!   The corresponding ideal/projected time and ideal width/information
+//!   fields are optional; absent effort evidence leaves this gate unsupported
+//!   rather than treating zero action as ideal.
 //! * `policy.future_manifold_projection_budget` — maximum audited slices.
 //! * `policy.future_manifold_physical_horizon` — optional required final time.
+//! * `residual_N` reports signed excess in dimension N at the earliest
+//!   decisive tick; `shape_residual_T_N` addresses the signed excess at the
+//!   actual one-based projected time T. Positive means prediction above the
+//!   allowed tube, negative below it, and zero remains inside the tube.
 //!
 //! The result is evidence only.  `resolved` means the requested projection
 //! was completely audited (or an escape was located); it never commits a
@@ -189,17 +202,21 @@ pub fn projection_field(
     let mut earliest_decisive_tick = 0.0;
     let mut audited = 0usize;
     let mut retained_by_dim: Vec<bool> = Vec::new();
+    let mut residual_shape: Vec<Vec<f64>> = Vec::new();
 
     if support {
         let dims = predicted[0].len();
         retained_by_dim = vec![true; dims];
+        residual_shape = vec![vec![0.0; dims]; predicted.len()];
         let audit_horizon = requested_horizon.min(budget);
         for (t, time) in times.iter().enumerate().take(audit_horizon) {
             audited += 1;
             for d in 0..dims {
-                let residual = (predicted[t][d] - target[t][d]).abs();
+                let delta = predicted[t][d] - target[t][d];
+                let residual = delta.abs();
                 let allowed = bounds[t][d] + widths[t][d];
                 if residual > allowed {
+                    residual_shape[t][d] = delta.signum() * (residual - allowed);
                     retained_by_dim[d] = false;
                     loss += 1.0;
                     information_loss += 1.0;
@@ -232,6 +249,70 @@ pub fn projection_field(
     let horizon = audited as f64;
     let budget = budget as f64;
     let anchor_count = audited as f64;
+    let maximum_enclosure_width = widths.iter().flatten().copied().fold(0.0, f64::max);
+    let projected_effort = scalar(graph, interner, candidate, "future_manifold_effort");
+    let ideal_effort = scalar(graph, interner, episode, "future_manifold_ideal_effort")
+        .filter(|ideal| ideal.is_finite() && *ideal > 0.0)
+        .or_else(|| {
+            scalar(
+                graph,
+                interner,
+                policy,
+                "future_manifold_ideal_effort_prior",
+            )
+            .filter(|ideal| ideal.is_finite() && *ideal > 0.0)
+        });
+    let effort_supported = matches!(
+        (projected_effort, ideal_effort),
+        (Some(projected), Some(ideal))
+            if projected.is_finite() && ideal.is_finite()
+                && projected >= 0.0 && ideal > 0.0
+    );
+    let effort_residual = if effort_supported {
+        (projected_effort.unwrap_or(0.0) - ideal_effort.unwrap_or(0.0)).max(0.0)
+    } else {
+        0.0
+    };
+    let time_compression = match (
+        scalar(
+            graph,
+            interner,
+            episode,
+            "future_manifold_ideal_completion_time",
+        ),
+        scalar(
+            graph,
+            interner,
+            candidate,
+            "future_manifold_completion_time",
+        ),
+    ) {
+        (Some(ideal), Some(projected))
+            if ideal.is_finite() && projected.is_finite() && ideal >= 0.0 && projected >= 0.0 =>
+        {
+            (ideal - projected).max(0.0)
+        }
+        _ => 0.0,
+    };
+    let width_compression = scalar(graph, interner, episode, "future_manifold_ideal_width")
+        .filter(|ideal| ideal.is_finite() && *ideal >= 0.0)
+        .map_or(0.0, |ideal| (ideal - maximum_enclosure_width).max(0.0));
+    let information_compression = scalar(
+        graph,
+        interner,
+        episode,
+        "future_manifold_ideal_information_loss",
+    )
+    .filter(|ideal| ideal.is_finite() && *ideal >= 0.0)
+    .map_or(0.0, |ideal| (ideal - information_loss).max(0.0));
+    // These are unlike dimensions.  Preserve the triangle instead of
+    // collapsing seconds, width units and information units into a score.
+    let compression_dimension_count = [time_compression, width_compression, information_compression]
+        .into_iter()
+        .filter(|compression| *compression > 0.0)
+        .count() as f64;
+    let manifold_compression = compression_dimension_count > 0.0;
+    let effort_authorized = !effort_supported || effort_residual <= 0.0 || manifold_compression;
     let field_name = name;
     let value = match field_name {
         "support" => support as i32 as f64,
@@ -264,9 +345,44 @@ pub fn projection_field(
                 1.0
             }
         }
-        "max_enclosure_width" => widths.iter().flatten().copied().fold(0.0, f64::max),
+        "max_enclosure_width" => maximum_enclosure_width,
+        "effort_supported" => effort_supported as i32 as f64,
+        "projected_effort" => projected_effort.unwrap_or(0.0),
+        "ideal_effort" => ideal_effort.unwrap_or(0.0),
+        "effort_residual" => effort_residual,
+        "time_compression" => time_compression,
+        "width_compression" => width_compression,
+        "information_compression" => information_compression,
+        "compression_dimension_count" => compression_dimension_count,
+        "manifold_compression" => manifold_compression as i32 as f64,
+        "effort_authorized" => effort_authorized as i32 as f64,
         "max_shape_order" => 0.0,
         "earliest_decisive_tick" => earliest_decisive_tick,
+        key if key.starts_with("residual_") => {
+            let idx = key[9..].parse::<usize>().ok();
+            let row = times
+                .iter()
+                .position(|time| *time as f64 == earliest_decisive_tick);
+            row.and_then(|t| idx.and_then(|d| residual_shape.get(t)?.get(d)))
+                .copied()
+                .unwrap_or(0.0)
+        }
+        key if key.starts_with("shape_residual_") => {
+            let indices: Vec<usize> = key[15..]
+                .split('_')
+                .filter_map(|part| part.parse::<usize>().ok())
+                .collect();
+            if indices.len() != 2 {
+                0.0
+            } else {
+                times
+                    .iter()
+                    .position(|time| *time == indices[0])
+                    .and_then(|t| residual_shape.get(t)?.get(indices[1]))
+                    .copied()
+                    .unwrap_or(0.0)
+            }
+        }
         key if key.starts_with("retained_") => {
             let idx = key[9..].parse::<usize>().ok();
             idx.and_then(|i| retained_by_dim.get(i).copied())
@@ -398,13 +514,11 @@ mod reachable_set_tests {
         let horizon = i.intern("future_manifold_physical_horizon");
 
         let slice = |xs: &[f64]| {
-            let sv: smallvec::SmallVec<[Value; 4]> =
-                xs.iter().map(|x| Value::Float(*x)).collect();
+            let sv: smallvec::SmallVec<[Value; 4]> = xs.iter().map(|x| Value::Float(*x)).collect();
             Value::Tuple(std::sync::Arc::new(sv))
         };
         let traj = |rows: &[&[f64]]| {
-            let sv: smallvec::SmallVec<[Value; 4]> =
-                rows.iter().map(|r| slice(r)).collect();
+            let sv: smallvec::SmallVec<[Value; 4]> = rows.iter().map(|r| slice(r)).collect();
             Value::Tuple(std::sync::Arc::new(sv))
         };
 
@@ -438,11 +552,27 @@ mod reachable_set_tests {
         assert_eq!(set[0].candidate, held);
         assert_eq!(set[1].candidate, escaping);
         assert!(set[0].support && set[1].support, "both audits supported");
-        assert_eq!(set[0].loss, 0.0, "the held candidate stays inside tolerance");
+        assert_eq!(
+            set[0].loss, 0.0,
+            "the held candidate stays inside tolerance"
+        );
         assert!(
             set[1].loss > 0.0,
             "the escaping candidate must register loss; got {:?}",
             set[1]
+        );
+
+        let residual = i.intern("residual_0");
+        let temporal = i.intern("shape_residual_3_0");
+        assert_eq!(
+            projection_field(&g, &i, episode, policy, escaping, None, residual),
+            Some(Value::Float(8.0)),
+            "earliest decisive residual preserves sign and excess magnitude",
+        );
+        assert_eq!(
+            projection_field(&g, &i, episode, policy, escaping, None, temporal),
+            Some(Value::Float(8.0)),
+            "time-addressed residual preserves the projected shape",
         );
     }
 

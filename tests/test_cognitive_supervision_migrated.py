@@ -327,6 +327,46 @@ def test_retired_process_cannot_shadow_replacement_lease_owner():
     ) is True
 
 
+def test_selected_active_lease_clears_a_stale_terminal_handoff_latch():
+    agent = WorldAdapter(seeds=("cognitive_supervision",))
+    episode = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "cognitive_checkin_terminal": 1,
+        "cognitive_continuation_authority": 0,
+    })
+    plan = agent.s.add_node("LearningPlan", {})
+    step = agent.s.add_node("LearningPlanStep", {})
+    process = agent.s.add_node("CognitiveProcess", {
+        "status": "monitoring", "continuation_authority": 1,
+    })
+    policy = agent.s.add_node("CognitiveSupervisionPolicy", {"enabled": 1})
+    for source, edge_type, target in (
+        (episode, "has_self_directed_learning_plan", plan),
+        (plan, "has_selected_learning_plan_step", step),
+        (episode, "has_cognitive_process", process),
+        (process, "supervises_learning_plan_step", step),
+        (process, "governed_by_cognitive_supervision_policy", policy),
+    ):
+        _edge(agent, source, edge_type, target)
+
+    agent.tick(max_steps=100)
+
+    attrs = agent.s.node(episode)["attrs"]
+    assert attrs["cognitive_checkin_terminal"] == 0
+    assert attrs["cognitive_continuation_authority"] == 1
+
+
+def test_only_the_selected_step_can_withdraw_global_continuation_authority():
+    rules = {rule["name"]: rule for rule in manifest()["rules"]}
+
+    for name in (
+        "cs_hold_marginally_dominated_process_for_replanning",
+        "cs_hold_zero_yield_process_for_replanning",
+    ):
+        assert [
+            "plan", "has_selected_learning_plan_step", "step"
+        ] in rules[name]["match"]
+
+
 def test_productive_replan_selects_ready_alternative_after_suspended_step():
     """A real suspended cognitive step hands control back to the plan.
 

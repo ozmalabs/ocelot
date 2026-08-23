@@ -961,6 +961,8 @@ struct HumanoidModel {
     context_id: f64,
     initialized: bool,
     active: bool,
+    exafferent: bool,
+    exafferent_scale: f64,
     input_energy_joules: f64,
     effect: [f64; 7],
     /// translation_per_joule of the EmbodiedEffectorCapability node attached
@@ -1134,30 +1136,46 @@ impl<'a> HumanoidComposer<'a> {
         let (coupling_regime, vertical_regime) = current_effector_regime(graph, interner, episode);
         let models = model_nodes
             .iter()
-            .map(|node| HumanoidModel {
-                node: *node,
-                token: sattr(graph, interner, *node, "token"),
-                group: fattr(graph, interner, *node, "actuator_group"),
-                support_phase: fattr(graph, interner, *node, "support_phase"),
-                context_id: fattr(graph, interner, *node, "context_id"),
-                initialized: fattr(graph, interner, *node, "initialized") > 0.5,
-                active: false,
-                input_energy_joules: fattr(graph, interner, *node, "mean_input_energy_joules"),
-                effect: std::array::from_fn(|i| {
-                    fattr(
+            .map(|node| {
+                let exafferent = fattr(graph, interner, *node, "exafferent") > 0.5;
+                let scale_denominator =
+                    fattr(graph, interner, *node, "counterfactual_scale_denominator");
+                let exafferent_scale = if exafferent && scale_denominator > 0.0 {
+                    (fattr(graph, interner, *node, "counterfactual_scale_numerator")
+                        / scale_denominator)
+                        .clamp(0.0, 1.0)
+                } else if exafferent {
+                    1.0
+                } else {
+                    0.0
+                };
+                HumanoidModel {
+                    node: *node,
+                    token: sattr(graph, interner, *node, "token"),
+                    group: fattr(graph, interner, *node, "actuator_group"),
+                    support_phase: fattr(graph, interner, *node, "support_phase"),
+                    context_id: fattr(graph, interner, *node, "context_id"),
+                    initialized: fattr(graph, interner, *node, "initialized") > 0.5,
+                    active: false,
+                    exafferent,
+                    exafferent_scale,
+                    input_energy_joules: fattr(graph, interner, *node, "mean_input_energy_joules"),
+                    effect: std::array::from_fn(|i| {
+                        fattr(
+                            graph,
+                            interner,
+                            *node,
+                            &format!("mean_{}", HUMANOID_KEYS[i]),
+                        )
+                    }),
+                    capability_translation_per_joule: matched_capability_translation_per_joule(
                         graph,
                         interner,
                         *node,
-                        &format!("mean_{}", HUMANOID_KEYS[i]),
-                    )
-                }),
-                capability_translation_per_joule: matched_capability_translation_per_joule(
-                    graph,
-                    interner,
-                    *node,
-                    coupling_regime,
-                    vertical_regime,
-                ),
+                        coupling_regime,
+                        vertical_regime,
+                    ),
+                }
             })
             .collect();
         let synergy_nodes = interner
@@ -1198,6 +1216,10 @@ impl<'a> HumanoidComposer<'a> {
             .collect();
         let support_phase = composer.ep("current_support_phase");
         for index in 0..composer.models.len() {
+            if composer.models[index].exafferent {
+                composer.models[index].active = composer.models[index].initialized;
+                continue;
+            }
             let model = &composer.models[index];
             if !model.initialized || model.support_phase != support_phase {
                 continue;
@@ -1638,7 +1660,11 @@ impl<'a> HumanoidComposer<'a> {
         Some(frames)
     }
 
-    fn manifold_bounds(&self, projected_frame: f64) -> Option<[f64; 7]> {
+    fn manifold_bounds(
+        &self,
+        projected_frame: f64,
+        caregiver_counterfactual_scale: f64,
+    ) -> Option<[f64; 7]> {
         let safety = learning_safety_evidence(self.graph, self.interner, self.episode);
         let support = situation_support_field(
             self.graph,
@@ -1647,6 +1673,7 @@ impl<'a> HumanoidComposer<'a> {
             self.policy,
             projected_frame,
             true,
+            caregiver_counterfactual_scale,
         );
         let mut bounds = [0.0; 7];
         for (index, key) in HUMANOID_KEYS.iter().enumerate() {
@@ -1686,6 +1713,14 @@ impl<'a> HumanoidComposer<'a> {
     /// Complete held-program synthesis. Duplicate or missing synergy evidence
     /// is ambiguous and is rejected rather than converted into authority.
     fn manifold_effect(&self, members: &[usize]) -> Option<[f64; 7]> {
+        self.manifold_effect_at_exafferent_scale(members, None)
+    }
+
+    fn manifold_effect_at_exafferent_scale(
+        &self,
+        members: &[usize],
+        exafferent_scale_override: Option<f64>,
+    ) -> Option<[f64; 7]> {
         if members.is_empty()
             || members.iter().any(|index| {
                 !self.active(*index)
@@ -1697,19 +1732,37 @@ impl<'a> HumanoidComposer<'a> {
             return None;
         }
         let response_frames = self.ep("response_frames");
-        let scale = if members.len() > 1 {
+        let endogenous_count = members
+            .iter()
+            .filter(|index| !self.models[**index].exafferent)
+            .count();
+        let endogenous_scale = if endogenous_count > 1 {
             ((response_frames as i64 / 2).max(1) as f64) / response_frames
         } else {
             1.0
         };
         let mut effect = [0.0; 7];
         for index in members {
+            // The child program's compound members share its response window.
+            // Learned caregiver support is an independent environmental
+            // consequence calibrated across the whole window, so adding it to
+            // a counterfactual must neither shorten it nor rescale the child.
+            let scale = if self.models[*index].exafferent {
+                exafferent_scale_override
+                    .unwrap_or(self.models[*index].exafferent_scale)
+                    .clamp(0.0, 1.0)
+            } else {
+                endogenous_scale
+            };
             for key in 0..7 {
-                effect[key] += self.models[*index].effect[key];
+                effect[key] += self.models[*index].effect[key] * scale;
             }
         }
         for left in 0..members.len() {
             for right in left + 1..members.len() {
+                if self.models[members[left]].exafferent || self.models[members[right]].exafferent {
+                    continue;
+                }
                 let a = self.models[members[left]].token;
                 let b = self.models[members[right]].token;
                 let matches: Vec<&HumanoidSynergy> = self
@@ -1725,12 +1778,9 @@ impl<'a> HumanoidComposer<'a> {
                     return None;
                 }
                 for key in 0..7 {
-                    effect[key] += matches[0].residual[key] / scale;
+                    effect[key] += matches[0].residual[key];
                 }
             }
-        }
-        for value in &mut effect {
-            *value *= scale;
         }
         Some(effect)
     }
@@ -1739,19 +1789,41 @@ impl<'a> HumanoidComposer<'a> {
     /// The held phase effect is a linear span, so endpoint magnitude certifies
     /// all intervening fractions. This deliberately claims no order
     /// escalation or higher-order authority.
-    fn manifold_path(&self, members: &[usize]) -> Option<(f64, f64)> {
+    fn manifold_path(&self, members: &[usize]) -> Option<(f64, f64, [f64; 7], f64)> {
+        self.manifold_path_at_exafferent_scale(members, None)
+    }
+
+    fn manifold_path_at_exafferent_scale(
+        &self,
+        members: &[usize],
+        exafferent_scale_override: Option<f64>,
+    ) -> Option<(f64, f64, [f64; 7], f64)> {
         let frames = self.manifold_foveated_frames()?;
-        let effect = self.manifold_effect(members)?;
+        let effect =
+            self.manifold_effect_at_exafferent_scale(members, exafferent_scale_override)?;
+        let caregiver_counterfactual_scale = exafferent_scale_override.unwrap_or_else(|| {
+            members
+                .iter()
+                .filter(|index| self.models[**index].exafferent)
+                .map(|index| self.models[*index].exafferent_scale)
+                .fold(0.0, f64::max)
+        });
         let horizon = *frames.last()?;
         let mut anchor_loss = 0.0;
         for frame in frames {
-            let bounds = self.manifold_bounds(frame)?;
+            let bounds = self.manifold_bounds(frame, caregiver_counterfactual_scale)?;
             let fraction = frame / horizon;
-            let escaped = (0..7)
-                .filter(|key| fraction * effect[*key].abs() > bounds[*key])
-                .count() as f64;
+            let mut residual = [0.0; 7];
+            for key in 0..7 {
+                let projected = fraction * effect[key];
+                let excess = projected.abs() - bounds[key];
+                if excess > 0.0 {
+                    residual[key] = projected.signum() * excess;
+                }
+            }
+            let escaped = residual.iter().filter(|value| **value != 0.0).count() as f64;
             if escaped > 0.0 {
-                return Some((f64::INFINITY, escaped));
+                return Some((f64::INFINITY, escaped, residual, frame));
             }
             for member in members {
                 let model = &self.models[*member];
@@ -1786,7 +1858,7 @@ impl<'a> HumanoidComposer<'a> {
                 }
             }
         }
-        Some((anchor_loss, 0.0))
+        Some((anchor_loss, 0.0, [0.0; 7], 0.0))
     }
 
     fn compose_manifold(&self) -> Vec<usize> {
@@ -1805,7 +1877,7 @@ impl<'a> HumanoidComposer<'a> {
                 self.active(*index) && model.token == token && model.context_id == context
             })
             .filter_map(|(index, _)| {
-                let (anchor_loss, escaped) = self.manifold_path(&[index])?;
+                let (anchor_loss, escaped, _, _) = self.manifold_path(&[index])?;
                 (escaped == 0.0 && anchor_loss.is_finite()).then_some((
                     index,
                     anchor_loss,
@@ -1839,6 +1911,7 @@ impl<'a> HumanoidComposer<'a> {
             self.policy,
             horizon,
             true,
+            0.0,
         );
         let safety = learning_safety_evidence(self.graph, self.interner, self.episode);
         if safety.active() && support.weights.iter().any(|weight| *weight > 0.0) {
@@ -1873,7 +1946,8 @@ impl<'a> HumanoidComposer<'a> {
                     }
                     let mut candidate_plan = plan.clone();
                     candidate_plan.push(index);
-                    let Some((anchor_loss, escaped)) = self.manifold_path(&candidate_plan) else {
+                    let Some((anchor_loss, escaped, _, _)) = self.manifold_path(&candidate_plan)
+                    else {
                         continue;
                     };
                     if escaped > 0.0 || !anchor_loss.is_finite() {
@@ -2179,6 +2253,11 @@ pub fn future_manifold_projection_field(
         let report = cached_future_humanoid_manifold_projection_for_members(
             graph, interner, episode, policy, &members,
         );
+        if let Some(value) = projection_effort_field(
+            graph, interner, episode, policy, source, &members, &report, name,
+        ) {
+            return Value::Float(value);
+        }
         return Value::Float(report.field(name));
     }
     let source_kind = sattr(graph, interner, source, "source");
@@ -2192,6 +2271,11 @@ pub fn future_manifold_projection_field(
         &members,
         epistemic_probe,
     );
+    if let Some(value) = projection_effort_field(
+        graph, interner, episode, policy, source, &members, &report, name,
+    ) {
+        return Value::Float(value);
+    }
     Value::Float(report.field(name))
 }
 
@@ -2234,6 +2318,8 @@ struct FutureProjectionReport {
     max_enclosure_width: f64,
     max_shape_order: f64,
     earliest_decisive_tick: f64,
+    minimum_exafferent_scale: f64,
+    residual: [f64; 7],
     retained: [f64; 7],
     situated_support: [f64; 7],
     applied_bounds: [f64; 7],
@@ -2288,6 +2374,24 @@ impl FutureProjectionReport {
             "max_enclosure_width" => self.max_enclosure_width,
             "max_shape_order" => self.max_shape_order,
             "earliest_decisive_tick" => self.earliest_decisive_tick,
+            "minimum_exafferent_scale" => self.minimum_exafferent_scale,
+            key if key.starts_with("residual_") => key[9..]
+                .parse::<usize>()
+                .ok()
+                .and_then(|index| self.residual.get(index))
+                .copied()
+                .unwrap_or(0.0),
+            key if key.starts_with("shape_residual_") => {
+                let indices: Vec<usize> = key[15..]
+                    .split('_')
+                    .filter_map(|part| part.parse::<usize>().ok())
+                    .collect();
+                if indices.len() == 2 && indices[0] as f64 == self.earliest_decisive_tick {
+                    self.residual.get(indices[1]).copied().unwrap_or(0.0)
+                } else {
+                    0.0
+                }
+            }
             "exploration_authority" => self
                 .situated_support
                 .iter()
@@ -2327,6 +2431,134 @@ impl FutureProjectionReport {
     }
 }
 
+/// Attach the generic ideal-effort contract to legacy/domain projectors.
+///
+/// The trajectory projector can read explicit candidate arrays directly. A
+/// domain analysis-by-synthesis model instead represents effort on its learned
+/// members, so resolve the same fields here without changing its state path.
+/// An episode-learned ideal wins; the policy prior exists only for domains
+/// that have not yet published receipt-grounded adaptation.
+fn projection_effort_field(
+    graph: &TypedGraph,
+    interner: &Interner,
+    episode: NodeID,
+    policy: NodeID,
+    source: NodeID,
+    members: &[NodeID],
+    report: &FutureProjectionReport,
+    name: &str,
+) -> Option<f64> {
+    let learned_ideal = fattr(graph, interner, episode, "future_manifold_ideal_effort");
+    let prior_ideal = fattr(
+        graph,
+        interner,
+        policy,
+        "future_manifold_ideal_effort_prior",
+    );
+    let ideal_effort = if learned_ideal > 0.0 {
+        learned_ideal
+    } else {
+        prior_ideal
+    };
+    let explicit_effort = fattr(graph, interner, source, "future_manifold_effort");
+    let source_effort = fattr(graph, interner, source, "mean_input_energy_joules");
+    let member_effort = members
+        .iter()
+        .map(|member| fattr(graph, interner, *member, "mean_input_energy_joules").max(0.0))
+        .sum::<f64>();
+    let effort_scale = fattr(
+        graph,
+        interner,
+        episode,
+        "future_manifold_effort_scale_joules",
+    );
+    let normalize = |energy: f64| {
+        if effort_scale > 0.0 {
+            energy / effort_scale
+        } else {
+            energy
+        }
+    };
+    let explicit_ratio = explicit_effort > 0.0;
+    let dimensional_evidence = source_effort > 0.0 || member_effort > 0.0;
+    let ratio_comparable = explicit_ratio || (effort_scale > 0.0 && dimensional_evidence);
+    let projected_effort = if explicit_ratio {
+        explicit_effort
+    } else if effort_scale <= 0.0 {
+        0.0
+    } else if source_effort > 0.0 {
+        normalize(source_effort)
+    } else {
+        normalize(member_effort)
+    };
+    let effort_supported = ideal_effort.is_finite()
+        && ideal_effort > 0.0
+        && projected_effort.is_finite()
+        && projected_effort > 0.0
+        && ratio_comparable;
+    let effort_residual = if effort_supported {
+        (projected_effort - ideal_effort).max(0.0)
+    } else {
+        0.0
+    };
+
+    let ideal_completion = fattr(
+        graph,
+        interner,
+        episode,
+        "future_manifold_ideal_completion_time",
+    );
+    let explicit_completion = fattr(graph, interner, source, "future_manifold_completion_time");
+    let projected_completion = if explicit_completion > 0.0 {
+        explicit_completion
+    } else {
+        report.horizon
+    };
+    let time_compression = if ideal_completion > 0.0 && projected_completion >= 0.0 {
+        (ideal_completion - projected_completion).max(0.0)
+    } else {
+        0.0
+    };
+    let ideal_width = fattr(graph, interner, episode, "future_manifold_ideal_width");
+    let width_compression = if ideal_width > 0.0 {
+        (ideal_width - report.max_enclosure_width).max(0.0)
+    } else {
+        0.0
+    };
+    let ideal_information = fattr(
+        graph,
+        interner,
+        episode,
+        "future_manifold_ideal_information_loss",
+    );
+    let information_compression = if ideal_information > 0.0 {
+        (ideal_information - report.information_loss).max(0.0)
+    } else {
+        0.0
+    };
+    let compression_dimension_count = [time_compression, width_compression, information_compression]
+        .into_iter()
+        .filter(|compression| *compression > 0.0)
+        .count() as f64;
+    let manifold_compression = compression_dimension_count > 0.0;
+    let effort_authorized = !effort_supported || effort_residual <= 0.0 || manifold_compression;
+
+    Some(match name {
+        "effort_supported" => effort_supported as i32 as f64,
+        "projected_effort" => projected_effort,
+        "ideal_effort" => ideal_effort,
+        "effort_scale" => effort_scale,
+        "effort_residual" => effort_residual,
+        "time_compression" => time_compression,
+        "width_compression" => width_compression,
+        "information_compression" => information_compression,
+        "compression_dimension_count" => compression_dimension_count,
+        "manifold_compression" => manifold_compression as i32 as f64,
+        "effort_authorized" => effort_authorized as i32 as f64,
+        _ => return None,
+    })
+}
+
 fn support_observability(
     graph: &TypedGraph,
     interner: &Interner,
@@ -2334,9 +2566,18 @@ fn support_observability(
     policy: NodeID,
     horizon: f64,
     humanoid_axes: bool,
+    caregiver_counterfactual_scale: f64,
 ) -> ([f64; 7], [f64; 7]) {
     let safety = learning_safety_evidence(graph, interner, episode);
-    let field = situation_support_field(graph, interner, episode, policy, horizon, humanoid_axes);
+    let field = situation_support_field(
+        graph,
+        interner,
+        episode,
+        policy,
+        horizon,
+        humanoid_axes,
+        caregiver_counterfactual_scale,
+    );
     let mut bounds = [0.0; 7];
     let keys = if humanoid_axes {
         &HUMANOID_KEYS
@@ -2383,8 +2624,9 @@ fn cached_future_humanoid_manifold_projection_for_members(
     }) {
         return report;
     }
-    let report =
-        future_humanoid_manifold_projection_for_members(graph, interner, episode, policy, &members);
+    let report = future_humanoid_manifold_projection_for_members(
+        graph, interner, episode, policy, &members, true,
+    );
     HUMANOID_PROJECTION_CACHE.with(|slot| {
         *slot.borrow_mut() = Some(HumanoidProjectionCache {
             graph_address,
@@ -2404,11 +2646,22 @@ fn future_humanoid_manifold_projection_for_members(
     episode: NodeID,
     policy: NodeID,
     member_nodes: &[NodeID],
+    calculate_minimum_exafferent_scale: bool,
 ) -> FutureProjectionReport {
-    let all_models = interner
+    let mut all_models = interner
         .lookup("has_humanoid_phase_action_model")
         .map(|edge| graph.neighbours(episode, Some(edge)))
         .unwrap_or_default();
+    let exafferent_nodes: Vec<NodeID> = member_nodes
+        .iter()
+        .copied()
+        .filter(|node| fattr(graph, interner, *node, "exafferent") > 0.5)
+        .collect();
+    for node in &exafferent_nodes {
+        if !all_models.contains(node) {
+            all_models.push(*node);
+        }
+    }
     let composer = HumanoidComposer::build(graph, interner, episode, policy, &all_models);
     // A retained program names opaque action semantics, not a frozen
     // context-node identity.  Rebind each historical member to the currently
@@ -2418,6 +2671,12 @@ fn future_humanoid_manifold_projection_for_members(
     let members: Vec<usize> = member_nodes
         .iter()
         .filter_map(|node| {
+            if fattr(graph, interner, *node, "exafferent") > 0.5 {
+                return all_models
+                    .iter()
+                    .position(|known| known == node)
+                    .filter(|index| composer.active(*index));
+            }
             let token = sattr(graph, interner, *node, "token");
             let group = fattr(graph, interner, *node, "actuator_group");
             all_models.iter().enumerate().find_map(|(index, known)| {
@@ -2428,37 +2687,117 @@ fn future_humanoid_manifold_projection_for_members(
             })
         })
         .collect();
+    let caregiver_counterfactual_scale = members
+        .iter()
+        .filter(|index| composer.models[**index].exafferent)
+        .map(|index| composer.models[*index].exafferent_scale)
+        .fold(0.0, f64::max);
     let frames = composer.manifold_foveated_frames();
     let path = if members.len() == member_nodes.len() {
         composer.manifold_path(&members)
     } else {
         None
     };
+    // Minimum intervention is part of the same pre-decision projection as
+    // the supported path.  Only refine its magnitude when the experiment has
+    // explicitly granted the counterfactual gate authority, the endogenous
+    // program actually crosses the configured severe-loss threshold, and
+    // full learned support preserves a path.  This keeps the answer atomic
+    // while avoiding a four-point scale search for observational audits and
+    // non-severe actions.
+    let counterfactual_authority = fattr(
+        graph,
+        interner,
+        episode,
+        "caregiver_support_counterfactual_authority",
+    ) > 0.5;
+    let counterfactual_loss_floor = fattr(
+        graph,
+        interner,
+        episode,
+        "caregiver_support_counterfactual_loss_floor",
+    )
+    .max(1.0);
+    let full_support_preserves_path =
+        path.as_ref()
+            .is_some_and(|(shape_residual, escaped, _, _)| {
+                shape_residual.is_finite() && *escaped <= 0.0
+            });
+    let endogenous_loss_reaches_floor = if calculate_minimum_exafferent_scale
+        && counterfactual_authority
+        && caregiver_counterfactual_scale > 0.0
+        && members.len() == member_nodes.len()
+        && full_support_preserves_path
+    {
+        let endogenous_members: Vec<usize> = members
+            .iter()
+            .copied()
+            .filter(|index| !composer.models[*index].exafferent)
+            .collect();
+        composer
+            .manifold_path(&endogenous_members)
+            .is_some_and(|(_, escaped, _, _)| escaped >= counterfactual_loss_floor)
+    } else {
+        false
+    };
+    let minimum_exafferent_scale =
+        if calculate_minimum_exafferent_scale && endogenous_loss_reaches_floor {
+            [0.25, 0.5, 0.75, 1.0]
+                .into_iter()
+                .find(|scale| {
+                    composer
+                        .manifold_path_at_exafferent_scale(&members, Some(*scale))
+                        .is_some_and(|(shape_residual, escaped, _, _)| {
+                            shape_residual.is_finite() && escaped <= 0.0
+                        })
+                })
+                .unwrap_or(0.0)
+        } else {
+            0.0
+        };
     let safety = learning_safety_evidence(graph, interner, episode);
     let horizon = frames
         .as_ref()
         .and_then(|anchors| anchors.last().copied())
         .unwrap_or(0.0);
-    let situated_support = situation_support_field(graph, interner, episode, policy, horizon, true);
+    let situated_support = situation_support_field(
+        graph,
+        interner,
+        episode,
+        policy,
+        horizon,
+        true,
+        caregiver_counterfactual_scale,
+    );
     let information_authority = situated_support
         .weights
         .iter()
         .copied()
         .reduce(f64::min)
         .unwrap_or(0.0);
-    let (support, resolved, loss, raw_information_loss, termination_code) = match path {
-        Some((shape_residual, escaped)) if shape_residual.is_finite() => {
-            (true, true, escaped, escaped, 6.0)
-        }
-        Some((_shape_residual, escaped)) if escaped > 0.0 => (true, true, escaped, escaped, 1.0),
-        _ => (false, false, 0.0, 0.0, 4.0),
-    };
+    let (support, resolved, loss, raw_information_loss, termination_code, residual, decisive) =
+        match path {
+            Some((shape_residual, escaped, residual, decisive)) if shape_residual.is_finite() => {
+                (true, true, escaped, escaped, 6.0, residual, decisive)
+            }
+            Some((_shape_residual, escaped, residual, decisive)) if escaped > 0.0 => {
+                (true, true, escaped, escaped, 1.0, residual, decisive)
+            }
+            _ => (false, false, 0.0, 0.0, 4.0, [0.0; 7], 0.0),
+        };
     let information_loss =
         (raw_information_loss - safety.information_loss_allowance * information_authority).max(0.0);
     let anchor_count = frames.as_ref().map_or(0.0, |anchors| anchors.len() as f64);
     let retained_value = if support && loss <= 0.0 { 1.0 } else { 0.0 };
-    let (report_support, applied_bounds) =
-        support_observability(graph, interner, episode, policy, horizon, true);
+    let (report_support, applied_bounds) = support_observability(
+        graph,
+        interner,
+        episode,
+        policy,
+        horizon,
+        true,
+        caregiver_counterfactual_scale,
+    );
     FutureProjectionReport {
         support,
         resolved,
@@ -2477,7 +2816,9 @@ fn future_humanoid_manifold_projection_for_members(
         ambiguous_interval_count: 0.0,
         max_enclosure_width: 0.0,
         max_shape_order: if anchor_count > 1.0 { 1.0 } else { 0.0 },
-        earliest_decisive_tick: if loss > 0.0 { horizon } else { 0.0 },
+        earliest_decisive_tick: decisive,
+        minimum_exafferent_scale,
+        residual,
         retained: [retained_value; 7],
         situated_support: report_support,
         applied_bounds,
@@ -2550,6 +2891,7 @@ fn situation_support_field(
     policy: NodeID,
     projected_tick: f64,
     humanoid_axes: bool,
+    caregiver_counterfactual_scale: f64,
 ) -> SituationSupportField {
     let safety = learning_safety_evidence(graph, interner, episode);
     if !safety.active() {
@@ -2596,12 +2938,13 @@ fn situation_support_field(
     } else {
         0.0
     };
-    let caregiver_engaged = fattr(
-        graph,
-        interner,
-        episode,
-        "caregiver_protective_support_requested",
-    ) > 0.5
+    let caregiver_engaged = caregiver_counterfactual_scale > 0.0
+        || fattr(
+            graph,
+            interner,
+            episode,
+            "caregiver_protective_support_requested",
+        ) > 0.5
         || fattr(
             graph,
             interner,
@@ -2610,6 +2953,18 @@ fn situation_support_field(
         ) > 0.5;
     let caregiver = if safety.protective_support_available && caregiver_engaged {
         safety.protective_support_effectiveness
+            * if caregiver_counterfactual_scale > 0.0 {
+                caregiver_counterfactual_scale.clamp(0.0, 1.0)
+            } else {
+                let enacted_scale = fattr(graph, interner, episode, "caregiver_support_scale");
+                if enacted_scale > 0.0 {
+                    enacted_scale.clamp(0.0, 1.0)
+                } else {
+                    // Binary request evidence predates explicit magnitude and
+                    // therefore retains its historical full-support meaning.
+                    1.0
+                }
+            }
     } else {
         0.0
     };
@@ -2732,6 +3087,8 @@ struct ProjectionIntervalResult {
     finite: bool,
     width: f64,
     retained: [f64; 7],
+    /// Signed, guaranteed excess beyond the allowed tube for each component.
+    residual: [f64; 7],
 }
 
 fn projection_state_finite(state: &ProjectionState) -> bool {
@@ -3264,8 +3621,15 @@ fn projection_certify_interval_sparse(
     members: &[NodeID],
 ) -> ProjectionIntervalResult {
     let safety = learning_safety_evidence(graph, interner, episode);
-    let situated_support =
-        situation_support_field(graph, interner, episode, policy, end_tick as f64, false);
+    let situated_support = situation_support_field(
+        graph,
+        interner,
+        episode,
+        policy,
+        end_tick as f64,
+        false,
+        0.0,
+    );
     let ticks = end_tick - start_tick;
     if ticks == 1 {
         let mut end_state = start_state.clone();
@@ -3280,6 +3644,7 @@ fn projection_certify_interval_sparse(
                 finite: false,
                 width: f64::INFINITY,
                 retained: [0.0; 7],
+                residual: [0.0; 7],
             };
         }
         let Some(predicted) = projection_predictions(
@@ -3293,9 +3658,11 @@ fn projection_certify_interval_sparse(
                 finite: false,
                 width: f64::INFINITY,
                 retained: [0.0; 7],
+                residual: [0.0; 7],
             };
         };
         let mut retained = [0.0; 7];
+        let mut shape_residual = [0.0; 7];
         let mut loss = None;
         for ci in 0..7 {
             if fattr(
@@ -3307,24 +3674,25 @@ fn projection_certify_interval_sparse(
             {
                 continue;
             }
-            let residual = (fattr(
-                graph,
-                interner,
-                episode,
-                &format!("target_{}", COMPONENTS[ci]),
-            ) - predicted[ci])
-                .abs();
-            if residual
-                > safety.bound(
-                    fattr(
-                        graph,
-                        interner,
-                        episode,
-                        &format!("manifold_bound_{}", COMPONENTS[ci]),
-                    ),
-                    situated_support.weights[ci],
-                )
-            {
+            let delta = predicted[ci]
+                - fattr(
+                    graph,
+                    interner,
+                    episode,
+                    &format!("target_{}", COMPONENTS[ci]),
+                );
+            let bound = safety.bound(
+                fattr(
+                    graph,
+                    interner,
+                    episode,
+                    &format!("manifold_bound_{}", COMPONENTS[ci]),
+                ),
+                situated_support.weights[ci],
+            );
+            let excess = delta.abs() - bound;
+            if excess > 0.0 {
+                shape_residual[ci] = delta.signum() * excess;
                 loss = Some((end_tick, loss.map_or(1, |(_, count)| count + 1)));
             } else {
                 retained[ci] = 1.0;
@@ -3338,6 +3706,7 @@ fn projection_certify_interval_sparse(
             finite: true,
             width: 0.0,
             retained,
+            residual: shape_residual,
         };
     }
     let mut affine = [[0.0; 4]; 4];
@@ -3363,6 +3732,7 @@ fn projection_certify_interval_sparse(
             finite: false,
             width: f64::INFINITY,
             retained: [0.0; 7],
+            residual: [0.0; 7],
         };
     }
     let (power, jump_bias) = projection_affine_power(affine, bias, ticks);
@@ -3400,6 +3770,7 @@ fn projection_certify_interval_sparse(
             finite: false,
             width: f64::INFINITY,
             retained: [0.0; 7],
+            residual: [0.0; 7],
         };
     }
     let context_bounds = [(0.0 - radius, radius); 4];
@@ -3425,6 +3796,7 @@ fn projection_certify_interval_sparse(
                 finite: false,
                 width: f64::INFINITY,
                 retained: [0.0; 7],
+                residual: [0.0; 7],
             };
         };
         positions.push(end);
@@ -3452,6 +3824,7 @@ fn projection_certify_interval_sparse(
                 finite: false,
                 width: f64::INFINITY,
                 retained: [0.0; 7],
+                residual: [0.0; 7],
             };
         };
         reference_bounds.push(bounds);
@@ -3475,9 +3848,11 @@ fn projection_certify_interval_sparse(
             finite: false,
             width: f64::INFINITY,
             retained: [0.0; 7],
+            residual: [0.0; 7],
         };
     };
     let mut retained = [0.0; 7];
+    let mut shape_residual = [0.0; 7];
     let mut loss = None;
     let mut ambiguous = false;
     let mut width: f64 = 0.0;
@@ -3517,6 +3892,11 @@ fn projection_certify_interval_sparse(
         };
         let residual_hi = (target - lo).abs().max((target - hi).abs());
         if residual_lo > bound {
+            shape_residual[ci] = if lo > target {
+                lo - target - bound
+            } else {
+                hi - target + bound
+            };
             loss = Some((start_tick + 1, loss.map_or(1, |(_, count)| count + 1)));
         } else if residual_hi <= bound {
             retained[ci] = 1.0;
@@ -3536,6 +3916,7 @@ fn projection_certify_interval_sparse(
         finite: true,
         width,
         retained,
+        residual: shape_residual,
     }
 }
 
@@ -3576,8 +3957,15 @@ fn projection_certify_interval_legacy(
     members: &[NodeID],
 ) -> ProjectionIntervalResult {
     let safety = learning_safety_evidence(graph, interner, episode);
-    let situated_support =
-        situation_support_field(graph, interner, episode, policy, end_tick as f64, false);
+    let situated_support = situation_support_field(
+        graph,
+        interner,
+        episode,
+        policy,
+        end_tick as f64,
+        false,
+        0.0,
+    );
     let mut state = start_state.clone();
     let mut minima = [f64::INFINITY; 7];
     let mut maxima = [f64::NEG_INFINITY; 7];
@@ -3627,6 +4015,7 @@ fn projection_certify_interval_legacy(
             finite: false,
             width,
             retained,
+            residual: [0.0; 7],
         };
     }
 
@@ -3691,6 +4080,7 @@ fn projection_certify_interval_legacy(
         finite: true,
         width,
         retained,
+        residual: [0.0; 7],
     }
 }
 
@@ -3817,6 +4207,7 @@ fn future_manifold_projection_for_members_legacy(
     // 3 = budget exhausted unresolved, 4 = support unavailable.
     let mut termination_code = if support { 3.0 } else { 4.0 };
     let mut retained = [0.0f64; 7];
+    let mut shape_residual = [0.0f64; 7];
     let mut fixed_run = 0;
     for step in 1..=budget {
         if !support {
@@ -4004,16 +4395,17 @@ fn future_manifold_projection_for_members_legacy(
             for (i, m) in members.iter().enumerate() {
                 prediction += predict(*m, positions[i]) - baseline_prediction;
             }
-            let residual =
-                (fattr(graph, interner, episode, &format!("target_{key}")) - prediction).abs();
+            let target = fattr(graph, interner, episode, &format!("target_{key}"));
+            let delta = prediction - target;
             let situated_support =
-                situation_support_field(graph, interner, episode, policy, step as f64, false);
-            if residual
-                > safety.bound(
-                    fattr(graph, interner, episode, &format!("manifold_bound_{key}")),
-                    situated_support.weights[ci],
-                )
-            {
+                situation_support_field(graph, interner, episode, policy, step as f64, false, 0.0);
+            let bound = safety.bound(
+                fattr(graph, interner, episode, &format!("manifold_bound_{key}")),
+                situated_support.weights[ci],
+            );
+            let excess = delta.abs() - bound;
+            if excess > 0.0 {
+                shape_residual[ci] = delta.signum() * excess;
                 step_loss += 1.0;
                 retained[ci] = 0.0;
             } else {
@@ -4077,20 +4469,21 @@ fn future_manifold_projection_for_members_legacy(
     if !support {
         loss = 0.0;
         retained = [0.0; 7];
+        shape_residual = [0.0; 7];
     }
     let retained_cells = retained.iter().sum::<f64>();
     let information_authority = protected_support_authority(
         graph,
         interner,
         policy,
-        situation_support_field(graph, interner, episode, policy, horizon, false),
+        situation_support_field(graph, interner, episode, policy, horizon, false, 0.0),
     );
     let information_loss = (loss
         + (protected * (protected - 1.0) - retained_cells * (retained_cells - 1.0)) / 2.0
         - safety.information_loss_allowance * information_authority)
         .max(0.0);
     let (situated_support, applied_bounds) =
-        support_observability(graph, interner, episode, policy, horizon, false);
+        support_observability(graph, interner, episode, policy, horizon, false, 0.0);
     FutureProjectionReport {
         support,
         resolved,
@@ -4105,7 +4498,9 @@ fn future_manifold_projection_for_members_legacy(
         ambiguous_interval_count: 0.0,
         max_enclosure_width: 0.0,
         max_shape_order: 0.0,
-        earliest_decisive_tick: 0.0,
+        earliest_decisive_tick: if loss > 0.0 { horizon } else { 0.0 },
+        minimum_exafferent_scale: 0.0,
+        residual: shape_residual,
         retained,
         situated_support,
         applied_bounds,
@@ -4235,6 +4630,7 @@ fn future_manifold_projection_for_members_foveated(
         });
 
     let mut retained = [0.0f64; 7];
+    let mut residual = [0.0f64; 7];
     let mut loss = 0.0;
     let mut horizon = 0.0;
     let mut resolved = false;
@@ -4314,6 +4710,7 @@ fn future_manifold_projection_for_members_foveated(
                 earliest_decisive_tick = decisive_tick as f64;
                 horizon = decisive_tick as f64;
                 retained = result.retained;
+                residual = result.residual;
                 resolved = true;
                 termination_code = 1.0;
                 interval_failed = true;
@@ -4426,6 +4823,7 @@ fn future_manifold_projection_for_members_foveated(
 
     if !support {
         retained = [0.0; 7];
+        residual = [0.0; 7];
         loss = 0.0;
         horizon = 0.0;
         resolved = false;
@@ -4448,14 +4846,14 @@ fn future_manifold_projection_for_members_foveated(
         graph,
         interner,
         policy,
-        situation_support_field(graph, interner, episode, policy, horizon, false),
+        situation_support_field(graph, interner, episode, policy, horizon, false, 0.0),
     );
     let information_loss = (loss
         + (protected * (protected - 1.0) - retained_cells * (retained_cells - 1.0)) / 2.0
         - safety.information_loss_allowance * information_authority)
         .max(0.0);
     let (situated_support, applied_bounds) =
-        support_observability(graph, interner, episode, policy, horizon, false);
+        support_observability(graph, interner, episode, policy, horizon, false, 0.0);
     FutureProjectionReport {
         support,
         resolved,
@@ -4471,6 +4869,8 @@ fn future_manifold_projection_for_members_foveated(
         max_enclosure_width,
         max_shape_order,
         earliest_decisive_tick,
+        minimum_exafferent_scale: 0.0,
+        residual,
         retained,
         situated_support,
         applied_bounds,

@@ -135,6 +135,10 @@ def test_locomotor_basins_are_recurrent_integer_pareto_shapes():
         "ed_mint_novel_locomotor_phenotype_from_receipt",
         "ed_accumulate_recurrent_locomotor_phenotype",
         "ed_verify_recurrent_locomotor_basin_on_pareto_basis",
+        "ed_mint_locomotor_phenotype_family_from_receipt",
+        "ed_accumulate_locomotor_phenotype_family",
+        "ed_bind_locomotor_phenotype_refinement_to_family",
+        "ed_verify_recurrent_locomotor_family_on_pareto_basis",
     } <= rules.keys()
     profile = json.dumps(
         rules["ed_instantiate_situated_locomotor_pareto_profile"]
@@ -151,7 +155,444 @@ def test_locomotor_basins_are_recurrent_integer_pareto_shapes():
     assert "development_evidence_window" in verify
     assert "has_pareto_candidate" in verify
     assert "sum_directed_consistency" in verify
+    assert "sum_directed_units" in verify
+    assert '"type": "Minus"' in verify
     assert '"scalarized": 0' in profile
+
+    family = json.dumps(
+        rules["ed_mint_locomotor_phenotype_family_from_receipt"]
+    )
+    binding = json.dumps(
+        rules["ed_bind_locomotor_phenotype_refinement_to_family"]
+    )
+    assert "development_locomotor_phenotype_family_signature" in family
+    assert '"shape_order": 0' in family
+    assert "refines_locomotor_phenotype_family" in binding
+
+
+def test_locomotor_family_accumulates_distinct_dynamic_refinements():
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("embodied_development",))
+    episode = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "development_learning_active": 1,
+        "development_evidence_window": 2,
+        "latest_development_receipt_seq": 1,
+    })
+    agent.inner.add_edge(
+        agent.agent, "has_embodied_development_episode", episode
+    )
+    parent_signature = (
+        ("action_intent", "learned_walk"),
+        ("support_transition", 1),
+        ("support_count", 1),
+    )
+    parent_key = json.dumps(parent_signature, separators=(",", ":"))
+
+    def add_receipt(seq, refinement):
+        signature = (*parent_signature, ("vertical_impulse_sign", refinement))
+        receipt = agent.s.add_node("Node", {
+            "development_receipt_closed": 1,
+            "development_locomotor_cycle_evidence": 1,
+            "development_receipt_seq": seq,
+            "development_locomotor_phenotype_signature": signature,
+            "development_locomotor_phenotype_key": json.dumps(
+                signature, separators=(",", ":")
+            ),
+            "development_locomotor_phenotype_family_signature": parent_signature,
+            "development_locomotor_phenotype_family_key": parent_key,
+            "development_directed_units": 1,
+            "development_translation_units": 1,
+            "development_lateral_units": 0,
+            "development_energy_units": 1,
+            "development_peak_load_units": 1,
+        })
+        agent.inner.add_edge(
+            episode, "has_embodied_development_receipt", receipt
+        )
+
+    add_receipt(1, -1)
+    agent.tick()
+    agent.inner.set_attr(episode, "latest_development_receipt_seq", 2)
+    add_receipt(2, 0)
+    agent.tick()
+
+    families = agent.inner.neighbours(
+        episode, "has_embodied_locomotor_phenotype_family"
+    )
+    leaves = agent.inner.neighbours(
+        episode, "has_embodied_locomotor_phenotype"
+    )
+    assert len(families) == 1
+    assert len(leaves) == 2
+    family_attrs = agent.s.node(families[0])["attrs"]
+    assert family_attrs["occurrence_count"] == 2
+    assert family_attrs["status"] == "verified_basin"
+    assert all(agent.inner.neighbours(
+        leaf, "refines_locomotor_phenotype_family"
+    ) == families for leaf in leaves)
+
+
+def test_translated_action_mints_shape_without_contact_cycle():
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("embodied_development",))
+    episode = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "development_learning_active": 1,
+        "development_evidence_window": 3,
+        "latest_development_receipt_seq": 1,
+    })
+    agent.inner.add_edge(
+        agent.agent, "has_embodied_development_episode", episode
+    )
+    signature = (
+        ("action_intent", "learned_walk"),
+        ("developmental_capability", "running"),
+        ("motor_program", "aerial_program"),
+        ("pre_distal_support_code", 0),
+        ("pre_whole_body_support_count", 0),
+        ("distal_support_code", 0),
+        ("distal_support_transition", 0),
+        ("whole_body_support_count", 0),
+        ("aerial", 1),
+        ("pre_orientation_class", 3),
+        ("post_orientation_class", 3),
+        ("vertical_impulse_sign", 0),
+        ("motion_nonamplifying", 1),
+    )
+    family_signature = (*signature[:2], *signature[5:11])
+    receipt = agent.s.add_node("Node", {
+        "development_receipt_closed": 1,
+        "development_locomotor_cycle_evidence": 0,
+        "development_receipt_seq": 1,
+        "development_locomotor_phenotype_signature": signature,
+        "development_locomotor_phenotype_key": json.dumps(
+            signature, separators=(",", ":")
+        ),
+        "development_locomotor_phenotype_family_signature": family_signature,
+        "development_locomotor_phenotype_family_key": json.dumps(
+            family_signature, separators=(",", ":")
+        ),
+        "development_action_intent": "learned_walk",
+        "developmental_capability": "running",
+        "development_motor_program_key": "aerial_program",
+        "development_primary_token": "aerial_program",
+        "development_secondary_token": "",
+        "development_pre_orientation_class": 3,
+        "development_post_orientation_class": 3,
+        "development_pre_distal_support_code": 0,
+        "development_pre_support_count": 0,
+        "development_directed_units": 1,
+        "development_translation_units": 1,
+        "development_lateral_units": 0,
+        "development_energy_units": 1,
+        "development_peak_load_units": 0,
+    })
+    agent.inner.add_edge(
+        episode, "has_embodied_development_receipt", receipt
+    )
+
+    agent.tick()
+
+    leaves = agent.inner.neighbours(
+        episode, "has_embodied_locomotor_phenotype"
+    )
+    assert len(leaves) == 1
+    assert agent.s.node(leaves[0])["attrs"]["developmental_capability"] == (
+        "running"
+    )
+
+    # The exception is foveated to walking. A translated developmental probe
+    # without a contact cycle must not enlarge the locomotor hot frontier.
+    probe_signature = (
+        ("action_intent", "get_up_explore"), *signature[1:]
+    )
+    probe_attrs = dict(agent.s.node(receipt)["attrs"])
+    probe_attrs.update({
+        "development_receipt_seq": 2,
+        "development_action_intent": "get_up_explore",
+        "development_locomotor_phenotype_signature": probe_signature,
+        "development_locomotor_phenotype_key": json.dumps(
+            probe_signature, separators=(",", ":")
+        ),
+    })
+    probe = agent.s.add_node("Node", probe_attrs)
+    agent.inner.add_edge(
+        episode, "has_embodied_development_receipt", probe
+    )
+    agent.inner.set_attr(episode, "latest_development_receipt_seq", 2)
+    agent.tick()
+    assert len(agent.inner.neighbours(
+        episode, "has_embodied_locomotor_phenotype"
+    )) == 1
+
+    recurrent_attrs = dict(agent.s.node(receipt)["attrs"])
+    recurrent_attrs["development_receipt_seq"] = 3
+    recurrent_attrs["development_locomotor_phenotype_novel"] = 0
+    recurrent = agent.s.add_node("Node", recurrent_attrs)
+    agent.inner.add_edge(
+        episode, "has_embodied_development_receipt", recurrent
+    )
+    agent.inner.set_attr(episode, "latest_development_receipt_seq", 3)
+    agent.tick()
+
+    leaves = agent.inner.neighbours(
+        episode, "has_embodied_locomotor_phenotype"
+    )
+    families = agent.inner.neighbours(
+        episode, "has_embodied_locomotor_phenotype_family"
+    )
+    assert agent.s.node(leaves[0])["attrs"]["occurrence_count"] == 2
+    assert len(families) == 1
+    assert agent.s.node(families[0])["attrs"]["occurrence_count"] == 2
+    assert agent.inner.neighbours(
+        leaves[0], "refines_locomotor_phenotype_family"
+    ) == families
+
+
+def test_recurrent_contrary_family_is_not_a_locomotor_basin():
+    rules = {row["name"]: row for row in manifest()["rules"]}
+    verify = json.dumps(
+        rules["ed_verify_recurrent_locomotor_family_on_pareto_basis"]
+    )
+    assert "sum_directed_units" in verify
+    assert "sum_directed_consistency" in verify
+    assert '"type": "Minus"' in verify
+
+
+def test_ambiguous_locomotor_family_escalates_to_program_refinements():
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("embodied_development",))
+    episode = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "development_learning_active": 1,
+        "development_evidence_window": 3,
+        "latest_development_receipt_seq": 1,
+    })
+    agent.inner.add_edge(
+        agent.agent, "has_embodied_development_episode", episode
+    )
+    family_signature = (
+        ("action_intent", "learned_walk"),
+        ("developmental_capability", "independent_walking"),
+        ("distal_support_code", 1),
+        ("distal_support_transition", 1),
+        ("whole_body_support_count", 1),
+        ("aerial", 0),
+        ("pre_orientation_class", 3),
+        ("post_orientation_class", 3),
+    )
+    family_key = json.dumps(family_signature, separators=(",", ":"))
+
+    def add_receipt(seq, program, directed):
+        signature = (
+            *family_signature[:2],
+            ("motor_program", program),
+            ("pre_distal_support_code", 1),
+            ("pre_whole_body_support_count", 1),
+            *family_signature[2:],
+            ("vertical_impulse_sign", 0),
+            ("motion_nonamplifying", 1),
+        )
+        receipt = agent.s.add_node("Node", {
+            "development_receipt_closed": 1,
+            "development_locomotor_cycle_evidence": 1,
+            "development_receipt_seq": seq,
+            "development_locomotor_phenotype_signature": signature,
+            "development_locomotor_phenotype_key": json.dumps(
+                signature, separators=(",", ":")
+            ),
+            "development_locomotor_phenotype_family_signature": (
+                family_signature
+            ),
+            "development_locomotor_phenotype_family_key": family_key,
+            "development_action_intent": "learned_walk",
+            "developmental_capability": "independent_walking",
+            "development_motor_program_key": program,
+            "development_primary_token": program,
+            "development_secondary_token": program,
+            "development_pre_orientation_class": 3,
+            "development_post_orientation_class": 3,
+            "development_pre_distal_support_code": 1,
+            "development_pre_support_count": 1,
+            "development_directed_units": directed,
+            "development_translation_units": abs(directed),
+            "development_lateral_units": 0,
+            "development_energy_units": 1,
+            "development_peak_load_units": 1,
+        })
+        agent.inner.add_edge(
+            episode, "has_embodied_development_receipt", receipt
+        )
+
+    for seq, program, directed in (
+        (1, "forward", 1),
+        (2, "forward", 1),
+        (3, "backward", -1),
+    ):
+        agent.inner.set_attr(
+            episode, "latest_development_receipt_seq", seq
+        )
+        add_receipt(seq, program, directed)
+        agent.tick()
+
+    families = agent.inner.neighbours(
+        episode, "has_embodied_locomotor_phenotype_family"
+    )
+    assert len(families) == 1
+    attrs = agent.s.node(families[0])["attrs"]
+    assert attrs["occurrence_count"] == 3
+    assert attrs["sum_directed_units"] == 1
+    assert attrs["sum_directed_consistency"] == 2
+    assert attrs["status"] == "refinement_required"
+    assert attrs["refinement_required"] == 1
+    assert attrs["selected_refinement_order"] == 1
+    assert not agent.inner.neighbours(
+        families[0], "publishes_locomotor_pareto_candidate"
+    )
+    leaves = agent.inner.neighbours(
+        episode, "has_embodied_locomotor_phenotype"
+    )
+    forward = next(
+        leaf for leaf in leaves
+        if agent.s.node(leaf)["attrs"]["primary_token"] == "forward"
+    )
+    forward_attrs = agent.s.node(forward)["attrs"]
+    assert forward_attrs["action_intent"] == "learned_walk"
+    assert forward_attrs["developmental_capability"] == "independent_walking"
+    assert forward_attrs["motor_program_key"] == "forward"
+    assert forward_attrs["occurrence_count"] == 2
+
+
+def test_locomotor_family_evidence_survives_library_round_trip():
+    from scripts.jabberwock_humanoid_walk import (
+        _motor_library_snapshot,
+        _restore_motor_library,
+    )
+    from substrate.world_adapter import WorldAdapter
+
+    source = WorldAdapter(seeds=(
+        "somatomotor_waves", "embodied_development",
+    ))
+    target = WorldAdapter(seeds=(
+        "somatomotor_waves", "embodied_development",
+    ))
+    source_humanoid = source.s.add_node("HumanoidEpisode", {})
+    target_humanoid = target.s.add_node("HumanoidEpisode", {})
+    source_development = source.s.add_node("EmbodiedDevelopmentEpisode", {})
+    target_development = target.s.add_node("EmbodiedDevelopmentEpisode", {})
+    source.inner.add_edge_unchecked(
+        source.agent, "has_humanoid_episode", source_humanoid
+    )
+    target.inner.add_edge_unchecked(
+        target.agent, "has_humanoid_episode", target_humanoid
+    )
+    source.inner.add_edge_unchecked(
+        source.agent, "has_embodied_development_episode", source_development
+    )
+    target.inner.add_edge_unchecked(
+        target.agent, "has_embodied_development_episode", target_development
+    )
+    family = source.s.add_node("EmbodiedLocomotorPhenotypeFamily", {
+        "key": "support-family",
+        "signature": (
+            ("action_intent", "learned_walk"),
+            ("developmental_capability", "independent_walking"),
+            ("support_transition", 1),
+            ("distal_support_code", 1),
+            ("whole_body_support_count", 1),
+            ("aerial", 0),
+            ("pre_orientation_class", 3),
+            ("post_orientation_class", 3),
+        ),
+        "shape_order": 0,
+        "status": "verified_basin",
+        "occurrence_count": 9,
+        "sum_directed_units": 9,
+        "sum_translation_units": 12,
+        "sum_lateral_units": 2,
+        "sum_energy_units": 4,
+        "sum_peak_load_units": 5,
+        "sum_directed_consistency": 6,
+        "last_receipt_seq": 99,
+        "output_authority": 0,
+        "integer_native": 1,
+    })
+    source.inner.add_edge_unchecked(
+        source_development,
+        "has_embodied_locomotor_phenotype_family",
+        family,
+    )
+    leaf_signature = (
+        ("action_intent", "learned_walk"),
+        ("developmental_capability", "independent_walking"),
+        ("motor_program", '["humanoid_actuator_001"]'),
+        ("pre_distal_support_code", 1),
+        ("pre_whole_body_support_count", 1),
+        ("distal_support_code", 1),
+        ("distal_support_transition", 1),
+        ("whole_body_support_count", 1),
+        ("aerial", 0),
+        ("pre_orientation_class", 3),
+        ("post_orientation_class", 3),
+        ("vertical_impulse_sign", 0),
+        ("motion_nonamplifying", 1),
+    )
+    leaf = source.s.add_node("EmbodiedLocomotorPhenotype", {
+        "key": json.dumps(leaf_signature, separators=(",", ":")),
+        "signature": leaf_signature,
+        "family_key": "support-family",
+        "shape_order": 1,
+        "status": "verified_basin",
+        "occurrence_count": 7,
+        "sum_directed_units": 11,
+        "sum_translation_units": 14,
+        "sum_lateral_units": 1,
+        "sum_energy_units": 3,
+        "sum_peak_load_units": 4,
+        "sum_directed_consistency": 5,
+        "last_receipt_seq": 99,
+        "output_authority": 0,
+        "integer_native": 1,
+    })
+    source.inner.add_edge_unchecked(
+        source_development,
+        "has_embodied_locomotor_phenotype",
+        leaf,
+    )
+
+    snapshot = json.loads(json.dumps(_motor_library_snapshot(source)))
+    assert snapshot["locomotor_phenotype_families"][0]["attrs"][
+        "occurrence_count"
+    ] == 9
+    assert snapshot["locomotor_phenotypes"][0]["attrs"][
+        "occurrence_count"
+    ] == 7
+    restored = _restore_motor_library(target, snapshot)
+
+    restored_families = target.inner.neighbours(
+        target_development, "has_embodied_locomotor_phenotype_family"
+    )
+    assert restored["locomotor_phenotype_family_count"] == 1
+    assert restored["locomotor_phenotype_count"] == 1
+    assert len(restored_families) == 1
+    attrs = target.s.node(restored_families[0])["attrs"]
+    assert attrs["occurrence_count"] == 9
+    assert attrs["sum_directed_units"] == 9
+    assert attrs["status"] == "hypothesis"
+    assert attrs["last_receipt_seq"] == 0
+    assert attrs["output_authority"] == 0
+    restored_leaves = target.inner.neighbours(
+        target_development, "has_embodied_locomotor_phenotype"
+    )
+    assert len(restored_leaves) == 1
+    leaf_attrs = target.s.node(restored_leaves[0])["attrs"]
+    assert leaf_attrs["occurrence_count"] == 7
+    assert leaf_attrs["sum_directed_units"] == 11
+    assert leaf_attrs["shape_order"] == 1
+    assert leaf_attrs["status"] == "hypothesis"
+    assert leaf_attrs["last_receipt_seq"] == 0
+    assert leaf_attrs["output_authority"] == 0
 
 
 def test_locomotor_consistency_is_relative_to_requested_direction():
@@ -484,6 +925,77 @@ def test_failure_window_voluntarily_requests_a_more_informative_scenario():
     assert attrs["cause"] == "capability_experiment_stalled"
     assert attrs["scenario_name"] == "contact_rich_fixture"
     assert attrs["reinstantiation_spec_ready"] == 1
+    assert agent.s.node(instance)["attrs"][
+        "last_reinstantiation_failure_count"
+    ] == 2
+
+
+def test_learned_failure_still_requests_next_situated_experiment():
+    """The reset gate survives learning advancing last_receipt_seq first."""
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("embodied_development",))
+    episode = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "development_learning_active": 1,
+        "development_evidence_window": 2,
+        "latest_development_receipt_seq": 2,
+        "embodiment_reset_available": 1,
+        "embodiment_reset_cost_units": 6,
+        "embodiment_generation": 0,
+        "embodiment_terminal": 0,
+        "embodied_reset_requested": 0,
+    })
+    instance = agent.s.add_node(
+        "EmbodiedSituatedDevelopmentalCapability", {
+            "name": "supported_transition",
+            "goal": "supported_transition",
+            "evidence_kind": "support_topology_change",
+            "status": "active",
+            "attempt_count": 2,
+            "success_count": 0,
+            "failure_count": 2,
+            "last_receipt_seq": 2,
+            "activation_receipt_seq": 0,
+            "last_reinstantiation_failure_count": 0,
+        },
+    )
+    scenario = agent.s.add_node("EmbodiedResetScenario", {
+        "name": "supported_fixture",
+        "ordinal": 0,
+        "target_goal": "any",
+        "fixture_quarter_turn_x": 0,
+        "fixture_quarter_turn_y": 0,
+        "fixture_quarter_turn_z": 0,
+        "selection_count": 0,
+        "enabled": 1,
+    })
+    receipt = agent.s.add_node("Node", {
+        "development_receipt_closed": 1,
+        "development_experience_retained": 1,
+        "development_receipt_seq": 2,
+        "development_support_topology_changed": 0,
+        "embodiment_destroyed": 0,
+    })
+    agent.inner.add_edge(
+        agent.agent, "has_embodied_development_episode", episode
+    )
+    agent.inner.add_edge(
+        episode, "has_active_embodied_developmental_capability", instance
+    )
+    agent.inner.add_edge(episode, "has_embodied_reset_scenario", scenario)
+    agent.inner.add_edge(
+        episode, "has_embodied_development_receipt", receipt
+    )
+
+    agent.tick()
+
+    requests = agent.inner.neighbours(
+        episode, "has_active_embodied_reset_request"
+    )
+    assert len(requests) == 1
+    assert agent.s.node(requests[0])["attrs"]["scenario_name"] == (
+        "supported_fixture"
+    )
     assert agent.s.node(instance)["attrs"][
         "last_reinstantiation_failure_count"
     ] == 2

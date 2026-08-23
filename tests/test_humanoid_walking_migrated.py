@@ -19,6 +19,23 @@ def _rule(seed: dict, name: str) -> dict:
     return next(rule for rule in seed["rules"] if rule["name"] == name)
 
 
+def test_foveated_exploration_preserves_exact_singleton_program_identity():
+    seed = json.loads(SEED.read_text(encoding="utf-8"))
+    valuation = json.dumps(
+        _rule(seed, "ha_prepare_shared_walking_primary")
+    )
+    synthesis = json.dumps(
+        _rule(seed, "ha_choose_learned_walking_twitch")
+    )
+
+    assert "secondary_token" in valuation
+    assert '"type": "Sum"' in valuation
+    assert "refinement_required" in valuation
+    assert "refines_locomotor_phenotype_family" in valuation
+    assert "selected_manifold_refinement_exploration_value" in synthesis
+    assert "allow_expansion" in synthesis
+
+
 def test_post_sweep_pareto_choice_focuses_one_context_dimension():
     seed = json.loads(SEED.read_text(encoding="utf-8"))
     policy = next(
@@ -498,7 +515,7 @@ def test_shape_library_persists_gait_sweep_between_lifetimes():
     assert "stores_humanoid_residual_regime_memory" in production_edges
 
     runner = RUNNER.read_text(encoding="utf-8")
-    assert "MOTOR_LIBRARY_VERSION = 12" in runner
+    assert "MOTOR_LIBRARY_VERSION = 20" in runner
     assert 'shape_row.get("residual_regimes", [])' in runner
     assert '"residual_regimes": residual_regimes' in runner
 

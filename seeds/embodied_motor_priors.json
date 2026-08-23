@@ -1,6 +1,6 @@
 {
  "id": "embodied_motor_priors",
- "version": "1.1.0",
+ "version": "1.4.0",
  "depends_on": [
   "embodied_pareto_profile",
   "embodied_sensorimotor_core",
@@ -18,7 +18,8 @@
     "description": "Connected components, constraints, effectors and load paths are discoverable relational structure.",
     "defeasible": 1.0,
     "confidence": 0.5,
-    "evidence_count": 0.0
+    "evidence_count": 0.0,
+    "ideal_effort_prior_pseudocount": 0.0
    }
   },
   {
@@ -29,7 +30,8 @@
     "description": "Interventions reveal delayed, state-conditioned causal influence.",
     "defeasible": 1.0,
     "confidence": 0.5,
-    "evidence_count": 0.0
+    "evidence_count": 0.0,
+    "ideal_effort_prior_pseudocount": 0.0
    }
   },
   {
@@ -40,7 +42,8 @@
     "description": "Effectors may exchange momentum through contacts, wheels, reaction mass, thrusters or surrounding fluid; infer causal roles from receipts rather than body-part names.",
     "defeasible": 1.0,
     "confidence": 0.5,
-    "evidence_count": 0.0
+    "evidence_count": 0.0,
+    "ideal_effort_prior_pseudocount": 0.0
    }
   },
   {
@@ -51,7 +54,8 @@
     "description": "Prefer useful task work per free-energy expenditure while respecting power, regeneration, heat and finite storage constraints.",
     "defeasible": 1.0,
     "confidence": 0.5,
-    "evidence_count": 0.0
+    "evidence_count": 0.0,
+    "ideal_effort_prior_pseudocount": 0.0
    }
   },
   {
@@ -62,7 +66,8 @@
     "description": "Prefer predicted states that remain recoverable over merely instantaneously stable states.",
     "defeasible": 1.0,
     "confidence": 0.5,
-    "evidence_count": 0.0
+    "evidence_count": 0.0,
+    "ideal_effort_prior_pseudocount": 0.0
    }
   },
   {
@@ -73,7 +78,8 @@
     "description": "Contacts may bear load, propel, pivot, brake or provide leverage.",
     "defeasible": 1.0,
     "confidence": 0.5,
-    "evidence_count": 0.0
+    "evidence_count": 0.0,
+    "ideal_effort_prior_pseudocount": 0.0
    }
   },
   {
@@ -84,7 +90,8 @@
     "description": "Independent compatible actions may combine; interaction residuals must be learned from receipts.",
     "defeasible": 1.0,
     "confidence": 0.5,
-    "evidence_count": 0.0
+    "evidence_count": 0.0,
+    "ideal_effort_prior_pseudocount": 0.0
    }
   },
   {
@@ -95,7 +102,8 @@
     "description": "Useful actions persist, terminate on sensed events and form receipt-grounded transitions.",
     "defeasible": 1.0,
     "confidence": 0.5,
-    "evidence_count": 0.0
+    "evidence_count": 0.0,
+    "ideal_effort_prior_pseudocount": 0.0
    }
   },
   {
@@ -106,7 +114,8 @@
     "description": "Compose contact and free-flight capabilities across sensed phases: prepare, impulse, coast, arrest and recover are learned temporal roles rather than body-plan-specific commands.",
     "defeasible": 1.0,
     "confidence": 0.5,
-    "evidence_count": 0.0
+    "evidence_count": 0.0,
+    "ideal_effort_prior_pseudocount": 0.0
    }
   },
   {
@@ -117,7 +126,8 @@
     "description": "Effectors with overlapping causal roles may substitute after damage.",
     "defeasible": 1.0,
     "confidence": 0.5,
-    "evidence_count": 0.0
+    "evidence_count": 0.0,
+    "ideal_effort_prior_pseudocount": 0.0
    }
   },
   {
@@ -128,7 +138,8 @@
     "description": "Repeated safe trajectories may consolidate into reusable programs.",
     "defeasible": 1.0,
     "confidence": 0.5,
-    "evidence_count": 0.0
+    "evidence_count": 0.0,
+    "ideal_effort_prior_pseudocount": 0.0
    }
   }
  ],
@@ -294,6 +305,18 @@
    }
   },
   {
+   "provenance": "embodied_motor_priors:ideal_effort_state",
+   "src": {
+    "type": "EmbodiedMotorEpisode",
+    "var": "episode"
+   },
+   "edge_type": "has_embodied_ideal_effort_state",
+   "tgt": {
+    "type": "EmbodiedIdealEffortState",
+    "var": "state"
+   }
+  },
+  {
    "provenance": "embodied_motor_priors:energetic_state",
    "src": {
     "type": "EmbodiedMotorEpisode",
@@ -447,6 +470,18 @@
    "tgt": {
     "type": "Unknown",
     "var": "outcome"
+   }
+  },
+  {
+   "provenance": "embodied_motor_priors:episode_trial",
+   "src": {
+    "type": "EmbodiedMotorEpisode",
+    "var": "episode"
+   },
+   "edge_type": "has_embodied_motor_trial",
+   "tgt": {
+    "type": "Unknown",
+    "var": "trial"
    }
   }
  ],
@@ -813,6 +848,33 @@
         }
        }
       }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "episode"
+        },
+        "edge_type": "has_embodied_motor_trial",
+        "any_type": false
+       },
+       "var_name": "known_trial",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Var",
+         "name": "known_trial"
+        },
+        "b": {
+         "type": "Var",
+         "name": "trial"
+        }
+       }
+      }
      }
     ]
    },
@@ -834,6 +896,12 @@
      "trial",
      "has_embodied_motor_receipt",
      "outcome"
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_embodied_motor_trial",
+     "trial"
     ]
    ]
   },
@@ -969,6 +1037,33 @@
           }
          }
         }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "episode"
+          },
+          "edge_type": "has_embodied_motor_trial",
+          "any_type": false
+         },
+         "var_name": "known_trial",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Var",
+           "name": "known_trial"
+          },
+          "b": {
+           "type": "Var",
+           "name": "trial"
+          }
+         }
+        }
        }
       ]
      }
@@ -992,6 +1087,12 @@
      "trial",
      "has_embodied_motor_receipt",
      "outcome"
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_embodied_motor_trial",
+     "trial"
     ]
    ]
   },
@@ -1105,6 +1206,33 @@
         }
        }
       }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "episode"
+        },
+        "edge_type": "has_embodied_motor_trial",
+        "any_type": false
+       },
+       "var_name": "known_trial",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Var",
+         "name": "known_trial"
+        },
+        "b": {
+         "type": "Var",
+         "name": "trial"
+        }
+       }
+      }
      }
     ]
    },
@@ -1126,6 +1254,12 @@
      "trial",
      "has_embodied_motor_receipt",
      "outcome"
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_embodied_motor_trial",
+     "trial"
     ]
    ]
   },
@@ -1239,6 +1373,33 @@
         }
        }
       }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "episode"
+        },
+        "edge_type": "has_embodied_motor_trial",
+        "any_type": false
+       },
+       "var_name": "known_trial",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Var",
+         "name": "known_trial"
+        },
+        "b": {
+         "type": "Var",
+         "name": "trial"
+        }
+       }
+      }
      }
     ]
    },
@@ -1260,6 +1421,12 @@
      "trial",
      "has_embodied_motor_receipt",
      "outcome"
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_embodied_motor_trial",
+     "trial"
     ]
    ]
   },
@@ -1432,6 +1599,860 @@
      "add_edge",
      "episode",
      "has_embodied_energetic_state",
+     "state"
+    ]
+   ]
+  },
+  {
+   "name": "emp_open_defeasible_ideal_effort_prior",
+   "area": "embodied_motor_priors",
+   "latency_class": "hard_realtime",
+   "comment": "Express effort as expenditure divided by one morphology-scaled body-work unit. Before receipts, one independently controllable effector group's share of the repertoire supplies the normal-action ratio; no universal effort percentage is asserted.",
+   "match": [
+    [
+     "agent",
+     "has_embodied_motor_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "uses_embodied_motor_prior",
+     "prior"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "prior"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "energetics"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "episode"
+        },
+        "edge_type": "has_embodied_ideal_effort_state",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "state",
+     "EmbodiedIdealEffortState",
+     {
+      "motor_task_context": "general",
+      "effort_scale_joules": {
+       "__term__": {
+        "type": "Times",
+        "items": [
+         {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 0.0
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "episode"
+              },
+              "key": "body_mass"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "Max",
+          "items": [
+           {
+            "type": "Lit",
+            "value": 0.0
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "episode"
+              },
+              "key": "gravity_acceleration"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "episode"
+              },
+              "key": "standing_reference_z"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          "then": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "key": "standing_reference_z"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "other": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "episode"
+               },
+               "key": "characteristic_length_metres"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0.0
+            }
+           },
+           "then": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "episode"
+              },
+              "key": "characteristic_length_metres"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "other": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          }
+         }
+        ]
+       }
+      },
+      "ideal_effort_ratio": {
+       "__term__": {
+        "type": "Div",
+        "a": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "b": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "key": "motor_effector_group_count"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "key": "motor_effector_group_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "other": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       }
+      },
+      "prior_effort_ratio": {
+       "__term__": {
+        "type": "Div",
+        "a": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "b": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "key": "motor_effector_group_count"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "key": "motor_effector_group_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "other": {
+          "type": "Lit",
+          "value": 1.0
+         }
+        }
+       }
+      },
+      "evidence_count": 0.0,
+      "last_motor_epoch": -1.0
+     }
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_embodied_ideal_effort_state",
+     "state"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "future_manifold_ideal_effort",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "b": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "key": "motor_effector_group_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        },
+        "then": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "motor_effector_group_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "other": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "future_manifold_ideal_effort_context",
+     "general"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "future_manifold_effort_scale_joules",
+     {
+      "__term__": {
+       "type": "Times",
+       "items": [
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 0.0
+          },
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "key": "body_mass"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 0.0
+          },
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "key": "gravity_acceleration"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "key": "standing_reference_z"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         },
+         "then": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "key": "standing_reference_z"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "other": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "episode"
+              },
+              "key": "characteristic_length_metres"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0.0
+           }
+          },
+          "then": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "key": "characteristic_length_metres"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          },
+          "other": {
+           "type": "Lit",
+           "value": 0.0
+          }
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "future_manifold_ideal_completion_time",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "response_frames"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       "then": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "episode"
+          },
+          "key": "response_frames"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       },
+       "other": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "episode"
+          },
+          "key": "future_manifold_ideal_completion_time"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "future_manifold_ideal_effort_evidence_count",
+     0.0
+    ]
+   ]
+  },
+  {
+   "name": "emp_open_situated_ideal_effort_prior",
+   "area": "embodied_motor_priors",
+   "latency_class": "hard_realtime",
+   "comment": "Fork the defeasible general ratio when a verified receipt identifies a new motor-task context. Each context can then adapt without walking, recovery and ballistic effort contaminating one another.",
+   "match": [
+    [
+     "agent",
+     "has_embodied_motor_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "has_embodied_ideal_effort_state",
+     "general"
+    ],
+    [
+     "episode",
+     "has_embodied_motor_trial",
+     "trial"
+    ],
+    [
+     "trial",
+     "has_embodied_motor_receipt",
+     "outcome"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "general"
+       },
+       "key": "motor_task_context"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "general"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "trial"
+        },
+        "key": "motor_task_context"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "edge_type": "has_embodied_ideal_effort_state",
+         "any_type": false
+        },
+        "var_name": "situated_effort_state",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "situated_effort_state"
+          },
+          "key": "motor_task_context"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "trial"
+          },
+          "key": "motor_task_context"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "general"
+         },
+         "key": "effort_scale_joules"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "state",
+     "EmbodiedIdealEffortState",
+     {
+      "motor_task_context": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "trial"
+        },
+        "key": "motor_task_context"
+       }
+      },
+      "effort_scale_joules": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "general"
+          },
+          "key": "effort_scale_joules"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "ideal_effort_ratio": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "general"
+          },
+          "key": "prior_effort_ratio"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "prior_effort_ratio": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "general"
+          },
+          "key": "prior_effort_ratio"
+         },
+         {
+          "type": "Lit",
+          "value": 0.0
+         }
+        ]
+       }
+      },
+      "evidence_count": 0.0,
+      "last_motor_epoch": -1.0
+     }
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_embodied_ideal_effort_state",
      "state"
     ]
    ]
@@ -11571,6 +12592,702 @@
          "value": 0.0
         }
        ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "emp_adapt_ideal_effort_from_verified_receipt",
+   "area": "adaptive_learning",
+   "latency_class": "soft_realtime",
+   "comment": "The morphology prior guides action before evidence but has zero receipt-equivalent weight: the first verified receipt replaces it. Later receipts form the situated running mean.",
+   "match": [
+    [
+     "agent",
+     "has_embodied_motor_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "uses_embodied_motor_prior",
+     "prior"
+    ],
+    [
+     "episode",
+     "has_embodied_ideal_effort_state",
+     "state"
+    ],
+    [
+     "episode",
+     "has_embodied_motor_trial",
+     "trial"
+    ],
+    [
+     "trial",
+     "has_embodied_motor_receipt",
+     "outcome"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "prior"
+       },
+       "key": "kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "energetics"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "state"
+       },
+       "key": "motor_task_context"
+      },
+      "b": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trial"
+         },
+         "key": "motor_task_context"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "general"
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "trial"
+        },
+        "key": "motor_task_context"
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "outcome"
+         },
+         "key": "receipt_verified"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 0.0
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "outcome"
+           },
+           "key": "input_energy_joules"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "state"
+         },
+         "key": "effort_scale_joules"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "outcome"
+         },
+         "key": "motor_epoch"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "state"
+         },
+         "key": "last_motor_epoch"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "state",
+     "ideal_effort_ratio",
+     {
+      "__term__": {
+       "type": "Div",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "state"
+              },
+              "key": "ideal_effort_ratio"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "state"
+                },
+                "key": "evidence_count"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             },
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "prior"
+                },
+                "key": "ideal_effort_prior_pseudocount"
+               },
+               {
+                "type": "Lit",
+                "value": 0.0
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "Div",
+          "a": {
+           "type": "Max",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0.0
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "input_energy_joules"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "state"
+             },
+             "key": "effort_scale_joules"
+            },
+            {
+             "type": "Lit",
+             "value": 0.0
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "state"
+              },
+              "key": "evidence_count"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "prior"
+              },
+              "key": "ideal_effort_prior_pseudocount"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "Lit",
+          "value": 1.0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "state",
+     "evidence_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "state"
+           },
+           "key": "evidence_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "state",
+     "last_motor_epoch",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "outcome"
+         },
+         "key": "motor_epoch"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "future_manifold_ideal_effort",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "state"
+         },
+         "key": "ideal_effort_ratio"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "future_manifold_ideal_effort_context",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "state"
+       },
+       "key": "motor_task_context"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "future_manifold_ideal_effort_evidence_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "state"
+         },
+         "key": "evidence_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "emp_activate_situated_ideal_effort",
+   "area": "embodied_motor_priors",
+   "latency_class": "hard_realtime",
+   "comment": "Select the learned normal-effort ratio for the current generic motor-task context before projection. This changes no motor command and falls back to the general prior when no context exists.",
+   "match": [
+    [
+     "agent",
+     "has_embodied_motor_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "has_embodied_ideal_effort_state",
+     "state"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "episode"
+        },
+        "key": "motor_task_context"
+       },
+       "b": {
+        "type": "Lit",
+        "value": null
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "state"
+       },
+       "key": "motor_task_context"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "key": "motor_task_context"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "episode"
+          },
+          "key": "future_manifold_ideal_effort_context"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "state"
+          },
+          "key": "motor_task_context"
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "key": "future_manifold_ideal_effort"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "state"
+            },
+            "key": "ideal_effort_ratio"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "episode",
+     "future_manifold_ideal_effort",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "state"
+         },
+         "key": "ideal_effort_ratio"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "future_manifold_ideal_effort_evidence_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "state"
+         },
+         "key": "evidence_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "future_manifold_ideal_effort_context",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "state"
+       },
+       "key": "motor_task_context"
       }
      }
     ]

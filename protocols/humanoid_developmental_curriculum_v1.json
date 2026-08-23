@@ -31,6 +31,38 @@
     "caregiver_scaffolding_mode": "contingent",
     "protective_support_available": true,
     "protective_support_effectiveness": 1.0,
+    "reinstantiation_scenarios": [
+      {
+        "name": "supported_supine_floor_exploration",
+        "target_goal": "any",
+        "base_quarter_turns": [1, 0, 0]
+      },
+      {
+        "name": "upright_configuration_reversal",
+        "target_goal": "configuration_reversal",
+        "base_quarter_turns": [0, 0, 0]
+      },
+      {
+        "name": "upright_running_exploration",
+        "target_capability": "running",
+        "base_quarter_turns": [0, 0, 0]
+      },
+      {
+        "name": "upright_jump_exploration",
+        "target_capability": "two_foot_jump",
+        "base_quarter_turns": [0, 0, 0]
+      },
+      {
+        "name": "upright_stair_exploration",
+        "target_capability": "stairs",
+        "base_quarter_turns": [0, 0, 0]
+      },
+      {
+        "name": "upright_single_support_exploration",
+        "target_capability": "single_leg_balance",
+        "base_quarter_turns": [0, 0, 0]
+      }
+    ],
     "safe_learning_required_horizon_units": 1,
     "safe_learning_minimum_width_relaxation": 1.0,
     "safe_learning_information_loss_allowance": 1.0
@@ -42,6 +74,7 @@
     "target_directed_progress_m": 3.0,
     "support_geometry_preview_authority": 1.0,
     "persistent_task_residual_authority": 1.0,
+    "foveated_program_exploration_authority": 0.0,
     "modes": ["directed_walk"]
   },
   "evaluation": {

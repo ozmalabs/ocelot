@@ -65,7 +65,7 @@ def test_situated_context_owns_trajectory_without_minting_a_pose_target():
         ]
     )
 
-    assert seed["version"] == "1.6.0"
+    assert seed["version"] == "1.8.0"
     assert attrs["trajectory_ownership"] == 1
     assert attrs["pose_target_authority"] == 0
     assert attrs["material_limit_authority"] == 1
@@ -126,6 +126,27 @@ def test_owned_non_upright_trajectory_does_not_recruit_pose_recovery():
     assert attrs["situated_locomotion_context_active"] == 1
     assert context_attrs["trajectory_ownership"] == 1
     assert context_attrs["pose_target_authority"] == 0
+
+
+def test_supported_floor_learning_owns_non_upright_future_path():
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("humanoid_adaptation",))
+    episode = _episode(agent)
+    agent.inner.set_attr(episode, "locomotion_drive_active", 0)
+    agent.inner.set_attr(episode, "developmental_goal", "rolling")
+    agent.inner.set_attr(
+        episode, "caregiver_protective_support_available", 1
+    )
+    agent.tick()
+
+    assert len(agent.inner.neighbours(
+        episode,
+        "has_current_humanoid_situated_locomotion_context",
+    )) == 1
+    attrs = agent.s.node(episode)["attrs"]
+    assert attrs["upright"] == 0.0
+    assert attrs["recovery_mode"] == 0.0
 
 
 def test_owned_trajectory_cannot_waive_hard_sensorimotor_interrupt():

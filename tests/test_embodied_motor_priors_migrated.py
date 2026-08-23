@@ -20,8 +20,13 @@ def _edge(agent, source, edge_type, target):
         agent.inner.add_edge_unchecked(source, edge_type, target)
 
 
-def _receipt(agent, episode, model, *, step, contact, vz, energy):
-    trial = agent.s.add_node("MotorTrial", {})
+def _receipt(
+    agent, episode, model, *, step, contact, vz, energy, context=None
+):
+    trial_attrs = {}
+    if context is not None:
+        trial_attrs["motor_task_context"] = context
+    trial = agent.s.add_node("MotorTrial", trial_attrs)
     outcome = agent.s.add_node("TransitionObservation", {
         "pre_x": 0.0,
         "pre_y": 0.0,
@@ -69,6 +74,80 @@ def test_priors_cover_hybrid_effectors_and_thermodynamic_economy():
         "temporal_continuity",
         "hybrid_manoeuvre",
     } <= kinds
+
+
+def test_ideal_effort_starts_from_body_work_prior_then_adapts_quickly():
+    agent = WorldAdapter(seeds=("embodied_motor_priors",))
+    episode = agent.s.add_node("EmbodiedEpisode", {
+        "phase": "locomotion",
+        "body_mass": 2.0,
+        "gravity_acceleration": 10.0,
+        "characteristic_length_metres": 1.0,
+        "motor_effector_group_count": 4.0,
+    })
+    model = agent.s.add_node("ActionModel", {"token": "opaque_effector"})
+    _edge(agent, agent.agent, "has_embodied_episode", episode)
+    agent.tick()
+
+    # One of four independently controllable groups supplies a morphological
+    # 1:4 prior. Its dimensional scale is one 20-joule body-work unit.
+    assert agent.s.node(episode)["attrs"][
+        "future_manifold_ideal_effort"
+    ] == pytest.approx(0.25)
+    assert agent.s.node(episode)["attrs"][
+        "future_manifold_effort_scale_joules"
+    ] == pytest.approx(20.0)
+
+    _receipt(agent, episode, model, step=1, contact=1, vz=0.0, energy=4.0)
+    agent.tick()
+    assert agent.s.node(episode)["attrs"][
+        "future_manifold_ideal_effort"
+    ] == pytest.approx(0.2)
+
+    _receipt(agent, episode, model, step=2, contact=1, vz=0.0, energy=2.0)
+    agent.tick()
+    attrs = agent.s.node(episode)["attrs"]
+    assert attrs["future_manifold_ideal_effort"] == pytest.approx(0.15)
+    assert attrs["future_manifold_ideal_effort_evidence_count"] == 2.0
+
+
+def test_ideal_effort_adapts_independently_by_motor_task_context():
+    agent = WorldAdapter(seeds=("embodied_motor_priors",))
+    episode = agent.s.add_node("EmbodiedEpisode", {
+        "body_mass": 2.0,
+        "gravity_acceleration": 10.0,
+        "characteristic_length_metres": 1.0,
+        "motor_effector_group_count": 4.0,
+        "motor_task_context": "locomotion",
+    })
+    model = agent.s.add_node("ActionModel", {"token": "opaque_effector"})
+    _edge(agent, agent.agent, "has_embodied_episode", episode)
+    agent.tick()
+
+    _receipt(
+        agent, episode, model, step=1, contact=1, vz=0.0, energy=2.0,
+        context="locomotion",
+    )
+    agent.tick()
+    assert agent.s.node(episode)["attrs"][
+        "future_manifold_ideal_effort"
+    ] == pytest.approx(0.1)
+
+    agent.inner.set_attr(episode, "motor_task_context", "self_takeoff")
+    _receipt(
+        agent, episode, model, step=2, contact=1, vz=0.0, energy=8.0,
+        context="self_takeoff",
+    )
+    agent.tick()
+    assert agent.s.node(episode)["attrs"][
+        "future_manifold_ideal_effort"
+    ] == pytest.approx(0.4)
+
+    agent.inner.set_attr(episode, "motor_task_context", "locomotion")
+    agent.tick()
+    attrs = agent.s.node(episode)["attrs"]
+    assert attrs["future_manifold_ideal_effort"] == pytest.approx(0.1)
+    assert attrs["future_manifold_ideal_effort_context"] == "locomotion"
 
 
 def test_graph_learns_grounded_and_descending_effector_roles_separately():

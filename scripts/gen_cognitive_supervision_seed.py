@@ -180,6 +180,38 @@ def attach_rule():
     }
 
 
+def reconcile_selected_lease_authority_rule():
+    """Clear a stale terminal latch after a graph-authored process handoff."""
+    return {
+        "name": "cs_reconcile_terminal_latch_with_selected_active_lease",
+        "area": "cognitive_supervision",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "comment": "A replan handoff may attach the replacement before the "
+        "departing process writes its terminal latch in the same settlement. "
+        "The selected process already owns valid continuation authority; "
+        "reconcile the episode latch to that existing lease without minting "
+        "or extending authority.",
+        "match": [
+            ["episode", "has_self_directed_learning_plan", "plan"],
+            ["plan", "has_selected_learning_plan_step", "step"],
+            ["episode", "has_cognitive_process", "process"],
+            ["process", "supervises_learning_plan_step", "step"],
+            ["process", "governed_by_cognitive_supervision_policy", "policy"],
+        ],
+        "where": And(
+            Eq(P0("episode", "cognitive_checkin_terminal"), L(1)),
+            Eq(A("process", "status"), L("monitoring")),
+            Eq(P0("process", "continuation_authority"), L(1)),
+            Eq(P0("policy", "enabled"), L(1)),
+        ),
+        "effects": [
+            ["set_attr", "episode", "cognitive_continuation_authority", 1],
+            ["set_attr", "episode", "cognitive_checkin_terminal", 0],
+        ],
+    }
+
+
 def adjust_daemon_cycle_budget_rule():
     """Project an existing supervisory lease into an asynchronous quantum.
 
@@ -765,6 +797,7 @@ def dominated_replan_rule():
         "batch": False,
         "match": [
             ["episode", "has_self_directed_learning_plan", "plan"],
+            ["plan", "has_selected_learning_plan_step", "step"],
             ["episode", "has_cognitive_process", "process"],
             ["process", "governed_by_cognitive_supervision_policy", "policy"],
             ["process", "has_cognitive_checkin", "checkin"],
@@ -795,6 +828,7 @@ def unproductive_replan_rule():
         "batch": False,
         "match": [
             ["episode", "has_self_directed_learning_plan", "plan"],
+            ["plan", "has_selected_learning_plan_step", "step"],
             ["episode", "has_cognitive_process", "process"],
             ["process", "governed_by_cognitive_supervision_policy", "policy"],
             ["process", "has_cognitive_checkin", "checkin"],
@@ -867,7 +901,8 @@ def manifest():
         ],
         "productions": [production(*row) for row in productions],
         "rules": [
-            attach_rule(), expand_order_n_goal_tree_rule(),
+            attach_rule(), reconcile_selected_lease_authority_rule(),
+            expand_order_n_goal_tree_rule(),
             instantiate_goal_baseline_rule(), observe_goal_progress_rule(),
             scheduled_checkin_rule(), surprise_checkin_rule(),
             mark_checkin_parallel_contexts_rule(),

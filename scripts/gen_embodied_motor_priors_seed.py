@@ -284,6 +284,7 @@ def recognize_receipt_rule(
     unless_model_edge: str | None = None,
 ):
     receipts = Neighbours("episode", "has_embodied_motor_receipt")
+    generic_trials = Neighbours("episode", "has_embodied_motor_trial")
     credited = Neighbours("model", "has_embodied_motor_receipt")
     trial_receipts = Neighbours("trial", "has_embodied_motor_receipt")
     normalization_needed = Or(
@@ -301,6 +302,11 @@ def recognize_receipt_rule(
             trial_receipts,
             "trial_receipt",
             Eq(V("trial_receipt"), V("outcome")),
+        )),
+        Not(Exists(
+            generic_trials,
+            "known_trial",
+            Eq(V("known_trial"), V("trial")),
         )),
     )
     if unless_model_edge is not None:
@@ -340,6 +346,12 @@ def recognize_receipt_rule(
                 "trial",
                 "has_embodied_motor_receipt",
                 "outcome",
+            ],
+            [
+                "add_edge",
+                "episode",
+                "has_embodied_motor_trial",
+                "trial",
             ],
         ],
     }
@@ -438,6 +450,249 @@ def reset_energetic_state_rule():
             ["set_attr", "episode", "motor_peak_power_watts", 0.0],
             ["set_attr", "episode", "motor_cost_of_transport", 0.0],
             ["set_attr", "episode", "motor_transport_economy", 0.0],
+        ],
+    }
+
+
+def open_ideal_effort_state_rule():
+    states = Neighbours("episode", "has_embodied_ideal_effort_state")
+    characteristic_length = If(
+        Gt(P0("episode", "standing_reference_z"), L(0.0)),
+        P0("episode", "standing_reference_z"),
+        If(
+            Gt(P0("episode", "characteristic_length_metres"), L(0.0)),
+            P0("episode", "characteristic_length_metres"),
+            L(0.0),
+        ),
+    )
+    body_mass = Max(L(0.0), P0("episode", "body_mass"))
+    gravity = Max(L(0.0), P0("episode", "gravity_acceleration"))
+    effort_scale = Times(body_mass, gravity, characteristic_length)
+    effector_group_count = If(
+        Gt(P0("episode", "motor_effector_group_count"), L(0.0)),
+        P0("episode", "motor_effector_group_count"),
+        L(1.0),
+    )
+    prior_ratio = Div(L(1.0), effector_group_count)
+    return {
+        "name": "emp_open_defeasible_ideal_effort_prior",
+        "area": "embodied_motor_priors",
+        "latency_class": "hard_realtime",
+        "comment": "Express effort as expenditure divided by one "
+        "morphology-scaled body-work unit. Before receipts, one independently "
+        "controllable effector group's share of the repertoire supplies the "
+        "normal-action ratio; no universal effort percentage is asserted.",
+        "match": [
+            ["agent", "has_embodied_motor_episode", "episode"],
+            ["episode", "uses_embodied_motor_prior", "prior"],
+        ],
+        "where": And(
+            Eq(A("prior", "kind"), L("energetics")),
+            Eq(Count(states), L(0.0)),
+        ),
+        "effects": [
+            ["add_node", "state", "EmbodiedIdealEffortState", {
+                "motor_task_context": "general",
+                "effort_scale_joules": T(effort_scale),
+                "ideal_effort_ratio": T(prior_ratio),
+                "prior_effort_ratio": T(prior_ratio),
+                "evidence_count": 0.0,
+                "last_motor_epoch": -1.0,
+            }],
+            [
+                "add_edge", "episode", "has_embodied_ideal_effort_state",
+                "state",
+            ],
+            ["set_attr", "episode", "future_manifold_ideal_effort", T(
+                prior_ratio
+            )],
+            [
+                "set_attr", "episode",
+                "future_manifold_ideal_effort_context", "general",
+            ],
+            ["set_attr", "episode", "future_manifold_effort_scale_joules", T(
+                effort_scale
+            )],
+            [
+                "set_attr", "episode",
+                "future_manifold_ideal_completion_time",
+                T(If(
+                    Gt(P0("episode", "response_frames"), L(0.0)),
+                    P0("episode", "response_frames"),
+                    P0("episode", "future_manifold_ideal_completion_time"),
+                )),
+            ],
+            [
+                "set_attr", "episode",
+                "future_manifold_ideal_effort_evidence_count", 0.0,
+            ],
+        ],
+    }
+
+
+def open_situated_ideal_effort_state_rule():
+    states = Neighbours("episode", "has_embodied_ideal_effort_state")
+    same_context = Filter(
+        states,
+        "situated_effort_state",
+        Eq(
+            A("situated_effort_state", "motor_task_context"),
+            A("trial", "motor_task_context"),
+        ),
+    )
+    return {
+        "name": "emp_open_situated_ideal_effort_prior",
+        "area": "embodied_motor_priors",
+        "latency_class": "hard_realtime",
+        "comment": "Fork the defeasible general ratio when a verified "
+        "receipt identifies a new motor-task context. Each context can then "
+        "adapt without walking, recovery and ballistic effort contaminating "
+        "one another.",
+        "match": [
+            ["agent", "has_embodied_motor_episode", "episode"],
+            ["episode", "has_embodied_ideal_effort_state", "general"],
+            ["episode", "has_embodied_motor_trial", "trial"],
+            ["trial", "has_embodied_motor_receipt", "outcome"],
+        ],
+        "where": And(
+            Eq(A("general", "motor_task_context"), L("general")),
+            Not(Eq(A("trial", "motor_task_context"), L(None))),
+            Eq(Count(same_context), L(0.0)),
+            Gt(P0("general", "effort_scale_joules"), L(0.0)),
+        ),
+        "effects": [
+            ["add_node", "state", "EmbodiedIdealEffortState", {
+                "motor_task_context": T(A("trial", "motor_task_context")),
+                "effort_scale_joules": T(P0("general", "effort_scale_joules")),
+                "ideal_effort_ratio": T(P0("general", "prior_effort_ratio")),
+                "prior_effort_ratio": T(P0("general", "prior_effort_ratio")),
+                "evidence_count": 0.0,
+                "last_motor_epoch": -1.0,
+            }],
+            [
+                "add_edge", "episode", "has_embodied_ideal_effort_state",
+                "state",
+            ],
+        ],
+    }
+
+
+def adapt_ideal_effort_rule():
+    """Replace the weak guess on first evidence, then learn a running mean."""
+    observed_energy = Max(L(0.0), P0("outcome", "input_energy_joules"))
+    observed_ratio = Div(
+        observed_energy,
+        P0("state", "effort_scale_joules"),
+    )
+    effective_count = Plus(
+        P0("state", "evidence_count"),
+        P0("prior", "ideal_effort_prior_pseudocount"),
+    )
+    receipt_context = If(
+        Eq(A("trial", "motor_task_context"), L(None)),
+        L("general"),
+        A("trial", "motor_task_context"),
+    )
+    adapted = Div(
+        Plus(
+            Times(P0("state", "ideal_effort_ratio"), effective_count),
+            observed_ratio,
+        ),
+        Plus(effective_count, L(1.0)),
+    )
+    return {
+        "name": "emp_adapt_ideal_effort_from_verified_receipt",
+        "area": "embodied_motor_priors",
+        "latency_class": "hard_realtime",
+        "comment": "The morphology prior guides action before evidence but "
+        "has zero receipt-equivalent weight: the first verified receipt "
+        "replaces it. Later receipts form the situated running mean.",
+        "match": [
+            ["agent", "has_embodied_motor_episode", "episode"],
+            ["episode", "uses_embodied_motor_prior", "prior"],
+            ["episode", "has_embodied_ideal_effort_state", "state"],
+            ["episode", "has_embodied_motor_trial", "trial"],
+            ["trial", "has_embodied_motor_receipt", "outcome"],
+        ],
+        "where": And(
+            Eq(A("prior", "kind"), L("energetics")),
+            Eq(A("state", "motor_task_context"), receipt_context),
+            Gt(P0("outcome", "receipt_verified"), L(0.0)),
+            Gt(observed_energy, L(0.0)),
+            Gt(P0("state", "effort_scale_joules"), L(0.0)),
+            Gt(
+                P0("outcome", "motor_epoch"),
+                P0("state", "last_motor_epoch"),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "state", "ideal_effort_ratio", T(adapted)],
+            ["set_attr", "state", "evidence_count", T(Plus(
+                P0("state", "evidence_count"), L(1.0)
+            ))],
+            ["set_attr", "state", "last_motor_epoch", T(
+                P0("outcome", "motor_epoch")
+            )],
+            ["set_attr", "episode", "future_manifold_ideal_effort", T(
+                P0("state", "ideal_effort_ratio")
+            )],
+            [
+                "set_attr", "episode",
+                "future_manifold_ideal_effort_context",
+                T(A("state", "motor_task_context")),
+            ],
+            [
+                "set_attr", "episode",
+                "future_manifold_ideal_effort_evidence_count",
+                T(P0("state", "evidence_count")),
+            ],
+        ],
+    }
+
+
+def activate_situated_ideal_effort_rule():
+    return {
+        "name": "emp_activate_situated_ideal_effort",
+        "area": "embodied_motor_priors",
+        "latency_class": "hard_realtime",
+        "comment": "Select the learned normal-effort ratio for the current "
+        "generic motor-task context before projection. This changes no motor "
+        "command and falls back to the general prior when no context exists.",
+        "match": [
+            ["agent", "has_embodied_motor_episode", "episode"],
+            ["episode", "has_embodied_ideal_effort_state", "state"],
+        ],
+        "where": And(
+            Not(Eq(A("episode", "motor_task_context"), L(None))),
+            Eq(
+                A("state", "motor_task_context"),
+                A("episode", "motor_task_context"),
+            ),
+            Or(
+                Not(Eq(
+                    A("episode", "future_manifold_ideal_effort_context"),
+                    A("state", "motor_task_context"),
+                )),
+                Not(Eq(
+                    P0("episode", "future_manifold_ideal_effort"),
+                    P0("state", "ideal_effort_ratio"),
+                )),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "episode", "future_manifold_ideal_effort", T(
+                P0("state", "ideal_effort_ratio")
+            )],
+            [
+                "set_attr", "episode",
+                "future_manifold_ideal_effort_evidence_count",
+                T(P0("state", "evidence_count")),
+            ],
+            [
+                "set_attr", "episode",
+                "future_manifold_ideal_effort_context",
+                T(A("state", "motor_task_context")),
+            ],
         ],
     }
 
@@ -1427,6 +1682,7 @@ MOTOR_PRIOR_SOFT_REALTIME_RULES = {
     "emp_open_receipt_grounded_effector_capability",
     "emp_measure_locomotor_continuity_from_receipts",
     "emp_measure_thermodynamic_motor_economy",
+    "emp_adapt_ideal_effort_from_verified_receipt",
     "emp_learn_opaque_effector_causal_capability",
 }
 
@@ -1455,13 +1711,14 @@ def manifest():
                 "defeasible": 1.0,
                 "confidence": 0.5,
                 "evidence_count": 0.0,
+                "ideal_effort_prior_pseudocount": 0.0,
             },
         }
         for ordinal, (kind, description) in enumerate(PRIOR_KINDS, 1)
     ]
     return apply_biological_schedule({
         "id": "embodied_motor_priors",
-        "version": "1.1.0",
+        "version": "1.4.0",
         "depends_on": [
             "embodied_pareto_profile",
             "embodied_sensorimotor_core",
@@ -1507,6 +1764,15 @@ def manifest():
                 "edge_type": "has_embodied_locomotor_state",
                 "tgt": {
                     "type": "EmbodiedLocomotorState",
+                    "var": "state",
+                },
+            },
+            {
+                "provenance": "embodied_motor_priors:ideal_effort_state",
+                "src": {"type": "EmbodiedMotorEpisode", "var": "episode"},
+                "edge_type": "has_embodied_ideal_effort_state",
+                "tgt": {
+                    "type": "EmbodiedIdealEffortState",
                     "var": "state",
                 },
             },
@@ -1624,6 +1890,12 @@ def manifest():
                 "edge_type": "has_embodied_motor_receipt",
                 "tgt": {"type": "Unknown", "var": "outcome"},
             },
+            {
+                "provenance": "embodied_motor_priors:episode_trial",
+                "src": {"type": "EmbodiedMotorEpisode", "var": "episode"},
+                "edge_type": "has_embodied_motor_trial",
+                "tgt": {"type": "Unknown", "var": "trial"},
+            },
         ],
         "rules": [
             recognize_episode_rule(
@@ -1670,6 +1942,8 @@ def manifest():
             ),
             open_locomotor_state_rule(),
             open_energetic_state_rule(),
+            open_ideal_effort_state_rule(),
+            open_situated_ideal_effort_state_rule(),
             open_effector_capability_rule(),
             open_effector_assembly_hypothesis_rule(),
             bridge_humanoid_program_members_rule(),
@@ -1688,6 +1962,8 @@ def manifest():
             reset_energetic_state_rule(),
             measure_locomotor_continuity_rule(),
             measure_energetics_rule(),
+            adapt_ideal_effort_rule(),
+            activate_situated_ideal_effort_rule(),
             learn_effector_capability_rule(),
             learn_effector_assembly_rule(),
         ],

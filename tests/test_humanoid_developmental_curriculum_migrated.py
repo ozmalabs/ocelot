@@ -47,13 +47,19 @@ def test_humanoid_seed_is_an_integer_output_null_bridge():
     assert "trajectory_minimum_selection_depth" in text
     assert "publish_verified_motor_transition_to_generic_trajectory" in text
     assert "mint_receipt_grounded_developmental_program_transition" in text
-    assert "replay_selected_order_n_program_path" in text
+    from scripts.gen_humanoid_adaptation_seed import manifest as motor_manifest
+
+    assert "release_selected_developmental_order_n_trajectory" in json.dumps(
+        motor_manifest()
+    )
     assert "reject_selected_trajectory_in_current_manifold_context" in text
     assert "archive_selected_trajectory_after_capability_mastery" in text
     assert "park_inactive_program_trajectory_off_hot_frontier" in text
     assert "restore_reactivated_program_trajectory_to_hot_frontier" in text
     assert "clear_selected_trajectory_without_current_state_source" in text
     assert "futuremanifoldprojection" in text
+    assert "effort_supported" in text
+    assert "effort_authorized" in text
     assert "open_goal_relative_inverse_kinematic_bootstrap" in text
     assert "knows_embodied_inverse_kinematics" in text
     assert "home" not in text
@@ -132,12 +138,80 @@ def test_inverse_kinematic_query_inverts_learned_integer_forward_model():
     ] == [4, 36]
 
 
+def test_orientation_inverse_uses_current_surface_and_explores_unseen_actions():
+    from scripts.gen_humanoid_developmental_curriculum_seed import (
+        developmental_evidence_rank,
+        inverse_kinematic_rank,
+    )
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
+    episode = agent.s.add_node("HumanoidEpisode", {
+        "state_gravity_relative_orientation_class": -2,
+    })
+    capability = agent.s.add_node(
+        "EmbodiedSituatedDevelopmentalCapability", {
+            "evidence_kind": "supported_half_turn",
+        },
+    )
+    query = agent.s.add_node("EmbodiedInverseKinematicQuery", {
+        "mode": "orientation",
+        "target_orientation_units": 4,
+    })
+    model = agent.s.add_node("HumanoidActionModel", {
+        "development_receipt_count": 10,
+        "development_orientation_escape_units": 100,
+        "development_orientation_return_units": 0,
+    })
+    phase = agent.s.add_node("HumanoidPhaseActionModel", {
+        "inverse_kinematic_cost_units": 9,
+    })
+    evidence = agent.s.add_node(
+        "HumanoidSituatedOrientationActionEvidence", {
+            "orientation_class": -2,
+            "receipt_count": 2,
+            "escape_units": 2,
+            "return_units": 0,
+        },
+    )
+    _edge(agent, phase, "generalizes_humanoid_action_model", model)
+    _edge(agent, model, "has_situated_orientation_action_evidence", evidence)
+
+    bindings = {
+        "episode": episode,
+        "capability": capability,
+        "query": query,
+        "candidate": phase,
+    }
+    assert agent.inner.evaluate(
+        inverse_kinematic_rank("query", "candidate"), bindings
+    ) == 9
+    assert agent.inner.evaluate(
+        developmental_evidence_rank("candidate"), bindings
+    ) == 9
+
+    unseen_model = agent.s.add_node("HumanoidActionModel", {
+        "development_receipt_count": 10,
+    })
+    unseen_phase = agent.s.add_node("HumanoidPhaseActionModel", {
+        "inverse_kinematic_cost_units": 0,
+    })
+    _edge(
+        agent, unseen_phase,
+        "generalizes_humanoid_action_model", unseen_model,
+    )
+    bindings["candidate"] = unseen_phase
+    assert agent.inner.evaluate(
+        developmental_evidence_rank("candidate"), bindings
+    ) == -1
+
+
 def test_normal_receipts_teach_integer_task_space_forward_consequences():
     from substrate.world_adapter import WorldAdapter
 
     agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
     episode = agent.s.add_node("HumanoidEpisode", {})
-    trial = agent.s.add_node("HumanoidMotorTrial", {})
+    trial = agent.s.add_node("HumanoidMotorTrial", {"request_seq": 1})
     model = agent.s.add_node("HumanoidActionModel", {})
     outcome = agent.s.add_node("HumanoidTransition", {
         "development_receipt_closed": 1,
@@ -145,6 +219,7 @@ def test_normal_receipts_teach_integer_task_space_forward_consequences():
         "development_lateral_units": 1,
         "development_elevation_units": 2,
         "development_orientation_escape_units": 4,
+        "development_pre_orientation_class": -2,
     })
     _edge(agent, agent.agent, "has_humanoid_episode", episode)
     _edge(agent, episode, "has_humanoid_motor_trial", trial)
@@ -159,6 +234,19 @@ def test_normal_receipts_teach_integer_task_space_forward_consequences():
     assert attrs["development_elevation_sum_units"] == 2
     assert attrs["development_orientation_escape_sum_units"] == 4
     assert not any(isinstance(value, float) for value in attrs.values())
+    situated = agent.inner.neighbours(
+        model, "has_situated_orientation_action_evidence"
+    )
+    assert len(situated) == 1
+    assert agent.s.node(situated[0])["attrs"] == {
+        "orientation_class": -2,
+        "receipt_count": 1,
+        "escape_units": 4,
+        "return_units": 0,
+        "last_request_seq": 1,
+        "integer_native": 1,
+        "output_authority": 0,
+    }
 
 
 def test_latest_receipt_reanchors_trajectory_by_categorical_body_state():
@@ -425,9 +513,9 @@ def test_physics_question_synthesizes_unseen_arbitrary_width_compound_before_rel
             "actuator_group": ordinal,
             "support_phase": 0,
         })
+        _edge(agent, episode, "has_humanoid_action_model", learned)
         _edge(agent, episode, "has_humanoid_phase_action_model", candidate)
         _edge(agent, candidate, "generalizes_humanoid_action_model", learned)
-
     physics_tasks = agent.s.add_node("SystemTwoTaskSet", {
         "area": "embodied_physics_proposal", "enabled": 1,
     })
@@ -479,6 +567,41 @@ def test_physics_question_synthesizes_unseen_arbitrary_width_compound_before_rel
     } == set(tokens)
 
 
+def test_established_manifold_requests_path_without_target_shape():
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
+    episode = agent.s.add_node("HumanoidEpisode", {
+        "developmental_curriculum_active": 1,
+        "phase": "locomotion",
+        "manifold_bounds_ready": 1,
+        "caregiver_protective_support_available": 1,
+    })
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "development_evidence_window": 4,
+    })
+    capability = agent.s.add_node(
+        "EmbodiedSituatedDevelopmentalCapability", {
+            "name": "path_only_fixture",
+            "developmental_ecology": "upright",
+            "desired_body_state_signature": None,
+        },
+    )
+    _edge(agent, agent.agent, "has_humanoid_episode", episode)
+    _edge(agent, episode, "projects_embodied_development", development)
+    _edge(
+        agent, development,
+        "has_active_embodied_developmental_capability", capability,
+    )
+    policy = agent.inner.neighbours(agent.agent, "has_humanoid_policy")[0]
+    agent.inner.set_attr(policy, "future_manifold_enabled", 1)
+    agent.tick()
+
+    assert agent.inner.neighbours(
+        capability, "requests_embodied_program_trajectory"
+    ) == [development]
+
+
 def test_learned_effort_excess_opens_body_discovered_orientation_bundle():
     """The classifier unlocks composition, but does not choose its members."""
     from substrate.world_adapter import WorldAdapter
@@ -493,6 +616,7 @@ def test_learned_effort_excess_opens_body_discovered_orientation_bundle():
         "action_ready": 0,
         "response_frames": 1,
         "current_support_phase": 0,
+        "state_gravity_relative_orientation_class": -2,
     })
     development = agent.s.add_node("EmbodiedDevelopmentEpisode", {})
     capability = agent.s.add_node(
@@ -524,8 +648,20 @@ def test_learned_effort_excess_opens_body_discovered_orientation_bundle():
             "actuator_group": ordinal,
             "support_phase": 0,
         })
+        _edge(agent, episode, "has_humanoid_action_model", learned)
         _edge(agent, episode, "has_humanoid_phase_action_model", candidate)
         _edge(agent, candidate, "generalizes_humanoid_action_model", learned)
+        situated = agent.s.add_node(
+            "HumanoidSituatedOrientationActionEvidence", {
+                "orientation_class": -2,
+                "escape_units": ordinal + 1 if ordinal < 2 else 0,
+                "return_units": 0 if ordinal < 2 else 4,
+            },
+        )
+        _edge(
+            agent, learned,
+            "has_situated_orientation_action_evidence", situated,
+        )
 
     agent.tick()
 
@@ -541,28 +677,189 @@ def test_learned_effort_excess_opens_body_discovered_orientation_bundle():
     members = agent.inner.neighbours(
         programs[0], "includes_humanoid_phase_action_model"
     )
-    assert len(members) == 3
+    assert len(members) == 2
     assert {
         agent.s.node(member)["attrs"]["actuator_group"]
         for member in members
-    } == {0, 1, 2}
+    } == {0, 1}
+    assert agent.s.node(programs[0])["attrs"][
+        "developmental_orientation_origin_class"
+    ] == -2
+    assert agent.s.node(programs[0])["attrs"][
+        "developmental_orientation_shape_order"
+    ] == 2
     attrs = agent.s.node(episode)["attrs"]
     assert attrs["action_ready"] == 1
     assert attrs["selected_collapse_kind"] == (
         "developmental_orientation_bundle"
     )
 
-    # The same graph verdict also opens practice. A missing authored shape no
-    # longer drops straight back to isolated twitches after one compound.
+    # Issuance alone does not ground a practice program. Without an exact
+    # receipt for request 1, the next request must not replay it as memory.
     agent.inner.set_attr(episode, "request_seq", 2)
     agent.inner.set_attr(episode, "action_ready", 0)
     agent.tick()
     replay_attrs = agent.s.node(episode)["attrs"]
-    assert replay_attrs["action_ready"] == 1
-    assert replay_attrs["selected_collapse_kind"] == "developmental_metaprogram"
-    assert agent.s.node(programs[0])["attrs"][
-        "developmental_replay_count"
-    ] == 1
+    assert replay_attrs["action_ready"] == 0
+    assert agent.s.node(programs[0])["attrs"].get(
+        "developmental_replay_count", 0
+    ) == 0
+
+    # A bundle that uses its body-derived replay budget without retaining a
+    # current orientation escape remains negative evidence, but must not own
+    # this support phase forever. A fresh AbS bundle replaces it.
+    agent.inner.set_attr(programs[0], "status", "grounded")
+    agent.inner.set_attr(programs[0], "developmental_replay_count", 3)
+    agent.inner.set_attr(
+        programs[0], "development_latest_orientation_escape_units", 0
+    )
+    agent.inner.remove_edge(
+        episode, "has_ready_humanoid_motor_program", programs[0]
+    )
+    agent.inner.set_attr(episode, "request_seq", 3)
+    agent.inner.set_attr(episode, "action_ready", 0)
+    agent.tick()
+
+    old_attrs = agent.s.node(programs[0])["attrs"]
+    assert old_attrs["orientation_exploration_exhausted"] == 1
+    assert old_attrs["orientation_exhaustion_reason"] == (
+        "replay_budget_closed_without_current_escape"
+    )
+    replacements = [
+        candidate for candidate in agent.inner.neighbours(
+            episode, "has_humanoid_motor_program"
+        )
+        if candidate != programs[0]
+        and agent.s.node(candidate)["attrs"].get(
+            "developmental_orientation_bundle"
+        ) == 1
+    ]
+    assert len(replacements) == 1
+    assert agent.s.node(replacements[0])["attrs"][
+        "developmental_orientation_shape_order"
+    ] == 3
+    assert len(agent.inner.neighbours(
+        replacements[0], "includes_humanoid_phase_action_model"
+    )) == 3
+    assert agent.s.node(episode)["attrs"]["selected_collapse_kind"] in (
+        "developmental_orientation_bundle", "developmental_metaprogram"
+    )
+
+
+def test_elevation_shape_does_not_recruit_orientation_bundle():
+    """A manifold signature is not by itself an orientation request."""
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
+    episode = agent.s.add_node("HumanoidEpisode", {
+        "developmental_curriculum_active": 1,
+        "phase": "locomotion",
+        "request_seq": 1,
+        "decision_seq": 0,
+        "decision_count": 0,
+        "action_ready": 0,
+        "response_frames": 1,
+        "current_support_phase": 0,
+    })
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {})
+    capability = agent.s.add_node(
+        "EmbodiedSituatedDevelopmentalCapability", {
+            "evidence_kind": "support_reducing_elevation",
+            "desired_body_state_signature": (
+                ("height_energy_relation", "increasing"),
+                ("support_relation", "reduced"),
+            ),
+            "classifier_effort_excess": 1,
+        },
+    )
+    _edge(agent, agent.agent, "has_humanoid_episode", episode)
+    _edge(agent, episode, "projects_embodied_development", development)
+    _edge(
+        agent, development,
+        "has_active_embodied_developmental_capability", capability,
+    )
+    for ordinal in range(2):
+        learned = agent.s.add_node("HumanoidActionModel", {
+            "development_orientation_escape_units": ordinal + 1,
+            "development_orientation_return_units": 0,
+        })
+        candidate = agent.s.add_node("HumanoidPhaseActionModel", {
+            "token": f"opaque_{ordinal}",
+            "ordinal": ordinal,
+            "actuator_group": ordinal,
+            "support_phase": 0,
+        })
+        _edge(agent, episode, "has_humanoid_phase_action_model", candidate)
+        _edge(agent, candidate, "generalizes_humanoid_action_model", learned)
+
+    agent.tick()
+
+    assert not any(
+        agent.s.node(program)["attrs"].get(
+            "developmental_orientation_bundle"
+        ) == 1
+        for program in agent.inner.neighbours(
+            episode, "has_humanoid_motor_program"
+        )
+    )
+
+
+def test_orientation_ready_authority_closes_when_evidence_manifold_ends():
+    """Retain the learned bundle, but not obsolete actuator authority."""
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
+    episode = agent.s.add_node("HumanoidEpisode", {
+        "developmental_curriculum_active": 1,
+        "phase": "locomotion",
+        "request_seq": 12,
+        "decision_seq": 11,
+        "action_ready": 0,
+    })
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {})
+    capability = agent.s.add_node(
+        "EmbodiedSituatedDevelopmentalCapability", {
+            "name": "next_capability",
+            "goal": "locomotion",
+            "evidence_kind": "supported_translation",
+        },
+    )
+    orientation = agent.s.add_node("HumanoidMotorProgram", {
+        "status": "ready",
+        "request_seq": 8,
+        "developmental_orientation_bundle": 1,
+    })
+    ordinary = agent.s.add_node("HumanoidMotorProgram", {
+        "status": "ready",
+        "request_seq": 9,
+        "developmental_orientation_bundle": 0,
+    })
+    _edge(agent, agent.agent, "has_humanoid_episode", episode)
+    _edge(agent, episode, "projects_embodied_development", development)
+    _edge(
+        agent, development,
+        "has_active_embodied_developmental_capability", capability,
+    )
+    _edge(agent, episode, "has_humanoid_motor_program", orientation)
+    _edge(agent, episode, "has_humanoid_motor_program", ordinary)
+    _edge(agent, episode, "has_ready_humanoid_motor_program", orientation)
+    _edge(agent, episode, "has_ready_humanoid_motor_program", ordinary)
+
+    agent.tick()
+
+    assert agent.inner.neighbours(
+        episode, "has_ready_humanoid_motor_program"
+    ) == []
+    assert agent.s.node(ordinary)["attrs"]["status"] == "superseded"
+    attrs = agent.s.node(orientation)["attrs"]
+    assert attrs["status"] == "manifold_authority_closed"
+    assert attrs["orientation_authority_closed_at_request_seq"] == 12
+    assert attrs["orientation_authority_close_reason"] == (
+        "active_capability_not_orientation_evidence"
+    )
+    assert orientation in agent.inner.neighbours(
+        episode, "has_humanoid_motor_program"
+    )
 
 
 def test_verified_developmental_receipt_mints_body_neutral_program_edge():
@@ -609,11 +906,20 @@ def test_verified_developmental_receipt_mints_body_neutral_program_edge():
         "has_active_embodied_developmental_capability", capability,
     )
     _edge(agent, capability, "has_current_embodied_program", previous)
+    _edge(
+        agent, episode,
+        "last_verified_humanoid_motor_program", previous,
+    )
     _edge(agent, episode, "has_humanoid_motor_trial", trial)
     _edge(agent, trial, "enacts_humanoid_motor_program", memory)
     _edge(agent, trial, "has_humanoid_transition", outcome)
 
-    agent.tick()
+    steps = agent.tick(max_steps=2_000)
+
+    assert steps < 2_000
+    assert agent.inner.neighbours(
+        capability, "has_current_embodied_program"
+    ) == [memory]
 
     transitions = agent.inner.neighbours(
         capability, "has_embodied_program_transition"
@@ -635,6 +941,45 @@ def test_verified_developmental_receipt_mints_body_neutral_program_edge():
     assert not any(isinstance(value, float) for value in attrs.values())
 
 
+def test_latest_trial_preserves_all_current_equivalent_programs():
+    """Multiple enacted aliases cannot clear and rebind each other forever."""
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
+    episode = agent.s.add_node("HumanoidEpisode", {})
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "latest_development_receipt_seq": 5,
+    })
+    capability = agent.s.add_node(
+        "EmbodiedSituatedDevelopmentalCapability", {}
+    )
+    current_a = agent.s.add_node("HumanoidMotorProgram", {})
+    current_b = agent.s.add_node("HumanoidMotorProgram", {})
+    stale = agent.s.add_node("HumanoidMotorProgram", {})
+    trial = agent.s.add_node("HumanoidMotorTrial", {"request_seq": 5})
+    outcome = agent.s.add_node("HumanoidTransition", {
+        "development_receipt_closed": 1,
+    })
+    _edge(agent, episode, "projects_embodied_development", development)
+    _edge(
+        agent, development,
+        "has_active_embodied_developmental_capability", capability,
+    )
+    for program in (current_a, current_b, stale):
+        _edge(agent, capability, "has_current_embodied_program", program)
+    _edge(agent, episode, "has_humanoid_motor_trial", trial)
+    _edge(agent, trial, "enacts_humanoid_motor_program", current_a)
+    _edge(agent, trial, "enacts_humanoid_motor_program", current_b)
+    _edge(agent, trial, "has_humanoid_transition", outcome)
+
+    steps = agent.tick(max_steps=2_000)
+
+    assert steps < 2_000
+    assert set(agent.inner.neighbours(
+        capability, "has_current_embodied_program"
+    )) == {current_a, current_b}
+
+
 def test_caregiver_is_contextual_protection_not_developmental_permission():
     from scripts.gen_humanoid_developmental_curriculum_seed import manifest
 
@@ -651,8 +996,16 @@ def test_caregiver_is_contextual_protection_not_developmental_permission():
     assert "unscaffolded_self_attempt" in cold
     assert "caregiver_protective_support_available" in protection
     assert "development_evidence_window" in protection
-    assert "attempt_count" in protection
+    assert "success_count" in protection
+    assert "attempt_count" not in protection
     protection_condition = json.dumps(protection_rule["where"])
+    protection_effects = json.dumps(protection_rule["effects"])
+    assert "caregiver_support_scale" in protection_effects
+    effect_keys = [effect[2] for effect in protection_rule["effects"][:2]]
+    assert effect_keys == [
+        "caregiver_support_scale",
+        "caregiver_protective_support_requested",
+    ]
     assert "milestone" not in protection_condition
     assert "developmental_stage_ordinal" not in protection_condition
     reference = json.dumps(rules[
@@ -918,6 +1271,53 @@ def test_general_development_is_a_capability_dag_not_an_age_clock():
     assert by_name["independent_sitting"]["clinical_milestone"] == 1
     assert by_name["hands_knees_crawling"]["optional_route"] == 1
     assert by_name["independent_walking"]["human_analogue"] == "walking_alone"
+    assert by_name["two_foot_jump"]["motor_task_context"] == "self_takeoff"
+    assert by_name["two_foot_jump"]["motor_task_target_scale"] == 1
+
+
+def test_developmental_task_context_opens_takeoff_only_inside_supported_manifold():
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
+    episode = agent.s.add_node("HumanoidEpisode", {
+        "developmental_curriculum_active": 1,
+        "phase": "locomotion",
+        "upright": 1,
+        "recovery_mode": 0,
+        "active_support_count": 2,
+        "self_takeoff_drive_active": 0,
+        "self_takeoff_target_velocity_scale": 0,
+        "self_takeoff_compression_scale": 0,
+        "motor_primary_ready": 1,
+    })
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {})
+    capability = agent.s.add_node(
+        "EmbodiedSituatedDevelopmentalCapability", {
+            "name": "fixture_elevation",
+            "goal": "support_reducing_elevation",
+            "motor_task_context": "self_takeoff",
+            "motor_task_target_scale": 1,
+        },
+    )
+    _edge(agent, agent.agent, "has_humanoid_episode", episode)
+    _edge(agent, episode, "projects_embodied_development", development)
+    _edge(
+        agent,
+        development,
+        "has_active_embodied_developmental_capability",
+        capability,
+    )
+
+    agent.tick()
+    attrs = agent.s.node(episode)["attrs"]
+    assert attrs["self_takeoff_drive_active"] == 1
+    assert attrs["self_takeoff_target_velocity_scale"] == 1
+
+    agent.inner.set_attr(episode, "active_support_count", 0)
+    agent.tick()
+    attrs = agent.s.node(episode)["attrs"]
+    assert attrs["self_takeoff_drive_active"] == 0
+    assert attrs["self_takeoff_target_velocity_scale"] == 0
 
 
 def test_cross_body_transfer_is_structural_output_null_and_reverified():

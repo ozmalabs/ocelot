@@ -734,6 +734,146 @@
    ]
   },
   {
+   "name": "cs_reconcile_terminal_latch_with_selected_active_lease",
+   "area": "cognitive_supervision",
+   "latency_class": "hard_realtime",
+   "batch": false,
+   "comment": "A replan handoff may attach the replacement before the departing process writes its terminal latch in the same settlement. The selected process already owns valid continuation authority; reconcile the episode latch to that existing lease without minting or extending authority.",
+   "match": [
+    [
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "plan",
+     "has_selected_learning_plan_step",
+     "step"
+    ],
+    [
+     "episode",
+     "has_cognitive_process",
+     "process"
+    ],
+    [
+     "process",
+     "supervises_learning_plan_step",
+     "step"
+    ],
+    [
+     "process",
+     "governed_by_cognitive_supervision_policy",
+     "policy"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "cognitive_checkin_terminal"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "process"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "monitoring"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "process"
+         },
+         "key": "continuation_authority"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "policy"
+         },
+         "key": "enabled"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "episode",
+     "cognitive_continuation_authority",
+     1
+    ],
+    [
+     "set_attr",
+     "episode",
+     "cognitive_checkin_terminal",
+     0
+    ]
+   ]
+  },
+  {
    "name": "cs_follow_existing_goal_tree_to_arbitrary_depth",
    "area": "cognitive_supervision",
    "latency_class": "hard_realtime",
@@ -4360,6 +4500,11 @@
      "plan"
     ],
     [
+     "plan",
+     "has_selected_learning_plan_step",
+     "step"
+    ],
+    [
      "episode",
      "has_cognitive_process",
      "process"
@@ -4896,6 +5041,11 @@
      "episode",
      "has_self_directed_learning_plan",
      "plan"
+    ],
+    [
+     "plan",
+     "has_selected_learning_plan_step",
+     "step"
     ],
     [
      "episode",

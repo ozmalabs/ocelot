@@ -31,6 +31,14 @@ def Min(*items):
     return {"type": "Min", "items": list(items)}
 
 
+def Pick(source):
+    return {"type": "Pick", "source": source}
+
+
+def node_attr(node, key):
+    return Plus({"type": "Attr", "node": node, "key": key}, L(0.0))
+
+
 def clamp01(value):
     return Max(L(0.0), Min(L(1.0), value))
 
@@ -1083,7 +1091,7 @@ def update_local_loop_rule():
         L(1.0),
         L(0.0),
     )
-    urgency = clamp01(Plus(
+    raw_urgency = clamp01(Plus(
         Times(
             P0("policy", "surprise_urgency_gain"),
             Div(
@@ -1094,6 +1102,25 @@ def update_local_loop_rule():
         Times(P0("policy", "angular_urgency_gain"), angular_speed),
         Times(P0("policy", "contact_loss_urgency_gain"), contact_loss),
     ))
+    verified_safety = Filter(
+        Neighbours("episode", "has_learning_safety_context"),
+        "verified_learning_safety",
+        Eq(P0("verified_learning_safety", "verified"), L(1.0)),
+    )
+    safety = Pick(verified_safety)
+    recoverability = If(
+        Gt(Count(verified_safety), L(0.0)),
+        Plus(
+            Times(
+                node_attr(safety, "protective_support_available"),
+                node_attr(safety, "protective_support_effectiveness"),
+            ),
+            node_attr(safety, "reset_reachable"),
+            Min(L(1.0), node_attr(safety, "recovery_path_count")),
+        ),
+        L(0.0),
+    )
+    urgency = Div(raw_urgency, Plus(L(1.0), recoverability))
     interrupt = If(
         Gte(urgency, P0("policy", "local_interrupt_threshold")),
         L(1.0),
@@ -1104,6 +1131,10 @@ def update_local_loop_rule():
         "area": "embodied_sensorimotor",
         "order": 5,
         "latency_class": "hard_realtime",
+        "comment": "Weight local surprise, angular motion and contact-loss "
+        "urgency by graph-verified recoverability. Protective support and "
+        "reachable resets widen safe exploration without changing structural "
+        "power or thermal limits.",
         "match": [
             ["agent", "has_embodied_sensorimotor_policy", "policy"],
             ["agent", "has_embodied_motor_episode", "episode"],
@@ -1496,7 +1527,7 @@ def manifest():
     ]
     return {
         "id": "embodied_sensorimotor_core",
-        "version": "1.1.0",
+        "version": "1.2.0",
         "depends_on": [
             "adaptive_control_core",
             "default_mode_core",

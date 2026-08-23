@@ -45,7 +45,7 @@ def test_humanoid_seed_owns_learning_and_balance_choice():
     learner = json.dumps(_rule(seed, "ha_learn_opaque_joint_consequence"))
 
     assert seed["id"] == "humanoid_adaptation"
-    assert seed["version"] == "1.6.0"
+    assert seed["version"] == "1.15.0"
     assert '"type": "Argmin"' in chooser
     assert "gravity_acceleration" in chooser
     assert '"type": "Sqrt"' in chooser
@@ -53,6 +53,38 @@ def test_humanoid_seed_owns_learning_and_balance_choice():
         assert f"mean_{axis}" in chooser
     for axis in ("dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz"):
         assert f"observed_{axis}" in learner
+
+
+def test_all_motor_trial_openers_refuse_duplicate_current_request():
+    from scripts.gen_humanoid_adaptation_seed import manifest
+
+    rules = {rule["name"]: rule for rule in manifest()["rules"]}
+    for name in (
+        "ha_open_receipt_backed_motor_trial",
+        "ha_open_synthesized_motor_program_trial",
+        "ha_bind_synthesized_structure_to_canonical_memory",
+        "ha_open_receipt_advanced_motor_sequence_trial",
+        "ha_open_reassociated_motor_memory_trial",
+    ):
+        condition = json.dumps(rules[name]["where"])
+        assert rules[name]["batch"] is False
+        assert "has_humanoid_motor_trial" in condition
+        assert "current_issued_trial" in condition
+        assert "request_seq" in condition
+
+    for name in (
+        "ha_open_synthesized_motor_program_trial",
+        "ha_bind_synthesized_structure_to_canonical_memory",
+    ):
+        condition = json.dumps(rules[name]["where"])
+        assert "current_ready_program" in condition
+        assert '"type": "Argmin"' in condition
+    program_opener = rules["ha_open_synthesized_motor_program_trial"]
+    assert "generalizes_humanoid_action_model" not in json.dumps(
+        program_opener["match"]
+    )
+    assert "program_action_candidate" in json.dumps(program_opener["where"])
+    assert "motor_memory_recalled" in json.dumps(program_opener["effects"])
     text = SEED.read_text(encoding="utf-8").lower()
     for forbidden in (
         "hip",
@@ -131,6 +163,23 @@ def test_full_humanoid_exposes_opaque_dynamic_joint_alphabet():
             frames=5,
             caregiver_protective_support=True,
         )
+        caregiver_half_buffered = world.step(
+            "humanoid_actuator_001",
+            frames=5,
+            caregiver_protective_support=True,
+            caregiver_support_scale=0.5,
+        )
+        caregiver_directional = world.step(
+            "humanoid_actuator_001",
+            frames=5,
+            caregiver_protective_support=True,
+            caregiver_manifold_residual=(0.1, -0.2, 0.0, 0.0, 0.3, -0.4, 0.0),
+        )
+        with pytest.raises(ValueError, match="requires authorization"):
+            world.step(
+                "humanoid_actuator_001",
+                caregiver_support_scale=0.5,
+            )
         with pytest.raises(ValueError, match="conflicting joint group"):
             world.step(
                 ("humanoid_actuator_001", "humanoid_actuator_002")
@@ -171,9 +220,20 @@ def test_full_humanoid_exposes_opaque_dynamic_joint_alphabet():
         "humanoid_actuator_003",
     )
     assert caregiver_buffered["caregiver_protective_support_applied"] == 1
+    assert caregiver_buffered["caregiver_support_scale"] == 1.0
     assert (
         caregiver_buffered["caregiver_support_impulse_newton_seconds"] > 0.0
     )
+    assert caregiver_half_buffered["caregiver_support_scale"] == 0.5
+    assert caregiver_half_buffered[
+        "caregiver_support_impulse_newton_seconds"
+    ] == pytest.approx(
+        caregiver_buffered["caregiver_support_impulse_newton_seconds"] * 0.5
+    )
+    assert caregiver_directional["caregiver_support_force_world"][0] < 0.0
+    assert caregiver_directional["caregiver_support_force_world"][1] > 0.0
+    assert caregiver_directional["caregiver_support_torque_world"][0] < 0.0
+    assert caregiver_directional["caregiver_support_torque_world"][1] < 0.0
     assert options[1]["actuator_group"] != options[3]["actuator_group"]
     assert all(
         math.isfinite(value)
