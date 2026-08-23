@@ -489,6 +489,71 @@ has been recorded as an architectural residual; it is now also a 2.4x cost again
 with `mflood=0`. The tests already take the rim path (`_rim_run` sets `mflood=0.0`); production
 callers still do not.
 
+## 6h. THE ANTI-ALIASED EDGE — a threshold that provably does not exist, and why the CELL is the wrong carrier
+
+§6f closed with an honest residual: the sub-cell contour had been tested only on a HARD MASK,
+where both cells give t = 0.5 and it reduces exactly to midpoint placement, so it was inert and
+"the medial belongs to the program" was concluded without it. Running the case it needed — a
+supersampled raster, the partial coverage a real blurred observation carries — produced something
+more interesting than a placement tweak.
+
+**First, a correction to my own reading.** I initially reported the crossings COLLAPSING
+116 -> 66 -> 43 under supersampling and read it as the soft edge going undetected. That was a
+misread column: those were contour points on the largest cycle, not crossings. Measured properly,
+the crossings go **UP**, 116 -> 212 -> 224 -> 220, which is what the gradient argument predicts.
+What actually changes is the PARTITION:
+
+| raster | crossings | regions | largest | 2nd | remainder |
+|---|---|---|---|---|---|
+| hard mask | 116 | **2** | 1024 | 657 | — |
+| super x2 | 212 | 46 | 1008 | 621 | ~52 cells over 44 regions |
+| super x4 | 224 | **50** | 1008 | 609 | ~64 cells over 48 regions |
+| super x8 | 220 | 46 | 1008 | 629 | ~44 cells over 44 regions |
+
+The disc never merges with the background, so this is NOT the single-linkage chaining already
+retracted in §2a. It is a ring of **slivers averaging 1.2 cells each**.
+
+**Second, and this is the load-bearing result: no single threshold exists.** Swept on the super x4
+disc:
+
+| mtol | regions | largest | 2nd | verdict |
+|---|---|---|---|---|
+| 0.5 | 82 | 992 | 593 | 80 sliver regions |
+| 1.5 | 50 | 1008 | 609 | 48 sliver regions |
+| 2.5 | 26 | 1008 | 649 | 24 sliver regions |
+| 3.5 | 17 | **1665** | 1 | disc lost — merged |
+| 4.5+ | 1 | **1681** | 0 | disc lost — merged |
+
+Below 3.5 the disc separates but carries slivers; at 3.5 and above the slivers go and the disc goes
+with them. **There is no value that yields two clean regions.** So this is not a badly chosen
+number, and the seed's own Otsu derivation (`mo_tol_otsu`) cannot rescue it either — deriving a
+threshold better does not help when the threshold being sought does not exist.
+
+**Third, the mechanism, which says what to do instead.** The ramp is only ONE cell wide (measured;
+max adjacent step stays 8.44 at x4 and 8.02 at x8, so the signal is not smeared away). A
+partially-covered edge cell differs from the interior by more than `mtol` AND from the exterior by
+more than `mtol` — so it is cut from BOTH sides. Its coverage varies around the circumference, so
+no single threshold cuts it from exactly one side everywhere.
+
+Which means the sliver is an artifact of demanding a **total partition of CELLS**. Every cell must
+belong to some region, so a cell that is genuinely *on the boundary* has to have a region invented
+for it. The crossing representation never required that — and the sub-cell parameter `t` is
+precisely the quantity that says where WITHIN the cell the boundary falls. So sub-cell placement is
+not the ~3% cosmetic rms improvement it measured as on a hard mask (0.403 -> 0.392 at x4,
+0.386 -> 0.357 at x8); on a real observation it is **structurally what makes the edge cell
+representable at all**.
+
+This is §6f's finding one level down, and the same shape as it: **the observation alone
+underdetermines, and the carrier decides what can be said.** A cell partition cannot express "the
+boundary runs through here"; a crossing with a sub-cell `t` can. The number that was being sought
+(one tolerance separating ramp from object) provably does not exist, which is this tree's standing
+defect shape stated as strongly as it can be stated — a number standing where a shape belongs, and
+measured to be impossible rather than merely awkward.
+
+**Status:** measured and recorded, NOT built. `bt_disagree` is still a pairwise threshold, and the
+adapters still take a total cell partition. What this establishes is that the fix cannot be a better
+threshold, so it is worth the redesign; it does not claim the redesign is done.
+
 ## 6b. PRIOR ART
 ## 6b. PRIOR ART — nearly all of this is textbook, and one match is exact
 
