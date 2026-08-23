@@ -64,7 +64,10 @@ def trajectory_manifold_projection(
     return term
 
 
-def trajectory_manifold_release_allowed(source: str = "memory"):
+def trajectory_manifold_release_allowed(
+    source: str = "memory",
+    addition: str | None = None,
+):
     gate_active = And(
         Gt(P0("policy", "future_manifold_enabled"), L(0)),
         Gt(P0("episode", "manifold_bounds_ready"), L(0)),
@@ -72,19 +75,29 @@ def trajectory_manifold_release_allowed(source: str = "memory"):
     return Or(
         Not(gate_active),
         And(
-            Gt(trajectory_manifold_projection(source, "support"), L(0)),
-            Gt(trajectory_manifold_projection(source, "resolved"), L(0)),
+            Gt(trajectory_manifold_projection(
+                source, "support", addition
+            ), L(0)),
+            Gt(trajectory_manifold_projection(
+                source, "resolved", addition
+            ), L(0)),
             Eq(
-                trajectory_manifold_projection(source, "information_loss"),
+                trajectory_manifold_projection(
+                    source, "information_loss", addition
+                ),
                 L(0),
             ),
             Or(
                 Eq(
-                    trajectory_manifold_projection(source, "effort_supported"),
+                    trajectory_manifold_projection(
+                        source, "effort_supported", addition
+                    ),
                     L(0),
                 ),
                 Gt(
-                    trajectory_manifold_projection(source, "effort_authorized"),
+                    trajectory_manifold_projection(
+                        source, "effort_authorized", addition
+                    ),
                     L(0),
                 ),
             ),
@@ -2834,7 +2847,9 @@ def audit_selected_trajectory_manifold_rule():
             *[
                 [
                     "set_attr", "path", f"last_manifold_projection_{field}",
-                    T(trajectory_manifold_projection("memory", field)),
+                    T(trajectory_manifold_projection(
+                        "path", field, "transition"
+                    )),
                 ]
                 for field in (
                     "support", "resolved", "loss", "information_loss",
@@ -2923,7 +2938,7 @@ def reject_selected_trajectory_manifold_rule():
                 P0("path", "last_manifold_audit_seq"),
                 P0("episode", "request_seq"),
             ),
-            Not(trajectory_manifold_release_allowed("memory")),
+            Not(trajectory_manifold_release_allowed("path", "transition")),
             Eq(Count(Filter(
                 Neighbours(
                     "path",
@@ -3051,7 +3066,7 @@ def replay_selected_order_n_program_path_rule():
                     ), L(1)),
                 ),
             ),
-            trajectory_manifold_release_allowed("memory"),
+            trajectory_manifold_release_allowed("path", "transition"),
             Gt(Count(primary), L(0)),
             Gt(P0("episode", "request_seq"), P0("episode", "decision_seq")),
             Eq(P0("episode", "action_ready"), L(0)),
@@ -3071,17 +3086,23 @@ def replay_selected_order_n_program_path_rule():
             )],
             ["set_attr", "path", "last_manifold_projection_support", T(If(
                 Gt(P0("policy", "future_manifold_enabled"), L(0)),
-                trajectory_manifold_projection("memory", "support"),
+                trajectory_manifold_projection(
+                    "path", "support", "transition"
+                ),
                 L(0),
             ))],
             ["set_attr", "path", "last_manifold_projection_resolved", T(If(
                 Gt(P0("policy", "future_manifold_enabled"), L(0)),
-                trajectory_manifold_projection("memory", "resolved"),
+                trajectory_manifold_projection(
+                    "path", "resolved", "transition"
+                ),
                 L(0),
             ))],
             ["set_attr", "path", "last_manifold_projection_loss", T(If(
                 Gt(P0("policy", "future_manifold_enabled"), L(0)),
-                trajectory_manifold_projection("memory", "loss"),
+                trajectory_manifold_projection(
+                    "path", "loss", "transition"
+                ),
                 L(0),
             ))],
             ["add_edge", "episode", "has_ready_humanoid_motor_program", "memory"],
