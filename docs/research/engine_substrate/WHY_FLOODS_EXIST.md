@@ -381,6 +381,74 @@ geometry's constant factors is arguing about the wrong term — which is itself 
 does this need to be cheap": it already is, and the cost that remains is the engine's.
 
 
+## 6f. THE TWO EXPENSIVE STAGES, FIXED — and the medial axis turns out to belong to the PROGRAM
+
+§6e measured two stages working over the AREA when the point of reifying the boundary was that
+they need not. Both are now fixed, and the second fix landed somewhere more interesting than
+expected.
+
+**The contour: O(area) -> O(perimeter), byte-identical output.** The union-find was doing three
+jobs, and none of them needs a cell: orientation comes from `owns_figure` (minted locally by
+`bt_own`); the regions are the CYCLES of the `next_crossing` graph; and the region SIZE is the
+cycle's own shoelace area plus a correction that is the same for every shape — the midpoint
+contour cuts each convex corner by 1/8 and fills each reflex corner by 1/8, and a simple
+rectilinear polygon has exactly four more convex corners than reflex ones, so the total is always
+4 x 1/8 = 1/2 however involved the outline. `cells = shoelace + 0.5`, read off the boundary.
+
+| n | cells | crossings | union-find | cycles | speedup |
+|---|---|---|---|---|---|
+| 17 | 289 | 44 | 1.66 ms | 0.258 ms | 6x |
+| 41 | 1681 | 116 | 9.11 ms | 0.678 ms | 13x |
+| 57 | 3249 | 156 | 17.50 ms | **0.891 ms** | **20x** |
+
+Scaling, from the smallest to the largest: cells x11.2, crossings x3.5, **union-find x10.5,
+cycles x3.5**. Exactly the boundary's own growth rate, and contours identical at every angle
+tested (max deviation 0.00e+00 at 0/15/30/45/90 degrees). Gated by
+`test_the_contour_needs_no_field_scan_and_agrees_with_the_one_that_does` and
+`test_the_contour_cost_follows_the_perimeter_not_the_area`; `_crossing_contours` is retained as
+the ORACLE the fast path is checked against, so its O(area) cost is now deliberate.
+
+**The medial axis: the cost fix worked, and then located a deeper error.** Blum defined the medial
+axis as the centres of maximal inscribed circles, and every such circle is tangent to the
+boundary — so it needs no field either. Closed form, no iteration: for boundary point p_i with
+inward normal n_i, a circle tangent at p_i touching p_j has `r = |d|^2 / (2 d.n_i)` with
+`d = p_j - p_i`, and the maximal inscribed circle is the SMALLEST such r. One vectorised pass.
+Measured: **106x faster at n=57**, growing x3.6 against crossings x3.5 — linear, as intended.
+
+But the ANSWER was wrong: the disc read r = 10.19 against a true 14.35. Three measurements
+located it, and the third is the point:
+
+  * an ANALYTIC circle returns r = 14.35 with spread 0.00 — the formula is exact;
+  * the error is entirely the STAIRCASE contour;
+  * widening the normal stencil saturates at 12.96 and makes the spread WORSE (12.52 -> 14.20).
+    Local repair does not recover it.
+
+This is the textbook instability of the medial axis to boundary noise — the reason the pruning
+literature (lambda-medial axis, scale axis) exists at all. And the observation's medial does not
+merely err, it **fails to converge**: its smear GROWS with resolution, 6.65 -> 9.56 -> 12.52 ->
+18.05 across n = 25/33/41/57.
+
+The fix is this arc's own thesis, "a circle has one point," applied one level on. Fit the contour
+to its program — one closed-form algebraic least squares, linear in (D,E,F), no seed and nothing
+to tune — and take the medial of the PROGRAM:
+
+| n | observed r | observed spread | program r | program spread | fit residual | true R |
+|---|---|---|---|---|---|---|
+| 25 | 5.75 | 6.65 | 8.77 | **0.00** | 0.27 | 8.75 |
+| 41 | 10.19 | 12.52 | 14.45 | **0.00** | 0.45 | 14.35 |
+| 57 | 12.77 | 18.05 | 19.92 | **0.00** | 0.48 | 19.95 |
+
+One point at every size, radius correct to 0.03, from a fit whose residual is sub-cell throughout.
+**The medial axis of the observation is noise; the medial axis of the recognised shape is exact** —
+so the noise was never there to be pruned, and the whole pruning apparatus is answering a question
+that the program layer dissolves. The observed-vs-program split here is the same one already
+measured for the verdict comparator ("bins propose, continuous decides"): the raster is what you
+match against, never what you compute structure from.
+
+**Honest residual:** the sub-cell contour was tested here and is INERT on these fixtures, not a
+result — the synthetic raster is a hard mask, so both cells give t = 0.5 and it reduces exactly to
+the midpoint placement. It needs the supersampled raster to say anything, and that was not run.
+
 ## 6b. PRIOR ART
 ## 6b. PRIOR ART — nearly all of this is textbook, and one match is exact
 
