@@ -30,6 +30,7 @@ from scripts.gen_humanoid_adaptation_seed import (  # noqa: E402
     L,
     Lt,
     Max,
+    Min,
     Minus,
     Neg,
     Neighbours,
@@ -99,6 +100,9 @@ def open_trajectory_rule() -> dict:
     situated_trajectories = Neighbours(
         "owner", "has_embodied_program_trajectory"
     )
+    minimum_depth = Max(
+        L(1), P0("budget", "trajectory_minimum_selection_depth")
+    )
     return {
         "name": "ept_open_situated_program_trajectory",
         "area": "embodied_program_trajectory",
@@ -119,10 +123,12 @@ def open_trajectory_rule() -> dict:
                 "kind": "embodied_program_trajectory",
                 "dimension_count": 6,
                 "horizon": T(P0("budget", "trajectory_horizon")),
-                "minimum_selection_depth": T(Max(
-                    L(1), P0("budget", "trajectory_minimum_selection_depth")
+                "active_expansion_horizon": T(Min(
+                    P0("budget", "trajectory_horizon"), minimum_depth
                 )),
+                "minimum_selection_depth": T(minimum_depth),
                 "expansion_count": 0,
+                "last_foveation_deepening_expansion_count": -1,
                 "selection_count": 0,
                 "selected_task_progress_units": 0,
                 "selected_capability_evidence_units": 0,
@@ -246,6 +252,13 @@ def refresh_trajectory_horizon_rule() -> dict:
             "set_attr", "trajectory", "horizon", T(
                 P0("budget", "trajectory_horizon")
             ),
+        ], [
+            "set_attr", "trajectory", "active_expansion_horizon", T(
+                Min(
+                    P0("trajectory", "active_expansion_horizon"),
+                    P0("budget", "trajectory_horizon"),
+                )
+            ),
         ]],
     }
 
@@ -253,7 +266,7 @@ def refresh_trajectory_horizon_rule() -> dict:
 def extend_path_rule() -> dict:
     transitions = Neighbours("owner", "has_embodied_program_transition")
     expansion_budget = Plus(
-        P0("trajectory", "horizon"),
+        P0("trajectory", "active_expansion_horizon"),
         Count(transitions),
     )
     known_extensions = Filter(
@@ -316,7 +329,10 @@ def extend_path_rule() -> dict:
             Eq(A("parent", "kind"), L("embodied_program_path")),
             Eq(P0("parent", "verified"), L(1)),
             Eq(P0("transition", "verified"), L(1)),
-            Lt(P0("parent", "depth"), P0("trajectory", "horizon")),
+            Lt(
+                P0("parent", "depth"),
+                P0("trajectory", "active_expansion_horizon"),
+            ),
             Lt(P0("trajectory", "expansion_count"), expansion_budget),
             Lt(
                 Count(Neighbours("trajectory", "has_pareto_candidate")),
@@ -605,6 +621,13 @@ def select_frontier_path_rule() -> dict:
             Eq(Count(Neighbours(
                 "owner", "has_selected_embodied_program_path"
             )), L(0)),
+            Not(Eq(
+                P0(
+                    "trajectory",
+                    "last_foveation_deepening_expansion_count",
+                ),
+                P0("trajectory", "expansion_count"),
+            )),
         ),
         "effects": [
             ["add_edge", "owner", "has_selected_embodied_program_path", "path"],
@@ -660,6 +683,47 @@ def retract_refuted_selection_rule() -> dict:
         ],
         "effects": [[
             "del_edge", "owner", "has_selected_embodied_program_path", "path"
+        ]],
+    }
+
+
+def deepen_exhausted_trajectory_rule() -> dict:
+    return {
+        "name": "ept_deepen_trajectory_after_local_frontier_exhaustion",
+        "area": "embodied_program_trajectory",
+        "latency_class": "soft_realtime",
+        "batch": False,
+        "comment": "Temporal foveation holds farther futures as potential. "
+        "Expose one additional order after selection finds no live local "
+        "path, and continue only if that newly constructed layer is also "
+        "exhausted.",
+        "match": [
+            ["owner", "has_embodied_program_trajectory", "trajectory"],
+            ["owner", "has_current_embodied_program", "current_program"],
+        ],
+        "where": And(
+            Eq(P0("trajectory", "selection_enabled"), L(1)),
+            Lt(
+                P0("trajectory", "active_expansion_horizon"),
+                P0("trajectory", "horizon"),
+            ),
+            Eq(Count(Neighbours(
+                "owner", "has_selected_embodied_program_path"
+            )), L(0)),
+        ),
+        "effects": [[
+            "set_attr", "trajectory", "active_expansion_horizon", T(
+                Plus(P0("trajectory", "active_expansion_horizon"), L(1))
+            ),
+        ], [
+            "set_attr", "trajectory", "foveation_deepening_count", T(
+                Plus(P0("trajectory", "foveation_deepening_count"), L(1))
+            ),
+        ], [
+            "set_attr", "trajectory",
+            "last_foveation_deepening_expansion_count", T(
+                P0("trajectory", "expansion_count")
+            ),
         ]],
     }
 
@@ -721,6 +785,7 @@ def manifest() -> dict:
             situate_path_in_current_state_rule(),
             retract_refuted_selection_rule(),
             select_frontier_path_rule(),
+            deepen_exhausted_trajectory_rule(),
         ],
     }
 
