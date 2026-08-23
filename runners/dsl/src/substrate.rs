@@ -3780,9 +3780,9 @@ impl Substrate {
             let mut progressed_here: u64 = 0;
             // STAGE A staging area — empty and untouched when the flag is off.
             let compare_here = crate::stage_a::compare_mode()
-                && crate::stage_a::rule_is_derivable(&rule);
+                && crate::stage_a::rule_is_derivable(&rule, &self.terms);
             let stage_a_here = crate::stage_a::enabled()
-                && crate::stage_a::rule_is_derivable(&rule);
+                && crate::stage_a::rule_is_derivable(&rule, &self.terms);
             if crate::stage_a::enabled() && !stage_a_here {
                 crate::stage_a::note_excluded_drain();
             }
