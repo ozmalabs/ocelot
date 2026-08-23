@@ -3837,7 +3837,7 @@
    "area": "cognitive_pareto",
    "latency_class": "soft_realtime",
    "batch": false,
-   "comment": "Pareto removes only refuted paths. Temporal foveation then collapses the surviving frontier to the shortest sufficient prefix, using deeper paths only after local detail is exhausted; this selection grants no actuator authority.",
+   "comment": "Pareto removes only refuted paths. Temporal foveation first restricts choice to the shortest sufficient prefix; within that fixed depth, situated task, evidence, and practice coordinates retain their familiar ordering. Selection grants no actuator authority.",
    "match": [
     [
      "owner",
@@ -5089,16 +5089,249 @@
         "type": "Plus",
         "items": [
          {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "frontier_path"
-          },
-          "key": "current_state_shape_residual_units"
+          "type": "Times",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "frontier_path"
+              },
+              "key": "current_state_shape_residual_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "active_expansion_horizon"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "active_expansion_horizon"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "active_expansion_horizon"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           }
+          ]
          },
          {
-          "type": "Lit",
-          "value": 0
+          "type": "Times",
+          "items": [
+           {
+            "type": "Neg",
+            "arg": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frontier_path"
+               },
+               "key": "task_progress_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            }
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "active_expansion_horizon"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "active_expansion_horizon"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Neg",
+            "arg": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frontier_path"
+               },
+               "key": "capability_evidence_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            }
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "active_expansion_horizon"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "frontier_path"
+            },
+            "key": "replay_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
          }
         ]
        },

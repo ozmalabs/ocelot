@@ -577,9 +577,9 @@ def select_frontier_path_rule() -> dict:
     )
     # Every frontier member already contains a currently admissible source
     # and survived Pareto refutation. Select the shortest such path, then use
-    # receipt-state residual only to resolve equal-depth
-    # alternatives. This makes temporal foveation a relational restriction,
-    # not a weighted preference that a large task coordinate could reverse.
+    # the prior situated rank only within that equal-depth subset. This makes
+    # temporal foveation a relational restriction, not a weighted preference
+    # that a large task coordinate could reverse.
     shallowest = Argmin(
         frontier,
         "shallow_frontier_path",
@@ -594,10 +594,35 @@ def select_frontier_path_rule() -> dict:
             AO(shallowest, "depth"),
         ),
     )
+    rank_span = Plus(
+        P0("trajectory", "active_expansion_horizon"), L(1)
+    )
     selected = Argmin(
         shortest,
         "frontier_path",
-        P0("frontier_path", "current_state_shape_residual_units"),
+        Plus(
+            Times(
+                P0(
+                    "frontier_path",
+                    "current_state_shape_residual_units",
+                ),
+                rank_span,
+                rank_span,
+                rank_span,
+            ),
+            Times(
+                Neg(P0("frontier_path", "task_progress_units")),
+                rank_span,
+                rank_span,
+            ),
+            Times(
+                Neg(P0(
+                    "frontier_path", "capability_evidence_units"
+                )),
+                rank_span,
+            ),
+            P0("frontier_path", "replay_count"),
+        ),
         shallowest,
     )
     return {
@@ -606,9 +631,10 @@ def select_frontier_path_rule() -> dict:
         "latency_class": "soft_realtime",
         "batch": False,
         "comment": "Pareto removes only refuted paths. Temporal foveation "
-        "then collapses the surviving frontier to the shortest sufficient "
-        "prefix, using deeper paths only after local detail is exhausted; "
-        "this selection grants no actuator authority.",
+        "first restricts choice to the shortest sufficient prefix; within "
+        "that fixed depth, situated task, evidence, and practice coordinates "
+        "retain their familiar ordering. Selection grants no actuator "
+        "authority.",
         "match": [
             ["owner", "has_embodied_program_trajectory", "trajectory"],
             ["owner", "has_current_embodied_program", "current_program"],
