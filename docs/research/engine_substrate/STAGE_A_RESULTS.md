@@ -582,6 +582,33 @@ FOLD is 12.6% of seed rules against PROPAGATION's 3.2%, and §5c is explicit tha
 that does not converge. A refusal that covered only propagation would have closed the visible
 falsifier and left the silent under-count in place.
 
+**COMPARE MODE, THE DIRECT CHECK.** The falsifier passing says the red test went green; it does
+not say the divergences are gone. Compare mode derives each drain BOTH ways and diffs the write
+lists, and §5c recorded 587 divergences across its workloads. Re-run against the refusal:
+
+| workload | compared drains | diverged | unsound |
+|---|---|---|---|
+| motion + boundary, flood ON | 20 | **1** | 0 |
+| conversation + intent | 25 | **0** | 0 |
+
+The single survivor is `bt_chain_collinear`, and it is §5c's **shape 1, the idempotent superset**:
+39,424 writes against the committed path's 19,712, exactly 2x, the same edge emitted twice. Its
+match is symmetric — it binds `(x, y)` and `(y, x)` — so the committed path suppresses the second
+because the edge already exists, while Stage A derives both against the base.
+
+**"Benign" is a claim about the GRAPH, not the write list, so it was checked on the graph.** Same
+workload, both modes, order-independent digest over all nodes and edges:
+
+```
+OFF: steps=23  nodes=2034  edges=7886  digest=34368dffec963478
+ON : steps=23  nodes=2034  edges=7886  digest=34368dffec963478   (1828 proposals, 224 excluded)
+IDENTICAL
+```
+
+Identical fixpoint, identical graph, with Stage A genuinely active — 1828 proposals, so the
+comparison is not vacuous. Gated by `test_the_settled_graph_is_identical_in_both_modes`, which
+asserts `proposals > 0` before the digests are allowed to count.
+
 **HONEST LIMITS, all three structural rather than incidental:**
 
 - ~~**Does not see a CROSS-RULE dependency.**~~ **WITHDRAWN — measured, and the phrasing was

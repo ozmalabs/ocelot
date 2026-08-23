@@ -197,6 +197,82 @@ def test_a_fold_over_bindings_does_not_silently_under_count(n):
         f"(§5c's silent divergence has reopened)")
 
 
+def _settled_digest(stage_a):
+    """Settle a real motion+boundary workload and digest the resulting graph."""
+    import hashlib
+    import json
+
+    import numpy as np
+    import domains.motion_group_world as mgw
+    from substrate.boot_core import load_seeds_into
+
+    n, sub = 33, 4
+    V = np.zeros((n, n, 2))
+    cx = cy = n / 2.0 - 0.5
+    R = n * 0.35
+    offs = [(i + 0.5) / sub - 0.5 for i in range(sub)]
+    for r in range(n):
+        for c in range(n):
+            hits = sum(1 for oy in offs for ox in offs
+                       if (c + ox - cx) ** 2 + (r + oy - cy) ** 2 <= R * R)
+            V[r, c, 1] = 9.0 * hits / (sub * sub)
+
+    native.stage_a_enable(bool(stage_a))
+    native.stage_a_reset()
+    try:
+        s, ag = boot_core()
+        load_seeds_into(s, ag, ["vision_motion_group", "vision_boundary_trace"])
+        h = mgw.add_mfield(s, V)
+        for c in s.nodes("MCell"):
+            s.set_attr(c, "mtol", 1.5)
+            s.set_attr(c, "mtol_done", 1.0)
+            s.set_attr(c, "on_rim", 0.0)
+        s.set_attr(h["field"], "mtol", 1.5)
+        s.set_attr(h["field"], "mtol_done", 1.0)
+        mgw.set_flag(s, marm=1.0, mcontrast=1.0, mtol_exact=1.5, mflood=1.0)
+        steps = s.tick(200_000)
+        d = s._inner.graph_to_dict()
+        nodes = sorted((str(x.get("type")),
+                        json.dumps(x.get("attrs"), sort_keys=True, default=str))
+                       for x in (d.get("nodes") or []))
+        edges = sorted(json.dumps(e, sort_keys=True, default=str)
+                       for e in (d.get("edges") or []))
+        dig = hashlib.sha256()
+        for x in nodes:
+            dig.update(repr(x).encode())
+        dig.update(b"|EDGES|")
+        for x in edges:
+            dig.update(x.encode())
+        return dig.hexdigest(), steps, native.stage_a_stats()
+    finally:
+        native.stage_a_enable(False)
+
+
+def test_the_settled_graph_is_identical_in_both_modes():
+    """The claim that actually matters, checked on the PRODUCT.
+
+    One divergence survives the refusal: `bt_chain_collinear` emits a 2x
+    idempotent superset, because its match is symmetric (it binds (x,y) and
+    (y,x)) and the committed path suppresses the second write while Stage A
+    derives both against the base. §5c calls that shape benign.
+
+    Benign means the GRAPH is unaffected, so this checks the graph rather than
+    the write list -- 39424 writes against 19712 is a real difference, and it
+    still has to come out at the same fixpoint. `proposals > 0` is asserted so a
+    fully-refused workload cannot pass this vacuously."""
+    off_digest, off_steps, off_stats = _settled_digest(False)
+    on_digest, on_steps, on_stats = _settled_digest(True)
+
+    assert on_stats["proposals"] > 0, (
+        "Stage A speculated on nothing here -- the comparison is vacuous")
+    assert off_stats["proposals"] == 0, "Stage A ran with the flag off"
+    assert on_steps == off_steps, (
+        f"fixpoint iteration differs: {on_steps} vs {off_steps}")
+    assert on_digest == off_digest, (
+        "the settled graph DIFFERS between modes -- a divergence reached the "
+        "fixpoint instead of landing idempotently")
+
+
 def test_the_falsifier_stays_closed():
     """§5f's own reproduction, as a standing gate.
 
