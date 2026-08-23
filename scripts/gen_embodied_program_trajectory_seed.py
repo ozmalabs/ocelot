@@ -221,6 +221,35 @@ def mint_base_path_rule() -> dict:
     }
 
 
+def refresh_trajectory_horizon_rule() -> dict:
+    return {
+        "name": "ept_refresh_situated_trajectory_horizon_from_budget",
+        "area": "embodied_program_trajectory",
+        "latency_class": "soft_realtime",
+        "batch": False,
+        "comment": "An existing trajectory deepens as its situated evidence "
+        "window grows. The owner retains one trajectory identity; only the "
+        "graph-held expansion horizon changes.",
+        "match": [
+            ["owner", "has_embodied_program_trajectory", "trajectory"],
+            ["trajectory", "uses_embodied_program_budget", "budget"],
+        ],
+        "where": And(
+            Eq(P0("trajectory", "selection_enabled"), L(1)),
+            Gt(P0("budget", "trajectory_horizon"), L(0)),
+            Not(Eq(
+                P0("trajectory", "horizon"),
+                P0("budget", "trajectory_horizon"),
+            )),
+        ),
+        "effects": [[
+            "set_attr", "trajectory", "horizon", T(
+                P0("budget", "trajectory_horizon")
+            ),
+        ]],
+    }
+
+
 def extend_path_rule() -> dict:
     transitions = Neighbours("owner", "has_embodied_program_transition")
     expansion_budget = Plus(
@@ -674,6 +703,7 @@ def manifest() -> dict:
         ],
         "rules": [
             open_trajectory_rule(),
+            refresh_trajectory_horizon_rule(),
             mint_base_path_rule(),
             extend_path_rule(),
             inherit_path_transition_rule(),

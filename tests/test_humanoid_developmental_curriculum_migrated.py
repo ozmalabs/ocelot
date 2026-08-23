@@ -355,8 +355,8 @@ def test_generic_order_n_path_releases_only_its_next_compound_program():
         "current_support_phase": 0,
     })
     development = agent.s.add_node("EmbodiedDevelopmentEpisode", {
-        "development_evidence_window": 2,
-        "trajectory_horizon": 2,
+        "development_evidence_window": 4,
+        "trajectory_horizon": 0,
         "latest_development_receipt_seq": 0,
     })
     capability = agent.s.add_node("EmbodiedSituatedDevelopmentalCapability", {
@@ -405,6 +405,7 @@ def test_generic_order_n_path_releases_only_its_next_compound_program():
         "has_current_embodied_program", programs[0],
     )
     agent.tick()
+    assert agent.s.node(development)["attrs"]["trajectory_horizon"] == 4
     agent.dual_process_tick()
     trajectory = agent.inner.neighbours(
         capability, "has_embodied_program_trajectory"
