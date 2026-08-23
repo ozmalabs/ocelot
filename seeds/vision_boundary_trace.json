@@ -1,6 +1,6 @@
 {
  "id": "vision_boundary_trace",
- "version": "1.9.0",
+ "version": "1.10.0",
  "depends_on": [
   "vision_motion_group"
  ],
@@ -1236,6 +1236,246 @@
        ]
       }
      }
+    ]
+   ]
+  },
+  {
+   "name": "bt_chain_diagonal",
+   "comment": "THE DIAGONAL STEP \u2014 the third way two consecutive crossings can relate, and the one the other two chaining rules cannot reach. `bt_chain_perpendicular` needs a SHARED cell; `bt_chain_collinear` needs the cells to correspond ACROSS the pair (A~C and B~D). A boundary that steps diagonally has neither.\n\nMeasured, on a supersampled disc at the four cardinal points where the boundary is tangent to the lattice: the partial cell's coverage decides which SIDE of it the cut falls on. At the exact top the partial cell is 88% covered, so it agrees with the interior (|9.0-7.9| < mtol) and the crossing sits on its FAR side; one column over it is 81% covered, disagrees, and the crossing sits on its NEAR side. Both place the edge correctly in space -- they simply attach to different cell pairs, one row apart, sharing no cell and with only ONE cross-pair adjacency. The chain broke into 8 components, the largest holding 26 of 108 crossings.\n\nTHE GUARD IS WHAT MAKES THIS SAFE, AND WITHOUT IT THE RULE IS WRONG. Linking every diagonally-offset pair was measured first: it does close the chain (8 components -> 1) and it wrecks the curve, because 80 such pairs exist along the boundary and only 8 are steps -- degree went to {2:28, 3:16, 4:64}. Restricting to crossings that have NOWHERE ELSE TO GO fixes it exactly: 8 links added, 1 component, and degree 2 on all 108. A pair that the collinear or perpendicular rule already linked is at degree 2 and is therefore never considered, so this is a FALLBACK rather than a fourth way to chain -- which is also why it adds nothing at all on the hard-mask, x2 and x4 fixtures, where every crossing already has degree 2.\n\nMonotone (it only adds edges) and self-limiting (the guard closes as soon as a crossing reaches degree 2), so it settles.\n\nThe guard is written `Lte(degree, 1)` rather than `Lt(degree, 2)`. Identical on integers, and it keeps the seed's only literals the {0.0, 0.5, 1.0} its own no-new-constant gate admits -- which caught the first draft's bare 2.0. It also reads as what it means: a crossing with AT MOST ONE link is one that still needs a successor.\n\nTHE DEGREE MUST COUNT LINKS TO *TRUE* CROSSINGS ONLY, and counting raw ones silently disables the rule. Measured: the isolated crossing at the disc's top has TWO `next_crossing` links -- both to crossings `bt_true_boundary` discarded. Its degree among true crossings is 0, which is what needs the successor, but a raw count reads 2 and the guard refuses. The rule installed cleanly, matched nothing, and changed no measurement; only comparing it against the Python probe that DID filter showed the two disagreeing.\n\nAND THE DEGREE IS THE OUT-LINKS ALONE, not out+in. `next_crossing` links are MUTUAL here -- the chaining rules' matches are symmetric, so both directions get written -- and summing the two sides therefore counts one undirected link TWICE. Measured: out-true degree equals distinct undirected degree for all 108 crossings, distribution {0:4, 1:8, 2:96} either way. The out+in form read 2 for a crossing whose real degree is 1, so the guard refused every candidate partner and the rule matched nothing. Found by bisecting the guards one at a time -- the rule was installed, well-formed, and silently inert through two rounds of measurement.",
+   "match": [
+    [
+     "x",
+     "separates",
+     "a"
+    ],
+    [
+     "y",
+     "separates",
+     "c"
+    ],
+    [
+     "a",
+     "neighbour",
+     "c"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "key": "marm",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "MotionParams"
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Var",
+        "name": "x"
+       },
+       "b": {
+        "type": "Var",
+        "name": "y"
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "x"
+       },
+       "key": "true_boundary"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "y"
+       },
+       "key": "true_boundary"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "y"
+         },
+         "edge_type": "separates",
+         "any_type": false
+        },
+        "var_name": "z",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Var",
+          "name": "z"
+         },
+         "b": {
+          "type": "Var",
+          "name": "a"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "edge_type": "separates",
+         "any_type": false
+        },
+        "var_name": "z",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Var",
+          "name": "z"
+         },
+         "b": {
+          "type": "Var",
+          "name": "c"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "x"
+         },
+         "edge_type": "next_crossing",
+         "any_type": false
+        },
+        "var_name": "w",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "w"
+          },
+          "key": "true_boundary"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Lte",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "y"
+         },
+         "edge_type": "next_crossing",
+         "any_type": false
+        },
+        "var_name": "w",
+        "predicate": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "w"
+          },
+          "key": "true_boundary"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0.5
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "x",
+     "next_crossing",
+     "y"
     ]
    ]
   }

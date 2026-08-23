@@ -865,13 +865,59 @@ Its neighbours either side have the boundary a row further in. No chaining rule 
 that are a row apart, share no cell, and have no corresponding pair. Four cardinal points give 4
 isolated crossings, each costing its two neighbours a link: 4 + 8 = the 12 observed, exactly.
 
-**So this is not a chaining defect, and repairing it in the chaining rules is treating a symptom.**
-It is the pairwise threshold in `bt_disagree` — §6h's "no single threshold works" appearing as a
-chain break rather than as slivers. Whether the partial cell counts as figure or as band flips as
-its coverage crosses `9 - mtol`, and the boundary moves a whole cell when it does. `bt_true_boundary`
-is doing the right thing with the cuts it is handed; the cuts are what is wrong. This residual
-therefore belongs to the one piece this arc has consistently named as unbuilt, and closes only when
-that does.
+**That reading was HALF RIGHT, and the half that was wrong is the interesting one.** The coverage
+flip is real and is the pairwise threshold's doing. But it does NOT misplace the boundary: at col 20
+the partial cell is 88% covered, genuinely agrees with the interior (`|9.0 - 7.9| < mtol`), and the
+cut correctly falls on its FAR side; at col 19 it is 81% covered, genuinely disagrees, and the cut
+correctly falls on its NEAR side. **Both crossings place the edge correctly in space.** They simply
+attach to different cell pairs, one row apart — and no chaining rule could link them.
+
+So it IS a chaining gap after all, and a precisely characterisable one. Enumerating how every pair
+of consecutive true crossings relates:
+
+| relation | cross-pair adjacencies | shared cells | handled by |
+|---|---|---|---|
+| perpendicular | — | 1 | `bt_chain_perpendicular` |
+| collinear | 2 | 0 | `bt_chain_collinear` |
+| **diagonal step** | **1** | **0** | **nothing** |
+
+### 6m. `bt_chain_diagonal` (v1.10.0) — the third relation, as a FALLBACK
+
+**The naive rule is wrong, and was measured before being written.** Linking every diagonally-offset
+pair does close the chain (8 components → 1) and wrecks the curve: 80 such pairs exist along the
+boundary while only 8 are steps, and the degree distribution goes to `{2:28, 3:16, 4:64}`.
+
+Restricting to crossings that have NOWHERE ELSE TO GO fixes it exactly — `Lte(degree, 1)`, i.e. a
+crossing that still lacks a successor. A pair the collinear or perpendicular rule already linked
+sits at degree 2 and is never considered, so this is a fallback rather than a fourth way to chain:
+
+| raster | before | after |
+|---|---|---|
+| hard mask | 116 crossings, degree 2, 1 component | **unchanged** |
+| super x2 / x4 | degree 2, 1 component | **unchanged** |
+| super x8 | 4 isolated + 8 endpoints, **8 components**, largest 26 | **degree 2 on all 108, 1 component** |
+
+**TWO WAYS THE RULE WAS SILENTLY INERT, both found only by cross-checking it against the Python
+probe that already worked.** It installed cleanly, was well-formed, matched nothing, and moved no
+measurement — twice.
+
+1. **The degree counted RAW links, not links to TRUE crossings.** The isolated crossing at the
+   disc's top has two `next_crossing` links, both to crossings `bt_true_boundary` discards. Its
+   degree among true crossings is 0 — it needs a successor — but a raw count reads 2 and the guard
+   refuses.
+2. **Then it counted `out + in`, which double-counts.** `next_crossing` links are MUTUAL here (the
+   chaining rules' matches are symmetric, so both directions get written), so summing the two sides
+   reads 2 for a crossing whose real degree is 1. Measured: out-degree equals distinct undirected
+   degree for all 108 crossings, `{0:4, 1:8, 2:96}` either way.
+
+Found by bisecting the guards one at a time — `deg(x)<=1` alone selected exactly the 4 isolated
+crossings, and adding `deg(y)<=1` emptied the rule, which is impossible if the partners really have
+degree 1. **A rule that installs, is well-formed, and quietly matches nothing is the worst failure
+shape here, because every gate stays green.**
+
+Gated by `test_the_boundary_closes_into_one_curve_at_every_raster` (one component and degree 2
+exactly, at all four rasters — degree 2 is what the unguarded version destroyed) and
+`test_the_diagonal_fallback_adds_nothing_where_the_chain_is_already_closed`. 32/32.
 
 **A repair was proposed, measured, and REFUTED.** Link two true crossings whose FIGURE cells are
 lattice neighbours — weaker than cell-pair correspondence, so it should still link across a 2-cell
