@@ -65,6 +65,55 @@ def test_humanoid_seed_is_an_integer_output_null_bridge():
     assert "home" not in text
 
 
+def test_deliberate_takeoff_owns_controller_over_generic_capability_hold():
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
+    episode = agent.s.add_node("HumanoidEpisode", {
+        "developmental_curriculum_active": 1,
+        "phase": "locomotion",
+        "action_ready": 0,
+        "self_takeoff_drive_active": 1,
+        "active_support_count": 1,
+        "sensorimotor_interrupt_required": 0,
+        "upright": 1,
+        "recovery_mode": 1,
+        "recovery_entry_open": 1,
+    })
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {})
+    capability = agent.s.add_node(
+        "EmbodiedSituatedDevelopmentalCapability", {
+            "name": "fixture_jump",
+            "goal": "support_reducing_elevation",
+            "developmental_ecology": "upright",
+            "motor_task_context": "self_takeoff",
+            "motor_task_target_scale": 1,
+        },
+    )
+    _edge(agent, agent.agent, "has_humanoid_episode", episode)
+    _edge(agent, episode, "projects_embodied_development", development)
+    _edge(
+        agent,
+        development,
+        "has_active_embodied_developmental_capability",
+        capability,
+    )
+    # Let curriculum projection initialize, then reproduce the conflicting
+    # situated controller state at an ordinary decision boundary.
+    agent.tick()
+    agent.inner.set_attr(episode, "self_takeoff_drive_active", 1)
+    agent.inner.set_attr(episode, "upright", 1)
+    agent.inner.set_attr(episode, "recovery_mode", 1)
+    agent.inner.set_attr(episode, "recovery_entry_open", 1)
+
+    steps = agent.tick()
+
+    assert steps < 100_000
+    attrs = agent.s.node(episode)["attrs"]
+    assert attrs["recovery_mode"] == 0
+    assert attrs["recovery_entry_open"] == 0
+
+
 def test_inverse_kinematic_query_inverts_learned_integer_forward_model():
     from scripts.gen_humanoid_developmental_curriculum_seed import (
         inverse_kinematic_rank,

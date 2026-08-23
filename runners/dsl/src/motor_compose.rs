@@ -890,17 +890,12 @@ impl<'a> Composer<'a> {
                 best = Some((mi, information_loss, loss, cost));
             }
         }
-        let Some((primary, _, mut current_loss, _)) = best else {
+        let Some((primary, mut current_information_loss, mut current_loss, _)) = best else {
             return Vec::new();
         };
         let mut plan = vec![primary];
 
         loop {
-            // Zero loss already preserves the whole bounded path.  Adding an
-            // action would spend intervention without preserving more future.
-            if current_loss <= 0.0 {
-                break;
-            }
             let plan_cost = self.program_cost(&plan, None);
             let groups_in_plan: Vec<f64> = plan.iter().map(|mi| self.models[*mi].group).collect();
             let mut best_addition: Option<(usize, f64, f64, f64)> = None;
@@ -915,7 +910,7 @@ impl<'a> Composer<'a> {
                 let (support, resolved, loss, information_loss) = self.manifold_report(&proposed);
                 let cost = self.program_cost(&plan, Some(mi));
                 if !(support && resolved)
-                    || !(loss < current_loss)
+                    || !((information_loss, loss) <= (current_information_loss, current_loss))
                     || !(cost + self.minimum_improvement < plan_cost)
                 {
                     continue;
@@ -927,10 +922,11 @@ impl<'a> Composer<'a> {
                     best_addition = Some((mi, information_loss, loss, cost));
                 }
             }
-            let Some((mi, _, loss, _)) = best_addition else {
+            let Some((mi, information_loss, loss, _)) = best_addition else {
                 break;
             };
             plan.push(mi);
+            current_information_loss = information_loss;
             current_loss = loss;
         }
         plan
@@ -1893,13 +1889,107 @@ impl<'a> HumanoidComposer<'a> {
         let Some((primary, _, _)) = viable.first().copied() else {
             return Vec::new();
         };
-        // Operationally, stop at the least admissible action. During situated
-        // learning an addition is admissible only when it opens a consequence
-        // dimension that the current program does not represent. This makes
-        // exploration proportional to recoverability and new information,
-        // with a structural seven-axis ceiling instead of task-cost-driven
-        // program growth.
+        // Establishing a future manifold does not imply zero momentum. Grow
+        // the ordinary analysis-by-synthesis program while each complete
+        // candidate remains inside the projected manifold and improves the
+        // task cost. This recovers a situated normal-effort action without
+        // trading any future bound against a scalar task reward.
         let mut plan = vec![primary];
+        loop {
+            let current_cost = self.cost(&plan, None);
+            let mut best: Option<(usize, f64, f64)> = None;
+            for index in 0..self.models.len() {
+                if plan.contains(&index)
+                    || !self.active(index)
+                    || plan
+                        .iter()
+                        .any(|member| self.models[*member].group == self.models[index].group)
+                {
+                    continue;
+                }
+                let mut candidate_plan = plan.clone();
+                candidate_plan.push(index);
+                let Some((anchor_loss, escaped, _, _)) = self.manifold_path(&candidate_plan) else {
+                    continue;
+                };
+                if escaped > 0.0 || !anchor_loss.is_finite() {
+                    continue;
+                }
+                let cost = self.cost(&candidate_plan, None);
+                if !(cost < current_cost) {
+                    continue;
+                }
+                if best.map_or(true, |old| {
+                    (cost, anchor_loss, index) < (old.1, old.2, old.0)
+                }) {
+                    best = Some((index, cost, anchor_loss));
+                }
+            }
+            let Some((candidate, _, _)) = best else {
+                break;
+            };
+            plan.push(candidate);
+        }
+
+        // Persistent supported learning may need to cross a locally flat
+        // composition surface: no single extra effector improves the task,
+        // while a receipt-modelled higher-order assembly does.  Project only
+        // as far as failed evidence asks, and commit one member of a rollout
+        // only when the complete projected assembly improves on the current
+        // normal-effort program.  This preserves meaningful exploration
+        // without treating target order itself as output authority.
+        let target_order = self.takeoff_exploration_target_order();
+        while plan.len() < target_order {
+            let current_cost = self.cost(&plan, None);
+            let mut best_rollout: Option<(usize, f64)> = None;
+            for first in 0..self.models.len() {
+                if !self.admissible_new_member(&plan, first) {
+                    continue;
+                }
+                let mut rollout = plan.clone();
+                rollout.push(first);
+                if !self.manifold_program_admissible(&rollout) {
+                    continue;
+                }
+                while rollout.len() < target_order {
+                    let mut next: Option<(usize, f64)> = None;
+                    for index in 0..self.models.len() {
+                        if !self.admissible_new_member(&rollout, index) {
+                            continue;
+                        }
+                        let mut projected = rollout.clone();
+                        projected.push(index);
+                        if !self.manifold_program_admissible(&projected) {
+                            continue;
+                        }
+                        let cost = self.cost(&projected, None);
+                        if next.map_or(true, |old| (cost, index) < (old.1, old.0)) {
+                            next = Some((index, cost));
+                        }
+                    }
+                    let Some((index, _)) = next else { break };
+                    rollout.push(index);
+                }
+                if rollout.len() != target_order {
+                    continue;
+                }
+                let terminal_cost = self.cost(&rollout, None);
+                if !(terminal_cost < current_cost) {
+                    continue;
+                }
+                if best_rollout.map_or(true, |old| (terminal_cost, first) < (old.1, old.0)) {
+                    best_rollout = Some((first, terminal_cost));
+                }
+            }
+            let Some((first, _)) = best_rollout else {
+                break;
+            };
+            plan.push(first);
+        }
+
+        // In a supported learning situation, use any remaining safe width to
+        // sample consequence dimensions that the task-optimal program did not
+        // already exercise. This is information acquisition, not task force.
         let horizon = self
             .manifold_foveated_frames()
             .and_then(|frames| frames.last().copied())
@@ -1975,6 +2065,76 @@ impl<'a> HumanoidComposer<'a> {
         }
         let _ = self.cost(&plan, None);
         plan
+    }
+
+    fn admissible_new_member(&self, plan: &[usize], index: usize) -> bool {
+        !plan.contains(&index)
+            && self.active(index)
+            && !plan
+                .iter()
+                .any(|member| self.models[*member].group == self.models[index].group)
+    }
+
+    fn manifold_program_admissible(&self, plan: &[usize]) -> bool {
+        self.manifold_path(plan)
+            .is_some_and(|(anchor_loss, escaped, _, _)| escaped == 0.0 && anchor_loss.is_finite())
+    }
+
+    fn takeoff_exploration_target_order(&self) -> usize {
+        if self.ep("self_takeoff_drive_active") <= 0.5 || !self.expansion_allowed() {
+            return 1;
+        }
+        let Some(projects) = self.interner.lookup("projects_embodied_development") else {
+            return 1;
+        };
+        let Some(active) = self
+            .interner
+            .lookup("has_active_embodied_developmental_capability")
+        else {
+            return 1;
+        };
+        let Some(development) = self
+            .graph
+            .neighbours(self.episode, Some(projects))
+            .into_iter()
+            .next()
+        else {
+            return 1;
+        };
+        let Some(capability) = self
+            .graph
+            .neighbours(development, Some(active))
+            .into_iter()
+            .next()
+        else {
+            return 1;
+        };
+        if sattr(self.graph, self.interner, capability, "evidence_kind")
+            != self.interner.lookup("support_reducing_elevation")
+        {
+            return 1;
+        }
+        let window = fattr(
+            self.graph,
+            self.interner,
+            development,
+            "development_evidence_window",
+        );
+        let failures = fattr(self.graph, self.interner, capability, "failure_count");
+        if !(window > 0.0 && failures >= window) {
+            return 1;
+        }
+        let evidence_order = 1usize.saturating_add((failures / window).sqrt().floor() as usize);
+        let mut groups: Vec<u64> = self
+            .models
+            .iter()
+            .enumerate()
+            .filter(|(index, _)| self.active(*index))
+            .map(|(_, model)| model.group.to_bits())
+            .collect();
+        groups.sort_unstable();
+        groups.dedup();
+        evidence_order.min(groups.len()).max(1)
     }
 
     fn compose(&self) -> Vec<usize> {

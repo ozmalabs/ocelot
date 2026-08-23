@@ -17,6 +17,7 @@ if str(ROOT) not in sys.path:
 
 from scripts.gen_humanoid_adaptation_seed import (  # noqa: E402
     A,
+    AO,
     Abs,
     And,
     Argmin,
@@ -25,6 +26,7 @@ from scripts.gen_humanoid_adaptation_seed import (  # noqa: E402
     Exists,
     Filter,
     Gt,
+    If,
     L,
     Lt,
     Max,
@@ -58,13 +60,14 @@ def orientation_span(source: str, terminal: str) -> dict:
 def path_values(
     *,
     orientation: dict,
+    evidence: dict,
     boundary: dict,
     energy: dict,
     peak_load: dict,
 ) -> list[list]:
-    """Create the four complete integer Pareto coordinates for one path."""
-    raw = (orientation, boundary, energy, peak_load)
-    signed = (orientation, boundary, Neg(energy), Neg(peak_load))
+    """Create complete, separate integer Pareto coordinates for one path."""
+    raw = (orientation, evidence, boundary, energy, peak_load)
+    signed = (orientation, evidence, boundary, Neg(energy), Neg(peak_load))
     effects: list[list] = []
     for ordinal, value in enumerate(signed):
         name = f"path_value_{ordinal}"
@@ -108,12 +111,16 @@ def open_trajectory_rule() -> dict:
         "effects": [
             ["add_node", "trajectory", "ParetoProfile", {
                 "kind": "embodied_program_trajectory",
-                "dimension_count": 4,
+                "dimension_count": 5,
                 "horizon": T(P0("budget", "trajectory_horizon")),
                 "minimum_selection_depth": T(Max(
                     L(1), P0("budget", "trajectory_minimum_selection_depth")
                 )),
                 "expansion_count": 0,
+                "selection_count": 0,
+                "selected_capability_evidence_units": 0,
+                "selected_orientation_preserving_evidence_count": 0,
+                "selected_state_shape_residual_units": 0,
                 "selection_enabled": 1,
                 "output_authority": 0,
                 "integer_native": 1,
@@ -128,6 +135,7 @@ def open_trajectory_rule() -> dict:
 def mint_base_path_rule() -> dict:
     span = orientation_span("transition", "transition")
     boundary = P0("transition", "boundary_transition_count")
+    evidence = P0("transition", "capability_evidence_units")
     energy = P0("transition", "energy_units")
     peak_load = P0("transition", "peak_load_units")
     return {
@@ -174,6 +182,7 @@ def mint_base_path_rule() -> dict:
                 },
                 "orientation_span_units": T(span),
                 "boundary_transition_count": T(boundary),
+                "capability_evidence_units": T(evidence),
                 "energy_units": T(energy),
                 "peak_load_units": T(peak_load),
                 "replay_count": 0,
@@ -193,6 +202,7 @@ def mint_base_path_rule() -> dict:
             ["add_edge", "path", "contains_embodied_program", "terminal_program"],
             *path_values(
                 orientation=span,
+                evidence=evidence,
                 boundary=boundary,
                 energy=energy,
                 peak_load=peak_load,
@@ -228,6 +238,10 @@ def extend_path_rule() -> dict:
     boundary = Plus(
         P0("parent", "boundary_transition_count"),
         P0("transition", "boundary_transition_count"),
+    )
+    evidence = Plus(
+        P0("parent", "capability_evidence_units"),
+        P0("transition", "capability_evidence_units"),
     )
     energy = Plus(
         P0("parent", "energy_units"),
@@ -296,6 +310,7 @@ def extend_path_rule() -> dict:
                 },
                 "orientation_span_units": T(span),
                 "boundary_transition_count": T(boundary),
+                "capability_evidence_units": T(evidence),
                 "energy_units": T(energy),
                 "peak_load_units": T(peak_load),
                 "replay_count": 0,
@@ -322,6 +337,7 @@ def extend_path_rule() -> dict:
             )],
             *path_values(
                 orientation=span,
+                evidence=evidence,
                 boundary=boundary,
                 energy=energy,
                 peak_load=peak_load,
@@ -373,6 +389,32 @@ def inherit_path_program_rule() -> dict:
 
 
 def select_frontier_path_rule() -> dict:
+    def current_state_residual(path_var: str) -> dict:
+        current_transitions = Filter(
+            Neighbours(path_var, "contains_embodied_program_transition"),
+            "path_current_transition",
+            Exists(
+                Neighbours(
+                    "owner", "has_current_embodied_program_transition_source"
+                ),
+                "known_current_transition",
+                Eq(
+                    V("path_current_transition"),
+                    V("known_current_transition"),
+                ),
+            ),
+        )
+        closest = Argmin(
+            current_transitions,
+            "ranked_current_transition",
+            P0("ranked_current_transition", "current_state_shape_residual_units"),
+            V(path_var),
+        )
+        return Plus(
+            AO(closest, "current_state_shape_residual_units"),
+            L(0),
+        )
+
     def has_next_transition_from_current(path_var: str) -> dict:
         return Or(
             Exists(
@@ -427,7 +469,10 @@ def select_frontier_path_rule() -> dict:
                 P0("frontier_path", "depth"),
                 P0("trajectory", "minimum_selection_depth"),
             )),
-            Gt(P0("frontier_path", "orientation_span_units"), L(0)),
+            Or(
+                Gt(P0("frontier_path", "orientation_span_units"), L(0)),
+                Gt(P0("frontier_path", "capability_evidence_units"), L(0)),
+            ),
             Eq(
                 Count(Neighbours(
                     "frontier_path", "contains_embodied_program_transition"
@@ -446,16 +491,32 @@ def select_frontier_path_rule() -> dict:
             )), L(0)),
         ),
     )
-    # replay_count is the curiosity/default coordinate.  The multiplier is
-    # derived from the held horizon, making depth a bounded tie-break rather
-    # than an authored utility coefficient.
+    # Current-state residual is the situated coordinate: a path learned from
+    # a different shape in the same coarse orientation class must not outrank
+    # one whose first transition starts near the sensed body. Within that
+    # shape, retain the path containing the most exact successful receipts,
+    # then prefer less practice and greater depth. Powers of the held horizon
+    # make these bounded integers lexicographic without authored weights or a
+    # scalarized risk/task tradeoff.
+    rank_span = Plus(P0("trajectory", "horizon"), L(1))
     selected = Argmin(
         frontier,
         "frontier_path",
         Plus(
             Times(
+                current_state_residual("frontier_path"),
+                rank_span,
+                rank_span,
+                rank_span,
+            ),
+            Times(
+                Neg(P0("frontier_path", "capability_evidence_units")),
+                rank_span,
+                rank_span,
+            ),
+            Times(
                 P0("frontier_path", "replay_count"),
-                Plus(P0("trajectory", "horizon"), L(1)),
+                rank_span,
             ),
             Neg(P0("frontier_path", "depth")),
         ),
@@ -482,9 +543,37 @@ def select_frontier_path_rule() -> dict:
                 "owner", "has_selected_embodied_program_path"
             )), L(0)),
         ),
-        "effects": [[
-            "add_edge", "owner", "has_selected_embodied_program_path", "path"
-        ]],
+        "effects": [
+            ["add_edge", "owner", "has_selected_embodied_program_path", "path"],
+            ["set_attr", "trajectory", "selection_count", T(Plus(
+                P0("trajectory", "selection_count"), L(1)
+            ))],
+            ["set_attr", "trajectory", "selected_capability_evidence_units", T(
+                Plus(
+                    P0("trajectory", "selected_capability_evidence_units"),
+                    P0("path", "capability_evidence_units"),
+                )
+            )],
+            [
+                "set_attr", "trajectory",
+                "selected_orientation_preserving_evidence_count", T(Plus(
+                    P0(
+                        "trajectory",
+                        "selected_orientation_preserving_evidence_count",
+                    ),
+                    If(
+                        And(
+                            Eq(P0("path", "orientation_span_units"), L(0)),
+                            Gt(P0("path", "capability_evidence_units"), L(0)),
+                        ),
+                        L(1), L(0),
+                    ),
+                ))
+            ],
+            ["set_attr", "trajectory", "selected_state_shape_residual_units", T(
+                current_state_residual("path")
+            )],
+        ],
     }
 
 
@@ -535,7 +624,7 @@ def manifest() -> dict:
     )
     return {
         "id": "embodied_program_trajectory",
-        "version": "1.0.0",
+        "version": "1.2.0",
         "depends_on": ["cognitive_pareto"],
         "area": "general_cognition",
         "latency_class": "soft_realtime",

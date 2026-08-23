@@ -4270,6 +4270,36 @@ def _run_arm(
                     ))
                     for program in committed_programs
                 ), default=0),
+                "takeoff_compound_target_order": max((
+                    int(agent.s.node(program)["attrs"].get(
+                        "takeoff_compound_target_order", 0
+                    ))
+                    for program in committed_programs
+                ), default=0),
+                "compound_curiosity_selection_count": sum(
+                    int(agent.s.node(program)["attrs"].get(
+                        "compound_curiosity_selection_count", 0
+                    ))
+                    for program in committed_programs
+                ),
+                "compound_curiosity_pre_expansion_candidate_count_maximum": max((
+                    int(agent.s.node(program)["attrs"].get(
+                        "compound_curiosity_pre_expansion_candidate_count", 0
+                    ))
+                    for program in committed_programs
+                ), default=0),
+                "compound_curiosity_terminal_candidate_count_maximum": max((
+                    int(agent.s.node(program)["attrs"].get(
+                        "compound_curiosity_terminal_candidate_count", 0
+                    ))
+                    for program in committed_programs
+                ), default=0),
+                "compound_curiosity_terminal_target_order_maximum": max((
+                    int(agent.s.node(program)["attrs"].get(
+                        "compound_curiosity_terminal_target_order", 0
+                    ))
+                    for program in committed_programs
+                ), default=0),
                 "takeoff_compound_selection_kind": next((
                     str(agent.s.node(program)["attrs"].get(
                         "compound_selection_kind", "none"
@@ -5026,6 +5056,14 @@ def _run_arm(
                 capability, "has_selected_embodied_program_path"
             )
         })
+        capability_current_transition_sources = list({
+            transition
+            for capability in situated_developmental_capabilities
+            for transition in agent.inner.neighbours(
+                capability,
+                "has_current_embodied_program_transition_source",
+            )
+        })
         selected_program_path_rows = []
         for capability in situated_developmental_capabilities:
             capability_attrs = agent.s.node(capability)["attrs"]
@@ -5178,6 +5216,60 @@ def _run_arm(
                 ))
                 for capability in situated_developmental_capabilities
             ),
+            "capability_evidence_transition_count": sum(
+                int(agent.s.node(transition)["attrs"].get(
+                    "capability_evidence_units", 0
+                )) > 0
+                for transition in program_transition_nodes
+            ),
+            "capability_evidence_path_count": sum(
+                int(agent.s.node(path)["attrs"].get(
+                    "capability_evidence_units", 0
+                )) > 0
+                for path in program_path_nodes
+            ),
+            "orientation_preserving_evidence_path_count": sum(
+                int(agent.s.node(path)["attrs"].get(
+                    "orientation_span_units", 0
+                )) == 0
+                and int(agent.s.node(path)["attrs"].get(
+                    "capability_evidence_units", 0
+                )) > 0
+                for path in program_path_nodes
+            ),
+            "current_capability_evidence_transition_count": sum(
+                int(agent.s.node(transition)["attrs"].get(
+                    "capability_evidence_units", 0
+                )) > 0
+                for transition in capability_current_transition_sources
+            ),
+            "selection_count": sum(
+                int(agent.s.node(trajectory)["attrs"].get(
+                    "selection_count", 0
+                ))
+                for trajectory in program_trajectory_nodes
+            ),
+            "selected_capability_evidence_units": sum(
+                int(agent.s.node(trajectory)["attrs"].get(
+                    "selected_capability_evidence_units", 0
+                ))
+                for trajectory in program_trajectory_nodes
+            ),
+            "selected_orientation_preserving_evidence_count": sum(
+                int(agent.s.node(trajectory)["attrs"].get(
+                    "selected_orientation_preserving_evidence_count", 0
+                ))
+                for trajectory in program_trajectory_nodes
+            ),
+            "latest_selected_state_shape_residual_units": max((
+                int(agent.s.node(trajectory)["attrs"].get(
+                    "selected_state_shape_residual_units", 0
+                ))
+                for trajectory in program_trajectory_nodes
+                if int(agent.s.node(trajectory)["attrs"].get(
+                    "selection_count", 0
+                )) > 0
+            ), default=0),
         }
         locomotor_phenotype_rows = []
         locomotor_phenotype_family_rows = []

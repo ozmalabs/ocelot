@@ -640,8 +640,8 @@ def test_native_composer_projects_complete_candidates_only_when_gate_is_active()
     assert _motor_members(agent, episode, policy) == {"retained"}
 
 
-def test_humanoid_risk_gate_stops_at_least_admissible_intervention():
-    """Task improvement cannot widen an already-preserved future path."""
+def test_humanoid_risk_gate_keeps_normal_task_momentum_inside_manifold():
+    """Preserving the future path does not collapse normal effort to zero."""
     try:
         agent = WorldAdapter(seeds=("humanoid_adaptation",))
     except RuntimeError as exc:
@@ -716,4 +716,100 @@ def test_humanoid_risk_gate_stops_at_least_admissible_intervention():
         "primary", "cancellation",
     }
     agent.inner.set_attr(policy, "future_manifold_enabled", 1.0)
-    assert _humanoid_motor_members(agent, episode, policy) == {"primary"}
+    assert _humanoid_motor_members(agent, episode, policy) == {
+        "primary", "cancellation",
+    }
+
+
+def test_humanoid_takeoff_projects_flat_intermediate_actions_to_improving_order_n_shape():
+    """A higher-order receipt model may justify crossing a flat local step."""
+    try:
+        agent = WorldAdapter(seeds=("humanoid_adaptation",))
+    except RuntimeError as exc:
+        pytest.skip(str(exc))
+    root = agent.agent
+    policy = agent.inner.neighbours(root, "has_humanoid_policy")[0]
+    for key, value in {
+        "native_humanoid_composition_enabled": 1.0,
+        "future_manifold_enabled": 1.0,
+        "future_manifold_temporal_anchors_enabled": 1.0,
+        "persistent_task_residual_authority": 1.0,
+        "support_geometry_preview_authority": 0.0,
+        "takeoff_motor_compression_authority": 0.0,
+        "gravity_acceleration": 9.0,
+        "support_phase_prior_strength": 1.0,
+        "target_froude_speed": 0.0,
+    }.items():
+        agent.inner.set_attr(policy, key, value)
+    episode = agent.s.add_node("HumanoidEpisode", {
+        "request_seq": 1.0, "state_seq": 1.0,
+        "selected_primary_token": "primary",
+        "selected_primary_context_id": 0.0,
+        "current_support_phase": 0.0,
+        "response_frames": 2.0,
+        "physics_time_step": 0.01,
+        "manifold_bounds_ready": 1.0,
+        "standing_reference_z": 1.0,
+        "state_qx": 0.0, "state_qy": 0.0,
+        "state_qz": 0.0, "state_qw": 1.0,
+        "state_vz": 0.0,
+        "self_takeoff_drive_active": 1.0,
+        "self_takeoff_target_velocity_scale": 1.0,
+        "heading_x": 1.0,
+        **{f"manifold_bound_{key}": 10.0 for key in (
+            "dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz",
+        )},
+    })
+    _edge(agent, root, "has_humanoid_episode", episode)
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "development_evidence_window": 4.0,
+    })
+    capability = agent.s.add_node("EmbodiedSituatedDevelopmentalCapability", {
+        "evidence_kind": "support_reducing_elevation",
+        "failure_count": 16.0,
+    })
+    _edge(agent, episode, "projects_embodied_development", development)
+    _edge(
+        agent, development,
+        "has_active_embodied_developmental_capability", capability,
+    )
+    common = {
+        "support_phase": 0.0, "context_id": 0.0,
+        "initialized": 1.0, "mean_input_energy_joules": 0.0,
+        **{f"mean_{key}": 0.0 for key in (
+            "dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz",
+        )},
+        **{f"anchor_{key}": 0.0 for key in (
+            "z_x", "z_y", "wx", "wy", "vx", "vy", "vz",
+        )},
+        "anchor_lateral_offset": 0.0,
+    }
+    models = []
+    for ordinal, token in enumerate(("primary", "flat_a", "flat_b")):
+        model = agent.s.add_node("HumanoidPhaseActionModel", {
+            **common, "token": token, "ordinal": float(ordinal),
+            "actuator_group": float(ordinal),
+        })
+        _edge(agent, episode, "has_humanoid_phase_action_model", model)
+        models.append(model)
+    for ordinal, (left, right) in enumerate((
+        ("primary", "flat_a"),
+        ("primary", "flat_b"),
+        ("flat_a", "flat_b"),
+    )):
+        synergy = agent.s.add_node("HumanoidSynergyModel", {
+            "token_a": left, "token_b": right,
+            "ordinal": float(ordinal), "approved": 1.0,
+            **{f"residual_{key}": (
+                3.0 if key == "dvz" and left == "flat_a" else 0.0
+            ) for key in ("dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz")},
+        })
+        _edge(agent, episode, "has_humanoid_synergy_model", synergy)
+    plan = agent.s.add_node("HumanoidMotorProgram", {
+        "request_seq": 1.0, "allow_expansion": 1.0,
+    })
+    _edge(agent, episode, "has_active_humanoid_motor_program", plan)
+
+    assert _humanoid_motor_members(agent, episode, policy) == {
+        "primary", "flat_a", "flat_b",
+    }

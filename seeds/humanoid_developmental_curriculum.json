@@ -1,6 +1,6 @@
 {
  "id": "humanoid_developmental_curriculum",
- "version": "3.34.0",
+ "version": "3.35.0",
  "depends_on": [
   "humanoid_adaptation",
   "somatomotor_waves"
@@ -4411,7 +4411,7 @@
    "latency_class": "hard_realtime",
    "order": -118,
    "batch": false,
-   "comment": "Translate the active capability's generic task-space contract into temporary motor-context authority. Self-takeoff is open only while an upright supported synthesis can begin, closes during flight or recovery, and closes when the capability changes.",
+   "comment": "Translate the active capability's generic task-space contract into temporary motor-context authority. Self-takeoff is open while an upright supported synthesis can begin; a transient competing recovery-mode bit does not erase the task intention. It closes on a material viability verdict, flight, loss of support, or when the capability changes.",
    "match": [
     [
      "agent",
@@ -4540,30 +4540,6 @@
              }
             },
             {
-             "type": "Eq",
-             "a": {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "episode"
-                },
-                "key": "recovery_mode"
-               },
-               {
-                "type": "Lit",
-                "value": 0
-               }
-              ]
-             },
-             "b": {
-              "type": "Lit",
-              "value": 0
-             }
-            },
-            {
              "type": "Gt",
              "a": {
               "type": "Plus",
@@ -4585,6 +4561,62 @@
              "b": {
               "type": "Lit",
               "value": 0
+             }
+            },
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Or",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "episode"
+                   },
+                   "key": "sensorimotor_interrupt_required"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "episode"
+                   },
+                   "key": "reset_requested"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              }
             }
            ]
@@ -4666,30 +4698,6 @@
              }
             },
             {
-             "type": "Eq",
-             "a": {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "episode"
-                },
-                "key": "recovery_mode"
-               },
-               {
-                "type": "Lit",
-                "value": 0
-               }
-              ]
-             },
-             "b": {
-              "type": "Lit",
-              "value": 0
-             }
-            },
-            {
              "type": "Gt",
              "a": {
               "type": "Plus",
@@ -4711,6 +4719,62 @@
              "b": {
               "type": "Lit",
               "value": 0
+             }
+            },
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Or",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "episode"
+                   },
+                   "key": "sensorimotor_interrupt_required"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "episode"
+                   },
+                   "key": "reset_requested"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              }
             }
            ]
@@ -4796,30 +4860,6 @@
              }
             },
             {
-             "type": "Eq",
-             "a": {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "episode"
-                },
-                "key": "recovery_mode"
-               },
-               {
-                "type": "Lit",
-                "value": 0
-               }
-              ]
-             },
-             "b": {
-              "type": "Lit",
-              "value": 0
-             }
-            },
-            {
              "type": "Gt",
              "a": {
               "type": "Plus",
@@ -4841,6 +4881,62 @@
              "b": {
               "type": "Lit",
               "value": 0
+             }
+            },
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Or",
+              "items": [
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "episode"
+                   },
+                   "key": "sensorimotor_interrupt_required"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "episode"
+                   },
+                   "key": "reset_requested"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Lit",
+                 "value": 1
+                }
+               }
+              ]
              }
             }
            ]
@@ -4911,30 +5007,6 @@
           }
          },
          {
-          "type": "Eq",
-          "a": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "episode"
-             },
-             "key": "recovery_mode"
-            },
-            {
-             "type": "Lit",
-             "value": 0
-            }
-           ]
-          },
-          "b": {
-           "type": "Lit",
-           "value": 0
-          }
-         },
-         {
           "type": "Gt",
           "a": {
            "type": "Plus",
@@ -4956,6 +5028,62 @@
           "b": {
            "type": "Lit",
            "value": 0
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "episode"
+                },
+                "key": "sensorimotor_interrupt_required"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "episode"
+                },
+                "key": "reset_requested"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           ]
           }
          }
         ]
@@ -5021,30 +5149,6 @@
           }
          },
          {
-          "type": "Eq",
-          "a": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "episode"
-             },
-             "key": "recovery_mode"
-            },
-            {
-             "type": "Lit",
-             "value": 0
-            }
-           ]
-          },
-          "b": {
-           "type": "Lit",
-           "value": 0
-          }
-         },
-         {
           "type": "Gt",
           "a": {
            "type": "Plus",
@@ -5066,6 +5170,62 @@
           "b": {
            "type": "Lit",
            "value": 0
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "episode"
+                },
+                "key": "sensorimotor_interrupt_required"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "episode"
+                },
+                "key": "reset_requested"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           ]
           }
          }
         ]
@@ -5144,30 +5304,6 @@
           }
          },
          {
-          "type": "Eq",
-          "a": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "episode"
-             },
-             "key": "recovery_mode"
-            },
-            {
-             "type": "Lit",
-             "value": 0
-            }
-           ]
-          },
-          "b": {
-           "type": "Lit",
-           "value": 0
-          }
-         },
-         {
           "type": "Gt",
           "a": {
            "type": "Plus",
@@ -5189,6 +5325,62 @@
           "b": {
            "type": "Lit",
            "value": 0
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "episode"
+                },
+                "key": "sensorimotor_interrupt_required"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "episode"
+                },
+                "key": "reset_requested"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           ]
           }
          }
         ]
@@ -6185,6 +6377,30 @@
         "type": "Lit",
         "value": "locomotion"
        }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "self_takeoff_drive_active"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
       }
      },
      {
@@ -26762,6 +26978,2026 @@
     [
      "set_attr",
      "transition",
+     "capability_evidence_units",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Or",
+        "items": [
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "spontaneous_configuration_change"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_configuration_changed"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_external_event"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "effector_coverage"
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "episode"
+                 },
+                 "key": "development_effector_covered_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "capability"
+                 },
+                 "key": "effector_coverage_scored_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "episode"
+                 },
+                 "key": "development_effector_coverage_complete"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_configuration_changed"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "configuration_reversal"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_reversal"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "support_topology_change"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_support_topology_changed"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "supported_orientation_change"
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_orientation_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "supported_quarter_turn"
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "development_quarter_turn_transition"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "development_half_turn_transition"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "capability"
+                 },
+                 "key": "trajectory_half_turn_complete"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             },
+             {
+              "type": "And",
+              "items": [
+               {
+                "type": "Not",
+                "arg": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "capability"
+                    },
+                    "key": "trajectory_origin_orientation_class"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "outcome"
+                   },
+                   "key": "development_post_orientation_class"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Neg",
+                 "arg": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "capability"
+                    },
+                    "key": "trajectory_origin_orientation_class"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  ]
+                 }
+                }
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "supported_half_turn"
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "development_half_turn_transition"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "capability"
+                 },
+                 "key": "trajectory_half_turn_complete"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             },
+             {
+              "type": "And",
+              "items": [
+               {
+                "type": "Not",
+                "arg": {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "capability"
+                    },
+                    "key": "trajectory_origin_orientation_class"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                }
+               },
+               {
+                "type": "Eq",
+                "a": {
+                 "type": "Plus",
+                 "items": [
+                  {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "outcome"
+                   },
+                   "key": "development_post_orientation_class"
+                  },
+                  {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 ]
+                },
+                "b": {
+                 "type": "Neg",
+                 "arg": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "capability"
+                    },
+                    "key": "trajectory_origin_orientation_class"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  ]
+                 }
+                }
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "support_gain"
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "development_support_gain"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "development_support_extent_gain"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "stable_partial_motion"
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_configuration_changed"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_motion_nonamplifying"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "supported_translation"
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_translation_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "supported_elevation"
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_elevation_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "bounded_equilibrium"
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_motion_nonamplifying"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_support_topology_changed"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_external_event"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "translated_support_cycle"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_translation_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_support_topology_changed"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "support_reducing_elevation"
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_elevation_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Lt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_support_gain"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "reduced_support_equilibrium"
+            }
+           },
+           {
+            "type": "Or",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "caregiver_protective_support_applied"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1
+              }
+             }
+            ]
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "episode"
+               },
+               "key": "development_sparse_support_ceiling"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_post_support_count"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "episode"
+                },
+                "key": "development_sparse_support_ceiling"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             }
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_motion_nonamplifying"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_support_topology_changed"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "reduced_support_cycle"
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "episode"
+               },
+               "key": "development_sparse_support_ceiling"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_post_support_count"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "episode"
+                },
+                "key": "development_sparse_support_ceiling"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             }
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_translation_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_support_topology_changed"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "novel_locomotor_phenotype"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_locomotor_phenotype_novel"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         },
+         {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "pareto_locomotor_repertoire"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_locomotor_cycle_evidence"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Count",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Pick",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "episode"
+                 },
+                 "edge_type": "has_embodied_locomotor_pareto_profile",
+                 "any_type": false
+                }
+               },
+               "edge_type": "has_pareto_candidate",
+               "any_type": false
+              },
+              "var_name": "locomotor_candidate",
+              "predicate": {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "locomotor_candidate"
+                    },
+                    "key": "verified"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 1
+                 }
+                },
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Count",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "locomotor_candidate"
+                   },
+                   "edge_type": "is_dominated_by_pareto_candidate",
+                   "any_type": false
+                  }
+                 },
+                 "b": {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                }
+               ]
+              }
+             }
+            },
+            "b": {
+             "type": "Count",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "edge_type": "requires_embodied_developmental_capability",
+              "any_type": false
+             }
+            }
+           }
+          ]
+         }
+        ]
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "transition",
      "integer_native_trajectory",
      1
     ],
@@ -27164,6 +29400,2021 @@
           "value": 0
          }
         ]
+       }
+      },
+      "capability_evidence_units": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Or",
+         "items": [
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "spontaneous_configuration_change"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_configuration_changed"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_external_event"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "effector_coverage"
+             }
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "episode"
+                  },
+                  "key": "development_effector_covered_count"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "capability"
+                  },
+                  "key": "effector_coverage_scored_count"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "episode"
+                  },
+                  "key": "development_effector_coverage_complete"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              }
+             ]
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_configuration_changed"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "configuration_reversal"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_reversal"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "support_topology_change"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_support_topology_changed"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "supported_orientation_change"
+             }
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "development_post_support_count"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "caregiver_protective_support_applied"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              }
+             ]
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_orientation_units"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "supported_quarter_turn"
+             }
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "development_post_support_count"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "caregiver_protective_support_applied"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              }
+             ]
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "development_quarter_turn_transition"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "development_half_turn_transition"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "capability"
+                  },
+                  "key": "trajectory_half_turn_complete"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              },
+              {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Not",
+                 "arg": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "capability"
+                     },
+                     "key": "trajectory_origin_orientation_class"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 }
+                },
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "outcome"
+                    },
+                    "key": "development_post_orientation_class"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Neg",
+                  "arg": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "capability"
+                     },
+                     "key": "trajectory_origin_orientation_class"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  }
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "supported_half_turn"
+             }
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "development_post_support_count"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "caregiver_protective_support_applied"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              }
+             ]
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "development_half_turn_transition"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "capability"
+                  },
+                  "key": "trajectory_half_turn_complete"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              },
+              {
+               "type": "And",
+               "items": [
+                {
+                 "type": "Not",
+                 "arg": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "capability"
+                     },
+                     "key": "trajectory_origin_orientation_class"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 }
+                },
+                {
+                 "type": "Eq",
+                 "a": {
+                  "type": "Plus",
+                  "items": [
+                   {
+                    "type": "Attr",
+                    "node": {
+                     "type": "Var",
+                     "name": "outcome"
+                    },
+                    "key": "development_post_orientation_class"
+                   },
+                   {
+                    "type": "Lit",
+                    "value": 0
+                   }
+                  ]
+                 },
+                 "b": {
+                  "type": "Neg",
+                  "arg": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "capability"
+                     },
+                     "key": "trajectory_origin_orientation_class"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  }
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "support_gain"
+             }
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "development_support_gain"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "development_support_extent_gain"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "stable_partial_motion"
+             }
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "development_post_support_count"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "caregiver_protective_support_applied"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              }
+             ]
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_configuration_changed"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_motion_nonamplifying"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "supported_translation"
+             }
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "development_post_support_count"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "caregiver_protective_support_applied"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              }
+             ]
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_translation_units"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "supported_elevation"
+             }
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "development_post_support_count"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "caregiver_protective_support_applied"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              }
+             ]
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_elevation_units"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "bounded_equilibrium"
+             }
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "development_post_support_count"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "caregiver_protective_support_applied"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              }
+             ]
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_motion_nonamplifying"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_support_topology_changed"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_external_event"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "translated_support_cycle"
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_translation_units"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_support_topology_changed"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "support_reducing_elevation"
+             }
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "development_post_support_count"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "caregiver_protective_support_applied"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              }
+             ]
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_elevation_units"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Lt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_support_gain"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "reduced_support_equilibrium"
+             }
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Gt",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "development_post_support_count"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0
+               }
+              },
+              {
+               "type": "Eq",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "outcome"
+                  },
+                  "key": "caregiver_protective_support_applied"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Lit",
+                "value": 1
+               }
+              }
+             ]
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "episode"
+                },
+                "key": "development_sparse_support_ceiling"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "episode"
+                 },
+                 "key": "development_sparse_support_ceiling"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              }
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_motion_nonamplifying"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_support_topology_changed"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "reduced_support_cycle"
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "episode"
+                },
+                "key": "development_sparse_support_ceiling"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Not",
+             "arg": {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "outcome"
+                 },
+                 "key": "development_post_support_count"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "episode"
+                 },
+                 "key": "development_sparse_support_ceiling"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              }
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_translation_units"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_support_topology_changed"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "novel_locomotor_phenotype"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_locomotor_phenotype_novel"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            }
+           ]
+          },
+          {
+           "type": "And",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "capability"
+              },
+              "key": "evidence_kind"
+             },
+             "b": {
+              "type": "Lit",
+              "value": "pareto_locomotor_repertoire"
+             }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "outcome"
+                },
+                "key": "development_locomotor_cycle_evidence"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 1
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Count",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Pick",
+                 "source": {
+                  "type": "Neighbours",
+                  "node": {
+                   "type": "Var",
+                   "name": "episode"
+                  },
+                  "edge_type": "has_embodied_locomotor_pareto_profile",
+                  "any_type": false
+                 }
+                },
+                "edge_type": "has_pareto_candidate",
+                "any_type": false
+               },
+               "var_name": "locomotor_candidate",
+               "predicate": {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "locomotor_candidate"
+                     },
+                     "key": "verified"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 1
+                  }
+                 },
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Count",
+                   "source": {
+                    "type": "Neighbours",
+                    "node": {
+                     "type": "Var",
+                     "name": "locomotor_candidate"
+                    },
+                    "edge_type": "is_dominated_by_pareto_candidate",
+                    "any_type": false
+                   }
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 0
+                  }
+                 }
+                ]
+               }
+              }
+             },
+             "b": {
+              "type": "Count",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "capability"
+               },
+               "edge_type": "requires_embodied_developmental_capability",
+               "any_type": false
+              }
+             }
+            }
+           ]
+          }
+         ]
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0
+        }
        }
       },
       "response_frames": {
@@ -28258,6 +32509,138 @@
     ]
    },
    "effects": [
+    [
+     "set_attr",
+     "transition",
+     "current_state_shape_residual_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "transition"
+             },
+             "key": "pre_state_axis_x_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_x_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "transition"
+             },
+             "key": "pre_state_axis_y_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_y_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "transition"
+             },
+             "key": "pre_state_axis_z_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_z_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        }
+       ]
+      }
+     }
+    ],
     [
      "add_edge",
      "capability",

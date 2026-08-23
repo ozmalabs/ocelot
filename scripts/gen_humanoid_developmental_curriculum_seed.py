@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
 
 from scripts.gen_humanoid_adaptation_seed import (  # noqa: E402
     A,
+    Abs,
     AO,
     And,
     Argmin,
@@ -39,6 +40,7 @@ from scripts.gen_humanoid_adaptation_seed import (  # noqa: E402
     T,
     V,
 )
+from scripts.gen_embodied_development_seed import capability_success  # noqa: E402
 
 
 P0 = PI0
@@ -700,8 +702,8 @@ def synchronize_developmental_motor_task_rule():
     supported_attempt_ready = And(
         requests_takeoff,
         Eq(P0("episode", "upright"), L(1)),
-        Eq(P0("episode", "recovery_mode"), L(0)),
         Gt(P0("episode", "active_support_count"), L(0)),
+        Not(material_viability_reflex_active()),
     )
     desired_drive = If(supported_attempt_ready, L(1), L(0))
     desired_scale = If(
@@ -722,8 +724,10 @@ def synchronize_developmental_motor_task_rule():
         "batch": False,
         "comment": "Translate the active capability's generic task-space "
         "contract into temporary motor-context authority. Self-takeoff is "
-        "open only while an upright supported synthesis can begin, closes "
-        "during flight or recovery, and closes when the capability changes.",
+        "open while an upright supported synthesis can begin; a transient "
+        "competing recovery-mode bit does not erase the task intention. It "
+        "closes on a material viability verdict, flight, loss of support, or "
+        "when the capability changes.",
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
             ["episode", "projects_embodied_development", "development"],
@@ -835,6 +839,10 @@ def hold_pre_locomotor_residual_rule():
             Eq(P0("episode", "developmental_curriculum_active"), L(1)),
             Eq(A("episode", "phase"), L("locomotion")),
             Not(Eq(A("capability", "goal"), L("locomotion"))),
+            # A deliberate capability controller owns the current path.  The
+            # generic pre-locomotor hold must not alternate recovery authority
+            # with that more situated controller inside one graph settlement.
+            Eq(P0("episode", "self_takeoff_drive_active"), L(0)),
             Not(floor_development()),
             Eq(P0("episode", "action_ready"), L(0)),
             Not(And(
@@ -2431,6 +2439,9 @@ def publish_verified_transition_to_generic_trajectory_rule():
             ["set_attr", "transition", "peak_load_units", T(
                 P0("outcome", "development_peak_load_units")
             )],
+            ["set_attr", "transition", "capability_evidence_units", T(If(
+                capability_success("capability", "outcome"), L(1), L(0)
+            ))],
             ["set_attr", "transition", "integer_native_trajectory", 1],
             [
                 "add_edge", "capability",
@@ -2529,6 +2540,9 @@ def mint_developmental_program_transition_rule():
                 )),
                 "peak_load_units": T(P0(
                     "outcome", "development_peak_load_units"
+                )),
+                "capability_evidence_units": T(If(
+                    capability_success("capability", "outcome"), L(1), L(0)
                 )),
                 "response_frames": T(P0("trial", "response_frames")),
                 "receipt_seq": T(P0("trial", "request_seq")),
@@ -2731,10 +2745,24 @@ def bind_trajectory_state_source_from_latest_receipt_rule():
                 Eq(V("known_state_source"), V("transition")),
             )),
         ),
-        "effects": [[
-            "add_edge", "capability",
-            "has_current_embodied_program_transition_source", "transition",
-        ]],
+        "effects": [
+            ["set_attr", "transition", "current_state_shape_residual_units", T(
+                Plus(*(
+                    Abs(Minus(
+                        P0("transition", f"pre_state_axis_{axis}_units"),
+                        P0(
+                            "outcome",
+                            f"development_post_gravity_axis_{axis}_units",
+                        ),
+                    ))
+                    for axis in ("x", "y", "z")
+                ))
+            )],
+            [
+                "add_edge", "capability",
+                "has_current_embodied_program_transition_source", "transition",
+            ],
+        ],
     }
 
 
@@ -4129,7 +4157,7 @@ def close_humanoid_wave_program_rule():
 def manifest() -> dict:
     return {
         "id": "humanoid_developmental_curriculum",
-        "version": "3.34.0",
+        "version": "3.35.0",
         "depends_on": ["humanoid_adaptation", "somatomotor_waves"],
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",

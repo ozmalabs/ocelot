@@ -4600,6 +4600,53 @@ def compound_pair_experience(plan, candidate):
     )
 
 
+def compound_curiosity_target_order():
+    """Evidence-derived assembly order for persistent residual exploration.
+
+    Pair observations grow quadratically with assembly width, so the square
+    root of failed evidence windows is the corresponding order estimate. The
+    singleton origin supplies the additive one; candidate/group exhaustion
+    remains the hard structural ceiling.
+    """
+    development = Pick({
+        "type": "Neighbours",
+        "node": V("episode"),
+        "edge_type": "projects_embodied_development",
+        "any_type": False,
+    })
+    capability = Pick({
+        "type": "Neighbours",
+        "node": development,
+        "edge_type": "has_active_embodied_developmental_capability",
+        "any_type": False,
+    })
+    failed_windows = Div(
+        Plus(AO(capability, "failure_count"), L(0)),
+        Max(
+            L(1),
+            Plus(AO(development, "development_evidence_window"), L(0)),
+        ),
+    )
+    return If(
+        And(
+            Eq(A("plan", "motor_task_context"), L("self_takeoff")),
+            Gt(PI0("episode", "self_takeoff_drive_active"), L(0)),
+        ),
+        Plus(
+            L(1),
+            Max(L(1), IDiv(Sqrt(failed_windows), L(1))),
+        ),
+        L(2),
+    )
+
+
+def compound_curiosity_can_expand():
+    return And(
+        Lt(PI0("plan", "member_count"), compound_curiosity_target_order()),
+        Gt(Count(compound_curiosity_candidates()), L(0)),
+    )
+
+
 def integer_candidate_pair_residual(plan, candidate, key):
     """Exact calibrated nonlinear residual for integer-native expansion."""
     return Sum(
@@ -6724,7 +6771,10 @@ def audit_takeoff_compound_frontier_rule():
                 PI0("capability", "success_count")
             )],
             ["set_attr", "plan", "takeoff_compound_evidence_window", T(
-                PI0("episode", "development_evidence_window")
+                PI0("development", "development_evidence_window")
+            )],
+            ["set_attr", "plan", "takeoff_compound_target_order", T(
+                compound_curiosity_target_order()
             )],
         ],
     }
@@ -6772,11 +6822,17 @@ def select_compound_curiosity_candidate_rule():
                     ),
                     Lt(
                         PI0("compound_capability", "success_count"),
-                        PI0("episode", "development_evidence_window"),
+                        PI0(
+                            "compound_development",
+                            "development_evidence_window",
+                        ),
                     ),
                     Not(Lt(
                         PI0("compound_capability", "failure_count"),
-                        PI0("episode", "development_evidence_window"),
+                        PI0(
+                            "compound_development",
+                            "development_evidence_window",
+                        ),
                     )),
                 ),
             ),
@@ -6786,9 +6842,10 @@ def select_compound_curiosity_candidate_rule():
         "name": "ha_curiosity_selects_persistent_singleton_compound",
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
-        "comment": "When a singleton repeatedly leaves its task residual "
-        "open, choose the compatible exact pair with least receipt "
-        "experience. Locomotion uses confirmed prediction surprise; a "
+        "order": -3,
+        "comment": "When a smaller assembly repeatedly leaves its task "
+        "residual open, choose the compatible next effector with least "
+        "receipt experience. Locomotion uses confirmed prediction surprise; a "
         "self-takeoff task uses a complete failed developmental evidence "
         "window. The candidate alphabet, "
         "independent effector groups, context and receipt-backed pair "
@@ -6817,6 +6874,13 @@ def select_compound_curiosity_candidate_rule():
             ],
         ],
         "where": And(
+            Or(
+                Eq(
+                    PI0("policy", "native_humanoid_composition_enabled"),
+                    L(0),
+                ),
+                Eq(PI0("episode", "self_takeoff_drive_active"), L(0)),
+            ),
             Eq(A("plan", "status"), L("building")),
             Eq(A("frontier", "status"), L("open")),
             Eq(PI0("plan", "synthesis_yield_required"), L(0)),
@@ -6825,7 +6889,10 @@ def select_compound_curiosity_candidate_rule():
                 PI0("episode", "request_seq"),
             ),
             Eq(PI0("plan", "allow_expansion"), L(1)),
-            Eq(PI0("plan", "member_count"), L(1)),
+            Lt(
+                PI0("plan", "member_count"),
+                compound_curiosity_target_order(),
+            ),
             Eq(
                 PI0("policy", "persistent_task_residual_authority"),
                 L(1),
@@ -6857,6 +6924,14 @@ def select_compound_curiosity_candidate_rule():
                 "compound_curiosity_pair_experience",
                 T(compound_pair_experience("plan", "candidate")),
             ],
+            ["set_attr", "plan", "compound_curiosity_selection_count", T(
+                Plus(PI0("plan", "compound_curiosity_selection_count"), L(1))
+            )],
+            [
+                "set_attr", "plan",
+                "compound_curiosity_pre_expansion_candidate_count",
+                T(Count(candidates)),
+            ],
         ],
     }
 
@@ -6868,9 +6943,10 @@ def expand_compound_curiosity_program_rule():
         "name": "ha_curiosity_expands_exact_compound_program",
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
-        "comment": "Commit the selected compatible effector as one exact "
-        "two-member intervention. The ordinary receipt path then grounds "
-        "the whole nonlinear program and refines its exact pair residual.",
+        "order": -2,
+        "comment": "Commit the selected compatible effector into one exact "
+        "order-N intervention. The ordinary receipt path then grounds the "
+        "whole nonlinear program and refines every exact pair residual.",
         "match": [
             ["agent", "has_humanoid_policy", "policy"],
             ["agent", "has_humanoid_episode", "episode"],
@@ -6896,7 +6972,10 @@ def expand_compound_curiosity_program_rule():
                 PI0("episode", "request_seq"),
             ),
             Eq(PI0("plan", "allow_expansion"), L(1)),
-            Eq(PI0("plan", "member_count"), L(1)),
+            Lt(
+                PI0("plan", "member_count"),
+                compound_curiosity_target_order(),
+            ),
             Gt(
                 Count(integer_exact_synergies(
                     Argmin(
@@ -7237,6 +7316,13 @@ def close_motor_program_rule():
             ),
             Eq(A("primary", "token"), A("plan", "primary_token")),
             Or(
+                Not(Eq(
+                    A("plan", "compound_selection_kind"),
+                    L("persistent_residual_surprise_curiosity"),
+                )),
+                Not(compound_curiosity_can_expand()),
+            ),
+            Or(
                 And(
                     native_humanoid_composition_enabled(),
                     Or(
@@ -7292,6 +7378,12 @@ def close_motor_program_rule():
         "effects": [
             ["set_attr", "plan", "member_count", T(
                 effective_member_count
+            )],
+            ["set_attr", "plan", "compound_curiosity_terminal_candidate_count", T(
+                Count(compound_curiosity_candidates())
+            )],
+            ["set_attr", "plan", "compound_curiosity_terminal_target_order", T(
+                compound_curiosity_target_order()
             )],
             *[
                 ["set_attr", "plan", f"sum_{key}", T(If(

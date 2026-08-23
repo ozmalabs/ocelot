@@ -1,6 +1,6 @@
 {
  "id": "embodied_program_trajectory",
- "version": "1.0.0",
+ "version": "1.2.0",
  "depends_on": [
   "cognitive_pareto"
  ],
@@ -301,7 +301,7 @@
      "ParetoProfile",
      {
       "kind": "embodied_program_trajectory",
-      "dimension_count": 4,
+      "dimension_count": 5,
       "horizon": {
        "__term__": {
         "type": "Plus",
@@ -350,6 +350,10 @@
        }
       },
       "expansion_count": 0,
+      "selection_count": 0,
+      "selected_capability_evidence_units": 0,
+      "selected_orientation_preserving_evidence_count": 0,
+      "selected_state_shape_residual_units": 0,
       "selection_enabled": 1,
       "output_authority": 0,
       "integer_native": 1
@@ -781,6 +785,25 @@
         ]
        }
       },
+      "capability_evidence_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "capability_evidence_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
       "energy_units": {
        "__term__": {
         "type": "Plus",
@@ -1166,6 +1189,60 @@
            "type": "Var",
            "name": "transition"
           },
+          "key": "capability_evidence_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "capability_evidence_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "path",
+     "has_pareto_value",
+     "path_value_1"
+    ],
+    [
+     "add_node",
+     "path_value_2",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 2,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
           "key": "boundary_transition_count"
          },
          {
@@ -1202,14 +1279,14 @@
      "add_edge",
      "path",
      "has_pareto_value",
-     "path_value_1"
+     "path_value_2"
     ],
     [
      "add_node",
-     "path_value_2",
+     "path_value_3",
      "ParetoValue",
      {
-      "dimension_ordinal": 2,
+      "dimension_ordinal": 3,
       "raw_value": {
        "__term__": {
         "type": "Plus",
@@ -1259,14 +1336,14 @@
      "add_edge",
      "path",
      "has_pareto_value",
-     "path_value_2"
+     "path_value_3"
     ],
     [
      "add_node",
-     "path_value_3",
+     "path_value_4",
      "ParetoValue",
      {
-      "dimension_ordinal": 3,
+      "dimension_ordinal": 4,
       "raw_value": {
        "__term__": {
         "type": "Plus",
@@ -1316,7 +1393,7 @@
      "add_edge",
      "path",
      "has_pareto_value",
-     "path_value_3"
+     "path_value_4"
     ]
    ]
   },
@@ -2029,6 +2106,47 @@
         ]
        }
       },
+      "capability_evidence_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "parent"
+            },
+            "key": "capability_evidence_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "capability_evidence_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
       "energy_units": {
        "__term__": {
         "type": "Plus",
@@ -2541,6 +2659,104 @@
              "type": "Var",
              "name": "parent"
             },
+            "key": "capability_evidence_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "capability_evidence_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "parent"
+            },
+            "key": "capability_evidence_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "capability_evidence_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "path",
+     "has_pareto_value",
+     "path_value_1"
+    ],
+    [
+     "add_node",
+     "path_value_2",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 2,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "parent"
+            },
             "key": "boundary_transition_count"
            },
            {
@@ -2618,14 +2834,14 @@
      "add_edge",
      "path",
      "has_pareto_value",
-     "path_value_1"
+     "path_value_2"
     ],
     [
      "add_node",
-     "path_value_2",
+     "path_value_3",
      "ParetoValue",
      {
-      "dimension_ordinal": 2,
+      "dimension_ordinal": 3,
       "raw_value": {
        "__term__": {
         "type": "Plus",
@@ -2719,14 +2935,14 @@
      "add_edge",
      "path",
      "has_pareto_value",
-     "path_value_2"
+     "path_value_3"
     ],
     [
      "add_node",
-     "path_value_3",
+     "path_value_4",
      "ParetoValue",
      {
-      "dimension_ordinal": 3,
+      "dimension_ordinal": 4,
       "raw_value": {
        "__term__": {
         "type": "Max",
@@ -2820,7 +3036,7 @@
      "add_edge",
      "path",
      "has_pareto_value",
-     "path_value_3"
+     "path_value_4"
     ]
    ]
   },
@@ -3106,28 +3322,57 @@
            }
           },
           {
-           "type": "Gt",
-           "a": {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "frontier_path"
-              },
-              "key": "orientation_span_units"
+           "type": "Or",
+           "items": [
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frontier_path"
+                },
+                "key": "orientation_span_units"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
              },
-             {
+             "b": {
               "type": "Lit",
               "value": 0
              }
-            ]
-           },
-           "b": {
-            "type": "Lit",
-            "value": 0
-           }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frontier_path"
+                },
+                "key": "capability_evidence_units"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           ]
           },
           {
            "type": "Eq",
@@ -3444,28 +3689,57 @@
            }
           },
           {
-           "type": "Gt",
-           "a": {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "frontier_path"
-              },
-              "key": "orientation_span_units"
+           "type": "Or",
+           "items": [
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frontier_path"
+                },
+                "key": "orientation_span_units"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
              },
-             {
+             "b": {
               "type": "Lit",
               "value": 0
              }
-            ]
-           },
-           "b": {
-            "type": "Lit",
-            "value": 0
-           }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frontier_path"
+                },
+                "key": "capability_evidence_units"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           ]
           },
           {
            "type": "Eq",
@@ -3686,6 +3960,241 @@
              {
               "type": "Attr",
               "node": {
+               "type": "Argmin",
+               "source": {
+                "type": "Filter",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "frontier_path"
+                 },
+                 "edge_type": "contains_embodied_program_transition",
+                 "any_type": false
+                },
+                "var_name": "path_current_transition",
+                "predicate": {
+                 "type": "Exists",
+                 "source": {
+                  "type": "Neighbours",
+                  "node": {
+                   "type": "Var",
+                   "name": "owner"
+                  },
+                  "edge_type": "has_current_embodied_program_transition_source",
+                  "any_type": false
+                 },
+                 "var_name": "known_current_transition",
+                 "predicate": {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Var",
+                   "name": "path_current_transition"
+                  },
+                  "b": {
+                   "type": "Var",
+                   "name": "known_current_transition"
+                  }
+                 }
+                }
+               },
+               "var_name": "ranked_current_transition",
+               "value": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "ranked_current_transition"
+                  },
+                  "key": "current_state_shape_residual_units"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0
+                 }
+                ]
+               },
+               "default": {
+                "type": "Var",
+                "name": "frontier_path"
+               }
+              },
+              "key": "current_state_shape_residual_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "horizon"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "horizon"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "horizon"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Neg",
+            "arg": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frontier_path"
+               },
+               "key": "capability_evidence_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            }
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "horizon"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "horizon"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
                "type": "Var",
                "name": "frontier_path"
               },
@@ -3780,6 +4289,260 @@
      "owner",
      "has_selected_embodied_program_path",
      "path"
+    ],
+    [
+     "set_attr",
+     "trajectory",
+     "selection_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "trajectory"
+           },
+           "key": "selection_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "trajectory",
+     "selected_capability_evidence_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "trajectory"
+           },
+           "key": "selected_capability_evidence_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "path"
+           },
+           "key": "capability_evidence_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "trajectory",
+     "selected_orientation_preserving_evidence_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "trajectory"
+           },
+           "key": "selected_orientation_preserving_evidence_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "path"
+               },
+               "key": "orientation_span_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "path"
+               },
+               "key": "capability_evidence_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "trajectory",
+     "selected_state_shape_residual_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Argmin",
+          "source": {
+           "type": "Filter",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "path"
+            },
+            "edge_type": "contains_embodied_program_transition",
+            "any_type": false
+           },
+           "var_name": "path_current_transition",
+           "predicate": {
+            "type": "Exists",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "owner"
+             },
+             "edge_type": "has_current_embodied_program_transition_source",
+             "any_type": false
+            },
+            "var_name": "known_current_transition",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Var",
+              "name": "path_current_transition"
+             },
+             "b": {
+              "type": "Var",
+              "name": "known_current_transition"
+             }
+            }
+           }
+          },
+          "var_name": "ranked_current_transition",
+          "value": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "ranked_current_transition"
+             },
+             "key": "current_state_shape_residual_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "default": {
+           "type": "Var",
+           "name": "path"
+          }
+         },
+         "key": "current_state_shape_residual_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
     ]
    ]
   }
