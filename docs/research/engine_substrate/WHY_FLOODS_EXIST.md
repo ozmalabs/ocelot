@@ -305,6 +305,50 @@ within-shape pairs match better reversed, far too many to be traversal inconsist
 explained instead by these shapes being mirror-symmetric themselves so the two senses tie. Losing
 that invariance costs 1.1pp.
 
+## 6d. The other way round: a region as a WIDE STROKE
+
+Everything above describes a region by its OUTLINE. The dual describes it by a CENTRELINE plus a
+WIDTH -- Blum's medial axis (1967) -- and for anything elongated that is far more compact. It
+also lands in machinery that already exists: `StrokeQuantize` consumes strokes, and a wide stroke
+is a stroke with a width profile.
+
+No flood is involved: the crossings are already reified, so distance-to-boundary is computed
+against them rather than grown inward by a grassfire.
+
+| shape | cells | boundary points | **medial points** | width |
+|---|---|---|---|---|
+| disc r=9 | 253 | 76 | **5** | 14.9-17.1 |
+| bar 18x5 | 95 | 48 | 15 | 5.0 constant |
+| ell | 155 | 72 | 26 | 5.0-6.4 |
+| square 16 | 289 | 68 | 21 | 7.0-17.0 |
+
+**A disc is five points — one point up to grid resolution — with a radius.** That is the literal
+form of "a circle has one point": as an outline it is 76 boundary samples or one arc; as a stroke
+it is a POINT and a thickness. The bar is a centreline of constant width 5.0, the square is its X
+of diagonals with width rising from corner to centre, the ell is an L thickened at the corner.
+The stroke beats the outline on size for every shape here — 15x for the disc, about 3x for the
+rest.
+
+**Three criteria were tried and discarded before one worked**, each caught by a control rather
+than by reading the code:
+
+- **local maxima of the distance field** — finds only the maximal-disc centre. Along a square's
+  diagonal the distance RISES toward the middle, so a square came back as ONE point instead of an
+  X;
+- **two nearest boundary points, separated in absolute distance** — scale-dependent and far too
+  weak. Adjacent crossings on a discrete boundary sit about one cell apart, so a threshold of 2
+  admitted 289 of 289 cells;
+- **object angle alone** (the standard criterion: the two nearest boundary points must lie on
+  opposite sides as seen from the point) — still admits a point pressed hard against a straight
+  edge, where two ADJACENT crossings straddle it and look opposite from close range. A disc came
+  back with 57 medial points.
+
+What works is object angle **plus geodesic separation**: the two generating boundary points must
+also be far apart ALONG the contour, which the crossing chain already provides. That is the
+standard pruning for a discrete medial axis, and it is available here for free precisely because
+the boundary was reified as an ordered structure rather than a set of pixels.
+
+
 ## 6b. PRIOR ART
 ## 6b. PRIOR ART — nearly all of this is textbook, and one match is exact
 
