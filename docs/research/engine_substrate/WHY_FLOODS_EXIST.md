@@ -601,11 +601,40 @@ its failure was being the only rule, so the collinear majority went unlinked.
 | | degree-2 | isolated | saddles (deg>2) |
 |---|---|---|---|
 | share-a-cell only (removed) | 12/60 = 20% | **34** | 9 |
-| both rules | **39/60 = 65%** | **0** | 15 |
+| both rules, v1.3.0 | 39/60 = 65% | **0** | 15 |
+| both rules, **v1.5.0 (current)** | **41/60 = 68%** | **0** | **6** |
 
 Zero isolated crossings, and the residual degree-3/4 are genuine saddles left VISIBLE as degree
 rather than resolved by a hidden convention. Filtered to a single region's boundary they vanish
 entirely — the branches are between regions.
+
+**UPDATED 2026-08-23, and the "15 saddles" figure quoted downstream is stale.** The v1.3.0 row was
+measured before `bt_chain_perpendicular` was corrected to link only ADJACENT sides at a shared
+cell (it had been linking all pairs there, including opposite sides — a chord straight across the
+rim, invisible on axis-aligned shapes). Re-running the same parallax fixture on the current seed:
+**saddles 15 -> 6**, degree-2 65% -> 68%. The remaining 13 degree-1 crossings are field-edge
+truncation, not chaining failures — the parallax regions run off the border.
+
+And the last sentence above, which was an inference at the time, is now measured directly. Four
+single-region shapes, current seed:
+
+| scene | crossings | degree-2 | deg>2 | deg<2 |
+|---|---|---|---|---|
+| three blocks (the gate fixture) | 42 | **42** | 0 | 0 |
+| disc r=8 | 68 | **68** | 0 | 0 |
+| diamond, every edge diagonal | 60 | **60** | 0 | 0 |
+| two blocks touching at a CORNER | 32 | 28 | **4** | 0 |
+
+**100% degree-2 on every simple closed region, including the all-diagonal diamond** — so the
+branching is entirely between regions, as claimed. The one scene that does branch is two blocks
+meeting at a corner, and that ambiguity is REAL: whether the blocks connect through the corner is
+the classic marching-squares saddle, and it is not decidable from adjacency alone. Leaving it
+visible as degree is therefore the correct behaviour, not an unfinished one.
+
+Caveat carried forward: the contour walk breaks a degree>2 tie arbitrarily, and BOTH walks (the
+oracle and the O(perimeter) one, §6f) break it the same way — so the identity gate between them
+cannot see a wrong choice. On the fixtures above that gate is exercised only where saddles are
+zero.
 
 ### The contour closes, and the shape is recognised
 
