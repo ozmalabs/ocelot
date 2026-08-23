@@ -1741,18 +1741,45 @@ fn read_term(
             Some(v) => Ok(Some(term_from_json(v, arena, interner)?)),
         }
     }
+    /// A Term's list-of-children field.
+    ///
+    /// STRICT ON ABSENCE, deliberately. This used to return an empty Vec for a
+    /// missing field, for a null, or for a non-array — silently — while
+    /// `child_of` directly above has always raised `MissingField`. The
+    /// asymmetry made an ARITY MISTAKE EVALUATE INSTEAD OF RAISING: writing
+    /// `{"type": "Max", "a": x, "b": y}` for a variant whose field is `items`
+    /// parsed cleanly as `Max { items: [] }`, which evaluates to 0.
+    ///
+    /// That is not hypothetical. `seeds/vision_motion_group.json`'s
+    /// `mo_tol_otsu` writes exactly that as its divide-by-zero guard, so the
+    /// guard is 0, every candidate threshold's between-class variance divides by
+    /// zero, and the `Argmax` ranges over all-equal values — the rule returns an
+    /// arbitrary cell's `pd` instead of computing Otsu. It shipped, and stayed
+    /// invisible on hard-mask fixtures where the arbitrary answer happens to be
+    /// the right one.
+    ///
+    /// An EXPLICIT empty array stays legal: `Call { args: [] }` and
+    /// `Program { stmts: [] }` are meaningful, and `term_to_json` always emits
+    /// the field, so every round-trip keeps working.
     fn children_of(
         field: &str,
         obj: &Map<String, J>,
         arena: &mut TermArena,
         interner: &mut Interner,
+        variant: &str,
     ) -> Result<Vec<TermIdx>, JsonError> {
         match obj.get(field) {
             Some(J::Array(items)) => items
                 .iter()
                 .map(|x| term_from_json(x, arena, interner))
                 .collect(),
-            _ => Ok(Vec::new()),
+            None | Some(J::Null) => Err(JsonError::MissingField {
+                variant: variant.to_string(),
+                field: field.to_string(),
+            }),
+            Some(_) => Err(JsonError::ShapeMismatch(
+                "expected a JSON array for a Term's list field",
+            )),
         }
     }
     /// Identifier-list field (Program IR `targets`/`names`): a JSON
@@ -1784,10 +1811,10 @@ fn read_term(
         },
         "UseTool" => TermNode::UseTool {
             tool: get_sym("tool", interner)?,
-            args: children_of("args", obj, arena, interner)?,
+            args: children_of("args", obj, arena, interner, variant)?,
         },
         "SetT" => TermNode::SetT {
-            items: children_of("items", obj, arena, interner)?,
+            items: children_of("items", obj, arena, interner, variant)?,
         },
         "In" => TermNode::In {
             member: child_of("member", obj, arena, interner, variant)?,
@@ -1826,7 +1853,7 @@ fn read_term(
             expected: child_of("expected", obj, arena, interner, variant)?,
         },
         "MkDict" => TermNode::MkDict {
-            items: children_of("items", obj, arena, interner)?,
+            items: children_of("items", obj, arena, interner, variant)?,
         },
         "ToJsonString" => TermNode::ToJsonString {
             value: child_of("value", obj, arena, interner, variant)?,
@@ -1872,7 +1899,7 @@ fn read_term(
             geometry: child_of("geometry", obj, arena, interner, variant)?,
         },
         "StringConcat" => TermNode::StringConcat {
-            parts: children_of("parts", obj, arena, interner)?,
+            parts: children_of("parts", obj, arena, interner, variant)?,
         },
         // Rung 1 Tier-1 stdlib Term ports.
         "Replace" => TermNode::Replace {
@@ -2137,10 +2164,10 @@ fn read_term(
             node: child_of("node", obj, arena, interner, variant)?,
         },
         "And" => TermNode::And {
-            items: children_of("items", obj, arena, interner)?,
+            items: children_of("items", obj, arena, interner, variant)?,
         },
         "Or" => TermNode::Or {
-            items: children_of("items", obj, arena, interner)?,
+            items: children_of("items", obj, arena, interner, variant)?,
         },
         "Not" => TermNode::Not {
             arg: child_of("arg", obj, arena, interner, variant)?,
@@ -2152,14 +2179,14 @@ fn read_term(
             arg: child_of("arg", obj, arena, interner, variant)?,
         },
         "Plus" => TermNode::Plus {
-            items: children_of("items", obj, arena, interner)?,
+            items: children_of("items", obj, arena, interner, variant)?,
         },
         "Minus" => TermNode::Minus {
             a: child_of("a", obj, arena, interner, variant)?,
             b: child_of("b", obj, arena, interner, variant)?,
         },
         "Times" => TermNode::Times {
-            items: children_of("items", obj, arena, interner)?,
+            items: children_of("items", obj, arena, interner, variant)?,
         },
         "Div" => TermNode::Div {
             a: child_of("a", obj, arena, interner, variant)?,
@@ -2307,13 +2334,13 @@ fn read_term(
             arg: child_of("arg", obj, arena, interner, variant)?,
         },
         "Min" => TermNode::Min {
-            items: children_of("items", obj, arena, interner)?,
+            items: children_of("items", obj, arena, interner, variant)?,
         },
         "Max" => TermNode::Max {
-            items: children_of("items", obj, arena, interner)?,
+            items: children_of("items", obj, arena, interner, variant)?,
         },
         "ArgMax" => TermNode::ArgMax {
-            items: children_of("items", obj, arena, interner)?,
+            items: children_of("items", obj, arena, interner, variant)?,
         },
         "IfThenElse" => TermNode::IfThenElse {
             cond: child_of("cond", obj, arena, interner, variant)?,
@@ -2321,7 +2348,7 @@ fn read_term(
             other: child_of("other", obj, arena, interner, variant)?,
         },
         "Vec" => TermNode::Vec_ {
-            items: children_of("items", obj, arena, interner)?,
+            items: children_of("items", obj, arena, interner, variant)?,
         },
         "VecAdd" => TermNode::VecAdd {
             a: child_of("a", obj, arena, interner, variant)?,
@@ -2370,7 +2397,7 @@ fn read_term(
             }
         }
         "Cat" => TermNode::Cat {
-            items: children_of("items", obj, arena, interner)?,
+            items: children_of("items", obj, arena, interner, variant)?,
         },
         "Slot" => TermNode::Slot {
             name: get_sym("name", interner)?,
@@ -2380,7 +2407,7 @@ fn read_term(
             items: opt_child_of("items", obj, arena, interner)?,
         },
         "Bytes" => TermNode::Bytes {
-            items: children_of("items", obj, arena, interner)?,
+            items: children_of("items", obj, arena, interner, variant)?,
         },
         "U8" => TermNode::U8 {
             expr: opt_child_of("expr", obj, arena, interner)?,
@@ -2398,7 +2425,7 @@ fn read_term(
             expr: opt_child_of("expr", obj, arena, interner)?,
         },
         "Lines" => TermNode::Lines {
-            items: children_of("items", obj, arena, interner)?,
+            items: children_of("items", obj, arena, interner, variant)?,
         },
         "Label" => TermNode::Label {
             prefix: interner.intern(&get_str_or_empty("prefix")),
@@ -2753,7 +2780,7 @@ fn read_term(
             name: child_of("name", obj, arena, interner, variant)?,
         },
         "ArgMin" => TermNode::ArgMin {
-            items: children_of("items", obj, arena, interner)?,
+            items: children_of("items", obj, arena, interner, variant)?,
         },
         "TrackIdentityCorrespondence" => {
             let get_opt_sym = |field: &str, i: &mut Interner| -> Option<Sym> {
@@ -2776,7 +2803,7 @@ fn read_term(
         // (jsonio holds `&mut Interner`), which is why eval-time
         // interning is never needed for IR-carried names.
         "ProgSeq" => TermNode::ProgSeq {
-            stmts: children_of("stmts", obj, arena, interner)?,
+            stmts: children_of("stmts", obj, arena, interner, variant)?,
         },
         "ProgAssignVar" => TermNode::ProgAssignVar {
             name: get_sym("name", interner)?,
@@ -2846,7 +2873,7 @@ fn read_term(
         "ProgCallExtern" => TermNode::ProgCallExtern {
             name: get_sym("name", interner)?,
             recv: opt_child_of("recv", obj, arena, interner)?,
-            args: children_of("args", obj, arena, interner)?,
+            args: children_of("args", obj, arena, interner, variant)?,
         },
         "ProgAttrGet" => TermNode::ProgAttrGet {
             obj: child_of("obj", obj, arena, interner, variant)?,
@@ -2864,7 +2891,7 @@ fn read_term(
         },
         "ProgContainerLit" => TermNode::ProgContainerLit {
             kind: get_sym("kind", interner)?,
-            items: children_of("items", obj, arena, interner)?,
+            items: children_of("items", obj, arena, interner, variant)?,
         },
         "ProgComprehensionList" => TermNode::ProgComprehensionList {
             var: get_sym("var", interner)?,
@@ -2887,7 +2914,7 @@ fn read_term(
                 .unwrap_or(false),
         },
         "ProgFString" => TermNode::ProgFString {
-            parts: children_of("parts", obj, arena, interner)?,
+            parts: children_of("parts", obj, arena, interner, variant)?,
         },
         "ProgEval" => TermNode::ProgEval {
             prog: child_of("prog", obj, arena, interner, variant)?,
@@ -2916,7 +2943,7 @@ fn read_term(
         },
         "Call" => TermNode::Call {
             name: get_sym("name", interner)?,
-            args: children_of("args", obj, arena, interner)?,
+            args: children_of("args", obj, arena, interner, variant)?,
         },
         "ParetoDominates" => TermNode::ParetoDominates {
             candidate: child_of("candidate", obj, arena, interner, variant)?,
@@ -3317,5 +3344,56 @@ mod tests {
         let j = json!({"type": "BogusTerm"});
         let r = term_from_json(&j, &mut a, &mut i);
         assert!(matches!(r, Err(JsonError::UnknownTermType(_))));
+    }
+
+    /// An ARITY MISTAKE MUST RAISE, NOT EVALUATE.
+    ///
+    /// `children_of` used to return an empty Vec for a missing list field, so
+    /// `{"type": "Max", "a": x, "b": y}` -- the wrong shape for a variant whose
+    /// field is `items` -- parsed as `Max { items: [] }` and evaluated to 0.
+    /// That is how the defect in `seeds/vision_motion_group.json`'s
+    /// `mo_tol_otsu` survived: its divide-by-zero guard was silently 0, so the
+    /// rule returned an arbitrary cell's `pd` instead of an Otsu split, and it
+    /// stayed invisible on the hard-mask fixtures where the arbitrary answer
+    /// happens to be correct.
+    #[test]
+    fn list_field_arity_mistakes_raise_instead_of_evaluating() {
+        let mut arena = TermArena::new();
+        let mut interner = Interner::default();
+
+        // the mistake: right variant, wrong field name
+        let wrong = json!({"type": "Max", "a": {"type": "Lit", "value": 7.0},
+                                          "b": {"type": "Lit", "value": 1.0}});
+        match term_from_json(&wrong, &mut arena, &mut interner) {
+            Err(JsonError::MissingField { variant, field }) => {
+                assert_eq!(variant, "Max");
+                assert_eq!(field, "items");
+            }
+            other => panic!("arity mistake did not raise: {other:?}"),
+        }
+
+        // a non-array in the list field is also a shape error, not an empty list
+        let not_array = json!({"type": "Min", "items": {"type": "Lit", "value": 3.0}});
+        assert!(
+            matches!(
+                term_from_json(&not_array, &mut arena, &mut interner),
+                Err(JsonError::ShapeMismatch(_))
+            ),
+            "a non-array list field must raise"
+        );
+
+        // the correct shape still parses
+        let right = json!({"type": "Max", "items": [{"type": "Lit", "value": 7.0},
+                                                    {"type": "Lit", "value": 1.0}]});
+        assert!(term_from_json(&right, &mut arena, &mut interner).is_ok());
+
+        // and an EXPLICIT empty list stays legal -- `Call { args: [] }` and
+        // `Program { stmts: [] }` are meaningful, and term_to_json always emits
+        // the field, so every round-trip keeps working.
+        let empty = json!({"type": "Max", "items": []});
+        assert!(
+            term_from_json(&empty, &mut arena, &mut interner).is_ok(),
+            "an explicit empty list must remain legal"
+        );
     }
 }
