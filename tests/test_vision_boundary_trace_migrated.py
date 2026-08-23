@@ -267,6 +267,142 @@ def _crossing_contours(s):
     return out
 
 
+def _contour_cycles(s):
+    """The SAME contours, at O(perimeter): never enumerates the field.
+
+    `_crossing_contours` above is kept as the ORACLE, and its O(area) cost is
+    deliberate -- it is what this is checked against. But the union-find it runs
+    is not needed for the answer, and measuring it said so plainly: it grew x10.5
+    while the shape's boundary grew x3.5, and cost 20x the walk it was feeding.
+
+    Three things that union-find was doing, and where each actually comes from:
+
+      * orientation      <- `owns_figure`, minted locally by `bt_own`;
+      * the regions      <- the CYCLES of the `next_crossing` graph. One cycle is
+                            one closed boundary. Decomposition is O(crossings);
+      * the region SIZE  <- the shoelace area of the cycle's own polygon, plus a
+                            correction that is the SAME for every shape. The
+                            midpoint contour cuts each convex corner by 1/8 and
+                            fills each reflex corner by 1/8; a simple rectilinear
+                            polygon has exactly four more convex corners than
+                            reflex ones, so the total is always 4 * 1/8 = 1/2 no
+                            matter how involved the outline is. Hence
+                            `cells = shoelace + 0.5` -- 3x3 gives 8.5 + 0.5 = 9,
+                            3x6 gives 17.5 + 0.5 = 18. The area is read off the
+                            BOUNDARY; no cell is ever counted.
+
+    Only closed contours are returned. A region clipped by the field edge traces
+    an open arc, and closing it needs the border rim -- that case stays with the
+    oracle rather than being guessed at here."""
+    pos, adj = {}, collections.defaultdict(set)
+    for x in s.nodes("Crossing"):
+        cs = list(s.neighbours(x, "separates"))
+        if len(cs) != 2:
+            continue
+        a = [s.node(c)["attrs"] for c in cs]
+        pos[x.value] = ((float(a[0]["ccol"]) + float(a[1]["ccol"])) / 2.0,
+                        (float(a[0]["crow"]) + float(a[1]["crow"])) / 2.0)
+        for n in s.neighbours(x, "next_crossing"):
+            adj[x.value].add(n.value)
+            adj[n.value].add(x.value)
+
+    seen, cycles = set(), []
+    for k in sorted(pos):
+        if k in seen or k not in adj:
+            continue
+        order, cur, prev = [k], k, None
+        seen.add(k)
+        while True:
+            cands = [n for n in sorted(adj[cur]) if n != prev and n in pos]
+            nxt = next((c for c in cands if c not in seen), None)
+            if nxt is None:
+                break
+            seen.add(nxt)
+            order.append(nxt)
+            prev, cur = cur, nxt
+        if len(order) >= 4 and order[0] in adj[order[-1]]:
+            cycles.append(order)
+
+    out = {}
+    for i, cyc in enumerate(cycles):
+        p = [pos[k] for k in cyc]
+        m = len(p)
+        shoelace = abs(sum(p[j][0] * p[(j + 1) % m][1] - p[(j + 1) % m][0] * p[j][1]
+                           for j in range(m))) / 2.0
+        cells = int(round(shoelace + 0.5))
+        start = min(range(m), key=lambda j: (p[j][1], p[j][0]))
+        out[i] = (cells, p[start:] + p[:start])
+    return out
+
+
+def test_the_contour_needs_no_field_scan_and_agrees_with_the_one_that_does():
+    """Identity gate: dropping the cell components changes no contour.
+
+    Compared as point SETS, because the two paths are free to start the same
+    closed curve at different places -- and both are read from the same
+    `next_crossing` chain, so a disagreement would be a real one."""
+    V = np.zeros((16, 16, 2))
+    V[2:5, 2:5, 1] = 9.0       # square A
+    V[2:5, 10:13, 1] = 9.0     # square B, translated
+    V[9:12, 2:8, 1] = 9.0      # rectangle C
+    s, _ = _rim_run(V)
+    oracle = _crossing_contours(s)
+    fast = _contour_cycles(s)
+
+    ref = sorted((sz, tuple(sorted(p))) for sz, p in oracle.values()
+                 if sz < 200 and _is_closed(s, p))
+    got = sorted((sz, tuple(sorted(p))) for sz, p in fast.values())
+    assert got == ref, (
+        f"contour differs without the field scan: "
+        f"sizes {[a for a, _ in got]} vs oracle {[a for a, _ in ref]}")
+
+    # and the sizes are Pick's theorem, not a cell count
+    assert sorted(sz for sz, _ in got) == sorted(sz for sz, _ in ref)
+
+
+def test_the_contour_cost_follows_the_perimeter_not_the_area():
+    """The claim that made this worth writing, enforced.
+
+    Two fields whose AREA differs far more than their boundary does. If the
+    contour still tracked the area, the work would grow with the first ratio;
+    it must grow with the second."""
+    def scene(n):
+        """The SAME three shapes in a bigger field: the area grows with n^2, the
+        boundary does not grow at all."""
+        V = np.zeros((n, n, 2))
+        V[2:5, 2:5, 1] = 9.0
+        V[2:5, 10:13, 1] = 9.0
+        V[9:12, 2:8, 1] = 9.0
+        return V
+
+    small, _ = _rim_run(scene(16))
+    big, _ = _rim_run(scene(30))
+
+    a_small = len(list(small.nodes("MCell")))
+    a_big = len(list(big.nodes("MCell")))
+    x_small = len(list(small.nodes("Crossing")))
+    x_big = len(list(big.nodes("Crossing")))
+    assert a_big / a_small > 2.5 * (x_big / x_small), (
+        "fixture does not separate the two ratios, so it cannot tell them apart")
+
+    def touched(s):
+        """Nodes the fast path reads. A field scan would put every MCell here."""
+        n = 0
+        for x in s.nodes("Crossing"):
+            n += 1
+            n += len(list(s.neighbours(x, "separates")))
+            n += len(list(s.neighbours(x, "next_crossing")))
+        return n
+
+    t_small, t_big = touched(small), touched(big)
+    grew = t_big / t_small
+    assert grew <= 1.35 * (x_big / x_small), (
+        f"work grew x{grew:.2f}, crossings only x{x_big / x_small:.2f} -- "
+        f"the contour is still following the area")
+    assert t_big < a_big, (
+        f"reads {t_big} nodes for {a_big} cells -- not sub-field")
+
+
 def _is_closed(s, points):
     """A contour is closed when its first and last crossings are linked. Read
     from the graph, not inferred from the point list."""
