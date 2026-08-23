@@ -291,64 +291,28 @@ pub fn note_excluded_drain() {
     EXCLUDED_DRAINS.fetch_add(1, Ordering::Relaxed);
 }
 
-/// True when an effect term reads the very attribute key its effect writes.
+/// True when this rule's own READ set and WRITE set share an attribute key.
 ///
-/// This is the whole read-write test, and it is deliberately not split by WHERE
-/// the read happens, because both divergence shapes reduce to it:
+/// `RewriteRule::derive_access` already computes both, statically and as
+/// over-approximated supersets, for the batch-apply / write-set-dirtying slice.
+/// Reusing it rather than re-deriving is the point: it is already exercised by
+/// every rule this engine installs, and it covers a read this module's first
+/// attempt missed entirely — a WHERE-CLAUSE read of the key an effect writes,
+/// which is just as much a read-write dependency as an effect-arg read, because
+/// under Stage A every binding evaluates its guard against the base too.
 ///
-///   * PROPAGATION — writes `K` on one node, reads `K` off ANOTHER (a neighbour,
-///     another bound var). `mo_flood` is this: proposals write disjoint cells
-///     and read each other's `mlabel`.
-///   * FOLD — writes `K` on a node, reads `K` off the SAME node, across
-///     different bindings. `adaptive_control_assign_discounted_credit` is this:
-///     each binding adds to what the previous wrote.
-///
-/// A first pass at this dismissed FOLD as "plain counters, already caught by the
-/// write-set relation". That was wrong — `STAGE_A_RESULTS.md` §5c calls it "this
-/// one is real", and it is four times commoner than propagation in this tree
-/// (12.6% of seed rules against 3.2%).
-fn effect_reads_what_it_writes(arena: &crate::term::TermArena, root: TermIdx, key: Sym) -> bool {
-    let mut stack = vec![root];
-    while let Some(t) = stack.pop() {
-        let node = arena.get(t);
-        if let crate::term::TermNode::Attr { key: k, .. } = node {
-            if *k == key {
-                return true;
-            }
-        }
-        stack.extend(crate::term::children(node));
+/// `reads_any` / `writes_any` are the conservative "reads or writes something
+/// opaque" flags; either one means the sets cannot be trusted to be complete, so
+/// the rule is refused.
+fn rule_has_read_write_dependency(rule: &crate::rewrite::RewriteRule) -> bool {
+    if rule.reads_any || rule.writes_any {
+        return true;
     }
-    false
+    rule.write_set.iter().any(|w| rule.read_set.contains(w))
 }
 
-/// True when this rule can be derived speculatively.
-///
-/// TWO exclusions, and the second is what `STAGE_A_RESULTS.md` §5f falsified the
-/// whole scheme on.
-///
-/// 1. NODE DELETION — undo cannot restore a deleted node, and deriving against
-///    one base requires undoing progressing firings too.
-///
-/// 2. READ-WRITE DEPENDENCE — an effect that reads the attribute key it writes.
-///    `conflicts()` compares WRITE sets, so it is blind to a read-write
-///    dependency by construction, and §5f established that no refinement of a
-///    write-set relation can see one. The doc's remedy is per-proposal READ
-///    sets, which means instrumenting every graph read during effect evaluation
-///    — the hottest path in the engine.
-///
-///    But Stage A does not have to DECIDE these rules, only to REFUSE them, and
-///    refusing needs no instrumentation at all: the dependency is visible in the
-///    rule's own Term tree. Measured over 3739 seed rules, that refuses 14.7%
-///    and leaves 85.3% still speculable — and it catches every rule the doc
-///    names that lives in a seed (`mo_flood`, `qf_relax`, and both fold cases).
-///
-///    HONEST LIMITS. This is SUFFICIENT for refusal, not a complete read-set
-///    analysis. It does not see a CROSS-RULE dependency (rule A writes `K`, rule
-///    B reads `K` in the same drain), and it cannot see rules that are not
-///    Term-resident at all — `mv_relax` lives in `substrate.rs`, so no
-///    inspection of effect terms reaches it.
-pub fn rule_is_derivable(rule: &crate::rewrite::RewriteRule, arena: &crate::term::TermArena) -> bool {
-    use crate::rewrite::{Effect, EffectArg};
+pub fn rule_is_derivable(rule: &crate::rewrite::RewriteRule, _arena: &crate::term::TermArena) -> bool {
+    use crate::rewrite::Effect;
 
     if rule
         .effects
@@ -358,19 +322,7 @@ pub fn rule_is_derivable(rule: &crate::rewrite::RewriteRule, arena: &crate::term
         return false;
     }
 
-    for e in &rule.effects {
-        let (key, value) = match e {
-            Effect::SetAttr { key, value, .. } => (*key, value),
-            Effect::SetAttrIfDifferent { key, value, .. } => (*key, value),
-            _ => continue,
-        };
-        if let EffectArg::Computed(t) = value {
-            if effect_reads_what_it_writes(arena, *t, key) {
-                return false;
-            }
-        }
-    }
-    true
+    !rule_has_read_write_dependency(rule)
 }
 
 /// Read the forward delta of a firing that has been applied but NOT yet undone.
@@ -620,9 +572,15 @@ mod tests {
         // reads a DIFFERENT key — independent, must stay derivable
         let reads_other = arena.add(crate::term::TermNode::Attr { node: var, key: other });
 
-        let mk = |value| RewriteRule {
-            effects: vec![Effect::SetAttr { var: v, key: k, value }],
-            ..RewriteRule::default()
+        // derive_access is what populates read_set/write_set, so the rule must
+        // go through it -- exactly as `add_rule` does on the way in.
+        let mk = |value| {
+            let mut r = RewriteRule {
+                effects: vec![Effect::SetAttr { var: v, key: k, value }],
+                ..RewriteRule::default()
+            };
+            r.derive_access(&arena);
+            r
         };
 
         assert!(

@@ -488,17 +488,42 @@ read during effect evaluation, "the hottest path in the engine".
 **Stage A does not have to DECIDE these rules. It only has to REFUSE them** — and refusing needs no
 instrumentation at all, because the dependency is already visible in the rule's own Term tree.
 
-`rule_is_derivable` now excludes, in addition to node deletion, **any effect that reads the
-attribute key it writes**. Both divergence shapes reduce to that one predicate:
+`rule_is_derivable` now excludes, in addition to node deletion, **any rule whose own READ set and
+WRITE set intersect** — using `RewriteRule::derive_access`'s existing static, over-approximated
+sets rather than a fresh walk. (A first cut hand-rolled the walk over effect args only, and was
+strictly weaker: it missed a WHERE-CLAUSE read of a key an effect writes, which is just as much a
+read-write dependency, because under Stage A every binding evaluates its guard against the base
+too. It also ignored `reads_any`/`writes_any`, the conservative "reads something opaque" flags,
+either of which means the sets cannot be trusted.)
+
+**§5f's "read sets require instrumenting the hottest path" is true of PER-PROPOSAL read sets, and
+this engine already carries a PER-RULE one for free.** `derive_access` computes `read_set` /
+`write_set` for the batch-apply and write-set-dirtying slice, on every rule the engine installs.
+Nothing had connected it to Stage A.
+
+Both divergence shapes reduce to that one predicate:
 
 | shape | reads the key it writes | example |
 |---|---|---|
 | PROPAGATION (§5f) | off ANOTHER node — a neighbour, another bound var | `mo_flood`, `qf_relax` |
 | FOLD (§5c, "this one is real") | off the SAME node, across bindings | `adaptive_control_assign_discounted_credit`, `ept_extend_path_with_compatible_verified_transition` |
 
-Measured over the 3740 seed rules: **550 refused (14.7%), 3190 still speculable (85.3%)** — and
-every rule this document names that lives in a seed is among the refused, all four checked
-explicitly.
+Measured over the 3740 seed rules on the attribute half alone: **550 refused (14.7%)** — and every
+rule this document names that lives in a seed is among the refused, all four checked explicitly.
+The intersection is taken over ALL key kinds, not just attributes, because the same argument
+applies to structure: **95 seed rules (2.5%) MATCH and ADD the same edge type**, which is
+transitive closure, and under Stage A each binding reads the base — one hop per pass, the flood's
+failure exactly. Widening from attributes-only to the full intersection costs 1.3 points of
+runtime refusal and covers that shape.
+
+What matters at runtime is DRAINS, not rules, and `stage_a_stats()` reports it:
+
+| predicate | drains refused | still speculated |
+|---|---|---|
+| attribute keys only | 9.6% | 90.4% |
+| **full read/write intersection** | **10.9%** | **89.1%** |
+
+(motion + boundary settle on a supersampled disc, 2052 drains.)
 
 **The result:**
 
@@ -519,9 +544,11 @@ falsifier and left the silent under-count in place.
 - **Sufficient, not complete.** This refuses on a syntactic property of one rule's own effects. It
   does NOT see a CROSS-RULE dependency — rule A writes `K`, rule B reads `K` within the same
   drain. Such a pair would still be speculated on.
-- **Term-resident rules only.** `mv_relax` lives in `runners/dsl/src/substrate.rs`, not in any
-  seed, so no inspection of effect Terms reaches it. Rust-resident rules need the same check at
-  their construction site, and that is not built.
+- ~~**Term-resident rules only**, per `mv_relax`.~~ **WITHDRAWN — the premise was false.**
+  `mv_relax` does not live in `substrate.rs`; it appears there only inside a COMMENT, and the
+  name occurs in no `.json` and no `.py` anywhere in the tree. This document named it as one of
+  three rules of the flood shape, and that reference is stale. The check applies to every rule the
+  engine installs, because `derive_access` runs on all of them.
 - **Conservative by construction.** A rule that reads its written key on a node no other binding
   can touch is refused anyway. 14.7% is an upper bound on the real dependency rate, not a
   measurement of it.
