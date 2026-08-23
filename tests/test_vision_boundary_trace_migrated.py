@@ -529,6 +529,129 @@ def test_the_true_boundary_predicate_needs_no_flood():
         "more than one neighbour expansion -- the guard is no longer 2-hop")
 
 
+def _soft_disc_scene(n, sub, background=0.0, second=None):
+    """A supersampled disc, optionally on a RAISED background or beside a second
+    disc at a different value. Both variants exist to break anchors that only
+    work on one object over a zero background -- three such were measured and
+    discarded before `bt_subcell_t` (WHY_FLOODS_EXIST.md 6j)."""
+    V = np.zeros((n, n, 2))
+    V[:, :, 1] = background
+    offs = [(i + 0.5) / sub - 0.5 for i in range(sub)]
+    discs = [((12.0, 20.0), 7.0, 9.0)]
+    if second is not None:
+        discs.append(((29.0, 20.0), 7.0, second))
+    for row in range(n):
+        for col in range(n):
+            for (cx, cy), rad, val in discs:
+                hits = sum(1 for oy in offs for ox in offs
+                           if (col + ox - cx) ** 2 + (row + oy - cy) ** 2 <= rad * rad)
+                if hits:
+                    V[row, col, 1] = background + (val - background) * hits / (sub * sub)
+    return V, discs
+
+
+def _contour_rms(s, discs, use_subcell):
+    """Radial error of the traced contour against the discs that generated it."""
+    at = {c.value: s.node(c)["attrs"] for c in s.nodes("MCell")}
+    pos, adj, keep = {}, collections.defaultdict(set), set()
+    for x in s.nodes("Crossing"):
+        xa = s.node(x)["attrs"]
+        if float(xa.get("true_boundary", 0.0)) <= 0.5:
+            continue
+        cs = list(s.neighbours(x, "separates"))
+        figs = list(s.neighbours(x, "owns_figure"))
+        if len(cs) != 2 or not figs:
+            continue
+        a = figs[0].value
+        b = cs[1].value if a == cs[0].value else cs[0].value
+        pa = np.array([float(at[a]["ccol"]), float(at[a]["crow"])])
+        pb = np.array([float(at[b]["ccol"]), float(at[b]["crow"])])
+        t = float(xa.get("subcell_t", 0.5)) if use_subcell else 0.5
+        t = min(1.0, max(0.0, t))
+        q = pa + t * (pb - pa)
+        pos[x.value] = (float(q[0]), float(q[1]))
+        keep.add(x.value)
+    for x in s.nodes("Crossing"):
+        if x.value not in keep:
+            continue
+        for n in s.neighbours(x, "next_crossing"):
+            if n.value in keep:
+                adj[x.value].add(n.value)
+                adj[n.value].add(x.value)
+    seen, errs = set(), []
+    for k in sorted(pos):
+        if k in seen or k not in adj:
+            continue
+        order, cur, prev = [k], k, None
+        seen.add(k)
+        while True:
+            cands = [n for n in sorted(adj[cur]) if n != prev and n in pos]
+            nxt = next((c for c in cands if c not in seen), None)
+            if nxt is None:
+                break
+            seen.add(nxt)
+            order.append(nxt)
+            prev, cur = cur, nxt
+        if len(order) < 8:
+            continue
+        P = np.array([pos[i] for i in order])
+        (cx, cy), rad, _ = min(discs, key=lambda d: np.linalg.norm(P.mean(axis=0) - np.array(d[0])))
+        errs += list(np.linalg.norm(P - np.array([cx, cy]), axis=1) - rad)
+    return float(np.sqrt(np.mean(np.square(errs)))) if errs else float("nan")
+
+
+def test_subcell_t_is_written_on_every_true_crossing_and_stays_in_the_cell():
+    """`t` locates the boundary BETWEEN two cell centres, so it must land in
+    [0,1] -- outside that it is placing the edge in some third cell."""
+    V, _ = _soft_disc_scene(41, 4)
+    s, _ = _rim_run(V)
+    true_x = [x for x in s.nodes("Crossing")
+              if float(s.node(x)["attrs"].get("true_boundary", 0.0)) > 0.5]
+    assert true_x, "fixture produced no true crossings"
+    missing = [x for x in true_x if "subcell_t" not in s.node(x)["attrs"]]
+    assert not missing, f"{len(missing)} true crossings carry no subcell_t"
+    ts = [float(s.node(x)["attrs"]["subcell_t"]) for x in true_x]
+    assert all(0.0 <= t <= 1.0 for t in ts), (
+        f"t outside the cell: [{min(ts):.3f}, {max(ts):.3f}]")
+
+
+def test_reading_partial_coverage_beats_the_midpoint_on_a_soft_edge():
+    """Anti-aliasing is information, not noise.
+
+    Asserted as a RATIO against the same scene's own midpoint placement, so the
+    gate cannot go stale on a fixture change."""
+    V, discs = _soft_disc_scene(41, 4)
+    s, _ = _rim_run(V)
+    mid = _contour_rms(s, discs, use_subcell=False)
+    sub = _contour_rms(s, discs, use_subcell=True)
+    assert sub < 0.5 * mid, (
+        f"sub-cell rms {sub:.3f} vs midpoint {mid:.3f} -- partial coverage is "
+        f"not being read")
+
+
+def test_the_anchor_survives_a_raised_background_and_a_second_object():
+    """The gate that three earlier anchors failed.
+
+    Anchoring on the field's global extremes scored 0.456 against a midpoint's
+    0.274 on two objects at different values -- WORSE than doing nothing. And an
+    anchor that looked local was really a hard-coded 0.0, which only a
+    zero background flatters. Both scenes here break those, and the accuracy must
+    hold, not merely beat the midpoint."""
+    _, base_discs = _soft_disc_scene(41, 4)
+    base = _contour_rms(_rim_run(_soft_disc_scene(41, 4)[0])[0], base_discs, True)
+
+    V2, d2 = _soft_disc_scene(41, 4, second=4.5)
+    two_objects = _contour_rms(_rim_run(V2)[0], d2, True)
+    V3, d3 = _soft_disc_scene(41, 4, background=3.0)
+    raised = _contour_rms(_rim_run(V3)[0], d3, True)
+
+    for name, got in (("a second object at 4.5", two_objects),
+                      ("a raised 3.0 background", raised)):
+        assert got <= 1.35 * base, (
+            f"accuracy degrades with {name}: {got:.3f} against {base:.3f} on the "
+            f"plain scene -- the anchor is assuming something about the scene")
+
+
 def _is_closed(s, points):
     """A contour is closed when its first and last crossings are linked. Read
     from the graph, not inferred from the point list."""

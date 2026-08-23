@@ -682,8 +682,48 @@ where a shape belongs — found on this occasion inside a candidate fix for the 
 the argument for the sizing step, not against the anchor: the measured 1.8x accuracy is real and
 still on the table.
 
-**Also still not built:** `bt_disagree` remains a pairwise threshold, so consumers place crossings at
-the midpoint and the rms improvement is available but untaken. Two residuals stand: at super x8 only 26 of the 108 surviving crossings chain into one cycle
+### 6j. BUILT AFTER ALL — the far plateau is 2 hops across the band, not 3 around it
+
+The sizing above concluded the far plateau was 3 hops away and stopped. That was wrong in a useful
+way: it searched among the band cell's AGREEING neighbours, which are other band cells. But the
+band cell also has a CUT neighbour on the far side — precisely the crossing `bt_true_boundary`
+discards. **The discarded chain is what locates the edge on the kept one.**
+
+```
+I --cut-- P --cut-- E        a = I (figure), b = P (band), e = E (far plateau)
+```
+
+One case remains: where the band has drifted close enough to the far side that no crossing forms
+there, the far plateau is reached over AGREEMENT instead. The two cases are complementary, and
+since ownership is by magnitude — so `a` is always the higher side — the far plateau is always the
+LOWEST-magnitude lattice neighbour of `b` other than `a`. That covers both without distinguishing
+them, and needs no union, no fallback, and no background:
+
+| scene | midpoint | global anchor | crosscut only | **neighbour minimum** |
+|---|---|---|---|---|
+| one disc on 0.0 | 0.274 | 0.065 | **0.061** | 0.084 |
+| two discs, 9.0 and 4.5 | 0.274 | 0.456 | 0.189 | **0.084** |
+| disc on a raised 3.0 background | 0.274 | 0.065 | 0.260 | **0.084** |
+| fallbacks needed | — | — | 16–31% | **0 everywhere** |
+
+**0.084 on all three, identical** — the constancy is itself the evidence, since it says the residual
+is the quantization floor rather than a fit to any scene. It gives up 0.023 against `crosscut` on
+the easiest case and is the only anchor with nothing assumed.
+
+**`bt_subcell_t` (v1.7.0):** `t = 0.5 * (|a| - far) / (|a| - |b|)`, over `MinOver` of `b`'s lattice
+neighbours excluding `a`. Verified to reproduce the probe from the graph — 0.084 on all three
+scenes, `subcell_t` present on every true crossing, `t` in [0.50, 1.00].
+
+*The seed's own no-new-constant gate caught the first draft*, which wrote the halfway factor as a
+bare `2.0`. The quantity is algebraically `0.5 * (|a| - far) / (|a| - |b|)`, which keeps the seed's
+only literals the `{0.0, 0.5, 1.0}` it admits. A gate earning its keep on the rung that added it.
+
+Gated by three tests: `t` written on every true crossing and inside [0,1]; sub-cell beating the
+midpoint by better than 2x, asserted as a RATIO so it cannot go stale; and — the one that matters —
+**accuracy holding on a raised background AND beside a second object at a different value**, which
+is exactly what the three discarded anchors failed. 24/24 green.
+
+**Still not built:** `bt_disagree` remains a pairwise threshold. Two residuals stand: at super x8 only 26 of the 108 surviving crossings chain into one cycle
 (the chaining rules link true crossings to dropped ones, and the chain is not re-derived among the
 survivors), and the rectangle's cell count drops 65 -> 33 under supersampling because the boundary
 band is excluded from the region — the extent has to come from the sub-cell contour, not from
