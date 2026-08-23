@@ -550,7 +550,7 @@ def _soft_disc_scene(n, sub, background=0.0, second=None):
     return V, discs
 
 
-def _contour_rms(s, discs, use_subcell):
+def _contour_rms(s, discs, use_subcell, clip_t=False):
     """Radial error of the traced contour against the discs that generated it."""
     at = {c.value: s.node(c)["attrs"] for c in s.nodes("MCell")}
     pos, adj, keep = {}, collections.defaultdict(set), set()
@@ -567,7 +567,9 @@ def _contour_rms(s, discs, use_subcell):
         pa = np.array([float(at[a]["ccol"]), float(at[a]["crow"])])
         pb = np.array([float(at[b]["ccol"]), float(at[b]["crow"])])
         t = float(xa.get("subcell_t", 0.5)) if use_subcell else 0.5
-        t = min(1.0, max(0.0, t))
+        # t runs along a -> b -> far, so the ray is [0,2]. `clip_t` reproduces
+        # the old a->b-only placement, for the comparison gate above.
+        t = min(1.0 if clip_t else 2.0, max(0.0, t))
         q = pa + t * (pb - pa)
         pos[x.value] = (float(q[0]), float(q[1]))
         keep.add(x.value)
@@ -600,19 +602,55 @@ def _contour_rms(s, discs, use_subcell):
     return float(np.sqrt(np.mean(np.square(errs)))) if errs else float("nan")
 
 
-def test_subcell_t_is_written_on_every_true_crossing_and_stays_in_the_cell():
-    """`t` locates the boundary BETWEEN two cell centres, so it must land in
-    [0,1] -- outside that it is placing the edge in some third cell."""
-    V, _ = _soft_disc_scene(41, 4)
-    s, _ = _rim_run(V)
-    true_x = [x for x in s.nodes("Crossing")
-              if float(s.node(x)["attrs"].get("true_boundary", 0.0)) > 0.5]
-    assert true_x, "fixture produced no true crossings"
-    missing = [x for x in true_x if "subcell_t" not in s.node(x)["attrs"]]
-    assert not missing, f"{len(missing)} true crossings carry no subcell_t"
-    ts = [float(s.node(x)["attrs"]["subcell_t"]) for x in true_x]
-    assert all(0.0 <= t <= 1.0 for t in ts), (
-        f"t outside the cell: [{min(ts):.3f}, {max(ts):.3f}]")
+def test_subcell_t_is_written_on_every_true_crossing_and_stays_on_the_ray():
+    """`t` runs along a -> b -> far, so its range is [0,2], not [0,1].
+
+    An earlier version asserted [0,1], which was the CLAMP rather than the
+    geometry: with a one-cell band the level is often crossed past b's centre,
+    between the band cell and the far plateau, and t up to 2 places it there. A t
+    above 1 is meaningful; above 2 would be off the ray, and below 0 behind the
+    figure cell. Both terms are bounded by construction, so no clamp is applied
+    and this checks the construction rather than a clip."""
+    for sub in (4, 8):
+        V, _ = _soft_disc_scene(41, sub)
+        s, _ = _rim_run(V)
+        true_x = [x for x in s.nodes("Crossing")
+                  if float(s.node(x)["attrs"].get("true_boundary", 0.0)) > 0.5]
+        assert true_x, f"sub={sub}: fixture produced no true crossings"
+        missing = [x for x in true_x if "subcell_t" not in s.node(x)["attrs"]]
+        assert not missing, f"sub={sub}: {len(missing)} true crossings carry no subcell_t"
+        ts = [float(s.node(x)["attrs"]["subcell_t"]) for x in true_x]
+        assert all(0.0 <= t <= 2.0 for t in ts), (
+            f"sub={sub}: t off the ray: [{min(ts):.3f}, {max(ts):.3f}]")
+
+
+def test_finer_observation_does_not_make_the_boundary_worse():
+    """The inversion that clipping `t` to [0,1] caused.
+
+    Interpolating only along a -> b and clipping is a systematic OUTWARD bias at
+    every crossing whose band cell is more than half covered -- and there are
+    enough of those at x8 that the clipped placement was WORSE there than at x4
+    (0.169 against 0.084). Finer observation making the answer worse is the
+    signature of information being fought rather than read.
+
+    Asserted as monotonicity rather than against a literal, because the property
+    that matters is the ordering, not the number."""
+    _, discs = _soft_disc_scene(41, 4)
+    by_sub = {}
+    for sub in (4, 8):
+        V, d = _soft_disc_scene(41, sub)
+        by_sub[sub] = _contour_rms(_rim_run(V)[0], d, use_subcell=True)
+    assert by_sub[8] <= by_sub[4], (
+        f"x8 rms {by_sub[8]:.3f} is worse than x4 {by_sub[4]:.3f} -- finer "
+        f"observation is degrading the boundary")
+
+    # and the clipped placement is what it beats
+    V8, d8 = _soft_disc_scene(41, 8)
+    s8, _ = _rim_run(V8)
+    clipped = _contour_rms(s8, d8, use_subcell=True, clip_t=True)
+    assert by_sub[8] < 0.6 * clipped, (
+        f"piecewise {by_sub[8]:.3f} vs clipped {clipped:.3f} -- the level is not "
+        f"being placed on the segment that contains it")
 
 
 def test_reading_partial_coverage_beats_the_midpoint_on_a_soft_edge():

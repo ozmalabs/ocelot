@@ -729,6 +729,47 @@ midpoint by better than 2x, asserted as a RATIO so it cannot go stale; and — t
 **accuracy holding on a raised background AND beside a second object at a different value**, which
 is exactly what the three discarded anchors failed. 24/24 green.
 
+### 6l. `t` WAS BEING CLAMPED, AND THE CLAMP INVERTED THE VALUE OF BETTER DATA (v1.9.0)
+
+`bt_subcell_t` interpolated only along `a -> b` and clipped `t` to [0,1]. That clip is not a safety
+rail, it is a systematic OUTWARD bias: with a one-cell band the level is often crossed PAST the band
+cell's centre, between `b` and the far plateau. At col 19 of the x8 disc — `|a|`=9.0, `|b|`=7.3,
+far=0.0, level 4.5 — the `a -> b` solution is **t = 2.65**, and clipping it to 1.0 misplaces that
+crossing by 0.385 of a cell.
+
+The fix is to place on the segment the level actually falls in, with values at `a`=0, `b`=1, far=2
+along the ray. Branchlessly, since `(|a|-lvl)/(|a|-|b|)` exceeds 1 exactly when the level lies
+beyond `b`:
+
+```
+t = min(1, (|a|-lvl)/(|a|-|b|)) + max(0, (|b|-lvl)/(|b|-far)),   lvl = 0.5*(|a| + far)
+```
+
+`t` is a real in [0,2] and needs **no clamp** — both terms are bounded by construction, the second
+because `lvl >= far` always. A `t` above 1 is meaningful rather than an error: it places the
+boundary past the band cell's centre, which is where a mostly-covered band cell's edge is.
+
+| scene | x4 | x8 clipped | **x8 piecewise** | crossings with t > 1 |
+|---|---|---|---|---|
+| two-level | 0.084 | 0.169 | **0.068** | 16 of 52 |
+| three-level | 0.084 | 0.133 | **0.075** | 16 of 104 |
+| raised background | 0.084 | 0.082 | 0.082 | 0 |
+
+**This fixes an INVERSION, not merely an error.** Under clipping, x8 was WORSE than x4 (0.169
+against 0.084) — finer observation made the answer worse, which is the signature of information
+being fought rather than read. Accuracy is now monotone in observation quality, and that ordering
+is what the gate asserts, rather than a literal.
+
+**Still exactly inert on a hard mask.** With no band, `far == |b|`, so the first term is
+`min(1, 0.5)` and the second divides by zero — which this engine returns as 0.0 rather than
+raising, so `max(0, .)` is 0. `t = 0.5` precisely, verified as equality (deviation 0.00e+00) across
+five hard-mask scenes including a three-level annulus.
+
+*Found while writing this rule, and the reason the previous section exists:* the first draft wrote
+`Min`/`Max` as `{a, b}`, and the engine returned **0** rather than erroring on the unknown shape.
+That is exactly the failure hiding in `mo_tol_otsu`, and it is how a silent defect survives in a
+shipped seed — an arity mistake that evaluates instead of raising. 27/27 green.
+
 ### 6k. `bt_true_boundary` HAD THE WRONG DISCRIMINATOR — measured on hard masks, fixed, and the gate that missed it replaced
 
 The rule as first built (v1.6.0) asked whether the figure cell had a fully-INTERIOR neighbour — one

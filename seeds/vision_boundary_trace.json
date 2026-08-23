@@ -1,6 +1,6 @@
 {
  "id": "vision_boundary_trace",
- "version": "1.8.0",
+ "version": "1.9.0",
  "depends_on": [
   "vision_motion_group"
  ],
@@ -892,7 +892,7 @@
   },
   {
    "name": "bt_subcell_t",
-   "comment": "WHERE INSIDE THE CELL THE BOUNDARY FALLS. A crossing placed at t = 0.5 between two cell centres is a magic number and the source of the staircase; on a real (anti-aliased) observation the straddling cell's PARTIAL COVERAGE says where the edge actually is. Measured (WHY_FLOODS_EXIST.md 6i/6j): reading it drops the contour's radial rms from 0.274 to 0.084, and makes an anti-aliased observation ~3x MORE accurate than a hard mask of the same disc. Anti-aliasing is information, not noise.\n\nTHE ANCHOR IS THE WHOLE DIFFICULTY, AND THREE WRONG ONES WERE MEASURED FIRST.\n  * mtol -- solving for where deviation reaches the tolerance uses a DETECTION threshold as a LOCATION. It put the edge well inside the object and made rms WORSE at every raster level.\n  * the field's global extremes -- right for one object on one background, and on two objects at different values it scored 0.456, WORSE than doing nothing (0.274), because each boundary runs between a different pair of plateaus and the global midpoint belongs to neither.\n  * the far cell's AGREEING interior neighbours -- looked local, but a band cell's agreeing neighbours are other band cells, so 85% of crossings fell back to a hard-coded 0.0 and the good score was a fact about the fixtures' background being zero.\n\nWhat works needs no fallback and no background: the edge sits halfway between the two plateaus THIS boundary runs between, and both are 2 hops from the crossing. `a` is one of them (the figure cell is at plateau by construction -- it is the last cell before the band). The other is the lowest-magnitude lattice neighbour of the band cell `b` other than `a`, since ownership is by magnitude and so `a` is always the higher side. Reached ACROSS the band, either over the discarded crossing or over agreement where the band has drifted too close to the far side for a crossing to form -- the two cases are complementary, and taking the neighbour minimum covers both without distinguishing them. Zero fallbacks on all three scenes measured.\n\nt = 0.5 * (|a| - far) / (|a| - |b|), a real in (0,1) -- the algebraic form of 'halfway between the two plateaus', which keeps the seed's only literals the 0.5/0.0/1.0 its own no-new-constant gate admits (an earlier draft wrote the same quantity with a bare 2.0 and that gate caught it). This is a CROSS-FRAME quantity and the frame rule permits it: it lives in the map from the observation lattice to the boundary, never in the lattice's own coordinates.",
+   "comment": "WHERE INSIDE THE CELL THE BOUNDARY FALLS. A crossing placed at t = 0.5 between two cell centres is a magic number and the source of the staircase; on a real (anti-aliased) observation the straddling cell's PARTIAL COVERAGE says where the edge actually is. Measured (WHY_FLOODS_EXIST.md 6i/6j): reading it drops the contour's radial rms from 0.274 to 0.084, and makes an anti-aliased observation ~3x MORE accurate than a hard mask of the same disc. Anti-aliasing is information, not noise.\n\nTHE ANCHOR IS THE WHOLE DIFFICULTY, AND THREE WRONG ONES WERE MEASURED FIRST.\n  * mtol -- solving for where deviation reaches the tolerance uses a DETECTION threshold as a LOCATION. It put the edge well inside the object and made rms WORSE at every raster level.\n  * the field's global extremes -- right for one object on one background, and on two objects at different values it scored 0.456, WORSE than doing nothing (0.274), because each boundary runs between a different pair of plateaus and the global midpoint belongs to neither.\n  * the far cell's AGREEING interior neighbours -- looked local, but a band cell's agreeing neighbours are other band cells, so 85% of crossings fell back to a hard-coded 0.0 and the good score was a fact about the fixtures' background being zero.\n\nWhat works needs no fallback and no background: the edge sits halfway between the two plateaus THIS boundary runs between, and both are 2 hops from the crossing. `a` is one of them (the figure cell is at plateau by construction -- it is the last cell before the band). The other is the lowest-magnitude lattice neighbour of the band cell `b` other than `a`, since ownership is by magnitude and so `a` is always the higher side. Reached ACROSS the band, either over the discarded crossing or over agreement where the band has drifted too close to the far side for a crossing to form -- the two cases are complementary, and taking the neighbour minimum covers both without distinguishing them. Zero fallbacks on all three scenes measured.\n\nTHE LEVEL IS CROSSED ON WHICHEVER SEGMENT CONTAINS IT, which is not always the first. Interpolating only along a->b and clipping t to [0,1] is a systematic OUTWARD bias: with a one-cell band the edge often lies PAST b's centre, between b and the far plateau. Measured on the x8 disc at col 19 -- |a|=9.0, |b|=7.3, far=0.0, level 4.5 -- the a->b solution is t=2.65, and clipping it to 1.0 misplaces that crossing by 0.385 of a cell, outward, at every crossing whose band cell is more than half covered.\n\nSo place on the segment the level actually falls in, with values at a=0, b=1, far=2 along the ray. Branchlessly, since (|a|-lvl)/(|a|-|b|) exceeds 1 exactly when the level lies beyond b:\n\n  t = min(1, (|a|-lvl)/(|a|-|b|)) + max(0, (|b|-lvl)/(|b|-far)),   lvl = 0.5*(|a| + far)\n\nt is a real in [0,2] and needs no clamp -- both terms are bounded by construction, the second because lvl >= far always. A t above 1 is meaningful, not an error: it places the boundary past the band cell's centre, which is where a mostly-covered band cell's edge actually is.\n\nEXACTLY INERT ON A HARD MASK. With no band, far == |b|, so the first term is min(1, 0.5) = 0.5 and the second divides by zero -- which this engine returns as 0.0 rather than raising, so max(0, .) is 0. t = 0.5 precisely, bit-for-bit the midpoint placement every hard-mask fixture in this tree already had.\n\nMeasured: x8 radial rms 0.169 -> 0.068 two-level and 0.133 -> 0.075 three-level, with 16 of 52 crossings previously clipped. That fixes an INVERSION, not just an error -- under clipping, x8 was WORSE than x4 (0.169 against 0.084), so finer observation made the answer worse. Accuracy now improves monotonically with observation quality, which is the property that says the partial coverage is being read rather than fought.\n\nOnly 0.5/0.0/1.0 appear as literals, which the seed's own no-new-constant gate admits (an earlier draft wrote a halfway factor as a bare 2.0 and that gate caught it). This is a CROSS-FRAME quantity and the frame rule permits it: it lives in the map from the observation lattice to the boundary, never in the lattice's own coordinates.",
    "match": [
     [
      "x",
@@ -964,97 +964,276 @@
      "subcell_t",
      {
       "__term__": {
-       "type": "Div",
-       "a": {
-        "type": "Times",
-        "items": [
-         {
-          "type": "Lit",
-          "value": 0.5
-         },
-         {
-          "type": "Minus",
-          "a": {
-           "type": "Magnitude",
-           "arg": {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "a"
-            },
-            "key": "v"
-           }
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Min",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 1.0
           },
-          "b": {
-           "type": "MinOver",
-           "source": {
-            "type": "Filter",
-            "source": {
-             "type": "Neighbours",
-             "node": {
-              "type": "Var",
-              "name": "b"
-             },
-             "edge_type": "neighbour",
-             "any_type": false
-            },
-            "var_name": "z",
-            "predicate": {
-             "type": "Not",
+          {
+           "type": "Div",
+           "a": {
+            "type": "Minus",
+            "a": {
+             "type": "Magnitude",
              "arg": {
-              "type": "Eq",
-              "a": {
-               "type": "Var",
-               "name": "z"
-              },
-              "b": {
+              "type": "Attr",
+              "node": {
                "type": "Var",
                "name": "a"
-              }
+              },
+              "key": "v"
              }
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Magnitude",
+                 "arg": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "a"
+                  },
+                  "key": "v"
+                 }
+                },
+                {
+                 "type": "MinOver",
+                 "source": {
+                  "type": "Filter",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "b"
+                   },
+                   "edge_type": "neighbour",
+                   "any_type": false
+                  },
+                  "var_name": "z",
+                  "predicate": {
+                   "type": "Not",
+                   "arg": {
+                    "type": "Eq",
+                    "a": {
+                     "type": "Var",
+                     "name": "z"
+                    },
+                    "b": {
+                     "type": "Var",
+                     "name": "a"
+                    }
+                   }
+                  }
+                 },
+                 "var_name": "z",
+                 "value": {
+                  "type": "Magnitude",
+                  "arg": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "z"
+                   },
+                   "key": "v"
+                  }
+                 }
+                }
+               ]
+              }
+             ]
             }
            },
-           "var_name": "z",
-           "value": {
-            "type": "Magnitude",
-            "arg": {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "z"
-             },
-             "key": "v"
+           "b": {
+            "type": "Minus",
+            "a": {
+             "type": "Magnitude",
+             "arg": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "a"
+              },
+              "key": "v"
+             }
+            },
+            "b": {
+             "type": "Magnitude",
+             "arg": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "v"
+             }
             }
            }
           }
-         }
-        ]
-       },
-       "b": {
-        "type": "Minus",
-        "a": {
-         "type": "Magnitude",
-         "arg": {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "a"
-          },
-          "key": "v"
-         }
+         ]
         },
-        "b": {
-         "type": "Magnitude",
-         "arg": {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "b"
+        {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 0.0
           },
-          "key": "v"
-         }
+          {
+           "type": "Div",
+           "a": {
+            "type": "Minus",
+            "a": {
+             "type": "Magnitude",
+             "arg": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "v"
+             }
+            },
+            "b": {
+             "type": "Times",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0.5
+              },
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Magnitude",
+                 "arg": {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "a"
+                  },
+                  "key": "v"
+                 }
+                },
+                {
+                 "type": "MinOver",
+                 "source": {
+                  "type": "Filter",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "b"
+                   },
+                   "edge_type": "neighbour",
+                   "any_type": false
+                  },
+                  "var_name": "z",
+                  "predicate": {
+                   "type": "Not",
+                   "arg": {
+                    "type": "Eq",
+                    "a": {
+                     "type": "Var",
+                     "name": "z"
+                    },
+                    "b": {
+                     "type": "Var",
+                     "name": "a"
+                    }
+                   }
+                  }
+                 },
+                 "var_name": "z",
+                 "value": {
+                  "type": "Magnitude",
+                  "arg": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "z"
+                   },
+                   "key": "v"
+                  }
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           },
+           "b": {
+            "type": "Minus",
+            "a": {
+             "type": "Magnitude",
+             "arg": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "b"
+              },
+              "key": "v"
+             }
+            },
+            "b": {
+             "type": "MinOver",
+             "source": {
+              "type": "Filter",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "b"
+               },
+               "edge_type": "neighbour",
+               "any_type": false
+              },
+              "var_name": "z",
+              "predicate": {
+               "type": "Not",
+               "arg": {
+                "type": "Eq",
+                "a": {
+                 "type": "Var",
+                 "name": "z"
+                },
+                "b": {
+                 "type": "Var",
+                 "name": "a"
+                }
+               }
+              }
+             },
+             "var_name": "z",
+             "value": {
+              "type": "Magnitude",
+              "arg": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "z"
+               },
+               "key": "v"
+              }
+             }
+            }
+           }
+          }
+         ]
         }
-       }
+       ]
       }
      }
     ]
