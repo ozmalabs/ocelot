@@ -647,9 +647,43 @@ check that the rule stays 2-hop — its match binds only `owns_figure` and `neig
 `mlabel`, and it expands `Neighbours` exactly once. 21/21 green. It adds no literal outside the
 `{0.0, 0.5, 1.0}` set the seed's own no-new-constant gate already enforces.
 
-**Still NOT built:** `bt_disagree` remains a pairwise threshold, and the sub-cell anchor lives in no
-seed — the contour consumers still place crossings at the midpoint, so the rms improvement above is
-available but not yet taken. Two residuals stand: at super x8 only 26 of the 108 surviving crossings chain into one cycle
+**The sub-cell anchor was taken to the edge of shipping and STOPPED, on measurement.** It is the
+other half of §6i's win, so it was sized properly rather than assumed, and two findings came out.
+
+*The global anchor is a two-level assumption that degrades BELOW baseline.* Anchoring at the
+halfway point between the field's global extremes is exactly right for one object on one
+background and wrong the moment there are two objects at different values, because each boundary
+runs between a DIFFERENT pair of plateaus and the global midpoint belongs to neither:
+
+| scene | midpoint | global anchor | local anchor |
+|---|---|---|---|
+| one disc on 0.0 | 0.274 | **0.065** | **0.065** |
+| two discs, 9.0 and 4.5, on 0.0 | 0.274 | **0.456** — worse than doing nothing | **0.065** |
+| one disc on a RAISED 3.0 background | 0.274 | 0.065 | 0.069 |
+
+Building the global version into a seed would have shipped a two-level assumption that silently
+falls below the placement it replaced on any multi-object scene.
+
+*And the "local" anchor is not local.* It scored 0.065, but replacing only its FALLBACK — the value
+used when no far plateau is in reach — collapsed it to 0.271, barely better than the midpoint. That
+gap says the fallback is the common path, not an edge case. Counted directly: **on a 0.0
+background, 44 of 52 true crossings (85%) fall back**; on a raised background, 20 of 52 (38%). So
+the formula was overwhelmingly returning a hard-coded 0.0, and its good score was a fact about
+these fixtures' background being zero.
+
+The structural reason is exact, and it is the same fact that makes `bt_true_boundary` work: the far
+cell of a TRUE crossing IS the band cell, and a band cell's agreeing neighbours are other band
+cells, which are never interior. **The far plateau is simply not reachable within 2 hops of a true
+crossing** — it is 3 hops away, through the band. That rule is designable and still flood-free, but
+it is not this rule, and it is not written.
+
+This is this document's own defect shape for the third time in one stretch — a number standing
+where a shape belongs — found on this occasion inside a candidate fix for the previous two. Which is
+the argument for the sizing step, not against the anchor: the measured 1.8x accuracy is real and
+still on the table.
+
+**Also still not built:** `bt_disagree` remains a pairwise threshold, so consumers place crossings at
+the midpoint and the rms improvement is available but untaken. Two residuals stand: at super x8 only 26 of the 108 surviving crossings chain into one cycle
 (the chaining rules link true crossings to dropped ones, and the chain is not re-derived among the
 survivors), and the rectangle's cell count drops 65 -> 33 under supersampling because the boundary
 band is excluded from the region — the extent has to come from the sub-cell contour, not from
