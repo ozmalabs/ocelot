@@ -627,9 +627,29 @@ program is still markedly better, and only the program collapses the disc to a s
 its strength does not.** The honest statement is that the medial axis is highly sensitive to
 boundary accuracy, not that the observation cannot support one.
 
-**Status: measured, NOT built.** Everything above is a probe over the live graph. `bt_disagree` is
-still a pairwise threshold, no `bt_interior` rule exists, and the sub-cell anchor is not in any
-seed. Two residuals stand: at super x8 only 26 of the 108 surviving crossings chain into one cycle
+**BUILT (v1.6.0): `bt_true_boundary`.** The discriminator is now a rule, not a probe:
+
+```
+[x owns_figure a], [a neighbour n],  Count(Neighbours(n, cuts)) < 1
+  ->  set_attr x true_boundary 1.0
+```
+
+Two simplifications fell out of stating it as graph data. A crossing's figure cell ALWAYS has a cut
+— that is what a crossing is — so it can never itself be interior, and the direct clause is dead;
+the whole predicate is "does the figure cell have an interior NEIGHBOUR." And `cuts` is symmetric,
+so a neighbour with zero cuts cannot be cut from `a` either, which retires the second guard. The
+rule reproduces the Python probe's verdict EXACTLY at every raster level (116/116, 116/116,
+108/108, 108/108 — set equality, not just counts).
+
+Gated by three tests: inert on a hard mask (nothing dropped), the doubling-and-halving on a soft
+edge asserted as a RATIO against the same disc's hard mask so it cannot go stale, and a structural
+check that the rule stays 2-hop — its match binds only `owns_figure` and `neighbour`, it reads no
+`mlabel`, and it expands `Neighbours` exactly once. 21/21 green. It adds no literal outside the
+`{0.0, 0.5, 1.0}` set the seed's own no-new-constant gate already enforces.
+
+**Still NOT built:** `bt_disagree` remains a pairwise threshold, and the sub-cell anchor lives in no
+seed — the contour consumers still place crossings at the midpoint, so the rms improvement above is
+available but not yet taken. Two residuals stand: at super x8 only 26 of the 108 surviving crossings chain into one cycle
 (the chaining rules link true crossings to dropped ones, and the chain is not re-derived among the
 survivors), and the rectangle's cell count drops 65 -> 33 under supersampling because the boundary
 band is excluded from the region — the extent has to come from the sub-cell contour, not from

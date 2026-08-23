@@ -443,6 +443,92 @@ def test_the_contour_cost_follows_the_perimeter_not_the_area():
         f"reads {t_big} nodes for {a_big} cells -- not sub-field")
 
 
+def _soft_disc(n, sub):
+    """A disc rasterised with supersampling. `sub=1` is the hard mask every other
+    fixture here uses; `sub>1` gives a cell straddling the edge PARTIAL coverage,
+    which is the sub-cell information a real blurred observation carries and a
+    hard mask throws away."""
+    V = np.zeros((n, n, 2))
+    cx = cy = n / 2.0 - 0.5
+    r = n * 0.35
+    offs = [(i + 0.5) / sub - 0.5 for i in range(sub)]
+    for row in range(n):
+        for col in range(n):
+            hits = sum(1 for oy in offs for ox in offs
+                       if (col + ox - cx) ** 2 + (row + oy - cy) ** 2 <= r * r)
+            V[row, col, 1] = 9.0 * hits / (sub * sub)
+    return V
+
+
+def _true_crossings(s):
+    return {x.value for x in s.nodes("Crossing")
+            if float(s.node(x)["attrs"].get("true_boundary", 0.0)) > 0.5}
+
+
+def test_the_true_boundary_rule_is_inert_on_a_hard_mask():
+    """`bt_true_boundary` must cost nothing where there is nothing to fix.
+
+    Every other fixture in this file is a hard mask, so this rule has to leave
+    them exactly as they were -- every crossing a true boundary, none dropped.
+    A rule that starts discarding crossings on hard input would silently change
+    every result above it."""
+    s, _ = _rim_run(_soft_disc(25, 1))
+    total = len(list(s.nodes("Crossing")))
+    true_x = _true_crossings(s)
+    assert total > 0, "fixture produced no crossings"
+    assert len(true_x) == total, (
+        f"{total - len(true_x)} crossings dropped on a HARD MASK -- the rule is "
+        f"not inert where the boundary is already single")
+
+
+def test_an_anti_aliased_edge_doubles_the_boundary_and_the_rule_halves_it_back():
+    """The finding this rule exists for.
+
+    A soft edge cuts the straddling cell from BOTH sides, so the crossings go UP
+    and the partition fragments into slivers -- and no threshold repairs it
+    (swept in WHY_FLOODS_EXIST.md 6h: below 3.5 the disc slivers, at 3.5 and
+    above the disc merges). The discriminator is structural: a real region has an
+    interior cell, a one-cell-wide band has none.
+
+    Asserted as a RATIO against the same disc's hard mask rather than as a
+    literal count, so the gate does not go stale if the fixture size changes."""
+    hard, _ = _rim_run(_soft_disc(25, 1))
+    n_hard = len(list(hard.nodes("Crossing")))
+
+    soft, _ = _rim_run(_soft_disc(25, 4))
+    n_soft = len(list(soft.nodes("Crossing")))
+    true_x = _true_crossings(soft)
+
+    assert n_soft > 1.5 * n_hard, (
+        f"anti-aliasing did not double the boundary ({n_hard} -> {n_soft}); "
+        f"this fixture no longer exercises the rule")
+    assert len(true_x) < 0.75 * n_soft, (
+        f"the rule kept {len(true_x)} of {n_soft} crossings -- it is not "
+        f"discarding the second chain")
+    assert abs(len(true_x) - n_hard) <= 0.15 * n_hard, (
+        f"the rule kept {len(true_x)}, but the hard mask's own boundary is "
+        f"{n_hard} -- it should recover that count, not some other one")
+
+
+def test_the_true_boundary_predicate_needs_no_flood():
+    """The predicate must stay LOCAL.
+
+    "Which region is this cell in" is the O(area x iterations) question the rim
+    exists to remove, so the rule must not need it. It reads a crossing's figure
+    cell and that cell's immediate neighbours -- 2 hops -- and nothing else. This
+    asserts the seed's own text: the rule's match binds only `owns_figure` and
+    `neighbour`, and its guard counts `cuts` on ONE node."""
+    blob = json.loads((ROOT / "seeds" / "vision_boundary_trace.json").read_text())
+    rule = next(r for r in blob["rules"] if r["name"] == "bt_true_boundary")
+    edges = {m[1] for m in rule["match"]}
+    assert edges == {"owns_figure", "neighbour"}, (
+        f"match reaches beyond 2 local hops: {sorted(edges)}")
+    body = json.dumps(rule)
+    assert "mlabel" not in body, "the rule reads the flood's label"
+    assert body.count('"Neighbours"') == 1, (
+        "more than one neighbour expansion -- the guard is no longer 2-hop")
+
+
 def _is_closed(s, points):
     """A contour is closed when its first and last crossings are linked. Read
     from the graph, not inferred from the point list."""

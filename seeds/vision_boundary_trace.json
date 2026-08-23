@@ -1,6 +1,6 @@
 {
  "id": "vision_boundary_trace",
- "version": "1.5.0",
+ "version": "1.6.0",
  "depends_on": [
   "vision_motion_group"
  ],
@@ -807,6 +807,72 @@
      "x",
      "owns_figure",
      "a"
+    ]
+   ]
+  },
+  {
+   "name": "bt_true_boundary",
+   "comment": "AN ANTI-ALIASED EDGE DOUBLES THE BOUNDARY, AND ONLY ONE OF THE TWO CHAINS IS THE OBJECT'S. A real observation is not a hard mask: a cell straddling the edge carries PARTIAL coverage, differs from the interior by more than mtol AND from the exterior by more than mtol, and so is cut from both sides. Measured (WHY_FLOODS_EXIST.md 6h): the crossings go UP, 116 -> 220 on a supersampled disc, and the partition fragments into ~48 sliver regions averaging 1.2 cells, because a total partition of CELLS must invent a region for a cell that is genuinely on the boundary. No threshold repairs this -- swept, and below 3.5 the disc separates but slivers, at 3.5 and above the slivers go and the disc goes with them. There is no value giving two clean regions, so deriving the tolerance better (mo_tol_otsu) cannot help either.\n\nThe discriminator is structural, not numeric: a real region contains an INTERIOR cell, one with no `cuts` edge at all; a one-cell-wide band contains none. Verified across two shapes and four raster levels -- exactly 2 regions with an interior in all 8 configurations.\n\nApplied at the crossing, this stays LOCAL -- 2 hops, no flood, because asking 'which region is this cell in' is the O(area x iterations) question the rim exists to remove. A crossing's figure cell always has a cut (that is what a crossing IS), so it is never itself interior; what separates the chains is whether it has an interior NEIGHBOUR. `cuts` is symmetric, so a neighbour with zero cuts cannot be cut from `a` either, and no second guard is needed.\n\n  (interior | band): figure side is the interior cell, whose other neighbours are interior -> TRUE\n  (band | exterior): figure side is the band cell, whose agreeing neighbours are band cells -> FALSE\n\nMeasured: inert on a hard mask (116 crossings, 0 dropped), and it recovers the hard mask's own count from the doubled soft-edge set (super x2 212 -> 116). Placing the survivor sub-cell then beats the hard mask outright, rms 0.250 -> 0.135, because partial coverage says WHERE in the cell the edge falls and a hard mask has thrown that away. Anti-aliasing is information.",
+   "match": [
+    [
+     "x",
+     "owns_figure",
+     "a"
+    ],
+    [
+     "a",
+     "neighbour",
+     "n"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "key": "marm",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "MotionParams"
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "n"
+        },
+        "edge_type": "cuts",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "x",
+     "true_boundary",
+     1.0
     ]
    ]
   }
