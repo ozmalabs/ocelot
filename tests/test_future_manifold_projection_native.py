@@ -119,6 +119,80 @@ def _learning_safety(agent, episode, **overrides):
     return safety
 
 
+def _humanoid_path_bench(effects, *, bound=1.0):
+    """Build a graph-only learned program chain; no world is stepped."""
+    try:
+        agent = WorldAdapter(seeds=("humanoid_adaptation",))
+    except RuntimeError as exc:
+        pytest.skip(str(exc))
+    root = agent.agent
+    policy = agent.inner.neighbours(root, "has_humanoid_policy")[0]
+    for key, value in {
+        "future_manifold_enabled": 1.0,
+        "future_manifold_temporal_anchors_enabled": 1.0,
+        "future_manifold_projection_budget": 16.0,
+        "gravity_acceleration": 9.81,
+    }.items():
+        agent.inner.set_attr(policy, key, value)
+    episode = agent.s.add_node("HumanoidEpisode", {
+        "request_seq": 1.0, "state_seq": 1.0,
+        "current_support_phase": 0.0, "response_frames": 1.0,
+        "manifold_bounds_ready": 1.0,
+        **{f"manifold_bound_{key}": bound for key in (
+            "dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz",
+        )},
+    })
+    _edge(agent, root, "has_humanoid_episode", episode)
+    programs = [agent.s.add_node("HumanoidMotorProgram", {
+        "status": "grounded", "memory_eligible": 1.0,
+    })]
+    common = {
+        "support_phase": 0.0, "context_id": 0.0, "initialized": 1.0,
+        "mean_input_energy_joules": 1.0,
+        **{f"mean_{key}": 0.0 for key in (
+            "dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz",
+        )},
+        **{f"anchor_{key}": 0.0 for key in (
+            "z_x", "z_y", "wx", "wy", "vx", "vy", "vz",
+        )},
+        "anchor_lateral_offset": 0.0,
+    }
+    for ordinal, effect in enumerate(effects, start=1):
+        model = agent.s.add_node("HumanoidPhaseActionModel", {
+            **common, "token": f"path-{ordinal}",
+            "ordinal": float(ordinal), "actuator_group": float(ordinal),
+            "mean_dvx": float(effect),
+        })
+        _edge(agent, episode, "has_humanoid_phase_action_model", model)
+        program = agent.s.add_node("HumanoidMotorProgram", {
+            "status": "grounded", "memory_eligible": 1.0,
+        })
+        _edge(agent, program, "includes_humanoid_phase_action_model", model)
+        programs.append(program)
+    transitions = []
+    for ordinal in range(len(effects)):
+        transition = agent.s.add_node("EmbodiedProgramTransition", {
+            "verified": 1.0, "response_frames": 1.0,
+        })
+        _edge(
+            agent, transition, "starts_from_embodied_program",
+            programs[ordinal],
+        )
+        _edge(
+            agent, transition, "continues_with_embodied_program",
+            programs[ordinal + 1],
+        )
+        transitions.append(transition)
+    path = agent.s.add_node("ParetoCandidate", {
+        "kind": "embodied_program_path", "depth": float(len(transitions)),
+    })
+    _edge(agent, path, "starts_from_embodied_program", programs[0])
+    _edge(agent, path, "continues_with_embodied_program", programs[-1])
+    for transition in transitions:
+        _edge(agent, path, "contains_embodied_program_transition", transition)
+    return agent, episode, policy, path, transitions
+
+
 def test_ideal_effort_allows_excess_only_for_manifold_compression():
     agent, ep, policy, source = _bench()
     agent.inner.set_attr(policy, "future_manifold_projection_budget", 2.0)
@@ -323,6 +397,70 @@ def test_projection_accepts_grounded_humanoid_phase_program_membership():
     assert float(_value(agent, ep, policy, source, "resolved")) == 1.0
 
     assert float(_value(agent, ep, policy, source, "loss")) == 0.0
+
+
+def test_humanoid_path_projection_carries_shape_across_program_boundaries():
+    agent, ep, policy, path, transitions = _humanoid_path_bench((0.5, 1.0))
+    assert float(_value(agent, ep, policy, path, "support")) == 1.0
+    assert float(_value(agent, ep, policy, path, "resolved")) == 1.0
+    assert float(_value(agent, ep, policy, path, "loss")) == 1.0
+    assert float(_value(agent, ep, policy, path, "horizon")) == 2.0
+    assert float(_value(agent, ep, policy, path, "residual_4")) == 0.5
+
+    # Once the first action has a real receipt, prediction is re-anchored to
+    # that state and only the still-unexecuted suffix is synthesized.
+    assert float(_value(
+        agent, ep, policy, path, "loss", addition=transitions[1]
+    )) == 0.0
+    assert float(_value(
+        agent, ep, policy, path, "horizon", addition=transitions[1]
+    )) == 1.0
+
+
+def test_humanoid_path_projection_respects_transition_order():
+    unsafe = _humanoid_path_bench((1.5, -1.0))
+    safe = _humanoid_path_bench((-1.0, 1.5))
+    assert float(_value(*unsafe[:4], "loss")) == 1.0
+    assert float(_value(*safe[:4], "loss")) == 0.0
+    assert float(_value(*safe[:4], "horizon")) == 2.0
+
+
+def test_humanoid_path_projection_fails_closed_on_disconnected_chain():
+    agent, ep, policy, path, transitions = _humanoid_path_bench((0.25, 0.25))
+    origin = agent.inner.neighbours(
+        transitions[1], "starts_from_embodied_program"
+    )[0]
+    agent.inner.remove_edge(
+        transitions[1], "starts_from_embodied_program", origin
+    )
+    disconnected = agent.s.add_node("HumanoidMotorProgram", {})
+    _edge(
+        agent, transitions[1], "starts_from_embodied_program", disconnected
+    )
+    assert float(_value(agent, ep, policy, path, "support")) == 0.0
+    assert float(_value(agent, ep, policy, path, "resolved")) == 0.0
+
+
+def test_humanoid_path_escape_cannot_pose_as_effort_time_compression():
+    agent, ep, policy, path, _ = _humanoid_path_bench((1.5, -1.0))
+    agent.inner.set_attr(ep, "future_manifold_ideal_effort", 1.0)
+    agent.inner.set_attr(ep, "future_manifold_ideal_completion_time", 4.0)
+    agent.inner.set_attr(path, "future_manifold_effort", 2.0)
+    assert float(_value(agent, ep, policy, path, "loss")) == 1.0
+    assert float(_value(agent, ep, policy, path, "time_compression")) == 0.0
+    assert float(_value(agent, ep, policy, path, "effort_authorized")) == 0.0
+
+
+def test_humanoid_path_effort_ratio_uses_matching_temporal_exposure():
+    agent, ep, policy, path, _ = _humanoid_path_bench((0.25, -0.25))
+    agent.inner.set_attr(ep, "future_manifold_ideal_effort", 0.5)
+    agent.inner.set_attr(ep, "future_manifold_effort_scale_joules", 2.0)
+    # Two one-joule programs consume two ordinary action exposures. Their
+    # mean situated ratio is therefore 2 J / (2 J/action * 2 actions) = 0.5.
+    assert float(_value(agent, ep, policy, path, "projected_effort")) == 0.5
+    assert float(_value(agent, ep, policy, path, "effort_scale")) == 4.0
+    assert float(_value(agent, ep, policy, path, "effort_residual")) == 0.0
+    assert float(_value(agent, ep, policy, path, "effort_authorized")) == 1.0
 
 def test_projection_uses_humanoid_phase_models_as_reference_population():
     agent, ep, policy, source = _bench(member_forward=0.0, bound=1.0)

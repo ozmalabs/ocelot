@@ -1719,7 +1719,23 @@ impl<'a> HumanoidComposer<'a> {
         members: &[usize],
         exafferent_scale_override: Option<f64>,
     ) -> Option<[f64; 7]> {
+        self.manifold_effect_at_exafferent_scale_for_frames(
+            members,
+            exafferent_scale_override,
+            self.ep("response_frames"),
+        )
+    }
+
+    fn manifold_effect_at_exafferent_scale_for_frames(
+        &self,
+        members: &[usize],
+        exafferent_scale_override: Option<f64>,
+        response_frames: f64,
+    ) -> Option<[f64; 7]> {
         if members.is_empty()
+            || !response_frames.is_finite()
+            || response_frames < 1.0
+            || response_frames.fract() != 0.0
             || members.iter().any(|index| {
                 !self.active(*index)
                     || !self.models[*index].initialized
@@ -1729,7 +1745,6 @@ impl<'a> HumanoidComposer<'a> {
         {
             return None;
         }
-        let response_frames = self.ep("response_frames");
         let endogenous_count = members
             .iter()
             .filter(|index| !self.models[**index].exafferent)
@@ -2439,6 +2454,30 @@ pub fn future_manifold_projection_field(
     addition: Option<NodeID>,
     field: Sym,
 ) -> Value {
+    if interner
+        .lookup("embodied_program_path")
+        .is_some_and(|kind| sattr(graph, interner, source, "kind") == Some(kind))
+    {
+        let (report, effort_members, effort_exposure_count) =
+            future_humanoid_manifold_projection_for_path(
+                graph, interner, episode, policy, source, addition,
+            );
+        let name = interner.resolve(field);
+        if let Some(value) = projection_effort_field(
+            graph,
+            interner,
+            episode,
+            policy,
+            source,
+            &effort_members,
+            &report,
+            Some(effort_exposure_count as f64),
+            name,
+        ) {
+            return Value::Float(value);
+        }
+        return Value::Float(report.field(name));
+    }
     let member_edge = interner.lookup("includes_embodied_effector_model");
     let mut members = member_edge
         .map(|e| graph.neighbours(source, Some(e)))
@@ -2470,7 +2509,7 @@ pub fn future_manifold_projection_field(
             graph, interner, episode, policy, &members,
         );
         if let Some(value) = projection_effort_field(
-            graph, interner, episode, policy, source, &members, &report, name,
+            graph, interner, episode, policy, source, &members, &report, None, name,
         ) {
             return Value::Float(value);
         }
@@ -2488,7 +2527,7 @@ pub fn future_manifold_projection_field(
         epistemic_probe,
     );
     if let Some(value) = projection_effort_field(
-        graph, interner, episode, policy, source, &members, &report, name,
+        graph, interner, episode, policy, source, &members, &report, None, name,
     ) {
         return Value::Float(value);
     }
@@ -2662,6 +2701,7 @@ fn projection_effort_field(
     source: NodeID,
     members: &[NodeID],
     report: &FutureProjectionReport,
+    effort_exposure_count: Option<f64>,
     name: &str,
 ) -> Option<f64> {
     let learned_ideal = fattr(graph, interner, episode, "future_manifold_ideal_effort");
@@ -2688,19 +2728,24 @@ fn projection_effort_field(
         episode,
         "future_manifold_effort_scale_joules",
     );
+    let exposure_count = effort_exposure_count.unwrap_or(1.0);
+    let exposure_supported =
+        exposure_count.is_finite() && exposure_count >= 1.0 && exposure_count.fract() == 0.0;
+    let situated_effort_scale = effort_scale * exposure_count;
     let normalize = |energy: f64| {
-        if effort_scale > 0.0 {
-            energy / effort_scale
+        if situated_effort_scale > 0.0 {
+            energy / situated_effort_scale
         } else {
             energy
         }
     };
     let explicit_ratio = explicit_effort > 0.0;
     let dimensional_evidence = source_effort > 0.0 || member_effort > 0.0;
-    let ratio_comparable = explicit_ratio || (effort_scale > 0.0 && dimensional_evidence);
+    let ratio_comparable =
+        explicit_ratio || (effort_scale > 0.0 && exposure_supported && dimensional_evidence);
     let projected_effort = if explicit_ratio {
         explicit_effort
-    } else if effort_scale <= 0.0 {
+    } else if effort_scale <= 0.0 || !exposure_supported {
         0.0
     } else if source_effort > 0.0 {
         normalize(source_effort)
@@ -2730,11 +2775,15 @@ fn projection_effort_field(
     } else {
         report.horizon
     };
-    let time_compression = if ideal_completion > 0.0 && projected_completion >= 0.0 {
-        (ideal_completion - projected_completion).max(0.0)
-    } else {
-        0.0
-    };
+    // Reaching a manifold boundary early is an escape, not fast completion.
+    // Never let a decisive loss manufacture the time compression that would
+    // authorize above-normal effort.
+    let time_compression =
+        if report.loss <= 0.0 && ideal_completion > 0.0 && projected_completion >= 0.0 {
+            (ideal_completion - projected_completion).max(0.0)
+        } else {
+            0.0
+        };
     let ideal_width = fattr(graph, interner, episode, "future_manifold_ideal_width");
     let width_compression = if ideal_width > 0.0 {
         (ideal_width - report.max_enclosure_width).max(0.0)
@@ -2763,7 +2812,7 @@ fn projection_effort_field(
         "effort_supported" => effort_supported as i32 as f64,
         "projected_effort" => projected_effort,
         "ideal_effort" => ideal_effort,
-        "effort_scale" => effort_scale,
+        "effort_scale" => situated_effort_scale,
         "effort_residual" => effort_residual,
         "time_compression" => time_compression,
         "width_compression" => width_compression,
@@ -2807,6 +2856,389 @@ fn support_observability(
         );
     }
     (field.weights, bounds)
+}
+
+#[derive(Clone)]
+struct HumanoidPathSegment {
+    transition: NodeID,
+    program: NodeID,
+    frames: i32,
+}
+
+fn unsupported_future_projection_report(
+    graph: &TypedGraph,
+    interner: &Interner,
+    episode: NodeID,
+    policy: NodeID,
+) -> FutureProjectionReport {
+    let (situated_support, applied_bounds) =
+        support_observability(graph, interner, episode, policy, 0.0, true, 0.0);
+    FutureProjectionReport {
+        support: false,
+        resolved: false,
+        termination_code: 4.0,
+        horizon: 0.0,
+        budget: fattr(graph, interner, policy, "future_manifold_projection_budget"),
+        loss: 0.0,
+        information_loss: 0.0,
+        anchor_count: 0.0,
+        refinement_count: 0.0,
+        certified_interval_count: 0.0,
+        ambiguous_interval_count: 0.0,
+        max_enclosure_width: 0.0,
+        max_shape_order: 0.0,
+        earliest_decisive_tick: 0.0,
+        minimum_exafferent_scale: 0.0,
+        residual: [0.0; 7],
+        retained: [0.0; 7],
+        situated_support,
+        applied_bounds,
+    }
+}
+
+fn unique_neighbour(
+    graph: &TypedGraph,
+    interner: &Interner,
+    node: NodeID,
+    edge: &str,
+) -> Option<NodeID> {
+    let edge = interner.lookup(edge)?;
+    let neighbours = graph.neighbours(node, Some(edge));
+    (neighbours.len() == 1).then_some(neighbours[0])
+}
+
+/// Recover the path's temporal order from its graph edges. Membership edges
+/// are sets, so order is established only by an unambiguous connected chain
+/// from the declared origin to the declared terminal. Any fork, gap, cycle,
+/// stale depth, or unverified transition is unsupported rather than guessed.
+fn humanoid_path_segments(
+    graph: &TypedGraph,
+    interner: &Interner,
+    path: NodeID,
+    current_transition: Option<NodeID>,
+) -> Option<Vec<HumanoidPathSegment>> {
+    let edge = interner.lookup("contains_embodied_program_transition")?;
+    let transitions = graph.neighbours(path, Some(edge));
+    let depth = fattr(graph, interner, path, "depth");
+    if transitions.is_empty()
+        || !depth.is_finite()
+        || depth < 1.0
+        || depth.fract() != 0.0
+        || depth as usize != transitions.len()
+    {
+        return None;
+    }
+    let mut current = unique_neighbour(graph, interner, path, "starts_from_embodied_program")?;
+    let terminal = unique_neighbour(graph, interner, path, "continues_with_embodied_program")?;
+    let mut unused = transitions;
+    let mut segments = Vec::with_capacity(unused.len());
+    while !unused.is_empty() {
+        let matching: Vec<(usize, NodeID)> = unused
+            .iter()
+            .copied()
+            .enumerate()
+            .filter(|(_, transition)| {
+                unique_neighbour(graph, interner, *transition, "starts_from_embodied_program")
+                    == Some(current)
+            })
+            .collect();
+        if matching.len() != 1 {
+            return None;
+        }
+        let (index, transition) = matching[0];
+        if fattr(graph, interner, transition, "verified") <= 0.5 {
+            return None;
+        }
+        let frames = fattr(graph, interner, transition, "response_frames");
+        if !frames.is_finite() || frames < 1.0 || frames.fract() != 0.0 || frames > i32::MAX as f64
+        {
+            return None;
+        }
+        current = unique_neighbour(
+            graph,
+            interner,
+            transition,
+            "continues_with_embodied_program",
+        )?;
+        segments.push(HumanoidPathSegment {
+            transition,
+            program: current,
+            frames: frames as i32,
+        });
+        unused.swap_remove(index);
+    }
+    if current != terminal {
+        return None;
+    }
+    if let Some(anchor) = current_transition {
+        let index = segments
+            .iter()
+            .position(|segment| segment.transition == anchor)?;
+        segments.drain(0..index);
+    }
+    Some(segments)
+}
+
+fn foveated_segment_anchors(horizon: i32) -> Option<Vec<i32>> {
+    if horizon < 1 {
+        return None;
+    }
+    let mut frames = Vec::new();
+    let mut current = 0i32;
+    while current < horizon {
+        let requested = match current {
+            0 => 1,
+            1 => 2,
+            2 => 3,
+            3 => 4,
+            4 => 8,
+            8 => 16,
+            value => value.saturating_mul(value),
+        };
+        let next = requested.min(horizon);
+        if next <= current {
+            return None;
+        }
+        frames.push(next);
+        current = next;
+    }
+    Some(frames)
+}
+
+fn rebind_humanoid_program_members(
+    graph: &TypedGraph,
+    interner: &Interner,
+    composer: &HumanoidComposer<'_>,
+    all_models: &[NodeID],
+    program: NodeID,
+) -> Option<(Vec<usize>, Vec<NodeID>)> {
+    let member_edge = interner.lookup("includes_humanoid_phase_action_model")?;
+    let historical = graph.neighbours(program, Some(member_edge));
+    if historical.is_empty() {
+        return None;
+    }
+    let mut rebound = Vec::with_capacity(historical.len());
+    for node in &historical {
+        let index = if fattr(graph, interner, *node, "exafferent") > 0.5 {
+            all_models
+                .iter()
+                .position(|known| known == node)
+                .filter(|index| composer.active(*index))
+        } else {
+            let token = sattr(graph, interner, *node, "token");
+            let group = fattr(graph, interner, *node, "actuator_group");
+            all_models.iter().enumerate().find_map(|(index, known)| {
+                (composer.active(index)
+                    && sattr(graph, interner, *known, "token") == token
+                    && fattr(graph, interner, *known, "actuator_group") == group)
+                    .then_some(index)
+            })
+        }?;
+        if rebound.contains(&index) {
+            return None;
+        }
+        rebound.push(index);
+    }
+    Some((rebound, historical))
+}
+
+/// Project a selected order-N path as one continuous learned shape. The
+/// simulator is neither read nor advanced: each segment is synthesized from
+/// its receipt-grounded program models, cumulative effects carry across
+/// program boundaries, and every boundary is an obligatory audit anchor.
+fn future_humanoid_manifold_projection_for_path(
+    graph: &TypedGraph,
+    interner: &Interner,
+    episode: NodeID,
+    policy: NodeID,
+    path: NodeID,
+    current_transition: Option<NodeID>,
+) -> (FutureProjectionReport, Vec<NodeID>, usize) {
+    let unsupported = || {
+        (
+            unsupported_future_projection_report(graph, interner, episode, policy),
+            Vec::new(),
+            0,
+        )
+    };
+    if fattr(
+        graph,
+        interner,
+        policy,
+        "future_manifold_temporal_anchors_enabled",
+    ) <= 0.5
+    {
+        return unsupported();
+    }
+    let Some(segments) = humanoid_path_segments(graph, interner, path, current_transition) else {
+        return unsupported();
+    };
+    let mut all_models = interner
+        .lookup("has_humanoid_phase_action_model")
+        .map(|edge| graph.neighbours(episode, Some(edge)))
+        .unwrap_or_default();
+    if all_models.is_empty() {
+        return unsupported();
+    }
+    // Retained caregiver models may be attached to programs without being in
+    // the episode's endogenous model population. Include those exact learned
+    // nodes before constructing the analysis-by-synthesis model.
+    if let Some(member_edge) = interner.lookup("includes_humanoid_phase_action_model") {
+        for segment in &segments {
+            for member in graph.neighbours(segment.program, Some(member_edge)) {
+                if fattr(graph, interner, member, "exafferent") > 0.5
+                    && !all_models.contains(&member)
+                {
+                    all_models.push(member);
+                }
+            }
+        }
+    }
+    let composer = HumanoidComposer::build(graph, interner, episode, policy, &all_models);
+    let budget_raw = fattr(graph, interner, policy, "future_manifold_projection_budget");
+    let budget = budget_raw.round() as usize;
+    if !budget_raw.is_finite()
+        || !(2..=64).contains(&budget)
+        || (budget_raw - budget as f64).abs() >= f64::EPSILON
+    {
+        return unsupported();
+    }
+
+    let mut cumulative = [0.0f64; 7];
+    let mut total_tick = 0i32;
+    let mut anchor_count = 0usize;
+    let mut effort_members = Vec::new();
+    let mut maximum_caregiver_scale = 0.0f64;
+    let mut loss = 0.0;
+    let mut residual = [0.0; 7];
+    let mut decisive = 0.0;
+
+    for segment in &segments {
+        let Some((members, historical)) = rebind_humanoid_program_members(
+            graph,
+            interner,
+            &composer,
+            &all_models,
+            segment.program,
+        ) else {
+            return unsupported();
+        };
+        for node in historical {
+            // Effort is expenditure through time. Preserve repeated use of a
+            // learned member in different programs even though the path's
+            // graph membership is set-valued.
+            effort_members.push(node);
+        }
+        maximum_caregiver_scale = maximum_caregiver_scale.max(
+            members
+                .iter()
+                .filter(|index| composer.models[**index].exafferent)
+                .map(|index| composer.models[*index].exafferent_scale)
+                .fold(0.0, f64::max),
+        );
+        let Some(effect) = composer.manifold_effect_at_exafferent_scale_for_frames(
+            &members,
+            None,
+            segment.frames as f64,
+        ) else {
+            return unsupported();
+        };
+        let Some(anchors) = foveated_segment_anchors(segment.frames) else {
+            return unsupported();
+        };
+        for local_frame in anchors {
+            anchor_count += 1;
+            if anchor_count > budget {
+                return unsupported();
+            }
+            let projected_tick = total_tick + local_frame;
+            let Some(bounds) =
+                composer.manifold_bounds(projected_tick as f64, maximum_caregiver_scale)
+            else {
+                return unsupported();
+            };
+            let fraction = local_frame as f64 / segment.frames as f64;
+            let mut anchor_residual = [0.0; 7];
+            for component in 0..7 {
+                let projected = cumulative[component] + fraction * effect[component];
+                let excess = projected.abs() - bounds[component];
+                if excess > 0.0 {
+                    anchor_residual[component] = projected.signum() * excess;
+                }
+            }
+            let escaped = anchor_residual
+                .iter()
+                .filter(|value| **value != 0.0)
+                .count() as f64;
+            if escaped > 0.0 {
+                loss = escaped;
+                residual = anchor_residual;
+                decisive = projected_tick as f64;
+                break;
+            }
+        }
+        if loss > 0.0 {
+            break;
+        }
+        for component in 0..7 {
+            cumulative[component] += effect[component];
+        }
+        total_tick = total_tick.saturating_add(segment.frames);
+    }
+
+    let horizon = if loss > 0.0 {
+        decisive
+    } else {
+        total_tick as f64
+    };
+    let safety = learning_safety_evidence(graph, interner, episode);
+    let (situated_support, applied_bounds) = support_observability(
+        graph,
+        interner,
+        episode,
+        policy,
+        horizon,
+        true,
+        maximum_caregiver_scale,
+    );
+    let information_authority = situated_support
+        .iter()
+        .copied()
+        .reduce(f64::min)
+        .unwrap_or(0.0);
+    let information_loss =
+        (loss - safety.information_loss_allowance * information_authority).max(0.0);
+    let retained_value = if loss <= 0.0 { 1.0 } else { 0.0 };
+    let effort_exposure_count = segments.len();
+    (
+        FutureProjectionReport {
+            support: true,
+            resolved: true,
+            termination_code: if loss > 0.0 { 1.0 } else { 6.0 },
+            horizon,
+            budget: budget as f64,
+            loss,
+            information_loss,
+            anchor_count: anchor_count as f64,
+            refinement_count: 0.0,
+            certified_interval_count: if loss > 0.0 {
+                anchor_count.saturating_sub(1) as f64
+            } else {
+                anchor_count as f64
+            },
+            ambiguous_interval_count: 0.0,
+            max_enclosure_width: 0.0,
+            max_shape_order: if anchor_count > 1 { 1.0 } else { 0.0 },
+            earliest_decisive_tick: decisive,
+            minimum_exafferent_scale: 0.0,
+            residual,
+            retained: [retained_value; 7],
+            situated_support,
+            applied_bounds,
+        },
+        effort_members,
+        effort_exposure_count,
+    )
 }
 
 fn cached_future_humanoid_manifold_projection_for_members(
