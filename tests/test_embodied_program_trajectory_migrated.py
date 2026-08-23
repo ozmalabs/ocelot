@@ -63,6 +63,7 @@ def _fixture(horizon: int, transitions):
             "energy_units": row["energy"],
             "peak_load_units": row.get("load", 1),
             "capability_evidence_units": row.get("evidence", 0),
+            "task_progress_units": row.get("task_progress", 0),
             "current_state_shape_residual_units": row.get("residual", 0),
             "integer_native": 1,
         })
@@ -247,6 +248,26 @@ def test_frontier_admits_orientation_preserving_capability_evidence():
     )
     assert len(selected) == 1
     assert transitions[0] in agent.inner.neighbours(
+        selected[0], "contains_embodied_program_transition"
+    )
+
+
+def test_frontier_admits_orientation_preserving_task_shape_progress():
+    agent, owner, _, transitions = _fixture(2, (
+        {"source": 0, "target": 1, "pre_x": 0, "post_x": 0,
+         "energy": 1, "task_progress": 1},
+        {"source": 1, "target": 2, "pre_x": 0, "post_x": 0,
+         "energy": 1, "task_progress": 2},
+    ))
+
+    selected = agent.inner.neighbours(
+        owner, "has_selected_embodied_program_path"
+    )
+    assert len(selected) == 1
+    attrs = agent.s.node(selected[0])["attrs"]
+    assert attrs["depth"] == 2
+    assert attrs["task_progress_units"] == 3
+    assert transitions[1] in agent.inner.neighbours(
         selected[0], "contains_embodied_program_transition"
     )
 

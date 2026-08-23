@@ -277,6 +277,34 @@ def is_orientation_evidence(capability="capability"):
     ])
 
 
+def trajectory_task_progress_units(
+    capability="capability", outcome="outcome"
+):
+    """Signed progress in the capability's own task-space coordinate.
+
+    Elevation includes both realized height and Froude-normalized vertical
+    velocity: a launch impulse changes the future height manifold before the
+    body has had time to rise.  This remains receipt data, not a simulator
+    rollout. Other capabilities retain their existing situated coordinates.
+    """
+    elevation_shape = Plus(
+        P0(outcome, "development_elevation_units"),
+        Minus(
+            P0(outcome, "development_post_vertical_velocity_units"),
+            P0(outcome, "development_pre_vertical_velocity_units"),
+        ),
+    )
+    return If(
+        is_elevation_evidence(capability),
+        elevation_shape,
+        If(
+            is_translation_evidence(capability),
+            P0(outcome, "development_directed_units"),
+            L(0),
+        ),
+    )
+
+
 def inverse_queries(development="development", capability="capability"):
     return Filter(
         Neighbours(development, "has_active_embodied_inverse_kinematic_query"),
@@ -2442,6 +2470,9 @@ def publish_verified_transition_to_generic_trajectory_rule():
             ["set_attr", "transition", "capability_evidence_units", T(If(
                 capability_success("capability", "outcome"), L(1), L(0)
             ))],
+            ["set_attr", "transition", "task_progress_units", T(
+                trajectory_task_progress_units("capability", "outcome")
+            )],
             ["set_attr", "transition", "integer_native_trajectory", 1],
             [
                 "add_edge", "capability",
@@ -2544,6 +2575,9 @@ def mint_developmental_program_transition_rule():
                 "capability_evidence_units": T(If(
                     capability_success("capability", "outcome"), L(1), L(0)
                 )),
+                "task_progress_units": T(
+                    trajectory_task_progress_units("capability", "outcome")
+                ),
                 "response_frames": T(P0("trial", "response_frames")),
                 "receipt_seq": T(P0("trial", "request_seq")),
                 "integer_native_trajectory": 1,

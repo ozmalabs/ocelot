@@ -814,6 +814,24 @@ def _close_action(
     development_lateral_units = round(
         abs(displacement_y) * developmental_resolution / body_scale
     ) if body_scale > 0.0 else 0
+    characteristic_velocity = math.sqrt(max(
+        0.0,
+        float(after.get("gravity_acceleration", 0.0)) * body_scale,
+    ))
+    if characteristic_velocity > 0.0:
+        development_pre_vertical_velocity_units = round(
+            float(pre_linear[2])
+            * developmental_resolution
+            / characteristic_velocity
+        )
+        development_post_vertical_velocity_units = round(
+            float(post_linear[2])
+            * developmental_resolution
+            / characteristic_velocity
+        )
+    else:
+        development_pre_vertical_velocity_units = 0
+        development_post_vertical_velocity_units = 0
     pre_motor_configuration_shape = tuple(
         int(value) for value in before.get("motor_configuration_shape", ())
     )
@@ -1120,6 +1138,12 @@ def _close_action(
         "development_directed_units": development_directed_units,
         "development_lateral_units": development_lateral_units,
         "development_elevation_units": development_elevation_units,
+        "development_pre_vertical_velocity_units": (
+            development_pre_vertical_velocity_units
+        ),
+        "development_post_vertical_velocity_units": (
+            development_post_vertical_velocity_units
+        ),
         "development_energy_units": development_energy_units,
         "development_peak_load_units": development_peak_load_units,
         "development_pre_distal_support_code": pre_distal_support_code,
@@ -1303,6 +1327,13 @@ def _close_action(
     )
     closed_trial["_development_translation_units"] = int(
         outcome_attrs["development_translation_units"]
+    )
+    closed_trial["_development_elevation_units"] = int(
+        outcome_attrs["development_elevation_units"]
+    )
+    closed_trial["_development_vertical_velocity_progress_units"] = int(
+        outcome_attrs["development_post_vertical_velocity_units"]
+        - outcome_attrs["development_pre_vertical_velocity_units"]
     )
     closed_trial["_development_directed_consistency"] = int(
         outcome_attrs["development_directed_units"] > 0

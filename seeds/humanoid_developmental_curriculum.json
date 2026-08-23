@@ -28998,6 +28998,214 @@
     [
      "set_attr",
      "transition",
+     "task_progress_units",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "capability"
+           },
+           "key": "evidence_kind"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "supported_elevation"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "capability"
+           },
+           "key": "evidence_kind"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "support_reducing_elevation"
+          }
+         }
+        ]
+       },
+       "then": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "outcome"
+            },
+            "key": "development_elevation_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_vertical_velocity_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_pre_vertical_velocity_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Or",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "capability"
+            },
+            "key": "evidence_kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "supported_translation"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "capability"
+            },
+            "key": "evidence_kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "translated_support_cycle"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "capability"
+            },
+            "key": "evidence_kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "reduced_support_cycle"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "capability"
+            },
+            "key": "evidence_kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "novel_locomotor_phenotype"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "capability"
+            },
+            "key": "evidence_kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "locomotor_cycle"
+           }
+          }
+         ]
+        },
+        "then": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "outcome"
+           },
+           "key": "development_directed_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "transition",
      "integer_native_trajectory",
      1
     ],
@@ -31414,6 +31622,209 @@
         "other": {
          "type": "Lit",
          "value": 0
+        }
+       }
+      },
+      "task_progress_units": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Or",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "capability"
+            },
+            "key": "evidence_kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "supported_elevation"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "capability"
+            },
+            "key": "evidence_kind"
+           },
+           "b": {
+            "type": "Lit",
+            "value": "support_reducing_elevation"
+           }
+          }
+         ]
+        },
+        "then": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_elevation_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "outcome"
+              },
+              "key": "development_post_vertical_velocity_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "outcome"
+              },
+              "key": "development_pre_vertical_velocity_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         ]
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "supported_translation"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "translated_support_cycle"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "reduced_support_cycle"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "novel_locomotor_phenotype"
+            }
+           },
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "capability"
+             },
+             "key": "evidence_kind"
+            },
+            "b": {
+             "type": "Lit",
+             "value": "locomotor_cycle"
+            }
+           }
+          ]
+         },
+         "then": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "outcome"
+            },
+            "key": "development_directed_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0
+         }
         }
        }
       },
