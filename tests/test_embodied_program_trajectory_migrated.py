@@ -223,16 +223,21 @@ def test_existing_trajectory_deepens_lazily_when_local_frontier_exhausts():
             agent, path,
             "is_dominated_by_pareto_candidate", counterexample,
         )
+        _edge(
+            agent, path,
+            "manifold_blocked_from_embodied_program_transition",
+            counterexample,
+        )
     agent.tick()
     assert agent.s.node(trajectory)["attrs"][
         "active_expansion_horizon"
-    ] == 3
+    ] == 2
     assert max(
         agent.s.node(path)["attrs"]["depth"]
         for path in agent.inner.neighbours(
             trajectory, "has_pareto_candidate"
         )
-    ) == 3
+    ) == 2
 
 
 def test_temporal_foveation_selects_shortest_sufficient_frontier_path():
@@ -385,7 +390,7 @@ def test_pareto_refutes_only_dominated_paths_and_keeps_tradeoffs():
             for path in frontier} == {10, 20}
 
 
-def test_branching_expansion_is_bounded_by_graph_budget_not_authored_depth():
+def test_branching_expansion_is_bounded_by_active_foveated_horizon():
     rows = (
         {"source": 0, "target": 1, "pre_x": 0, "post_x": 10,
          "energy": 1},
@@ -402,12 +407,14 @@ def test_branching_expansion_is_bounded_by_graph_budget_not_authored_depth():
     )
     agent, _, trajectory, _ = _fixture(5, rows)
     attrs = agent.s.node(trajectory)["attrs"]
-    assert attrs["expansion_budget_units"] == 5 + len(rows)
+    assert attrs["horizon"] == 5
+    assert attrs["active_expansion_horizon"] == 2
+    assert attrs["expansion_budget_units"] == 2 + len(rows)
     assert attrs["expansion_count"] <= attrs["expansion_budget_units"]
     assert len(agent.inner.neighbours(
         trajectory, "has_pareto_candidate"
-    )) <= attrs["expansion_budget_units"]
+    )) <= len(rows) + attrs["expansion_budget_units"]
     assert max(
         agent.s.node(path)["attrs"]["depth"]
         for path in agent.inner.neighbours(trajectory, "has_pareto_candidate")
-    ) > 2
+    ) == 2

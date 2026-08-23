@@ -5524,46 +5524,6 @@
        "type": "Lit",
        "value": 0
       }
-     },
-     {
-      "type": "Not",
-      "arg": {
-       "type": "Eq",
-       "a": {
-        "type": "Plus",
-        "items": [
-         {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "trajectory"
-          },
-          "key": "last_foveation_deepening_expansion_count"
-         },
-         {
-          "type": "Lit",
-          "value": 0
-         }
-        ]
-       },
-       "b": {
-        "type": "Plus",
-        "items": [
-         {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "trajectory"
-          },
-          "key": "expansion_count"
-         },
-         {
-          "type": "Lit",
-          "value": 0
-         }
-        ]
-       }
-      }
      }
     ]
    },
@@ -5823,7 +5783,7 @@
    "area": "embodied_program_trajectory",
    "latency_class": "soft_realtime",
    "batch": false,
-   "comment": "Temporal foveation holds farther futures as potential. Expose one additional order after selection finds no live local path, and continue only if that newly constructed layer is also exhausted.",
+   "comment": "Temporal foveation holds farther futures as potential. Expose one additional order only after the manifold explicitly blocks a path at the active depth; deeper orders require their own new local block evidence.",
    "match": [
     [
      "owner",
@@ -5917,6 +5877,130 @@
       "b": {
        "type": "Lit",
        "value": 0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "trajectory"
+         },
+         "edge_type": "has_pareto_candidate",
+         "any_type": false
+        },
+        "var_name": "blocked_local_path",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "blocked_local_path"
+              },
+              "key": "depth"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "trajectory"
+              },
+              "key": "active_expansion_horizon"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Count",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "blocked_local_path"
+             },
+             "edge_type": "manifold_blocked_from_embodied_program_transition",
+             "any_type": false
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "trajectory"
+          },
+          "key": "last_foveation_deepening_expansion_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       },
+       "b": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "trajectory"
+          },
+          "key": "expansion_count"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
       }
      }
     ]
