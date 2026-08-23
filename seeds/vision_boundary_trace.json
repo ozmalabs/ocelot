@@ -1,6 +1,6 @@
 {
  "id": "vision_boundary_trace",
- "version": "1.7.0",
+ "version": "1.8.0",
  "depends_on": [
   "vision_motion_group"
  ],
@@ -812,17 +812,12 @@
   },
   {
    "name": "bt_true_boundary",
-   "comment": "AN ANTI-ALIASED EDGE DOUBLES THE BOUNDARY, AND ONLY ONE OF THE TWO CHAINS IS THE OBJECT'S. A real observation is not a hard mask: a cell straddling the edge carries PARTIAL coverage, differs from the interior by more than mtol AND from the exterior by more than mtol, and so is cut from both sides. Measured (WHY_FLOODS_EXIST.md 6h): the crossings go UP, 116 -> 220 on a supersampled disc, and the partition fragments into ~48 sliver regions averaging 1.2 cells, because a total partition of CELLS must invent a region for a cell that is genuinely on the boundary. No threshold repairs this -- swept, and below 3.5 the disc separates but slivers, at 3.5 and above the slivers go and the disc goes with them. There is no value giving two clean regions, so deriving the tolerance better (mo_tol_otsu) cannot help either.\n\nThe discriminator is structural, not numeric: a real region contains an INTERIOR cell, one with no `cuts` edge at all; a one-cell-wide band contains none. Verified across two shapes and four raster levels -- exactly 2 regions with an interior in all 8 configurations.\n\nApplied at the crossing, this stays LOCAL -- 2 hops, no flood, because asking 'which region is this cell in' is the O(area x iterations) question the rim exists to remove. A crossing's figure cell always has a cut (that is what a crossing IS), so it is never itself interior; what separates the chains is whether it has an interior NEIGHBOUR. `cuts` is symmetric, so a neighbour with zero cuts cannot be cut from `a` either, and no second guard is needed.\n\n  (interior | band): figure side is the interior cell, whose other neighbours are interior -> TRUE\n  (band | exterior): figure side is the band cell, whose agreeing neighbours are band cells -> FALSE\n\nMeasured: inert on a hard mask (116 crossings, 0 dropped), and it recovers the hard mask's own count from the doubled soft-edge set (super x2 212 -> 116). Placing the survivor sub-cell then beats the hard mask outright, rms 0.250 -> 0.135, because partial coverage says WHERE in the cell the edge falls and a hard mask has thrown that away. Anti-aliasing is information.",
+   "comment": "AN ANTI-ALIASED EDGE DOUBLES THE BOUNDARY, AND ONLY ONE OF THE TWO CHAINS IS THE OBJECT'S. A real observation is not a hard mask: a cell straddling the edge carries PARTIAL coverage, differs from the interior by more than mtol AND from the exterior by more than mtol, and so is cut from both sides. Measured (WHY_FLOODS_EXIST.md 6h): the crossings go UP, 116 -> 220 on a supersampled disc, and the partition fragments into ~48 sliver regions averaging 1.2 cells. No threshold repairs it -- swept, and below 3.5 the disc separates but slivers, at 3.5 and above the slivers go and the disc goes with them. There is no value giving two clean regions, so deriving the tolerance better (mo_tol_otsu) cannot help either.\n\nTHE DISCRIMINATOR IS THE VALUE, AND IT IS ONE HOP. The figure cell of a crossing is BY DEFINITION the higher of the two sides (bt_own owns the stronger one). So if anything ELSE cuts that cell from ABOVE, it is not a plateau at all -- it is a middle layer, a band, and its outward crossing is the spurious second chain:\n\n  (interior | band): figure is the interior cell; nothing cuts it from above  -> TRUE\n  (band | exterior): figure is the band cell, cut from above by the interior  -> FALSE\n\nLocal, one hop, no flood -- asking 'which region is this cell in' is the O(area x iterations) question the rim exists to remove.\n\nAN EARLIER VERSION OF THIS RULE USED THE WRONG DISCRIMINATOR AND IS WORTH RECORDING. It asked whether the figure cell had a fully-INTERIOR neighbour (one with no cuts at all), as a proxy for 'is a plateau'. That is right for large smooth shapes and wrong for anything thin, because `neighbour` is 4-connected: measured on hard masks, where nothing should ever be dropped, it deleted 1x1 and 2x2 blocks and 1x9 and 2x9 bars ENTIRELY (0 crossings kept), and dropped the 4 corners of every rectilinear shape at every size (3x3 kept 33%, 13x13 kept 85%). The corner cell of a block is DIAGONAL to its interior, so it has no interior neighbour. The value test above keeps 100% on every one of those, and is byte-identical to the interior test on the soft-edge cases the rule exists for (116/116, 108/108 at every raster level).",
    "match": [
     [
      "x",
      "owns_figure",
      "a"
-    ],
-    [
-     "a",
-     "neighbour",
-     "n"
     ]
    ],
    "where": {
@@ -847,22 +842,41 @@
       }
      },
      {
-      "type": "Lt",
+      "type": "Lte",
       "a": {
-       "type": "Count",
+       "type": "MaxOver",
        "source": {
         "type": "Neighbours",
         "node": {
          "type": "Var",
-         "name": "n"
+         "name": "a"
         },
         "edge_type": "cuts",
         "any_type": false
+       },
+       "var_name": "z",
+       "value": {
+        "type": "Magnitude",
+        "arg": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "z"
+         },
+         "key": "v"
+        }
        }
       },
       "b": {
-       "type": "Lit",
-       "value": 1.0
+       "type": "Magnitude",
+       "arg": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "a"
+        },
+        "key": "v"
+       }
       }
      }
     ]
