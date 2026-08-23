@@ -301,7 +301,7 @@
      "ParetoProfile",
      {
       "kind": "embodied_program_trajectory",
-      "dimension_count": 5,
+      "dimension_count": 6,
       "horizon": {
        "__term__": {
         "type": "Plus",
@@ -351,6 +351,7 @@
       },
       "expansion_count": 0,
       "selection_count": 0,
+      "selected_task_progress_units": 0,
       "selected_capability_evidence_units": 0,
       "selected_orientation_preserving_evidence_count": 0,
       "selected_state_shape_residual_units": 0,
@@ -804,6 +805,25 @@
         ]
        }
       },
+      "task_progress_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "task_progress_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
       "energy_units": {
        "__term__": {
         "type": "Plus",
@@ -1189,6 +1209,60 @@
            "type": "Var",
            "name": "transition"
           },
+          "key": "task_progress_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "task_progress_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "path",
+     "has_pareto_value",
+     "path_value_1"
+    ],
+    [
+     "add_node",
+     "path_value_2",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 2,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
           "key": "capability_evidence_units"
          },
          {
@@ -1225,14 +1299,14 @@
      "add_edge",
      "path",
      "has_pareto_value",
-     "path_value_1"
+     "path_value_2"
     ],
     [
      "add_node",
-     "path_value_2",
+     "path_value_3",
      "ParetoValue",
      {
-      "dimension_ordinal": 2,
+      "dimension_ordinal": 3,
       "raw_value": {
        "__term__": {
         "type": "Plus",
@@ -1279,14 +1353,14 @@
      "add_edge",
      "path",
      "has_pareto_value",
-     "path_value_2"
+     "path_value_3"
     ],
     [
      "add_node",
-     "path_value_3",
+     "path_value_4",
      "ParetoValue",
      {
-      "dimension_ordinal": 3,
+      "dimension_ordinal": 4,
       "raw_value": {
        "__term__": {
         "type": "Plus",
@@ -1336,14 +1410,14 @@
      "add_edge",
      "path",
      "has_pareto_value",
-     "path_value_3"
+     "path_value_4"
     ],
     [
      "add_node",
-     "path_value_4",
+     "path_value_5",
      "ParetoValue",
      {
-      "dimension_ordinal": 4,
+      "dimension_ordinal": 5,
       "raw_value": {
        "__term__": {
         "type": "Plus",
@@ -1393,7 +1467,7 @@
      "add_edge",
      "path",
      "has_pareto_value",
-     "path_value_4"
+     "path_value_5"
     ]
    ]
   },
@@ -2147,6 +2221,47 @@
         ]
        }
       },
+      "task_progress_units": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "parent"
+            },
+            "key": "task_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "task_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
       "energy_units": {
        "__term__": {
         "type": "Plus",
@@ -2659,6 +2774,104 @@
              "type": "Var",
              "name": "parent"
             },
+            "key": "task_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "task_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "signed_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "parent"
+            },
+            "key": "task_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "task_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "verified": 1,
+      "integer_native": 1
+     }
+    ],
+    [
+     "add_edge",
+     "path",
+     "has_pareto_value",
+     "path_value_1"
+    ],
+    [
+     "add_node",
+     "path_value_2",
+     "ParetoValue",
+     {
+      "dimension_ordinal": 2,
+      "raw_value": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "parent"
+            },
             "key": "capability_evidence_units"
            },
            {
@@ -2736,14 +2949,14 @@
      "add_edge",
      "path",
      "has_pareto_value",
-     "path_value_1"
+     "path_value_2"
     ],
     [
      "add_node",
-     "path_value_2",
+     "path_value_3",
      "ParetoValue",
      {
-      "dimension_ordinal": 2,
+      "dimension_ordinal": 3,
       "raw_value": {
        "__term__": {
         "type": "Plus",
@@ -2834,14 +3047,14 @@
      "add_edge",
      "path",
      "has_pareto_value",
-     "path_value_2"
+     "path_value_3"
     ],
     [
      "add_node",
-     "path_value_3",
+     "path_value_4",
      "ParetoValue",
      {
-      "dimension_ordinal": 3,
+      "dimension_ordinal": 4,
       "raw_value": {
        "__term__": {
         "type": "Plus",
@@ -2935,14 +3148,14 @@
      "add_edge",
      "path",
      "has_pareto_value",
-     "path_value_3"
+     "path_value_4"
     ],
     [
      "add_node",
-     "path_value_4",
+     "path_value_5",
      "ParetoValue",
      {
-      "dimension_ordinal": 4,
+      "dimension_ordinal": 5,
       "raw_value": {
        "__term__": {
         "type": "Max",
@@ -3036,7 +3249,7 @@
      "add_edge",
      "path",
      "has_pareto_value",
-     "path_value_4"
+     "path_value_5"
     ]
    ]
   },
@@ -3336,6 +3549,30 @@
                  "name": "frontier_path"
                 },
                 "key": "orientation_span_units"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frontier_path"
+                },
+                "key": "task_progress_units"
                },
                {
                 "type": "Lit",
@@ -3703,6 +3940,30 @@
                  "name": "frontier_path"
                 },
                 "key": "orientation_span_units"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frontier_path"
+                },
+                "key": "task_progress_units"
                },
                {
                 "type": "Lit",
@@ -4106,6 +4367,135 @@
               "value": 1
              }
             ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "horizon"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Neg",
+            "arg": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "frontier_path"
+               },
+               "key": "task_progress_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            }
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "horizon"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "horizon"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "horizon"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             },
+             {
+              "type": "Lit",
+              "value": 1
+             }
+            ]
            }
           ]
          },
@@ -4318,6 +4708,52 @@
         {
          "type": "Lit",
          "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "trajectory",
+     "selected_task_progress_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "trajectory"
+           },
+           "key": "selected_task_progress_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "path"
+           },
+           "key": "task_progress_units"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
         }
        ]
       }

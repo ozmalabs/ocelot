@@ -323,6 +323,54 @@ def _metrics(run: dict) -> dict:
                 "self_takeoff_drive_active_after", 0
             )) > 0.5
         ),
+        "takeoff_positive_elevation_action_count": sum(
+            int(row.get("development_elevation_units", 0)) > 0
+            for row in trace
+            if float(row.get(
+                "self_takeoff_drive_active_after", 0
+            )) > 0.5
+        ),
+        "takeoff_vertical_velocity_progress_units": sum(
+            int(row.get(
+                "development_vertical_velocity_progress_units", 0
+            ))
+            for row in trace
+            if float(row.get(
+                "self_takeoff_drive_active_after", 0
+            )) > 0.5
+        ),
+        "takeoff_positive_vertical_velocity_action_count": sum(
+            int(row.get(
+                "development_vertical_velocity_progress_units", 0
+            )) > 0
+            for row in trace
+            if float(row.get(
+                "self_takeoff_drive_active_after", 0
+            )) > 0.5
+        ),
+        "takeoff_motor_weight_maximum": max(
+            (
+                max(
+                    float(row.get("motor_weight_a", 1.0)),
+                    float(row.get("motor_weight_b", 1.0)),
+                )
+                for row in trace
+                if float(row.get(
+                    "self_takeoff_drive_active_after", 0
+                )) > 0.5
+            ),
+            default=0.0,
+        ),
+        "takeoff_above_unit_effort_action_count": sum(
+            max(
+                float(row.get("motor_weight_a", 1.0)),
+                float(row.get("motor_weight_b", 1.0)),
+            ) > 1.0
+            for row in trace
+            if float(row.get(
+                "self_takeoff_drive_active_after", 0
+            )) > 0.5
+        ),
         "takeoff_compound_candidate_count_maximum": max(
             (
                 int(row.get("takeoff_compound_candidate_count", 0))

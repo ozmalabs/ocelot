@@ -60,14 +60,20 @@ def orientation_span(source: str, terminal: str) -> dict:
 def path_values(
     *,
     orientation: dict,
+    task_progress: dict,
     evidence: dict,
     boundary: dict,
     energy: dict,
     peak_load: dict,
 ) -> list[list]:
     """Create complete, separate integer Pareto coordinates for one path."""
-    raw = (orientation, evidence, boundary, energy, peak_load)
-    signed = (orientation, evidence, boundary, Neg(energy), Neg(peak_load))
+    raw = (
+        orientation, task_progress, evidence, boundary, energy, peak_load,
+    )
+    signed = (
+        orientation, task_progress, evidence, boundary,
+        Neg(energy), Neg(peak_load),
+    )
     effects: list[list] = []
     for ordinal, value in enumerate(signed):
         name = f"path_value_{ordinal}"
@@ -111,13 +117,14 @@ def open_trajectory_rule() -> dict:
         "effects": [
             ["add_node", "trajectory", "ParetoProfile", {
                 "kind": "embodied_program_trajectory",
-                "dimension_count": 5,
+                "dimension_count": 6,
                 "horizon": T(P0("budget", "trajectory_horizon")),
                 "minimum_selection_depth": T(Max(
                     L(1), P0("budget", "trajectory_minimum_selection_depth")
                 )),
                 "expansion_count": 0,
                 "selection_count": 0,
+                "selected_task_progress_units": 0,
                 "selected_capability_evidence_units": 0,
                 "selected_orientation_preserving_evidence_count": 0,
                 "selected_state_shape_residual_units": 0,
@@ -136,6 +143,7 @@ def mint_base_path_rule() -> dict:
     span = orientation_span("transition", "transition")
     boundary = P0("transition", "boundary_transition_count")
     evidence = P0("transition", "capability_evidence_units")
+    task_progress = P0("transition", "task_progress_units")
     energy = P0("transition", "energy_units")
     peak_load = P0("transition", "peak_load_units")
     return {
@@ -183,6 +191,7 @@ def mint_base_path_rule() -> dict:
                 "orientation_span_units": T(span),
                 "boundary_transition_count": T(boundary),
                 "capability_evidence_units": T(evidence),
+                "task_progress_units": T(task_progress),
                 "energy_units": T(energy),
                 "peak_load_units": T(peak_load),
                 "replay_count": 0,
@@ -202,6 +211,7 @@ def mint_base_path_rule() -> dict:
             ["add_edge", "path", "contains_embodied_program", "terminal_program"],
             *path_values(
                 orientation=span,
+                task_progress=task_progress,
                 evidence=evidence,
                 boundary=boundary,
                 energy=energy,
@@ -242,6 +252,10 @@ def extend_path_rule() -> dict:
     evidence = Plus(
         P0("parent", "capability_evidence_units"),
         P0("transition", "capability_evidence_units"),
+    )
+    task_progress = Plus(
+        P0("parent", "task_progress_units"),
+        P0("transition", "task_progress_units"),
     )
     energy = Plus(
         P0("parent", "energy_units"),
@@ -311,6 +325,7 @@ def extend_path_rule() -> dict:
                 "orientation_span_units": T(span),
                 "boundary_transition_count": T(boundary),
                 "capability_evidence_units": T(evidence),
+                "task_progress_units": T(task_progress),
                 "energy_units": T(energy),
                 "peak_load_units": T(peak_load),
                 "replay_count": 0,
@@ -337,6 +352,7 @@ def extend_path_rule() -> dict:
             )],
             *path_values(
                 orientation=span,
+                task_progress=task_progress,
                 evidence=evidence,
                 boundary=boundary,
                 energy=energy,
@@ -471,6 +487,7 @@ def select_frontier_path_rule() -> dict:
             )),
             Or(
                 Gt(P0("frontier_path", "orientation_span_units"), L(0)),
+                Gt(P0("frontier_path", "task_progress_units"), L(0)),
                 Gt(P0("frontier_path", "capability_evidence_units"), L(0)),
             ),
             Eq(
@@ -505,6 +522,13 @@ def select_frontier_path_rule() -> dict:
         Plus(
             Times(
                 current_state_residual("frontier_path"),
+                rank_span,
+                rank_span,
+                rank_span,
+                rank_span,
+            ),
+            Times(
+                Neg(P0("frontier_path", "task_progress_units")),
                 rank_span,
                 rank_span,
                 rank_span,
@@ -548,6 +572,12 @@ def select_frontier_path_rule() -> dict:
             ["set_attr", "trajectory", "selection_count", T(Plus(
                 P0("trajectory", "selection_count"), L(1)
             ))],
+            ["set_attr", "trajectory", "selected_task_progress_units", T(
+                Plus(
+                    P0("trajectory", "selected_task_progress_units"),
+                    P0("path", "task_progress_units"),
+                )
+            )],
             ["set_attr", "trajectory", "selected_capability_evidence_units", T(
                 Plus(
                     P0("trajectory", "selected_capability_evidence_units"),

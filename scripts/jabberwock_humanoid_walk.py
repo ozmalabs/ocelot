@@ -4234,6 +4234,14 @@ def _run_arm(
                 "development_translation_units": int(trial_after.get(
                     "_development_translation_units", 0
                 )),
+                "development_elevation_units": int(trial_after.get(
+                    "_development_elevation_units", 0
+                )),
+                "development_vertical_velocity_progress_units": int(
+                    trial_after.get(
+                        "_development_vertical_velocity_progress_units", 0
+                    )
+                ),
                 "development_directed_consistency": int(trial_after.get(
                     "_development_directed_consistency", 0
                 )),
@@ -5049,6 +5057,27 @@ def _run_arm(
                 trajectory, "has_pareto_candidate"
             )
         })
+        active_capability_transition_nodes = list({
+            transition
+            for capability in active_developmental_capabilities
+            for transition in agent.inner.neighbours(
+                capability, "has_embodied_program_transition"
+            )
+        })
+        active_capability_trajectory_nodes = list({
+            trajectory
+            for capability in active_developmental_capabilities
+            for trajectory in agent.inner.neighbours(
+                capability, "has_embodied_program_trajectory"
+            )
+        })
+        active_capability_path_nodes = list({
+            path
+            for trajectory in active_capability_trajectory_nodes
+            for path in agent.inner.neighbours(
+                trajectory, "has_pareto_candidate"
+            )
+        })
         selected_program_path_nodes = list({
             path
             for capability in situated_developmental_capabilities
@@ -5222,11 +5251,47 @@ def _run_arm(
                 )) > 0
                 for transition in program_transition_nodes
             ),
+            "positive_task_progress_transition_count": sum(
+                int(agent.s.node(transition)["attrs"].get(
+                    "task_progress_units", 0
+                )) > 0
+                for transition in program_transition_nodes
+            ),
+            "maximum_task_progress_transition_units": max((
+                int(agent.s.node(transition)["attrs"].get(
+                    "task_progress_units", 0
+                ))
+                for transition in program_transition_nodes
+            ), default=0),
+            "active_capability_positive_task_progress_transition_count": sum(
+                int(agent.s.node(transition)["attrs"].get(
+                    "task_progress_units", 0
+                )) > 0
+                for transition in active_capability_transition_nodes
+            ),
+            "active_capability_maximum_task_progress_transition_units": max((
+                int(agent.s.node(transition)["attrs"].get(
+                    "task_progress_units", 0
+                ))
+                for transition in active_capability_transition_nodes
+            ), default=0),
             "capability_evidence_path_count": sum(
                 int(agent.s.node(path)["attrs"].get(
                     "capability_evidence_units", 0
                 )) > 0
                 for path in program_path_nodes
+            ),
+            "positive_task_progress_path_count": sum(
+                int(agent.s.node(path)["attrs"].get(
+                    "task_progress_units", 0
+                )) > 0
+                for path in program_path_nodes
+            ),
+            "active_capability_positive_task_progress_path_count": sum(
+                int(agent.s.node(path)["attrs"].get(
+                    "task_progress_units", 0
+                )) > 0
+                for path in active_capability_path_nodes
             ),
             "orientation_preserving_evidence_path_count": sum(
                 int(agent.s.node(path)["attrs"].get(
@@ -5254,6 +5319,18 @@ def _run_arm(
                     "selected_capability_evidence_units", 0
                 ))
                 for trajectory in program_trajectory_nodes
+            ),
+            "selected_task_progress_units": sum(
+                int(agent.s.node(trajectory)["attrs"].get(
+                    "selected_task_progress_units", 0
+                ))
+                for trajectory in program_trajectory_nodes
+            ),
+            "active_capability_selected_task_progress_units": sum(
+                int(agent.s.node(trajectory)["attrs"].get(
+                    "selected_task_progress_units", 0
+                ))
+                for trajectory in active_capability_trajectory_nodes
             ),
             "selected_orientation_preserving_evidence_count": sum(
                 int(agent.s.node(trajectory)["attrs"].get(
