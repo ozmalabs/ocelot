@@ -525,13 +525,29 @@ What matters at runtime is DRAINS, not rules, and `stage_a_stats()` reports it:
 
 (motion + boundary settle on a supersampled disc, 2052 drains.)
 
-**The result:**
+**The result — both halves, and the second is the one that matters more.**
+
+The PROPAGATION half had a visible falsifier:
 
 ```
 tests/test_parallax_efference_migrated.py
   Stage A OFF : 7 passed          (unchanged)
   Stage A ON  : 7 passed          (was 2 failed, 5 passed — §5f's reproduction)
 ```
+
+The FOLD half had none, by §5c's own account — *"Stage A silently under-counts
+every fold-over-bindings rule, and `steps` is identical, so nothing in the iteration profile
+signals it."* §5c's minimal reproduction, re-run:
+
+| items | OFF total | ON total, §5c as recorded | ON total, now |
+|---|---|---|---|
+| 5 | 5.0 | **1.0** | **5.0** |
+| 20 | 20.0 | **1.0** | **20.0** |
+| 50 | 50.0 | — | **50.0** |
+
+A fix for propagation alone would have closed the red test and left this exactly as it was, with
+nothing to notice it by. It is gated at all three sizes, asserted against `n` directly rather than
+against the OFF run, so a fixture that quietly stopped counting in BOTH modes could not pass.
 
 *A correction made while building this.* The first predicate excluded the FOLD shape as "plain
 counters, already caught by the write-set relation". That was wrong, and it is the larger half —
