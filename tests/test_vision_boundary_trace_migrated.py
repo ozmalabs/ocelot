@@ -894,3 +894,65 @@ def test_border_ownership_is_local_and_gives_figure_hole_polarity():
     assert len(turns) >= 2, f"expected an outer boundary and a hole, got {len(turns)} cycles"
     assert any(t > 5.0 for t in turns), f"no figure (+2pi) boundary: {turns}"
     assert any(t < -5.0 for t in turns), f"no hole (-2pi) boundary: {turns}"
+
+
+def _contour_validity(pts, expect_extent=None):
+    """Is this contour a SIMPLE CLOSED CURVE? Returns (ok, total_turning, w, h).
+
+    A closed contour accumulates exactly +/-2pi. Anything else means the walk
+    took a shortcut, closed early, or never closed -- and the resulting point
+    list still LOOKS like a contour to every downstream comparison."""
+    import math
+    if len(pts) < 6:
+        return False, 0.0, 0.0, 0.0
+    P = [np.array(p, float) for p in pts]
+    n = len(P)
+    e = [P[(i + 1) % n] - P[i] for i in range(n)]
+    a = np.array([math.atan2(x[1], x[0]) for x in e])
+    d = a - np.roll(a, 1)
+    d = (d + math.pi) % (2 * math.pi) - math.pi
+    tot = float(np.sum(d))
+    w = max(p[0] for p in pts) - min(p[0] for p in pts)
+    h = max(p[1] for p in pts) - min(p[1] for p in pts)
+    ok = abs(abs(tot) - 2 * math.pi) < 0.5
+    if expect_extent is not None:
+        ok = ok and w > 0.6 * expect_extent and h > 0.6 * expect_extent
+    return ok, tot, w, h
+
+
+def test_every_extracted_contour_is_a_simple_closed_curve():
+    """THE CHECK THAT SHOULD HAVE RUN FIRST.
+
+    Three separate conclusions in `WHY_FLOODS_EXIST.md` were retracted because
+    they were measured on contours that were quietly broken: a radius-12 circle
+    produced a 27-point contour with bbox 12x13 — half its boundary — and every
+    downstream comparison accepted it as a contour and reported numbers.
+
+    The check is five lines and costs nothing: a simple closed curve accumulates
+    exactly +/-2pi. It is gated here so that an extraction regression fails
+    LOUDLY rather than silently degrading whatever is measured on top of it.
+
+    The battery deliberately includes shapes whose boundaries TURN. The
+    adjacent-sides defect was invisible on axis-aligned shapes — a square passed
+    both before and after the fix — so a suite of rectangles would have gated
+    nothing."""
+    n, r = 33, 9.0
+    battery = {
+        "square (axis-aligned)": lambda u, v: abs(u) <= r and abs(v) <= r,
+        "circle (turns everywhere)": lambda u, v: u * u + v * v <= r * r,
+        "ellipse (turns, anisotropic)": lambda u, v: (u / r) ** 2 + (v / (r * 0.5)) ** 2 <= 1.0,
+        "diamond (45-degree edges)": lambda u, v: abs(u) + abs(v) <= r,
+        "triangle (oblique edges)": lambda u, v: (v >= -r * 0.6 and v <= r - abs(u) * 1.4
+                                                  and abs(u) <= r),
+    }
+    bad = []
+    for name, fn in battery.items():
+        s, _ = _rim_run(_small_raster(fn, 0, n=n))
+        pts = _largest_contour(s)
+        if pts is None:
+            bad.append(f"{name}: no contour extracted")
+            continue
+        ok, tot, w, h = _contour_validity(pts, expect_extent=1.4 * r)
+        if not ok:
+            bad.append(f"{name}: {len(pts)} pts, turning {tot:+.2f}, bbox {w:.0f}x{h:.0f}")
+    assert not bad, "invalid contours:\n  " + "\n  ".join(bad)
