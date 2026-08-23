@@ -565,19 +565,26 @@ def test_curiosity_treats_unprobed_pair_as_evidence_gap_not_fault():
     ] == 0
 
 
-def test_persistent_takeoff_residual_escalates_from_singleton_to_exact_pair():
+def test_failed_windows_bound_takeoff_analysis_without_forcing_width():
     agent, episode = _persistent_singleton_surprise_fixture(
         surprise_streak=0,
     )
     agent.inner.set_attr(episode, "self_takeoff_drive_active", 1)
+    agent.inner.set_attr(
+        _one_node(agent, "HumanoidPolicy"),
+        "native_humanoid_composition_enabled",
+        1,
+    )
     agent.inner.set_attr(episode, "self_takeoff_target_velocity_scale", 1)
-    agent.inner.set_attr(episode, "development_evidence_window", 4)
-    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {})
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "development_evidence_window": 4,
+    })
     capability = agent.s.add_node(
         "EmbodiedSituatedDevelopmentalCapability", {
             "evidence_kind": "support_reducing_elevation",
             "success_count": 0,
-            "failure_count": 4,
+            # Four failed evidence windows imply order 1 + sqrt(4) = 3.
+            "failure_count": 16,
         },
     )
     _edge(agent, episode, "projects_embodied_development", development)
@@ -596,10 +603,11 @@ def test_persistent_takeoff_residual_escalates_from_singleton_to_exact_pair():
     )[0]
     attrs = agent.s.node(program)["attrs"]
     assert attrs["motor_task_context"] == "self_takeoff"
-    assert attrs["member_count"] == 2
-    assert attrs["compound_selection_kind"] == (
-        "persistent_residual_surprise_curiosity"
-    )
+    # Failed evidence sets analysis depth, not actuator authority.  This
+    # fixture has no terminally improving higher-order effect, so it remains
+    # at the normal admissible program instead of forcing width three.
+    assert attrs["member_count"] == 1
+    assert attrs.get("compound_selection_kind", "none") == "none"
 
 
 def test_material_interrupt_withdraws_situated_compound_memory_authority():

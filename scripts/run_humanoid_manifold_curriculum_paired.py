@@ -333,6 +333,25 @@ def _metrics(run: dict) -> dict:
             ),
             default=0,
         ),
+        **{
+            key: max(
+                (
+                    int(row.get(key, 0))
+                    for row in trace
+                    if float(row.get(
+                        "self_takeoff_drive_active_after", 0
+                    )) > 0.5
+                ),
+                default=0,
+            )
+            for key in (
+                "takeoff_compound_target_order",
+                "compound_curiosity_selection_count",
+                "compound_curiosity_pre_expansion_candidate_count_maximum",
+                "compound_curiosity_terminal_candidate_count_maximum",
+                "compound_curiosity_terminal_target_order_maximum",
+            )
+        },
         "takeoff_compound_expansion_authorized_action_count": sum(
             int(row.get("takeoff_compound_allow_expansion", 0)) == 1
             for row in trace

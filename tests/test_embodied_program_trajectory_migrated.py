@@ -62,6 +62,8 @@ def _fixture(horizon: int, transitions):
             "boundary_transition_count": row.get("boundary", 0),
             "energy_units": row["energy"],
             "peak_load_units": row.get("load", 1),
+            "capability_evidence_units": row.get("evidence", 0),
+            "current_state_shape_residual_units": row.get("residual", 0),
             "integer_native": 1,
         })
         transition_nodes.append(transition)
@@ -202,6 +204,51 @@ def test_frontier_remains_replayable_from_an_internal_current_program():
     )
     assert len(replayable) == 1
     assert agent.s.node(replayable[0])["attrs"]["depth"] == 2
+
+
+def test_frontier_prefers_path_whose_transition_matches_current_shape():
+    agent, owner, _, transitions = _fixture(1, (
+        {"source": 0, "target": 1, "pre_x": 0, "post_x": 10,
+         "energy": 1, "residual": 9},
+        {"source": 0, "target": 2, "pre_x": 0, "post_x": 20,
+         "energy": 5, "residual": 1},
+    ))
+    selected = agent.inner.neighbours(
+        owner, "has_selected_embodied_program_path"
+    )[0]
+    agent.inner.remove_edge(
+        owner, "has_selected_embodied_program_path", selected
+    )
+    for transition in transitions:
+        _edge(
+            agent, owner,
+            "has_current_embodied_program_transition_source", transition,
+        )
+
+    agent.tick()
+
+    selected = agent.inner.neighbours(
+        owner, "has_selected_embodied_program_path"
+    )
+    assert len(selected) == 1
+    assert transitions[1] in agent.inner.neighbours(
+        selected[0], "contains_embodied_program_transition"
+    )
+
+
+def test_frontier_admits_orientation_preserving_capability_evidence():
+    agent, owner, _, transitions = _fixture(1, (
+        {"source": 0, "target": 1, "pre_x": 0, "post_x": 0,
+         "energy": 2, "evidence": 1},
+    ))
+
+    selected = agent.inner.neighbours(
+        owner, "has_selected_embodied_program_path"
+    )
+    assert len(selected) == 1
+    assert transitions[0] in agent.inner.neighbours(
+        selected[0], "contains_embodied_program_transition"
+    )
 
 
 def test_pareto_refutes_only_dominated_paths_and_keeps_tradeoffs():
