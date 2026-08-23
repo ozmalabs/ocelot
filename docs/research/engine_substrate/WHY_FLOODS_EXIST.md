@@ -631,10 +631,11 @@ meeting at a corner, and that ambiguity is REAL: whether the blocks connect thro
 the classic marching-squares saddle, and it is not decidable from adjacency alone. Leaving it
 visible as degree is therefore the correct behaviour, not an unfinished one.
 
-Caveat carried forward: the contour walk breaks a degree>2 tie arbitrarily, and BOTH walks (the
-oracle and the O(perimeter) one, §6f) break it the same way — so the identity gate between them
-cannot see a wrong choice. On the fixtures above that gate is exercised only where saddles are
-zero.
+The tie-break is now gated rather than carried as a caveat. Measured on the corner fixture before
+any assertion was written: **both walks resolve the four ambiguous crossings the same way, and
+both resolve them correctly** — two separate closed contours of 16 cells each, the blocks kept
+apart. Pinned by `test_both_walks_agree_where_the_boundary_graph_is_genuinely_ambiguous`, which
+also asserts the fixture still produces 4 saddles so it cannot go quietly inert.
 
 ### The contour closes, and the shape is recognised
 
