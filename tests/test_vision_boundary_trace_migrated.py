@@ -360,6 +360,46 @@ def test_the_contour_needs_no_field_scan_and_agrees_with_the_one_that_does():
     assert sorted(sz for sz, _ in got) == sorted(sz for sz, _ in ref)
 
 
+def test_both_walks_agree_where_the_boundary_graph_is_genuinely_ambiguous():
+    """The saddle case, pinned.
+
+    Every other fixture in this file has 100% degree-2 crossings, so the walks
+    never have to break a tie and the identity gate above cannot exercise one.
+    Two blocks meeting at a CORNER do: four crossings come out at degree > 2,
+    because whether the blocks connect through that corner is not decidable from
+    adjacency alone -- the classic marching-squares saddle.
+
+    Measured before this was written, rather than assumed: both walks resolve it
+    the same way and both resolve it correctly, as two separate closed contours
+    of 16 cells each. Recorded as a gate so that a future change to either walk's
+    tie-breaking has to come past it."""
+    V = np.zeros((16, 16, 2))
+    V[3:7, 3:7, 1] = 9.0
+    V[7:11, 7:11, 1] = 9.0      # touches the first only at a corner
+    s, _ = _rim_run(V)
+
+    adj = collections.defaultdict(set)
+    for x in s.nodes("Crossing"):
+        for n in s.neighbours(x, "next_crossing"):
+            adj[x.value].add(n.value)
+            adj[n.value].add(x.value)
+    saddles = sum(1 for x in s.nodes("Crossing") if len(adj.get(x.value, ())) > 2)
+    assert saddles == 4, (
+        f"expected the corner to produce 4 ambiguous crossings, got {saddles} -- "
+        f"this fixture no longer exercises the tie-break")
+
+    oracle = _crossing_contours(s)
+    fast = _contour_cycles(s)
+    ref = sorted((sz, tuple(sorted(p))) for sz, p in oracle.values()
+                 if sz < 200 and _is_closed(s, p))
+    got = sorted((sz, tuple(sorted(p))) for sz, p in fast.values())
+    assert got == ref, "the two walks break the saddle tie differently"
+
+    # and the answer itself is right: two 4x4 blocks, kept apart
+    assert [sz for sz, _ in got] == [16, 16], (
+        f"corner contact merged or split the blocks: sizes {[sz for sz, _ in got]}")
+
+
 def test_the_contour_cost_follows_the_perimeter_not_the_area():
     """The claim that made this worth writing, enforced.
 
