@@ -1,6 +1,6 @@
 {
  "id": "vision_boundary_trace",
- "version": "1.4.0",
+ "version": "1.5.0",
  "depends_on": [
   "vision_motion_group"
  ],
@@ -721,6 +721,92 @@
      "x",
      "next_crossing",
      "y"
+    ]
+   ]
+  },
+  {
+   "name": "bt_own",
+   "comment": "BORDER OWNERSHIP, LOCALLY. `vision_border_ownership`'s bo_own gives a directed boundary that owns its figure -- the one thing the crossing construction lacked -- but reaches it through bo_bgflood, surroundedness as inward reachability from the frame, which costs a pass per hop. A crossing already holds both cells, so where figure and ground differ in magnitude the ownership is decidable AT THE CROSSING: the owned side is the stronger one. Measured on discs, an annulus and two discs, orienting each boundary cycle by this ownership makes its total turning +2pi for a figure and -2pi for a hole, every case correct, with no flood and no cell components.\n\nTHE LIMIT IS DELIBERATE AND IS WHERE bo_bgflood EARNS ITS COST. Ownership is CONTEXTUAL in the case that seed is built on -- Zhou/Friedman/von der Heydt 2000, where an IDENTICAL local edge flips ownership with the GLOBAL figure -- and no local rule can settle that. This covers the unambiguous case for free and leaves the ambiguous one to the flood that is actually buying something.",
+   "match": [
+    [
+     "x",
+     "separates",
+     "a"
+    ],
+    [
+     "x",
+     "separates",
+     "b"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "key": "marm",
+       "node": {
+        "type": "PickUnique",
+        "source": {
+         "type": "NodesOfType",
+         "node_type": "MotionParams"
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.5
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Var",
+        "name": "a"
+       },
+       "b": {
+        "type": "Var",
+        "name": "b"
+       }
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Magnitude",
+       "arg": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "a"
+        },
+        "key": "v"
+       }
+      },
+      "b": {
+       "type": "Magnitude",
+       "arg": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "b"
+        },
+        "key": "v"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "x",
+     "owns_figure",
+     "a"
     ]
    ]
   }
