@@ -349,6 +349,38 @@ standard pruning for a discrete medial axis, and it is available here for free p
 the boundary was reified as an ordered structure rather than a set of pixels.
 
 
+## 6e. COST AUDIT — it should be cheap, and where it is not, it was done wrong
+
+Measured rather than assumed, on discs at four field sizes (cells x5.8, crossings x2.6 from the
+smallest to the largest):
+
+| stage | n=17 | n=41 | growth | verdict |
+|---|---|---|---|---|
+| crossing walk | 0.015 ms | **0.043 ms** | x2.9 | **O(perimeter)** — correct |
+| turning function psi | 0.24 ms | 0.41 ms | x1.7 | fixed resample — correct |
+| psi comparison | 2.15 ms | **2.16 ms** | **x1.0** | flat in shape size — correct |
+| cell components (union-find) | 0.79 ms | 4.81 ms | x6.1 | **O(area)** — WRONG |
+| medial, per-cell distance | 1.3 ms | 8.5 ms | x6.5 | **O(area x perimeter)** — WRONG |
+| `ScTpsDist` | 0.62 ms | 4.36 ms | x7.0 | superlinear in boundary points |
+| substrate settle | 41 ms | 77 ms | x1.9 | sublinear — and it DOMINATES |
+
+**The boundary pipeline is cheap: 43 microseconds, scaling with perimeter.** The comparison is
+flat. Two stages are not, and both fail the same way — they work over the AREA when the whole
+point of reifying the boundary was that they need not:
+
+- **cell components** cost 110x the walk at n=41 and grow with area. This is the union-find
+  already flagged as "moved to Python, not avoided" — and §6c showed polarity does not need it at
+  all, since crossing cycles plus local ownership give figure/hole directly. It is pure waste.
+- **the medial axis** is computed as a distance from every interior cell to every crossing. The
+  medial axis is a subset of the VORONOI diagram of the boundary, which is O(perimeter); touching
+  every cell to find it is the same mistake one level on.
+
+And the honest headline: **the substrate settle dominates everything by 10-40x.** Every geometric
+stage together is under 15 ms at n=41 against 77 ms for the rule engine. So arguing about the
+geometry's constant factors is arguing about the wrong term — which is itself the answer to "why
+does this need to be cheap": it already is, and the cost that remains is the engine's.
+
+
 ## 6b. PRIOR ART
 ## 6b. PRIOR ART — nearly all of this is textbook, and one match is exact
 
