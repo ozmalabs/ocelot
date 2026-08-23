@@ -1132,6 +1132,23 @@ square should decode as square-plus-residual rather than as a new entry. That la
 **not measured** — the residual comparison it needs was run against the invalid circle contour and
 has to be redone once smooth boundaries extract.
 
+### The check that should have run first, now gated
+
+Three conclusions in this document were retracted because they were measured on contours that
+were quietly broken — a radius-12 circle producing a 27-point contour with bbox 12x13, half its
+boundary, which every downstream comparison accepted and reported numbers on. The check that
+catches it is five lines: **a simple closed curve accumulates exactly +/-2pi.**
+
+`test_every_extracted_contour_is_a_simple_closed_curve` runs it over a battery and fails loudly
+rather than letting an extraction regression silently degrade whatever is measured on top. The
+battery deliberately includes shapes whose boundaries TURN — circle, ellipse, diamond, triangle —
+because the adjacent-sides defect was invisible on axis-aligned ones: a square passed both before
+and after the fix, so a suite of rectangles would have gated nothing.
+
+Verified against the actual historical defect: restoring the all-pairs chaining rule makes the
+ellipse come back as 20 points with turning +0.00 and bbox 14x5, and the gate fails on it.
+
+
 ### Landed as a gate
 
 The coverage measurements above are research and stay in this document — each observation is a
