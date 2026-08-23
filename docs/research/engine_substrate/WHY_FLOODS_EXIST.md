@@ -257,6 +257,36 @@ already answers without diffusion — so `bo_own`'s polarity is SEPARABLE from t
 currently pays for it. That is the synthesis: crossings for the boundary, ownership for the
 polarity, neither flood.
 
+> **CORRECTION to the table above.** It claims "components via `cuts`, no diffusion". The
+> components in question were computed by **union-find in Python** — a closure over cells, O(area),
+> moved out of the graph rather than avoided. Nothing in the seed computes them. Connected
+> components genuinely need closure, as this document establishes early on, so that column was not
+> a fair win as written.
+>
+> **But polarity does not need them.** The crossing graph has degree 2 everywhere, so its connected
+> components ARE the boundary cycles and finding them is a walk of O(perimeter), not a flood over
+> O(area). Orient each cycle locally — at any one crossing, walk so the brighter of its two cells
+> is on the left — and the cycle's total turning then gives its polarity:
+>
+> ```
+> disc            76 crossings   +6.28  -> figure
+> annulus outer   92 crossings   +6.28  -> figure
+> annulus inner   44 crossings   -6.28  -> hole
+> two discs       36, 36         +6.28  -> figure (both)
+> ```
+>
+> Correct in every case, with no flood, no cell components and no frame-contact test. A first
+> attempt read the turning sign WITHOUT the local orientation step and got -6.28 for everything,
+> including a disc's outer boundary — the sign was reporting the walk direction, which the
+> lowest-node-id tie-break had made arbitrary.
+>
+> **The limitation is exactly where the eye earns its cost.** This works because the scene has two
+> values and the figure is the brighter one. Genuine figure-ground ambiguity is CONTEXTUAL — the
+> von der Heydt result the seed is built on is that an IDENTICAL local edge flips ownership with
+> the global figure — and no local rule can settle that. So `bo_bgflood` is not redundant; it is
+> buying the contextual case specifically, and the local construction covers the unambiguous one
+> for free.
+
 Polarity is worth having on its own terms — it distinguishes a figure from a hole and makes the
 boundary directed. **What it did NOT buy was the speedup I expected.** Orienting each contour so
 the owned side is consistently on the left, then dropping the reversal search from the turning
