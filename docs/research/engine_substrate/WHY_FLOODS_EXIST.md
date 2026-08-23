@@ -550,9 +550,10 @@ boundary runs through here"; a crossing with a sub-cell `t` can. The number that
 defect shape stated as strongly as it can be stated — a number standing where a shape belongs, and
 measured to be impossible rather than merely awkward.
 
-**Status:** measured and recorded, NOT built. `bt_disagree` is still a pairwise threshold, and the
-adapters still take a total cell partition. What this establishes is that the fix cannot be a better
-threshold, so it is worth the redesign; it does not claim the redesign is done.
+**Status when written:** measured and recorded, NOT built. **Since built** — §6i/§6j add
+`bt_true_boundary` and `bt_subcell_t`, which discard the doubled chain and read the partial coverage
+that a threshold cannot. `bt_disagree` is still a pairwise threshold and the adapters still take a
+total cell partition; what changed is that neither is now load-bearing for accuracy on a soft edge.
 
 ## 6i. THE FIX §6h SAID WAS NEEDED — and anti-aliasing turns out to be INFORMATION
 
@@ -673,9 +674,14 @@ these fixtures' background being zero.
 
 The structural reason is exact, and it is the same fact that makes `bt_true_boundary` work: the far
 cell of a TRUE crossing IS the band cell, and a band cell's agreeing neighbours are other band
-cells, which are never interior. **The far plateau is simply not reachable within 2 hops of a true
-crossing** — it is 3 hops away, through the band. That rule is designable and still flood-free, but
-it is not this rule, and it is not written.
+cells, which are never interior.
+
+**CORRECTED BY §6j BELOW — the conclusion drawn here was wrong, and worth leaving visible.** This
+went on to say the far plateau was therefore "3 hops away, through the band," and stopped. It is 2
+hops: the search looked only among the band cell's AGREEING neighbours, and missed that the band
+cell also has a CUT neighbour on the far side — the very crossing `bt_true_boundary` discards.
+Searching one relation and concluding about reachability in general is its own error, distinct from
+the anchor errors above. `bt_subcell_t` is built.
 
 This is this document's own defect shape for the third time in one stretch — a number standing
 where a shape belongs — found on this occasion inside a candidate fix for the previous two. Which is
