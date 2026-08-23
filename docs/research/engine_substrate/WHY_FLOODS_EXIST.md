@@ -554,6 +554,87 @@ measured to be impossible rather than merely awkward.
 adapters still take a total cell partition. What this establishes is that the fix cannot be a better
 threshold, so it is worth the redesign; it does not claim the redesign is done.
 
+## 6i. THE FIX §6h SAID WAS NEEDED — and anti-aliasing turns out to be INFORMATION
+
+§6h established that no single threshold separates a soft edge, and that the sliver is an artifact
+of demanding a total partition of CELLS. Both halves of the repair follow from that, and both are
+measured. Neither introduces a number.
+
+**Telling a region from a boundary band, structurally.** A real region contains at least one
+INTERIOR cell — one with no `cuts` edge at all, agreeing with every neighbour. A one-cell-wide band
+contains none, because every cell in it is cut on both sides. Measured across two shapes and four
+raster levels, this finds **exactly 2 regions with an interior in all 8 configurations** (disc and
+rectangle, hard through super x8), with the 8-48 remaining fragments having none.
+
+*A correction made in passing, because it is this section's own defect shape appearing inside the
+check for it:* the first verdict function demanded that slivers be <= 2 cells, which is a magic
+number, and it failed an 11-cell band that is still one cell wide with no interior. The predicate
+was right and my test of it was wrong. Region-versus-band is about HAVING an interior, not about
+size.
+
+**Recovering the true boundary without reinstating the flood.** An anti-aliased edge gives two
+parallel crossing chains bracketing the band: `(interior | band)` and `(band | exterior)`. Only one
+is the object's boundary, and choosing between them must not ask "which region is this cell in" —
+that is the O(area x iterations) question the rim exists to remove. A LOCAL 2-hop predicate
+suffices: a crossing is a true boundary iff its figure-side cell is interior, or is a `neighbour`
+of an interior cell with no `cuts` between them.
+
+| raster | crossings | true (2-hop) | dropped |
+|---|---|---|---|
+| hard mask | 116 | **116** | **0** |
+| super x2 | 212 | **116** | 96 |
+| super x4 | 224 | 108 | 116 |
+| super x8 | 220 | 108 | 112 |
+
+**Inert on a hard mask** (116 -> 116, nothing dropped), and it recovers the hard mask's own
+crossing count from the doubled soft-edge set.
+
+**And then the result that inverts the framing.** Placing the surviving crossing sub-cell gives a
+boundary MORE accurate than the hard mask ever was:
+
+| raster | placement | radial rms |
+|---|---|---|
+| hard mask | midpoint | 0.250 |
+| super x2 | sub-cell | **0.140** |
+| super x4 | sub-cell | **0.147** |
+| super x8 | sub-cell | **0.135** |
+
+**Anti-aliasing is INFORMATION, not noise** — ~1.8x more accurate than a hard mask, because partial
+coverage says where inside the cell the edge falls and a hard mask has thrown that away.
+
+*The anchor had to be corrected first, and the error is worth keeping.* The sub-cell formula
+inherited from the earlier probe solves for the point where deviation reaches `mtol` — but `mtol` is
+a DETECTION threshold, and using it as a LOCATION puts the edge at value 7.5, well inside the
+object. It made the rms WORSE at every level (0.388 -> 0.470, 0.478 -> 0.504, 0.458 -> 0.486). The
+edge is where the observation is halfway between the two levels it runs between, and both levels
+are OBSERVED (the field's own extremes), not declared. Same defect shape as §6h, found inside the
+fix for §6h.
+
+**This QUALIFIES §6f, which is a committed claim and must not stand unamended.** §6f concluded "the
+medial axis of the observation is noise; the medial axis of the recognised shape is exact" — but it
+concluded that from a STAIRCASE contour, rms 0.250. On the accurate contour:
+
+| contour | rms | medial r (true 14.35) | spread |
+|---|---|---|---|
+| hard, midpoint | 0.250 | 10.19 | 12.52 |
+| super x4, midpoint | 0.478 | 9.25 | 12.02 |
+| super x4, **sub-cell** | **0.147** | **13.22** | **4.34** |
+| fitted program | — | 14.45 | **0.00** |
+
+The observation's medial was not hopeless — it was reading a bad contour. A 3x better contour takes
+it from 71% to 92% of the true radius and tightens the axis 2.9x. **§6f's direction holds — the
+program is still markedly better, and only the program collapses the disc to a single point — but
+its strength does not.** The honest statement is that the medial axis is highly sensitive to
+boundary accuracy, not that the observation cannot support one.
+
+**Status: measured, NOT built.** Everything above is a probe over the live graph. `bt_disagree` is
+still a pairwise threshold, no `bt_interior` rule exists, and the sub-cell anchor is not in any
+seed. Two residuals stand: at super x8 only 26 of the 108 surviving crossings chain into one cycle
+(the chaining rules link true crossings to dropped ones, and the chain is not re-derived among the
+survivors), and the rectangle's cell count drops 65 -> 33 under supersampling because the boundary
+band is excluded from the region — the extent has to come from the sub-cell contour, not from
+counting cells.
+
 ## 6b. PRIOR ART
 ## 6b. PRIOR ART — nearly all of this is textbook, and one match is exact
 
