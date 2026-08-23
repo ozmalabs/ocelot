@@ -635,6 +635,26 @@ where in the cell the edge actually lay. That is an information limit, not an im
 boundary partial coverage — the sub-cell information a blurred or anti-aliased observation
 carries — and the fit then improves 3 of 4 angles, best 28% at 30 degrees, while worsening 45.
 
+> **RE-CHECKED, AND THIS ONE STRENGTHENS.** The table above used absolute `ScTpsDist` on pre-fix
+> contours. Re-run with the chaining fix and the canonical L2 turning metric:
+>
+> | | midpoint | sub-cell | |
+> |---|---|---|---|
+> | soft 15 deg | 0.3248 | **0.1834** | −44% |
+> | soft 30 deg | 0.2467 | **0.1110** | −55% |
+> | soft 45 deg | 0.1592 | **0.0599** | −62% |
+> | soft 90 deg | 0.0514 | **0.0387** | −25% |
+>
+> On a soft edge sub-cell placement now roughly **halves the distance at every rotation**, rather
+> than helping at three angles of four. On a hard mask it stays mixed and small, which is the
+> prediction: a hard mask carries no sub-cell information for any fit to recover, and no
+> improvement in the comparison can manufacture it.
+>
+> **Four pre-fix claims have now been re-checked: three retracted, this one strengthened.** The
+> pattern is not that everything measured before the fixes was wrong — it is that anything
+> measured through a broken contour or a rotation-blind metric was unsafe in EITHER direction, and
+> the only way to know which was to re-run it.
+
 So the sharpened version of "the grid is the wrong thing": **the damage is done at SAMPLING time,
 not at contour-extraction time.** You cannot de-grid afterwards if the sampling already discarded
 the sub-cell evidence. Where the observation retains it, fitting recovers part of the loss; where
