@@ -44,15 +44,22 @@ from scripts.gen_humanoid_adaptation_seed import (  # noqa: E402
 P0 = PI0
 
 
-def trajectory_manifold_projection(source: str, field: str):
+def trajectory_manifold_projection(
+    source: str,
+    field: str,
+    addition: str | None = None,
+):
     """Project a grounded program with the graph's learned AbS model only."""
-    return {
+    term = {
         "type": "FutureManifoldProjection",
         "episode": V("episode"),
         "policy": V("policy"),
         "source": V(source),
         "field": field,
     }
+    if addition is not None:
+        term["addition"] = V(addition)
+    return term
 
 
 def trajectory_manifold_release_allowed(source: str = "memory"):
@@ -69,6 +76,16 @@ def trajectory_manifold_release_allowed(source: str = "memory"):
                 trajectory_manifold_projection(source, "information_loss"),
                 L(0),
             ),
+            Or(
+                Eq(
+                    trajectory_manifold_projection(source, "effort_supported"),
+                    L(0),
+                ),
+                Gt(
+                    trajectory_manifold_projection(source, "effort_authorized"),
+                    L(0),
+                ),
+            ),
         ),
     )
 
@@ -83,13 +100,63 @@ def developmental_action_model(phase_candidate="candidate"):
     ))
 
 
+def situated_orientation_evidence(phase_candidate="candidate"):
+    model = developmental_action_model(phase_candidate)
+    return Filter(
+        {
+            "type": "Neighbours",
+            "node": model,
+            "edge_type": "has_situated_orientation_action_evidence",
+            "any_type": False,
+        },
+        "situated_orientation_evidence",
+        Eq(
+            P0("situated_orientation_evidence", "orientation_class"),
+            P0("episode", "state_gravity_relative_orientation_class"),
+        ),
+    )
+
+
+def developmental_orientation_receipt_count(phase_candidate="candidate"):
+    model = developmental_action_model(phase_candidate)
+    situated = situated_orientation_evidence(phase_candidate)
+    return If(
+        Eq(P0("episode", "state_gravity_relative_orientation_class"), L(0)),
+        integer_node_attr(model, "development_receipt_count"),
+        Sum(
+            situated,
+            "counted_orientation_evidence",
+            P0("counted_orientation_evidence", "receipt_count"),
+        ),
+    )
+
+
 def developmental_orientation_escape_score(phase_candidate="candidate"):
     model = developmental_action_model(phase_candidate)
-    return Plus(
+    aggregate = Plus(
         integer_node_attr(model, "development_orientation_escape_units"),
         Neg(integer_node_attr(
             model, "development_orientation_return_units"
         )),
+    )
+    situated = situated_orientation_evidence(phase_candidate)
+    return If(
+        Eq(P0("episode", "state_gravity_relative_orientation_class"), L(0)),
+        aggregate,
+        If(
+            Gt(Count(situated), L(0)),
+            Sum(
+                situated,
+                "matching_orientation_evidence",
+                Plus(
+                    P0("matching_orientation_evidence", "escape_units"),
+                    Neg(P0(
+                        "matching_orientation_evidence", "return_units"
+                    )),
+                ),
+            ),
+            L(0),
+        ),
     )
 
 
@@ -99,12 +166,24 @@ def developmental_evidence_rank(
     # Selection follows requested observable evidence, not a named skill.
     # This lets the same learned consequence model serve unfamiliar curricula
     # and body plans without an adapter-side vocabulary of rolls or poses.
+    learned_rank = If(
+        is_orientation_evidence("capability"),
+        If(
+            Eq(
+                developmental_orientation_receipt_count(phase_candidate),
+                L(0),
+            ),
+            L(-1),
+            P0(phase_candidate, "inverse_kinematic_cost_units"),
+        ),
+        P0(phase_candidate, "inverse_kinematic_cost_units"),
+    )
     return If(
         Gt(integer_node_attr(
             developmental_action_model(phase_candidate),
             "development_receipt_count",
         ), L(0)),
-        P0(phase_candidate, "inverse_kinematic_cost_units"),
+        learned_rank,
         Neg(physics_evidence_units("capability", phase_candidate)),
     )
 
@@ -242,21 +321,11 @@ def inverse_kinematic_rank(query="query", candidate="candidate"):
     elevation = expected_action_units(
         candidate, "development_elevation_sum_units"
     )
-    orientation_sum = integer_node_attr(
-        developmental_action_model(candidate),
-        "development_orientation_escape_sum_units",
-    )
-    orientation = If(
-        Eq(orientation_sum, L(0)),
-        IDiv(
-            developmental_orientation_escape_score(candidate),
-            Max(L(1), integer_node_attr(
-                developmental_action_model(candidate),
-                "development_receipt_count",
-            )),
-        ),
-        expected_action_units(
-            candidate, "development_orientation_escape_sum_units"
+    orientation = IDiv(
+        developmental_orientation_escape_score(candidate),
+        Max(
+            L(1),
+            developmental_orientation_receipt_count(candidate),
         ),
     )
     return If(
@@ -522,6 +591,18 @@ def material_viability_reflex_active():
     )
 
 
+def caregiver_protection_needed(capability="capability"):
+    """Whether the situated child action still needs an external envelope."""
+    return And(
+        Eq(P0("episode", "caregiver_protective_support_available"), L(1)),
+        Lt(
+            P0(capability, "success_count"),
+            P0("development", "development_evidence_window"),
+        ),
+        Not(material_viability_reflex_active()),
+    )
+
+
 def situated_developmental_release_gate(capability="capability"):
     """Separate intended floor/locomotor exploration from an interrupt."""
     return And(
@@ -593,6 +674,10 @@ def apply_capability_goal_rule():
                 Or(
                     floor_development(),
                     Eq(A("capability", "goal"), L("locomotion")),
+                    Eq(
+                        A("capability", "motor_task_context"),
+                        L("self_takeoff"),
+                    ),
                 ),
                 If(
                     material_viability_reflex_active(),
@@ -603,6 +688,134 @@ def apply_capability_goal_rule():
             ))],
             ["set_attr", "episode", "motor_primary_ready", 0],
             ["set_attr", "episode", "motor_recovery_primary_ready", 0],
+        ],
+    }
+
+
+def synchronize_developmental_motor_task_rule():
+    """Open only the task residual named by the active generic capability."""
+    requests_takeoff = Eq(
+        A("capability", "motor_task_context"), L("self_takeoff")
+    )
+    supported_attempt_ready = And(
+        requests_takeoff,
+        Eq(P0("episode", "upright"), L(1)),
+        Eq(P0("episode", "recovery_mode"), L(0)),
+        Gt(P0("episode", "active_support_count"), L(0)),
+    )
+    desired_drive = If(supported_attempt_ready, L(1), L(0))
+    desired_scale = If(
+        supported_attempt_ready,
+        P0("capability", "motor_task_target_scale"),
+        L(0),
+    )
+    desired_context = If(
+        supported_attempt_ready,
+        L("self_takeoff"),
+        L("locomotion"),
+    )
+    return {
+        "name": "hdc_synchronize_generic_developmental_motor_task_context",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -118,
+        "batch": False,
+        "comment": "Translate the active capability's generic task-space "
+        "contract into temporary motor-context authority. Self-takeoff is "
+        "open only while an upright supported synthesis can begin, closes "
+        "during flight or recovery, and closes when the capability changes.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "projects_embodied_development", "development"],
+            [
+                "development",
+                "has_active_embodied_developmental_capability",
+                "capability",
+            ],
+        ],
+        "where": And(
+            Eq(P0("episode", "developmental_curriculum_active"), L(1)),
+            Eq(A("episode", "phase"), L("locomotion")),
+            Or(
+                Not(Eq(
+                    P0("episode", "self_takeoff_drive_active"),
+                    desired_drive,
+                )),
+                Not(Eq(
+                    P0("episode", "self_takeoff_target_velocity_scale"),
+                    desired_scale,
+                )),
+                Not(Eq(
+                    A("episode", "motor_task_context"),
+                    desired_context,
+                )),
+            ),
+        ),
+        "effects": [
+            [
+                "set_attr", "episode", "self_takeoff_drive_active",
+                T(desired_drive),
+            ],
+            [
+                "set_attr", "episode", "self_takeoff_target_velocity_scale",
+                T(desired_scale),
+            ],
+            [
+                "set_attr", "episode", "motor_task_context",
+                T(desired_context),
+            ],
+            ["set_attr", "episode", "self_takeoff_compression_scale", 0],
+            ["set_attr", "episode", "motor_primary_ready", 0],
+        ],
+    }
+
+
+def retire_orientation_authority_outside_orientation_manifold_rule():
+    """Close ready orientation programs when their evidence manifold ends."""
+    return {
+        "name": "hdc_retire_orientation_authority_outside_orientation_manifold",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "batch": True,
+        "comment": "A developmental orientation bundle remains retained as "
+        "experimental evidence, but its ready edge is actuator authority. "
+        "Once the active capability no longer asks for orientation evidence, "
+        "that authority lies outside the current future manifold and must "
+        "close before another controller can establish its path.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "projects_embodied_development", "development"],
+            [
+                "development",
+                "has_active_embodied_developmental_capability",
+                "capability",
+            ],
+            ["episode", "has_ready_humanoid_motor_program", "plan"],
+        ],
+        "where": And(
+            Eq(P0("plan", "developmental_orientation_bundle"), L(1)),
+            Not(is_orientation_evidence("capability")),
+        ),
+        "effects": [
+            [
+                "del_edge",
+                "episode",
+                "has_ready_humanoid_motor_program",
+                "plan",
+            ],
+            ["set_attr", "plan", "status", "manifold_authority_closed"],
+            [
+                "set_attr",
+                "plan",
+                "orientation_authority_closed_at_request_seq",
+                T(P0("episode", "request_seq")),
+            ],
+            [
+                "set_attr",
+                "plan",
+                "orientation_authority_close_reason",
+                "active_capability_not_orientation_evidence",
+            ],
         ],
     }
 
@@ -780,6 +993,108 @@ def mirror_mastery_count_rule():
             )],
             ["set_attr", "episode", "developmental_stage_ordinal", T(
                 P0("development", "embodied_developmental_mastery_count")
+            )],
+        ],
+    }
+
+
+def mint_situated_orientation_action_evidence_rule():
+    existing = Filter(
+        Neighbours(
+            "action_model", "has_situated_orientation_action_evidence"
+        ),
+        "known_orientation_evidence",
+        Eq(
+            P0("known_orientation_evidence", "orientation_class"),
+            P0("outcome", "development_pre_orientation_class"),
+        ),
+    )
+    escape = P0("outcome", "development_orientation_escape_units")
+    return {
+        "name": "hdc_mint_situated_orientation_action_evidence",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 87,
+        "batch": False,
+        "comment": "Index vestibular consequences by the supported surface "
+        "from which the opaque action was enacted. Opposite body surfaces "
+        "are distinct future manifolds even when support phase is unchanged.",
+        "match": [
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "uses_humanoid_action_model", "action_model"],
+            ["trial", "has_humanoid_transition", "outcome"],
+        ],
+        "where": And(
+            Eq(P0("outcome", "development_receipt_closed"), L(1)),
+            Not(Eq(
+                P0("outcome", "development_pre_orientation_class"), L(0)
+            )),
+            Eq(Count(existing), L(0)),
+        ),
+        "effects": [
+            ["add_node", "orientation_evidence", "HumanoidSituatedOrientationActionEvidence", {
+                "orientation_class": T(P0(
+                    "outcome", "development_pre_orientation_class"
+                )),
+                "receipt_count": 1,
+                "escape_units": T(Max(L(0), escape)),
+                "return_units": T(Max(L(0), Neg(escape))),
+                "last_request_seq": T(P0("trial", "request_seq")),
+                "integer_native": 1,
+                "output_authority": 0,
+            }],
+            [
+                "add_edge", "action_model",
+                "has_situated_orientation_action_evidence",
+                "orientation_evidence",
+            ],
+        ],
+    }
+
+
+def update_situated_orientation_action_evidence_rule():
+    escape = P0("outcome", "development_orientation_escape_units")
+    return {
+        "name": "hdc_update_situated_orientation_action_evidence",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 87,
+        "batch": False,
+        "match": [
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "uses_humanoid_action_model", "action_model"],
+            ["trial", "has_humanoid_transition", "outcome"],
+            [
+                "action_model",
+                "has_situated_orientation_action_evidence",
+                "orientation_evidence",
+            ],
+        ],
+        "where": And(
+            Eq(P0("outcome", "development_receipt_closed"), L(1)),
+            Eq(
+                P0("orientation_evidence", "orientation_class"),
+                P0("outcome", "development_pre_orientation_class"),
+            ),
+            Lt(
+                P0("orientation_evidence", "last_request_seq"),
+                P0("trial", "request_seq"),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "orientation_evidence", "receipt_count", T(Plus(
+                P0("orientation_evidence", "receipt_count"), L(1)
+            ))],
+            ["set_attr", "orientation_evidence", "escape_units", T(Plus(
+                P0("orientation_evidence", "escape_units"),
+                Max(L(0), escape),
+            ))],
+            ["set_attr", "orientation_evidence", "return_units", T(Plus(
+                P0("orientation_evidence", "return_units"),
+                Max(L(0), Neg(escape)),
+            ))],
+            ["set_attr", "orientation_evidence", "last_request_seq", T(
+                P0("trial", "request_seq")
             )],
         ],
     }
@@ -972,6 +1287,9 @@ def learn_integer_developmental_program_affordance_rule():
             ["set_attr", "plan", "development_latest_orientation_escape_units", T(
                 P0("outcome", "development_orientation_escape_units")
             )],
+            ["set_attr", "plan", "development_latest_pre_orientation_class", T(
+                P0("outcome", "development_pre_orientation_class")
+            )],
             ["set_attr", "plan", "development_support_evidence_units", T(
                 Plus(
                     P0("plan", "development_support_evidence_units"),
@@ -1001,39 +1319,36 @@ def learn_integer_developmental_program_affordance_rule():
     }
 
 
-def positive_orientation_phase_candidates():
+def orientation_phase_candidates():
     return Filter(
         Neighbours("episode", "has_humanoid_phase_action_model"),
-        "positive_orientation_phase_candidate",
-        And(
-            Eq(
-                P0("positive_orientation_phase_candidate", "support_phase"),
-                P0("episode", "current_support_phase"),
-            ),
-            Gt(developmental_orientation_escape_score(
-                "positive_orientation_phase_candidate"
-            ), L(0)),
+        "orientation_phase_candidate",
+        Eq(
+            P0("orientation_phase_candidate", "support_phase"),
+            P0("episode", "current_support_phase"),
         ),
+    )
+
+
+def positive_orientation_phase_candidates():
+    return Filter(
+        orientation_phase_candidates(),
+        "positive_orientation_phase_candidate",
+        Gt(developmental_orientation_escape_score(
+            "positive_orientation_phase_candidate"
+        ), L(0)),
     )
 
 
 def orientation_composition_authorized(capability="capability"):
     """A prior shape or a learned excess verdict may open composition."""
-    return Or(
-        Gt(Count(A(capability, "desired_body_state_signature")), L(0)),
-        And(
+    return And(
+        is_orientation_evidence(capability),
+        Or(
+            Gt(Count(A(
+                capability, "desired_body_state_signature"
+            )), L(0)),
             Eq(P0(capability, "classifier_effort_excess"), L(1)),
-            Or(
-                Eq(A(capability, "evidence_kind"), L(
-                    "supported_orientation_change"
-                )),
-                Eq(A(capability, "evidence_kind"), L(
-                    "supported_quarter_turn"
-                )),
-                Eq(A(capability, "evidence_kind"), L(
-                    "supported_half_turn"
-                )),
-            ),
         ),
     )
 
@@ -1329,6 +1644,7 @@ def release_selected_physics_counterfactual_rule():
 
 
 def open_composed_orientation_escape_bundle_rule():
+    channel_count = Count(Neighbours("field", "has_somatomotor_wave_cell"))
     prior_bundles = Filter(
         Neighbours("episode", "has_humanoid_motor_program"),
         "prior_orientation_bundle",
@@ -1336,11 +1652,53 @@ def open_composed_orientation_escape_bundle_rule():
             Eq(P0(
                 "prior_orientation_bundle", "developmental_orientation_bundle"
             ), L(1)),
+            Eq(P0(
+                "prior_orientation_bundle",
+                "orientation_exploration_exhausted",
+            ), L(0)),
             Eq(
                 P0("prior_orientation_bundle", "support_phase"),
                 P0("episode", "current_support_phase"),
             ),
+            Eq(
+                P0(
+                    "prior_orientation_bundle",
+                    "developmental_orientation_origin_class",
+                ),
+                P0(
+                    "episode", "state_gravity_relative_orientation_class"
+                ),
+            ),
         ),
+    )
+    exhausted_bundles = Filter(
+        Neighbours("episode", "has_humanoid_motor_program"),
+        "exhausted_orientation_bundle",
+        And(
+            Eq(P0(
+                "exhausted_orientation_bundle",
+                "developmental_orientation_bundle",
+            ), L(1)),
+            Eq(P0(
+                "exhausted_orientation_bundle",
+                "orientation_exploration_exhausted",
+            ), L(1)),
+            Eq(P0(
+                "exhausted_orientation_bundle", "support_phase"
+            ), P0("episode", "current_support_phase")),
+            Eq(P0(
+                "exhausted_orientation_bundle",
+                "developmental_orientation_origin_class",
+            ), P0(
+                "episode", "state_gravity_relative_orientation_class"
+            )),
+        ),
+    )
+    next_shape_order = Plus(L(2), Count(exhausted_bundles))
+    shape_order = If(
+        Lt(next_shape_order, channel_count),
+        next_shape_order,
+        channel_count,
     )
     return {
         "name": "hdc_open_arbitrary_width_orientation_escape_bundle",
@@ -1355,6 +1713,7 @@ def open_composed_orientation_escape_bundle_rule():
             ["agent", "has_humanoid_episode", "episode"],
             ["episode", "projects_embodied_development", "development"],
             ["development", "has_active_embodied_developmental_capability", "capability"],
+            ["episode", "has_somatomotor_wave_field", "field"],
         ],
         "where": And(
             orientation_composition_authorized(),
@@ -1374,7 +1733,12 @@ def open_composed_orientation_escape_bundle_rule():
                 "decision_kind": "developmental_metaprogram",
                 "open_residual_count": 1,
                 "developmental_orientation_bundle": 1,
+                "orientation_exploration_exhausted": 0,
                 "support_phase": T(P0("episode", "current_support_phase")),
+                "developmental_orientation_origin_class": T(P0(
+                    "episode", "state_gravity_relative_orientation_class"
+                )),
+                "developmental_orientation_shape_order": T(shape_order),
                 "output_authority": 0,
                 "integer_native": 1,
             }],
@@ -1383,22 +1747,85 @@ def open_composed_orientation_escape_bundle_rule():
     }
 
 
-def bind_composed_orientation_escape_bundle_rule():
-    same_group = Filter(
-        positive_orientation_phase_candidates(),
-        "same_orientation_group_candidate",
-        Eq(
-            P0("same_orientation_group_candidate", "actuator_group"),
-            P0("candidate", "actuator_group"),
+def exhaust_ineffective_orientation_bundle_rule():
+    """Retain a null result without letting it monopolize future synthesis."""
+    channel_count = Count(Neighbours("field", "has_somatomotor_wave_cell"))
+    return {
+        "name": "hdc_exhaust_ineffective_orientation_bundle",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -101,
+        "batch": True,
+        "comment": "A replay-budgeted bundle whose latest physical receipt "
+        "has no orientation escape is retained as experimentally relevant "
+        "negative evidence, but no longer blocks a new analysis-by-synthesis "
+        "candidate for the same support phase.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_policy", "policy"],
+            ["episode", "has_somatomotor_wave_field", "field"],
+            ["episode", "has_humanoid_motor_program", "plan"],
+        ],
+        "where": And(
+            Eq(P0("plan", "developmental_orientation_bundle"), L(1)),
+            Eq(P0("plan", "orientation_exploration_exhausted"), L(0)),
+            Not(Lt(
+                P0("plan", "developmental_replay_count"),
+                Max(
+                    L(2),
+                    P0("plan", "developmental_orientation_shape_order"),
+                ),
+            )),
+            Not(Gt(
+                P0("plan", "development_latest_orientation_escape_units"),
+                L(0),
+            )),
         ),
+        "effects": [
+            ["set_attr", "plan", "orientation_exploration_exhausted", 1],
+            [
+                "set_attr",
+                "plan",
+                "orientation_exhaustion_reason",
+                "replay_budget_closed_without_current_escape",
+            ],
+            [
+                "set_attr",
+                "plan",
+                "orientation_exhausted_at_request_seq",
+                T(P0("episode", "request_seq")),
+            ],
+            [
+                "del_edge",
+                "episode",
+                "has_ready_humanoid_motor_program",
+                "plan",
+            ],
+        ],
+    }
+
+
+def bind_composed_orientation_escape_bundle_rule():
+    members = Neighbours("plan", "includes_humanoid_phase_action_model")
+    available = Filter(
+        orientation_phase_candidates(),
+        "available_orientation_candidate",
+        Not(Exists(
+            members,
+            "bound_orientation_group",
+            Eq(
+                P0("bound_orientation_group", "actuator_group"),
+                P0("available_orientation_candidate", "actuator_group"),
+            ),
+        )),
     )
     winner = Argmin(
-        same_group,
+        available,
         "ranked_orientation_group_candidate",
         Neg(developmental_orientation_escape_score(
             "ranked_orientation_group_candidate"
         )),
-        V("candidate"),
+        V("plan"),
     )
     return {
         "name": "hdc_bind_best_escape_command_per_effector_group",
@@ -1413,16 +1840,11 @@ def bind_composed_orientation_escape_bundle_rule():
         ],
         "where": And(
             Eq(A("plan", "status"), L("developmental_orientation_building")),
-            Gt(developmental_orientation_escape_score("candidate"), L(0)),
             Eq(V("candidate"), winner),
-            Eq(Count(Filter(
-                Neighbours("plan", "includes_humanoid_phase_action_model"),
-                "bound_orientation_group",
-                Eq(
-                    P0("bound_orientation_group", "actuator_group"),
-                    P0("candidate", "actuator_group"),
-                ),
-            )), L(0)),
+            Lt(
+                Count(members),
+                P0("plan", "developmental_orientation_shape_order"),
+            ),
         ),
         "effects": [[
             "add_edge", "plan", "includes_humanoid_phase_action_model", "candidate"
@@ -1444,6 +1866,18 @@ def close_composed_orientation_escape_bundle_rule():
         secondary_options, "orientation_bundle_secondary",
         P0("orientation_bundle_secondary", "ordinal"), primary
     )
+    remaining_groups = Filter(
+        orientation_phase_candidates(),
+        "remaining_orientation_candidate",
+        Not(Exists(
+            members,
+            "existing_orientation_member",
+            Eq(
+                P0("existing_orientation_member", "actuator_group"),
+                P0("remaining_orientation_candidate", "actuator_group"),
+            ),
+        )),
+    )
     return {
         "name": "hdc_collapse_arbitrary_width_orientation_escape_bundle",
         "area": "humanoid_sensorimotor_adaptation",
@@ -1457,6 +1891,13 @@ def close_composed_orientation_escape_bundle_rule():
         "where": And(
             Eq(A("plan", "status"), L("developmental_orientation_building")),
             Gt(Count(members), L(1)),
+            Or(
+                Not(Lt(
+                    Count(members),
+                    P0("plan", "developmental_orientation_shape_order"),
+                )),
+                Eq(Count(remaining_groups), L(0)),
+            ),
         ),
         "effects": [
             ["set_attr", "plan", "status", "ready"],
@@ -1496,24 +1937,53 @@ def replay_developmental_orientation_metaprogram_rule():
         Neighbours("episode", "has_humanoid_motor_program"),
         "orientation_program_candidate",
         And(
+            Eq(P0(
+                "orientation_program_candidate",
+                "orientation_exploration_exhausted",
+            ), L(0)),
             Or(
                 Eq(A("orientation_program_candidate", "status"), L("grounded")),
                 Eq(A("orientation_program_candidate", "status"), L("ready")),
             ),
             Or(
-                Gt(P0(
-                    "orientation_program_candidate",
-                    "development_latest_orientation_escape_units",
-                ), L(0)),
+                And(
+                    Gt(P0(
+                        "orientation_program_candidate",
+                        "development_latest_orientation_escape_units",
+                    ), L(0)),
+                    Eq(
+                        P0(
+                            "orientation_program_candidate",
+                            "development_latest_pre_orientation_class",
+                        ),
+                        P0(
+                            "episode",
+                            "state_gravity_relative_orientation_class",
+                        ),
+                    ),
+                ),
                 And(
                     Eq(P0(
                         "orientation_program_candidate",
                         "developmental_orientation_bundle",
                     ), L(1)),
+                    Eq(P0(
+                        "orientation_program_candidate",
+                        "developmental_orientation_origin_class",
+                    ), P0(
+                        "episode",
+                        "state_gravity_relative_orientation_class",
+                    )),
                     Lt(P0(
                         "orientation_program_candidate",
                         "developmental_replay_count",
-                    ), channel_count),
+                    ), Max(
+                        L(2),
+                        P0(
+                            "orientation_program_candidate",
+                            "developmental_orientation_shape_order",
+                        ),
+                    )),
                 ),
             ),
             Exists(
@@ -1546,7 +2016,13 @@ def replay_developmental_orientation_metaprogram_rule():
                     Lt(P0(
                         "ranked_orientation_program",
                         "developmental_replay_count",
-                    ), channel_count),
+                    ), Max(
+                        L(2),
+                        P0(
+                            "ranked_orientation_program",
+                            "developmental_orientation_shape_order",
+                        ),
+                    )),
                 ),
                 channel_count,
                 L(0),
@@ -1652,15 +2128,37 @@ def request_generic_program_trajectory_rule():
         "batch": False,
         "comment": "The developmental capability supplies a situated owner "
         "and the body's evidence window supplies its horizon. The generic "
-        "trajectory faculty owns expansion and selection.",
+        "trajectory faculty owns expansion and selection. An explicit target "
+        "shape is optional once receipt-grounded manifold bounds define the "
+        "acceptable path family.",
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_policy", "policy"],
             ["episode", "projects_embodied_development", "development"],
             ["development", "has_active_embodied_developmental_capability", "capability"],
         ],
         "where": And(
-            Eq(A("capability", "developmental_ecology"), L("floor")),
-            Gt(Count(A("capability", "desired_body_state_signature")), L(0)),
+            Or(
+                Eq(A("capability", "developmental_ecology"), L("floor")),
+                And(
+                    Gt(P0("policy", "future_manifold_enabled"), L(0)),
+                    Gt(P0("episode", "manifold_bounds_ready"), L(0)),
+                    Eq(
+                        P0(
+                            "episode",
+                            "caregiver_protective_support_available",
+                        ),
+                        L(1),
+                    ),
+                ),
+            ),
+            Or(
+                Gt(Count(A("capability", "desired_body_state_signature")), L(0)),
+                And(
+                    Gt(P0("policy", "future_manifold_enabled"), L(0)),
+                    Gt(P0("episode", "manifold_bounds_ready"), L(0)),
+                ),
+            ),
             Gt(P0("development", "development_evidence_window"), L(0)),
             Eq(Count(Neighbours(
                 "capability", "requests_embodied_program_trajectory"
@@ -1714,6 +2212,25 @@ def request_generic_program_trajectory_rule():
 
 
 def clear_stale_generic_program_context_rule():
+    latest_closed_receipt = Exists(
+        Neighbours("episode", "has_humanoid_motor_trial"),
+        "latest_context_trial",
+        And(
+            Eq(
+                P0("latest_context_trial", "request_seq"),
+                P0("development", "latest_development_receipt_seq"),
+            ),
+            Exists(
+                Neighbours(
+                    "latest_context_trial", "has_humanoid_transition"
+                ),
+                "latest_context_outcome",
+                Eq(P0(
+                    "latest_context_outcome", "development_receipt_closed"
+                ), L(1)),
+            ),
+        ),
+    )
     return {
         "name": "hdc_clear_stale_generic_program_trajectory_context",
         "area": "humanoid_sensorimotor_adaptation",
@@ -1727,7 +2244,10 @@ def clear_stale_generic_program_context_rule():
             ["episode", "last_verified_humanoid_motor_program", "current"],
             ["capability", "has_current_embodied_program", "stale"],
         ],
-        "where": Not(Eq(V("current"), V("stale"))),
+        "where": And(
+            Not(latest_closed_receipt),
+            Not(Eq(V("current"), V("stale"))),
+        ),
         "effects": [[
             "del_edge", "capability", "has_current_embodied_program", "stale"
         ]],
@@ -1735,6 +2255,25 @@ def clear_stale_generic_program_context_rule():
 
 
 def bind_generic_program_context_rule():
+    latest_closed_receipt = Exists(
+        Neighbours("episode", "has_humanoid_motor_trial"),
+        "latest_context_trial",
+        And(
+            Eq(
+                P0("latest_context_trial", "request_seq"),
+                P0("development", "latest_development_receipt_seq"),
+            ),
+            Exists(
+                Neighbours(
+                    "latest_context_trial", "has_humanoid_transition"
+                ),
+                "latest_context_outcome",
+                Eq(P0(
+                    "latest_context_outcome", "development_receipt_closed"
+                ), L(1)),
+            ),
+        ),
+    )
     return {
         "name": "hdc_bind_current_program_as_trajectory_context",
         "area": "humanoid_sensorimotor_adaptation",
@@ -1748,6 +2287,7 @@ def bind_generic_program_context_rule():
             ["episode", "last_verified_humanoid_motor_program", "current"],
         ],
         "where": And(
+            Not(latest_closed_receipt),
             Not(Exists(
                 Neighbours("capability", "has_current_embodied_program"),
                 "known_current",
@@ -2022,7 +2562,6 @@ def clear_generic_program_context_from_latest_receipt_rule():
             ["development", "has_active_embodied_developmental_capability", "capability"],
             ["capability", "has_current_embodied_program", "stale"],
             ["episode", "has_humanoid_motor_trial", "trial"],
-            ["trial", "enacts_humanoid_motor_program", "current"],
             ["trial", "has_humanoid_transition", "outcome"],
         ],
         "where": And(
@@ -2031,7 +2570,11 @@ def clear_generic_program_context_from_latest_receipt_rule():
                 P0("trial", "request_seq"),
                 P0("development", "latest_development_receipt_seq"),
             ),
-            Not(Eq(V("stale"), V("current"))),
+            Not(Exists(
+                Neighbours("trial", "enacts_humanoid_motor_program"),
+                "enacted_current",
+                Eq(V("stale"), V("enacted_current")),
+            )),
         ),
         "effects": [[
             "del_edge", "capability", "has_current_embodied_program", "stale"
@@ -2114,7 +2657,6 @@ def clear_stale_trajectory_state_source_rule():
         "program no longer preserves the current future manifold.",
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
-            ["agent", "has_humanoid_policy", "policy"],
             ["episode", "projects_embodied_development", "development"],
             ["development", "has_active_embodied_developmental_capability", "capability"],
             [
@@ -2240,9 +2782,50 @@ def audit_selected_trajectory_manifold_rule():
                     "support", "resolved", "loss", "information_loss",
                     "horizon", "anchor_count", "refinement_count",
                     "termination_code", "exploration_authority",
+                    "effort_supported", "projected_effort", "ideal_effort",
+                    "effort_scale", "effort_residual", "time_compression",
+                    "width_compression", "information_compression",
+                    "compression_dimension_count", "manifold_compression",
+                    "effort_authorized",
                     *(f"situated_support_{index}" for index in range(7)),
                     *(f"applied_bound_{index}" for index in range(7)),
                 )
+            ],
+            ["set_attr", "episode", "manifold_effort_audit_count", T(Plus(
+                P0("episode", "manifold_effort_audit_count"), L(1)
+            ))],
+            [
+                "set_attr", "episode", "manifold_effort_supported_audit_count",
+                T(Plus(
+                    P0("episode", "manifold_effort_supported_audit_count"),
+                    If(
+                        Gt(P0("path", "last_manifold_projection_effort_supported"), L(0)),
+                        L(1), L(0),
+                    ),
+                )),
+            ],
+            [
+                "set_attr", "episode", "manifold_effort_blocked_audit_count",
+                T(Plus(
+                    P0("episode", "manifold_effort_blocked_audit_count"),
+                    If(
+                        And(
+                            Gt(P0("path", "last_manifold_projection_effort_supported"), L(0)),
+                            Eq(P0("path", "last_manifold_projection_effort_authorized"), L(0)),
+                        ),
+                        L(1), L(0),
+                    ),
+                )),
+            ],
+            [
+                "set_attr", "episode", "manifold_effort_compression_audit_count",
+                T(Plus(
+                    P0("episode", "manifold_effort_compression_audit_count"),
+                    If(
+                        Gt(P0("path", "last_manifold_projection_manifold_compression"), L(0)),
+                        L(1), L(0),
+                    ),
+                )),
             ],
         ],
     }
@@ -2388,7 +2971,13 @@ def replay_selected_order_n_program_path_rule():
             ["transition", "continues_with_embodied_program", "memory"],
         ],
         "where": And(
-            Gt(Count(A("capability", "desired_body_state_signature")), L(0)),
+            Or(
+                Gt(Count(A("capability", "desired_body_state_signature")), L(0)),
+                And(
+                    Gt(P0("policy", "future_manifold_enabled"), L(0)),
+                    Gt(P0("episode", "manifold_bounds_ready"), L(0)),
+                ),
+            ),
             Gt(P0("path", "depth"), L(1)),
             Eq(P0("transition", "verified"), L(1)),
             Or(
@@ -2911,30 +3500,27 @@ def request_evidence_faded_caregiver_protection_rule():
         "order": -80,
         "batch": False,
         "comment": "A caregiver changes the situated consequence envelope. "
-        "Protection is requested while the active capability has less direct "
-        "evidence than its body-derived window, then fades without an age or "
-        "milestone constant.",
+        "Protection is requested while the active capability has less "
+        "successful situated evidence than its body-derived window, then "
+        "fades without an age or milestone constant. Failed attempts are "
+        "evidence about the basin, but they are not evidence that support can "
+        "already be withdrawn.",
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_policy", "policy"],
             ["episode", "projects_embodied_development", "development"],
             ["development", "has_active_embodied_developmental_capability", "capability"],
             ["episode", "has_ready_humanoid_motor_program", "plan"],
         ],
         "where": And(
-            Eq(P0(
-                "episode", "caregiver_protective_support_available"
-            ), L(1)),
+            caregiver_protection_needed("capability"),
             Eq(P0(
                 "episode", "caregiver_protective_support_requested"
             ), L(0)),
             Eq(P0("episode", "action_ready"), L(1)),
-            Lt(
-                P0("capability", "attempt_count"),
-                P0("development", "development_evidence_window"),
-            ),
-            Not(material_viability_reflex_active()),
         ),
         "effects": [
+            ["set_attr", "episode", "caregiver_support_scale", 1],
             ["set_attr", "episode", "caregiver_protective_support_requested", 1],
             ["set_attr", "plan", "contextual_release_eligible", 1],
             ["set_attr", "plan", "caregiver_buffered_release", 1],
@@ -2942,6 +3528,78 @@ def request_evidence_faded_caregiver_protection_rule():
                 "add_edge", "plan",
                 "released_under_caregiver_protection", "capability",
             ],
+        ],
+    }
+
+
+def audit_learned_caregiver_support_counterfactual_rule():
+    """Observe composition quality without granting intervention authority."""
+    return {
+        "name": "hdc_audit_learned_caregiver_support_counterfactual",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -82,
+        "batch": False,
+        "comment": "Compose the child's issued motor program with the learned "
+        "exafferent support consequence through native analysis by synthesis. "
+        "These fields are audit evidence only; this rule neither requests nor "
+        "enacts caregiver support.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_policy", "policy"],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "enacts_humanoid_motor_program", "plan"],
+            ["episode", "has_caregiver_support_action_model", "support_model"],
+        ],
+        "where": And(
+            Eq(P0("support_model", "initialized"), L(1)),
+            Eq(A("trial", "status"), L("issued")),
+            Eq(P0("trial", "request_seq"), P0("episode", "request_seq")),
+            Lt(
+                P0("plan", "support_counterfactual_audit_seq"),
+                P0("episode", "request_seq"),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "plan", "support_counterfactual_audit_seq", T(
+                P0("episode", "request_seq")
+            )],
+        ] + [
+            ["set_attr", "plan", f"unsupported_projection_{field}", T(
+                trajectory_manifold_projection("plan", field)
+            )]
+            for field in ("support", "resolved", "loss", "information_loss")
+        ] + [
+            ["set_attr", "plan", f"supported_projection_{field}", T(
+                trajectory_manifold_projection(
+                    "plan", field, addition="support_model"
+                )
+            )]
+            for field in (
+                "support", "resolved", "loss", "information_loss", "horizon",
+                "earliest_decisive_tick", "minimum_exafferent_scale",
+            )
+        ] + [
+            ["set_attr", "plan", f"supported_projection_residual_{index}", T(
+                trajectory_manifold_projection(
+                    "plan", f"residual_{index}", addition="support_model"
+                )
+            )]
+            for index in range(7)
+        ] + [
+            ["set_attr", "plan", f"unsupported_projection_bound_{index}", T(
+                trajectory_manifold_projection(
+                    "plan", f"applied_bound_{index}"
+                )
+            )]
+            for index in range(7)
+        ] + [
+            ["set_attr", "plan", f"supported_projection_bound_{index}", T(
+                trajectory_manifold_projection(
+                    "plan", f"applied_bound_{index}", addition="support_model"
+                )
+            )]
+            for index in range(7)
         ],
     }
 
@@ -2979,6 +3637,7 @@ def request_calibration_caregiver_protection_rule():
             Not(material_viability_reflex_active()),
         ),
         "effects": [
+            ["set_attr", "episode", "caregiver_support_scale", 1],
             ["set_attr", "episode", "caregiver_protective_support_requested", 1],
             ["set_attr", "plan", "contextual_release_eligible", 1],
             ["set_attr", "plan", "caregiver_buffered_release", 1],
@@ -2986,6 +3645,53 @@ def request_calibration_caregiver_protection_rule():
                 "add_edge", "plan",
                 "released_under_caregiver_protection", "action_model",
             ],
+        ],
+    }
+
+
+def request_counterfactual_caregiver_protection_rule():
+    """Opt-in additive authority; never withdraws curriculum protection."""
+    return {
+        "name": "hdc_request_counterfactual_caregiver_protection",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -81,
+        "batch": False,
+        "comment": "When explicitly enabled for an experiment, add caregiver "
+        "support only where the enacted unsupported path escapes and the "
+        "learned exafferent composition preserves it. Existing support rules "
+        "remain authoritative and are never suppressed by this rule.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "enacts_humanoid_motor_program", "plan"],
+            ["episode", "has_caregiver_support_action_model", "support_model"],
+        ],
+        "where": And(
+            Eq(P0("episode", "caregiver_support_counterfactual_authority"), L(1)),
+            Eq(P0("episode", "caregiver_protective_support_available"), L(1)),
+            Eq(P0("episode", "caregiver_protective_support_requested"), L(0)),
+            Eq(A("trial", "status"), L("issued")),
+            Eq(P0("trial", "request_seq"), P0("episode", "request_seq")),
+            Eq(P0("plan", "support_counterfactual_audit_seq"), P0("episode", "request_seq")),
+            Not(Lt(
+                P0("plan", "unsupported_projection_loss"),
+                P0("episode", "caregiver_support_counterfactual_loss_floor"),
+            )),
+            Eq(P0("plan", "supported_projection_loss"), L(0)),
+            Gt(P0("plan", "supported_projection_minimum_exafferent_scale"), L(0)),
+        ),
+        "effects": [
+            ["set_attr", "episode", "caregiver_support_scale", T(
+                P0("plan", "supported_projection_minimum_exafferent_scale")
+            )],
+            ["set_attr", "episode", "caregiver_protective_support_requested", 1],
+            ["set_attr", "plan", "contextual_release_eligible", 1],
+            ["set_attr", "plan", "caregiver_buffered_release", 1],
+            ["set_attr", "plan", "counterfactual_support_release", 1],
+            ["set_attr", "plan", "counterfactual_support_release_seq", T(
+                P0("episode", "request_seq")
+            )],
         ],
     }
 
@@ -3423,7 +4129,7 @@ def close_humanoid_wave_program_rule():
 def manifest() -> dict:
     return {
         "id": "humanoid_developmental_curriculum",
-        "version": "3.16.0",
+        "version": "3.34.0",
         "depends_on": ["humanoid_adaptation", "somatomotor_waves"],
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
@@ -3495,6 +4201,15 @@ def manifest() -> dict:
                     "var": "phase_model",
                 },
             },
+            {
+                "provenance": "humanoid_development:situated_orientation_action_evidence",
+                "src": {"type": "HumanoidActionModel", "var": "action_model"},
+                "edge_type": "has_situated_orientation_action_evidence",
+                "tgt": {
+                    "type": "HumanoidSituatedOrientationActionEvidence",
+                    "var": "orientation_evidence",
+                },
+            },
         ],
         "rules": [
             archive_stale_inverse_kinematic_query_rule(),
@@ -3503,6 +4218,8 @@ def manifest() -> dict:
             refresh_inverse_kinematic_query_rule(),
             score_inverse_kinematic_forward_models_rule(),
             apply_capability_goal_rule(),
+            synchronize_developmental_motor_task_rule(),
+            retire_orientation_authority_outside_orientation_manifold_rule(),
             release_stale_recovery_program_rule(),
             release_stale_recovery_basin_rule(),
             hold_pre_locomotor_residual_rule(),
@@ -3510,17 +4227,19 @@ def manifest() -> dict:
             request_generic_program_trajectory_rule(),
             clear_stale_generic_program_context_rule(),
             bind_generic_program_context_rule(),
-            replay_selected_order_n_program_path_rule(),
             open_physics_counterfactual_compound_rule(),
             bind_physics_counterfactual_members_rule(),
             close_physics_counterfactual_compound_rule(),
             release_selected_physics_counterfactual_rule(),
+            exhaust_ineffective_orientation_bundle_rule(),
             open_composed_orientation_escape_bundle_rule(),
             bind_composed_orientation_escape_bundle_rule(),
             close_composed_orientation_escape_bundle_rule(),
             replay_developmental_orientation_metaprogram_rule(),
             open_scaffolded_self_attempt_rule(),
             open_unscaffolded_self_attempt_rule(),
+            audit_learned_caregiver_support_counterfactual_rule(),
+            request_counterfactual_caregiver_protection_rule(),
             request_calibration_caregiver_protection_rule(),
             request_evidence_faded_caregiver_protection_rule(),
             mark_scaffolded_self_attempt_as_babble_rule(),
@@ -3534,6 +4253,8 @@ def manifest() -> dict:
             bind_humanoid_wave_member_rule(),
             close_humanoid_wave_program_rule(),
             mirror_mastery_count_rule(),
+            mint_situated_orientation_action_evidence_rule(),
+            update_situated_orientation_action_evidence_rule(),
             learn_integer_developmental_action_affordance_rule(),
             learn_integer_developmental_program_affordance_rule(),
             publish_verified_transition_to_generic_trajectory_rule(),

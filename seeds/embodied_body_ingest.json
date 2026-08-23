@@ -1,6 +1,6 @@
 {
   "id": "embodied_body_ingest",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "depends_on": [
     "embodied_learning_session"
   ],
@@ -1640,6 +1640,7 @@
           {
             "status": "situated_ready",
             "body_class": "articulated_humanoid",
+            "initial_situated_experiment_established": 0,
             "grounded": 1,
             "integer_native": 1,
             "output_authority": 0
@@ -1968,6 +1969,21 @@
             }
           },
           {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "episode"
+              },
+              "key": "initial_situated_experiment_established"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
             "type": "Not",
             "arg": {
               "type": "Exists",
@@ -2017,6 +2033,90 @@
           "request",
           "revises_learning_plan_step",
           "step"
+        ]
+      ]
+    },
+    {
+      "name": "ebi_close_established_initial_situated_reset_request",
+      "area": "general_cognition",
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "The initialization request only establishes which declared fixture grounds the first experiment; it has no mechanical output authority. Once the ordinary scenario selector resolves it, retain it as history but release the active-request frontier for later evidence-driven situated experiments.",
+      "match": [
+        [
+          "episode",
+          "has_active_embodied_reset_request",
+          "request"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "cause"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "initial_situated_experiment"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "output_authority"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "reinstantiation_spec_ready"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "request",
+          "status",
+          "initial_fixture_established"
+        ],
+        [
+          "set_attr",
+          "episode",
+          "initial_situated_experiment_established",
+          1
+        ],
+        [
+          "del_edge",
+          "episode",
+          "has_active_embodied_reset_request",
+          "request"
         ]
       ]
     }

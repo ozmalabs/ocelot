@@ -174,6 +174,47 @@ def test_manifest_reuses_existing_adaptive_and_default_mode_cores():
     assert not any("python" in rule.get("comment", "").lower() for rule in manifest["rules"])
 
 
+def test_verified_recoverability_relaxes_local_exploration_interrupt():
+    unsafe_agent, unsafe_episode, unsafe_model = _fixture()
+    _motor_receipt(
+        unsafe_agent,
+        unsafe_episode,
+        unsafe_model,
+        epoch=2,
+        pre_x=0.0,
+        post_x=0.0,
+        sensed_post_x=0.0,
+        angular_velocity=10.0,
+    )
+    unsafe_attrs = unsafe_agent.s.node(unsafe_episode)["attrs"]
+    assert unsafe_attrs["sensorimotor_interrupt_required"] == 1.0
+
+    safe_agent, safe_episode, safe_model = _fixture()
+    safety = safe_agent.s.add_node("LearningSafetyContext", {
+        "verified": 1.0,
+        "protective_support_available": 1.0,
+        "protective_support_effectiveness": 1.0,
+        "reset_reachable": 1.0,
+        "recovery_path_count": 2.0,
+    })
+    _edge(safe_agent, safe_episode, "has_learning_safety_context", safety)
+    _motor_receipt(
+        safe_agent,
+        safe_episode,
+        safe_model,
+        epoch=2,
+        pre_x=0.0,
+        post_x=0.0,
+        sensed_post_x=0.0,
+        angular_velocity=10.0,
+    )
+    safe_attrs = safe_agent.s.node(safe_episode)["attrs"]
+    assert safe_attrs["sensorimotor_local_urgency"] < unsafe_attrs[
+        "sensorimotor_local_urgency"
+    ]
+    assert safe_attrs["sensorimotor_interrupt_required"] == 0.0
+
+
 def test_pruned_network_sample_is_not_republished_from_old_receipt():
     agent, episode, model = _fixture()
     _, outcome, _ = _motor_receipt(

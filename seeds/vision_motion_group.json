@@ -131,7 +131,7 @@
   },
   {
    "name": "mo_tol_otsu",
-   "comment": "\u00a713 -- THE TOLERANCE IS NOT A NUMBER IN THIS FILE. It is the `pd` of a cell the graph picked, by Otsu's between-class criterion over the field's OWN adjacent-pair vector-difference distribution. Fires only once every cell has been measured (the zero-pending guard), so the fixpoint orders the layers with no adapter sequencing. THE INHERITED HONEST LIMIT, pre-registered rather than discovered afterwards: Otsu has no NULL HYPOTHESIS -- it returns a split on any distribution, including a field with no motion structure in it at all. The stills and noise arms exist to measure exactly that.",
+   "comment": "\u00a713 -- THE TOLERANCE IS NOT A NUMBER IN THIS FILE. It is the `pd` of a cell the graph picked, by Otsu's between-class criterion over the field's OWN adjacent-pair vector-difference distribution. Fires only once every cell has been measured (the zero-pending guard), so the fixpoint orders the layers with no adapter sequencing. THE INHERITED HONEST LIMIT, pre-registered rather than discovered afterwards: Otsu has no NULL HYPOTHESIS -- it returns a split on any distribution, including a field with no motion structure in it at all. The stills and noise arms exist to measure exactly that.\n\nFIXED 2026-08-23 -- THE DIVIDE GUARD WAS SILENTLY ZERO. `Min`/`Max` take `items: Vec`, and this rule wrote `{type: Max, a: <counts>, b: 1.0}`, which deserialises with an EMPTY item list and evaluates to 0. Every candidate threshold's between-class variance therefore divided by zero (the engine returns 0.0 rather than erroring), the `Argmax` ranged over all-equal values, and the rule returned an ARBITRARY cell's `pd` -- it was not computing Otsu at all.\n\nOn a hard mask this was invisible, because the arbitrary answer (0.0) is also the correct Otsu answer for a bimodal {0, 9} distribution -- splitting at t=0 separates the classes exactly. On a GRADED field it is not: measured on a supersampled disc with pd values {0, 0.56, 3.38, 5.62, 6.75, 8.44, 9.0}, the guard-as-written derives mtol = 0.0 and the fixed form derives 3.375. A tolerance of 0 cuts every pair that differs at all, which is the maximum-fragmentation case (WHY_FLOODS_EXIST.md 6h measured 82 sliver regions there).\n\nSo the defect bit precisely on real, anti-aliased observation and was hidden by the hard-mask fixtures. Callers passing an explicit `mtol_exact` were never affected; callers relying on the derived tolerance were.",
    "match_type": null,
    "match": [
     [
@@ -548,75 +548,77 @@
          },
          "b": {
           "type": "Max",
-          "a": {
-           "type": "Times",
-           "items": [
-            {
-             "type": "Count",
-             "source": {
-              "type": "Filter",
+          "items": [
+           {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Count",
               "source": {
-               "type": "NodesOfType",
-               "node_type": "MCell"
-              },
-              "var_name": "z",
-              "predicate": {
-               "type": "Lte",
-               "a": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "z"
-                },
-                "key": "pd"
+               "type": "Filter",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "MCell"
                },
-               "b": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "t"
+               "var_name": "z",
+               "predicate": {
+                "type": "Lte",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "z"
+                 },
+                 "key": "pd"
                 },
-                "key": "pd"
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "t"
+                 },
+                 "key": "pd"
+                }
+               }
+              }
+             },
+             {
+              "type": "Count",
+              "source": {
+               "type": "Filter",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "MCell"
+               },
+               "var_name": "z",
+               "predicate": {
+                "type": "Gt",
+                "a": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "z"
+                 },
+                 "key": "pd"
+                },
+                "b": {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "t"
+                 },
+                 "key": "pd"
+                }
                }
               }
              }
-            },
-            {
-             "type": "Count",
-             "source": {
-              "type": "Filter",
-              "source": {
-               "type": "NodesOfType",
-               "node_type": "MCell"
-              },
-              "var_name": "z",
-              "predicate": {
-               "type": "Gt",
-               "a": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "z"
-                },
-                "key": "pd"
-               },
-               "b": {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "t"
-                },
-                "key": "pd"
-               }
-              }
-             }
-            }
-           ]
-          },
-          "b": {
-           "type": "Lit",
-           "value": 1.0
-          }
+            ]
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           }
+          ]
          }
         },
         "default": null

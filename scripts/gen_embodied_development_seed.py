@@ -343,6 +343,9 @@ CAPABILITIES = (
         "goal": "support_reducing_elevation",
         "evidence": "support_reducing_elevation",
         "ecology": "upright",
+        # Task-space contract only: opaque actuator programs remain learned.
+        "motor_task_context": "self_takeoff",
+        "motor_task_target_scale": 1,
         "human_analogue": "two_foot_takeoff_and_landing",
         "requires": ("independent_walking", "controlled_lowering"),
     },
@@ -419,6 +422,10 @@ def neighbours_of(node, edge_type):
 
 def locomotor_phenotypes():
     return Neighbours("episode", "has_embodied_locomotor_phenotype")
+
+
+def locomotor_phenotype_families():
+    return Neighbours("episode", "has_embodied_locomotor_phenotype_family")
 
 
 def verified_locomotor_frontier():
@@ -734,6 +741,12 @@ def instantiate_capability_rule():
                 "goal": T(A("template", "goal")),
                 "evidence_kind": T(A("template", "evidence_kind")),
                 "developmental_ecology": T(A("template", "developmental_ecology")),
+                "motor_task_context": T(A(
+                    "template", "motor_task_context"
+                )),
+                "motor_task_target_scale": T(P0(
+                    "template", "motor_task_target_scale"
+                )),
                 "human_analogue": T(A("template", "human_analogue")),
                 "desired_body_state_signature": T(A(
                     "template", "desired_body_state_signature"
@@ -984,6 +997,17 @@ def suspend_detached_locomotor_pareto_profile_rule():
     }
 
 
+def locomotor_shape_evidence(receipt="receipt"):
+    """Project contact cycles broadly and non-cycle walking locally."""
+    return Or(
+        Eq(P0(receipt, "development_locomotor_cycle_evidence"), L(1)),
+        And(
+            Eq(A(receipt, "development_action_intent"), L("learned_walk")),
+            Gt(P0(receipt, "development_translation_units"), L(0)),
+        ),
+    )
+
+
 def mint_locomotor_phenotype_rule():
     known = Filter(
         locomotor_phenotypes(),
@@ -1005,7 +1029,9 @@ def mint_locomotor_phenotype_rule():
         "where": And(
             Eq(P0("episode", "development_learning_active"), L(1)),
             Eq(P0("receipt", "development_receipt_closed"), L(1)),
-            Eq(P0("receipt", "development_locomotor_cycle_evidence"), L(1)),
+            # Keep the broad repertoire at contact-cycle resolution, then
+            # project non-cycle detail only for directed walking.
+            locomotor_shape_evidence(),
             Eq(
                 P0("receipt", "development_receipt_seq"),
                 P0("episode", "latest_development_receipt_seq"),
@@ -1019,6 +1045,37 @@ def mint_locomotor_phenotype_rule():
                 )),
                 "key": T(A(
                     "receipt", "development_locomotor_phenotype_key"
+                )),
+                "family_key": T(A(
+                    "receipt", "development_locomotor_phenotype_family_key"
+                )),
+                "shape_order": 1,
+                "action_intent": T(A(
+                    "receipt", "development_action_intent"
+                )),
+                "developmental_capability": T(A(
+                    "receipt", "developmental_capability"
+                )),
+                "motor_program_key": T(A(
+                    "receipt", "development_motor_program_key"
+                )),
+                "primary_token": T(A(
+                    "receipt", "development_primary_token"
+                )),
+                "secondary_token": T(A(
+                    "receipt", "development_secondary_token"
+                )),
+                "pre_orientation_class": T(P0(
+                    "receipt", "development_pre_orientation_class"
+                )),
+                "post_orientation_class": T(P0(
+                    "receipt", "development_post_orientation_class"
+                )),
+                "pre_distal_support_code": T(P0(
+                    "receipt", "development_pre_distal_support_code"
+                )),
+                "pre_whole_body_support_count": T(P0(
+                    "receipt", "development_pre_support_count"
                 )),
                 "status": "hypothesis",
                 "occurrence_count": 1,
@@ -1050,6 +1107,134 @@ def mint_locomotor_phenotype_rule():
     }
 
 
+def mint_locomotor_phenotype_family_rule():
+    known = Filter(
+        locomotor_phenotype_families(),
+        "known_family",
+        Eq(
+            A("known_family", "key"),
+            A("receipt", "development_locomotor_phenotype_family_key"),
+        ),
+    )
+    return {
+        "name": "ed_mint_locomotor_phenotype_family_from_receipt",
+        "area": "general_cognition",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_development_episode", "episode"],
+            ["episode", "has_embodied_development_receipt", "receipt"],
+        ],
+        "where": And(
+            Eq(P0("episode", "development_learning_active"), L(1)),
+            Eq(P0("receipt", "development_receipt_closed"), L(1)),
+            locomotor_shape_evidence(),
+            Eq(
+                P0("receipt", "development_receipt_seq"),
+                P0("episode", "latest_development_receipt_seq"),
+            ),
+            Eq(Count(known), L(0)),
+        ),
+        "effects": [
+            ["add_node", "family", "EmbodiedLocomotorPhenotypeFamily", {
+                "signature": T(A(
+                    "receipt", "development_locomotor_phenotype_family_signature"
+                )),
+                "key": T(A(
+                    "receipt", "development_locomotor_phenotype_family_key"
+                )),
+                "shape_order": 0,
+                "status": "hypothesis",
+                "occurrence_count": 1,
+                "sum_directed_units": T(P0("receipt", "development_directed_units")),
+                "sum_translation_units": T(P0("receipt", "development_translation_units")),
+                "sum_lateral_units": T(P0("receipt", "development_lateral_units")),
+                "sum_energy_units": T(P0("receipt", "development_energy_units")),
+                "sum_peak_load_units": T(P0("receipt", "development_peak_load_units")),
+                "sum_directed_consistency": T(directed_consistency()),
+                "last_receipt_seq": T(P0("receipt", "development_receipt_seq")),
+                "integer_native": 1,
+                "output_authority": 0,
+            }],
+            ["add_edge", "episode", "has_embodied_locomotor_phenotype_family", "family"],
+        ],
+    }
+
+
+def update_locomotor_phenotype_family_rule():
+    fields = (
+        ("sum_directed_units", "development_directed_units"),
+        ("sum_translation_units", "development_translation_units"),
+        ("sum_lateral_units", "development_lateral_units"),
+        ("sum_energy_units", "development_energy_units"),
+        ("sum_peak_load_units", "development_peak_load_units"),
+    )
+    return {
+        "name": "ed_accumulate_locomotor_phenotype_family",
+        "area": "general_cognition",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_development_episode", "episode"],
+            ["episode", "has_embodied_locomotor_phenotype_family", "family"],
+            ["episode", "has_embodied_development_receipt", "receipt"],
+        ],
+        "where": And(
+            Eq(P0("receipt", "development_receipt_closed"), L(1)),
+            locomotor_shape_evidence(),
+            Eq(
+                P0("receipt", "development_receipt_seq"),
+                P0("episode", "latest_development_receipt_seq"),
+            ),
+            Eq(A("family", "key"), A(
+                "receipt", "development_locomotor_phenotype_family_key"
+            )),
+            Gt(P0("receipt", "development_receipt_seq"),
+               P0("family", "last_receipt_seq")),
+        ),
+        "effects": [
+            ["set_attr", "family", "occurrence_count", T(Plus(
+                P0("family", "occurrence_count"), L(1)
+            ))],
+            *[
+                ["set_attr", "family", target, T(Plus(
+                    P0("family", target), P0("receipt", source)
+                ))]
+                for target, source in fields
+            ],
+            ["set_attr", "family", "sum_directed_consistency", T(Plus(
+                P0("family", "sum_directed_consistency"),
+                directed_consistency(),
+            ))],
+            ["set_attr", "family", "last_receipt_seq", T(P0(
+                "receipt", "development_receipt_seq"
+            ))],
+        ],
+    }
+
+
+def bind_locomotor_phenotype_to_family_rule():
+    return {
+        "name": "ed_bind_locomotor_phenotype_refinement_to_family",
+        "area": "general_cognition",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "match": [
+            ["episode", "has_embodied_locomotor_phenotype", "phenotype"],
+            ["episode", "has_embodied_locomotor_phenotype_family", "family"],
+        ],
+        "where": And(
+            Eq(A("phenotype", "family_key"), A("family", "key")),
+            Eq(Count(Neighbours(
+                "phenotype", "refines_locomotor_phenotype_family"
+            )), L(0)),
+        ),
+        "effects": [[
+            "add_edge", "phenotype", "refines_locomotor_phenotype_family", "family"
+        ]],
+    }
+
+
 def update_locomotor_phenotype_rule():
     fields = (
         ("sum_directed_units", "development_directed_units"),
@@ -1070,7 +1255,7 @@ def update_locomotor_phenotype_rule():
         ],
         "where": And(
             Eq(P0("receipt", "development_receipt_closed"), L(1)),
-            Eq(P0("receipt", "development_locomotor_cycle_evidence"), L(1)),
+            locomotor_shape_evidence(),
             Eq(
                 P0("receipt", "development_receipt_seq"),
                 P0("episode", "latest_development_receipt_seq"),
@@ -1097,6 +1282,33 @@ def update_locomotor_phenotype_rule():
             ))],
             ["set_attr", "phenotype", "last_receipt_seq", T(P0(
                 "receipt", "development_receipt_seq"
+            ))],
+            ["set_attr", "phenotype", "action_intent", T(A(
+                "receipt", "development_action_intent"
+            ))],
+            ["set_attr", "phenotype", "developmental_capability", T(A(
+                "receipt", "developmental_capability"
+            ))],
+            ["set_attr", "phenotype", "motor_program_key", T(A(
+                "receipt", "development_motor_program_key"
+            ))],
+            ["set_attr", "phenotype", "primary_token", T(A(
+                "receipt", "development_primary_token"
+            ))],
+            ["set_attr", "phenotype", "secondary_token", T(A(
+                "receipt", "development_secondary_token"
+            ))],
+            ["set_attr", "phenotype", "pre_orientation_class", T(P0(
+                "receipt", "development_pre_orientation_class"
+            ))],
+            ["set_attr", "phenotype", "post_orientation_class", T(P0(
+                "receipt", "development_post_orientation_class"
+            ))],
+            ["set_attr", "phenotype", "pre_distal_support_code", T(P0(
+                "receipt", "development_pre_distal_support_code"
+            ))],
+            ["set_attr", "phenotype", "pre_whole_body_support_count", T(P0(
+                "receipt", "development_pre_support_count"
             ))],
         ],
     }
@@ -1172,11 +1384,142 @@ def verify_locomotor_basin_rule():
                 P0("phenotype", "occurrence_count"),
                 P0("episode", "development_evidence_window"),
             )),
+            Gt(P0("phenotype", "sum_directed_units"), L(0)),
+            Gt(
+                P0("phenotype", "sum_directed_consistency"),
+                Minus(
+                    P0("phenotype", "occurrence_count"),
+                    P0("phenotype", "sum_directed_consistency"),
+                ),
+            ),
             Eq(Count(Neighbours(
                 "phenotype", "publishes_locomotor_pareto_candidate"
             )), L(0)),
         ),
         "effects": effects,
+    }
+
+
+def verify_locomotor_phenotype_family_rule():
+    """Verify recurrent order-0 support shape while retaining leaf detail."""
+    values = (
+        ("sum_directed_units", False),
+        ("sum_translation_units", True),
+        ("sum_lateral_units", True),
+        ("sum_energy_units", True),
+        ("sum_peak_load_units", True),
+        ("sum_directed_consistency", False),
+    )
+    effects = [
+        ["add_node", "candidate", "ParetoCandidate", {
+            "identity": T(StringConcat(
+                L("locomotor_basin_family:"),
+                A("family", "key"),
+            )),
+            "signature": T(A("family", "signature")),
+            "shape_order": 0,
+            "verified": 1,
+            "dominated": 0,
+            "archived": 0,
+            "integer_native": 1,
+            "output_authority": 0,
+        }],
+        ["add_edge", "profile", "has_pareto_candidate", "candidate"],
+        ["add_edge", "family", "publishes_locomotor_pareto_candidate", "candidate"],
+        ["set_attr", "family", "status", "verified_basin"],
+        ["set_attr", "profile", "candidate_count", T(Plus(
+            P0("profile", "candidate_count"), L(1)
+        ))],
+        ["add_node", "pareto_task_set", "SystemTwoTaskSet", {
+            "area": "cognitive_pareto",
+            "enabled": 1,
+            "provenance_kind": "locomotor_pareto_relational_evaluation",
+        }],
+        ["add_node", "pareto_escalation", "SystemTwoEscalation", {
+            "status": "requested",
+            "reason": "evaluate_locomotor_family_tradeoff_basis",
+            "epoch": T(Plus(P0("profile", "candidate_count"), L(1))),
+        }],
+        ["add_edge", "pareto_escalation", "about_context", "profile"],
+        ["add_edge", "pareto_escalation", "recruits_task_set", "pareto_task_set"],
+    ]
+    for ordinal, (field, minimize) in enumerate(values):
+        variable = f"family_value_{ordinal}"
+        raw = P0("family", field)
+        effects.extend((
+            ["add_node", variable, "ParetoValue", {
+                "dimension_ordinal": ordinal,
+                "raw_value": T(raw),
+                "signed_value": T(Neg(raw) if minimize else raw),
+                "verified": 1,
+                "integer_native": 1,
+            }],
+            ["add_edge", "candidate", "has_pareto_value", variable],
+        ))
+    return {
+        "name": "ed_verify_recurrent_locomotor_family_on_pareto_basis",
+        "area": "general_cognition",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_development_episode", "episode"],
+            ["episode", "has_embodied_locomotor_pareto_profile", "profile"],
+            ["episode", "has_embodied_locomotor_phenotype_family", "family"],
+        ],
+        "where": And(
+            Eq(A("family", "status"), L("hypothesis")),
+            Not(Lt(
+                P0("family", "occurrence_count"),
+                P0("episode", "development_evidence_window"),
+            )),
+            Gt(P0("family", "sum_directed_units"), L(0)),
+            Gt(
+                P0("family", "sum_directed_consistency"),
+                Minus(
+                    P0("family", "occurrence_count"),
+                    P0("family", "sum_directed_consistency"),
+                ),
+            ),
+            Eq(Count(Neighbours(
+                "family", "publishes_locomotor_pareto_candidate"
+            )), L(0)),
+        ),
+        "effects": effects,
+    }
+
+
+def escalate_ambiguous_locomotor_family_rule():
+    """Escalate only when exact refinements disagree inside one parent."""
+    return {
+        "name": "ed_escalate_ambiguous_locomotor_family_shape_order",
+        "area": "general_cognition",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "match": [
+            ["agent", "has_embodied_development_episode", "episode"],
+            ["episode", "has_embodied_locomotor_phenotype_family", "family"],
+            ["episode", "has_embodied_locomotor_phenotype", "positive"],
+            ["positive", "refines_locomotor_phenotype_family", "family"],
+            ["episode", "has_embodied_locomotor_phenotype", "negative"],
+            ["negative", "refines_locomotor_phenotype_family", "family"],
+        ],
+        "where": And(
+            Eq(A("family", "status"), L("hypothesis")),
+            Eq(P0("family", "refinement_required"), L(0)),
+            Not(Lt(
+                P0("family", "occurrence_count"),
+                P0("episode", "development_evidence_window"),
+            )),
+            Gt(P0("positive", "sum_directed_units"), L(0)),
+            Lt(P0("negative", "sum_directed_units"), L(0)),
+        ),
+        "effects": [
+            ["set_attr", "family", "status", "refinement_required"],
+            ["set_attr", "family", "refinement_required", 1],
+            ["set_attr", "family", "selected_refinement_order", 1],
+            ["set_attr", "family", "shape_residual_kind",
+             "program_conditioned_directed_sign_conflict"],
+        ],
     }
 
 
@@ -2720,14 +3063,28 @@ def request_new_situated_experiment_rule():
                 P0("receipt", "development_receipt_seq"),
                 P0("episode", "latest_development_receipt_seq"),
             ),
-            Gt(
-                P0("receipt", "development_receipt_seq"),
+            # Depending on dirty-rule scheduling, the learner may have already
+            # advanced last_receipt_seq before this policy rule observes the
+            # retained receipt. Accept that same causally closed receipt on
+            # either side of bookkeeping, but never an older receipt.
+            Not(Gt(
                 P0("instance", "last_receipt_seq"),
-            ),
+                P0("receipt", "development_receipt_seq"),
+            )),
             Not(capability_success()),
             Not(Lt(
                 Minus(
-                    Plus(P0("instance", "failure_count"), L(1)),
+                    Plus(
+                        P0("instance", "failure_count"),
+                        If(
+                            Gt(
+                                P0("receipt", "development_receipt_seq"),
+                                P0("instance", "last_receipt_seq"),
+                            ),
+                            L(1),
+                            L(0),
+                        ),
+                    ),
                     P0("instance", "last_reinstantiation_failure_count"),
                 ),
                 Max(L(1), P0("episode", "development_evidence_window")),
@@ -2761,7 +3118,17 @@ def request_new_situated_experiment_rule():
             ["set_attr", "episode", "embodied_reset_requested", 1],
             ["set_attr", "episode", "reset_requested", 1],
             ["set_attr", "instance", "last_reinstantiation_failure_count", T(
-                Plus(P0("instance", "failure_count"), L(1))
+                Plus(
+                    P0("instance", "failure_count"),
+                    If(
+                        Gt(
+                            P0("receipt", "development_receipt_seq"),
+                            P0("instance", "last_receipt_seq"),
+                        ),
+                        L(1),
+                        L(0),
+                    ),
+                )
             )],
         ],
     }
@@ -2779,6 +3146,16 @@ def select_reinstantiation_scenario_rule():
                 Eq(
                     A("candidate_scenario", "target_goal"),
                     A("instance", "goal"),
+                ),
+            ),
+            Or(
+                Not(declared("candidate_scenario", "target_capability")),
+                Eq(
+                    A("candidate_scenario", "target_capability"), L("any")
+                ),
+                Eq(
+                    A("candidate_scenario", "target_capability"),
+                    A("instance", "name"),
                 ),
             ),
         ),
@@ -4256,6 +4633,12 @@ def manifest() -> dict:
                 "goal": row["goal"],
                 "evidence_kind": row["evidence"],
                 "developmental_ecology": row["ecology"],
+                "motor_task_context": row.get(
+                    "motor_task_context", "locomotion"
+                ),
+                "motor_task_target_scale": row.get(
+                    "motor_task_target_scale", 0
+                ),
                 "human_analogue": row["human_analogue"],
                 "desired_body_state_signature": row.get(
                     "desired_body_state_signature"
@@ -4294,7 +4677,7 @@ def manifest() -> dict:
             })
     return {
         "id": "embodied_development",
-        "version": "2.12.0",
+        "version": "2.26.0",
         "depends_on": [
             "decision_core", "cognitive_pareto", "metacognitive_learning",
             "metacognitive_program_discrimination",
@@ -4637,6 +5020,11 @@ def manifest() -> dict:
             mint_locomotor_phenotype_rule(),
             update_locomotor_phenotype_rule(),
             verify_locomotor_basin_rule(),
+            mint_locomotor_phenotype_family_rule(),
+            update_locomotor_phenotype_family_rule(),
+            bind_locomotor_phenotype_to_family_rule(),
+            escalate_ambiguous_locomotor_family_rule(),
+            verify_locomotor_phenotype_family_rule(),
             recall_exact_body_experience_rule(),
             recall_exact_body_experience_context_rule(),
             recall_metacognitive_revision_memory_rule(),

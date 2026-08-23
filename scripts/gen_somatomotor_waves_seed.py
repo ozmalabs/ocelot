@@ -649,6 +649,132 @@ def learn_passive_vestibular_scaffold_rule():
     }
 
 
+def request_protective_support_baseline_rule():
+    return {
+        "name": "smw_request_exafferent_support_baseline_calibration",
+        "area": "embodied_somatomotor_waves",
+        "latency_class": "hard_realtime",
+        "order": -112,
+        "batch": False,
+        "comment": "Learn an external intervention as its own action model. "
+        "The first reset-matched tonic observation measures passive body "
+        "motion so it is not credited to caregiver support.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "has_somatomotor_wave_field", "field"],
+        ],
+        "where": And(
+            Eq(P0("episode", "caregiver_scaffold_session_active"), L(1)),
+            Eq(P0("episode", "caregiver_bounce_completed"), L(1)),
+            Eq(P0("episode", "caregiver_protective_support_available"), L(1)),
+            Eq(P0("episode", "caregiver_support_calibration_complete"), L(0)),
+            Eq(P0("episode", "caregiver_support_calibration_requested"), L(0)),
+            Eq(Count(Neighbours(
+                "episode", "has_caregiver_support_action_model"
+            )), L(0)),
+        ),
+        "effects": [
+            ["add_node", "support_model", "CaregiverSupportActionModel", {
+                "token": "exafferent_support_000",
+                "exafferent": 1,
+                "initialized": 0,
+                "experience_count": 0,
+                "support_scale": 1,
+                "counterfactual_scale_numerator": 1,
+                "counterfactual_scale_denominator": 1,
+                "output_authority": 0,
+                "integer_native": 1,
+            }],
+            [
+                "add_edge", "episode", "has_caregiver_support_action_model",
+                "support_model",
+            ],
+            ["set_attr", "episode", "caregiver_support_calibration_kind", "baseline"],
+            ["set_attr", "episode", "caregiver_support_calibration_requested", 1],
+        ],
+    }
+
+
+def learn_protective_support_baseline_rule():
+    return {
+        "name": "smw_learn_exafferent_support_baseline_without_action_credit",
+        "area": "embodied_somatomotor_waves",
+        "latency_class": "hard_realtime",
+        "order": -111,
+        "batch": False,
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "has_caregiver_support_action_model", "support_model"],
+            ["episode", "has_caregiver_support_calibration_receipt", "receipt"],
+            ["receipt", "calibrates_caregiver_support_action_model", "support_model"],
+        ],
+        "where": And(
+            Eq(A("receipt", "calibration_kind"), L("baseline")),
+            Eq(P0("receipt", "receipt_processed"), L(0)),
+            Eq(P0("receipt", "exafferent"), L(1)),
+            Eq(P0("receipt", "efference_copy_present"), L(0)),
+        ),
+        "effects": [
+            ["set_attr", "support_model", f"baseline_{axis}", T(
+                P0("receipt", f"observed_{axis}")
+            )]
+            for axis in ("dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz")
+        ] + [
+            ["set_attr", "support_model", f"anchor_{axis}", T(
+                P0("receipt", f"pre_{axis}")
+            )]
+            for axis in ("z_x", "z_y", "wx", "wy", "vx", "vy", "vz")
+        ] + [
+            ["set_attr", "support_model", "anchor_lateral_offset", T(
+                P0("receipt", "pre_lateral_offset")
+            )],
+            ["set_attr", "receipt", "receipt_processed", 1],
+            ["set_attr", "episode", "caregiver_support_calibration_kind", "supported"],
+        ],
+    }
+
+
+def learn_protective_support_effect_rule():
+    axes = ("dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz")
+    return {
+        "name": "smw_learn_exafferent_support_effect_by_baseline_residual",
+        "area": "embodied_somatomotor_waves",
+        "latency_class": "hard_realtime",
+        "order": -110,
+        "batch": False,
+        "comment": "The support model owns only supported-minus-passive "
+        "consequence. It remains output-null evidence until a later graph "
+        "projection explicitly composes it with a child motor program.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "has_caregiver_support_action_model", "support_model"],
+            ["episode", "has_caregiver_support_calibration_receipt", "receipt"],
+            ["receipt", "calibrates_caregiver_support_action_model", "support_model"],
+        ],
+        "where": And(
+            Eq(A("receipt", "calibration_kind"), L("supported")),
+            Eq(P0("receipt", "receipt_processed"), L(0)),
+            Eq(P0("receipt", "exafferent"), L(1)),
+            Eq(P0("receipt", "efference_copy_present"), L(0)),
+            Eq(P0("support_model", "initialized"), L(0)),
+        ),
+        "effects": [
+            ["set_attr", "support_model", f"mean_{axis}", T(Minus(
+                P0("receipt", f"observed_{axis}"),
+                P0("support_model", f"baseline_{axis}"),
+            ))]
+            for axis in axes
+        ] + [
+            ["set_attr", "support_model", "initialized", 1],
+            ["set_attr", "support_model", "experience_count", 1],
+            ["set_attr", "support_model", "prediction_authority", 1],
+            ["set_attr", "receipt", "receipt_processed", 1],
+            ["set_attr", "episode", "caregiver_support_calibration_requested", 0],
+            ["set_attr", "episode", "caregiver_support_calibration_complete", 1],
+        ],
+    }
+
+
 def close_passive_scaffold_handoff_rule():
     return {
         "name": "smw_close_passive_scaffold_before_self_authored_attempt",
@@ -661,6 +787,10 @@ def close_passive_scaffold_handoff_rule():
             Eq(P0("episode", "caregiver_scaffold_session_active"), L(1)),
             Eq(Count(unexposed_scaffold_cells()), L(0)),
             Eq(P0("episode", "caregiver_bounce_completed"), L(1)),
+            Or(
+                Eq(P0("episode", "caregiver_protective_support_available"), L(0)),
+                Eq(P0("episode", "caregiver_support_calibration_complete"), L(1)),
+            ),
             Eq(P0("episode", "caregiver_scaffold_handoff_ready"), L(0)),
         ),
         "effects": [
@@ -1286,6 +1416,24 @@ def manifest() -> dict:
                 "tgt": {"type": "SomatomotorWaveProgram", "var": "program"},
             },
             {
+                "provenance": "somatomotor_waves:caregiver_support_action_model",
+                "src": {"type": "Unknown", "var": "episode"},
+                "edge_type": "has_caregiver_support_action_model",
+                "tgt": {"type": "CaregiverSupportActionModel", "var": "support_model"},
+            },
+            {
+                "provenance": "somatomotor_waves:caregiver_support_calibration_receipt",
+                "src": {"type": "Unknown", "var": "episode"},
+                "edge_type": "has_caregiver_support_calibration_receipt",
+                "tgt": {"type": "CaregiverSupportCalibrationReceipt", "var": "receipt"},
+            },
+            {
+                "provenance": "somatomotor_waves:caregiver_support_calibration_target",
+                "src": {"type": "CaregiverSupportCalibrationReceipt", "var": "receipt"},
+                "edge_type": "calibrates_caregiver_support_action_model",
+                "tgt": {"type": "CaregiverSupportActionModel", "var": "support_model"},
+            },
+            {
                 "provenance": "somatomotor_waves:coupling_memory",
                 "src": {"type": "Agent", "var": "agent"},
                 "edge_type": "has_somatomotor_coupling_memory",
@@ -1304,6 +1452,9 @@ def manifest() -> dict:
             reject_noncontingent_effector_scaffold_rule(),
             request_passive_vestibular_scaffold_rule(),
             learn_passive_vestibular_scaffold_rule(),
+            request_protective_support_baseline_rule(),
+            learn_protective_support_baseline_rule(),
+            learn_protective_support_effect_rule(),
             close_passive_scaffold_handoff_rule(),
             advance_clock_rule(),
             recover_and_charge_rule(),

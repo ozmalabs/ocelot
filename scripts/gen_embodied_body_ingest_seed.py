@@ -309,6 +309,7 @@ def request_initial_situated_reset_rule():
             Eq(A("step", "status"), L("active")),
             Eq(A("capability", "status"), L("active")),
             Eq(A("scenario", "enabled"), L(1)),
+            Eq(A("episode", "initial_situated_experiment_established"), L(0)),
             absent(N("episode", "has_active_embodied_reset_request")),
         ),
         "effects": [
@@ -319,6 +320,36 @@ def request_initial_situated_reset_rule():
             ["add_edge", "episode", "has_embodied_reset_request", "request"],
             ["add_edge", "episode", "has_active_embodied_reset_request", "request"],
             ["add_edge", "request", "revises_learning_plan_step", "step"],
+        ],
+    }
+
+
+def close_initial_situated_reset_rule():
+    return {
+        "name": "ebi_close_established_initial_situated_reset_request",
+        "area": "general_cognition",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "comment": "The initialization request only establishes which "
+        "declared fixture grounds the first experiment; it has no mechanical "
+        "output authority. Once the ordinary scenario selector resolves it, "
+        "retain it as history but release the active-request frontier for "
+        "later evidence-driven situated experiments.",
+        "match": [
+            ["episode", "has_active_embodied_reset_request", "request"],
+        ],
+        "where": And(
+            Eq(A("request", "cause"), L("initial_situated_experiment")),
+            Eq(A("request", "output_authority"), L(0)),
+            Eq(A("request", "reinstantiation_spec_ready"), L(1)),
+        ),
+        "effects": [
+            ["set_attr", "request", "status", "initial_fixture_established"],
+            ["set_attr", "episode", "initial_situated_experiment_established", 1],
+            [
+                "del_edge", "episode",
+                "has_active_embodied_reset_request", "request",
+            ],
         ],
     }
 
@@ -342,6 +373,7 @@ def open_situated_episode_rule():
         "effects": [
             ["add_node", "episode", "EmbodiedDevelopmentEpisode", {
                 "status": "situated_ready", "body_class": "articulated_humanoid",
+                "initial_situated_experiment_established": 0,
                 "grounded": 1, "integer_native": 1, "output_authority": 0,
             }],
             ["add_edge", "agent", "has_embodied_development_episode", "episode"],
@@ -403,7 +435,7 @@ def production(name, src, edge, tgt):
 def manifest() -> dict:
     return {
         "id": "embodied_body_ingest",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "depends_on": ["embodied_learning_session"],
         "area": "general_cognition",
         "latency_class": "hard_realtime",
@@ -452,6 +484,7 @@ def manifest() -> dict:
             mark_strictly_newest_attachment_rule(),
             retire_noncurrent_attachment_rule(),
             request_initial_situated_reset_rule(),
+            close_initial_situated_reset_rule(),
         ],
     }
 

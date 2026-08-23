@@ -563,12 +563,24 @@ def situated_locomotion_context_active():
 
 
 def intentional_situated_locomotion_requested():
-    """Graph-held intent which admits a non-canonical locomotor attractor."""
+    """Graph-held intent which owns a safe non-canonical future path.
+
+    Locomotion is one such path, but supported developmental exploration also
+    deliberately visits low and non-upright configurations.  Protective
+    support changes the viable manifold; it must therefore suppress canonical
+    pose recovery while structural interrupt authority remains intact.
+    """
     return And(
         Eq(A("episode", "phase"), L("locomotion")),
         Eq(PI0("episode", "evaluation_active"), L(1)),
         Eq(PI0("episode", "developmental_curriculum_active"), L(1)),
-        Eq(PI0("episode", "locomotion_drive_active"), L(1)),
+        Not(Eq(A("episode", "developmental_goal"), L("inactive"))),
+        Or(
+            Eq(PI0("episode", "locomotion_drive_active"), L(1)),
+            Eq(PI0(
+                "episode", "caregiver_protective_support_available"
+            ), L(1)),
+        ),
     )
 
 
@@ -3493,6 +3505,109 @@ def gait_support_loss_cost(candidate):
     )
 
 
+def foveated_program_exploration_value(candidate):
+    """Value an exact singleton program over its projected outcome shape.
+
+    Outcome coordinates are residual samples, not distinct action identities.
+    Aggregate every shape leaf produced by the same singleton in the same
+    entry context before granting authority; otherwise a single lucky child
+    remains permanently optimistic while contrary sibling shapes accumulate.
+    """
+    development = Pick(Neighbours(
+        "episode", "projects_embodied_development"
+    ))
+    candidate_token = (
+        A(candidate, "token")
+        if isinstance(candidate, str)
+        else AO(candidate, "token")
+    )
+    leaves = Filter(
+        {
+            "type": "Neighbours",
+            "node": development,
+            "edge_type": "has_embodied_locomotor_phenotype",
+            "any_type": False,
+        },
+        "exploration_leaf",
+        And(
+            Eq(A("exploration_leaf", "action_intent"), L("learned_walk")),
+            Eq(
+                A("exploration_leaf", "developmental_capability"),
+                A("episode", "active_developmental_capability"),
+            ),
+            Eq(
+                P0("exploration_leaf", "pre_orientation_class"),
+                P0("episode", "state_gravity_relative_orientation_class"),
+            ),
+            Eq(
+                P0("exploration_leaf", "pre_whole_body_support_count"),
+                P0("episode", "active_support_count"),
+            ),
+            Eq(A("exploration_leaf", "primary_token"), candidate_token),
+            # A primary option can establish this exact program without
+            # guessing only when the observed program was the singleton.
+            Eq(
+                A("exploration_leaf", "secondary_token"),
+                candidate_token,
+            ),
+            Exists(
+                Neighbours(
+                    "exploration_leaf",
+                    "refines_locomotor_phenotype_family",
+                ),
+                "ambiguous_program_parent",
+                Eq(
+                    P0("ambiguous_program_parent", "refinement_required"),
+                    L(1),
+                ),
+            ),
+        ),
+    )
+    occurrence_count = Sum(
+        leaves, "program_shape_leaf", P0("program_shape_leaf", "occurrence_count")
+    )
+    directed_units = Sum(
+        leaves, "program_shape_leaf", P0("program_shape_leaf", "sum_directed_units")
+    )
+    translation_units = Sum(
+        leaves, "program_shape_leaf", P0("program_shape_leaf", "sum_translation_units")
+    )
+    directed_consistency = Sum(
+        leaves,
+        "program_shape_leaf",
+        P0("program_shape_leaf", "sum_directed_consistency"),
+    )
+    evidence_window = N0(development, "development_evidence_window")
+    recoverability = Min(
+        L(1.0),
+        Plus(
+            N0(development, "protective_support_available"),
+            N0(development, "embodiment_reset_reachable"),
+        ),
+    )
+    return If(
+        And(
+            Gt(occurrence_count, L(0)),
+            Gt(directed_units, L(0)),
+            Gt(
+                directed_consistency,
+                Minus(occurrence_count, directed_consistency),
+            ),
+            Lt(occurrence_count, evidence_window),
+        ),
+        Times(
+            P0("policy", "foveated_program_exploration_authority"),
+            recoverability,
+            Div(directed_units, Max(L(1), translation_units)),
+            Div(
+                Max(L(0), Minus(evidence_window, occurrence_count)),
+                Max(L(1), evidence_window),
+            ),
+        ),
+        L(0),
+    )
+
+
 def walking_cost(candidate):
     velocity_scale = Sqrt(Times(
         P0("policy", "gravity_acceleration"),
@@ -3829,6 +3944,10 @@ def choose_walking_primary_rule():
                 T(N0(primary, "context_id")),
             ],
             ["set_attr", "episode", "motor_primary_ready", 1.0],
+            ["set_attr", "episode",
+             "selected_manifold_refinement_exploration_value", T(
+                 foveated_program_exploration_value(primary)
+             )],
             ["set_attr", "episode", "motor_primary_request_seq", T(
                 P0("episode", "request_seq")
             )],
@@ -3937,10 +4056,37 @@ def prepare_shared_walking_primary_rule():
                 P0("phase_model", "ordinal")
             )],
             ["set_attr", "phase_model", "default_value", 0.0],
-            ["set_attr", "phase_model", "grounded_value", T(Minus(
-                L(0.0),
-                walking_cost("phase_model"),
+            ["set_attr", "phase_model", "grounded_value", T(Plus(
+                Minus(L(0.0), walking_cost("phase_model")),
+                foveated_program_exploration_value("phase_model"),
             ))],
+            ["set_attr", "phase_model",
+             "manifold_refinement_exploration_value", T(
+                 foveated_program_exploration_value("phase_model")
+             )],
+            ["set_attr", "episode",
+             "maximum_manifold_refinement_exploration_value", T(Max(
+                 P0(
+                     "episode",
+                     "maximum_manifold_refinement_exploration_value",
+                 ),
+                 foveated_program_exploration_value("phase_model"),
+             ))],
+            ["set_attr", "episode",
+             "manifold_refinement_exploration_valuation_count", T(Plus(
+                 P0(
+                     "episode",
+                     "manifold_refinement_exploration_valuation_count",
+                 ),
+                 If(
+                     Gt(
+                         foveated_program_exploration_value("phase_model"),
+                         L(0),
+                     ),
+                     L(1),
+                     L(0),
+                 ),
+             ))],
             ["set_attr", "phase_model", "motor_decision_value_epoch", T(
                 P0("episode", "request_seq")
             )],
@@ -4083,6 +4229,10 @@ def release_shared_walking_primary_rule():
                 T(P0("primary", "context_id")),
             ],
             ["set_attr", "episode", "motor_primary_ready", 1.0],
+            ["set_attr", "episode",
+             "selected_manifold_refinement_exploration_value", T(P0(
+                 "primary", "manifold_refinement_exploration_value"
+             ))],
             ["set_attr", "episode", "motor_primary_request_seq", T(
                 P0("episode", "request_seq")
             )],
@@ -6164,8 +6314,20 @@ def choose_walking_rule():
                     A("episode", "state_motor_configuration_shape")
                 ),
                 "member_count": 1.0,
+                # Exploration authority is evidence about an exact singleton
+                # program. Preserve that identity through synthesis instead
+                # of allowing the selected primary to recruit an unobserved
+                # secondary composition.
                 "allow_expansion": T(If(
-                    allow_expansion, L(1.0), L(0.0)
+                    Gt(
+                        P0(
+                            "episode",
+                            "selected_manifold_refinement_exploration_value",
+                        ),
+                        L(0),
+                    ),
+                    L(0.0),
+                    If(allow_expansion, L(1.0), L(0.0)),
                 )),
                 **{
                     f"sum_{key}": T(P0("primary", f"mean_{key}"))
@@ -6461,6 +6623,113 @@ def resume_motor_program_rule():
     }
 
 
+def retire_stale_motor_program_synthesis_rule():
+    """Withdraw a losing synthesis channel before the next request.
+
+    A somatomotor wave, recalled program, or other decision channel can make
+    the episode action-ready while an ordinary analysis-by-synthesis program
+    is still building.  Such a program is evidence from the old request, not
+    work that may be resumed against a later sensed state.
+    """
+    return {
+        "name": "ha_retire_stale_motor_program_synthesis",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -2,
+        "batch": True,
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            [
+                "episode",
+                "has_active_humanoid_motor_program",
+                "plan",
+            ],
+        ],
+        "where": And(
+            Lt(P0("plan", "request_seq"), P0("episode", "request_seq")),
+            Or(
+                Eq(A("plan", "status"), L("building")),
+                Eq(
+                    A("plan", "status"),
+                    L("somatomotor_wave_building"),
+                ),
+            ),
+        ),
+        "effects": [
+            [
+                "del_edge",
+                "episode",
+                "has_active_humanoid_motor_program",
+                "plan",
+            ],
+            [
+                "del_edge",
+                "episode",
+                "resumes_humanoid_motor_program",
+                "plan",
+            ],
+            ["set_attr", "plan", "status", "superseded"],
+            [
+                "set_attr",
+                "plan",
+                "supersession_reason",
+                "competing_program_committed_for_request",
+            ],
+            [
+                "set_attr",
+                "plan",
+                "superseded_at_request_seq",
+                T(P0("episode", "request_seq")),
+            ],
+        ],
+    }
+
+
+def audit_takeoff_compound_frontier_rule():
+    """Expose the live order-escalation preconditions before collapse."""
+    return {
+        "name": "ha_audit_takeoff_compound_frontier",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -2,
+        "batch": False,
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "projects_embodied_development", "development"],
+            [
+                "development",
+                "has_active_embodied_developmental_capability",
+                "capability",
+            ],
+            ["episode", "has_active_humanoid_motor_program", "plan"],
+            ["episode", "resumes_humanoid_motor_program", "plan"],
+        ],
+        "where": And(
+            Eq(A("plan", "status"), L("building")),
+            Eq(A("plan", "motor_task_context"), L("self_takeoff")),
+            Eq(PI0("plan", "takeoff_compound_audit_ready"), L(0)),
+        ),
+        "effects": [
+            ["set_attr", "plan", "takeoff_compound_audit_ready", 1],
+            ["set_attr", "plan", "takeoff_compound_candidate_count", T(
+                Count(compound_curiosity_candidates())
+            )],
+            ["set_attr", "plan", "takeoff_compound_allow_expansion", T(
+                PI0("plan", "allow_expansion")
+            )],
+            ["set_attr", "plan", "takeoff_compound_failure_count", T(
+                PI0("capability", "failure_count")
+            )],
+            ["set_attr", "plan", "takeoff_compound_success_count", T(
+                PI0("capability", "success_count")
+            )],
+            ["set_attr", "plan", "takeoff_compound_evidence_window", T(
+                PI0("episode", "development_evidence_window")
+            )],
+        ],
+    }
+
+
 def select_compound_curiosity_candidate_rule():
     """Select the least-understood compatible pair after persistent surprise."""
     candidates = compound_curiosity_candidates()
@@ -6474,13 +6743,54 @@ def select_compound_curiosity_candidate_rule():
         "plan",
         "has_selected_humanoid_compound_curiosity_candidate",
     )
+    persistent_locomotion_residual = And(
+        Eq(A("plan", "motor_task_context"), L("locomotion")),
+        Eq(PI0("episode", "locomotion_drive_active"), L(1)),
+        Gt(PI0("episode", "locomotion_residual_m"), L(0)),
+        Gt(PI0("episode", "gait_surprise_streak"), L(0)),
+        Not(Lt(
+            PI0("episode", "gait_surprise_streak"),
+            PI0("policy", "gait_surprise_confirmation_receipts"),
+        )),
+    )
+    persistent_takeoff_residual = And(
+        Eq(A("plan", "motor_task_context"), L("self_takeoff")),
+        Gt(PI0("episode", "self_takeoff_drive_active"), L(0)),
+        Exists(
+            Neighbours("episode", "projects_embodied_development"),
+            "compound_development",
+            Exists(
+                Neighbours(
+                    "compound_development",
+                    "has_active_embodied_developmental_capability",
+                ),
+                "compound_capability",
+                And(
+                    Eq(
+                        A("compound_capability", "evidence_kind"),
+                        L("support_reducing_elevation"),
+                    ),
+                    Lt(
+                        PI0("compound_capability", "success_count"),
+                        PI0("episode", "development_evidence_window"),
+                    ),
+                    Not(Lt(
+                        PI0("compound_capability", "failure_count"),
+                        PI0("episode", "development_evidence_window"),
+                    )),
+                ),
+            ),
+        ),
+    )
     return {
         "name": "ha_curiosity_selects_persistent_singleton_compound",
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
-        "comment": "When a singleton repeatedly leaves both its "
-        "task residual and prediction surprise open, choose the compatible "
-        "exact pair with least receipt experience. The candidate alphabet, "
+        "comment": "When a singleton repeatedly leaves its task residual "
+        "open, choose the compatible exact pair with least receipt "
+        "experience. Locomotion uses confirmed prediction surprise; a "
+        "self-takeoff task uses a complete failed developmental evidence "
+        "window. The candidate alphabet, "
         "independent effector groups, context and receipt-backed pair "
         "compatibility all come from the graph. Support and load remain "
         "learned tradeoffs unless a material interrupt is present; there is "
@@ -6516,20 +6826,13 @@ def select_compound_curiosity_candidate_rule():
             ),
             Eq(PI0("plan", "allow_expansion"), L(1)),
             Eq(PI0("plan", "member_count"), L(1)),
-            Eq(A("plan", "motor_task_context"), L("locomotion")),
             Eq(
                 PI0("policy", "persistent_task_residual_authority"),
                 L(1),
             ),
-            Eq(PI0("episode", "locomotion_drive_active"), L(1)),
             Eq(PI0("episode", "sensorimotor_interrupt_required"), L(0)),
             Eq(PI0("episode", "reset_requested"), L(0)),
-            Gt(PI0("episode", "locomotion_residual_m"), L(0)),
-            Gt(PI0("episode", "gait_surprise_streak"), L(0)),
-            Not(Lt(
-                PI0("episode", "gait_surprise_streak"),
-                PI0("policy", "gait_surprise_confirmation_receipts"),
-            )),
+            Or(persistent_locomotion_residual, persistent_takeoff_residual),
             Eq(A("primary", "token"), A("plan", "primary_token")),
             Gt(Count(candidates), L(0)),
             Eq(V("candidate"), selected),
@@ -9807,7 +10110,9 @@ def choose_get_up_exploration_rule():
         "latency_class": "hard_realtime",
         "comment": "When fallen, systematically try the entire opaque "
         "actuator alphabet. This includes arm, trunk, and leg actuators when "
-        "the body has them, without supplying anatomical labels to the graph.",
+        "the body has them, without supplying anatomical labels to the graph. "
+        "This is the pre-basin fallback; once a situated recovery basin exists, "
+        "its local explorer exclusively owns the decision fields.",
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
             [
@@ -9823,6 +10128,7 @@ def choose_get_up_exploration_rule():
             Eq(P0("episode", "upright"), L(0.0)),
             Eq(P0("episode", "action_ready"), L(0.0)),
             Eq(P0("episode", "reset_requested"), L(0.0)),
+            Eq(Count(CURRENT_RECOVERY_BASINS), L(0.0)),
             Gt(Count(UNTRIED_GET_UP_MODELS), L(0.0)),
             Eq(P0("get_up_model", "ordinal"), N0(best, "ordinal")),
         ),
@@ -9868,9 +10174,9 @@ def choose_get_up_exploitation_rule():
         "name": "ha_exploit_learned_whole_body_get_up_action",
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
-        "comment": "After one complete recovery alphabet, repeat the action "
-        "whose verified receipts best increased normalized height and body "
-        "vertical alignment.",
+        "comment": "Before a situated basin exists, repeat the action whose "
+        "verified receipts best increased normalized height and body vertical "
+        "alignment. Basin-local exploitation exclusively owns later choices.",
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
             [
@@ -9886,6 +10192,7 @@ def choose_get_up_exploitation_rule():
             Eq(P0("episode", "upright"), L(0.0)),
             Eq(P0("episode", "action_ready"), L(0.0)),
             Eq(P0("episode", "reset_requested"), L(0.0)),
+            Eq(Count(CURRENT_RECOVERY_BASINS), L(0.0)),
             Eq(Count(UNTRIED_GET_UP_MODELS), L(0.0)),
             Eq(P0("get_up_model", "ordinal"), N0(best, "ordinal")),
         ),
@@ -9944,7 +10251,9 @@ def choose_gait_recovery_primary_rule():
         "latency_class": "hard_realtime",
         "comment": "Select the learned primary balance correction before "
         "collapsing the still-open locomotion and recovery residuals through "
-        "the shared arbitrary-width motor-program synthesis.",
+        "the shared arbitrary-width motor-program synthesis. This controller "
+        "owns upright instability; once the body is classified fallen, the "
+        "situated get-up manifold exclusively owns motor selection.",
         "match": [
             ["agent", "has_humanoid_policy", "policy"],
             ["agent", "has_humanoid_episode", "episode"],
@@ -9953,6 +10262,7 @@ def choose_gait_recovery_primary_rule():
             Eq(A("episode", "phase"), L("locomotion")),
             Eq(A("episode", "mode"), L("directed_walk")),
             Eq(P0("episode", "recovery_mode"), L(1.0)),
+            Eq(P0("episode", "upright"), L(1.0)),
             Eq(P0("episode", "action_ready"), L(0.0)),
             Eq(P0("episode", "motor_recovery_primary_ready"), L(0.0)),
             Gt(Count(support_models), L(0.0)),
@@ -10033,12 +10343,295 @@ def choose_tonic_control_rule():
     }
 
 
+def issued_trials_for_current_request():
+    return Filter(
+        Neighbours("episode", "has_humanoid_motor_trial"),
+        "current_issued_trial",
+        And(
+            Eq(A("current_issued_trial", "status"), L("issued")),
+            Eq(
+                P0("current_issued_trial", "request_seq"),
+                P0("episode", "request_seq"),
+            ),
+        ),
+    )
+
+
+def retire_stale_ready_motor_authority_rule():
+    return {
+        "name": "ha_retire_ready_motor_authority_at_request_boundary",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "batch": True,
+        "comment": "Ready is one-request output authority, never persistent "
+        "memory state. A newer sensed request expires an unconsumed edge; a "
+        "previously learned program remains grounded evidence, while an "
+        "unreceipted synthesis is retained only as superseded analysis.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "has_ready_humanoid_motor_program", "program"],
+        ],
+        "where": And(
+            Lt(
+                P0("program", "request_seq"),
+                P0("episode", "request_seq"),
+            ),
+            Eq(P0("program", "developmental_orientation_bundle"), L(0.0)),
+        ),
+        "effects": [
+            [
+                "del_edge", "episode",
+                "has_ready_humanoid_motor_program", "program",
+            ],
+            ["set_attr", "program", "status", T(If(
+                Eq(P0("program", "receipt_learned"), L(1.0)),
+                L("grounded"),
+                L("superseded"),
+            ))],
+            ["set_attr", "program", "open_residual_count", 0.0],
+            ["set_attr", "program", "authority_expired_request_seq", T(
+                P0("episode", "request_seq")
+            )],
+        ],
+    }
+
+
+def developmental_trajectory_projection(source: str, field: str):
+    return {
+        "type": "FutureManifoldProjection",
+        "episode": V("episode"),
+        "policy": V("policy"),
+        "source": V(source),
+        "field": field,
+    }
+
+
+def release_selected_developmental_trajectory_rule():
+    """Release a selected path before ordinary motor choice can commit."""
+    members = Neighbours("memory", "includes_humanoid_phase_action_model")
+    primary = Filter(
+        members,
+        "trajectory_primary_member",
+        Eq(
+            A("trajectory_primary_member", "token"),
+            A("memory", "primary_token"),
+        ),
+    )
+    secondary = Argmin(
+        Filter(
+            members,
+            "trajectory_secondary_member",
+            Not(Exists(
+                primary,
+                "known_trajectory_primary",
+                Eq(
+                    V("known_trajectory_primary"),
+                    V("trajectory_secondary_member"),
+                ),
+            )),
+        ),
+        "ranked_trajectory_secondary",
+        P0("ranked_trajectory_secondary", "ordinal"),
+        Pick(primary),
+    )
+    gate_active = And(
+        Gt(P0("policy", "future_manifold_enabled"), L(0.0)),
+        Gt(P0("episode", "manifold_bounds_ready"), L(0.0)),
+    )
+    release_allowed = Or(
+        Not(gate_active),
+        And(
+            Gt(developmental_trajectory_projection("memory", "support"), L(0.0)),
+            Gt(developmental_trajectory_projection("memory", "resolved"), L(0.0)),
+            Eq(
+                developmental_trajectory_projection(
+                    "memory", "information_loss"
+                ),
+                L(0.0),
+            ),
+            Or(
+                Eq(
+                    developmental_trajectory_projection(
+                        "memory", "effort_supported"
+                    ),
+                    L(0.0),
+                ),
+                Gt(
+                    developmental_trajectory_projection(
+                        "memory", "effort_authorized"
+                    ),
+                    L(0.0),
+                ),
+            ),
+        ),
+    )
+    return {
+        "name": "ha_release_selected_developmental_order_n_trajectory",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "comment": "The motor executor consumes a System-2-selected path "
+        "before ordinary recovery or locomotion can commit the request. Each "
+        "collapse releases one grounded program through the existing exact "
+        "trial and receipt machinery.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_policy", "policy"],
+            ["episode", "projects_embodied_development", "development"],
+            [
+                "development",
+                "has_active_embodied_developmental_capability",
+                "capability",
+            ],
+            ["capability", "has_selected_embodied_program_path", "path"],
+            ["path", "contains_embodied_program_transition", "transition"],
+            [
+                "capability",
+                "has_current_embodied_program_transition_source",
+                "transition",
+            ],
+            ["transition", "continues_with_embodied_program", "memory"],
+        ],
+        "where": And(
+            Or(
+                Gt(Count(A("capability", "desired_body_state_signature")), L(0.0)),
+                gate_active,
+            ),
+            Gt(P0("path", "depth"), L(1.0)),
+            Eq(P0("transition", "verified"), L(1.0)),
+            Eq(A("memory", "status"), L("grounded")),
+            Or(
+                Eq(P0("memory", "memory_eligible"), L(1.0)),
+                And(
+                    Eq(P0("memory", "experience_retained"), L(1.0)),
+                    Eq(
+                        P0(
+                            "episode",
+                            "caregiver_protective_support_available",
+                        ),
+                        L(1.0),
+                    ),
+                ),
+            ),
+            release_allowed,
+            Gt(Count(primary), L(0.0)),
+            Gt(P0("episode", "request_seq"), P0("episode", "decision_seq")),
+            Eq(P0("episode", "action_ready"), L(0.0)),
+            Eq(Count(issued_trials_for_current_request()), L(0.0)),
+            Eq(
+                Count(Neighbours(
+                    "episode", "has_ready_humanoid_motor_program"
+                )),
+                L(0.0),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "memory", "status", "ready"],
+            ["set_attr", "memory", "request_seq", T(
+                P0("episode", "request_seq")
+            )],
+            [
+                "set_attr", "memory", "collapse_kind",
+                "developmental_order_n_trajectory",
+            ],
+            ["set_attr", "memory", "open_residual_count", 1.0],
+            ["set_attr", "path", "trajectory_replay_issued_seq", T(
+                P0("episode", "request_seq")
+            )],
+            [
+                "add_edge", "episode",
+                "has_ready_humanoid_motor_program", "memory",
+            ],
+            ["set_attr", "episode", "selected_token", T(
+                A("memory", "primary_token")
+            )],
+            ["set_attr", "episode", "selected_secondary_token", T(
+                AO(secondary, "token")
+            )],
+            ["set_attr", "episode", "selected_response_frames", T(Max(
+                L(1.0), P0("transition", "response_frames")
+            ))],
+            ["set_attr", "episode", "selected_motor_weight_a", 1.0],
+            ["set_attr", "episode", "selected_motor_weight_b", 1.0],
+            *[
+                ["set_attr", "episode", f"selected_predicted_{key}", 0.0]
+                for key in (
+                    "dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz"
+                )
+            ],
+            ["set_attr", "episode", "decision_kind", "learned_walk"],
+            [
+                "set_attr", "episode", "selected_collapse_kind",
+                "developmental_order_n_trajectory",
+            ],
+            ["set_attr", "episode", "decision_seq", T(
+                P0("episode", "request_seq")
+            )],
+            ["set_attr", "episode", "decision_count", T(Plus(
+                P0("episode", "decision_count"), L(1.0)
+            ))],
+            ["set_attr", "episode", "action_ready", 1.0],
+        ],
+    }
+
+
+def ready_motor_programs_for_current_request():
+    return Filter(
+        Neighbours("episode", "has_ready_humanoid_motor_program"),
+        "current_ready_program",
+        And(
+            Eq(A("current_ready_program", "status"), L("ready")),
+            Eq(
+                P0("current_ready_program", "request_seq"),
+                P0("episode", "request_seq"),
+            ),
+        ),
+    )
+
+
+def selected_ready_motor_program():
+    """Stable output-null choice after every candidate passed its own gate."""
+    return Argmin(
+        ready_motor_programs_for_current_request(),
+        "ranked_ready_program",
+        P0("ranked_ready_program", "request_seq"),
+        V("episode"),
+    )
+
+
 def open_trial_rule():
+    secondary_model = Pick(Filter(
+        Neighbours("episode", "has_humanoid_action_model"),
+        "secondary_candidate",
+        Eq(
+            A("secondary_candidate", "token"),
+            A("episode", "selected_secondary_token"),
+        ),
+    ))
+    mechanically_distinct_secondary = And(
+        Not(Eq(
+            A("model", "token"),
+            AO(secondary_model, "token"),
+        )),
+        Not(Eq(
+            P0("model", "actuator_group"),
+            N0(secondary_model, "actuator_group"),
+        )),
+    )
+    committed_secondary_token = If(
+        mechanically_distinct_secondary,
+        AO(secondary_model, "token"),
+        A("model", "token"),
+    )
     return {
         "name": "ha_open_receipt_backed_motor_trial",
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
-        "comment": "Open a trial for the exact graph-selected opaque actuator.",
+        "batch": False,
+        "comment": "Commit the graph-selected opaque action against the "
+        "body-derived mechanical topology. Distinct tokens for the same "
+        "actuator group collapse to the primary singleton, so concurrent "
+        "proposal settlement cannot author contradictory joint commands.",
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
             ["episode", "has_humanoid_action_model", "model"],
@@ -10054,6 +10647,7 @@ def open_trial_rule():
                 P0("episode", "request_seq"),
                 P0("episode", "last_trial_request_seq"),
             ),
+            Eq(Count(issued_trials_for_current_request()), L(0)),
         ),
         "effects": [
             ["add_node", "trial", "HumanoidMotorTrial", {
@@ -10061,9 +10655,7 @@ def open_trial_rule():
                 "motor_task_context": T(motor_task_context()),
                 **trial_regime_eligibility_attrs(),
                 "token": T(A("model", "token")),
-                "secondary_token": T(
-                    A("episode", "selected_secondary_token")
-                ),
+                "secondary_token": T(committed_secondary_token),
                 "motor_weight_a": T(
                     P0("episode", "selected_motor_weight_a")
                 ),
@@ -10089,12 +10681,9 @@ def open_trial_rule():
                     for key in ("dzx", "dzy", "dwx", "dwy")
                 },
                 "bundle_member_count": T(If(
-                    Eq(
-                        A("model", "token"),
-                        A("episode", "selected_secondary_token"),
-                    ),
-                    L(1.0),
+                    mechanically_distinct_secondary,
                     L(2.0),
+                    L(1.0),
                 )),
                 "model_response_frames": T(
                     P0("episode", "response_frames")
@@ -10128,10 +10717,25 @@ def open_trial_rule():
 
 
 def open_motor_program_trial_rule():
+    candidate_models = Filter(
+        Neighbours("episode", "has_humanoid_action_model"),
+        "program_action_candidate",
+        Eq(
+            A("program_action_candidate", "token"),
+            A("plan", "primary_token"),
+        ),
+    )
+    selected_model = Argmin(
+        candidate_models,
+        "ranked_program_action_model",
+        P0("ranked_program_action_model", "context_id"),
+        V("episode"),
+    )
     return {
         "name": "ha_open_synthesized_motor_program_trial",
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
+        "batch": False,
         "comment": "Open an arbitrary bundle trial from the program's own "
         "member edges. This structural dependency makes the fixpoint "
         "incrementally visible without a host-side pump.",
@@ -10143,13 +10747,11 @@ def open_motor_program_trial_rule():
                 "includes_humanoid_phase_action_model",
                 "primary",
             ],
-            [
-                "primary",
-                "generalizes_humanoid_action_model",
-                "model",
-            ],
+            ["episode", "has_humanoid_action_model", "model"],
         ],
         "where": And(
+            Eq(V("plan"), selected_ready_motor_program()),
+            Eq(V("model"), selected_model),
             Eq(A("plan", "status"), L("ready")),
             Eq(A("primary", "token"), A("plan", "primary_token")),
             Eq(
@@ -10160,6 +10762,7 @@ def open_motor_program_trial_rule():
                 P0("episode", "request_seq"),
                 P0("episode", "last_trial_request_seq"),
             ),
+            Eq(Count(issued_trials_for_current_request()), L(0)),
         ),
         "effects": [
             ["add_node", "trial", "HumanoidMotorTrial", {
@@ -10191,6 +10794,14 @@ def open_motor_program_trial_rule():
                 "collapse_kind": T(A("plan", "collapse_kind")),
                 "open_residual_count": T(
                     P0("plan", "open_residual_count")
+                ),
+                "motor_memory_recalled": T(If(
+                    Eq(P0("plan", "receipt_learned"), L(1.0)),
+                    L(1.0),
+                    L(0.0),
+                )),
+                "expected_directed_advance": T(
+                    P0("plan", "mean_directed_advance")
                 ),
                 "support_phase": T(
                     P0("episode", "current_support_phase")
@@ -10247,6 +10858,7 @@ def open_canonical_synthesis_trial_rule():
         "name": "ha_bind_synthesized_structure_to_canonical_memory",
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
+        "batch": False,
         "comment": "Analysis by synthesis still authors the exact action. If "
         "that structure already has a safe grounded population memory, enact "
         "the stable node and credit its receipt instead of creating another "
@@ -10268,6 +10880,7 @@ def open_canonical_synthesis_trial_rule():
             ],
         ],
         "where": And(
+            Eq(V("plan"), selected_ready_motor_program()),
             Eq(A("plan", "status"), L("ready")),
             Gt(P0("plan", "member_count"), L(0.0)),
             Gt(Count(eligible), L(0.0)),
@@ -10281,6 +10894,7 @@ def open_canonical_synthesis_trial_rule():
                 P0("episode", "request_seq"),
                 P0("episode", "last_trial_request_seq"),
             ),
+            Eq(Count(issued_trials_for_current_request()), L(0)),
         ),
         "effects": [
             ["add_node", "trial", "HumanoidMotorTrial", {
@@ -10386,6 +11000,7 @@ def open_motor_sequence_trial_rule():
         "name": "ha_open_receipt_advanced_motor_sequence_trial",
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
+        "batch": False,
         "comment": "Make one learned transition output-potent. The new trial "
         "links both the stable subprogram and the conditional transition "
         "state so its receipt can update the exact temporal model.",
@@ -10446,6 +11061,7 @@ def open_motor_sequence_trial_rule():
                 P0("episode", "request_seq"),
                 P0("episode", "last_trial_request_seq"),
             ),
+            Eq(Count(issued_trials_for_current_request()), L(0)),
         ),
         "effects": [
             ["add_node", "trial", "HumanoidMotorTrial", {
@@ -10544,6 +11160,7 @@ def open_recalled_motor_program_trial_rule():
         "name": "ha_open_reassociated_motor_memory_trial",
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
+        "batch": False,
         "comment": "Convert one graph-selected output-null motor memory into "
         "an output-potent trial. The trial is a new causal event while its "
         "arbitrary member set remains on the grounded repertoire node.",
@@ -10598,6 +11215,7 @@ def open_recalled_motor_program_trial_rule():
                 P0("episode", "request_seq"),
                 P0("episode", "last_trial_request_seq"),
             ),
+            Eq(Count(issued_trials_for_current_request()), L(0)),
         ),
         "effects": [
             ["add_node", "trial", "HumanoidMotorTrial", {
@@ -14734,8 +15352,9 @@ def open_situated_locomotion_context_rule():
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
         "batch": False,
-        "comment": "When developmental intent deliberately opens locomotion, "
-        "mint explicit graph ownership of the trajectory. It is not a pose "
+        "comment": "When safe developmental intent deliberately opens a "
+        "non-canonical future path, mint explicit graph ownership of the "
+        "trajectory. It is not a pose "
         "target: the owned trajectory may remain dynamically unbalanced while "
         "structural power and thermal limits retain hard-reflex authority.",
         "match": [
@@ -15440,7 +16059,7 @@ def manifest():
     )
     return apply_biological_schedule({
         "id": "humanoid_adaptation",
-        "version": "1.6.0",
+        "version": "1.15.0",
         "depends_on": [
             "decision_core",
             "embodied_motor_priors",
@@ -16291,6 +16910,8 @@ def manifest():
             initialize_synergy_model_rule(),
             choose_synergy_probe_rule(),
             close_synergy_calibration_rule(),
+            retire_stale_ready_motor_authority_rule(),
+            release_selected_developmental_trajectory_rule(),
             choose_balance_rule(),
             account_recovery_entry_rule(),
             mint_recovery_basin_rule(),
@@ -16329,8 +16950,10 @@ def manifest():
             materialize_learning_safety_context_rule(),
             establish_future_manifold_bounds_rule(),
             stamp_future_manifold_audit_contract_rule(),
+            retire_stale_motor_program_synthesis_rule(),
             choose_walking_rule(),
             resume_motor_program_rule(),
+            audit_takeoff_compound_frontier_rule(),
             select_compound_curiosity_candidate_rule(),
             expand_compound_curiosity_program_rule(),
             expand_motor_program_rule(),

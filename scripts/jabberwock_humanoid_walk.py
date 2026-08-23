@@ -8,6 +8,7 @@ import hashlib
 from itertools import combinations
 import json
 import multiprocessing
+import os
 from pathlib import Path
 import sys
 from typing import Any, Callable
@@ -55,6 +56,8 @@ from scripts.jabberwock_humanoid_adaptation import (  # noqa: E402
     _close_action,
     _edge,
     _enact_graph_command,
+    _gravity_relative_orientation_class,
+    _gravity_relative_up_axis,
     _model_rows,
     _one_node,
     _request_action,
@@ -64,7 +67,7 @@ from substrate.world_adapter import WorldAdapter  # noqa: E402
 
 
 DEFAULT_PROTOCOL = ROOT / "protocols" / "humanoid_walking_v1.json"
-MOTOR_LIBRARY_VERSION = 12
+MOTOR_LIBRARY_VERSION = 20
 DEVELOPMENTAL_CURRICULUM_CONTRACT_VERSION = 1
 
 
@@ -686,7 +689,9 @@ def _run_caregiver_scaffold(
     ordered_channels = tuple(sorted(cells_by_channel))
     trace = []
     receipt_seq = 0
-    for _ in range(len(cells) + 1):
+    # One request per effector, one vestibular bounce, then a reset-matched
+    # passive/support pair for the independent exafferent support model.
+    for _ in range(len(cells) + 3):
         requests = agent.inner.neighbours(
             episode,
             "requests_passive_somatomotor_scaffold",
@@ -821,6 +826,97 @@ def _run_caregiver_scaffold(
             })
             _tick_agent(agent)
             continue
+        calibration_kind = str(attrs.get(
+            "caregiver_support_calibration_kind", ""
+        ))
+        if (
+            int(attrs.get("caregiver_support_calibration_requested", 0)) == 1
+            and calibration_kind in {"baseline", "supported"}
+        ):
+            models = agent.inner.neighbours(
+                episode, "has_caregiver_support_action_model"
+            )
+            if len(models) != 1:
+                raise RuntimeError(
+                    "caregiver support calibration requires one action model"
+                )
+            before = world.reset()
+            observation = world.step(
+                "humanoid_actuator_000",
+                caregiver_protective_support=(calibration_kind == "supported"),
+            )
+            before_up = _gravity_relative_up_axis(tuple(
+                float(value) for value in before["base_orientation_xyzw"]
+            ))
+            after_up = _gravity_relative_up_axis(tuple(
+                float(value) for value in observation["base_orientation_xyzw"]
+            ))
+            before_angular = tuple(float(value) for value in before[
+                "base_angular_velocity"
+            ])
+            after_angular = tuple(float(value) for value in observation[
+                "base_angular_velocity"
+            ])
+            before_linear = tuple(float(value) for value in before[
+                "base_linear_velocity"
+            ])
+            after_linear = tuple(float(value) for value in observation[
+                "base_linear_velocity"
+            ])
+            observed = {
+                "dzx": after_up[0] - before_up[0],
+                "dzy": after_up[1] - before_up[1],
+                "dwx": after_angular[0] - before_angular[0],
+                "dwy": after_angular[1] - before_angular[1],
+                "dvx": after_linear[0] - before_linear[0],
+                "dvy": after_linear[1] - before_linear[1],
+                "dvz": after_linear[2] - before_linear[2],
+            }
+            receipt_seq += 1
+            receipt = agent.s.add_node("CaregiverSupportCalibrationReceipt", {
+                "scaffold_seq": receipt_seq,
+                "calibration_kind": calibration_kind,
+                "exafferent": 1,
+                "efference_copy_present": 0,
+                "receipt_processed": 0,
+                "support_applied": int(observation.get(
+                    "caregiver_protective_support_applied", 0
+                )),
+                "pre_z_x": before_up[0],
+                "pre_z_y": before_up[1],
+                "pre_wx": before_angular[0],
+                "pre_wy": before_angular[1],
+                "pre_vx": before_linear[0],
+                "pre_vy": before_linear[1],
+                "pre_vz": before_linear[2],
+                "pre_lateral_offset": float(before["base_position"][1]),
+                **{f"observed_{axis}": value for axis, value in observed.items()},
+                "output_authority": 0,
+                "integer_native": 1,
+            })
+            _edge(
+                agent,
+                episode,
+                "has_caregiver_support_calibration_receipt",
+                receipt,
+            )
+            _edge(
+                agent,
+                receipt,
+                "calibrates_caregiver_support_action_model",
+                models[0],
+            )
+            trace.append({
+                "kind": f"protective_support_{calibration_kind}",
+                "exafferent": 1,
+                "efference_copy_present": 0,
+                "support_applied": int(observation.get(
+                    "caregiver_protective_support_applied", 0
+                )),
+                **{f"observed_{axis}": value for axis, value in observed.items()},
+            })
+            _tick_agent(agent)
+            continue
         break
     if int(agent.s.node(episode)["attrs"].get(
         "caregiver_scaffold_handoff_ready", 0
@@ -850,7 +946,8 @@ def _restore_motor_library(
         library
     )
     if library.get("version") not in {
-        3, 4, 5, 6, 7, 8, 9, 10, 11, MOTOR_LIBRARY_VERSION,
+        3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+        MOTOR_LIBRARY_VERSION,
     }:
         raise ValueError(
             "unsupported humanoid motor library version: "
@@ -873,6 +970,125 @@ def _restore_motor_library(
     motor_proposal_shape_memory_count = 0
     motor_proposal_body_shape_memory_count = 0
     motor_proposal_counterexample_count = 0
+    caregiver_support_model_count = 0
+    locomotor_phenotype_count = 0
+    locomotor_phenotype_family_count = 0
+    episodes = agent.s.nodes("HumanoidEpisode")
+    if len(episodes) != 1:
+        raise ValueError("motor library restore requires one humanoid episode")
+    episode = episodes[0]
+    family_rows = library.get("locomotor_phenotype_families", [])
+    if family_rows:
+        developments = agent.s.nodes("EmbodiedDevelopmentEpisode")
+        if len(developments) != 1:
+            raise ValueError(
+                "locomotor phenotype family restore requires one "
+                "embodied development episode"
+            )
+        development = developments[0]
+        for family_row in family_rows:
+            family_attrs = _restore_library_attrs(family_row)
+            signature = family_attrs.get("signature", ())
+            if (
+                library.get("version") < 18
+                or len(signature) < 8
+                or tuple(signature[0])[:1] != ("action_intent",)
+                or tuple(signature[1])[:1] != ("developmental_capability",)
+                or tuple(signature[6])[:1] != ("pre_orientation_class",)
+                or tuple(signature[7])[:1] != ("post_orientation_class",)
+            ):
+                # Earlier families lacked a required causal coordinate or, in
+                # v17, incorrectly promoted enacted program to order 0. Their
+                # statistics remain in the old artifact, but cannot be imported
+                # as evidence into this foveated hierarchy.
+                continue
+            if family_attrs.get("output_authority", 0) != 0:
+                raise ValueError(
+                    "locomotor phenotype families must be output-null"
+                )
+            if family_attrs.get("integer_native", 1) != 1:
+                raise ValueError(
+                    "locomotor phenotype families must be integer-native"
+                )
+            family_attrs["output_authority"] = 0
+            family_attrs["integer_native"] = 1
+            family_attrs["shape_order"] = 0
+            family_attrs["status"] = "hypothesis"
+            family_attrs["refinement_required"] = 0
+            family_attrs["selected_refinement_order"] = 0
+            family_attrs["shape_residual_kind"] = "unresolved"
+            family_attrs["last_receipt_seq"] = 0
+            family_attrs["source"] = "library"
+            family = agent.s.add_node(
+                "EmbodiedLocomotorPhenotypeFamily", family_attrs
+            )
+            _edge(
+                agent,
+                development,
+                "has_embodied_locomotor_phenotype_family",
+                family,
+            )
+            locomotor_phenotype_family_count += 1
+    phenotype_rows = library.get("locomotor_phenotypes", [])
+    if phenotype_rows:
+        developments = agent.s.nodes("EmbodiedDevelopmentEpisode")
+        if len(developments) != 1:
+            raise ValueError(
+                "locomotor phenotype restore requires one embodied "
+                "development episode"
+            )
+        development = developments[0]
+        for phenotype_row in phenotype_rows:
+            phenotype_attrs = _restore_library_attrs(phenotype_row)
+            signature = phenotype_attrs.get("signature", ())
+            if (
+                library.get("version") < 20
+                or len(signature) < 13
+                or tuple(signature[0])[:1] != ("action_intent",)
+                or tuple(signature[1])[:1] != ("developmental_capability",)
+                or tuple(signature[2])[:1] != ("motor_program",)
+                or tuple(signature[3])[:1] != ("pre_distal_support_code",)
+                or tuple(signature[4])[:1] != (
+                    "pre_whole_body_support_count",
+                )
+            ):
+                continue
+            if phenotype_attrs.get("output_authority", 0) != 0:
+                raise ValueError("locomotor phenotypes must be output-null")
+            if phenotype_attrs.get("integer_native", 1) != 1:
+                raise ValueError("locomotor phenotypes must be integer-native")
+            phenotype_attrs["output_authority"] = 0
+            phenotype_attrs["integer_native"] = 1
+            phenotype_attrs["shape_order"] = 1
+            phenotype_attrs["status"] = "hypothesis"
+            phenotype_attrs["last_receipt_seq"] = 0
+            phenotype_attrs["source"] = "library"
+            phenotype = agent.s.add_node(
+                "EmbodiedLocomotorPhenotype", phenotype_attrs
+            )
+            _edge(
+                agent,
+                development,
+                "has_embodied_locomotor_phenotype",
+                phenotype,
+            )
+            locomotor_phenotype_count += 1
+    for model_row in library.get("caregiver_support_models", []):
+        model_attrs = _restore_library_attrs(model_row)
+        if model_attrs.get("output_authority", 0) != 0:
+            raise ValueError("caregiver support models must be output-null")
+        if model_attrs.get("exafferent", 0) != 1:
+            raise ValueError("caregiver support models must be exafferent")
+        if model_attrs.get("initialized", 0) != 1:
+            raise ValueError("caregiver support models must be initialized")
+        model_attrs["output_authority"] = 0
+        model = agent.s.add_node("CaregiverSupportActionModel", model_attrs)
+        _edge(agent, episode, "has_caregiver_support_action_model", model)
+        caregiver_support_model_count += 1
+    if caregiver_support_model_count:
+        agent.inner.set_attr(
+            episode, "caregiver_support_calibration_complete", 1
+        )
     shapes_by_name = {}
     for shape_row in _coalesce_body_shape_rows(
         library.get("body_shapes", [])
@@ -1288,6 +1504,12 @@ def _restore_motor_library(
         restored["developmental_capability_count"] = (
             developmental_capability_count
         )
+    if locomotor_phenotype_family_count:
+        restored["locomotor_phenotype_family_count"] = (
+            locomotor_phenotype_family_count
+        )
+    if locomotor_phenotype_count:
+        restored["locomotor_phenotype_count"] = locomotor_phenotype_count
     if developmental_experience_count:
         restored["developmental_experience_count"] = (
             developmental_experience_count
@@ -1319,6 +1541,10 @@ def _restore_motor_library(
     if motor_proposal_counterexample_count:
         restored["motor_proposal_counterexample_count"] = (
             motor_proposal_counterexample_count
+        )
+    if caregiver_support_model_count:
+        restored["caregiver_support_model_count"] = (
+            caregiver_support_model_count
         )
     return restored
 
@@ -1899,6 +2125,62 @@ def _motor_library_snapshot(
             separators=(",", ":"),
         ),
     ))
+    caregiver_support_models = [
+        {"attrs": dict(agent.s.node(model)["attrs"])}
+        for episode in agent.s.nodes("HumanoidEpisode")
+        for model in agent.inner.neighbours(
+            episode, "has_caregiver_support_action_model"
+        )
+        if int(agent.s.node(model)["attrs"].get("initialized", 0)) == 1
+    ]
+    caregiver_support_models.sort(
+        key=lambda row: str(row["attrs"].get("token", ""))
+    )
+    locomotor_phenotypes = []
+    for development in agent.s.nodes("EmbodiedDevelopmentEpisode"):
+        for phenotype in agent.inner.neighbours(
+            development, "has_embodied_locomotor_phenotype"
+        ):
+            attrs = {
+                key: value
+                for key, value in agent.s.node(phenotype)["attrs"].items()
+                if key != "source"
+            }
+            if attrs.get("output_authority", 0) != 0:
+                raise ValueError("locomotor phenotypes must be output-null")
+            attrs["shape_order"] = 1
+            attrs["status"] = "hypothesis"
+            attrs["refinement_required"] = 0
+            attrs["selected_refinement_order"] = 0
+            attrs["shape_residual_kind"] = "unresolved"
+            attrs["last_receipt_seq"] = 0
+            locomotor_phenotypes.append({"attrs": attrs})
+    locomotor_phenotypes.sort(
+        key=lambda row: str(row["attrs"].get("key", ""))
+    )
+    locomotor_phenotype_families = []
+    for development in agent.s.nodes("EmbodiedDevelopmentEpisode"):
+        for family in agent.inner.neighbours(
+            development, "has_embodied_locomotor_phenotype_family"
+        ):
+            attrs = {
+                key: value
+                for key, value in agent.s.node(family)["attrs"].items()
+                if key != "source"
+            }
+            if attrs.get("output_authority", 0) != 0:
+                raise ValueError(
+                    "locomotor phenotype families must be output-null"
+                )
+            # A Pareto candidate is episode-local relational evidence. The
+            # sufficient statistics survive; verification is replayed in the
+            # new context before the family can re-enter its frontier.
+            attrs["status"] = "hypothesis"
+            attrs["last_receipt_seq"] = 0
+            locomotor_phenotype_families.append({"attrs": attrs})
+    locomotor_phenotype_families.sort(
+        key=lambda row: str(row["attrs"].get("key", ""))
+    )
     return {
         "version": MOTOR_LIBRARY_VERSION,
         "developmental_curriculum_contract": (
@@ -1909,6 +2191,9 @@ def _motor_library_snapshot(
         "developmental_capabilities": developmental_capabilities,
         "developmental_experiences": developmental_experiences,
         "somatomotor_couplings": _somatomotor_coupling_snapshot(agent),
+        "caregiver_support_models": caregiver_support_models,
+        "locomotor_phenotypes": locomotor_phenotypes,
+        "locomotor_phenotype_families": locomotor_phenotype_families,
         "metacognitive_learning_revisions": metacognitive_learning_revisions,
         "metacognitive_learning_counterexamples": (
             metacognitive_learning_counterexamples
@@ -2095,6 +2380,18 @@ def _run_arm(
         policy,
         "persistent_task_residual_authority",
         persistent_task_residual_authority,
+    )
+    foveated_program_exploration_authority = float(
+        locomotion.get("foveated_program_exploration_authority", 0.0)
+    )
+    if foveated_program_exploration_authority not in (0.0, 1.0):
+        raise ValueError(
+            "foveated_program_exploration_authority must be 0.0 or 1.0"
+        )
+    agent.inner.set_attr(
+        policy,
+        "foveated_program_exploration_authority",
+        foveated_program_exploration_authority,
     )
     future_manifold_enabled = float(
         locomotion.get("future_manifold_enabled", 0.0)
@@ -2364,10 +2661,24 @@ def _run_arm(
                 and curriculum.get("caregiver_scaffolding", False)
             ),
             "caregiver_protective_support_requested": 0,
+            "caregiver_support_counterfactual_authority": int(
+                os.environ.get(
+                    "HUMANOID_SUPPORT_COUNTERFACTUAL_AUTHORITY", "0"
+                ) == "1"
+            ),
+            "caregiver_support_counterfactual_loss_floor": float(
+                os.environ.get(
+                    "HUMANOID_SUPPORT_COUNTERFACTUAL_LOSS_FLOOR", "1"
+                )
+            ),
+            "caregiver_support_scale": 0.0,
             "caregiver_protected_action_count": 0,
             "caregiver_unbuffered_action_count": 0,
             "caregiver_bounce_requested": 0,
             "caregiver_bounce_completed": 0,
+            "caregiver_support_calibration_requested": 0,
+            "caregiver_support_calibration_kind": "none",
+            "caregiver_support_calibration_complete": 0,
             "developmental_stage_ordinal": 0,
             "developmental_stage_transition_count": 0,
             "developmental_goal": "inactive",
@@ -2595,6 +2906,9 @@ def _run_arm(
                     "ordinal": scenario_ordinal,
                     "target_goal": str(scenario_spec.get(
                         "target_goal", "any"
+                    )),
+                    "target_capability": str(scenario_spec.get(
+                        "target_capability", "any"
                     )),
                     "fixture_quarter_turn_x": quarter_turns[0],
                     "fixture_quarter_turn_y": quarter_turns[1],
@@ -2904,6 +3218,22 @@ def _run_arm(
                 "selected_secondary_token": decision[
                     "selected_secondary_token"
                 ],
+                "orientation_class_before": (
+                    _gravity_relative_orientation_class(
+                        _gravity_relative_up_axis(tuple(
+                            float(value) for value in
+                            before["base_orientation_xyzw"]
+                        ))
+                    )
+                ),
+                "orientation_class_after": (
+                    _gravity_relative_orientation_class(
+                        _gravity_relative_up_axis(tuple(
+                            float(value) for value in
+                            after["base_orientation_xyzw"]
+                        ))
+                    )
+                ),
                 "response_frames": decision["selected_response_frames"],
                 "decision_kind": decision["decision_kind"],
                 "collapse_kind": decision.get(
@@ -3453,6 +3783,10 @@ def _run_arm(
         ]
         touchdown_advances = []
         trace = []
+        # Attribute the situated curriculum itself, excluding boot and
+        # calibration. The native counters are observational and do not alter
+        # rule scheduling or graph state.
+        agent.s._inner.reset_rule_costs()
         completed_attempt_progress = 0.0
         body_reset_records = []
         perturbation = locomotion.get("perturbation")
@@ -3514,6 +3848,7 @@ def _run_arm(
             ):
                 selected_reset_fixture = None
                 selected_reset_scenario = None
+                enacted_development_reset_request = None
                 if reset_source == development_context:
                     active_reset_requests = agent.inner.neighbours(
                         development_context,
@@ -3523,8 +3858,9 @@ def _run_arm(
                         raise RuntimeError(
                             "graph reset authority requires one active request"
                         )
+                    enacted_development_reset_request = active_reset_requests[0]
                     reset_request_attrs = agent.s.node(
-                        active_reset_requests[0]
+                        enacted_development_reset_request
                     )["attrs"]
                     if reset_request_attrs.get(
                         "reinstantiation_spec_ready", 0
@@ -3570,10 +3906,26 @@ def _run_arm(
                     for row in observation["support_contact_forces"]
                 ]
                 last_unilateral_support = 0
+                # Reset receipts have their own event sequence. A reset can
+                # expose a new basin that immediately justifies another reset
+                # before any motor action is emitted; reusing request_seq then
+                # gives both physical events the same identity and makes the
+                # second acknowledgement's strict monotonicity guard false.
+                body_reset_seq = 1 + max(
+                    int(agent.s.node(episode)["attrs"].get(
+                        "body_reset_seq", 0
+                    )),
+                    int(
+                        agent.s.node(development_context)["attrs"].get(
+                            "body_reset_seq", 0
+                        )
+                        if development_context is not None else 0
+                    ),
+                )
                 agent.inner.set_attr(
                     episode,
                     "body_reset_seq",
-                    float(request_seq),
+                    float(body_reset_seq),
                 )
                 if development_context is not None:
                     reset_cost_units = int(
@@ -3589,7 +3941,7 @@ def _run_arm(
                     agent.inner.set_attr(
                         development_context,
                         "body_reset_seq",
-                        int(request_seq),
+                        body_reset_seq,
                     )
                 _write_state(
                     agent,
@@ -3599,14 +3951,36 @@ def _run_arm(
                     state_is_receipt=True,
                 )
                 _tick_agent(agent)
-                if (
-                    agent.s.node(reset_source)["attrs"].get(
-                        "reset_requested"
+                development_reset_acknowledged = (
+                    enacted_development_reset_request is not None
+                    and agent.s.node(enacted_development_reset_request)[
+                        "attrs"
+                    ].get("status") == "enacted"
+                    and enacted_development_reset_request not in (
+                        agent.inner.neighbours(
+                            development_context,
+                            "has_active_embodied_reset_request",
+                        )
                     )
-                    != 0
+                )
+                motor_reset_acknowledged = (
+                    enacted_development_reset_request is None
+                    and agent.s.node(reset_source)["attrs"].get(
+                        "reset_requested"
+                    ) == 0
+                )
+                if not (
+                    development_reset_acknowledged
+                    or motor_reset_acknowledged
                 ):
+                    reset_attrs = agent.s.node(reset_source)["attrs"]
                     raise RuntimeError(
-                        "graph did not acknowledge requested body reset"
+                        "graph did not acknowledge requested body reset: "
+                        f"source={'development' if reset_source == development_context else 'motor'} "
+                        f"body_reset_seq={reset_attrs.get('body_reset_seq')} "
+                        "processed_seq="
+                        f"{reset_attrs.get('embodied_reset_processed_seq', reset_attrs.get('body_reset_processed_seq'))} "
+                        f"active_request_count={len(agent.inner.neighbours(reset_source, 'has_active_embodied_reset_request'))}"
                     )
                 body_reset_before_action = True
             request_seq += 1
@@ -3620,12 +3994,59 @@ def _run_arm(
                     "manifold_bounds_ready", 0.0
                 )
             )
+            if os.environ.get("HUMANOID_ACTION_PROGRESS") == "1":
+                print(
+                    f"humanoid_action_phase action={action} request_start",
+                    flush=True,
+                )
             token, trial, decision = _request_action(
                 agent,
                 episode,
                 before,
                 request_seq=request_seq,
             )
+            if os.environ.get("HUMANOID_ACTION_PROGRESS") == "1":
+                print(
+                    f"humanoid_action_phase action={action} request_done",
+                    flush=True,
+                )
+            active_capability_before_action = {}
+            development_evidence_window_before_action = 0
+            if development_context is not None:
+                active_capabilities = agent.inner.neighbours(
+                    development_context,
+                    "has_active_embodied_developmental_capability",
+                )
+                if active_capabilities:
+                    active_capability_before_action = dict(agent.s.node(
+                        active_capabilities[0]
+                    )["attrs"])
+                development_evidence_window_before_action = int(
+                    agent.s.node(development_context)["attrs"].get(
+                        "development_evidence_window", 0
+                    )
+                )
+            committed_programs = [
+                *agent.inner.neighbours(
+                    trial, "enacts_humanoid_motor_program"
+                ),
+                *agent.inner.neighbours(
+                    trial, "synthesized_humanoid_motor_program"
+                ),
+            ]
+            support_counterfactual_audit = next((
+                dict(agent.s.node(program)["attrs"])
+                for program in committed_programs
+                if int(agent.s.node(program)["attrs"].get(
+                    "support_counterfactual_audit_seq", 0
+                )) > 0
+            ), {})
+            committed_program_caregiver_buffered = int(any(
+                int(agent.s.node(program)["attrs"].get(
+                    "caregiver_buffered_release", 0
+                )) == 1
+                for program in committed_programs
+            ))
             curriculum_event = (
                 enact_graph_force_request(
                     agent,
@@ -3682,6 +4103,11 @@ def _run_arm(
                     0.0,
                 )
             )
+            if os.environ.get("HUMANOID_ACTION_PROGRESS") == "1":
+                print(
+                    f"humanoid_action_phase action={action} receipt_start",
+                    flush=True,
+                )
             trial_after = _close_action(
                 agent,
                 episode,
@@ -3702,6 +4128,11 @@ def _run_arm(
                     )
                 ),
             )
+            if os.environ.get("HUMANOID_ACTION_PROGRESS") == "1":
+                print(
+                    f"humanoid_action_phase action={action} receipt_done",
+                    flush=True,
+                )
             height = float(after["base_position"][2])
             tilt = _body_axis_tilt(after)
             minimum_height = min(minimum_height, height)
@@ -3746,6 +4177,44 @@ def _run_arm(
             if support_code > 0:
                 last_unilateral_support = support_code
             graph_state_after = agent.s.node(episode)["attrs"]
+            before_up = _gravity_relative_up_axis(tuple(
+                float(value) for value in before["base_orientation_xyzw"]
+            ))
+            after_up = _gravity_relative_up_axis(tuple(
+                float(value) for value in after["base_orientation_xyzw"]
+            ))
+            before_angular = before["base_angular_velocity"]
+            after_angular = after["base_angular_velocity"]
+            before_linear = before["base_linear_velocity"]
+            after_linear = after["base_linear_velocity"]
+            observed_projection_delta = [
+                float(after_up[0]) - float(before_up[0]),
+                float(after_up[1]) - float(before_up[1]),
+                float(after_angular[0]) - float(before_angular[0]),
+                float(after_angular[1]) - float(before_angular[1]),
+                float(after_linear[0]) - float(before_linear[0]),
+                float(after_linear[1]) - float(before_linear[1]),
+                float(after_linear[2]) - float(before_linear[2]),
+            ]
+            unsupported_projection_bounds = [
+                float(support_counterfactual_audit.get(
+                    f"unsupported_projection_bound_{index}", 0.0
+                ))
+                for index in range(7)
+            ]
+            supported_projection_bounds = [
+                float(support_counterfactual_audit.get(
+                    f"supported_projection_bound_{index}", 0.0
+                ))
+                for index in range(7)
+            ]
+            observed_projection_bounds = (
+                supported_projection_bounds
+                if int(after.get(
+                    "caregiver_protective_support_applied", 0
+                )) == 1
+                else unsupported_projection_bounds
+            )
             trace.append({
                 "action": action,
                 "active_residual_regime_ordinal": float(
@@ -3759,13 +4228,86 @@ def _run_arm(
                     )
                 ),
                 "selected_token": token,
+                "development_directed_units": int(trial_after.get(
+                    "_development_directed_units", 0
+                )),
+                "development_translation_units": int(trial_after.get(
+                    "_development_translation_units", 0
+                )),
+                "development_directed_consistency": int(trial_after.get(
+                    "_development_directed_consistency", 0
+                )),
                 "selected_secondary_token": decision[
                     "selected_secondary_token"
                 ],
+                "orientation_class_before": (
+                    _gravity_relative_orientation_class(
+                        _gravity_relative_up_axis(tuple(
+                            float(value) for value in
+                            before["base_orientation_xyzw"]
+                        ))
+                    )
+                ),
+                "orientation_class_after": (
+                    _gravity_relative_orientation_class(
+                        _gravity_relative_up_axis(tuple(
+                            float(value) for value in
+                            after["base_orientation_xyzw"]
+                        ))
+                    )
+                ),
                 "motor_tokens": list(after["last_actuator_tokens"]),
                 "motor_bundle_width": len(after["last_actuator_tokens"]),
+                "takeoff_compound_candidate_count": max((
+                    int(agent.s.node(program)["attrs"].get(
+                        "takeoff_compound_candidate_count", 0
+                    ))
+                    for program in committed_programs
+                ), default=0),
+                "takeoff_compound_allow_expansion": max((
+                    int(agent.s.node(program)["attrs"].get(
+                        "takeoff_compound_allow_expansion", 0
+                    ))
+                    for program in committed_programs
+                ), default=0),
+                "takeoff_compound_selection_kind": next((
+                    str(agent.s.node(program)["attrs"].get(
+                        "compound_selection_kind", "none"
+                    ))
+                    for program in committed_programs
+                    if agent.s.node(program)["attrs"].get(
+                        "compound_selection_kind"
+                    ) is not None
+                ), "none"),
                 "manifold_bounds_ready": (
                     manifold_bounds_ready_before_action
+                ),
+                "ideal_effort_ratio": float(graph_state_after.get(
+                    "future_manifold_ideal_effort", 0.0
+                )),
+                "ideal_effort_evidence_count": int(graph_state_after.get(
+                    "future_manifold_ideal_effort_evidence_count", 0
+                )),
+                "effort_scale_joules": float(graph_state_after.get(
+                    "future_manifold_effort_scale_joules", 0.0
+                )),
+                "manifold_effort_audit_count": int(graph_state_after.get(
+                    "manifold_effort_audit_count", 0
+                )),
+                "manifold_effort_supported_audit_count": int(
+                    graph_state_after.get(
+                        "manifold_effort_supported_audit_count", 0
+                    )
+                ),
+                "manifold_effort_blocked_audit_count": int(
+                    graph_state_after.get(
+                        "manifold_effort_blocked_audit_count", 0
+                    )
+                ),
+                "manifold_effort_compression_audit_count": int(
+                    graph_state_after.get(
+                        "manifold_effort_compression_audit_count", 0
+                    )
                 ),
                 "motor_weight_a": float(
                     decision.get("selected_motor_weight_a", 1.0)
@@ -3787,6 +4329,106 @@ def _run_arm(
                     "open_residual_count",
                     1.0,
                 ),
+                # Preserve the actual exafferent intervention on every
+                # developmental action.  A request is only graph intent; the
+                # world receipt is the evidence that support was enacted.
+                "caregiver_protective_support_applied": int(after.get(
+                    "caregiver_protective_support_applied", 0
+                )),
+                "caregiver_protective_support_requested": int(decision.get(
+                    "caregiver_protective_support_requested", 0
+                )),
+                "caregiver_support_scale": float(after.get(
+                    "caregiver_support_scale", 0.0
+                )),
+                "caregiver_manifold_decisive_tick": float(decision.get(
+                    "caregiver_manifold_decisive_tick", 0.0
+                )),
+                "caregiver_manifold_residual": [
+                    float(decision.get(
+                        f"caregiver_manifold_residual_{index}", 0.0
+                    ))
+                    for index in range(7)
+                ],
+                "support_counterfactual_audit_seq": int(
+                    support_counterfactual_audit.get(
+                        "support_counterfactual_audit_seq", 0
+                    )
+                ),
+                "unsupported_projection": {
+                    field: float(support_counterfactual_audit.get(
+                        f"unsupported_projection_{field}", 0.0
+                    ))
+                    for field in (
+                        "support", "resolved", "loss", "information_loss"
+                    )
+                },
+                "supported_projection": {
+                    field: float(support_counterfactual_audit.get(
+                        f"supported_projection_{field}", 0.0
+                    ))
+                    for field in (
+                        "support", "resolved", "loss", "information_loss",
+                        "horizon", "earliest_decisive_tick",
+                        "minimum_exafferent_scale",
+                    )
+                },
+                "supported_projection_residual": [
+                    float(support_counterfactual_audit.get(
+                        f"supported_projection_residual_{index}", 0.0
+                    ))
+                    for index in range(7)
+                ],
+                "unsupported_projection_bounds": unsupported_projection_bounds,
+                "supported_projection_bounds": supported_projection_bounds,
+                "observed_projection_delta": observed_projection_delta,
+                "observed_projection_escape_count": sum(
+                    abs(delta) > bound
+                    for delta, bound in zip(
+                        observed_projection_delta, observed_projection_bounds
+                    )
+                ),
+                "support_counterfactual_recommends_support": int(
+                    float(support_counterfactual_audit.get(
+                        "unsupported_projection_loss", 0.0
+                    )) > 0.0
+                    and float(support_counterfactual_audit.get(
+                        "supported_projection_loss", 0.0
+                    )) == 0.0
+                ),
+                "caregiver_support_force_world": list(after.get(
+                    "caregiver_support_force_world", (0.0, 0.0, 0.0)
+                )),
+                "caregiver_support_torque_world": list(after.get(
+                    "caregiver_support_torque_world", (0.0, 0.0, 0.0)
+                )),
+                "caregiver_protective_support_available": int(decision.get(
+                    "caregiver_protective_support_available", 0
+                )),
+                "developmental_capability_success_count_before_action": int(
+                    active_capability_before_action.get("success_count", 0)
+                ),
+                "development_evidence_window": (
+                    development_evidence_window_before_action
+                ),
+                "sensorimotor_interrupt_required_before_action": int(
+                    decision.get("sensorimotor_interrupt_required", 0)
+                ),
+                "reset_requested_before_action": int(decision.get(
+                    "reset_requested", 0
+                )),
+                "committed_program_caregiver_buffered": (
+                    committed_program_caregiver_buffered
+                ),
+                "counterfactual_support_release": int(any(
+                    int(agent.s.node(program)["attrs"].get(
+                        "counterfactual_support_release_seq", 0
+                    )) == request_seq
+                    for program in committed_programs
+                )),
+                "caregiver_support_impulse_newton_seconds": float(after.get(
+                    "caregiver_support_impulse_newton_seconds", 0.0
+                )),
                 "motor_reference_kind": after.get("motor_reference_kind"),
                 "motor_reference_shape": decision.get(
                     "selected_motor_reference_shape"
@@ -3828,6 +4470,21 @@ def _run_arm(
                 "body_reset_before_action": body_reset_before_action,
                 "perturbation_applied": perturbation_applied,
                 "curriculum_event": curriculum_event,
+                # Attribute the outcome to the capability that selected the
+                # action. Processing this receipt may master that capability
+                # and activate the next one, which is useful transition state
+                # but must not be allowed to relabel the enacted action.
+                "active_developmental_capability": (
+                    active_capability_before_action.get("name", "inactive")
+                ),
+                "active_developmental_capability_after_action": (
+                    graph_state_after.get(
+                        "active_developmental_capability", "inactive"
+                    )
+                ),
+                "developmental_goal": graph_state_after.get(
+                    "developmental_goal", "inactive"
+                ),
                 "position_after": list(after["base_position"]),
                 "linear_velocity_after": list(
                     after["base_linear_velocity"]
@@ -3902,6 +4559,20 @@ def _run_arm(
                     for row in after["support_contact_forces"]
                 ],
             })
+            if os.environ.get("HUMANOID_ACTION_PROGRESS") == "1":
+                development_progress = (
+                    agent.s.node(development_context)["attrs"]
+                    if development_context is not None else {}
+                )
+                print(
+                    "humanoid_action_progress "
+                    f"action={action} "
+                    "capability="
+                    f"{graph_state_after.get('active_developmental_capability')} "
+                    "resets="
+                    f"{development_progress.get('embodiment_reset_iteration_count', 0)}",
+                    flush=True,
+                )
             if observer is not None:
                 observer(world, {
                     "phase": "learning_receipt",
@@ -4371,7 +5042,10 @@ def _run_arm(
                 ))
                 next_programs = [
                     program
-                    for transition in sorted(path_transitions & current_sources)
+                    for transition in sorted(
+                        path_transitions & current_sources,
+                        key=str,
+                    )
                     for program in agent.inner.neighbours(
                         transition, "continues_with_embodied_program"
                     )
@@ -4426,6 +5100,12 @@ def _run_arm(
                             "information_loss", "horizon", "anchor_count",
                             "refinement_count", "termination_code",
                             "exploration_authority",
+                            "effort_supported", "projected_effort",
+                            "ideal_effort", "effort_scale",
+                            "effort_residual", "time_compression",
+                            "width_compression", "information_compression",
+                            "compression_dimension_count",
+                            "manifold_compression", "effort_authorized",
                             *(f"situated_support_{index}"
                               for index in range(7)),
                             *(f"applied_bound_{index}"
@@ -4500,6 +5180,7 @@ def _run_arm(
             ),
         }
         locomotor_phenotype_rows = []
+        locomotor_phenotype_family_rows = []
         if development_context is not None:
             for phenotype in agent.inner.neighbours(
                 development_context, "has_embodied_locomotor_phenotype"
@@ -4517,6 +5198,35 @@ def _run_arm(
                 ))
                 locomotor_phenotype_rows.append(row)
             locomotor_phenotype_rows.sort(
+                key=lambda row: json.dumps(
+                    row.get("signature", ()), separators=(",", ":")
+                )
+            )
+            for family in agent.inner.neighbours(
+                development_context,
+                "has_embodied_locomotor_phenotype_family",
+            ):
+                row = dict(agent.s.node(family)["attrs"])
+                candidates = agent.inner.neighbours(
+                    family, "publishes_locomotor_pareto_candidate"
+                )
+                row["pareto_candidate_count"] = len(candidates)
+                row["pareto_dominated"] = int(any(
+                    agent.inner.neighbours(
+                        candidate, "is_dominated_by_pareto_candidate"
+                    )
+                    for candidate in candidates
+                ))
+                row["refinement_count"] = sum(
+                    family in agent.inner.neighbours(
+                        phenotype, "refines_locomotor_phenotype_family"
+                    )
+                    for phenotype in agent.inner.neighbours(
+                        development_context, "has_embodied_locomotor_phenotype"
+                    )
+                )
+                locomotor_phenotype_family_rows.append(row)
+            locomotor_phenotype_family_rows.sort(
                 key=lambda row: json.dumps(
                     row.get("signature", ()), separators=(",", ":")
                 )
@@ -4858,7 +5568,84 @@ def _run_arm(
         key=lambda row: int(row.get("trajectory_replay_issued_seq", 0)),
         default={},
     )
+    rule_cost_rows = sorted(
+        (
+            {
+                "rule": name,
+                "micros": micros,
+                "visits": visits,
+                "progressions": progressions,
+            }
+            for name, micros, visits, progressions
+            in agent.s._inner.rule_costs()
+            if micros > 0
+        ),
+        key=lambda row: row["micros"],
+        reverse=True,
+    )
+    developmental_reset_diagnostics = {}
+    if development_context is not None:
+        development_context_attrs = dict(
+            agent.s.node(development_context)["attrs"]
+        )
+        hot_receipts = sorted(
+            (
+                dict(agent.s.node(receipt)["attrs"])
+                for receipt in agent.inner.neighbours(
+                    development_context,
+                    "has_embodied_development_receipt",
+                )
+            ),
+            key=lambda attrs: attrs.get("development_receipt_seq", -1),
+        )
+        reset_requests = [
+            dict(agent.s.node(request)["attrs"])
+            for request in agent.inner.neighbours(
+                development_context,
+                "has_active_embodied_reset_request",
+            )
+        ]
+        developmental_reset_diagnostics = {
+            "development": {
+                key: development_context_attrs.get(key)
+                for key in (
+                    "latest_development_receipt_seq",
+                    "development_evidence_window",
+                    "embodiment_reset_available",
+                    "embodiment_terminal",
+                    "embodied_reset_requested",
+                    "reset_requested",
+                )
+            },
+            "latest_hot_receipt": (
+                {
+                    key: hot_receipts[-1].get(key)
+                    for key in (
+                        "development_receipt_seq",
+                        "development_receipt_closed",
+                        "development_experience_retained",
+                        "embodiment_destroyed",
+                        "development_elevation_units",
+                        "development_support_gain",
+                        "development_post_support_count",
+                    )
+                }
+                if hot_receipts else None
+            ),
+            "active_reset_requests": reset_requests,
+        }
+    ideal_effort_state_rows = sorted(
+        (
+            dict(agent.s.node(state)["attrs"])
+            for state in agent.inner.neighbours(
+                episode, "has_embodied_ideal_effort_state"
+            )
+        ),
+        key=lambda row: str(row.get("motor_task_context", "general")),
+    )
     result = {
+        "curriculum_rule_costs": rule_cost_rows,
+        "developmental_reset_diagnostics": developmental_reset_diagnostics,
         "mode": mode,
         "developmental_curriculum_contract": current_developmental_contract,
         "developmental_curriculum_contract_digest": (
@@ -4913,6 +5700,31 @@ def _run_arm(
                         f"applied_bound_{index}", 0.0
                     ) for index in range(7)
                 ],
+            },
+            "ideal_effort": {
+                "context": final.get(
+                    "future_manifold_ideal_effort_context", "general"
+                ),
+                "ratio": final.get("future_manifold_ideal_effort", 0.0),
+                "evidence_count": final.get(
+                    "future_manifold_ideal_effort_evidence_count", 0
+                ),
+                "scale_joules": final.get(
+                    "future_manifold_effort_scale_joules", 0.0
+                ),
+                "audit_count": final.get(
+                    "manifold_effort_audit_count", 0
+                ),
+                "supported_audit_count": final.get(
+                    "manifold_effort_supported_audit_count", 0
+                ),
+                "blocked_audit_count": final.get(
+                    "manifold_effort_blocked_audit_count", 0
+                ),
+                "compression_audit_count": final.get(
+                    "manifold_effort_compression_audit_count", 0
+                ),
+                "situated_states": ideal_effort_state_rows,
             },
         },
         "policy_owner": "rust_graph",
@@ -5172,16 +5984,60 @@ def _run_arm(
                     "development_sparse_support_ceiling", 0
                 ),
                 "locomotor_phenotype_count": len(locomotor_phenotype_rows),
+                "locomotor_phenotype_family_count": len(
+                    locomotor_phenotype_family_rows
+                ),
+                "locomotor_basin_evidence_window": int(
+                    development_final.get("development_evidence_window", 0)
+                ),
+                "maximum_locomotor_phenotype_occurrence_count": max((
+                    int(row.get("occurrence_count", 0))
+                    for row in locomotor_phenotype_rows
+                ), default=0),
+                "locomotor_phenotype_occurrence_histogram": dict(Counter(
+                    int(row.get("occurrence_count", 0))
+                    for row in locomotor_phenotype_rows
+                )),
+                "locomotor_phenotype_recurrence_leaders": [
+                    {
+                        key: row.get(key)
+                        for key in (
+                            "signature",
+                            "occurrence_count",
+                            "sum_directed_units",
+                            "sum_translation_units",
+                            "sum_lateral_units",
+                            "sum_directed_consistency",
+                            "status",
+                        )
+                    }
+                    for row in sorted(
+                        locomotor_phenotype_rows,
+                        key=lambda item: (
+                            -int(item.get("occurrence_count", 0)),
+                            json.dumps(item.get("signature", ())),
+                        ),
+                    )[:8]
+                ],
                 "verified_locomotor_basin_count": sum(
                     row.get("status") == "verified_basin"
-                    for row in locomotor_phenotype_rows
+                    for row in (
+                        locomotor_phenotype_rows
+                        + locomotor_phenotype_family_rows
+                    )
                 ),
                 "locomotor_pareto_frontier_count": sum(
                     row.get("pareto_candidate_count", 0) > 0
                     and row.get("pareto_dominated", 0) == 0
-                    for row in locomotor_phenotype_rows
+                    for row in (
+                        locomotor_phenotype_rows
+                        + locomotor_phenotype_family_rows
+                    )
                 ),
                 "locomotor_phenotypes": locomotor_phenotype_rows,
+                "locomotor_phenotype_families": (
+                    locomotor_phenotype_family_rows
+                ),
                 "body_capability_signature": development_final.get(
                     "body_capability_signature", ()
                 ),
@@ -5402,6 +6258,12 @@ def _run_arm(
         ),
         "calibration_trace": calibration_trace,
         "caregiver_scaffold_trace": caregiver_scaffold_trace,
+        "caregiver_support_models": [
+            dict(agent.s.node(model)["attrs"])
+            for model in agent.inner.neighbours(
+                episode, "has_caregiver_support_action_model"
+            )
+        ],
         "caregiver_scaffold_handoff_ready": agent.s.node(episode)[
             "attrs"
         ].get("caregiver_scaffold_handoff_ready", 0),
@@ -5557,6 +6419,16 @@ def _run_arm(
         "phase_models_before_walk": phase_models_before_walk,
         "phase_models_after_adaptation": phase_models_after_adaptation,
         "phase_models_after_walk": phase_models_after_walk,
+        "maximum_manifold_refinement_exploration_value": agent.s.node(
+            episode
+        )["attrs"].get(
+            "maximum_manifold_refinement_exploration_value", 0.0
+        ),
+        "manifold_refinement_exploration_valuation_count": agent.s.node(
+            episode
+        )["attrs"].get(
+            "manifold_refinement_exploration_valuation_count", 0
+        ),
         "adaptation_actions": warmup_actions,
         "familiarization_complete": phase_adaptation_complete,
         "adaptation_first_fall_action": warmup_first_fall_action,
@@ -5589,6 +6461,9 @@ def _run_arm(
         "recovery_mode_exits": final["recovery_mode_exits"],
         "recovery_action_count": final["recovery_action_count"],
         "recovery_mode_at_end": final["recovery_mode"],
+        "situated_trajectory_context_active_at_end": final.get(
+            "situated_locomotion_context_active", 0
+        ),
         "motor_fixation_count": final.get("motor_fixation_count", 0.0),
         "motor_configuration_transition_count": final.get(
             "motor_configuration_transition_count",

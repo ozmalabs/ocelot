@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 from pathlib import Path
 import sys
 from typing import Any
@@ -41,6 +42,25 @@ from substrate.world_adapter import WorldAdapter  # noqa: E402
 
 
 DEFAULT_PROTOCOL = ROOT / "protocols" / "humanoid_balance_adaptation_v1.json"
+
+
+def _gravity_relative_up_axis(
+    orientation_xyzw: tuple[float, ...],
+) -> tuple[float, float, float]:
+    """Transduce the body's local up axis against world gravity."""
+    x, y, z, w = orientation_xyzw
+    return (
+        2.0 * (x * z + w * y),
+        2.0 * (y * z - w * x),
+        1.0 - 2.0 * (x * x + y * y),
+    )
+
+
+def _gravity_relative_orientation_class(
+    local_up_in_world: tuple[float, float, float],
+) -> int:
+    axis = max(range(3), key=lambda index: abs(local_up_in_world[index]))
+    return (axis + 1) * (1 if local_up_in_world[axis] >= 0.0 else -1)
 
 
 def _write_state(
@@ -94,6 +114,14 @@ def _write_state(
         raise RuntimeError(
             f"expected two load-bearing support links, found {len(support)}"
         )
+    orientation = tuple(
+        float(value) for value in observation["base_orientation_xyzw"]
+    )
+    gravity_relative_orientation_class = (
+        _gravity_relative_orientation_class(
+            _gravity_relative_up_axis(orientation)
+        )
+    )
     attrs = {
         **basic_sensor_state_attrs(observation, state_seq=state_seq),
         "state_wx": float(angular[0]),
@@ -138,6 +166,9 @@ def _write_state(
         "state_joint_count": float(len(joint_configuration)),
         "state_joint_velocity_energy": sum(
             velocity * velocity for velocity in joint_velocities
+        ),
+        "state_gravity_relative_orientation_class": float(
+            gravity_relative_orientation_class
         ),
         "state_motor_reference_kind": observation.get(
             "motor_reference_kind",
@@ -195,7 +226,33 @@ def _issued_trial(agent: WorldAdapter, episode, request_seq: int):
             description=f"trials for request {request_seq}",
         )
     except GraphBoundaryCardinalityError as exc:
-        raise RuntimeError(str(exc)) from exc
+        matches = [
+            trial
+            for trial in agent.inner.neighbours(
+                episode, "has_humanoid_motor_trial"
+            )
+            if agent.s.node(trial)["attrs"].get("request_seq") == request_seq
+            and agent.s.node(trial)["attrs"].get("status") == "issued"
+        ]
+        diagnostics = []
+        for trial in matches:
+            attrs = agent.s.node(trial)["attrs"]
+            diagnostics.append({
+                "id": str(trial),
+                "decision_kind": attrs.get("decision_kind"),
+                "collapse_kind": attrs.get("collapse_kind"),
+                "token": attrs.get("token"),
+                "enacted_program_count": len(agent.inner.neighbours(
+                    trial, "enacts_humanoid_motor_program"
+                )),
+                "synthesized_program_count": len(agent.inner.neighbours(
+                    trial, "synthesized_humanoid_motor_program"
+                )),
+                "recalled_transition_count": len(agent.inner.neighbours(
+                    trial, "enacts_humanoid_motor_transition"
+                )),
+            })
+        raise RuntimeError(f"{exc}; diagnostics={diagnostics!r}") from exc
 
 
 def _trial_motor_tokens(
@@ -244,6 +301,8 @@ def _resume_graph_motor_synthesis(
 ) -> dict[str, Any]:
     """Mechanically resume graph-authored asynchronous synthesis yields."""
     previous_width = 0.0
+    previous_resume_steps: int | None = None
+    resume_edge_was_present: bool | None = None
     while True:
         attrs = dict(agent.s.node(episode)["attrs"])
         if attrs.get("action_ready") == 1.0:
@@ -260,16 +319,54 @@ def _resume_graph_motor_synthesis(
             return attrs
         width = float(program_attrs.get("member_count", 0.0))
         if width <= previous_width:
+            members = agent.inner.neighbours(
+                program, "includes_humanoid_phase_action_model"
+            )
+            member_rows = [
+                {
+                    key: agent.s.node(member)["attrs"].get(key)
+                    for key in (
+                        "token",
+                        "ordinal",
+                        "actuator_group",
+                        "support_phase",
+                        "context_id",
+                    )
+                }
+                for member in members
+            ]
+            frontiers = [
+                dict(agent.s.node(frontier)["attrs"])
+                for frontier in agent.inner.neighbours(
+                    program, "has_humanoid_motor_program_frontier"
+                )
+            ]
             raise RuntimeError(
-                "graph motor synthesis yielded without adding a member"
+                "graph motor synthesis yielded without adding a member: "
+                f"previous_width={previous_width}, width={width}, "
+                f"program={program_attrs!r}, members={member_rows!r}, "
+                f"frontiers={frontiers!r}, resume_edge_present="
+                f"{program in agent.inner.neighbours(episode, 'resumes_humanoid_motor_program')}, "
+                f"resume_edge_was_present={resume_edge_was_present}, "
+                f"previous_resume_steps={previous_resume_steps}, "
+                f"episode_request_seq={attrs.get('request_seq')!r}"
             )
         previous_width = width
+        resume_edge_was_present = program in agent.inner.neighbours(
+            episode, "resumes_humanoid_motor_program"
+        )
         agent.s.add_edge(
             episode,
             "resumes_humanoid_motor_program",
             program,
         )
-        agent.tick()
+        previous_resume_steps = agent.tick()
+        if previous_resume_steps >= 100_000:
+            raise RuntimeError(
+                "graph motor synthesis resume did not reach a fixpoint: "
+                f"steps={previous_resume_steps}, request_seq="
+                f"{attrs.get('request_seq')}, program={program_attrs!r}"
+            )
 
 
 def _request_action(
@@ -317,7 +414,30 @@ def _request_action(
     agent.inner.set_attr(
         episode, "caregiver_protective_support_requested", 0
     )
+    agent.inner.set_attr(episode, "caregiver_support_scale", 0.0)
     agent.tick()
+    # A later-installed developmental rule may publish a ready arbitrary-order
+    # program after the ordinary motor trial openers have already passed in
+    # this graph cycle.  Settle that graph authority once more before crossing
+    # the mechanical boundary.  This is the same sensed request (not a world
+    # prediction or simulator fork); it merely lets the existing exact-trial
+    # machinery consume an output-potent program produced later in rule order.
+    current_trials = [
+        trial for trial in agent.inner.neighbours(
+            episode, "has_humanoid_motor_trial"
+        )
+        if int(agent.s.node(trial)["attrs"].get("request_seq", -1))
+        == request_seq
+    ]
+    current_ready_programs = [
+        program for program in agent.inner.neighbours(
+            episode, "has_ready_humanoid_motor_program"
+        )
+        if int(agent.s.node(program)["attrs"].get("request_seq", -1))
+        == request_seq
+    ]
+    if current_ready_programs and not current_trials:
+        agent.tick()
     attrs = _resume_graph_motor_synthesis(agent, episode)
     token = attrs.get("selected_token")
     if not isinstance(token, str) or attrs.get("action_ready") != 1.0:
@@ -402,14 +522,96 @@ def _request_action(
                 "frontiers": frontiers,
                 "synthesis": synthesis_debug,
             })
+        selected_primary = []
+        current_support_models = []
+        for phase_model in agent.inner.neighbours(
+            episode, "has_humanoid_phase_action_model"
+        ):
+            phase_attrs = dict(agent.s.node(phase_model)["attrs"])
+            if phase_attrs.get("support_phase") == attrs.get(
+                "current_support_phase"
+            ):
+                current_support_models.append({
+                    key: phase_attrs.get(key)
+                    for key in (
+                        "token", "context_id", "initialized",
+                        "experience_count", "motor_decision_value_epoch",
+                    )
+                })
+            if phase_attrs.get("token") == attrs.get("selected_primary_token"):
+                selected_primary.append({
+                    "token": phase_attrs.get("token"),
+                    "context_id": phase_attrs.get("context_id"),
+                    "support_phase": phase_attrs.get("support_phase"),
+                    "initialized": phase_attrs.get("initialized"),
+                })
+        wave_programs = []
+        for field in agent.inner.neighbours(
+            episode, "has_somatomotor_wave_field"
+        ):
+            for wave_program in agent.inner.neighbours(
+                field, "has_somatomotor_wave_program"
+            ):
+                wave_programs.append(dict(
+                    agent.s.node(wave_program)["attrs"]
+                ))
+        authority_programs = []
+        for edge_type in (
+            "has_active_humanoid_motor_program",
+            "has_ready_humanoid_motor_program",
+        ):
+            for authority_program in agent.inner.neighbours(
+                episode, edge_type
+            ):
+                authority_attrs = dict(
+                    agent.s.node(authority_program)["attrs"]
+                )
+                authority_programs.append({
+                    "edge_type": edge_type,
+                    **{
+                        key: authority_attrs.get(key)
+                        for key in (
+                            "status", "request_seq", "collapse_kind",
+                            "decision_kind", "developmental_orientation_bundle",
+                            "orientation_exploration_exhausted",
+                        )
+                    },
+                })
+        policy_rows = [
+            {
+                key: agent.s.node(policy)["attrs"].get(key)
+                for key in (
+                    "shared_motor_collapse_enabled",
+                    "persistent_task_residual_authority",
+                )
+            }
+            for policy in agent.inner.neighbours(
+                agent.agent, "has_humanoid_policy"
+            )
+        ]
         raise RuntimeError(
             f"graph emitted no action for request {request_seq}: "
             f"phase={attrs.get('phase')!r}, "
+            f"mode={attrs.get('mode')!r}, "
             f"recovery_mode={attrs.get('recovery_mode')!r}, "
             f"support_phase={attrs.get('current_support_phase')!r}, "
+            f"developmental_goal={attrs.get('developmental_goal')!r}, "
+            f"active_capability="
+            f"{attrs.get('active_developmental_capability')!r}, "
+            f"locomotion_drive_active="
+            f"{attrs.get('locomotion_drive_active')!r}, "
             f"motor_primary_ready={attrs.get('motor_primary_ready')!r}, "
             f"recovery_primary_ready="
             f"{attrs.get('motor_recovery_primary_ready')!r}, "
+            f"selected_primary_token={attrs.get('selected_primary_token')!r}, "
+            f"selected_primary_context_id="
+            f"{attrs.get('selected_primary_context_id')!r}, "
+            f"selected_primary_models={selected_primary!r}, "
+            f"current_support_model_count={len(current_support_models)!r}, "
+            f"current_support_models={current_support_models[:4]!r}, "
+            f"policy_rows={policy_rows!r}, "
+            f"authority_programs={authority_programs!r}, "
+            f"wave_programs={wave_programs!r}, "
             f"programs={programs!r}"
         )
     if int(attrs.get("motor_reference_request_seq", -1)) != request_seq:
@@ -572,40 +774,16 @@ def _close_action(
         float(value) for value in after["base_orientation_xyzw"]
     )
 
-    def gravity_relative_up_axis(
-        orientation_xyzw: tuple[float, ...],
-    ) -> tuple[float, float, float]:
-        """Quantize the body's local up axis against world gravity.
-
-        This is boundary transduction, like a vestibular organ: the graph is
-        given a signed relational class, never Euler angles or a preferred
-        pose.  Opposite signs are opposite supported body surfaces and a
-        changed absolute axis is an intervening side orientation.
-        """
-        x, y, z, w = orientation_xyzw
-        local_up_in_world = (
-            2.0 * (x * z + w * y),
-            2.0 * (y * z - w * x),
-            1.0 - 2.0 * (x * x + y * y),
-        )
-        return local_up_in_world
-
-    def gravity_relative_orientation_class(
-        local_up_in_world: tuple[float, float, float],
-    ) -> int:
-        axis = max(range(3), key=lambda index: abs(local_up_in_world[index]))
-        return (axis + 1) * (1 if local_up_in_world[axis] >= 0.0 else -1)
-
-    pre_gravity_axis = gravity_relative_up_axis(
+    pre_gravity_axis = _gravity_relative_up_axis(
         before_orientation
     )
-    post_gravity_axis = gravity_relative_up_axis(
+    post_gravity_axis = _gravity_relative_up_axis(
         after_orientation
     )
-    development_pre_orientation_class = gravity_relative_orientation_class(
+    development_pre_orientation_class = _gravity_relative_orientation_class(
         pre_gravity_axis
     )
-    development_post_orientation_class = gravity_relative_orientation_class(
+    development_post_orientation_class = _gravity_relative_orientation_class(
         post_gravity_axis
     )
     pre_dominant_axis = abs(development_pre_orientation_class) - 1
@@ -719,19 +897,50 @@ def _close_action(
             pre_joint_configuration,
         )
     )
+    # A manifold shape is meaningful only relative to the future the action
+    # was establishing.  Recovery, exploration, and directed locomotion can
+    # produce the same contact geometry while pursuing different futures, so
+    # retain the graph-authored action intent as the coarsest coordinate.
+    development_action_intent = str(
+        trial_attrs.get("decision_kind", "unspecified")
+    )
+    development_capability = str(
+        episode_attrs.get("active_developmental_capability", "unspecified")
+    )
+    development_motor_program_key = json.dumps(
+        expected_tokens, separators=(",", ":"), ensure_ascii=True
+    )
     locomotor_phenotype_signature = (
+        ("action_intent", development_action_intent),
+        ("developmental_capability", development_capability),
+        ("motor_program", development_motor_program_key),
+        ("pre_distal_support_code", pre_distal_support_code),
+        ("pre_whole_body_support_count", len(pre_support_links)),
         ("distal_support_code", post_distal_support_code),
         ("distal_support_transition", int(
             pre_distal_support_code != post_distal_support_code
         )),
         ("whole_body_support_count", len(post_support_links)),
         ("aerial", int(len(post_support_links) == 0)),
+        ("pre_orientation_class", development_pre_orientation_class),
+        ("post_orientation_class", development_post_orientation_class),
         ("vertical_impulse_sign", sign(
             development_elevation_units
         )),
         ("motion_nonamplifying", int(
             post_joint_velocity_energy <= pre_joint_velocity_energy
         )),
+    )
+    # Order-0 basin geometry excludes the two dynamic refinement dimensions.
+    # Receipts retain the full signature below, so verification can accumulate
+    # on the stable support shape without discarding impulse/amplification
+    # residuals needed for later Pareto discrimination.
+    # Order 0 preserves the projected state shape. Exact enacted program and
+    # dynamic response remain on the leaf, available for local escalation only
+    # when the parent's residual cannot be resolved at this coarser order.
+    locomotor_phenotype_family_signature = (
+        *locomotor_phenotype_signature[:2],
+        *locomotor_phenotype_signature[5:11],
     )
     outcome_attrs = {
         **_pose(before, "pre"),
@@ -929,11 +1138,26 @@ def _close_action(
             development_translation_units > 0
             and pre_support_links != post_support_links
         ),
+        "development_action_intent": development_action_intent,
+        "developmental_capability": development_capability,
+        "development_motor_program_key": development_motor_program_key,
+        "development_primary_token": str(trial_attrs.get("token", "")),
+        "development_secondary_token": str(
+            trial_attrs.get("secondary_token", "")
+        ),
         "development_locomotor_phenotype_signature": (
             locomotor_phenotype_signature
         ),
         "development_locomotor_phenotype_key": json.dumps(
             locomotor_phenotype_signature,
+            separators=(",", ":"),
+            ensure_ascii=True,
+        ),
+        "development_locomotor_phenotype_family_signature": (
+            locomotor_phenotype_family_signature
+        ),
+        "development_locomotor_phenotype_family_key": json.dumps(
+            locomotor_phenotype_family_signature,
             separators=(",", ":"),
             ensure_ascii=True,
         ),
@@ -1024,14 +1248,66 @@ def _close_action(
         state_seq=request_seq * 2,
         state_is_receipt=True,
     )
-    agent.tick()
+    if os.environ.get("HUMANOID_ACTION_PROGRESS") == "1":
+        print(
+            f"humanoid_close_phase request={request_seq} hard_tick_start",
+            flush=True,
+        )
+    diagnostic_tick_budget = int(os.environ.get(
+        "HUMANOID_RECEIPT_TICK_BUDGET", "100000"
+    ))
+    if "HUMANOID_RECEIPT_TICK_BUDGET" in os.environ:
+        agent.s._inner.reset_rule_costs()
+    receipt_tick_steps = agent.tick(max_steps=diagnostic_tick_budget)
+    if (
+        "HUMANOID_RECEIPT_TICK_BUDGET" in os.environ
+        and receipt_tick_steps >= diagnostic_tick_budget
+    ):
+        hot_rules = sorted(
+            agent.s._inner.rule_costs(),
+            key=lambda row: row[1],
+            reverse=True,
+        )[:20]
+        raise RuntimeError(
+            "humanoid receipt hard tick reached diagnostic step budget: "
+            f"request_seq={request_seq}, steps={receipt_tick_steps}, "
+            f"hot_rules={hot_rules!r}"
+        )
+    if os.environ.get("HUMANOID_ACTION_PROGRESS") == "1":
+        print(
+            f"humanoid_close_phase request={request_seq} hard_tick_done",
+            flush=True,
+        )
     if development_contexts:
         # A complete receipt is the scheduling boundary for the soft sheet.
         # This call supplies no condition, ranking, or action from Python: the
         # graph decides whether trajectory expansion/Pareto work exists, while
         # the next hard-real-time tick alone can release one motor outcome.
+        if os.environ.get("HUMANOID_ACTION_PROGRESS") == "1":
+            print(
+                f"humanoid_close_phase request={request_seq} soft_tick_start",
+                flush=True,
+            )
         agent.dual_process_tick()
-    return dict(agent.s.node(trial)["attrs"])
+        if os.environ.get("HUMANOID_ACTION_PROGRESS") == "1":
+            print(
+                f"humanoid_close_phase request={request_seq} soft_tick_done",
+                flush=True,
+            )
+    closed_trial = dict(agent.s.node(trial)["attrs"])
+    # Host-local observability for the exact enacted action. These keys are
+    # returned to the runner only; they are never written into graph state or
+    # consulted by a decision rule.
+    closed_trial["_development_directed_units"] = int(
+        outcome_attrs["development_directed_units"]
+    )
+    closed_trial["_development_translation_units"] = int(
+        outcome_attrs["development_translation_units"]
+    )
+    closed_trial["_development_directed_consistency"] = int(
+        outcome_attrs["development_directed_units"] > 0
+    )
+    return closed_trial
 
 
 def _enact_graph_command(
@@ -1050,6 +1326,9 @@ def _enact_graph_command(
         caregiver_protective_support=bool(
             int(decision.get("caregiver_protective_support_requested", 0))
         ),
+        caregiver_support_scale=float(decision.get(
+            "caregiver_support_scale", 0.0
+        )),
     )
 
 

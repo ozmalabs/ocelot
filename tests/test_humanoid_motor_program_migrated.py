@@ -104,6 +104,7 @@ def _inverse_control_fixture() -> tuple[WorldAdapter, object]:
         base = agent.s.add_node("HumanoidActionModel", {
             "token": phase_attrs["token"],
             "ordinal": phase_attrs["ordinal"],
+            "actuator_group": phase_attrs["actuator_group"],
             "tonic_default": 0.0,
             "experience_count": 1.0,
         })
@@ -136,6 +137,38 @@ def _inverse_control_fixture() -> tuple[WorldAdapter, object]:
         _edge(agent, episode, "has_humanoid_synergy_model", synergy)
 
     return agent, episode
+
+
+def test_competing_decision_retires_unfinished_program_before_next_request():
+    agent, episode = _inverse_control_fixture()
+    program = agent.s.add_node("HumanoidMotorProgram", {
+        "status": "building",
+        "request_seq": 1.0,
+        "member_count": 2.0,
+        "synthesis_yield_required": 1.0,
+    })
+    _edge(agent, episode, "has_humanoid_motor_program", program)
+    _edge(agent, episode, "has_active_humanoid_motor_program", program)
+    _edge(agent, episode, "resumes_humanoid_motor_program", program)
+
+    # Another synthesis channel supplied request 1.  On request 2 this losing
+    # plan must not be resumed against a different sensed state.
+    agent.inner.set_attr(episode, "request_seq", 2.0)
+    agent.inner.set_attr(episode, "action_ready", 1.0)
+    agent.tick()
+
+    attrs = agent.s.node(program)["attrs"]
+    assert attrs["status"] == "superseded"
+    assert attrs["supersession_reason"] == (
+        "competing_program_committed_for_request"
+    )
+    assert attrs["superseded_at_request_seq"] == 2.0
+    assert program not in agent.inner.neighbours(
+        episode, "has_active_humanoid_motor_program"
+    )
+    assert program not in agent.inner.neighbours(
+        episode, "resumes_humanoid_motor_program"
+    )
 
 
 def test_humanoid_future_manifold_gate_rejects_unsafe_candidate_but_off_is_legacy():
@@ -530,6 +563,43 @@ def test_curiosity_treats_unprobed_pair_as_evidence_gap_not_fault():
     assert agent.s.node(program)["attrs"][
         "compound_curiosity_pair_experience"
     ] == 0
+
+
+def test_persistent_takeoff_residual_escalates_from_singleton_to_exact_pair():
+    agent, episode = _persistent_singleton_surprise_fixture(
+        surprise_streak=0,
+    )
+    agent.inner.set_attr(episode, "self_takeoff_drive_active", 1)
+    agent.inner.set_attr(episode, "self_takeoff_target_velocity_scale", 1)
+    agent.inner.set_attr(episode, "development_evidence_window", 4)
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {})
+    capability = agent.s.add_node(
+        "EmbodiedSituatedDevelopmentalCapability", {
+            "evidence_kind": "support_reducing_elevation",
+            "success_count": 0,
+            "failure_count": 4,
+        },
+    )
+    _edge(agent, episode, "projects_embodied_development", development)
+    _edge(
+        agent,
+        development,
+        "has_active_embodied_developmental_capability",
+        capability,
+    )
+
+    agent.tick()
+    _resume_graph_motor_synthesis(agent, episode)
+    program = agent.inner.neighbours(
+        episode,
+        "has_humanoid_motor_program",
+    )[0]
+    attrs = agent.s.node(program)["attrs"]
+    assert attrs["motor_task_context"] == "self_takeoff"
+    assert attrs["member_count"] == 2
+    assert attrs["compound_selection_kind"] == (
+        "persistent_residual_surprise_curiosity"
+    )
 
 
 def test_material_interrupt_withdraws_situated_compound_memory_authority():
@@ -1626,6 +1696,126 @@ def test_recovery_basin_composes_compatible_effectors_and_sweeps_hold():
     )
     assert len(programs) == 1
     assert agent.s.node(programs[0])["attrs"]["status"] == "armed"
+
+
+def test_situated_recovery_exploration_excludes_whole_body_fallback():
+    agent, episode = _inverse_control_fixture()
+    _enable_recovery_measurements(agent, episode)
+    models = []
+    for action in agent.inner.neighbours(
+        episode,
+        "has_humanoid_action_model",
+    ):
+        attrs = agent.s.node(action)["attrs"]
+        model = agent.s.add_node("HumanoidGetUpActionModel", {
+            "token": attrs["token"],
+            "ordinal": attrs["ordinal"],
+            "actuator_group": attrs["ordinal"],
+            "experience_count": 0.0,
+            "mean_height_gain": 0.0,
+            "mean_alignment_gain": 0.0,
+            "last_update_request_seq": 0.0,
+        })
+        _edge(agent, episode, "has_humanoid_get_up_action_model", model)
+        models.append(model)
+
+    basin = agent.s.add_node("HumanoidRecoveryBasin", {
+        "ordinal": 1.0,
+        "status": "situated",
+        "normalized_height": 0.1,
+        "vertical_alignment": 0.0,
+    })
+    _edge(agent, episode, "has_humanoid_recovery_basin", basin)
+    _edge(agent, episode, "has_current_humanoid_recovery_basin", basin)
+    first = agent.s.node(models[0])["attrs"]
+    tried = agent.s.add_node("HumanoidRecoveryBasinAction", {
+        "primary_token": first["token"],
+        "secondary_token": first["token"],
+        "primary_actuator_group": first["actuator_group"],
+        "secondary_actuator_group": first["actuator_group"],
+        "member_count": 1.0,
+        "experience_count": 1.0,
+        "mean_height_gain": 0.0,
+        "mean_alignment_gain": 0.0,
+        "response_frames": 8.0,
+        "last_update_request_seq": 1.0,
+    })
+    _edge(agent, basin, "has_humanoid_recovery_basin_action", tried)
+    for key, value in {
+        "recovery_mode": 1.0,
+        "upright": 0.0,
+        "nominal_response_frames": 8.0,
+        "request_seq": 2.0,
+        "last_trial_request_seq": 1.0,
+        "action_ready": 0.0,
+        "reset_requested": 0.0,
+        "state_z": 0.1,
+        "state_qx": 0.0,
+        "state_qy": 0.0,
+        "state_qw": 1.0,
+        "state_contact_count_raw": 1.0,
+    }.items():
+        agent.inner.set_attr(episode, key, value)
+
+    agent.tick()
+
+    trial = next(
+        candidate
+        for candidate in agent.inner.neighbours(
+            episode,
+            "has_humanoid_motor_trial",
+        )
+        if agent.s.node(candidate)["attrs"]["request_seq"] == 2.0
+    )
+    attrs = agent.s.node(trial)["attrs"]
+    assert attrs["decision_kind"] == "get_up_explore"
+    assert attrs["token"] == "motor_b"
+    assert attrs["secondary_token"] == "motor_b"
+    assert attrs["bundle_member_count"] == 1.0
+    assert agent.s.node(episode)["attrs"].get(
+        "motor_recovery_primary_ready", 0.0
+    ) == 0.0
+    assert agent.inner.neighbours(
+        episode,
+        "has_active_humanoid_motor_program",
+    ) == []
+
+
+def test_trial_commit_collapses_conflicting_opaque_actuator_groups():
+    agent, episode = _inverse_control_fixture()
+    actions = {
+        agent.s.node(action)["attrs"]["token"]: action
+        for action in agent.inner.neighbours(
+            episode,
+            "has_humanoid_action_model",
+        )
+    }
+    agent.inner.set_attr(actions["motor_b"], "actuator_group", 0.0)
+    for key, value in {
+        "request_seq": 2.0,
+        "last_trial_request_seq": 1.0,
+        "action_ready": 1.0,
+        "selected_token": "motor_a",
+        "selected_secondary_token": "motor_b",
+        "selected_response_frames": 8.0,
+        "decision_kind": "get_up_explore",
+    }.items():
+        agent.inner.set_attr(episode, key, value)
+
+    agent.tick()
+
+    trial = next(
+        candidate
+        for candidate in agent.inner.neighbours(
+            episode,
+            "has_humanoid_motor_trial",
+        )
+        if agent.s.node(candidate)["attrs"]["request_seq"] == 2.0
+    )
+    attrs = agent.s.node(trial)["attrs"]
+    assert attrs["token"] == "motor_a"
+    assert attrs["secondary_token"] == "motor_a"
+    assert attrs["bundle_member_count"] == 1.0
 
 
 def test_compound_general_contact_mints_a_changed_successor_basin():

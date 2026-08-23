@@ -2,10 +2,13 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
+from contextlib import contextmanager
 from copy import deepcopy
 import gc
 import hashlib
 import json
+import os
 from pathlib import Path
 import sys
 import time
@@ -139,9 +142,124 @@ def _metrics(run: dict) -> dict:
     future_manifold = run.get("future_manifold") or {}
     cognitive = run.get("cognitive_supervision") or {}
     trace = run.get("trace") or []
+    support_audit_rows = [
+        row for row in trace
+        if int(row.get("support_counterfactual_audit_seq", 0)) > 0
+    ]
     actions_executed = run.get("actions_executed")
     if actions_executed is None:
         actions_executed = len(trace)
+    phase_models_after_walk = run.get("phase_models_after_walk") or []
+    enacted_token_outcomes = {}
+    for token in sorted({str(row.get("selected_token", "")) for row in trace}):
+        rows = [row for row in trace if str(row.get("selected_token", "")) == token]
+        enacted_token_outcomes[token] = {
+            "action_count": len(rows),
+            "directed_units": sum(
+                int(row.get("development_directed_units", 0)) for row in rows
+            ),
+            "translation_units": sum(
+                int(row.get("development_translation_units", 0)) for row in rows
+            ),
+            "directed_consistency_count": sum(
+                int(row.get("development_directed_consistency", 0)) for row in rows
+            ),
+        }
+    enacted_motor_program_outcomes = {}
+    program_keys = sorted({
+        "|".join(str(value) for value in row.get("motor_tokens", []))
+        for row in trace
+    })
+    for program_key in program_keys:
+        rows = [
+            row for row in trace
+            if "|".join(
+                str(value) for value in row.get("motor_tokens", [])
+            ) == program_key
+        ]
+        enacted_motor_program_outcomes[program_key] = {
+            "action_count": len(rows),
+            "directed_units": sum(
+                int(row.get("development_directed_units", 0)) for row in rows
+            ),
+            "translation_units": sum(
+                int(row.get("development_translation_units", 0)) for row in rows
+            ),
+            "directed_consistency_count": sum(
+                int(row.get("development_directed_consistency", 0))
+                for row in rows
+            ),
+            "decision_kind_counts": dict(Counter(
+                str(row.get("decision_kind", "unclassified")) for row in rows
+            )),
+        }
+    enacted_intent_program_outcomes = {}
+    intent_program_keys = sorted({
+        (
+            str(row.get("decision_kind", "unclassified")),
+            "|".join(str(value) for value in row.get("motor_tokens", [])),
+        )
+        for row in trace
+    })
+    for intent, program_key in intent_program_keys:
+        rows = [
+            row for row in trace
+            if str(row.get("decision_kind", "unclassified")) == intent
+            and "|".join(
+                str(value) for value in row.get("motor_tokens", [])
+            ) == program_key
+        ]
+        enacted_intent_program_outcomes[
+            f"{intent}::{program_key}"
+        ] = {
+            "intent": intent,
+            "program": program_key,
+            "action_count": len(rows),
+            "directed_units": sum(
+                int(row.get("development_directed_units", 0)) for row in rows
+            ),
+            "translation_units": sum(
+                int(row.get("development_translation_units", 0)) for row in rows
+            ),
+            "directed_consistency_count": sum(
+                int(row.get("development_directed_consistency", 0))
+                for row in rows
+            ),
+        }
+    enacted_development_context_outcomes = {}
+    context_keys = sorted({
+        (
+            str(row.get("decision_kind", "unclassified")),
+            str(row.get("active_developmental_capability", "inactive")),
+            int(row.get("orientation_class_before", 0)),
+            str(row.get("selected_token", "")),
+        )
+        for row in trace
+    })
+    for intent, capability, orientation, token in context_keys:
+        rows = [
+            row for row in trace
+            if str(row.get("decision_kind", "unclassified")) == intent
+            and str(row.get(
+                "active_developmental_capability", "inactive"
+            )) == capability
+            and int(row.get("orientation_class_before", 0)) == orientation
+            and str(row.get("selected_token", "")) == token
+        ]
+        key = f"{intent}::{capability}::{orientation}::{token}"
+        enacted_development_context_outcomes[key] = {
+            "intent": intent,
+            "capability": capability,
+            "pre_orientation_class": orientation,
+            "primary_token": token,
+            "action_count": len(rows),
+            "directed_units": sum(
+                int(row.get("development_directed_units", 0)) for row in rows
+            ),
+            "translation_units": sum(
+                int(row.get("development_translation_units", 0)) for row in rows
+            ),
+        }
 
     # _run_arm may publish these directly in a newer build.  The trace forms
     # are accepted as a compatibility fallback for mocked/older builds.
@@ -169,12 +287,300 @@ def _metrics(run: dict) -> dict:
     )
     return {
         "actions_executed": actions_executed,
+        "curriculum_rule_costs": run.get("curriculum_rule_costs", []),
+        "developmental_reset_diagnostics": run.get(
+            "developmental_reset_diagnostics", {}
+        ),
         "directed_progress": run.get("directed_progress", 0.0),
         "first_fall_action": run.get("first_fall_action"),
         "minimum_height": run.get("minimum_height", 0.0),
         "lateral_offset": run.get("lateral_offset", 0.0),
         "support_alternations": run.get("support_alternations", 0),
         "compound_action_count": run.get("compound_action_count", 0),
+        "takeoff_action_count": sum(
+            float(row.get("self_takeoff_drive_active_after", 0)) > 0.5
+            for row in trace
+        ),
+        "takeoff_compound_action_count": sum(
+            float(row.get("self_takeoff_drive_active_after", 0)) > 0.5
+            and int(row.get("motor_bundle_width", 0)) > 1
+            for row in trace
+        ),
+        "takeoff_maximum_motor_bundle_width": max(
+            (
+                int(row.get("motor_bundle_width", 0))
+                for row in trace
+                if float(row.get(
+                    "self_takeoff_drive_active_after", 0
+                )) > 0.5
+            ),
+            default=0,
+        ),
+        "takeoff_development_elevation_units": sum(
+            int(row.get("development_elevation_units", 0))
+            for row in trace
+            if float(row.get(
+                "self_takeoff_drive_active_after", 0
+            )) > 0.5
+        ),
+        "takeoff_compound_candidate_count_maximum": max(
+            (
+                int(row.get("takeoff_compound_candidate_count", 0))
+                for row in trace
+                if float(row.get(
+                    "self_takeoff_drive_active_after", 0
+                )) > 0.5
+            ),
+            default=0,
+        ),
+        "takeoff_compound_expansion_authorized_action_count": sum(
+            int(row.get("takeoff_compound_allow_expansion", 0)) == 1
+            for row in trace
+            if float(row.get(
+                "self_takeoff_drive_active_after", 0
+            )) > 0.5
+        ),
+        "takeoff_compound_selection_kind_counts": dict(Counter(
+            str(row.get("takeoff_compound_selection_kind", "none"))
+            for row in trace
+            if float(row.get(
+                "self_takeoff_drive_active_after", 0
+            )) > 0.5
+        )),
+        "ideal_effort_ratio_final": (
+            (run.get("future_manifold") or {}).get("ideal_effort") or {}
+        ).get("ratio", 0.0),
+        "ideal_effort_evidence_count_final": (
+            (run.get("future_manifold") or {}).get("ideal_effort") or {}
+        ).get("evidence_count", 0),
+        "effort_scale_joules_final": (
+            (run.get("future_manifold") or {}).get("ideal_effort") or {}
+        ).get("scale_joules", 0.0),
+        "effort_gate_audit_count": (
+            (future_manifold.get("ideal_effort") or {}).get("audit_count", 0)
+        ),
+        "effort_gate_supported_audit_count": (
+            (future_manifold.get("ideal_effort") or {}).get(
+                "supported_audit_count", 0
+            )
+        ),
+        "effort_gate_blocked_audit_count": (
+            (future_manifold.get("ideal_effort") or {}).get(
+                "blocked_audit_count", 0
+            )
+        ),
+        "effort_gate_compression_audit_count": (
+            (future_manifold.get("ideal_effort") or {}).get(
+                "compression_audit_count", 0
+            )
+        ),
+        "caregiver_protected_action_count": sum(
+            int(row.get("caregiver_protective_support_applied", 0))
+            for row in trace
+        ),
+        "caregiver_support_impulse_newton_seconds": sum(
+            float(row.get("caregiver_support_impulse_newton_seconds", 0.0))
+            for row in trace
+        ),
+        "caregiver_support_scale_sum": sum(
+            float(row.get("caregiver_support_scale", 0.0))
+            for row in trace
+        ),
+        "caregiver_support_scale_maximum": max(
+            (float(row.get("caregiver_support_scale", 0.0)) for row in trace),
+            default=0.0,
+        ),
+        "counterfactual_support_scale_counts": dict(Counter(
+            str(float(row.get("caregiver_support_scale", 0.0)))
+            for row in trace
+            if int(row.get("counterfactual_support_release", 0)) == 1
+        )),
+        "caregiver_manifold_residual_signed_sums": [
+            sum(
+                float((row.get("caregiver_manifold_residual") or [0.0] * 7)[index])
+                for row in trace
+                if int(row.get("caregiver_protective_support_applied", 0)) == 1
+            )
+            for index in range(7)
+        ],
+        "caregiver_manifold_residual_absolute_sums": [
+            sum(
+                abs(float((row.get("caregiver_manifold_residual") or [0.0] * 7)[index]))
+                for row in trace
+                if int(row.get("caregiver_protective_support_applied", 0)) == 1
+            )
+            for index in range(7)
+        ],
+        "caregiver_manifold_decisive_tick_maximum": max(
+            (
+                float(row.get("caregiver_manifold_decisive_tick", 0.0))
+                for row in trace
+                if int(row.get("caregiver_protective_support_applied", 0)) == 1
+            ),
+            default=0.0,
+        ),
+        "caregiver_protective_support_available": run.get(
+            "caregiver_protective_support_available", 0
+        ),
+        "caregiver_support_models": run.get("caregiver_support_models", []),
+        "support_counterfactual_audit_count": len(support_audit_rows),
+        "support_counterfactual_loss_improvement_count": sum(
+            float((row.get("supported_projection") or {}).get("loss", 0.0))
+            < float((row.get("unsupported_projection") or {}).get("loss", 0.0))
+            for row in support_audit_rows
+        ),
+        "support_counterfactual_resolution_gain_count": sum(
+            float((row.get("supported_projection") or {}).get("resolved", 0.0))
+            > float((row.get("unsupported_projection") or {}).get("resolved", 0.0))
+            for row in support_audit_rows
+        ),
+        "support_counterfactual_escape_count": sum(
+            float((row.get("supported_projection") or {}).get("loss", 0.0)) > 0.0
+            for row in support_audit_rows
+        ),
+        "support_counterfactual_recommendation_count": sum(
+            int(row.get("support_counterfactual_recommends_support", 0))
+            for row in support_audit_rows
+        ),
+        "support_counterfactual_recommended_and_applied_count": sum(
+            int(row.get("support_counterfactual_recommends_support", 0)) == 1
+            and int(row.get("caregiver_protective_support_applied", 0)) == 1
+            for row in support_audit_rows
+        ),
+        "support_counterfactual_recommended_not_applied_count": sum(
+            int(row.get("support_counterfactual_recommends_support", 0)) == 1
+            and int(row.get("caregiver_protective_support_applied", 0)) == 0
+            for row in support_audit_rows
+        ),
+        "support_counterfactual_not_recommended_but_applied_count": sum(
+            int(row.get("support_counterfactual_recommends_support", 0)) == 0
+            and int(row.get("caregiver_protective_support_applied", 0)) == 1
+            for row in support_audit_rows
+        ),
+        "support_counterfactual_worsening_count": sum(
+            float((row.get("supported_projection") or {}).get("loss", 0.0))
+            > float((row.get("unsupported_projection") or {}).get("loss", 0.0))
+            for row in support_audit_rows
+        ),
+        "support_counterfactual_applied_predicted_safe_observed_safe_count": sum(
+            int(row.get("caregiver_protective_support_applied", 0)) == 1
+            and float((row.get("supported_projection") or {}).get("loss", 0.0)) == 0.0
+            and int(row.get("observed_projection_escape_count", 0)) == 0
+            for row in support_audit_rows
+        ),
+        "support_counterfactual_applied_predicted_safe_observed_escape_count": sum(
+            int(row.get("caregiver_protective_support_applied", 0)) == 1
+            and float((row.get("supported_projection") or {}).get("loss", 0.0)) == 0.0
+            and int(row.get("observed_projection_escape_count", 0)) > 0
+            for row in support_audit_rows
+        ),
+        "support_counterfactual_recommended_unapplied_observed_escape_count": sum(
+            int(row.get("support_counterfactual_recommends_support", 0)) == 1
+            and int(row.get("caregiver_protective_support_applied", 0)) == 0
+            and int(row.get("observed_projection_escape_count", 0)) > 0
+            for row in support_audit_rows
+        ),
+        "support_counterfactual_not_recommended_unapplied_observed_escape_count": sum(
+            int(row.get("support_counterfactual_recommends_support", 0)) == 0
+            and int(row.get("caregiver_protective_support_applied", 0)) == 0
+            and int(row.get("observed_projection_escape_count", 0)) > 0
+            for row in support_audit_rows
+        ),
+        "support_counterfactual_audits": [
+            {
+                "action": row.get("action"),
+                "selected_token": row.get("selected_token"),
+                "support_applied": row.get(
+                    "caregiver_protective_support_applied"
+                ),
+                "recommends_support": row.get(
+                    "support_counterfactual_recommends_support"
+                ),
+                "unsupported": row.get("unsupported_projection"),
+                "supported": row.get("supported_projection"),
+                "supported_residual": row.get(
+                    "supported_projection_residual"
+                ),
+                "unsupported_bounds": row.get(
+                    "unsupported_projection_bounds"
+                ),
+                "supported_bounds": row.get("supported_projection_bounds"),
+                "observed_delta": row.get("observed_projection_delta"),
+                "observed_escape_count": row.get(
+                    "observed_projection_escape_count"
+                ),
+            }
+            for row in support_audit_rows
+        ],
+        "caregiver_under_evidenced_unprotected_counts_by_capability": dict(
+            Counter(
+                row.get("active_developmental_capability", "inactive")
+                for row in trace
+                if int(row.get("caregiver_protective_support_available", 0)) == 1
+                and float(row.get(
+                    "developmental_capability_success_count_before_action", 0
+                )) < float(row.get("development_evidence_window", 0))
+                and int(row.get(
+                    "caregiver_protective_support_applied", 0
+                )) == 0
+            )
+        ),
+        "caregiver_protected_action_counts_by_capability": dict(Counter(
+            row.get("active_developmental_capability", "inactive")
+            for row in trace
+            if int(row.get("caregiver_protective_support_applied", 0)) == 1
+        )),
+        "caregiver_protected_action_counts_by_decision_kind": dict(Counter(
+            row.get("decision_kind", "unclassified")
+            for row in trace
+            if int(row.get("caregiver_protective_support_applied", 0)) == 1
+        )),
+        "decision_kind_counts": dict(Counter(
+            row.get("decision_kind", "unclassified") for row in trace
+        )),
+        "collapse_kind_counts": dict(Counter(
+            row.get("collapse_kind", "unclassified") for row in trace
+        )),
+        "selected_token_counts": dict(Counter(
+            row.get("selected_token", "") for row in trace
+        )),
+        "enacted_token_outcomes": enacted_token_outcomes,
+        "enacted_motor_program_outcomes": enacted_motor_program_outcomes,
+        "enacted_intent_program_outcomes": enacted_intent_program_outcomes,
+        "enacted_development_context_outcomes": (
+            enacted_development_context_outcomes
+        ),
+        "manifold_refinement_exploration_model_count": sum(
+            float(row.get("manifold_refinement_exploration_value", 0.0)) > 0.0
+            for row in phase_models_after_walk
+        ),
+        "maximum_manifold_refinement_exploration_value": max(
+            float(run.get(
+                "maximum_manifold_refinement_exploration_value", 0.0
+            )),
+            max((
+                float(row.get(
+                    "manifold_refinement_exploration_value", 0.0
+                ))
+                for row in phase_models_after_walk
+            ), default=0.0),
+        ),
+        "manifold_refinement_exploration_valuation_count": int(run.get(
+            "manifold_refinement_exploration_valuation_count", 0
+        )),
+        "orientation_class_transition_counts": dict(Counter(
+            f"{row.get('orientation_class_before', 0)}->"
+            f"{row.get('orientation_class_after', 0)}"
+            for row in trace
+        )),
+        "recovery_mode_action_count": sum(
+            float(row.get("recovery_mode_after", 0)) > 0.5
+            for row in trace
+        ),
+        "recovery_mode_at_end": run.get("recovery_mode_at_end", 0),
+        "situated_trajectory_context_active_at_end": run.get(
+            "situated_trajectory_context_active_at_end", 0
+        ),
         "body_reset_count": len(run.get("body_reset_records") or []),
         "body_reset_scenarios": [
             row.get("selected_reset_scenario")
@@ -216,6 +622,24 @@ def _metrics(run: dict) -> dict:
             ),
             "locomotor_phenotype_count": curriculum.get(
                 "locomotor_phenotype_count", 0
+            ),
+            "locomotor_phenotype_family_count": curriculum.get(
+                "locomotor_phenotype_family_count", 0
+            ),
+            "locomotor_phenotype_families": curriculum.get(
+                "locomotor_phenotype_families", []
+            ),
+            "locomotor_basin_evidence_window": curriculum.get(
+                "locomotor_basin_evidence_window", 0
+            ),
+            "maximum_locomotor_phenotype_occurrence_count": curriculum.get(
+                "maximum_locomotor_phenotype_occurrence_count", 0
+            ),
+            "locomotor_phenotype_occurrence_histogram": curriculum.get(
+                "locomotor_phenotype_occurrence_histogram", {}
+            ),
+            "locomotor_phenotype_recurrence_leaders": curriculum.get(
+                "locomotor_phenotype_recurrence_leaders", []
             ),
             "verified_locomotor_basin_count": curriculum.get(
                 "verified_locomotor_basin_count", 0
@@ -320,6 +744,25 @@ def _configure(protocol: dict, actions: int, enabled: float) -> dict:
     return configured
 
 
+@contextmanager
+def _counterfactual_support_authority(enabled: bool, loss_floor: int):
+    """Scope experimental risk-gate authority to exactly one paired arm."""
+    names = {
+        "HUMANOID_SUPPORT_COUNTERFACTUAL_AUTHORITY": "1" if enabled else "0",
+        "HUMANOID_SUPPORT_COUNTERFACTUAL_LOSS_FLOOR": str(loss_floor),
+    }
+    previous = {name: os.environ.get(name) for name in names}
+    os.environ.update(names)
+    try:
+        yield
+    finally:
+        for name, value in previous.items():
+            if value is None:
+                os.environ.pop(name, None)
+            else:
+                os.environ[name] = value
+
+
 def _cognitive_invalid_reasons(metrics: dict) -> list[str]:
     cognitive = metrics.get("cognitive_supervision") or {}
     reasons = []
@@ -350,6 +793,18 @@ def _training_completion(
     if metrics.get("motor_library_saved_shape_count", 0) < 1:
         reasons.append("fresh_training_library_shape_evidence_absent")
     return not reasons, reasons
+
+
+def _locomotion_reached(curriculum: dict) -> bool:
+    """Use retained capability evidence, not only the transient active goal."""
+    if curriculum.get("goal") == "locomotion":
+        return True
+    return any(
+        stage.get("name") == "independent_walking"
+        and stage.get("status") == "mastered"
+        for stage in curriculum.get("developmental_stages") or []
+        if isinstance(stage, dict)
+    )
 
 
 def _pair_invalid_reasons(
@@ -405,7 +860,7 @@ def _pair_invalid_reasons(
         )
 
     curriculum = treatment.get("curriculum") or {}
-    if curriculum.get("goal") != "locomotion":
+    if not _locomotion_reached(curriculum):
         reasons.append("developmental_locomotion_goal_not_reached")
 
     # Gate-onset evidence is required once a treatment claims activation.  It
@@ -436,6 +891,7 @@ def _checkpoint(
     curriculum = metrics.get("curriculum") or {}
     future = metrics.get("future_manifold") or {}
     goal = curriculum.get("goal", "inactive")
+    locomotion_reached = _locomotion_reached(curriculum)
     gate_ready = bool(
         float(future.get("enabled", 0.0)) > 0.5
         and float(future.get("temporal_anchors_enabled", 0.0)) > 0.5
@@ -444,13 +900,13 @@ def _checkpoint(
     if mode in {"training", "continue"} and training_complete is False:
         milestone = "incomplete_training"
         recommendation = "do_not_accept_artifact"
-    elif gate_ready and goal == "locomotion":
+    elif gate_ready and locomotion_reached:
         milestone = "manifold_ready"
         recommendation = "paired_evaluation_permitted"
     elif gate_ready:
         milestone = "manifold_ready_pre_locomotion"
         recommendation = "continue_curriculum_before_pairing"
-    elif goal == "locomotion":
+    elif locomotion_reached:
         milestone = "locomotion_reached"
         recommendation = "advance_single_arm_probe_before_pairing"
     elif curriculum.get("stage_ordinal", 0) > 0:
@@ -489,6 +945,7 @@ def run_staged(
     mode: str,
     library_path: Path,
     library_in: Path | None = None,
+    foveated_exploration_authority: bool = False,
 ) -> dict:
     """Run exactly one arm at a finite checkpoint.
 
@@ -538,6 +995,9 @@ def run_staged(
         action_budget,
         0.0 if mode == "training" else 1.0,
     )
+    configured["locomotion"][
+        "foveated_program_exploration_authority"
+    ] = float(foveated_exploration_authority)
     started = time.perf_counter()
     run = _run_arm(
         configured,
@@ -581,6 +1041,9 @@ def run_staged(
         "evaluation_actions": action_budget if mode == "probe" else None,
         "runtime_seconds": time.perf_counter() - started,
         "mode": mode,
+        "foveated_exploration_authority": bool(
+            foveated_exploration_authority
+        ),
         "library_in": str(library_in) if library_in is not None else None,
         "library_out": (
             str(library_path) if mode in {"training", "continue"} else None
@@ -611,6 +1074,8 @@ def run(
     evaluation_actions: int,
     library_path: Path,
     library_in: Path | None = None,
+    counterfactual_treatment_authority: bool = False,
+    counterfactual_loss_floor: int = 2,
 ) -> dict:
     if training_actions < 1 or evaluation_actions < 1:
         raise ValueError("training and evaluation actions must be positive")
@@ -663,11 +1128,12 @@ def run(
     treatment_protocol = _configure(protocol, evaluation_actions, 1.0)
 
     started = time.perf_counter()
-    baseline_run = _run_arm(
-        baseline_protocol,
-        "directed_walk",
-        motor_library=motor_library,
-    )
+    with _counterfactual_support_authority(False, counterfactual_loss_floor):
+        baseline_run = _run_arm(
+            baseline_protocol,
+            "directed_walk",
+            motor_library=motor_library,
+        )
     baseline_seconds = time.perf_counter() - started
     baseline_metrics = _metrics(baseline_run)
     baseline_calibration = _digest(baseline_run["calibration_trace"])
@@ -676,11 +1142,15 @@ def run(
     gc.collect()
 
     started = time.perf_counter()
-    treatment_run = _run_arm(
-        treatment_protocol,
-        "directed_walk",
-        motor_library=motor_library,
-    )
+    with _counterfactual_support_authority(
+        counterfactual_treatment_authority,
+        counterfactual_loss_floor,
+    ):
+        treatment_run = _run_arm(
+            treatment_protocol,
+            "directed_walk",
+            motor_library=motor_library,
+        )
     treatment_seconds = time.perf_counter() - started
     treatment_metrics = _metrics(treatment_run)
     treatment_calibration = _digest(treatment_run["calibration_trace"])
@@ -726,6 +1196,10 @@ def run(
         "training_actions": training_actions,
         "evaluation_actions": evaluation_actions,
         "training_source": training_source,
+        "counterfactual_treatment_authority": (
+            counterfactual_treatment_authority
+        ),
+        "counterfactual_loss_floor": counterfactual_loss_floor,
         "training_complete": (
             True if library_in is not None else training_complete
         ),
@@ -796,6 +1270,17 @@ def main() -> int:
     parser.add_argument("--library-in", type=Path)
     parser.add_argument("--json-out", type=Path)
     parser.add_argument(
+        "--counterfactual-treatment-authority",
+        action="store_true",
+        help="enable learned minimum-support risk authority only in treatment",
+    )
+    parser.add_argument(
+        "--counterfactual-loss-floor",
+        type=int,
+        default=2,
+        help="minimum unsupported manifold escape count for treatment support",
+    )
+    parser.add_argument(
         "--staged-mode",
         choices=("training", "continue", "probe"),
         help=(
@@ -809,6 +1294,14 @@ def main() -> int:
         default=48,
         help="single-arm checkpoint budget (48, 96, 192, or 360)",
     )
+    parser.add_argument(
+        "--foveated-exploration-authority",
+        action="store_true",
+        help=(
+            "enable capability-local manifold refinement exploration in the "
+            "single staged arm"
+        ),
+    )
     args = parser.parse_args()
     if args.staged_mode is not None:
         result = run_staged(
@@ -817,6 +1310,9 @@ def main() -> int:
             mode=args.staged_mode,
             library_path=args.library_out,
             library_in=args.library_in,
+            foveated_exploration_authority=(
+                args.foveated_exploration_authority
+            ),
         )
     else:
         result = run(
@@ -825,6 +1321,10 @@ def main() -> int:
             evaluation_actions=args.evaluation_actions,
             library_path=args.library_out,
             library_in=args.library_in,
+            counterfactual_treatment_authority=(
+                args.counterfactual_treatment_authority
+            ),
+            counterfactual_loss_floor=args.counterfactual_loss_floor,
         )
     rendered = json.dumps(result, indent=2)
     if args.json_out is not None:

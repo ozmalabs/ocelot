@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 
 import pytest
 
@@ -10,11 +11,54 @@ from scripts import run_humanoid_manifold_curriculum_paired as runner
 PROTOCOL = runner.ROOT / "protocols" / "humanoid_developmental_curriculum_v1.json"
 
 
+def test_configuration_reversal_can_reinstantiate_upright():
+    protocol = json.loads(PROTOCOL.read_text(encoding="utf-8"))
+    scenarios = protocol["curriculum"]["reinstantiation_scenarios"]
+
+    assert scenarios == [
+        {
+            "name": "supported_supine_floor_exploration",
+            "target_goal": "any",
+            "base_quarter_turns": [1, 0, 0],
+        },
+        {
+            "name": "upright_configuration_reversal",
+            "target_goal": "configuration_reversal",
+            "base_quarter_turns": [0, 0, 0],
+        },
+        {
+            "name": "upright_running_exploration",
+            "target_capability": "running",
+            "base_quarter_turns": [0, 0, 0],
+        },
+        {
+            "name": "upright_jump_exploration",
+            "target_capability": "two_foot_jump",
+            "base_quarter_turns": [0, 0, 0],
+        },
+        {
+            "name": "upright_stair_exploration",
+            "target_capability": "stairs",
+            "base_quarter_turns": [0, 0, 0],
+        },
+        {
+            "name": "upright_single_support_exploration",
+            "target_capability": "single_leg_balance",
+            "base_quarter_turns": [0, 0, 0],
+        },
+    ]
+
+
 def _raw_run(*, treatment: bool, ready: bool = True) -> dict:
     trace = [{
         "action": 7,
         "manifold_bounds_ready": 1,
         "motor_bundle_width": 1,
+        "caregiver_protective_support_applied": 1,
+        "active_developmental_capability": "running",
+        "decision_kind": "developmental_metaprogram",
+        "caregiver_support_impulse_newton_seconds": 2.5,
+        "caregiver_support_scale": 0.25,
     }] if ready else []
     return {
         "trace": trace,
@@ -58,6 +102,7 @@ def _raw_run(*, treatment: bool, ready: bool = True) -> dict:
             "replan_count": 0,
             "continuation_authority_at_end": 1,
         },
+        "caregiver_protective_support_available": 1,
     }
 
 
@@ -71,6 +116,46 @@ def test_metrics_keep_legacy_defaults_and_extract_gate_trace():
     assert metrics["maximum_post_gate_program_width"] == 1
     assert metrics["body_reset_count"] == 0
     assert metrics["body_reset_scenarios"] == []
+    assert metrics["caregiver_protected_action_count"] == 1
+    assert metrics["caregiver_support_impulse_newton_seconds"] == 2.5
+    assert metrics["caregiver_support_scale_sum"] == 0.25
+    assert metrics["caregiver_support_scale_maximum"] == 0.25
+    assert metrics["caregiver_protective_support_available"] == 1
+    assert metrics["caregiver_protected_action_counts_by_capability"] == {
+        "running": 1
+    }
+    assert metrics["caregiver_protected_action_counts_by_decision_kind"] == {
+        "developmental_metaprogram": 1
+    }
+    assert metrics["enacted_token_outcomes"][""] == {
+        "action_count": 1,
+        "directed_units": 0,
+        "translation_units": 0,
+        "directed_consistency_count": 0,
+    }
+    assert metrics["enacted_motor_program_outcomes"][""] == {
+        "action_count": 1,
+        "directed_units": 0,
+        "translation_units": 0,
+        "directed_consistency_count": 0,
+        "decision_kind_counts": {"developmental_metaprogram": 1},
+    }
+    assert metrics["enacted_intent_program_outcomes"][
+        "developmental_metaprogram::"
+    ] == {
+        "intent": "developmental_metaprogram",
+        "program": "",
+        "action_count": 1,
+        "directed_units": 0,
+        "translation_units": 0,
+        "directed_consistency_count": 0,
+    }
+    assert metrics["manifold_refinement_exploration_model_count"] == 0
+    assert metrics["maximum_manifold_refinement_exploration_value"] == 0.0
+    assert metrics["manifold_refinement_exploration_valuation_count"] == 0
+    assert metrics["enacted_development_context_outcomes"][
+        "developmental_metaprogram::running::0::"
+    ]["action_count"] == 1
     assert metrics["gate_onset_evidence_present"] is True
     assert metrics["motor_library_loaded_developmental_capability_count"] == 15
     assert metrics["curriculum"]["active_capability_diagnostics"] == {
@@ -80,6 +165,15 @@ def test_metrics_keep_legacy_defaults_and_extract_gate_trace():
     assert metrics["curriculum"]["developmental_unresolved_prerequisites"] == [
         "prior"
     ]
+    assert metrics["curriculum"][
+        "maximum_locomotor_phenotype_occurrence_count"
+    ] == 0
+    assert metrics["curriculum"][
+        "locomotor_phenotype_occurrence_histogram"
+    ] == {}
+    assert metrics["curriculum"][
+        "locomotor_phenotype_recurrence_leaders"
+    ] == []
     assert metrics["curriculum"]["self_learning_plan"] == {
         "selected_step": "step"
     }
@@ -88,6 +182,11 @@ def test_metrics_keep_legacy_defaults_and_extract_gate_trace():
     assert legacy["actions_executed"] == 0
     assert legacy["curriculum"]["stage_ordinal"] == 0
     assert legacy["future_manifold"] == {}
+    assert legacy["caregiver_protected_action_count"] == 0
+    assert legacy["caregiver_support_impulse_newton_seconds"] == 0.0
+    assert legacy["caregiver_support_scale_sum"] == 0.0
+    assert legacy["caregiver_protective_support_available"] == 0
+    assert legacy["caregiver_protected_action_counts_by_capability"] == {}
 
 
 def test_library_metadata_rejects_old_artifact_and_checks_exact_contract():
@@ -215,6 +314,63 @@ def test_checkpoint_does_not_pair_on_manifold_readiness_before_locomotion():
     assert checkpoint["recommendation"] == (
         "continue_curriculum_before_pairing"
     )
+
+
+def test_post_locomotion_goal_retains_paired_evaluation_readiness():
+    metrics = runner._metrics(_raw_run(treatment=True, ready=True))
+    metrics["curriculum"]["goal"] = "reduced_support_equilibrium"
+    metrics["curriculum"]["developmental_stages"] = [{
+        "name": "independent_walking",
+        "status": "mastered",
+    }]
+
+    checkpoint = runner._checkpoint(
+        metrics,
+        action_budget=192,
+        mode="continue",
+        protocol_digest="digest",
+    )
+
+    assert checkpoint["milestone"] == "manifold_ready"
+    assert checkpoint["recommendation"] == "paired_evaluation_permitted"
+
+    protocol = json.loads(PROTOCOL.read_text(encoding="utf-8"))
+    library_metadata = runner._library_metadata(
+        {
+            "developmental_capabilities": [{}],
+            "developmental_curriculum_contract": (
+                runner.developmental_curriculum_contract()
+            ),
+        },
+        protocol,
+    )
+    baseline = runner._metrics(_raw_run(treatment=False, ready=True))
+    reasons = runner._pair_invalid_reasons(
+        baseline,
+        metrics,
+        evaluation_actions=1,
+        calibration_identical=True,
+        pre_locomotion_identical=True,
+        library_metadata=library_metadata,
+        protocol_digest="same",
+        treatment_protocol_digest="same",
+    )
+    assert "developmental_locomotion_goal_not_reached" not in reasons
+
+
+def test_paired_counterfactual_authority_is_arm_scoped(monkeypatch):
+    monkeypatch.setenv("HUMANOID_SUPPORT_COUNTERFACTUAL_AUTHORITY", "outer")
+    monkeypatch.delenv("HUMANOID_SUPPORT_COUNTERFACTUAL_LOSS_FLOOR", raising=False)
+
+    with runner._counterfactual_support_authority(False, 2):
+        assert os.environ["HUMANOID_SUPPORT_COUNTERFACTUAL_AUTHORITY"] == "0"
+        assert os.environ["HUMANOID_SUPPORT_COUNTERFACTUAL_LOSS_FLOOR"] == "2"
+    assert os.environ["HUMANOID_SUPPORT_COUNTERFACTUAL_AUTHORITY"] == "outer"
+    assert "HUMANOID_SUPPORT_COUNTERFACTUAL_LOSS_FLOOR" not in os.environ
+
+    with runner._counterfactual_support_authority(True, 3):
+        assert os.environ["HUMANOID_SUPPORT_COUNTERFACTUAL_AUTHORITY"] == "1"
+        assert os.environ["HUMANOID_SUPPORT_COUNTERFACTUAL_LOSS_FLOOR"] == "3"
 
 
 def test_staged_mode_runs_one_arm_and_records_checkpoint(monkeypatch, tmp_path):

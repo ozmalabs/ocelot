@@ -140,7 +140,10 @@ class PyBulletHumanoidWorld:
         self._last_peak_contact_force_newtons = 0.0
         self._last_contact_normal_impulse_newton_seconds = 0.0
         self._last_caregiver_support_applied = False
+        self._last_caregiver_support_scale = 0.0
         self._last_caregiver_support_impulse_newton_seconds = 0.0
+        self._last_caregiver_support_force_world = (0.0, 0.0, 0.0)
+        self._last_caregiver_support_torque_world = (0.0, 0.0, 0.0)
         # PER-FRAME VERTICAL TRACE. `_advance` appends the base link's height
         # once per integration frame; `reset` clears it. Pure measurement of a
         # quantity the simulator already holds — there is no policy here and
@@ -172,7 +175,10 @@ class PyBulletHumanoidWorld:
         self._last_motor_target_positions = ()
         self._last_motor_command_displacements = ()
         self._last_caregiver_support_applied = False
+        self._last_caregiver_support_scale = 0.0
         self._last_caregiver_support_impulse_newton_seconds = 0.0
+        self._last_caregiver_support_force_world = (0.0, 0.0, 0.0)
+        self._last_caregiver_support_torque_world = (0.0, 0.0, 0.0)
         self._token_to_twitch = {}
 
     def reset(
@@ -307,7 +313,10 @@ class PyBulletHumanoidWorld:
         self._last_peak_contact_force_newtons = 0.0
         self._last_contact_normal_impulse_newton_seconds = 0.0
         self._last_caregiver_support_applied = False
+        self._last_caregiver_support_scale = 0.0
         self._last_caregiver_support_impulse_newton_seconds = 0.0
+        self._last_caregiver_support_force_world = (0.0, 0.0, 0.0)
+        self._last_caregiver_support_torque_world = (0.0, 0.0, 0.0)
         self._write_twitches(())
         self._apply_declared_initial_fixture(initial_base_quarter_turns)
         # A reset opens a new trial, so its per-frame vertical trace starts
@@ -798,13 +807,16 @@ class PyBulletHumanoidWorld:
         weights: dict[str, float] | None = None,
         reference_positions: Iterable[float] | None = None,
         caregiver_protective_support: bool = False,
+        caregiver_support_scale: float | None = None,
+        caregiver_manifold_residual: Iterable[float] | None = None,
+        caregiver_manifold_decisive_tick: float | None = None,
     ) -> dict[str, Any]:
         """Enact a graph-selected motor bundle and optional external support.
 
-        Caregiver support is an exafferent world intervention. It applies one
-        body-weight of upward force during the held child action, so it changes
-        the consequence without changing the child's selected motor command or
-        receiving child agency credit.
+        Caregiver support is an exafferent world intervention. Its graph-
+        authored scale applies that fraction of one body-weight during the held
+        child action, changing the consequence without changing the selected
+        motor command or receiving child agency credit.
         """
         self._require_open()
         selected = (tokens,) if isinstance(tokens, str) else tuple(tokens)
@@ -854,14 +866,81 @@ class PyBulletHumanoidWorld:
         )
         if not isinstance(caregiver_protective_support, bool):
             raise ValueError("caregiver_protective_support must be boolean")
-        self._last_caregiver_support_applied = caregiver_protective_support
-        self._last_caregiver_support_impulse_newton_seconds = 0.0
-        if caregiver_protective_support:
-            assert self._body is not None
-            upward_force = (
-                self._body_mass * self.configuration.gravity_acceleration
+        if caregiver_support_scale is None:
+            caregiver_support_scale = (
+                1.0 if caregiver_protective_support else 0.0
             )
-            for _ in range(hold_frames):
+        if (
+            isinstance(caregiver_support_scale, bool)
+            or not math.isfinite(caregiver_support_scale)
+            or not 0.0 <= caregiver_support_scale <= 1.0
+        ):
+            raise ValueError("caregiver_support_scale must be within [0, 1]")
+        if not caregiver_protective_support and caregiver_support_scale != 0.0:
+            raise ValueError("caregiver support scale requires authorization")
+        signed_residual = None
+        if caregiver_manifold_residual is not None:
+            signed_residual = tuple(float(value) for value in caregiver_manifold_residual)
+            if len(signed_residual) != 7 or not all(
+                math.isfinite(value) for value in signed_residual
+            ):
+                raise ValueError(
+                    "caregiver_manifold_residual must contain seven finite values"
+                )
+            if not caregiver_protective_support and any(signed_residual):
+                raise ValueError("caregiver manifold residual requires authorization")
+        if caregiver_manifold_decisive_tick is not None and (
+            isinstance(caregiver_manifold_decisive_tick, bool)
+            or not math.isfinite(caregiver_manifold_decisive_tick)
+            or caregiver_manifold_decisive_tick < 0.0
+        ):
+            raise ValueError("caregiver manifold decisive tick must be finite and nonnegative")
+        support_applied = caregiver_protective_support and (
+            caregiver_support_scale > 0.0
+            and (signed_residual is None or any(signed_residual))
+        )
+        self._last_caregiver_support_applied = support_applied
+        self._last_caregiver_support_scale = caregiver_support_scale
+        self._last_caregiver_support_impulse_newton_seconds = 0.0
+        self._last_caregiver_support_force_world = (0.0, 0.0, 0.0)
+        self._last_caregiver_support_torque_world = (0.0, 0.0, 0.0)
+        if support_applied:
+            assert self._body is not None
+            body_weight = self._body_mass * self.configuration.gravity_acceleration
+            if signed_residual is None:
+                support_frames = hold_frames
+                force = (0.0, 0.0, body_weight * caregiver_support_scale)
+                torque = (0.0, 0.0, 0.0)
+            else:
+                support_frames = min(
+                    hold_frames,
+                    max(1, math.ceil(caregiver_manifold_decisive_tick or hold_frames)),
+                )
+                duration = self.configuration.time_step * support_frames
+                dzx, dzy, dwx, dwy, dvx, dvy, dvz = signed_residual
+                raw_force = (
+                    -self._body_mass * dvx / duration,
+                    -self._body_mass * dvy / duration,
+                    -self._body_mass * dvz / duration,
+                )
+                inertia = self._body_mass * self._body_length_scale ** 2
+                raw_torque = (
+                    -inertia * dwx / duration + 2.0 * inertia * dzy / duration ** 2,
+                    -inertia * dwy / duration - 2.0 * inertia * dzx / duration ** 2,
+                    0.0,
+                )
+                def _capped(vector, limit):
+                    magnitude = math.sqrt(sum(value * value for value in vector))
+                    factor = min(1.0, limit / magnitude) if magnitude > 0.0 else 0.0
+                    return tuple(value * factor for value in vector)
+                force = _capped(raw_force, body_weight * caregiver_support_scale)
+                torque = _capped(
+                    raw_torque,
+                    body_weight * self._body_length_scale * caregiver_support_scale,
+                )
+            self._last_caregiver_support_force_world = force
+            self._last_caregiver_support_torque_world = torque
+            for _ in range(support_frames):
                 position, _orientation = _bullet.getBasePositionAndOrientation(
                     self._body,
                     physicsClientId=self._client,
@@ -869,14 +948,25 @@ class PyBulletHumanoidWorld:
                 _bullet.applyExternalForce(
                     self._body,
                     -1,
-                    forceObj=(0.0, 0.0, upward_force),
+                    forceObj=force,
                     posObj=position,
                     flags=_bullet.WORLD_FRAME,
                     physicsClientId=self._client,
                 )
+                _bullet.applyExternalTorque(
+                    self._body,
+                    -1,
+                    torqueObj=torque,
+                    flags=_bullet.WORLD_FRAME,
+                    physicsClientId=self._client,
+                )
                 self._advance(1)
+            if support_frames < hold_frames:
+                self._advance(hold_frames - support_frames)
             self._last_caregiver_support_impulse_newton_seconds = (
-                upward_force * self.configuration.time_step * hold_frames
+                math.sqrt(sum(value * value for value in force))
+                * self.configuration.time_step
+                * support_frames
             )
         else:
             self._advance(hold_frames)
@@ -1362,9 +1452,12 @@ class PyBulletHumanoidWorld:
             "caregiver_protective_support_applied": int(
                 self._last_caregiver_support_applied
             ),
+            "caregiver_support_scale": self._last_caregiver_support_scale,
             "caregiver_support_impulse_newton_seconds": (
                 self._last_caregiver_support_impulse_newton_seconds
             ),
+            "caregiver_support_force_world": self._last_caregiver_support_force_world,
+            "caregiver_support_torque_world": self._last_caregiver_support_torque_world,
             "last_actuator_token": (
                 self._last_tokens[0] if len(self._last_tokens) == 1 else None
             ),

@@ -119,6 +119,70 @@ def _learning_safety(agent, episode, **overrides):
     return safety
 
 
+def test_ideal_effort_allows_excess_only_for_manifold_compression():
+    agent, ep, policy, source = _bench()
+    agent.inner.set_attr(policy, "future_manifold_projection_budget", 2.0)
+    agent.inner.set_attr(policy, "future_manifold_physical_horizon", 2.0)
+    for key, value in {
+        "future_manifold_target": [[0.0], [0.0]],
+        "future_manifold_bounds": [[1.0], [1.0]],
+        "future_manifold_ideal_effort": 10.0,
+        "future_manifold_ideal_completion_time": 2.0,
+        "future_manifold_ideal_width": 0.0,
+        "future_manifold_ideal_information_loss": 0.0,
+    }.items():
+        agent.inner.set_attr(ep, key, value)
+    for key, value in {
+        "future_manifold_values": [[0.0], [0.0]],
+        "future_manifold_widths": [[0.0], [0.0]],
+        "future_manifold_effort": 12.0,
+        "future_manifold_completion_time": 2.0,
+    }.items():
+        agent.inner.set_attr(source, key, value)
+
+    assert _value(agent, ep, policy, source, "effort_supported") == 1.0
+    assert _value(agent, ep, policy, source, "effort_residual") == 2.0
+    assert _value(agent, ep, policy, source, "manifold_compression") == 0.0
+    assert _value(agent, ep, policy, source, "compression_dimension_count") == 0.0
+    assert _value(agent, ep, policy, source, "effort_authorized") == 0.0
+
+    # More-than-normal effort becomes admissible when it shortens the
+    # represented completion time; this is compression, not a reward for burn.
+    agent.inner.set_attr(source, "future_manifold_completion_time", 1.0)
+    assert _value(agent, ep, policy, source, "time_compression") == 1.0
+    assert _value(agent, ep, policy, source, "manifold_compression") == 1.0
+    assert _value(agent, ep, policy, source, "compression_dimension_count") == 1.0
+    assert _value(agent, ep, policy, source, "effort_authorized") == 1.0
+
+    # Width and information remain independent authorization dimensions; no
+    # cross-unit scalar trade is required or exposed.
+    agent.inner.set_attr(source, "future_manifold_completion_time", 2.0)
+    agent.inner.set_attr(ep, "future_manifold_ideal_width", 1.0)
+    assert _value(agent, ep, policy, source, "width_compression") == 1.0
+    assert _value(agent, ep, policy, source, "compression_dimension_count") == 1.0
+    assert _value(agent, ep, policy, source, "effort_authorized") == 1.0
+
+    agent.inner.set_attr(ep, "future_manifold_ideal_width", 0.0)
+    agent.inner.set_attr(ep, "future_manifold_ideal_information_loss", 1.0)
+    assert _value(agent, ep, policy, source, "information_compression") == 1.0
+    assert _value(agent, ep, policy, source, "compression_dimension_count") == 1.0
+    assert _value(agent, ep, policy, source, "effort_authorized") == 1.0
+
+    # Normal-or-lower effort remains admissible without inventing compression.
+    agent.inner.set_attr(source, "future_manifold_completion_time", 2.0)
+    agent.inner.set_attr(ep, "future_manifold_ideal_information_loss", 0.0)
+    agent.inner.set_attr(source, "future_manifold_effort", 8.0)
+    assert _value(agent, ep, policy, source, "effort_residual") == 0.0
+    assert _value(agent, ep, policy, source, "effort_authorized") == 1.0
+
+    # Before a domain has adapted an episode-local value, a policy can supply
+    # a weak general prior without making zero action the reference.
+    agent.inner.set_attr(ep, "future_manifold_ideal_effort", 0.0)
+    agent.inner.set_attr(policy, "future_manifold_ideal_effort_prior", 9.0)
+    assert _value(agent, ep, policy, source, "ideal_effort") == 9.0
+    assert _value(agent, ep, policy, source, "effort_supported") == 1.0
+
+
 def test_learning_exploration_is_situated_by_support_and_projected_time():
     """A declaration supplies a budget; the current recovery field spends it."""
     agent, ep, policy, source = _bench(member_forward=1.2, bound=1.0)
@@ -221,6 +285,29 @@ def test_projection_reports_horizon_loss_and_retention():
     assert float(_value(agent, ep, policy, source, "termination_code")) == 2.0
 
 
+@pytest.mark.parametrize(
+    ("member_forward", "expected_residual"),
+    ((2.0, 1.0), (-2.0, -1.0)),
+)
+def test_projection_reports_signed_time_addressed_shape_residual(
+    member_forward, expected_residual
+):
+    """Escapes retain direction and excess, not merely a scalar loss count."""
+    agent, ep, policy, source = _bench(
+        member_forward=member_forward, bound=1.0
+    )
+    assert float(_value(agent, ep, policy, source, "loss")) == 1.0
+    assert float(_value(
+        agent, ep, policy, source, "residual_0"
+    )) == expected_residual
+    assert float(_value(
+        agent, ep, policy, source, "shape_residual_1_0"
+    )) == expected_residual
+    assert float(_value(
+        agent, ep, policy, source, "shape_residual_1_1"
+    )) == 0.0
+
+
 def test_projection_accepts_grounded_humanoid_phase_program_membership():
     agent, ep, policy, source = _bench(member_forward=0.0, bound=1.0)
     member = agent.inner.neighbours(
@@ -234,6 +321,7 @@ def test_projection_accepts_grounded_humanoid_phase_program_membership():
     )
     assert float(_value(agent, ep, policy, source, "support")) == 1.0
     assert float(_value(agent, ep, policy, source, "resolved")) == 1.0
+
     assert float(_value(agent, ep, policy, source, "loss")) == 0.0
 
 def test_projection_uses_humanoid_phase_models_as_reference_population():
@@ -270,12 +358,44 @@ def test_projection_uses_humanoid_phase_models_as_reference_population():
     agent.inner.set_attr(ep, "current_support_phase", 0.0)
     agent.inner.set_attr(ep, "response_frames", 2.0)
     agent.inner.set_attr(ep, "manifold_bounds_ready", 1.0)
+    agent.inner.set_attr(ep, "caregiver_support_counterfactual_authority", 1.0)
+    agent.inner.set_attr(ep, "caregiver_support_counterfactual_loss_floor", 1.0)
     for key in ("dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz"):
         agent.inner.set_attr(ep, f"manifold_bound_{key}", 1.0)
 
     assert float(_value(agent, ep, policy, source, "support")) == 1.0
     assert float(_value(agent, ep, policy, source, "resolved")) == 1.0
-    assert float(_value(agent, ep, policy, source, "loss")) == 0.0
+
+    # The endogenous program escapes by one unit. Learned exafference of -2
+    # restores the path, with one-half being the least tested intervention
+    # that reaches the bound. This is a risk-gate decision; when endogenous
+    # motion is already safe, the correct minimum is zero.
+    agent.inner.set_attr(member, "mean_dvx", 2.0)
+    fractional_support = agent.s.add_node(
+        "CaregiverSupportScaleCandidate",
+        {
+            **dict(agent.s.node(member)["attrs"]),
+            "token": "fractional_support",
+            "exafferent": 1.0,
+            "counterfactual_scale_numerator": 1.0,
+            "counterfactual_scale_denominator": 4.0,
+            "mean_dvx": -2.0,
+        },
+    )
+    assert float(_value(
+        agent, ep, policy, source, "loss", addition=fractional_support
+    )) == 1.0
+    agent.inner.set_attr(
+        fractional_support, "counterfactual_scale_numerator", 4.0
+    )
+    assert float(_value(
+        agent, ep, policy, source, "loss", addition=fractional_support
+    )) == 0.0
+    assert float(_value(
+        agent, ep, policy, source, "minimum_exafferent_scale",
+        addition=fractional_support,
+    )) == 0.5
+    assert float(_value(agent, ep, policy, source, "loss")) == 1.0
 
     historical_attrs = dict(agent.s.node(member)["attrs"])
     historical_attrs["context_id"] = 99.0

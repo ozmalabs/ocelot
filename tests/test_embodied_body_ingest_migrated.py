@@ -296,10 +296,14 @@ def test_real_attached_body_activates_existing_development_and_graph_selects_res
             episode, "has_active_embodied_developmental_capability"
         )
         scenarios = agent.inner.neighbours(episode, "has_embodied_reset_scenario")
-        requests = agent.inner.neighbours(
+        active_requests = agent.inner.neighbours(
             episode, "has_active_embodied_reset_request"
         )
+        requests = agent.inner.neighbours(
+            episode, "has_embodied_reset_request"
+        )
         assert len(plan) == len(active) == len(scenarios) == len(requests) == 1
+        assert active_requests == []
         selected_step = agent.inner.neighbours(
             plan[0], "has_selected_learning_plan_step"
         )
@@ -307,6 +311,10 @@ def test_real_attached_body_activates_existing_development_and_graph_selects_res
         request_attrs = agent.s.node(requests[0])["attrs"]
         assert request_attrs["cause"] == "initial_situated_experiment"
         assert request_attrs["reinstantiation_spec_ready"] == 1
+        assert request_attrs["status"] == "initial_fixture_established"
+        assert agent.s.node(episode)["attrs"][
+            "initial_situated_experiment_established"
+        ] == 1
         assert agent.inner.neighbours(
             requests[0], "selects_embodied_reset_scenario"
         ) == scenarios
