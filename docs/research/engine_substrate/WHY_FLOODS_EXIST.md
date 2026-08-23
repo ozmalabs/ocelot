@@ -449,6 +449,46 @@ match against, never what you compute structure from.
 result — the synthetic raster is a hard mask, so both cells give t = 0.5 and it reduces exactly to
 the midpoint placement. It needs the supersampled raster to say anything, and that was not run.
 
+## 6g. WHAT THE SETTLE ACTUALLY IS — one irreducible read, and the flood's iteration on top
+
+§6e's honest headline was that the settle dominates every geometric stage by 10-40x, which made
+the geometry's constant factors the wrong thing to argue about. Measured, on one scene at five
+sizes, in three configurations:
+
+| n | cells | flood only | rim only | both | rim/flood |
+|---|---|---|---|---|---|
+| 16 | 256 | 4.3 ms | 3.9 ms | 6.4 ms | 0.89 |
+| 32 | 1024 | 17.4 ms | 9.5 ms | 20.1 ms | 0.55 |
+| 60 | 3600 | 58.9 ms | **28.9 ms** | 69.0 ms | **0.49** |
+
+Scaling from n=16 to n=60, cells x14.1: **flood x13.6, rim x7.5.**
+
+So the flood is O(area), and the rim is not O(perimeter) either — nor could it be. `bt_disagree`
+has to test every `neighbour` edge in the field, because **you cannot find a boundary without
+reading the observation at least once**, and that read is O(area) by definition. That cost is
+irreducible and it is not a defect: it is what observing IS.
+
+What separates the two is everything on top of that read. The flood iterates to fixpoint, so it
+pays the area cost once PER PASS — O(area x iterations), and the iteration count is the region's
+diameter. The rim pays it exactly once. Hence the ratio falling 0.89 -> 0.49 as the field grows,
+and hence the rim's x7.5 against the flood's x13.6: the diffusion factor is what the boundary
+representation removes, and the residual O(area) term is the one nobody can remove.
+
+**The cost claim, stated completely, for the pipeline as it now stands:**
+
+  * ONE O(area) pass to read the observation — irreducible;
+  * everything structural after it is O(perimeter): contour cycles x3.5 against crossings x3.5,
+    turning function flat, comparison flat at 2.15 -> 2.16 ms;
+  * the medial axis is O(perimeter) too, and belongs to the fitted program rather than the raster
+    (§6f).
+
+**And a measured argument for finishing a job this arc left open.** Running the boundary rules
+ALONGSIDE the flood costs 69.0 ms against the flood's own 58.9 — strictly worse than either path
+alone, because the field gets scanned for both. `mo_flood` being "derived alongside, not replaced"
+has been recorded as an architectural residual; it is now also a 2.4x cost against the rim path
+with `mflood=0`. The tests already take the rim path (`_rim_run` sets `mflood=0.0`); production
+callers still do not.
+
 ## 6b. PRIOR ART
 ## 6b. PRIOR ART — nearly all of this is textbook, and one match is exact
 
