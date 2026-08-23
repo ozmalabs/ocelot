@@ -141,6 +141,62 @@ def test_cross_rule_dependence_is_not_a_stage_a_hazard():
         f"the dependency did not propagate at all: {on}")
 
 
+# §5c's minimal FOLD reproduction. The `seen` guard means each binding fires
+# exactly once, so there is no later pass for the fixpoint to accumulate in --
+# which is why the under-count never heals itself.
+_FOLD = {
+    "id": "stage_a_fold", "version": "1.0.0", "depends_on": [],
+    "rules": [
+        {"name": "fold_count", "match": [["c", "counts", "it"]],
+         "where": {"type": "Lt", "a": A("it", "seen"), "b": L(0.5)},
+         "effects": [
+             ["set_attr", "it", "seen", {"__term__": L(1.0)}],
+             ["set_attr", "c", "total",
+              {"__term__": {"type": "Plus", "items": [A("c", "total"), L(1.0)]}}],
+         ]},
+    ],
+}
+
+
+def _fold_total(stage_a, n):
+    native.stage_a_enable(bool(stage_a))
+    native.stage_a_reset()
+    try:
+        s, _ag = boot_core()
+        s.add_production({"provenance": "test:stage_a_fold",
+                          "src": {"type": "Counter", "var": "c"},
+                          "edge_type": "counts",
+                          "tgt": {"type": "Item", "var": "i"}})
+        s._inner.load_seed_manifest(_FOLD)
+        c = s.add_node("Counter", {"total": 0.0})
+        for _ in range(n):
+            it = s.add_node("Item", {"seen": 0.0})
+            s.add_edge(c, "counts", it)
+        s.tick(100_000)
+        return float(s.node(c)["attrs"].get("total", 0.0))
+    finally:
+        native.stage_a_enable(False)
+
+
+@pytest.mark.parametrize("n", [5, 20, 50])
+def test_a_fold_over_bindings_does_not_silently_under_count(n):
+    """§5c's shape — the half of this fix with NO visible symptom.
+
+    Propagation had a falsifier: the parallax suite went red. Fold does not.
+    §5c: "Stage A silently under-counts every fold-over-bindings rule, and
+    `steps` is identical, so nothing in the iteration profile signals it." It
+    recorded ON total = 1.0 at every size against an OFF total of n.
+
+    The rule reads `total` and writes `total`, so the refusal must decline it and
+    the count must come back. Asserted against `n` directly rather than against
+    the OFF run, so a fixture that silently stopped counting in BOTH modes
+    could not pass."""
+    assert _fold_total(False, n) == float(n), "the OFF baseline is itself wrong"
+    assert _fold_total(True, n) == float(n), (
+        f"Stage A under-counted a fold: got {_fold_total(True, n)}, expected {n} "
+        f"(§5c's silent divergence has reopened)")
+
+
 def test_the_falsifier_stays_closed():
     """§5f's own reproduction, as a standing gate.
 
