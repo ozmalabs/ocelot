@@ -52,6 +52,7 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use crate::graph::{Attrs, NodeID, TypedGraph};
 use crate::rewrite::UndoStep;
 use crate::sym::Sym;
+use crate::term::TermIdx;
 use crate::value::Value;
 
 /// One resolved write, captured from a speculative firing before it was undone.
@@ -290,14 +291,86 @@ pub fn note_excluded_drain() {
     EXCLUDED_DRAINS.fetch_add(1, Ordering::Relaxed);
 }
 
-/// True when this rule can be derived speculatively — i.e. its effects contain
-/// no node deletion. See the module note: undo cannot restore a deleted node,
-/// and deriving against one base requires undoing progressing firings too.
-pub fn rule_is_derivable(rule: &crate::rewrite::RewriteRule) -> bool {
-    !rule
+/// True when an effect term reads the very attribute key its effect writes.
+///
+/// This is the whole read-write test, and it is deliberately not split by WHERE
+/// the read happens, because both divergence shapes reduce to it:
+///
+///   * PROPAGATION — writes `K` on one node, reads `K` off ANOTHER (a neighbour,
+///     another bound var). `mo_flood` is this: proposals write disjoint cells
+///     and read each other's `mlabel`.
+///   * FOLD — writes `K` on a node, reads `K` off the SAME node, across
+///     different bindings. `adaptive_control_assign_discounted_credit` is this:
+///     each binding adds to what the previous wrote.
+///
+/// A first pass at this dismissed FOLD as "plain counters, already caught by the
+/// write-set relation". That was wrong — `STAGE_A_RESULTS.md` §5c calls it "this
+/// one is real", and it is four times commoner than propagation in this tree
+/// (12.6% of seed rules against 3.2%).
+fn effect_reads_what_it_writes(arena: &crate::term::TermArena, root: TermIdx, key: Sym) -> bool {
+    let mut stack = vec![root];
+    while let Some(t) = stack.pop() {
+        let node = arena.get(t);
+        if let crate::term::TermNode::Attr { key: k, .. } = node {
+            if *k == key {
+                return true;
+            }
+        }
+        stack.extend(crate::term::children(node));
+    }
+    false
+}
+
+/// True when this rule can be derived speculatively.
+///
+/// TWO exclusions, and the second is what `STAGE_A_RESULTS.md` §5f falsified the
+/// whole scheme on.
+///
+/// 1. NODE DELETION — undo cannot restore a deleted node, and deriving against
+///    one base requires undoing progressing firings too.
+///
+/// 2. READ-WRITE DEPENDENCE — an effect that reads the attribute key it writes.
+///    `conflicts()` compares WRITE sets, so it is blind to a read-write
+///    dependency by construction, and §5f established that no refinement of a
+///    write-set relation can see one. The doc's remedy is per-proposal READ
+///    sets, which means instrumenting every graph read during effect evaluation
+///    — the hottest path in the engine.
+///
+///    But Stage A does not have to DECIDE these rules, only to REFUSE them, and
+///    refusing needs no instrumentation at all: the dependency is visible in the
+///    rule's own Term tree. Measured over 3739 seed rules, that refuses 14.7%
+///    and leaves 85.3% still speculable — and it catches every rule the doc
+///    names that lives in a seed (`mo_flood`, `qf_relax`, and both fold cases).
+///
+///    HONEST LIMITS. This is SUFFICIENT for refusal, not a complete read-set
+///    analysis. It does not see a CROSS-RULE dependency (rule A writes `K`, rule
+///    B reads `K` in the same drain), and it cannot see rules that are not
+///    Term-resident at all — `mv_relax` lives in `substrate.rs`, so no
+///    inspection of effect terms reaches it.
+pub fn rule_is_derivable(rule: &crate::rewrite::RewriteRule, arena: &crate::term::TermArena) -> bool {
+    use crate::rewrite::{Effect, EffectArg};
+
+    if rule
         .effects
         .iter()
-        .any(|e| matches!(e, crate::rewrite::Effect::DelNode { .. }))
+        .any(|e| matches!(e, Effect::DelNode { .. }))
+    {
+        return false;
+    }
+
+    for e in &rule.effects {
+        let (key, value) = match e {
+            Effect::SetAttr { key, value, .. } => (*key, value),
+            Effect::SetAttrIfDifferent { key, value, .. } => (*key, value),
+            _ => continue,
+        };
+        if let EffectArg::Computed(t) = value {
+            if effect_reads_what_it_writes(arena, *t, key) {
+                return false;
+            }
+        }
+    }
+    true
 }
 
 /// Read the forward delta of a firing that has been applied but NOT yet undone.
@@ -518,5 +591,51 @@ pub fn commit(proposal: &Proposal, graph: &mut TypedGraph) {
                 }
             }
         }
+    }
+
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Stage A must REFUSE a rule whose effect reads the key it writes.
+    ///
+    /// `STAGE_A_RESULTS.md` §5f falsified Stage A on exactly this: `mo_flood`'s
+    /// proposals are write-disjoint and read-dependent, and `conflicts()`
+    /// compares write sets, so no write-set relation can see it. Refusing needs
+    /// no read-set instrumentation — the dependency is in the Term tree.
+    #[test]
+    fn a_rule_that_reads_the_key_it_writes_is_refused() {
+        use crate::rewrite::{Effect, EffectArg, RewriteRule};
+        let mut arena = crate::term::TermArena::new();
+        let mut interner = crate::sym::Interner::default();
+        let k = interner.intern("mlabel");
+        let other = interner.intern("elsewhere");
+        let v = interner.intern("R");
+
+        let var = arena.add(crate::term::TermNode::Var { name: v });
+        // reads `mlabel` — the FOLD/PROPAGATION shape
+        let reads_same = arena.add(crate::term::TermNode::Attr { node: var, key: k });
+        // reads a DIFFERENT key — independent, must stay derivable
+        let reads_other = arena.add(crate::term::TermNode::Attr { node: var, key: other });
+
+        let mk = |value| RewriteRule {
+            effects: vec![Effect::SetAttr { var: v, key: k, value }],
+            ..RewriteRule::default()
+        };
+
+        assert!(
+            !rule_is_derivable(&mk(EffectArg::Computed(reads_same)), &arena),
+            "a rule that reads the key it writes must be refused"
+        );
+        assert!(
+            rule_is_derivable(&mk(EffectArg::Computed(reads_other)), &arena),
+            "reading a DIFFERENT key is not a read-write dependency"
+        );
+        assert!(
+            rule_is_derivable(&mk(EffectArg::Literal(crate::value::Value::Float(1.0))), &arena),
+            "a literal write has nothing to read"
+        );
     }
 }

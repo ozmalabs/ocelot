@@ -477,6 +477,58 @@ No strengthening of a write-set relation reaches this.
   run that identical failure sets would be the weakest outcome. The run did not even deliver
   that.
 
+## 5g. THE FALSIFIER IS CLOSED — by REFUSING the rules, not by deciding them
+
+§5f settled that `stage_a::conflicts` "is incomplete in kind": it compares write sets, `mo_flood`'s
+proposals are write-disjoint and read-dependent, and **no refinement of a write-set relation can
+see one**. That stands. What it does not follow from is the remedy §5f then reached for — "a sound
+compatibility relation needs each proposal's READ set", requiring instrumentation of every graph
+read during effect evaluation, "the hottest path in the engine".
+
+**Stage A does not have to DECIDE these rules. It only has to REFUSE them** — and refusing needs no
+instrumentation at all, because the dependency is already visible in the rule's own Term tree.
+
+`rule_is_derivable` now excludes, in addition to node deletion, **any effect that reads the
+attribute key it writes**. Both divergence shapes reduce to that one predicate:
+
+| shape | reads the key it writes | example |
+|---|---|---|
+| PROPAGATION (§5f) | off ANOTHER node — a neighbour, another bound var | `mo_flood`, `qf_relax` |
+| FOLD (§5c, "this one is real") | off the SAME node, across bindings | `adaptive_control_assign_discounted_credit`, `ept_extend_path_with_compatible_verified_transition` |
+
+Measured over the 3740 seed rules: **550 refused (14.7%), 3190 still speculable (85.3%)** — and
+every rule this document names that lives in a seed is among the refused, all four checked
+explicitly.
+
+**The result:**
+
+```
+tests/test_parallax_efference_migrated.py
+  Stage A OFF : 7 passed          (unchanged)
+  Stage A ON  : 7 passed          (was 2 failed, 5 passed — §5f's reproduction)
+```
+
+*A correction made while building this.* The first predicate excluded the FOLD shape as "plain
+counters, already caught by the write-set relation". That was wrong, and it is the larger half —
+FOLD is 12.6% of seed rules against PROPAGATION's 3.2%, and §5c is explicit that it is the shape
+that does not converge. A refusal that covered only propagation would have closed the visible
+falsifier and left the silent under-count in place.
+
+**HONEST LIMITS, all three structural rather than incidental:**
+
+- **Sufficient, not complete.** This refuses on a syntactic property of one rule's own effects. It
+  does NOT see a CROSS-RULE dependency — rule A writes `K`, rule B reads `K` within the same
+  drain. Such a pair would still be speculated on.
+- **Term-resident rules only.** `mv_relax` lives in `runners/dsl/src/substrate.rs`, not in any
+  seed, so no inspection of effect Terms reaches it. Rust-resident rules need the same check at
+  their construction site, and that is not built.
+- **Conservative by construction.** A rule that reads its written key on a node no other binding
+  can touch is refused anyway. 14.7% is an upper bound on the real dependency rate, not a
+  measurement of it.
+
+**The flag still stays OFF by default** — this changes what Stage A *would* do when enabled, not
+whether it is enabled. §5a's bar for flipping the default is unchanged and is not met by this.
+
 ## 5a. Why the flag still stays off
 
 Not because of a measured defect — there isn't one now — but because the evidence is one
