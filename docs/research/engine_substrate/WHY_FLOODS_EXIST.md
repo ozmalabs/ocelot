@@ -729,6 +729,64 @@ midpoint by better than 2x, asserted as a RATIO so it cannot go stale; and — t
 **accuracy holding on a raised background AND beside a second object at a different value**, which
 is exactly what the three discarded anchors failed. 24/24 green.
 
+### 6k. `bt_true_boundary` HAD THE WRONG DISCRIMINATOR — measured on hard masks, fixed, and the gate that missed it replaced
+
+The rule as first built (v1.6.0) asked whether the figure cell had a fully-INTERIOR neighbour — one
+with no `cuts` at all — as a proxy for "is a plateau". That is right for large smooth shapes and
+wrong for anything thin, because `neighbour` is 4-connected and a block's corner cell is DIAGONAL
+to its interior. Measured on HARD MASKS, where nothing should ever be discarded:
+
+| object | crossings | kept (v1.6.0) | dropped |
+|---|---|---|---|
+| 1x1 | 4 | **0** | **all** |
+| 2x2 | 8 | **0** | **all** |
+| 1x9 bar | 20 | **0** | **all** |
+| 2x9 bar | 22 | **0** | **all** |
+| 3x3 | 12 | 4 | 8 |
+| 5x5 | 20 | 12 | 8 |
+| 13x13 | 52 | 44 | 8 |
+
+**Any object under three cells thick was deleted outright**, and four corners were lost from every
+rectilinear shape at every size (the constant 8 is the four corners' two crossings each).
+
+*The gate that shipped it was too weak, and the reason is instructive.*
+`test_the_true_boundary_rule_is_inert_on_a_hard_mask` used a large DISC, and every figure cell of a
+disc DOES have an interior neighbour — so the fixture could not fail. A gate that only exercises the
+regime a rule was designed in cannot find the regime it breaks in.
+
+**The right discriminator is the VALUE, and it is one hop, not two.** The figure cell of a crossing
+is by definition the higher of its two sides (`bt_own` owns the stronger). So if anything ELSE cuts
+that cell from ABOVE, it is not a plateau — it is a middle layer, a band, and its outward crossing
+is the spurious chain:
+
+```
+(interior | band): figure is the interior cell; nothing cuts it from above  -> TRUE
+(band | exterior): figure is the band cell, cut from above by the interior  -> FALSE
+```
+
+One `MaxOver` over the figure cell's own `cuts`, no pair enumeration, no interior concept, and the
+match dropped from two hops to one. Measured: **100% kept on every hard-mask object above**,
+1x1 and thin bars included, and **byte-identical to the interior test on the soft-edge cases the
+rule exists for** — 116/116 at x2, 108/108 at x4 and x8. The fixtures elsewhere in the gate recover
+their full boundaries too (three blocks 18 -> 42 crossings, corner contact 16 -> 32, hard annulus
+48 -> 56). Strictly dominant; there is no case where the interior test was better.
+
+An intermediate predicate was also measured and is worth naming as unnecessary: "the cell's value
+lies strictly BETWEEN two OPPOSING cut-neighbours", opposing in the sense `bt_chain_perpendicular`
+already uses (their only common neighbour is the cell itself). It gives identical verdicts in every
+case tested, and the simpler one-hop test is preferred precisely because it needs no pair
+enumeration and no opposing test.
+
+Gated by `test_no_object_loses_its_boundary_however_thin_it_is`, which sweeps 1x1 through 13x13 plus
+the two thin bars — the test that would have caught this. **v1.8.0, 26/26 green.**
+
+**And a property worth having, now gated:** `subcell_t` is EXACTLY 0.5 on a hard mask, not
+approximately — with no band, `b` IS the far plateau, so `far == |b|` and
+`t = 0.5(|a|-|b|)/(|a|-|b|)`. Verified as equality (deviation 0.00e+00) across five hard-mask
+scenes including a three-level annulus. Every existing fixture in this tree is a hard mask, so a
+consumer can adopt `subcell_t` unconditionally and get bit-for-bit the midpoint it had before, with
+the accuracy appearing only where there is partial coverage to read.
+
 ### The chain-after-filter residual, narrowed — and one repair refuted
 
 The residual recorded as "at super x8 only 26 of 108 surviving crossings chain into one cycle" is

@@ -521,12 +521,12 @@ def test_the_true_boundary_predicate_needs_no_flood():
     blob = json.loads((ROOT / "seeds" / "vision_boundary_trace.json").read_text())
     rule = next(r for r in blob["rules"] if r["name"] == "bt_true_boundary")
     edges = {m[1] for m in rule["match"]}
-    assert edges == {"owns_figure", "neighbour"}, (
-        f"match reaches beyond 2 local hops: {sorted(edges)}")
+    assert edges <= {"owns_figure", "neighbour"}, (
+        f"match reaches beyond the crossing's own cells: {sorted(edges)}")
     body = json.dumps(rule)
     assert "mlabel" not in body, "the rule reads the flood's label"
     assert body.count('"Neighbours"') == 1, (
-        "more than one neighbour expansion -- the guard is no longer 2-hop")
+        "more than one neighbour expansion -- the guard is no longer local")
 
 
 def _soft_disc_scene(n, sub, background=0.0, second=None):
@@ -650,6 +650,81 @@ def test_the_anchor_survives_a_raised_background_and_a_second_object():
         assert got <= 1.35 * base, (
             f"accuracy degrades with {name}: {got:.3f} against {base:.3f} on the "
             f"plain scene -- the anchor is assuming something about the scene")
+
+
+def _block(k, pad=8, h=None):
+    """A solid rectangle on a hard mask, sized to order."""
+    h = k if h is None else h
+    n = max(k, h) + pad
+    V = np.zeros((n, n, 2))
+    r0, c0 = (n - h) // 2, (n - k) // 2
+    V[r0:r0 + h, c0:c0 + k, 1] = 9.0
+    return V
+
+
+def test_no_object_loses_its_boundary_however_thin_it_is():
+    """The gate that the first version of `bt_true_boundary` failed.
+
+    That version asked whether the figure cell had a fully-INTERIOR neighbour, as
+    a proxy for "is a plateau". `neighbour` is 4-connected, so a block's corner
+    cell is DIAGONAL to its interior and has none -- and anything under three
+    cells thick has no interior cell at all. Measured on hard masks, where
+    nothing should ever be dropped, it deleted 1x1 and 2x2 blocks and 1x9 and 2x9
+    bars ENTIRELY, and dropped four corners from every rectilinear shape at every
+    size.
+
+    The inertness test above did not catch it because it used a large DISC, whose
+    every figure cell does have an interior neighbour. Hence this one: thin and
+    small, where a plateau proxy breaks and the value test does not."""
+    for label, V in (("1x1", _block(1)), ("2x2", _block(2)), ("3x3", _block(3)),
+                     ("13x13", _block(13)), ("1x9 bar", _block(9, h=1)),
+                     ("2x9 bar", _block(9, h=2))):
+        s, _ = _rim_run(V)
+        total = len(list(s.nodes("Crossing")))
+        true_x = _true_crossings(s)
+        assert total > 0, f"{label}: fixture produced no crossings"
+        assert len(true_x) == total, (
+            f"{label}: {total - len(true_x)} of {total} crossings discarded on a "
+            f"HARD MASK -- an object is losing its boundary for being small or thin")
+
+
+def test_subcell_t_is_exactly_one_half_on_a_hard_mask():
+    """Adoption has to be free. Every existing fixture in this tree is a hard
+    mask, so a consumer that starts reading `subcell_t` must get bit-for-bit the
+    midpoint it got before.
+
+    It is exact, not approximate, and algebraically so: with no band, `b` IS the
+    far plateau, so far == |b| and t = 0.5*(|a|-|b|)/(|a|-|b|) = 0.5. Asserted as
+    equality rather than a tolerance, because a tolerance here would hide
+    precisely the drift it exists to catch."""
+    scenes = {
+        "three blocks": _blocks_2d(),
+        "hard disc": _soft_disc_scene(25, 1)[0],
+        "corner contact": _corner_contact(),
+    }
+    for name, V in scenes.items():
+        s, _ = _rim_run(V)
+        ts = [float(s.node(x)["attrs"]["subcell_t"]) for x in s.nodes("Crossing")
+              if "subcell_t" in s.node(x)["attrs"]]
+        assert ts, f"{name}: no crossing carried subcell_t"
+        assert all(t == 0.5 for t in ts), (
+            f"{name}: hard mask gave t != 0.5 "
+            f"(max deviation {max(abs(t - 0.5) for t in ts):.3e})")
+
+
+def _blocks_2d():
+    V = np.zeros((16, 16, 2))
+    V[2:5, 2:5, 1] = 9.0
+    V[2:5, 10:13, 1] = 9.0
+    V[9:12, 2:8, 1] = 9.0
+    return V
+
+
+def _corner_contact():
+    V = np.zeros((16, 16, 2))
+    V[3:7, 3:7, 1] = 9.0
+    V[7:11, 7:11, 1] = 9.0
+    return V
 
 
 def _is_closed(s, points):
