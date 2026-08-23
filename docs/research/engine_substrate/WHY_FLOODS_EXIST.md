@@ -801,9 +801,36 @@ crossings only:
 | super x8 | 108 | 4 | 8 | 96 | 0 | 8 | 26 |
 
 **Hard, x2 and x4 are perfect** — 100% degree-2, a single cycle, nothing to repair. Only x8 breaks,
-and there 12 of 108 crossings (11%) are under-connected. The cause is that at x8 some segments have
-a TWO-cell band, so the cell-pair correspondence `bt_chain_collinear` needs (`A neighbour C` AND
-`B neighbour D`) no longer holds across the gap.
+and there 12 of 108 crossings (11%) are under-connected.
+
+**The cause first recorded here — "some segments have a TWO-cell band" — is WRONG, and the real one
+is more interesting.** Every under-connected crossing was inspected: all twelve sit on a ONE-cell
+band, and all twelve are at the four CARDINAL points of the disc, where the boundary is tangent to
+the lattice and the partial cell's coverage is therefore highest. Reading the column strip across
+the disc's top, with `mtol` 1.5 so a partial cell agrees with a 9.0 interior once its value exceeds
+7.5:
+
+| col | v(partial) | cut 5\|6 | cut 6\|7 | the partial cell is | TRUE boundary at |
+|---|---|---|---|---|---|
+| 18 | 6.3 | yes | yes | a BAND | rows 6\|7 |
+| 19 | 7.3 | yes | yes | a BAND | rows 6\|7 |
+| **20** | **7.9** | yes | **no** | **part of the figure** | **rows 5\|6** |
+| 21 | 7.3 | yes | yes | a BAND | rows 6\|7 |
+| 22 | 6.3 | yes | yes | a BAND | rows 6\|7 |
+
+At the exact top of the disc the partial cell is 88% covered, so it AGREES with the interior and is
+absorbed into the figure — and the detected boundary steps one cell outward for that single column.
+Its neighbours either side have the boundary a row further in. No chaining rule links two crossings
+that are a row apart, share no cell, and have no corresponding pair. Four cardinal points give 4
+isolated crossings, each costing its two neighbours a link: 4 + 8 = the 12 observed, exactly.
+
+**So this is not a chaining defect, and repairing it in the chaining rules is treating a symptom.**
+It is the pairwise threshold in `bt_disagree` — §6h's "no single threshold works" appearing as a
+chain break rather than as slivers. Whether the partial cell counts as figure or as band flips as
+its coverage crosses `9 - mtol`, and the boundary moves a whole cell when it does. `bt_true_boundary`
+is doing the right thing with the cuts it is handed; the cuts are what is wrong. This residual
+therefore belongs to the one piece this arc has consistently named as unbuilt, and closes only when
+that does.
 
 **A repair was proposed, measured, and REFUTED.** Link two true crossings whose FIGURE cells are
 lattice neighbours — weaker than cell-pair correspondence, so it should still link across a 2-cell
