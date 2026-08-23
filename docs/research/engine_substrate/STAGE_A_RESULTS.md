@@ -609,6 +609,43 @@ Identical fixpoint, identical graph, with Stage A genuinely active — 1828 prop
 comparison is not vacuous. Gated by `test_the_settled_graph_is_identical_in_both_modes`, which
 asserts `proposals > 0` before the digests are allowed to count.
 
+**THE FULL BENCH, BOTH MODES — §5a's own bar.** Run twice; the first attempt is discarded and the
+reason is worth more than the numbers.
+
+**Attempt 1 (discarded).** Both passes ran against a MOVING BINARY: the engine `.so` was rebuilt
+during both windows, and seven unrelated commits landed inside the OFF window. It reported
+OFF 139 failed / ON 131 failed — **Stage A ON with FEWER failures than OFF**, twenty items failing
+only in OFF. Stage A cannot fix tests, so that asymmetry was tree drift and nothing else. It also
+carried a live trap: three humanoid tests failed only under ON, which reads exactly like a Stage A
+regression, and they were files being edited mid-run. This is §5f's own footnote happening a second
+time ("the full bench ran on the binary built BEFORE the write-set relation was strengthened").
+
+**Attempt 2 (the result).** A detached worktree pinned at `597dcff` with its own engine, isolated
+from the live tree. The harness fingerprints the engine before and after EVERY pass and refuses to
+compare if it moved:
+
+```
+engine 4522ef6bb22b6d4c at all four measurement points — start and end of both passes
+OFF: 456 failed, 8126 passed, 306 skipped, 347 errors, 788 node ids   (3:02:09)
+ON : 455 failed, 8127 passed, 306 skipped, 347 errors, 787 node ids   (3:01:21)
+
+only with Stage A ON  (would be a regression):  NONE
+only with Stage A OFF (cannot be caused by it): test_full_racing_migrated::
+                                                test_short_closed_loop_run_is_graph_authored_and_bounded
+```
+
+**No test fails under Stage A that passes without it.** The single asymmetric test was re-run in
+isolation, four times per mode, and passes 4/4 in BOTH — an xdist flake, not an effect.
+
+**What this run does NOT establish.** The absolute red count is inflated and is NOT this tree's
+baseline: the worktree carries only the 45 TRACKED entries of `results/` against the live tree's
+1212, so ~1167 untracked artifacts are missing and the arc / mbpp / prog_descent suites error on
+`FileNotFoundError`. That inflation applies EQUALLY to both passes, which is why the comparison
+survives it — but 788 red node ids here must never be quoted against
+`results/failure_baseline.json`, and a baseline-grade absolute figure would need the artifacts
+present. Recorded rather than corrected, because the question this run existed to answer is the
+DIFFERENCE, and the difference is clean.
+
 **HONEST LIMITS, all three structural rather than incidental:**
 
 - ~~**Does not see a CROSS-RULE dependency.**~~ **WITHDRAWN — measured, and the phrasing was
