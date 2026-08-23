@@ -433,32 +433,54 @@ def inherit_path_program_rule() -> dict:
     }
 
 
-def select_frontier_path_rule() -> dict:
-    def current_state_residual(path_var: str) -> dict:
-        current_transitions = Filter(
-            Neighbours(path_var, "contains_embodied_program_transition"),
-            "path_current_transition",
-            Exists(
-                Neighbours(
-                    "owner", "has_current_embodied_program_transition_source"
-                ),
-                "known_current_transition",
-                Eq(
-                    V("path_current_transition"),
-                    V("known_current_transition"),
-                ),
+def situate_path_in_current_state_rule() -> dict:
+    path_sources = Filter(
+        Neighbours("path", "contains_embodied_program_transition"),
+        "path_source",
+        Exists(
+            Neighbours(
+                "owner", "has_current_embodied_program_transition_source"
             ),
-        )
-        closest = Argmin(
-            current_transitions,
-            "ranked_current_transition",
-            P0("ranked_current_transition", "current_state_shape_residual_units"),
-            V(path_var),
-        )
-        return Plus(
-            AO(closest, "current_state_shape_residual_units"),
-            L(0),
-        )
+            "current_source",
+            Eq(V("path_source"), V("current_source")),
+        ),
+    )
+    closest = Argmin(
+        path_sources,
+        "closest_path_source",
+        P0("closest_path_source", "current_state_shape_residual_units"),
+        V("path"),
+    )
+    return {
+        "name": "ept_situate_path_in_current_state_shape",
+        "area": "embodied_program_trajectory",
+        "latency_class": "soft_realtime",
+        "batch": True,
+        "comment": "Cache the least residual between a retained path and "
+        "the owner's current receipt-grounded transition sources. This is a "
+        "situated selection coordinate, not new transition evidence.",
+        "match": [
+            ["owner", "has_embodied_program_trajectory", "trajectory"],
+            ["trajectory", "has_pareto_candidate", "path"],
+            ["path", "contains_embodied_program_transition", "transition"],
+        ],
+        "where": And(
+            Gt(Count(path_sources), L(0)),
+            Eq(V("transition"), closest),
+            Not(Eq(
+                P0("path", "current_state_shape_residual_units"),
+                P0("transition", "current_state_shape_residual_units"),
+            )),
+        ),
+        "effects": [[
+            "set_attr", "path", "current_state_shape_residual_units", T(
+                P0("transition", "current_state_shape_residual_units")
+            ),
+        ]],
+    }
+
+
+def select_frontier_path_rule() -> dict:
 
     def has_next_transition_from_current(path_var: str) -> dict:
         return Or(
@@ -537,52 +559,40 @@ def select_frontier_path_rule() -> dict:
             )), L(0)),
         ),
     )
-    # Current-state residual is the situated coordinate: a path learned from
-    # a different shape in the same coarse orientation class must not outrank
-    # one whose first transition starts near the sensed body. Within that
-    # shape, retain the path containing the most exact successful receipts,
-    # then prefer less practice and greater depth. Powers of the held horizon
-    # make these bounded integers lexicographic without authored weights or a
-    # scalarized risk/task tradeoff.
-    rank_span = Plus(P0("trajectory", "horizon"), L(1))
-    selected = Argmin(
+    # Every frontier member already contains a currently admissible source
+    # and survived Pareto refutation. Select the shortest such path, then use
+    # receipt-state residual only to resolve equal-depth
+    # alternatives. This makes temporal foveation a relational restriction,
+    # not a weighted preference that a large task coordinate could reverse.
+    shallowest = Argmin(
         frontier,
-        "frontier_path",
-        Plus(
-            Times(
-                current_state_residual("frontier_path"),
-                rank_span,
-                rank_span,
-                rank_span,
-                rank_span,
-            ),
-            Times(
-                Neg(P0("frontier_path", "task_progress_units")),
-                rank_span,
-                rank_span,
-                rank_span,
-            ),
-            Times(
-                Neg(P0("frontier_path", "capability_evidence_units")),
-                rank_span,
-                rank_span,
-            ),
-            Times(
-                P0("frontier_path", "replay_count"),
-                rank_span,
-            ),
-            Neg(P0("frontier_path", "depth")),
-        ),
+        "shallow_frontier_path",
+        P0("shallow_frontier_path", "depth"),
         V("owner"),
+    )
+    shortest = Filter(
+        frontier,
+        "shortest_frontier_path",
+        Eq(
+            P0("shortest_frontier_path", "depth"),
+            AO(shallowest, "depth"),
+        ),
+    )
+    selected = Argmin(
+        shortest,
+        "frontier_path",
+        P0("frontier_path", "current_state_shape_residual_units"),
+        shallowest,
     )
     return {
         "name": "ept_collapse_frontier_to_one_practice_path",
         "area": "cognitive_pareto",
         "latency_class": "soft_realtime",
         "batch": False,
-        "comment": "Pareto removes only refuted paths. Curiosity then "
-        "collapses the surviving frontier to one least-practised, deepest "
-        "prefix; this selection grants no actuator authority.",
+        "comment": "Pareto removes only refuted paths. Temporal foveation "
+        "then collapses the surviving frontier to the shortest sufficient "
+        "prefix, using deeper paths only after local detail is exhausted; "
+        "this selection grants no actuator authority.",
         "match": [
             ["owner", "has_embodied_program_trajectory", "trajectory"],
             ["owner", "has_current_embodied_program", "current_program"],
@@ -630,7 +640,7 @@ def select_frontier_path_rule() -> dict:
                 ))
             ],
             ["set_attr", "trajectory", "selected_state_shape_residual_units", T(
-                current_state_residual("path")
+                P0("path", "current_state_shape_residual_units")
             )],
         ],
     }
@@ -708,6 +718,7 @@ def manifest() -> dict:
             extend_path_rule(),
             inherit_path_transition_rule(),
             inherit_path_program_rule(),
+            situate_path_in_current_state_rule(),
             retract_refuted_selection_rule(),
             select_frontier_path_rule(),
         ],

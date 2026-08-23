@@ -35,6 +35,7 @@ def _fixture(horizon: int, transitions):
     owner = agent.s.add_node("FixtureTrajectoryOwner", {})
     budget = agent.s.add_node("FixtureTrajectoryBudget", {
         "trajectory_horizon": horizon,
+        "trajectory_minimum_selection_depth": min(horizon, 2),
         "integer_native": 1,
     })
     programs = [
@@ -210,6 +211,23 @@ def test_existing_trajectory_deepens_when_evidence_budget_grows():
             trajectory, "has_pareto_candidate"
         )
     ) == 3
+
+
+def test_temporal_foveation_selects_shortest_sufficient_frontier_path():
+    agent, owner, _, _ = _fixture(3, (
+        {"source": 0, "target": 1, "pre_x": 0, "post_x": 0,
+         "energy": 1, "task_progress": 1},
+        {"source": 1, "target": 2, "pre_x": 0, "post_x": 0,
+         "energy": 1, "task_progress": 1},
+        {"source": 2, "target": 3, "pre_x": 0, "post_x": 0,
+         "energy": 1, "task_progress": 1},
+    ))
+
+    selected = agent.inner.neighbours(
+        owner, "has_selected_embodied_program_path"
+    )
+    assert len(selected) == 1
+    assert agent.s.node(selected[0])["attrs"]["depth"] == 2
 
 
 def test_frontier_remains_replayable_from_an_internal_current_program():
