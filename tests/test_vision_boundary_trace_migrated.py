@@ -360,6 +360,93 @@ def test_the_contour_needs_no_field_scan_and_agrees_with_the_one_that_does():
     assert sorted(sz for sz, _ in got) == sorted(sz for sz, _ in ref)
 
 
+def _true_chain(s):
+    """Degree distribution and components over the TRUE crossings only."""
+    import collections as _c
+    tb = lambda x: float(s.node(x)["attrs"].get("true_boundary", 0.0)) > 0.5  # noqa: E731
+    ids = {x.value for x in s.nodes("Crossing") if tb(x)}
+    adj = _c.defaultdict(set)
+    for x in s.nodes("Crossing"):
+        if x.value not in ids:
+            continue
+        for n in s.neighbours(x, "next_crossing"):
+            if n.value in ids:
+                adj[x.value].add(n.value)
+                adj[n.value].add(x.value)
+    seen, comps = set(), []
+    for k in sorted(ids):
+        if k in seen:
+            continue
+        stack, comp = [k], []
+        seen.add(k)
+        while stack:
+            c = stack.pop()
+            comp.append(c)
+            for m in adj.get(c, ()):
+                if m not in seen:
+                    seen.add(m)
+                    stack.append(m)
+        comps.append(len(comp))
+    deg = _c.Counter(len(adj.get(k, ())) for k in ids)
+    return ids, deg, comps
+
+
+@pytest.mark.parametrize("sub", [1, 2, 4, 8])
+def test_the_boundary_closes_into_one_curve_at_every_raster(sub):
+    """The chain must be a single closed curve, not fragments.
+
+    At super x8 it was not: the partial cell's coverage decides which SIDE of it
+    the cut falls on, and at the four cardinal points -- where the boundary is
+    tangent to the lattice and coverage peaks -- it flips. The crossing there
+    attaches one row out from its neighbours', sharing no cell and with only one
+    cross-pair adjacency, which neither `bt_chain_collinear` (needs A~C AND B~D)
+    nor `bt_chain_perpendicular` (needs a shared cell) can link. 12 of 108
+    crossings were under-connected and the contour broke into 8 components, the
+    largest holding 26.
+
+    `bt_chain_diagonal` closes it as a FALLBACK, firing only where a crossing has
+    nowhere else to go -- so this also asserts degree 2 exactly, which is what an
+    unguarded version destroyed (it reached one component with degree {2:28,
+    3:16, 4:64})."""
+    V, _ = _soft_disc_scene(41, sub)
+    s, _ = _rim_run(V)
+    ids, deg, comps = _true_chain(s)
+    assert len(ids) > 40, f"sub={sub}: too few true crossings to be a real test"
+    assert len(comps) == 1, (
+        f"sub={sub}: boundary is in {len(comps)} pieces "
+        f"(largest {max(comps)} of {len(ids)})")
+    assert set(deg) == {2}, (
+        f"sub={sub}: not a clean curve, degrees {dict(sorted(deg.items()))}")
+
+
+def test_the_diagonal_fallback_adds_nothing_where_the_chain_is_already_closed():
+    """It is a FALLBACK, so it must be inert on every fixture that was already
+    a single degree-2 curve -- which is every hard-mask scene in this file.
+
+    Asserted by counting the links: a hard mask's chain is fully determined by
+    the collinear and perpendicular rules, so the diagonal rule firing there at
+    all would mean its guard is not holding.
+
+    `_corner_contact` is deliberately NOT in this list. It carries four genuine
+    SADDLE crossings -- two blocks meeting at a corner, where whether they
+    connect is not decidable from adjacency -- so degree > 2 there is correct and
+    is pinned by its own test. Asserting degree <= 2 over it was this test's own
+    first draft, and it failed for that reason rather than for a defect."""
+    # n=41: `_soft_disc_scene` places its disc at (12, 20) radius 7, which at
+    # n=25 runs off the field edge and traces an OPEN contour with degree-1
+    # endpoints -- a fact about the fixture size, not about the rule. That was
+    # this test's second wrong draft.
+    for name, V in (("three blocks", _blocks_2d()),
+                    ("hard disc", _soft_disc_scene(41, 1)[0])):
+        s, _ = _rim_run(V)
+        ids, deg, comps = _true_chain(s)
+        assert set(deg) <= {2}, (
+            f"{name}: gained a degree-{max(deg)} crossing -- the diagonal "
+            f"fallback fired where the chain was already closed")
+        assert len(comps) >= 1 and all(c >= 4 for c in comps), (
+            f"{name}: degenerate chain {comps}")
+
+
 def test_both_walks_agree_where_the_boundary_graph_is_genuinely_ambiguous():
     """The saddle case, pinned.
 
