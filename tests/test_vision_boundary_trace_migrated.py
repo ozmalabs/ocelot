@@ -154,6 +154,48 @@ def test_rim_is_invariant_to_the_derivation_mode():
 
     assert committed == staged, f"rim differed by mode: {committed} vs {staged}"
 
+    # NON-VACUITY. The assertion above compares two arms, so it passes when BOTH
+    # are dead -- and mutation testing showed exactly that: deleting
+    # bt_boundary_cell or bt_border_rim (which write `on_rim`) or bt_rim_link
+    # (which reads it and writes `rim_next`) broke NO gate in this file, because
+    # every consumer of that layer is either inside the seed or is this
+    # equality. So the arms have to be shown non-empty before their agreement
+    # means anything.
+    sweeps, cuts, links, rim, groups = committed
+    assert cuts > 0, "no cuts -- bt_disagree is not firing"
+    assert rim > 0, "no cell marked on_rim -- bt_boundary_cell/bt_border_rim dead"
+    assert links > 0, "no rim_next links -- bt_rim_link dead"
+
+
+def test_an_INTERIOR_boundary_cell_is_marked_on_rim():
+    """Isolates `bt_boundary_cell` from `bt_border_rim`.
+
+    The two rules both write `on_rim`: one marks a cell that has a `cuts` edge,
+    the other marks a cell on the field's own perimeter. On the 1x64 strip the
+    mode-invariance test uses, EVERY cell is on the perimeter, so the border rule
+    covers the field and deleting the boundary rule changes nothing measurable --
+    which is why mutation testing found it ungated even after the non-vacuity
+    assertions went in.
+
+    A 2D scene with a block well away from the edge separates them: the block's
+    rim cells are interior to the field, so only `bt_boundary_cell` can mark
+    them."""
+    V = np.zeros((16, 16, 2))
+    V[5:11, 5:11, 1] = 9.0          # no cell of this block touches the border
+    s, _ = _rim_run(V)
+
+    interior_rim = 0
+    for c in s.nodes("MCell"):
+        a = s.node(c)["attrs"]
+        r, col = int(round(float(a["crow"]))), int(round(float(a["ccol"])))
+        on_border = r in (0, 15) or col in (0, 15)
+        if not on_border and float(a.get("on_rim", 0.0)) > 0.5:
+            interior_rim += 1
+    assert interior_rim > 0, (
+        "no INTERIOR cell is marked on_rim -- bt_boundary_cell is dead, and the "
+        "border rule cannot cover this case because the block does not touch the "
+        "field edge")
+
 
 def test_seed_introduces_no_new_constant():
     """§13 discipline, as `vision_motion_group` and `parallax_efference` hold it:
@@ -391,6 +433,27 @@ def _true_chain(s):
     return ids, deg, comps
 
 
+def _centred_disc(n, sub):
+    """A disc CENTRED in the field at radius 0.35n.
+
+    Not interchangeable with `_soft_disc_scene`, which places a radius-7 disc at
+    (12, 20). Only this one puts the boundary exactly tangent to the lattice at
+    the four cardinal points, which is where the partial cell's coverage peaks
+    and the crossing flips to the far side of it -- the diagonal step
+    `bt_chain_diagonal` exists for. Mutation testing found the distinction: with
+    the other fixture, deleting that rule broke no gate at all."""
+    V = np.zeros((n, n, 2))
+    cx = cy = n / 2.0 - 0.5
+    r = n * 0.35
+    offs = [(i + 0.5) / sub - 0.5 for i in range(sub)]
+    for row in range(n):
+        for col in range(n):
+            hits = sum(1 for oy in offs for ox in offs
+                       if (col + ox - cx) ** 2 + (row + oy - cy) ** 2 <= r * r)
+            V[row, col, 1] = 9.0 * hits / (sub * sub)
+    return V
+
+
 @pytest.mark.parametrize("sub", [1, 2, 4, 8])
 def test_the_boundary_closes_into_one_curve_at_every_raster(sub):
     """The chain must be a single closed curve, not fragments.
@@ -408,8 +471,7 @@ def test_the_boundary_closes_into_one_curve_at_every_raster(sub):
     nowhere else to go -- so this also asserts degree 2 exactly, which is what an
     unguarded version destroyed (it reached one component with degree {2:28,
     3:16, 4:64})."""
-    V, _ = _soft_disc_scene(41, sub)
-    s, _ = _rim_run(V)
+    s, _ = _rim_run(_centred_disc(41, sub))
     ids, deg, comps = _true_chain(s)
     assert len(ids) > 40, f"sub={sub}: too few true crossings to be a real test"
     assert len(comps) == 1, (

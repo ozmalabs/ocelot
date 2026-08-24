@@ -989,6 +989,48 @@ averages over many crossings — a centroid, a dominant orientation, a first mom
 sub-cell precision for free from the averaging, and gains nothing here. That distinction matters
 before someone reaches for `subcell_t` to improve a statistic that never needed it.
 
+### 6s. MUTATION TESTING THE SEED — three of eleven rules were ungated, including one built the same day
+
+Three claims broke today (§6l's `[0,2]` bound, §6q's "always return exact", §6r's localisation
+reading), and each rested on a fixture that could not fail it. The systematic form of that check is
+mutation testing: **delete one rule at a time and see whether any gate notices.** A rule whose
+removal changes nothing is either dead or ungated, and both are worth knowing.
+
+Run over all eleven rules of `vision_boundary_trace`:
+
+| removed | gates that went red |
+|---|---|
+| `bt_disagree` | 34 |
+| `bt_mint_crossing` | 32 |
+| `bt_chain_perpendicular` / `bt_own` / `bt_true_boundary` | 20 each |
+| `bt_chain_collinear` | 13 |
+| `bt_subcell_t` | 7 |
+| **`bt_boundary_cell`** | **0** |
+| **`bt_border_rim`** | **0** |
+| **`bt_chain_diagonal`** | **0** |
+
+**`bt_chain_diagonal` had been built and "gated" hours earlier.** The rule works — removing it takes
+the x8 chain from 1 component to 8, exactly as designed — but its gate used `_soft_disc_scene`,
+which places a radius-7 disc at (12, 20), and that disc never puts the boundary tangent to the
+lattice at a cardinal point. **The fixture could not produce the phenomenon the rule exists for.**
+Re-pointed at a CENTRED disc, the gate now fails without the rule and passes with it.
+
+**The rim-cell layer was ungated for a subtler reason.** `on_rim` and `rim_next` are read by nothing
+outside the seed except `test_rim_is_invariant_to_the_derivation_mode` — and that test compares two
+arms for equality, so it passes when BOTH are dead. An equality-between-arms test cannot detect that
+the arms are empty. It now asserts `cuts > 0`, `rim > 0` and `links > 0` before their agreement is
+allowed to count.
+
+**And even that was not enough for `bt_boundary_cell`,** because the mode-invariance fixture is a
+1x64 strip where EVERY cell is on the field perimeter — so `bt_border_rim` covers the field and the
+boundary rule adds nothing measurable. A 2D scene with a block away from the edge separates them:
+only `bt_boundary_cell` can mark an interior rim cell.
+
+**All eleven rules are now gated: deleting any one of them turns something red.** The three fixes
+are worth more than the count, because each is a distinct way a green gate can be empty — a fixture
+that cannot produce the phenomenon, an equality that both arms satisfy vacuously, and a fixture
+whose geometry lets one rule mask another.
+
 ### 6q. WHICH TOLERANCE ESTIMATOR — settled by the statistic, not by preference
 
 `vision_motion_group` offers two mutually exclusive arms, `mo_tol_exact` (tolerance = exact vector
