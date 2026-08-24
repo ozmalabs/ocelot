@@ -316,6 +316,47 @@ def test_frontier_prefers_path_whose_transition_matches_current_shape():
     )
 
 
+def test_manifold_block_reselects_a_retained_frontier_branch():
+    agent, owner, _, transitions = _fixture(1, (
+        {"source": 0, "target": 1, "pre_x": 0, "post_x": 10,
+         "energy": 1, "task_progress": 2},
+        {"source": 0, "target": 2, "pre_x": 0, "post_x": 20,
+         "energy": 2, "task_progress": 1},
+    ))
+    selected = agent.inner.neighbours(
+        owner, "has_selected_embodied_program_path"
+    )[0]
+    selected_transition = next(
+        transition for transition in transitions
+        if transition in agent.inner.neighbours(
+            selected, "contains_embodied_program_transition"
+        )
+    )
+    alternative_transition = next(
+        transition for transition in transitions
+        if transition != selected_transition
+    )
+
+    agent.inner.remove_edge(
+        owner, "has_selected_embodied_program_path", selected
+    )
+    _edge(
+        agent, selected,
+        "manifold_blocked_from_embodied_program_transition",
+        selected_transition,
+    )
+    agent.tick()
+
+    reselection = agent.inner.neighbours(
+        owner, "has_selected_embodied_program_path"
+    )
+    assert len(reselection) == 1
+    assert reselection[0] != selected
+    assert alternative_transition in agent.inner.neighbours(
+        reselection[0], "contains_embodied_program_transition"
+    )
+
+
 def test_frontier_admits_orientation_preserving_capability_evidence():
     agent, owner, _, transitions = _fixture(1, (
         {"source": 0, "target": 1, "pre_x": 0, "post_x": 0,
