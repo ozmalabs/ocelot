@@ -237,6 +237,15 @@ def _cognitive_continuation_authorised(
     plans = agent.inner.neighbours(
         development_context, "has_self_directed_learning_plan"
     )
+    if plans and all(
+        agent.s.node(plan)["attrs"].get("status") == "completed"
+        for plan in plans
+    ):
+        # The finite learning process has discharged its own risk gate. Motor
+        # enactment is still governed by the ordinary situated manifold gate;
+        # requiring a fictional selected learning step here would make
+        # successful development disable deployment.
+        return True
     selected_steps = {
         step
         for plan in plans
