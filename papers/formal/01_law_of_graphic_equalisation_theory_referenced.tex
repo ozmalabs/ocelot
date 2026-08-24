@@ -241,22 +241,34 @@ The order of exposition is therefore deliberate. Collapse is stated before time 
 This is measurable rather than merely stipulative, and it has been measured. A perceptual system given ordered frames and no temporal coordinate infers a transition generator carrying one frame to the next, and the integer count of applications \emph{is} the time axis it then holds; given the same frames shuffled, it infers none. The dimension was not supplied to it and does not exist in the observations --- it exists in the map between them, once something constructs it. Notably, the mechanism that constructs it is the system's general \emph{dimension-inference} machinery, not a temporal faculty: time is minted by the same operation that mints any other unobserved dimension, which is Proposition~\ref{prop:time-inferred} in implementation.
 \end{remark}
 
-\section{The present, and three states of a dimension}\label{sec:present}
-\begin{definition}[Three states]
-For a frame $\mathcal F$, a dimension is in exactly one of three states:
+\section{The present, and the states of a dimension}\label{sec:present}
+
+\begin{definition}[States of a dimension]\label{def:states}
+For a frame $\mathcal F$, a dimension is in exactly one of four states:
 \[
-\boxed{\mathrm{NULL}\neq\mathrm{unknown}\neq\mathrm{resolved}.}
+\boxed{\mathrm{NULL}\;\neq\;\mathrm{undetermined}\;\neq\;\mathrm{undisclosed}\;\neq\;\mathrm{resolved}.}
 \]
-\emph{NULL}: the dimension is not instantiated. \emph{Unknown}: the dimension is instantiated and its value is unresolved in the frame's projection. \emph{Resolved}: a realised value.
+\emph{NULL}: the dimension is not instantiated; there is nothing to have a value. \emph{Undetermined}: the dimension is instantiated and \emph{no value has been realised} --- collapse has not occurred. \emph{Undisclosed}: a value has been realised but is not held by this frame. \emph{Resolved}: a realised value, held.
 \end{definition}
-These are operationally distinct, not terminological variants. An unresolved value is something the frame may act to resolve; a NULL dimension is not something it can look for.
+
+\begin{remark}[Why the middle two must be separated]\label{rem:undetermined-vs-undisclosed}
+Ordinary usage collapses three distinct conditions into the single word \emph{unknown}, and only one of them is epistemic:
+\begin{enumerate}[leftmargin=*]
+\item \textbf{undisclosed} --- a value exists and this frame does not hold it. Another frame may. This is ignorance.
+\item \textbf{undetermined} --- \emph{no value exists yet}. Nothing has been realised, so there is nothing to be ignorant of. This is not a deficiency of any frame.
+\item \textbf{indeterministic} --- no structure fixes what the value will be. The present theory denies this (Section~\ref{sec:determinism}); it is listed to be excluded.
+\end{enumerate}
+The distinction is operational rather than terminological. \textbf{Determination is an event, not a fact about a pre-existing value}: ``undisclosed'' presupposes a value already realised and merely unheld, whereas ``undetermined'' asserts that collapse is what produces one. A frame may act to \emph{obtain} an undisclosed value; it can only \emph{await or participate in} the collapse that determines an undetermined one; and a NULL dimension is not something it can look for at all.
+
+This separation is what Proposition~\ref{prop:determinable} states from the other side: a continuation may be determinable and undetermined simultaneously, since the first concerns what fixes it and the second whether it has happened.
+\end{remark}
 
 \begin{definition}[The present, structurally]\label{def:present}
-Within a frame, the present is the collapse boundary at which every instantiated unknown relevant to that collapse has resolved:
+Within a frame, the present is the collapse boundary at which every instantiated \emph{undetermined} dimension relevant to that collapse has been determined:
 \[
 \boxed{U_{\mathcal F}=0.}
 \]
-NULL dimensions are excluded from the unknown count; they are not unresolved variables.
+$U_{\mathcal F}$ counts undetermined dimensions only. NULL dimensions are excluded --- they are not variables. \textbf{Undisclosed dimensions are also excluded}: they are already determined, and a frame's failure to hold them is an epistemic deficit rather than an unresolved collapse. A frame with outstanding undisclosed structure is still at its own present.
 \end{definition}
 The present is therefore defined structurally rather than as a point on a primitive time axis, which is required given Section~\ref{sec:time-not-primitive}.
 
@@ -265,7 +277,7 @@ A continuation may be completely determinable from present structure without hav
 \[
 \boxed{\text{determinable}\neq\text{determined}.}
 \]
-``Determined'' is reserved for what has collapsed into realised history.
+``Determined'' is reserved for what has collapsed into realised history; a continuation that is determinable but not yet realised is \emph{undetermined} in the sense of Definition~\ref{def:states}, and this is not a statement about any frame's knowledge.
 \end{proposition}
 
 \begin{proposition}[Causally sufficient present structure]\label{prop:present-sufficiency}
@@ -320,6 +332,8 @@ Thus
 \text{deterministic dynamics viewed through unresolved causal structure}.
 }
 \]
+
+The distinction of Remark~\ref{rem:undetermined-vs-undisclosed} is what makes quantum measurement the visible case for Axiom~4's conditional bridge. In that regime the pre-measurement alternatives provably cannot be re-read as an \emph{undisclosed} already-realised classical value: Bell's theorem excludes the local hidden-variable class and Kochen--Specker constrains noncontextual value assignment \citep{bell1964,kochen1967}. What remains is \emph{undetermined} in the strict sense --- not a value withheld, but no value yet. Elsewhere the two readings are usually interchangeable in practice; there they are not.
 
 Two repetitions that are identical only on the dimensions available to a lower frame need not be identical antecedent configurations in the containing frame. Observed outcome variation therefore does not by itself imply fundamental randomness; it demonstrates only that the observing frame lacks a determining distinction.
 

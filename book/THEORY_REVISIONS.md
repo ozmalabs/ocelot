@@ -15,6 +15,53 @@ belongs in its own later paper; these notes are its theoretical foundation.
 
 ---
 
+## The third sharpening: undetermined is not unknown
+
+**Applied to papers 01 and 02. Chapters pending.**
+
+The three-state vocabulary said `NULL ≠ unknown ≠ resolved`, with *unknown*
+defined as instantiated-but-unresolved-in-projection. That single word was
+carrying two conditions that behave differently under every operation that
+matters, and ordinary English collapses a third one into it as well:
+
+- **undisclosed** — a value exists and this frame does not hold it. Epistemic.
+  Another frame may hold it, and observation, report or inference can obtain it.
+- **undetermined** — **no value exists yet.** Collapse has not occurred, so
+  there is nothing to be ignorant of. No amount of observation obtains it.
+- **indeterministic** — no structure fixes what it will be. The theory denies
+  this, and it is now listed explicitly in order to be excluded.
+
+**Determination is an event, not a fact about a pre-existing value.** That is
+the whole of the distinction: *undisclosed* presupposes a realised value merely
+unheld; *undetermined* says collapse is what produces one. The word
+"undetermined" has been damaged by habitual reading as either the first or the
+third, leaving the only sense the theory needs without a term.
+
+Landed as a four-state definition in paper 01 (`NULL ≠ undetermined ≠
+undisclosed ≠ resolved`), with the remark that separates them, and with
+`U_F = 0` redefined to count **undetermined dimensions only** — a frame with
+outstanding undisclosed structure is still at its own present, which the old
+wording did not permit.
+
+Two consequences worth keeping:
+
+**It is why quantum measurement is the visible case.** Paper 01 now says so
+directly: that regime is the one place where the alternatives provably cannot be
+re-read as an undisclosed already-realised classical value, since Bell excludes
+the local hidden-variable class and Kochen–Specker constrains noncontextual
+assignment. Everywhere else the two readings are interchangeable in practice.
+There they are not — which is what makes the bridge a claim rather than an
+analogy.
+
+**A manifold and a blind spot are different deficits.** Paper 02 now states it:
+a Seldon manifold is a projection over the *undetermined*, a blind spot is a
+limitation over the *undisclosed*. Improving access reduces the second and
+leaves the first untouched. A projection that mixes them reports either a
+manifold width no observation could ever reduce, or an occlusion no observation
+could ever resolve.
+
+---
+
 ## The sharpening after the notes
 
 Two clarifications arrived after the notes were applied, and both strengthen
