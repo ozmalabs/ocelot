@@ -104,7 +104,7 @@ def developmental_curriculum_contract() -> dict[str, Any]:
 
 def _validate_developmental_curriculum_contract(
     library: dict[str, Any],
-) -> dict[str, Any]:
+) -> dict[str, Any] | int:
     expected = developmental_curriculum_contract()
     supplied = library.get("developmental_curriculum_contract")
     if supplied is None:
@@ -198,12 +198,12 @@ def _tick_agent(
     agent: WorldAdapter,
     *,
     service_system_two: bool = False,
-) -> None:
+) -> dict[str, Any]:
     """Tick cognition and service graph-requested faculty construction I/O."""
     if service_system_two:
-        agent.dual_process_tick()
+        report = agent.dual_process_tick()
     else:
-        agent.tick()
+        report = agent.tick()
     _sample_cost_terms()
     # A status-keyed I/O service check, not a host decision: the graph has
     # already requested synthesis. Once every need is terminal, ordinary
@@ -214,6 +214,7 @@ def _tick_agent(
         for need in agent.s.nodes("FacultyNeed")
     ):
         faculty_autogenesis.pump(agent)
+    return report
 
 
 def _cognitive_continuation_authorised(
@@ -298,6 +299,200 @@ def _cognitive_continuation_authorised(
         and type(evidence) is int
         and evidence < next_evidence
     )
+
+
+def _cognitive_authority_resolution_signature(
+    agent: WorldAdapter,
+    episode,
+    development_context,
+) -> tuple[Any, ...]:
+    """Return the decision-relevant shape of a withheld-authority settle.
+
+    Cognitive epochs are intentionally absent: elapsed scheduler time is not
+    progress.  A repeated signature therefore means another output-null cycle
+    cannot justify silently trying again.  Conversely, a changed selected
+    step, process lease, escalation, or terminal decision is real progress and
+    permits the graph to finish its bounded multi-cycle handoff.
+    """
+    context = development_context if development_context is not None else episode
+    plans = tuple(sorted(
+        agent.inner.neighbours(context, "has_self_directed_learning_plan"),
+        key=str,
+    ))
+    selected_steps = tuple(sorted(
+        (
+            (plan, step)
+            for plan in plans
+            for step in agent.inner.neighbours(
+                plan, "has_selected_learning_plan_step"
+            )
+        ),
+        key=lambda pair: (str(pair[0]), str(pair[1])),
+    ))
+    step_ids = {
+        step
+        for plan in plans
+        for step in agent.inner.neighbours(plan, "has_learning_plan_step")
+    }
+    steps = tuple(
+        (
+            step,
+            agent.s.node(step)["attrs"].get("status"),
+            agent.s.node(step)["attrs"].get("selection_count"),
+            agent.s.node(step)["attrs"].get("revision_count"),
+        )
+        for step in sorted(step_ids, key=str)
+    )
+    processes = tuple(
+        (
+            process,
+            attrs.get("status"),
+            attrs.get("continuation_authority"),
+            attrs.get("lease_generation"),
+            attrs.get("renew_before_epoch"),
+            attrs.get("next_checkin_evidence_units"),
+            attrs.get("replan_release_complete"),
+            tuple(sorted(
+                agent.inner.neighbours(
+                    process, "supervises_learning_plan_step"
+                ),
+                key=str,
+            )),
+        )
+        for process in sorted(
+            agent.inner.neighbours(context, "has_cognitive_process"),
+            key=str,
+        )
+        for attrs in (agent.s.node(process)["attrs"],)
+    )
+    escalations = tuple(
+        (node, agent.s.node(node)["attrs"].get("status"))
+        for node in sorted(agent.s.nodes("SystemTwoEscalation"), key=str)
+    )
+    scheduler_turns = tuple(
+        (node, agent.s.node(node)["attrs"].get("system_two_turn_owed"))
+        for node in sorted(agent.s.nodes("DualProcessPolicy"), key=str)
+        if agent.s.node(node)["attrs"].get("enabled") == 1
+    )
+    terminal = agent.s.node(context)["attrs"].get(
+        "cognitive_checkin_terminal", 0
+    )
+    return (
+        terminal,
+        plans,
+        selected_steps,
+        steps,
+        processes,
+        escalations,
+        scheduler_turns,
+    )
+
+
+def _settle_cognitive_continuation_authority(
+    agent: WorldAdapter,
+    episode,
+    development_context,
+) -> tuple[bool, int]:
+    """Service authority until granted, halted, or a transition repeats."""
+    seen_transitions: set[tuple[Any, ...]] = set()
+    cycles = 0
+    context = development_context if development_context is not None else episode
+    while not _cognitive_continuation_authorised(
+        agent, episode, development_context
+    ):
+        plans = agent.inner.neighbours(
+            context, "has_self_directed_learning_plan"
+        )
+        plan_steps = [
+            step
+            for plan in plans
+            for step in agent.inner.neighbours(
+                plan, "has_learning_plan_step"
+            )
+        ]
+        if plan_steps and all(
+            agent.s.node(step)["attrs"].get("status") == "completed"
+            for step in plan_steps
+        ):
+            return False, cycles
+        if agent.s.node(context)["attrs"].get(
+            "cognitive_checkin_terminal", 0
+        ) == 1:
+            return False, cycles
+        before = _cognitive_authority_resolution_signature(
+            agent, episode, development_context
+        )
+        report = _tick_agent(agent, service_system_two=True)
+        cycles += 1
+        if _cognitive_continuation_authorised(
+            agent, episode, development_context
+        ):
+            return True, cycles
+        after = _cognitive_authority_resolution_signature(
+            agent, episode, development_context
+        )
+        report_signature = tuple(sorted(
+            (
+                str(key),
+                repr(value),
+            )
+            for key, value in (report or {}).items()
+            if key not in {"trace", "task_summary"}
+        ))
+        transition = (before, after, report_signature)
+        if transition in seen_transitions:
+            return False, cycles
+        seen_transitions.add(transition)
+    return True, cycles
+
+
+def _cognitive_process_snapshots(
+    agent: WorldAdapter,
+    context,
+) -> list[dict[str, Any]]:
+    """Expose which selected step each supervision lease actually governs."""
+    selected = {
+        step
+        for plan in agent.inner.neighbours(
+            context, "has_self_directed_learning_plan"
+        )
+        for step in agent.inner.neighbours(
+            plan, "has_selected_learning_plan_step"
+        )
+    }
+    snapshots = []
+    for process in agent.s.nodes("CognitiveProcess"):
+        supervised = agent.inner.neighbours(
+            process, "supervises_learning_plan_step"
+        )
+        snapshots.append({
+            **{
+                key: agent.s.node(process)["attrs"].get(key)
+                for key in (
+                    "status",
+                    "continuation_authority",
+                    "lease_generation",
+                    "renew_before_epoch",
+                    "next_checkin_epoch",
+                    "last_checkin_evidence_units",
+                    "next_checkin_evidence_units",
+                    "checkin_span_evidence_units",
+                    "checkin_count",
+                )
+            },
+            "supervised_steps": [
+                {
+                    "name": agent.s.node(step)["attrs"].get("name"),
+                    "status": agent.s.node(step)["attrs"].get("status"),
+                    "evidence_spent_units": agent.s.node(step)["attrs"].get(
+                        "evidence_spent_units"
+                    ),
+                    "selected": int(step in selected),
+                }
+                for step in supervised
+            ],
+        })
+    return snapshots
 
 
 def _development_progress_snapshot(
@@ -3783,6 +3978,7 @@ def _run_arm(
         ]
         touchdown_advances = []
         trace = []
+        cognitive_authority_settlement_cycles = 0
         # Attribute the situated curriculum itself, excluding boot and
         # calibration. The native counters are observational and do not alter
         # rule scheduling or graph state.
@@ -3818,20 +4014,21 @@ def _run_arm(
         resolved_perturbation_force = None
         for action in range(locomotion_action_count):
             # Mechanical enactment boundary: a graph check-in may withdraw
-            # authority. Give the graph one output-null cycle to finish the
-            # check/replan path; no body command is emitted while authority
-            # remains absent, and the host never chooses the replacement.
+            # authority. Settle the graph-authored check/replan path without
+            # emitting a body command. One bounded cognition cycle is not
+            # assumed to equal one completed authority decision: continue
+            # only while its semantic state changes, so neither a host retry
+            # count nor an infinite epoch-only spin can choose the outcome.
             if not _cognitive_continuation_authorised(
                 agent, episode, development_context
             ):
-                # The graph withdrew action authority and requested a
-                # System-Two Pareto check-in.  Service that declared task set
-                # without emitting a body command; the graph alone renews or
-                # withholds the lease.
-                _tick_agent(agent, service_system_two=True)
-                if not _cognitive_continuation_authorised(
-                    agent, episode, development_context
-                ):
+                authorised, settlement_cycles = (
+                    _settle_cognitive_continuation_authority(
+                        agent, episode, development_context
+                    )
+                )
+                cognitive_authority_settlement_cycles += settlement_cycles
+                if not authorised:
                     break
             body_reset_before_action = False
             reset_source = episode
@@ -5324,6 +5521,41 @@ def _run_arm(
                 ))
                 for trajectory in program_trajectory_nodes
             ),
+            "capacity_pareto_selection_count": sum(
+                int(agent.s.node(trajectory)["attrs"].get(
+                    "capacity_pareto_selection_count", 0
+                ))
+                for trajectory in program_trajectory_nodes
+            ),
+            "capacity_dominated_path_count": sum(
+                int(agent.s.node(trajectory)["attrs"].get(
+                    "capacity_dominated_path_count", 0
+                ))
+                for trajectory in program_trajectory_nodes
+            ),
+            "maximum_capacity_candidate_count": max((
+                int(agent.s.node(trajectory)["attrs"].get(
+                    "last_capacity_candidate_count", 0
+                ))
+                for trajectory in program_trajectory_nodes
+            ), default=0),
+            "maximum_capacity_frontier_count": max((
+                int(agent.s.node(trajectory)["attrs"].get(
+                    "last_capacity_frontier_count", 0
+                ))
+                for trajectory in program_trajectory_nodes
+            ), default=0),
+            "maximum_selected_conditional_narrativium_retained": [
+                max((
+                    int(agent.s.node(trajectory)["attrs"].get(
+                        "selected_conditional_narrativium_retained_"
+                        f"{dimension}",
+                        0,
+                    ))
+                    for trajectory in program_trajectory_nodes
+                ), default=0)
+                for dimension in range(7)
+            ],
             "selected_capability_evidence_units": sum(
                 int(agent.s.node(trajectory)["attrs"].get(
                     "selected_capability_evidence_units", 0
@@ -6077,6 +6309,9 @@ def _run_arm(
             ),
         },
         "cognitive_supervision": {
+            "authority_settlement_cycle_count": (
+                cognitive_authority_settlement_cycles
+            ),
             "process_count": len(list(agent.s.nodes("CognitiveProcess"))),
             "checkin_count": len(list(agent.s.nodes("CognitiveCheckIn"))),
             "continued_count": sum(
@@ -6101,23 +6336,11 @@ def _run_arm(
                 if development_final.get("cognitive_checkin_terminal", 0)
                 else "none"
             ),
-            "processes": [
-                {
-                    key: agent.s.node(process)["attrs"].get(key)
-                    for key in (
-                        "status",
-                        "continuation_authority",
-                        "lease_generation",
-                        "renew_before_epoch",
-                        "next_checkin_epoch",
-                        "last_checkin_evidence_units",
-                        "next_checkin_evidence_units",
-                        "checkin_span_evidence_units",
-                        "checkin_count",
-                    )
-                }
-                for process in agent.s.nodes("CognitiveProcess")
-            ],
+            "processes": _cognitive_process_snapshots(
+                agent,
+                development_context
+                if development_context is not None else episode,
+            ),
             "policies": [
                 {
                     key: agent.s.node(policy_node)["attrs"].get(key)

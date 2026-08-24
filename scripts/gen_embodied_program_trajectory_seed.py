@@ -145,6 +145,14 @@ def open_trajectory_rule() -> dict:
                 "selected_capability_evidence_units": 0,
                 "selected_orientation_preserving_evidence_count": 0,
                 "selected_state_shape_residual_units": 0,
+                "capacity_pareto_selection_count": 0,
+                "capacity_dominated_path_count": 0,
+                "last_capacity_candidate_count": 0,
+                "last_capacity_frontier_count": 0,
+                **{
+                    f"selected_conditional_narrativium_retained_{dimension}": 0
+                    for dimension in range(7)
+                },
                 "selection_enabled": 1,
                 "output_authority": 0,
                 "integer_native": 1,
@@ -752,6 +760,39 @@ def select_frontier_path_rule() -> dict:
             ["set_attr", "trajectory", "selected_state_shape_residual_units", T(
                 P0("path", "current_state_shape_residual_units")
             )],
+            ["set_attr", "trajectory", "last_capacity_candidate_count", T(
+                Count(shortest)
+            )],
+            ["set_attr", "trajectory", "last_capacity_frontier_count", T(
+                Count(capacity_frontier)
+            )],
+            ["set_attr", "trajectory", "capacity_pareto_selection_count", T(
+                Plus(
+                    P0("trajectory", "capacity_pareto_selection_count"),
+                    If(
+                        Lt(Count(capacity_frontier), Count(shortest)),
+                        L(1), L(0),
+                    ),
+                )
+            )],
+            ["set_attr", "trajectory", "capacity_dominated_path_count", T(
+                Plus(
+                    P0("trajectory", "capacity_dominated_path_count"),
+                    Minus(Count(shortest), Count(capacity_frontier)),
+                )
+            )],
+            *[
+                [
+                    "set_attr", "trajectory",
+                    f"selected_conditional_narrativium_retained_{dimension}",
+                    T(If(
+                        manifold_context_ready,
+                        retained("path", dimension),
+                        L(0),
+                    )),
+                ]
+                for dimension in range(7)
+            ],
         ],
     }
 
@@ -866,7 +907,7 @@ def manifest() -> dict:
     )
     return {
         "id": "embodied_program_trajectory",
-        "version": "1.4.0",
+        "version": "1.5.0",
         "depends_on": ["cognitive_pareto"],
         "area": "general_cognition",
         "latency_class": "soft_realtime",

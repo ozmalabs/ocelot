@@ -410,6 +410,54 @@ def test_staged_mode_runs_one_arm_and_records_checkpoint(monkeypatch, tmp_path):
     assert result["checkpoint"]["milestone"] == "pre_locomotion"
 
 
+def test_full_curriculum_mastery_is_valid_early_terminal_completion(
+    monkeypatch, tmp_path
+):
+    library_path = tmp_path / "mastered-library.json"
+    capability_names = runner.developmental_curriculum_contract()[
+        "capability_names"
+    ]
+
+    def mastered_run(
+        protocol, mode, *, motor_library=None, motor_library_out=None
+    ):
+        assert motor_library_out == library_path
+        motor_library_out.write_text(
+            json.dumps({"developmental_capabilities": [{}]}),
+            encoding="utf-8",
+        )
+        result = _raw_run(treatment=False, ready=False)
+        result["trace"] = [{"action": n} for n in range(47)]
+        result["motor_library_saved_shape_count"] = 1
+        result["curriculum"].update({
+            "stage_ordinal": len(capability_names),
+            "mastery_count": len(capability_names),
+            "active_capability": "inactive",
+            "developmental_stages": [
+                {"name": name, "status": "mastered"}
+                for name in capability_names
+            ],
+        })
+        result["cognitive_supervision"][
+            "continuation_authority_at_end"
+        ] = 0
+        return result
+
+    monkeypatch.setattr(runner, "_run_arm", mastered_run)
+    result = runner.run_staged(
+        PROTOCOL,
+        action_budget=48,
+        mode="training",
+        library_path=library_path,
+    )
+
+    assert result["training_complete"] is True
+    assert result["training_invalid_reasons"] == []
+    assert result["staged_result_valid"] is True
+    assert result["checkpoint"]["curriculum_complete"] is True
+    assert result["checkpoint"]["action_budget_complete"] is False
+
+
 def test_staged_training_halt_is_fail_closed_but_preserves_null_artifact(
     monkeypatch, tmp_path
 ):

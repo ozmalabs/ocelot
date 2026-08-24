@@ -435,6 +435,11 @@ def test_pareto_refutes_only_dominated_paths_and_keeps_tradeoffs():
     ]
     assert {agent.s.node(path)["attrs"]["orientation_span_units"]
             for path in frontier} == {10, 20}
+    trajectory_attrs = agent.s.node(trajectory)["attrs"]
+    assert trajectory_attrs["last_capacity_candidate_count"] == 3
+    assert trajectory_attrs["last_capacity_frontier_count"] == 3
+    assert trajectory_attrs["capacity_pareto_selection_count"] == 0
+    assert trajectory_attrs["capacity_dominated_path_count"] == 0
 
 
 def test_branching_expansion_is_bounded_by_active_foveated_horizon():

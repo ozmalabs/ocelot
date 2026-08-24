@@ -971,6 +971,18 @@ def _counterfactual_support_authority(enabled: bool, loss_floor: int):
                 os.environ[name] = value
 
 
+def _curriculum_fully_mastered(metrics: dict) -> bool:
+    """Recognise graph-authored exhaustion of the finite curriculum."""
+    curriculum = metrics.get("curriculum") or {}
+    expected = set(developmental_curriculum_contract()["capability_names"])
+    mastered = {
+        str(stage.get("name"))
+        for stage in curriculum.get("developmental_stages") or []
+        if isinstance(stage, dict) and stage.get("status") == "mastered"
+    }
+    return bool(expected) and mastered == expected
+
+
 def _cognitive_invalid_reasons(metrics: dict) -> list[str]:
     cognitive = metrics.get("cognitive_supervision") or {}
     reasons = []
@@ -978,7 +990,10 @@ def _cognitive_invalid_reasons(metrics: dict) -> list[str]:
         return ["cognitive_supervision_evidence_absent"]
     if cognitive.get("experiment_halted_by_checkin", 0):
         reasons.append("cognitive_checkin_terminal")
-    if cognitive.get("continuation_authority_at_end") != 1:
+    if (
+        cognitive.get("continuation_authority_at_end") != 1
+        and not _curriculum_fully_mastered(metrics)
+    ):
         reasons.append("cognitive_continuation_authority_absent")
     return reasons
 
@@ -993,7 +1008,10 @@ def _training_completion(
     reasons = []
     if metrics is None:
         return False, ["fresh_training_metrics_absent"]
-    if metrics.get("actions_executed") != requested_actions:
+    if (
+        metrics.get("actions_executed") != requested_actions
+        and not _curriculum_fully_mastered(metrics)
+    ):
         reasons.append("fresh_training_action_budget_not_completed")
     reasons.extend(_cognitive_invalid_reasons(metrics))
     if not library_path.exists():
@@ -1141,6 +1159,7 @@ def _checkpoint(
         "gate_onset_action": metrics.get("future_manifold_gate_onset_action"),
         "post_gate_action_count": metrics.get("post_gate_action_count"),
         "cognitive_invalid_reasons": _cognitive_invalid_reasons(metrics),
+        "curriculum_complete": _curriculum_fully_mastered(metrics),
         "action_budget_complete": metrics.get("actions_executed", 0)
         == action_budget,
     }
