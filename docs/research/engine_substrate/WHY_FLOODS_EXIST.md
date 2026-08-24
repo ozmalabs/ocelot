@@ -1031,6 +1031,33 @@ are worth more than the count, because each is a distinct way a green gate can b
 that cannot produce the phenomenon, an equality that both arms satisfy vacuously, and a fixture
 whose geometry lets one rule mask another.
 
+### 6t. TWO SWEEPS FOR SILENTLY-EMPTY THINGS — both clean, and the negatives are the point
+
+The `mo_tol_otsu` bug (§6q) was an arity mistake that EVALUATED instead of raising: `Max` written
+with `a`/`b` where the variant takes `items`, parsed as `Max { items: [] }` = 0. The reader is now
+strict, which raises two questions that a scan answers without running anything — useful in itself,
+since the tree's engine was unmeasurable at the time (its `.so` had been replaced without its build
+record, so provenance correctly refused).
+
+Both sweeps read the variant→field mapping out of `jsonio.rs` itself rather than restating it, so
+neither can drift from the reader it checks.
+
+**1. Does the new strictness break any seed?** Every list-taking variant (21 of them: `And`, `Or`,
+`Plus`, `Times`, `Min`, `Max`, `ArgMax`, `ArgMin`, `Call`, `MkDict`, …) checked for a missing field
+across the entire seed tree: **0 malformed sites.** `mo_tol_otsu` was the only one, and it is fixed.
+The strictness costs nothing.
+
+**2. Are there rules that have NEVER loaded?** `child_of` has always raised on a missing single-child
+field, so a rule carrying one is skipped at install behind a warning nobody reads — it has simply
+never existed. Across 797 top-level seeds and **1,006,365 Term nodes**, over 204 variants with a
+required sub-term field: **0 rules that cannot load.**
+
+The second is the more interesting null. It was a real possibility — the whole reason `mo_tol_otsu`
+survived is that a malformed Term produced a plausible value instead of a complaint — and the
+strict-vs-lenient asymmetry meant the *lenient* path was the one hiding a bug while the strict path
+was clean. Worth knowing that the tree has no accumulated dead rules of that class, and worth
+knowing it by measurement rather than by assuming the load warnings would have been noticed.
+
 ### 6q. WHICH TOLERANCE ESTIMATOR — settled by the statistic, not by preference
 
 `vision_motion_group` offers two mutually exclusive arms, `mo_tol_exact` (tolerance = exact vector
