@@ -56,3 +56,16 @@ checkable: when these claims were true of the substrate.
 
 **The book being built from these papers lives in `../book/`.** Start at
 `../book/README.md`.
+
+## Building
+
+Compile **from inside `formal/`**, not with `-output-directory`:
+
+```
+cd papers/formal && pdflatex 02_seldon_manifolds_theory_referenced.tex
+```
+
+Paper 02 `\input`s its figures by relative path (`../figures/fig02_*-body`), so
+`-output-directory` changes how those paths resolve and the build silently
+produces no PDF for that paper while the other four succeed. Found the obvious
+way: a batch loop reported four papers and should have reported five.
