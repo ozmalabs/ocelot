@@ -498,17 +498,31 @@ def situate_path_in_current_state_rule() -> dict:
 
 def select_frontier_path_rule() -> dict:
 
+    def is_unblocked_from(path_var: str, transition_var: str) -> dict:
+        return Not(Exists(
+            Neighbours(
+                path_var,
+                "manifold_blocked_from_embodied_program_transition",
+            ),
+            "blocked_state_transition",
+            Eq(V("blocked_state_transition"), V(transition_var)),
+        ))
+
     def has_next_transition_from_current(path_var: str) -> dict:
         return Or(
             Exists(
                 Neighbours(path_var, "contains_embodied_program_transition"),
                 "path_next_transition",
-                Exists(
-                    Neighbours(
-                        "path_next_transition", "starts_from_embodied_program"
+                And(
+                    Exists(
+                        Neighbours(
+                            "path_next_transition",
+                            "starts_from_embodied_program",
+                        ),
+                        "path_next_source",
+                        Eq(V("path_next_source"), V("current_program")),
                     ),
-                    "path_next_source",
-                    Eq(V("path_next_source"), V("current_program")),
+                    is_unblocked_from(path_var, "path_next_transition"),
                 ),
             ),
             Exists(
@@ -526,17 +540,9 @@ def select_frontier_path_rule() -> dict:
                             V("path_state_transition"),
                             V("current_transition_source"),
                         ),
-                        Not(Exists(
-                            Neighbours(
-                                path_var,
-                                "manifold_blocked_from_embodied_program_transition",
-                            ),
-                            "blocked_state_transition",
-                            Eq(
-                                V("blocked_state_transition"),
-                                V("current_transition_source"),
-                            ),
-                        )),
+                        is_unblocked_from(
+                            path_var, "current_transition_source"
+                        ),
                     ),
                 ),
             ),
@@ -798,7 +804,7 @@ def manifest() -> dict:
     )
     return {
         "id": "embodied_program_trajectory",
-        "version": "1.2.0",
+        "version": "1.3.0",
         "depends_on": ["cognitive_pareto"],
         "area": "general_cognition",
         "latency_class": "soft_realtime",
