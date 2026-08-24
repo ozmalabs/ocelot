@@ -966,6 +966,29 @@ an easy target by construction.
 Gated by `test_a_known_object_is_recovered_from_REAL_texture` at contrast 6.0, skipping when the
 corpus is absent.
 
+### 6r. WHERE THE SUB-CELL WIN IS, AND WHERE IT IS NOT
+
+"Anti-aliasing is information" (§6i) is true, and it is narrower than it sounds. Measured three
+ways, on the same planted disc:
+
+| quantity | midpoint | sub-cell | does sub-cell help? |
+|---|---|---|---|
+| local boundary rms | 0.274 | **0.084** | **yes, 3.3x** |
+| extent at a generic phase | 84 cells (−20%) | **103.0 (−1.9%)** | **yes, 10x** |
+| CENTROID under a sub-cell shift | 0.118 | 0.118 | **no — identical** |
+
+**A centroid does not need sub-cell placement**, because it averages over the whole contour and the
+per-crossing quantisation errors largely cancel. Both placements track a quarter-cell shift, and
+both carry the same residual S-shaped bias with period one cell — 0.25 reads as 0.118, 0.75 as
+0.882, and 0.50 and 1.00 come out exact. That is quantisation bias which averaging reduces but does
+not remove at quarter-phases, and it is a property of the lattice rather than of either placement
+rule.
+
+So the sub-cell machinery buys LOCAL accuracy and AREA, not localisation. Anything that already
+averages over many crossings — a centroid, a dominant orientation, a first moment — was getting
+sub-cell precision for free from the averaging, and gains nothing here. That distinction matters
+before someone reaches for `subcell_t` to improve a statistic that never needed it.
+
 ### 6q. WHICH TOLERANCE ESTIMATOR — settled by the statistic, not by preference
 
 `vision_motion_group` offers two mutually exclusive arms, `mo_tol_exact` (tolerance = exact vector
