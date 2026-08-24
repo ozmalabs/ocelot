@@ -90,6 +90,32 @@ genuinely new shape.
 The order is Occam's razor made operational: try the cheapest description first,
 and add to the codebook only what three cheaper readings could not absorb.
 
+### Why this criterion requires a generator
+
+One consequence of the criterion is not obvious and is load-bearing for three
+later chapters, so it belongs here rather than where it is used.
+
+**You cannot compute a residual without rendering.** "What the codebook
+explains" is not a number the codebook hands you; it is a *reconstruction* you
+have to produce and subtract. So the moment growth is driven by residual, the
+system has committed to generation — a decoder that emits only an index cannot
+say what it failed to account for.
+
+And two models cost two descriptions. A recogniser and a generator held
+separately store the same codebook twice, in two parameterisations that can
+silently disagree; one model used in both directions costs half as much and its
+consistency is structural rather than maintained. The criterion takes that trade
+without being asked.
+
+**Which is why generation and perception are one model here.** Not as a design
+preference, and not because it measured well on a benchmark — chapter 5 reports
+the run where its measured advantage evaporated, and the architecture was
+unaffected, because a benchmark delta cannot touch something the growth
+criterion entails. It also explains why the stroke renderer had to be the
+quantiser's *exact* inverse with the round trip proven rather than assumed: an
+approximate inverse contaminates the residual with its own reconstruction error,
+and the growth signal stops being a measurement of the world.
+
 Stated as a criterion rather than a ladder: **mint if and only if it
 compresses.** Which is minimum description length, and it is worth noticing that
 this is the same test the *author* of this substrate runs on claims — name the
@@ -164,9 +190,10 @@ Applying the loop to space required one reframe and produced several
 consequences worth stating, because they generalise.
 
 **The map is a belief, not a grid.** What the agent holds is a persistent
-observation belief in which **unknown is a state in its own right** — not a
-default zero, and distinct from a dimension that is absent altogether
-(chapter 7 makes the three-way distinction). A world that hands over its whole map at load time
+observation belief in which **not-yet-observed is a state in its own right** —
+not a default zero, and distinct both from a dimension that is absent altogether
+and from one whose value has not been determined at all (chapter 7 makes the
+full distinction). A world that hands over its whole map at load time
 is then the degenerate case rather than the normal one.
 
 **Quanta are decoded per body.** Spatial boxes are decoded from that belief

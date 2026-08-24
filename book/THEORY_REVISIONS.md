@@ -15,9 +15,43 @@ belongs in its own later paper; these notes are its theoretical foundation.
 
 ---
 
+## Provenance: four primitives, four modes of arrival
+
+**Applied to paper 01 (scope section and the collapse remark) and to the
+introduction.** Not a revision to the theory — a revision to how the theory
+presents its own history, which the papers had been silent about in a way that
+implied more unity than the record supports.
+
+| primitive | arrived by | note |
+|---|---|---|
+| **g**, the graph | observation | unrelated engineering problems having one shape |
+| **Γ**, admissibility | insight | with the sieve image attached, and it predates collapse |
+| **collapse** | constraint | adopted from quantum measurement, the regime where it is forced, and generalised |
+| **r**, the rules | implementation | "when you make it work, something has to do the things" |
+
+Two consequences landed with it.
+
+**The quantum bridge's arrow ran the other way**, and paper 01 now says so
+(Remark, *Direction of the borrowing*). The papers presented a general
+actualisation primitive with quantum measurement as a possible instance, which
+reads as independent arrival followed by a match. What happened is that collapse
+was taken from the one regime where it is experimentally forced and assumed to
+hold everywhere. That is a promoted constraint — the same structure as the
+equivalence principle — and it is *why* the bridge was always stated
+conditionally: the generalisation is the conjecture, not the compatibility.
+Stating the provenance makes the claim more defensible rather than less, since
+the alternative reading invites *of course it matches, you copied it*.
+
+**And construction is a source of this theory, not a test of it.** Paper 05's
+closing list of distinctions that implementation forced on the theory is not a
+coda: `r` is the first entry in that list. This should change how that paper is
+read.
+
+---
+
 ## The third sharpening: undetermined is not unknown
 
-**Applied to papers 01 and 02. Chapters pending.**
+**Applied to papers 01 and 02, and to chapters 2, 7 and 17.**
 
 The three-state vocabulary said `NULL ≠ unknown ≠ resolved`, with *unknown*
 defined as instantiated-but-unresolved-in-projection. That single word was

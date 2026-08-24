@@ -75,11 +75,20 @@ accumulating held surface (falls smoothly), a stateless single-tick reading
 cost bend — per-tick work drains to zero on a static scene, rises through
 motion, drains again.
 
-**Caption to use.** *Two claims in one run. Left: the held surface accumulates
-— and the scrambled-order arm is why that is a claim rather than a curve, since
-the same frames in the wrong order do not accumulate. Right: work follows
-surprise. A static scene costs nothing to keep looking at, which is the same
-fact the fading figure states from the other side.*
+**Caption to use.** *Three readers of one stream. The accumulating held surface
+falls smoothly; the scrambled-order arm is why that is a claim rather than a
+curve, since the same frames in the wrong order do not accumulate; and the
+**stateless reader is flat**. That flat line is the chapter's argument about
+what a change-detecting eye obliges everything downstream to be: a difference
+cannot be read without the thing it differs from, so a reader with no held base
+extracts nothing, however good the diffs are. Right: work follows surprise. A
+static scene costs nothing to keep looking at, which is the same fact the fading
+figure states from the other side.*
+
+**Note for the writer:** this figure was originally selected as a result about
+accumulation. It is better read as the measurement behind the obligation to
+generate — chapter 5's third argument for analysis-by-synthesis, in chapter 1's
+own data.
 
 ### C4 — the eye goes blind to a static scene
 **File** `results/doom_eye/contact_sheet.png` ·

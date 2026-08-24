@@ -122,8 +122,30 @@ that nobody outside this project would have required.
 ## 5.4 Analysis-by-synthesis, which was right for a different reason
 
 Run 15 removed the +3.7 that analysis-by-synthesis had been credited with. It
-did not remove the architecture, and the architecture matters more than the
-delta did.
+did not remove the architecture, and it could not have — **a benchmark delta
+cannot touch a commitment that three independent arguments already force.**
+
+*The growth criterion forces it.* Chapter 4: a residual is what a held codebook
+fails to cover, and computing it requires rendering what the codebook *does*
+cover. Without generation there is no residual, and without residual there is no
+growth.
+
+*The input format forces it.* Chapter 1: what a change-detecting eye emits is a
+stream of differences, and a difference is uninterpretable without the thing it
+differs from. A reader must hold a base, which means producing one.
+
+*And the frame invariant places it.* Chapter 2: comparing an observation to a
+candidate is a cross-frame operation, so it lives in a map between frames — with
+both sides instantiated, which requires the candidate to have been rendered.
+
+Three routes, from learning economy, from input format, and from where the
+comparison lives. The third makes the first two moot: even if compression were
+indifferent, you would still have to generate, or the incoming difference
+attaches to nothing.
+
+So what run 15 measured was whether *this particular* render-and-compare
+implementation beat *this particular* alternative on *this* benchmark. It
+didn't, at power. The commitment was never resting on that.
 
 The stroke quantiser turns a pen path into indices. Its **exact inverse** was
 built: a renderer that turns indices back into a pen path, with the round trip

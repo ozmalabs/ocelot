@@ -40,6 +40,21 @@ pedantry: an eye with an absolute zero has somewhere to fall back to, and this
 one does not. It has only what it currently predicts and what it currently
 fails to predict.
 
+**And that fixes what everything downstream of this retina has to be.** If the
+output is a stream of differences rather than pictures, then a difference is
+uninterpretable on its own — a diff means nothing without the thing it differs
+from. So anything reading this eye must be *holding* a reconstruction and
+applying changes to it, which means it must be able to produce one. Generation
+downstream is not an architectural preference here. It is the only way the input
+parses at all.
+
+That claim has a measurement, and it is in this chapter [C3]. Three readers of
+the same stream: one accumulating a held surface, whose error falls smoothly as
+it integrates; one **stateless, reading each tick alone, whose error is flat**;
+and a scrambled-order control that stays high. The flat line is the argument.
+A reader with no held base extracts nothing from a diff stream, however good the
+diffs are.
+
 ---
 
 ## 1.1 What this is, and what it is not

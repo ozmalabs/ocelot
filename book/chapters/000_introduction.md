@@ -63,12 +63,36 @@ become*: a finite, decidable, inspectable statement of which relations may exist
 at all, with the map as the thing it governs. Everything after this point in the
 book is a consequence of that inversion.
 
+That one did arrive by insight, and it arrived with a picture attached: **shove
+the graph through admissibility, like a sieve.** The image is older than most of
+the theory and has not been retired — chapter 17 still runs on it, in a form
+that turns it inside out.
+
+**And then the part I should be blunt about.** The first draft of the paper was,
+in substance, *step 1: graphs. Step 2: magic.* A substrate, an admissibility
+grammar, a sieve — and no account of what actually happens. Because with graphs
+and Γ you can say what *may* exist, and nothing yet says what *does*. Many
+things pass the mesh; the picture was silent on which one occurs.
+
 **Then the model became unnecessary.** If the grammar generates what is
 admissible and the substrate realises one of those, the language model was
 scaffolding rather than mechanism. That is the ancestor of a rule that governs
 every capability chapter here: no borrowed model in the decision path.
 
-**Then physics.** My own note, dated 25 April 2026: *this becomes a physics
+**Then collapse, and it did not arrive by insight.** It arrived by constraint,
+and the reasoning was closer to plumbing than to physics: whatever I am building
+has to be compatible with quantum mechanics, this is how quantum mechanics
+works, so assume it works for everything. That filled step 2 — selection, one
+continuation realised out of many admitted, which is exactly what the sieve had
+been missing.
+
+Promoting a constraint from the one regime where it is forced and taking the
+generalisation seriously is an old move; the equivalence principle has the same
+shape. It is also why every statement of the quantum bridge in these papers is
+*conditional*. The compatibility is not in doubt. **The generalisation is the
+conjecture**, and it is stated with a falsifier because that is what it is.
+
+**Then physics properly.** My own note, dated 25 April 2026: *this becomes a physics
 paper masquerading as computer science; we need to look there for prior art.*
 The tick was already possibility-then-realise. And quantum measurement is the
 regime where the distinction between indexed possibility and realised history is
@@ -82,6 +106,26 @@ Four months, meeting-avoidance hack to a theory of collapse. The substrate this
 book is about was first imported into its own repository on 10 August 2026.
 
 ---
+
+## Four things, four ways of arriving
+
+Worth stopping on, because presenting `G = (g, r, Γ)` as a spare reasoned-out
+triple would be true of the result and false about everything that produced it.
+
+- **The graph** arrived by *observation*. Several unrelated problems had one
+  shape.
+- **Γ** arrived by *insight*. The sieve.
+- **Collapse** arrived by *constraint*. Borrowed from the regime where it is
+  forced, then assumed to hold everywhere.
+- **The rules** arrived by *implementation*. When you make it work, something
+  has to do the things.
+
+That last one has a consequence I did not expect. The construction paper closes
+with a list of distinctions that building forced on the theory, and I had
+thought of that list as a coda — the executor tidying up after the thinking was
+finished. It is not. **The rules are the first entry in that list.**
+Construction has been a source of this theory rather than a test of it, since
+before there was a theory to test.
 
 ## The method, which is the only transferable part
 
@@ -197,6 +241,66 @@ produces are the ones this book's method chapter formalises — distrust the
 reported state, positive-control the instrument before believing the reading, a
 green dashboard is not evidence the service is up. The sixteen dead instruments
 in chapter 1 were caught by that reflex, not by a test suite.
+
+It also explains the shape of everything above. I learn by doing, and all four
+of the moves in this book are engineering moves: build it and see what you are
+forced to add, force it through the loop and triage what resists, remove it and
+see what breaks, take a constraint from where it is forced and generalise.
+Bisecting, refactoring, ablating, debugging.
+
+Engineering has exactly one truth-oracle — *does it work* — and it is excellent
+until the question becomes *does this mechanism produce this capability*, at
+which point it fails completely, because a measurement can be arranged and a
+green build says nothing about whether the analysis was chosen after the data
+arrived. **Preregistration is the one thing I imported**, and I imported it at
+precisely the point where the engineering oracle stops working. Chapter 16 is
+not an engineer doing science. It is engineering practice plus the single
+instrument engineering does not have.
+
+### Where the architecture came from, and why that is a risk
+
+Much of this was built from looking at myself. I should say so plainly, because
+it is a provenance claim about the whole substrate and it is the obvious line of
+attack.
+
+Two things make it defensible, and one thing does not.
+
+**It is not introspection, in the sense that word usually carries.** Reporting
+on your own states is unreliable about mechanism — people confabulate the
+reasons for their own behaviour and have poor access to the processes producing
+it. What I did more often was *self-experimentation*: model a mechanism, derive
+a consequence that I do not control, and check whether it happens. The clearest
+case is inner speech. If it is motor simulation rather than replayed sound, then
+driving the model hard enough should produce involuntary articulation — and it
+does; your mouth makes the words. That is not a report about an inner state. It
+is a physical outcome I did not choose, and articulatory activity during inner
+speech is independently documented by people measuring other people's faces.
+
+**And there is at least one case where the introspective prior lost.** Chapter 1
+went looking for orientation selectivity learned from retinal waves, which is
+the textbook picture and the intuitive one. Five pre-registered rungs said no,
+with an arithmetic cause. The instrument overruled the intuition and the
+intuition was retired. A system built from self-observation that has never
+contradicted its author is a mirror; one that has, in a documented and
+pre-registered way, is an instrument.
+
+**What is not defensible is any part of this where no external check exists.**
+The developmental stages in chapters 6 and 9 are checked against the child
+language literature and the WHO milestone data — outside standards that could
+have contradicted the design and did not. But the agent's eleven meta-shapes,
+the categories it files its own knowledge under, have no such check. If those
+came from me, then *the agent's categories are its author's categories*, and
+evidence that the taxonomy is good is evidence that it matches its own source.
+Chapter 3 fixes the recogniser over that codebook and opens its growth path,
+which is real work and does not touch where the eleven came from. Treat it as a
+hypothesis with a mint path attached.
+
+The falsifier that follows is worth stating: **if this substrate learns only in
+domains where I have intuitions, then my epistemology is the mechanism.** The
+six bodies of chapter 9 are a partial test already — I have no intuition for
+autorotation or hypersonic flight, and the same core drives them.
+
+### The lineage
 
 The lineage matters more than my job title, and it is a restoration rather than
 an invention. The people who built graph-native machines in the 1960s, 70s and

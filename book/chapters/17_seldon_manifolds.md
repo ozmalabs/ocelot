@@ -63,10 +63,14 @@ The naive reading of "further ahead" is geometric: more time, so more distance,
 so more uncertainty. The useful reading is structural, and it uses chapter 14's
 three states of a dimension.
 
-At a given horizon, a frame's projection contains some number of **instantiated
-but unresolved** variables. Call that the unknown count. NULL dimensions are
-excluded — a dimension the frame does not instantiate is not an unresolved
-variable, it is not a variable.
+At a given horizon, a frame's projection contains some number of
+**undetermined** dimensions — instantiated, with no value realised, because the
+collapse that would produce one has not happened. Call that the undetermined
+count. Two exclusions, and both matter. NULL dimensions are not counted: a
+dimension the frame does not instantiate is not a variable at all. And
+**undisclosed** dimensions are not counted either: those are already determined,
+and the frame's failure to hold them is ignorance rather than an unresolved
+collapse.
 
 Then the present is not a point on an axis. **The present is where the unknown
 count reaches zero**: the collapse boundary at which every instantiated unknown
@@ -96,7 +100,14 @@ yet realised. Determined belongs to what has collapsed.
 A frame can fail to observe a region directly and still constrain it, through
 the relations around it. Three states, not two:
 
-> **directly resolved ≠ unresolved ≠ occluded but inferable**
+> **directly resolved ≠ undisclosed ≠ occluded but inferable**
+
+All three concern the *undisclosed*, which is what separates a blind spot from a
+manifold. **They are different deficits.** A manifold projects over the
+undetermined — continuations not yet realised, which no amount of looking will
+settle. A blind spot limits access to the undisclosed — values that exist and
+are not held, which looking *can* settle. Improving access shrinks one and
+leaves the other exactly where it was.
 
 An occluded region whose contents are constrained by its surroundings is not in
 the same epistemic position as one never approached. A blind spot is a

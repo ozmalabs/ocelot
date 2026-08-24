@@ -43,6 +43,32 @@ code does what it did yesterday. It cannot check whether the quantity you
 measured means what you think it means, and — chapter 1's sixteen inert
 instruments — it cannot even tell you whether your instrument was connected.
 
+So this chapter is not an engineer taking up science. It is **engineering
+practice plus the one instrument engineering does not have.** Every other move
+in this book is an engineer's: build it and see what you are forced to add,
+force it through the native loop and triage what resists, remove it and see what
+breaks, promote a constraint from where it is forced. Preregistration is the
+single import, adopted at exactly the point where *does it work* stops being
+answerable.
+
+### The earliest instance was a theory, not a measurement
+
+Every rule below was minted by being violated, and the first violation predates
+all of them. The first draft of the theory these chapters rest on was, in its
+author's own summary, **step 1: graphs, step 2: magic** — a substrate, an
+admissibility grammar, and no account of what actually happens.
+
+That belongs apart from the rest of the chapter, because it is the hard case.
+The other corrections here are corrections to *measurements*, where something
+eventually goes red: an interval overlaps, a control fails, a baseline turns out
+to be condition-dependent. **A theory with a hole in it produces no error.** It
+reads as complete, it accumulates commitments on top of the gap, and the only
+thing that finds it is somebody asking what the unnamed step is doing.
+
+Which is step 1 of the method, run on the author's own work before there was any
+apparatus to run it with. What filled the gap — selection, and therefore
+collapse — is the subject of half this book.
+
 So the defence has to come from somewhere else, and the somewhere else is a
 century old and belongs to experimental science.
 

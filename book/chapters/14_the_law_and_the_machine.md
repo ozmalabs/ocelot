@@ -171,15 +171,26 @@ time as a background.
 **And the present is structural, not a point on an axis.** A dimension in a
 frame is in one of three states, and they are operationally different:
 
-> **NULL ≠ unknown ≠ resolved.** *NULL*: the dimension is not instantiated.
-> *Unknown*: instantiated, value unresolved. *Resolved*: a realised value.
+> **NULL ≠ undetermined ≠ undisclosed ≠ resolved.** *NULL*: the dimension is
+> not instantiated. *Undetermined*: instantiated, and no value realised — the
+> collapse has not happened. *Undisclosed*: realised, not held by this frame.
+> *Resolved*: realised, and held.
 
-The present is then the collapse boundary at which every instantiated unknown
-relevant to that collapse has resolved — written **U = 0**, with NULL dimensions
-excluded from the count because they are not unresolved variables. Chapter 7
-uses exactly this distinction to say what an unvisited cell is: unknown, not
-NULL. The agent can go and resolve an unknown; there is nothing to look for
-where a dimension is absent.
+The present is then the collapse boundary at which every instantiated
+**undetermined** dimension relevant to that collapse has been determined —
+written **U = 0**. Two exclusions carry weight. NULL dimensions are not counted,
+being no variables at all. And *undisclosed* dimensions are not counted either:
+they are already determined, so a frame with outstanding ignorance is still at
+its own present.
+
+The middle two are the pair English collapses, and they behave differently under
+every operation that matters. **Undisclosed** is ignorance — a value exists, some
+frame may hold it, and observation or inference can obtain it. **Undetermined**
+is not ignorance at all: there is no value yet, so nothing can be obtained and
+only a collapse settles it. Determination is an *event*, not a fact about a
+value sitting somewhere unread. Chapter 7's unvisited cell is undisclosed —
+which is why exploring works. Chapter 17's manifold is over the undetermined —
+which is why no amount of looking narrows it.
 
 **Residual is what the realised successor did not absorb.** Not an error, not a
 diagnosis — a *mismatch*, and one that need contain no explanation of itself.

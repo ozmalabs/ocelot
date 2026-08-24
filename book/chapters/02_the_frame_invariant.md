@@ -159,14 +159,15 @@ A graph like this is unbounded in two directions at once.
 
 **Outward — the extensive direction.** The frontier. There is always one more
 step you have not taken, one more region you have not visited, one more thing
-you have not observed. What lies beyond it is *unknown* — and unknown is a state
-in its own right, not a default zero and not a filled-in guess, but a
-representable fact that there is something you do not have.
+you have not observed. What lies beyond it is *undetermined* — a state in its
+own right, not a default zero and not a filled-in guess, but a representable
+fact that there is something you do not have.
 
-(There is a third state, distinct from both. A dimension can be **NULL** —
-absent, not instantiated at all — which is different again from instantiated and
-unresolved. Chapter 7 needs the full distinction and states it; here only the
-middle state is in play.) Step outward as often as you like; you never
+(There are three other states, and chapter 7 needs the full set. A dimension can
+be **NULL** — absent, not instantiated at all. A value can be **undisclosed** —
+realised, but not held by this frame. And it can be **undetermined** — no value
+yet, because the collapse that would produce one has not happened. What lies
+beyond the frontier is the third kind: it is not being withheld from you.) Step outward as often as you like; you never
 finish. This direction is countable.
 
 **Inward — the intensive direction.** Refinement. Between any two things you

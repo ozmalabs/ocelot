@@ -13,23 +13,34 @@ structure has a slot and the slot must contain a value.
 
 **This chapter is about not filling it.**
 
-The map here is a *belief*, and in a belief, **unknown is a state in its own
-right** — distinct from empty and distinct from occupied. The agent does not
+The map here is a *belief*, and in a belief, **not-yet-observed is a state in
+its own right** — distinct from empty and distinct from occupied. The agent does not
 hold a grid with unknowns filled in; it holds what it has observed, plus the
 fact that this is not everything.
 
 The theory's own vocabulary makes a three-way distinction here, and it is worth
 having before the chapter uses it:
 
-> **NULL ≠ unknown ≠ resolved.** *NULL* is a dimension that is absent — not
-> instantiated at all. *Unknown* is a dimension that exists but whose value is
-> unresolved. *Resolved* is a realised value.
+> **NULL ≠ undetermined ≠ undisclosed ≠ resolved.** *NULL*: the dimension is
+> absent, not instantiated at all. *Undetermined*: instantiated, and **no value
+> has been realised** — the collapse that would produce one has not happened.
+> *Undisclosed*: a value has been realised and this frame does not hold it.
+> *Resolved*: realised, and held.
 
-An unvisited cell is **unknown**, not NULL: the spatial dimensions are
-instantiated, and what is missing is the value. The distinction matters because
-the two behave differently under projection — an unresolved value is something
-the agent can go and resolve, and a NULL dimension is not something it can look
-for.
+An unvisited cell is **undisclosed**. The spatial dimensions are instantiated,
+the cell's contents are already determined — the world has them — and what is
+missing is this agent's access. That is why exploration works at all: the agent
+can go and get it.
+
+The distinction from *undetermined* is the one that matters for what a map is
+for. An undisclosed value can be obtained — by going there, by being told, or by
+inference from what surrounds it. An undetermined value cannot be obtained by
+any of those, because there is nothing yet to obtain; only a collapse settles
+it. A map is a store of the first kind. A projection of where the agent might
+go next is a store of the second. Conflating them produces either a map that
+can never be completed or a plan that observation could somehow resolve.
+
+And **NULL** is neither: not something the agent can look for.
 
 That sounds like a representational nicety. It is the load-bearing decision in
 the chapter, and everything else — routing per body, decoding only where you are
@@ -190,12 +201,13 @@ find it.
   once decoded and has since looked away from would expose it.
 
   There is a third state the current implementation does not distinguish, and
-  naming it says where the fix goes: **directly resolved ≠ unresolved ≠ occluded
-  but inferable.** A region the agent cannot currently see, but whose contents
-  are constrained by what surrounds it, is not in the same epistemic position as
-  one it has never approached. A blind spot is a limitation of access rather
-  than a hole in the world, and a belief that collapses the two loses the
-  constraint.
+  naming it says where the fix goes: **directly resolved ≠ undisclosed ≠
+  occluded but inferable.** A region the agent cannot currently see, but whose
+  contents are constrained by what surrounds it, is not in the same epistemic
+  position as one it has never approached. All three concern the *undisclosed* —
+  in each case a value exists and the question is only how much of it this frame
+  can reach. A blind spot is a limitation of access rather than a hole in the
+  world, and a belief that collapses the three loses the constraint.
 - **Per-dimension resolution.** If uniform refinement matches per-dimension
   splitting on a powered comparison, the added machinery is not earning itself.
 
