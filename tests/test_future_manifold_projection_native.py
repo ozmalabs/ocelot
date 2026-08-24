@@ -214,6 +214,68 @@ def test_humanoid_projection_exposes_narrativium_by_humanoid_axis():
     assert _value(agent, ep, policy, path, "narrativium_retained_dvx") == 1.0
 
 
+def test_humanoid_narrativium_counts_distinct_sibling_path_shapes_per_axis():
+    agent, ep, policy, path, _ = _humanoid_path_bench([0.1], bound=1.0)
+    origin = agent.inner.neighbours(
+        path, "starts_from_embodied_program"
+    )[0]
+    common = {
+        "support_phase": 0.0, "context_id": 0.0, "initialized": 1.0,
+        "mean_input_energy_joules": 1.0,
+        **{f"mean_{key}": 0.0 for key in (
+            "dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz",
+        )},
+        **{f"anchor_{key}": 0.0 for key in (
+            "z_x", "z_y", "wx", "wy", "vx", "vy", "vz",
+        )},
+        "anchor_lateral_offset": 0.0,
+    }
+    escaping_model = agent.s.add_node("HumanoidPhaseActionModel", {
+        **common, "token": "escaping-sibling", "ordinal": 99.0,
+        "actuator_group": 99.0, "mean_dvx": 2.0,
+    })
+    _edge(agent, ep, "has_humanoid_phase_action_model", escaping_model)
+    terminal = agent.s.add_node("HumanoidMotorProgram", {
+        "status": "grounded", "memory_eligible": 1.0,
+    })
+    _edge(
+        agent, terminal,
+        "includes_humanoid_phase_action_model", escaping_model,
+    )
+    transition = agent.s.add_node("EmbodiedProgramTransition", {
+        "verified": 1.0, "response_frames": 1.0,
+    })
+    _edge(agent, transition, "starts_from_embodied_program", origin)
+    _edge(agent, transition, "continues_with_embodied_program", terminal)
+    escaping_path = agent.s.add_node("ParetoCandidate", {
+        "kind": "embodied_program_path", "depth": 1.0,
+    })
+    _edge(agent, escaping_path, "starts_from_embodied_program", origin)
+    _edge(agent, escaping_path, "continues_with_embodied_program", terminal)
+    _edge(
+        agent, escaping_path,
+        "contains_embodied_program_transition", transition,
+    )
+    trajectory = agent.s.add_node("ParetoProfile", {})
+    _edge(agent, trajectory, "has_pareto_candidate", path)
+    _edge(agent, trajectory, "has_pareto_candidate", escaping_path)
+
+    assert _value(
+        agent, ep, policy, path, "narrativium_reachable_dvx"
+    ) == 2.0
+    assert _value(
+        agent, ep, policy, path, "narrativium_retained_dvx"
+    ) == 1.0
+    # The paths are identical in vertical shape, so that dimension retains
+    # one distinct future rather than inheriting the horizontal count.
+    assert _value(
+        agent, ep, policy, path, "narrativium_reachable_dvz"
+    ) == 1.0
+    assert _value(
+        agent, ep, policy, path, "narrativium_retained_dvz"
+    ) == 1.0
+
+
 def test_ideal_effort_allows_excess_only_for_manifold_compression():
     agent, ep, policy, source = _bench()
     agent.inner.set_attr(policy, "future_manifold_projection_budget", 2.0)
