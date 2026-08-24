@@ -704,6 +704,67 @@ def test_the_adapter_reports_saddles_rather_than_resolving_them_silently():
         "branches reported on a fixture with no saddles")
 
 
+def _two_level(n, lo, hi, frac=0.35):
+    V = np.zeros((n, n, 2))
+    cx = cy = n / 2.0 - 0.5
+    r = n * frac
+    for row in range(n):
+        for col in range(n):
+            V[row, col, 1] = hi if (col - cx) ** 2 + (row - cy) ** 2 <= r * r else lo
+    return V
+
+
+def test_otsu_is_well_posed_ONLY_on_a_strictly_two_level_field():
+    """Which tolerance estimator the data supports is measurable, not a taste.
+
+    On a strictly two-level field `pd` takes exactly two values {0, delta}, so
+    there is exactly ONE admissible split -- Otsu must return 0, which IS exact
+    equality. On anything richer its objective goes flat and its answer is a
+    tie-break.
+
+    So `mo_tol_otsu` is either equivalent to `mo_tol_exact` or ill-posed. That is
+    a property of the statistic, and this pins it so a future caller cannot pick
+    the Otsu arm believing it buys a better threshold."""
+    two, _ = _rim_run(_two_level(41, 0.0, 9.0)), None
+    s_two = two[0] if isinstance(two, tuple) else two
+    reg_two = mgw.tolerance_regime(s_two)
+    assert reg_two["otsu_margin"] > 0.5, (
+        f"two-level field reads as ill-posed: {reg_two}")
+
+    # three levels: still piecewise constant, but Otsu has nothing to decide
+    V3 = np.zeros((41, 41, 2))
+    V3[10:31, 10:31, 1] = 9.0
+    V3[17:24, 17:24, 1] = 4.0
+    s3, _ = _rim_run(V3)
+    reg3 = mgw.tolerance_regime(s3)
+    assert reg3["otsu_margin"] < 0.5, (
+        f"three-level field reads as well-posed for Otsu: {reg3}")
+    assert reg3["slivers"] == 0, (
+        f"three-level field is piecewise constant, so exact equality must give "
+        f"no slivers: {reg3}")
+
+
+def test_the_regime_says_when_NEITHER_arm_applies():
+    """An anti-aliased edge defeats both arms, and the diagnostic must say so.
+
+    Otsu goes flat, and exact equality -- which does work on a piecewise-constant
+    field of any number of levels -- shatters the partial-coverage band into
+    slivers. An atom at pd=0 is NOT sufficient to license exact equality; the
+    anti-aliased disc has one (84.5%) and still fails. `slivers` is the
+    measurement that separates them."""
+    V, _ = _soft_disc_scene(41, 4)
+    s, _ = _rim_run(V)
+    reg = mgw.tolerance_regime(s)
+    assert reg["otsu_margin"] < 0.5, f"anti-aliased field reads well-posed: {reg}"
+    assert reg["slivers"] > 10, (
+        f"anti-aliased field shows {reg['slivers']} slivers under exact equality "
+        f"-- if this is small, the fixture is not anti-aliased and the test is inert")
+
+    hard, _ = _rim_run(_two_level(41, 0.0, 9.0))
+    assert mgw.tolerance_regime(hard)["slivers"] == 0, (
+        "a hard two-level field must show no slivers")
+
+
 def test_both_walks_agree_where_the_boundary_graph_is_genuinely_ambiguous():
     """The saddle case, pinned.
 

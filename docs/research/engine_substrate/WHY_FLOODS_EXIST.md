@@ -966,6 +966,62 @@ an easy target by construction.
 Gated by `test_a_known_object_is_recovered_from_REAL_texture` at contrast 6.0, skipping when the
 corpus is absent.
 
+### 6q. WHICH TOLERANCE ESTIMATOR — settled by the statistic, not by preference
+
+`vision_motion_group` offers two mutually exclusive arms, `mo_tol_exact` (tolerance = exact vector
+equality) and `mo_tol_otsu` (a threshold by Otsu's between-class criterion over the field's own
+adjacent-difference distribution `pd`). Nothing told a caller which its data supports — the gap
+that let the parallax efference suite sit on the Otsu arm while depending on exact-equality
+behaviour. That is an empirical question and it has an answer.
+
+**Otsu's premise is bimodality, and bimodality is measurable.** Comparing its best split against
+its runner-up:
+
+| field | best-vs-runner-up margin |
+|---|---|
+| strictly two-level (5 value pairs, 3 radii) | **100.0%** |
+| parallax `b_flat` (one plane) | **100.0%** |
+| three-level annulus | 5.1% |
+| disc, supersampled x2 / x4 / x8 | 3.9% / 0.2% / 0.1% |
+| parallax `b_depth` (three planes) | 0.3% |
+| five BSDS photographs | 0.0–0.1% |
+
+**Nothing measured lands between 5.1% and 100%.** And the reason is not statistical, it is
+arithmetic: on a strictly two-level field `pd` takes exactly two values `{0, delta}`, so there is
+exactly ONE admissible split. The 100% is not Otsu being decisive — it is there being a single
+candidate.
+
+**Which forces the conclusion. Where Otsu is well-posed it returns t = 0.00 — and t = 0 IS exact
+equality.** Verified on nine such fields, every one. So:
+
+> `mo_tol_otsu` is either EQUIVALENT to `mo_tol_exact`, or ILL-POSED. It is never strictly better.
+
+That is a property of the statistic, not a judgement about the method, and it costs ~200 ms/field
+(§ the derived-tolerance timing) to arrive at an answer the exact arm gives for nothing.
+
+**Exact equality has its own precondition, and the obvious guess for it is wrong.** It is not "an
+atom at pd = 0": an anti-aliased disc has one (84.5%) and exact equality still fails there. The
+precondition is that the field be piecewise CONSTANT, which is directly visible as the sliver count
+under exact equality:
+
+| field | regions at tol=0 | slivers (<= 2 cells) |
+|---|---|---|
+| two-level disc | 2 | **0** |
+| three-level annulus | 3 | **0** |
+| disc, supersampled x4 | 82 | **76** |
+| real photograph | 1595 | **1586** |
+
+So the three regimes are fully separated, and the third is §6h rederived from the `pd` distribution
+alone: **on an anti-aliased or natural field NEITHER arm applies**, and the answer there is the
+boundary representation, not a better tolerance.
+
+**Built: `motion_group_world.tolerance_regime()`** — mechanical, reporting `otsu_margin`,
+`atom_at_zero`, `slivers` and `regions`. It returns the MEASUREMENTS, not a verdict, because a
+caller with more context may read them differently; what it removes is the possibility of choosing
+an arm blind, which is the actual defect. Gated by
+`test_otsu_is_well_posed_ONLY_on_a_strictly_two_level_field` and
+`test_the_regime_says_when_NEITHER_arm_applies`.
+
 ### 6n. HOW BIG IS THIS OBJECT — counting cells is 20% wrong on any real observation
 
 The residual recorded earlier as "the rectangle's cell count drops 65 -> 33 under supersampling"
