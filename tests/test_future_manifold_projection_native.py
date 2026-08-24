@@ -276,6 +276,14 @@ def test_humanoid_narrativium_counts_distinct_sibling_path_shapes_per_axis():
     assert _value(
         agent, ep, policy, path, "narrativium_retained_dvz"
     ) == 1.0
+    assert _value(
+        agent, ep, policy, path,
+        "conditional_narrativium_reachable_dvx",
+    ) == 1.0
+    assert _value(
+        agent, ep, policy, path,
+        "conditional_narrativium_retained_dvx",
+    ) == 1.0
     # Once a decision transition anchors projection, the unrelated sibling is
     # outside that conditional future rather than poisoning it as malformed.
     assert _value(
@@ -285,6 +293,87 @@ def test_humanoid_narrativium_counts_distinct_sibling_path_shapes_per_axis():
     assert _value(
         agent, ep, policy, path, "narrativium_retained_dvx",
         addition=selected_transitions[0],
+    ) == 1.0
+
+
+def test_conditional_narrativium_distinguishes_branching_future_width():
+    agent, ep, policy, path, transitions = _humanoid_path_bench(
+        [0.1, 0.1], bound=1.0
+    )
+    origin = agent.inner.neighbours(
+        path, "starts_from_embodied_program"
+    )[0]
+    middle = agent.inner.neighbours(
+        transitions[0], "continues_with_embodied_program"
+    )[0]
+    common = {
+        "support_phase": 0.0, "context_id": 0.0, "initialized": 1.0,
+        "mean_input_energy_joules": 1.0,
+        **{f"mean_{key}": 0.0 for key in (
+            "dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz",
+        )},
+        **{f"anchor_{key}": 0.0 for key in (
+            "z_x", "z_y", "wx", "wy", "vx", "vy", "vz",
+        )},
+        "anchor_lateral_offset": 0.0,
+    }
+
+    def program(effect, ordinal):
+        model = agent.s.add_node("HumanoidPhaseActionModel", {
+            **common, "token": f"branch-{ordinal}",
+            "ordinal": float(ordinal), "actuator_group": float(ordinal),
+            "mean_dvx": effect,
+        })
+        node = agent.s.add_node("HumanoidMotorProgram", {
+            "status": "grounded", "memory_eligible": 1.0,
+        })
+        _edge(agent, ep, "has_humanoid_phase_action_model", model)
+        _edge(agent, node, "includes_humanoid_phase_action_model", model)
+        return node
+
+    def transition(source, target):
+        node = agent.s.add_node("EmbodiedProgramTransition", {
+            "verified": 1.0, "response_frames": 1.0,
+        })
+        _edge(agent, node, "starts_from_embodied_program", source)
+        _edge(agent, node, "continues_with_embodied_program", target)
+        return node
+
+    def path_node(first, second, terminal):
+        node = agent.s.add_node("ParetoCandidate", {
+            "kind": "embodied_program_path", "depth": 2.0,
+        })
+        _edge(agent, node, "starts_from_embodied_program", origin)
+        _edge(agent, node, "continues_with_embodied_program", terminal)
+        _edge(agent, node, "contains_embodied_program_transition", first)
+        _edge(agent, node, "contains_embodied_program_transition", second)
+        return node
+
+    shared_terminal = program(0.2, 20)
+    shared_second = transition(middle, shared_terminal)
+    shared_path = path_node(transitions[0], shared_second, shared_terminal)
+
+    narrow_middle = program(0.4, 30)
+    narrow_terminal = program(0.1, 31)
+    narrow_first = transition(origin, narrow_middle)
+    narrow_second = transition(narrow_middle, narrow_terminal)
+    narrow_path = path_node(narrow_first, narrow_second, narrow_terminal)
+
+    trajectory = agent.s.add_node("ParetoProfile", {})
+    for candidate in (path, shared_path, narrow_path):
+        _edge(agent, trajectory, "has_pareto_candidate", candidate)
+
+    assert _value(
+        agent, ep, policy, path,
+        "conditional_narrativium_retained_dvx",
+    ) == 2.0
+    assert _value(
+        agent, ep, policy, shared_path,
+        "conditional_narrativium_retained_dvx",
+    ) == 2.0
+    assert _value(
+        agent, ep, policy, narrow_path,
+        "conditional_narrativium_retained_dvx",
     ) == 1.0
 
 

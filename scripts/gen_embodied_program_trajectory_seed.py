@@ -36,6 +36,7 @@ from scripts.gen_humanoid_adaptation_seed import (  # noqa: E402
     Neighbours,
     Not,
     Or,
+    Pick,
     PI0,
     Plus,
     T,
@@ -45,6 +46,16 @@ from scripts.gen_humanoid_adaptation_seed import (  # noqa: E402
 
 
 P0 = PI0
+
+
+def future_manifold_projection(episode, policy, source: str, field: str):
+    return {
+        "type": "FutureManifoldProjection",
+        "episode": episode,
+        "policy": policy,
+        "source": V(source),
+        "field": field,
+    }
 
 
 def orientation_span(source: str, terminal: str) -> dict:
@@ -600,11 +611,60 @@ def select_frontier_path_rule() -> dict:
             AO(shallowest, "depth"),
         ),
     )
+    manifold_episodes = Neighbours(
+        "owner", "projects_future_manifold_in_episode"
+    )
+    manifold_policies = Neighbours(
+        "owner", "uses_future_manifold_policy"
+    )
+    manifold_context_ready = And(
+        Eq(Count(manifold_episodes), L(1)),
+        Eq(Count(manifold_policies), L(1)),
+    )
+
+    def retained(path_var: str, dimension: int) -> dict:
+        return future_manifold_projection(
+            Pick(manifold_episodes),
+            Pick(manifold_policies),
+            path_var,
+            f"conditional_narrativium_retained_{dimension}",
+        )
+
+    capacity_frontier = Filter(
+        shortest,
+        "capacity_path",
+        Or(
+            Not(manifold_context_ready),
+            Not(Exists(
+                shortest,
+                "capacity_alternative",
+                And(
+                    Not(Eq(
+                        V("capacity_alternative"), V("capacity_path")
+                    )),
+                    *(
+                        Not(Lt(
+                            retained("capacity_alternative", dimension),
+                            retained("capacity_path", dimension),
+                        ))
+                        for dimension in range(7)
+                    ),
+                    Or(*(
+                        Gt(
+                            retained("capacity_alternative", dimension),
+                            retained("capacity_path", dimension),
+                        )
+                        for dimension in range(7)
+                    )),
+                ),
+            )),
+        ),
+    )
     rank_span = Plus(
         P0("trajectory", "active_expansion_horizon"), L(1)
     )
     selected = Argmin(
-        shortest,
+        capacity_frontier,
         "frontier_path",
         Plus(
             Times(
@@ -637,10 +697,12 @@ def select_frontier_path_rule() -> dict:
         "latency_class": "soft_realtime",
         "batch": False,
         "comment": "Pareto removes only refuted paths. Temporal foveation "
-        "first restricts choice to the shortest sufficient prefix; within "
-        "that fixed depth, situated task, evidence, and practice coordinates "
-        "retain their familiar ordering. Selection grants no actuator "
-        "authority.",
+        "first restricts choice to the shortest sufficient prefix. When a "
+        "situated manifold context exists, a second Pareto restriction "
+        "removes only paths dominated in all seven conditional retained-"
+        "future dimensions; no scalar capacity score is formed. Situated "
+        "task, evidence, and practice coordinates order the surviving "
+        "tradeoffs. Selection grants no actuator authority.",
         "match": [
             ["owner", "has_embodied_program_trajectory", "trajectory"],
             ["owner", "has_current_embodied_program", "current_program"],
@@ -804,7 +866,7 @@ def manifest() -> dict:
     )
     return {
         "id": "embodied_program_trajectory",
-        "version": "1.3.0",
+        "version": "1.4.0",
         "depends_on": ["cognitive_pareto"],
         "area": "general_cognition",
         "latency_class": "soft_realtime",
