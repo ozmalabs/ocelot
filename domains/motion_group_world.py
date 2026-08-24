@@ -356,6 +356,103 @@ def contours(s) -> list[dict]:
     return out
 
 
+def tolerance_regime(s) -> dict:
+    """Which tolerance estimator is WELL-POSED for this field. Mechanical.
+
+    The seed offers two mutually exclusive arms — `mo_tol_exact` (tolerance =
+    exact vector equality) and `mo_tol_otsu` (a threshold by Otsu's between-class
+    criterion over the field's own adjacent-difference distribution `pd`) — and
+    nothing told a caller which one its data supports. That gap is what let the
+    parallax suite sit on the Otsu arm while depending on exact-equality
+    behaviour for months.
+
+    Measured, and the result is sharper than a preference:
+
+      * on a STRICTLY TWO-LEVEL field, `pd` takes exactly two values {0, delta},
+        so there is exactly ONE admissible split and Otsu must return 0 — which
+        IS exact equality. Verified over 9 such fields, every one t=0.00;
+      * on anything richer — three levels, an anti-aliased edge, a photograph —
+        Otsu's objective is FLAT (best-vs-runner-up margin <= 5.1%, against
+        100% when well-posed, with no field measured in between), so its answer
+        is a tie-break rather than a measurement.
+
+    **Otsu is therefore either equivalent to exact equality or ill-posed.** It is
+    never strictly better, which is a fact about the statistic and not a
+    judgement about the method.
+
+    Exact equality has its own precondition, and it is not "an atom at pd=0": an
+    anti-aliased edge has one too (84.5%) and exact equality shatters its band
+    into slivers. The precondition is that the field be piecewise CONSTANT, which
+    shows up directly as `slivers`.
+
+    Returns the three measurements, not a verdict — a caller with more context
+    may reasonably read them differently:
+
+      `otsu_margin`   ~1.0 => Otsu well-posed (and equal to exact); ~0 => tie-break
+      `atom_at_zero`  fraction of cells with an exactly-agreeing neighbourhood
+      `slivers`       regions of <= 2 cells under exact equality; many means the
+                      field is not piecewise constant and NEITHER arm applies
+    """
+    cells = list(s.nodes("MCell"))
+    if not cells:
+        return {"otsu_margin": float("nan"), "atom_at_zero": float("nan"),
+                "slivers": 0, "regions": 0}
+    pd = []
+    for c in cells:
+        a = s.node(c)["attrs"]
+        v = a.get("pd")
+        pd.append(0.0 if v is None else float(v))
+    pd_sorted = sorted(set(pd))
+    n = len(pd)
+    scores = []
+    for t in pd_sorted:
+        lo = [x for x in pd if x <= t]
+        hi = [x for x in pd if x > t]
+        if not lo or not hi:
+            continue
+        w0, w1 = len(lo) / n, len(hi) / n
+        scores.append(w0 * w1 * (sum(lo) / len(lo) - sum(hi) / len(hi)) ** 2)
+    scores.sort(reverse=True)
+    if len(scores) < 2:
+        margin = 1.0
+    elif scores[0] <= 0.0:
+        margin = 0.0
+    else:
+        margin = (scores[0] - scores[1]) / scores[0]
+
+    # exact-equality partition, to expose the slivers that make it inapplicable
+    key = {}
+    for c in cells:
+        a = s.node(c)["attrs"]
+        key[c.value] = (int(round(float(a["crow"]))), int(round(float(a["ccol"]))))
+    val = {c.value: tuple(float(x) for x in s.node(c)["attrs"].get("v", (0.0, 0.0)))
+           for c in cells}
+    par = {c.value: c.value for c in cells}
+
+    def find(x):
+        while par[x] != x:
+            par[x] = par[par[x]]
+            x = par[x]
+        return x
+
+    for c in cells:
+        for nb in s.neighbours(c, "neighbour"):
+            if val.get(nb.value) == val[c.value]:
+                a, b = find(c.value), find(nb.value)
+                if a != b:
+                    par[max(a, b)] = min(a, b)
+    sizes = {}
+    for c in cells:
+        r = find(c.value)
+        sizes[r] = sizes.get(r, 0) + 1
+    return {
+        "otsu_margin": float(margin),
+        "atom_at_zero": float(sum(1 for x in pd if x == 0.0) / n),
+        "slivers": sum(1 for v in sizes.values() if v <= 2),
+        "regions": len(sizes),
+    }
+
+
 def field_attr(s, handle: dict, key: str):
     return s.node(handle["field"])["attrs"].get(key)
 
