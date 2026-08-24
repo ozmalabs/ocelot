@@ -7,6 +7,7 @@ from pathlib import Path
 from scripts.gen_cognitive_supervision_seed import manifest
 from scripts.jabberwock_humanoid_walk import (
     _cognitive_continuation_authorised,
+    _settle_cognitive_continuation_authority,
 )
 from substrate.world_adapter import WorldAdapter
 
@@ -737,3 +738,87 @@ def test_humanoid_adapter_honours_withdrawn_graph_authority():
     gate = source.index("if not _cognitive_continuation_authorised(")
     enact = source.index("token, trial, decision = _request_action", gate)
     assert gate < enact
+
+
+def test_authority_boundary_settles_changed_graph_state_without_action(
+    monkeypatch,
+):
+    import scripts.jabberwock_humanoid_walk as walk
+
+    agent, development, _, _, _, process = _fixture(span=4)
+    runtime = agent.s.add_node("HumanoidEpisode", {
+        "cognitive_continuation_authority": 1,
+    })
+    agent.inner.set_attr(process, "continuation_authority", 0)
+    calls = []
+
+    def output_null_tick(active_agent, *, service_system_two=False):
+        assert active_agent is agent
+        assert service_system_two is True
+        calls.append(len(calls))
+        if len(calls) == 1:
+            active_agent.inner.set_attr(process, "lease_generation", 1)
+        else:
+            active_agent.inner.set_attr(process, "continuation_authority", 1)
+
+    monkeypatch.setattr(walk, "_tick_agent", output_null_tick)
+
+    authorised, cycles = _settle_cognitive_continuation_authority(
+        agent, runtime, development
+    )
+
+    assert authorised is True
+    assert cycles == 2
+    assert calls == [0, 1]
+
+
+def test_authority_boundary_stops_when_scheduler_transition_repeats(monkeypatch):
+    import scripts.jabberwock_humanoid_walk as walk
+
+    agent, development, _, _, _, process = _fixture(span=4)
+    runtime = agent.s.add_node("HumanoidEpisode", {
+        "cognitive_continuation_authority": 1,
+    })
+    agent.inner.set_attr(process, "continuation_authority", 0)
+    calls = []
+
+    def output_null_tick(active_agent, *, service_system_two=False):
+        assert active_agent is agent
+        assert service_system_two is True
+        calls.append(len(calls))
+
+    monkeypatch.setattr(walk, "_tick_agent", output_null_tick)
+
+    authorised, cycles = _settle_cognitive_continuation_authority(
+        agent, runtime, development
+    )
+
+    assert authorised is False
+    assert cycles == 2
+    assert calls == [0, 1]
+
+
+def test_authority_boundary_does_not_service_an_exhausted_learning_plan(
+    monkeypatch,
+):
+    import scripts.jabberwock_humanoid_walk as walk
+
+    agent, development, plan, step, _, process = _fixture(span=4)
+    runtime = agent.s.add_node("HumanoidEpisode", {
+        "cognitive_continuation_authority": 1,
+    })
+    agent.inner.set_attr(step, "status", "completed")
+    agent.inner.set_attr(process, "continuation_authority", 0)
+    _edge(agent, plan, "has_learning_plan_step", step)
+
+    def unexpected_tick(*args, **kwargs):
+        raise AssertionError("a completed plan has no authority work to settle")
+
+    monkeypatch.setattr(walk, "_tick_agent", unexpected_tick)
+
+    authorised, cycles = _settle_cognitive_continuation_authority(
+        agent, runtime, development
+    )
+
+    assert authorised is False
+    assert cycles == 0
