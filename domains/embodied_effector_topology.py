@@ -309,6 +309,9 @@ def install_name_free_effector_topology(
         _edge(agent, relation, "has_embodied_effector_target", right)
         relation_count += 1
     agent.inner.set_attr(topology, "relation_count", float(relation_count))
+    # The boundary publishes one immutable plant snapshot.  Consumers may now
+    # close any derived topology indexes instead of rescanning them forever.
+    agent.inner.set_attr(topology, "topology_facts_complete", 1.0)
     return {
         "topology": topology,
         "effectors": tuple(effectors),

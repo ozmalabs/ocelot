@@ -1,6 +1,6 @@
 {
  "id": "somatomotor_waves",
- "version": "1.6.0",
+ "version": "1.8.0",
  "depends_on": [
   "embodied_development"
  ],
@@ -756,10 +756,202 @@
    ]
   },
   {
-   "name": "smw_warm_start_structurally_matching_coupling_hint",
+   "name": "smw_open_changed_situation_coupling_memory_audit",
    "area": "embodied_somatomotor_waves",
    "latency_class": "hard_realtime",
    "order": -117,
+   "batch": true,
+   "comment": "A coupling enters the expensive structural memory join only when its body signature or available memory generation changed.",
+   "match": [
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "projects_embodied_development",
+     "development"
+    ],
+    [
+     "episode",
+     "has_somatomotor_wave_field",
+     "field"
+    ],
+    [
+     "field",
+     "has_somatomotor_wave_cell",
+     "source"
+    ],
+    [
+     "source",
+     "has_somatomotor_wave_coupling",
+     "coupling"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "coupling"
+           },
+           "key": "warm_prior_rank"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "coupling"
+          },
+          "edge_type": "warm_starts_from_somatomotor_coupling_memory",
+          "any_type": false
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "coupling"
+            },
+            "key": "warm_start_audit_signature"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "development"
+            },
+            "key": "body_capability_signature"
+           }
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "coupling"
+              },
+              "key": "warm_start_audit_memory_count"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Count",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "agent"
+             },
+             "edge_type": "has_somatomotor_coupling_memory",
+             "any_type": false
+            }
+           }
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "field"
+         },
+         "edge_type": "has_pending_warm_coupling_memory_audit",
+         "any_type": false
+        },
+        "var_name": "pending_coupling",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Var",
+          "name": "pending_coupling"
+         },
+         "b": {
+          "type": "Var",
+          "name": "coupling"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "field",
+     "has_pending_warm_coupling_memory_audit",
+     "coupling"
+    ]
+   ]
+  },
+  {
+   "name": "smw_warm_start_structurally_matching_coupling_hint",
+   "area": "embodied_somatomotor_waves",
+   "latency_class": "hard_realtime",
+   "order": -116,
    "batch": false,
    "comment": "A source-body coupling supplies only a one-shot rank hint when body ShapeDecode coverage exceeds residual and the local mechanical relation motif matches. The target receipt immediately clears the hint; actuator choice remains in the local wave collapse.",
    "match": [
@@ -777,6 +969,11 @@
      "episode",
      "has_somatomotor_wave_field",
      "field"
+    ],
+    [
+     "field",
+     "has_pending_warm_coupling_memory_audit",
+     "coupling"
     ],
     [
      "field",
@@ -818,47 +1015,114 @@
     "type": "And",
     "items": [
      {
-      "type": "Eq",
-      "a": {
-       "type": "Plus",
-       "items": [
-        {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "coupling"
-         },
-         "key": "warm_prior_rank"
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "coupling"
+           },
+           "key": "warm_prior_rank"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
         },
-        {
+        "b": {
          "type": "Lit",
          "value": 0
         }
-       ]
-      },
-      "b": {
-       "type": "Lit",
-       "value": 0
-      }
-     },
-     {
-      "type": "Eq",
-      "a": {
-       "type": "Count",
-       "source": {
-        "type": "Neighbours",
-        "node": {
-         "type": "Var",
-         "name": "coupling"
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "coupling"
+          },
+          "edge_type": "warm_starts_from_somatomotor_coupling_memory",
+          "any_type": false
+         }
         },
-        "edge_type": "warm_starts_from_somatomotor_coupling_memory",
-        "any_type": false
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "coupling"
+            },
+            "key": "warm_start_audit_signature"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "development"
+            },
+            "key": "body_capability_signature"
+           }
+          }
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "coupling"
+              },
+              "key": "warm_start_audit_memory_count"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Count",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "agent"
+             },
+             "edge_type": "has_somatomotor_coupling_memory",
+             "any_type": false
+            }
+           }
+          }
+         }
+        ]
        }
-      },
-      "b": {
-       "type": "Lit",
-       "value": 0
-      }
+      ]
      },
      {
       "type": "Gt",
@@ -2510,6 +2774,871 @@
        ]
       }
      }
+    ],
+    [
+     "del_edge",
+     "field",
+     "has_pending_warm_coupling_memory_audit",
+     "coupling"
+    ]
+   ]
+  },
+  {
+   "name": "smw_close_unmatched_coupling_memory_audit",
+   "area": "embodied_somatomotor_waves",
+   "latency_class": "hard_realtime",
+   "order": -115,
+   "batch": true,
+   "comment": "A failed structural lookup is evidence for this body signature and memory generation, so unchanged fixpoints do not repeat the coupling-by-memory join.",
+   "match": [
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ],
+    [
+     "episode",
+     "projects_embodied_development",
+     "development"
+    ],
+    [
+     "episode",
+     "has_somatomotor_wave_field",
+     "field"
+    ],
+    [
+     "field",
+     "has_pending_warm_coupling_memory_audit",
+     "coupling"
+    ],
+    [
+     "field",
+     "has_somatomotor_wave_cell",
+     "source"
+    ],
+    [
+     "source",
+     "has_somatomotor_wave_coupling",
+     "coupling"
+    ],
+    [
+     "source",
+     "represents_embodied_effector",
+     "source_effector"
+    ],
+    [
+     "coupling",
+     "grounds_in_embodied_effector_relation",
+     "relation"
+    ],
+    [
+     "coupling",
+     "targets_somatomotor_wave_cell",
+     "target"
+    ],
+    [
+     "target",
+     "represents_embodied_effector",
+     "target_effector"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Count",
+     "source": {
+      "type": "Filter",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "agent"
+       },
+       "edge_type": "has_somatomotor_coupling_memory",
+       "any_type": false
+      },
+      "var_name": "memory_candidate",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "same_command_channel"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "relation"
+              },
+              "key": "same_command_channel"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "declared_hard_coupling"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "relation"
+              },
+              "key": "declared_hard_coupling"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "mechanical_path_known"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "relation"
+              },
+              "key": "mechanical_path_known"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "mechanical_path_length"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "relation"
+              },
+              "key": "mechanical_path_length"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "same_mount"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "relation"
+              },
+              "key": "same_mount"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "command_polarity_product"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "relation"
+              },
+              "key": "command_polarity_product"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "source_mount_depth"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "source_effector"
+              },
+              "key": "mount_depth"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "source_mount_degree"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "source_effector"
+              },
+              "key": "mount_degree"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "source_axis_x_class"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "source_effector"
+              },
+              "key": "axis_x_class"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "source_axis_y_class"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "source_effector"
+              },
+              "key": "axis_y_class"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "source_axis_z_class"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "source_effector"
+              },
+              "key": "axis_z_class"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "target_mount_depth"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "target_effector"
+              },
+              "key": "mount_depth"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "target_mount_degree"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "target_effector"
+              },
+              "key": "mount_degree"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "target_axis_x_class"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "target_effector"
+              },
+              "key": "axis_x_class"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "target_axis_y_class"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "target_effector"
+              },
+              "key": "axis_y_class"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "target_axis_z_class"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "target_effector"
+              },
+              "key": "axis_z_class"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         ]
+        },
+        {
+         "type": "Gt",
+         "a": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "memory_candidate"
+             },
+             "key": "productive_count"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "memory_candidate"
+             },
+             "key": "unproductive_count"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        {
+         "type": "Gt",
+         "a": {
+          "type": "ShapeDecode",
+          "goal": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "development"
+           },
+           "key": "body_capability_signature"
+          },
+          "codebook_type": "SomatomotorCouplingMemory",
+          "codebook_scope": {
+           "type": "SetT",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "memory_candidate"
+             },
+             "key": "name"
+            }
+           ]
+          },
+          "beam": 1,
+          "max_steps": 1,
+          "cand_k": 1,
+          "field": "covered_count",
+          "wild_objects": false
+         },
+         "b": {
+          "type": "Count",
+          "source": {
+           "type": "ShapeDecode",
+           "goal": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "development"
+            },
+            "key": "body_capability_signature"
+           },
+           "codebook_type": "SomatomotorCouplingMemory",
+           "codebook_scope": {
+            "type": "SetT",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory_candidate"
+              },
+              "key": "name"
+             }
+            ]
+           },
+           "beam": 1,
+           "max_steps": 1,
+           "cand_k": 1,
+           "field": "residual",
+           "wild_objects": false
+          }
+         }
+        },
+        {
+         "type": "Not",
+         "arg": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "memory_candidate"
+           },
+           "key": "signature"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "development"
+           },
+           "key": "body_capability_signature"
+          }
+         }
+        }
+       ]
+      }
+     }
+    },
+    "b": {
+     "type": "Lit",
+     "value": 0
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "coupling",
+     "warm_start_audit_signature",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "development"
+       },
+       "key": "body_capability_signature"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "coupling",
+     "warm_start_audit_memory_count",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "agent"
+        },
+        "edge_type": "has_somatomotor_coupling_memory",
+        "any_type": false
+       }
+      }
+     }
+    ],
+    [
+     "del_edge",
+     "field",
+     "has_pending_warm_coupling_memory_audit",
+     "coupling"
     ]
    ]
   },

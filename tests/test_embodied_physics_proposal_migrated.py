@@ -471,6 +471,21 @@ def test_unseen_compound_is_predicted_selected_then_physically_grounded():
         agent, episode,
         "has_active_embodied_developmental_capability", capability,
     )
+    # An unrelated capability receipt cannot settle a compound that has not
+    # itself crossed the domain's physical actuation/receipt boundary.
+    agent.inner.set_attr(capability, "failure_count", 1)
+    unrelated_receipt = agent.s.add_node("Node", {
+        "development_receipt_closed": 1,
+        "integer_native": 1,
+    })
+    _edge(
+        agent, episode, "has_embodied_development_receipt",
+        unrelated_receipt,
+    )
+    _settle(agent, 2)
+    assert agent.s.node(proposal)["attrs"]["status"] == "trial_requested"
+
+    agent.inner.set_attr(program, "physical_verified", 1)
     agent.inner.set_attr(capability, "success_count", 1)
     receipt = agent.s.add_node("Node", {
         "development_receipt_closed": 1,
@@ -481,3 +496,26 @@ def test_unseen_compound_is_predicted_selected_then_physically_grounded():
     assert agent.s.node(proposal)["attrs"]["status"] == "grounded"
     assert agent.s.node(program)["attrs"]["status"] == "grounded"
     assert agent.s.node(program)["attrs"]["physical_verified"] == 1
+
+    rejected = agent.s.add_node("HumanoidMotorProgram", {
+        "status": "counterfactual_predicted",
+        "counterfactual_unseen": 1,
+        "subsection_composition": 1,
+        "subsection_composition_manifold_admissible": 0,
+        "member_count": 2,
+        "predicted_evidence_units": 5,
+        "predicted_energy_units": 1,
+        "predicted_peak_load_units": 1,
+        "predicted_recoverability_units": 1,
+        "interaction_uncertainty_units": 1,
+    })
+    _edge(agent, question, "has_counterfactual_motor_program", rejected)
+    _settle(agent, 2)
+    assert not any(
+        rejected in agent.inner.neighbours(
+            candidate, "proposes_counterfactual_motor_program"
+        )
+        for candidate in agent.inner.neighbours(
+            question, "has_motor_learning_proposal"
+        )
+    )

@@ -220,6 +220,18 @@ def test_ideal_effort_allows_excess_only_for_manifold_compression():
     assert _value(agent, ep, policy, source, "compression_dimension_count") == 0.0
     assert _value(agent, ep, policy, source, "effort_authorized") == 0.0
 
+    # A receipt-grounded compound can explicitly carry the exact number of
+    # unresolved interaction dimensions its whole response collapsed. This is
+    # a compression ratio/count, not an effort-tolerance percentage.
+    agent.inner.set_attr(
+        source, "future_manifold_information_compression", 2.0
+    )
+    assert _value(agent, ep, policy, source, "information_compression") == 2.0
+    assert _value(agent, ep, policy, source, "effort_authorized") == 1.0
+    agent.inner.set_attr(
+        source, "future_manifold_information_compression", 0.0
+    )
+
     # More-than-normal effort becomes admissible when it shortens the
     # represented completion time; this is compression, not a reward for burn.
     agent.inner.set_attr(source, "future_manifold_completion_time", 1.0)
@@ -357,6 +369,53 @@ def test_projection_reports_horizon_loss_and_retention():
     assert float(_value(agent, ep, policy, source, "resolved")) == 1.0
     assert float(_value(agent, ep, policy, source, "horizon")) == 1.0
     assert float(_value(agent, ep, policy, source, "termination_code")) == 2.0
+
+
+def test_projection_snapshot_is_the_same_atomic_six_field_report():
+    agent, ep, policy, source = _bench(member_forward=0.0, bound=1.0)
+    snapshot = tuple(_value(agent, ep, policy, source, "snapshot"))
+    fields = (
+        "support", "resolved", "loss", "information_loss",
+        "effort_supported", "effort_authorized",
+    )
+    assert snapshot == tuple(
+        _value(agent, ep, policy, source, field) for field in fields
+    )
+
+
+def test_projection_shape_snapshot_is_the_same_atomic_manifold_report():
+    agent, ep, policy, source = _bench(member_forward=2.0, bound=1.0)
+    snapshot = tuple(_value(agent, ep, policy, source, "shape_snapshot"))
+    fields = (
+        "support", "resolved", "loss", "information_loss", "horizon",
+        "earliest_decisive_tick", "minimum_exafferent_scale",
+        *(f"residual_{index}" for index in range(7)),
+        *(f"applied_bound_{index}" for index in range(7)),
+    )
+    assert len(snapshot) == 21
+    assert snapshot == tuple(
+        _value(agent, ep, policy, source, field) for field in fields
+    )
+
+
+def test_projection_audit_snapshot_matches_every_selected_path_field():
+    agent, ep, policy, source = _bench(member_forward=2.0, bound=1.0)
+    snapshot = tuple(_value(agent, ep, policy, source, "audit_snapshot"))
+    fields = (
+        "support", "resolved", "loss", "information_loss", "horizon",
+        "anchor_count", "refinement_count", "termination_code",
+        "exploration_authority", "effort_supported", "projected_effort",
+        "ideal_effort", "effort_scale", "effort_residual",
+        "time_compression", "width_compression", "information_compression",
+        "compression_dimension_count", "manifold_compression",
+        "effort_authorized",
+        *(f"situated_support_{index}" for index in range(7)),
+        *(f"applied_bound_{index}" for index in range(7)),
+    )
+    assert len(snapshot) == 34
+    assert snapshot == tuple(
+        _value(agent, ep, policy, source, field) for field in fields
+    )
 
 
 @pytest.mark.parametrize(
@@ -708,6 +767,33 @@ def test_optional_candidate_is_projected_exactly_once():
     assert float(_value(agent, ep, policy, source, "loss", addition=addition)) == 1.0
 
 
+def test_optional_program_expands_its_grounded_models_before_projection():
+    agent, ep, policy, source = _bench(member_forward=0.0, bound=1.0)
+    addition = agent.s.add_node("EmbodiedMotorProgram", {"member_count": 1.0})
+    addition_model = agent.s.add_node("EmbodiedEffectorModel", {
+        "experience_count": 2.0,
+        "context_delta_experience_count": 2.0,
+        "activation_magnitude": 1.0,
+        "state_effector_position": 0.0,
+        "specified_command_level": 0.0,
+        "specified_maximum_position_change_per_action": 1.0,
+        "mean_forward": 0.75,
+    })
+    _edge(
+        agent, addition, "includes_embodied_effector_model", addition_model
+    )
+    assert float(
+        _value(agent, ep, policy, source, "support", addition=addition)
+    ) == 1.0
+    assert float(
+        _value(agent, ep, policy, source, "loss", addition=addition)
+    ) == 0.0
+    agent.inner.set_attr(addition_model, "mean_forward", 1.25)
+    assert float(
+        _value(agent, ep, policy, source, "loss", addition=addition)
+    ) == 1.0
+
+
 def test_specified_effect_can_inherit_learned_neutral_context_transition():
     agent, ep, policy, source = _bench(
         member_context_count=0.0, specified_prior=True,
@@ -891,10 +977,12 @@ def test_humanoid_takeoff_projects_flat_intermediate_actions_to_improving_order_
         "state_qx": 0.0, "state_qy": 0.0,
         "state_qz": 0.0, "state_qw": 1.0,
         "state_vz": 0.0,
+        "motor_task_context": "self_takeoff",
+        "state_gravity_relative_orientation_class": 3.0,
         "self_takeoff_drive_active": 1.0,
         "self_takeoff_target_velocity_scale": 1.0,
         "heading_x": 1.0,
-        **{f"manifold_bound_{key}": 10.0 for key in (
+        **{f"manifold_bound_{key}": (5.0 if key == "dvz" else 10.0) for key in (
             "dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz",
         )},
     })
@@ -961,6 +1049,8 @@ def test_humanoid_takeoff_projects_flat_intermediate_actions_to_improving_order_
         "request_seq": 1.0, "allow_expansion": 1.0,
     })
     _edge(agent, episode, "has_active_humanoid_motor_program", plan)
+    for model in models:
+        _edge(agent, plan, "includes_humanoid_phase_action_model", model)
 
     # The unknown pair is the only information-gaining probe. Its receipt is
     # identifiable, so the composer stops at width two even though evidence
@@ -969,6 +1059,54 @@ def test_humanoid_takeoff_projects_flat_intermediate_actions_to_improving_order_
         "primary", "flat_a",
     }
     assert ungrounded is not None
+    agent.inner.remove_edge(
+        episode, "has_humanoid_synergy_model", ungrounded
+    )
+    # A supported learning projection preserves the additive path and carries
+    # the one unobserved pair in the information-loss dimension. It does not
+    # invent a synergy or collapse the complete order-three program to
+    # unsupported merely because this action is the experiment that learns it.
+    assert float(_value(agent, episode, policy, plan, "support")) == 1.0
+    unobserved_information_loss = float(
+        _value(agent, episode, policy, plan, "information_loss")
+    )
+    assert 0.0 < unobserved_information_loss <= 1.0
+
+    # A physical receipt for the complete compound supersedes its incomplete
+    # pairwise decomposition.  The whole-program response is analysis by
+    # synthesis evidence in its own right: replaying it must not recreate the
+    # unknown interaction as information loss.
+    for key in ("dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz"):
+        agent.inner.set_attr(plan, f"mean_{key}", 3.0 if key == "dvz" else 0.0)
+    agent.inner.set_attr(plan, "member_count", 3.0)
+    agent.inner.set_attr(plan, "experience_count", 1.0)
+    agent.inner.set_attr(plan, "receipt_learned", 1.0)
+    agent.inner.set_attr(plan, "whole_program_projection_authority", 1.0)
+    agent.inner.set_attr(plan, "motor_task_context", "self_takeoff")
+    agent.inner.set_attr(plan, "receipt_support_phase", 0.0)
+    agent.inner.set_attr(plan, "receipt_orientation_class", 3.0)
+    agent.inner.set_attr(plan, "receipt_response_frames", 2.0)
+    agent.inner.set_attr(plan, "response_frames", 2.0)
+    assert float(_value(agent, episode, policy, plan, "support")) == 1.0
+    assert float(
+        _value(agent, episode, policy, plan, "information_loss")
+    ) == 0.0
+    agent.inner.set_attr(
+        episode, "state_gravity_relative_orientation_class", 2.0
+    )
+    assert float(
+        _value(agent, episode, policy, plan, "information_loss")
+    ) == unobserved_information_loss
+    agent.inner.set_attr(
+        episode, "state_gravity_relative_orientation_class", 3.0
+    )
+    agent.inner.set_attr(plan, "response_frames", 3.0)
+    assert float(
+        _value(agent, episode, policy, plan, "information_loss")
+    ) == unobserved_information_loss
+    agent.inner.set_attr(plan, "response_frames", 2.0)
+
+    _edge(agent, episode, "has_humanoid_synergy_model", ungrounded)
     agent.inner.set_attr(ungrounded, "experience_count", 1.0)
 
     # Once the lower-order basis is grounded, the terminal order-three shape
@@ -976,3 +1114,29 @@ def test_humanoid_takeoff_projects_flat_intermediate_actions_to_improving_order_
     assert _humanoid_motor_members(agent, episode, policy) == {
         "primary", "flat_a", "flat_b",
     }
+
+    # Infer recruitment from the outstanding takeoff residual, then authorize
+    # it only when the exact scaled order-N shape stays inside every bound.
+    agent.inner.set_attr(episode, "self_takeoff_target_velocity_scale", 2.0)
+    effort = _value(
+        agent, episode, policy, plan, "takeoff_effort_snapshot",
+    )
+    safe_boundary = (5.0 / 3.0) ** 0.5
+    assert tuple(float(value) for value in effort[:5]) == pytest.approx((
+        1.0,
+        2.0 ** 0.5,
+        safe_boundary,
+        2.0 ** 0.5 - safe_boundary,
+        1.0,
+    ))
+    assert float(effort[11]) == pytest.approx(5.0)
+
+    agent.inner.set_attr(episode, "manifold_bound_dvz", 10.0)
+    effort = _value(
+        agent, episode, policy, plan, "takeoff_effort_snapshot",
+    )
+    assert tuple(float(value) for value in effort[:5]) == pytest.approx(
+        (1.0, 2.0 ** 0.5, 2.0 ** 0.5, 0.0, 1.0),
+    )
+    # Pairwise synergy scales with both uniformly recruited members.
+    assert float(effort[11]) == pytest.approx(6.0)

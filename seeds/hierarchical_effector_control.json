@@ -1,0 +1,1894 @@
+{
+ "id": "hierarchical_effector_control",
+ "version": "1.1.0",
+ "depends_on": [
+  "decision_core"
+ ],
+ "area": "hierarchical_effector_control",
+ "latency_class": "hard_realtime",
+ "description": "Morphology-neutral lazy body-subsection addressing and deterministic unrolling of nested, overlapping motor-program bindings to primitive effectors.",
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "hierarchical_effector_control:scope",
+   "src": {
+    "type": "EmbodiedEffectorTopology",
+    "var": "topology"
+   },
+   "edge_type": "has_embodied_control_subsection",
+   "tgt": {
+    "type": "EmbodiedControlSubsection",
+    "var": "scope"
+   }
+  },
+  {
+   "provenance": "hierarchical_effector_control:nested_scope",
+   "src": {
+    "type": "EmbodiedControlSubsection",
+    "var": "parent"
+   },
+   "edge_type": "contains_embodied_control_subsection",
+   "tgt": {
+    "type": "EmbodiedControlSubsection",
+    "var": "child"
+   }
+  },
+  {
+   "provenance": "hierarchical_effector_control:scope_member",
+   "src": {
+    "type": "EmbodiedControlSubsection",
+    "var": "scope"
+   },
+   "edge_type": "addresses_embodied_effector",
+   "tgt": {
+    "type": "EmbodiedEffector",
+    "var": "effector"
+   }
+  },
+  {
+   "provenance": "hierarchical_effector_control:scope_root",
+   "src": {
+    "type": "EmbodiedControlSubsection",
+    "var": "scope"
+   },
+   "edge_type": "rooted_at_embodied_effector",
+   "tgt": {
+    "type": "EmbodiedEffector",
+    "var": "effector"
+   }
+  },
+  {
+   "provenance": "hierarchical_effector_control:topology_relation",
+   "src": {
+    "type": "EmbodiedEffectorTopology",
+    "var": "topology"
+   },
+   "edge_type": "has_embodied_effector_relation",
+   "tgt": {
+    "type": "EmbodiedEffectorRelation",
+    "var": "relation"
+   }
+  },
+  {
+   "provenance": "hierarchical_effector_control:relation_source",
+   "src": {
+    "type": "EmbodiedEffectorRelation",
+    "var": "relation"
+   },
+   "edge_type": "has_embodied_effector_source",
+   "tgt": {
+    "type": "EmbodiedEffector",
+    "var": "effector"
+   }
+  },
+  {
+   "provenance": "hierarchical_effector_control:relation_target",
+   "src": {
+    "type": "EmbodiedEffectorRelation",
+    "var": "relation"
+   },
+   "edge_type": "has_embodied_effector_target",
+   "tgt": {
+    "type": "EmbodiedEffector",
+    "var": "effector"
+   }
+  },
+  {
+   "provenance": "hierarchical_effector_control:program",
+   "src": {
+    "type": "Agent",
+    "var": "agent"
+   },
+   "edge_type": "has_embodied_hierarchical_control_program",
+   "tgt": {
+    "type": "EmbodiedHierarchicalControlProgram",
+    "var": "program"
+   }
+  },
+  {
+   "provenance": "hierarchical_effector_control:binding",
+   "src": {
+    "type": "EmbodiedHierarchicalControlProgram",
+    "var": "program"
+   },
+   "edge_type": "includes_embodied_program_binding",
+   "tgt": {
+    "type": "EmbodiedProgramBinding",
+    "var": "binding"
+   }
+  },
+  {
+   "provenance": "hierarchical_effector_control:binding_scope",
+   "src": {
+    "type": "EmbodiedProgramBinding",
+    "var": "binding"
+   },
+   "edge_type": "targets_embodied_control_subsection",
+   "tgt": {
+    "type": "EmbodiedControlSubsection",
+    "var": "scope"
+   }
+  },
+  {
+   "provenance": "hierarchical_effector_control:binding_program",
+   "src": {
+    "type": "EmbodiedProgramBinding",
+    "var": "binding"
+   },
+   "edge_type": "invokes_embodied_child_motor_program",
+   "tgt": {
+    "type": "Unknown",
+    "var": "child_program"
+   }
+  },
+  {
+   "provenance": "hierarchical_effector_control:assignment",
+   "src": {
+    "type": "EmbodiedHierarchicalControlProgram",
+    "var": "program"
+   },
+   "edge_type": "has_embodied_effector_program_assignment",
+   "tgt": {
+    "type": "EmbodiedEffectorProgramAssignment",
+    "var": "assignment"
+   }
+  },
+  {
+   "provenance": "hierarchical_effector_control:assignment_binding",
+   "src": {
+    "type": "EmbodiedEffectorProgramAssignment",
+    "var": "assignment"
+   },
+   "edge_type": "comes_from_embodied_program_binding",
+   "tgt": {
+    "type": "EmbodiedProgramBinding",
+    "var": "binding"
+   }
+  },
+  {
+   "provenance": "hierarchical_effector_control:assignment_effector",
+   "src": {
+    "type": "EmbodiedEffectorProgramAssignment",
+    "var": "assignment"
+   },
+   "edge_type": "targets_embodied_effector",
+   "tgt": {
+    "type": "EmbodiedEffector",
+    "var": "effector"
+   }
+  },
+  {
+   "provenance": "hierarchical_effector_control:assignment_program",
+   "src": {
+    "type": "EmbodiedEffectorProgramAssignment",
+    "var": "assignment"
+   },
+   "edge_type": "invokes_embodied_child_motor_program",
+   "tgt": {
+    "type": "Unknown",
+    "var": "child_program"
+   }
+  },
+  {
+   "provenance": "hierarchical_effector_control:conflict",
+   "src": {
+    "type": "EmbodiedHierarchicalControlProgram",
+    "var": "program"
+   },
+   "edge_type": "has_conflicting_embodied_effector",
+   "tgt": {
+    "type": "EmbodiedEffector",
+    "var": "effector"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "hec_materialize_singleton_scope_for_each_effector",
+   "area": "hierarchical_effector_control",
+   "latency_class": "hard_realtime",
+   "order": -30,
+   "batch": true,
+   "comment": "Every primitive remains independently addressable; composite scopes are created only when named or learned.",
+   "match": [
+    [
+     "topology",
+     "has_embodied_effector",
+     "effector"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "topology"
+         },
+         "key": "subsection_hierarchy_ready"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "topology"
+        },
+        "edge_type": "has_embodied_control_subsection"
+       },
+       "var_name": "scope",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "scope"
+           },
+           "key": "scope_kind"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "singleton"
+          }
+         },
+         {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "scope"
+           },
+           "edge_type": "addresses_embodied_effector"
+          },
+          "var_name": "member",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Var",
+            "name": "member"
+           },
+           "b": {
+            "type": "Var",
+            "name": "effector"
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "scope",
+     "EmbodiedControlSubsection",
+     {
+      "scope_kind": "singleton",
+      "status": "ready",
+      "member_count": 1,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "topology",
+     "has_embodied_control_subsection",
+     "scope"
+    ],
+    [
+     "add_edge",
+     "scope",
+     "addresses_embodied_effector",
+     "effector"
+    ]
+   ]
+  },
+  {
+   "name": "hec_materialize_rooted_subsection_for_each_effector",
+   "area": "hierarchical_effector_control",
+   "latency_class": "hard_realtime",
+   "order": -29,
+   "batch": true,
+   "comment": "One O(N) rooted scope per discovered control point represents the mechanically distal subsection beginning there.",
+   "match": [
+    [
+     "topology",
+     "has_embodied_effector",
+     "effector"
+    ],
+    [
+     "topology",
+     "has_embodied_control_subsection",
+     "singleton"
+    ],
+    [
+     "singleton",
+     "addresses_embodied_effector",
+     "effector"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "topology"
+         },
+         "key": "subsection_hierarchy_ready"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "singleton"
+       },
+       "key": "scope_kind"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "singleton"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "topology"
+        },
+        "edge_type": "has_embodied_control_subsection"
+       },
+       "var_name": "scope",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "scope"
+           },
+           "key": "scope_kind"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "rooted_subsection"
+          }
+         },
+         {
+          "type": "Exists",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "scope"
+           },
+           "edge_type": "rooted_at_embodied_effector"
+          },
+          "var_name": "root",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Var",
+            "name": "root"
+           },
+           "b": {
+            "type": "Var",
+            "name": "effector"
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "scope",
+     "EmbodiedControlSubsection",
+     {
+      "scope_kind": "rooted_subsection",
+      "status": "ready",
+      "member_count": 0,
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "topology",
+     "has_embodied_control_subsection",
+     "scope"
+    ],
+    [
+     "add_edge",
+     "scope",
+     "rooted_at_embodied_effector",
+     "effector"
+    ],
+    [
+     "add_edge",
+     "scope",
+     "contains_embodied_control_subsection",
+     "singleton"
+    ]
+   ]
+  },
+  {
+   "name": "hec_nest_directly_distal_rooted_subsection",
+   "area": "hierarchical_effector_control",
+   "latency_class": "hard_realtime",
+   "order": -28,
+   "batch": true,
+   "comment": "Direct mechanical adjacency and observed mount depth, not anatomical names, form the rooted body-section hierarchy.",
+   "match": [
+    [
+     "topology",
+     "has_embodied_effector_relation",
+     "relation"
+    ],
+    [
+     "relation",
+     "has_embodied_effector_source",
+     "source"
+    ],
+    [
+     "relation",
+     "has_embodied_effector_target",
+     "target"
+    ],
+    [
+     "topology",
+     "has_embodied_control_subsection",
+     "source_scope"
+    ],
+    [
+     "source_scope",
+     "rooted_at_embodied_effector",
+     "source"
+    ],
+    [
+     "topology",
+     "has_embodied_control_subsection",
+     "target_scope"
+    ],
+    [
+     "target_scope",
+     "rooted_at_embodied_effector",
+     "target"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "topology"
+         },
+         "key": "subsection_hierarchy_ready"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "relation"
+         },
+         "key": "mechanical_path_known"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "relation"
+         },
+         "key": "mechanical_path_length"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "target"
+         },
+         "key": "mount_depth"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "source"
+         },
+         "key": "mount_depth"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "source_scope"
+        },
+        "edge_type": "contains_embodied_control_subsection"
+       },
+       "var_name": "known",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Var",
+         "name": "known"
+        },
+        "b": {
+         "type": "Var",
+         "name": "target_scope"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "source_scope",
+     "contains_embodied_control_subsection",
+     "target_scope"
+    ]
+   ]
+  },
+  {
+   "name": "hec_nest_reverse_ordered_directly_distal_subsection",
+   "area": "hierarchical_effector_control",
+   "latency_class": "hard_realtime",
+   "order": -28,
+   "batch": true,
+   "comment": "Direct mechanical adjacency and observed mount depth, not anatomical names, form the rooted body-section hierarchy.",
+   "match": [
+    [
+     "topology",
+     "has_embodied_effector_relation",
+     "relation"
+    ],
+    [
+     "relation",
+     "has_embodied_effector_source",
+     "source"
+    ],
+    [
+     "relation",
+     "has_embodied_effector_target",
+     "target"
+    ],
+    [
+     "topology",
+     "has_embodied_control_subsection",
+     "source_scope"
+    ],
+    [
+     "source_scope",
+     "rooted_at_embodied_effector",
+     "source"
+    ],
+    [
+     "topology",
+     "has_embodied_control_subsection",
+     "target_scope"
+    ],
+    [
+     "target_scope",
+     "rooted_at_embodied_effector",
+     "target"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "topology"
+         },
+         "key": "subsection_hierarchy_ready"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "relation"
+         },
+         "key": "mechanical_path_known"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "relation"
+         },
+         "key": "mechanical_path_length"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "source"
+         },
+         "key": "mount_depth"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "target"
+         },
+         "key": "mount_depth"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "target_scope"
+        },
+        "edge_type": "contains_embodied_control_subsection"
+       },
+       "var_name": "known",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Var",
+         "name": "known"
+        },
+        "b": {
+         "type": "Var",
+         "name": "source_scope"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "target_scope",
+     "contains_embodied_control_subsection",
+     "source_scope"
+    ]
+   ]
+  },
+  {
+   "name": "hec_unroll_nested_subsection_membership",
+   "area": "hierarchical_effector_control",
+   "latency_class": "hard_realtime",
+   "order": -27,
+   "batch": true,
+   "comment": "A subsection recursively addresses every primitive addressed by its child subsections.",
+   "match": [
+    [
+     "parent",
+     "contains_embodied_control_subsection",
+     "child"
+    ],
+    [
+     "child",
+     "addresses_embodied_effector",
+     "effector"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "parent"
+      },
+      "edge_type": "addresses_embodied_effector"
+     },
+     "var_name": "known",
+     "predicate": {
+      "type": "Eq",
+      "a": {
+       "type": "Var",
+       "name": "known"
+      },
+      "b": {
+       "type": "Var",
+       "name": "effector"
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "add_edge",
+     "parent",
+     "addresses_embodied_effector",
+     "effector"
+    ]
+   ]
+  },
+  {
+   "name": "hec_reconcile_named_subsection_width",
+   "area": "hierarchical_effector_control",
+   "latency_class": "hard_realtime",
+   "order": -26,
+   "batch": true,
+   "match": [
+    [
+     "topology",
+     "has_embodied_control_subsection",
+     "scope"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Eq",
+     "a": {
+      "type": "Plus",
+      "items": [
+       {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "scope"
+        },
+        "key": "member_count"
+       },
+       {
+        "type": "Lit",
+        "value": 0
+       }
+      ]
+     },
+     "b": {
+      "type": "Count",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "scope"
+       },
+       "edge_type": "addresses_embodied_effector"
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "scope",
+     "member_count",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "scope"
+        },
+        "edge_type": "addresses_embodied_effector"
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "hec_close_immutable_effector_subsection_hierarchy",
+   "area": "hierarchical_effector_control",
+   "latency_class": "hard_realtime",
+   "order": -25,
+   "batch": false,
+   "comment": "Once the immutable plant topology has one singleton and one rooted scope per effector and recursive membership is closed, retire its construction rules from the hot path.",
+   "match": [
+    [
+     "episode",
+     "has_embodied_effector_topology",
+     "topology"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "topology"
+         },
+         "key": "topology_facts_complete"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "topology"
+         },
+         "key": "subsection_hierarchy_ready"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "topology"
+        },
+        "edge_type": "has_embodied_effector"
+       }
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "topology"
+         },
+         "key": "effector_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "topology"
+         },
+         "edge_type": "has_embodied_control_subsection"
+        },
+        "var_name": "singleton_scope",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "singleton_scope"
+          },
+          "key": "scope_kind"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "singleton"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "topology"
+         },
+         "key": "effector_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "topology"
+         },
+         "edge_type": "has_embodied_control_subsection"
+        },
+        "var_name": "rooted_scope",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "rooted_scope"
+          },
+          "key": "scope_kind"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "rooted_subsection"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "topology"
+         },
+         "key": "effector_count"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "topology"
+        },
+        "edge_type": "has_embodied_control_subsection"
+       },
+       "var_name": "width_scope",
+       "predicate": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "width_scope"
+            },
+            "key": "member_count"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Count",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "width_scope"
+           },
+           "edge_type": "addresses_embodied_effector"
+          }
+         }
+        }
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "topology"
+        },
+        "edge_type": "has_embodied_control_subsection"
+       },
+       "var_name": "parent_scope",
+       "predicate": {
+        "type": "Exists",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "parent_scope"
+         },
+         "edge_type": "contains_embodied_control_subsection"
+        },
+        "var_name": "child_scope",
+        "predicate": {
+         "type": "Exists",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "child_scope"
+          },
+          "edge_type": "addresses_embodied_effector"
+         },
+         "var_name": "child_effector",
+         "predicate": {
+          "type": "Not",
+          "arg": {
+           "type": "Exists",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "parent_scope"
+            },
+            "edge_type": "addresses_embodied_effector"
+           },
+           "var_name": "parent_effector",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "parent_effector"
+            },
+            "b": {
+             "type": "Var",
+             "name": "child_effector"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "topology",
+     "subsection_hierarchy_ready",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "hec_unroll_subsection_program_to_primitive_assignment",
+   "area": "hierarchical_effector_control",
+   "latency_class": "hard_realtime",
+   "order": -20,
+   "batch": true,
+   "comment": "The binding is preserved while one explicit assignment is emitted for every addressed primitive.",
+   "match": [
+    [
+     "parent",
+     "includes_embodied_program_binding",
+     "binding"
+    ],
+    [
+     "binding",
+     "targets_embodied_control_subsection",
+     "scope"
+    ],
+    [
+     "binding",
+     "invokes_embodied_child_motor_program",
+     "child_program"
+    ],
+    [
+     "scope",
+     "addresses_embodied_effector",
+     "effector"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "parent"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "assembling"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "parent"
+         },
+         "edge_type": "has_embodied_effector_program_assignment"
+        },
+        "var_name": "assignment",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Exists",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "assignment"
+            },
+            "edge_type": "comes_from_embodied_program_binding"
+           },
+           "var_name": "source_binding",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "source_binding"
+            },
+            "b": {
+             "type": "Var",
+             "name": "binding"
+            }
+           }
+          },
+          {
+           "type": "Exists",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "assignment"
+            },
+            "edge_type": "targets_embodied_effector"
+           },
+           "var_name": "target_effector",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "target_effector"
+            },
+            "b": {
+             "type": "Var",
+             "name": "effector"
+            }
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "assignment",
+     "EmbodiedEffectorProgramAssignment",
+     {
+      "composition_operator": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "binding"
+        },
+        "key": "composition_operator"
+       }
+      },
+      "status": "assigned",
+      "integer_native": 1,
+      "output_authority": 0
+     }
+    ],
+    [
+     "add_edge",
+     "parent",
+     "has_embodied_effector_program_assignment",
+     "assignment"
+    ],
+    [
+     "add_edge",
+     "assignment",
+     "comes_from_embodied_program_binding",
+     "binding"
+    ],
+    [
+     "add_edge",
+     "assignment",
+     "targets_embodied_effector",
+     "effector"
+    ],
+    [
+     "add_edge",
+     "assignment",
+     "invokes_embodied_child_motor_program",
+     "child_program"
+    ]
+   ]
+  },
+  {
+   "name": "hec_close_fully_unrolled_program_binding",
+   "area": "hierarchical_effector_control",
+   "latency_class": "hard_realtime",
+   "order": -19,
+   "batch": true,
+   "match": [
+    [
+     "parent",
+     "includes_embodied_program_binding",
+     "binding"
+    ],
+    [
+     "binding",
+     "targets_embodied_control_subsection",
+     "scope"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "parent"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "assembling"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "scope"
+        },
+        "edge_type": "addresses_embodied_effector"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "parent"
+         },
+         "edge_type": "has_embodied_effector_program_assignment"
+        },
+        "var_name": "assignment",
+        "predicate": {
+         "type": "Exists",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "assignment"
+          },
+          "edge_type": "comes_from_embodied_program_binding"
+         },
+         "var_name": "source_binding",
+         "predicate": {
+          "type": "Eq",
+          "a": {
+           "type": "Var",
+           "name": "source_binding"
+          },
+          "b": {
+           "type": "Var",
+           "name": "binding"
+          }
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "scope"
+        },
+        "edge_type": "addresses_embodied_effector"
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "binding"
+        },
+        "key": "status"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "resolved"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "binding",
+     "status",
+     "resolved"
+    ]
+   ]
+  },
+  {
+   "name": "hec_reject_undeclared_or_exclusive_effector_overlap",
+   "area": "hierarchical_effector_control",
+   "latency_class": "hard_realtime",
+   "order": -18,
+   "batch": false,
+   "comment": "Graph order never resolves actuator contention. Every overlapping binding must explicitly opt into superposition.",
+   "match": [
+    [
+     "parent",
+     "has_embodied_effector_program_assignment",
+     "first"
+    ],
+    [
+     "parent",
+     "has_embodied_effector_program_assignment",
+     "second"
+    ],
+    [
+     "first",
+     "targets_embodied_effector",
+     "effector"
+    ],
+    [
+     "second",
+     "targets_embodied_effector",
+     "effector"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "parent"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "assembling"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Var",
+        "name": "first"
+       },
+       "b": {
+        "type": "Var",
+        "name": "second"
+       }
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "first"
+          },
+          "key": "composition_operator"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "superpose"
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "second"
+          },
+          "key": "composition_operator"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "superpose"
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "parent",
+     "status",
+     "rejected"
+    ],
+    [
+     "set_attr",
+     "parent",
+     "rejection_reason",
+     "unresolved_effector_overlap"
+    ],
+    [
+     "add_edge",
+     "parent",
+     "has_conflicting_embodied_effector",
+     "effector"
+    ]
+   ]
+  },
+  {
+   "name": "hec_close_explicitly_composed_hierarchical_program",
+   "area": "hierarchical_effector_control",
+   "latency_class": "hard_realtime",
+   "order": -17,
+   "batch": false,
+   "comment": "A closed program is itself reusable as a child program at any higher body scope.",
+   "match": [
+    [
+     "agent",
+     "has_embodied_hierarchical_control_program",
+     "parent"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "parent"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "assembling"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "parent"
+        },
+        "edge_type": "includes_embodied_program_binding"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "parent"
+        },
+        "edge_type": "includes_embodied_program_binding"
+       }
+      },
+      "b": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "parent"
+         },
+         "edge_type": "includes_embodied_program_binding"
+        },
+        "var_name": "binding",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "binding"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "resolved"
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "parent",
+     "status",
+     "ready"
+    ],
+    [
+     "set_attr",
+     "parent",
+     "binding_count",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "parent"
+        },
+        "edge_type": "includes_embodied_program_binding"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "parent",
+     "assignment_count",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "parent"
+        },
+        "edge_type": "has_embodied_effector_program_assignment"
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

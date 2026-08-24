@@ -4353,6 +4353,16 @@ def _run_arm(
                 "motor_weight_b": float(
                     decision.get("selected_motor_weight_b", 1.0)
                 ),
+                **{
+                    key: float(decision.get(key, 0.0))
+                    for key in (
+                        "motor_effort_ratio",
+                        "takeoff_effort_supported",
+                        "takeoff_effort_required_ratio",
+                        "takeoff_effort_residual_ratio",
+                        "takeoff_effort_authorized",
+                    )
+                },
                 "motor_input_energy_joules": float(
                     after["supplied_energy_joules"]
                 ),
@@ -5737,6 +5747,81 @@ def _run_arm(
         key=lambda row: int(row.get("trajectory_replay_issued_seq", 0)),
         default={},
     )
+    subsection_composition_questions = [
+        question
+        for question in agent.s.nodes("EmbodiedPhysicsQuestion")
+        if agent.s.node(question)["attrs"].get("kind")
+        == "situated_subsection_composition"
+    ]
+    subsection_composition_rows = []
+    subsection_selected_plan_ids = set()
+    subsection_proposal_rows = []
+    for question in subsection_composition_questions:
+        question_attrs = agent.s.node(question)["attrs"]
+        question_capabilities = agent.inner.neighbours(
+            question, "targets_learning_capability"
+        )
+        question_capability_name = (
+            agent.s.node(question_capabilities[0])["attrs"].get("name")
+            if len(question_capabilities) == 1 else None
+        )
+        selected_proposals = set(agent.inner.neighbours(
+            question, "has_selected_motor_learning_proposal"
+        ))
+        for proposal in agent.inner.neighbours(
+            question, "has_motor_learning_proposal"
+        ):
+            proposal_attrs = agent.s.node(proposal)["attrs"]
+            proposed_plans = agent.inner.neighbours(
+                proposal, "proposes_counterfactual_motor_program"
+            )
+            subsection_proposal_rows.append({
+                "status": proposal_attrs.get("status"),
+                "eligible": proposal_attrs.get("eligible", 0),
+                "selected": int(proposal in selected_proposals),
+                "proposed_plan_count": len(proposed_plans),
+            })
+            if proposal in selected_proposals:
+                subsection_selected_plan_ids.update(proposed_plans)
+        for plan in agent.inner.neighbours(
+            question, "has_counterfactual_motor_program"
+        ):
+            plan_attrs = agent.s.node(plan)["attrs"]
+            if plan_attrs.get("subsection_composition") != 1:
+                continue
+            subsection_composition_rows.append({
+                key: plan_attrs.get(key)
+                for key in (
+                    "status",
+                    "member_count",
+                    "primary_token",
+                    "secondary_token",
+                    "subsection_composition_manifold_admissible",
+                    "predicted_evidence_units",
+                    "interaction_uncertainty_units",
+                    "predicted_energy_units",
+                    "predicted_peak_load_units",
+                    "predicted_recoverability_units",
+                    "subsection_composition_manifold_support",
+                    "subsection_composition_manifold_resolved",
+                    "subsection_composition_manifold_loss",
+                    "subsection_composition_manifold_information_loss",
+                    "subsection_composition_manifold_effort_supported",
+                    "subsection_composition_manifold_effort_authorized",
+                    "physical_verified",
+                    "interaction_residual_units",
+                    "development_elevation_sum_units",
+                    "development_vertical_velocity_progress_sum_units",
+                )
+            } | {
+                "selected": int(plan in subsection_selected_plan_ids),
+                "question_status": question_attrs.get("status"),
+                "question_request_seq": question_attrs.get("request_seq"),
+                "question_capability": question_capability_name,
+            })
+    subsection_composition_status_counts = Counter(
+        str(row.get("status")) for row in subsection_composition_rows
+    )
     rule_cost_rows = sorted(
         (
             {
@@ -5895,6 +5980,67 @@ def _run_arm(
                 ),
                 "situated_states": ideal_effort_state_rows,
             },
+        },
+        "subsection_composition": {
+            "question_count": len(subsection_composition_questions),
+            "plan_count": len(subsection_composition_rows),
+            "proposal_count": len(subsection_proposal_rows),
+            "selected_plan_count": len(subsection_selected_plan_ids),
+            "manifold_admissible_plan_count": sum(
+                row.get("subsection_composition_manifold_admissible") == 1
+                for row in subsection_composition_rows
+            ),
+            "physical_verified_plan_count": sum(
+                row.get("physical_verified") == 1
+                for row in subsection_composition_rows
+            ),
+            "status_counts": dict(subsection_composition_status_counts),
+            "proposal_status_counts": dict(Counter(
+                str(row.get("status")) for row in subsection_proposal_rows
+            )),
+            "release_context": {
+                key: agent.s.node(episode)["attrs"].get(key)
+                for key in (
+                    "developmental_curriculum_active",
+                    "phase",
+                    "sensorimotor_interrupt_required",
+                    "reset_requested",
+                    "caregiver_protective_support_available",
+                    "locomotion_drive_active",
+                    "request_seq",
+                    "decision_seq",
+                    "action_ready",
+                    "structural_interrupt_required",
+                )
+            } | {
+                "ready_program_count": len(agent.inner.neighbours(
+                    episode, "has_ready_humanoid_motor_program"
+                )),
+                "active_capability_count": len(
+                    active_developmental_capabilities
+                ),
+                "development_evidence_window": (
+                    agent.s.node(development_context)["attrs"].get(
+                        "development_evidence_window"
+                    )
+                    if development_context is not None else None
+                ),
+                "active_capability": (
+                    {
+                        key: agent.s.node(
+                            active_developmental_capabilities[0]
+                        )["attrs"].get(key)
+                        for key in (
+                            "name", "goal", "developmental_ecology",
+                            "success_count", "failure_count",
+                            "active_physical_experiment_lease_count",
+                        )
+                    }
+                    if len(active_developmental_capabilities) == 1 else {}
+                ),
+            },
+            "plans": subsection_composition_rows,
+            "proposals": subsection_proposal_rows,
         },
         "policy_owner": "rust_graph",
         "first_bounds_ready_action": first_bounds_ready_action,
@@ -6333,6 +6479,12 @@ def _run_arm(
             "warm_start_shape_recognized"
         ],
         "warm_start_program_count": final["warm_start_program_count"],
+        "late_shape_library_recognition_count": final.get(
+            "late_shape_library_recognition_count", 0
+        ),
+        "partial_trajectory_warm_reuse_count": final.get(
+            "partial_trajectory_warm_reuse_count", 0
+        ),
         "actuator_count": len(options),
         "non_tonic_actuator_count": probe_count,
         "nominal_response_frames": final["nominal_response_frames"],

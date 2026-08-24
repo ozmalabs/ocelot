@@ -228,6 +228,28 @@ def coupling_memory_candidates():
     )
 
 
+def warm_coupling_audit_needed():
+    memory_count = Count(Neighbours(
+        "agent", "has_somatomotor_coupling_memory"
+    ))
+    return And(
+        Eq(P0("coupling", "warm_prior_rank"), L(0)),
+        Eq(Count(Neighbours(
+            "coupling", "warm_starts_from_somatomotor_coupling_memory"
+        )), L(0)),
+        Or(
+            Not(Eq(
+                A("coupling", "warm_start_audit_signature"),
+                A("development", "body_capability_signature"),
+            )),
+            Not(Eq(
+                P0("coupling", "warm_start_audit_memory_count"),
+                memory_count,
+            )),
+        ),
+    )
+
+
 def floor_development_active():
     return And(
         Eq(P0("episode", "somatomotor_wave_enabled"), L(1)),
@@ -843,6 +865,37 @@ def bind_coupling_rule(direction: str):
     }
 
 
+def open_warm_start_coupling_audit_rule():
+    return {
+        "name": "smw_open_changed_situation_coupling_memory_audit",
+        "area": "embodied_somatomotor_waves",
+        "latency_class": "hard_realtime",
+        "order": -117,
+        "batch": True,
+        "comment": "A coupling enters the expensive structural memory join "
+        "only when its body signature or available memory generation changed.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "projects_embodied_development", "development"],
+            ["episode", "has_somatomotor_wave_field", "field"],
+            ["field", "has_somatomotor_wave_cell", "source"],
+            ["source", "has_somatomotor_wave_coupling", "coupling"],
+        ],
+        "where": And(
+            warm_coupling_audit_needed(),
+            Eq(Count(Filter(
+                Neighbours("field", "has_pending_warm_coupling_memory_audit"),
+                "pending_coupling",
+                Eq(V("pending_coupling"), V("coupling")),
+            )), L(0)),
+        ),
+        "effects": [[
+            "add_edge", "field",
+            "has_pending_warm_coupling_memory_audit", "coupling",
+        ]],
+    }
+
+
 def warm_start_coupling_rule():
     candidates = coupling_memory_candidates()
     winner = Argmax(
@@ -858,7 +911,7 @@ def warm_start_coupling_rule():
         "name": "smw_warm_start_structurally_matching_coupling_hint",
         "area": "embodied_somatomotor_waves",
         "latency_class": "hard_realtime",
-        "order": -117,
+        "order": -116,
         "batch": False,
         "comment": "A source-body coupling supplies only a one-shot rank "
         "hint when body ShapeDecode coverage exceeds residual and the local "
@@ -868,6 +921,7 @@ def warm_start_coupling_rule():
             ["agent", "has_humanoid_episode", "episode"],
             ["episode", "projects_embodied_development", "development"],
             ["episode", "has_somatomotor_wave_field", "field"],
+            ["field", "has_pending_warm_coupling_memory_audit", "coupling"],
             ["field", "has_somatomotor_wave_cell", "source"],
             ["source", "has_somatomotor_wave_coupling", "coupling"],
             ["source", "represents_embodied_effector", "source_effector"],
@@ -877,10 +931,7 @@ def warm_start_coupling_rule():
             ["agent", "has_somatomotor_coupling_memory", "memory"],
         ],
         "where": And(
-            Eq(P0("coupling", "warm_prior_rank"), L(0)),
-            Eq(Count(Neighbours(
-                "coupling", "warm_starts_from_somatomotor_coupling_memory"
-            )), L(0)),
+            warm_coupling_audit_needed(),
             Gt(Count(candidates), L(0)),
             Eq(V("memory"), winner),
         ),
@@ -901,6 +952,50 @@ def warm_start_coupling_rule():
             ["set_attr", "field", "warm_coupling_hint_count", T(Plus(
                 P0("field", "warm_coupling_hint_count"), L(1)
             ))],
+            [
+                "del_edge", "field",
+                "has_pending_warm_coupling_memory_audit", "coupling",
+            ],
+        ],
+    }
+
+
+def close_unmatched_warm_start_coupling_audit_rule():
+    return {
+        "name": "smw_close_unmatched_coupling_memory_audit",
+        "area": "embodied_somatomotor_waves",
+        "latency_class": "hard_realtime",
+        "order": -115,
+        "batch": True,
+        "comment": "A failed structural lookup is evidence for this body "
+        "signature and memory generation, so unchanged fixpoints do not "
+        "repeat the coupling-by-memory join.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "projects_embodied_development", "development"],
+            ["episode", "has_somatomotor_wave_field", "field"],
+            ["field", "has_pending_warm_coupling_memory_audit", "coupling"],
+            ["field", "has_somatomotor_wave_cell", "source"],
+            ["source", "has_somatomotor_wave_coupling", "coupling"],
+            ["source", "represents_embodied_effector", "source_effector"],
+            ["coupling", "grounds_in_embodied_effector_relation", "relation"],
+            ["coupling", "targets_somatomotor_wave_cell", "target"],
+            ["target", "represents_embodied_effector", "target_effector"],
+        ],
+        "where": Eq(Count(coupling_memory_candidates()), L(0)),
+        "effects": [
+            ["set_attr", "coupling", "warm_start_audit_signature", T(
+                A("development", "body_capability_signature")
+            )],
+            ["set_attr", "coupling", "warm_start_audit_memory_count", T(
+                Count(Neighbours(
+                    "agent", "has_somatomotor_coupling_memory"
+                ))
+            )],
+            [
+                "del_edge", "field",
+                "has_pending_warm_coupling_memory_audit", "coupling",
+            ],
         ],
     }
 
@@ -1380,7 +1475,7 @@ def archive_experienced_wave_program_rule():
 def manifest() -> dict:
     return {
         "id": "somatomotor_waves",
-        "version": "1.6.0",
+        "version": "1.8.0",
         "depends_on": ["embodied_development"],
         "area": "embodied_somatomotor_waves",
         "latency_class": "hard_realtime",
@@ -1446,7 +1541,9 @@ def manifest() -> dict:
             instantiate_passive_body_model_rule(),
             bind_coupling_rule("forward"),
             bind_coupling_rule("reverse"),
+            open_warm_start_coupling_audit_rule(),
             warm_start_coupling_rule(),
+            close_unmatched_warm_start_coupling_audit_rule(),
             request_passive_effector_scaffold_rule(),
             learn_passive_effector_scaffold_rule(),
             reject_noncontingent_effector_scaffold_rule(),

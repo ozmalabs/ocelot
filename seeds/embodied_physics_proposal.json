@@ -1,6 +1,6 @@
 {
  "id": "embodied_physics_proposal",
- "version": "1.1.0",
+ "version": "1.7.0",
  "depends_on": [
   "metacognitive_learning",
   "embodied_program_trajectory",
@@ -2501,19 +2501,77 @@
     "type": "And",
     "items": [
      {
-      "type": "Eq",
-      "a": {
-       "type": "Attr",
-       "node": {
-        "type": "Var",
-        "name": "question"
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "question"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "open"
+        }
        },
-       "key": "status"
-      },
-      "b": {
-       "type": "Lit",
-       "value": "open"
-      }
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "program"
+             },
+             "key": "subsection_composition"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "question"
+             },
+             "key": "physical_experiment_lease_active"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      ]
      },
      {
       "type": "Eq",
@@ -2601,6 +2659,59 @@
        "type": "Lit",
        "value": 0
       }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "program"
+           },
+           "key": "subsection_composition"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "program"
+           },
+           "key": "subsection_composition_manifold_admissible"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      ]
      },
      {
       "type": "Eq",
@@ -3262,6 +3373,21 @@
     "type": "And",
     "items": [
      {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "question"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "open"
+      }
+     },
+     {
       "type": "Gt",
       "a": {
        "type": "Count",
@@ -3800,6 +3926,79 @@
    "where": {
     "type": "And",
     "items": [
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "question"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "open"
+        }
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "program"
+             },
+             "key": "subsection_composition"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "question"
+             },
+             "key": "physical_experiment_lease_active"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      ]
+     },
      {
       "type": "Gt",
       "a": {
@@ -4363,6 +4562,67 @@
       }
      },
      {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "proposal"
+          },
+          "edge_type": "proposes_counterfactual_motor_program",
+          "any_type": false
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Exists",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "proposal"
+         },
+         "edge_type": "proposes_counterfactual_motor_program",
+         "any_type": false
+        },
+        "var_name": "causally_receipted_program",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "causally_receipted_program"
+            },
+            "key": "physical_verified"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       }
+      ]
+     },
+     {
       "type": "Eq",
       "a": {
        "type": "Plus",
@@ -4781,6 +5041,67 @@
       }
      },
      {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "proposal"
+          },
+          "edge_type": "proposes_counterfactual_motor_program",
+          "any_type": false
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "Exists",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "proposal"
+         },
+         "edge_type": "proposes_counterfactual_motor_program",
+         "any_type": false
+        },
+        "var_name": "causally_receipted_program",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "causally_receipted_program"
+            },
+            "key": "physical_verified"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       }
+      ]
+     },
+     {
       "type": "Eq",
       "a": {
        "type": "Plus",
@@ -5082,34 +5403,7 @@
      "set_attr",
      "program",
      "physical_verified",
-     {
-      "__term__": {
-       "type": "IfThenElse",
-       "cond": {
-        "type": "Eq",
-        "a": {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "proposal"
-         },
-         "key": "status"
-        },
-        "b": {
-         "type": "Lit",
-         "value": "grounded"
-        }
-       },
-       "then": {
-        "type": "Lit",
-        "value": 1
-       },
-       "other": {
-        "type": "Lit",
-        "value": 0
-       }
-      }
-     }
+     1
     ]
    ]
   }

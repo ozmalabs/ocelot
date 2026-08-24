@@ -1315,7 +1315,6 @@ def publish_network_mode_sample_rule():
             ["episode", "has_embodied_body_belief", "belief"],
             ["episode", "has_embodied_motor_receipt", "outcome"],
             ["outcome", "has_interoceptive_forecast", "forecast"],
-            ["agent", "has_allostatic_error", "error"],
             ["error", "forecasted_from", "forecast"],
         ],
         "where": And(
@@ -1527,10 +1526,11 @@ def manifest():
     ]
     return {
         "id": "embodied_sensorimotor_core",
-        "version": "1.2.0",
+        "version": "1.4.0",
         "depends_on": [
             "adaptive_control_core",
             "default_mode_core",
+            "hierarchical_effector_control",
         ],
         "area": "embodied_sensorimotor",
         "latency_class": "hard_realtime",

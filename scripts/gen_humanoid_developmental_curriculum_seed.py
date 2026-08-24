@@ -41,9 +41,16 @@ from scripts.gen_humanoid_adaptation_seed import (  # noqa: E402
     V,
 )
 from scripts.gen_embodied_development_seed import capability_success  # noqa: E402
+from scripts.gen_embodied_physics_proposal_seed import (  # noqa: E402
+    PARETO_DIMENSIONS as MOTOR_PROPOSAL_PARETO_DIMENSIONS,
+)
 
 
 P0 = PI0
+
+
+def Nth(items, index):
+    return {"type": "Nth", "items": items, "index": index}
 
 
 def trajectory_manifold_projection(
@@ -616,6 +623,195 @@ def physics_counterfactual_candidates(
     )
 
 
+def neighbours_of(node, edge_type):
+    return {
+        "type": "Neighbours",
+        "node": node,
+        "edge_type": edge_type,
+        "any_type": False,
+    }
+
+
+def expected_program_units(program, key):
+    return IDiv(
+        P0(program, key),
+        Max(L(1), P0(program, "development_receipt_count")),
+    )
+
+
+def developmental_program_evidence_units(capability, program):
+    kind = A(capability, "evidence_kind")
+    orientation = Max(L(0), Minus(
+        expected_program_units(program, "development_orientation_escape_units"),
+        expected_program_units(program, "development_orientation_return_units"),
+    ))
+    return If(
+        is_orientation_evidence(capability),
+        orientation,
+        If(
+            Eq(kind, L("support_gain")),
+            expected_program_units(program, "development_support_evidence_units"),
+            If(
+                Eq(kind, L("configuration_reversal")),
+                expected_program_units(program, "development_reversal_evidence_count"),
+                If(
+                    Eq(kind, L("support_topology_change")),
+                    expected_program_units(
+                        program, "development_support_transition_evidence_count"
+                    ),
+                    If(
+                        Eq(kind, L("stable_partial_motion")),
+                        expected_program_units(program, "development_stable_evidence_count"),
+                        If(
+                            is_translation_evidence(capability),
+                            expected_program_units(
+                                program, "development_translation_evidence_units"
+                            ),
+                            If(
+                                is_elevation_evidence(capability),
+                                Max(L(0), expected_program_units(
+                                    program, "development_elevation_sum_units"
+                                )),
+                                L(0),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+    )
+
+
+def developmental_outcome_evidence_units(capability, outcome="outcome"):
+    kind = A(capability, "evidence_kind")
+    return If(
+        is_orientation_evidence(capability),
+        Max(L(0), P0(outcome, "development_orientation_escape_units")),
+        If(
+            Eq(kind, L("support_gain")),
+            Plus(
+                Max(L(0), P0(outcome, "development_support_gain")),
+                P0(outcome, "development_support_extent_gain"),
+            ),
+            If(
+                Eq(kind, L("configuration_reversal")),
+                P0(outcome, "development_reversal"),
+                If(
+                    Eq(kind, L("support_topology_change")),
+                    P0(outcome, "development_support_topology_changed"),
+                    If(
+                        Eq(kind, L("stable_partial_motion")),
+                        P0(outcome, "development_stable_partial_motion"),
+                        If(
+                            is_translation_evidence(capability),
+                            P0(outcome, "development_translation_units"),
+                            If(
+                                is_elevation_evidence(capability),
+                                P0(outcome, "development_elevation_units"),
+                                L(0),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+    )
+
+
+def situated_subsection_candidate_predicate(var_name):
+    return And(
+            Eq(P0(var_name, "exclude_subsection_candidate"), L(0)),
+            Eq(
+                P0(var_name, "subsection_candidate_audit_seq"),
+                P0("episode", "request_seq"),
+            ),
+            Gt(P0(var_name, "subsection_program_ordinal"), L(0)),
+            Gt(P0(var_name, "development_receipt_count"), L(0)),
+            Eq(P0(var_name, "experience_retained"), L(1)),
+            Or(
+                Eq(A(var_name, "status"), L("grounded")),
+                Eq(A(var_name, "status"), L("learned")),
+                Eq(A(var_name, "status"), L("ready")),
+            ),
+            Eq(P0(var_name, "subsection_assignment_evidence_complete"), L(1)),
+            Eq(P0(var_name, "subsection_local_manifold_admissible"), L(1)),
+            Gt(P0(var_name, "subsection_candidate_evidence_units"), L(0)),
+    )
+
+
+def subsection_program_candidates(
+    capability="capability", var_name="subsection_candidate"
+):
+    return Filter(
+        Neighbours("episode", "has_humanoid_motor_program"),
+        var_name,
+        situated_subsection_candidate_predicate(var_name),
+    )
+
+
+def subsection_program_inverse_rank(query, program):
+    directed = expected_program_units(program, "development_directed_sum_units")
+    lateral = expected_program_units(program, "development_lateral_sum_units")
+    elevation = expected_program_units(program, "development_elevation_sum_units")
+    orientation = IDiv(
+        Minus(
+            P0(program, "development_orientation_escape_units"),
+            P0(program, "development_orientation_return_units"),
+        ),
+        Max(L(1), P0(program, "development_receipt_count")),
+    )
+    task_residual = If(
+        Eq(A(query, "mode"), L("translation")),
+        Plus(
+            squared_residual(P0(query, "target_directed_units"), directed),
+            Times(lateral, lateral),
+            Times(elevation, elevation),
+        ),
+        If(
+            Eq(A(query, "mode"), L("elevation")),
+            Plus(
+                squared_residual(P0(query, "target_elevation_units"), elevation),
+                Times(lateral, lateral),
+            ),
+            If(
+                Eq(A(query, "mode"), L("orientation")),
+                squared_residual(P0(query, "target_orientation_units"), orientation),
+                Neg(developmental_program_evidence_units("capability", program)),
+            ),
+        ),
+    )
+    interaction_residual = IDiv(
+        P0(program, "subsection_interaction_residual_sum_units"),
+        Max(L(1), P0(program, "subsection_composition_receipt_count")),
+    )
+    return Plus(
+        task_residual,
+        Times(interaction_residual, interaction_residual),
+    )
+
+
+def subsection_scope(program):
+    hierarchy = Pick(Neighbours(
+        program, "realizes_embodied_hierarchical_control_program"
+    ))
+    return Pick(neighbours_of(hierarchy, "controls_embodied_control_subsection"))
+
+
+def subsection_overlap_count(first, second):
+    second_members = neighbours_of(
+        subsection_scope(second), "addresses_embodied_effector"
+    )
+    return Count(Filter(
+        neighbours_of(subsection_scope(first), "addresses_embodied_effector"),
+        "overlap_effector",
+        Exists(
+            second_members,
+            "second_effector",
+            Eq(V("second_effector"), V("overlap_effector")),
+        ),
+    ))
+
+
 def intentional_locomotor_goal(capability="capability"):
     """Any developmental capability intentionally exploring locomotion."""
     return Eq(A(capability, "goal"), L("locomotion"))
@@ -653,12 +849,28 @@ def situated_developmental_release_gate(capability="capability"):
         Eq(A("episode", "phase"), L("locomotion")),
         Or(
             floor_development(capability),
+            caregiver_protection_needed(capability),
             And(
                 intentional_locomotor_goal(capability),
                 Eq(P0("episode", "locomotion_drive_active"), L(1)),
             ),
         ),
         Not(material_viability_reflex_active()),
+    )
+
+
+def leased_subsection_situated_release_continues():
+    """Preserve leased support authority unless its physical premise leaves."""
+    return And(
+        Eq(P0("question", "situated_release_authorized"), L(1)),
+        Or(
+            Eq(P0(
+                "question", "physical_experiment_requires_caregiver_support"
+            ), L(0)),
+            Eq(P0(
+                "episode", "caregiver_protective_support_available"
+            ), L(1)),
+        ),
     )
 
 
@@ -1354,6 +1566,30 @@ def learn_integer_developmental_program_affordance_rule():
                     P0("outcome", "development_translation_units"),
                 )
             )],
+            ["set_attr", "plan", "development_directed_sum_units", T(Plus(
+                P0("plan", "development_directed_sum_units"),
+                P0("outcome", "development_directed_units"),
+            ))],
+            ["set_attr", "plan", "development_lateral_sum_units", T(Plus(
+                P0("plan", "development_lateral_sum_units"),
+                P0("outcome", "development_lateral_units"),
+            ))],
+            ["set_attr", "plan", "development_elevation_sum_units", T(Plus(
+                P0("plan", "development_elevation_sum_units"),
+                P0("outcome", "development_elevation_units"),
+            ))],
+            ["set_attr", "plan", "development_energy_sum_units", T(Plus(
+                P0("plan", "development_energy_sum_units"),
+                P0("outcome", "development_energy_units"),
+            ))],
+            ["set_attr", "plan", "development_peak_load_sum_units", T(Plus(
+                P0("plan", "development_peak_load_sum_units"),
+                P0("outcome", "development_peak_load_units"),
+            ))],
+            ["set_attr", "plan", "development_recoverability_sum_units", T(Plus(
+                P0("plan", "development_recoverability_sum_units"),
+                P0("outcome", "development_recoverability_units"),
+            ))],
             ["set_attr", "plan", "development_reversal_evidence_count", T(
                 Plus(
                     P0("plan", "development_reversal_evidence_count"),
@@ -1402,6 +1638,601 @@ def orientation_composition_authorized(capability="capability"):
     )
 
 
+def open_situated_subsection_composition_question_rule():
+    """Give one active inverse query one typed composition workspace."""
+    return {
+        "name": "hdc_open_situated_subsection_composition_question",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -112,
+        "batch": False,
+        "comment": "Subsection composition owns a typed workspace attached to the current inverse query. A shared targets-capability edge is not sufficient identity: queries and proposals also use that relation.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "projects_embodied_development", "development"],
+            ["development", "has_active_embodied_developmental_capability", "capability"],
+            ["development", "has_active_embodied_inverse_kinematic_query", "query"],
+            ["query", "targets_learning_capability", "capability"],
+        ],
+        "where": And(
+            Gt(Count(subsection_program_candidates()), L(1)),
+            Gt(
+                P0("episode", "request_seq"),
+                P0("query", "subsection_composition_question_closed_seq"),
+            ),
+            Eq(Count(Neighbours(
+                "query", "has_active_subsection_composition_question"
+            )), L(0)),
+        ),
+        "effects": [
+            ["add_node", "question", "EmbodiedPhysicsQuestion", {
+                "kind": "situated_subsection_composition",
+                "status": "resolved",
+                "request_seq": T(P0("episode", "request_seq")),
+                "output_authority": 0,
+                "integer_native": 1,
+            }],
+            ["add_edge", "query",
+             "has_active_subsection_composition_question", "question"],
+            ["add_edge", "question",
+             "targets_learning_capability", "capability"],
+        ],
+    }
+
+
+def audit_developmental_subsection_candidate_rule():
+    assignments = Neighbours(
+        "hierarchy", "has_embodied_effector_program_assignment"
+    )
+    evidence_complete = And(
+        Gt(Count(assignments), L(0)),
+        Not(Exists(
+            assignments,
+            "unsupported_assignment",
+            Eq(P0("unsupported_assignment", "experience_count"), L(0)),
+        )),
+    )
+    manifold_snapshot = A("program", "subsection_local_manifold_snapshot")
+    gate_active = And(
+        Gt(P0("policy", "future_manifold_enabled"), L(0)),
+        Gt(P0("episode", "manifold_bounds_ready"), L(0)),
+    )
+    manifold_allowed = Or(
+        Not(gate_active),
+        And(
+            Gt(Nth(manifold_snapshot, 0), L(0)),
+            Gt(Nth(manifold_snapshot, 1), L(0)),
+            Eq(Nth(manifold_snapshot, 3), L(0)),
+            Or(
+                Eq(Nth(manifold_snapshot, 4), L(0)),
+                Gt(Nth(manifold_snapshot, 5), L(0)),
+            ),
+        ),
+    )
+    snapshot_fields = (
+        "support", "resolved", "loss", "information_loss",
+        "effort_supported", "effort_authorized",
+    )
+    return {
+        "name": "hdc_audit_situated_subsection_program_candidate",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -113,
+        "batch": True,
+        "comment": "Evaluate each learned subsection once per sensed request. Later selection reads these graph-visible local-manifold, assignment-evidence, task-residual and expected-evidence facts without duplicating projection work.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_policy", "policy"],
+            ["episode", "projects_embodied_development", "development"],
+            ["development", "has_active_embodied_developmental_capability", "capability"],
+            ["development", "has_active_embodied_inverse_kinematic_query", "query"],
+            ["query", "targets_learning_capability", "capability"],
+            ["episode", "has_humanoid_motor_program", "program"],
+            ["program", "realizes_embodied_hierarchical_control_program", "hierarchy"],
+        ],
+        "where": And(
+            Gt(P0("hierarchy", "receipt_count"), L(0)),
+            Gt(P0("program", "subsection_program_ordinal"), L(0)),
+            Gt(P0("program", "development_receipt_count"), L(0)),
+            Eq(P0("program", "experience_retained"), L(1)),
+            Or(
+                Eq(A("program", "status"), L("grounded")),
+                Eq(A("program", "status"), L("learned")),
+                Eq(A("program", "status"), L("ready")),
+            ),
+            Gt(
+                developmental_program_evidence_units("capability", "program"),
+                L(0),
+            ),
+            evidence_complete,
+            Lt(
+                P0("program", "subsection_candidate_audit_seq"),
+                P0("episode", "request_seq"),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "program", "subsection_local_manifold_snapshot", T(
+                trajectory_manifold_projection("program", "snapshot")
+            )],
+            ["set_attr", "program", "subsection_candidate_audit_seq", T(
+                P0("episode", "request_seq")
+            )],
+            ["set_attr", "program", "subsection_assignment_evidence_complete", T(
+                If(evidence_complete, L(1), L(0))
+            )],
+            ["set_attr", "program", "subsection_local_manifold_admissible", T(
+                If(manifold_allowed, L(1), L(0))
+            )],
+            ["set_attr", "program", "subsection_candidate_evidence_units", T(
+                developmental_program_evidence_units("capability", "program")
+            )],
+            ["set_attr", "program", "subsection_candidate_inverse_cost_units", T(
+                subsection_program_inverse_rank("query", "program")
+            )],
+            *[
+                [
+                    "set_attr", "program",
+                    f"subsection_local_manifold_{field}",
+                    T(If(
+                        Gt(P0("policy", "future_manifold_enabled"), L(0)),
+                        Nth(
+                            A("program", "subsection_local_manifold_snapshot"),
+                            index,
+                        ),
+                        L(0),
+                    )),
+                ]
+                for index, field in enumerate(snapshot_fields)
+            ],
+        ],
+    }
+
+
+def select_subsection_program_anchor_rule():
+    candidates = subsection_program_candidates()
+    anchor = Argmin(
+        candidates,
+        "subsection_anchor",
+        P0("subsection_anchor", "subsection_candidate_inverse_cost_units"),
+        V("episode"),
+    )
+    return {
+        "name": "hdc_select_situated_subsection_program_anchor",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -111,
+        "batch": False,
+        "comment": "Choose one assignment-verified, locally manifold-admissible program that best reduces the current task-space residual. The edge turns later peer expansion into a linear join.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_policy", "policy"],
+            ["episode", "projects_embodied_development", "development"],
+            ["development", "has_active_embodied_developmental_capability", "capability"],
+            ["development", "has_active_embodied_inverse_kinematic_query", "query"],
+            ["query", "targets_learning_capability", "capability"],
+            ["query", "has_active_subsection_composition_question", "question"],
+            ["question", "targets_learning_capability", "capability"],
+            ["episode", "has_humanoid_motor_program", "first"],
+        ],
+        "where": And(
+            situated_subsection_candidate_predicate("first"),
+            Gt(Count(candidates), L(1)),
+            Eq(V("first"), anchor),
+            Eq(Count(Neighbours(
+                "question", "has_subsection_composition_anchor"
+            )), L(0)),
+        ),
+        "effects": [[
+            "add_edge", "question", "has_subsection_composition_anchor", "first",
+        ]],
+    }
+
+
+def open_subsection_program_counterfactuals_rule():
+    candidates = subsection_program_candidates()
+    known_pair = Filter(
+        Neighbours("question", "has_counterfactual_motor_program"),
+        "known_pair_program",
+        And(
+            Exists(
+                Neighbours(
+                    "known_pair_program", "composes_developmental_subsection_program"
+                ),
+                "known_first",
+                Eq(V("known_first"), V("first")),
+            ),
+            Exists(
+                Neighbours(
+                    "known_pair_program", "composes_developmental_subsection_program"
+                ),
+                "known_second",
+                Eq(V("known_second"), V("second")),
+            ),
+        ),
+    )
+    overlap = subsection_overlap_count("first", "second")
+    pair_components = Filter(
+        candidates,
+        "pair_component",
+        Or(
+            Eq(V("pair_component"), V("first")),
+            Eq(V("pair_component"), V("second")),
+        ),
+    )
+    component_count = Count(pair_components)
+    predicted_evidence = Plus(
+        P0("first", "subsection_candidate_evidence_units"),
+        P0("second", "subsection_candidate_evidence_units"),
+    )
+    return {
+        "name": "hdc_open_verified_subsection_program_pair_experiments",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -110,
+        "batch": True,
+        "comment": "Use one best situated subsection program as an anchor and publish one Pareto experiment per compatible peer. This is linear in retained programs; the existing Pareto frontier chooses the actual experiment.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_policy", "policy"],
+            ["episode", "projects_embodied_development", "development"],
+            ["development", "has_active_embodied_developmental_capability", "capability"],
+            ["development", "has_active_embodied_inverse_kinematic_query", "query"],
+            ["query", "targets_learning_capability", "capability"],
+            ["query", "has_active_subsection_composition_question", "question"],
+            ["question", "targets_learning_capability", "capability"],
+            ["question", "has_subsection_composition_anchor", "first"],
+            ["episode", "has_humanoid_motor_program", "second"],
+        ],
+        "where": And(
+            situated_subsection_candidate_predicate("second"),
+            Not(Eq(V("first"), V("second"))),
+            Eq(Count(known_pair), L(0)),
+        ),
+        "effects": [
+            ["add_node", "plan", "HumanoidMotorProgram", {
+                "status": "subsection_counterfactual_building",
+                "request_seq": T(P0("episode", "request_seq")),
+                "member_count": 0,
+                "primary_token": "",
+                "response_frames": T(Max(
+                    L(1),
+                    P0("first", "response_frames"),
+                    P0("second", "response_frames"),
+                )),
+                "collapse_kind": "developmental_subsection_composition",
+                "decision_kind": "developmental_metaprogram",
+                "counterfactual_unseen": 1,
+                "subsection_composition": 1,
+                "subsection_shape_order": T(Plus(
+                    Max(
+                        L(1),
+                        P0("first", "subsection_shape_order"),
+                        P0("second", "subsection_shape_order"),
+                    ),
+                    L(1),
+                )),
+                "component_count": T(component_count),
+                "subsection_overlap_count": T(overlap),
+                "predicted_evidence_units": T(predicted_evidence),
+                "predicted_energy_units": T(Plus(
+                    expected_program_units("first", "development_energy_sum_units"),
+                    expected_program_units("second", "development_energy_sum_units"),
+                )),
+                "predicted_peak_load_units": T(Plus(
+                    expected_program_units("first", "development_peak_load_sum_units"),
+                    expected_program_units("second", "development_peak_load_sum_units"),
+                )),
+                "predicted_recoverability_units": T(Plus(
+                    expected_program_units("first", "development_recoverability_sum_units"),
+                    expected_program_units("second", "development_recoverability_sum_units"),
+                )),
+                "interaction_uncertainty_units": T(Plus(
+                    Minus(component_count, L(1)),
+                    overlap,
+                )),
+                "subsection_composition_manifold_admissible": T(If(
+                    trajectory_manifold_release_allowed("first", "second"),
+                    L(1), L(0),
+                )),
+                **{
+                    f"subsection_composition_manifold_{field}": T(
+                        trajectory_manifold_projection(
+                            "first", field, "second"
+                        )
+                    )
+                    for field in (
+                        "support", "resolved", "loss", "information_loss",
+                        "effort_supported", "effort_authorized",
+                    )
+                },
+                "requires_release_envelope_guard": 1,
+                "development_receipt_count": 0,
+                "experience_retained": 0,
+                "output_authority": 0,
+                "integer_native": 1,
+            }],
+            ["add_edge", "episode", "has_humanoid_motor_program", "plan"],
+            ["add_edge", "question", "has_counterfactual_motor_program", "plan"],
+            ["add_edge", "plan", "composes_developmental_subsection_program", "first"],
+            ["add_edge", "plan", "composes_developmental_subsection_program", "second"],
+        ],
+    }
+
+
+def bind_subsection_program_counterfactual_members_rule():
+    return {
+        "name": "hdc_unroll_subsection_components_into_counterfactual_members",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -109,
+        "batch": True,
+        "match": [
+            ["question", "has_counterfactual_motor_program", "plan"],
+            ["plan", "composes_developmental_subsection_program", "component"],
+            ["component", "includes_humanoid_phase_action_model", "member"],
+        ],
+        "where": And(
+            Eq(A("plan", "status"), L("subsection_counterfactual_building")),
+            Not(Exists(
+                Neighbours("plan", "includes_humanoid_phase_action_model"),
+                "known_member",
+                Eq(V("known_member"), V("member")),
+            )),
+        ),
+        "effects": [[
+            "add_edge", "plan", "includes_humanoid_phase_action_model", "member",
+        ]],
+    }
+
+
+def close_subsection_program_counterfactual_rule():
+    components = Neighbours(
+        "plan", "composes_developmental_subsection_program"
+    )
+    members = Neighbours("plan", "includes_humanoid_phase_action_model")
+    missing = Exists(
+        components,
+        "component",
+        Exists(
+            Neighbours("component", "includes_humanoid_phase_action_model"),
+            "component_member",
+            Not(Exists(
+                members,
+                "known_member",
+                Eq(V("known_member"), V("component_member")),
+            )),
+        ),
+    )
+    primary = Argmin(
+        members, "subsection_primary", P0("subsection_primary", "ordinal"), V("plan")
+    )
+    secondary = Argmin(
+        Filter(
+            members,
+            "subsection_secondary_option",
+            Not(Eq(V("subsection_secondary_option"), primary)),
+        ),
+        "subsection_secondary",
+        P0("subsection_secondary", "ordinal"),
+        primary,
+    )
+    return {
+        "name": "hdc_forward_project_subsection_program_composition",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -108,
+        "batch": False,
+        "comment": "The rolled-up child programs remain explicit provenance while their primitive union enters the existing physical prediction and release path.",
+        "match": [["question", "has_counterfactual_motor_program", "plan"]],
+        "where": And(
+            Eq(A("plan", "status"), L("subsection_counterfactual_building")),
+            Eq(Count(components), L(2)),
+            Gt(Count(members), L(1)),
+            Not(missing),
+        ),
+        "effects": [
+            ["set_attr", "plan", "status", "counterfactual_predicted"],
+            ["set_attr", "plan", "member_count", T(Count(members))],
+            ["set_attr", "plan", "primary_token", T(AO(primary, "token"))],
+            ["set_attr", "plan", "secondary_token", T(AO(secondary, "token"))],
+        ],
+    }
+
+
+def lease_capability_for_admissible_subsection_experiment_rule():
+    return {
+        "name": "hdc_lease_capability_for_admissible_subsection_experiment",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -107,
+        "batch": False,
+        "comment": "An admissible projected experiment establishes a future "
+        "that spans the soft Pareto collapse. Preserve its situated capability "
+        "until a physical receipt settles that future; the lease grants no "
+        "motor authority and remains subordinate to material interruption.",
+        "match": [
+            ["episode", "projects_embodied_development", "development"],
+            ["development", "has_active_embodied_developmental_capability",
+             "capability"],
+            ["development", "has_active_embodied_inverse_kinematic_query", "query"],
+            ["query", "targets_learning_capability", "capability"],
+            ["query", "has_active_subsection_composition_question", "question"],
+            ["question", "has_counterfactual_motor_program", "plan"],
+        ],
+        "where": And(
+            Eq(A("plan", "status"), L("counterfactual_predicted")),
+            Eq(P0(
+                "plan", "subsection_composition_manifold_admissible"
+            ), L(1)),
+            Eq(P0(
+                "capability", "active_physical_experiment_lease_count"
+            ), L(0)),
+            situated_developmental_release_gate(),
+        ),
+        "effects": [
+            ["set_attr", "capability",
+             "active_physical_experiment_lease_count", 1],
+            ["set_attr", "question", "physical_experiment_lease_active", 1],
+            ["set_attr", "question", "situated_release_authorized", 1],
+            ["set_attr", "question",
+             "physical_experiment_requires_caregiver_support", T(If(
+                 caregiver_protection_needed(), L(1), L(0)
+             ))],
+        ],
+    }
+
+
+def cancel_subsection_experiment_lease_outside_situated_manifold_rule():
+    question_plans = Neighbours(
+        "question", "has_counterfactual_motor_program"
+    )
+    trials = Neighbours("episode", "has_humanoid_motor_trial")
+    settling_receipt = Exists(
+        question_plans,
+        "receipted_question_plan",
+        Exists(
+            trials,
+            "settling_trial",
+            And(
+                Or(
+                    Exists(
+                        Neighbours(
+                            "settling_trial", "enacts_humanoid_motor_program"
+                        ),
+                        "directly_enacted_plan",
+                        Eq(
+                            V("directly_enacted_plan"),
+                            V("receipted_question_plan"),
+                        ),
+                    ),
+                    Exists(
+                        Neighbours(
+                            "settling_trial",
+                            "synthesized_humanoid_motor_program",
+                        ),
+                        "reassociated_plan",
+                        Eq(
+                            V("reassociated_plan"),
+                            V("receipted_question_plan"),
+                        ),
+                    ),
+                ),
+                Exists(
+                    Neighbours("settling_trial", "has_humanoid_transition"),
+                    "settling_outcome",
+                    Eq(P0(
+                        "settling_outcome", "development_receipt_closed"
+                    ), L(1)),
+                ),
+            ),
+        ),
+    )
+    return {
+        "name": "hdc_cancel_subsection_experiment_lease_outside_situated_manifold",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 95,
+        "batch": False,
+        "comment": "A viability interrupt, withdrawn support, or other "
+        "situated-gate change compresses the leased future out of the "
+        "acceptable manifold. Cancel the output-null experiment without "
+        "losing its projected evidence.",
+        "match": [
+            ["episode", "projects_embodied_development", "development"],
+            ["development", "has_active_embodied_developmental_capability",
+             "capability"],
+            ["query", "has_active_subsection_composition_question", "question"],
+            ["question", "targets_learning_capability", "capability"],
+        ],
+        "where": And(
+            Eq(P0("question", "physical_experiment_lease_active"), L(1)),
+            Not(leased_subsection_situated_release_continues()),
+            Not(settling_receipt),
+            Eq(P0("question", "physical_experiment_issued"), L(0)),
+        ),
+        "effects": [
+            ["set_attr", "capability",
+             "active_physical_experiment_lease_count", 0],
+            ["set_attr", "question", "physical_experiment_lease_active", 0],
+            ["set_attr", "question", "physical_experiment_issued", 0],
+            ["set_attr", "question", "situated_release_authorized", 0],
+            ["set_attr", "question", "status", "situated_release_withdrawn"],
+            ["del_edge", "query",
+             "has_active_subsection_composition_question", "question"],
+            ["set_attr", "query",
+             "subsection_composition_question_closed_seq", T(
+                 P0("episode", "request_seq")
+             )],
+        ],
+    }
+
+
+def retire_withdrawn_subsection_proposal_rule():
+    return {
+        "name": "hdc_retire_withdrawn_subsection_proposal",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 96,
+        "batch": True,
+        "comment": "Withdrawal removes experiment eligibility and selection, "
+        "not evidence. The counterfactual plan and its projected manifold "
+        "shape remain in graph history without later output authority.",
+        "match": [
+            ["question", "targets_learning_capability", "capability"],
+            ["question", "has_motor_learning_proposal", "proposal"],
+            ["proposal", "proposes_counterfactual_motor_program", "plan"],
+        ],
+        "where": And(
+            Eq(A("question", "status"), L("situated_release_withdrawn")),
+            Eq(P0("plan", "subsection_composition"), L(1)),
+            Not(Eq(A("proposal", "status"), L("situated_release_withdrawn"))),
+        ),
+        "effects": [
+            ["set_attr", "proposal", "status", "situated_release_withdrawn"],
+            ["set_attr", "proposal", "eligible", 0],
+            ["del_edge", "question",
+             "has_selected_motor_learning_proposal", "proposal"],
+            ["del_edge", "capability",
+             "has_selected_motor_learning_proposal", "proposal"],
+        ],
+    }
+
+
+def retire_settled_subsection_proposal_sibling_rule():
+    return {
+        "name": "hdc_retire_settled_subsection_proposal_sibling",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 96,
+        "batch": True,
+        "comment": "A physical receipt settles one experiment for the "
+        "workspace. Remaining frontier siblings retain their projections but "
+        "cannot be selected after the situated question has closed.",
+        "match": [
+            ["question", "targets_learning_capability", "capability"],
+            ["question", "has_motor_learning_proposal", "proposal"],
+            ["proposal", "proposes_counterfactual_motor_program", "plan"],
+        ],
+        "where": And(
+            Eq(A("question", "status"), L("experiment_settled")),
+            Eq(P0("plan", "subsection_composition"), L(1)),
+            Or(
+                Eq(A("proposal", "status"), L("candidate")),
+                Eq(A("proposal", "status"), L("trial_requested")),
+            ),
+            Eq(P0("plan", "physical_verified"), L(0)),
+        ),
+        "effects": [
+            ["set_attr", "proposal", "status", "workspace_settled"],
+            ["set_attr", "proposal", "eligible", 0],
+            ["del_edge", "question",
+             "has_selected_motor_learning_proposal", "proposal"],
+            ["del_edge", "capability",
+             "has_selected_motor_learning_proposal", "proposal"],
+        ],
+    }
+
+
 def open_physics_counterfactual_compound_rule():
     candidates = physics_counterfactual_candidates()
     independent_pair = Exists(
@@ -1428,6 +2259,7 @@ def open_physics_counterfactual_compound_rule():
         "is an output-null counterfactual, not an action or a replay.",
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_policy", "policy"],
             ["episode", "projects_embodied_development", "development"],
             ["development", "has_active_embodied_developmental_capability", "capability"],
             ["question", "targets_learning_capability", "capability"],
@@ -1457,6 +2289,145 @@ def open_physics_counterfactual_compound_rule():
             ["add_edge", "episode", "has_humanoid_motor_program", "plan"],
             ["add_edge", "question", "has_counterfactual_motor_program", "plan"],
         ],
+    }
+
+
+def request_subsection_composition_pareto_escalation_rule():
+    """Schedule slow proposal comparison when a new composition is ready."""
+    pending = Filter(
+        Neighbours("question", "has_counterfactual_motor_program"),
+        "escalation_candidate",
+        And(
+            Eq(A("escalation_candidate", "status"), L("counterfactual_predicted")),
+            Eq(P0("escalation_candidate", "subsection_composition"), L(1)),
+            Eq(P0(
+                "escalation_candidate",
+                "subsection_composition_manifold_admissible",
+            ), L(1)),
+        ),
+    )
+    canonical = Argmin(
+        pending,
+        "escalation_candidate",
+        P0("escalation_candidate", "subsection_shape_order"),
+        V("question"),
+    )
+    return {
+        "name": "hdc_request_subsection_composition_pareto_escalation",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -107,
+        "batch": False,
+        "comment": "A physics question may have completed its original "
+        "System-Two pass before enough learned subsections existed. Each new "
+        "manifold-admissible output-null composition therefore requests its "
+        "own bounded physics and Pareto pass; rejected shapes remain evidence "
+        "but do not consume or scope the experiment frontier.",
+        "match": [
+            ["question", "has_motor_learning_pareto_profile", "profile"],
+            ["question", "has_counterfactual_motor_program", "plan"],
+        ],
+        "where": And(
+            Eq(A("plan", "status"), L("counterfactual_predicted")),
+            Eq(P0("plan", "subsection_composition"), L(1)),
+            Eq(V("plan"), canonical),
+            Not(Exists(
+                Neighbours(
+                    "question",
+                    "has_subsection_composition_pareto_escalation",
+                ),
+                "known_subsection_escalation",
+                L(True),
+            )),
+        ),
+        "effects": [
+            ["add_node", "physics_tasks", "SystemTwoTaskSet", {
+                "area": "embodied_physics_proposal",
+                "enabled": 1,
+                "integer_native": 1,
+            }],
+            ["add_node", "pareto_tasks", "SystemTwoTaskSet", {
+                "area": "cognitive_pareto",
+                "enabled": 1,
+                "integer_native": 1,
+            }],
+            ["add_node", "escalation", "SystemTwoEscalation", {
+                "status": "requested",
+                "reason": "subsection_composition_requires_pareto_collapse",
+                "output_authority": 0,
+                "integer_native": 1,
+            }],
+            ["add_edge", "escalation", "about_context", "plan"],
+            ["add_edge", "escalation", "recruits_task_set", "physics_tasks"],
+            ["add_edge", "escalation", "recruits_task_set", "pareto_tasks"],
+            ["add_edge", "question",
+             "has_subsection_composition_pareto_escalation", "escalation"],
+        ],
+    }
+
+
+def ensure_subsection_composition_pareto_profile_rule():
+    """Restore the disposable proposal basis for a late composition."""
+    pending = Filter(
+        Neighbours("question", "has_counterfactual_motor_program"),
+        "profile_candidate",
+        And(
+            Eq(A("profile_candidate", "status"), L("counterfactual_predicted")),
+            Eq(P0("profile_candidate", "subsection_composition"), L(1)),
+        ),
+    )
+    canonical = Argmin(
+        pending,
+        "profile_candidate",
+        P0("profile_candidate", "subsection_shape_order"),
+        V("question"),
+    )
+    effects = [
+        ["add_node", "profile", "ParetoProfile", {
+            "kind": "motor_learning_proposal",
+            "status": "collecting_candidates",
+            "dimension_count": len(MOTOR_PROPOSAL_PARETO_DIMENSIONS),
+            "scalarized": 0,
+            "output_authority": 0,
+            "integer_native": 1,
+        }],
+        ["add_edge", "question", "has_motor_learning_pareto_profile", "profile"],
+    ]
+    for ordinal, (name, direction) in enumerate(
+        MOTOR_PROPOSAL_PARETO_DIMENSIONS
+    ):
+        dimension = f"dimension_{ordinal}"
+        effects.extend((
+            ["add_node", dimension, "ParetoDimension", {
+                "name": name,
+                "ordinal": ordinal,
+                "direction": direction,
+                "integer_native": 1,
+            }],
+            ["add_edge", "profile", "has_pareto_dimension", dimension],
+        ))
+    return {
+        "name": "hdc_ensure_subsection_composition_pareto_profile",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -107,
+        "batch": False,
+        "comment": "The original physics-question profile is disposable "
+        "System-Two working state. If learned subsections become composable "
+        "later, reconstruct the same six-dimensional non-scalarized basis "
+        "before requesting a new bounded comparison.",
+        "match": [["question", "has_counterfactual_motor_program", "plan"]],
+        "where": And(
+            Eq(A("plan", "status"), L("counterfactual_predicted")),
+            Eq(P0("plan", "subsection_composition"), L(1)),
+            Eq(V("plan"), canonical),
+            Not(Exists(
+                Neighbours("question", "has_motor_learning_pareto_profile"),
+                "known_subsection_profile",
+                L(True),
+            )),
+        ),
+        "effects": effects,
     }
 
 
@@ -1615,6 +2586,17 @@ def close_physics_counterfactual_compound_rule():
 
 def release_selected_physics_counterfactual_rule():
     members = Neighbours("plan", "includes_humanoid_phase_action_model")
+    current_ready = Filter(
+        Neighbours("episode", "has_ready_humanoid_motor_program"),
+        "current_ready_program",
+        And(
+            Eq(A("current_ready_program", "status"), L("ready")),
+            Eq(
+                P0("current_ready_program", "request_seq"),
+                P0("episode", "request_seq"),
+            ),
+        ),
+    )
     primary = Filter(
         members,
         "selected_physics_primary",
@@ -1645,6 +2627,7 @@ def release_selected_physics_counterfactual_rule():
         "motor collapse, which still owns material-envelope interruption.",
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_policy", "policy"],
             ["episode", "projects_embodied_development", "development"],
             ["development", "has_active_embodied_developmental_capability", "capability"],
             ["question", "targets_learning_capability", "capability"],
@@ -1654,19 +2637,55 @@ def release_selected_physics_counterfactual_rule():
         "where": And(
             Eq(A("proposal", "status"), L("trial_requested")),
             Eq(A("plan", "status"), L("counterfactual_predicted")),
-            situated_developmental_release_gate(),
+            Or(
+                And(
+                    Eq(P0("plan", "subsection_composition"), L(1)),
+                    Eq(P0(
+                        "question", "physical_experiment_lease_active"
+                    ), L(1)),
+                    Eq(P0("question", "physical_experiment_issued"), L(0)),
+                ),
+                And(
+                    Eq(P0("plan", "subsection_composition"), L(0)),
+                    Eq(A("question", "status"), L("open")),
+                ),
+            ),
+            Or(
+                And(
+                    Eq(P0("plan", "subsection_composition"), L(1)),
+                    leased_subsection_situated_release_continues(),
+                    Eq(A("episode", "phase"), L("locomotion")),
+                    Not(material_viability_reflex_active()),
+                ),
+                And(
+                    Eq(P0("plan", "subsection_composition"), L(0)),
+                    situated_developmental_release_gate(),
+                ),
+            ),
+            Or(
+                And(
+                    Eq(P0("plan", "subsection_composition"), L(1)),
+                    Eq(P0(
+                        "plan",
+                        "subsection_composition_manifold_admissible",
+                    ), L(1)),
+                ),
+                And(
+                    Eq(P0("plan", "subsection_composition"), L(0)),
+                    trajectory_manifold_release_allowed("plan"),
+                ),
+            ),
             Eq(P0("episode", "structural_interrupt_required"), L(0)),
             Gt(P0("episode", "request_seq"), P0("episode", "decision_seq")),
             Eq(P0("episode", "action_ready"), L(0)),
-            Eq(Count(Neighbours(
-                "episode", "has_ready_humanoid_motor_program"
-            )), L(0)),
+            Eq(Count(current_ready), L(0)),
             Gt(Count(primary), L(0)),
         ),
         "effects": [
             ["set_attr", "plan", "status", "ready"],
             ["set_attr", "plan", "request_seq", T(P0("episode", "request_seq"))],
             ["set_attr", "plan", "open_residual_count", 1],
+            ["set_attr", "question", "physical_experiment_issued", 1],
             ["add_edge", "episode", "has_ready_humanoid_motor_program", "plan"],
             ["set_attr", "episode", "selected_token", T(A("plan", "primary_token"))],
             ["set_attr", "episode", "selected_secondary_token", T(AO(
@@ -1889,11 +2908,11 @@ def bind_composed_orientation_escape_bundle_rule():
         ],
         "where": And(
             Eq(A("plan", "status"), L("developmental_orientation_building")),
-            Eq(V("candidate"), winner),
             Lt(
                 Count(members),
                 P0("plan", "developmental_orientation_shape_order"),
             ),
+            Eq(V("candidate"), winner),
         ),
         "effects": [[
             "add_edge", "plan", "includes_humanoid_phase_action_model", "candidate"
@@ -2701,12 +3720,64 @@ def bind_generic_program_context_from_latest_receipt_rule():
     }
 
 
+def cache_latest_development_receipt_shape_rule():
+    return {
+        "name": "hdc_cache_latest_development_receipt_shape",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 94,
+        "batch": False,
+        "comment": "Materialize the latest categorical body state once per "
+        "receipt. Transition rules can then compare against one situated "
+        "state instead of repeatedly joining every learned transition to "
+        "the complete physical receipt history.",
+        "match": [
+            ["episode", "projects_embodied_development", "development"],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "has_humanoid_transition", "outcome"],
+        ],
+        "where": And(
+            Eq(
+                P0("trial", "request_seq"),
+                P0("development", "latest_development_receipt_seq"),
+            ),
+            Or(
+                Not(Eq(P0(
+                    "development", "cached_trajectory_receipt_valid"
+                ), L(1))),
+                Not(Eq(
+                    P0("development", "cached_trajectory_receipt_seq"),
+                    P0("development", "latest_development_receipt_seq"),
+                )),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "development", "cached_trajectory_receipt_valid", 1],
+            ["set_attr", "development", "cached_trajectory_receipt_seq", T(
+                P0("trial", "request_seq")
+            )],
+            ["set_attr", "development", "cached_post_orientation_class", T(
+                P0("outcome", "development_post_orientation_class")
+            )],
+            *(
+                ["set_attr", "development", f"cached_post_axis_{axis}_units", T(
+                    P0(
+                        "outcome",
+                        f"development_post_gravity_axis_{axis}_units",
+                    )
+                )]
+                for axis in ("x", "y", "z")
+            ),
+        ],
+    }
+
+
 def clear_stale_trajectory_state_source_rule():
     return {
         "name": "hdc_clear_stale_trajectory_state_source",
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
-        "order": 94,
+        "order": 95,
         "batch": True,
         "comment": "A program node is an action, not the body's state. "
         "Withdraw transition sources whose learned pre-state no longer "
@@ -2722,18 +3793,19 @@ def clear_stale_trajectory_state_source_rule():
                 "transition",
             ],
             ["transition", "continues_with_embodied_program", "memory"],
-            ["episode", "has_humanoid_motor_trial", "trial"],
-            ["trial", "has_humanoid_transition", "outcome"],
         ],
         "where": And(
+            Eq(P0(
+                "development", "cached_trajectory_receipt_valid"
+            ), L(1)),
             Eq(
-                P0("trial", "request_seq"),
+                P0("development", "cached_trajectory_receipt_seq"),
                 P0("development", "latest_development_receipt_seq"),
             ),
             Or(
                 Not(Eq(
                     P0("transition", "pre_orientation_class"),
-                    P0("outcome", "development_post_orientation_class"),
+                    P0("development", "cached_post_orientation_class"),
                 )),
                 Not(trajectory_manifold_release_allowed("memory")),
             ),
@@ -2753,7 +3825,7 @@ def bind_trajectory_state_source_from_latest_receipt_rule():
         "name": "hdc_bind_trajectory_state_source_from_latest_receipt",
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
-        "order": 95,
+        "order": 96,
         "batch": True,
         "comment": "Re-anchor every learned transition matching the latest "
         "categorical receipt, but publish only next programs admitted by the "
@@ -2768,35 +3840,33 @@ def bind_trajectory_state_source_from_latest_receipt_rule():
                 "capability", "has_embodied_program_transition", "transition"
             ],
             ["transition", "continues_with_embodied_program", "memory"],
-            ["episode", "has_humanoid_motor_trial", "trial"],
-            ["trial", "has_humanoid_transition", "outcome"],
         ],
         "where": And(
             Eq(P0("transition", "verified"), L(1)),
+            Eq(P0(
+                "development", "cached_trajectory_receipt_valid"
+            ), L(1)),
             Eq(
-                P0("trial", "request_seq"),
+                P0("development", "cached_trajectory_receipt_seq"),
                 P0("development", "latest_development_receipt_seq"),
             ),
             Eq(
                 P0("transition", "pre_orientation_class"),
-                P0("outcome", "development_post_orientation_class"),
+                P0("development", "cached_post_orientation_class"),
             ),
-            trajectory_manifold_release_allowed("memory"),
             Not(Exists(
                 current_sources,
                 "known_state_source",
                 Eq(V("known_state_source"), V("transition")),
             )),
+            trajectory_manifold_release_allowed("memory"),
         ),
         "effects": [
             ["set_attr", "transition", "current_state_shape_residual_units", T(
                 Plus(*(
                     Abs(Minus(
                         P0("transition", f"pre_state_axis_{axis}_units"),
-                        P0(
-                            "outcome",
-                            f"development_post_gravity_axis_{axis}_units",
-                        ),
+                        P0("development", f"cached_post_axis_{axis}_units"),
                     ))
                     for axis in ("x", "y", "z")
                 ))
@@ -2810,6 +3880,18 @@ def bind_trajectory_state_source_from_latest_receipt_rule():
 
 
 def audit_selected_trajectory_manifold_rule():
+    audit_fields = (
+        "support", "resolved", "loss", "information_loss",
+        "horizon", "anchor_count", "refinement_count",
+        "termination_code", "exploration_authority",
+        "effort_supported", "projected_effort", "ideal_effort",
+        "effort_scale", "effort_residual", "time_compression",
+        "width_compression", "information_compression",
+        "compression_dimension_count", "manifold_compression",
+        "effort_authorized",
+        *(f"situated_support_{index}" for index in range(7)),
+        *(f"applied_bound_{index}" for index in range(7)),
+    )
     return {
         "name": "hdc_audit_selected_trajectory_manifold_gate",
         "area": "humanoid_sensorimotor_adaptation",
@@ -2841,28 +3923,23 @@ def audit_selected_trajectory_manifold_rule():
             ),
         ),
         "effects": [
+            ["set_attr", "path", "last_manifold_projection_audit_snapshot", T(
+                trajectory_manifold_projection(
+                    "path", "audit_snapshot", "transition"
+                )
+            )],
             ["set_attr", "path", "last_manifold_audit_seq", T(
                 P0("episode", "request_seq")
             )],
             *[
                 [
                     "set_attr", "path", f"last_manifold_projection_{field}",
-                    T(trajectory_manifold_projection(
-                        "path", field, "transition"
+                    T(Nth(
+                        A("path", "last_manifold_projection_audit_snapshot"),
+                        index,
                     )),
                 ]
-                for field in (
-                    "support", "resolved", "loss", "information_loss",
-                    "horizon", "anchor_count", "refinement_count",
-                    "termination_code", "exploration_authority",
-                    "effort_supported", "projected_effort", "ideal_effort",
-                    "effort_scale", "effort_residual", "time_compression",
-                    "width_compression", "information_compression",
-                    "compression_dimension_count", "manifold_compression",
-                    "effort_authorized",
-                    *(f"situated_support_{index}" for index in range(7)),
-                    *(f"applied_bound_{index}" for index in range(7)),
-                )
+                for index, field in enumerate(audit_fields)
             ],
             ["set_attr", "episode", "manifold_effort_audit_count", T(Plus(
                 P0("episode", "manifold_effort_audit_count"), L(1)
@@ -2938,7 +4015,6 @@ def reject_selected_trajectory_manifold_rule():
                 P0("path", "last_manifold_audit_seq"),
                 P0("episode", "request_seq"),
             ),
-            Not(trajectory_manifold_release_allowed("path", "transition")),
             Eq(Count(Filter(
                 Neighbours(
                     "path",
@@ -2947,6 +4023,7 @@ def reject_selected_trajectory_manifold_rule():
                 "known_blocked_source",
                 Eq(V("known_blocked_source"), V("transition")),
             )), L(0)),
+            Not(trajectory_manifold_release_allowed("path", "transition")),
         ),
         "effects": [
             [
@@ -3282,6 +4359,42 @@ def wave_phase_candidates(cell="cell", plan="plan"):
     )
 
 
+def open_wave_local_command_index_rule():
+    return {
+        "name": "hdc_open_changed_wave_local_command_index",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -95,
+        "batch": False,
+        "comment": "Open the topology indexing lease only when the wave "
+        "cell or body-local command population changes.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "has_somatomotor_wave_field", "field"],
+        ],
+        "where": And(
+            Or(
+                Not(Eq(
+                    P0("field", "indexed_wave_cell_count"),
+                    Count(Neighbours("field", "has_somatomotor_wave_cell")),
+                )),
+                Not(Eq(
+                    P0("field", "indexed_local_command_count"),
+                    Count(Neighbours(
+                        "episode", "has_humanoid_phase_action_model"
+                    )),
+                )),
+            ),
+            Eq(Count(Neighbours(
+                "field", "has_open_wave_local_command_index"
+            )), L(0)),
+        ),
+        "effects": [[
+            "add_edge", "field", "has_open_wave_local_command_index", "episode",
+        ]],
+    }
+
+
 def index_humanoid_wave_local_commands_rule():
     """Materialize the stable wave-cell to local-command join once.
 
@@ -3304,6 +4417,7 @@ def index_humanoid_wave_local_commands_rule():
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
             ["episode", "has_somatomotor_wave_field", "field"],
+            ["field", "has_open_wave_local_command_index", "episode"],
             ["field", "has_somatomotor_wave_cell", "cell"],
             ["cell", "represents_embodied_effector", "cell_effector"],
             ["episode", "has_humanoid_phase_action_model", "candidate"],
@@ -3329,6 +4443,35 @@ def index_humanoid_wave_local_commands_rule():
             "add_edge", "cell", "indexes_humanoid_wave_local_command",
             "candidate",
         ]],
+    }
+
+
+def close_wave_local_command_index_rule():
+    return {
+        "name": "hdc_close_wave_local_command_index",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -93,
+        "batch": False,
+        "comment": "Batch indexing has exhausted the current stable "
+        "topology join; retain its population generation as negative work.",
+        "match": [
+            ["episode", "has_somatomotor_wave_field", "field"],
+            ["field", "has_open_wave_local_command_index", "episode"],
+        ],
+        "effects": [
+            ["set_attr", "field", "indexed_wave_cell_count", T(
+                Count(Neighbours("field", "has_somatomotor_wave_cell"))
+            )],
+            ["set_attr", "field", "indexed_local_command_count", T(
+                Count(Neighbours(
+                    "episode", "has_humanoid_phase_action_model"
+                ))
+            )],
+            [
+                "del_edge", "field", "has_open_wave_local_command_index", "episode",
+            ],
+        ],
     }
 
 
@@ -3613,6 +4756,16 @@ def request_evidence_faded_caregiver_protection_rule():
 
 def audit_learned_caregiver_support_counterfactual_rule():
     """Observe composition quality without granting intervention authority."""
+    unsupported_snapshot = A("plan", "unsupported_projection_shape_snapshot")
+    supported_snapshot = A("plan", "supported_projection_shape_snapshot")
+    unsupported_fields = (
+        ("support", 0), ("resolved", 1), ("loss", 2),
+        ("information_loss", 3),
+    )
+    supported_fields = unsupported_fields + (
+        ("horizon", 4), ("earliest_decisive_tick", 5),
+        ("minimum_exafferent_scale", 6),
+    )
     return {
         "name": "hdc_audit_learned_caregiver_support_counterfactual",
         "area": "humanoid_sensorimotor_adaptation",
@@ -3640,43 +4793,40 @@ def audit_learned_caregiver_support_counterfactual_rule():
             ),
         ),
         "effects": [
+            ["set_attr", "plan", "unsupported_projection_shape_snapshot", T(
+                trajectory_manifold_projection("plan", "shape_snapshot")
+            )],
+            ["set_attr", "plan", "supported_projection_shape_snapshot", T(
+                trajectory_manifold_projection(
+                    "plan", "shape_snapshot", addition="support_model"
+                )
+            )],
             ["set_attr", "plan", "support_counterfactual_audit_seq", T(
                 P0("episode", "request_seq")
             )],
         ] + [
             ["set_attr", "plan", f"unsupported_projection_{field}", T(
-                trajectory_manifold_projection("plan", field)
+                Nth(unsupported_snapshot, index)
             )]
-            for field in ("support", "resolved", "loss", "information_loss")
+            for field, index in unsupported_fields
         ] + [
             ["set_attr", "plan", f"supported_projection_{field}", T(
-                trajectory_manifold_projection(
-                    "plan", field, addition="support_model"
-                )
+                Nth(supported_snapshot, index)
             )]
-            for field in (
-                "support", "resolved", "loss", "information_loss", "horizon",
-                "earliest_decisive_tick", "minimum_exafferent_scale",
-            )
+            for field, index in supported_fields
         ] + [
             ["set_attr", "plan", f"supported_projection_residual_{index}", T(
-                trajectory_manifold_projection(
-                    "plan", f"residual_{index}", addition="support_model"
-                )
+                Nth(supported_snapshot, 7 + index)
             )]
             for index in range(7)
         ] + [
             ["set_attr", "plan", f"unsupported_projection_bound_{index}", T(
-                trajectory_manifold_projection(
-                    "plan", f"applied_bound_{index}"
-                )
+                Nth(unsupported_snapshot, 14 + index)
             )]
             for index in range(7)
         ] + [
             ["set_attr", "plan", f"supported_projection_bound_{index}", T(
-                trajectory_manifold_projection(
-                    "plan", f"applied_bound_{index}", addition="support_model"
-                )
+                Nth(supported_snapshot, 14 + index)
             )]
             for index in range(7)
         ],
@@ -4205,11 +5355,545 @@ def close_humanoid_wave_program_rule():
     }
 
 
+def open_developmental_hierarchical_projection_rule():
+    """Roll a developmental program's body footprint into one reusable scope."""
+    representative = Argmin(
+        Neighbours("plan", "includes_humanoid_phase_action_model"),
+        "hierarchy_representative",
+        P0("hierarchy_representative", "ordinal"),
+        V("plan"),
+    )
+    return {
+        "name": "hdc_open_hierarchical_projection_for_developmental_program",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -89,
+        "batch": False,
+        "comment": "Every developmental compound is represented both as a learned program and as a reusable body subsection. Primitive command selection remains morphology-neutral.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "has_embodied_effector_topology", "topology"],
+            ["episode", "has_humanoid_motor_program", "plan"],
+            ["plan", "includes_humanoid_phase_action_model", "phase_model"],
+            ["phase_model", "generalizes_humanoid_action_model", "action_model"],
+            ["action_model", "models_embodied_effector", "effector"],
+        ],
+        "where": And(
+            Gt(P0("episode", "developmental_curriculum_active"), L(0)),
+            Eq(V("phase_model"), representative),
+            Eq(Count(Neighbours(
+                "plan", "realizes_embodied_hierarchical_control_program"
+            )), L(0)),
+        ),
+        "effects": [
+            ["add_node", "scope", "EmbodiedControlSubsection", {
+                "scope_kind": "learned_program_subsection",
+                "status": "ready",
+                "member_count": 0,
+                "integer_native": 1,
+                "output_authority": 0,
+            }],
+            ["add_node", "hierarchy", "EmbodiedHierarchicalControlProgram", {
+                "status": "collecting",
+                "request_seq": T(P0("plan", "request_seq")),
+                "ordinal": T(Plus(
+                    P0("episode", "hierarchical_program_generation"), L(1)
+                )),
+                "receipt_count": 0,
+                "source": "developmental_motor_program",
+                "integer_native": 1,
+                "output_authority": 0,
+            }],
+            ["add_edge", "topology", "has_embodied_control_subsection", "scope"],
+            ["add_edge", "agent", "has_embodied_hierarchical_control_program", "hierarchy"],
+            ["add_edge", "plan", "realizes_embodied_hierarchical_control_program", "hierarchy"],
+            ["add_edge", "hierarchy", "controls_embodied_control_subsection", "scope"],
+            ["set_attr", "plan", "subsection_program_ordinal", T(Plus(
+                P0("episode", "hierarchical_program_generation"), L(1)
+            ))],
+            ["set_attr", "episode", "hierarchical_program_generation", T(Plus(
+                P0("episode", "hierarchical_program_generation"), L(1)
+            ))],
+        ],
+    }
+
+
+def bind_developmental_hierarchical_member_rule():
+    existing = Exists(
+        Neighbours(
+            "hierarchy", "has_bound_embodied_child_motor_program"
+        ),
+        "known_program",
+        Eq(V("known_program"), V("phase_model")),
+    )
+    return {
+        "name": "hdc_bind_developmental_command_to_addressed_body_subsection",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -88,
+        "batch": True,
+        "comment": "A local learned command becomes an explicit subsection binding; compatible overlap is declared as superposition rather than resolved by edge order. The hierarchy-to-child edge indexes the authoritative binding without repeatedly traversing every binding node. Singleton scope construction guarantees one scope for the child program's effector.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "has_embodied_effector_topology", "topology"],
+            ["episode", "has_humanoid_motor_program", "plan"],
+            ["plan", "realizes_embodied_hierarchical_control_program", "hierarchy"],
+            ["hierarchy", "controls_embodied_control_subsection", "aggregate"],
+            ["plan", "includes_humanoid_phase_action_model", "phase_model"],
+            ["phase_model", "generalizes_humanoid_action_model", "action_model"],
+            ["action_model", "models_embodied_effector", "effector"],
+            ["topology", "has_embodied_control_subsection", "singleton"],
+            ["singleton", "addresses_embodied_effector", "effector"],
+        ],
+        "where": And(
+            Eq(A("hierarchy", "status"), L("collecting")),
+            Eq(A("singleton", "scope_kind"), L("singleton")),
+            Not(existing),
+        ),
+        "effects": [
+            ["add_node", "binding", "EmbodiedProgramBinding", {
+                "composition_operator": "superpose",
+                "status": "open",
+                "integer_native": 1,
+                "output_authority": 0,
+            }],
+            ["add_edge", "hierarchy", "includes_embodied_program_binding", "binding"],
+            ["add_edge", "binding", "targets_embodied_control_subsection", "singleton"],
+            ["add_edge", "binding", "invokes_embodied_child_motor_program", "phase_model"],
+            ["add_edge", "hierarchy", "has_bound_embodied_child_motor_program", "phase_model"],
+            ["add_edge", "aggregate", "contains_embodied_control_subsection", "singleton"],
+        ],
+    }
+
+
+def arm_complete_developmental_hierarchy_rule():
+    return {
+        "name": "hdc_arm_hierarchy_after_developmental_program_is_complete",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -87,
+        "batch": False,
+        "comment": "Incremental synthesis may yield after every member. Unrolling begins only after the source program closes, so no partial body program can acquire output authority.",
+        "match": [
+            ["episode", "has_humanoid_motor_program", "plan"],
+            ["plan", "realizes_embodied_hierarchical_control_program", "hierarchy"],
+        ],
+        "where": And(
+            Eq(A("plan", "status"), L("ready")),
+            Eq(A("hierarchy", "status"), L("collecting")),
+            Gt(Count(Neighbours(
+                "hierarchy", "includes_embodied_program_binding"
+            )), L(0)),
+        ),
+        "effects": [["set_attr", "hierarchy", "status", "assembling"]],
+    }
+
+
+def mark_developmental_hierarchy_ready_rule():
+    return {
+        "name": "hdc_publish_resolved_developmental_hierarchy",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -16,
+        "batch": False,
+        "match": [
+            ["episode", "has_humanoid_motor_program", "plan"],
+            ["plan", "realizes_embodied_hierarchical_control_program", "hierarchy"],
+        ],
+        "where": And(
+            Eq(A("hierarchy", "status"), L("ready")),
+            Eq(P0("plan", "hierarchical_control_ready"), L(0)),
+        ),
+        "effects": [
+            ["set_attr", "plan", "hierarchical_control_ready", 1],
+            ["set_attr", "plan", "hierarchical_assignment_count", T(
+                Count(Neighbours(
+                    "hierarchy", "has_embodied_effector_program_assignment"
+                ))
+            )],
+            ["set_attr", "plan", "subsection_shape_order", T(Max(
+                L(1), P0("plan", "subsection_shape_order")
+            ))],
+        ],
+    }
+
+
+def bind_hierarchical_program_to_developmental_trial_rule():
+    return {
+        "name": "hdc_bind_enacted_trial_to_resolved_hierarchical_program",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 87,
+        "batch": False,
+        "match": [
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "enacts_humanoid_motor_program", "plan"],
+            ["plan", "realizes_embodied_hierarchical_control_program", "hierarchy"],
+        ],
+        "where": And(
+            Eq(A("hierarchy", "status"), L("ready")),
+            Eq(Count(Neighbours(
+                "trial", "enacts_embodied_hierarchical_control_program"
+            )), L(0)),
+        ),
+        "effects": [[
+            "add_edge", "trial", "enacts_embodied_hierarchical_control_program", "hierarchy",
+        ]],
+    }
+
+
+def credit_hierarchical_program_receipt_rule():
+    return {
+        "name": "hdc_credit_verified_receipt_to_hierarchical_program",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 91,
+        "batch": False,
+        "match": [
+            ["trial", "enacts_embodied_hierarchical_control_program", "hierarchy"],
+            ["trial", "has_humanoid_transition", "outcome"],
+        ],
+        "where": And(
+            Eq(P0("outcome", "receipt_verified"), L(1)),
+            Eq(Count(Neighbours(
+                "outcome", "verifies_embodied_hierarchical_control_program"
+            )), L(0)),
+        ),
+        "effects": [
+            ["add_edge", "outcome", "verifies_embodied_hierarchical_control_program", "hierarchy"],
+            ["set_attr", "hierarchy", "receipt_count", T(Plus(
+                P0("hierarchy", "receipt_count"), L(1)
+            ))],
+        ],
+    }
+
+
+def credit_hierarchical_assignment_receipt_rule():
+    already_credited = Exists(
+        Neighbours("outcome", "verifies_embodied_effector_program_assignment"),
+        "known_assignment",
+        Eq(V("known_assignment"), V("assignment")),
+    )
+    return {
+        "name": "hdc_credit_verified_receipt_to_each_unrolled_assignment",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 92,
+        "batch": True,
+        "match": [
+            ["trial", "enacts_embodied_hierarchical_control_program", "hierarchy"],
+            ["hierarchy", "has_embodied_effector_program_assignment", "assignment"],
+            ["trial", "has_humanoid_transition", "outcome"],
+        ],
+        "where": And(
+            Eq(P0("outcome", "receipt_verified"), L(1)),
+            Not(already_credited),
+        ),
+        "effects": [
+            ["add_edge", "outcome", "verifies_embodied_effector_program_assignment", "assignment"],
+            ["set_attr", "assignment", "status", "experienced"],
+            ["set_attr", "assignment", "experience_count", T(Plus(
+                P0("assignment", "experience_count"), L(1)
+            ))],
+        ],
+    }
+
+
+def rotate_settled_subsection_composition_question_rule(
+    trial_program_edge="enacts_humanoid_motor_program",
+    name="hdc_rotate_settled_subsection_composition_question",
+):
+    return {
+        "name": name,
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 94,
+        "batch": False,
+        "comment": "A physical compound receipt closes exactly its situated composition workspace. The next request may open a fresh workspace whose anchor includes the learned interaction residual.",
+        "match": [
+            ["episode", "projects_embodied_development", "development"],
+            ["development", "has_active_embodied_developmental_capability",
+             "capability"],
+            ["query", "has_active_subsection_composition_question", "question"],
+            ["question", "targets_learning_capability", "capability"],
+            ["question", "has_motor_learning_proposal", "proposal"],
+            ["proposal", "proposes_counterfactual_motor_program", "plan"],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", trial_program_edge, "plan"],
+            ["trial", "has_humanoid_transition", "outcome"],
+        ],
+        "where": And(
+            Eq(P0("plan", "subsection_composition"), L(1)),
+            Eq(P0("outcome", "development_receipt_closed"), L(1)),
+        ),
+        "effects": [
+            ["set_attr", "capability",
+             "active_physical_experiment_lease_count", 0],
+            ["set_attr", "question", "physical_experiment_lease_active", 0],
+            ["set_attr", "question", "physical_experiment_issued", 0],
+            ["set_attr", "question", "situated_release_authorized", 0],
+            ["del_edge", "query",
+             "has_active_subsection_composition_question", "question"],
+            ["set_attr", "query",
+             "subsection_composition_question_closed_seq", T(
+                 P0("episode", "request_seq")
+             )],
+            ["set_attr", "question", "status", "experiment_settled"],
+        ],
+    }
+
+
+def learn_subsection_composition_interaction_rule(
+    trial_program_edge="enacts_humanoid_motor_program",
+    name="hdc_learn_subsection_composition_interaction_from_receipt",
+):
+    actual = developmental_outcome_evidence_units("capability")
+    residual = Abs(Minus(P0("plan", "predicted_evidence_units"), actual))
+    already = Exists(
+        Neighbours("trial", "updates_developmental_subsection_component"),
+        "known_component",
+        Eq(V("known_component"), V("component")),
+    )
+    return {
+        "name": name,
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 93,
+        "batch": True,
+        "comment": "A physical compound receipt updates each rolled-up component with the observed nonlinear interaction residual. Null and adverse results remain reusable negative evidence.",
+        "match": [
+            ["development", "has_active_embodied_developmental_capability", "capability"],
+            ["episode", "projects_embodied_development", "development"],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", trial_program_edge, "plan"],
+            ["plan", "composes_developmental_subsection_program", "component"],
+            ["trial", "has_humanoid_transition", "outcome"],
+        ],
+        "where": And(
+            Eq(P0("plan", "subsection_composition"), L(1)),
+            Eq(P0("outcome", "development_receipt_closed"), L(1)),
+            Not(already),
+        ),
+        "effects": [
+            ["set_attr", "plan", "interaction_residual_units", T(residual)],
+            ["set_attr", "plan", "physical_verified", 1],
+            ["set_attr", "component", "subsection_composition_receipt_count", T(Plus(
+                P0("component", "subsection_composition_receipt_count"), L(1)
+            ))],
+            ["set_attr", "component", "subsection_interaction_residual_sum_units", T(Plus(
+                P0("component", "subsection_interaction_residual_sum_units"),
+                residual,
+            ))],
+            ["set_attr", "component", "subsection_composition_success_count", T(Plus(
+                P0("component", "subsection_composition_success_count"),
+                If(capability_success("capability", "outcome"), L(1), L(0)),
+            ))],
+            ["add_edge", "trial", "updates_developmental_subsection_component", "component"],
+        ],
+    }
+
+
+def credit_wide_takeoff_program_derivative_rule(
+    trial_program_edge="enacts_humanoid_motor_program",
+    name="hdc_credit_wide_takeoff_program_derivative",
+):
+    vertical_derivative = Minus(
+        P0("outcome", "development_post_vertical_velocity_units"),
+        P0("outcome", "development_pre_vertical_velocity_units"),
+    )
+    return {
+        "name": name,
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 92,
+        "batch": False,
+        "comment": "Credit a complete wide-program receipt once so an observed positive takeoff derivative can seed an exact temporal recurrence without promoting the action to completed capability. The rule is independent of whether the program came from subsection or native compound synthesis.",
+        "match": [
+            ["episode", "projects_embodied_development", "development"],
+            ["development", "has_active_embodied_developmental_capability", "capability"],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", trial_program_edge, "plan"],
+            ["trial", "has_humanoid_transition", "outcome"],
+        ],
+        "where": And(
+            Eq(A("capability", "evidence_kind"), L("support_reducing_elevation")),
+            Not(Lt(
+                P0("capability", "failure_count"),
+                P0("development", "development_evidence_window"),
+            )),
+            Gt(P0("plan", "member_count"), L(2)),
+            Eq(P0("outcome", "development_receipt_closed"), L(1)),
+            Eq(P0("trial", "request_seq"), P0("episode", "request_seq")),
+            Eq(P0("outcome", "subsection_derivative_credit_complete"), L(0)),
+        ),
+        "effects": [
+            ["set_attr", "plan", "subsection_derivative_receipt_count", T(Plus(
+                P0("plan", "subsection_derivative_receipt_count"), L(1)
+            ))],
+            ["set_attr", "plan", "development_latest_vertical_velocity_progress_units", T(
+                vertical_derivative
+            )],
+            ["set_attr", "plan", "development_vertical_velocity_progress_sum_units", T(Plus(
+                P0("plan", "development_vertical_velocity_progress_sum_units"),
+                vertical_derivative,
+            ))],
+            ["set_attr", "plan", "partial_trajectory_evidence", T(Max(
+                P0("plan", "partial_trajectory_evidence"),
+                If(Gt(vertical_derivative, L(0)), L(1), L(0)),
+            ))],
+            ["set_attr", "plan", "capability_counterexample_observed", 1],
+            ["set_attr", "plan", "motor_task_context", "self_takeoff"],
+            ["set_attr", "plan", "whole_program_projection_authority", 1],
+            ["set_attr", "plan", "future_manifold_information_compression", T(
+                Max(L(0), P0("plan", "interaction_uncertainty_units"))
+            )],
+            ["set_attr", "plan", "receipt_support_phase", T(
+                P0("episode", "current_support_phase")
+            )],
+            ["set_attr", "plan", "receipt_orientation_class", T(
+                P0("episode", "state_gravity_relative_orientation_class")
+            )],
+            ["set_attr", "plan", "receipt_response_frames", T(
+                P0("trial", "response_frames")
+            )],
+            ["set_attr", "plan", "response_frames", T(
+                P0("trial", "response_frames")
+            )],
+            ["set_attr", "plan", "subsection_derivative_credit_request_seq", T(
+                P0("trial", "request_seq")
+            )],
+            ["set_attr", "outcome", "subsection_derivative_credit_complete", 1],
+        ],
+    }
+
+
+def replay_positive_takeoff_derivative_program_rule():
+    members = Neighbours("plan", "includes_humanoid_phase_action_model")
+    secondary = Argmin(
+        Filter(
+            members,
+            "partial_secondary_option",
+            Not(Eq(
+                A("partial_secondary_option", "token"),
+                A("plan", "primary_token"),
+            )),
+        ),
+        "partial_secondary",
+        P0("partial_secondary", "ordinal"),
+        V("plan"),
+    )
+    ready = Filter(
+        Neighbours("episode", "has_ready_humanoid_motor_program"),
+        "existing_ready",
+        Eq(P0("existing_ready", "request_seq"), P0("episode", "request_seq")),
+    )
+    situated_warm_partial = And(
+        Eq(P0("plan", "partial_trajectory_evidence"), L(1)),
+        Gt(P0("plan", "development_vertical_velocity_progress_sum_units"), L(0)),
+        Eq(P0("plan", "warm_start_requires_verification"), L(1)),
+        Eq(P0("plan", "warm_start_verified"), L(0)),
+        Eq(P0("plan", "whole_program_projection_authority"), L(1)),
+        Eq(
+            P0("plan", "receipt_support_phase"),
+            P0("episode", "current_support_phase"),
+        ),
+        Eq(
+            P0("plan", "receipt_orientation_class"),
+            P0("episode", "state_gravity_relative_orientation_class"),
+        ),
+        Gt(P0("plan", "receipt_response_frames"), L(0)),
+        Eq(
+            P0("plan", "receipt_response_frames"),
+            P0("plan", "response_frames"),
+        ),
+    )
+    return {
+        "name": "hdc_recur_positive_takeoff_derivative_program",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -102,
+        "batch": False,
+        "comment": "A positive vertical derivative establishes the next temporal segment. Recur the exact held subsection once per new receipt; a non-positive receipt removes its own recurrence condition. The program is indexed directly and never re-enters pair enumeration.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_policy", "policy"],
+            ["episode", "projects_embodied_development", "development"],
+            ["development", "has_active_embodied_developmental_capability", "capability"],
+            ["episode", "has_humanoid_motor_program", "plan"],
+        ],
+        "where": And(
+            Eq(A("capability", "evidence_kind"), L("support_reducing_elevation")),
+            Not(Lt(
+                P0("capability", "failure_count"),
+                P0("development", "development_evidence_window"),
+            )),
+            Gt(P0("plan", "member_count"), L(2)),
+            Or(
+                Gt(P0(
+                    "plan", "development_latest_vertical_velocity_progress_units"
+                ), L(0)),
+                situated_warm_partial,
+            ),
+            Lt(
+                P0("plan", "subsection_partial_replay_receipt_count"),
+                P0("plan", "subsection_derivative_receipt_count"),
+            ),
+            trajectory_manifold_release_allowed("plan"),
+            Eq(P0("episode", "structural_interrupt_required"), L(0)),
+            Gt(P0("episode", "request_seq"), P0("episode", "decision_seq")),
+            Eq(P0("episode", "action_ready"), L(0)),
+            Eq(Count(ready), L(0)),
+        ),
+        "effects": [
+            ["set_attr", "plan", "counterexample_retained", 1],
+            ["set_attr", "plan", "exclude_subsection_candidate", 1],
+            ["set_attr", "plan", "status", "ready"],
+            ["set_attr", "plan", "request_seq", T(P0("episode", "request_seq"))],
+            ["set_attr", "plan", "subsection_partial_replay_receipt_count", T(
+                P0("plan", "subsection_derivative_receipt_count")
+            )],
+            ["add_edge", "episode", "has_ready_humanoid_motor_program", "plan"],
+            ["set_attr", "episode", "selected_token", T(A("plan", "primary_token"))],
+            ["set_attr", "episode", "selected_secondary_token", T(AO(
+                secondary, "token"
+            ))],
+            ["set_attr", "episode", "selected_response_frames", T(Max(
+                L(1), P0("plan", "response_frames")
+            ))],
+            ["set_attr", "episode", "selected_motor_weight_a", 1],
+            ["set_attr", "episode", "selected_motor_weight_b", 1],
+            *[
+                ["set_attr", "episode", f"selected_predicted_{key}", 0]
+                for key in ("dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz")
+            ],
+            ["set_attr", "episode", "decision_kind", "developmental_metaprogram"],
+            ["set_attr", "episode", "selected_collapse_kind", T(If(
+                situated_warm_partial,
+                L("situated_partial_warm_verification"),
+                L("takeoff_derivative_recurrence"),
+            ))],
+            ["set_attr", "episode", "partial_trajectory_warm_reuse_count", T(Plus(
+                P0("episode", "partial_trajectory_warm_reuse_count"),
+                If(situated_warm_partial, L(1), L(0)),
+            ))],
+            ["set_attr", "episode", "decision_seq", T(P0("episode", "request_seq"))],
+            ["set_attr", "episode", "decision_count", T(Plus(
+                P0("episode", "decision_count"), L(1)
+            ))],
+            ["set_attr", "episode", "action_ready", 1],
+        ],
+    }
+
+
 def manifest() -> dict:
     return {
         "id": "humanoid_developmental_curriculum",
-        "version": "3.35.0",
-        "depends_on": ["humanoid_adaptation", "somatomotor_waves"],
+        "version": "3.72.0",
+        "depends_on": [
+            "humanoid_adaptation",
+            "somatomotor_waves",
+            "hierarchical_effector_control",
+        ],
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
         "description": "Thin integer humanoid transduction bridge for the "
@@ -4289,6 +5973,66 @@ def manifest() -> dict:
                     "var": "orientation_evidence",
                 },
             },
+            {
+                "provenance": "humanoid_development:hierarchical_program_projection",
+                "src": {"type": "HumanoidMotorProgram", "var": "program"},
+                "edge_type": "realizes_embodied_hierarchical_control_program",
+                "tgt": {"type": "EmbodiedHierarchicalControlProgram", "var": "hierarchy"},
+            },
+            {
+                "provenance": "humanoid_development:hierarchical_scope",
+                "src": {"type": "EmbodiedHierarchicalControlProgram", "var": "hierarchy"},
+                "edge_type": "controls_embodied_control_subsection",
+                "tgt": {"type": "EmbodiedControlSubsection", "var": "scope"},
+            },
+            {
+                "provenance": "humanoid_development:trial_hierarchy",
+                "src": {"type": "HumanoidMotorTrial", "var": "trial"},
+                "edge_type": "enacts_embodied_hierarchical_control_program",
+                "tgt": {"type": "EmbodiedHierarchicalControlProgram", "var": "hierarchy"},
+            },
+            {
+                "provenance": "humanoid_development:receipt_hierarchy",
+                "src": {"type": "HumanoidTransition", "var": "outcome"},
+                "edge_type": "verifies_embodied_hierarchical_control_program",
+                "tgt": {"type": "EmbodiedHierarchicalControlProgram", "var": "hierarchy"},
+            },
+            {
+                "provenance": "humanoid_development:receipt_assignment",
+                "src": {"type": "HumanoidTransition", "var": "outcome"},
+                "edge_type": "verifies_embodied_effector_program_assignment",
+                "tgt": {"type": "EmbodiedEffectorProgramAssignment", "var": "assignment"},
+            },
+            {
+                "provenance": "humanoid_development:active_subsection_composition_question",
+                "src": {"type": "EmbodiedInverseKinematicQuery", "var": "query"},
+                "edge_type": "has_active_subsection_composition_question",
+                "tgt": {"type": "EmbodiedPhysicsQuestion", "var": "question"},
+            },
+            {
+                "provenance": "humanoid_development:subsection_component",
+                "src": {"type": "HumanoidMotorProgram", "var": "composite"},
+                "edge_type": "composes_developmental_subsection_program",
+                "tgt": {"type": "HumanoidMotorProgram", "var": "component"},
+            },
+            {
+                "provenance": "humanoid_development:subsection_composition_anchor",
+                "src": {"type": "EmbodiedPhysicsQuestion", "var": "question"},
+                "edge_type": "has_subsection_composition_anchor",
+                "tgt": {"type": "HumanoidMotorProgram", "var": "program"},
+            },
+            {
+                "provenance": "humanoid_development:subsection_pareto_escalation",
+                "src": {"type": "EmbodiedPhysicsQuestion", "var": "question"},
+                "edge_type": "has_subsection_composition_pareto_escalation",
+                "tgt": {"type": "SystemTwoEscalation", "var": "escalation"},
+            },
+            {
+                "provenance": "humanoid_development:subsection_component_receipt",
+                "src": {"type": "HumanoidMotorTrial", "var": "trial"},
+                "edge_type": "updates_developmental_subsection_component",
+                "tgt": {"type": "HumanoidMotorProgram", "var": "component"},
+            },
         ],
         "rules": [
             archive_stale_inverse_kinematic_query_rule(),
@@ -4310,6 +6054,19 @@ def manifest() -> dict:
             bind_physics_counterfactual_members_rule(),
             close_physics_counterfactual_compound_rule(),
             release_selected_physics_counterfactual_rule(),
+            replay_positive_takeoff_derivative_program_rule(),
+            audit_developmental_subsection_candidate_rule(),
+            open_situated_subsection_composition_question_rule(),
+            select_subsection_program_anchor_rule(),
+            open_subsection_program_counterfactuals_rule(),
+            bind_subsection_program_counterfactual_members_rule(),
+            close_subsection_program_counterfactual_rule(),
+            lease_capability_for_admissible_subsection_experiment_rule(),
+            cancel_subsection_experiment_lease_outside_situated_manifold_rule(),
+            retire_withdrawn_subsection_proposal_rule(),
+            retire_settled_subsection_proposal_sibling_rule(),
+            ensure_subsection_composition_pareto_profile_rule(),
+            request_subsection_composition_pareto_escalation_rule(),
             exhaust_ineffective_orientation_bundle_rule(),
             open_composed_orientation_escape_bundle_rule(),
             bind_composed_orientation_escape_bundle_rule(),
@@ -4326,11 +6083,35 @@ def manifest() -> dict:
             bind_scaffolded_unfixed_reference_rule(),
             close_scaffolded_self_attempt_rule(),
             distinguish_active_agency_from_passive_body_model_rule(),
+            open_wave_local_command_index_rule(),
             index_humanoid_wave_local_commands_rule(),
+            close_wave_local_command_index_rule(),
             open_humanoid_wave_program_rule(),
             resume_humanoid_wave_program_rule(),
             bind_humanoid_wave_member_rule(),
             close_humanoid_wave_program_rule(),
+            open_developmental_hierarchical_projection_rule(),
+            bind_developmental_hierarchical_member_rule(),
+            arm_complete_developmental_hierarchy_rule(),
+            mark_developmental_hierarchy_ready_rule(),
+            bind_hierarchical_program_to_developmental_trial_rule(),
+            credit_hierarchical_program_receipt_rule(),
+            credit_hierarchical_assignment_receipt_rule(),
+            credit_wide_takeoff_program_derivative_rule(),
+            credit_wide_takeoff_program_derivative_rule(
+                "synthesized_humanoid_motor_program",
+                "hdc_credit_reassociated_wide_takeoff_program_derivative",
+            ),
+            learn_subsection_composition_interaction_rule(),
+            learn_subsection_composition_interaction_rule(
+                "synthesized_humanoid_motor_program",
+                "hdc_learn_reassociated_subsection_composition_from_receipt",
+            ),
+            rotate_settled_subsection_composition_question_rule(),
+            rotate_settled_subsection_composition_question_rule(
+                "synthesized_humanoid_motor_program",
+                "hdc_rotate_reassociated_subsection_composition_question",
+            ),
             mirror_mastery_count_rule(),
             mint_situated_orientation_action_evidence_rule(),
             update_situated_orientation_action_evidence_rule(),
@@ -4340,6 +6121,7 @@ def manifest() -> dict:
             mint_developmental_program_transition_rule(),
             clear_generic_program_context_from_latest_receipt_rule(),
             bind_generic_program_context_from_latest_receipt_rule(),
+            cache_latest_development_receipt_shape_rule(),
             clear_stale_trajectory_state_source_rule(),
             bind_trajectory_state_source_from_latest_receipt_rule(),
             clear_selected_trajectory_without_current_source_rule(),

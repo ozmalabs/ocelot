@@ -297,7 +297,7 @@ pub fn projection_field(
     let width_compression = scalar(graph, interner, episode, "future_manifold_ideal_width")
         .filter(|ideal| ideal.is_finite() && *ideal >= 0.0)
         .map_or(0.0, |ideal| (ideal - maximum_enclosure_width).max(0.0));
-    let information_compression = scalar(
+    let inferred_information_compression = scalar(
         graph,
         interner,
         episode,
@@ -305,6 +305,16 @@ pub fn projection_field(
     )
     .filter(|ideal| ideal.is_finite() && *ideal >= 0.0)
     .map_or(0.0, |ideal| (ideal - information_loss).max(0.0));
+    let explicit_information_compression = scalar(
+        graph,
+        interner,
+        candidate,
+        "future_manifold_information_compression",
+    )
+    .filter(|compression| compression.is_finite() && *compression >= 0.0)
+    .unwrap_or(0.0);
+    let information_compression = inferred_information_compression
+        .max(explicit_information_compression);
     // These are unlike dimensions.  Preserve the triangle instead of
     // collapsing seconds, width units and information units into a score.
     let compression_dimension_count = [time_compression, width_compression, information_compression]
@@ -314,6 +324,54 @@ pub fn projection_field(
     let manifold_compression = compression_dimension_count > 0.0;
     let effort_authorized = !effort_supported || effort_residual <= 0.0 || manifold_compression;
     let field_name = name;
+    if field_name == "shape_snapshot" {
+        let decisive_row = times
+            .iter()
+            .position(|time| *time as f64 == earliest_decisive_tick)
+            .or_else(|| audited.checked_sub(1));
+        let mut fields = Vec::with_capacity(21);
+        fields.extend([
+            support as i32 as f64,
+            resolved as i32 as f64,
+            loss,
+            information_loss,
+            horizon,
+            earliest_decisive_tick,
+            0.0, // Generic matrix projections have no exafferent addition.
+        ]);
+        for dimension in 0..7 {
+            fields.push(
+                decisive_row
+                    .and_then(|row| residual_shape.get(row))
+                    .and_then(|values| values.get(dimension))
+                    .copied()
+                    .unwrap_or(0.0),
+            );
+        }
+        for dimension in 0..7 {
+            fields.push(
+                decisive_row
+                    .and_then(|row| Some((bounds.get(row)?, widths.get(row)?)))
+                    .and_then(|(bound_row, width_row)| {
+                        Some(*bound_row.get(dimension)? + *width_row.get(dimension)?)
+                    })
+                    .unwrap_or(0.0),
+            );
+        }
+        return Some(Value::Tuple(std::sync::Arc::new(
+            fields.into_iter().map(Value::Float).collect::<Vec<_>>().into(),
+        )));
+    }
+    if field_name == "snapshot" {
+        return Some(Value::Tuple(std::sync::Arc::new(vec![
+            Value::Float(support as i32 as f64),
+            Value::Float(resolved as i32 as f64),
+            Value::Float(loss),
+            Value::Float(information_loss),
+            Value::Float(effort_supported as i32 as f64),
+            Value::Float(effort_authorized as i32 as f64),
+        ].into())));
+    }
     let value = match field_name {
         "support" => support as i32 as f64,
         "resolved" => resolved as i32 as f64,

@@ -131,6 +131,14 @@ def SetT(*items):
     return {"type": "SetT", "items": list(items)}
 
 
+def Vec(*items):
+    return {"type": "Vec", "items": list(items)}
+
+
+def Nth(items, index):
+    return {"type": "Nth", "items": items, "index": index}
+
+
 def StringConcat(*parts):
     return {"type": "StringConcat", "parts": list(parts)}
 
@@ -657,32 +665,33 @@ CONSOLIDATED_MOTOR_PRIOR_FIELDS = (
 )
 
 
+def body_shape_decode(candidate, field):
+    return {
+        "type": "ShapeDecode",
+        "goal": A("episode", "body_shape_signature"),
+        "codebook_type": "HumanoidBodyShapeSignature",
+        "codebook_scope": SetT(A(candidate, "name")),
+        "beam": 1,
+        "max_steps": 1,
+        "cand_k": 1,
+        "field": field,
+        "wild_objects": False,
+    }
+
+
 def exact_body_shape_candidates():
     """Held body shapes that exactly cover the current mechanical signature."""
-
-    def decode_field(candidate, field):
-        return {
-            "type": "ShapeDecode",
-            "goal": A("episode", "body_shape_signature"),
-            "codebook_type": "HumanoidBodyShapeSignature",
-            "codebook_scope": SetT(A(candidate, "name")),
-            "beam": 1,
-            "max_steps": 1,
-            "cand_k": 1,
-            "field": field,
-            "wild_objects": False,
-        }
 
     return Filter(
         BODY_SHAPES,
         "body_shape_candidate",
         And(
             Eq(
-                Count(decode_field("body_shape_candidate", "residual")),
+                Count(body_shape_decode("body_shape_candidate", "residual")),
                 L(0.0),
             ),
             Eq(
-                decode_field("body_shape_candidate", "covered_count"),
+                body_shape_decode("body_shape_candidate", "covered_count"),
                 Count(A("episode", "body_shape_signature")),
             ),
             Eq(
@@ -711,6 +720,52 @@ def exact_body_shape_candidates():
             ),
         ),
     )
+
+
+def audit_held_body_shape_rule():
+    dynamics_match = And(*[
+        Eq(A("shape", field), A("episode", field))
+        for field in (
+            "physics_time_step",
+            "gravity_acceleration",
+            "joint_twitch_radians",
+            "maximum_joint_force",
+            "position_gain",
+            "velocity_gain",
+        )
+    ])
+    return {
+        "name": "ha_audit_held_body_shape_recognition",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -1,
+        "batch": False,
+        "comment": "Publish the exact shape-math recognition coordinates as output-null diagnostics before warm-start selection.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_body_shape_library", "shape"],
+        ],
+        "where": And(
+            Eq(P0("episode", "body_shape_initialized"), L(0)),
+            Eq(A("shape", "name"), A("episode", "body_shape_name")),
+            Eq(P0("episode", "body_shape_audit_complete"), L(0)),
+        ),
+        "effects": [
+            ["set_attr", "episode", "body_shape_audit_residual_count", T(
+                Count(body_shape_decode("shape", "residual"))
+            )],
+            ["set_attr", "episode", "body_shape_audit_covered_count", T(
+                body_shape_decode("shape", "covered_count")
+            )],
+            ["set_attr", "episode", "body_shape_audit_signature_count", T(
+                Count(A("episode", "body_shape_signature"))
+            )],
+            ["set_attr", "episode", "body_shape_audit_dynamics_match", T(If(
+                dynamics_match, L(1), L(0)
+            ))],
+            ["set_attr", "episode", "body_shape_audit_complete", 1],
+        ],
+    }
 
 
 def recognize_body_shape_rule():
@@ -743,6 +798,46 @@ def recognize_body_shape_rule():
             ],
             ["set_attr", "episode", "body_shape_initialized", 1.0],
             ["set_attr", "episode", "warm_start_shape_recognized", 1.0],
+        ],
+    }
+
+
+def recognize_late_restored_body_shape_rule():
+    already_recognized = Exists(
+        Neighbours("episode", "recognizes_humanoid_body_shape"),
+        "recognized_shape",
+        Eq(V("recognized_shape"), V("shape")),
+    )
+    is_exact = Exists(
+        exact_body_shape_candidates(),
+        "exact_shape",
+        Eq(V("exact_shape"), V("shape")),
+    )
+    return {
+        "name": "ha_recognize_late_restored_body_shape",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "comment": "Assimilate an exact shape library that arrived after body ingest. The late memory remains output-null; this only opens normal member rebinding and local verification.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["agent", "has_humanoid_body_shape_library", "shape"],
+        ],
+        "where": And(
+            Eq(P0("episode", "body_shape_initialized"), L(1)),
+            Eq(A("shape", "source"), L("library")),
+            Gt(Count(Neighbours(
+                "shape", "stores_humanoid_motor_program"
+            )), L(0)),
+            Not(already_recognized),
+            is_exact,
+        ),
+        "effects": [
+            ["add_edge", "episode", "recognizes_humanoid_body_shape", "shape"],
+            ["set_attr", "episode", "warm_start_shape_recognized", 1],
+            ["set_attr", "episode", "late_shape_library_recognition_count", T(
+                Plus(P0("episode", "late_shape_library_recognition_count"), L(1))
+            )],
         ],
     }
 
@@ -823,18 +918,84 @@ def exact_motor_program_shape(program, candidate, field):
     }
 
 
+def library_motor_programs(shape="shape"):
+    return Filter(
+        Neighbours(shape, "stores_humanoid_motor_program"),
+        "library_program",
+        Eq(A("library_program", "status"), L("library")),
+    )
+
+
+def duplicate_library_program_candidates(program="program", shape="shape"):
+    return Filter(
+        Neighbours(shape, "stores_humanoid_motor_program"),
+        "duplicate_candidate",
+        And(
+            Not(Eq(V(program), V("duplicate_candidate"))),
+            Not(Eq(A("duplicate_candidate", "name"), L(None))),
+            Not(Eq(A("duplicate_candidate", "signature"), L(None))),
+            Eq(A("duplicate_candidate", "status"), L("library")),
+            Lt(
+                P0("duplicate_candidate", "library_slot"),
+                P0(program, "library_slot"),
+            ),
+            Eq(Count(exact_motor_program_shape(
+                program, "duplicate_candidate", "residual"
+            )), L(0.0)),
+            Eq(
+                exact_motor_program_shape(
+                    program, "duplicate_candidate", "covered_count"
+                ),
+                Count(A(program, "signature")),
+            ),
+        ),
+    )
+
+
+def open_library_program_shape_audit_rule():
+    return {
+        "name": "ha_open_changed_library_motor_program_shape_audit",
+        "area": "embodied_sensorimotor",
+        "latency_class": "hard_realtime",
+        "order": -2,
+        "batch": True,
+        "comment": "Enter ShapeDecode only when the imported program "
+        "population changed since this program's last deduplication audit.",
+        "match": [["shape", "stores_humanoid_motor_program", "program"]],
+        "where": And(
+            Eq(A("program", "status"), L("library")),
+            Not(Eq(A("program", "name"), L(None))),
+            Not(Eq(A("program", "signature"), L(None))),
+            Not(Eq(
+                P0("program", "library_shape_audit_population"),
+                Count(library_motor_programs()),
+            )),
+            Eq(Count(Filter(
+                Neighbours("shape", "has_pending_library_program_shape_audit"),
+                "pending_program",
+                Eq(V("pending_program"), V("program")),
+            )), L(0)),
+        ),
+        "effects": [[
+            "add_edge", "shape",
+            "has_pending_library_program_shape_audit", "program",
+        ]],
+    }
+
+
 def recognize_duplicate_library_program_shape_rule():
     """Collapse imported duplicates with the engine's shape mathematics."""
     return {
         "name": "ha_shape_decode_duplicate_library_motor_program",
         "area": "embodied_sensorimotor",
         "latency_class": "hard_realtime",
+        "order": -1,
         "batch": False,
         "comment": "Treat motor programs as relation systems. ShapeDecode, "
         "not host tuple comparison, recognizes an imported program already "
         "covered by an earlier codebook entry under the same body shape.",
         "match": [
-            ["shape", "stores_humanoid_motor_program", "program"],
+            ["shape", "has_pending_library_program_shape_audit", "program"],
             ["shape", "stores_humanoid_motor_program", "canonical"],
         ],
         "where": And(
@@ -876,6 +1037,38 @@ def recognize_duplicate_library_program_shape_rule():
             [
                 "add_edge", "program",
                 "is_shape_duplicate_of_humanoid_program", "canonical",
+            ],
+            [
+                "del_edge", "shape",
+                "has_pending_library_program_shape_audit", "program",
+            ],
+        ],
+    }
+
+
+def close_unique_library_program_shape_audit_rule():
+    return {
+        "name": "ha_close_unique_library_motor_program_shape_audit",
+        "area": "embodied_sensorimotor",
+        "latency_class": "hard_realtime",
+        "order": 0,
+        "batch": True,
+        "comment": "A zero-residual duplicate search is stable until the "
+        "library population changes; retain that negative shape evidence.",
+        "match": [
+            ["shape", "has_pending_library_program_shape_audit", "program"],
+            ["shape", "stores_humanoid_motor_program", "program"],
+        ],
+        "where": Eq(
+            Count(duplicate_library_program_candidates()), L(0)
+        ),
+        "effects": [
+            ["set_attr", "program", "library_shape_audit_population", T(
+                Count(library_motor_programs())
+            )],
+            [
+                "del_edge", "shape",
+                "has_pending_library_program_shape_audit", "program",
             ],
         ],
     }
@@ -1527,56 +1720,108 @@ def activate_warm_program_rule():
     }
 
 
-def activate_warm_motor_transition_rule():
-    active_programs = Neighbours("episode", "has_humanoid_motor_program")
-    previous_candidates = Filter(
-        active_programs,
-        "previous_candidate",
+def bind_warm_motor_transition_source_rule():
+    candidates = Filter(
+        Neighbours("episode", "has_humanoid_motor_program"),
+        "source_candidate",
         And(
             Eq(
-                P0("previous_candidate", "ordinal"),
+                P0("source_candidate", "ordinal"),
                 P0("transition", "from_program_ordinal"),
             ),
             Eq(
-                A("previous_candidate", "motor_task_context"),
+                A("source_candidate", "motor_task_context"),
                 A("transition", "motor_task_context"),
             ),
             Eq(
-                P0("previous_candidate", "jump_schema_id"),
+                P0("source_candidate", "jump_schema_id"),
                 P0("transition", "jump_schema_id"),
             ),
         ),
     )
-    memory_candidates = Filter(
-        active_programs,
-        "memory_candidate",
+    selected = Argmin(
+        candidates, "source_candidate",
+        P0("source_candidate", "member_count"), V("previous"),
+    )
+    return {
+        "name": "ha_bind_shape_transition_source_endpoint",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "comment": "Resolve one restored transition endpoint before the "
+        "edge is activated, avoiding a repeated endpoint cross product.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "recognizes_humanoid_body_shape", "shape"],
+            ["shape", "stores_humanoid_motor_transition", "transition"],
+            ["episode", "has_humanoid_motor_program", "previous"],
+        ],
+        "where": And(
+            Eq(A("transition", "status"), L("library")),
+            Eq(P0("transition", "trajectory_verified"), L(1.0)),
+            Eq(V("previous"), selected),
+            Not(Exists(
+                Neighbours("previous", "has_humanoid_motor_transition"),
+                "known_transition",
+                Eq(V("known_transition"), V("transition")),
+            )),
+        ),
+        "effects": [[
+            "add_edge", "previous", "has_humanoid_motor_transition", "transition",
+        ]],
+    }
+
+
+def bind_warm_motor_transition_target_rule():
+    candidates = Filter(
+        Neighbours("episode", "has_humanoid_motor_program"),
+        "target_candidate",
         And(
             Eq(
-                P0("memory_candidate", "ordinal"),
+                P0("target_candidate", "ordinal"),
                 P0("transition", "next_program_ordinal"),
             ),
             Eq(
-                A("memory_candidate", "motor_task_context"),
+                A("target_candidate", "motor_task_context"),
                 A("transition", "motor_task_context"),
             ),
             Eq(
-                P0("memory_candidate", "jump_schema_id"),
+                P0("target_candidate", "jump_schema_id"),
                 P0("transition", "jump_schema_id"),
             ),
         ),
     )
-    selected_previous = Argmin(
-        previous_candidates,
-        "previous_candidate",
-        P0("previous_candidate", "member_count"),
-        V("previous"),
+    selected = Argmin(
+        candidates, "target_candidate",
+        P0("target_candidate", "member_count"), V("memory"),
     )
-    selected_memory = Argmin(
-        memory_candidates,
-        "memory_candidate",
-        P0("memory_candidate", "member_count"),
-        V("memory"),
-    )
+    return {
+        "name": "ha_bind_shape_transition_target_endpoint",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "recognizes_humanoid_body_shape", "shape"],
+            ["shape", "stores_humanoid_motor_transition", "transition"],
+            ["episode", "has_humanoid_motor_program", "memory"],
+        ],
+        "where": And(
+            Eq(A("transition", "status"), L("library")),
+            Eq(P0("transition", "trajectory_verified"), L(1.0)),
+            Eq(V("memory"), selected),
+            Eq(Count(Neighbours(
+                "transition", "continues_with_humanoid_motor_program"
+            )), L(0)),
+        ),
+        "effects": [[
+            "add_edge", "transition",
+            "continues_with_humanoid_motor_program", "memory",
+        ]],
+    }
+
+
+def activate_warm_motor_transition_rule():
     return {
         "name": "ha_activate_shape_matched_motor_transition",
         "area": "humanoid_sensorimotor_adaptation",
@@ -1587,8 +1832,8 @@ def activate_warm_motor_transition_rule():
             ["agent", "has_humanoid_episode", "episode"],
             ["episode", "recognizes_humanoid_body_shape", "shape"],
             ["shape", "stores_humanoid_motor_transition", "transition"],
-            ["episode", "has_humanoid_motor_program", "previous"],
-            ["episode", "has_humanoid_motor_program", "memory"],
+            ["previous", "has_humanoid_motor_transition", "transition"],
+            ["transition", "continues_with_humanoid_motor_program", "memory"],
         ],
         "where": And(
             Eq(A("transition", "status"), L("library")),
@@ -1617,8 +1862,6 @@ def activate_warm_motor_transition_rule():
                 P0("memory", "jump_schema_id"),
                 P0("transition", "jump_schema_id"),
             ),
-            Eq(V("previous"), selected_previous),
-            Eq(V("memory"), selected_memory),
         ),
         "effects": [
             ["add_edge", "episode", "has_humanoid_motor_transition", "transition"],
@@ -1630,12 +1873,28 @@ def activate_warm_motor_transition_rule():
     }
 
 
+def partial_trajectory_program(program="program"):
+    """A safe, retained intermediate that improved the projected future.
+
+    It is not terminal capability success.  Its counterexample provenance is
+    kept while the exact motor shape remains available to order-N planning.
+    """
+    return And(
+        Eq(P0(program, "partial_trajectory_evidence"), L(1.0)),
+        Gt(P0(program, "development_vertical_velocity_progress_sum_units"), L(0.0)),
+        Gt(P0(program, "member_count"), L(1.0)),
+        Eq(P0(program, "memory_eligible"), L(1.0)),
+        Eq(P0(program, "receipt_learned"), L(1.0)),
+    )
+
+
 def store_program_by_body_shape_rule():
     stored = Neighbours("shape", "stores_humanoid_motor_program")
     whole_trajectory_candidate = And(
         Eq(A("program", "motor_task_context"), L("self_takeoff")),
         Eq(P0("program", "trajectory_verified"), L(1.0)),
     )
+    partial_trajectory_candidate = partial_trajectory_program()
     is_stored = Exists(
         stored,
         "stored_program",
@@ -1679,9 +1938,10 @@ def store_program_by_body_shape_rule():
     )
     initial_candidate = And(
         Eq(P0("program", "memory_eligible"), L(1.0)),
-        Or(
-            whole_trajectory_candidate,
-            And(
+            Or(
+                whole_trajectory_candidate,
+                partial_trajectory_candidate,
+                And(
                 Gt(P0("program", "mean_directed_advance"), L(0.0)),
                 Lt(
                     motor_model_uncertainty("program"),
@@ -1703,6 +1963,7 @@ def store_program_by_body_shape_rule():
                 L(1.0),
             ),
             whole_trajectory_candidate,
+            partial_trajectory_candidate,
         ),
         Not(is_stored),
     )
@@ -1733,7 +1994,13 @@ def store_program_by_body_shape_rule():
             ["episode", "has_humanoid_motor_program", "program"],
         ],
         "where": And(
-            Eq(A("program", "status"), L("grounded")),
+            Or(
+                Eq(A("program", "status"), L("grounded")),
+                And(
+                    Eq(A("program", "status"), L("counterexample_observed")),
+                    partial_trajectory_candidate,
+                ),
+            ),
             Or(
                 Gt(P0("program", "member_count"), L(1.0)),
                 whole_trajectory_candidate,
@@ -1832,7 +2099,13 @@ def request_motor_library_consolidation_rule():
         Eq(V("stored_program"), V("program")),
     )
     initial_candidate = And(
-        Eq(A("program", "status"), L("grounded")),
+        Or(
+            Eq(A("program", "status"), L("grounded")),
+            And(
+                Eq(A("program", "status"), L("counterexample_observed")),
+                partial_trajectory_program(),
+            ),
+        ),
         Eq(P0("program", "memory_eligible"), L(1.0)),
         Eq(P0("program", "receipt_learned"), L(1.0)),
         Or(
@@ -1841,6 +2114,7 @@ def request_motor_library_consolidation_rule():
                 Eq(A("program", "motor_task_context"), L("self_takeoff")),
                 Eq(P0("program", "trajectory_verified"), L(1.0)),
             ),
+            partial_trajectory_program(),
         ),
         Or(
             Not(Eq(A("episode", "phase"), L("locomotion"))),
@@ -1943,6 +2217,7 @@ def withdraw_unsafe_program_from_shape_rule():
         Eq(A("program", "motor_task_context"), L("self_takeoff")),
         Eq(P0("program", "trajectory_verified"), L(1.0)),
     )
+    partial_trajectory_candidate = partial_trajectory_program()
     return {
         "name": "ha_withdraw_unsafe_program_from_body_shape_library",
         "area": "humanoid_sensorimotor_adaptation",
@@ -1956,7 +2231,10 @@ def withdraw_unsafe_program_from_shape_rule():
             ["shape", "stores_humanoid_motor_program", "program"],
         ],
         "where": And(
-            Not(whole_trajectory_candidate),
+            Not(Or(
+                whole_trajectory_candidate,
+                partial_trajectory_candidate,
+            )),
             Or(
                 Not(Gt(P0("program", "member_count"), L(1.0))),
                 And(
@@ -4013,6 +4291,9 @@ def clear_stale_shared_walking_primary_rule():
 
 
 def prepare_shared_walking_primary_rule():
+    valuation = A("phase_model", "motor_option_valuation_snapshot")
+    walking_cost_index = 0
+    exploration_value_index = 1
     return {
         "name": "ha_prepare_shared_walking_primary",
         "area": "humanoid_sensorimotor_adaptation",
@@ -4045,6 +4326,12 @@ def prepare_shared_walking_primary_rule():
             ),
         ),
         "effects": [
+            ["set_attr", "phase_model", "motor_option_valuation_snapshot", T(
+                Vec(
+                    walking_cost("phase_model"),
+                    foveated_program_exploration_value("phase_model"),
+                )
+            )],
             [
                 "add_edge",
                 "episode",
@@ -4057,12 +4344,12 @@ def prepare_shared_walking_primary_rule():
             )],
             ["set_attr", "phase_model", "default_value", 0.0],
             ["set_attr", "phase_model", "grounded_value", T(Plus(
-                Minus(L(0.0), walking_cost("phase_model")),
-                foveated_program_exploration_value("phase_model"),
+                Minus(L(0.0), Nth(valuation, walking_cost_index)),
+                Nth(valuation, exploration_value_index),
             ))],
             ["set_attr", "phase_model",
              "manifold_refinement_exploration_value", T(
-                 foveated_program_exploration_value("phase_model")
+                 Nth(valuation, exploration_value_index)
              )],
             ["set_attr", "episode",
              "maximum_manifold_refinement_exploration_value", T(Max(
@@ -4070,7 +4357,7 @@ def prepare_shared_walking_primary_rule():
                      "episode",
                      "maximum_manifold_refinement_exploration_value",
                  ),
-                 foveated_program_exploration_value("phase_model"),
+                 Nth(valuation, exploration_value_index),
              ))],
             ["set_attr", "episode",
              "manifold_refinement_exploration_valuation_count", T(Plus(
@@ -4080,7 +4367,7 @@ def prepare_shared_walking_primary_rule():
                  ),
                  If(
                      Gt(
-                         foveated_program_exploration_value("phase_model"),
+                         Nth(valuation, exploration_value_index),
                          L(0),
                      ),
                      L(1),
@@ -4140,13 +4427,13 @@ def retire_inactive_shared_walking_primary_rule():
 
 
 def arm_shared_walking_primary_rule():
-    prepared = Filter(
+    unprepared = Filter(
         ACTIVE_PHASE_MODELS,
         "candidate",
-        Eq(
+        Not(Eq(
             P0("candidate", "motor_decision_value_epoch"),
             P0("episode", "request_seq"),
-        ),
+        )),
     )
     return {
         "name": "ha_arm_shared_walking_primary",
@@ -4168,7 +4455,7 @@ def arm_shared_walking_primary_rule():
             Eq(P0("episode", "motor_primary_ready"), L(0.0)),
             Eq(current_motor_programs(), L(0.0)),
             Gt(Count(ACTIVE_PHASE_MODELS), L(0.0)),
-            Eq(Count(prepared), Count(ACTIVE_PHASE_MODELS)),
+            Eq(Count(unprepared), L(0.0)),
             Eq(P0("episode", "decision_armed"), L(0.0)),
             Gt(
                 P0("episode", "request_seq"),
@@ -4259,6 +4546,26 @@ def native_motor_compose_member(candidate="candidate"):
         "policy": V("policy"),
         "candidate": V(candidate),
     }
+
+
+def takeoff_effort_projection(program="plan"):
+    return {
+        "type": "FutureManifoldProjection",
+        "episode": V("episode"),
+        "policy": V("policy"),
+        "source": V(program),
+        "field": "takeoff_effort_snapshot",
+    }
+
+
+def takeoff_effort_prepared(program="plan"):
+    return Or(
+        Not(Eq(A(program, "motor_task_context"), L("self_takeoff"))),
+        Eq(
+            P0(program, "takeoff_effort_audit_seq"),
+            P0("episode", "request_seq"),
+        ),
+    )
 
 
 def current_motor_programs():
@@ -6780,19 +7087,7 @@ def audit_takeoff_compound_frontier_rule():
     }
 
 
-def select_compound_curiosity_candidate_rule():
-    """Select the least-understood compatible pair after persistent surprise."""
-    candidates = compound_curiosity_candidates()
-    selected = Argmin(
-        candidates,
-        "curiosity_option",
-        compound_pair_experience("plan", "curiosity_option"),
-        V("plan"),
-    )
-    selected_edges = Neighbours(
-        "plan",
-        "has_selected_humanoid_compound_curiosity_candidate",
-    )
+def persistent_compound_curiosity_residual():
     persistent_locomotion_residual = And(
         Eq(A("plan", "motor_task_context"), L("locomotion")),
         Eq(PI0("episode", "locomotion_drive_active"), L(1)),
@@ -6838,6 +7133,74 @@ def select_compound_curiosity_candidate_rule():
             ),
         ),
     )
+    return Or(persistent_locomotion_residual, persistent_takeoff_residual)
+
+
+def open_compound_curiosity_selection_rule():
+    selected_edges = Neighbours(
+        "plan", "has_selected_humanoid_compound_curiosity_candidate"
+    )
+    return {
+        "name": "ha_open_persistent_compound_curiosity_selection",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -4,
+        "batch": False,
+        "comment": "Persistent task residual opens an explicit candidate "
+        "comparison lease; ordinary fixpoints do not join the full phase "
+        "alphabet to every building program.",
+        "match": [
+            ["agent", "has_humanoid_policy", "policy"],
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "has_active_humanoid_motor_program", "plan"],
+            ["episode", "resumes_humanoid_motor_program", "plan"],
+            ["plan", "has_humanoid_motor_program_frontier", "frontier"],
+            ["plan", "includes_humanoid_phase_action_model", "primary"],
+        ],
+        "where": And(
+            Or(
+                Eq(PI0("policy", "native_humanoid_composition_enabled"), L(0)),
+                Eq(PI0("episode", "self_takeoff_drive_active"), L(0)),
+            ),
+            Eq(A("plan", "status"), L("building")),
+            Eq(A("frontier", "status"), L("open")),
+            Eq(PI0("plan", "synthesis_yield_required"), L(0)),
+            Eq(PI0("plan", "request_seq"), PI0("episode", "request_seq")),
+            Eq(PI0("plan", "allow_expansion"), L(1)),
+            Lt(PI0("plan", "member_count"), compound_curiosity_target_order()),
+            Eq(PI0("policy", "persistent_task_residual_authority"), L(1)),
+            Eq(PI0("episode", "sensorimotor_interrupt_required"), L(0)),
+            Eq(PI0("episode", "reset_requested"), L(0)),
+            persistent_compound_curiosity_residual(),
+            Eq(A("primary", "token"), A("plan", "primary_token")),
+            Eq(Count(selected_edges), L(0)),
+            Lt(
+                PI0("plan", "compound_curiosity_candidate_audit_seq"),
+                PI0("episode", "request_seq"),
+            ),
+            Eq(Count(Neighbours(
+                "plan", "has_open_compound_curiosity_selection"
+            )), L(0)),
+        ),
+        "effects": [[
+            "add_edge", "plan", "has_open_compound_curiosity_selection", "episode",
+        ]],
+    }
+
+
+def select_compound_curiosity_candidate_rule():
+    """Select the least-understood compatible pair after persistent surprise."""
+    candidates = compound_curiosity_candidates()
+    selected = Argmin(
+        candidates,
+        "curiosity_option",
+        compound_pair_experience("plan", "curiosity_option"),
+        V("plan"),
+    )
+    selected_edges = Neighbours(
+        "plan",
+        "has_selected_humanoid_compound_curiosity_candidate",
+    )
     return {
         "name": "ha_curiosity_selects_persistent_singleton_compound",
         "area": "humanoid_sensorimotor_adaptation",
@@ -6857,15 +7220,11 @@ def select_compound_curiosity_candidate_rule():
             ["agent", "has_humanoid_episode", "episode"],
             ["episode", "has_active_humanoid_motor_program", "plan"],
             ["episode", "resumes_humanoid_motor_program", "plan"],
+            ["plan", "has_open_compound_curiosity_selection", "episode"],
             [
                 "plan",
                 "has_humanoid_motor_program_frontier",
                 "frontier",
-            ],
-            [
-                "plan",
-                "includes_humanoid_phase_action_model",
-                "primary",
             ],
             [
                 "episode",
@@ -6874,38 +7233,27 @@ def select_compound_curiosity_candidate_rule():
             ],
         ],
         "where": And(
-            Or(
-                Eq(
-                    PI0("policy", "native_humanoid_composition_enabled"),
-                    L(0),
-                ),
-                Eq(PI0("episode", "self_takeoff_drive_active"), L(0)),
-            ),
             Eq(A("plan", "status"), L("building")),
             Eq(A("frontier", "status"), L("open")),
-            Eq(PI0("plan", "synthesis_yield_required"), L(0)),
             Eq(
                 PI0("plan", "request_seq"),
                 PI0("episode", "request_seq"),
             ),
-            Eq(PI0("plan", "allow_expansion"), L(1)),
-            Lt(
-                PI0("plan", "member_count"),
-                compound_curiosity_target_order(),
-            ),
-            Eq(
-                PI0("policy", "persistent_task_residual_authority"),
-                L(1),
-            ),
-            Eq(PI0("episode", "sensorimotor_interrupt_required"), L(0)),
-            Eq(PI0("episode", "reset_requested"), L(0)),
-            Or(persistent_locomotion_residual, persistent_takeoff_residual),
-            Eq(A("primary", "token"), A("plan", "primary_token")),
-            Gt(Count(candidates), L(0)),
             Eq(V("candidate"), selected),
             Eq(Count(selected_edges), L(0)),
         ),
         "effects": [
+            [
+                "set_attr", "plan",
+                "compound_curiosity_pre_expansion_candidate_count",
+                T(Count(candidates)),
+            ],
+            [
+                "set_attr",
+                "plan",
+                "compound_curiosity_pair_experience",
+                T(compound_pair_experience("plan", "candidate")),
+            ],
             [
                 "add_edge",
                 "plan",
@@ -6918,19 +7266,39 @@ def select_compound_curiosity_candidate_rule():
                 "compound_selection_kind",
                 "persistent_residual_surprise_curiosity",
             ],
-            [
-                "set_attr",
-                "plan",
-                "compound_curiosity_pair_experience",
-                T(compound_pair_experience("plan", "candidate")),
-            ],
             ["set_attr", "plan", "compound_curiosity_selection_count", T(
                 Plus(PI0("plan", "compound_curiosity_selection_count"), L(1))
             )],
             [
-                "set_attr", "plan",
-                "compound_curiosity_pre_expansion_candidate_count",
-                T(Count(candidates)),
+                "del_edge", "plan",
+                "has_open_compound_curiosity_selection", "episode",
+            ],
+        ],
+    }
+
+
+def close_empty_compound_curiosity_selection_rule():
+    return {
+        "name": "ha_close_empty_compound_curiosity_selection",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -2,
+        "batch": False,
+        "comment": "An empty compatible alphabet is negative evidence for "
+        "this request and is reconsidered when the sensed request advances.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "has_active_humanoid_motor_program", "plan"],
+            ["plan", "has_open_compound_curiosity_selection", "episode"],
+        ],
+        "where": Eq(Count(compound_curiosity_candidates()), L(0)),
+        "effects": [
+            ["set_attr", "plan", "compound_curiosity_candidate_audit_seq", T(
+                PI0("episode", "request_seq")
+            )],
+            [
+                "del_edge", "plan",
+                "has_open_compound_curiosity_selection", "episode",
             ],
         ],
     }
@@ -7486,6 +7854,61 @@ def close_motor_program_rule():
                 )
             )],
             ["set_attr", "episode", "action_ready", 1.0],
+        ],
+    }
+
+
+def project_takeoff_effort_ratio_rule():
+    snapshot = A("plan", "takeoff_effort_projection_snapshot")
+    supported = Nth(snapshot, 0)
+    required = Nth(snapshot, 1)
+    selected = Nth(snapshot, 2)
+    residual = Nth(snapshot, 3)
+    authorized = Nth(snapshot, 4)
+    effect_keys = ("dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz")
+    return {
+        "name": "ha_project_least_takeoff_effort_inside_future_manifold",
+        "area": "generic_future_option_risk",
+        "latency_class": "hard_realtime",
+        "order": 1,
+        "batch": False,
+        "comment": "After member synthesis, derive the target-to-predicted recruitment ratio and use it only when the complete scaled held program remains inside every foveated manifold bound. Unsupported or escaping proposals retain normal unit effort.",
+        "match": [
+            ["agent", "has_humanoid_policy", "policy"],
+            ["agent", "has_humanoid_episode", "episode"],
+            ["episode", "has_ready_humanoid_motor_program", "plan"],
+        ],
+        "where": And(
+            Eq(A("plan", "status"), L("ready")),
+            Eq(A("plan", "motor_task_context"), L("self_takeoff")),
+            Eq(P0("plan", "request_seq"), P0("episode", "request_seq")),
+            Not(Eq(
+                P0("plan", "takeoff_effort_audit_seq"),
+                P0("episode", "request_seq"),
+            )),
+        ),
+        "effects": [
+            ["set_attr", "plan", "takeoff_effort_projection_snapshot", T(
+                takeoff_effort_projection()
+            )],
+            ["set_attr", "plan", "takeoff_effort_supported", T(supported)],
+            ["set_attr", "plan", "takeoff_effort_required_ratio", T(required)],
+            ["set_attr", "plan", "motor_effort_ratio", T(selected)],
+            ["set_attr", "plan", "takeoff_effort_residual_ratio", T(residual)],
+            ["set_attr", "plan", "takeoff_effort_authorized", T(authorized)],
+            ["set_attr", "episode", "selected_motor_weight_a", T(selected)],
+            ["set_attr", "episode", "selected_motor_weight_b", T(selected)],
+            *[
+                ["set_attr", "episode", f"selected_predicted_{key}", T(If(
+                    Gt(supported, L(0)),
+                    Nth(snapshot, 5 + index),
+                    P0("episode", f"selected_predicted_{key}"),
+                ))]
+                for index, key in enumerate(effect_keys)
+            ],
+            ["set_attr", "plan", "takeoff_effort_audit_seq", T(
+                P0("episode", "request_seq")
+            )],
         ],
     }
 
@@ -10610,12 +11033,7 @@ def release_selected_developmental_trajectory_rule():
             Gt(P0("episode", "request_seq"), P0("episode", "decision_seq")),
             Eq(P0("episode", "action_ready"), L(0.0)),
             Eq(Count(issued_trials_for_current_request()), L(0.0)),
-            Eq(
-                Count(Neighbours(
-                    "episode", "has_ready_humanoid_motor_program"
-                )),
-                L(0.0),
-            ),
+            Eq(Count(ready_motor_programs_for_current_request()), L(0.0)),
         ),
         "effects": [
             ["set_attr", "memory", "status", "ready"],
@@ -10845,6 +11263,7 @@ def open_motor_program_trial_rule():
             Eq(V("plan"), selected_ready_motor_program()),
             Eq(V("model"), selected_model),
             Eq(A("plan", "status"), L("ready")),
+            takeoff_effort_prepared(),
             Eq(A("primary", "token"), A("plan", "primary_token")),
             Eq(
                 P0("plan", "request_seq"),
@@ -10868,6 +11287,24 @@ def open_motor_program_trial_rule():
                 "response_frames": T(
                     P0("episode", "selected_response_frames")
                 ),
+                "motor_weight_a": T(P0(
+                    "episode", "selected_motor_weight_a"
+                )),
+                "motor_weight_b": T(P0(
+                    "episode", "selected_motor_weight_b"
+                )),
+                "motor_effort_ratio": T(P0(
+                    "plan", "motor_effort_ratio"
+                )),
+                **{
+                    key: T(P0("plan", key))
+                    for key in (
+                        "takeoff_effort_supported",
+                        "takeoff_effort_required_ratio",
+                        "takeoff_effort_residual_ratio",
+                        "takeoff_effort_authorized",
+                    )
+                },
                 **{
                     f"predicted_{key}": T(
                         P0("episode", f"selected_predicted_{key}")
@@ -10974,6 +11411,7 @@ def open_canonical_synthesis_trial_rule():
         "where": And(
             Eq(V("plan"), selected_ready_motor_program()),
             Eq(A("plan", "status"), L("ready")),
+            takeoff_effort_prepared(),
             Gt(P0("plan", "member_count"), L(0.0)),
             Gt(Count(eligible), L(0.0)),
             Eq(V("memory"), canonical),
@@ -11000,6 +11438,24 @@ def open_canonical_synthesis_trial_rule():
                 "response_frames": T(
                     P0("episode", "selected_response_frames")
                 ),
+                "motor_weight_a": T(P0(
+                    "episode", "selected_motor_weight_a"
+                )),
+                "motor_weight_b": T(P0(
+                    "episode", "selected_motor_weight_b"
+                )),
+                "motor_effort_ratio": T(P0(
+                    "plan", "motor_effort_ratio"
+                )),
+                **{
+                    key: T(P0("plan", key))
+                    for key in (
+                        "takeoff_effort_supported",
+                        "takeoff_effort_required_ratio",
+                        "takeoff_effort_residual_ratio",
+                        "takeoff_effort_authorized",
+                    )
+                },
                 **{
                     f"predicted_{key}": T(
                         P0("episode", f"selected_predicted_{key}")
@@ -13123,16 +13579,19 @@ def update_recalled_motor_memory_rule():
         ),
     )
     next_response_frames = If(
-        And(
-            Eq(
-                P0("trial", "motor_memory_structurally_reused"),
-                L(1.0),
+        Or(
+            And(
+                Eq(
+                    P0("trial", "motor_memory_structurally_reused"),
+                    L(1.0),
+                ),
+                Eq(
+                    P0("memory", "warm_start_requires_verification"),
+                    L(1.0),
+                ),
+                Eq(P0("memory", "warm_start_verified"), L(0.0)),
             ),
-            Eq(
-                P0("memory", "warm_start_requires_verification"),
-                L(1.0),
-            ),
-            Eq(P0("memory", "warm_start_verified"), L(0.0)),
+            Eq(P0("memory", "partial_trajectory_evidence"), L(1.0)),
         ),
         P0("trial", "response_frames"),
         tuned_response_frames,
@@ -16151,7 +16610,7 @@ def manifest():
     )
     return apply_biological_schedule({
         "id": "humanoid_adaptation",
-        "version": "1.15.0",
+        "version": "1.29.0",
         "depends_on": [
             "decision_core",
             "embodied_motor_priors",
@@ -16969,8 +17428,11 @@ def manifest():
         ],
         "rules": [
             recognize_body_shape_rule(),
+            recognize_late_restored_body_shape_rule(),
             mint_body_shape_rule(),
+            open_library_program_shape_audit_rule(),
             recognize_duplicate_library_program_shape_rule(),
+            close_unique_library_program_shape_audit_rule(),
             select_motor_plan_task_context_rule(),
             consider_motor_plan_hint_rule(),
             classify_grounded_program_routing_shape_rule(),
@@ -16982,6 +17444,8 @@ def manifest():
             restore_shape_residual_regime_memory_rule(),
             bind_warm_program_member_rule(),
             activate_warm_program_rule(),
+            bind_warm_motor_transition_source_rule(),
+            bind_warm_motor_transition_target_rule(),
             activate_warm_motor_transition_rule(),
             request_motor_library_consolidation_rule(),
             mint_shape_residual_regime_memory_rule(),
@@ -17046,11 +17510,14 @@ def manifest():
             choose_walking_rule(),
             resume_motor_program_rule(),
             audit_takeoff_compound_frontier_rule(),
+            open_compound_curiosity_selection_rule(),
             select_compound_curiosity_candidate_rule(),
+            close_empty_compound_curiosity_selection_rule(),
             expand_compound_curiosity_program_rule(),
             expand_motor_program_rule(),
             native_expand_motor_program_rule(),
             close_motor_program_rule(),
+            project_takeoff_effort_ratio_rule(),
             choose_tonic_control_rule(),
             open_motor_sequence_trial_rule(),
             open_recalled_motor_program_trial_rule(),
