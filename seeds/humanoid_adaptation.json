@@ -1,6 +1,6 @@
 {
  "id": "humanoid_adaptation",
- "version": "1.29.0",
+ "version": "1.30.0",
  "depends_on": [
   "decision_core",
   "embodied_motor_priors",
@@ -676203,6 +676203,119 @@
              "type": "Lit",
              "value": 1.0
             }
+           },
+           {
+            "type": "And",
+            "items": [
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "memory"
+                 },
+                 "key": "partial_trajectory_evidence"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 1.0
+              }
+             },
+             {
+              "type": "Eq",
+              "a": {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "memory"
+               },
+               "key": "motor_task_context"
+              },
+              "b": {
+               "type": "Lit",
+               "value": "self_takeoff"
+              }
+             },
+             {
+              "type": "Gt",
+              "a": {
+               "type": "FutureManifoldProjection",
+               "episode": {
+                "type": "Var",
+                "name": "episode"
+               },
+               "policy": {
+                "type": "Var",
+                "name": "policy"
+               },
+               "source": {
+                "type": "Var",
+                "name": "memory"
+               },
+               "field": "support"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "Gt",
+              "a": {
+               "type": "FutureManifoldProjection",
+               "episode": {
+                "type": "Var",
+                "name": "episode"
+               },
+               "policy": {
+                "type": "Var",
+                "name": "policy"
+               },
+               "source": {
+                "type": "Var",
+                "name": "memory"
+               },
+               "field": "resolved"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             },
+             {
+              "type": "Gt",
+              "a": {
+               "type": "FutureManifoldProjection",
+               "episode": {
+                "type": "Var",
+                "name": "episode"
+               },
+               "policy": {
+                "type": "Var",
+                "name": "policy"
+               },
+               "source": {
+                "type": "Var",
+                "name": "memory"
+               },
+               "field": "narrativium_retained_dvz"
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0.0
+              }
+             }
+            ]
            },
            {
             "type": "Not",

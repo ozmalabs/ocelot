@@ -45,7 +45,7 @@ def test_humanoid_seed_owns_learning_and_balance_choice():
     learner = json.dumps(_rule(seed, "ha_learn_opaque_joint_consequence"))
 
     assert seed["id"] == "humanoid_adaptation"
-    assert seed["version"] == "1.29.0"
+    assert seed["version"] == "1.30.0"
     assert '"type": "Argmin"' in chooser
     assert "gravity_acceleration" in chooser
     assert '"type": "Sqrt"' in chooser
@@ -112,6 +112,17 @@ def test_partial_trajectory_counterexample_is_retained_without_becoming_success(
     assert "counterexample_observed" in store
     assert "counterexample_observed" in request
     assert "capability_success" not in store
+
+
+def test_partial_takeoff_memory_retains_generic_vertical_narrativium():
+    from scripts.gen_humanoid_adaptation_seed import manifest
+
+    rule = _rule(manifest(), "ha_update_reassociated_motor_memory")
+    encoded = json.dumps(rule)
+    assert "narrativium_retained_dvz" in encoded
+    assert "partial_trajectory_evidence" in encoded
+    assert "self_takeoff" in encoded
+    assert "mean_directed_advance" in encoded
 
 
 def test_humanoid_python_boundary_contains_no_agent_policy():

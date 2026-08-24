@@ -193,6 +193,27 @@ def _humanoid_path_bench(effects, *, bound=1.0):
     return agent, episode, policy, path, transitions
 
 
+def test_generic_projection_exposes_dimension_local_narrativium():
+    agent, ep, policy, source = _bench()
+    agent.inner.set_attr(policy, "future_manifold_projection_budget", 2.0)
+    agent.inner.set_attr(policy, "future_manifold_physical_horizon", 2.0)
+    agent.inner.set_attr(ep, "future_manifold_target", [[0.0], [0.0]])
+    agent.inner.set_attr(ep, "future_manifold_bounds", [[1.0], [1.0]])
+    agent.inner.set_attr(source, "future_manifold_values", [[0.0], [0.5]])
+
+    assert _value(agent, ep, policy, source, "narrativium_reachable_0") == 1.0
+    assert _value(agent, ep, policy, source, "narrativium_retained_0") == 1.0
+    agent.inner.set_attr(source, "future_manifold_values", [[0.0], [2.0]])
+    assert _value(agent, ep, policy, source, "narrativium_reachable_0") == 1.0
+    assert _value(agent, ep, policy, source, "narrativium_retained_0") == 0.0
+
+
+def test_humanoid_projection_exposes_narrativium_by_humanoid_axis():
+    agent, ep, policy, path, _ = _humanoid_path_bench([0.1], bound=1.0)
+    assert _value(agent, ep, policy, path, "narrativium_reachable_dvx") == 1.0
+    assert _value(agent, ep, policy, path, "narrativium_retained_dvx") == 1.0
+
+
 def test_ideal_effort_allows_excess_only_for_manifold_compression():
     agent, ep, policy, source = _bench()
     agent.inner.set_attr(policy, "future_manifold_projection_budget", 2.0)

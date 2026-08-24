@@ -33,6 +33,12 @@
 //!   decisive tick; `shape_residual_T_N` addresses the signed excess at the
 //!   actual one-based projected time T. Positive means prediction above the
 //!   allowed tube, negative below it, and zero remains inside the tube.
+//! * `narrativium_reachable_N` and `narrativium_retained_N` expose the
+//!   discrete counting measure for this candidate in dimension N.  A single
+//!   supported trace contributes one reachable deformation; it contributes
+//!   one retained deformation only when the whole audited trace stays within
+//!   the manifold. Candidate-family callers use
+//!   [`counting_narrativium_by_dimension`] to deduplicate and count the set.
 //!
 //! The result is evidence only.  `resolved` means the requested projection
 //! was completely audited (or an escape was located); it never commits a
@@ -313,8 +319,8 @@ pub fn projection_field(
     )
     .filter(|compression| compression.is_finite() && *compression >= 0.0)
     .unwrap_or(0.0);
-    let information_compression = inferred_information_compression
-        .max(explicit_information_compression);
+    let information_compression =
+        inferred_information_compression.max(explicit_information_compression);
     // These are unlike dimensions.  Preserve the triangle instead of
     // collapsing seconds, width units and information units into a score.
     let compression_dimension_count = [time_compression, width_compression, information_compression]
@@ -359,18 +365,25 @@ pub fn projection_field(
             );
         }
         return Some(Value::Tuple(std::sync::Arc::new(
-            fields.into_iter().map(Value::Float).collect::<Vec<_>>().into(),
+            fields
+                .into_iter()
+                .map(Value::Float)
+                .collect::<Vec<_>>()
+                .into(),
         )));
     }
     if field_name == "snapshot" {
-        return Some(Value::Tuple(std::sync::Arc::new(vec![
-            Value::Float(support as i32 as f64),
-            Value::Float(resolved as i32 as f64),
-            Value::Float(loss),
-            Value::Float(information_loss),
-            Value::Float(effort_supported as i32 as f64),
-            Value::Float(effort_authorized as i32 as f64),
-        ].into())));
+        return Some(Value::Tuple(std::sync::Arc::new(
+            vec![
+                Value::Float(support as i32 as f64),
+                Value::Float(resolved as i32 as f64),
+                Value::Float(loss),
+                Value::Float(information_loss),
+                Value::Float(effort_supported as i32 as f64),
+                Value::Float(effort_authorized as i32 as f64),
+            ]
+            .into(),
+        )));
     }
     let value = match field_name {
         "support" => support as i32 as f64,
@@ -447,6 +460,18 @@ pub fn projection_field(
                 .map(|v| if v { 1.0 } else { 0.0 })
                 .unwrap_or(0.0)
         }
+        key if key.starts_with("narrativium_reachable_") => {
+            let idx = key[22..].parse::<usize>().ok();
+            idx.filter(|dimension| *dimension < retained_by_dim.len())
+                .map(|_| if support { 1.0 } else { 0.0 })
+                .unwrap_or(0.0)
+        }
+        key if key.starts_with("narrativium_retained_") => {
+            let idx = key[21..].parse::<usize>().ok();
+            idx.and_then(|dimension| retained_by_dim.get(dimension).copied())
+                .map(|retained| if support && retained { 1.0 } else { 0.0 })
+                .unwrap_or(0.0)
+        }
         _ => 0.0,
     };
     Some(Value::Float(value))
@@ -471,6 +496,9 @@ pub struct DeformationRecord {
     pub information_loss: f64,
     /// Dimensions still inside tolerance at the audited horizon.
     pub retained_width: f64,
+    /// Per-dimension retention.  This remains a vector because dimensions
+    /// need not share a measure or even comparable units.
+    pub retained_dimensions: Vec<bool>,
     /// Earliest tick at which the outcome was decided, when one exists.
     pub earliest_decisive_tick: f64,
 }
@@ -522,7 +550,7 @@ pub fn reachable_deformation_set(
     policy: NodeID,
     candidates: &[NodeID],
 ) -> Vec<DeformationRecord> {
-    let (support, resolved, loss, info, width, decisive) = (
+    let (support, resolved, loss, info, retained_width_field, decisive) = (
         interner.intern("support"),
         interner.intern("resolved"),
         interner.intern("loss"),
@@ -530,6 +558,17 @@ pub fn reachable_deformation_set(
         interner.intern("retained_width"),
         interner.intern("earliest_decisive_tick"),
     );
+    let maximum_dimensions = candidates
+        .iter()
+        .filter_map(|candidate| {
+            matrix(graph, interner, *candidate, "future_manifold_values")
+                .and_then(|values| width(&values))
+        })
+        .max()
+        .unwrap_or(0);
+    let retained_fields: Vec<Sym> = (0..maximum_dimensions)
+        .map(|dimension| interner.intern(&format!("retained_{dimension}")))
+        .collect();
     let interner = &*interner;
     let read = |cand: NodeID, field: Sym| -> f64 {
         projection_field(graph, interner, episode, policy, cand, None, field)
@@ -548,10 +587,111 @@ pub fn reachable_deformation_set(
             resolved: read(candidate, resolved) != 0.0,
             loss: read(candidate, loss),
             information_loss: read(candidate, info),
-            retained_width: read(candidate, width),
+            retained_width: read(candidate, retained_width_field),
+            retained_dimensions: {
+                let dimensions = matrix(graph, interner, candidate, "future_manifold_values")
+                    .and_then(|values| width(&values))
+                    .unwrap_or(0);
+                (0..dimensions)
+                    .map(|dimension| read(candidate, retained_fields[dimension]) != 0.0)
+                    .collect()
+            },
             earliest_decisive_tick: read(candidate, decisive),
         })
         .collect()
+}
+
+/// A deterministic counting grounding for Narrativium in one dimension.
+///
+/// `reachable_deformations` counts distinct, supported projected traces in
+/// the admissible reachable-set upper bound. `retained_deformations` counts
+/// the subset whose complete audited trace remains inside the represented
+/// manifold.  Both are cardinalities, not magnitudes in the dimension's
+/// units, and no value is combined across dimensions.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DimensionNarrativium {
+    pub dimension: usize,
+    pub reachable_deformations: usize,
+    pub retained_deformations: usize,
+}
+
+/// Apply the discrete counting measure to an admissible candidate family.
+///
+/// This is one explicit grounding of the theory's open `mu`: two candidates
+/// contribute once when their projected traces in a dimension are identical.
+/// `None` means the requested Narrativium dimension is not established: an
+/// empty family, malformed dimensionality, or any unsupported candidate fails
+/// closed rather than being reported as zero capacity.
+pub fn counting_narrativium_by_dimension(
+    graph: &TypedGraph,
+    interner: &mut Interner,
+    episode: NodeID,
+    policy: NodeID,
+    candidates: &[NodeID],
+) -> Option<Vec<DimensionNarrativium>> {
+    if candidates.is_empty() {
+        return None;
+    }
+    let records = reachable_deformation_set(graph, interner, episode, policy, candidates);
+    if records.iter().any(|record| !record.support) {
+        return None;
+    }
+    let trajectories: Vec<Vec<Vec<f64>>> = candidates
+        .iter()
+        .map(|candidate| matrix(graph, interner, *candidate, "future_manifold_values"))
+        .collect::<Option<_>>()?;
+    let dimensions = trajectories.first().and_then(|values| width(values))?;
+    let physical_horizon = scalar(graph, interner, policy, "future_manifold_physical_horizon");
+    let measured_horizon = match physical_horizon {
+        Some(horizon) if horizon.is_finite() && horizon >= 1.0 && horizon.fract() == 0.0 => {
+            horizon as usize
+        }
+        Some(horizon) if horizon <= 0.0 => trajectories.first()?.len(),
+        None => trajectories.first()?.len(),
+        _ => return None,
+    };
+    if dimensions == 0
+        || measured_horizon == 0
+        || trajectories
+            .iter()
+            .any(|values| width(values) != Some(dimensions) || values.len() < measured_horizon)
+    {
+        return None;
+    }
+
+    Some(
+        (0..dimensions)
+            .map(|dimension| {
+                let mut reachable: Vec<Vec<u64>> = Vec::new();
+                let mut retained: Vec<Vec<u64>> = Vec::new();
+                for (trajectory, record) in trajectories.iter().zip(&records) {
+                    let trace: Vec<u64> = trajectory
+                        .iter()
+                        .take(measured_horizon)
+                        .map(|row| {
+                            let value = row[dimension];
+                            if value == 0.0 {
+                                0.0f64.to_bits()
+                            } else {
+                                value.to_bits()
+                            }
+                        })
+                        .collect();
+                    if !reachable.contains(&trace) {
+                        reachable.push(trace.clone());
+                    }
+                    if record.retained_dimensions[dimension] && !retained.contains(&trace) {
+                        retained.push(trace);
+                    }
+                }
+                DimensionNarrativium {
+                    dimension,
+                    reachable_deformations: reachable.len(),
+                    retained_deformations: retained.len(),
+                }
+            })
+            .collect(),
+    )
 }
 
 #[cfg(test)]
@@ -657,6 +797,58 @@ mod reachable_set_tests {
             !set[0].support,
             "a candidate with no trajectory must fail closed, got {:?}",
             set[0]
+        );
+    }
+
+    #[test]
+    fn narrativium_counts_distinct_reachable_traces_per_dimension() {
+        let (mut g, mut i, episode, policy, held, escaping) = bench();
+        let ty = g.node(held).type_;
+        let duplicate = g.insert_node(ty, FxHashMap::default());
+        let vals = i.intern("future_manifold_values");
+        let slice = |xs: &[f64]| {
+            let values: smallvec::SmallVec<[Value; 4]> =
+                xs.iter().map(|value| Value::Float(*value)).collect();
+            Value::Tuple(std::sync::Arc::new(values))
+        };
+        let rows: smallvec::SmallVec<[Value; 4]> = [&[0.0][..], &[0.2][..], &[0.1][..]]
+            .iter()
+            .map(|row| slice(row))
+            .collect();
+        g.set_node_attr(duplicate, vals, Value::Tuple(std::sync::Arc::new(rows)));
+
+        let measure = counting_narrativium_by_dimension(
+            &g,
+            &mut i,
+            episode,
+            policy,
+            &[held, duplicate, escaping],
+        )
+        .expect("the dimension is represented and every candidate is auditable");
+        assert_eq!(
+            measure,
+            vec![DimensionNarrativium {
+                dimension: 0,
+                reachable_deformations: 2,
+                retained_deformations: 1,
+            }],
+            "duplicate programs do not fabricate capacity, while an escaping trace remains reachable but not retained",
+        );
+    }
+
+    #[test]
+    fn narrativium_is_undefined_without_supported_reachability() {
+        let (mut g, mut i, episode, policy, held, _escaping) = bench();
+        let bare = g.insert_node(g.node(held).type_, FxHashMap::default());
+        assert_eq!(
+            counting_narrativium_by_dimension(&g, &mut i, episode, policy, &[held, bare],),
+            None,
+            "unsupported reachability is not zero Narrativium",
+        );
+        assert_eq!(
+            counting_narrativium_by_dimension(&g, &mut i, episode, policy, &[]),
+            None,
+            "an absent dimension is not a measured zero",
         );
     }
 }
