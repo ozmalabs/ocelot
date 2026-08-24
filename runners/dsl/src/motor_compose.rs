@@ -2771,11 +2771,55 @@ pub fn future_manifold_projection_field(
         .lookup("embodied_program_path")
         .is_some_and(|kind| sattr(graph, interner, source, "kind") == Some(kind))
     {
-        let (report, effort_members, effort_exposure_count) =
+        let (report, effort_members, effort_exposure_count, projected_trace) =
             future_humanoid_manifold_projection_for_path(
                 graph, interner, episode, policy, source, addition,
             );
         let name = interner.resolve(field);
+        if name == "narrativium_snapshot" {
+            let counts = path_family_narrativium(
+                graph,
+                interner,
+                episode,
+                policy,
+                source,
+                addition,
+                (&report, &projected_trace),
+            );
+            return counts.map_or(Value::None, |(reachable, retained)| {
+                Value::Tuple(std::sync::Arc::new(
+                    reachable
+                        .into_iter()
+                        .chain(retained)
+                        .map(Value::Float)
+                        .collect::<Vec<_>>()
+                        .into(),
+                ))
+            });
+        }
+        if let Some(dimension) = humanoid_narrativium_dimension(name) {
+            let retained = name.starts_with("narrativium_retained_");
+            let counts = path_family_narrativium(
+                graph,
+                interner,
+                episode,
+                policy,
+                source,
+                addition,
+                (&report, &projected_trace),
+            );
+            return Value::Float(
+                counts
+                    .map(|(reachable, retained_counts)| {
+                        if retained {
+                            retained_counts[dimension]
+                        } else {
+                            reachable[dimension]
+                        }
+                    })
+                    .unwrap_or(0.0),
+            );
+        }
         if name == "snapshot" {
             return projection_snapshot(
                 graph,
@@ -3570,6 +3614,124 @@ fn foveated_segment_anchors(horizon: i32) -> Option<Vec<i32>> {
     Some(frames)
 }
 
+fn humanoid_narrativium_dimension(field: &str) -> Option<usize> {
+    let suffix = field
+        .strip_prefix("narrativium_reachable_")
+        .or_else(|| field.strip_prefix("narrativium_retained_"))?;
+    suffix
+        .parse::<usize>()
+        .ok()
+        .filter(|index| *index < HUMANOID_KEYS.len())
+        .or_else(|| COMPONENTS.iter().position(|component| *component == suffix))
+        .or_else(|| HUMANOID_KEYS.iter().position(|component| *component == suffix))
+}
+
+/// Count distinct projected future shapes beside `selected`. Projected time
+/// remains part of every per-dimension trace key; axes are never collapsed
+/// into a scalar. A malformed member leaves the family unknown.
+fn path_family_narrativium(
+    graph: &TypedGraph,
+    interner: &Interner,
+    episode: NodeID,
+    policy: NodeID,
+    selected: NodeID,
+    current_transition: Option<NodeID>,
+    selected_projection: (&FutureProjectionReport, &[(i32, [f64; 7])]),
+) -> Option<([f64; 7], [f64; 7])> {
+    let candidate_edge = interner.lookup("has_pareto_candidate");
+    let trajectories = candidate_edge
+        .map(|edge| graph.in_neighbours(selected, Some(edge)))
+        .unwrap_or_default();
+    let mut candidates = if trajectories.is_empty() {
+        vec![selected]
+    } else {
+        if trajectories.len() != 1 {
+            return None;
+        }
+        graph.neighbours(trajectories[0], candidate_edge)
+    };
+    let selected_depth = fattr(graph, interner, selected, "depth");
+    candidates.retain(|candidate| {
+        fattr(graph, interner, *candidate, "depth") == selected_depth
+    });
+    if let Some(dominated_edge) = interner.lookup("is_dominated_by_pareto_candidate") {
+        candidates.retain(|candidate| {
+            graph.neighbours(*candidate, Some(dominated_edge)).is_empty()
+        });
+    }
+    if let (Some(anchor), Some(blocked_edge)) = (
+        current_transition,
+        interner.lookup("manifold_blocked_from_embodied_program_transition"),
+    ) {
+        candidates.retain(|candidate| {
+            !graph
+                .neighbours(*candidate, Some(blocked_edge))
+                .contains(&anchor)
+        });
+    }
+    if candidates.is_empty() {
+        return None;
+    }
+
+    let mut projections = Vec::with_capacity(candidates.len());
+    for candidate in candidates {
+        if candidate == selected {
+            projections.push((
+                selected_projection.0.clone(),
+                selected_projection.1.to_vec(),
+            ));
+        } else {
+            let (report, _, _, trace) = future_humanoid_manifold_projection_for_path(
+                graph,
+                interner,
+                episode,
+                policy,
+                candidate,
+                current_transition,
+            );
+            projections.push((report, trace));
+        }
+    }
+    if projections
+        .iter()
+        .any(|(report, trace)| !report.support || trace.is_empty())
+    {
+        return None;
+    }
+
+    let mut reachable = [0.0; 7];
+    let mut retained = [0.0; 7];
+    for dimension in 0..7 {
+        let mut reachable_traces: Vec<Vec<(i32, u64)>> = Vec::new();
+        let mut retained_traces: Vec<Vec<(i32, u64)>> = Vec::new();
+        for (report, trace) in &projections {
+            let key: Vec<(i32, u64)> = trace
+                .iter()
+                .map(|(tick, values)| {
+                    let value = values[dimension];
+                    (
+                        *tick,
+                        if value == 0.0 {
+                            0.0f64.to_bits()
+                        } else {
+                            value.to_bits()
+                        },
+                    )
+                })
+                .collect();
+            if !reachable_traces.contains(&key) {
+                reachable_traces.push(key.clone());
+            }
+            if report.retained[dimension] > 0.5 && !retained_traces.contains(&key) {
+                retained_traces.push(key);
+            }
+        }
+        reachable[dimension] = reachable_traces.len() as f64;
+        retained[dimension] = retained_traces.len() as f64;
+    }
+    Some((reachable, retained))
+}
+
 fn rebind_humanoid_program_members(
     graph: &TypedGraph,
     interner: &Interner,
@@ -3801,12 +3963,13 @@ fn future_humanoid_manifold_projection_for_path(
     policy: NodeID,
     path: NodeID,
     current_transition: Option<NodeID>,
-) -> (FutureProjectionReport, Vec<NodeID>, usize) {
+) -> (FutureProjectionReport, Vec<NodeID>, usize, Vec<(i32, [f64; 7])>) {
     let unsupported = || {
         (
             unsupported_future_projection_report(graph, interner, episode, policy),
             Vec::new(),
             0,
+            Vec::new(),
         )
     };
     if fattr(
@@ -3861,6 +4024,7 @@ fn future_humanoid_manifold_projection_for_path(
     let mut residual = [0.0; 7];
     let mut retained = [1.0; 7];
     let mut decisive = 0.0;
+    let mut projected_trace = Vec::new();
 
     for segment in &segments {
         let Some((members, historical)) = rebind_humanoid_program_members(
@@ -3908,14 +4072,17 @@ fn future_humanoid_manifold_projection_for_path(
             };
             let fraction = local_frame as f64 / segment.frames as f64;
             let mut anchor_residual = [0.0; 7];
+            let mut projected_values = [0.0; 7];
             for component in 0..7 {
                 let projected = cumulative[component] + fraction * effect[component];
+                projected_values[component] = projected;
                 let excess = projected.abs() - bounds[component];
                 if excess > 0.0 {
                     anchor_residual[component] = projected.signum() * excess;
                     retained[component] = 0.0;
                 }
             }
+            projected_trace.push((projected_tick, projected_values));
             let escaped = anchor_residual
                 .iter()
                 .filter(|value| **value != 0.0)
@@ -3983,6 +4150,7 @@ fn future_humanoid_manifold_projection_for_path(
         },
         effort_members,
         effort_exposure_count,
+        projected_trace,
     )
 }
 

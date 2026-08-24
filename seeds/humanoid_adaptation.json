@@ -1,6 +1,6 @@
 {
  "id": "humanoid_adaptation",
- "version": "1.31.0",
+ "version": "1.32.0",
  "depends_on": [
   "decision_core",
   "embodied_motor_priors",
@@ -32792,7 +32792,7 @@
     [
      "set_attr",
      "memory",
-     "selected_path_narrativium_reachable_dzx",
+     "selected_path_narrativium_snapshot",
      {
       "__term__": {
        "type": "FutureManifoldProjection",
@@ -32808,7 +32808,26 @@
         "type": "Var",
         "name": "path"
        },
-       "field": "narrativium_reachable_dzx"
+       "field": "narrativium_snapshot"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_narrativium_reachable_dzx",
+     {
+      "__term__": {
+       "type": "Nth",
+       "items": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "key": "selected_path_narrativium_snapshot"
+       },
+       "index": 0
       }
      }
     ],
@@ -32818,20 +32837,16 @@
      "selected_path_narrativium_reachable_dzy",
      {
       "__term__": {
-       "type": "FutureManifoldProjection",
-       "episode": {
-        "type": "Var",
-        "name": "episode"
+       "type": "Nth",
+       "items": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "key": "selected_path_narrativium_snapshot"
        },
-       "policy": {
-        "type": "Var",
-        "name": "policy"
-       },
-       "source": {
-        "type": "Var",
-        "name": "path"
-       },
-       "field": "narrativium_reachable_dzy"
+       "index": 1
       }
      }
     ],
@@ -32841,20 +32856,16 @@
      "selected_path_narrativium_reachable_dwx",
      {
       "__term__": {
-       "type": "FutureManifoldProjection",
-       "episode": {
-        "type": "Var",
-        "name": "episode"
+       "type": "Nth",
+       "items": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "key": "selected_path_narrativium_snapshot"
        },
-       "policy": {
-        "type": "Var",
-        "name": "policy"
-       },
-       "source": {
-        "type": "Var",
-        "name": "path"
-       },
-       "field": "narrativium_reachable_dwx"
+       "index": 2
       }
      }
     ],
@@ -32864,20 +32875,16 @@
      "selected_path_narrativium_reachable_dwy",
      {
       "__term__": {
-       "type": "FutureManifoldProjection",
-       "episode": {
-        "type": "Var",
-        "name": "episode"
+       "type": "Nth",
+       "items": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "key": "selected_path_narrativium_snapshot"
        },
-       "policy": {
-        "type": "Var",
-        "name": "policy"
-       },
-       "source": {
-        "type": "Var",
-        "name": "path"
-       },
-       "field": "narrativium_reachable_dwy"
+       "index": 3
       }
      }
     ],
@@ -32887,20 +32894,16 @@
      "selected_path_narrativium_reachable_dvx",
      {
       "__term__": {
-       "type": "FutureManifoldProjection",
-       "episode": {
-        "type": "Var",
-        "name": "episode"
+       "type": "Nth",
+       "items": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "key": "selected_path_narrativium_snapshot"
        },
-       "policy": {
-        "type": "Var",
-        "name": "policy"
-       },
-       "source": {
-        "type": "Var",
-        "name": "path"
-       },
-       "field": "narrativium_reachable_dvx"
+       "index": 4
       }
      }
     ],
@@ -32910,20 +32913,16 @@
      "selected_path_narrativium_reachable_dvy",
      {
       "__term__": {
-       "type": "FutureManifoldProjection",
-       "episode": {
-        "type": "Var",
-        "name": "episode"
+       "type": "Nth",
+       "items": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "key": "selected_path_narrativium_snapshot"
        },
-       "policy": {
-        "type": "Var",
-        "name": "policy"
-       },
-       "source": {
-        "type": "Var",
-        "name": "path"
-       },
-       "field": "narrativium_reachable_dvy"
+       "index": 5
       }
      }
     ],
@@ -32933,20 +32932,16 @@
      "selected_path_narrativium_reachable_dvz",
      {
       "__term__": {
-       "type": "FutureManifoldProjection",
-       "episode": {
-        "type": "Var",
-        "name": "episode"
+       "type": "Nth",
+       "items": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "key": "selected_path_narrativium_snapshot"
        },
-       "policy": {
-        "type": "Var",
-        "name": "policy"
-       },
-       "source": {
-        "type": "Var",
-        "name": "path"
-       },
-       "field": "narrativium_reachable_dvz"
+       "index": 6
       }
      }
     ],
@@ -32956,20 +32951,16 @@
      "selected_path_narrativium_retained_dzx",
      {
       "__term__": {
-       "type": "FutureManifoldProjection",
-       "episode": {
-        "type": "Var",
-        "name": "episode"
+       "type": "Nth",
+       "items": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "key": "selected_path_narrativium_snapshot"
        },
-       "policy": {
-        "type": "Var",
-        "name": "policy"
-       },
-       "source": {
-        "type": "Var",
-        "name": "path"
-       },
-       "field": "narrativium_retained_dzx"
+       "index": 7
       }
      }
     ],
@@ -32979,20 +32970,16 @@
      "selected_path_narrativium_retained_dzy",
      {
       "__term__": {
-       "type": "FutureManifoldProjection",
-       "episode": {
-        "type": "Var",
-        "name": "episode"
+       "type": "Nth",
+       "items": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "key": "selected_path_narrativium_snapshot"
        },
-       "policy": {
-        "type": "Var",
-        "name": "policy"
-       },
-       "source": {
-        "type": "Var",
-        "name": "path"
-       },
-       "field": "narrativium_retained_dzy"
+       "index": 8
       }
      }
     ],
@@ -33002,20 +32989,16 @@
      "selected_path_narrativium_retained_dwx",
      {
       "__term__": {
-       "type": "FutureManifoldProjection",
-       "episode": {
-        "type": "Var",
-        "name": "episode"
+       "type": "Nth",
+       "items": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "key": "selected_path_narrativium_snapshot"
        },
-       "policy": {
-        "type": "Var",
-        "name": "policy"
-       },
-       "source": {
-        "type": "Var",
-        "name": "path"
-       },
-       "field": "narrativium_retained_dwx"
+       "index": 9
       }
      }
     ],
@@ -33025,20 +33008,16 @@
      "selected_path_narrativium_retained_dwy",
      {
       "__term__": {
-       "type": "FutureManifoldProjection",
-       "episode": {
-        "type": "Var",
-        "name": "episode"
+       "type": "Nth",
+       "items": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "key": "selected_path_narrativium_snapshot"
        },
-       "policy": {
-        "type": "Var",
-        "name": "policy"
-       },
-       "source": {
-        "type": "Var",
-        "name": "path"
-       },
-       "field": "narrativium_retained_dwy"
+       "index": 10
       }
      }
     ],
@@ -33048,20 +33027,16 @@
      "selected_path_narrativium_retained_dvx",
      {
       "__term__": {
-       "type": "FutureManifoldProjection",
-       "episode": {
-        "type": "Var",
-        "name": "episode"
+       "type": "Nth",
+       "items": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "key": "selected_path_narrativium_snapshot"
        },
-       "policy": {
-        "type": "Var",
-        "name": "policy"
-       },
-       "source": {
-        "type": "Var",
-        "name": "path"
-       },
-       "field": "narrativium_retained_dvx"
+       "index": 11
       }
      }
     ],
@@ -33071,20 +33046,16 @@
      "selected_path_narrativium_retained_dvy",
      {
       "__term__": {
-       "type": "FutureManifoldProjection",
-       "episode": {
-        "type": "Var",
-        "name": "episode"
+       "type": "Nth",
+       "items": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "key": "selected_path_narrativium_snapshot"
        },
-       "policy": {
-        "type": "Var",
-        "name": "policy"
-       },
-       "source": {
-        "type": "Var",
-        "name": "path"
-       },
-       "field": "narrativium_retained_dvy"
+       "index": 12
       }
      }
     ],
@@ -33094,20 +33065,16 @@
      "selected_path_narrativium_retained_dvz",
      {
       "__term__": {
-       "type": "FutureManifoldProjection",
-       "episode": {
-        "type": "Var",
-        "name": "episode"
+       "type": "Nth",
+       "items": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "memory"
+        },
+        "key": "selected_path_narrativium_snapshot"
        },
-       "policy": {
-        "type": "Var",
-        "name": "policy"
-       },
-       "source": {
-        "type": "Var",
-        "name": "path"
-       },
-       "field": "narrativium_retained_dvz"
+       "index": 13
       }
      }
     ],

@@ -11058,21 +11058,32 @@ def release_selected_developmental_trajectory_rule():
                 "selected_path_projection_depth",
                 T(P0("path", "depth")),
             ],
+            [
+                "set_attr", "memory",
+                "selected_path_narrativium_snapshot",
+                T(path_projection("narrativium_snapshot")),
+            ],
             *[
                 [
                     "set_attr", "memory",
                     f"selected_path_narrativium_reachable_{key}",
-                    T(path_projection(f"narrativium_reachable_{key}")),
+                    T(Nth(
+                        A("memory", "selected_path_narrativium_snapshot"),
+                        index,
+                    )),
                 ]
-                for key in HUMANOID_MANIFOLD_DIMENSIONS
+                for index, key in enumerate(HUMANOID_MANIFOLD_DIMENSIONS)
             ],
             *[
                 [
                     "set_attr", "memory",
                     f"selected_path_narrativium_retained_{key}",
-                    T(path_projection(f"narrativium_retained_{key}")),
+                    T(Nth(
+                        A("memory", "selected_path_narrativium_snapshot"),
+                        len(HUMANOID_MANIFOLD_DIMENSIONS) + index,
+                    )),
                 ]
-                for key in HUMANOID_MANIFOLD_DIMENSIONS
+                for index, key in enumerate(HUMANOID_MANIFOLD_DIMENSIONS)
             ],
             [
                 "add_edge", "episode",
@@ -16677,7 +16688,7 @@ def manifest():
     )
     return apply_biological_schedule({
         "id": "humanoid_adaptation",
-        "version": "1.31.0",
+        "version": "1.32.0",
         "depends_on": [
             "decision_core",
             "embodied_motor_priors",
