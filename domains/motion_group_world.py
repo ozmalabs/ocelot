@@ -271,6 +271,91 @@ def objects(s) -> list[dict]:
     return out
 
 
+def contours(s) -> list[dict]:
+    """Every closed boundary the `vision_boundary_trace` seed has traced.
+
+    MECHANICAL, and offered ALONGSIDE `objects()` rather than replacing it. The
+    two answer different questions and disagree on real observations: `objects()`
+    reports `members`, a CELL COUNT, and a cell count loses ~20% of an object the
+    moment it is not lattice-aligned, because the partial-coverage band at its
+    edge is cut from both sides and belongs to neither region
+    (`WHY_FLOODS_EXIST.md` §6n). The contour integrates that band, so its `area`
+    is within 2% and — the property that makes it usable — does not depend on how
+    finely the observation happened to be sampled.
+
+    Every value here was decided by a rule; this only walks and reports:
+
+      * which crossings are real boundary  <- `true_boundary` (`bt_true_boundary`)
+      * where in the cell each one sits    <- `subcell_t` (`bt_subcell_t`),
+                                              absent meaning the midpoint
+      * which crossing follows which       <- `next_crossing` (the three chain rules)
+
+    `branches` is reported rather than resolved. A crossing of degree > 2 is a
+    genuine saddle — two blocks meeting at a corner, where whether they connect is
+    not decidable from adjacency — and the walk's successor choice there is a
+    read-order convention, not a fact about the world. A caller that cares must
+    look at `branches`; a caller that does not gets a deterministic answer.
+    """
+    attrs = {c.value: s.node(c)["attrs"] for c in s.nodes("MCell")}
+    pos, adj, keep = {}, {}, set()
+    for x in s.nodes("Crossing"):
+        xa = s.node(x)["attrs"]
+        if float(xa.get("true_boundary", 0.0)) <= 0.5:
+            continue
+        cells = list(s.neighbours(x, "separates"))
+        figs = list(s.neighbours(x, "owns_figure"))
+        if len(cells) != 2 or not figs:
+            continue
+        fig = figs[0].value
+        oth = cells[1].value if fig == cells[0].value else cells[0].value
+        t = float(xa.get("subcell_t", 0.5))
+        t = min(2.0, max(0.0, t))
+        fc, oc = attrs[fig], attrs[oth]
+        fx, fy = float(fc["ccol"]), float(fc["crow"])
+        ox, oy = float(oc["ccol"]), float(oc["crow"])
+        pos[x.value] = (fx + t * (ox - fx), fy + t * (oy - fy))
+        keep.add(x.value)
+    for x in s.nodes("Crossing"):
+        if x.value not in keep:
+            continue
+        adj.setdefault(x.value, set())
+        for n in s.neighbours(x, "next_crossing"):
+            if n.value in keep:
+                adj.setdefault(x.value, set()).add(n.value)
+                adj.setdefault(n.value, set()).add(x.value)
+
+    out, seen = [], set()
+    for k in sorted(pos):
+        if k in seen or k not in adj:
+            continue
+        order, cur, prev = [k], k, None
+        seen.add(k)
+        while True:
+            cands = [n for n in sorted(adj[cur]) if n != prev and n in pos]
+            nxt = next((c for c in cands if c not in seen), None)
+            if nxt is None:
+                break
+            seen.add(nxt)
+            order.append(nxt)
+            prev, cur = cur, nxt
+        pts = [pos[i] for i in order]
+        m = len(pts)
+        if m < 3:
+            continue
+        closed = order[0] in adj[order[-1]]
+        shoelace = abs(sum(pts[i][0] * pts[(i + 1) % m][1]
+                           - pts[(i + 1) % m][0] * pts[i][1]
+                           for i in range(m))) / 2.0
+        out.append({
+            "points": pts,
+            "closed": bool(closed),
+            "area": float(shoelace) if closed else 0.0,
+            "branches": sum(1 for i in order if len(adj[i]) > 2),
+        })
+    out.sort(key=lambda d: (-d["area"], -len(d["points"])))
+    return out
+
+
 def field_attr(s, handle: dict, key: str):
     return s.node(handle["field"])["attrs"].get(key)
 

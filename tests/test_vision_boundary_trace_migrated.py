@@ -663,6 +663,47 @@ def test_a_known_object_is_recovered_from_REAL_texture():
         f"defeating the boundary construction at 4x the tolerance")
 
 
+def test_the_adapter_reader_agrees_with_this_files_own_walk():
+    """`motion_group_world.contours()` makes the capability reachable.
+
+    Everything in this arc has been measured through helpers local to this test
+    file, so nothing outside it could use the boundary representation at all. The
+    adapter reader is the reference implementation a caller would actually reach
+    for, and it has to agree with the walk these gates were built on -- otherwise
+    the measurements describe code no consumer runs."""
+    for sub in (1, 4, 8):
+        V, _ = _soft_disc_scene(41, sub)
+        s, _ = _rim_run(V)
+        got = mgw.contours(s)
+        assert got, f"sub={sub}: adapter returned no contour"
+        biggest = got[0]
+        mine = _contour_area(s)
+        assert biggest["closed"], f"sub={sub}: largest contour not closed"
+        assert abs(biggest["area"] - mine) < 1e-6, (
+            f"sub={sub}: adapter area {biggest['area']:.4f} != this file's "
+            f"{mine:.4f} -- the reader and the gates disagree")
+
+
+def test_the_adapter_reports_saddles_rather_than_resolving_them_silently():
+    """A degree > 2 crossing is a genuine ambiguity, so the reader must SAY so.
+
+    Two blocks meeting at a corner produce four such crossings, and whether the
+    blocks connect is not decidable from adjacency. The walk still returns a
+    deterministic answer -- a read-order convention -- but a caller that cares
+    has to be able to tell, so `branches` is reported. A reader that silently
+    picked a side would look identical to one on unambiguous input."""
+    s, _ = _rim_run(_corner_contact())
+    got = mgw.contours(s)
+    assert got, "no contours on the corner-contact fixture"
+    assert sum(c["branches"] for c in got) > 0, (
+        "the corner fixture has four saddle crossings and the reader reported "
+        "none -- the ambiguity is being resolved silently")
+
+    plain, _ = _rim_run(_blocks_2d())
+    assert sum(c["branches"] for c in mgw.contours(plain)) == 0, (
+        "branches reported on a fixture with no saddles")
+
+
 def test_both_walks_agree_where_the_boundary_graph_is_genuinely_ambiguous():
     """The saddle case, pinned.
 
