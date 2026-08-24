@@ -1015,6 +1015,27 @@ So the three regimes are fully separated, and the third is §6h rederived from t
 alone: **on an anti-aliased or natural field NEITHER arm applies**, and the answer there is the
 boundary representation, not a better tolerance.
 
+**A TEMPTING SIMPLIFICATION, CONJECTURED AND REFUTED.** If Otsu returns 0 wherever it is well-posed,
+and exact equality is correct for piecewise-constant fields at any level count, it is natural to
+conclude that the derived arm should simply return 0 everywhere — that it just IS the exact arm, and
+the ~200 ms Otsu computation could go. Measured on five photographs before changing anything:
+
+| image | tol = 0 | Otsu's t |
+|---|---|---|
+| 100075 | 1595 regions, largest **3**, 98.4% in slivers | t=0.85 → 6 regions, largest **1675** |
+| 100098 | 1519 regions, largest 11, 93.9% in slivers | t=0.99 → 16 regions, largest 1660 |
+| 103041 | 1310 regions, largest 13, 81.7% in slivers | t=1.94 → 6 regions, largest **1595** |
+
+**The conjecture is false, and so is the obvious reading of the right-hand column.** tol = 0 does not
+merely fail on a photograph, it shatters it — 98% of the field in regions of two cells or fewer. But
+Otsu's threshold is not the fix: a largest region of 1675 out of 1681 cells is ONE BLOB SWALLOWING
+THE IMAGE, single-linkage chaining across a smooth gradient. The two fail in OPPOSITE directions,
+over-segmenting and under-segmenting, and a scoring rule of "few regions, large largest" — which is
+what this probe first used — rewards the second failure as though it were success.
+
+So the third regime is confirmed the strong way: **neither arm applies, and neither is a safe
+default there.** The derived arm must not be collapsed to a constant.
+
 **Built: `motion_group_world.tolerance_regime()`** — mechanical, reporting `otsu_margin`,
 `atom_at_zero`, `slivers` and `regions`. It returns the MEASUREMENTS, not a verdict, because a
 caller with more context may read them differently; what it removes is the possibility of choosing
