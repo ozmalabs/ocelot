@@ -3859,6 +3859,7 @@ fn future_humanoid_manifold_projection_for_path(
     let mut maximum_caregiver_scale = 0.0f64;
     let mut loss = 0.0;
     let mut residual = [0.0; 7];
+    let mut retained = [1.0; 7];
     let mut decisive = 0.0;
 
     for segment in &segments {
@@ -3912,21 +3913,18 @@ fn future_humanoid_manifold_projection_for_path(
                 let excess = projected.abs() - bounds[component];
                 if excess > 0.0 {
                     anchor_residual[component] = projected.signum() * excess;
+                    retained[component] = 0.0;
                 }
             }
             let escaped = anchor_residual
                 .iter()
                 .filter(|value| **value != 0.0)
                 .count() as f64;
-            if escaped > 0.0 {
+            if escaped > 0.0 && loss <= 0.0 {
                 loss = escaped;
                 residual = anchor_residual;
                 decisive = projected_tick as f64;
-                break;
             }
-        }
-        if loss > 0.0 {
-            break;
         }
         for component in 0..7 {
             cumulative[component] += effect[component];
@@ -3956,7 +3954,6 @@ fn future_humanoid_manifold_projection_for_path(
         .unwrap_or(0.0);
     let information_loss =
         (loss - safety.information_loss_allowance * information_authority).max(0.0);
-    let retained_value = if loss <= 0.0 { 1.0 } else { 0.0 };
     let effort_exposure_count = segments.len();
     (
         FutureProjectionReport {
@@ -3980,7 +3977,7 @@ fn future_humanoid_manifold_projection_for_path(
             earliest_decisive_tick: decisive,
             minimum_exafferent_scale: 0.0,
             residual,
-            retained: [retained_value; 7],
+            retained,
             situated_support,
             applied_bounds,
         },
