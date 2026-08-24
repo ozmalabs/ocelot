@@ -3068,6 +3068,40 @@ impl FutureProjectionReport {
                     0.0
                 }
             }
+            key if key.starts_with("narrativium_reachable_") => {
+                let suffix = &key[22..];
+                let represented = suffix
+                    .parse::<usize>()
+                    .ok()
+                    .filter(|index| *index < self.retained.len())
+                    .or_else(|| COMPONENTS.iter().position(|component| *component == suffix))
+                    .or_else(|| HUMANOID_KEYS.iter().position(|component| *component == suffix));
+                represented
+                    .map(|_| if self.support { 1.0 } else { 0.0 })
+                    .unwrap_or(0.0)
+            }
+            key if key.starts_with("narrativium_retained_") => {
+                let suffix = &key[21..];
+                suffix
+                    .parse::<usize>()
+                    .ok()
+                    .and_then(|index| self.retained.get(index))
+                    .copied()
+                    .or_else(|| {
+                        COMPONENTS
+                            .iter()
+                            .position(|component| *component == suffix)
+                            .or_else(|| {
+                                HUMANOID_KEYS
+                                    .iter()
+                                    .position(|component| *component == suffix)
+                            })
+                            .and_then(|index| self.retained.get(index))
+                            .copied()
+                    })
+                    .map(|retained| if self.support { retained } else { 0.0 })
+                    .unwrap_or(0.0)
+            }
             key if key.starts_with("retained_") => self
                 .retained
                 .iter()

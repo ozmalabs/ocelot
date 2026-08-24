@@ -13643,6 +13643,25 @@ def update_recalled_motor_memory_rule():
             count,
         ),
     )
+    takeoff_future_retained = And(
+        Eq(P0("memory", "partial_trajectory_evidence"), L(1.0)),
+        Eq(A("memory", "motor_task_context"), L("self_takeoff")),
+        Gt(
+            developmental_trajectory_projection("memory", "support"),
+            L(0.0),
+        ),
+        Gt(
+            developmental_trajectory_projection("memory", "resolved"),
+            L(0.0),
+        ),
+        Gt(
+            developmental_trajectory_projection(
+                "memory",
+                "narrativium_retained_dvz",
+            ),
+            L(0.0),
+        ),
+    )
     retains_transferred_value = Or(
         Eq(
             P0("memory", "warm_start_requires_verification"),
@@ -13652,6 +13671,7 @@ def update_recalled_motor_memory_rule():
             P0("trial", "motor_memory_structurally_reused"),
             L(1.0),
         ),
+        takeoff_future_retained,
         Not(Lt(
             directed_advance,
             P0("trial", "expected_directed_advance"),
@@ -16610,7 +16630,7 @@ def manifest():
     )
     return apply_biological_schedule({
         "id": "humanoid_adaptation",
-        "version": "1.29.0",
+        "version": "1.30.0",
         "depends_on": [
             "decision_core",
             "embodied_motor_priors",
