@@ -881,6 +881,58 @@ of consecutive true crossings relates:
 | collinear | 2 | 0 | `bt_chain_collinear` |
 | **diagonal step** | **1** | **0** | **nothing** |
 
+### 6o. REAL IMAGES FOUND A BUG NO SYNTHETIC FIXTURE COULD (v1.11.0)
+
+Every measurement in this arc up to here was taken on discs and rectangles I generated. CLAUDE.md's
+standing rule — *synthetic-proven mechanism is not benchmark value, report both* — is not a style
+note, and running the machinery on BSDS300 natural images produced a correctness defect within
+minutes.
+
+**`bt_subcell_t` was UNBOUNDED.** §6l argued t lies in [0,2] with "no clamp needed, both terms are
+bounded by construction". That proof has a hidden premise: the second segment's denominator is
+`|b| - far`, so it needs the far plateau BELOW the band cell. If `b` is a LOCAL MINIMUM in its own
+neighbourhood then `far > |b|`, the denominator goes negative, and t is unbounded. **Every
+synthetic fixture in this arc guaranteed the descent by construction, because `far` was always the
+0.0 background.** On real texture it is not guaranteed:
+
+| | before the guard | after |
+|---|---|---|
+| t range on BSDS patches | **[0.50, 53.50]** | **[0.51, 1.34]** |
+
+A t of 53.5 places the boundary fifty-three cells from the crossing that owns it. The fix is the
+guard the interpolation always implied — `|b| > far`, i.e. a genuine descent `|a| > |b| > far`,
+which is the only configuration the piecewise form describes. Where it does not hold, no t is
+written and a reader falls back to the midpoint, which is the honest answer for a profile that is
+not a step. **Synthetic accuracy is unchanged to the digit** — 0.084 at x4, 0.068 / 0.075 / 0.082 at
+x8 — so this cost nothing.
+
+**AND ONE CLAIM OF THIS ARC IS SYNTHETIC-ONLY, which is worth saying plainly.** §6m's "the boundary
+closes into one curve at every raster" is a property of closed synthetic objects, and it does NOT
+hold on natural images:
+
+| image | crossings | true | degree-2 | degree-1 | components |
+|---|---|---|---|---|---|
+| 103041 | 127 | 78 (61%) | 61 | 4 | 6 |
+| 104022 | 207 | 179 (86%) | 107 | 43 | 28 |
+| 105019 | 43 | 41 (95%) | 34 | 6 | 4 |
+
+That is not a defect — natural texture has open edges at every scale, not closed object boundaries,
+so fragments and endpoints are the correct answer. But "one closed curve" must never be quoted for
+real data, and `bt_true_boundary` discarding 5-39% depending on tolerance is a figure about
+texture, not about anti-aliasing.
+
+Gated by `test_subcell_t_stays_on_the_ray_on_REAL_images`, which SKIPS rather than substitutes a
+synthetic stand-in when the corpus is absent — a stand-in would pass while testing nothing, which is
+exactly how the bug survived this long.
+
+*Two process errors en route, both caught by a number rather than by a failure.* The descent guard's
+first draft compared `|b|` against the LEVEL instead of against `far` — a wrong subterm picked out
+by path-walking the effect tree rather than locating the `MinOver` by type — which excluded every
+band cell under 50% coverage and took the synthetic rms straight back to the midpoint's 0.274. And
+the two `subcell_t` gates asserted the attribute's PRESENCE, so a guard that correctly declines read
+as a regression; they now assert the EFFECTIVE value a consumer reads, with absence meaning
+midpoint.
+
 ### 6n. HOW BIG IS THIS OBJECT — counting cells is 20% wrong on any real observation
 
 The residual recorded earlier as "the rectangle's cell count drops 65 -> 33 under supersampling"

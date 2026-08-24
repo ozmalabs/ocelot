@@ -563,6 +563,55 @@ def test_extent_comes_from_the_CONTOUR_not_from_counting_cells(dx):
         f"this fixture no longer demonstrates why the contour is needed")
 
 
+def test_subcell_t_stays_on_the_ray_on_REAL_images():
+    """The bug no synthetic fixture in this file could find.
+
+    `bt_subcell_t`'s [0,2] bound holds only when the far plateau lies BELOW the
+    band cell: the second segment's denominator is |b| - far, so if `b` is a
+    LOCAL MINIMUM in its own neighbourhood then far > |b|, the denominator goes
+    negative, and t is unbounded. Every synthetic fixture here guaranteed the
+    descent by construction, because `far` was always the 0.0 background.
+
+    Measured on BSDS300 natural images before the descent guard existed: t reached
+    25.99, 29.99 and 53.50 -- placing a boundary tens of cells from the crossing
+    that owns it. Real photometry is the only thing that exposes it, so it is
+    gated on real photometry.
+
+    Skipped rather than faked when the corpus is absent; a synthetic stand-in
+    would pass while testing nothing."""
+    pytest.importorskip("PIL")
+    sys.path.insert(0, str(ROOT / "scripts"))
+    try:
+        from parallax_real_char import bsds_paths
+        paths = bsds_paths()[:4]
+    except Exception:
+        pytest.skip("BSDS300 corpus absent (data/ not symlinked)")
+    if not paths:
+        pytest.skip("BSDS300 corpus empty")
+
+    from PIL import Image
+    n = 33
+    seen_any = False
+    for path in paths:
+        im = Image.open(path).convert("L")
+        w, h = im.size
+        im = im.crop(((w - n) // 2, (h - n) // 2, (w - n) // 2 + n, (h - n) // 2 + n))
+        V = np.zeros((n, n, 2))
+        V[:, :, 1] = 9.0 * np.asarray(im, dtype=float) / 255.0
+        s, _ = _rim_run(V)
+        ts = [float(s.node(x)["attrs"]["subcell_t"]) for x in s.nodes("Crossing")
+              if "subcell_t" in s.node(x)["attrs"]]
+        if not ts:
+            continue
+        seen_any = True
+        assert all(0.0 <= t <= 2.0 for t in ts), (
+            f"{path.name if hasattr(path, 'name') else path}: t off the ray "
+            f"[{min(ts):.2f}, {max(ts):.2f}] -- the descent guard is not holding "
+            f"on real photometry")
+    if not seen_any:
+        pytest.skip("no real patch produced an explicit subcell_t")
+
+
 def test_both_walks_agree_where_the_boundary_graph_is_genuinely_ambiguous():
     """The saddle case, pinned.
 
@@ -820,11 +869,20 @@ def test_subcell_t_is_written_on_every_true_crossing_and_stays_on_the_ray():
         true_x = [x for x in s.nodes("Crossing")
                   if float(s.node(x)["attrs"].get("true_boundary", 0.0)) > 0.5]
         assert true_x, f"sub={sub}: fixture produced no true crossings"
-        missing = [x for x in true_x if "subcell_t" not in s.node(x)["attrs"]]
-        assert not missing, f"sub={sub}: {len(missing)} true crossings carry no subcell_t"
-        ts = [float(s.node(x)["attrs"]["subcell_t"]) for x in true_x]
+        # ABSENCE IS MEANINGFUL, so the EFFECTIVE t is what gets checked.
+        # `bt_subcell_t` fires only where the profile actually descends
+        # (|a| > |b| > far); elsewhere no t is written and a reader falls back to
+        # the midpoint, which is the honest answer for a profile that is not a
+        # step. An earlier version of this test asserted PRESENCE on every true
+        # crossing, which made the descent guard look like a regression when it
+        # was a fix.
+        ts = [float(s.node(x)["attrs"].get("subcell_t", 0.5)) for x in true_x]
         assert all(0.0 <= t <= 2.0 for t in ts), (
             f"sub={sub}: t off the ray: [{min(ts):.3f}, {max(ts):.3f}]")
+        explicit = [x for x in true_x if "subcell_t" in s.node(x)["attrs"]]
+        assert explicit, (
+            f"sub={sub}: NO crossing carried an explicit subcell_t -- the rule is "
+            f"inert here and the placement is silently all-midpoint")
 
 
 def test_finer_observation_does_not_make_the_boundary_worse():
@@ -945,11 +1003,16 @@ def test_subcell_t_is_exactly_one_half_on_a_hard_mask():
     }
     for name, V in scenes.items():
         s, _ = _rim_run(V)
-        ts = [float(s.node(x)["attrs"]["subcell_t"]) for x in s.nodes("Crossing")
-              if "subcell_t" in s.node(x)["attrs"]]
-        assert ts, f"{name}: no crossing carried subcell_t"
+        # On a hard mask there is no band: `far` equals |b| (both the background),
+        # so the descent guard declines and NO t is written -- and a reader's
+        # fallback is exactly the midpoint it had before. Either route must give
+        # 0.5 exactly, so the EFFECTIVE value is what is asserted.
+        true_x = [x for x in s.nodes("Crossing")
+                  if float(s.node(x)["attrs"].get("true_boundary", 0.0)) > 0.5]
+        assert true_x, f"{name}: no true crossings"
+        ts = [float(s.node(x)["attrs"].get("subcell_t", 0.5)) for x in true_x]
         assert all(t == 0.5 for t in ts), (
-            f"{name}: hard mask gave t != 0.5 "
+            f"{name}: hard mask gave an effective t != 0.5 "
             f"(max deviation {max(abs(t - 0.5) for t in ts):.3e})")
 
 
