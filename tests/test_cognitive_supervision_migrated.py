@@ -798,7 +798,7 @@ def test_authority_boundary_stops_when_scheduler_transition_repeats(monkeypatch)
     assert calls == [0, 1]
 
 
-def test_authority_boundary_does_not_service_an_exhausted_learning_plan(
+def test_completed_learning_plan_hands_authority_to_motor_manifold_gate(
     monkeypatch,
 ):
     import scripts.jabberwock_humanoid_walk as walk
@@ -807,6 +807,7 @@ def test_authority_boundary_does_not_service_an_exhausted_learning_plan(
     runtime = agent.s.add_node("HumanoidEpisode", {
         "cognitive_continuation_authority": 1,
     })
+    agent.inner.set_attr(plan, "status", "completed")
     agent.inner.set_attr(step, "status", "completed")
     agent.inner.set_attr(process, "continuation_authority", 0)
     _edge(agent, plan, "has_learning_plan_step", step)
@@ -816,9 +817,12 @@ def test_authority_boundary_does_not_service_an_exhausted_learning_plan(
 
     monkeypatch.setattr(walk, "_tick_agent", unexpected_tick)
 
+    assert _cognitive_continuation_authorised(
+        agent, runtime, development
+    ) is True
     authorised, cycles = _settle_cognitive_continuation_authority(
         agent, runtime, development
     )
 
-    assert authorised is False
+    assert authorised is True
     assert cycles == 0
