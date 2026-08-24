@@ -933,6 +933,39 @@ the two `subcell_t` gates asserted the attribute's PRESENCE, so a guard that cor
 as a regression; they now assert the EFFECTIVE value a consumer reads, with absence meaning
 midpoint.
 
+### 6p. A KNOWN OBJECT IN REAL TEXTURE — the arc's claims, with a real confound and ground truth
+
+§6o found a bug on real images but could not score the boundary itself, because this copy of BSDS300
+ships images with no segmentations. Planting supplies the truth instead and keeps the confound real:
+the background is an actual photograph, not noise with a convenient distribution.
+
+A disc of radius 9 (true area 254.5) composited over a real BSDS patch whose texture spans 0–3.0,
+supersampled x4, `mtol` 1.5:
+
+| contrast | blank field: area err / rms | **real texture: area err / rms** |
+|---|---|---|
+| 9.0 | −0.5% / 0.054 | **−0.5% / 0.053** |
+| 6.0 | −0.5% / 0.054 | **−0.4% / 0.054** |
+| 4.0 | −0.5% / 0.054 | **−0.4% / 0.057** |
+| 3.0 | collapses | −57.8% / 0.124 |
+| 2.0 | no contour | no contour |
+
+**Down to contrast 4.0 — 2.7x the tolerance — real texture costs essentially nothing.** Area within
+0.5%, boundary within 0.06 cells of the true circle, and indistinguishable from the same disc on a
+blank field. The extent and placement claims of §6i–§6n therefore survive a real confound, which is
+more than the synthetic arms could establish on their own.
+
+**And where it fails, it fails for the right reason.** The limit is contrast against `mtol`, not
+texture: at contrast 3.0 the disc is no more salient than the 0–3.0 texture it sits in, and at 2.0 it
+is below the 1.5 tolerance outright. Neither is a defect — a boundary detector asked to find an
+object no brighter than its surroundings should return nothing, and it does. What this does NOT
+establish is any figure for natural-image *segmentation*: there is no human ground truth here, §6o
+already showed real texture traces open fragments rather than closed curves, and a planted disc is
+an easy target by construction.
+
+Gated by `test_a_known_object_is_recovered_from_REAL_texture` at contrast 6.0, skipping when the
+corpus is absent.
+
 ### 6n. HOW BIG IS THIS OBJECT — counting cells is 20% wrong on any real observation
 
 The residual recorded earlier as "the rectangle's cell count drops 65 -> 33 under supersampling"

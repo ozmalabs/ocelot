@@ -612,6 +612,57 @@ def test_subcell_t_stays_on_the_ray_on_REAL_images():
         pytest.skip("no real patch produced an explicit subcell_t")
 
 
+def test_a_known_object_is_recovered_from_REAL_texture():
+    """Real photometry WITH ground truth: plant a disc of known area in a real
+    patch and measure what comes back.
+
+    The BSDS300 copy here ships images without segmentations, so there is no human
+    boundary to score against. Planting supplies the truth instead, and keeps the
+    confound real -- the background is an actual photograph, not noise with a
+    convenient distribution.
+
+    Measured across contrasts: down to contrast 4.0 (2.7x the 1.5 tolerance) real
+    texture costs essentially nothing -- area within 0.5% and the boundary within
+    0.06 cells of the true circle, indistinguishable from the same disc on a blank
+    field. Below that it degrades, and at contrast 2.0 there is no contour at all.
+    That limit is set by contrast against `mtol`, NOT by texture: at contrast 3.0
+    the disc is no more salient than the 0-3.0 texture it sits in, so failing
+    there is correct behaviour and not a defect."""
+    pytest.importorskip("PIL")
+    sys.path.insert(0, str(ROOT / "scripts"))
+    try:
+        from parallax_real_char import bsds_paths
+        paths = bsds_paths()[:1]
+    except Exception:
+        pytest.skip("BSDS300 corpus absent (data/ not symlinked)")
+    if not paths:
+        pytest.skip("BSDS300 corpus empty")
+
+    from PIL import Image
+    n, rad, sub = 41, 9.0, 4
+    cx = cy = n / 2.0 - 0.5
+    true_area = np.pi * rad * rad
+
+    im = Image.open(paths[0]).convert("L")
+    w, h = im.size
+    im = im.crop(((w - n) // 2, (h - n) // 2, (w - n) // 2 + n, (h - n) // 2 + n))
+    bg = 3.0 * np.asarray(im, dtype=float) / 255.0
+
+    offs = [(i + 0.5) / sub - 0.5 for i in range(sub)]
+    V = np.zeros((n, n, 2))
+    for r in range(n):
+        for c in range(n):
+            hits = sum(1 for oy in offs for ox in offs
+                       if (c + ox - cx) ** 2 + (r + oy - cy) ** 2 <= rad * rad)
+            V[r, c, 1] = bg[r, c] + 6.0 * hits / (sub * sub)
+
+    s, _ = _rim_run(V)
+    area = _contour_area(s)
+    assert abs(area - true_area) / true_area < 0.05, (
+        f"planted disc area {area:.1f} vs true {true_area:.1f} -- real texture is "
+        f"defeating the boundary construction at 4x the tolerance")
+
+
 def test_both_walks_agree_where_the_boundary_graph_is_genuinely_ambiguous():
     """The saddle case, pinned.
 
