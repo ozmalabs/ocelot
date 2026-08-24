@@ -447,6 +447,122 @@ def test_the_diagonal_fallback_adds_nothing_where_the_chain_is_already_closed():
             f"{name}: degenerate chain {comps}")
 
 
+def _offset_rect(n, sub, w, h, dx):
+    """A rectangle shifted by `dx` cells, so its edge does not land on a cell
+    boundary. At dx=0 the edges fall exactly between cell centres and
+    supersampling yields a HARD MASK -- no partial cells at all -- which is why
+    an unshifted fixture cannot exercise this at any thickness."""
+    V = np.zeros((n, n, 2))
+    cx = cy = n / 2.0 - 0.5
+    offs = [(i + 0.5) / sub - 0.5 for i in range(sub)]
+    for r in range(n):
+        for c in range(n):
+            hits = 0
+            for oy in offs:
+                for ox in offs:
+                    x, y = c + ox - cx - dx, r + oy - cy - dx
+                    hits += (abs(x) <= w / 2 and abs(y) <= h / 2)
+            V[r, c, 1] = 9.0 * hits / (sub * sub)
+    return V
+
+
+def _contour_area(s):
+    """Largest closed sub-cell contour's shoelace area."""
+    at = {c.value: s.node(c)["attrs"] for c in s.nodes("MCell")}
+    pos, adj, keep = {}, collections.defaultdict(set), set()
+    for x in s.nodes("Crossing"):
+        xa = s.node(x)["attrs"]
+        if float(xa.get("true_boundary", 0.0)) <= 0.5:
+            continue
+        cs = list(s.neighbours(x, "separates"))
+        figs = list(s.neighbours(x, "owns_figure"))
+        if len(cs) != 2 or not figs:
+            continue
+        a = figs[0].value
+        b = cs[1].value if a == cs[0].value else cs[0].value
+        pa = np.array([float(at[a]["ccol"]), float(at[a]["crow"])])
+        pb = np.array([float(at[b]["ccol"]), float(at[b]["crow"])])
+        t = min(2.0, max(0.0, float(xa.get("subcell_t", 0.5))))
+        q = pa + t * (pb - pa)
+        pos[x.value] = (float(q[0]), float(q[1]))
+        keep.add(x.value)
+    for x in s.nodes("Crossing"):
+        if x.value not in keep:
+            continue
+        for n in s.neighbours(x, "next_crossing"):
+            if n.value in keep:
+                adj[x.value].add(n.value)
+                adj[n.value].add(x.value)
+    seen, best = set(), 0.0
+    for k in sorted(pos):
+        if k in seen or k not in adj:
+            continue
+        order, cur, prev = [k], k, None
+        seen.add(k)
+        while True:
+            cands = [n for n in sorted(adj[cur]) if n != prev and n in pos]
+            nxt = next((c for c in cands if c not in seen), None)
+            if nxt is None:
+                break
+            seen.add(nxt)
+            order.append(nxt)
+            prev, cur = cur, nxt
+        p = [pos[i] for i in order]
+        m = len(p)
+        if m < 6:
+            continue
+        best = max(best, abs(sum(p[i][0] * p[(i + 1) % m][1] - p[(i + 1) % m][0] * p[i][1]
+                                 for i in range(m))) / 2.0)
+    return best
+
+
+@pytest.mark.parametrize("dx", [0.25, 0.5, 0.75])
+def test_extent_comes_from_the_CONTOUR_not_from_counting_cells(dx):
+    """How big is this object, on a real observation?
+
+    Counting cells answers this correctly only when the object happens to be
+    lattice-aligned. Shift it by any fraction of a cell -- which is the generic
+    case, and the only case for a real object -- and the partial-coverage band is
+    cut from BOTH sides, excluded from the region, and the count loses 20%. The
+    sub-cell contour integrates that band and stays within 2%.
+
+    Both numbers are asserted, because the point is the GAP between them: a gate
+    on the contour alone would still pass if cell-counting quietly became right,
+    and the claim being made is that it is not."""
+    true_area = 15.0 * 7.0
+    V = _offset_rect(41, 4, 15.0, 7.0, dx)
+    s, _ = _rim_run(V)
+
+    area = _contour_area(s)
+    assert abs(area - true_area) / true_area < 0.05, (
+        f"contour area {area:.1f} vs true {true_area:.1f} -- the sub-cell "
+        f"boundary is not integrating the partial band")
+
+    at = {c.value: s.node(c)["attrs"] for c in s.nodes("MCell")}
+    cut = {(c.value, n.value) for c in s.nodes("MCell") for n in s.neighbours(c, "cuts")}
+    par = {k: k for k in at}
+
+    def find(x):
+        while par[x] != x:
+            par[x] = par[par[x]]
+            x = par[x]
+        return x
+
+    for c in s.nodes("MCell"):
+        for n in s.neighbours(c, "neighbour"):
+            if (c.value, n.value) not in cut:
+                a, b = find(c.value), find(n.value)
+                if a != b:
+                    par[max(a, b)] = min(a, b)
+    ctr = next((k for k, a in at.items()
+                if int(round(float(a["crow"]))) == 20
+                and int(round(float(a["ccol"]))) == 20), None)
+    cells = collections.Counter(find(k) for k in at)[find(ctr)]
+    assert cells < 0.9 * true_area, (
+        f"cell count {cells} is within 10% of the true area {true_area:.0f} -- "
+        f"this fixture no longer demonstrates why the contour is needed")
+
+
 def test_both_walks_agree_where_the_boundary_graph_is_genuinely_ambiguous():
     """The saddle case, pinned.
 

@@ -881,6 +881,39 @@ of consecutive true crossings relates:
 | collinear | 2 | 0 | `bt_chain_collinear` |
 | **diagonal step** | **1** | **0** | **nothing** |
 
+### 6n. HOW BIG IS THIS OBJECT — counting cells is 20% wrong on any real observation
+
+The residual recorded earlier as "the rectangle's cell count drops 65 -> 33 under supersampling"
+is real but was attributed to the wrong variable. It is not thickness. **It is SUB-CELL PHASE**,
+and pinning that made the finding both sharper and more general.
+
+A rectangle whose edges land on cell BOUNDARIES has no partial cells at all — supersampling it
+yields a hard mask, and its cell count is exact at every thickness tested (3, 5, 7, 11 cells:
+0% loss). That is a degenerate fixture, and it is why the effect looked thickness-dependent.
+Shift the same rectangle by any fraction of a cell — the generic case, and the only case for a
+real object:
+
+| edge phase | cell count | error | contour area | error |
+|---|---|---|---|---|
+| on a cell boundary | 105 | **0%** | 104.5 | −0.5% |
+| shifted 0.25 | 84 | **−20%** | 103.0 | −1.9% |
+| shifted 0.50 | 84 | **−20%** | 103.0 | −1.9% |
+| shifted 0.75 | 84 | **−20%** | 103.0 | −1.9% |
+
+**Counting cells loses a fifth of the object the moment it is not lattice-aligned**, because the
+partial-coverage band is cut from BOTH sides and belongs to neither region. The sub-cell contour
+integrates that band and stays within 2%. A disc, which is never lattice-aligned anywhere along its
+edge, shows the same thing more mildly (253 → 241, −5%) since only its near-tangent portions have
+strongly partial cells.
+
+The contour figure is also RASTER-INDEPENDENT — 252.5 / 253.1 / 253.2 / 253.5 for a disc at hard /
+x2 / x4 / x8 against a true 254.5 — which is the property that makes it usable: the answer does not
+depend on how finely the observation happened to be sampled.
+
+Gated by `test_extent_comes_from_the_CONTOUR_not_from_counting_cells` at three sub-cell phases,
+which asserts BOTH numbers. A gate on the contour alone would still pass if cell-counting quietly
+became correct, and the claim is precisely that it is not.
+
 ### 6m. `bt_chain_diagonal` (v1.10.0) — the third relation, as a FALLBACK
 
 **The naive rule is wrong, and was measured before being written.** Linking every diagonally-offset
@@ -954,9 +987,7 @@ recorded so the next attempt does not retry it.
 
 **Still not built:** `bt_disagree` remains a pairwise threshold. Two residuals stand: at super x8 only 26 of the 108 surviving crossings chain into one cycle
 (the chaining rules link true crossings to dropped ones, and the chain is not re-derived among the
-survivors), and the rectangle's cell count drops 65 -> 33 under supersampling because the boundary
-band is excluded from the region — the extent has to come from the sub-cell contour, not from
-counting cells.
+survivors), and the extent question below.
 
 ## 6b. PRIOR ART
 ## 6b. PRIOR ART — nearly all of this is textbook, and one match is exact
