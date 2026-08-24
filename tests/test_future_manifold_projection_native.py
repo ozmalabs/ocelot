@@ -215,7 +215,9 @@ def test_humanoid_projection_exposes_narrativium_by_humanoid_axis():
 
 
 def test_humanoid_narrativium_counts_distinct_sibling_path_shapes_per_axis():
-    agent, ep, policy, path, _ = _humanoid_path_bench([0.1], bound=1.0)
+    agent, ep, policy, path, selected_transitions = _humanoid_path_bench(
+        [0.1], bound=1.0
+    )
     origin = agent.inner.neighbours(
         path, "starts_from_embodied_program"
     )[0]
@@ -273,6 +275,16 @@ def test_humanoid_narrativium_counts_distinct_sibling_path_shapes_per_axis():
     ) == 1.0
     assert _value(
         agent, ep, policy, path, "narrativium_retained_dvz"
+    ) == 1.0
+    # Once a decision transition anchors projection, the unrelated sibling is
+    # outside that conditional future rather than poisoning it as malformed.
+    assert _value(
+        agent, ep, policy, path, "narrativium_reachable_dvx",
+        addition=selected_transitions[0],
+    ) == 1.0
+    assert _value(
+        agent, ep, policy, path, "narrativium_retained_dvx",
+        addition=selected_transitions[0],
     ) == 1.0
 
 

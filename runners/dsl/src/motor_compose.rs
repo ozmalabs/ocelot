@@ -3654,6 +3654,16 @@ fn path_family_narrativium(
     candidates.retain(|candidate| {
         fattr(graph, interner, *candidate, "depth") == selected_depth
     });
+    if let (Some(anchor), Some(contains_edge)) = (
+        current_transition,
+        interner.lookup("contains_embodied_program_transition"),
+    ) {
+        candidates.retain(|candidate| {
+            graph
+                .neighbours(*candidate, Some(contains_edge))
+                .contains(&anchor)
+        });
+    }
     if let Some(dominated_edge) = interner.lookup("is_dominated_by_pareto_candidate") {
         candidates.retain(|candidate| {
             graph.neighbours(*candidate, Some(dominated_edge)).is_empty()
