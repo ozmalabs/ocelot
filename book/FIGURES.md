@@ -218,8 +218,15 @@ more interesting result (without pruning, each tick costs more than the last),
 but not the one it had been filed as. The FFI wall has no committed plot at
 all. *A figure identified from its filename is an unread figure.*
 
-**The rule these suggest, added to the ones above:** *render every figure and
-read it before believing it.* A figure is an instrument, and this tree's own
+**And a third instance, outside figures entirely:** a set of `.tex` files
+numbered `v1`–`v22` was described in `papers/README.md` as paper 01's revision
+lineage. Their modification times all fall inside a two-day window — they are one
+session's intermediate saves, and the paper's real history is far longer and
+carries no consistent numbering. Corrected there.
+
+**The rule these suggest, in its general form:** *an artefact's history cannot
+be read off its filename* — and its specific case for this document, *render
+every figure and read it before believing it.* A figure is an instrument, and this tree's own
 standing lesson is that instruments need positive controls too.
 
 ## Order of work

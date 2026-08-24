@@ -33,9 +33,26 @@ version is deliberately a date rather than a number: these papers are revised in
 response to measurement, and a date says when the claims were true of the
 substrate.
 
-Note that paper 01 has an older, separate `v1`–`v22` lineage outside this
-directory (`~/law_of_graphic_equalisation_recursive_v*.tex`). The date string
-does not continue that numbering and is not meant to.
+**A number would be a fiction, and here is the specific reason.** There are
+files outside this directory named `law_of_graphic_equalisation_recursive_v1`
+through `v22`, and it is tempting to read them as the paper's revision history.
+They are not. Every one of them carries a modification time inside a two-day
+window (20–21 August 2026): they are one rewriting session's intermediate saves.
+The paper's actual history is much longer — on the author's own account, in the
+hundreds of revisions — and it runs through differently-named documents in
+several places, none of which shares a numbering scheme with any other.
+
+So there is no continuous count to continue, and inventing one would assert a
+history that no artefact records. The date says the one thing that is true and
+checkable: when these claims were true of the substrate.
+
+> **Standing note, third instance.** This is the third time in this work that
+> provenance was inferred from a filename and was wrong — after
+> `eye_timing/scaling.png` (filed as an FFI-wall plot on the strength of its
+> name) and `per_area_settlement.png` (read as a town figure; "settlement" meant
+> *settling*). The rule generalises past figures: **an artefact's history cannot
+> be read off its filename.** `v22` is not the twenty-second version any more
+> than `scaling.png` was the scaling result.
 
 **The book being built from these papers lives in `../book/`.** Start at
 `../book/README.md`.
