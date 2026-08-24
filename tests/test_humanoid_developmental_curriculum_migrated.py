@@ -345,10 +345,52 @@ def test_latest_receipt_reanchors_trajectory_by_categorical_body_state():
     ) == [transition]
 
 
-def test_generic_order_n_path_releases_only_its_next_compound_program():
+def test_order_n_release_projects_the_selected_path_not_only_its_next_program():
+    from scripts.gen_humanoid_adaptation_seed import manifest
+
+    rules = {rule["name"]: rule for rule in manifest()["rules"]}
+    rule = rules["ha_release_selected_developmental_order_n_trajectory"]
+    sources = []
+
+    def visit(value):
+        if isinstance(value, dict):
+            if value.get("type") == "FutureManifoldProjection":
+                sources.append(value["source"])
+            for child in value.values():
+                visit(child)
+        elif isinstance(value, list):
+            for child in value:
+                visit(child)
+
+    visit(rule)
+    assert sources
+    assert all(source == {"type": "Var", "name": "path"} for source in sources)
+    encoded = json.dumps(rule)
+    assert "selected_path_projection_request_seq" in encoded
+    assert "selected_path_narrativium_retained_dvz" in encoded
+
+
+@pytest.mark.parametrize(("terminal_dvx", "released"), (
+    (-0.25, True),
+    (0.5, False),
+))
+def test_generic_order_n_path_releases_only_its_next_compound_program(
+    terminal_dvx,
+    released,
+):
     from substrate.world_adapter import WorldAdapter
 
     agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
+    policy = agent.inner.neighbours(
+        agent.agent, "has_humanoid_policy"
+    )[0]
+    for key, value in {
+        "future_manifold_enabled": 1.0,
+        "future_manifold_temporal_anchors_enabled": 1.0,
+        "future_manifold_projection_budget": 16.0,
+        "gravity_acceleration": 9.81,
+    }.items():
+        agent.inner.set_attr(policy, key, value)
     episode = agent.s.add_node("HumanoidEpisode", {
         "developmental_curriculum_active": 1,
         "phase": "locomotion",
@@ -360,6 +402,11 @@ def test_generic_order_n_path_releases_only_its_next_compound_program():
         "selected_response_frames": 1,
         "response_frames": 1,
         "current_support_phase": 0,
+        "manifold_bounds_ready": 1,
+        "motor_task_context": "locomotion",
+        **{f"manifold_bound_{key}": 0.5 for key in (
+            "dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz",
+        )},
     })
     development = agent.s.add_node("EmbodiedDevelopmentEpisode", {
         "development_evidence_window": 4,
@@ -396,10 +443,28 @@ def test_generic_order_n_path_releases_only_its_next_compound_program():
         phase_model = agent.s.add_node("HumanoidPhaseActionModel", {
             "ordinal": ordinal,
             "token": token,
+            "actuator_group": ordinal,
+            "support_phase": 0,
+            "context_id": 0,
+            "initialized": 1,
+            "mean_dvx": (
+                0.25 if ordinal == 1 else terminal_dvx if ordinal == 2 else 0.0
+            ),
+            **{f"mean_{key}": 0.0 for key in (
+                "dzx", "dzy", "dwx", "dwy", "dvy", "dvz",
+            )},
+            **{f"anchor_{key}": 0.0 for key in (
+                "z_x", "z_y", "wx", "wy", "vx", "vy", "vz",
+            )},
+            "anchor_lateral_offset": 0.0,
         })
         _edge(
             agent, program,
             "includes_humanoid_phase_action_model", phase_model,
+        )
+        _edge(
+            agent, episode,
+            "has_humanoid_phase_action_model", phase_model,
         )
         programs.append(program)
 
@@ -482,13 +547,18 @@ def test_generic_order_n_path_releases_only_its_next_compound_program():
     assert agent.s.node(selected[0])["attrs"]["depth"] == 2
     assert agent.inner.neighbours(
         episode, "has_ready_humanoid_motor_program"
-    ) == [programs[1]]
+    ) == ([programs[1]] if released else [])
     attrs = agent.s.node(episode)["attrs"]
-    assert attrs["action_ready"] == 1
-    assert attrs["selected_token"] == "next"
-    assert attrs["selected_collapse_kind"] == (
-        "developmental_order_n_trajectory"
-    )
+    assert attrs["action_ready"] == int(released)
+    if released:
+        assert attrs["selected_token"] == "next"
+        assert attrs["selected_collapse_kind"] == (
+            "developmental_order_n_trajectory"
+        )
+        memory_attrs = agent.s.node(programs[1])["attrs"]
+        assert memory_attrs["selected_path_projection_request_seq"] == 2
+        assert memory_attrs["selected_path_projection_depth"] == 2
+        assert memory_attrs["selected_path_narrativium_retained_dvz"] == 1
     assert agent.s.node(capability)["attrs"].get(
         "trajectory_replay_count", 0
     ) == 0

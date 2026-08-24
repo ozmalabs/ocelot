@@ -486,6 +486,13 @@ def test_humanoid_path_projection_carries_shape_across_program_boundaries():
     assert float(_value(agent, ep, policy, path, "loss")) == 1.0
     assert float(_value(agent, ep, policy, path, "horizon")) == 2.0
     assert float(_value(agent, ep, policy, path, "residual_4")) == 0.5
+    assert float(
+        _value(agent, ep, policy, path, "narrativium_retained_dvx")
+    ) == 0.0
+    assert float(
+        _value(agent, ep, policy, path, "narrativium_retained_dvz")
+    ) == 1.0
+    assert float(_value(agent, ep, policy, path, "retained_width")) == 6.0
 
     # Once the first action has a real receipt, prediction is re-anchored to
     # that state and only the still-unexecuted suffix is synthesized.

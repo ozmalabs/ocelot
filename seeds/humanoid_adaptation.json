@@ -1,6 +1,6 @@
 {
  "id": "humanoid_adaptation",
- "version": "1.30.0",
+ "version": "1.31.0",
  "depends_on": [
   "decision_core",
   "embodied_motor_priors",
@@ -32299,7 +32299,7 @@
            },
            "source": {
             "type": "Var",
-            "name": "memory"
+            "name": "path"
            },
            "field": "support"
           },
@@ -32322,7 +32322,7 @@
            },
            "source": {
             "type": "Var",
-            "name": "memory"
+            "name": "path"
            },
            "field": "resolved"
           },
@@ -32345,7 +32345,7 @@
            },
            "source": {
             "type": "Var",
-            "name": "memory"
+            "name": "path"
            },
            "field": "information_loss"
           },
@@ -32371,7 +32371,7 @@
              },
              "source": {
               "type": "Var",
-              "name": "memory"
+              "name": "path"
              },
              "field": "effort_supported"
             },
@@ -32394,7 +32394,7 @@
              },
              "source": {
               "type": "Var",
-              "name": "memory"
+              "name": "path"
              },
              "field": "effort_authorized"
             },
@@ -32738,6 +32738,376 @@
          "value": 0.0
         }
        ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_projection_request_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_projection_depth",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "key": "depth"
+        },
+        {
+         "type": "Lit",
+         "value": 0.0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_narrativium_reachable_dzx",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "narrativium_reachable_dzx"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_narrativium_reachable_dzy",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "narrativium_reachable_dzy"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_narrativium_reachable_dwx",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "narrativium_reachable_dwx"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_narrativium_reachable_dwy",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "narrativium_reachable_dwy"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_narrativium_reachable_dvx",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "narrativium_reachable_dvx"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_narrativium_reachable_dvy",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "narrativium_reachable_dvy"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_narrativium_reachable_dvz",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "narrativium_reachable_dvz"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_narrativium_retained_dzx",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "narrativium_retained_dzx"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_narrativium_retained_dzy",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "narrativium_retained_dzy"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_narrativium_retained_dwx",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "narrativium_retained_dwx"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_narrativium_retained_dwy",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "narrativium_retained_dwy"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_narrativium_retained_dvx",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "narrativium_retained_dvx"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_narrativium_retained_dvy",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "narrativium_retained_dvy"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "selected_path_narrativium_retained_dvz",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "narrativium_retained_dvz"
       }
      }
     ],
@@ -676247,73 +676617,149 @@
               }
              },
              {
-              "type": "Gt",
-              "a": {
-               "type": "FutureManifoldProjection",
-               "episode": {
-                "type": "Var",
-                "name": "episode"
+              "type": "Or",
+              "items": [
+               {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Eq",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "memory"
+                     },
+                     "key": "selected_path_projection_request_seq"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0.0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "trial"
+                     },
+                     "key": "request_seq"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0.0
+                    }
+                   ]
+                  }
+                 },
+                 {
+                  "type": "Gt",
+                  "a": {
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "memory"
+                     },
+                     "key": "selected_path_narrativium_retained_dvz"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0.0
+                    }
+                   ]
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 0.0
+                  }
+                 }
+                ]
                },
-               "policy": {
-                "type": "Var",
-                "name": "policy"
-               },
-               "source": {
-                "type": "Var",
-                "name": "memory"
-               },
-               "field": "support"
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0.0
-              }
-             },
-             {
-              "type": "Gt",
-              "a": {
-               "type": "FutureManifoldProjection",
-               "episode": {
-                "type": "Var",
-                "name": "episode"
-               },
-               "policy": {
-                "type": "Var",
-                "name": "policy"
-               },
-               "source": {
-                "type": "Var",
-                "name": "memory"
-               },
-               "field": "resolved"
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0.0
-              }
-             },
-             {
-              "type": "Gt",
-              "a": {
-               "type": "FutureManifoldProjection",
-               "episode": {
-                "type": "Var",
-                "name": "episode"
-               },
-               "policy": {
-                "type": "Var",
-                "name": "policy"
-               },
-               "source": {
-                "type": "Var",
-                "name": "memory"
-               },
-               "field": "narrativium_retained_dvz"
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0.0
-              }
+               {
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Gt",
+                  "a": {
+                   "type": "FutureManifoldProjection",
+                   "episode": {
+                    "type": "Var",
+                    "name": "episode"
+                   },
+                   "policy": {
+                    "type": "Var",
+                    "name": "policy"
+                   },
+                   "source": {
+                    "type": "Var",
+                    "name": "memory"
+                   },
+                   "field": "support"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 0.0
+                  }
+                 },
+                 {
+                  "type": "Gt",
+                  "a": {
+                   "type": "FutureManifoldProjection",
+                   "episode": {
+                    "type": "Var",
+                    "name": "episode"
+                   },
+                   "policy": {
+                    "type": "Var",
+                    "name": "policy"
+                   },
+                   "source": {
+                    "type": "Var",
+                    "name": "memory"
+                   },
+                   "field": "resolved"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 0.0
+                  }
+                 },
+                 {
+                  "type": "Gt",
+                  "a": {
+                   "type": "FutureManifoldProjection",
+                   "episode": {
+                    "type": "Var",
+                    "name": "episode"
+                   },
+                   "policy": {
+                    "type": "Var",
+                    "name": "policy"
+                   },
+                   "source": {
+                    "type": "Var",
+                    "name": "memory"
+                   },
+                   "field": "narrativium_retained_dvz"
+                  },
+                  "b": {
+                   "type": "Lit",
+                   "value": 0.0
+                  }
+                 }
+                ]
+               }
+              ]
              }
             ]
            },

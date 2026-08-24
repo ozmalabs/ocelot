@@ -6,6 +6,9 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+HUMANOID_MANIFOLD_DIMENSIONS = (
+    "dzx", "dzy", "dwx", "dwy", "dvx", "dvy", "dvz",
+)
 
 
 def V(name):
@@ -10953,28 +10956,25 @@ def release_selected_developmental_trajectory_rule():
         Gt(P0("policy", "future_manifold_enabled"), L(0.0)),
         Gt(P0("episode", "manifold_bounds_ready"), L(0.0)),
     )
+    path_projection = lambda field: developmental_trajectory_projection(
+        "path", field
+    )
     release_allowed = Or(
         Not(gate_active),
         And(
-            Gt(developmental_trajectory_projection("memory", "support"), L(0.0)),
-            Gt(developmental_trajectory_projection("memory", "resolved"), L(0.0)),
+            Gt(path_projection("support"), L(0.0)),
+            Gt(path_projection("resolved"), L(0.0)),
             Eq(
-                developmental_trajectory_projection(
-                    "memory", "information_loss"
-                ),
+                path_projection("information_loss"),
                 L(0.0),
             ),
             Or(
                 Eq(
-                    developmental_trajectory_projection(
-                        "memory", "effort_supported"
-                    ),
+                    path_projection("effort_supported"),
                     L(0.0),
                 ),
                 Gt(
-                    developmental_trajectory_projection(
-                        "memory", "effort_authorized"
-                    ),
+                    path_projection("effort_authorized"),
                     L(0.0),
                 ),
             ),
@@ -11048,6 +11048,32 @@ def release_selected_developmental_trajectory_rule():
             ["set_attr", "path", "trajectory_replay_issued_seq", T(
                 P0("episode", "request_seq")
             )],
+            [
+                "set_attr", "memory",
+                "selected_path_projection_request_seq",
+                T(P0("episode", "request_seq")),
+            ],
+            [
+                "set_attr", "memory",
+                "selected_path_projection_depth",
+                T(P0("path", "depth")),
+            ],
+            *[
+                [
+                    "set_attr", "memory",
+                    f"selected_path_narrativium_reachable_{key}",
+                    T(path_projection(f"narrativium_reachable_{key}")),
+                ]
+                for key in HUMANOID_MANIFOLD_DIMENSIONS
+            ],
+            *[
+                [
+                    "set_attr", "memory",
+                    f"selected_path_narrativium_retained_{key}",
+                    T(path_projection(f"narrativium_retained_{key}")),
+                ]
+                for key in HUMANOID_MANIFOLD_DIMENSIONS
+            ],
             [
                 "add_edge", "episode",
                 "has_ready_humanoid_motor_program", "memory",
@@ -13646,20 +13672,41 @@ def update_recalled_motor_memory_rule():
     takeoff_future_retained = And(
         Eq(P0("memory", "partial_trajectory_evidence"), L(1.0)),
         Eq(A("memory", "motor_task_context"), L("self_takeoff")),
-        Gt(
-            developmental_trajectory_projection("memory", "support"),
-            L(0.0),
-        ),
-        Gt(
-            developmental_trajectory_projection("memory", "resolved"),
-            L(0.0),
-        ),
-        Gt(
-            developmental_trajectory_projection(
-                "memory",
-                "narrativium_retained_dvz",
+        Or(
+            And(
+                Eq(
+                    P0("memory", "selected_path_projection_request_seq"),
+                    P0("trial", "request_seq"),
+                ),
+                Gt(
+                    P0(
+                        "memory",
+                        "selected_path_narrativium_retained_dvz",
+                    ),
+                    L(0.0),
+                ),
             ),
-            L(0.0),
+            And(
+                Gt(
+                    developmental_trajectory_projection(
+                        "memory", "support"
+                    ),
+                    L(0.0),
+                ),
+                Gt(
+                    developmental_trajectory_projection(
+                        "memory", "resolved"
+                    ),
+                    L(0.0),
+                ),
+                Gt(
+                    developmental_trajectory_projection(
+                        "memory",
+                        "narrativium_retained_dvz",
+                    ),
+                    L(0.0),
+                ),
+            ),
         ),
     )
     retains_transferred_value = Or(
@@ -16630,7 +16677,7 @@ def manifest():
     )
     return apply_biological_schedule({
         "id": "humanoid_adaptation",
-        "version": "1.30.0",
+        "version": "1.31.0",
         "depends_on": [
             "decision_core",
             "embodied_motor_priors",
