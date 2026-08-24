@@ -919,6 +919,22 @@ Gated by `test_the_boundary_closes_into_one_curve_at_every_raster` (one componen
 exactly, at all four rasters — degree 2 is what the unguarded version destroyed) and
 `test_the_diagonal_fallback_adds_nothing_where_the_chain_is_already_closed`. 32/32.
 
+**Neither the accuracy nor the cost moved, and both were re-measured rather than assumed.** The
+rule only ADDS links, so it changes the contour's structure and not its point placement — the
+radial rms is identical at every raster and scene (x8: 0.068 two-level, 0.075 three-level, 0.082
+raised). And the settle, against the figure §6g recorded before any of the three new rules existed:
+
+| n | cells | flood only | rim, v1.10.0 | ratio |
+|---|---|---|---|---|
+| 16 | 256 | 4.2 ms | 4.7 ms | 1.12 |
+| 32 | 1024 | 16.1 ms | 9.9 ms | 0.61 |
+| 60 | 3600 | 56.2 ms | **29.7 ms** | **0.53** |
+
+§6g's record was 28.9 ms at n=60 with ratio 0.49. **Three rules, one of them a THREE-EDGE match,
+cost under 3%** — because `bt_chain_diagonal`'s guards (`true_boundary`, then degree ≤ 1) prune
+almost every candidate before the join ever widens. Growth from n=16 to n=60 is x6.3 against the
+flood's x13.2, so the sublinear-in-area behaviour is intact.
+
 **A repair was proposed, measured, and REFUTED.** Link two true crossings whose FIGURE cells are
 lattice neighbours — weaker than cell-pair correspondence, so it should still link across a 2-cell
 band. It fails both ways at once:
