@@ -267,8 +267,52 @@ def _trial_motor_tokens(
     if len(programs) > 1:
         raise RuntimeError("trial enacts more than one motor program")
     if programs:
+        program = programs[0]
+        hierarchies = agent.inner.neighbours(
+            program,
+            "realizes_embodied_hierarchical_control_program",
+        )
+        if len(hierarchies) > 1:
+            raise RuntimeError("motor program has more than one control hierarchy")
+        if hierarchies:
+            hierarchy = hierarchies[0]
+            if agent.s.node(hierarchy)["attrs"].get("status") != "ready":
+                raise RuntimeError("motor program control hierarchy is unresolved")
+            assignments = agent.inner.neighbours(
+                hierarchy,
+                "has_embodied_effector_program_assignment",
+            )
+            ordered_assignments = []
+            for assignment in assignments:
+                effectors = agent.inner.neighbours(
+                    assignment, "targets_embodied_effector"
+                )
+                children = agent.inner.neighbours(
+                    assignment, "invokes_embodied_child_motor_program"
+                )
+                if len(effectors) != 1 or len(children) != 1:
+                    raise RuntimeError(
+                        "hierarchical motor assignment is not primitive"
+                    )
+                ordered_assignments.append((
+                    float(agent.s.node(effectors[0])["attrs"].get(
+                        "ordinal", 0.0
+                    )),
+                    float(agent.s.node(children[0])["attrs"].get(
+                        "ordinal", 0.0
+                    )),
+                    str(agent.s.node(children[0])["attrs"].get("token", "")),
+                ))
+            tokens = tuple(dict.fromkeys(
+                token
+                for _, _, token in sorted(ordered_assignments)
+            ))
+            if not tokens or not all(tokens):
+                raise RuntimeError("control hierarchy has invalid assignments")
+            return tokens
+
         members = agent.inner.neighbours(
-            programs[0],
+            program,
             "includes_humanoid_phase_action_model",
         )
         ordered = sorted(
@@ -369,6 +413,52 @@ def _resume_graph_motor_synthesis(
             )
 
 
+def _probe_humanoid_request_matchers(
+    agent: WorldAdapter,
+    episode,
+    phase: str,
+) -> None:
+    """Profile risky request matchers when explicitly enabled.
+
+    This is a read-only diagnosis for accumulated curriculum states: printing
+    the name before the native matcher call makes a non-returning match
+    attributable without changing graph state or simulator state.
+    """
+    if os.environ.get("HUMANOID_REQUEST_MATCH_PROBE") != "1":
+        return
+    development = agent.inner.neighbours(
+        episode, "projects_embodied_development"
+    )
+    capabilities = (
+        agent.inner.neighbours(
+            development[0],
+            "has_active_embodied_developmental_capability",
+        )
+        if len(development) == 1 else []
+    )
+    capability_attrs = (
+        agent.s.node(capabilities[0])["attrs"] if len(capabilities) == 1 else {}
+    )
+    if capability_attrs.get("name") != "two_foot_jump":
+        return
+    prefixes = ("hdc_", "epm_", "cp_", "hec_")
+    names = sorted({
+        row[0] for row in agent.inner.rule_costs()
+        if row[0].startswith(prefixes)
+    })
+    for name in names:
+        print(
+            f"humanoid_match_probe phase={phase} rule={name} start",
+            flush=True,
+        )
+        report = agent.inner.profile_rule_match(name, 1)
+        print(
+            f"humanoid_match_probe phase={phase} rule={name} done "
+            f"report={report}",
+            flush=True,
+        )
+
+
 def _request_action(
     agent: WorldAdapter,
     episode,
@@ -390,6 +480,7 @@ def _request_action(
         observation,
         state_seq=request_seq * 2 - 1,
     )
+    _probe_humanoid_request_matchers(agent, episode, "perception")
     agent.tick()
     agent.inner.set_attr(episode, "phase", active_phase)
     agent.inner.set_attr(episode, "request_seq", float(request_seq))
@@ -415,6 +506,7 @@ def _request_action(
         episode, "caregiver_protective_support_requested", 0
     )
     agent.inner.set_attr(episode, "caregiver_support_scale", 0.0)
+    _probe_humanoid_request_matchers(agent, episode, "decision")
     agent.tick()
     # A later-installed developmental rule may publish a ready arbitrary-order
     # program after the ordinary motor trial openers have already passed in
@@ -437,6 +529,7 @@ def _request_action(
         == request_seq
     ]
     if current_ready_programs and not current_trials:
+        _probe_humanoid_request_matchers(agent, episode, "late_release")
         agent.tick()
     attrs = _resume_graph_motor_synthesis(agent, episode)
     token = attrs.get("selected_token")
@@ -653,14 +746,35 @@ def _request_action(
     attrs["selected_secondary_token"] = secondary_token
     attrs["selected_response_frames"] = response_frames
     attrs["selected_motor_tokens"] = _trial_motor_tokens(agent, trial)
-    attrs["selected_motor_weights"] = {
-        attrs.get("selected_token"): float(
-            attrs.get("selected_motor_weight_a", 1.0)
-        ),
-        attrs.get("selected_secondary_token"): float(
-            attrs.get("selected_motor_weight_b", 1.0)
-        ),
-    }
+    for key in (
+        "motor_effort_ratio",
+        "takeoff_effort_supported",
+        "takeoff_effort_required_ratio",
+        "takeoff_effort_residual_ratio",
+        "takeoff_effort_authorized",
+    ):
+        attrs[key] = trial_attrs.get(key, 0.0)
+    effort_ratio = trial_attrs.get("motor_effort_ratio")
+    if (
+        trial_attrs.get("motor_task_context") == "self_takeoff"
+        and isinstance(effort_ratio, (int, float))
+        and not isinstance(effort_ratio, bool)
+        and math.isfinite(float(effort_ratio))
+        and float(effort_ratio) >= 1.0
+    ):
+        attrs["selected_motor_weights"] = {
+            motor_token: float(effort_ratio)
+            for motor_token in attrs["selected_motor_tokens"]
+        }
+    else:
+        attrs["selected_motor_weights"] = {
+            attrs.get("selected_token"): float(
+                attrs.get("selected_motor_weight_a", 1.0)
+            ),
+            attrs.get("selected_secondary_token"): float(
+                attrs.get("selected_motor_weight_b", 1.0)
+            ),
+        }
     if token not in attrs["selected_motor_tokens"]:
         raise RuntimeError("primary token is absent from graph motor program")
     return token, trial, attrs
@@ -1312,7 +1426,50 @@ def _close_action(
                 f"humanoid_close_phase request={request_seq} soft_tick_start",
                 flush=True,
             )
-        agent.dual_process_tick()
+        checkpoint_seq = os.environ.get("HUMANOID_SOFT_PROBE_REQUEST_SEQ")
+        if checkpoint_seq is not None and request_seq >= int(checkpoint_seq):
+            checkpoint_path = os.environ.get(
+                "HUMANOID_SOFT_PROBE_CHECKPOINT",
+                "/tmp/humanoid_soft_probe_checkpoint.json",
+            )
+            agent.save(checkpoint_path)
+            prefixes = ("ept_", "cp_", "epm_")
+            names = sorted({
+                row[0] for row in agent.inner.rule_costs()
+                if row[0].startswith(prefixes)
+            })
+            for name in names:
+                print(
+                    f"humanoid_soft_match_probe request={request_seq} "
+                    f"rule={name} start",
+                    flush=True,
+                )
+                report = agent.inner.profile_rule_match(name, 1)
+                print(
+                    f"humanoid_soft_match_probe request={request_seq} "
+                    f"rule={name} done report={report}",
+                    flush=True,
+                )
+        soft_tick_budget = int(os.environ.get(
+            "HUMANOID_RECEIPT_SOFT_TICK_BUDGET", "100000"
+        ))
+        if "HUMANOID_RECEIPT_SOFT_TICK_BUDGET" in os.environ:
+            agent.s._inner.reset_rule_costs()
+        soft_report = agent.dual_process_tick(max_steps=soft_tick_budget)
+        if (
+            "HUMANOID_RECEIPT_SOFT_TICK_BUDGET" in os.environ
+            and int(soft_report.get("steps", 0)) >= soft_tick_budget
+        ):
+            hot_rules = sorted(
+                agent.s._inner.rule_costs(),
+                key=lambda row: row[1],
+                reverse=True,
+            )[:20]
+            raise RuntimeError(
+                "humanoid receipt soft tick reached diagnostic step budget: "
+                f"request_seq={request_seq}, report={soft_report!r}, "
+                f"hot_rules={hot_rules!r}"
+            )
         if os.environ.get("HUMANOID_ACTION_PROGRESS") == "1":
             print(
                 f"humanoid_close_phase request={request_seq} soft_tick_done",

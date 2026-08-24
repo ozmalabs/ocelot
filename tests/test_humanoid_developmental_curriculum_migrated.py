@@ -34,7 +34,9 @@ def test_humanoid_seed_is_an_integer_output_null_bridge():
     assert not _contains_float(generated)
     assert generated["nodes"] == []
     assert generated["depends_on"] == [
-        "humanoid_adaptation", "somatomotor_waves"
+        "humanoid_adaptation",
+        "somatomotor_waves",
+        "hierarchical_effector_control",
     ]
     text = json.dumps(generated).lower()
     assert "has_active_embodied_developmental_capability" in text
@@ -47,6 +49,11 @@ def test_humanoid_seed_is_an_integer_output_null_bridge():
     assert "trajectory_minimum_selection_depth" in text
     assert "publish_verified_motor_transition_to_generic_trajectory" in text
     assert "mint_receipt_grounded_developmental_program_transition" in text
+    assert "bind_developmental_command_to_addressed_body_subsection" in text
+    assert "credit_verified_receipt_to_each_unrolled_assignment" in text
+    assert "open_verified_subsection_program_pair_experiments" in text
+    assert "request_subsection_composition_pareto_escalation" in text
+    assert "learn_subsection_composition_interaction_from_receipt" in text
     from scripts.gen_humanoid_adaptation_seed import manifest as motor_manifest
 
     assert "release_selected_developmental_order_n_trajectory" in json.dumps(
@@ -650,6 +657,628 @@ def test_established_manifold_requests_path_without_target_shape():
     assert agent.inner.neighbours(
         capability, "requests_embodied_program_trajectory"
     ) == [development]
+
+
+def test_developmental_program_enacts_and_learns_through_body_hierarchy():
+    from scripts.jabberwock_humanoid_adaptation import _trial_motor_tokens
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
+    episode = agent.s.add_node("HumanoidEpisode", {
+        "developmental_curriculum_active": 1,
+        "request_seq": 7,
+        "action_ready": 0,
+        "phase": "fixture",
+    })
+    topology = agent.s.add_node("EmbodiedEffectorTopology", {})
+    plan = agent.s.add_node("HumanoidMotorProgram", {
+        "status": "somatomotor_wave_building",
+        "request_seq": 7,
+        "member_count": 1,
+    })
+    _edge(agent, agent.agent, "has_humanoid_episode", episode)
+    _edge(agent, episode, "has_embodied_effector_topology", topology)
+    _edge(agent, episode, "has_humanoid_motor_program", plan)
+
+    effectors = []
+    phase_models = []
+    for ordinal, token in enumerate(("QUUX", "FOO", "BAR")):
+        effector = agent.s.add_node("EmbodiedEffector", {
+            "ordinal": ordinal,
+            "channel_ordinal": ordinal,
+            "mount_depth": ordinal + 1,
+        })
+        action_model = agent.s.add_node("HumanoidActionModel", {
+            "token": token,
+            "ordinal": ordinal,
+        })
+        phase_model = agent.s.add_node("HumanoidPhaseActionModel", {
+            "token": token,
+            "ordinal": ordinal,
+            "actuator_group": ordinal,
+        })
+        effectors.append(effector)
+        phase_models.append(phase_model)
+        _edge(agent, topology, "has_embodied_effector", effector)
+        _edge(agent, action_model, "models_embodied_effector", effector)
+        _edge(
+            agent, phase_model,
+            "generalizes_humanoid_action_model", action_model,
+        )
+    _edge(
+        agent, plan,
+        "includes_humanoid_phase_action_model", phase_models[0],
+    )
+
+    assert agent.tick() > 0
+    hierarchies = agent.inner.neighbours(
+        plan, "realizes_embodied_hierarchical_control_program"
+    )
+    assert len(hierarchies) == 1
+    hierarchy = hierarchies[0]
+    assert agent.s.node(hierarchy)["attrs"]["status"] == "collecting"
+    assert not agent.inner.neighbours(
+        hierarchy, "has_embodied_effector_program_assignment"
+    )
+
+    for phase_model in phase_models[1:]:
+        _edge(
+            agent, plan,
+            "includes_humanoid_phase_action_model", phase_model,
+        )
+    agent.inner.set_attr(plan, "member_count", 3)
+    agent.inner.set_attr(plan, "status", "ready")
+    assert agent.tick() > 0
+    hierarchy_attrs = agent.s.node(hierarchy)["attrs"]
+    assert hierarchy_attrs["status"] == "ready"
+    assert hierarchy_attrs["assignment_count"] == 3
+    assert set(agent.inner.neighbours(
+        hierarchy, "has_bound_embodied_child_motor_program"
+    )) == set(phase_models)
+    assert len(agent.inner.neighbours(
+        hierarchy, "includes_embodied_program_binding"
+    )) == 3
+    assert agent.s.node(plan)["attrs"]["hierarchical_control_ready"] == 1
+
+    aggregate = agent.inner.neighbours(
+        hierarchy, "controls_embodied_control_subsection"
+    )
+    assert len(aggregate) == 1
+    assert set(agent.inner.neighbours(
+        aggregate[0], "addresses_embodied_effector"
+    )) == set(effectors)
+
+    trial = agent.s.add_node("HumanoidMotorTrial", {
+        "status": "learned",
+        "request_seq": 7,
+    })
+    _edge(agent, episode, "has_humanoid_motor_trial", trial)
+    _edge(agent, trial, "enacts_humanoid_motor_program", plan)
+    assert agent.tick() > 0
+    assert agent.inner.neighbours(
+        trial, "enacts_embodied_hierarchical_control_program"
+    ) == [hierarchy]
+    assert _trial_motor_tokens(agent, trial) == ("QUUX", "FOO", "BAR")
+
+    outcome = agent.s.add_node("HumanoidTransition", {
+        "receipt_verified": 1,
+    })
+    _edge(agent, trial, "has_humanoid_transition", outcome)
+    assert agent.tick() > 0
+    assert agent.inner.neighbours(
+        outcome, "verifies_embodied_hierarchical_control_program"
+    ) == [hierarchy]
+    assignments = agent.inner.neighbours(
+        hierarchy, "has_embodied_effector_program_assignment"
+    )
+    assert set(agent.inner.neighbours(
+        outcome, "verifies_embodied_effector_program_assignment"
+    )) == set(assignments)
+    assert all(
+        agent.s.node(assignment)["attrs"]["experience_count"] == 1
+        for assignment in assignments
+    )
+
+
+def _learned_subsection_program(
+    agent, episode, ordinal, directed_units, effectors
+):
+    program = agent.s.add_node("HumanoidMotorProgram", {
+        "status": "grounded",
+        "request_seq": ordinal,
+        "subsection_program_ordinal": ordinal,
+        "subsection_shape_order": 1,
+        "development_receipt_count": 1,
+        "experience_retained": 1,
+        "development_translation_evidence_units": directed_units,
+        "development_directed_sum_units": directed_units,
+        "development_lateral_sum_units": 0,
+        "development_elevation_sum_units": 0,
+        "development_energy_sum_units": 1,
+        "development_peak_load_sum_units": 1,
+        "development_recoverability_sum_units": 1,
+        "response_frames": 1,
+        "member_count": len(effectors),
+        "primary_token": f"program_{ordinal}_0",
+    })
+    hierarchy = agent.s.add_node("EmbodiedHierarchicalControlProgram", {
+        "status": "ready",
+        "receipt_count": 1,
+    })
+    scope = agent.s.add_node("EmbodiedControlSubsection", {
+        "scope_kind": "learned_program_subsection",
+        "status": "ready",
+        "member_count": len(effectors),
+    })
+    _edge(agent, episode, "has_humanoid_motor_program", program)
+    _edge(
+        agent, program,
+        "realizes_embodied_hierarchical_control_program", hierarchy,
+    )
+    _edge(
+        agent, hierarchy,
+        "controls_embodied_control_subsection", scope,
+    )
+    for member_ordinal, effector in enumerate(effectors):
+        phase_model = agent.s.add_node("HumanoidPhaseActionModel", {
+            "token": f"program_{ordinal}_{member_ordinal}",
+            "ordinal": ordinal * 10 + member_ordinal,
+            "actuator_group": agent.s.node(effector)["attrs"]["ordinal"],
+        })
+        action_model = agent.s.add_node("HumanoidActionModel", {
+            "token": f"program_{ordinal}_{member_ordinal}",
+            "ordinal": ordinal * 10 + member_ordinal,
+        })
+        assignment = agent.s.add_node("EmbodiedEffectorProgramAssignment", {
+            "status": "experienced",
+            "experience_count": 1,
+            "composition_operator": "superpose",
+        })
+        _edge(
+            agent, program,
+            "includes_humanoid_phase_action_model", phase_model,
+        )
+        _edge(
+            agent, phase_model,
+            "generalizes_humanoid_action_model", action_model,
+        )
+        _edge(agent, action_model, "models_embodied_effector", effector)
+        _edge(
+            agent, hierarchy,
+            "has_embodied_effector_program_assignment", assignment,
+        )
+        _edge(agent, assignment, "targets_embodied_effector", effector)
+        _edge(
+            agent, assignment,
+            "invokes_embodied_child_motor_program", phase_model,
+        )
+        _edge(agent, scope, "addresses_embodied_effector", effector)
+    return program
+
+
+def test_verified_subsection_programs_enter_pareto_composition_and_learn_residual():
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
+    policy = agent.inner.neighbours(agent.agent, "has_humanoid_policy")[0]
+    agent.inner.set_attr(policy, "future_manifold_enabled", 0)
+    episode = agent.s.add_node("HumanoidEpisode", {
+        "developmental_curriculum_active": 1,
+        "request_seq": 20,
+        "decision_seq": 0,
+        "decision_count": 0,
+        "action_ready": 0,
+        "structural_interrupt_required": 0,
+        "sensorimotor_interrupt_required": 0,
+        "reset_requested": 0,
+        "locomotion_drive_active": 1,
+        "current_support_phase": 0,
+        "phase": "locomotion",
+    })
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "development_evidence_window": 1,
+    })
+    topology = agent.s.add_node("EmbodiedEffectorTopology", {})
+    capability = agent.s.add_node("EmbodiedSituatedDevelopmentalCapability", {
+        "evidence_kind": "supported_translation",
+        "goal": "locomotion",
+    })
+    query = agent.s.add_node("EmbodiedInverseKinematicQuery", {
+        "status": "active",
+        "mode": "translation",
+        "target_directed_units": 5,
+        "target_elevation_units": 0,
+        "target_orientation_units": 0,
+    })
+    historical_question = agent.s.add_node("EmbodiedPhysicsQuestion", {
+        "status": "resolved",
+    })
+    _edge(agent, agent.agent, "has_humanoid_episode", episode)
+    _edge(agent, episode, "projects_embodied_development", development)
+    _edge(agent, episode, "has_embodied_effector_topology", topology)
+    _edge(
+        agent, development,
+        "has_active_embodied_developmental_capability", capability,
+    )
+    _edge(
+        agent, development,
+        "has_active_embodied_inverse_kinematic_query", query,
+    )
+    _edge(agent, query, "targets_learning_capability", capability)
+    _edge(
+        agent, historical_question,
+        "targets_learning_capability", capability,
+    )
+    relation_aliases = [
+        agent.s.add_node("MotorLearningProposal", {"status": "candidate"})
+        for _ in range(19)
+    ]
+    for alias in relation_aliases:
+        _edge(agent, alias, "targets_learning_capability", capability)
+
+    effectors = [
+        agent.s.add_node("EmbodiedEffector", {
+            "ordinal": ordinal,
+            "channel_ordinal": ordinal,
+        })
+        for ordinal in range(3)
+    ]
+    for effector in effectors:
+        _edge(agent, topology, "has_embodied_effector", effector)
+    best = _learned_subsection_program(
+        agent, episode, 1, 5, [effectors[0]]
+    )
+    disjoint = _learned_subsection_program(
+        agent, episode, 2, 2, [effectors[1]]
+    )
+    overlapping = _learned_subsection_program(
+        agent, episode, 3, 1, [effectors[0], effectors[2]]
+    )
+
+    assert agent.tick() > 0
+    active_questions = agent.inner.neighbours(
+        query, "has_active_subsection_composition_question"
+    )
+    assert len(active_questions) == 1
+    question = active_questions[0]
+    assert agent.s.node(question)["attrs"]["kind"] == (
+        "situated_subsection_composition"
+    )
+    proposals = [
+        plan for plan in agent.inner.neighbours(
+            question, "has_counterfactual_motor_program"
+        )
+        if agent.s.node(plan)["attrs"].get("subsection_composition") == 1
+    ]
+    # One task-space-optimal anchor paired with every other admissible
+    # subsection program: linear, rather than all-pairs, proposal growth.
+    assert len(proposals) == 2
+    assert agent.inner.neighbours(
+        historical_question, "has_counterfactual_motor_program"
+    ) == []
+    assert all(
+        agent.inner.neighbours(alias, "has_counterfactual_motor_program") == []
+        and agent.inner.neighbours(alias, "has_motor_learning_pareto_profile") == []
+        for alias in relation_aliases
+    )
+    profiles = agent.inner.neighbours(
+        question, "has_motor_learning_pareto_profile"
+    )
+    assert len(profiles) == 1
+    assert len(agent.inner.neighbours(
+        profiles[0], "has_pareto_dimension"
+    )) == 6
+    assert agent.inner.neighbours(
+        question, "has_subsection_composition_anchor"
+    ) == [best]
+    assert all(
+        best in agent.inner.neighbours(
+            plan, "composes_developmental_subsection_program"
+        )
+        for plan in proposals
+    )
+    overlap_plan = next(
+        plan for plan in proposals
+        if overlapping in agent.inner.neighbours(
+            plan, "composes_developmental_subsection_program"
+        )
+    )
+    assert agent.s.node(overlap_plan)["attrs"]["subsection_overlap_count"] == 1
+    assert agent.s.node(overlap_plan)["attrs"]["interaction_uncertainty_units"] == 2
+    assert agent.s.node(overlap_plan)["attrs"][
+        "subsection_composition_manifold_admissible"
+    ] == 1
+
+    escalations = [
+        escalation for escalation in agent.s.nodes("SystemTwoEscalation")
+        if agent.s.node(escalation)["attrs"].get("reason")
+        == "subsection_composition_requires_pareto_collapse"
+    ]
+    escalation_contexts = [
+        [
+            agent.s.node(context)["attrs"].get("primary_token"),
+            agent.s.node(context)["attrs"].get("status"),
+            agent.s.node(context)["attrs"].get("request_seq"),
+        ]
+        for escalation in escalations
+        for context in agent.inner.neighbours(escalation, "about_context")
+    ]
+    assert escalations, escalation_contexts
+    assert any(
+        agent.s.node(escalation)["attrs"]["status"] == "serviced"
+        for escalation in escalations
+    )
+    learning_proposals = agent.inner.neighbours(
+        question, "has_motor_learning_proposal"
+    )
+    assert len(learning_proposals) == len(proposals), [
+        agent.s.node(proposal)["attrs"] for proposal in learning_proposals
+    ]
+    selected = agent.inner.neighbours(
+        question, "has_selected_motor_learning_proposal"
+    )
+    assert len(selected) == 1
+    selected_plan = agent.inner.neighbours(
+        selected[0], "proposes_counterfactual_motor_program"
+    )
+    assert selected_plan == [overlap_plan]
+    assert agent.s.node(overlap_plan)["attrs"]["status"] == "ready"
+    assert agent.s.node(capability)["attrs"][
+        "active_physical_experiment_lease_count"
+    ] == 1
+    assert agent.inner.neighbours(
+        episode, "has_ready_humanoid_motor_program"
+    ) == [overlap_plan]
+
+    trial = agent.s.add_node("HumanoidMotorTrial", {
+        "status": "learned",
+        "request_seq": 20,
+    })
+    outcome = agent.s.add_node("HumanoidTransition", {
+        "development_receipt_closed": 1,
+        "receipt_verified": 1,
+        "development_translation_units": 2,
+        "development_directed_units": 2,
+    })
+    _edge(agent, episode, "has_humanoid_motor_trial", trial)
+    _edge(agent, trial, "enacts_humanoid_motor_program", overlap_plan)
+    _edge(agent, trial, "has_humanoid_transition", outcome)
+    assert agent.tick() > 0
+
+    assert agent.s.node(overlap_plan)["attrs"]["physical_verified"] == 1
+    assert agent.s.node(capability)["attrs"][
+        "active_physical_experiment_lease_count"
+    ] == 0
+    assert agent.s.node(overlap_plan)["attrs"]["interaction_residual_units"] == 4
+    for component in (best, overlapping):
+        attrs = agent.s.node(component)["attrs"]
+        assert attrs["subsection_composition_receipt_count"] == 1
+        assert attrs["subsection_interaction_residual_sum_units"] == 4
+
+    # The failed additivity assumption changes the next situated anchor. The
+    # individually weaker but composition-reliable program now has the lower
+    # task residual after learned interaction error is included.
+    assert agent.inner.neighbours(
+        query, "has_active_subsection_composition_question"
+    ) == []
+    agent.inner.set_attr(episode, "request_seq", 21)
+    assert agent.tick() > 0
+    next_questions = agent.inner.neighbours(
+        query, "has_active_subsection_composition_question"
+    )
+    assert len(next_questions) == 1
+    next_question = next_questions[0]
+    assert next_question != question
+    assert agent.inner.neighbours(
+        next_question, "has_subsection_composition_anchor"
+    ) == [disjoint]
+
+
+def test_unreceipted_assignment_cannot_become_subsection_component():
+    from scripts.gen_humanoid_developmental_curriculum_seed import manifest
+
+    rule = next(
+        rule for rule in manifest()["rules"]
+        if rule["name"] == "hdc_audit_situated_subsection_program_candidate"
+    )
+    text = json.dumps(rule)
+    assert "unsupported_assignment" in text
+
+    pair_rule = next(
+        rule for rule in manifest()["rules"]
+        if rule["name"]
+        == "hdc_open_verified_subsection_program_pair_experiments"
+    )
+    pair_text = json.dumps(pair_rule)
+    assert '"addition": {"type": "Var", "name": "second"}' in pair_text
+    release_rule = next(
+        rule for rule in manifest()["rules"]
+        if rule["name"]
+        == "hdc_release_selected_counterfactual_through_motor_collapse"
+    )
+    assert "subsection_composition_manifold_admissible" in json.dumps(
+        release_rule
+    )
+    assert "experience_count" in text
+    assert "FutureManifoldProjection" in text
+    reassociated_learn = next(
+        rule for rule in manifest()["rules"]
+        if rule["name"]
+        == "hdc_learn_reassociated_subsection_composition_from_receipt"
+    )
+    reassociated_rotate = next(
+        rule for rule in manifest()["rules"]
+        if rule["name"]
+        == "hdc_rotate_reassociated_subsection_composition_question"
+    )
+    assert "synthesized_humanoid_motor_program" in json.dumps(
+        reassociated_learn
+    )
+    assert "synthesized_humanoid_motor_program" in json.dumps(
+        reassociated_rotate
+    )
+    cancellation = next(
+        rule for rule in manifest()["rules"]
+        if rule["name"]
+        == "hdc_cancel_subsection_experiment_lease_outside_situated_manifold"
+    )
+    cancellation_text = json.dumps(cancellation)
+    assert "enacts_humanoid_motor_program" in cancellation_text
+    assert "synthesized_humanoid_motor_program" in cancellation_text
+    assert "development_receipt_closed" in cancellation_text
+    assert "physical_experiment_issued" in cancellation_text
+    derivative_credit = next(
+        rule for rule in manifest()["rules"]
+        if rule["name"] == "hdc_credit_wide_takeoff_program_derivative"
+    )
+    derivative_credit_text = json.dumps(derivative_credit)
+    assert "subsection_derivative_credit_complete" in derivative_credit_text
+    assert "subsection_derivative_receipt_count" in derivative_credit_text
+    assert "development_post_vertical_velocity_units" in derivative_credit_text
+    assert "development_pre_vertical_velocity_units" in derivative_credit_text
+    assert "whole_program_projection_authority" in derivative_credit_text
+    assert "future_manifold_information_compression" in derivative_credit_text
+    assert "interaction_uncertainty_units" in derivative_credit_text
+    assert derivative_credit_text.count("partial_trajectory_evidence") >= 2
+    assert "receipt_support_phase" in derivative_credit_text
+    assert "receipt_orientation_class" in derivative_credit_text
+    assert "receipt_response_frames" in derivative_credit_text
+    assert derivative_credit_text.count('"key": "response_frames"') >= 2
+    assert '"name": "trial"}, "key": "request_seq"' in derivative_credit_text
+    assert '"name": "episode"}, "key": "request_seq"' in derivative_credit_text
+
+
+def test_positive_takeoff_derivative_replays_exact_wide_program_without_pair_search():
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
+    policy = agent.inner.neighbours(agent.agent, "has_humanoid_policy")[0]
+    agent.inner.set_attr(policy, "future_manifold_enabled", 0)
+    episode = agent.s.add_node("HumanoidEpisode", {
+        "developmental_curriculum_active": 1,
+        "request_seq": 2,
+        "decision_seq": 1,
+        "decision_count": 1,
+        "action_ready": 0,
+        "structural_interrupt_required": 0,
+        "phase": "locomotion",
+    })
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "development_evidence_window": 1,
+    })
+    capability = agent.s.add_node("EmbodiedSituatedDevelopmentalCapability", {
+        "evidence_kind": "support_reducing_elevation",
+        "failure_count": 1,
+        "goal": "locomotion",
+    })
+    topology = agent.s.add_node("EmbodiedEffectorTopology", {})
+    effectors = [
+        agent.s.add_node("EmbodiedEffector", {
+            "ordinal": ordinal,
+            "channel_ordinal": ordinal,
+        })
+        for ordinal in range(3)
+    ]
+    _edge(agent, agent.agent, "has_humanoid_episode", episode)
+    _edge(agent, episode, "projects_embodied_development", development)
+    _edge(agent, episode, "has_embodied_effector_topology", topology)
+    _edge(
+        agent, development,
+        "has_active_embodied_developmental_capability", capability,
+    )
+    for effector in effectors:
+        _edge(agent, topology, "has_embodied_effector", effector)
+    program = _learned_subsection_program(
+        agent, episode, 1, 0, effectors,
+    )
+    agent.inner.set_attr(
+        program, "development_latest_vertical_velocity_progress_units", 9,
+    )
+    agent.inner.set_attr(program, "subsection_derivative_receipt_count", 1)
+    agent.inner.set_attr(program, "subsection_partial_replay_receipt_count", 0)
+
+    assert agent.tick() > 0
+    attrs = agent.s.node(episode)["attrs"]
+    program_attrs = agent.s.node(program)["attrs"]
+    assert attrs["selected_collapse_kind"] == "takeoff_derivative_recurrence"
+    assert attrs["action_ready"] == 1
+    assert attrs["partial_trajectory_warm_reuse_count"] == 0
+    assert agent.inner.neighbours(
+        episode, "has_ready_humanoid_motor_program"
+    ) == [program]
+    assert program_attrs["subsection_partial_replay_receipt_count"] == 1
+    assert program_attrs["exclude_subsection_candidate"] == 1
+    assert agent.inner.neighbours(
+        episode, "has_active_subsection_composition_question"
+    ) == []
+
+
+def test_situated_warm_partial_takeoff_gets_one_local_verification_attempt():
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
+    policy = agent.inner.neighbours(agent.agent, "has_humanoid_policy")[0]
+    agent.inner.set_attr(policy, "future_manifold_enabled", 0)
+    episode = agent.s.add_node("HumanoidEpisode", {
+        "developmental_curriculum_active": 1,
+        "request_seq": 2,
+        "decision_seq": 1,
+        "decision_count": 1,
+        "action_ready": 0,
+        "structural_interrupt_required": 0,
+        "phase": "locomotion",
+        "current_support_phase": 0,
+        "state_gravity_relative_orientation_class": 3,
+    })
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "development_evidence_window": 1,
+    })
+    capability = agent.s.add_node("EmbodiedSituatedDevelopmentalCapability", {
+        "evidence_kind": "support_reducing_elevation",
+        "failure_count": 1,
+    })
+    topology = agent.s.add_node("EmbodiedEffectorTopology", {})
+    effectors = [
+        agent.s.add_node("EmbodiedEffector", {
+            "ordinal": ordinal,
+            "channel_ordinal": ordinal,
+        })
+        for ordinal in range(3)
+    ]
+    _edge(agent, agent.agent, "has_humanoid_episode", episode)
+    _edge(agent, episode, "projects_embodied_development", development)
+    _edge(agent, episode, "has_embodied_effector_topology", topology)
+    _edge(
+        agent, development,
+        "has_active_embodied_developmental_capability", capability,
+    )
+    for effector in effectors:
+        _edge(agent, topology, "has_embodied_effector", effector)
+    program = _learned_subsection_program(agent, episode, 1, 0, effectors)
+    for key, value in {
+        "partial_trajectory_evidence": 1,
+        "development_vertical_velocity_progress_sum_units": 36,
+        "development_latest_vertical_velocity_progress_units": 0,
+        "warm_start_requires_verification": 1,
+        "warm_start_verified": 0,
+        "whole_program_projection_authority": 1,
+        "receipt_support_phase": 0,
+        "receipt_orientation_class": 3,
+        "receipt_response_frames": 1,
+        "response_frames": 1,
+        "subsection_derivative_receipt_count": 5,
+        "subsection_partial_replay_receipt_count": 4,
+    }.items():
+        agent.inner.set_attr(program, key, value)
+
+    assert agent.tick() > 0
+    attrs = agent.s.node(episode)["attrs"]
+    assert attrs["selected_collapse_kind"] == "situated_partial_warm_verification"
+    assert attrs["action_ready"] == 1
+    assert attrs["partial_trajectory_warm_reuse_count"] == 1
+    assert agent.inner.neighbours(
+        episode, "has_ready_humanoid_motor_program"
+    ) == [program]
 
 
 def test_learned_effort_excess_opens_body_discovered_orientation_bundle():

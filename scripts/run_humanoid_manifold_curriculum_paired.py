@@ -288,6 +288,7 @@ def _metrics(run: dict) -> dict:
     return {
         "actions_executed": actions_executed,
         "curriculum_rule_costs": run.get("curriculum_rule_costs", []),
+        "subsection_composition": run.get("subsection_composition", {}),
         "developmental_reset_diagnostics": run.get(
             "developmental_reset_diagnostics", {}
         ),
@@ -301,6 +302,67 @@ def _metrics(run: dict) -> dict:
             float(row.get("self_takeoff_drive_active_after", 0)) > 0.5
             for row in trace
         ),
+        "takeoff_action_trace": [
+            {
+                key: row.get(key)
+                for key in (
+                    "action",
+                    "body_reset_before_action",
+                    "active_developmental_capability",
+                    "decision_kind",
+                    "collapse_kind",
+                    "motor_tokens",
+                    "motor_bundle_width",
+                    "response_frames",
+                    "orientation_class_before",
+                    "orientation_class_after",
+                    "development_elevation_units",
+                    "development_vertical_velocity_progress_units",
+                    "position_after",
+                    "linear_velocity_after",
+                    "motor_weight_a",
+                    "motor_weight_b",
+                    "takeoff_effort_supported",
+                    "takeoff_effort_authorized",
+                )
+            }
+            for row in trace
+            if float(row.get("self_takeoff_drive_active_after", 0)) > 0.5
+        ],
+        "takeoff_transition_trace": [
+            {
+                key: row.get(key)
+                for key in (
+                    "action",
+                    "body_reset_before_action",
+                    "active_developmental_capability",
+                    "active_developmental_capability_after_action",
+                    "self_takeoff_drive_active_after",
+                    "support_pattern",
+                    "decision_kind",
+                    "collapse_kind",
+                    "motor_tokens",
+                    "motor_bundle_width",
+                    "response_frames",
+                    "orientation_class_before",
+                    "orientation_class_after",
+                    "development_elevation_units",
+                    "development_vertical_velocity_progress_units",
+                    "position_after",
+                    "linear_velocity_after",
+                )
+            }
+            for row in trace
+            if (
+                row.get("active_developmental_capability")
+                == "two_foot_jump"
+                or float(row.get("self_takeoff_drive_active_after", 0)) > 0.5
+                or row.get("collapse_kind") in {
+                    "takeoff_derivative_recurrence",
+                    "compound_recovery_locomotion",
+                }
+            )
+        ],
         "takeoff_compound_action_count": sum(
             float(row.get("self_takeoff_drive_active_after", 0)) > 0.5
             and int(row.get("motor_bundle_width", 0)) > 1
@@ -348,6 +410,52 @@ def _metrics(run: dict) -> dict:
                 "self_takeoff_drive_active_after", 0
             )) > 0.5
         ),
+        "takeoff_outcomes_by_motor_bundle_width": {
+            str(width): {
+                "action_count": sum(
+                    int(row.get("motor_bundle_width", 0)) == width
+                    for row in trace
+                    if float(row.get(
+                        "self_takeoff_drive_active_after", 0
+                    )) > 0.5
+                ),
+                "elevation_units": sum(
+                    int(row.get("development_elevation_units", 0))
+                    for row in trace
+                    if float(row.get(
+                        "self_takeoff_drive_active_after", 0
+                    )) > 0.5
+                    and int(row.get("motor_bundle_width", 0)) == width
+                ),
+                "vertical_velocity_progress_units": sum(
+                    int(row.get(
+                        "development_vertical_velocity_progress_units", 0
+                    ))
+                    for row in trace
+                    if float(row.get(
+                        "self_takeoff_drive_active_after", 0
+                    )) > 0.5
+                    and int(row.get("motor_bundle_width", 0)) == width
+                ),
+                "positive_vertical_velocity_action_count": sum(
+                    int(row.get(
+                        "development_vertical_velocity_progress_units", 0
+                    )) > 0
+                    for row in trace
+                    if float(row.get(
+                        "self_takeoff_drive_active_after", 0
+                    )) > 0.5
+                    and int(row.get("motor_bundle_width", 0)) == width
+                ),
+            }
+            for width in sorted({
+                int(row.get("motor_bundle_width", 0))
+                for row in trace
+                if float(row.get(
+                    "self_takeoff_drive_active_after", 0
+                )) > 0.5
+            })
+        },
         "takeoff_motor_weight_maximum": max(
             (
                 max(
@@ -371,6 +479,26 @@ def _metrics(run: dict) -> dict:
                 "self_takeoff_drive_active_after", 0
             )) > 0.5
         ),
+        "takeoff_effort_supported_action_count": sum(
+            float(row.get("takeoff_effort_supported", 0.0)) > 0.5
+            for row in trace
+            if float(row.get("self_takeoff_drive_active_after", 0)) > 0.5
+        ),
+        "takeoff_effort_authorized_action_count": sum(
+            float(row.get("takeoff_effort_authorized", 0.0)) > 0.5
+            for row in trace
+            if float(row.get("self_takeoff_drive_active_after", 0)) > 0.5
+        ),
+        "takeoff_effort_required_ratio_maximum": max((
+            float(row.get("takeoff_effort_required_ratio", 0.0))
+            for row in trace
+            if float(row.get("self_takeoff_drive_active_after", 0)) > 0.5
+        ), default=0.0),
+        "takeoff_effort_residual_ratio_maximum": max((
+            float(row.get("takeoff_effort_residual_ratio", 0.0))
+            for row in trace
+            if float(row.get("self_takeoff_drive_active_after", 0)) > 0.5
+        ), default=0.0),
         "takeoff_compound_candidate_count_maximum": max(
             (
                 int(row.get("takeoff_compound_candidate_count", 0))
@@ -777,6 +905,19 @@ def _metrics(run: dict) -> dict:
         "cognitive_supervision": cognitive,
         "body_shape_name": run.get("body_shape_name"),
         "actuator_count": run.get("actuator_count"),
+        "warm_start_shape_recognized": run.get(
+            "warm_start_shape_recognized", 0
+        ),
+        "warm_start_program_count": run.get("warm_start_program_count", 0),
+        "late_shape_library_recognition_count": run.get(
+            "late_shape_library_recognition_count", 0
+        ),
+        "partial_trajectory_warm_reuse_count": run.get(
+            "partial_trajectory_warm_reuse_count", 0
+        ),
+        "motor_memory_recall_count": run.get(
+            "motor_memory_recall_count", 0
+        ),
         "motor_library_loaded_shape_count": run.get(
             "motor_library_loaded_shape_count", 0
         ),

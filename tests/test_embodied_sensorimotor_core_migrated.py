@@ -158,6 +158,7 @@ def test_manifest_reuses_existing_adaptive_and_default_mode_cores():
     assert manifest["depends_on"] == [
         "adaptive_control_core",
         "default_mode_core",
+        "hierarchical_effector_control",
     ]
     names = {rule["name"] for rule in manifest["rules"]}
     assert {

@@ -192,6 +192,21 @@ def curiosity_selected_proposal(question: str = "question") -> dict:
     )
 
 
+def proposal_has_causal_counterfactual_receipt(
+    proposal: str = "proposal",
+) -> dict:
+    """A compound proposal settles only after its own program was enacted."""
+    programs = Neighbours(proposal, "proposes_counterfactual_motor_program")
+    return Or(
+        Eq(Count(programs), L(0)),
+        Exists(
+            programs,
+            "causally_receipted_program",
+            Eq(P0("causally_receipted_program", "physical_verified"), L(1)),
+        ),
+    )
+
+
 def add_pareto_values(candidate: str, raw: tuple[dict, ...]) -> list[list]:
     signed = (raw[0], raw[1], raw[2], Neg(raw[3]), Neg(raw[4]), raw[5])
     effects: list[list] = []
@@ -565,11 +580,26 @@ def mint_counterfactual_compound_proposal_rule() -> dict:
             ["question", "has_counterfactual_motor_program", "program"],
         ],
         "where": And(
-            Eq(A("question", "status"), L("open")),
+            Or(
+                Eq(A("question", "status"), L("open")),
+                And(
+                    Eq(P0("program", "subsection_composition"), L(1)),
+                    Eq(P0(
+                        "question", "physical_experiment_lease_active"
+                    ), L(1)),
+                ),
+            ),
             Eq(A("program", "status"), L("counterfactual_predicted")),
             Eq(P0("program", "counterfactual_unseen"), L(1)),
             Gt(P0("program", "member_count"), L(1)),
             Gt(P0("program", "predicted_evidence_units"), L(0)),
+            Or(
+                Eq(P0("program", "subsection_composition"), L(0)),
+                Eq(P0(
+                    "program",
+                    "subsection_composition_manifold_admissible",
+                ), L(1)),
+            ),
             Eq(Count(proposals_for_counterfactual()), L(0)),
         ),
         "effects": effects,
@@ -596,6 +626,7 @@ def select_frontier_proposal_rule() -> dict:
             ["proposal", "proposes_embodied_program_path", "path"],
         ],
         "where": And(
+            Eq(A("question", "status"), L("open")),
             Gt(Count(frontier), L(0)),
             Eq(V("proposal"), selected),
             Eq(Count(Neighbours(
@@ -640,6 +671,16 @@ def select_counterfactual_frontier_proposal_rule() -> dict:
             ["proposal", "proposes_counterfactual_motor_program", "program"],
         ],
         "where": And(
+            Or(
+                Eq(A("question", "status"), L("open")),
+                And(
+                    Eq(P0("program", "subsection_composition"), L(1)),
+                    Eq(
+                        P0("question", "physical_experiment_lease_active"),
+                        L(1),
+                    ),
+                ),
+            ),
             Gt(Count(frontier), L(0)),
             Eq(V("proposal"), selected),
             Eq(Count(Neighbours(
@@ -682,6 +723,7 @@ def promote_successful_proposal_rule() -> dict:
         ],
         "where": And(
             Eq(A("proposal", "status"), L("trial_requested")),
+            proposal_has_causal_counterfactual_receipt(),
             Eq(P0("receipt", "development_receipt_closed"), L(1)),
             Gt(P0("capability", "success_count"), P0(
                 "proposal", "success_baseline"
@@ -773,12 +815,9 @@ def settle_counterfactual_program_status_rule() -> dict:
         "effects": [
             ["set_attr", "program", "status", T(A("proposal", "status"))],
             ["set_attr", "program", "experience_retained", 1],
-            ["set_attr", "program", "physical_verified", T(
-                If(
-                    Eq(A("proposal", "status"), L("grounded")),
-                    L(1), L(0),
-                )
-            )],
+            # Both grounded success and a retained counterexample are causal
+            # physical evidence. Outcome valence must not erase verification.
+            ["set_attr", "program", "physical_verified", 1],
         ],
     }
 
@@ -798,6 +837,7 @@ def reject_failed_proposal_rule() -> dict:
         ],
         "where": And(
             Eq(A("proposal", "status"), L("trial_requested")),
+            proposal_has_causal_counterfactual_receipt(),
             Eq(P0("receipt", "development_receipt_closed"), L(1)),
             Gt(P0("capability", "failure_count"), P0(
                 "proposal", "failure_baseline"
@@ -874,7 +914,7 @@ def manifest() -> dict:
     )
     return {
         "id": "embodied_physics_proposal",
-        "version": "1.1.0",
+        "version": "1.7.0",
         "depends_on": [
             "metacognitive_learning",
             "embodied_program_trajectory",

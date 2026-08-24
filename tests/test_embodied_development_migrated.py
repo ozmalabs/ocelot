@@ -668,11 +668,88 @@ def test_learning_is_causal_varied_and_retention_gated():
     assert "has_embodied_developmental_context" in competence
     assert "development_evidence_window" in competence
     assert "retention_start_seq" in retention
+    lease_guarded_rules = (
+        "ed_defer_exhausted_learning_step_without_progress_or_reset",
+        "ed_open_delayed_retention_test_after_varied_competence",
+        "ed_release_incomplete_experiment_back_to_frontier",
+        "ed_defer_unsatisfied_retention_retest",
+        "ed_master_only_after_delayed_successful_retest",
+    )
+    assert all(
+        "active_physical_experiment_lease_count" in json.dumps(rules[name])
+        for name in lease_guarded_rules
+    )
     store = json.dumps(
         rules["ed_store_mastered_capability_by_structural_body_shape"]
     )
     assert "evidence_kind" in store
     assert "mastery_receipt_seq" in store
+
+
+def test_recoverable_upward_liftoff_is_projected_elevation_evidence():
+    """Contact loss can precede a coarse realized-height bin crossing."""
+    rules = {row["name"]: row for row in manifest()["rules"]}
+    learning = json.dumps(
+        rules["ed_learn_capability_from_causally_closed_receipt"]
+    )
+    assert "support_reducing_elevation" in learning
+    assert "development_post_vertical_velocity_units" in learning
+    assert "development_recoverability_units" in learning
+    assert "development_support_gain" in learning
+
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("embodied_development",))
+    episode = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "development_learning_active": 1,
+        "development_evidence_window": 21,
+        "latest_development_receipt_seq": 1,
+        "development_sparse_support_ceiling": 0,
+    })
+    capability = agent.s.add_node(
+        "EmbodiedSituatedDevelopmentalCapability", {
+            "name": "two_foot_jump",
+            "goal": "support_reducing_elevation",
+            "evidence_kind": "support_reducing_elevation",
+            "status": "active",
+            "attempt_count": 0,
+            "success_count": 0,
+            "failure_count": 0,
+            "last_receipt_seq": 0,
+            "activation_receipt_seq": 0,
+            "asym_count": 21,
+            "q": 0,
+            "effector_coverage_scored_count": 0,
+        },
+    )
+    receipt = agent.s.add_node("Node", {
+        "development_receipt_closed": 1,
+        "development_receipt_seq": 1,
+        "development_post_support_count": 0,
+        "caregiver_protective_support_applied": 0,
+        "development_support_gain": -1,
+        "development_elevation_units": 0,
+        "development_post_vertical_velocity_units": 1,
+        "development_recoverability_units": 1,
+    })
+    agent.inner.add_edge(
+        agent.agent, "has_embodied_development_episode", episode
+    )
+    agent.inner.add_edge(
+        episode,
+        "has_active_embodied_developmental_capability",
+        capability,
+    )
+    agent.inner.add_edge(
+        episode, "has_embodied_development_receipt", receipt
+    )
+
+    agent.tick()
+
+    attrs = agent.s.node(capability)["attrs"]
+    assert attrs["attempt_count"] == 1
+    assert attrs["success_count"] == 1
+    assert attrs["failure_count"] == 0
 
 
 def test_closed_adverse_receipt_is_retained_without_release_or_success_credit():

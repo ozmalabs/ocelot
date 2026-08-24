@@ -61,6 +61,11 @@ def declared(name, key):
     return Not(Eq(A(name, key), L(None)))
 
 
+def no_active_physical_experiment_lease(instance="instance"):
+    """A selected learning future owns its capability until it is settled."""
+    return Eq(P0(instance, "active_physical_experiment_lease_count"), L(0))
+
+
 ACTIVE_RESET_REQUESTS = Neighbours(
     "episode", "has_active_embodied_reset_request"
 )
@@ -566,9 +571,28 @@ def capability_success(instance="instance", receipt="receipt"):
         ),
         And(
             Eq(kind, L("support_reducing_elevation")),
-            supported,
-            Gt(P0(receipt, "development_elevation_units"), L(0)),
             Lt(P0(receipt, "development_support_gain"), L(0)),
+            Or(
+                And(
+                    supported,
+                    Gt(P0(receipt, "development_elevation_units"), L(0)),
+                ),
+                # At liftoff the future elevation manifold changes before a
+                # coarse height bin necessarily does.  Upward momentum with a
+                # measured recovery path and fewer contacts is the exact
+                # temporally projected shape; it is not fabricated realized
+                # height and does not waive recoverability.
+                And(
+                    Gt(P0(
+                        receipt,
+                        "development_post_vertical_velocity_units",
+                    ), L(0)),
+                    Gt(P0(
+                        receipt,
+                        "development_recoverability_units",
+                    ), L(0)),
+                ),
+            ),
         ),
         And(
             Eq(kind, L("reduced_support_equilibrium")),
@@ -2631,6 +2655,7 @@ def defer_exhausted_learning_step_without_reset_rule():
             ["step", "plans_learning_capability", "instance"],
         ],
         "where": And(
+            no_active_physical_experiment_lease(),
             Eq(P0("episode", "embodiment_reset_available"), L(0)),
             Not(Lt(
                 P0("step", "evidence_spent_units"),
@@ -3359,6 +3384,7 @@ def open_retention_rule():
             ["episode", "has_active_embodied_developmental_capability", "instance"],
         ],
         "where": And(
+            no_active_physical_experiment_lease(),
             Eq(P0("episode", "development_learning_active"), L(1)),
             Eq(A("instance", "status"), L("active")),
             # AN ABSENT WINDOW IS NOT A SATISFIED ONE. Without this the two
@@ -3415,6 +3441,7 @@ def release_incomplete_experiment_rule():
             ["episode", "has_embodied_development_receipt", "receipt"],
         ],
         "where": And(
+            no_active_physical_experiment_lease(),
             Eq(A("instance", "status"), L("active")),
             Eq(P0("instance", "last_receipt_seq"),
                P0("receipt", "development_receipt_seq")),
@@ -3451,6 +3478,7 @@ def defer_retention_retest_rule():
             ["episode", "has_embodied_development_receipt", "receipt"],
         ],
         "where": And(
+            no_active_physical_experiment_lease(),
             Eq(A("instance", "status"), L("retention_due")),
             Eq(P0("instance", "last_receipt_seq"),
                P0("receipt", "development_receipt_seq")),
@@ -3477,6 +3505,7 @@ def master_after_retention_rule():
             ["episode", "has_embodied_development_receipt", "receipt"],
         ],
         "where": And(
+            no_active_physical_experiment_lease(),
             Eq(P0("episode", "development_learning_active"), L(1)),
             Eq(A("instance", "status"), L("retention_due")),
             Eq(P0("receipt", "development_receipt_closed"), L(1)),
@@ -4525,6 +4554,19 @@ def memory_shape(memory, field):
 def warm_start_similar_body_rule():
     covered = memory_shape("memory", "covered_count")
     residual = memory_shape("memory", "residual")
+    eligible = And(
+        Eq(A("instance", "name"), A("memory", "capability_name")),
+        Eq(A("instance", "goal"), A("memory", "goal")),
+        Eq(A("instance", "evidence_kind"), A("memory", "evidence_kind")),
+        Eq(P0("instance", "attempt_count"), L(0)),
+        Eq(Count(Neighbours(
+            "instance", "warm_starts_from_embodied_developmental_capability"
+        )), L(0)),
+        Not(Eq(
+            A("memory", "signature"),
+            A("episode", "body_capability_signature"),
+        )),
+    )
     return {
         "name": "ed_warm_start_capability_from_similar_body_shape",
         "area": "general_cognition",
@@ -4542,20 +4584,12 @@ def warm_start_similar_body_rule():
             ["agent", "has_embodied_developmental_capability_memory", "memory"],
         ],
         "where": And(
-            Eq(A("instance", "name"), A("memory", "capability_name")),
-            Eq(A("instance", "goal"), A("memory", "goal")),
-            Eq(
-                A("instance", "evidence_kind"),
-                A("memory", "evidence_kind"),
+            eligible,
+            If(
+                eligible,
+                And(Gt(covered, L(0)), Gt(covered, Count(residual))),
+                L(False),
             ),
-            Eq(P0("instance", "attempt_count"), L(0)),
-            Eq(Count(Neighbours(
-                "instance", "warm_starts_from_embodied_developmental_capability"
-            )), L(0)),
-            Gt(covered, L(0)),
-            Gt(covered, Count(residual)),
-            Not(Eq(A("memory", "signature"),
-                   A("episode", "body_capability_signature"))),
         ),
         "effects": [
             ["add_edge", "instance", "warm_starts_from_embodied_developmental_capability", "memory"],
@@ -4677,7 +4711,7 @@ def manifest() -> dict:
             })
     return {
         "id": "embodied_development",
-        "version": "2.26.0",
+        "version": "2.29.0",
         "depends_on": [
             "decision_core", "cognitive_pareto", "metacognitive_learning",
             "metacognitive_program_discrimination",
