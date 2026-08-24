@@ -3269,6 +3269,14 @@ def request_generic_program_trajectory_rule():
             ],
             [
                 "add_edge", "capability",
+                "projects_future_manifold_in_episode", "episode",
+            ],
+            [
+                "add_edge", "capability",
+                "uses_future_manifold_policy", "policy",
+            ],
+            [
+                "add_edge", "capability",
                 "requests_embodied_program_trajectory", "development",
             ],
         ],
@@ -5888,7 +5896,7 @@ def replay_positive_takeoff_derivative_program_rule():
 def manifest() -> dict:
     return {
         "id": "humanoid_developmental_curriculum",
-        "version": "3.72.0",
+        "version": "3.73.0",
         "depends_on": [
             "humanoid_adaptation",
             "somatomotor_waves",
@@ -5907,6 +5915,24 @@ def manifest() -> dict:
                 "src": {"type": "HumanoidEpisode", "var": "episode"},
                 "edge_type": "projects_embodied_development",
                 "tgt": {"type": "EmbodiedDevelopmentEpisode", "var": "development"},
+            },
+            {
+                "provenance": "humanoid_development:trajectory_manifold_episode",
+                "src": {
+                    "type": "EmbodiedSituatedDevelopmentalCapability",
+                    "var": "capability",
+                },
+                "edge_type": "projects_future_manifold_in_episode",
+                "tgt": {"type": "HumanoidEpisode", "var": "episode"},
+            },
+            {
+                "provenance": "humanoid_development:trajectory_manifold_policy",
+                "src": {
+                    "type": "EmbodiedSituatedDevelopmentalCapability",
+                    "var": "capability",
+                },
+                "edge_type": "uses_future_manifold_policy",
+                "tgt": {"type": "HumanoidPolicy", "var": "policy"},
             },
             {
                 "provenance": "humanoid_development:inverse_query",

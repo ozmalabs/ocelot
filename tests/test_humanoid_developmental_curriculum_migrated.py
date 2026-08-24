@@ -47,6 +47,8 @@ def test_humanoid_seed_is_an_integer_output_null_bridge():
     assert "best_escape_command_per_effector_group" in text
     assert "request_generic_order_n_program_trajectory" in text
     assert "trajectory_minimum_selection_depth" in text
+    assert "projects_future_manifold_in_episode" in text
+    assert "uses_future_manifold_policy" in text
     assert "publish_verified_motor_transition_to_generic_trajectory" in text
     assert "mint_receipt_grounded_developmental_program_transition" in text
     assert "bind_developmental_command_to_addressed_body_subsection" in text

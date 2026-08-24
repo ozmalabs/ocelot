@@ -2771,43 +2771,27 @@ pub fn future_manifold_projection_field(
         .lookup("embodied_program_path")
         .is_some_and(|kind| sattr(graph, interner, source, "kind") == Some(kind))
     {
-        let (report, effort_members, effort_exposure_count, projected_trace) =
-            future_humanoid_manifold_projection_for_path(
-                graph, interner, episode, policy, source, addition,
-            );
         let name = interner.resolve(field);
-        if name == "narrativium_snapshot" {
-            let counts = path_family_narrativium(
-                graph,
-                interner,
-                episode,
-                policy,
-                source,
-                addition,
-                (&report, &projected_trace),
+        let narrativium_dimension = humanoid_narrativium_dimension(name);
+        if name == "narrativium_snapshot" || narrativium_dimension.is_some() {
+            let conditional = name.starts_with("conditional_narrativium_");
+            let counts = cached_path_family_narrativium(
+                graph, interner, episode, policy, source, addition, conditional,
             );
-            return counts.map_or(Value::None, |(reachable, retained)| {
-                Value::Tuple(std::sync::Arc::new(
-                    reachable
-                        .into_iter()
-                        .chain(retained)
-                        .map(Value::Float)
-                        .collect::<Vec<_>>()
-                        .into(),
-                ))
-            });
-        }
-        if let Some(dimension) = humanoid_narrativium_dimension(name) {
-            let retained = name.starts_with("narrativium_retained_");
-            let counts = path_family_narrativium(
-                graph,
-                interner,
-                episode,
-                policy,
-                source,
-                addition,
-                (&report, &projected_trace),
-            );
+            if name == "narrativium_snapshot" {
+                return counts.map_or(Value::None, |(reachable, retained)| {
+                    Value::Tuple(std::sync::Arc::new(
+                        reachable
+                            .into_iter()
+                            .chain(retained)
+                            .map(Value::Float)
+                            .collect::<Vec<_>>()
+                            .into(),
+                    ))
+                });
+            }
+            let dimension = narrativium_dimension.expect("checked above");
+            let retained = name.contains("narrativium_retained_");
             return Value::Float(
                 counts
                     .map(|(reachable, retained_counts)| {
@@ -2820,6 +2804,10 @@ pub fn future_manifold_projection_field(
                     .unwrap_or(0.0),
             );
         }
+        let (report, effort_members, effort_exposure_count, _) =
+            future_humanoid_manifold_projection_for_path(
+                graph, interner, episode, policy, source, addition,
+            );
         if name == "snapshot" {
             return projection_snapshot(
                 graph,
@@ -3617,7 +3605,9 @@ fn foveated_segment_anchors(horizon: i32) -> Option<Vec<i32>> {
 fn humanoid_narrativium_dimension(field: &str) -> Option<usize> {
     let suffix = field
         .strip_prefix("narrativium_reachable_")
-        .or_else(|| field.strip_prefix("narrativium_retained_"))?;
+        .or_else(|| field.strip_prefix("narrativium_retained_"))
+        .or_else(|| field.strip_prefix("conditional_narrativium_reachable_"))
+        .or_else(|| field.strip_prefix("conditional_narrativium_retained_"))?;
     suffix
         .parse::<usize>()
         .ok()
@@ -3637,6 +3627,7 @@ fn path_family_narrativium(
     selected: NodeID,
     current_transition: Option<NodeID>,
     selected_projection: (&FutureProjectionReport, &[(i32, [f64; 7])]),
+    condition_on_first_transition: bool,
 ) -> Option<([f64; 7], [f64; 7])> {
     let candidate_edge = interner.lookup("has_pareto_candidate");
     let trajectories = candidate_edge
@@ -3654,8 +3645,14 @@ fn path_family_narrativium(
     candidates.retain(|candidate| {
         fattr(graph, interner, *candidate, "depth") == selected_depth
     });
+    let decision_anchor = current_transition.or_else(|| {
+        condition_on_first_transition
+            .then(|| humanoid_path_segments(graph, interner, selected, None))
+            .flatten()
+            .and_then(|segments| segments.first().map(|segment| segment.transition))
+    });
     if let (Some(anchor), Some(contains_edge)) = (
-        current_transition,
+        decision_anchor,
         interner.lookup("contains_embodied_program_transition"),
     ) {
         candidates.retain(|candidate| {
@@ -3670,7 +3667,7 @@ fn path_family_narrativium(
         });
     }
     if let (Some(anchor), Some(blocked_edge)) = (
-        current_transition,
+        decision_anchor,
         interner.lookup("manifold_blocked_from_embodied_program_transition"),
     ) {
         candidates.retain(|candidate| {
@@ -3740,6 +3737,84 @@ fn path_family_narrativium(
         retained[dimension] = retained_traces.len() as f64;
     }
     Some((reachable, retained))
+}
+
+#[derive(Clone)]
+struct PathNarrativiumCacheEntry {
+    episode: NodeID,
+    policy: NodeID,
+    path: NodeID,
+    current_transition: Option<NodeID>,
+    conditional: bool,
+    counts: Option<([f64; 7], [f64; 7])>,
+}
+
+thread_local! {
+    static PATH_NARRATIVIUM_CACHE: RefCell<(usize, u64, Vec<PathNarrativiumCacheEntry>)> =
+        const { RefCell::new((0, 0, Vec::new())) };
+}
+
+fn cached_path_family_narrativium(
+    graph: &TypedGraph,
+    interner: &Interner,
+    episode: NodeID,
+    policy: NodeID,
+    path: NodeID,
+    current_transition: Option<NodeID>,
+    conditional: bool,
+) -> Option<([f64; 7], [f64; 7])> {
+    let graph_address = graph as *const TypedGraph as usize;
+    let mutation_version = graph.mutation_version();
+    if let Some(counts) = PATH_NARRATIVIUM_CACHE.with(|slot| {
+        let slot = slot.borrow();
+        (slot.0 == graph_address && slot.1 == mutation_version)
+            .then(|| {
+                slot.2.iter().find(|entry| {
+                    entry.episode == episode
+                        && entry.policy == policy
+                        && entry.path == path
+                        && entry.current_transition == current_transition
+                        && entry.conditional == conditional
+                })
+            })
+            .flatten()
+            .map(|entry| entry.counts)
+    }) {
+        return counts;
+    }
+    let (report, _, _, trace) = future_humanoid_manifold_projection_for_path(
+        graph,
+        interner,
+        episode,
+        policy,
+        path,
+        current_transition,
+    );
+    let counts = path_family_narrativium(
+        graph,
+        interner,
+        episode,
+        policy,
+        path,
+        current_transition,
+        (&report, &trace),
+        conditional,
+    );
+    PATH_NARRATIVIUM_CACHE.with(|slot| {
+        let mut slot = slot.borrow_mut();
+        if slot.0 != graph_address || slot.1 != mutation_version {
+            *slot = (graph_address, mutation_version, Vec::new());
+        }
+        slot.2.push(PathNarrativiumCacheEntry {
+            episode,
+            policy,
+            path,
+            current_transition,
+            conditional,
+            counts,
+        });
+    });
+    counts
 }
 
 fn rebind_humanoid_program_members(

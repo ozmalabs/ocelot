@@ -94,6 +94,12 @@ def test_seed_is_reproducible_generic_integer_and_output_null():
         assert forbidden not in encoded
     assert '"output_authority": 0' in encoded
     assert "manifold_blocked_from_embodied_program_transition" in encoded
+    for dimension in range(7):
+        assert (
+            f"conditional_narrativium_retained_{dimension}" in encoded
+        )
+    assert "projects_future_manifold_in_episode" in encoded
+    assert "uses_future_manifold_policy" in encoded
     assert generated["depends_on"] == ["cognitive_pareto"]
 
 
