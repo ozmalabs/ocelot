@@ -147,6 +147,7 @@ def test_moving_current_program_does_not_fragment_situated_trajectory():
         for ordinal in (10, 11)
     ]
     current = agent.inner.neighbours(owner, "has_current_embodied_program")[0]
+    origin = current
     agent.inner.remove_edge(owner, "has_current_embodied_program", current)
     _edge(agent, owner, "has_current_embodied_program", programs[0])
     agent.tick()
@@ -154,9 +155,6 @@ def test_moving_current_program_does_not_fragment_situated_trajectory():
         owner, "has_current_embodied_program", programs[0]
     )
     _edge(agent, owner, "has_current_embodied_program", programs[1])
-    origin = agent.inner.neighbours(
-        trajectory, "starts_from_embodied_program"
-    )[0]
     transition = agent.s.add_node("FixtureTransition", {
         "verified": 1,
         "pre_orientation_class": 1,
@@ -244,6 +242,60 @@ def test_existing_trajectory_deepens_lazily_when_local_frontier_exhausts():
             trajectory, "has_pareto_candidate"
         )
     ) == 2
+
+
+def test_late_transition_receives_horizon_bounded_composition_work():
+    agent, owner, trajectory, transitions = _fixture(2, (
+        {"source": 0, "target": 1, "pre_x": 0, "post_x": 10,
+         "energy": 1, "task_progress": 1},
+    ))
+    middle = agent.inner.neighbours(
+        transitions[0], "continues_with_embodied_program"
+    )[0]
+    agent.inner.set_attr(
+        transitions[0], "incremental_trajectory_evidence", 1
+    )
+    agent.inner.set_attr(trajectory, "selection_count", 1)
+    agent.inner.set_attr(trajectory, "expansion_count", 100)
+    terminal = agent.s.add_node("FixtureProgram", {"ordinal": 9})
+    late = agent.s.add_node("FixtureTransition", {
+        "verified": 1,
+        "pre_orientation_class": 1,
+        "post_orientation_class": 1,
+        "pre_state_axis_x_units": 10,
+        "pre_state_axis_y_units": 0,
+        "pre_state_axis_z_units": 0,
+        "post_state_axis_x_units": 20,
+        "post_state_axis_y_units": 0,
+        "post_state_axis_z_units": 0,
+        "boundary_transition_count": 0,
+        "energy_units": 1,
+        "peak_load_units": 1,
+        "capability_evidence_units": 0,
+        "task_progress_units": 1,
+        "incremental_trajectory_evidence": 1,
+        "integer_native": 1,
+    })
+    _edge(agent, owner, "has_embodied_program_transition", late)
+    _edge(agent, late, "starts_from_embodied_program", middle)
+    _edge(agent, late, "continues_with_embodied_program", terminal)
+
+    agent.tick()
+
+    composed = [
+        path
+        for path in agent.inner.neighbours(
+            trajectory, "has_pareto_candidate"
+        )
+        if agent.s.node(path)["attrs"]["depth"] == 2
+        and late in agent.inner.neighbours(
+            path, "contains_embodied_program_transition"
+        )
+    ]
+    assert len(composed) == 1
+    attrs = agent.s.node(trajectory)["attrs"]
+    assert attrs["late_transition_expansion_allowance"] > 0
+    assert attrs["late_transition_expansion_used"] > 0
 
 
 def test_temporal_foveation_selects_shortest_sufficient_frontier_path():

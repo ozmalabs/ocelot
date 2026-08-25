@@ -2528,7 +2528,7 @@ def bind_physics_counterfactual_members_rule():
         "name": "hdc_bind_receipt_learned_component_per_effector_group",
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
-        "order": -105,
+        "order": 93,
         "batch": True,
         "comment": "One locally learned command represents each independent "
         "group. Group count and compound width fall out of the sensed body.",
@@ -4186,7 +4186,7 @@ def replay_selected_order_n_program_path_rule():
         "name": "hdc_replay_selected_order_n_program_path",
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
-        "order": -106,
+        "order": 92,
         "batch": False,
         "comment": "System 2 selects an output-null arbitrary-order path; "
         "each hard-real-time collapse releases only its next already-grounded "
@@ -4748,6 +4748,225 @@ def bind_retained_trajectory_deployment_context_rule():
             ],
             [
                 "set_attr", "transition", "last_current_context_request_seq",
+                T(P0("trial", "request_seq")),
+            ],
+        ],
+    }
+
+
+def initialize_deployment_program_observation_rule():
+    enacted = Neighbours("trial", "enacts_humanoid_motor_program")
+    return {
+        "name": "hdc_initialize_deployment_program_observation",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -105,
+        "batch": False,
+        "comment": "After normal receipt consolidation, the first closed "
+        "deployment receipt establishes the previous canonical program "
+        "needed to describe later observed transitions. This is output-null "
+        "state, not an action recommendation.",
+        "match": [
+            ["episode", "has_embodied_deployment_program_owner", "owner"],
+            ["episode", "projects_embodied_development", "development"],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "enacts_humanoid_motor_program", "current"],
+            ["trial", "has_humanoid_transition", "outcome"],
+        ],
+        "where": And(
+            Eq(P0("development", "developmental_deployment_mode"), L(1)),
+            Eq(P0("outcome", "development_receipt_closed"), L(1)),
+            Eq(P0("trial", "request_seq"), P0("episode", "request_seq")),
+            Eq(Count(enacted), L(1)),
+            Eq(Count(Neighbours(
+                "owner", "tracks_latest_deployment_program"
+            )), L(0)),
+        ),
+        "effects": [
+            [
+                "add_edge", "owner",
+                "tracks_latest_deployment_program", "current",
+            ],
+            [
+                "set_attr", "owner", "last_deployment_observation_seq",
+                T(P0("trial", "request_seq")),
+            ],
+        ],
+    }
+
+
+def mint_uncovered_deployment_transition_rule():
+    return {
+        "name": "hdc_mint_uncovered_deployment_state_transition",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -106,
+        "batch": False,
+        "comment": "When no retained transition source contains the latest "
+        "receipt state, retain the consolidated program-to-program "
+        "transition as new output-null coverage and ask analysis-by-synthesis "
+        "to update. Existing retained evidence is neither rewritten nor "
+        "promoted.",
+        "match": [
+            ["episode", "has_embodied_deployment_program_owner", "owner"],
+            ["episode", "projects_embodied_development", "development"],
+            ["owner", "tracks_latest_deployment_program", "previous"],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "enacts_humanoid_motor_program", "current"],
+            ["trial", "has_humanoid_transition", "outcome"],
+        ],
+        "where": And(
+            Eq(P0("development", "developmental_deployment_mode"), L(1)),
+            Eq(P0("outcome", "development_receipt_closed"), L(1)),
+            Eq(P0("trial", "request_seq"), P0("episode", "request_seq")),
+            Gt(
+                P0("trial", "request_seq"),
+                P0("owner", "last_deployment_observation_seq"),
+            ),
+            Eq(Count(Neighbours(
+                "owner", "has_current_embodied_program_transition_source"
+            )), L(0)),
+        ),
+        "effects": [
+            ["add_node", "transition", "ParetoProfile", {
+                "verified": 1,
+                "experience_retained": 1,
+                "contextual_release_eligible": 0,
+                "online_state_coverage": 1,
+                "incremental_trajectory_evidence": 1,
+                "pre_orientation_class": T(P0(
+                    "outcome", "development_pre_orientation_class"
+                )),
+                "post_orientation_class": T(P0(
+                    "outcome", "development_post_orientation_class"
+                )),
+                **{
+                    f"pre_state_axis_{axis}_units": T(P0(
+                        "outcome",
+                        f"development_pre_gravity_axis_{axis}_units",
+                    ))
+                    for axis in ("x", "y", "z")
+                },
+                **{
+                    f"pre_state_axis_{axis}_minimum_units": T(P0(
+                        "outcome",
+                        f"development_pre_gravity_axis_{axis}_units",
+                    ))
+                    for axis in ("x", "y", "z")
+                },
+                **{
+                    f"pre_state_axis_{axis}_maximum_units": T(P0(
+                        "outcome",
+                        f"development_pre_gravity_axis_{axis}_units",
+                    ))
+                    for axis in ("x", "y", "z")
+                },
+                **{
+                    f"post_state_axis_{axis}_units": T(P0(
+                        "outcome",
+                        f"development_post_gravity_axis_{axis}_units",
+                    ))
+                    for axis in ("x", "y", "z")
+                },
+                "boundary_transition_count": T(Plus(
+                    P0("outcome", "development_quarter_turn_transition"),
+                    P0("outcome", "development_half_turn_transition"),
+                )),
+                "energy_units": T(P0(
+                    "outcome", "development_energy_units"
+                )),
+                "peak_load_units": T(P0(
+                    "outcome", "development_peak_load_units"
+                )),
+                "capability_evidence_units": 0,
+                "task_progress_units": T(Max(
+                    L(0), P0("outcome", "development_directed_units")
+                )),
+                "response_frames": T(P0("trial", "response_frames")),
+                "receipt_seq": T(P0("trial", "request_seq")),
+                "integer_native_trajectory": 1,
+                "output_authority": 0,
+            }],
+            [
+                "add_edge", "owner",
+                "has_embodied_program_transition", "transition",
+            ],
+            [
+                "add_edge", "transition",
+                "starts_from_embodied_program", "previous",
+            ],
+            [
+                "add_edge", "transition",
+                "continues_with_embodied_program", "current",
+            ],
+            ["add_node", "trajectory_tasks", "SystemTwoTaskSet", {
+                "area": "embodied_program_trajectory",
+                "enabled": 1,
+                "provenance_kind": "deployment_state_coverage_update",
+            }],
+            ["add_node", "pareto_tasks", "SystemTwoTaskSet", {
+                "area": "cognitive_pareto",
+                "enabled": 1,
+                "provenance_kind": "deployment_state_coverage_pareto",
+            }],
+            ["add_node", "escalation", "SystemTwoEscalation", {
+                "status": "requested",
+                "reason": "uncovered_deployment_state_observed",
+                "epoch": T(P0("trial", "request_seq")),
+            }],
+            ["add_edge", "escalation", "about_context", "transition"],
+            [
+                "add_edge", "escalation",
+                "recruits_task_set", "trajectory_tasks",
+            ],
+            [
+                "add_edge", "escalation",
+                "recruits_task_set", "pareto_tasks",
+            ],
+            ["set_attr", "owner", "online_state_coverage_count", T(Plus(
+                P0("owner", "online_state_coverage_count"), L(1)
+            ))],
+        ],
+    }
+
+
+def advance_deployment_program_observation_rule():
+    return {
+        "name": "hdc_advance_deployment_program_observation",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 93,
+        "batch": False,
+        "comment": "Advance the output-null observation cursor only after "
+        "the uncovered-state rule had an opportunity to retain the relation.",
+        "match": [
+            ["episode", "has_embodied_deployment_program_owner", "owner"],
+            ["episode", "projects_embodied_development", "development"],
+            ["owner", "tracks_latest_deployment_program", "previous"],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "enacts_humanoid_motor_program", "current"],
+            ["trial", "has_humanoid_transition", "outcome"],
+        ],
+        "where": And(
+            Eq(P0("development", "developmental_deployment_mode"), L(1)),
+            Eq(P0("outcome", "development_receipt_closed"), L(1)),
+            Eq(P0("trial", "request_seq"), P0("episode", "request_seq")),
+            Gt(
+                P0("trial", "request_seq"),
+                P0("owner", "last_deployment_observation_seq"),
+            ),
+        ),
+        "effects": [
+            [
+                "del_edge", "owner",
+                "tracks_latest_deployment_program", "previous",
+            ],
+            [
+                "add_edge", "owner",
+                "tracks_latest_deployment_program", "current",
+            ],
+            [
+                "set_attr", "owner", "last_deployment_observation_seq",
                 T(P0("trial", "request_seq")),
             ],
         ],
@@ -7409,6 +7628,9 @@ def manifest() -> dict:
             recruit_retained_trajectory_deployment_tasks_rule(),
             clear_stale_retained_trajectory_deployment_context_rule(),
             bind_retained_trajectory_deployment_context_rule(),
+            initialize_deployment_program_observation_rule(),
+            mint_uncovered_deployment_transition_rule(),
+            advance_deployment_program_observation_rule(),
             refresh_retained_trajectory_after_receipt_rule(),
             refute_retained_trajectory_forecast_from_receipt_rule(),
             complete_retained_trajectory_replay_rule(),
