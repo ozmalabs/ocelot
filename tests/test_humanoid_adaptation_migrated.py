@@ -45,7 +45,7 @@ def test_humanoid_seed_owns_learning_and_balance_choice():
     learner = json.dumps(_rule(seed, "ha_learn_opaque_joint_consequence"))
 
     assert seed["id"] == "humanoid_adaptation"
-    assert seed["version"] == "1.32.0"
+    assert seed["version"] == "1.35.0"
     assert '"type": "Argmin"' in chooser
     assert "gravity_acceleration" in chooser
     assert '"type": "Sqrt"' in chooser

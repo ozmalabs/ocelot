@@ -1826,7 +1826,7 @@ def test_trial_commit_collapses_conflicting_opaque_actuator_groups():
     assert attrs["bundle_member_count"] == 1.0
 
 
-def test_compound_general_contact_mints_a_changed_successor_basin():
+def test_compound_total_effect_mints_dynamic_successor_boundary():
     agent, episode = _inverse_control_fixture()
     _enable_recovery_measurements(agent, episode)
     basin = agent.s.add_node("HumanoidRecoveryBasin", {
@@ -1898,9 +1898,10 @@ def test_compound_general_contact_mints_a_changed_successor_basin():
     _verified_outcome(
         agent,
         trial,
-        post_vx=1.0,
+        post_vx=0.0,
+        post_x=0.0,
         pre_contact_count=1.0,
-        post_contact_count=2.0,
+        post_contact_count=1.0,
         pre_configuration_shape=[0, 0],
         post_configuration_shape=[0, 1],
     )
@@ -1915,7 +1916,7 @@ def test_compound_general_contact_mints_a_changed_successor_basin():
         basin,
         "continues_to_humanoid_recovery_basin",
     ) == current
-    assert agent.s.node(current[0])["attrs"]["contact_count"] == 2.0
+    assert agent.s.node(current[0])["attrs"]["contact_count"] == 1.0
     successor_attrs = agent.s.node(current[0])["attrs"]
     assert list(successor_attrs["incoming_configuration_shape"]) == [0, 0]
     assert successor_attrs["incoming_contact_count"] == 1.0
@@ -2050,16 +2051,18 @@ def test_settled_warm_basin_tests_causal_stored_transition_first():
         "vertical_alignment": 0.35,
         "support_count": 2.0,
         "contact_count": 6.0,
-        "motion_energy": 0.01,
+        "motion_energy": 0.1,
         "incoming_primary_token": "motor_b",
         "incoming_secondary_token": "motor_c",
         "incoming_response_frames": 8.0,
         "incoming_motor_weight_a": 7.5,
         "incoming_motor_weight_b": 6.5,
         "incoming_configuration_shape": incoming_shape,
+        "incoming_normalized_height": 0.0,
+        "incoming_vertical_alignment": 1.0,
         "incoming_support_count": 0.0,
-        "incoming_contact_count": 4.0,
-        "incoming_motion_energy": 0.04,
+        "incoming_contact_count": 0.0,
+        "incoming_motion_energy": 0.0,
     })
     basin = agent.s.add_node("HumanoidRecoveryBasin", {
         "status": "situated",
@@ -2088,11 +2091,13 @@ def test_settled_warm_basin_tests_causal_stored_transition_first():
         "recovery_path_hint_count": 0.0,
         "recovery_warm_start_count": 0.0,
         "state_motor_configuration_shape": incoming_shape,
+        "state_z": 0.2,
+        "standing_reference_z": 1.0,
         "active_support_count": 0.0,
         "state_contact_count_raw": 4.0,
-        "state_vx": 0.1,
-        "state_vy": 0.1,
-        "state_vz": 0.1,
+        "state_vx": 0.2,
+        "state_vy": 0.0,
+        "state_vz": 0.0,
     }.items():
         agent.inner.set_attr(episode, key, value)
 
@@ -2126,7 +2131,7 @@ def test_settled_warm_basin_tests_causal_stored_transition_first():
     assert program_attrs["target_vertical_alignment"] == 0.35
     assert program_attrs["target_support_count"] == 2.0
     assert program_attrs["target_contact_count"] == 6.0
-    assert program_attrs["target_motion_energy"] == 0.01
+    assert program_attrs["target_motion_energy"] == 0.1
     assert program_attrs["motor_weight_a"] == 7.5
     assert program_attrs["motor_weight_b"] == 6.5
     assert list(program_attrs["launch_configuration_shape"]) == incoming_shape
