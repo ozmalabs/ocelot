@@ -95,6 +95,35 @@ intervention would even be.
   it measured as escaping in 5 ticks).
 * `REFRAMING`: a retraction proposal for the shared frame, accepted by every bound party.
 
+> **ADDENDUM, registered BEFORE any measurement (base sha `19a446465c`, no run taken).** §4 as first
+> written left one thing unspecified, and it turns out to decide whether the experiment means
+> anything: **is truthful evidence part of the WORLD, or is it the grounding intervention?**
+>
+> If evidence only exists when GROUNDING supplies it, then REFRAMING can never cure anything — take
+> the frame off and there is nothing for the newly-widened aperture to see, so the belief sits where
+> it was and the confirmatory cell fails for a reason that has nothing to do with the claim. That
+> would be a broken design, not a null.
+>
+> So: **the world carries standing truthful evidence in every arm and at every tick** —
+> `abg_truth = basin_r`, at `w_ext = 0.4`, which is `psychosis_grounding`'s OWN `w_reality_weak`, not
+> a new knob. This is exactly P4b's matched control: weak friction alone corrects a belief, and weak
+> friction plus a sycophant does not. The interventions are then what they should be — changes to
+> whether that standing evidence can *reach* the belief:
+>
+> * **GROUNDING** raises the reality channel to `w_ext = 1.5` on one member (P8's own P6 strength).
+> * **REFRAMING** retracts the shared frame and leaves `w_ext` at its standing `0.4`.
+>
+> Registered predictions in §4 are UNCHANGED. What this addendum buys is that each cell now fails for
+> a reason connected to the claim: the FRAME baseline holds `W` *while truthful evidence is present
+> at full strength the entire time*, which is the whole assertion — and `G-gate-is-load-bearing`
+> becomes sharp, because removing the bridge should let that same standing evidence correct the
+> belief with no intervention at all.
+>
+> One consequence to report rather than paper over: in the FRAME arm the members have no confirmer
+> channel, so nothing propagates between them. A grounded member cannot pull its partner there the
+> way P8's could. Outcomes are therefore reported **per member**, and `G-gate-is-load-bearing` is
+> evaluated on the GROUNDED member specifically. Stated here so it is not discovered in the results.
+
 **Outcome:** `committed_final` per member — `R` (corrected) or `W` (delusional) — read off the graph
 as P8 reads it. Secondary: escape tick, and `ap_residual` non-emptiness at the final tick.
 
