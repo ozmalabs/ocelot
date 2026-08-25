@@ -1,0 +1,312 @@
+{
+ "id": "theory_residual_concern",
+ "version": "1.0.0",
+ "depends_on": [],
+ "description": "A THEORY IS A SOLUTION SHAPE YOU TRY TO PRODUCE, and its residual is the work remaining. THEORY_AS_SHAPE_RESULTS.md established that a target shape decodes against the held codebook like any other grain -- the residual is exactly the part of the wanted state not yet reachable from what the agent has. What it also established is that MINTING that residual is wrong: it turns 'my theory needs radar' into 'radar is a held capability', reporting covered and residual [] while nothing was built and nothing learned.\n\nThe asymmetry is exact. At the OBSERVATION grain a residual is EVIDENCE -- the world supplied something the codebook could not explain, so minting a quantum is warranted. At the TARGET grain a residual is a DEMAND: nothing supplied it, and minting would assert a capability on the strength of wanting one. So a target-grain residual OPENS A CONCERN rather than closing itself, and the concern closes only when the residual genuinely empties -- which requires something to have actually produced the part.",
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "theory_residual_concern",
+   "src": {
+    "type": "Agent",
+    "var": "a"
+   },
+   "edge_type": "holds_theory",
+   "tgt": {
+    "type": "Theory",
+    "var": "t"
+   },
+   "where": null,
+   "weight": null
+  },
+  {
+   "provenance": "theory_residual_concern",
+   "src": {
+    "type": "SelfConcern",
+    "var": "sc"
+   },
+   "edge_type": "about_theory",
+   "tgt": {
+    "type": "Theory",
+    "var": "t"
+   },
+   "where": null,
+   "weight": null
+  }
+ ],
+ "rules": [
+  {
+   "name": "tr_decode_theory",
+   "comment": "Decode the theory's OWN held shape against the codebook. Epoch-gated on the same `codebook_epoch` idiom the sd loop uses, so the decode re-arms whenever the codebook grows -- which is what lets a concern close later without anything re-authoring the theory.",
+   "match": [
+    [
+     "ag",
+     "holds_theory",
+     "th"
+    ]
+   ],
+   "where": {
+    "type": "Lt",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "th"
+     },
+     "key": "tr_epoch_seen"
+    },
+    "b": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "th"
+     },
+     "key": "tr_epoch"
+    }
+   },
+   "effects": [
+    [
+     "set_attr",
+     "th",
+     "tr_residual",
+     {
+      "__term__": {
+       "type": "ShapeDecode",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "th"
+        },
+        "key": "signature"
+       },
+       "field": "residual",
+       "beam": 3,
+       "max_steps": 8,
+       "cand_k": 3,
+       "wild_objects": false
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "th",
+     "tr_covered",
+     {
+      "__term__": {
+       "type": "ShapeDecode",
+       "goal": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "th"
+        },
+        "key": "signature"
+       },
+       "field": "covered_count",
+       "beam": 3,
+       "max_steps": 8,
+       "cand_k": 3,
+       "wild_objects": false
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "th",
+     "tr_epoch_seen",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "th"
+       },
+       "key": "tr_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "tr_open_concern",
+   "comment": "A NON-EMPTY RESIDUAL OPENS A CONCERN. It does NOT mint the missing part -- that would be wishful thinking, and the loop would report success having built nothing. The concern enters the same human-gated spine every other SelfConcern uses (promote -> StandingConcern -> experiment -> adopt), so the only route from 'wanted' to 'held' runs through evidence.\n\nDeduped by content against every live SelfConcern, matching gap_awareness's own guard, so one gap is filed once however many times the decode re-arms.",
+   "match": [
+    [
+     "ag",
+     "holds_theory",
+     "th"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "th"
+        },
+        "key": "tr_residual"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "th"
+        },
+        "key": "tr_noted"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1.0
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "SelfConcern"
+       },
+       "var_name": "sc2",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "sc2"
+         },
+         "key": "content"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "th"
+         },
+         "key": "tr_residual"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "th",
+     "tr_noted",
+     1.0
+    ],
+    [
+     "add_node",
+     "sc",
+     "SelfConcern",
+     {
+      "status": "noted",
+      "source": "theory_residual",
+      "kind": "capability_gap",
+      "content": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "th"
+        },
+        "key": "tr_residual"
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ag",
+     "has_self_concern",
+     "sc"
+    ],
+    [
+     "add_edge",
+     "sc",
+     "about_theory",
+     "th"
+    ]
+   ]
+  },
+  {
+   "name": "tr_resolve_concern",
+   "comment": "THE ONLY WAY THE CONCERN CLOSES. When the theory's residual has genuinely emptied -- because the codebook gained the part by some route that had to supply evidence -- the concern it opened is marked resolved. Nothing here can empty a residual; this rule only observes that it has emptied. That asymmetry is the whole point of the seed.",
+   "match": [
+    [
+     "sc",
+     "about_theory",
+     "th"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "th"
+        },
+        "key": "tr_residual"
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "sc"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "noted"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "sc",
+     "status",
+     "resolved"
+    ]
+   ]
+  }
+ ]
+}
