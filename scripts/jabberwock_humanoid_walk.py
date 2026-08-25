@@ -5985,7 +5985,9 @@ def _run_arm(
                         "effort_residual", "time_compression",
                         "width_compression", "information_compression",
                         "compression_dimension_count", "manifold_compression",
-                        "effort_authorized",
+                        "effort_authorized", "task_effect_supported",
+                        "projected_task_effect", "retained_task_effect",
+                        "task_effect_residual",
                     )
                 },
             })

@@ -116,6 +116,21 @@ def trajectory_manifold_release_allowed(
     )
 
 
+def retained_task_effect_release_allowed(
+    source: str = "path", addition: str | None = None,
+):
+    """Positive retained progress must remain positive in current synthesis."""
+    return Or(
+        Not(Gt(P0(source, "task_progress_units"), L(0))),
+        Gt(
+            trajectory_manifold_projection(
+                source, "task_effect_supported", addition
+            ),
+            L(0),
+        ),
+    )
+
+
 def integer_node_attr(node, key):
     return Plus(AO(node, key), L(0))
 
@@ -5111,6 +5126,7 @@ def replay_retained_order_n_program_path_rule():
                 Eq(A("memory", "status"), L("trajectory_endpoint")),
             ),
             trajectory_manifold_release_allowed("path", "transition"),
+            retained_task_effect_release_allowed("path", "transition"),
             Gt(Count(primary), L(0)),
             Gt(P0("episode", "request_seq"), P0("episode", "decision_seq")),
             Eq(P0("episode", "action_ready"), L(0)),
@@ -5292,7 +5308,10 @@ def reject_retained_order_n_program_path_rule():
                 "known_blocked_source",
                 Eq(V("known_blocked_source"), V("transition")),
             )), L(0)),
-            Not(trajectory_manifold_release_allowed("path", "transition")),
+            Not(And(
+                trajectory_manifold_release_allowed("path", "transition"),
+                retained_task_effect_release_allowed("path", "transition"),
+            )),
         ),
         "effects": [
             [
@@ -5319,7 +5338,9 @@ def audit_retained_order_n_program_path_manifold_rule():
         "effort_scale", "effort_residual", "time_compression",
         "width_compression", "information_compression",
         "compression_dimension_count", "manifold_compression",
-        "effort_authorized",
+        "effort_authorized", "task_effect_supported",
+        "projected_task_effect", "retained_task_effect",
+        "task_effect_residual",
     )
     return {
         "name": "hdc_audit_retained_order_n_program_path_manifold",
