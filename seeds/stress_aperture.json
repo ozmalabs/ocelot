@@ -1,0 +1,177 @@
+{
+  "id": "stress_aperture",
+  "version": "1.0.0",
+  "comment": "Emit seeds/stress_aperture.json -- STRESS COMPRESSES APERTURE.\n\n`arousal_window_coreg` narrows the WINDOW OF TOLERANCE under dysregulation. This\nnarrows a second thing on a different axis: WHAT THE AGENT CAN RESOLVE.\n\nThe two are not the same limitation. A narrow window is about how much arousal you\ncan carry before dysregulating. A narrow aperture is about which dimensions you can\nassess at all -- and `future_manifold.rs` counts an unresolved dimension as\nUNASSESSED (`information_loss`), never as failed (`loss`). So a dysregulated agent\nbecomes measurably STUPID in the technical sense: not wrong, unable to tell.\n\nWhich dimensions survive is READ FROM GRAPH DATA (`AffectiveState.stress_resolves`),\nexactly as `observer_aperture` reads `Observer.resolves`. A hand-tuned \"stress\nfactor\" would be the scalar-standing-in-for-a-shape defect `CLAUDE.md` names, and\nwould make the result unfalsifiable by construction.\n\nPrereg: STRESS_COMPRESSES_APERTURE_PREREG.md (block 366000).\n",
+  "depends_on": [],
+  "productions": [
+    {
+      "provenance": "seed:stress_aperture:policy",
+      "src": {
+        "type": "AffectiveState",
+        "var": "aff"
+      },
+      "edge_type": "gates_projection",
+      "tgt": {
+        "type": "ManifoldPolicy",
+        "var": "pol"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "sa_compress_on_dysregulation",
+      "comment": "A dysregulated affective state narrows what its projection policy can resolve. The mask is the state's own `stress_resolves` -- graph data, not a tuned coefficient -- so an agent whose stress spares a dimension keeps it, and the fixture cannot smuggle in the answer as a magnitude. Guarded on the current value so the fixpoint terminates.",
+      "match": [
+        [
+          "aff",
+          "gates_projection",
+          "pol"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "dysregulated"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "future_manifold_resolved_dims"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "aff"
+                },
+                "key": "stress_resolves"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "pol",
+          "future_manifold_resolved_dims",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "stress_resolves"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "pol",
+          "sa_compressed",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "sa_restore_on_regulation",
+      "comment": "Returning to the window restores the full aperture. The recovery is the point: without it 'nothing helps a stressed agent' would pass trivially for an agent that is simply broken, and the registered crossover would have no positive control.",
+      "match": [
+        [
+          "aff",
+          "gates_projection",
+          "pol"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "aff"
+                },
+                "key": "dysregulated"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "future_manifold_resolved_dims"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "aff"
+                },
+                "key": "regulated_resolves"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "pol",
+          "future_manifold_resolved_dims",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "regulated_resolves"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "pol",
+          "sa_compressed",
+          0.0
+        ]
+      ]
+    }
+  ]
+}

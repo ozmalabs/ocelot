@@ -52,15 +52,12 @@ pub struct GpuMeHandle {
 #[pymethods]
 impl GpuMeHandle {
     /// Block until the GPU work is complete; return the MVs.
-    fn wait<'py>(
-        &mut self,
-        py: Python<'py>,
-    ) -> PyResult<Bound<'py, pyo3::types::PyBytes>> {
+    fn wait<'py>(&mut self, py: Python<'py>) -> PyResult<Bound<'py, pyo3::types::PyBytes>> {
         let handle = self.inner.take().ok_or_else(|| {
-            pyo3::exceptions::PyRuntimeError::new_err(
-                "GpuMeHandle.wait() called twice")
+            pyo3::exceptions::PyRuntimeError::new_err("GpuMeHandle.wait() called twice")
         })?;
-        let mvs = py.allow_threads(|| handle.wait())
+        let mvs = py
+            .allow_threads(|| handle.wait())
             .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e))?;
         let mut out = Vec::with_capacity(mvs.len() * 12);
         for m in &mvs {
@@ -120,8 +117,7 @@ fn apply_motion_compensation_kernel(
         .min(mb_h);
     let rows_per_chunk = (mb_h + n_threads - 1) / n_threads;
     let recon_per_row = plane_w * 16;
-    let mut chunks: Vec<(usize, usize, &mut [u8])> =
-        Vec::with_capacity(n_threads);
+    let mut chunks: Vec<(usize, usize, &mut [u8])> = Vec::with_capacity(n_threads);
     let mut remaining: &mut [u8] = &mut out;
     let mut row = 0;
     while row < mb_h {
@@ -137,8 +133,16 @@ fn apply_motion_compensation_kernel(
         for (start_row, end_row, chunk) in chunks {
             scope.spawn(move || {
                 apply_mc_rows(
-                    reference, ref_i32_ref, mvs, plane_w, plane_h,
-                    mb_w, start_row, end_row, subpel, chunk,
+                    reference,
+                    ref_i32_ref,
+                    mvs,
+                    plane_w,
+                    plane_h,
+                    mb_w,
+                    start_row,
+                    end_row,
+                    subpel,
+                    chunk,
                 );
             });
         }
@@ -200,11 +204,21 @@ fn apply_mc_rows(
                 // interpolate_luma per §8.4.2.2.1 eq. 8-239/240.
                 let src_i32 = reference_i32.expect("subpel requires i32 ref");
                 crate::h264_inter_pred::interpolate_luma(
-                    src_i32, plane_w, plane_w, plane_h,
-                    int_x0, int_y0, x_frac, y_frac,
-                    16, 16, /*bit_depth=*/8,
-                    &mut subpel_dst, 16,
-                ).expect("interpolate_luma");
+                    src_i32,
+                    plane_w,
+                    plane_w,
+                    plane_h,
+                    int_x0,
+                    int_y0,
+                    x_frac,
+                    y_frac,
+                    16,
+                    16,
+                    /*bit_depth=*/ 8,
+                    &mut subpel_dst,
+                    16,
+                )
+                .expect("interpolate_luma");
                 for yy in 0..16 {
                     let local_ty = (local_y * 16 + yy) as i32;
                     for xx in 0..16 {
@@ -227,9 +241,12 @@ fn tx_safe(mb_x: usize, xx: usize) -> i32 {
 /// candidate offsets and return (mv_x, mv_y, sad) for the best.
 /// MVs in integer luma pixels. Clamp-to-border on off-plane reads.
 fn estimate_motion_cpu_kernel(
-    target: &[u8], reference: &[u8],
-    plane_w: usize, plane_h: usize,
-    mb_w: usize, mb_h: usize,
+    target: &[u8],
+    reference: &[u8],
+    plane_w: usize,
+    plane_h: usize,
+    mb_w: usize,
+    mb_h: usize,
     search_radius: i32,
 ) -> Vec<(i32, i32, i32)> {
     let n_mbs = mb_w * mb_h;
@@ -305,8 +322,10 @@ fn refine_motion_subpel_kernel(
     target: &[u8],
     reference: &[u8],
     mvs_int: &[(i32, i32)],
-    plane_w: usize, plane_h: usize,
-    mb_w: usize, mb_h: usize,
+    plane_w: usize,
+    plane_h: usize,
+    mb_w: usize,
+    mb_h: usize,
     mode: SubpelMode,
 ) -> Vec<(i32, i32, i32)> {
     assert_eq!(target.len(), plane_w * plane_h);
@@ -342,9 +361,17 @@ fn refine_motion_subpel_kernel(
         for (start_row, end_row, chunk) in chunks {
             scope.spawn(move || {
                 refine_subpel_rows(
-                    target, reference, ref_i32_ref, mvs_int,
-                    plane_w, plane_h, mb_w,
-                    start_row, end_row, mode, chunk,
+                    target,
+                    reference,
+                    ref_i32_ref,
+                    mvs_int,
+                    plane_w,
+                    plane_h,
+                    mb_w,
+                    start_row,
+                    end_row,
+                    mode,
+                    chunk,
                 );
             });
         }
@@ -355,25 +382,54 @@ fn refine_motion_subpel_kernel(
 /// QMV offsets relative to (qmv_int_x, qmv_int_y) for phase 1
 /// (half-pel) and phase 2 (quarter-pel) of the diamond search.
 const HALFPEL_OFFSETS: [(i32, i32); 8] = [
-    (-2, -2), (-2, 0), (-2, 2),
-    ( 0, -2),          ( 0, 2),
-    ( 2, -2), ( 2, 0), ( 2, 2),
+    (-2, -2),
+    (-2, 0),
+    (-2, 2),
+    (0, -2),
+    (0, 2),
+    (2, -2),
+    (2, 0),
+    (2, 2),
 ];
 const QUARTERPEL_OFFSETS: [(i32, i32); 8] = [
-    (-1, -1), (-1, 0), (-1, 1),
-    ( 0, -1),          ( 0, 1),
-    ( 1, -1), ( 1, 0), ( 1, 1),
+    (-1, -1),
+    (-1, 0),
+    (-1, 1),
+    (0, -1),
+    (0, 1),
+    (1, -1),
+    (1, 0),
+    (1, 1),
 ];
 
 /// All 24 non-zero QMV offsets in the 5×5 grid {-2..=2}² around the
 /// integer baseline. The integer-pel baseline (0, 0) is evaluated
 /// separately (no FIR needed), so this array has 24 entries.
 const FULL_5X5_OFFSETS: [(i32, i32); 24] = [
-    (-2, -2), (-1, -2), ( 0, -2), ( 1, -2), ( 2, -2),
-    (-2, -1), (-1, -1), ( 0, -1), ( 1, -1), ( 2, -1),
-    (-2,  0), (-1,  0),           ( 1,  0), ( 2,  0),
-    (-2,  1), (-1,  1), ( 0,  1), ( 1,  1), ( 2,  1),
-    (-2,  2), (-1,  2), ( 0,  2), ( 1,  2), ( 2,  2),
+    (-2, -2),
+    (-1, -2),
+    (0, -2),
+    (1, -2),
+    (2, -2),
+    (-2, -1),
+    (-1, -1),
+    (0, -1),
+    (1, -1),
+    (2, -1),
+    (-2, 0),
+    (-1, 0),
+    (1, 0),
+    (2, 0),
+    (-2, 1),
+    (-1, 1),
+    (0, 1),
+    (1, 1),
+    (2, 1),
+    (-2, 2),
+    (-1, 2),
+    (0, 2),
+    (1, 2),
+    (2, 2),
 ];
 
 fn refine_subpel_rows(
@@ -381,9 +437,11 @@ fn refine_subpel_rows(
     reference: &[u8],
     reference_i32: &[i32],
     mvs_int: &[(i32, i32)],
-    plane_w: usize, plane_h: usize,
+    plane_w: usize,
+    plane_h: usize,
     mb_w: usize,
-    start_row: usize, end_row: usize,
+    start_row: usize,
+    end_row: usize,
     mode: SubpelMode,
     out_chunk: &mut [(i32, i32, i32)],
 ) {
@@ -417,9 +475,8 @@ fn refine_subpel_rows(
             let int_y0 = mb_py + int_dy;
             let mut best_qmv_x = int_dx * 4;
             let mut best_qmv_y = int_dy * 4;
-            let mut best_sad = sad_integer(
-                &target_block, reference, plane_w, plane_h, int_x0, int_y0,
-            );
+            let mut best_sad =
+                sad_integer(&target_block, reference, plane_w, plane_h, int_x0, int_y0);
 
             match mode {
                 SubpelMode::Diamond => {
@@ -428,8 +485,16 @@ fn refine_subpel_rows(
                         let qx = int_dx * 4 + ox;
                         let qy = int_dy * 4 + oy;
                         let sad = sad_at_qmv(
-                            &target_block, reference, reference_i32,
-                            plane_w, plane_h, mb_px, mb_py, qx, qy, &mut pred,
+                            &target_block,
+                            reference,
+                            reference_i32,
+                            plane_w,
+                            plane_h,
+                            mb_px,
+                            mb_py,
+                            qx,
+                            qy,
+                            &mut pred,
                         );
                         if sad < best_sad {
                             best_sad = sad;
@@ -444,8 +509,16 @@ fn refine_subpel_rows(
                         let qx = p1_x + ox;
                         let qy = p1_y + oy;
                         let sad = sad_at_qmv(
-                            &target_block, reference, reference_i32,
-                            plane_w, plane_h, mb_px, mb_py, qx, qy, &mut pred,
+                            &target_block,
+                            reference,
+                            reference_i32,
+                            plane_w,
+                            plane_h,
+                            mb_px,
+                            mb_py,
+                            qx,
+                            qy,
+                            &mut pred,
                         );
                         if sad < best_sad {
                             best_sad = sad;
@@ -463,8 +536,16 @@ fn refine_subpel_rows(
                         let qx = int_dx * 4 + ox;
                         let qy = int_dy * 4 + oy;
                         let sad = sad_at_qmv(
-                            &target_block, reference, reference_i32,
-                            plane_w, plane_h, mb_px, mb_py, qx, qy, &mut pred,
+                            &target_block,
+                            reference,
+                            reference_i32,
+                            plane_w,
+                            plane_h,
+                            mb_px,
+                            mb_py,
+                            qx,
+                            qy,
+                            &mut pred,
                         );
                         if sad < best_sad {
                             best_sad = sad;
@@ -475,8 +556,7 @@ fn refine_subpel_rows(
                 }
             }
 
-            out_chunk[local_row * mb_w + mb_x] =
-                (best_qmv_x, best_qmv_y, best_sad as i32);
+            out_chunk[local_row * mb_w + mb_x] = (best_qmv_x, best_qmv_y, best_sad as i32);
         }
     }
 }
@@ -485,8 +565,10 @@ fn refine_subpel_rows(
 fn sad_integer(
     target_block: &[u8; 256],
     reference: &[u8],
-    plane_w: usize, plane_h: usize,
-    int_x: i32, int_y: i32,
+    plane_w: usize,
+    plane_h: usize,
+    int_x: i32,
+    int_y: i32,
 ) -> u32 {
     let w = plane_w as i32;
     let h = plane_h as i32;
@@ -508,9 +590,12 @@ fn sad_at_qmv(
     target_block: &[u8; 256],
     reference: &[u8],
     reference_i32: &[i32],
-    plane_w: usize, plane_h: usize,
-    mb_px: i32, mb_py: i32,
-    qmv_x: i32, qmv_y: i32,
+    plane_w: usize,
+    plane_h: usize,
+    mb_px: i32,
+    mb_py: i32,
+    qmv_x: i32,
+    qmv_y: i32,
     pred: &mut [i32; 256],
 ) -> u32 {
     let int_x = mb_px + qmv_x.div_euclid(4);
@@ -521,10 +606,22 @@ fn sad_at_qmv(
         return sad_integer(target_block, reference, plane_w, plane_h, int_x, int_y);
     }
     if crate::h264_inter_pred::interpolate_luma(
-        reference_i32, plane_w, plane_w, plane_h,
-        int_x, int_y, xf, yf, 16, 16, /*bit_depth=*/8,
-        pred, 16,
-    ).is_err() {
+        reference_i32,
+        plane_w,
+        plane_w,
+        plane_h,
+        int_x,
+        int_y,
+        xf,
+        yf,
+        16,
+        16,
+        /*bit_depth=*/ 8,
+        pred,
+        16,
+    )
+    .is_err()
+    {
         return u32::MAX;
     }
     let mut s: u32 = 0;
@@ -618,7 +715,11 @@ fn build_can_keys(inner: &mut crate::substrate::Substrate) -> Option<crate::can_
     })
 }
 
-fn py_to_value(py: Python<'_>, obj: &Bound<'_, PyAny>, interner: &mut crate::sym::Interner) -> PyResult<Value> {
+fn py_to_value(
+    py: Python<'_>,
+    obj: &Bound<'_, PyAny>,
+    interner: &mut crate::sym::Interner,
+) -> PyResult<Value> {
     if obj.is_none() {
         return Ok(Value::None);
     }
@@ -661,11 +762,7 @@ fn py_to_value(py: Python<'_>, obj: &Bound<'_, PyAny>, interner: &mut crate::sym
     // Tolerate any object with a `.value` int attr labelled as NodeID
     // (matches the Python `substrate.graph.NodeID` dataclass) so users
     // mixing Python and Rust NodeIDs don't trip.
-    if let Ok(cls_name) = obj
-        .get_type()
-        .name()
-        .map(|s| s.to_string())
-    {
+    if let Ok(cls_name) = obj.get_type().name().map(|s| s.to_string()) {
         if cls_name == "NodeID" {
             if let Ok(v) = obj.getattr("value").and_then(|v| v.extract::<u32>()) {
                 return Ok(Value::Node(NodeID(v)));
@@ -706,7 +803,10 @@ fn py_to_value(py: Python<'_>, obj: &Bound<'_, PyAny>, interner: &mut crate::sym
     if let Ok(d) = obj.downcast::<PyDict>() {
         let mut pairs: Vec<(Value, Value)> = Vec::new();
         for (k, v) in d.iter() {
-            pairs.push((py_to_value(py, &k, interner)?, py_to_value(py, &v, interner)?));
+            pairs.push((
+                py_to_value(py, &k, interner)?,
+                py_to_value(py, &v, interner)?,
+            ));
         }
         pairs.sort_by(|a, b| cmp_value(&a.0, &b.0));
         return Ok(Value::Dict(pairs.into()));
@@ -718,7 +818,11 @@ fn py_to_value(py: Python<'_>, obj: &Bound<'_, PyAny>, interner: &mut crate::sym
 }
 
 /// Convert a substrate Value back to a Python object.
-fn value_to_py<'py>(py: Python<'py>, v: &Value, interner: &crate::sym::Interner) -> PyResult<Bound<'py, PyAny>> {
+fn value_to_py<'py>(
+    py: Python<'py>,
+    v: &Value,
+    interner: &crate::sym::Interner,
+) -> PyResult<Bound<'py, PyAny>> {
     match v {
         Value::None => Ok(py.None().into_bound(py)),
         Value::Bool(b) => Ok(b.into_py(py).into_bound(py)),
@@ -926,7 +1030,6 @@ fn seed_ref_attrs_match(
     true
 }
 
-
 fn pydict_to_attrs(
     py: Python<'_>,
     d: Option<&Bound<'_, PyDict>>,
@@ -953,9 +1056,9 @@ fn pydict_to_env(
     let mut env: Env = SmallVec::new();
     if let Some(d) = d {
         for (k, v) in d.iter() {
-            let key = k.extract::<String>().map_err(|_| {
-                PyValueError::new_err("env keys must be strings (Var names)")
-            })?;
+            let key = k
+                .extract::<String>()
+                .map_err(|_| PyValueError::new_err("env keys must be strings (Var names)"))?;
             // Skip private keys used by the Python evaluator (_resolve_concept,
             // _holds_depth) — concept resolution goes through `define_concept`.
             if key.starts_with('_') {
@@ -975,7 +1078,10 @@ fn attrs_to_pydict<'py>(
 ) -> PyResult<Bound<'py, PyDict>> {
     let d = PyDict::new_bound(py);
     for (k, v) in attrs {
-        d.set_item(interner.resolve(*k).to_string(), value_to_py(py, v, interner)?)?;
+        d.set_item(
+            interner.resolve(*k).to_string(),
+            value_to_py(py, v, interner)?,
+        )?;
     }
     Ok(d)
 }
@@ -1187,7 +1293,8 @@ fn pyobj_to_json_term(py: Python<'_>, obj: &Bound<'_, PyAny>, mode: WireMode) ->
 
 fn json_to_pyobj<'py>(py: Python<'py>, j: &J) -> PyResult<Bound<'py, PyAny>> {
     let json_mod = py.import_bound("json")?;
-    let s = serde_json::to_string(j).map_err(|e| PyValueError::new_err(format!("json emit: {}", e)))?;
+    let s =
+        serde_json::to_string(j).map_err(|e| PyValueError::new_err(format!("json emit: {}", e)))?;
     Ok(json_mod.call_method1("loads", (s,))?)
 }
 
@@ -1234,7 +1341,13 @@ fn search_nodes(v: &Value) -> Vec<NodeID> {
         // Filter / Neighbours / SetT yield a Set or FrozenSet of Nodes.
         Value::Set(items) | Value::FrozenSet(items) => items
             .iter()
-            .filter_map(|x| if let Value::Node(n) = x { Some(*n) } else { None })
+            .filter_map(|x| {
+                if let Value::Node(n) = x {
+                    Some(*n)
+                } else {
+                    None
+                }
+            })
             .collect(),
         Value::Node(n) => vec![*n],
         _ => Vec::new(),
@@ -1325,7 +1438,9 @@ impl PySubstrate {
     #[new]
     fn new() -> Self {
         Self {
-            inner: Arc::new(Mutex::new(SubstrateRs::new(ConsistencyChecker::new(Grammar::new())))),
+            inner: Arc::new(Mutex::new(SubstrateRs::new(ConsistencyChecker::new(
+                Grammar::new(),
+            )))),
             hooks: FxHashMap::default(),
             agent_thread: None,
             agent_stop: Arc::new(std::sync::atomic::AtomicBool::new(false)),
@@ -1385,21 +1500,22 @@ impl PySubstrate {
                             false,
                             false,
                             n_threads_per_runner.max(1),
-                        ).steps;
+                        )
+                        .steps;
                         let prepared = crate::cognitive_tasks::prepare_requested(
-                            &mut guard, n_threads_per_runner.max(1));
+                            &mut guard,
+                            n_threads_per_runner.max(1),
+                        );
                         (prepared, steps)
                     };
                     // Pure task kernels run without the live-graph mutex.
-                    let completed =
-                        crate::cognitive_tasks::execute_prepared(prepared);
+                    let completed = crate::cognitive_tasks::execute_prepared(prepared);
                     {
                         let mut guard = match inner.lock() {
                             Ok(g) => g,
                             Err(p) => p.into_inner(),
                         };
-                        let _ = crate::cognitive_tasks::fold_completed(
-                            &mut guard, completed);
+                        let _ = crate::cognitive_tasks::fold_completed(&mut guard, completed);
                         let remaining = max_steps_per_tick.saturating_sub(pre_steps);
                         if remaining > 0 {
                             let _ = crate::cognitive_cycle::execute(
@@ -1473,9 +1589,9 @@ impl PySubstrate {
         root_node: Option<PyRef<'_, PyNodeID>>,
     ) -> PyResult<PyObject> {
         let manifest_json = pyobj_to_json(py, manifest)?;
-        let m = manifest_json.as_object().ok_or_else(|| {
-            PyValueError::new_err("seed manifest must be a JSON object")
-        })?;
+        let m = manifest_json
+            .as_object()
+            .ok_or_else(|| PyValueError::new_err("seed manifest must be a JSON object"))?;
         // `root_node` is the well-known node a manifest can name via
         // `{"role": "agent_root"}`. Agents pass `agent.agent_root`;
         // non-agent tasks (transcoding pipelines, subtitle generators
@@ -1498,26 +1614,19 @@ impl PySubstrate {
             let mut local_to_global: FxHashMap<u64, NodeID> = FxHashMap::default();
             if let Some(J::Array(nodes)) = m.get("nodes") {
                 for n in nodes {
-                    let n_obj = n.as_object().ok_or_else(|| {
-                        PyValueError::new_err("seed node must be an object")
-                    })?;
+                    let n_obj = n
+                        .as_object()
+                        .ok_or_else(|| PyValueError::new_err("seed node must be an object"))?;
                     let local_id = n_obj
                         .get("local_id")
                         .and_then(|v| v.as_u64())
-                        .ok_or_else(|| {
-                            PyValueError::new_err("seed node missing local_id")
-                        })?;
+                        .ok_or_else(|| PyValueError::new_err("seed node missing local_id"))?;
                     let type_str = n_obj
                         .get("type")
                         .and_then(|v| v.as_str())
-                        .ok_or_else(|| {
-                            PyValueError::new_err("seed node missing type")
-                        })?;
+                        .ok_or_else(|| PyValueError::new_err("seed node missing type"))?;
                     let type_sym = inner.interner.intern(type_str);
-                    let attrs = decode_attrs_object(
-                        n_obj.get("attrs"),
-                        &mut inner.interner,
-                    );
+                    let attrs = decode_attrs_object(n_obj.get("attrs"), &mut inner.interner);
                     let new_nid = inner.add_node(type_sym, attrs);
                     local_to_global.insert(local_id, new_nid);
                     nodes_added += 1;
@@ -1527,32 +1636,19 @@ impl PySubstrate {
             // 2) Edges: resolve src/tgt refs, then insert unchecked.
             if let Some(J::Array(edges)) = m.get("edges") {
                 for e in edges {
-                    let e_obj = e.as_object().ok_or_else(|| {
-                        PyValueError::new_err("seed edge must be an object")
-                    })?;
-                    let src = resolve_seed_ref(
-                        e_obj.get("src"),
-                        &local_to_global,
-                        root_nid,
-                        inner,
-                    )?;
-                    let tgt = resolve_seed_ref(
-                        e_obj.get("tgt"),
-                        &local_to_global,
-                        root_nid,
-                        inner,
-                    )?;
+                    let e_obj = e
+                        .as_object()
+                        .ok_or_else(|| PyValueError::new_err("seed edge must be an object"))?;
+                    let src =
+                        resolve_seed_ref(e_obj.get("src"), &local_to_global, root_nid, inner)?;
+                    let tgt =
+                        resolve_seed_ref(e_obj.get("tgt"), &local_to_global, root_nid, inner)?;
                     let et_str = e_obj
                         .get("type")
                         .and_then(|v| v.as_str())
-                        .ok_or_else(|| {
-                            PyValueError::new_err("seed edge missing type")
-                        })?;
+                        .ok_or_else(|| PyValueError::new_err("seed edge missing type"))?;
                     let et_sym = inner.interner.intern(et_str);
-                    let attrs = decode_attrs_object(
-                        e_obj.get("attrs"),
-                        &mut inner.interner,
-                    );
+                    let attrs = decode_attrs_object(e_obj.get("attrs"), &mut inner.interner);
                     let _ = inner.graph.insert_edge(src, et_sym, tgt, attrs);
                     edges_added += 1;
                 }
@@ -1625,13 +1721,15 @@ impl PySubstrate {
                             .get("name")
                             .and_then(|value| value.as_str())
                             .unwrap_or("anonymous_rule");
-                        rule.mutation_protected =
-                            !patchable_rule_names.contains(rule_name);
+                        rule.mutation_protected = !patchable_rule_names.contains(rule_name);
                         inner.add_rule(rule);
                         rules_added += 1;
                     }
                     Err(e) => {
-                        let nm = r.get("name").and_then(|n| n.as_str()).unwrap_or("<unnamed>");
+                        let nm = r
+                            .get("name")
+                            .and_then(|n| n.as_str())
+                            .unwrap_or("<unnamed>");
                         eprintln!("[seed] WARNING: skipping malformed rule '{}': {}", nm, e);
                         rules_skipped.push(format!("{}: {}", nm, e));
                     }
@@ -1662,7 +1760,10 @@ impl PySubstrate {
                 match load_reflex_json(r, inner, root_nid) {
                     Ok(()) => reflexes_added += 1,
                     Err(e) => {
-                        let nm = r.get("name").and_then(|n| n.as_str()).unwrap_or("<unnamed>");
+                        let nm = r
+                            .get("name")
+                            .and_then(|n| n.as_str())
+                            .unwrap_or("<unnamed>");
                         eprintln!("[seed] WARNING: skipping malformed reflex '{}': {}", nm, e);
                         reflexes_skipped.push(format!("{}: {}", nm, e));
                     }
@@ -1675,7 +1776,7 @@ impl PySubstrate {
         summary.set_item("edges", edges_added)?;
         summary.set_item("productions", productions_added)?;
         summary.set_item("rules", rules_added)?;
-        summary.set_item("rules_skipped", rules_skipped)?;   // visible per-rule failures, not silent
+        summary.set_item("rules_skipped", rules_skipped)?; // visible per-rule failures, not silent
         summary.set_item("reflexes", reflexes_added)?;
         summary.set_item("reflexes_skipped", reflexes_skipped)?;
         if let Some(J::String(seed_id)) = m.get("id") {
@@ -1704,10 +1805,14 @@ impl PySubstrate {
         // Fire hooks AFTER the mutation lands so callbacks observe the
         // post-state. Snapshot the callback Py refs so we can release
         // the &mut self borrow before invoking Python.
-        self.fire_hook(py, "node_inserted", &[
-            Py::new(py, py_nid)?.into_any(),
-            type_.to_string().into_py(py),
-        ])?;
+        self.fire_hook(
+            py,
+            "node_inserted",
+            &[
+                Py::new(py, py_nid)?.into_any(),
+                type_.to_string().into_py(py),
+            ],
+        )?;
         Ok(py_nid)
     }
 
@@ -1730,11 +1835,15 @@ impl PySubstrate {
         let tgt_node = tgt.to_node();
         match inner.add_edge(src_node, et, tgt_node, attrs_map) {
             Ok(_) => {
-                self.fire_hook(py, "edge_inserted", &[
-                    Py::new(py, PyNodeID::from_node(src_node))?.into_any(),
-                    edge_type.to_string().into_py(py),
-                    Py::new(py, PyNodeID::from_node(tgt_node))?.into_any(),
-                ])?;
+                self.fire_hook(
+                    py,
+                    "edge_inserted",
+                    &[
+                        Py::new(py, PyNodeID::from_node(src_node))?.into_any(),
+                        edge_type.to_string().into_py(py),
+                        Py::new(py, PyNodeID::from_node(tgt_node))?.into_any(),
+                    ],
+                )?;
                 Ok(())
             }
             Err(InadmissibleEdgeRs::Type1NoProduction {
@@ -1747,16 +1856,22 @@ impl PySubstrate {
                 inner.interner.resolve(edge_type),
                 inner.interner.resolve(tgt_type)
             ))),
-            Err(InadmissibleEdgeRs::Type2VocabAbsent { missing }) => Err(InadmissibleEdge::new_err(
-                format!(
+            Err(InadmissibleEdgeRs::Type2VocabAbsent { missing }) => {
+                Err(InadmissibleEdge::new_err(format!(
                     "Γ rejects: type '{}' not in vocabulary (Type-2)",
                     inner.interner.resolve(missing)
-                ),
-            )),
+                )))
+            }
         }
     }
 
-    fn remove_edge(&mut self, py: Python<'_>, src: PyRef<'_, PyNodeID>, edge_type: &str, tgt: PyRef<'_, PyNodeID>) -> PyResult<bool> {
+    fn remove_edge(
+        &mut self,
+        py: Python<'_>,
+        src: PyRef<'_, PyNodeID>,
+        edge_type: &str,
+        tgt: PyRef<'_, PyNodeID>,
+    ) -> PyResult<bool> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         let et = inner.interner.intern(edge_type);
@@ -1768,11 +1883,15 @@ impl PySubstrate {
             tgt: tgt_node,
         });
         if removed {
-            self.fire_hook(py, "edge_deleted", &[
-                Py::new(py, PyNodeID::from_node(src_node))?.into_any(),
-                edge_type.to_string().into_py(py),
-                Py::new(py, PyNodeID::from_node(tgt_node))?.into_any(),
-            ])?;
+            self.fire_hook(
+                py,
+                "edge_deleted",
+                &[
+                    Py::new(py, PyNodeID::from_node(src_node))?.into_any(),
+                    edge_type.to_string().into_py(py),
+                    Py::new(py, PyNodeID::from_node(tgt_node))?.into_any(),
+                ],
+            )?;
         }
         Ok(removed)
     }
@@ -1783,23 +1902,38 @@ impl PySubstrate {
         let nid_node = nid.to_node();
         // Snapshot the node's type BEFORE delete so the hook can carry it.
         let type_str = if inner.graph.has_node(nid_node) {
-            Some(inner.interner.resolve(inner.graph.node(nid_node).type_).to_string())
+            Some(
+                inner
+                    .interner
+                    .resolve(inner.graph.node(nid_node).type_)
+                    .to_string(),
+            )
         } else {
             None
         };
         let removed = inner.remove_node(nid_node);
         if removed {
             if let Some(t) = type_str {
-                self.fire_hook(py, "node_deleted", &[
-                    Py::new(py, PyNodeID::from_node(nid_node))?.into_any(),
-                    t.into_py(py),
-                ])?;
+                self.fire_hook(
+                    py,
+                    "node_deleted",
+                    &[
+                        Py::new(py, PyNodeID::from_node(nid_node))?.into_any(),
+                        t.into_py(py),
+                    ],
+                )?;
             }
         }
         Ok(removed)
     }
 
-    fn set_attr(&mut self, py: Python<'_>, nid: PyRef<'_, PyNodeID>, key: &str, value: &Bound<'_, PyAny>) -> PyResult<()> {
+    fn set_attr(
+        &mut self,
+        py: Python<'_>,
+        nid: PyRef<'_, PyNodeID>,
+        key: &str,
+        value: &Bound<'_, PyAny>,
+    ) -> PyResult<()> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         let v = py_to_value(py, value, &mut inner.interner)?;
@@ -1822,12 +1956,16 @@ impl PySubstrate {
             None => py.None(),
         };
         let new_py = value_to_py(py, &v, &inner.interner)?.unbind();
-        self.fire_hook(py, "attr_set", &[
-            Py::new(py, PyNodeID::from_node(nid_node))?.into_any(),
-            key.to_string().into_py(py),
-            old_py,
-            new_py,
-        ])?;
+        self.fire_hook(
+            py,
+            "attr_set",
+            &[
+                Py::new(py, PyNodeID::from_node(nid_node))?.into_any(),
+                key.to_string().into_py(py),
+                old_py,
+                new_py,
+            ],
+        )?;
         Ok(())
     }
 
@@ -2021,7 +2159,12 @@ impl PySubstrate {
         inner.graph.has_node(nid.to_node())
     }
 
-    fn has_edge(&self, src: PyRef<'_, PyNodeID>, edge_type: &str, tgt: PyRef<'_, PyNodeID>) -> bool {
+    fn has_edge(
+        &self,
+        src: PyRef<'_, PyNodeID>,
+        edge_type: &str,
+        tgt: PyRef<'_, PyNodeID>,
+    ) -> bool {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         let Some(et) = inner.interner.lookup(edge_type) else {
@@ -2224,9 +2367,7 @@ impl PySubstrate {
     /// Read-only with respect to graph state (no-op visit, no apply), so calling
     /// it cannot move a committed number.
     #[pyo3(signature = (rule_name, reps=1))]
-    fn profile_rule_match(&mut self, rule_name: &str, reps: usize)
-        -> Vec<(String, u64, u64)>
-    {
+    fn profile_rule_match(&mut self, rule_name: &str, reps: usize) -> Vec<(String, u64, u64)> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         __substrate_guard.profile_rule_match(rule_name, reps)
     }
@@ -2279,7 +2420,12 @@ impl PySubstrate {
             None => return std::collections::HashMap::new(),
         };
         let result = crate::can_ops::mt_mean_field_marginal(
-            &inner.graph, mt.to_node(), &keys, max_iter, tol, damping,
+            &inner.graph,
+            mt.to_node(),
+            &keys,
+            max_iter,
+            tol,
+            damping,
         );
         result.into_iter().map(|(n, v)| (n.0, v)).collect()
     }
@@ -2343,16 +2489,19 @@ impl PySubstrate {
                 return Ok(result);
             }
         };
-        let current =
-            crate::can_ops::mt_mean_field_marginal(
-                &inner.graph, mt.to_node(), &keys, 200, 1e-4, crate::can_ops::DEFAULT_DAMPING,
-            );
+        let current = crate::can_ops::mt_mean_field_marginal(
+            &inner.graph,
+            mt.to_node(),
+            &keys,
+            200,
+            1e-4,
+            crate::can_ops::DEFAULT_DAMPING,
+        );
         let target = crate::can_ops::mt_target(&inner.graph, mt.to_node(), &keys);
         let disp = crate::can_ops::distance_to_target(&current, &target);
 
         result.set_item("magnitude", disp.magnitude)?;
-        let per_node: Vec<(u32, f32)> =
-            disp.per_node.into_iter().map(|(n, d)| (n.0, d)).collect();
+        let per_node: Vec<(u32, f32)> = disp.per_node.into_iter().map(|(n, d)| (n.0, d)).collect();
         result.set_item("per_node", per_node)?;
         match disp.max_dev {
             Some((n, d)) => {
@@ -2418,16 +2567,22 @@ impl PySubstrate {
             None => return Vec::new(),
         };
         let conflicts = crate::can_ops::mt_conflicting_nodes(
-            &inner.graph, mt_a.to_node(), mt_b.to_node(), &keys,
+            &inner.graph,
+            mt_a.to_node(),
+            mt_b.to_node(),
+            &keys,
             magnitude_threshold,
         );
-        conflicts.into_iter().map(|(nid, sa, sb)| {
-            let mut d = std::collections::HashMap::new();
-            d.insert("node_id".to_string(), nid.0 as f32);
-            d.insert("sigma_a".to_string(), sa);
-            d.insert("sigma_b".to_string(), sb);
-            d
-        }).collect()
+        conflicts
+            .into_iter()
+            .map(|(nid, sa, sb)| {
+                let mut d = std::collections::HashMap::new();
+                d.insert("node_id".to_string(), nid.0 as f32);
+                d.insert("sigma_a".to_string(), sa);
+                d.insert("sigma_b".to_string(), sb);
+                d
+            })
+            .collect()
     }
 
     /// Cross-Mt cosine similarity on shared Concepts' marginals.
@@ -2454,7 +2609,10 @@ impl PySubstrate {
             }
         };
         let (similarity, shared_count) = crate::can_ops::mt_pairwise_similarity(
-            &inner.graph, mt_a.to_node(), mt_b.to_node(), &keys,
+            &inner.graph,
+            mt_a.to_node(),
+            mt_b.to_node(),
+            &keys,
         );
         result.set_item("similarity", similarity)?;
         result.set_item("shared_count", shared_count)?;
@@ -2480,32 +2638,21 @@ impl PySubstrate {
             .into_iter()
             .map(|(k, v)| (crate::graph::NodeID(k), v))
             .collect();
-        crate::can_ops::mt_frustration_given_state(
-            &inner.graph, mt.to_node(), &keys, &state_map,
-        )
+        crate::can_ops::mt_frustration_given_state(&inner.graph, mt.to_node(), &keys, &state_map)
     }
 
     /// Per-Concept frustration contribution under current state. Caller
     /// must have relaxed the network first (so state attrs reflect
     /// equilibrium). High value → node is involved in many unsatisfied
     /// constraints; good candidate for perturbation.
-    fn node_local_frustration(
-        &self,
-        mt: PyRef<'_, PyNodeID>,
-        concept: PyRef<'_, PyNodeID>,
-    ) -> f32 {
+    fn node_local_frustration(&self, mt: PyRef<'_, PyNodeID>, concept: PyRef<'_, PyNodeID>) -> f32 {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         let keys = match build_can_keys(inner) {
             Some(k) => k,
             None => return 0.0,
         };
-        crate::can_ops::node_local_frustration(
-            &inner.graph,
-            mt.to_node(),
-            &keys,
-            concept.to_node(),
-        )
+        crate::can_ops::node_local_frustration(&inner.graph, mt.to_node(), &keys, concept.to_node())
     }
 
     /// Hebbian J update — strengthens couplings between co-active concepts.
@@ -2539,9 +2686,7 @@ impl PySubstrate {
             Some(k) => k,
             None => return 0,
         };
-        crate::can_ops::update_identity_dynamics(
-            &mut inner.graph, mt.to_node(), &keys, alpha, beta,
-        )
+        crate::can_ops::update_identity_dynamics(&mut inner.graph, mt.to_node(), &keys, alpha, beta)
     }
 
     /// Single-Concept identity nudge for insight consolidation:
@@ -2560,7 +2705,11 @@ impl PySubstrate {
             None => return,
         };
         crate::can_ops::nudge_identity(
-            &mut inner.graph, concept.to_node(), &keys, target_sigma, alpha,
+            &mut inner.graph,
+            concept.to_node(),
+            &keys,
+            target_sigma,
+            alpha,
         );
     }
 
@@ -2593,12 +2742,7 @@ impl PySubstrate {
     /// Apply an evidence delta to a single Concept's external field.
     /// h_i ← h_i + alpha · evidence.
     #[pyo3(signature = (concept, evidence, alpha=1.0))]
-    fn concept_apply_evidence(
-        &mut self,
-        concept: PyRef<'_, PyNodeID>,
-        evidence: f32,
-        alpha: f32,
-    ) {
+    fn concept_apply_evidence(&mut self, concept: PyRef<'_, PyNodeID>, evidence: f32, alpha: f32) {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         let keys = match build_can_keys(inner) {
@@ -2633,7 +2777,12 @@ impl PySubstrate {
             None => return 0,
         };
         crate::can_ops::relax_to_marginal(
-            &mut inner.graph, mt.to_node(), &keys, max_iter, tol, damping,
+            &mut inner.graph,
+            mt.to_node(),
+            &keys,
+            max_iter,
+            tol,
+            damping,
         )
     }
 
@@ -2708,7 +2857,11 @@ impl PySubstrate {
         let reg = inner.interner.intern(register);
         let cell_sym = inner.interner.intern("cell");
         let cell_ids: Vec<NodeID> = cells.iter().map(|&v| NodeID(v)).collect();
-        let cap = if max_sweeps == 0 { cell_ids.len() + 1 } else { max_sweeps };
+        let cap = if max_sweeps == 0 {
+            cell_ids.len() + 1
+        } else {
+            max_sweeps
+        };
         let mut sweeps = 0usize;
         for _ in 0..cap {
             let mut updates: Vec<(NodeID, f64)> = Vec::new();
@@ -2721,8 +2874,14 @@ impl PySubstrate {
                 let mut cache = EvalCache::default();
                 let nv = {
                     let SubstrateRs {
-                        graph, interner, concepts, terms, counters,
-                        active_shape_target, shape_cache, ..
+                        graph,
+                        interner,
+                        concepts,
+                        terms,
+                        counters,
+                        active_shape_target,
+                        shape_cache,
+                        ..
                     } = &mut *inner;
                     let shape_target_copy = *active_shape_target;
                     let mut ctx = EvalCtx::new(graph, interner)
@@ -2765,7 +2924,19 @@ impl PySubstrate {
         Ok(sweeps)
     }
 
-    fn slide_flood(&mut self, seed: u32, slide: i64, fp_h: i64, fp_w: i64, walls: Vec<i64>, horizon: i64, epoch: i64, game: u32, mark_reached: bool, dist_attr: &str) -> PyResult<Vec<(u32, i64)>> {
+    fn slide_flood(
+        &mut self,
+        seed: u32,
+        slide: i64,
+        fp_h: i64,
+        fp_w: i64,
+        walls: Vec<i64>,
+        horizon: i64,
+        epoch: i64,
+        game: u32,
+        mark_reached: bool,
+        dist_attr: &str,
+    ) -> PyResult<Vec<(u32, i64)>> {
         use std::collections::{HashMap, HashSet, VecDeque};
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
@@ -2784,21 +2955,30 @@ impl PySubstrate {
         // agent stops proposing the dead move and routes elsewhere. This is the action-outcome correction
         // that closes the gap between the static reachability model and the real game.
         let blk_syms: [crate::sym::Sym; 4] = [
-            inner.interner.intern("_blk_u"), inner.interner.intern("_blk_d"),
-            inner.interner.intern("_blk_l"), inner.interner.intern("_blk_r"),
+            inner.interner.intern("_blk_u"),
+            inner.interner.intern("_blk_d"),
+            inner.interner.intern("_blk_l"),
+            inner.interner.intern("_blk_r"),
         ];
         let reached_sym = inner.interner.intern("reached");
         let game_id = NodeID(game);
         if mark_reached {
-            for idx in inner.graph.out_edges_idx(game_id, Some(reached_sym)) { inner.graph.delete_edge(idx); }
-        }
-        let read_i64 = |g: &crate::graph::TypedGraph, nid: NodeID, sym: crate::sym::Sym| -> Option<i64> {
-            match g.node(nid).attrs.get(&sym) {
-                Some(Value::Int(i)) => Some(*i), Some(Value::Float(f)) => Some(*f as i64), _ => None,
+            for idx in inner.graph.out_edges_idx(game_id, Some(reached_sym)) {
+                inner.graph.delete_edge(idx);
             }
-        };
+        }
+        let read_i64 =
+            |g: &crate::graph::TypedGraph, nid: NodeID, sym: crate::sym::Sym| -> Option<i64> {
+                match g.node(nid).attrs.get(&sym) {
+                    Some(Value::Int(i)) => Some(*i),
+                    Some(Value::Float(f)) => Some(*f as i64),
+                    _ => None,
+                }
+            };
         let seed_id = NodeID(seed);
-        if !inner.graph.has_node(seed_id) { return Ok(vec![]); }
+        if !inner.graph.has_node(seed_id) {
+            return Ok(vec![]);
+        }
         // RIGID-BODY slide flood. The agent is a `fp_h` x `fp_w` block whose TOP-LEFT corner is the seed
         // cell. It slides a FIXED `slide` cells per press and STOPS at a wall; a move in a direction is
         // admissible iff every cell the body sweeps into (the union of the old and new footprint) is
@@ -2811,38 +2991,67 @@ impl PySubstrate {
         let mut cellidx: HashMap<(i64, i64), NodeID> = HashMap::new();
         let mut seen_cells: HashSet<NodeID> = HashSet::new();
         let mut bq: VecDeque<NodeID> = VecDeque::new();
-        bq.push_back(seed_id); seen_cells.insert(seed_id);
+        bq.push_back(seed_id);
+        seen_cells.insert(seed_id);
         while let Some(n) = bq.pop_front() {
-            if let (Some(r), Some(c)) = (read_i64(&inner.graph, n, row_sym), read_i64(&inner.graph, n, col_sym)) {
+            if let (Some(r), Some(c)) = (
+                read_i64(&inner.graph, n, row_sym),
+                read_i64(&inner.graph, n, col_sym),
+            ) {
                 cellidx.insert((r, c), n);
             }
             for nb in inner.graph.neighbours(n, Some(neighbour_sym)) {
-                if seen_cells.insert(nb) { bq.push_back(nb); }
+                if seen_cells.insert(nb) {
+                    bq.push_back(nb);
+                }
             }
         }
         let wallset: HashSet<i64> = walls.into_iter().collect();
-        let val_at = |g: &crate::graph::TypedGraph, ci: &HashMap<(i64, i64), NodeID>, r: i64, c: i64| -> Option<i64> {
+        let val_at = |g: &crate::graph::TypedGraph,
+                      ci: &HashMap<(i64, i64), NodeID>,
+                      r: i64,
+                      c: i64|
+         -> Option<i64> {
             ci.get(&(r, c)).and_then(|&n| read_i64(g, n, value_sym))
         };
-        let (sr, sc) = match (read_i64(&inner.graph, seed_id, row_sym), read_i64(&inner.graph, seed_id, col_sym)) {
-            (Some(r), Some(c)) => (r, c), _ => return Ok(vec![]),
+        let (sr, sc) = match (
+            read_i64(&inner.graph, seed_id, row_sym),
+            read_i64(&inner.graph, seed_id, col_sym),
+        ) {
+            (Some(r), Some(c)) => (r, c),
+            _ => return Ok(vec![]),
         };
         let dirs: [(i64, i64); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
         let mut dist: HashMap<(i64, i64), i64> = HashMap::new();
         let mut queue: VecDeque<(i64, i64)> = VecDeque::new();
         dist.insert((sr, sc), 0);
         queue.push_back((sr, sc));
-        inner.graph.set_node_attr(seed_id, dist_sym, Value::Float(0.0));
-        inner.graph.set_node_attr(seed_id, epoch_sym, Value::Float(epoch as f64));
-        if mark_reached { let _ = inner.graph.insert_edge(game_id, reached_sym, seed_id, FxHashMap::<Sym, Value>::default()); }
+        inner
+            .graph
+            .set_node_attr(seed_id, dist_sym, Value::Float(0.0));
+        inner
+            .graph
+            .set_node_attr(seed_id, epoch_sym, Value::Float(epoch as f64));
+        if mark_reached {
+            let _ = inner.graph.insert_edge(
+                game_id,
+                reached_sym,
+                seed_id,
+                FxHashMap::<Sym, Value>::default(),
+            );
+        }
         let mut out: Vec<(u32, i64)> = vec![(seed, 0)];
         while let Some((r, c)) = queue.pop_front() {
             let d = *dist.get(&(r, c)).unwrap_or(&0);
-            if d >= horizon { continue; }
+            if d >= horizon {
+                continue;
+            }
             for (di, &(dr, dc)) in dirs.iter().enumerate() {
                 // refuse a move the source cell has LEARNED is dead in this direction.
                 if let Some(&src) = cellidx.get(&(r, c)) {
-                    if read_i64(&inner.graph, src, blk_syms[di]) == Some(1) { continue; }
+                    if read_i64(&inner.graph, src, blk_syms[di]) == Some(1) {
+                        continue;
+                    }
                 }
                 let (nr, nc) = (r + dr * slide, c + dc * slide);
                 // swept region = union of footprint at (r,c) and (nr,nc); all cells must exist & be non-wall.
@@ -2853,17 +3062,33 @@ impl PySubstrate {
                     for cc in c0..=c1 {
                         match val_at(&inner.graph, &cellidx, rr, cc) {
                             Some(v) if !wallset.contains(&v) => {}
-                            _ => { ok = false; break 'sweep; }
+                            _ => {
+                                ok = false;
+                                break 'sweep;
+                            }
                         }
                     }
                 }
-                if !ok { continue; }
+                if !ok {
+                    continue;
+                }
                 if !dist.contains_key(&(nr, nc)) {
                     dist.insert((nr, nc), d + 1);
                     if let Some(&node) = cellidx.get(&(nr, nc)) {
-                        inner.graph.set_node_attr(node, dist_sym, Value::Float((d + 1) as f64));
-                        inner.graph.set_node_attr(node, epoch_sym, Value::Float(epoch as f64));
-                        if mark_reached { let _ = inner.graph.insert_edge(game_id, reached_sym, node, FxHashMap::<Sym, Value>::default()); }
+                        inner
+                            .graph
+                            .set_node_attr(node, dist_sym, Value::Float((d + 1) as f64));
+                        inner
+                            .graph
+                            .set_node_attr(node, epoch_sym, Value::Float(epoch as f64));
+                        if mark_reached {
+                            let _ = inner.graph.insert_edge(
+                                game_id,
+                                reached_sym,
+                                node,
+                                FxHashMap::<Sym, Value>::default(),
+                            );
+                        }
                         out.push((node.0, d + 1));
                     }
                     queue.push_back((nr, nc));
@@ -2882,7 +3107,7 @@ impl PySubstrate {
     /// over the t+1 map: DYNAMIC (avoids where obstacles WILL be, e.g. its own advancing body), GENERIC (works
     /// in any world — impassable is whatever killed it, not a per-game constant). Cells remain graph nodes and
     /// the navigate_alive composition stays in graph; only this rasterize is the Rust primitive.
-fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
+    fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let mut __g = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__g;
         let responds_via_sym = inner.interner.intern("responds_via");
@@ -2898,14 +3123,20 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let ndim_sym = inner.interner.intern("ndim");
         let region_nid = NodeID(region);
         let read_f = |g: &crate::graph::TypedGraph, nid: NodeID, s: crate::sym::Sym| -> f64 {
-            match g.node(nid).attrs.get(&s) { Some(Value::Float(f)) => *f, Some(Value::Int(i)) => *i as f64, _ => 0.0 }
+            match g.node(nid).attrs.get(&s) {
+                Some(Value::Float(f)) => *f,
+                Some(Value::Int(i)) => *i as f64,
+                _ => 0.0,
+            }
         };
         // 2. Collect existing axes first (idempotency), dedup by NodeID.
         let mut axes: Vec<(NodeID, [f64; 3])> = Vec::new();
         let responders = inner.graph.neighbours(region_nid, Some(responds_via_sym));
         for cr in &responders {
             for ax in inner.graph.neighbours(*cr, Some(on_axis_sym)) {
-                if axes.iter().any(|(a, _)| *a == ax) { continue; }
+                if axes.iter().any(|(a, _)| *a == ax) {
+                    continue;
+                }
                 let d = [
                     read_f(&inner.graph, ax, dir_x_sym),
                     read_f(&inner.graph, ax, dir_y_sym),
@@ -2916,32 +3147,55 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         }
         // 3. Attach (or mint) an axis for each as-yet-unassigned control vector.
         for cr in &responders {
-            if !inner.graph.neighbours(*cr, Some(on_axis_sym)).is_empty() { continue; }
+            if !inner.graph.neighbours(*cr, Some(on_axis_sym)).is_empty() {
+                continue;
+            }
             let v = [
                 read_f(&inner.graph, *cr, dr_sym),
                 read_f(&inner.graph, *cr, dc_sym),
                 read_f(&inner.graph, *cr, dz_sym),
             ];
             let mag = (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]).sqrt();
-            if mag < 1e-6 { continue; }
+            if mag < 1e-6 {
+                continue;
+            }
             let mut hit: Option<(NodeID, f64)> = None;
             for (ax, d) in &axes {
                 let dmag = (d[0] * d[0] + d[1] * d[1] + d[2] * d[2]).sqrt();
-                if dmag < 1e-6 { continue; }
+                if dmag < 1e-6 {
+                    continue;
+                }
                 let dot = v[0] * d[0] + v[1] * d[1] + v[2] * d[2];
-                if dot.abs() / (mag * dmag) > 0.99 { hit = Some((*ax, dot)); break; }
+                if dot.abs() / (mag * dmag) > 0.99 {
+                    hit = Some((*ax, dot));
+                    break;
+                }
             }
             match hit {
                 Some((ax, dot)) => {
-                    let _ = inner.graph.insert_edge(*cr, on_axis_sym, ax, rustc_hash::FxHashMap::default());
-                    inner.set_attr(*cr, sign_sym, Value::Float(if dot > 0.0 { 1.0 } else { -1.0 }));
+                    let _ = inner.graph.insert_edge(
+                        *cr,
+                        on_axis_sym,
+                        ax,
+                        rustc_hash::FxHashMap::default(),
+                    );
+                    inner.set_attr(
+                        *cr,
+                        sign_sym,
+                        Value::Float(if dot > 0.0 { 1.0 } else { -1.0 }),
+                    );
                 }
                 None => {
                     let ax = inner.add_node(axis_type, rustc_hash::FxHashMap::default());
                     inner.set_attr(ax, dir_x_sym, Value::Float(v[0]));
                     inner.set_attr(ax, dir_y_sym, Value::Float(v[1]));
                     inner.set_attr(ax, dir_z_sym, Value::Float(v[2]));
-                    let _ = inner.graph.insert_edge(*cr, on_axis_sym, ax, rustc_hash::FxHashMap::default());
+                    let _ = inner.graph.insert_edge(
+                        *cr,
+                        on_axis_sym,
+                        ax,
+                        rustc_hash::FxHashMap::default(),
+                    );
                     inner.set_attr(*cr, sign_sym, Value::Float(1.0));
                     axes.push((ax, v));
                 }
@@ -2953,7 +3207,12 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         Ok(len as i64)
     }
 
-    fn predict_wall_set(&mut self, h: i64, w: i64, impassable_values: Vec<i32>) -> PyResult<Vec<u32>> {
+    fn predict_wall_set(
+        &mut self,
+        h: i64,
+        w: i64,
+        impassable_values: Vec<i32>,
+    ) -> PyResult<Vec<u32>> {
         use std::collections::{HashMap, HashSet};
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
@@ -2968,23 +3227,32 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let drow_sym = inner.interner.intern("drow");
         let dcol_sym = inner.interner.intern("dcol");
         let ground_sym = inner.interner.intern("is_ground");
-        let read_i = |g: &crate::graph::TypedGraph, nid: NodeID, s: crate::sym::Sym| -> Option<i64> {
-            match g.node(nid).attrs.get(&s) {
-                Some(Value::Int(i)) => Some(*i), Some(Value::Float(f)) => Some(*f as i64), _ => None,
-            }
-        };
+        let read_i =
+            |g: &crate::graph::TypedGraph, nid: NodeID, s: crate::sym::Sym| -> Option<i64> {
+                match g.node(nid).attrs.get(&s) {
+                    Some(Value::Int(i)) => Some(*i),
+                    Some(Value::Float(f)) => Some(*f as i64),
+                    _ => None,
+                }
+            };
         let read_f = |g: &crate::graph::TypedGraph, nid: NodeID, s: crate::sym::Sym| -> f64 {
             match g.node(nid).attrs.get(&s) {
-                Some(Value::Float(f)) => *f, Some(Value::Int(i)) => *i as f64, _ => 0.0,
+                Some(Value::Float(f)) => *f,
+                Some(Value::Int(i)) => *i as f64,
+                _ => 0.0,
             }
         };
         let imp: HashSet<i32> = impassable_values.into_iter().collect();
         // kind -> (drow,dcol): the per-kind forward-model velocity, from the impassable non-ground regions
         let mut vel: HashMap<i32, (i64, i64)> = HashMap::new();
         for nid in inner.graph.nodes_of_type(region_t) {
-            if read_f(&inner.graph, nid, ground_sym) == 1.0 { continue; }
+            if read_f(&inner.graph, nid, ground_sym) == 1.0 {
+                continue;
+            }
             if let Some(rv) = read_i(&inner.graph, nid, rvalue_sym) {
-                if !imp.contains(&(rv as i32)) { continue; }
+                if !imp.contains(&(rv as i32)) {
+                    continue;
+                }
                 let dr = read_f(&inner.graph, nid, drow_sym).round() as i64;
                 let dc = read_f(&inner.graph, nid, dcol_sym).round() as i64;
                 vel.insert(rv as i32, (dr, dc));
@@ -2994,21 +3262,31 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let mut cellidx: HashMap<(i64, i64), u32> = HashMap::new();
         let mut occupied: Vec<(i64, i64, i32)> = Vec::new();
         for nid in inner.graph.nodes_of_type(cell_t) {
-            let (r, c) = match (read_i(&inner.graph, nid, row_sym), read_i(&inner.graph, nid, col_sym)) {
-                (Some(r), Some(c)) => (r, c), _ => continue,
+            let (r, c) = match (
+                read_i(&inner.graph, nid, row_sym),
+                read_i(&inner.graph, nid, col_sym),
+            ) {
+                (Some(r), Some(c)) => (r, c),
+                _ => continue,
             };
             cellidx.insert((r, c), nid.0);
             if let Some(v) = read_i(&inner.graph, nid, value_sym) {
-                if imp.contains(&(v as i32)) { occupied.push((r, c, v as i32)); }
+                if imp.contains(&(v as i32)) {
+                    occupied.push((r, c, v as i32));
+                }
             }
         }
         let mut walls: HashSet<u32> = HashSet::new();
         for (r, c, v) in occupied {
-            if let Some(&id) = cellidx.get(&(r, c)) { walls.insert(id); }            // occupied NOW
+            if let Some(&id) = cellidx.get(&(r, c)) {
+                walls.insert(id);
+            } // occupied NOW
             let (dr, dc) = *vel.get(&v).unwrap_or(&(0, 0));
             let (nr, nc) = (r + dr, c + dc);
             if nr >= 0 && nr < h && nc >= 0 && nc < w {
-                if let Some(&id) = cellidx.get(&(nr, nc)) { walls.insert(id); }       // occupied NEXT (t+1)
+                if let Some(&id) = cellidx.get(&(nr, nc)) {
+                    walls.insert(id);
+                } // occupied NEXT (t+1)
             }
         }
         Ok(walls.into_iter().collect())
@@ -3118,7 +3396,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
 
         // The ρ-helper (Paper §1): live node + edge count as the
         // operational complexity proxy denominator.
-        d.set_item("rho_g_size", inner.graph.node_count() + inner.graph.edge_count())?;
+        d.set_item(
+            "rho_g_size",
+            inner.graph.node_count() + inner.graph.edge_count(),
+        )?;
         Ok(d)
     }
 
@@ -3198,11 +3479,15 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         // edge passed through, only that it exists.
         let src_node = src.to_node();
         let tgt_node = tgt.to_node();
-        self.fire_hook(py, "edge_inserted", &[
-            Py::new(py, PyNodeID::from_node(src_node))?.into_any(),
-            edge_type.to_string().into_py(py),
-            Py::new(py, PyNodeID::from_node(tgt_node))?.into_any(),
-        ])?;
+        self.fire_hook(
+            py,
+            "edge_inserted",
+            &[
+                Py::new(py, PyNodeID::from_node(src_node))?.into_any(),
+                edge_type.to_string().into_py(py),
+                Py::new(py, PyNodeID::from_node(tgt_node))?.into_any(),
+            ],
+        )?;
         Ok(())
     }
 
@@ -3221,20 +3506,21 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let Some(et) = inner.interner.lookup(edge_type) else {
             return Ok(false);
         };
-        let removed = if let Some(idx) = inner
-            .graph
-            .edge_idx(src.to_node(), et, tgt.to_node())
-        {
+        let removed = if let Some(idx) = inner.graph.edge_idx(src.to_node(), et, tgt.to_node()) {
             inner.graph.delete_edge(idx).is_some()
         } else {
             false
         };
         if removed {
-            self.fire_hook(py, "edge_deleted", &[
-                Py::new(py, PyNodeID::from_node(src.to_node()))?.into_any(),
-                edge_type.to_string().into_py(py),
-                Py::new(py, PyNodeID::from_node(tgt.to_node()))?.into_any(),
-            ])?;
+            self.fire_hook(
+                py,
+                "edge_deleted",
+                &[
+                    Py::new(py, PyNodeID::from_node(src.to_node()))?.into_any(),
+                    edge_type.to_string().into_py(py),
+                    Py::new(py, PyNodeID::from_node(tgt.to_node()))?.into_any(),
+                ],
+            )?;
         }
         Ok(removed)
     }
@@ -3281,11 +3567,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     }
 
     /// Stable identity/CAS metadata for one dense rule slot.
-    fn rule_metadata<'py>(
-        &self,
-        py: Python<'py>,
-        rule_idx: u32,
-    ) -> PyResult<Bound<'py, PyDict>> {
+    fn rule_metadata<'py>(&self, py: Python<'py>, rule_idx: u32) -> PyResult<Bound<'py, PyDict>> {
         let guard = self.inner.lock().expect("substrate mutex poisoned");
         let (uid, revision, content_hash, active) = guard
             .rule_metadata(crate::rewrite::RuleIdx(rule_idx))
@@ -3327,10 +3609,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
                 clause,
             )
             .map_err(|error| {
-                PyValueError::new_err(format!(
-                    "rule patch refused: {}",
-                    error.code()
-                ))
+                PyValueError::new_err(format!("rule patch refused: {}", error.code()))
             })?;
         let out = PyDict::new_bound(py);
         out.set_item("target_uid", receipt.uid.0)?;
@@ -3451,8 +3730,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         crate::scale_audit::begin_epoch();
         let report = {
             let mut guard = self.inner.lock().expect("substrate mutex poisoned");
-            guard.run_rules_settle(budget_per_area, max_rounds, drop_residual,
-                                   snapshot_round)
+            guard.run_rules_settle(budget_per_area, max_rounds, drop_residual, snapshot_round)
         };
         let guard = self.inner.lock().expect("substrate mutex poisoned");
         let name = |s: Sym| -> String {
@@ -3462,31 +3740,46 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
                 guard.interner.resolve(s).to_string()
             }
         };
-        let rounds: Vec<J> = report.rounds.iter().map(|r| {
-            let rows: Vec<J> = r.rows.iter().map(|row| {
+        let rounds: Vec<J> = report
+            .rounds
+            .iter()
+            .map(|r| {
+                let rows: Vec<J> = r
+                    .rows
+                    .iter()
+                    .map(|row| {
+                        serde_json::json!({
+                            "area": name(row.area),
+                            "dirty": row.dirty,
+                            "attempted": row.attempted,
+                            "steps": row.steps,
+                            "carried": row.carried,
+                        })
+                    })
+                    .collect();
                 serde_json::json!({
-                    "area": name(row.area),
-                    "dirty": row.dirty,
-                    "attempted": row.attempted,
-                    "steps": row.steps,
-                    "carried": row.carried,
+                    "steps": r.steps,
+                    "dirty_areas": r.dirty_areas,
+                    "residual": r.residual,
+                    "rows": rows,
                 })
-            }).collect();
-            serde_json::json!({
-                "steps": r.steps,
-                "dirty_areas": r.dirty_areas,
-                "residual": r.residual,
-                "rows": rows,
             })
-        }).collect();
-        let areas: Vec<J> = report.areas.iter().map(|a| serde_json::json!(name(*a))).collect();
-        json_to_pyobj(py, &serde_json::json!({
-            "steps": report.steps,
-            "rounds": rounds,
-            "n_rounds": report.rounds.len(),
-            "areas": areas,
-            "hit_max_rounds": report.hit_max_rounds,
-        }))
+            .collect();
+        let areas: Vec<J> = report
+            .areas
+            .iter()
+            .map(|a| serde_json::json!(name(*a)))
+            .collect();
+        json_to_pyobj(
+            py,
+            &serde_json::json!({
+                "steps": report.steps,
+                "rounds": rounds,
+                "n_rounds": report.rounds.len(),
+                "areas": areas,
+                "hit_max_rounds": report.hit_max_rounds,
+            }),
+        )
     }
 
     /// Relabel one rule's AREA — scheduling metadata only (no committed code
@@ -3504,16 +3797,21 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// a gate can assert the partition it is measuring without guessing.
     fn rule_areas<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let guard = self.inner.lock().expect("substrate mutex poisoned");
-        let rows: Vec<J> = guard.rules.iter().filter(|r| r.active).map(|r| {
-            serde_json::json!([
-                guard.interner.resolve(r.name).to_string(),
-                if r.area == Sym::default() {
-                    "global".to_string()
-                } else {
-                    guard.interner.resolve(r.area).to_string()
-                },
-            ])
-        }).collect();
+        let rows: Vec<J> = guard
+            .rules
+            .iter()
+            .filter(|r| r.active)
+            .map(|r| {
+                serde_json::json!([
+                    guard.interner.resolve(r.name).to_string(),
+                    if r.area == Sym::default() {
+                        "global".to_string()
+                    } else {
+                        guard.interner.resolve(r.area).to_string()
+                    },
+                ])
+            })
+            .collect();
         json_to_pyobj(py, &serde_json::json!(rows))
     }
 
@@ -3524,7 +3822,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// `Substrate::gamma_residual_capture`). Off ⇒ `add_edge`'s
     /// `Type1NoProduction` arm is byte-unchanged.
     fn set_gamma_residual_capture(&mut self, on: bool) {
-        self.inner.lock().expect("substrate mutex poisoned").set_gamma_residual_capture(on);
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .set_gamma_residual_capture(on);
     }
 
     // --- DIRTY-PROPAGATION PRECISION (block 187000) ---
@@ -3532,19 +3833,28 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// **DEFAULT OFF.** Turn on the key-precise + value-level external dirty
     /// path (see `Substrate::precise_dirty`). Off ⇒ the committed blanket.
     fn set_precise_dirty(&mut self, on: bool) {
-        self.inner.lock().expect("substrate mutex poisoned").set_precise_dirty(on);
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .set_precise_dirty(on);
     }
 
     /// **DEFAULT OFF.** Maintain the dirty-mark telemetry counters. Costs the
     /// no-op-write value comparison, so the committed path never pays it.
     fn set_dirty_telemetry(&mut self, on: bool) {
-        self.inner.lock().expect("substrate mutex poisoned").set_dirty_telemetry(on);
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .set_dirty_telemetry(on);
     }
 
     /// **THE WRONG-PRECISION FALSIFIER.** Over-aggressive predicate that skips
     /// genuinely-dirty rules; MUST break byte-identity. Measurement use only.
     fn set_dirty_overaggressive(&mut self, on: bool) {
-        self.inner.lock().expect("substrate mutex poisoned").set_dirty_overaggressive(on);
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .set_dirty_overaggressive(on);
     }
 
     /// BINDING PROJECTION (block 188000), **DEFAULT OFF**. Deduplicate a rule's
@@ -3553,14 +3863,19 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// A droppable, byte-identical mirror: it removes a RE-DERIVATION, never a
     /// DECISION.
     fn set_binding_projection(&mut self, on: bool) {
-        self.inner.lock().expect("substrate mutex poisoned").set_binding_projection(on);
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .set_binding_projection(on);
     }
 
     /// **THE WRONG-PROJECTION FALSIFIER.** Projects on the EMPTY variable set,
     /// so a rule fires at most once per visit however many distinct hubs match.
     /// MUST break byte-identity. Measurement use only.
     fn set_projection_overaggressive(&mut self, on: bool) {
-        self.inner.lock().expect("substrate mutex poisoned")
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
             .set_projection_overaggressive(on);
     }
 
@@ -3577,7 +3892,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// can exist. A droppable, byte-identical mirror: it removes an enumeration
     /// that provably yields nothing, never a DECISION.
     fn set_empty_match_proof(&mut self, on: bool) {
-        self.inner.lock().expect("substrate mutex poisoned").set_empty_match_proof(on);
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .set_empty_match_proof(on);
     }
 
     /// **THE UNSOUND-PREDICATE FALSIFIER.** Claims "empty" when a match edge
@@ -3585,7 +3903,9 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// rule that binds a one-of-a-kind edge is then silently never run. MUST
     /// break byte-identity. Measurement use only.
     fn set_empty_match_proof_unsound(&mut self, on: bool) {
-        self.inner.lock().expect("substrate mutex poisoned")
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
             .set_empty_match_proof_unsound(on);
     }
 
@@ -3598,7 +3918,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// byte-identical. The eye's where-gated mint rules fall back to full rescan
     /// (rung B's target).
     fn set_incremental_match(&mut self, on: bool) {
-        self.inner.lock().expect("substrate mutex poisoned").set_incremental_match(on);
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .set_incremental_match(on);
     }
 
     /// **THE UNSOUND-RETRACTION FALSIFIER** (block 192000). Accepts a stale
@@ -3607,7 +3930,9 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// rescan on any deleting workload. MUST break byte-identity. Measurement
     /// use only.
     fn set_incremental_match_unsound(&mut self, on: bool) {
-        self.inner.lock().expect("substrate mutex poisoned")
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
             .set_incremental_match_unsound(on);
     }
 
@@ -3621,7 +3946,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// attr-flip shape rung A named and fell back on (fire direction, add-only
     /// effects). OFF ⇒ the committed path, byte-unchanged.
     fn set_predicate_retraction(&mut self, on: bool) {
-        self.inner.lock().expect("substrate mutex poisoned").set_predicate_retraction(on);
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .set_predicate_retraction(on);
     }
 
     /// **THE UNSOUND-RETRACTION FALSIFIER** (block 194000). Drops one dirty node
@@ -3630,7 +3958,9 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// full rescan (a fired / minted observable moves). MUST break byte-identity.
     /// Measurement use only.
     fn set_predicate_retraction_unsound(&mut self, on: bool) {
-        self.inner.lock().expect("substrate mutex poisoned")
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
             .set_predicate_retraction_unsound(on);
     }
 
@@ -3641,7 +3971,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     }
 
     fn reset_empty_match_skips(&mut self) {
-        self.inner.lock().expect("substrate mutex poisoned").reset_empty_match_skips();
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .reset_empty_match_skips();
     }
 
     /// Read-only introspection: which ACTIVE rules are provably empty RIGHT NOW,
@@ -3656,34 +3989,53 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// external_events}` — dirty MARKS by the path that made them, counted at
     /// the false→true transition only.
     fn dirty_marks<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        let m = self.inner.lock().expect("substrate mutex poisoned").dirty_marks();
-        json_to_pyobj(py, &serde_json::json!({
-            "writeset": m[0], "edge_type": m[1], "external": m[2],
-            "attr_writes": m[3], "noop_attr_writes": m[4], "external_events": m[5],
-            "writeset_transitions": m[6], "edge_type_transitions": m[7],
-            "external_transitions": m[8],
-        }))
+        let m = self
+            .inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .dirty_marks();
+        json_to_pyobj(
+            py,
+            &serde_json::json!({
+                "writeset": m[0], "edge_type": m[1], "external": m[2],
+                "attr_writes": m[3], "noop_attr_writes": m[4], "external_events": m[5],
+                "writeset_transitions": m[6], "edge_type_transitions": m[7],
+                "external_transitions": m[8],
+            }),
+        )
     }
 
     fn reset_dirty_marks(&mut self) {
-        self.inner.lock().expect("substrate mutex poisoned").reset_dirty_marks();
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .reset_dirty_marks();
     }
 
     /// How many ACTIVE rules currently hold a dirty bit.
     fn dirty_rule_count(&self) -> usize {
-        self.inner.lock().expect("substrate mutex poisoned").dirty_rule_count()
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .dirty_rule_count()
     }
 
     /// `(rule, area)` for every active rule currently dirty.
     fn dirty_rule_names(&self) -> Vec<(String, String)> {
-        self.inner.lock().expect("substrate mutex poisoned").dirty_rule_names()
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .dirty_rule_names()
     }
 
     /// DIAGNOSTIC: mark every rule dirty + invalidate every cursor. Lets a
     /// measurement PROVE a precise-dirty run landed on a genuine fixpoint —
     /// force everything dirty, run the committed loop, expect ZERO steps.
     fn force_all_dirty(&mut self) {
-        self.inner.lock().expect("substrate mutex poisoned").force_all_dirty();
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .force_all_dirty();
     }
 
     /// `(rule, area)` for every active rule whose read-set contains `Attr(key)`.
@@ -3695,7 +4047,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
 
     /// The AREAS holding at least one dirty active rule, canonical order.
     fn dirty_area_names(&self) -> Vec<String> {
-        self.inner.lock().expect("substrate mutex poisoned").dirty_area_names()
+        self.inner
+            .lock()
+            .expect("substrate mutex poisoned")
+            .dirty_area_names()
     }
 
     /// ACCELERATOR (block 184000) — droppable, byte-identical vectorized mirror
@@ -3742,10 +4097,20 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         py.allow_threads(|| {
             let mut guard = self.inner.lock().expect("substrate mutex poisoned");
             crate::cognitive_tasks::retina_onset_batch(
-                &mut guard, &rod_ids, &col_ids, payloads,
-                epoch, threshold_db, refractory_epochs, perturb,
-                cell_idx.as_deref(), track_settled, stamp_rod_ids.as_deref(),
-                naive_skip, per_sensor_epoch)
+                &mut guard,
+                &rod_ids,
+                &col_ids,
+                payloads,
+                epoch,
+                threshold_db,
+                refractory_epochs,
+                perturb,
+                cell_idx.as_deref(),
+                track_settled,
+                stamp_rod_ids.as_deref(),
+                naive_skip,
+                per_sensor_epoch,
+            )
         })
     }
 
@@ -3780,9 +4145,20 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         py.allow_threads(|| {
             let mut guard = self.inner.lock().expect("substrate mutex poisoned");
             crate::cognitive_tasks::retina_event_task_batch(
-                &mut guard, retina_id, edge_type, kind, marker_key, dims,
-                sort_mode, &prefix, input_epoch, logical_time, order,
-                since_epoch, perturb)
+                &mut guard,
+                retina_id,
+                edge_type,
+                kind,
+                marker_key,
+                dims,
+                sort_mode,
+                &prefix,
+                input_epoch,
+                logical_time,
+                order,
+                since_epoch,
+                perturb,
+            )
         })
     }
 
@@ -3814,8 +4190,14 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// reuse the exact same cross-frame identity machinery instead of
     /// duplicating it — see framebuffer.rs). This method only unlocks
     /// the mutex and forwards.
-    fn segment(&mut self, game: pyo3::PyRef<'_, PyNodeID>, h: usize, w: usize,
-               values: Vec<i32>, cell_ids: Vec<i64>) {
+    fn segment(
+        &mut self,
+        game: pyo3::PyRef<'_, PyNodeID>,
+        h: usize,
+        w: usize,
+        values: Vec<i32>,
+        cell_ids: Vec<i64>,
+    ) {
         let mut g = self.inner.lock().expect("substrate mutex poisoned");
         g.segment_and_track(game.to_node(), h, w, &values, &cell_ids);
     }
@@ -3827,8 +4209,15 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// components, static/dominant background as one, then track them through
     /// the SAME cross-frame identity machinery `segment` uses. ADDITIVE — the
     /// exact-value `segment` above is unchanged and remains the default.
-    fn segment_motion(&mut self, game: pyo3::PyRef<'_, PyNodeID>, h: usize, w: usize,
-                      vy: Vec<f64>, vx: Vec<f64>, cell_ids: Vec<i64>) {
+    fn segment_motion(
+        &mut self,
+        game: pyo3::PyRef<'_, PyNodeID>,
+        h: usize,
+        w: usize,
+        vy: Vec<f64>,
+        vx: Vec<f64>,
+        cell_ids: Vec<i64>,
+    ) {
         let mut g = self.inner.lock().expect("substrate mutex poisoned");
         g.segment_motion_and_track(game.to_node(), h, w, &vy, &vx, &cell_ids);
     }
@@ -3950,7 +4339,15 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             let identity_sym = g.interner.intern(identity_key);
             let category_sym = category_key.map(|s| g.interner.intern(s));
             let extent_sym = extent_key.map(|s| g.interner.intern(s));
-            g.track_identity(&prev, &cur, feature_sym, category_sym, extent_sym, identity_sym, radius)
+            g.track_identity(
+                &prev,
+                &cur,
+                feature_sym,
+                category_sym,
+                extent_sym,
+                identity_sym,
+                radius,
+            )
         };
         let d = PyDict::new_bound(py);
         // Returns `NodeID` objects (not bare ints) — like `wire_relation`/
@@ -3959,9 +4356,13 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         // `Py::new` (not a bare `PyNodeID`) since `PyDict::set_item` needs
         // `ToPyObject`, which a raw pyclass struct doesn't implement --
         // only its GIL-allocated `Py<T>` handle does.
-        let mut matched: Vec<(Py<PyNodeID>, Py<PyNodeID>)> = Vec::with_capacity(result.matched.len());
+        let mut matched: Vec<(Py<PyNodeID>, Py<PyNodeID>)> =
+            Vec::with_capacity(result.matched.len());
         for (p, c) in &result.matched {
-            matched.push((Py::new(py, PyNodeID::from_node(*p))?, Py::new(py, PyNodeID::from_node(*c))?));
+            matched.push((
+                Py::new(py, PyNodeID::from_node(*p))?,
+                Py::new(py, PyNodeID::from_node(*c))?,
+            ));
         }
         let mut births: Vec<Py<PyNodeID>> = Vec::with_capacity(result.births.len());
         for n in &result.births {
@@ -3998,6 +4399,41 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     ///
     /// Returns `{"quanta": int, "portals": int, "frontiers": int,
     /// "reused": int, "split": int}`.
+    /// Feasible-set selection over a candidate family — a one-line handoff to
+    /// `future_manifold::feasible_selection`. The decision rule, the set-tie and
+    /// every fail-closed condition live in Rust; this only marshals node ids and
+    /// hands the record back as a dict.
+    fn feasible_selection<'py>(
+        &mut self,
+        py: Python<'py>,
+        episode: PyRef<'_, PyNodeID>,
+        policy: PyRef<'_, PyNodeID>,
+        candidates: Vec<PyRef<'_, PyNodeID>>,
+    ) -> PyResult<Option<Bound<'py, PyDict>>> {
+        let cands: Vec<NodeID> = candidates.iter().map(|c| NodeID(c.value)).collect();
+        let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+        let inner = &mut *guard;
+        let Some(sel) = crate::future_manifold::feasible_selection(
+            &inner.graph,
+            &mut inner.interner,
+            NodeID(episode.value),
+            NodeID(policy.value),
+            &cands,
+        ) else {
+            return Ok(None);
+        };
+        let ids = |v: &[NodeID]| -> Vec<u32> { v.iter().map(|n| n.0).collect() };
+        let out = PyDict::new_bound(py);
+        out.set_item("unestablished", ids(&sel.unestablished))?;
+        out.set_item("infeasible", ids(&sel.infeasible))?;
+        out.set_item("feasible", ids(&sel.feasible))?;
+        out.set_item("minimal", ids(&sel.minimal))?;
+        out.set_item("selected", ids(&sel.selected))?;
+        out.set_item("withheld_minimal", ids(&sel.withheld_minimal))?;
+        out.set_item("tie_breadth", sel.tie_breadth)?;
+        Ok(Some(out))
+    }
+
     #[pyo3(signature = (
         game, space_ndim, body_key, passable_values, focus_lo, focus_hi, epoch,
         body_extents=None, body_offsets=None, min_extent=None
@@ -4040,8 +4476,8 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         };
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
-        let summary = crate::space_quantize::space_quantize(inner, params)
-            .map_err(PyValueError::new_err)?;
+        let summary =
+            crate::space_quantize::space_quantize(inner, params).map_err(PyValueError::new_err)?;
         let d = PyDict::new_bound(py);
         d.set_item("quanta", summary.quanta)?;
         d.set_item("portals", summary.portals)?;
@@ -4064,18 +4500,17 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         crate::net_forward::net_forward_core(
-            &inner.graph, &inner.interner, NodeID(assemblage), inputs,
+            &inner.graph,
+            &inner.interner,
+            NodeID(assemblage),
+            inputs,
         )
     }
 
     /// BATCH reflex-net serve path. Graph-resident tensors are loaded once,
     /// then reused for every row in caller order. This is scalar
     /// `net_forward` semantics with one FFI crossing and one weight load.
-    fn net_forward_batch(
-        &self,
-        assemblage: u32,
-        inputs: Vec<Vec<f64>>,
-    ) -> Vec<Vec<f64>> {
+    fn net_forward_batch(&self, assemblage: u32, inputs: Vec<Vec<f64>>) -> Vec<Vec<f64>> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         crate::net_forward::net_forward_batch_core(
@@ -4099,13 +4534,25 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// residual passed up the stack. No backprop, online, per-observation.
     /// Returns the final residual magnitude Σr² (falls as depth/training
     /// grow). Mutates the blocks' weights in place.
-    fn cascade_collapse_step(&self, cascade: u32, input: Vec<f64>,
-                             target: Vec<f64>, eta: f64) -> f64 {
+    fn cascade_collapse_step(
+        &self,
+        cascade: u32,
+        input: Vec<f64>,
+        target: Vec<f64>,
+        eta: f64,
+    ) -> f64 {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
-        let SubstrateRs { graph, interner, .. } = &mut *inner;
+        let SubstrateRs {
+            graph, interner, ..
+        } = &mut *inner;
         crate::net_forward::cascade_collapse_step(
-            graph, interner, NodeID(cascade), &input, &target, eta,
+            graph,
+            interner,
+            NodeID(cascade),
+            &input,
+            &target,
+            eta,
         )
     }
 
@@ -4117,12 +4564,20 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// component covers the input's shape — the composite defers to cognition.
     /// A thin handoff to `net_forward::composite_forward` (cf. `net_forward`);
     /// the routing is grounded shape-residual, never a trained gate.
-    fn composite_forward(&self, composite: u32, input: Vec<f64>,
-                         sig_keys: Vec<String>) -> (Vec<f64>, i64, f64) {
+    fn composite_forward(
+        &self,
+        composite: u32,
+        input: Vec<f64>,
+        sig_keys: Vec<String>,
+    ) -> (Vec<f64>, i64, f64) {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         crate::net_forward::composite_forward(
-            &inner.graph, &inner.interner, NodeID(composite), input, sig_keys,
+            &inner.graph,
+            &inner.interner,
+            NodeID(composite),
+            input,
+            sig_keys,
         )
     }
 
@@ -4135,13 +4590,25 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// (input, target) pair per call (mechanical — the DECISION to train is
     /// a rule); over observations the net self-trains online, no external
     /// optimizer. This is "collapse and surprise within the net."
-    fn net_collapse_step(&self, assemblage: u32, inputs: Vec<f64>,
-                         target: Vec<f64>, eta: f64) -> f64 {
+    fn net_collapse_step(
+        &self,
+        assemblage: u32,
+        inputs: Vec<f64>,
+        target: Vec<f64>,
+        eta: f64,
+    ) -> f64 {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
-        let SubstrateRs { graph, interner, .. } = &mut *inner;
+        let SubstrateRs {
+            graph, interner, ..
+        } = &mut *inner;
         crate::net_forward::net_collapse_step(
-            graph, interner, NodeID(assemblage), &inputs, &target, eta,
+            graph,
+            interner,
+            NodeID(assemblage),
+            &inputs,
+            &target,
+            eta,
         )
     }
 
@@ -4164,7 +4631,9 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         }
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
-        let SubstrateRs { graph, interner, .. } = &mut *inner;
+        let SubstrateRs {
+            graph, interner, ..
+        } = &mut *inner;
         Ok(crate::net_forward::net_collapse_batch_ordered(
             graph,
             interner,
@@ -4225,7 +4694,8 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             detect_cycles,
             false,
             1,
-        ).steps
+        )
+        .steps
     }
 
     /// Execute one explicit native phase plan. This is the migration seam for
@@ -4254,7 +4724,13 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             let mut guard = self.inner.lock().expect("substrate mutex poisoned");
             crate::cognitive_cycle::advance_cognitive_epoch(&mut guard);
             let report = crate::cognitive_cycle::execute(
-                &mut *guard, plan, max_steps, detect_cycles, trace, n_workers);
+                &mut *guard,
+                plan,
+                max_steps,
+                detect_cycles,
+                trace,
+                n_workers,
+            );
             let prepared = synchronous_system_two_tasks.then(|| {
                 crate::cognitive_tasks::prepare_requested_class(
                     &mut guard,
@@ -4268,13 +4744,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             // Preserve the explicit cycle's synchronous API while releasing
             // the live-graph mutex for graph-authored pure System-2 work.
             // Other task classes remain untouched by this compatibility seam.
-            let completed = py.allow_threads(|| {
-                crate::cognitive_tasks::execute_prepared(prepared)
-            });
+            let completed = py.allow_threads(|| crate::cognitive_tasks::execute_prepared(prepared));
             let (summary, followup) = py.allow_threads(|| {
                 let mut guard = self.inner.lock().expect("substrate mutex poisoned");
-                let summary =
-                    crate::cognitive_tasks::fold_completed(&mut guard, completed);
+                let summary = crate::cognitive_tasks::fold_completed(&mut guard, completed);
                 let followup = if summary.requested > 0 {
                     let remaining = max_steps.saturating_sub(report.steps);
                     if remaining > 0 {
@@ -4338,10 +4811,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         out.set_item("system_one_commits", report.system_one_commits)?;
         out.set_item("system_two_escalations", report.system_two_escalations)?;
         out.set_item("system_two_stale", report.system_two_stale)?;
-        out.set_item(
-            "system_two_lease_blocked",
-            report.system_two_lease_blocked,
-        )?;
+        out.set_item("system_two_lease_blocked", report.system_two_lease_blocked)?;
         out.set_item("system_two_steps", report.system_two_steps)?;
         if let Some(tasks) = &report.task_summary {
             out.set_item("tasks_requested", tasks.requested)?;
@@ -4351,7 +4821,9 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             out.set_item("task_workers_used", tasks.workers_used)?;
             out.set_item("task_wall_micros", tasks.wall_micros)?;
         }
-        let events: Vec<(usize, &str, usize, Option<u64>)> = report.trace.iter()
+        let events: Vec<(usize, &str, usize, Option<u64>)> = report
+            .trace
+            .iter()
             .map(|e| (e.sequence, e.phase, e.progressed, e.fingerprint))
             .collect();
         out.set_item("trace", events)?;
@@ -4364,27 +4836,38 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     fn area_schedule<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let guard = self.inner.lock().expect("substrate mutex poisoned");
         let schedule = crate::area_scheduler::derive(&guard.rules);
-        let areas: Vec<J> = schedule.areas.iter().map(|a| {
-            serde_json::json!({
-                "area": if a.area == Sym::default() {
-                    "global"
-                } else {
-                    guard.interner.resolve(a.area)
-                },
-                "rules": a.rule_indices,
+        let areas: Vec<J> = schedule
+            .areas
+            .iter()
+            .map(|a| {
+                serde_json::json!({
+                    "area": if a.area == Sym::default() {
+                        "global"
+                    } else {
+                        guard.interner.resolve(a.area)
+                    },
+                    "rules": a.rule_indices,
+                })
             })
-        }).collect();
-        let dependencies: Vec<J> = schedule.dependencies.iter()
+            .collect();
+        let dependencies: Vec<J> = schedule
+            .dependencies
+            .iter()
             .map(|(a, b)| serde_json::json!([a, b]))
             .collect();
-        let components: Vec<J> = schedule.components.iter()
+        let components: Vec<J> = schedule
+            .components
+            .iter()
             .map(|c| serde_json::json!(c))
             .collect();
-        json_to_pyobj(py, &serde_json::json!({
-            "areas": areas,
-            "dependencies": dependencies,
-            "components": components,
-        }))
+        json_to_pyobj(
+            py,
+            &serde_json::json!({
+                "areas": areas,
+                "dependencies": dependencies,
+                "components": components,
+            }),
+        )
     }
 
     /// Execute every graph-requested pure CognitiveTask on native workers,
@@ -4423,15 +4906,9 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     ) -> Option<(u32, String, String)> {
         let mut guard = self.inner.lock().expect("substrate mutex poisoned");
         let ordered: Vec<NodeID> = ordered.into_iter().map(NodeID).collect();
-        let excluded: rustc_hash::FxHashSet<NodeID> =
-            excluded.into_iter().map(NodeID).collect();
-        crate::reflex_runtime::next_ready(
-            &mut guard, NodeID(agent), now, &ordered, &excluded)
-            .map(|dispatch| (
-                dispatch.node.0,
-                dispatch.name,
-                dispatch.response,
-            ))
+        let excluded: rustc_hash::FxHashSet<NodeID> = excluded.into_iter().map(NodeID).collect();
+        crate::reflex_runtime::next_ready(&mut guard, NodeID(agent), now, &ordered, &excluded)
+            .map(|dispatch| (dispatch.node.0, dispatch.name, dispatch.response))
     }
 
     /// ADMISSIBLE VECTORIZED STENCIL FAST PATH (block 134000,
@@ -4498,24 +4975,33 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             term_from_json(&j, &mut inner.terms, &mut inner.interner)
                 .map_err(|e| PyValueError::new_err(format!("bad options Term: {:?}", e)))?
         };
-        let mut opt_idx = |t: Option<&Bound<'_, PyAny>>, label: &str| -> PyResult<Option<TermIdx>> {
-            match t {
-                None => Ok(None),
-                Some(b) => {
-                    let j = pyobj_to_json_term(py, b, WireMode::Structural)?;
-                    Ok(Some(term_from_json(&j, &mut inner.terms, &mut inner.interner).map_err(
-                        |e| PyValueError::new_err(format!("bad {} Term: {:?}", label, e)),
-                    )?))
+        let mut opt_idx =
+            |t: Option<&Bound<'_, PyAny>>, label: &str| -> PyResult<Option<TermIdx>> {
+                match t {
+                    None => Ok(None),
+                    Some(b) => {
+                        let j = pyobj_to_json_term(py, b, WireMode::Structural)?;
+                        Ok(Some(
+                            term_from_json(&j, &mut inner.terms, &mut inner.interner).map_err(
+                                |e| PyValueError::new_err(format!("bad {} Term: {:?}", label, e)),
+                            )?,
+                        ))
+                    }
                 }
-            }
-        };
+            };
         let fail_idx = opt_idx(fail, "fail")?;
         let value_idx = opt_idx(value, "value")?;
         let accept_idx = opt_idx(accept, "accept")?;
         let assign_sym = inner.interner.intern(assign_edge);
         let env_v = pydict_to_env(py, env, &mut inner.interner)?;
         let result = search_recurse(
-            inner, open_idx, options_idx, assign_sym, fail_idx, value_idx, accept_idx,
+            inner,
+            open_idx,
+            options_idx,
+            assign_sym,
+            fail_idx,
+            value_idx,
+            accept_idx,
             &env_v,
         );
         inner.terms.nodes.truncate(snapshot);
@@ -4537,8 +5023,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     fn install_field_grammar_rules(&mut self) -> PyResult<usize> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
-        crate::codec::install_field_grammar_rules(&mut *inner)
-            .map_err(PyValueError::new_err)
+        crate::codec::install_field_grammar_rules(&mut *inner).map_err(PyValueError::new_err)
     }
 
     /// Number of rule SLOTS, i.e. the index space `add_rule` hands out
@@ -4625,9 +5110,15 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         for (i, rule_json) in arr.iter().enumerate() {
             let rule = parse_rule_json(rule_json, &mut inner.terms, &mut inner.interner)
                 .map_err(|e| PyValueError::new_err(format!("import_rules: rule {}: {}", i, e)))?;
-            let active = rule_json.get("active").and_then(|v| v.as_bool()).unwrap_or(true);
+            let active = rule_json
+                .get("active")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(true);
             let idx = inner.add_rule(rule);
-            debug_assert_eq!(idx.0 as usize, i, "import_rules: index drift from export order");
+            debug_assert_eq!(
+                idx.0 as usize, i,
+                "import_rules: index drift from export order"
+            );
             if !active {
                 inner.remove_rule(idx);
             }
@@ -4667,7 +5158,9 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             "B" => CabacSliceType::B,
             other => {
                 return Err(PyValueError::new_err(format!(
-                    "unknown slice_type: {}", other)))
+                    "unknown slice_type: {}",
+                    other
+                )))
             }
         };
         let ctxs = init_contexts(st, cabac_init_idc, slice_qp);
@@ -4703,8 +5196,8 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         skips: Vec<u8>,
     ) -> PyResult<Bound<'py, pyo3::types::PyTuple>> {
         use crate::cabac::{
-            init_contexts, mb_skip_flag_ctx_idx, mb_skip_flag_ctx_offset,
-            CabacDecoder, CabacEncoder, CabacSliceType,
+            init_contexts, mb_skip_flag_ctx_idx, mb_skip_flag_ctx_offset, CabacDecoder,
+            CabacEncoder, CabacSliceType,
         };
         let st = match slice_type {
             "P" | "SP" => CabacSliceType::P,
@@ -4785,8 +5278,8 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         mbs: Vec<(u8, u8)>,
     ) -> PyResult<Bound<'py, pyo3::types::PyTuple>> {
         use crate::cabac::{
-            decode_p_mb_type, encode_p_mb_type, init_contexts,
-            mb_skip_flag_ctx_idx, CabacDecoder, CabacEncoder, CabacSliceType,
+            decode_p_mb_type, encode_p_mb_type, init_contexts, mb_skip_flag_ctx_idx, CabacDecoder,
+            CabacEncoder, CabacSliceType,
         };
         let st = CabacSliceType::P;
         let mb_height = (mbs.len() + mb_width - 1) / mb_width;
@@ -4798,8 +5291,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             let c = i % mb_width;
             let left = if c == 0 { None } else { enc_grid[r][c - 1] };
             let top = if r == 0 { None } else { enc_grid[r - 1][c] };
-            let ctx_idx =
-                mb_skip_flag_ctx_idx(st, left, top).unwrap();
+            let ctx_idx = mb_skip_flag_ctx_idx(st, left, top).unwrap();
             enc.encode_bin(&mut enc_ctxs[ctx_idx], skip);
             enc_grid[r][c] = Some(skip);
             if skip == 0 {
@@ -4818,8 +5310,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             let c = i % mb_width;
             let left = if c == 0 { None } else { dec_grid[r][c - 1] };
             let top = if r == 0 { None } else { dec_grid[r - 1][c] };
-            let ctx_idx =
-                mb_skip_flag_ctx_idx(st, left, top).unwrap();
+            let ctx_idx = mb_skip_flag_ctx_idx(st, left, top).unwrap();
             let skip = dec.decode_bin(&mut dec_ctxs[ctx_idx]);
             dec_grid[r][c] = Some(skip);
             let mb_type = if skip == 0 {
@@ -4834,10 +5325,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let buf_py = pyo3::types::PyBytes::new_bound(py, &enc.buffer);
         let dec_py = pyo3::types::PyList::empty_bound(py);
         for (s, m) in decoded.iter() {
-            let t = pyo3::types::PyTuple::new_bound(
-                py,
-                &[s.into_py(py), m.into_py(py)],
-            );
+            let t = pyo3::types::PyTuple::new_bound(py, &[s.into_py(py), m.into_py(py)]);
             dec_py.append(t)?;
         }
         let bytes_per_mb: f64 = enc.buffer.len() as f64 / mbs.len() as f64;
@@ -4863,8 +5351,8 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         deltas: Vec<i32>,
     ) -> PyResult<Bound<'py, pyo3::types::PyTuple>> {
         use crate::cabac::{
-            decode_mb_qp_delta, encode_mb_qp_delta, init_contexts,
-            CabacDecoder, CabacEncoder, CabacSliceType,
+            decode_mb_qp_delta, encode_mb_qp_delta, init_contexts, CabacDecoder, CabacEncoder,
+            CabacSliceType,
         };
         let st = CabacSliceType::P;
         let mut enc_ctxs = init_contexts(st, cabac_init_idc, slice_qp);
@@ -4915,10 +5403,9 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         mbs: Vec<(u8, u8, i32, u8, u8)>,
     ) -> PyResult<Bound<'py, pyo3::types::PyTuple>> {
         use crate::cabac::{
-            decode_cbp_chroma, decode_cbp_luma, decode_mb_qp_delta,
-            decode_p_mb_type, encode_cbp_chroma, encode_cbp_luma,
-            encode_mb_qp_delta, encode_p_mb_type, init_contexts,
-            mb_skip_flag_ctx_idx, CabacDecoder, CabacEncoder, CabacSliceType,
+            decode_cbp_chroma, decode_cbp_luma, decode_mb_qp_delta, decode_p_mb_type,
+            encode_cbp_chroma, encode_cbp_luma, encode_mb_qp_delta, encode_p_mb_type,
+            init_contexts, mb_skip_flag_ctx_idx, CabacDecoder, CabacEncoder, CabacSliceType,
         };
         let st = CabacSliceType::P;
         let mb_height = (mbs.len() + mb_width - 1) / mb_width;
@@ -4937,24 +5424,20 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             let skip_ctx = mb_skip_flag_ctx_idx(st, sleft, stop).unwrap();
             enc.encode_bin(&mut enc_ctxs[skip_ctx], skip);
             enc_skip[r][c] = Some(skip);
-            if skip == 1 { continue; }
+            if skip == 1 {
+                continue;
+            }
 
             encode_p_mb_type(&mut enc, &mut enc_ctxs, mb_type);
-            encode_mb_qp_delta(
-                &mut enc, &mut enc_ctxs, qpd, prev_qpd_zero,
-            );
+            encode_mb_qp_delta(&mut enc, &mut enc_ctxs, qpd, prev_qpd_zero);
             prev_qpd_zero = qpd == 0;
 
             let lleft = if c == 0 { 0 } else { enc_luma[r][c - 1] };
             let ltop = if r == 0 { 0 } else { enc_luma[r - 1][c] };
             let cleft = if c == 0 { 0 } else { enc_chroma[r][c - 1] };
             let ctop = if r == 0 { 0 } else { enc_chroma[r - 1][c] };
-            encode_cbp_luma(
-                &mut enc, &mut enc_ctxs, cbp_l, lleft, ltop,
-            );
-            encode_cbp_chroma(
-                &mut enc, &mut enc_ctxs, cbp_c, cleft, ctop,
-            );
+            encode_cbp_luma(&mut enc, &mut enc_ctxs, cbp_l, lleft, ltop);
+            encode_cbp_chroma(&mut enc, &mut enc_ctxs, cbp_c, cleft, ctop);
             enc_luma[r][c] = cbp_l;
             enc_chroma[r][c] = cbp_c;
         }
@@ -4966,8 +5449,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let mut dec_skip = vec![vec![None::<u8>; mb_width]; mb_height];
         let mut dec_luma = vec![vec![0u8; mb_width]; mb_height];
         let mut dec_chroma = vec![vec![0u8; mb_width]; mb_height];
-        let mut decoded: Vec<(u8, u8, i32, u8, u8)> =
-            Vec::with_capacity(mbs.len());
+        let mut decoded: Vec<(u8, u8, i32, u8, u8)> = Vec::with_capacity(mbs.len());
         let mut prev_zero = true;
         for i in 0..mbs.len() {
             let r = i / mb_width;
@@ -4982,21 +5464,15 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
                 continue;
             }
             let (mb_type, _) = decode_p_mb_type(&mut dec, &mut dec_ctxs);
-            let (qpd, _) = decode_mb_qp_delta(
-                &mut dec, &mut dec_ctxs, prev_zero,
-            );
+            let (qpd, _) = decode_mb_qp_delta(&mut dec, &mut dec_ctxs, prev_zero);
             prev_zero = qpd == 0;
 
             let lleft = if c == 0 { 0 } else { dec_luma[r][c - 1] };
             let ltop = if r == 0 { 0 } else { dec_luma[r - 1][c] };
             let cleft = if c == 0 { 0 } else { dec_chroma[r][c - 1] };
             let ctop = if r == 0 { 0 } else { dec_chroma[r - 1][c] };
-            let (cbp_l, _) = decode_cbp_luma(
-                &mut dec, &mut dec_ctxs, lleft, ltop,
-            );
-            let (cbp_c, _) = decode_cbp_chroma(
-                &mut dec, &mut dec_ctxs, cleft, ctop,
-            );
+            let (cbp_l, _) = decode_cbp_luma(&mut dec, &mut dec_ctxs, lleft, ltop);
+            let (cbp_c, _) = decode_cbp_chroma(&mut dec, &mut dec_ctxs, cleft, ctop);
             dec_luma[r][c] = cbp_l;
             dec_chroma[r][c] = cbp_c;
             decoded.push((0, mb_type, qpd, cbp_l, cbp_c));
@@ -5008,8 +5484,11 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             let t = pyo3::types::PyTuple::new_bound(
                 py,
                 &[
-                    s.into_py(py), m.into_py(py),
-                    q.into_py(py), l.into_py(py), ch.into_py(py),
+                    s.into_py(py),
+                    m.into_py(py),
+                    q.into_py(py),
+                    l.into_py(py),
+                    ch.into_py(py),
                 ],
             );
             dec_py.append(t)?;
@@ -5036,8 +5515,8 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         blocks: Vec<Vec<i32>>,
     ) -> PyResult<Bound<'py, pyo3::types::PyTuple>> {
         use crate::cabac::{
-            decode_residual_4x4_luma, encode_residual_4x4_luma,
-            init_contexts, CabacDecoder, CabacEncoder, CabacSliceType,
+            decode_residual_4x4_luma, encode_residual_4x4_luma, init_contexts, CabacDecoder,
+            CabacEncoder, CabacSliceType,
         };
         let n = blocks.len();
         let mut enc_ctxs = init_contexts(CabacSliceType::P, cabac_init_idc, slice_qp);
@@ -5045,7 +5524,9 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         for block in &blocks {
             if block.len() != 16 {
                 return Err(PyValueError::new_err(format!(
-                    "each block must be 16 coefs; got {}", block.len())));
+                    "each block must be 16 coefs; got {}",
+                    block.len()
+                )));
             }
             let mut arr = [0i32; 16];
             for (i, &v) in block.iter().enumerate() {
@@ -5059,8 +5540,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
         let dec_py = pyo3::types::PyList::empty_bound(py);
         for _ in 0..n {
-            let (decoded, _) = decode_residual_4x4_luma(
-                &mut dec, &mut dec_ctxs);
+            let (decoded, _) = decode_residual_4x4_luma(&mut dec, &mut dec_ctxs);
             let block_py = pyo3::types::PyList::new_bound(py, &decoded);
             dec_py.append(block_py)?;
         }
@@ -5089,38 +5569,39 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         coefs: Vec<i32>,
     ) -> PyResult<Bound<'py, pyo3::types::PyTuple>> {
         use crate::cabac::{
-            decode_residual_block, encode_residual_block, init_contexts,
-            res_block_spec, CabacDecoder, CabacEncoder, CabacSliceType,
-            CtxBlockCat,
+            decode_residual_block, encode_residual_block, init_contexts, res_block_spec,
+            CabacDecoder, CabacEncoder, CabacSliceType, CtxBlockCat,
         };
         let cat_enum = match cat {
             "intra16x16_dc" => CtxBlockCat::Intra16x16Dc,
             "intra16x16_ac" => CtxBlockCat::Intra16x16Ac,
-            "luma_4x4"      => CtxBlockCat::Luma4x4,
-            "chroma_dc"     => CtxBlockCat::ChromaDc,
-            "chroma_ac"     => CtxBlockCat::ChromaAc,
-            "luma_8x8"      => CtxBlockCat::Luma8x8,
+            "luma_4x4" => CtxBlockCat::Luma4x4,
+            "chroma_dc" => CtxBlockCat::ChromaDc,
+            "chroma_ac" => CtxBlockCat::ChromaAc,
+            "luma_8x8" => CtxBlockCat::Luma8x8,
             other => {
                 return Err(PyValueError::new_err(format!(
-                    "unknown ctxBlockCat: {}", other)))
+                    "unknown ctxBlockCat: {}",
+                    other
+                )))
             }
         };
         let spec = res_block_spec(cat_enum);
         if coefs.len() != spec.n_coefs {
             return Err(PyValueError::new_err(format!(
                 "cat {} expects {} coefs; got {}",
-                cat, spec.n_coefs, coefs.len())));
+                cat,
+                spec.n_coefs,
+                coefs.len()
+            )));
         }
-        let mut enc_ctxs = init_contexts(
-            CabacSliceType::P, cabac_init_idc, slice_qp);
+        let mut enc_ctxs = init_contexts(CabacSliceType::P, cabac_init_idc, slice_qp);
         let mut enc = CabacEncoder::new();
         encode_residual_block(&mut enc, &mut enc_ctxs, spec, &coefs);
         enc.finish();
-        let mut dec_ctxs = init_contexts(
-            CabacSliceType::P, cabac_init_idc, slice_qp);
+        let mut dec_ctxs = init_contexts(CabacSliceType::P, cabac_init_idc, slice_qp);
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
-        let (decoded, _) = decode_residual_block(
-            &mut dec, &mut dec_ctxs, spec);
+        let (decoded, _) = decode_residual_block(&mut dec, &mut dec_ctxs, spec);
         let buf_py = pyo3::types::PyBytes::new_bound(py, &enc.buffer);
         let dec_py = pyo3::types::PyList::new_bound(py, &decoded);
         Ok(pyo3::types::PyTuple::new_bound(
@@ -5138,24 +5619,20 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         values: Vec<i32>,
     ) -> PyResult<Bound<'py, pyo3::types::PyTuple>> {
         use crate::cabac::{
-            decode_mvd, encode_mvd, init_contexts,
-            CabacDecoder, CabacEncoder, CabacSliceType,
+            decode_mvd, encode_mvd, init_contexts, CabacDecoder, CabacEncoder, CabacSliceType,
             MVD_L0_X_CTX_OFFSET,
         };
-        let mut enc_ctxs = init_contexts(
-            CabacSliceType::P, cabac_init_idc, slice_qp);
+        let mut enc_ctxs = init_contexts(CabacSliceType::P, cabac_init_idc, slice_qp);
         let mut enc = CabacEncoder::new();
         for &v in &values {
             encode_mvd(&mut enc, &mut enc_ctxs, MVD_L0_X_CTX_OFFSET, v);
         }
         enc.finish();
-        let mut dec_ctxs = init_contexts(
-            CabacSliceType::P, cabac_init_idc, slice_qp);
+        let mut dec_ctxs = init_contexts(CabacSliceType::P, cabac_init_idc, slice_qp);
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
         let mut decoded = Vec::with_capacity(values.len());
         for _ in 0..values.len() {
-            let (v, _) = decode_mvd(
-                &mut dec, &mut dec_ctxs, MVD_L0_X_CTX_OFFSET);
+            let (v, _) = decode_mvd(&mut dec, &mut dec_ctxs, MVD_L0_X_CTX_OFFSET);
             decoded.push(v);
         }
         let buf_py = pyo3::types::PyBytes::new_bound(py, &enc.buffer);
@@ -5175,18 +5652,16 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         values: Vec<u8>,
     ) -> PyResult<Bound<'py, pyo3::types::PyTuple>> {
         use crate::cabac::{
-            decode_p_sub_mb_type, encode_p_sub_mb_type, init_contexts,
-            CabacDecoder, CabacEncoder, CabacSliceType,
+            decode_p_sub_mb_type, encode_p_sub_mb_type, init_contexts, CabacDecoder, CabacEncoder,
+            CabacSliceType,
         };
-        let mut enc_ctxs = init_contexts(
-            CabacSliceType::P, cabac_init_idc, slice_qp);
+        let mut enc_ctxs = init_contexts(CabacSliceType::P, cabac_init_idc, slice_qp);
         let mut enc = CabacEncoder::new();
         for &v in &values {
             encode_p_sub_mb_type(&mut enc, &mut enc_ctxs, v);
         }
         enc.finish();
-        let mut dec_ctxs = init_contexts(
-            CabacSliceType::P, cabac_init_idc, slice_qp);
+        let mut dec_ctxs = init_contexts(CabacSliceType::P, cabac_init_idc, slice_qp);
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
         let mut decoded = Vec::with_capacity(values.len());
         for _ in 0..values.len() {
@@ -5196,7 +5671,8 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let buf_py = pyo3::types::PyBytes::new_bound(py, &enc.buffer);
         let dec_py = pyo3::types::PyList::new_bound(py, &decoded);
         Ok(pyo3::types::PyTuple::new_bound(
-            py, &[buf_py.into_any(), dec_py.into_any()],
+            py,
+            &[buf_py.into_any(), dec_py.into_any()],
         ))
     }
 
@@ -5212,12 +5688,11 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         values: Vec<u8>,
     ) -> PyResult<Bound<'py, pyo3::types::PyTuple>> {
         use crate::cabac::{
-            decode_ref_idx_l0, encode_ref_idx_l0, init_contexts,
-            ref_idx_bin0_ctx_inc, CabacDecoder, CabacEncoder, CabacSliceType,
+            decode_ref_idx_l0, encode_ref_idx_l0, init_contexts, ref_idx_bin0_ctx_inc,
+            CabacDecoder, CabacEncoder, CabacSliceType,
         };
         let height = (values.len() + mb_width - 1) / mb_width;
-        let mut enc_ctxs = init_contexts(
-            CabacSliceType::P, cabac_init_idc, slice_qp);
+        let mut enc_ctxs = init_contexts(CabacSliceType::P, cabac_init_idc, slice_qp);
         let mut enc = CabacEncoder::new();
         let mut enc_grid = vec![vec![None::<u8>; mb_width]; height];
         for (i, &v) in values.iter().enumerate() {
@@ -5226,16 +5701,12 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             let left = if c == 0 { None } else { enc_grid[r][c - 1] };
             let top = if r == 0 { None } else { enc_grid[r - 1][c] };
             let inc = ref_idx_bin0_ctx_inc(left, top);
-            encode_ref_idx_l0(
-                &mut enc, &mut enc_ctxs, v, inc,
-                num_ref_idx_active_minus1,
-            );
+            encode_ref_idx_l0(&mut enc, &mut enc_ctxs, v, inc, num_ref_idx_active_minus1);
             enc_grid[r][c] = Some(v);
         }
         enc.finish();
 
-        let mut dec_ctxs = init_contexts(
-            CabacSliceType::P, cabac_init_idc, slice_qp);
+        let mut dec_ctxs = init_contexts(CabacSliceType::P, cabac_init_idc, slice_qp);
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
         let mut dec_grid = vec![vec![None::<u8>; mb_width]; height];
         let mut decoded = Vec::with_capacity(values.len());
@@ -5245,17 +5716,15 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             let left = if c == 0 { None } else { dec_grid[r][c - 1] };
             let top = if r == 0 { None } else { dec_grid[r - 1][c] };
             let inc = ref_idx_bin0_ctx_inc(left, top);
-            let (v, _) = decode_ref_idx_l0(
-                &mut dec, &mut dec_ctxs, inc,
-                num_ref_idx_active_minus1,
-            );
+            let (v, _) = decode_ref_idx_l0(&mut dec, &mut dec_ctxs, inc, num_ref_idx_active_minus1);
             dec_grid[r][c] = Some(v);
             decoded.push(v);
         }
         let buf_py = pyo3::types::PyBytes::new_bound(py, &enc.buffer);
         let dec_py = pyo3::types::PyList::new_bound(py, &decoded);
         Ok(pyo3::types::PyTuple::new_bound(
-            py, &[buf_py.into_any(), dec_py.into_any()],
+            py,
+            &[buf_py.into_any(), dec_py.into_any()],
         ))
     }
 
@@ -5270,14 +5739,11 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         nal_ref_idc: u8,
         is_idr: bool,
     ) -> PyResult<Bound<'py, pyo3::types::PyDict>> {
-        use crate::h264_slice_header::{
-            walk_h264_slice_header, H264SpsPpsContext,
-        };
+        use crate::h264_slice_header::{walk_h264_slice_header, H264SpsPpsContext};
         let g = |k: &str| -> PyResult<i64> {
             sps_pps_dict
                 .get_item(k)?
-                .ok_or_else(|| PyValueError::new_err(format!(
-                    "sps_pps missing key {}", k)))?
+                .ok_or_else(|| PyValueError::new_err(format!("sps_pps missing key {}", k)))?
                 .extract::<i64>()
         };
         let ctx = H264SpsPpsContext {
@@ -5285,20 +5751,17 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             pic_order_cnt_type: g("pic_order_cnt_type")? as u32,
             log2_max_poc_lsb: g("log2_max_poc_lsb")? as u32,
             frame_mbs_only_flag: g("frame_mbs_only_flag")? as u32,
-            bottom_field_pic_order_in_frame_present_flag:
-                g("bottom_field_pic_order_in_frame_present_flag")? as u32,
-            redundant_pic_cnt_present_flag:
-                g("redundant_pic_cnt_present_flag")? as u32,
+            bottom_field_pic_order_in_frame_present_flag: g(
+                "bottom_field_pic_order_in_frame_present_flag",
+            )? as u32,
+            redundant_pic_cnt_present_flag: g("redundant_pic_cnt_present_flag")? as u32,
             weighted_pred_flag: g("weighted_pred_flag")? as u32,
             weighted_bipred_idc: g("weighted_bipred_idc")? as u32,
-            entropy_coding_mode_flag:
-                g("entropy_coding_mode_flag")? as u32,
-            deblocking_filter_control_present_flag:
-                g("deblocking_filter_control_present_flag")? as u32,
-            num_ref_idx_l0_default_active_minus1:
-                g("num_ref_idx_l0_default_active_minus1")? as u32,
-            num_ref_idx_l1_default_active_minus1:
-                g("num_ref_idx_l1_default_active_minus1")? as u32,
+            entropy_coding_mode_flag: g("entropy_coding_mode_flag")? as u32,
+            deblocking_filter_control_present_flag: g("deblocking_filter_control_present_flag")?
+                as u32,
+            num_ref_idx_l0_default_active_minus1: g("num_ref_idx_l0_default_active_minus1")? as u32,
+            num_ref_idx_l1_default_active_minus1: g("num_ref_idx_l1_default_active_minus1")? as u32,
             pic_init_qp_minus26: (g("pic_init_qp")? as i32) - 26,
             num_slice_groups_minus1: g("num_slice_groups_minus1")? as u32,
         };
@@ -5329,7 +5792,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         use crate::cabac::{CabacCtx, CabacDecoder, CabacEncoder};
         let start = std::time::Instant::now();
         // Encode
-        let mut enc_ctx = CabacCtx { p_state_idx, val_mps };
+        let mut enc_ctx = CabacCtx {
+            p_state_idx,
+            val_mps,
+        };
         let mut enc = CabacEncoder::new();
         for _ in 0..n_bins {
             enc.encode_bin(&mut enc_ctx, bin_val);
@@ -5337,7 +5803,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         enc.finish();
         let buf_len = enc.buffer.len();
         // Decode
-        let mut dec_ctx = CabacCtx { p_state_idx, val_mps };
+        let mut dec_ctx = CabacCtx {
+            p_state_idx,
+            val_mps,
+        };
         let mut dec = CabacDecoder::new(enc.buffer, 0);
         let mut sink: u64 = 0;
         for _ in 0..n_bins {
@@ -5360,17 +5829,29 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     ) -> PyResult<(f64, usize)> {
         use crate::cabac::{CabacCtx, CabacDecoder, CabacEncoder};
         let start = std::time::Instant::now();
-        let bins: Vec<u8> = (0..n_bins).map(|i| {
-            if i % skew_one_in == 0 { 1 - val_mps } else { val_mps }
-        }).collect();
-        let mut enc_ctx = CabacCtx { p_state_idx, val_mps };
+        let bins: Vec<u8> = (0..n_bins)
+            .map(|i| {
+                if i % skew_one_in == 0 {
+                    1 - val_mps
+                } else {
+                    val_mps
+                }
+            })
+            .collect();
+        let mut enc_ctx = CabacCtx {
+            p_state_idx,
+            val_mps,
+        };
         let mut enc = CabacEncoder::new();
         for &b in &bins {
             enc.encode_bin(&mut enc_ctx, b);
         }
         enc.finish();
         let buf_len = enc.buffer.len();
-        let mut dec_ctx = CabacCtx { p_state_idx, val_mps };
+        let mut dec_ctx = CabacCtx {
+            p_state_idx,
+            val_mps,
+        };
         let mut dec = CabacDecoder::new(enc.buffer, 0);
         let mut sink: u64 = 0;
         for _ in 0..n_bins {
@@ -5385,11 +5866,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// output 4×4 blocks to produce; each fold consumes four 4×4
     /// input blocks (= one 8×8 region of source). Returns the
     /// elapsed wall time on the Rust side.
-    fn h264_dct_fold_bench(
-        &self,
-        n_folds: usize,
-        use_matrix: bool,
-    ) -> PyResult<f64> {
+    fn h264_dct_fold_bench(&self, n_folds: usize, use_matrix: bool) -> PyResult<f64> {
         use crate::h264_dct::{fold_4to1_via_matrix, fold_4to1_via_pixels};
         // Build a "realistic" input: low-frequency-dominated
         // coefficients (DC large, AC small, mostly zero).
@@ -5397,21 +5874,33 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let mut tr = [0i32; 16];
         let mut bl = [0i32; 16];
         let mut br = [0i32; 16];
-        tl[0] = 120; tl[1] = -10; tl[4] = -8;
-        tr[0] = 122; tr[1] =  12; tr[4] = -6;
-        bl[0] = 118; bl[1] =  -7; bl[4] =  9;
-        br[0] = 125; br[1] =   8; br[4] =  4;
+        tl[0] = 120;
+        tl[1] = -10;
+        tl[4] = -8;
+        tr[0] = 122;
+        tr[1] = 12;
+        tr[4] = -6;
+        bl[0] = 118;
+        bl[1] = -7;
+        bl[4] = 9;
+        br[0] = 125;
+        br[1] = 8;
+        br[4] = 4;
         let start = std::time::Instant::now();
         let mut sink: i64 = 0;
         if use_matrix {
             for _ in 0..n_folds {
                 let out = fold_4to1_via_matrix(&tl, &tr, &bl, &br);
-                for v in out.iter() { sink = sink.wrapping_add(*v as i64); }
+                for v in out.iter() {
+                    sink = sink.wrapping_add(*v as i64);
+                }
             }
         } else {
             for _ in 0..n_folds {
                 let out = fold_4to1_via_pixels(&tl, &tr, &bl, &br);
-                for v in out.iter() { sink = sink.wrapping_add(*v as i64); }
+                for v in out.iter() {
+                    sink = sink.wrapping_add(*v as i64);
+                }
             }
         }
         let _ = std::hint::black_box(sink);
@@ -5440,10 +5929,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             let mut tr = [0i32; 16];
             let mut bl = [0i32; 16];
             let mut br = [0i32; 16];
-            tl.copy_from_slice(&coefs[i * 64      .. i * 64 + 16]);
-            tr.copy_from_slice(&coefs[i * 64 + 16 .. i * 64 + 32]);
-            bl.copy_from_slice(&coefs[i * 64 + 32 .. i * 64 + 48]);
-            br.copy_from_slice(&coefs[i * 64 + 48 .. i * 64 + 64]);
+            tl.copy_from_slice(&coefs[i * 64..i * 64 + 16]);
+            tr.copy_from_slice(&coefs[i * 64 + 16..i * 64 + 32]);
+            bl.copy_from_slice(&coefs[i * 64 + 32..i * 64 + 48]);
+            br.copy_from_slice(&coefs[i * 64 + 48..i * 64 + 64]);
             let folded = fold_4to1_via_matrix(&tl, &tr, &bl, &br);
             out.extend_from_slice(&folded);
         }
@@ -5470,7 +5959,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let mut out: Vec<i32> = Vec::with_capacity(16 * n);
         for i in 0..n {
             let mut x = [0i32; 16];
-            x.copy_from_slice(&samples[i * 16 .. (i + 1) * 16]);
+            x.copy_from_slice(&samples[i * 16..(i + 1) * 16]);
             let y = forward_4x4(&x);
             out.extend_from_slice(&y);
         }
@@ -5495,7 +5984,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let mut out: Vec<i32> = Vec::with_capacity(16 * n);
         for i in 0..n {
             let mut y = [0i32; 16];
-            y.copy_from_slice(&coefs[i * 16 .. (i + 1) * 16]);
+            y.copy_from_slice(&coefs[i * 16..(i + 1) * 16]);
             let x = inverse_4x4(&y);
             out.extend_from_slice(&x);
         }
@@ -5516,7 +6005,8 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         use crate::h264_dct::quantize_intra_4x4;
         if coefs.len() % 16 != 0 {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "coefs length must be a multiple of 16"));
+                "coefs length must be a multiple of 16",
+            ));
         }
         let n = coefs.len() / 16;
         let mut out: Vec<i32> = Vec::with_capacity(n * 16);
@@ -5555,7 +6045,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         for i in 0..n_samples {
             let off = i * 4;
             buf.push(f32::from_le_bytes([
-                raw[off], raw[off + 1], raw[off + 2], raw[off + 3],
+                raw[off],
+                raw[off + 1],
+                raw[off + 2],
+                raw[off + 3],
             ]));
         }
         let stream_nid = audio_stream.to_node();
@@ -5570,7 +6063,11 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             // the bytes directly as a Surface(Bytes) — cheap Arc clone,
             // no per-sample boxing.
             crate::pipeline_runtime::attach_audio_buffer(
-                inner, stream_nid, raw, sample_rate, n_samples,
+                inner,
+                stream_nid,
+                raw,
+                sample_rate,
+                n_samples,
             );
             crate::pipeline_runtime::run_pipeline(inner, stream_nid, &buf, sample_rate)
         };
@@ -5631,21 +6128,20 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
                  patch_is_sibilant must have matching lengths",
             ));
         }
-        let patches: Vec<crate::audio_primitives::VoiceboxPatch> =
-            patch_centres
-                .iter()
-                .zip(patch_sigmas.iter())
-                .zip(patch_kinds.iter())
-                .zip(patch_is_sibilant.iter())
-                .map(|(((c, sig), k), s)| {
-                    crate::audio_primitives::VoiceboxPatch {
-                        centre_hz: *c,
-                        freq_sigma_hz: *sig,
-                        kind: k.clone(),
-                        is_sibilant: *s,
-                    }
-                })
-                .collect();
+        let patches: Vec<crate::audio_primitives::VoiceboxPatch> = patch_centres
+            .iter()
+            .zip(patch_sigmas.iter())
+            .zip(patch_kinds.iter())
+            .zip(patch_is_sibilant.iter())
+            .map(
+                |(((c, sig), k), s)| crate::audio_primitives::VoiceboxPatch {
+                    centre_hz: *c,
+                    freq_sigma_hz: *sig,
+                    kind: k.clone(),
+                    is_sibilant: *s,
+                },
+            )
+            .collect();
         let audio = crate::audio_primitives::synthesize_from_trajectory(
             &trajectory,
             &patches,
@@ -5704,12 +6200,14 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             .zip(patch_sigmas.iter())
             .zip(patch_kinds.iter())
             .zip(patch_is_sibilant.iter())
-            .map(|(((c, sig), k), s)| crate::audio_primitives::VoiceboxPatch {
-                centre_hz: *c,
-                freq_sigma_hz: *sig,
-                kind: k.clone(),
-                is_sibilant: *s,
-            })
+            .map(
+                |(((c, sig), k), s)| crate::audio_primitives::VoiceboxPatch {
+                    centre_hz: *c,
+                    freq_sigma_hz: *sig,
+                    kind: k.clone(),
+                    is_sibilant: *s,
+                },
+            )
             .collect();
         let audio = crate::audio_primitives::synthesize_klatt_lf(
             &trajectory,
@@ -5818,7 +6316,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         for i in 0..n_samples {
             let off = i * 4;
             buf.push(f32::from_le_bytes([
-                raw[off], raw[off + 1], raw[off + 2], raw[off + 3],
+                raw[off],
+                raw[off + 1],
+                raw[off + 2],
+                raw[off + 3],
             ]));
         }
         let config = crate::cochlear_nucleus::CnConfig {
@@ -5892,7 +6393,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         for i in 0..n_samples {
             let off = i * 4;
             buf.push(f32::from_le_bytes([
-                raw[off], raw[off + 1], raw[off + 2], raw[off + 3],
+                raw[off],
+                raw[off + 1],
+                raw[off + 2],
+                raw[off + 3],
             ]));
         }
         let config = crate::inferior_colliculus::IcConfig {
@@ -5961,7 +6465,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         for i in 0..n_samples {
             let off = i * 4;
             buf.push(f32::from_le_bytes([
-                raw[off], raw[off + 1], raw[off + 2], raw[off + 3],
+                raw[off],
+                raw[off + 1],
+                raw[off + 2],
+                raw[off + 3],
             ]));
         }
 
@@ -5969,43 +6476,65 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         // A1Patch's attrs + its NodeID.
         let mut specs: Vec<crate::auditory_cortex::PatchSpec> = Vec::new();
         for item in patches.iter() {
-            let d = item.downcast::<PyDict>().map_err(|_| {
-                PyValueError::new_err("each patch must be a dict")
-            })?;
-            let nid: PyRef<PyNodeID> = d.get_item("nid")?
+            let d = item
+                .downcast::<PyDict>()
+                .map_err(|_| PyValueError::new_err("each patch must be a dict"))?;
+            let nid: PyRef<PyNodeID> = d
+                .get_item("nid")?
                 .ok_or_else(|| PyValueError::new_err("patch missing 'nid'"))?
                 .extract()?;
-            let name: String = d.get_item("name")?
+            let name: String = d
+                .get_item("name")?
                 .map(|v| v.extract::<String>().unwrap_or_default())
                 .unwrap_or_default();
-            let kind: String = d.get_item("kind")?
+            let kind: String = d
+                .get_item("kind")?
                 .map(|v| v.extract::<String>().unwrap_or_default())
                 .unwrap_or_default();
-            let centre_hz: f32 = d.get_item("centre_hz")?
-                .and_then(|v| v.extract::<f32>().ok()).unwrap_or(1000.0);
-            let freq_sigma_hz: f32 = d.get_item("freq_sigma_hz")?
-                .and_then(|v| v.extract::<f32>().ok()).unwrap_or(500.0);
-            let duration_ms: f32 = d.get_item("duration_ms")?
-                .and_then(|v| v.extract::<f32>().ok()).unwrap_or(50.0);
-            let slope_hz_per_ms: f32 = d.get_item("slope_hz_per_ms")?
-                .and_then(|v| v.extract::<f32>().ok()).unwrap_or(0.0);
+            let centre_hz: f32 = d
+                .get_item("centre_hz")?
+                .and_then(|v| v.extract::<f32>().ok())
+                .unwrap_or(1000.0);
+            let freq_sigma_hz: f32 = d
+                .get_item("freq_sigma_hz")?
+                .and_then(|v| v.extract::<f32>().ok())
+                .unwrap_or(500.0);
+            let duration_ms: f32 = d
+                .get_item("duration_ms")?
+                .and_then(|v| v.extract::<f32>().ok())
+                .unwrap_or(50.0);
+            let slope_hz_per_ms: f32 = d
+                .get_item("slope_hz_per_ms")?
+                .and_then(|v| v.extract::<f32>().ok())
+                .unwrap_or(0.0);
             specs.push(crate::auditory_cortex::PatchSpec {
                 nid: nid.to_node(),
-                name, kind, centre_hz, freq_sigma_hz,
-                duration_ms, slope_hz_per_ms,
+                name,
+                kind,
+                centre_hz,
+                freq_sigma_hz,
+                duration_ms,
+                slope_hz_per_ms,
             });
         }
 
         let config = crate::auditory_cortex::AcConfig {
-            envelope_lp_hz, peak_threshold_db, peak_refractory_ms,
+            envelope_lp_hz,
+            peak_threshold_db,
+            peak_refractory_ms,
         };
         let stream_nid = audio_stream.to_node();
         let summary = {
             let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
             let inner = &mut *__substrate_guard;
             crate::auditory_cortex::process_audio(
-                inner, stream_nid, &buf, sample_rate,
-                &band_centres, &specs, &config,
+                inner,
+                stream_nid,
+                &buf,
+                sample_rate,
+                &band_centres,
+                &specs,
+                &config,
             )
         };
         let out = PyDict::new_bound(py);
@@ -6054,30 +6583,30 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let refp = reference_plane.as_bytes();
         if tgt.len() != plane_w * plane_h || refp.len() != plane_w * plane_h {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "target/reference plane size mismatch"));
+                "target/reference plane size mismatch",
+            ));
         }
         let (mb_luma, cbp, skip, recon) = py.allow_threads(|| {
-            transcode_p_frame_static_mv0(
-                tgt, refp, plane_w, plane_h, mb_w, mb_h, qp,
-            )
+            transcode_p_frame_static_mv0(tgt, refp, plane_w, plane_h, mb_w, mb_h, qp)
         });
         // mb_luma → LE bytes
         let mut mb_luma_bytes = Vec::with_capacity(mb_luma.len() * 4);
         for v in &mb_luma {
             mb_luma_bytes.extend_from_slice(&v.to_le_bytes());
         }
-        let skip_bytes: Vec<u8> = skip.into_iter()
-            .map(|b| if b { 1u8 } else { 0u8 }).collect();
-        Ok(pyo3::types::PyTuple::new_bound(py, &[
-            pyo3::IntoPy::into_py(
-                pyo3::types::PyBytes::new_bound(py, &mb_luma_bytes), py),
-            pyo3::IntoPy::into_py(
-                pyo3::types::PyBytes::new_bound(py, &cbp), py),
-            pyo3::IntoPy::into_py(
-                pyo3::types::PyBytes::new_bound(py, &skip_bytes), py),
-            pyo3::IntoPy::into_py(
-                pyo3::types::PyBytes::new_bound(py, &recon), py),
-        ]))
+        let skip_bytes: Vec<u8> = skip
+            .into_iter()
+            .map(|b| if b { 1u8 } else { 0u8 })
+            .collect();
+        Ok(pyo3::types::PyTuple::new_bound(
+            py,
+            &[
+                pyo3::IntoPy::into_py(pyo3::types::PyBytes::new_bound(py, &mb_luma_bytes), py),
+                pyo3::IntoPy::into_py(pyo3::types::PyBytes::new_bound(py, &cbp), py),
+                pyo3::IntoPy::into_py(pyo3::types::PyBytes::new_bound(py, &skip_bytes), py),
+                pyo3::IntoPy::into_py(pyo3::types::PyBytes::new_bound(py, &recon), py),
+            ],
+        ))
     }
 
     /// Fused sub-pel P-frame transcoder. Replaces the
@@ -6121,43 +6650,45 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let refp = reference_plane.as_bytes();
         if tgt.len() != plane_w * plane_h || refp.len() != plane_w * plane_h {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "target/reference plane size mismatch"));
+                "target/reference plane size mismatch",
+            ));
         }
         let raw = mv_bytes.as_bytes();
         let n_mbs = mb_w * mb_h;
         if raw.len() != n_mbs * 12 {
-            return Err(pyo3::exceptions::PyValueError::new_err(
-                format!("mv_bytes must be {} bytes (3 LE i32 × {})",
-                        n_mbs * 12, n_mbs)));
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "mv_bytes must be {} bytes (3 LE i32 × {})",
+                n_mbs * 12,
+                n_mbs
+            )));
         }
         let mut mvs = Vec::with_capacity(n_mbs);
         for i in 0..n_mbs {
             let o = i * 12;
-            let mx = i32::from_le_bytes([raw[o], raw[o+1], raw[o+2], raw[o+3]]);
-            let my = i32::from_le_bytes([raw[o+4], raw[o+5], raw[o+6], raw[o+7]]);
+            let mx = i32::from_le_bytes([raw[o], raw[o + 1], raw[o + 2], raw[o + 3]]);
+            let my = i32::from_le_bytes([raw[o + 4], raw[o + 5], raw[o + 6], raw[o + 7]]);
             mvs.push((mx, my));
         }
         let (mb_luma, cbp, skip, recon) = py.allow_threads(|| {
-            transcode_p_frame_subpel_static(
-                tgt, refp, &mvs, plane_w, plane_h, mb_w, mb_h, qp,
-            )
+            transcode_p_frame_subpel_static(tgt, refp, &mvs, plane_w, plane_h, mb_w, mb_h, qp)
         });
         let mut mb_luma_bytes = Vec::with_capacity(mb_luma.len() * 4);
         for v in &mb_luma {
             mb_luma_bytes.extend_from_slice(&v.to_le_bytes());
         }
-        let skip_bytes: Vec<u8> = skip.into_iter()
-            .map(|b| if b { 1u8 } else { 0u8 }).collect();
-        Ok(pyo3::types::PyTuple::new_bound(py, &[
-            pyo3::IntoPy::into_py(
-                pyo3::types::PyBytes::new_bound(py, &mb_luma_bytes), py),
-            pyo3::IntoPy::into_py(
-                pyo3::types::PyBytes::new_bound(py, &cbp), py),
-            pyo3::IntoPy::into_py(
-                pyo3::types::PyBytes::new_bound(py, &skip_bytes), py),
-            pyo3::IntoPy::into_py(
-                pyo3::types::PyBytes::new_bound(py, &recon), py),
-        ]))
+        let skip_bytes: Vec<u8> = skip
+            .into_iter()
+            .map(|b| if b { 1u8 } else { 0u8 })
+            .collect();
+        Ok(pyo3::types::PyTuple::new_bound(
+            py,
+            &[
+                pyo3::IntoPy::into_py(pyo3::types::PyBytes::new_bound(py, &mb_luma_bytes), py),
+                pyo3::IntoPy::into_py(pyo3::types::PyBytes::new_bound(py, &cbp), py),
+                pyo3::IntoPy::into_py(pyo3::types::PyBytes::new_bound(py, &skip_bytes), py),
+                pyo3::IntoPy::into_py(pyo3::types::PyBytes::new_bound(py, &recon), py),
+            ],
+        ))
     }
 
     /// CABAC-encode a P-slice from packed mb_luma + cbp + skip
@@ -6185,22 +6716,24 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let n_mbs = mb_width * mb_height;
         let raw = luma_coefs_bytes.as_bytes();
         if raw.len() != n_mbs * 256 * 4 {
-            return Err(pyo3::exceptions::PyValueError::new_err(
-                format!("luma_coefs_bytes must be {} bytes",
-                        n_mbs * 256 * 4)));
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "luma_coefs_bytes must be {} bytes",
+                n_mbs * 256 * 4
+            )));
         }
         let cbp = cbp_luma_bytes.as_bytes();
         let skip = mb_skip_bytes.as_bytes();
         if cbp.len() != n_mbs || skip.len() != n_mbs {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "cbp/skip byte length mismatch"));
+                "cbp/skip byte length mismatch",
+            ));
         }
         // Decode mb_luma bytes → Vec<i32>
         let mut mb_luma_i32 = vec![0i32; n_mbs * 256];
         for i in 0..n_mbs * 256 {
             let off = i * 4;
-            mb_luma_i32[i] = i32::from_le_bytes([
-                raw[off], raw[off + 1], raw[off + 2], raw[off + 3]]);
+            mb_luma_i32[i] =
+                i32::from_le_bytes([raw[off], raw[off + 1], raw[off + 2], raw[off + 3]]);
         }
         let cbp_vec: Vec<u8> = cbp.to_vec();
         let skip_vec: Vec<bool> = skip.iter().map(|&b| b != 0).collect();
@@ -6212,31 +6745,38 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         if let Some(d) = chroma {
             let get = |k: &str| -> PyResult<Vec<u8>> {
                 let v = d.get_item(k)?.ok_or_else(|| {
-                    pyo3::exceptions::PyValueError::new_err(
-                        format!("chroma dict missing '{}'", k))
+                    pyo3::exceptions::PyValueError::new_err(format!("chroma dict missing '{}'", k))
                 })?;
-                let b: &Bound<pyo3::types::PyBytes> = v.downcast::<pyo3::types::PyBytes>()
-                    .map_err(|_| pyo3::exceptions::PyValueError::new_err(
-                        format!("chroma['{}'] must be bytes", k)))?;
+                let b: &Bound<pyo3::types::PyBytes> =
+                    v.downcast::<pyo3::types::PyBytes>().map_err(|_| {
+                        pyo3::exceptions::PyValueError::new_err(format!(
+                            "chroma['{}'] must be bytes",
+                            k
+                        ))
+                    })?;
                 Ok(b.as_bytes().to_vec())
             };
             let cbp_c = get("cbp_chroma")?;
             if cbp_c.len() != n_mbs {
-                return Err(pyo3::exceptions::PyValueError::new_err(
-                    format!("cbp_chroma must be {} bytes", n_mbs)));
+                return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                    "cbp_chroma must be {} bytes",
+                    n_mbs
+                )));
             }
             let parse_i32 = |label: &str, expected_count: usize| -> PyResult<Vec<i32>> {
                 let raw = get(label)?;
                 if raw.len() != expected_count * 4 {
-                    return Err(pyo3::exceptions::PyValueError::new_err(
-                        format!("{} must be {} bytes (LE i32 x {})",
-                                label, expected_count * 4, expected_count)));
+                    return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                        "{} must be {} bytes (LE i32 x {})",
+                        label,
+                        expected_count * 4,
+                        expected_count
+                    )));
                 }
                 let mut v = vec![0i32; expected_count];
                 for i in 0..expected_count {
                     let o = i * 4;
-                    v[i] = i32::from_le_bytes([
-                        raw[o], raw[o + 1], raw[o + 2], raw[o + 3]]);
+                    v[i] = i32::from_le_bytes([raw[o], raw[o + 1], raw[o + 2], raw[o + 3]]);
                 }
                 Ok(v)
             };
@@ -6245,8 +6785,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             let ac_cb = parse_i32("chroma_ac_cb", n_mbs * 60)?;
             let ac_cr = parse_i32("chroma_ac_cr", n_mbs * 60)?;
             chroma_buffers = Some((cbp_c, dc_cb, dc_cr, ac_cb, ac_cr));
-            let (cb_c, dc_cb_r, dc_cr_r, ac_cb_r, ac_cr_r) =
-                chroma_buffers.as_ref().unwrap();
+            let (cb_c, dc_cb_r, dc_cr_r, ac_cb_r, ac_cr_r) = chroma_buffers.as_ref().unwrap();
             chroma_ref = Some(PSliceChromaResiduals {
                 cbp_chroma_list: cb_c,
                 chroma_dc_cb: dc_cb_r,
@@ -6267,15 +6806,17 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
                 let xb_raw = xb.as_bytes();
                 let yb_raw = yb.as_bytes();
                 if xb_raw.len() != n_mbs * 2 || yb_raw.len() != n_mbs * 2 {
-                    return Err(pyo3::exceptions::PyValueError::new_err(
-                        format!("mvd_x/y_bytes must be {} bytes (LE i16 x {})",
-                                n_mbs * 2, n_mbs)));
+                    return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                        "mvd_x/y_bytes must be {} bytes (LE i16 x {})",
+                        n_mbs * 2,
+                        n_mbs
+                    )));
                 }
                 let mut mx = vec![0i16; n_mbs];
                 let mut my = vec![0i16; n_mbs];
                 for i in 0..n_mbs {
-                    mx[i] = i16::from_le_bytes([xb_raw[i*2], xb_raw[i*2+1]]);
-                    my[i] = i16::from_le_bytes([yb_raw[i*2], yb_raw[i*2+1]]);
+                    mx[i] = i16::from_le_bytes([xb_raw[i * 2], xb_raw[i * 2 + 1]]);
+                    my[i] = i16::from_le_bytes([yb_raw[i * 2], yb_raw[i * 2 + 1]]);
                 }
                 mvd_buffers = Some((mx, my));
             }
@@ -6284,17 +6825,25 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             }
             _ => {
                 return Err(pyo3::exceptions::PyValueError::new_err(
-                    "mvd_x_bytes and mvd_y_bytes must be provided together"));
+                    "mvd_x_bytes and mvd_y_bytes must be provided together",
+                ));
             }
         }
-        mvd_ref = mvd_buffers.as_ref().map(|(mx, my)| (mx.as_slice(), my.as_slice()));
+        mvd_ref = mvd_buffers
+            .as_ref()
+            .map(|(mx, my)| (mx.as_slice(), my.as_slice()));
         let payload = encode_p_slice_from_mb_luma(
-            &mb_luma_i32, &cbp_vec, &skip_vec,
-            mb_width, mb_height, cabac_init_idc, slice_qp,
+            &mb_luma_i32,
+            &cbp_vec,
+            &skip_vec,
+            mb_width,
+            mb_height,
+            cabac_init_idc,
+            slice_qp,
             chroma_ref.as_ref(),
             mvd_ref,
         );
-        let _ = chroma_buffers;  // keep alive for the call
+        let _ = chroma_buffers; // keep alive for the call
         let _ = mvd_buffers;
         Ok(pyo3::types::PyBytes::new_bound(py, &payload))
     }
@@ -6331,20 +6880,23 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let n_mbs = mb_width * mb_height;
         let raw = luma_coefs_bytes.as_bytes();
         if raw.len() != n_mbs * 256 * 4 {
-            return Err(pyo3::exceptions::PyValueError::new_err(
-                format!("luma_coefs_bytes must be {} bytes", n_mbs * 256 * 4)));
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "luma_coefs_bytes must be {} bytes",
+                n_mbs * 256 * 4
+            )));
         }
         let cbp = cbp_luma_bytes.as_bytes();
         let skip = mb_skip_bytes.as_bytes();
         if cbp.len() != n_mbs || skip.len() != n_mbs {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "cbp/skip byte length mismatch"));
+                "cbp/skip byte length mismatch",
+            ));
         }
         let mut mb_luma_i32 = vec![0i32; n_mbs * 256];
         for i in 0..n_mbs * 256 {
             let off = i * 4;
-            mb_luma_i32[i] = i32::from_le_bytes([
-                raw[off], raw[off + 1], raw[off + 2], raw[off + 3]]);
+            mb_luma_i32[i] =
+                i32::from_le_bytes([raw[off], raw[off + 1], raw[off + 2], raw[off + 3]]);
         }
         let cbp_vec: Vec<u8> = cbp.to_vec();
         let skip_vec: Vec<bool> = skip.iter().map(|&b| b != 0).collect();
@@ -6354,25 +6906,30 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         if let Some(d) = chroma {
             let get = |k: &str| -> PyResult<Vec<u8>> {
                 let v = d.get_item(k)?.ok_or_else(|| {
-                    pyo3::exceptions::PyValueError::new_err(
-                        format!("chroma dict missing '{}'", k))
+                    pyo3::exceptions::PyValueError::new_err(format!("chroma dict missing '{}'", k))
                 })?;
-                let b: &Bound<pyo3::types::PyBytes> = v.downcast::<pyo3::types::PyBytes>()
-                    .map_err(|_| pyo3::exceptions::PyValueError::new_err(
-                        format!("chroma['{}'] must be bytes", k)))?;
+                let b: &Bound<pyo3::types::PyBytes> =
+                    v.downcast::<pyo3::types::PyBytes>().map_err(|_| {
+                        pyo3::exceptions::PyValueError::new_err(format!(
+                            "chroma['{}'] must be bytes",
+                            k
+                        ))
+                    })?;
                 Ok(b.as_bytes().to_vec())
             };
             let cbp_c = get("cbp_chroma")?;
             let parse_i32 = |label: &str, expected: usize| -> PyResult<Vec<i32>> {
                 let raw = get(label)?;
                 if raw.len() != expected * 4 {
-                    return Err(pyo3::exceptions::PyValueError::new_err(
-                        format!("{} length mismatch", label)));
+                    return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                        "{} length mismatch",
+                        label
+                    )));
                 }
                 let mut v = vec![0i32; expected];
                 for i in 0..expected {
                     let o = i * 4;
-                    v[i] = i32::from_le_bytes([raw[o], raw[o+1], raw[o+2], raw[o+3]]);
+                    v[i] = i32::from_le_bytes([raw[o], raw[o + 1], raw[o + 2], raw[o + 3]]);
                 }
                 Ok(v)
             };
@@ -6381,8 +6938,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             let ac_cb = parse_i32("chroma_ac_cb", n_mbs * 60)?;
             let ac_cr = parse_i32("chroma_ac_cr", n_mbs * 60)?;
             chroma_buffers = Some((cbp_c, dc_cb, dc_cr, ac_cb, ac_cr));
-            let (cb_c, dc_cb_r, dc_cr_r, ac_cb_r, ac_cr_r) =
-                chroma_buffers.as_ref().unwrap();
+            let (cb_c, dc_cb_r, dc_cr_r, ac_cb_r, ac_cr_r) = chroma_buffers.as_ref().unwrap();
             chroma_ref = Some(PSliceChromaResiduals {
                 cbp_chroma_list: cb_c,
                 chroma_dc_cb: dc_cb_r,
@@ -6403,38 +6959,53 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
                 let yb_raw = yb.as_bytes();
                 if xb_raw.len() != n_mbs * 2 || yb_raw.len() != n_mbs * 2 {
                     return Err(pyo3::exceptions::PyValueError::new_err(
-                        "mvd bytes length mismatch"));
+                        "mvd bytes length mismatch",
+                    ));
                 }
                 let mut mx = vec![0i16; n_mbs];
                 let mut my = vec![0i16; n_mbs];
                 for i in 0..n_mbs {
-                    mx[i] = i16::from_le_bytes([xb_raw[i*2], xb_raw[i*2+1]]);
-                    my[i] = i16::from_le_bytes([yb_raw[i*2], yb_raw[i*2+1]]);
+                    mx[i] = i16::from_le_bytes([xb_raw[i * 2], xb_raw[i * 2 + 1]]);
+                    my[i] = i16::from_le_bytes([yb_raw[i * 2], yb_raw[i * 2 + 1]]);
                 }
                 mvd_buffers = Some((mx, my));
             }
             (None, None) => mvd_buffers = None,
-            _ => return Err(pyo3::exceptions::PyValueError::new_err(
-                "mvd_x_bytes and mvd_y_bytes must be provided together")),
+            _ => {
+                return Err(pyo3::exceptions::PyValueError::new_err(
+                    "mvd_x_bytes and mvd_y_bytes must be provided together",
+                ))
+            }
         }
-        mvd_ref = mvd_buffers.as_ref().map(|(x, y)| (x.as_slice(), y.as_slice()));
+        mvd_ref = mvd_buffers
+            .as_ref()
+            .map(|(x, y)| (x.as_slice(), y.as_slice()));
 
         let slices = py.allow_threads(|| {
             encode_p_slice_multi(
-                &mb_luma_i32, &cbp_vec, &skip_vec,
-                mb_width, mb_height, cabac_init_idc, slice_qp,
-                chroma_ref.as_ref(), mvd_ref, n_slices,
+                &mb_luma_i32,
+                &cbp_vec,
+                &skip_vec,
+                mb_width,
+                mb_height,
+                cabac_init_idc,
+                slice_qp,
+                chroma_ref.as_ref(),
+                mvd_ref,
+                n_slices,
             )
         });
         let _ = chroma_buffers;
         let _ = mvd_buffers;
         let out = pyo3::types::PyList::empty_bound(py);
         for (first_mb, payload) in slices {
-            let tup = pyo3::types::PyTuple::new_bound(py, &[
-                pyo3::IntoPy::into_py(first_mb, py),
-                pyo3::IntoPy::into_py(
-                    pyo3::types::PyBytes::new_bound(py, &payload), py),
-            ]);
+            let tup = pyo3::types::PyTuple::new_bound(
+                py,
+                &[
+                    pyo3::IntoPy::into_py(first_mb, py),
+                    pyo3::IntoPy::into_py(pyo3::types::PyBytes::new_bound(py, &payload), py),
+                ],
+            );
             out.append(tup)?;
         }
         Ok(out)
@@ -6477,23 +7048,27 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let refp = reference_plane.as_bytes();
         if tgt.len() != plane_w * plane_h || refp.len() != plane_w * plane_h {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "plane size mismatch"));
+                "plane size mismatch",
+            ));
         }
         let m = match mode {
             "full" => SearchMode::Full,
             "hex" => SearchMode::Hex,
-            other => return Err(pyo3::exceptions::PyValueError::new_err(
-                format!("mode must be 'full' or 'hex', got '{}'", other))),
+            other => {
+                return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                    "mode must be 'full' or 'hex', got '{}'",
+                    other
+                )))
+            }
         };
         let ctx = shared().map_err(|e| {
-            pyo3::exceptions::PyRuntimeError::new_err(
-                format!("gpu init failed: {}", e))
+            pyo3::exceptions::PyRuntimeError::new_err(format!("gpu init failed: {}", e))
         })?;
-        let mvs = py.allow_threads(|| {
-            ctx.estimate_with_mode(
-                tgt, refp, plane_w, plane_h, mb_w, mb_h, search_radius, m,
-            )
-        }).map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e))?;
+        let mvs = py
+            .allow_threads(|| {
+                ctx.estimate_with_mode(tgt, refp, plane_w, plane_h, mb_w, mb_h, search_radius, m)
+            })
+            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e))?;
         let mut out = Vec::with_capacity(mvs.len() * 12);
         for m in &mvs {
             out.extend_from_slice(&m.mv_x.to_le_bytes());
@@ -6538,22 +7113,28 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let refp = reference_plane.as_bytes();
         if tgt.len() != plane_w * plane_h || refp.len() != plane_w * plane_h {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "plane size mismatch"));
+                "plane size mismatch",
+            ));
         }
         let m = match mode {
             "full" => SearchMode::Full,
             "hex" => SearchMode::Hex,
-            other => return Err(pyo3::exceptions::PyValueError::new_err(
-                format!("mode must be 'full' or 'hex', got '{}'", other))),
+            other => {
+                return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                    "mode must be 'full' or 'hex', got '{}'",
+                    other
+                )))
+            }
         };
         let ctx = shared().map_err(|e| {
-            pyo3::exceptions::PyRuntimeError::new_err(
-                format!("gpu init failed: {}", e))
+            pyo3::exceptions::PyRuntimeError::new_err(format!("gpu init failed: {}", e))
         })?;
-        let handle = ctx.submit_async(
-            tgt, refp, plane_w, plane_h, mb_w, mb_h, search_radius, m,
-        ).map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e))?;
-        Ok(GpuMeHandle { inner: Some(handle) })
+        let handle = ctx
+            .submit_async(tgt, refp, plane_w, plane_h, mb_w, mb_h, search_radius, m)
+            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e))?;
+        Ok(GpuMeHandle {
+            inner: Some(handle),
+        })
     }
 
     /// Sub-pel luma interpolation per H.264 §8.4.2.2.1 — the spec-
@@ -6582,7 +7163,8 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let r = reference.as_bytes();
         if r.len() != src_w * src_h {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "reference plane size mismatch"));
+                "reference plane size mismatch",
+            ));
         }
         // The vendored kernel works in i32 to keep 6-tap intermediates
         // representable without overflow; expand the u8 plane on entry.
@@ -6591,12 +7173,12 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let bw = block_w as usize;
         let mut dst = vec![0i32; bw * bh];
         interpolate_luma(
-            &src_i32, src_w, src_w, src_h,
-            int_x, int_y, x_frac, y_frac,
-            block_w, block_h, /*bit_depth=*/8,
-            &mut dst, bw,
-        ).map_err(|e| pyo3::exceptions::PyValueError::new_err(
-            format!("interpolate_luma failed: {}", e)))?;
+            &src_i32, src_w, src_w, src_h, int_x, int_y, x_frac, y_frac, block_w, block_h,
+            /*bit_depth=*/ 8, &mut dst, bw,
+        )
+        .map_err(|e| {
+            pyo3::exceptions::PyValueError::new_err(format!("interpolate_luma failed: {}", e))
+        })?;
         let out: Vec<u8> = dst.iter().map(|&v| v.clamp(0, 255) as u8).collect();
         Ok(pyo3::types::PyBytes::new_bound(py, &out))
     }
@@ -6635,26 +7217,27 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let refp = reference_plane.as_bytes();
         if refp.len() != plane_w * plane_h {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "reference plane size mismatch"));
+                "reference plane size mismatch",
+            ));
         }
         let raw = mv_bytes.as_bytes();
         let n_mbs = mb_w * mb_h;
         if raw.len() != n_mbs * 12 {
-            return Err(pyo3::exceptions::PyValueError::new_err(
-                format!("mv_bytes must be {} bytes (3 LE i32 × {})",
-                        n_mbs * 12, n_mbs)));
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "mv_bytes must be {} bytes (3 LE i32 × {})",
+                n_mbs * 12,
+                n_mbs
+            )));
         }
         let mut mvs = Vec::with_capacity(n_mbs);
         for i in 0..n_mbs {
             let o = i * 12;
-            let mx = i32::from_le_bytes([raw[o], raw[o+1], raw[o+2], raw[o+3]]);
-            let my = i32::from_le_bytes([raw[o+4], raw[o+5], raw[o+6], raw[o+7]]);
+            let mx = i32::from_le_bytes([raw[o], raw[o + 1], raw[o + 2], raw[o + 3]]);
+            let my = i32::from_le_bytes([raw[o + 4], raw[o + 5], raw[o + 6], raw[o + 7]]);
             mvs.push((mx, my));
         }
         let out = py.allow_threads(|| {
-            apply_motion_compensation_kernel(
-                refp, &mvs, plane_w, plane_h, mb_w, mb_h, subpel,
-            )
+            apply_motion_compensation_kernel(refp, &mvs, plane_w, plane_h, mb_w, mb_h, subpel)
         });
         Ok(pyo3::types::PyBytes::new_bound(py, &out))
     }
@@ -6676,12 +7259,11 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let refp = reference_plane.as_bytes();
         if tgt.len() != plane_w * plane_h || refp.len() != plane_w * plane_h {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "plane size mismatch"));
+                "plane size mismatch",
+            ));
         }
         let mvs = py.allow_threads(|| {
-            estimate_motion_cpu_kernel(
-                tgt, refp, plane_w, plane_h, mb_w, mb_h, search_radius,
-            )
+            estimate_motion_cpu_kernel(tgt, refp, plane_w, plane_h, mb_w, mb_h, search_radius)
         });
         let mut out = Vec::with_capacity(mvs.len() * 12);
         for m in &mvs {
@@ -6713,27 +7295,30 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let p = plane.as_bytes();
         if p.len() != plane_w * plane_h {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
-                "plane len {} != plane_w*plane_h ({})", p.len(), plane_w * plane_h)));
+                "plane len {} != plane_w*plane_h ({})",
+                p.len(),
+                plane_w * plane_h
+            )));
         }
         if mb_w * 16 != plane_w || mb_h * 16 != plane_h {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "mb_w*16 must equal plane_w and mb_h*16 must equal plane_h"));
+                "mb_w*16 must equal plane_w and mb_h*16 must equal plane_h",
+            ));
         }
         let (mb_luma, recon) = py.allow_threads(|| {
-            intra_predict_and_quantise_slice_with_recon(
-                p, plane_w, plane_h, mb_w, mb_h, qp,
-            )
+            intra_predict_and_quantise_slice_with_recon(p, plane_w, plane_h, mb_w, mb_h, qp)
         });
         let mut mb_bytes = Vec::with_capacity(mb_luma.len() * 4);
         for v in &mb_luma {
             mb_bytes.extend_from_slice(&v.to_le_bytes());
         }
-        Ok(pyo3::types::PyTuple::new_bound(py, &[
-            pyo3::IntoPy::into_py(
-                pyo3::types::PyBytes::new_bound(py, &mb_bytes), py),
-            pyo3::IntoPy::into_py(
-                pyo3::types::PyBytes::new_bound(py, &recon), py),
-        ]))
+        Ok(pyo3::types::PyTuple::new_bound(
+            py,
+            &[
+                pyo3::IntoPy::into_py(pyo3::types::PyBytes::new_bound(py, &mb_bytes), py),
+                pyo3::IntoPy::into_py(pyo3::types::PyBytes::new_bound(py, &recon), py),
+            ],
+        ))
     }
 
     /// One-shot Rust kernel that does both skip-detection (spec-safe:
@@ -6770,12 +7355,16 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let cbp = cbp_bytes.as_bytes();
         let n_mbs = mb_w * mb_h;
         if raw.len() != n_mbs * 12 {
-            return Err(pyo3::exceptions::PyValueError::new_err(
-                format!("mv_bytes must be {} bytes", n_mbs * 12)));
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "mv_bytes must be {} bytes",
+                n_mbs * 12
+            )));
         }
         if cbp.len() != n_mbs {
-            return Err(pyo3::exceptions::PyValueError::new_err(
-                format!("cbp_bytes must be {} bytes", n_mbs)));
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "cbp_bytes must be {} bytes",
+                n_mbs
+            )));
         }
         let mv_scale: i32 = if qp_input { 1 } else { 4 };
         let slice_set: std::collections::HashSet<usize> =
@@ -6798,12 +7387,20 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             for c in 0..mb_w {
                 let j = r * mb_w + c;
                 let o = j * 12;
-                let mx = i32::from_le_bytes([raw[o], raw[o+1], raw[o+2], raw[o+3]]);
-                let my = i32::from_le_bytes([raw[o+4], raw[o+5], raw[o+6], raw[o+7]]);
+                let mx = i32::from_le_bytes([raw[o], raw[o + 1], raw[o + 2], raw[o + 3]]);
+                let my = i32::from_le_bytes([raw[o + 4], raw[o + 5], raw[o + 6], raw[o + 7]]);
                 let mv_qp = (mx * mv_scale, my * mv_scale);
                 let top_avail = r > 0 && !row_starts_slice;
-                let a = if c > 0 { grid[r * mb_w + (c - 1)] } else { None };
-                let b = if top_avail { grid[(r - 1) * mb_w + c] } else { None };
+                let a = if c > 0 {
+                    grid[r * mb_w + (c - 1)]
+                } else {
+                    None
+                };
+                let b = if top_avail {
+                    grid[(r - 1) * mb_w + c]
+                } else {
+                    None
+                };
                 let cc = if top_avail && c + 1 < mb_w {
                     grid[(r - 1) * mb_w + (c + 1)]
                 } else if top_avail && c > 0 {
@@ -6834,14 +7431,14 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
                 grid[j] = Some(mv_qp);
             }
         }
-        Ok(pyo3::types::PyTuple::new_bound(py, &[
-            pyo3::IntoPy::into_py(
-                pyo3::types::PyBytes::new_bound(py, &skip), py),
-            pyo3::IntoPy::into_py(
-                pyo3::types::PyBytes::new_bound(py, &mvd_x), py),
-            pyo3::IntoPy::into_py(
-                pyo3::types::PyBytes::new_bound(py, &mvd_y), py),
-        ]))
+        Ok(pyo3::types::PyTuple::new_bound(
+            py,
+            &[
+                pyo3::IntoPy::into_py(pyo3::types::PyBytes::new_bound(py, &skip), py),
+                pyo3::IntoPy::into_py(pyo3::types::PyBytes::new_bound(py, &mvd_x), py),
+                pyo3::IntoPy::into_py(pyo3::types::PyBytes::new_bound(py, &mvd_y), py),
+            ],
+        ))
     }
 
     /// H.264 emulation-prevention byte insertion (§7.4.1.1). Walks
@@ -6916,33 +7513,47 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     ) -> PyResult<Bound<'py, pyo3::types::PyBytes>> {
         let kernel_mode = match mode {
             "diamond" => SubpelMode::Diamond,
-            "full"    => SubpelMode::Full,
-            other => return Err(pyo3::exceptions::PyValueError::new_err(
-                format!("subpel mode must be 'diamond' or 'full', got {:?}", other))),
+            "full" => SubpelMode::Full,
+            other => {
+                return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                    "subpel mode must be 'diamond' or 'full', got {:?}",
+                    other
+                )))
+            }
         };
         let tgt = target_plane.as_bytes();
         let refp = reference_plane.as_bytes();
         if tgt.len() != plane_w * plane_h || refp.len() != plane_w * plane_h {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "plane size mismatch"));
+                "plane size mismatch",
+            ));
         }
         let raw = mv_bytes.as_bytes();
         let n_mbs = mb_w * mb_h;
         if raw.len() != n_mbs * 12 {
-            return Err(pyo3::exceptions::PyValueError::new_err(
-                format!("mv_bytes must be {} bytes (3 LE i32 × {})",
-                        n_mbs * 12, n_mbs)));
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "mv_bytes must be {} bytes (3 LE i32 × {})",
+                n_mbs * 12,
+                n_mbs
+            )));
         }
         let mut mvs_int = Vec::with_capacity(n_mbs);
         for i in 0..n_mbs {
             let o = i * 12;
-            let mx = i32::from_le_bytes([raw[o], raw[o+1], raw[o+2], raw[o+3]]);
-            let my = i32::from_le_bytes([raw[o+4], raw[o+5], raw[o+6], raw[o+7]]);
+            let mx = i32::from_le_bytes([raw[o], raw[o + 1], raw[o + 2], raw[o + 3]]);
+            let my = i32::from_le_bytes([raw[o + 4], raw[o + 5], raw[o + 6], raw[o + 7]]);
             mvs_int.push((mx, my));
         }
         let refined = py.allow_threads(|| {
             refine_motion_subpel_kernel(
-                tgt, refp, &mvs_int, plane_w, plane_h, mb_w, mb_h, kernel_mode,
+                tgt,
+                refp,
+                &mvs_int,
+                plane_w,
+                plane_h,
+                mb_w,
+                mb_h,
+                kernel_mode,
             )
         });
         let mut out = Vec::with_capacity(refined.len() * 12);
@@ -6975,33 +7586,38 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         if plane_slice.len() != in_w * in_h {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "plane len {} != in_w*in_h ({})",
-                plane_slice.len(), in_w * in_h)));
+                plane_slice.len(),
+                in_w * in_h
+            )));
         }
         let n_levels = slices_per_level.len();
         let levels = py.allow_threads(|| {
-            transcode_pyramid_multislice(
-                plane_slice, in_w, in_h, qp, n_levels, &slices_per_level,
-            )
+            transcode_pyramid_multislice(plane_slice, in_w, in_h, qp, n_levels, &slices_per_level)
         });
         let out = pyo3::types::PyList::empty_bound(py);
         for level in &levels {
             let slices_py = pyo3::types::PyList::empty_bound(py);
             for slice in &level.slices {
-                let payload_py = pyo3::types::PyBytes::new_bound(
-                    py, &slice.cabac_payload);
-                let slice_tup = pyo3::types::PyTuple::new_bound(py, &[
-                    pyo3::IntoPy::into_py(slice.first_mb_in_slice, py),
-                    pyo3::IntoPy::into_py(payload_py, py),
-                ]);
+                let payload_py = pyo3::types::PyBytes::new_bound(py, &slice.cabac_payload);
+                let slice_tup = pyo3::types::PyTuple::new_bound(
+                    py,
+                    &[
+                        pyo3::IntoPy::into_py(slice.first_mb_in_slice, py),
+                        pyo3::IntoPy::into_py(payload_py, py),
+                    ],
+                );
                 slices_py.append(slice_tup)?;
             }
-            let level_tup = pyo3::types::PyTuple::new_bound(py, &[
-                pyo3::IntoPy::into_py(level.out_w, py),
-                pyo3::IntoPy::into_py(level.out_h, py),
-                pyo3::IntoPy::into_py(level.mb_w, py),
-                pyo3::IntoPy::into_py(level.mb_h, py),
-                pyo3::IntoPy::into_py(slices_py, py),
-            ]);
+            let level_tup = pyo3::types::PyTuple::new_bound(
+                py,
+                &[
+                    pyo3::IntoPy::into_py(level.out_w, py),
+                    pyo3::IntoPy::into_py(level.out_h, py),
+                    pyo3::IntoPy::into_py(level.mb_w, py),
+                    pyo3::IntoPy::into_py(level.mb_h, py),
+                    pyo3::IntoPy::into_py(slices_py, py),
+                ],
+            );
             out.append(level_tup)?;
         }
         Ok(out)
@@ -7025,23 +7641,26 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         if plane_slice.len() != in_w * in_h {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "plane len {} != in_w*in_h ({})",
-                plane_slice.len(), in_w * in_h)));
+                plane_slice.len(),
+                in_w * in_h
+            )));
         }
         // Allow concurrency: release the GIL while Rust threads run.
-        let streams = py.allow_threads(|| {
-            transcode_pyramid_full(plane_slice, in_w, in_h, qp, n_levels)
-        });
+        let streams =
+            py.allow_threads(|| transcode_pyramid_full(plane_slice, in_w, in_h, qp, n_levels));
         let out = pyo3::types::PyList::empty_bound(py);
         for stream in &streams {
-            let payload_py = pyo3::types::PyBytes::new_bound(
-                py, &stream.cabac_payload);
-            let tup = pyo3::types::PyTuple::new_bound(py, &[
-                pyo3::IntoPy::into_py(stream.out_w, py),
-                pyo3::IntoPy::into_py(stream.out_h, py),
-                pyo3::IntoPy::into_py(stream.mb_w, py),
-                pyo3::IntoPy::into_py(stream.mb_h, py),
-                pyo3::IntoPy::into_py(payload_py, py),
-            ]);
+            let payload_py = pyo3::types::PyBytes::new_bound(py, &stream.cabac_payload);
+            let tup = pyo3::types::PyTuple::new_bound(
+                py,
+                &[
+                    pyo3::IntoPy::into_py(stream.out_w, py),
+                    pyo3::IntoPy::into_py(stream.out_h, py),
+                    pyo3::IntoPy::into_py(stream.mb_w, py),
+                    pyo3::IntoPy::into_py(stream.mb_h, py),
+                    pyo3::IntoPy::into_py(payload_py, py),
+                ],
+            );
             out.append(tup)?;
         }
         Ok(out)
@@ -7065,11 +7684,11 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         if plane_slice.len() != in_w * in_h {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "plane len {} != in_w*in_h ({})",
-                plane_slice.len(), in_w * in_h)));
+                plane_slice.len(),
+                in_w * in_h
+            )));
         }
-        let levels = transcode_pyramid_2to1(
-            plane_slice, in_w, in_h, qp, n_levels,
-        );
+        let levels = transcode_pyramid_2to1(plane_slice, in_w, in_h, qp, n_levels);
         let out = pyo3::types::PyList::empty_bound(py);
         for level in &levels {
             // Pack mb_luma as LE-bytes.
@@ -7078,13 +7697,16 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
                 bytes_buf.extend_from_slice(&v.to_le_bytes());
             }
             let mb_luma_py = pyo3::types::PyBytes::new_bound(py, &bytes_buf);
-            let tup = pyo3::types::PyTuple::new_bound(py, &[
-                pyo3::IntoPy::into_py(level.out_w, py),
-                pyo3::IntoPy::into_py(level.out_h, py),
-                pyo3::IntoPy::into_py(level.mb_w, py),
-                pyo3::IntoPy::into_py(level.mb_h, py),
-                pyo3::IntoPy::into_py(mb_luma_py, py),
-            ]);
+            let tup = pyo3::types::PyTuple::new_bound(
+                py,
+                &[
+                    pyo3::IntoPy::into_py(level.out_w, py),
+                    pyo3::IntoPy::into_py(level.out_h, py),
+                    pyo3::IntoPy::into_py(level.mb_w, py),
+                    pyo3::IntoPy::into_py(level.mb_h, py),
+                    pyo3::IntoPy::into_py(mb_luma_py, py),
+                ],
+            );
             out.append(tup)?;
         }
         Ok(out)
@@ -7109,15 +7731,16 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         if plane_slice.len() != in_w * in_h {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "plane len {} != in_w*in_h ({})",
-                plane_slice.len(), in_w * in_h)));
+                plane_slice.len(),
+                in_w * in_h
+            )));
         }
         if mb_w * 32 != in_w || mb_h * 32 != in_h {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "mb_w*32 must equal in_w and mb_h*32 must equal in_h"));
+                "mb_w*32 must equal in_w and mb_h*32 must equal in_h",
+            ));
         }
-        let mb_luma = transcode_2to1_luma_plane(
-            plane_slice, in_w, in_h, mb_w, mb_h, qp,
-        );
+        let mb_luma = transcode_2to1_luma_plane(plane_slice, in_w, in_h, mb_w, mb_h, qp);
         // Return as bytes (4× faster than PyList<i32> for 2M values).
         // Layout: little-endian i32 sequence.
         let mut out_bytes = Vec::with_capacity(mb_luma.len() * 4);
@@ -7154,27 +7777,29 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         if plane_slice.len() != in_w * in_h {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "plane len {} != in_w*in_h ({})",
-                plane_slice.len(), in_w * in_h)));
+                plane_slice.len(),
+                in_w * in_h
+            )));
         }
         if mb_w * 32 != in_w || mb_h * 32 != in_h {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "mb_w*32 must equal in_w and mb_h*32 must equal in_h"));
+                "mb_w*32 must equal in_w and mb_h*32 must equal in_h",
+            ));
         }
         let (mb_luma, recon) = py.allow_threads(|| {
-            transcode_2to1_luma_plane_with_recon(
-                plane_slice, in_w, in_h, mb_w, mb_h, qp,
-            )
+            transcode_2to1_luma_plane_with_recon(plane_slice, in_w, in_h, mb_w, mb_h, qp)
         });
         let mut mb_bytes = Vec::with_capacity(mb_luma.len() * 4);
         for v in &mb_luma {
             mb_bytes.extend_from_slice(&v.to_le_bytes());
         }
-        Ok(pyo3::types::PyTuple::new_bound(py, &[
-            pyo3::IntoPy::into_py(
-                pyo3::types::PyBytes::new_bound(py, &mb_bytes), py),
-            pyo3::IntoPy::into_py(
-                pyo3::types::PyBytes::new_bound(py, &recon), py),
-        ]))
+        Ok(pyo3::types::PyTuple::new_bound(
+            py,
+            &[
+                pyo3::IntoPy::into_py(pyo3::types::PyBytes::new_bound(py, &mb_bytes), py),
+                pyo3::IntoPy::into_py(pyo3::types::PyBytes::new_bound(py, &recon), py),
+            ],
+        ))
     }
 
     /// Single-pass DCT + 2:1 fold on a u8 luma plane. Input is a
@@ -7193,11 +7818,14 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         if plane.len() != in_w * in_h {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "plane len {} != in_w*in_h ({})",
-                plane.len(), in_w * in_h)));
+                plane.len(),
+                in_w * in_h
+            )));
         }
         if in_w & 7 != 0 || in_h & 7 != 0 {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "in_w and in_h must be multiples of 8"));
+                "in_w and in_h must be multiples of 8",
+            ));
         }
         let coefs = fold_luma_plane_to_coefs(&plane, in_w, in_h);
         Ok(pyo3::types::PyList::new_bound(py, &coefs))
@@ -7218,7 +7846,9 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         if coefs.len() != blocks_x * blocks_y * 16 {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "coefs len {} != blocks_x*blocks_y*16 ({})",
-                coefs.len(), blocks_x * blocks_y * 16)));
+                coefs.len(),
+                blocks_x * blocks_y * 16
+            )));
         }
         let plane = coefs_to_luma_plane(&coefs, blocks_x, blocks_y);
         Ok(pyo3::types::PyBytes::new_bound(py, &plane))
@@ -7249,11 +7879,11 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         if target.len() != plane_w * plane_h {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "target len {} != plane_w*plane_h ({})",
-                target.len(), plane_w * plane_h)));
+                target.len(),
+                plane_w * plane_h
+            )));
         }
-        let mb_luma = intra_predict_and_quantise_slice(
-            &target, plane_w, plane_h, mb_w, mb_h, qp,
-        );
+        let mb_luma = intra_predict_and_quantise_slice(&target, plane_w, plane_h, mb_w, mb_h, qp);
         Ok(pyo3::types::PyList::new_bound(py, &mb_luma))
     }
 
@@ -7271,7 +7901,8 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         use crate::h264_dct::idct_add_4x4_h264;
         if coefs.len() % 16 != 0 || preds.len() != coefs.len() {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "coefs and preds must both be multiples of 16, same length"));
+                "coefs and preds must both be multiples of 16, same length",
+            ));
         }
         let n = coefs.len() / 16;
         let mut out: Vec<u8> = Vec::with_capacity(n * 16);
@@ -7296,7 +7927,8 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         use crate::h264_dct::dequantize_intra_4x4;
         if coefs.len() % 16 != 0 {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "coefs length must be a multiple of 16"));
+                "coefs length must be a multiple of 16",
+            ));
         }
         let n = coefs.len() / 16;
         let mut out: Vec<i32> = Vec::with_capacity(n * 16);
@@ -7318,19 +7950,25 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         slice_type: &str,
         init_idc: u8,
     ) -> PyResult<Bound<'py, pyo3::types::PyList>> {
-        use crate::cabac::{CabacSliceType, init_table_mn};
+        use crate::cabac::{init_table_mn, CabacSliceType};
         let st = match slice_type {
             "I" | "SI" => CabacSliceType::I,
             "P" | "SP" => CabacSliceType::P,
             "B" => CabacSliceType::B,
-            _ => return Err(pyo3::exceptions::PyValueError::new_err(
-                format!("unknown slice_type {}", slice_type))),
+            _ => {
+                return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                    "unknown slice_type {}",
+                    slice_type
+                )))
+            }
         };
         let table = init_table_mn(st, init_idc);
         let out: Vec<(i8, i8)> = table.iter().map(|p| (p[0], p[1])).collect();
-        Ok(pyo3::types::PyList::new_bound(py, out.iter().map(|(m, n)|
-            pyo3::types::PyTuple::new_bound(py, [*m as i32, *n as i32])
-        )))
+        Ok(pyo3::types::PyList::new_bound(
+            py,
+            out.iter()
+                .map(|(m, n)| pyo3::types::PyTuple::new_bound(py, [*m as i32, *n as i32])),
+        ))
     }
 
     /// Like `h264_encode_i_slice_luma_only` but accepts the
@@ -7348,28 +7986,29 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         cbp_luma_list: Vec<u8>,
     ) -> PyResult<Bound<'py, pyo3::types::PyBytes>> {
         use crate::cabac::{
-            CabacEncoder, CabacSliceType, INxnMbInputs,
-            MbNeighbourState, encode_i_nxn_mb, init_contexts,
+            encode_i_nxn_mb, init_contexts, CabacEncoder, CabacSliceType, INxnMbInputs,
+            MbNeighbourState,
         };
         let n_mbs = mb_width * mb_height;
         let raw = luma_coefs_bytes.as_bytes();
         if raw.len() != n_mbs * 256 * 4 {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "luma_coefs_bytes must be {} bytes, got {}",
-                n_mbs * 256 * 4, raw.len())));
+                n_mbs * 256 * 4,
+                raw.len()
+            )));
         }
         if cbp_luma_list.len() != n_mbs {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "cbp_luma_list must be {} per MB, got {}",
-                n_mbs, cbp_luma_list.len())));
+                n_mbs,
+                cbp_luma_list.len()
+            )));
         }
         // Cast the byte buffer to a slice of i32 (LE).
-        let mut contexts = init_contexts(
-            CabacSliceType::I, cabac_init_idc, slice_qp,
-        );
+        let mut contexts = init_contexts(CabacSliceType::I, cabac_init_idc, slice_qp);
         let mut enc = CabacEncoder::new();
-        let mut grid: Vec<Vec<Option<MbNeighbourState>>> =
-            vec![vec![None; mb_width]; mb_height];
+        let mut grid: Vec<Vec<Option<MbNeighbourState>>> = vec![vec![None; mb_width]; mb_height];
 
         for r in 0..mb_height {
             for c in 0..mb_width {
@@ -7380,7 +8019,11 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
                     for k in 0..16 {
                         let off = (base + blk * 16 + k) * 4;
                         let v = i32::from_le_bytes([
-                            raw[off], raw[off+1], raw[off+2], raw[off+3]]);
+                            raw[off],
+                            raw[off + 1],
+                            raw[off + 2],
+                            raw[off + 3],
+                        ]);
                         mb.luma_4x4[blk][k] = v;
                     }
                 }
@@ -7390,9 +8033,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
                 mb.mb_qp_delta = 0;
                 let left = if c > 0 { grid[r][c - 1].as_ref() } else { None };
                 let top = if r > 0 { grid[r - 1][c].as_ref() } else { None };
-                let (_, luma_cbf) = encode_i_nxn_mb(
-                    &mut enc, &mut contexts, &mb, left, top,
-                );
+                let (_, luma_cbf) = encode_i_nxn_mb(&mut enc, &mut contexts, &mb, left, top);
                 let is_last = r == mb_height - 1 && c == mb_width - 1;
                 enc.encode_terminate(if is_last { 1 } else { 0 });
                 grid[r][c] = Some(MbNeighbourState {
@@ -7440,29 +8081,28 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         cbp_luma_list: Vec<u8>,
     ) -> PyResult<Bound<'py, pyo3::types::PyBytes>> {
         use crate::cabac::{
-            CabacEncoder, CabacSliceType, INxnMbInputs,
-            MbNeighbourState, encode_i_nxn_mb, init_contexts,
+            encode_i_nxn_mb, init_contexts, CabacEncoder, CabacSliceType, INxnMbInputs,
+            MbNeighbourState,
         };
         let n_mbs = mb_width * mb_height;
         if luma_coefs.len() != n_mbs * 256 {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "luma_coefs must be {} = mb_width*mb_height*256, got {}",
-                n_mbs * 256, luma_coefs.len(),
+                n_mbs * 256,
+                luma_coefs.len(),
             )));
         }
         if cbp_luma_list.len() != n_mbs {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "cbp_luma_list must be {} per MB, got {}",
-                n_mbs, cbp_luma_list.len(),
+                n_mbs,
+                cbp_luma_list.len(),
             )));
         }
-        let mut contexts = init_contexts(
-            CabacSliceType::I, cabac_init_idc, slice_qp,
-        );
+        let mut contexts = init_contexts(CabacSliceType::I, cabac_init_idc, slice_qp);
         let mut enc = CabacEncoder::new();
         // Per-row neighbour-state grids (Option to model availability).
-        let mut grid: Vec<Vec<Option<MbNeighbourState>>> =
-            vec![vec![None; mb_width]; mb_height];
+        let mut grid: Vec<Vec<Option<MbNeighbourState>>> = vec![vec![None; mb_width]; mb_height];
 
         for r in 0..mb_height {
             for c in 0..mb_width {
@@ -7482,9 +8122,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
 
                 let left = if c > 0 { grid[r][c - 1].as_ref() } else { None };
                 let top = if r > 0 { grid[r - 1][c].as_ref() } else { None };
-                let (_, luma_cbf) = encode_i_nxn_mb(
-                    &mut enc, &mut contexts, &mb, left, top,
-                );
+                let (_, luma_cbf) = encode_i_nxn_mb(&mut enc, &mut contexts, &mb, left, top);
 
                 // Per §7.3.5: after each MB in a CABAC slice, emit
                 // end_of_slice_flag — terminate bin = 1 only for the
@@ -7526,16 +8164,12 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         buffer: Vec<u8>,
     ) -> PyResult<Bound<'py, pyo3::types::PyTuple>> {
         use crate::cabac::{
-            CabacDecoder, CabacSliceType, MbNeighbourState,
-            decode_i_nxn_mb, init_contexts,
+            decode_i_nxn_mb, init_contexts, CabacDecoder, CabacSliceType, MbNeighbourState,
         };
         let n_mbs = mb_width * mb_height;
-        let mut contexts = init_contexts(
-            CabacSliceType::I, cabac_init_idc, slice_qp,
-        );
+        let mut contexts = init_contexts(CabacSliceType::I, cabac_init_idc, slice_qp);
         let mut dec = CabacDecoder::new(buffer, 0);
-        let mut grid: Vec<Vec<Option<MbNeighbourState>>> =
-            vec![vec![None; mb_width]; mb_height];
+        let mut grid: Vec<Vec<Option<MbNeighbourState>>> = vec![vec![None; mb_width]; mb_height];
 
         let mut luma_out: Vec<i32> = Vec::with_capacity(n_mbs * 256);
         let mut cbp_luma_out: Vec<u8> = Vec::with_capacity(n_mbs);
@@ -7544,9 +8178,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
             for c in 0..mb_width {
                 let left = if c > 0 { grid[r][c - 1].as_ref() } else { None };
                 let top = if r > 0 { grid[r - 1][c].as_ref() } else { None };
-                let (mb, _, luma_cbf) = decode_i_nxn_mb(
-                    &mut dec, &mut contexts, left, top,
-                );
+                let (mb, _, luma_cbf) = decode_i_nxn_mb(&mut dec, &mut contexts, left, top);
                 // Read end_of_slice_flag — mirror of the encoder.
                 let _ = dec.decode_terminate();
                 for blk in 0..16 {
@@ -7575,7 +8207,8 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let luma_py = pyo3::types::PyList::new_bound(py, &luma_out);
         let cbp_py = pyo3::types::PyList::new_bound(py, &cbp_luma_out);
         Ok(pyo3::types::PyTuple::new_bound(
-            py, [luma_py.into_any(), cbp_py.into_any()],
+            py,
+            [luma_py.into_any(), cbp_py.into_any()],
         ))
     }
 
@@ -7610,28 +8243,22 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         deblock_alpha_off: i32,
         deblock_beta_off: i32,
     ) -> PyResult<Bound<'py, pyo3::types::PyTuple>> {
-        use crate::cabac::{
-            CabacDecoder, CabacSliceType, MbNeighbourState, init_contexts,
-        };
+        use crate::cabac::{init_contexts, CabacDecoder, CabacSliceType, MbNeighbourState};
         use crate::h264_cabac_mb::{
-            DecodedIMb, IMbType, YuvFrame, chroma_qp, decode_i_macroblock,
-            reconstruct_i_macroblock,
+            chroma_qp, decode_i_macroblock, reconstruct_i_macroblock, DecodedIMb, IMbType, YuvFrame,
         };
-        use crate::h264_deblock::{MbDeblockInfo, deblock_i_frame};
+        use crate::h264_deblock::{deblock_i_frame, MbDeblockInfo};
 
         let w = mb_width * 16;
         let h = mb_height * 16;
         let mut frame = YuvFrame::new(w, h);
 
-        let mut contexts =
-            init_contexts(CabacSliceType::I, cabac_init_idc, slice_qp);
+        let mut contexts = init_contexts(CabacSliceType::I, cabac_init_idc, slice_qp);
         let mut dec = CabacDecoder::new(rbsp, cabac_start_bit);
 
         // Neighbour-state row (left = same row prev col, top = prev row).
-        let mut ns_grid: Vec<Vec<Option<MbNeighbourState>>> =
-            vec![vec![None; mb_width]; mb_height];
-        let mut mode_grid: Vec<Vec<Option<[u8; 16]>>> =
-            vec![vec![None; mb_width]; mb_height];
+        let mut ns_grid: Vec<Vec<Option<MbNeighbourState>>> = vec![vec![None; mb_width]; mb_height];
+        let mut mode_grid: Vec<Vec<Option<[u8; 16]>>> = vec![vec![None; mb_width]; mb_height];
 
         let mut cur_qp = slice_qp;
         // mb_qp_delta of the previous MB in DECODING ORDER (§9.3.3.1.1.5).
@@ -7639,7 +8266,11 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let mut prev_qp_delta_was_zero = true;
         // Per-MB QPs for the in-loop deblocking filter.
         let mut mb_info: Vec<MbDeblockInfo> = vec![
-            MbDeblockInfo { qp_luma: slice_qp, qp_chroma: slice_qp, is_intra: true };
+            MbDeblockInfo {
+                qp_luma: slice_qp,
+                qp_chroma: slice_qp,
+                is_intra: true
+            };
             mb_width * mb_height
         ];
         let mut i16 = 0usize;
@@ -7649,29 +8280,56 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
 
         'outer: for mby in 0..mb_height {
             for mbx in 0..mb_width {
-                let left = if mbx > 0 { ns_grid[mby][mbx - 1].as_ref() } else { None };
-                let top = if mby > 0 { ns_grid[mby - 1][mbx].as_ref() } else { None };
-                let left_m: Option<[u8; 16]> =
-                    if mbx > 0 { mode_grid[mby][mbx - 1] } else { None };
-                let top_m: Option<[u8; 16]> =
-                    if mby > 0 { mode_grid[mby - 1][mbx] } else { None };
+                let left = if mbx > 0 {
+                    ns_grid[mby][mbx - 1].as_ref()
+                } else {
+                    None
+                };
+                let top = if mby > 0 {
+                    ns_grid[mby - 1][mbx].as_ref()
+                } else {
+                    None
+                };
+                let left_m: Option<[u8; 16]> = if mbx > 0 {
+                    mode_grid[mby][mbx - 1]
+                } else {
+                    None
+                };
+                let top_m: Option<[u8; 16]> = if mby > 0 {
+                    mode_grid[mby - 1][mbx]
+                } else {
+                    None
+                };
 
                 let mb: DecodedIMb = decode_i_macroblock(
-                    &mut dec, &mut contexts, left, top,
-                    left_m.as_ref(), top_m.as_ref(),
+                    &mut dec,
+                    &mut contexts,
+                    left,
+                    top,
+                    left_m.as_ref(),
+                    top_m.as_ref(),
                     prev_qp_delta_was_zero,
                 );
                 // Track for the next MB in decoding order. mb_qp_delta is
                 // only PRESENT when the MB had coded blocks or is I_16x16;
                 // when absent it is inferred 0 (was_zero stays true).
-                let qp_present = mb.cbp_luma != 0 || mb.cbp_chroma != 0
+                let qp_present = mb.cbp_luma != 0
+                    || mb.cbp_chroma != 0
                     || matches!(mb.mb_type, IMbType::I16x16 { .. });
-                prev_qp_delta_was_zero = if qp_present { mb.mb_qp_delta == 0 } else { true };
+                prev_qp_delta_was_zero = if qp_present {
+                    mb.mb_qp_delta == 0
+                } else {
+                    true
+                };
 
                 if std::env::var("H264_TRACE").is_ok() {
                     let addr = mby * mb_width + mbx;
-                    let coef_sum: i64 = mb.luma_4x4.iter()
-                        .flat_map(|b| b.iter()).map(|&c| c as i64).sum::<i64>()
+                    let coef_sum: i64 = mb
+                        .luma_4x4
+                        .iter()
+                        .flat_map(|b| b.iter())
+                        .map(|&c| c as i64)
+                        .sum::<i64>()
                         + mb.luma_dc.iter().map(|&c| c as i64).sum::<i64>();
                     eprintln!(
                         "MB {:4} ({:2},{:2}) type={:?} cbp_l={:x} cbp_c={} qpd={} cmode={} coefsum={}",
@@ -7716,8 +8374,11 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
                     abs_mvd_x: 0,
                     abs_mvd_y: 0,
                 });
-                mode_grid[mby][mbx] =
-                    if is_inxn { Some(mb.luma4x4_modes) } else { None };
+                mode_grid[mby][mbx] = if is_inxn {
+                    Some(mb.luma4x4_modes)
+                } else {
+                    None
+                };
 
                 // end_of_slice_flag (terminate). 1 => slice ends.
                 let eos = dec.decode_terminate();
@@ -7729,23 +8390,31 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
 
         if deblock {
             deblock_i_frame(
-                &mut frame, &mb_info, mb_width, mb_height,
-                deblock_alpha_off, deblock_beta_off, deblock_disable_idc,
+                &mut frame,
+                &mb_info,
+                mb_width,
+                mb_height,
+                deblock_alpha_off,
+                deblock_beta_off,
+                deblock_disable_idc,
             );
         }
 
         let y_py = pyo3::types::PyBytes::new_bound(py, &frame.y);
         let u_py = pyo3::types::PyBytes::new_bound(py, &frame.u);
         let v_py = pyo3::types::PyBytes::new_bound(py, &frame.v);
-        Ok(pyo3::types::PyTuple::new_bound(py, [
-            y_py.into_any(),
-            u_py.into_any(),
-            v_py.into_any(),
-            decoded.into_py(py).into_bound(py),
-            i16.into_py(py).into_bound(py),
-            inxn.into_py(py).into_bound(py),
-            ipcm.into_py(py).into_bound(py),
-        ]))
+        Ok(pyo3::types::PyTuple::new_bound(
+            py,
+            [
+                y_py.into_any(),
+                u_py.into_any(),
+                v_py.into_any(),
+                decoded.into_py(py).into_bound(py),
+                i16.into_py(py).into_bound(py),
+                inxn.into_py(py).into_bound(py),
+                ipcm.into_py(py).into_bound(py),
+            ],
+        ))
     }
 
     fn cabac_round_trip<'py>(
@@ -7810,12 +8479,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
                     .next()
                     .unwrap();
                 let _ = init;
-                let ctx = dec_ctxs
-                    .entry(*ctx_id)
-                    .or_insert(CabacCtx {
-                        p_state_idx: orig_p,
-                        val_mps: orig_mps,
-                    });
+                let ctx = dec_ctxs.entry(*ctx_id).or_insert(CabacCtx {
+                    p_state_idx: orig_p,
+                    val_mps: orig_mps,
+                });
                 decoded.push(dec.decode_bin(ctx));
             } else {
                 decoded.push(dec.decode_bypass());
@@ -7837,8 +8504,14 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// "edge_deleted", "attr_set". The callback receives positional
     /// args matching the event (see `substrate_rs.ext` docstring).
     fn register_hook(&mut self, event: &str, callback: Py<PyAny>) -> PyResult<()> {
-        if !matches!(event, "node_inserted" | "node_deleted" | "edge_inserted" | "edge_deleted" | "attr_set") {
-            return Err(PyValueError::new_err(format!("unknown hook event: {}", event)));
+        if !matches!(
+            event,
+            "node_inserted" | "node_deleted" | "edge_inserted" | "edge_deleted" | "attr_set"
+        ) {
+            return Err(PyValueError::new_err(format!(
+                "unknown hook event: {}",
+                event
+            )));
         }
         self.hooks
             .entry(event.to_string())
@@ -7853,7 +8526,11 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
 
     // --- Grammar surface -----------------------------------------------
 
-    fn add_production(&mut self, py: Python<'_>, production_json: &Bound<'_, PyAny>) -> PyResult<()> {
+    fn add_production(
+        &mut self,
+        py: Python<'_>,
+        production_json: &Bound<'_, PyAny>,
+    ) -> PyResult<()> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         // The wire format wraps a single production in the same shape
@@ -7895,7 +8572,11 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// replay through this mirror-free method instead makes `load()`'s
     /// behaviour independent of whatever the general `add_production`
     /// binding does — today or after any future reroute of it.
-    fn add_production_no_mirror(&mut self, py: Python<'_>, production_json: &Bound<'_, PyAny>) -> PyResult<()> {
+    fn add_production_no_mirror(
+        &mut self,
+        py: Python<'_>,
+        production_json: &Bound<'_, PyAny>,
+    ) -> PyResult<()> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         let mut json = pyobj_to_json(py, production_json)?;
@@ -8089,10 +8770,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// STREAMING forget: while over the byte/count budget, shed the type
     /// with the lowest keep_value-per-byte. Call DURING ingest so one
     /// pathological episode cannot spike the store. Returns {type: n}.
-    fn memory_forget_over_budget<'py>(
-        &mut self,
-        py: Python<'py>,
-    ) -> PyResult<Bound<'py, PyDict>> {
+    fn memory_forget_over_budget<'py>(&mut self, py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
         let mut guard = self.inner.lock().expect("substrate mutex poisoned");
         let fac = self
             .memory
@@ -8108,10 +8786,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// End-of-round bound (records growth, runs streaming forget, snapshots
     /// census). Returns {nodes_before, bytes_before, nodes_after,
     /// bytes_after, forgot}.
-    fn memory_observe_and_bound<'py>(
-        &mut self,
-        py: Python<'py>,
-    ) -> PyResult<Bound<'py, PyDict>> {
+    fn memory_observe_and_bound<'py>(&mut self, py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
         let mut guard = self.inner.lock().expect("substrate mutex poisoned");
         let fac = self
             .memory
@@ -8255,8 +8930,16 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let fac = self
             .memory
             .get_or_insert_with(crate::memory::MemoryFaculty::default);
-        fac.consolidate(&mut guard, store_dir, key, nid.to_node(), round, &cat_vec, &leaf_vec)
-            .map_err(|e| PyValueError::new_err(format!("consolidate failed: {}", e)))
+        fac.consolidate(
+            &mut guard,
+            store_dir,
+            key,
+            nid.to_node(),
+            round,
+            &cat_vec,
+            &leaf_vec,
+        )
+        .map_err(|e| PyValueError::new_err(format!("consolidate failed: {}", e)))
     }
 
     /// Shuffle: evict cold clusters from RAM (disk copy persists). Returns
@@ -8288,7 +8971,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// Number of clusters in the order-N shape index (the index footprint —
     /// a RULE bounded by #clusters, NOT a per-item map).
     fn memory_index_clusters(&self) -> usize {
-        self.memory.as_ref().map(|f| f.findable_clusters()).unwrap_or(0)
+        self.memory
+            .as_ref()
+            .map(|f| f.findable_clusters())
+            .unwrap_or(0)
     }
 
     /// Report the L4 subsystem the memory faculty's operations belong to.
@@ -8439,18 +9125,18 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// edge_type_name, hop), ...]` so shape-analogues are distinguishable
     /// from co-occurrence neighbours. NOT a single-key lookup.
     #[pyo3(signature = (cue, max_hops=2))]
-    fn spread(
-        &self,
-        cue: PyRef<'_, PyNodeID>,
-        max_hops: usize,
-    ) -> Vec<(PyNodeID, String, usize)> {
+    fn spread(&self, cue: PyRef<'_, PyNodeID>, max_hops: usize) -> Vec<(PyNodeID, String, usize)> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         inner
             .spread(cue.to_node(), max_hops)
             .into_iter()
             .map(|(n, et, hop)| {
-                (PyNodeID::from_node(n), inner.interner.resolve(et).to_string(), hop)
+                (
+                    PyNodeID::from_node(n),
+                    inner.interner.resolve(et).to_string(),
+                    hop,
+                )
             })
             .collect()
     }
@@ -8619,7 +9305,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let idx = term_from_json(&json, &mut inner.terms, &mut inner.interner)
             .map_err(|e| PyValueError::new_err(format!("bad Term JSON: {:?}", e)))?;
         let nid = crate::reflect::term_to_subgraph(
-            &inner.terms, idx, &mut inner.graph, &mut inner.interner,
+            &inner.terms,
+            idx,
+            &mut inner.graph,
+            &mut inner.interner,
         );
         Py::new(py, PyNodeID { value: nid.0 })
     }
@@ -8638,7 +9327,10 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
         let nid = node.to_node();
         let snapshot = inner.terms.nodes.len();
         let idx = crate::reflect::term_from_subgraph(
-            &inner.graph, &inner.interner, nid, &mut inner.terms,
+            &inner.graph,
+            &inner.interner,
+            nid,
+            &mut inner.terms,
         )
         .map_err(|e| PyValueError::new_err(format!("not a Term subgraph: {:?}", e)))?;
         let j = term_to_json(&inner.terms, idx, &inner.interner);
@@ -8704,9 +9396,7 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
     /// shape is incompatible with this target will be SKIPPED by
     /// `apply_rule_once` (negative_problem_space_pruning at the rule
     /// dispatch level). Pass None to clear the filter.
-    fn set_shape_target(
-        &mut self, target: Option<&Bound<'_, PyDict>>,
-    ) -> PyResult<()> {
+    fn set_shape_target(&mut self, target: Option<&Bound<'_, PyDict>>) -> PyResult<()> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
         inner.set_shape_target(target.map(shape_from_pydict).transpose()?);
@@ -8733,24 +9423,26 @@ fn principal_axes(&mut self, region: u32) -> PyResult<i64> {
 
 // Helper for shapes_compatible: parse a Python dict into a Shape.
 fn shape_from_pydict(d: &Bound<'_, PyDict>) -> PyResult<crate::shape::Shape> {
-    let rec_str: String = d.get_item("recursion")?
+    let rec_str: String = d
+        .get_item("recursion")?
         .ok_or_else(|| PyValueError::new_err("shape dict missing 'recursion'"))?
         .extract()?;
-    let order_i: i64 = d.get_item("order_n")?
+    let order_i: i64 = d
+        .get_item("order_n")?
         .ok_or_else(|| PyValueError::new_err("shape dict missing 'order_n'"))?
         .extract()?;
-    let abs_str: String = d.get_item("abstraction")?
+    let abs_str: String = d
+        .get_item("abstraction")?
         .ok_or_else(|| PyValueError::new_err("shape dict missing 'abstraction'"))?
         .extract()?;
     let recursion = crate::shape::RecursionKind::from_str(&rec_str)
-        .ok_or_else(|| PyValueError::new_err(
-            format!("unknown RecursionKind '{}'", rec_str)))?;
+        .ok_or_else(|| PyValueError::new_err(format!("unknown RecursionKind '{}'", rec_str)))?;
     let abstraction = crate::shape::AbstractionKind::from_str(&abs_str)
-        .ok_or_else(|| PyValueError::new_err(
-            format!("unknown AbstractionKind '{}'", abs_str)))?;
-    let order_n = crate::shape::OrderN(u8::try_from(order_i)
-        .map_err(|_| PyValueError::new_err(
-            format!("order_n {} out of u8 range", order_i)))?);
+        .ok_or_else(|| PyValueError::new_err(format!("unknown AbstractionKind '{}'", abs_str)))?;
+    let order_n = crate::shape::OrderN(
+        u8::try_from(order_i)
+            .map_err(|_| PyValueError::new_err(format!("order_n {} out of u8 range", order_i)))?,
+    );
     Ok(crate::shape::Shape::new(recursion, order_n, abstraction))
 }
 
@@ -8775,7 +9467,9 @@ fn parse_rule_json(
     terms: &mut TermArena,
     interner: &mut crate::sym::Interner,
 ) -> Result<crate::rewrite::RewriteRule, String> {
-    let obj = j.as_object().ok_or_else(|| "rule must be an object".to_string())?;
+    let obj = j
+        .as_object()
+        .ok_or_else(|| "rule must be an object".to_string())?;
     let name = obj
         .get("name")
         .and_then(|v| v.as_str())
@@ -8790,11 +9484,17 @@ fn parse_rule_json(
         .unwrap_or(false);
     // Do not intern derived defaults: interner allocation order is observable
     // in this non-confluent runtime. Legacy rules must not move one Sym.
-    let area = obj.get("area").and_then(|v| v.as_str())
-        .map(|v| interner.intern(v)).unwrap_or_default();
+    let area = obj
+        .get("area")
+        .and_then(|v| v.as_str())
+        .map(|v| interner.intern(v))
+        .unwrap_or_default();
     let order = obj.get("order").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
-    let latency_class = obj.get("latency_class").and_then(|v| v.as_str())
-        .map(|v| interner.intern(v)).unwrap_or_default();
+    let latency_class = obj
+        .get("latency_class")
+        .and_then(|v| v.as_str())
+        .map(|v| interner.intern(v))
+        .unwrap_or_default();
 
     let match_arr = obj
         .get("match")
@@ -8802,13 +9502,23 @@ fn parse_rule_json(
         .ok_or_else(|| "missing or non-array 'match'".to_string())?;
     let mut match_edges = Vec::with_capacity(match_arr.len());
     for me in match_arr {
-        let arr = me.as_array().ok_or_else(|| "match item must be array".to_string())?;
+        let arr = me
+            .as_array()
+            .ok_or_else(|| "match item must be array".to_string())?;
         if arr.len() != 3 {
-            return Err("match item must have 3 elements: [src_var, edge_type, tgt_var]".to_string());
+            return Err(
+                "match item must have 3 elements: [src_var, edge_type, tgt_var]".to_string(),
+            );
         }
-        let src_var = arr[0].as_str().ok_or_else(|| "match src_var must be str".to_string())?;
-        let edge_type = arr[1].as_str().ok_or_else(|| "match edge_type must be str".to_string())?;
-        let tgt_var = arr[2].as_str().ok_or_else(|| "match tgt_var must be str".to_string())?;
+        let src_var = arr[0]
+            .as_str()
+            .ok_or_else(|| "match src_var must be str".to_string())?;
+        let edge_type = arr[1]
+            .as_str()
+            .ok_or_else(|| "match edge_type must be str".to_string())?;
+        let tgt_var = arr[2]
+            .as_str()
+            .ok_or_else(|| "match tgt_var must be str".to_string())?;
         match_edges.push(crate::rewrite::MatchEdge {
             src_var: interner.intern(src_var),
             edge_type: interner.intern(edge_type),
@@ -8835,7 +9545,9 @@ fn parse_rule_json(
     }
 
     let batch = obj.get("batch").and_then(|v| v.as_bool()).unwrap_or(false);
-    let match_type = obj.get("match_type").and_then(|v| v.as_str())
+    let match_type = obj
+        .get("match_type")
+        .and_then(|v| v.as_str())
         .map(|s| interner.intern(s));
 
     // R10 (join-index wave): optional "index_hints" — a list of
@@ -8845,9 +9557,12 @@ fn parse_rule_json(
     let mut index_hints = Vec::new();
     if let Some(arr) = obj.get("index_hints").and_then(|v| v.as_array()) {
         for h in arr {
-            let ho = h.as_object().ok_or_else(|| "index_hints item must be an object".to_string())?;
+            let ho = h
+                .as_object()
+                .ok_or_else(|| "index_hints item must be an object".to_string())?;
             let get_str = |k: &str| -> Result<&str, String> {
-                ho.get(k).and_then(|v| v.as_str())
+                ho.get(k)
+                    .and_then(|v| v.as_str())
                     .ok_or_else(|| format!("index_hints item missing string field {k:?}"))
             };
             index_hints.push(crate::rewrite::IndexJoinHint {
@@ -8908,7 +9623,11 @@ pub(crate) fn rule_to_json(
         Some(idx) => term_to_json(terms, idx, interner),
         None => J::Null,
     };
-    let effects_j: Vec<J> = rule.effects.iter().map(|e| effect_to_json(e, terms, interner)).collect();
+    let effects_j: Vec<J> = rule
+        .effects
+        .iter()
+        .map(|e| effect_to_json(e, terms, interner))
+        .collect();
     let match_type_j = match rule.match_type {
         Some(s) => J::String(interner.resolve(s).to_string()),
         None => J::Null,
@@ -8931,15 +9650,19 @@ pub(crate) fn rule_to_json(
     // literally. A hinted rule gains the key; parse_rule_json treats an
     // absent key as the empty Vec, so the round-trip is exact both ways.
     if !rule.index_hints.is_empty() {
-        let index_hints_j: Vec<J> = rule.index_hints.iter().map(|h| {
-            serde_json::json!({
-                "for_var": interner.resolve(h.for_var),
-                "via_var": interner.resolve(h.via_var),
-                "via_key": interner.resolve(h.via_key),
-                "node_type": interner.resolve(h.node_type),
-                "this_key": interner.resolve(h.this_key),
+        let index_hints_j: Vec<J> = rule
+            .index_hints
+            .iter()
+            .map(|h| {
+                serde_json::json!({
+                    "for_var": interner.resolve(h.for_var),
+                    "via_var": interner.resolve(h.via_var),
+                    "via_key": interner.resolve(h.via_key),
+                    "node_type": interner.resolve(h.node_type),
+                    "this_key": interner.resolve(h.this_key),
+                })
             })
-        }).collect();
+            .collect();
         out["index_hints"] = J::Array(index_hints_j);
     }
     if rule.mutation_protected {
@@ -8948,8 +9671,7 @@ pub(crate) fn rule_to_json(
     if rule.schedule_explicit {
         out["area"] = J::String(interner.resolve(rule.area).to_string());
         out["order"] = J::Number(serde_json::Number::from(rule.order));
-        out["latency_class"] =
-            J::String(interner.resolve(rule.latency_class).to_string());
+        out["latency_class"] = J::String(interner.resolve(rule.latency_class).to_string());
     }
     out
 }
@@ -8977,37 +9699,61 @@ fn attrs_to_json(
 ) -> J {
     let mut m = serde_json::Map::with_capacity(attrs.len());
     for (k, v) in attrs {
-        m.insert(interner.resolve(*k).to_string(), effect_arg_to_json(v, terms, interner));
+        m.insert(
+            interner.resolve(*k).to_string(),
+            effect_arg_to_json(v, terms, interner),
+        );
     }
     J::Object(m)
 }
 
 /// Inverse of `parse_effect_json` — same array-of-[kind, ...args] wire shape
 /// for every `Effect` variant.
-pub(crate) fn effect_to_json(eff: &crate::rewrite::Effect, terms: &TermArena, interner: &crate::sym::Interner) -> J {
+pub(crate) fn effect_to_json(
+    eff: &crate::rewrite::Effect,
+    terms: &TermArena,
+    interner: &crate::sym::Interner,
+) -> J {
     use crate::rewrite::Effect as E;
     let s = |sym: Sym| interner.resolve(sym).to_string();
     match eff {
-        E::AddEdge { src_var, edge_type, tgt_var, attrs } => J::Array(vec![
+        E::AddEdge {
+            src_var,
+            edge_type,
+            tgt_var,
+            attrs,
+        } => J::Array(vec![
             J::String("add_edge".into()),
             J::String(s(*src_var)),
             J::String(s(*edge_type)),
             J::String(s(*tgt_var)),
             attrs_to_json(attrs, terms, interner),
         ]),
-        E::DelEdge { src_var, edge_type, tgt_var } => J::Array(vec![
+        E::DelEdge {
+            src_var,
+            edge_type,
+            tgt_var,
+        } => J::Array(vec![
             J::String("del_edge".into()),
             J::String(s(*src_var)),
             J::String(s(*edge_type)),
             J::String(s(*tgt_var)),
         ]),
-        E::AddNode { new_var, type_, attrs } => J::Array(vec![
+        E::AddNode {
+            new_var,
+            type_,
+            attrs,
+        } => J::Array(vec![
             J::String("add_node".into()),
             J::String(s(*new_var)),
             J::String(s(*type_)),
             attrs_to_json(attrs, terms, interner),
         ]),
-        E::AddNodeIfAbsent { new_var, type_, attrs } => J::Array(vec![
+        E::AddNodeIfAbsent {
+            new_var,
+            type_,
+            attrs,
+        } => J::Array(vec![
             J::String("add_node_if_absent".into()),
             J::String(s(*new_var)),
             J::String(s(*type_)),
@@ -9036,7 +9782,11 @@ pub(crate) fn effect_to_json(eff: &crate::rewrite::Effect, terms: &TermArena, in
             effect_arg_to_json(name, terms, interner),
             effect_arg_to_json(term, terms, interner),
         ]),
-        E::SetRuleClause { rule_name, field, term } => J::Array(vec![
+        E::SetRuleClause {
+            rule_name,
+            field,
+            term,
+        } => J::Array(vec![
             J::String("set_rule_clause".into()),
             effect_arg_to_json(rule_name, terms, interner),
             effect_arg_to_json(field, terms, interner),
@@ -9046,27 +9796,51 @@ pub(crate) fn effect_to_json(eff: &crate::rewrite::Effect, terms: &TermArena, in
             J::String("apply_rule_patch".into()),
             J::String(s(*patch_var)),
         ]),
-        E::FbSample { fb, game_var, grid_w, grid_h } => J::Array(vec![
+        E::FbSample {
+            fb,
+            game_var,
+            grid_w,
+            grid_h,
+        } => J::Array(vec![
             J::String("fb_sample".into()),
             effect_arg_to_json(fb, terms, interner),
             J::String(s(*game_var)),
             effect_arg_to_json(grid_w, terms, interner),
             effect_arg_to_json(grid_h, terms, interner),
         ]),
-        E::NetCollapse { reflex_net, input, target, eta } => J::Array(vec![
+        E::NetCollapse {
+            reflex_net,
+            input,
+            target,
+            eta,
+        } => J::Array(vec![
             J::String("net_collapse".into()),
             J::String(s(*reflex_net)),
             effect_arg_to_json(input, terms, interner),
             effect_arg_to_json(target, terms, interner),
             effect_arg_to_json(eta, terms, interner),
         ]),
-        E::TrackIdentity { prev, cur, feature_key, category_key, extent_key, identity_key, radius } => J::Array(vec![
+        E::TrackIdentity {
+            prev,
+            cur,
+            feature_key,
+            category_key,
+            extent_key,
+            identity_key,
+            radius,
+        } => J::Array(vec![
             J::String("track_identity".into()),
             effect_arg_to_json(prev, terms, interner),
             effect_arg_to_json(cur, terms, interner),
             J::String(s(*feature_key)),
-            match category_key { Some(k) => J::String(s(*k)), None => J::Null },
-            match extent_key { Some(k) => J::String(s(*k)), None => J::Null },
+            match category_key {
+                Some(k) => J::String(s(*k)),
+                None => J::Null,
+            },
+            match extent_key {
+                Some(k) => J::String(s(*k)),
+                None => J::Null,
+            },
             J::String(s(*identity_key)),
             effect_arg_to_json(radius, terms, interner),
         ]),
@@ -9078,7 +9852,9 @@ fn parse_effect_json(
     terms: &mut TermArena,
     interner: &mut crate::sym::Interner,
 ) -> Result<crate::rewrite::Effect, String> {
-    let arr = j.as_array().ok_or_else(|| "effect must be an array".to_string())?;
+    let arr = j
+        .as_array()
+        .ok_or_else(|| "effect must be an array".to_string())?;
     let kind = arr
         .first()
         .and_then(|v| v.as_str())
@@ -9113,7 +9889,9 @@ fn parse_effect_json(
         let Some(raw) = arr.get(arr_i) else {
             return Ok(Vec::new());
         };
-        let obj = raw.as_object().ok_or_else(|| format!("effect attrs at {} must be object", arr_i))?;
+        let obj = raw
+            .as_object()
+            .ok_or_else(|| format!("effect attrs at {} must be object", arr_i))?;
         let mut out = Vec::with_capacity(obj.len());
         for (k, v) in obj {
             let arg = arg_to_effect(v, terms, interner)?;
@@ -9156,7 +9934,9 @@ fn parse_effect_json(
         "set_attr" => {
             let var = interner.intern(&s(1)?);
             let key = interner.intern(&s(2)?);
-            let raw = arr.get(3).ok_or_else(|| "set_attr missing value".to_string())?;
+            let raw = arr
+                .get(3)
+                .ok_or_else(|| "set_attr missing value".to_string())?;
             let value = arg_to_effect(raw, terms, interner)?;
             Ok(crate::rewrite::Effect::SetAttr { var, key, value })
         }
@@ -9169,7 +9949,8 @@ fn parse_effect_json(
         "set_attr_if_different" => {
             let var = interner.intern(&s(1)?);
             let key = interner.intern(&s(2)?);
-            let raw = arr.get(3)
+            let raw = arr
+                .get(3)
                 .ok_or_else(|| "set_attr_if_different missing value".to_string())?;
             let value = arg_to_effect(raw, terms, interner)?;
             Ok(crate::rewrite::Effect::SetAttrIfDifferent { var, key, value })
@@ -9197,10 +9978,12 @@ fn parse_effect_json(
             // Both arms share the same wire shape — the applier
             // pipes whatever Value falls out through `term_from_json`,
             // so authoring stays a single `arg_to_effect` codec call.
-            let name_raw = arr.get(1)
+            let name_raw = arr
+                .get(1)
                 .ok_or_else(|| "define_concept missing name".to_string())?;
             let name = arg_to_effect(name_raw, terms, interner)?;
-            let term_raw = arr.get(2)
+            let term_raw = arr
+                .get(2)
                 .ok_or_else(|| "define_concept missing term".to_string())?;
             let term = arg_to_effect(term_raw, terms, interner)?;
             Ok(crate::rewrite::Effect::DefineConcept { name, term })
@@ -9213,15 +9996,28 @@ fn parse_effect_json(
             // wire JSON for the new clause (a Term for "where", an effect list for
             // "effect"). Queued + applied between passes by Substrate::run_rules.
             let rule_name = arg_to_effect(
-                arr.get(1).ok_or_else(|| "set_rule_clause missing rule_name".to_string())?,
-                terms, interner)?;
+                arr.get(1)
+                    .ok_or_else(|| "set_rule_clause missing rule_name".to_string())?,
+                terms,
+                interner,
+            )?;
             let field = arg_to_effect(
-                arr.get(2).ok_or_else(|| "set_rule_clause missing field".to_string())?,
-                terms, interner)?;
+                arr.get(2)
+                    .ok_or_else(|| "set_rule_clause missing field".to_string())?,
+                terms,
+                interner,
+            )?;
             let term = arg_to_effect(
-                arr.get(3).ok_or_else(|| "set_rule_clause missing clause term".to_string())?,
-                terms, interner)?;
-            Ok(crate::rewrite::Effect::SetRuleClause { rule_name, field, term })
+                arr.get(3)
+                    .ok_or_else(|| "set_rule_clause missing clause term".to_string())?,
+                terms,
+                interner,
+            )?;
+            Ok(crate::rewrite::Effect::SetRuleClause {
+                rule_name,
+                field,
+                term,
+            })
         }
         "apply_rule_patch" => {
             // Shape: ["apply_rule_patch", "<bound_rule_patch_var>"].
@@ -9243,16 +10039,30 @@ fn parse_effect_json(
         // `Substrate::fb_sample` the PyO3 `fb_sample` method calls.
         "fb_sample" => {
             let fb = arg_to_effect(
-                arr.get(1).ok_or_else(|| "fb_sample missing fb_id".to_string())?,
-                terms, interner)?;
+                arr.get(1)
+                    .ok_or_else(|| "fb_sample missing fb_id".to_string())?,
+                terms,
+                interner,
+            )?;
             let game_var = interner.intern(&s(2)?);
             let grid_w = arg_to_effect(
-                arr.get(3).ok_or_else(|| "fb_sample missing grid_w".to_string())?,
-                terms, interner)?;
+                arr.get(3)
+                    .ok_or_else(|| "fb_sample missing grid_w".to_string())?,
+                terms,
+                interner,
+            )?;
             let grid_h = arg_to_effect(
-                arr.get(4).ok_or_else(|| "fb_sample missing grid_h".to_string())?,
-                terms, interner)?;
-            Ok(crate::rewrite::Effect::FbSample { fb, game_var, grid_w, grid_h })
+                arr.get(4)
+                    .ok_or_else(|| "fb_sample missing grid_h".to_string())?,
+                terms,
+                interner,
+            )?;
+            Ok(crate::rewrite::Effect::FbSample {
+                fb,
+                game_var,
+                grid_w,
+                grid_h,
+            })
         }
         // SELF-TRAINING: a rule fires one surprise-driven weight collapse of
         // a reflex net inside run_rules. Shape:
@@ -9264,15 +10074,29 @@ fn parse_effect_json(
         "net_collapse" => {
             let reflex_net = interner.intern(&s(1)?);
             let input = arg_to_effect(
-                arr.get(2).ok_or_else(|| "net_collapse missing input".to_string())?,
-                terms, interner)?;
+                arr.get(2)
+                    .ok_or_else(|| "net_collapse missing input".to_string())?,
+                terms,
+                interner,
+            )?;
             let target = arg_to_effect(
-                arr.get(3).ok_or_else(|| "net_collapse missing target".to_string())?,
-                terms, interner)?;
+                arr.get(3)
+                    .ok_or_else(|| "net_collapse missing target".to_string())?,
+                terms,
+                interner,
+            )?;
             let eta = arg_to_effect(
-                arr.get(4).ok_or_else(|| "net_collapse missing eta".to_string())?,
-                terms, interner)?;
-            Ok(crate::rewrite::Effect::NetCollapse { reflex_net, input, target, eta })
+                arr.get(4)
+                    .ok_or_else(|| "net_collapse missing eta".to_string())?,
+                terms,
+                interner,
+            )?;
+            Ok(crate::rewrite::Effect::NetCollapse {
+                reflex_net,
+                input,
+                target,
+                eta,
+            })
         }
         // GRAPH LAW #6: a rule triggers domain-general trans-frame
         // identity assignment. Shape:
@@ -9288,11 +10112,17 @@ fn parse_effect_json(
         // run_rules` between passes via `Substrate::track_identity`.
         "track_identity" => {
             let prev = arg_to_effect(
-                arr.get(1).ok_or_else(|| "track_identity missing prev".to_string())?,
-                terms, interner)?;
+                arr.get(1)
+                    .ok_or_else(|| "track_identity missing prev".to_string())?,
+                terms,
+                interner,
+            )?;
             let cur = arg_to_effect(
-                arr.get(2).ok_or_else(|| "track_identity missing cur".to_string())?,
-                terms, interner)?;
+                arr.get(2)
+                    .ok_or_else(|| "track_identity missing cur".to_string())?,
+                terms,
+                interner,
+            )?;
             let feature_key = interner.intern(&s(3)?);
             let category_key = match arr.get(4) {
                 Some(J::String(k)) => Some(interner.intern(k)),
@@ -9304,9 +10134,20 @@ fn parse_effect_json(
             };
             let identity_key = interner.intern(&s(6)?);
             let radius = arg_to_effect(
-                arr.get(7).ok_or_else(|| "track_identity missing radius".to_string())?,
-                terms, interner)?;
-            Ok(crate::rewrite::Effect::TrackIdentity { prev, cur, feature_key, category_key, extent_key, identity_key, radius })
+                arr.get(7)
+                    .ok_or_else(|| "track_identity missing radius".to_string())?,
+                terms,
+                interner,
+            )?;
+            Ok(crate::rewrite::Effect::TrackIdentity {
+                prev,
+                cur,
+                feature_key,
+                category_key,
+                extent_key,
+                identity_key,
+                radius,
+            })
         }
         other => Err(format!("unknown effect kind: {}", other)),
     }
@@ -9334,7 +10175,9 @@ fn load_reflex_json(
     inner: &mut SubstrateRs,
     agent_root: Option<NodeID>,
 ) -> Result<(), String> {
-    let obj = j.as_object().ok_or_else(|| "reflex must be an object".to_string())?;
+    let obj = j
+        .as_object()
+        .ok_or_else(|| "reflex must be an object".to_string())?;
     let name = obj
         .get("name")
         .and_then(|v| v.as_str())
@@ -9343,7 +10186,10 @@ fn load_reflex_json(
         .get("response")
         .and_then(|v| v.as_str())
         .ok_or_else(|| "missing 'response'".to_string())?;
-    let refractory_ticks = obj.get("refractory_ticks").and_then(|v| v.as_i64()).unwrap_or(0);
+    let refractory_ticks = obj
+        .get("refractory_ticks")
+        .and_then(|v| v.as_i64())
+        .unwrap_or(0);
     // ORDER 0 IS INVOLUNTARY: an `autonomous` reflex fires inside the engine's
     // own cycle and is never offered to the host dispatch loop.  Absent reads
     // 0, so every reflex authored before this key keeps the host path exactly.
@@ -9351,18 +10197,33 @@ fn load_reflex_json(
         .get("autonomous")
         .and_then(|v| v.as_i64().or_else(|| v.as_f64().map(|f| f as i64)))
         .unwrap_or(0);
-    let stimulus = obj.get("stimulus").ok_or_else(|| "missing 'stimulus'".to_string())?;
+    let stimulus = obj
+        .get("stimulus")
+        .ok_or_else(|| "missing 'stimulus'".to_string())?;
 
     let idx = term_from_json(stimulus, &mut inner.terms, &mut inner.interner)
         .map_err(|e| format!("bad stimulus Term: {:?}", e))?;
-    let stim_root = crate::reflect::term_to_subgraph(&inner.terms, idx, &mut inner.graph, &mut inner.interner);
+    let stim_root =
+        crate::reflect::term_to_subgraph(&inner.terms, idx, &mut inner.graph, &mut inner.interner);
 
     let reflex_type = inner.interner.intern("Reflex");
     let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
-    attrs.insert(inner.interner.intern("name"), Value::Str(inner.interner.intern(name)));
-    attrs.insert(inner.interner.intern("response"), Value::Str(inner.interner.intern(response)));
-    attrs.insert(inner.interner.intern("refractory_ticks"), Value::Int(refractory_ticks));
-    attrs.insert(inner.interner.intern("last_fired_tick"), Value::Int(-1_000_000_000));
+    attrs.insert(
+        inner.interner.intern("name"),
+        Value::Str(inner.interner.intern(name)),
+    );
+    attrs.insert(
+        inner.interner.intern("response"),
+        Value::Str(inner.interner.intern(response)),
+    );
+    attrs.insert(
+        inner.interner.intern("refractory_ticks"),
+        Value::Int(refractory_ticks),
+    );
+    attrs.insert(
+        inner.interner.intern("last_fired_tick"),
+        Value::Int(-1_000_000_000),
+    );
     attrs.insert(inner.interner.intern("fire_count"), Value::Int(0));
     attrs.insert(inner.interner.intern("autonomous"), Value::Int(autonomous));
     let reflex_nid = inner.add_node(reflex_type, attrs);
@@ -9370,9 +10231,13 @@ fn load_reflex_json(
     let has_reflex = inner.interner.intern("has_reflex");
     let stimulus_term = inner.interner.intern("stimulus_term");
     if let Some(agent) = agent_root {
-        let _ = inner.graph.insert_edge(agent, has_reflex, reflex_nid, FxHashMap::default());
+        let _ = inner
+            .graph
+            .insert_edge(agent, has_reflex, reflex_nid, FxHashMap::default());
     }
-    let _ = inner.graph.insert_edge(reflex_nid, stimulus_term, stim_root, FxHashMap::default());
+    let _ = inner
+        .graph
+        .insert_edge(reflex_nid, stimulus_term, stim_root, FxHashMap::default());
     Ok(())
 }
 
@@ -9415,10 +10280,19 @@ mod reflex_manifest_tests {
         let refractory_key = s.interner.intern("refractory_ticks");
         let last_fired_key = s.interner.intern("last_fired_tick");
         let fire_count_key = s.interner.intern("fire_count");
-        assert_eq!(attrs.get(&name_key), Some(&Value::Str(s.interner.lookup("question_pursue").unwrap())));
-        assert_eq!(attrs.get(&response_key), Some(&Value::Str(s.interner.lookup("question_pursue").unwrap())));
+        assert_eq!(
+            attrs.get(&name_key),
+            Some(&Value::Str(s.interner.lookup("question_pursue").unwrap()))
+        );
+        assert_eq!(
+            attrs.get(&response_key),
+            Some(&Value::Str(s.interner.lookup("question_pursue").unwrap()))
+        );
         assert_eq!(attrs.get(&refractory_key), Some(&Value::Int(2)));
-        assert_eq!(attrs.get(&last_fired_key), Some(&Value::Int(-1_000_000_000)));
+        assert_eq!(
+            attrs.get(&last_fired_key),
+            Some(&Value::Int(-1_000_000_000))
+        );
         assert_eq!(attrs.get(&fire_count_key), Some(&Value::Int(0)));
 
         // agent -has_reflex-> reflex
@@ -9431,7 +10305,10 @@ mod reflex_manifest_tests {
         let stim_targets = s.graph.neighbours(reflex_nid, Some(stimulus_term));
         assert_eq!(stim_targets.len(), 1, "exactly one stimulus_term edge");
         let stim_root = stim_targets[0];
-        assert_eq!(s.interner.resolve(s.graph.node(stim_root).type_), "Term.Lit");
+        assert_eq!(
+            s.interner.resolve(s.graph.node(stim_root).type_),
+            "Term.Lit"
+        );
     }
 
     /// No `root_node`/agent: the Reflex node + its stimulus subgraph
@@ -9451,7 +10328,10 @@ mod reflex_manifest_tests {
         // refractory_ticks defaults to 0 when absent.
         let reflex_nid = s.graph.nodes_of_type(reflex_type)[0];
         let refractory_key = s.interner.intern("refractory_ticks");
-        assert_eq!(s.graph.node(reflex_nid).attrs.get(&refractory_key), Some(&Value::Int(0)));
+        assert_eq!(
+            s.graph.node(reflex_nid).attrs.get(&refractory_key),
+            Some(&Value::Int(0))
+        );
     }
 
     /// Malformed entries (missing a required field) are reported as an
@@ -9607,7 +10487,14 @@ fn kmeans(data: Vec<f64>, n: usize, d: usize, k: usize, iters: usize) -> Vec<f64
 /// cannot. Returns `k*d*d` (row-major precision per primitive). `ridge` is added to the covariance diagonal
 /// so the inverse is well-conditioned even when a cluster has few samples. The BPL token model's covariance.
 #[pyfunction]
-fn cluster_precision(data: Vec<f64>, n: usize, d: usize, cent: Vec<f64>, k: usize, ridge: f64) -> Vec<f64> {
+fn cluster_precision(
+    data: Vec<f64>,
+    n: usize,
+    d: usize,
+    cent: Vec<f64>,
+    k: usize,
+    ridge: f64,
+) -> Vec<f64> {
     let mut assign = vec![0usize; n];
     for i in 0..n {
         let mut best = f64::INFINITY;
@@ -9618,7 +10505,10 @@ fn cluster_precision(data: Vec<f64>, n: usize, d: usize, cent: Vec<f64>, k: usiz
                 let dd = data[i * d + c] - cent[j * d + c];
                 s += dd * dd;
             }
-            if s < best { best = s; bj = j; }
+            if s < best {
+                best = s;
+                bj = j;
+            }
         }
         assign[i] = bj;
     }
@@ -9628,48 +10518,83 @@ fn cluster_precision(data: Vec<f64>, n: usize, d: usize, cent: Vec<f64>, k: usiz
         let pts: Vec<usize> = (0..n).filter(|&i| assign[i] == j).collect();
         let m = pts.len();
         let mut mean = vec![0.0f64; d];
-        for &i in &pts { for c in 0..d { mean[c] += data[i * d + c]; } }
-        if m > 0 { for c in 0..d { mean[c] /= m as f64; } }
+        for &i in &pts {
+            for c in 0..d {
+                mean[c] += data[i * d + c];
+            }
+        }
+        if m > 0 {
+            for c in 0..d {
+                mean[c] /= m as f64;
+            }
+        }
         // covariance + ridge on the diagonal
         let mut cov = vec![0.0f64; d * d];
         for &i in &pts {
             for a in 0..d {
                 let da = data[i * d + a] - mean[a];
-                for b in 0..d { cov[a * d + b] += da * (data[i * d + b] - mean[b]); }
+                for b in 0..d {
+                    cov[a * d + b] += da * (data[i * d + b] - mean[b]);
+                }
             }
         }
         let denom = (m.max(2) - 1) as f64;
         for a in 0..d {
-            for b in 0..d { cov[a * d + b] /= denom; }
+            for b in 0..d {
+                cov[a * d + b] /= denom;
+            }
             cov[a * d + a] += floor;
         }
         // invert via Gauss-Jordan (general d x d); fall back to ridge*I if singular
         let mut aug = vec![0.0f64; d * 2 * d];
         for r in 0..d {
-            for c in 0..d { aug[r * 2 * d + c] = cov[r * d + c]; }
+            for c in 0..d {
+                aug[r * 2 * d + c] = cov[r * d + c];
+            }
             aug[r * 2 * d + d + r] = 1.0;
         }
         let mut ok = true;
         for col in 0..d {
             let mut piv = col;
             for r in (col + 1)..d {
-                if aug[r * 2 * d + col].abs() > aug[piv * 2 * d + col].abs() { piv = r; }
+                if aug[r * 2 * d + col].abs() > aug[piv * 2 * d + col].abs() {
+                    piv = r;
+                }
             }
-            if aug[piv * 2 * d + col].abs() < 1e-12 { ok = false; break; }
+            if aug[piv * 2 * d + col].abs() < 1e-12 {
+                ok = false;
+                break;
+            }
             if piv != col {
-                for c in 0..2 * d { aug.swap(col * 2 * d + c, piv * 2 * d + c); }
+                for c in 0..2 * d {
+                    aug.swap(col * 2 * d + c, piv * 2 * d + c);
+                }
             }
             let pv = aug[col * 2 * d + col];
-            for c in 0..2 * d { aug[col * 2 * d + c] /= pv; }
+            for c in 0..2 * d {
+                aug[col * 2 * d + c] /= pv;
+            }
             for r in 0..d {
-                if r == col { continue; }
+                if r == col {
+                    continue;
+                }
                 let f = aug[r * 2 * d + col];
-                if f != 0.0 { for c in 0..2 * d { aug[r * 2 * d + c] -= f * aug[col * 2 * d + c]; } }
+                if f != 0.0 {
+                    for c in 0..2 * d {
+                        aug[r * 2 * d + c] -= f * aug[col * 2 * d + c];
+                    }
+                }
             }
         }
         for a in 0..d {
             for b in 0..d {
-                out[j * d * d + a * d + b] = if ok { aug[a * 2 * d + d + b] } else if a == b { 1.0 / floor } else { 0.0 };
+                out[j * d * d + a * d + b] = if ok {
+                    aug[a * 2 * d + d + b]
+                } else if a == b {
+                    1.0 / floor
+                } else {
+                    0.0
+                };
             }
         }
     }
@@ -9684,7 +10609,14 @@ fn cluster_precision(data: Vec<f64>, n: usize, d: usize, cent: Vec<f64>, k: usiz
 /// distance into a Mahalanobis metric that costs the primitive's NATURAL deformation directions less —
 /// structure-preserving (the part stays a part, only its metric is learned). Numerical primitive.
 #[pyfunction]
-fn cluster_deform_stats(data: Vec<f64>, n: usize, d: usize, cent: Vec<f64>, k: usize, ridge: f64) -> Vec<f64> {
+fn cluster_deform_stats(
+    data: Vec<f64>,
+    n: usize,
+    d: usize,
+    cent: Vec<f64>,
+    k: usize,
+    ridge: f64,
+) -> Vec<f64> {
     let mut sum = vec![0.0f64; k * d];
     let mut sq = vec![0.0f64; k * d];
     let mut cnt = vec![0usize; k];
@@ -9725,19 +10657,35 @@ fn cluster_deform_stats(data: Vec<f64>, n: usize, d: usize, cent: Vec<f64>, k: u
 }
 
 fn _soft_thr(v: f64, t: f64) -> f64 {
-    if v > t { v - t } else if v < -t { v + t } else { 0.0 }
+    if v > t {
+        v - t
+    } else if v < -t {
+        v + t
+    } else {
+        0.0
+    }
 }
 
 fn _l2norm(v: &mut [f64]) {
     let s: f64 = v.iter().map(|x| x * x).sum::<f64>().sqrt();
     if s > 1e-9 {
-        for x in v.iter_mut() { *x /= s; }
+        for x in v.iter_mut() {
+            *x /= s;
+        }
     }
 }
 
 /// ISTA sparse inference: code `a` (k) for `x` (d) under dictionary `dict` (k*d) = argmin ||x - D^T a||^2 +
 /// lam|a|_1 via iterated soft-thresholded gradient steps (biologically = recurrent lateral inhibition).
-fn _ista(x: &[f64], dict: &[f64], k: usize, d: usize, lam: f64, step: f64, iters: usize) -> Vec<f64> {
+fn _ista(
+    x: &[f64],
+    dict: &[f64],
+    k: usize,
+    d: usize,
+    lam: f64,
+    step: f64,
+    iters: usize,
+) -> Vec<f64> {
     let mut a = vec![0.0f64; k];
     for _ in 0..iters {
         let mut recon = vec![0.0f64; d];
@@ -9745,13 +10693,17 @@ fn _ista(x: &[f64], dict: &[f64], k: usize, d: usize, lam: f64, step: f64, iters
             let aj = a[j];
             if aj != 0.0 {
                 let b = j * d;
-                for c in 0..d { recon[c] += aj * dict[b + c]; }
+                for c in 0..d {
+                    recon[c] += aj * dict[b + c];
+                }
             }
         }
         for j in 0..k {
             let b = j * d;
             let mut g = 0.0;
-            for c in 0..d { g += dict[b + c] * (x[c] - recon[c]); }
+            for c in 0..d {
+                g += dict[b + c] * (x[c] - recon[c]);
+            }
             a[j] = _soft_thr(a[j] + step * g, step * lam);
         }
     }
@@ -9764,15 +10716,26 @@ fn _ista(x: &[f64], dict: &[f64], k: usize, d: usize, lam: f64, step: f64, iters
 /// biologically plausible (V1 receptive-field learning). Deterministic init (evenly-spaced samples), no RNG.
 /// Returns the k*d flat dictionary — the agent's generative stroke-primitive basis, held as graph data.
 #[pyfunction]
-fn sparse_dict_learn(data: Vec<f64>, n: usize, d: usize, k: usize, lam: f64, epochs: usize, lr: f64,
-                     infer_iters: usize, step: f64) -> Vec<f64> {
+fn sparse_dict_learn(
+    data: Vec<f64>,
+    n: usize,
+    d: usize,
+    k: usize,
+    lam: f64,
+    epochs: usize,
+    lr: f64,
+    infer_iters: usize,
+    step: f64,
+) -> Vec<f64> {
     if n == 0 || d == 0 || k == 0 {
         return vec![0.0; k.max(1) * d.max(1)];
     }
     let mut dict = vec![0.0f64; k * d];
     for j in 0..k {
         let idx = (j * n) / k;
-        for c in 0..d { dict[j * d + c] = data[idx * d + c]; }
+        for c in 0..d {
+            dict[j * d + c] = data[idx * d + c];
+        }
         _l2norm(&mut dict[j * d..(j + 1) * d]);
     }
     for _ep in 0..epochs {
@@ -9784,14 +10747,18 @@ fn sparse_dict_learn(data: Vec<f64>, n: usize, d: usize, k: usize, lam: f64, epo
                 let aj = a[j];
                 if aj != 0.0 {
                     let b = j * d;
-                    for c in 0..d { recon[c] += aj * dict[b + c]; }
+                    for c in 0..d {
+                        recon[c] += aj * dict[b + c];
+                    }
                 }
             }
             for j in 0..k {
                 let aj = a[j];
                 if aj != 0.0 {
                     let b = j * d;
-                    for c in 0..d { dict[b + c] += lr * aj * (x[c] - recon[c]); }
+                    for c in 0..d {
+                        dict[b + c] += lr * aj * (x[c] - recon[c]);
+                    }
                     _l2norm(&mut dict[b..b + d]);
                 }
             }
@@ -9803,12 +10770,30 @@ fn sparse_dict_learn(data: Vec<f64>, n: usize, d: usize, k: usize, lam: f64, epo
 /// Sparse-encode `m` `d`-dim vectors against a learned `k`*`d` dictionary (ISTA). Returns m*k flat codes —
 /// each vector's composition over the learned generative basis (structure-preserving, sparse).
 #[pyfunction]
-fn sparse_encode(data: Vec<f64>, m: usize, d: usize, dict: Vec<f64>, k: usize, lam: f64,
-                 infer_iters: usize, step: f64) -> Vec<f64> {
+fn sparse_encode(
+    data: Vec<f64>,
+    m: usize,
+    d: usize,
+    dict: Vec<f64>,
+    k: usize,
+    lam: f64,
+    infer_iters: usize,
+    step: f64,
+) -> Vec<f64> {
     let mut out = vec![0.0f64; m * k];
     for i in 0..m {
-        let a = _ista(&data[i * d..(i + 1) * d], &dict, k, d, lam, step, infer_iters);
-        for j in 0..k { out[i * k + j] = a[j]; }
+        let a = _ista(
+            &data[i * d..(i + 1) * d],
+            &dict,
+            k,
+            d,
+            lam,
+            step,
+            infer_iters,
+        );
+        for j in 0..k {
+            out[i * k + j] = a[j];
+        }
     }
     out
 }
@@ -9818,7 +10803,14 @@ fn sparse_encode(data: Vec<f64>, m: usize, d: usize, dict: Vec<f64>, k: usize, l
 /// (so a dot product of two histograms is their cosine). The character's composition over the learned
 /// vocabulary — a writer-invariant feature. Numerical primitive; the world adapter stores the result.
 #[pyfunction]
-fn bow_histogram(data: Vec<f64>, n: usize, d: usize, cent: Vec<f64>, k: usize, beta: f64) -> Vec<f64> {
+fn bow_histogram(
+    data: Vec<f64>,
+    n: usize,
+    d: usize,
+    cent: Vec<f64>,
+    k: usize,
+    beta: f64,
+) -> Vec<f64> {
     let mut h = vec![0.0f64; k];
     if n == 0 || k == 0 {
         return h;
@@ -9890,11 +10882,30 @@ fn cochleagram(x: Vec<f32>, fs: u32, env_cut: f32, dur_cut: f32, n_frames: usize
 /// `shuffle_future` is the negative control (predict a shuffled future).
 #[pyfunction]
 #[allow(clippy::too_many_arguments)]
-fn apc_train(frames_flat: Vec<f32>, seq_lens: Vec<usize>, din: usize, dh: usize,
-             k_ahead: usize, epochs: usize, lr: f32, bidir: bool, seed: u64,
-             shuffle_future: bool) -> Vec<f32> {
-    crate::apc::train(&frames_flat, &seq_lens, din, dh, k_ahead, epochs, lr,
-                      bidir, seed, shuffle_future)
+fn apc_train(
+    frames_flat: Vec<f32>,
+    seq_lens: Vec<usize>,
+    din: usize,
+    dh: usize,
+    k_ahead: usize,
+    epochs: usize,
+    lr: f32,
+    bidir: bool,
+    seed: u64,
+    shuffle_future: bool,
+) -> Vec<f32> {
+    crate::apc::train(
+        &frames_flat,
+        &seq_lens,
+        din,
+        dh,
+        k_ahead,
+        epochs,
+        lr,
+        bidir,
+        seed,
+        shuffle_future,
+    )
 }
 
 /// Train the CONTEXT-PREDICTIVE FRONT-END WITH an InfoNCE contrastive head
@@ -9913,14 +10924,46 @@ fn apc_train(frames_flat: Vec<f32>, seq_lens: Vec<usize>, din: usize, dh: usize,
 /// gradient/training math is entirely in Rust; this is a one-line hand-off.
 #[pyfunction]
 #[allow(clippy::too_many_arguments)]
-fn apc_train_contrastive(frames_flat: Vec<f32>, seq_lens: Vec<usize>, din: usize, dh: usize,
-                          k_ahead: usize, epochs: usize, lr: f32, bidir: bool, seed: u64,
-                          shuffle_future: bool, word_seq_idx: Vec<usize>, word_start: Vec<usize>,
-                          word_end: Vec<usize>, word_id: Vec<i64>, lambda_nce: f32, tau: f32,
-                          batch_size: usize, shuffle_word_id: bool) -> Vec<f32> {
-    crate::apc::train_contrastive(&frames_flat, &seq_lens, din, dh, k_ahead, epochs, lr, bidir,
-                                  seed, shuffle_future, &word_seq_idx, &word_start, &word_end,
-                                  &word_id, lambda_nce, tau, batch_size, shuffle_word_id)
+fn apc_train_contrastive(
+    frames_flat: Vec<f32>,
+    seq_lens: Vec<usize>,
+    din: usize,
+    dh: usize,
+    k_ahead: usize,
+    epochs: usize,
+    lr: f32,
+    bidir: bool,
+    seed: u64,
+    shuffle_future: bool,
+    word_seq_idx: Vec<usize>,
+    word_start: Vec<usize>,
+    word_end: Vec<usize>,
+    word_id: Vec<i64>,
+    lambda_nce: f32,
+    tau: f32,
+    batch_size: usize,
+    shuffle_word_id: bool,
+) -> Vec<f32> {
+    crate::apc::train_contrastive(
+        &frames_flat,
+        &seq_lens,
+        din,
+        dh,
+        k_ahead,
+        epochs,
+        lr,
+        bidir,
+        seed,
+        shuffle_future,
+        &word_seq_idx,
+        &word_start,
+        &word_end,
+        &word_id,
+        lambda_nce,
+        tau,
+        batch_size,
+        shuffle_word_id,
+    )
 }
 
 /// Train the MASKED-FRAME CONTRASTIVE PREDICTIVE CODING front-end (Step C
@@ -9932,12 +10975,38 @@ fn apc_train_contrastive(frames_flat: Vec<f32>, seq_lens: Vec<usize>, din: usize
 /// layout as `apc_train`, so `ApcEncode` reads it unchanged.
 #[pyfunction]
 #[allow(clippy::too_many_arguments)]
-fn apc_train_masked_cpc(frames_flat: Vec<f32>, seq_lens: Vec<usize>, din: usize, dh: usize,
-                         epochs: usize, lr: f32, bidir: bool, seed: u64, mask_prob: f32,
-                         mask_span: usize, dt: usize, tau: f32, batch_size: usize,
-                         shuffle_ctrl: bool) -> Vec<f32> {
-    crate::apc::train_masked_cpc(&frames_flat, &seq_lens, din, dh, epochs, lr, bidir, seed,
-                                 mask_prob, mask_span, dt, tau, batch_size, shuffle_ctrl)
+fn apc_train_masked_cpc(
+    frames_flat: Vec<f32>,
+    seq_lens: Vec<usize>,
+    din: usize,
+    dh: usize,
+    epochs: usize,
+    lr: f32,
+    bidir: bool,
+    seed: u64,
+    mask_prob: f32,
+    mask_span: usize,
+    dt: usize,
+    tau: f32,
+    batch_size: usize,
+    shuffle_ctrl: bool,
+) -> Vec<f32> {
+    crate::apc::train_masked_cpc(
+        &frames_flat,
+        &seq_lens,
+        din,
+        dh,
+        epochs,
+        lr,
+        bidir,
+        seed,
+        mask_prob,
+        mask_span,
+        dt,
+        tau,
+        batch_size,
+        shuffle_ctrl,
+    )
 }
 
 /// Batched cross-speaker NN-recall + d' over `n` trajectories (each `t`
@@ -9948,8 +11017,18 @@ fn apc_train_masked_cpc(frames_flat: Vec<f32>, seq_lens: Vec<usize>, din: usize,
 /// marshalling; the distance is identical to the held DtwTo Term.
 #[pyfunction]
 #[allow(clippy::too_many_arguments)]
-fn apc_recall(trajs: Vec<f32>, n: usize, t: usize, dim: usize, words: Vec<i64>,
-              spk: Vec<i64>, cap_q: usize, n_pos: usize, n_neg: usize, seed: u64) -> Vec<f32> {
+fn apc_recall(
+    trajs: Vec<f32>,
+    n: usize,
+    t: usize,
+    dim: usize,
+    words: Vec<i64>,
+    spk: Vec<i64>,
+    cap_q: usize,
+    n_pos: usize,
+    n_neg: usize,
+    seed: u64,
+) -> Vec<f32> {
     crate::apc::nn_recall_and_dprime(&trajs, n, t, dim, &words, &spk, cap_q, n_pos, n_neg, seed)
 }
 
@@ -9959,8 +11038,18 @@ fn apc_recall(trajs: Vec<f32>, n: usize, t: usize, dim: usize, words: Vec<i64>,
 /// pos..., n_neg, neg...]`. See `apc::nn_recall_detail`.
 #[pyfunction]
 #[allow(clippy::too_many_arguments)]
-fn apc_recall_detail(trajs: Vec<f32>, n: usize, t: usize, dim: usize, words: Vec<i64>,
-                     spk: Vec<i64>, cap_q: usize, n_pos: usize, n_neg: usize, seed: u64) -> Vec<f32> {
+fn apc_recall_detail(
+    trajs: Vec<f32>,
+    n: usize,
+    t: usize,
+    dim: usize,
+    words: Vec<i64>,
+    spk: Vec<i64>,
+    cap_q: usize,
+    n_pos: usize,
+    n_neg: usize,
+    seed: u64,
+) -> Vec<f32> {
     crate::apc::nn_recall_detail(&trajs, n, t, dim, &words, &spk, cap_q, n_pos, n_neg, seed)
 }
 
@@ -9968,8 +11057,15 @@ fn apc_recall_detail(trajs: Vec<f32>, n: usize, t: usize, dim: usize, words: Vec
 /// leader clustering over the DtwTo kernel (`apc::cluster_purity`). Returns
 /// [purity, n_clusters]. A fast measurement helper for gate (c).
 #[pyfunction]
-fn apc_purity(trajs: Vec<f32>, n: usize, t: usize, dim: usize, words: Vec<i64>,
-              target: usize, seed: u64) -> Vec<f32> {
+fn apc_purity(
+    trajs: Vec<f32>,
+    n: usize,
+    t: usize,
+    dim: usize,
+    words: Vec<i64>,
+    target: usize,
+    seed: u64,
+) -> Vec<f32> {
     crate::apc::cluster_purity(&trajs, n, t, dim, &words, target, seed)
 }
 
@@ -9978,7 +11074,13 @@ fn apc_purity(trajs: Vec<f32>, n: usize, t: usize, dim: usize, words: Vec<i64>,
 /// × dim (content-cancelled same-word-cross-speaker per-frame differences);
 /// returns the top-k principal directions (k*dim) to QUOTIENT out.
 #[pyfunction]
-fn apc_nuisance_subspace(resid: Vec<f32>, n: usize, dim: usize, k: usize, iters: usize) -> Vec<f32> {
+fn apc_nuisance_subspace(
+    resid: Vec<f32>,
+    n: usize,
+    dim: usize,
+    k: usize,
+    iters: usize,
+) -> Vec<f32> {
     crate::apc::nuisance_subspace(&resid, n, dim, k, iters)
 }
 
@@ -10007,8 +11109,14 @@ fn apc_formant_bands(f1: f32, f2: f32, f3: f32, sigma: f32) -> Vec<f32> {
 /// flattened row-major (frame, band); `voiced` is a per-frame 0/1 stat-frame mask.
 /// Returns the normalised matrix, same flat layout. Speaker-invariant phonetic trajectory.
 #[pyfunction]
-fn cmvn(m: Vec<f32>, n_frames: usize, n_bands: usize, eps: f32, do_variance: bool,
-        voiced: Vec<u8>) -> Vec<f32> {
+fn cmvn(
+    m: Vec<f32>,
+    n_frames: usize,
+    n_bands: usize,
+    eps: f32,
+    do_variance: bool,
+    voiced: Vec<u8>,
+) -> Vec<f32> {
     crate::audio_primitives::cmvn(&m, n_frames, n_bands, eps, do_variance, &voiced)
 }
 
@@ -10016,8 +11124,13 @@ fn cmvn(m: Vec<f32>, n_frames: usize, n_bands: usize, eps: f32, do_variance: boo
 /// (row-major n_cent x dim) by dot product and return (top-k indices, top-k scores).
 /// The batched form of the held Dot Term + argmax loop over WordCentroid nodes.
 #[pyfunction]
-fn topk_dot(emb: Vec<f32>, cents: Vec<f32>, n_cent: usize, dim: usize, k: usize)
-    -> (Vec<i64>, Vec<f32>) {
+fn topk_dot(
+    emb: Vec<f32>,
+    cents: Vec<f32>,
+    n_cent: usize,
+    dim: usize,
+    k: usize,
+) -> (Vec<i64>, Vec<f32>) {
     crate::audio_primitives::topk_dot(&emb, &cents, n_cent, dim, k)
 }
 
@@ -10025,8 +11138,16 @@ fn topk_dot(emb: Vec<f32>, cents: Vec<f32>, n_cent: usize, dim: usize, k: usize)
 /// Dot(emb, cent) - 0.5*((qdur - dmu)/dsig)^2 per centroid, top-k. dmu/dsig are per-unit
 /// duration mean/std (frames) from data. Returns (top-k indices, scores).
 #[pyfunction]
-fn topk_match(emb: Vec<f32>, cents: Vec<f32>, dmu: Vec<f32>, dsig: Vec<f32>, n_cent: usize,
-              dim: usize, k: usize, qdur: f32) -> (Vec<i64>, Vec<f32>) {
+fn topk_match(
+    emb: Vec<f32>,
+    cents: Vec<f32>,
+    dmu: Vec<f32>,
+    dsig: Vec<f32>,
+    n_cent: usize,
+    dim: usize,
+    k: usize,
+    qdur: f32,
+) -> (Vec<i64>, Vec<f32>) {
     crate::audio_primitives::topk_match(&emb, &cents, &dmu, &dsig, n_cent, dim, k, qdur)
 }
 
@@ -10054,10 +11175,24 @@ fn allpole_ear(x: Vec<f64>, fs: u32, nbands: usize, nwin: usize, order: usize) -
 /// The agent's sonority-valley word segmenter in Rust -> inter-word cut sample indices. The
 /// depth_threshold is the graph-resident, self-tuned decision; this is its mechanical DSP.
 #[pyfunction]
-fn sonority_segment(x: Vec<f64>, fs: u32, smoothing_ms: f64, min_sep_ms: f64,
-                    depth_threshold: f64, silence_floor: f64, snap_center: f64) -> Vec<usize> {
-    crate::audio_primitives::sonority_segment(&x, fs, smoothing_ms, min_sep_ms, depth_threshold,
-                                              silence_floor, snap_center)
+fn sonority_segment(
+    x: Vec<f64>,
+    fs: u32,
+    smoothing_ms: f64,
+    min_sep_ms: f64,
+    depth_threshold: f64,
+    silence_floor: f64,
+    snap_center: f64,
+) -> Vec<usize> {
+    crate::audio_primitives::sonority_segment(
+        &x,
+        fs,
+        smoothing_ms,
+        min_sep_ms,
+        depth_threshold,
+        silence_floor,
+        snap_center,
+    )
 }
 
 /// Short-time Fourier transform MAGNITUDE — Hann-windowed, hop-strided,
@@ -10104,12 +11239,7 @@ fn summary_autocorrelogram(band_acs: Vec<Vec<f32>>, n_lags: usize) -> Vec<f32> {
 /// (strength as float, lag cast to float) so it crosses the boundary
 /// as a plain numeric list.
 #[pyfunction]
-fn periodicity_track(
-    sacf: Vec<f32>,
-    n_lags: usize,
-    min_lag: usize,
-    max_lag: usize,
-) -> Vec<f32> {
+fn periodicity_track(sacf: Vec<f32>, n_lags: usize, min_lag: usize, max_lag: usize) -> Vec<f32> {
     let pairs = crate::audio_primitives::periodicity_track(&sacf, n_lags, min_lag, max_lag);
     let mut out = Vec::with_capacity(pairs.len() * 2);
     for (s, l) in pairs {
@@ -10267,7 +11397,15 @@ fn lpc_formant_warp_track(
     f_hi: f32,
 ) -> Vec<f32> {
     crate::audio_primitives::lpc_formant_warp_track(
-        &a_frames, order, fs, &freq_ratio, &targ_bw, n_formant, alpha, f_lo, f_hi,
+        &a_frames,
+        order,
+        fs,
+        &freq_ratio,
+        &targ_bw,
+        n_formant,
+        alpha,
+        f_lo,
+        f_hi,
     )
 }
 
@@ -10376,7 +11514,14 @@ fn glottal_warp_residual(
     src_tilt_db: f32,
 ) -> Vec<f32> {
     crate::audio_primitives::glottal_warp_residual(
-        &exc, &f0_track, hop, fs, tgt_f0, tgt_oq, tgt_tilt_db, src_tilt_db,
+        &exc,
+        &f0_track,
+        hop,
+        fs,
+        tgt_f0,
+        tgt_oq,
+        tgt_tilt_db,
+        src_tilt_db,
     )
 }
 
@@ -10404,7 +11549,14 @@ fn lf_excitation_transplant(
     am: f32,
 ) -> Vec<f32> {
     crate::audio_primitives::lf_excitation_transplant(
-        &content_res, &content_f0_track, hop, fs, tgt_f0, tgt_oq, tgt_ta_frac, am,
+        &content_res,
+        &content_f0_track,
+        hop,
+        fs,
+        tgt_f0,
+        tgt_oq,
+        tgt_ta_frac,
+        am,
     )
 }
 
@@ -10484,14 +11636,11 @@ fn detect_sonority_valleys(
 // =======================================================================
 
 use crate::effort_dial::{
-    blend_effort, CpuSlackEffortChannel, DeadlineEffortChannel,
-    EffortContext, EffortKnob, EffortPipeline, MemoryPressureEffortChannel,
-    SurpriseEffortChannel, ThreadMode, ThreadModeEffortChannel,
-    EFFORT_ADJUSTMENT, EFFORT_TARGET,
+    blend_effort, CpuSlackEffortChannel, DeadlineEffortChannel, EffortContext, EffortKnob,
+    EffortPipeline, MemoryPressureEffortChannel, SurpriseEffortChannel, ThreadMode,
+    ThreadModeEffortChannel, EFFORT_ADJUSTMENT, EFFORT_TARGET,
 };
-use crate::l6_cybernetic_feedback::{
-    CyberneticFeedbackLoop, RecommendationApplier,
-};
+use crate::l6_cybernetic_feedback::{CyberneticFeedbackLoop, RecommendationApplier};
 use crate::l6_essential_variables::{EssentialVariable, WorkingSetFit};
 use crate::memory::order_n_shape_salience;
 use std::sync::atomic::AtomicU64 as StdAtomicU64;
@@ -10524,15 +11673,27 @@ impl PyEffortDial {
         mem_high=0.9, budget_fraction=0.8,
         salient_at=0.5, routine_floor=1, mem_near_ceiling=3))]
     fn new(
-        max_effort: u64, min_passes: u64, max_passes: u64,
-        hi_threshold: f64, lo_threshold: f64,
-        realtime_ceiling: u64, l3_cache_bytes: usize,
-        mem_high: f64, budget_fraction: f64,
-        salient_at: f64, routine_floor: u64, mem_near_ceiling: u64,
+        max_effort: u64,
+        min_passes: u64,
+        max_passes: u64,
+        hi_threshold: f64,
+        lo_threshold: f64,
+        realtime_ceiling: u64,
+        l3_cache_bytes: usize,
+        mem_high: f64,
+        budget_fraction: f64,
+        salient_at: f64,
+        routine_floor: u64,
+        mem_near_ceiling: u64,
     ) -> Self {
         let knob = EffortKnob::new(
-            0, max_effort, min_passes, max_passes,
-            hi_threshold, lo_threshold);
+            0,
+            max_effort,
+            min_passes,
+            max_passes,
+            hi_threshold,
+            lo_threshold,
+        );
         let ctx = Arc::new(StdMutex::new(EffortContext {
             thread_mode: ThreadMode::OfflineParallel,
             deadline: None,
@@ -10540,36 +11701,56 @@ impl PyEffortDial {
             surprise: 0.0,
             now: Instant::now(),
         }));
-        let wsf: Arc<WorkingSetFit> =
-            Arc::new(WorkingSetFit::new("working_set_fit",
-                                        l3_cache_bytes, mem_high));
+        let wsf: Arc<WorkingSetFit> = Arc::new(WorkingSetFit::new(
+            "working_set_fit",
+            l3_cache_bytes,
+            mem_high,
+        ));
 
         let mut floop = CyberneticFeedbackLoop::new();
         // Surprise FIRST (a demand); constraint channels after.
         floop.add(Box::new(SurpriseEffortChannel::new(
-            "surprise", Arc::clone(&ctx), knob.clone(),
-            salient_at, routine_floor)));
+            "surprise",
+            Arc::clone(&ctx),
+            knob.clone(),
+            salient_at,
+            routine_floor,
+        )));
         floop.add(Box::new(ThreadModeEffortChannel::new(
-            "thread_mode", Arc::clone(&ctx), knob.clone(),
-            realtime_ceiling)));
+            "thread_mode",
+            Arc::clone(&ctx),
+            knob.clone(),
+            realtime_ceiling,
+        )));
         floop.add(Box::new(DeadlineEffortChannel::new(
-            "deadline", Arc::clone(&ctx), knob.clone(),
-            budget_fraction)));
-        let (cpu_ch, cpu_load) =
-            CpuSlackEffortChannel::new("cpu_slack", knob.clone());
+            "deadline",
+            Arc::clone(&ctx),
+            knob.clone(),
+            budget_fraction,
+        )));
+        let (cpu_ch, cpu_load) = CpuSlackEffortChannel::new("cpu_slack", knob.clone());
         floop.add(Box::new(cpu_ch));
         floop.add(Box::new(MemoryPressureEffortChannel::new(
-            "memory", knob.clone(),
+            "memory",
+            knob.clone(),
             Arc::clone(&wsf) as Arc<dyn EssentialVariable>,
-            mem_near_ceiling)));
+            mem_near_ceiling,
+        )));
 
         let mut applier = RecommendationApplier::new();
-        applier.register_knob_u64(EFFORT_ADJUSTMENT, EFFORT_TARGET,
-                                  knob.handle());
+        applier.register_knob_u64(EFFORT_ADJUSTMENT, EFFORT_TARGET, knob.handle());
 
         let pipeline = EffortPipeline::new(knob.clone());
 
-        Self { knob, ctx, floop, applier, pipeline, cpu_load, wsf }
+        Self {
+            knob,
+            ctx,
+            floop,
+            applier,
+            pipeline,
+            cpu_load,
+            wsf,
+        }
     }
 
     /// Set the execution context. `mode` is "realtime" (single-thread,
@@ -10581,14 +11762,24 @@ impl PyEffortDial {
     /// `working_set_bytes` feeds the memory bound.
     #[pyo3(signature = (mode, deadline_us=None, per_pass_us=100,
                         surprise=0.0, cpu_load=0.0, working_set_bytes=0))]
-    fn set_context(&self, mode: &str, deadline_us: Option<u64>,
-                   per_pass_us: u64, surprise: f64, cpu_load: f64,
-                   working_set_bytes: usize) -> PyResult<()> {
+    fn set_context(
+        &self,
+        mode: &str,
+        deadline_us: Option<u64>,
+        per_pass_us: u64,
+        surprise: f64,
+        cpu_load: f64,
+        working_set_bytes: usize,
+    ) -> PyResult<()> {
         let tm = match mode {
             "realtime" | "realtime_single" => ThreadMode::RealtimeSingle,
             "offline" | "offline_parallel" => ThreadMode::OfflineParallel,
-            other => return Err(PyValueError::new_err(format!(
-                "mode must be 'realtime' or 'offline', got {:?}", other))),
+            other => {
+                return Err(PyValueError::new_err(format!(
+                    "mode must be 'realtime' or 'offline', got {:?}",
+                    other
+                )))
+            }
         };
         let now = Instant::now();
         let deadline = match deadline_us {
@@ -10604,7 +11795,8 @@ impl PyEffortDial {
             c.now = now;
         }
         let lm = (cpu_load.clamp(0.0, 1.0) * 1000.0).round() as u64;
-        self.cpu_load.store(lm, std::sync::atomic::Ordering::Release);
+        self.cpu_load
+            .store(lm, std::sync::atomic::Ordering::Release);
         self.wsf.update(working_set_bytes);
         Ok(())
     }
@@ -10622,19 +11814,33 @@ impl PyEffortDial {
     /// Per-channel recommendations this tick: list of (name, effort)
     /// — the trace of WHICH context input asked for WHAT.
     fn channel_votes(&self) -> Vec<(String, u64)> {
-        self.floop.tick().iter()
-            .map(|r| (r.source_variable.clone(),
-                      r.adjustment_scalar.round() as u64))
+        self.floop
+            .tick()
+            .iter()
+            .map(|r| {
+                (
+                    r.source_variable.clone(),
+                    r.adjustment_scalar.round() as u64,
+                )
+            })
             .collect()
     }
 
     /// Current effort level.
-    fn effort(&self) -> u64 { self.knob.level() }
+    fn effort(&self) -> u64 {
+        self.knob.level()
+    }
     /// Passes the dial will run at current effort.
-    fn passes(&self) -> u64 { self.knob.passes() }
+    fn passes(&self) -> u64 {
+        self.knob.passes()
+    }
     /// Salience threshold at current effort (lower ⇒ keep more).
-    fn salience_threshold(&self) -> f64 { self.knob.salience_threshold() }
-    fn max_effort(&self) -> u64 { self.knob.max_effort() }
+    fn salience_threshold(&self) -> f64 {
+        self.knob.salience_threshold()
+    }
+    fn max_effort(&self) -> u64 {
+        self.knob.max_effort()
+    }
 
     /// Salience of an input trajectory (the surprise signal) — the
     /// same `order_n_shape_salience` operator memory + perception use.
@@ -10648,8 +11854,13 @@ impl PyEffortDial {
     /// estimate, wall_us, deadline_met. `surprise` gates processing;
     /// `deadline_us` (if set) is checked against actual wall-time.
     #[pyo3(signature = (input, surprise=0.0, deadline_us=None))]
-    fn run<'py>(&self, py: Python<'py>, input: Vec<f64>, surprise: f64,
-                deadline_us: Option<u64>) -> PyResult<Bound<'py, PyDict>> {
+    fn run<'py>(
+        &self,
+        py: Python<'py>,
+        input: Vec<f64>,
+        surprise: f64,
+        deadline_us: Option<u64>,
+    ) -> PyResult<Bound<'py, PyDict>> {
         let deadline = match deadline_us {
             Some(us) if us > 0 => Some(Instant::now() + Duration::from_micros(us)),
             _ => None,
@@ -10731,7 +11942,10 @@ fn effect_audit_stats(py: Python<'_>) -> PyResult<PyObject> {
     d.set_item("failed_edge_inserts", failed)?;
     d.set_item("false_progress", false_progress)?;
     d.set_item("first_row", first_row)?;
-    d.set_item("correction_enabled", crate::effect_audit::correct_failed_effects())?;
+    d.set_item(
+        "correction_enabled",
+        crate::effect_audit::correct_failed_effects(),
+    )?;
     Ok(d.into())
 }
 
@@ -10772,11 +11986,16 @@ fn same_round_visibility_stats(py: Python<'_>) -> PyResult<PyObject> {
     let d = PyDict::new_bound(py);
     d.set_item("multi_binding_drains", drains)?;
     d.set_item("rules", rules)?;
-    d.set_item("rule_count", rules_len(&crate::effect_audit::multi_binding_stats().1))?;
+    d.set_item(
+        "rule_count",
+        rules_len(&crate::effect_audit::multi_binding_stats().1),
+    )?;
     Ok(d.into())
 }
 
-fn rules_len(v: &[(String, u64)]) -> usize { v.len() }
+fn rules_len(v: &[(String, u64)]) -> usize {
+    v.len()
+}
 
 #[pyfunction]
 fn same_round_visibility_reset() {
@@ -10876,11 +12095,14 @@ fn selector_audit_stats(py: Python<'_>) -> PyResult<PyObject> {
     d.set_item("disagreements", disagreements)?;
     d.set_item("empty", empty)?;
     d.set_item("first_row", first_row)?;
-    d.set_item("mode", match crate::selector_audit::mode() {
-        crate::selector_audit::MODE_WARN => "warn",
-        crate::selector_audit::MODE_STRICT => "strict",
-        _ => "off",
-    })?;
+    d.set_item(
+        "mode",
+        match crate::selector_audit::mode() {
+            crate::selector_audit::MODE_WARN => "warn",
+            crate::selector_audit::MODE_STRICT => "strict",
+            _ => "off",
+        },
+    )?;
     d.set_item("fault_inject", crate::selector_audit::fault_inject_first())?;
     Ok(d.into())
 }
@@ -10946,20 +12168,22 @@ fn argmin_tie_reset() {
 /// cannot tell them apart has built the instrument that dies first.
 #[pyfunction]
 fn argmin_tie_stats(py: Python<'_>) -> PyResult<PyObject> {
-    let (firings, ties, empties, refusals, unique_term) =
-        crate::argmin_tie::stats();
+    let (firings, ties, empties, refusals, unique_term) = crate::argmin_tie::stats();
     let d = PyDict::new_bound(py);
     d.set_item("firings", firings)?;
     d.set_item("ties", ties)?;
     d.set_item("empties", empties)?;
     d.set_item("refusals", refusals)?;
     d.set_item("unique_term_firings", unique_term)?;
-    d.set_item("mode", match crate::argmin_tie::mode() {
-        crate::argmin_tie::MODE_COUNT => "count",
-        crate::argmin_tie::MODE_REFUSE_MIN => "refuse_min",
-        crate::argmin_tie::MODE_REFUSE_ALL => "refuse_all",
-        _ => "off",
-    })?;
+    d.set_item(
+        "mode",
+        match crate::argmin_tie::mode() {
+            crate::argmin_tie::MODE_COUNT => "count",
+            crate::argmin_tie::MODE_REFUSE_MIN => "refuse_min",
+            crate::argmin_tie::MODE_REFUSE_ALL => "refuse_all",
+            _ => "off",
+        },
+    )?;
     Ok(d.into())
 }
 
@@ -10985,8 +12209,15 @@ fn retinal_layout_sample(
 ) -> PyResult<Vec<f64>> {
     py.allow_threads(|| {
         crate::cognitive_tasks::sample_retinal_layout(
-            &luma, source_height, source_width, &gaze_az, &gaze_el,
-            &angular_width, &angular_height, fov_h, fov_v,
+            &luma,
+            source_height,
+            source_width,
+            &gaze_az,
+            &gaze_el,
+            &angular_width,
+            &angular_height,
+            fov_h,
+            fov_v,
         )
         .map_err(PyValueError::new_err)
     })
@@ -11021,10 +12252,21 @@ fn allocentric_retinal_projection(
 ) -> PyResult<(Vec<f64>, Vec<f64>, Vec<bool>, Vec<i64>)> {
     py.allow_threads(|| {
         crate::cognitive_tasks::project_allocentric_retina(
-            &surface_x, &surface_y, &surface_z, &surface_radius,
-            &surface_value, &surface_confidence,
-            pose_x, pose_y, pose_z, pose_yaw, pose_pitch,
-            &receptor_az, &receptor_el, &receptor_width, &receptor_height,
+            &surface_x,
+            &surface_y,
+            &surface_z,
+            &surface_radius,
+            &surface_value,
+            &surface_confidence,
+            pose_x,
+            pose_y,
+            pose_z,
+            pose_yaw,
+            pose_pitch,
+            &receptor_az,
+            &receptor_el,
+            &receptor_width,
+            &receptor_height,
         )
         .map_err(PyValueError::new_err)
     })
@@ -11033,7 +12275,10 @@ fn allocentric_retinal_projection(
 // --- module init ----------------------------------------------------------
 
 pub(crate) fn register(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add("InadmissibleEdge", m.py().get_type_bound::<InadmissibleEdge>())?;
+    m.add(
+        "InadmissibleEdge",
+        m.py().get_type_bound::<InadmissibleEdge>(),
+    )?;
     m.add_class::<PyNodeID>()?;
     m.add_class::<PySubstrate>()?;
     m.add_class::<PyEffortDial>()?;
@@ -11163,7 +12408,11 @@ mod rule_checkpoint_tests {
         let rule_a_name = s.interner.intern("rule_A");
         let idx_a = s.add_rule(RewriteRule {
             name: rule_a_name,
-            match_edges: vec![MatchEdge { src_var, edge_type: et, tgt_var }],
+            match_edges: vec![MatchEdge {
+                src_var,
+                edge_type: et,
+                tgt_var,
+            }],
             where_: None,
             effects: vec![Effect::AddNode {
                 new_var,
@@ -11175,9 +12424,17 @@ mod rule_checkpoint_tests {
         let rule_b_name = s.interner.intern("rule_B");
         let idx_b = s.add_rule(RewriteRule {
             name: rule_b_name,
-            match_edges: vec![MatchEdge { src_var, edge_type: et, tgt_var }],
+            match_edges: vec![MatchEdge {
+                src_var,
+                edge_type: et,
+                tgt_var,
+            }],
             where_: None,
-            effects: vec![Effect::AddNode { new_var, type_: minted_b_t, attrs: vec![] }],
+            effects: vec![Effect::AddNode {
+                new_var,
+                type_: minted_b_t,
+                attrs: vec![],
+            }],
             ..Default::default()
         });
         assert_eq!((idx_a.0, idx_b.0), (0, 1));
@@ -11185,8 +12442,11 @@ mod rule_checkpoint_tests {
         assert!(s.remove_rule(idx_b));
 
         // Export (same code path as `PySubstrate::export_rules`).
-        let exported: Vec<J> =
-            s.rules.iter().map(|r| rule_to_json(r, &s.terms, &s.interner)).collect();
+        let exported: Vec<J> = s
+            .rules
+            .iter()
+            .map(|r| rule_to_json(r, &s.terms, &s.interner))
+            .collect();
         assert_eq!(exported.len(), 2);
         assert_eq!(exported[0]["active"], serde_json::json!(true));
         assert_eq!(exported[1]["active"], serde_json::json!(false));
@@ -11201,13 +12461,18 @@ mod rule_checkpoint_tests {
         let et2 = s2.interner.intern("triggers");
         let a2 = s2.add_node(trigger_t2, FxHashMap::default());
         let b2 = s2.add_node(target_t2, FxHashMap::default());
-        s2.graph.insert_edge(a2, et2, b2, FxHashMap::default()).unwrap();
+        s2.graph
+            .insert_edge(a2, et2, b2, FxHashMap::default())
+            .unwrap();
 
         for (i, rj) in exported.iter().enumerate() {
             let rule = parse_rule_json(rj, &mut s2.terms, &mut s2.interner).unwrap();
             let active = rj.get("active").and_then(|v| v.as_bool()).unwrap();
             let idx = s2.add_rule(rule);
-            assert_eq!(idx.0 as usize, i, "import must reproduce export order as identical indices");
+            assert_eq!(
+                idx.0 as usize, i,
+                "import must reproduce export order as identical indices"
+            );
             if !active {
                 assert!(s2.remove_rule(idx));
             }
@@ -11235,7 +12500,10 @@ mod rule_checkpoint_tests {
         );
         let minted_node = s2.graph.nodes_of_type(minted_a_t2)[0];
         let k2 = s2.interner.intern("k");
-        assert_eq!(s2.graph.node(minted_node).attrs.get(&k2), Some(&Value::Int(42)));
+        assert_eq!(
+            s2.graph.node(minted_node).attrs.get(&k2),
+            Some(&Value::Int(42))
+        );
     }
 }
 
@@ -11264,13 +12532,21 @@ mod fb_sample_effect_tests {
     /// Real enough for `Substrate::fb_attach` to accept; no external
     /// writer process needed. Returns the bare shm name (`fb_attach`'s
     /// argument) and the on-disk path (for cleanup).
-    fn write_solid_fb(tag: &str, width: u32, height: u32, seq: u64, fill: (u8, u8, u8, u8)) -> (String, String) {
+    fn write_solid_fb(
+        tag: &str,
+        width: u32,
+        height: u32,
+        seq: u64,
+        fill: (u8, u8, u8, u8),
+    ) -> (String, String) {
         let stride = width * 4;
         let name = format!("/jbw_fb_effect_test_{}_{}", tag, std::process::id());
         let path = format!("/dev/shm/{}", name.trim_start_matches('/'));
         use std::io::Write;
         let mut f = std::fs::OpenOptions::new()
-            .create(true).write(true).truncate(true)
+            .create(true)
+            .write(true)
+            .truncate(true)
             .open(&path)
             .expect("write /dev/shm test fb (skip if /dev/shm unavailable)");
         let mut buf = vec![0u8; crate::framebuffer::FB_HEADER_LEN + (height * stride) as usize];
@@ -11316,7 +12592,11 @@ mod fb_sample_effect_tests {
             .iter()
             .map(|&nid| {
                 let attrs = &s.graph.node(nid).attrs;
-                (attr_num(attrs, row_k), attr_num(attrs, col_k), attr_num(attrs, value_k))
+                (
+                    attr_num(attrs, row_k),
+                    attr_num(attrs, col_k),
+                    attr_num(attrs, value_k),
+                )
             })
             .collect();
         out.sort();
@@ -11326,7 +12606,9 @@ mod fb_sample_effect_tests {
     /// `(rvalue, count)` for every `Region` node, sorted — the segmented
     /// connected components `fb_sample` mints via `segment_and_track`.
     fn region_summary(s: &SubstrateRs) -> Vec<(i64, i64)> {
-        let Some(region_t) = s.interner.lookup("Region") else { return Vec::new() };
+        let Some(region_t) = s.interner.lookup("Region") else {
+            return Vec::new();
+        };
         let rvalue_k = s.interner.lookup("rvalue").unwrap();
         let count_k = s.interner.lookup("count").unwrap();
         let mut out: Vec<(i64, i64)> = s
@@ -11349,7 +12631,12 @@ mod fb_sample_effect_tests {
     /// perception-as-action mint/update) then `set_attr` advancing the
     /// watermark to the frame just sampled (closing the gate until the
     /// NEXT frame, i.e. no per-tick churn on a static/paused writer).
-    fn install_look_rule(s: &mut SubstrateRs, fb_id: u32, grid_w: i64, grid_h: i64) -> (NodeID, NodeID) {
+    fn install_look_rule(
+        s: &mut SubstrateRs,
+        fb_id: u32,
+        grid_w: i64,
+        grid_h: i64,
+    ) -> (NodeID, NodeID) {
         let trigger_t = s.interner.intern("LookTrigger");
         let game_t = s.interner.intern("Game");
         let wants_look = s.interner.intern("wants_look");
@@ -11358,22 +12645,40 @@ mod fb_sample_effect_tests {
         let mut game_attrs: FxHashMap<Sym, Value> = FxHashMap::default();
         game_attrs.insert(last_seq_key, Value::Int(-1));
         let game = s.add_node(game_t, game_attrs);
-        s.graph.insert_edge(trigger, wants_look, game, FxHashMap::default()).unwrap();
+        s.graph
+            .insert_edge(trigger, wants_look, game, FxHashMap::default())
+            .unwrap();
 
         let t_var = s.interner.intern("t");
         let g_var = s.interner.intern("g");
         let g_ref = s.terms.add(TermNode::Var { name: g_var });
-        let attr_term = s.terms.add(TermNode::Attr { node: g_ref, key: last_seq_key });
-        let fb_lit_where = s.terms.add(TermNode::Lit { value: Value::Int(fb_id as i64) });
+        let attr_term = s.terms.add(TermNode::Attr {
+            node: g_ref,
+            key: last_seq_key,
+        });
+        let fb_lit_where = s.terms.add(TermNode::Lit {
+            value: Value::Int(fb_id as i64),
+        });
         let fbseq = s.terms.add(TermNode::FbFrameSeq { fb: fb_lit_where });
-        let where_term = s.terms.add(TermNode::Gt { a: fbseq, b: attr_term });
+        let where_term = s.terms.add(TermNode::Gt {
+            a: fbseq,
+            b: attr_term,
+        });
 
-        let fb_lit_watermark = s.terms.add(TermNode::Lit { value: Value::Int(fb_id as i64) });
-        let watermark_term = s.terms.add(TermNode::FbFrameSeq { fb: fb_lit_watermark });
+        let fb_lit_watermark = s.terms.add(TermNode::Lit {
+            value: Value::Int(fb_id as i64),
+        });
+        let watermark_term = s.terms.add(TermNode::FbFrameSeq {
+            fb: fb_lit_watermark,
+        });
 
         let rule = RewriteRule {
             name: s.interner.intern("look_when_frame_advances"),
-            match_edges: vec![MatchEdge { src_var: t_var, edge_type: wants_look, tgt_var: g_var }],
+            match_edges: vec![MatchEdge {
+                src_var: t_var,
+                edge_type: wants_look,
+                tgt_var: g_var,
+            }],
             where_: Some(where_term),
             effects: vec![
                 Effect::FbSample {
@@ -11410,30 +12715,49 @@ mod fb_sample_effect_tests {
         let fb_id_a = a.fb_attach(&name).expect("attach A");
         let game_t_a = a.interner.intern("Game");
         let game_a = a.add_node(game_t_a, FxHashMap::default());
-        a.fb_sample(fb_id_a, game_a, 2, 2).expect("direct fb_sample");
+        a.fb_sample(fb_id_a, game_a, 2, 2)
+            .expect("direct fb_sample");
 
         // --- B: purely rule-driven. No host fb_sample call anywhere. ---
         let mut b = fresh_substrate();
         let fb_id_b = b.fb_attach(&name).expect("attach B");
-        assert_eq!(fb_id_a, fb_id_b, "both substrates' first attach must get the same fb_id (fresh next_fb_id=1)");
+        assert_eq!(
+            fb_id_a, fb_id_b,
+            "both substrates' first attach must get the same fb_id (fresh next_fb_id=1)"
+        );
         install_look_rule(&mut b, fb_id_b, 2, 2);
         let steps = b.run_rules(1000);
         assert!(steps >= 1, "the look rule must have fired at least once");
 
         // Same downsampled grid, same segmented Region summary.
-        assert_eq!(cell_grid(&a), cell_grid(&b), "fb_sample effect must mint the same WorldInstance grid as the direct call");
-        assert_eq!(region_summary(&a), region_summary(&b), "fb_sample effect must mint the same Region segmentation as the direct call");
+        assert_eq!(
+            cell_grid(&a),
+            cell_grid(&b),
+            "fb_sample effect must mint the same WorldInstance grid as the direct call"
+        );
+        assert_eq!(
+            region_summary(&a),
+            region_summary(&b),
+            "fb_sample effect must mint the same Region segmentation as the direct call"
+        );
         // Solid fill over an 8x8 frame downsampled 2x2 -> one connected
         // Region covering all 4 cells. Sanity-check the fixture isn't
         // vacuously empty on BOTH sides (a real risk if grid mint failed
         // silently on both paths identically).
         assert_eq!(region_summary(&a).len(), 1);
-        assert_eq!(region_summary(&a)[0].1, 4, "solid fill -> one 4-cell region");
+        assert_eq!(
+            region_summary(&a)[0].1,
+            4,
+            "solid fill -> one 4-cell region"
+        );
 
         // No-churn: a second run_rules call must NOT re-fire (the
         // watermark effect closed the gate; frame_seq hasn't moved).
         let steps2 = b.run_rules(1000);
-        assert_eq!(steps2, 0, "gate must stay closed once the watermark catches up (no churn)");
+        assert_eq!(
+            steps2, 0,
+            "gate must stay closed once the watermark catches up (no churn)"
+        );
 
         let _ = std::fs::remove_file(&path);
     }
@@ -11454,7 +12778,11 @@ mod fb_sample_effect_tests {
         install_look_rule(&mut b, fb_id_b, 2, 2);
 
         // Export (same code path as `PySubstrate::export_rules`).
-        let exported: Vec<J> = b.rules.iter().map(|r| rule_to_json(r, &b.terms, &b.interner)).collect();
+        let exported: Vec<J> = b
+            .rules
+            .iter()
+            .map(|r| rule_to_json(r, &b.terms, &b.interner))
+            .collect();
         assert_eq!(exported.len(), 1);
         // Structural check: the effect list round-trips to the fb_sample
         // wire shape, not silently dropped/coerced to something else.
@@ -11467,7 +12795,10 @@ mod fb_sample_effect_tests {
         // the literal fb_id baked into the exported rule still resolves).
         let mut c = fresh_substrate();
         let fb_id_c = c.fb_attach(&name).expect("attach C");
-        assert_eq!(fb_id_c, fb_id_b, "fresh substrate's first attach must reproduce the same fb_id");
+        assert_eq!(
+            fb_id_c, fb_id_b,
+            "fresh substrate's first attach must reproduce the same fb_id"
+        );
         let game_t_c = c.interner.intern("Game");
         let trigger_t_c = c.interner.intern("LookTrigger");
         let wants_look_c = c.interner.intern("wants_look");
@@ -11476,7 +12807,9 @@ mod fb_sample_effect_tests {
         let mut game_attrs_c: FxHashMap<Sym, Value> = FxHashMap::default();
         game_attrs_c.insert(last_seq_key_c, Value::Int(-1));
         let game_c = c.add_node(game_t_c, game_attrs_c);
-        c.graph.insert_edge(trigger_c, wants_look_c, game_c, FxHashMap::default()).unwrap();
+        c.graph
+            .insert_edge(trigger_c, wants_look_c, game_c, FxHashMap::default())
+            .unwrap();
 
         for rj in &exported {
             let rule = parse_rule_json(rj, &mut c.terms, &mut c.interner).unwrap();
@@ -11485,9 +12818,16 @@ mod fb_sample_effect_tests {
 
         let steps = c.run_rules(1000);
         assert!(steps >= 1, "the imported rule must still fire");
-        assert!(!cell_grid(&c).is_empty(), "the imported rule's fb_sample effect must still mint WorldInstance nodes");
+        assert!(
+            !cell_grid(&c).is_empty(),
+            "the imported rule's fb_sample effect must still mint WorldInstance nodes"
+        );
         assert_eq!(region_summary(&c).len(), 1);
-        assert_eq!(region_summary(&c)[0].1, 4, "imported rule mints the same 4-cell region as the pre-export original");
+        assert_eq!(
+            region_summary(&c)[0].1,
+            4,
+            "imported rule mints the same 4-cell region as the pre-export original"
+        );
 
         let _ = std::fs::remove_file(&path);
     }
