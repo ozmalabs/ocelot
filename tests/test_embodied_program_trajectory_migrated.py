@@ -363,6 +363,44 @@ def test_manifold_block_reselects_a_retained_frontier_branch():
     )
 
 
+def test_receipt_counterexample_suspends_transition_forecast_reuse():
+    agent, owner, _, transitions = _fixture(1, (
+        {"source": 0, "target": 1, "pre_x": 0, "post_x": 10,
+         "energy": 1, "task_progress": 2},
+        {"source": 0, "target": 2, "pre_x": 0, "post_x": 20,
+         "energy": 2, "task_progress": 1},
+    ))
+    selected = agent.inner.neighbours(
+        owner, "has_selected_embodied_program_path"
+    )[0]
+    contradicted = next(
+        transition for transition in transitions
+        if transition in agent.inner.neighbours(
+            selected, "contains_embodied_program_transition"
+        )
+    )
+    alternative = next(
+        transition for transition in transitions
+        if transition != contradicted
+    )
+
+    agent.inner.remove_edge(
+        owner, "has_selected_embodied_program_path", selected
+    )
+    agent.inner.set_attr(
+        contradicted, "situated_forecast_counterexample_count", 1
+    )
+    agent.tick()
+
+    reselection = agent.inner.neighbours(
+        owner, "has_selected_embodied_program_path"
+    )
+    assert len(reselection) == 1
+    assert alternative in agent.inner.neighbours(
+        reselection[0], "contains_embodied_program_transition"
+    )
+
+
 def test_frontier_admits_orientation_preserving_capability_evidence():
     agent, owner, _, transitions = _fixture(1, (
         {"source": 0, "target": 1, "pre_x": 0, "post_x": 0,

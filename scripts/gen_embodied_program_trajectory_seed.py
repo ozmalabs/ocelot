@@ -517,15 +517,30 @@ def situate_path_in_current_state_rule() -> dict:
 
 def select_frontier_path_rule() -> dict:
 
-    def is_unblocked_from(path_var: str, transition_var: str) -> dict:
-        return Not(Exists(
-            Neighbours(
-                path_var,
-                "manifold_blocked_from_embodied_program_transition",
+    def transition_forecast_supported(transition_var: str) -> dict:
+        # The receipt which minted a verified transition is its first support
+        # observation. Replays then add confirmations or counterexamples. A
+        # tie retains the historical fact but suspends its predictive use.
+        return Gt(
+            Plus(
+                L(1),
+                P0(transition_var, "situated_forecast_confirmation_count"),
             ),
-            "blocked_state_transition",
-            Eq(V("blocked_state_transition"), V(transition_var)),
-        ))
+            P0(transition_var, "situated_forecast_counterexample_count"),
+        )
+
+    def is_unblocked_from(path_var: str, transition_var: str) -> dict:
+        return And(
+            transition_forecast_supported(transition_var),
+            Not(Exists(
+                Neighbours(
+                    path_var,
+                    "manifold_blocked_from_embodied_program_transition",
+                ),
+                "blocked_state_transition",
+                Eq(V("blocked_state_transition"), V(transition_var)),
+            )),
+        )
 
     def has_next_transition_from_current(path_var: str) -> dict:
         return Or(
@@ -710,7 +725,9 @@ def select_frontier_path_rule() -> dict:
         "removes only paths dominated in all seven conditional retained-"
         "future dimensions; no scalar capacity score is formed. Situated "
         "task, evidence, and practice coordinates order the surviving "
-        "tradeoffs. Selection grants no actuator authority.",
+        "tradeoffs. Receipt counterexamples suspend reuse when they no "
+        "longer leave a positive transition forecast evidence ratio. "
+        "Selection grants no actuator authority.",
         "match": [
             ["owner", "has_embodied_program_trajectory", "trajectory"],
             ["owner", "has_current_embodied_program", "current_program"],

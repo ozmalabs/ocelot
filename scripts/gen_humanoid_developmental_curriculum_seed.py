@@ -4807,6 +4807,13 @@ def refresh_retained_trajectory_after_receipt_rule():
 
 
 def complete_retained_trajectory_replay_rule():
+    forecast_refuted = Exists(
+        Neighbours(
+            "path", "manifold_blocked_from_embodied_program_transition"
+        ),
+        "blocked_transition",
+        Eq(V("blocked_transition"), V("transition")),
+    )
     return {
         "name": "hdc_complete_retained_trajectory_replay_from_receipt",
         "area": "humanoid_sensorimotor_adaptation",
@@ -4856,6 +4863,16 @@ def complete_retained_trajectory_replay_rule():
             ["set_attr", "path", "trajectory_replay_completed_seq", T(
                 P0("path", "trajectory_replay_issued_seq")
             )],
+            [
+                "set_attr", "transition",
+                "situated_forecast_confirmation_count", T(Plus(
+                    P0(
+                        "transition",
+                        "situated_forecast_confirmation_count",
+                    ),
+                    If(Not(forecast_refuted), L(1), L(0)),
+                )),
+            ],
             ["set_attr", "owner", "trajectory_replay_count", T(Plus(
                 P0("owner", "trajectory_replay_count"), L(1)
             ))],
@@ -4948,6 +4965,16 @@ def refute_retained_trajectory_forecast_from_receipt_rule():
                 L("task_effect_shortfall"),
                 L("endpoint_shape_residual"),
             ))],
+            [
+                "set_attr", "transition",
+                "situated_forecast_counterexample_count", T(Plus(
+                    P0(
+                        "transition",
+                        "situated_forecast_counterexample_count",
+                    ),
+                    L(1),
+                )),
+            ],
             ["set_attr", "path", "manifold_rejection_count", T(Plus(
                 P0("path", "manifold_rejection_count"), L(1)
             ))],
