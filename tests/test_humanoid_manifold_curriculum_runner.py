@@ -113,6 +113,7 @@ def test_metrics_keep_legacy_defaults_and_extract_gate_trace():
     assert metrics["curriculum"]["stage_ordinal"] == 13
     assert metrics["future_manifold_gate_onset_action"] == 7
     assert metrics["post_gate_action_count"] == 1
+
     assert metrics["maximum_post_gate_program_width"] == 1
     assert metrics["body_reset_count"] == 0
     assert metrics["body_reset_scenarios"] == []
@@ -187,6 +188,19 @@ def test_metrics_keep_legacy_defaults_and_extract_gate_trace():
     assert legacy["caregiver_support_scale_sum"] == 0.0
     assert legacy["caregiver_protective_support_available"] == 0
     assert legacy["caregiver_protected_action_counts_by_capability"] == {}
+
+
+def test_evaluation_configuration_declares_deployment_explicitly():
+    protocol = json.loads(PROTOCOL.read_text(encoding="utf-8"))
+
+    learning = runner._configure(protocol, 48, 0.0)
+    deployment = runner._configure(
+        protocol, 48, 1.0, deployment=True
+    )
+
+    assert learning["locomotion"]["developmental_deployment_mode"] == 0
+    assert deployment["locomotion"]["developmental_deployment_mode"] == 1
+    assert deployment["locomotion"]["future_manifold_enabled"] == 1.0
 
 
 def test_library_metadata_rejects_old_artifact_and_checks_exact_contract():

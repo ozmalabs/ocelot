@@ -49,6 +49,7 @@ def test_humanoid_seed_is_an_integer_output_null_bridge():
     assert "trajectory_minimum_selection_depth" in text
     assert "projects_future_manifold_in_episode" in text
     assert "uses_future_manifold_policy" in text
+    assert "hdc_project_completed_development_to_deployment_goal" in text
     assert "publish_verified_motor_transition_to_generic_trajectory" in text
     assert "mint_receipt_grounded_developmental_program_transition" in text
     assert "bind_developmental_command_to_addressed_body_subsection" in text
@@ -72,6 +73,54 @@ def test_humanoid_seed_is_an_integer_output_null_bridge():
     assert "open_goal_relative_inverse_kinematic_bootstrap" in text
     assert "knows_embodied_inverse_kinematics" in text
     assert "home" not in text
+
+
+def test_completed_deployment_plan_projects_normal_locomotion_goal():
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
+    episode = agent.s.add_node("HumanoidEpisode", {
+        "developmental_goal": "spontaneous_variation",
+        "active_developmental_capability": "stale",
+        "developmental_deployment_active": 0,
+        "locomotion_drive_active": 0,
+    })
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "developmental_deployment_mode": 1,
+    })
+    plan = agent.s.add_node("SelfDirectedLearningPlan", {
+        "status": "completed",
+    })
+    stale = agent.s.add_node(
+        "EmbodiedSituatedDevelopmentalCapability",
+        {
+            "name": "stale",
+            "goal": "spontaneous_variation",
+            "status": "mastered",
+        },
+    )
+    _edge(agent, agent.agent, "has_humanoid_episode", episode)
+    _edge(agent, episode, "projects_embodied_development", development)
+    _edge(agent, development, "has_self_directed_learning_plan", plan)
+    _edge(
+        agent,
+        development,
+        "has_active_embodied_developmental_capability",
+        stale,
+    )
+
+    steps = agent.tick()
+
+    attrs = agent.s.node(episode)["attrs"]
+    assert attrs["developmental_goal"] == "locomotion"
+    assert attrs["active_developmental_capability"] == "deployment"
+    assert attrs["developmental_deployment_active"] == 1
+    assert attrs["locomotion_drive_active"] == 1
+    assert agent.inner.neighbours(
+        development, "has_active_embodied_developmental_capability"
+    ) == []
+    assert steps < 100_000
+    assert agent.tick() < 100
 
 
 def test_deliberate_takeoff_owns_controller_over_generic_capability_hold():
