@@ -941,7 +941,13 @@ def _metrics(run: dict) -> dict:
     }
 
 
-def _configure(protocol: dict, actions: int, enabled: float) -> dict:
+def _configure(
+    protocol: dict,
+    actions: int,
+    enabled: float,
+    *,
+    deployment: bool = False,
+) -> dict:
     configured = deepcopy(protocol)
     configured["locomotion"]["actions"] = actions
     configured["locomotion"]["modes"] = ["directed_walk"]
@@ -949,6 +955,9 @@ def _configure(protocol: dict, actions: int, enabled: float) -> dict:
     configured["locomotion"][
         "future_manifold_temporal_anchors_enabled"
     ] = enabled
+    configured["locomotion"]["developmental_deployment_mode"] = int(
+        deployment
+    )
     return configured
 
 
@@ -1221,6 +1230,7 @@ def run_staged(
         protocol,
         action_budget,
         0.0 if mode == "training" else 1.0,
+        deployment=mode == "probe",
     )
     configured["locomotion"][
         "foveated_program_exploration_authority"
@@ -1351,8 +1361,12 @@ def run(
     motor_library = json.loads(library_bytes)
     library_metadata = _library_metadata(motor_library, protocol)
 
-    baseline_protocol = _configure(protocol, evaluation_actions, 0.0)
-    treatment_protocol = _configure(protocol, evaluation_actions, 1.0)
+    baseline_protocol = _configure(
+        protocol, evaluation_actions, 0.0, deployment=True
+    )
+    treatment_protocol = _configure(
+        protocol, evaluation_actions, 1.0, deployment=True
+    )
 
     started = time.perf_counter()
     with _counterfactual_support_authority(False, counterfactual_loss_floor):

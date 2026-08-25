@@ -947,6 +947,38 @@ def apply_capability_goal_rule():
     }
 
 
+def project_completed_plan_to_deployment_goal_rule():
+    return {
+        "name": "hdc_project_completed_development_to_deployment_goal",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -999,
+        "batch": False,
+        "comment": "A completed finite learning plan retires developmental "
+        "selection but does not erase the situated task. Explicit deployment "
+        "projects the normal locomotion objective into the motor controller; "
+        "the ordinary future-manifold gate still owns action authority.",
+        "match": [
+            ["episode", "projects_embodied_development", "development"],
+            ["development", "has_self_directed_learning_plan", "plan"],
+        ],
+        "where": And(
+            Eq(P0("development", "developmental_deployment_mode"), L(1)),
+            Eq(A("plan", "status"), L("completed")),
+            Or(
+                Not(Eq(A("episode", "developmental_goal"), L("locomotion"))),
+                Not(Eq(P0("episode", "developmental_deployment_active"), L(1))),
+            ),
+        ),
+        "effects": [
+            ["set_attr", "episode", "developmental_goal", "locomotion"],
+            ["set_attr", "episode", "active_developmental_capability", "deployment"],
+            ["set_attr", "episode", "developmental_deployment_active", 1],
+            ["set_attr", "episode", "locomotion_drive_active", 1],
+        ],
+    }
+
+
 def synchronize_developmental_motor_task_rule():
     """Open only the task residual named by the active generic capability."""
     requests_takeoff = Eq(
@@ -5896,7 +5928,7 @@ def replay_positive_takeoff_derivative_program_rule():
 def manifest() -> dict:
     return {
         "id": "humanoid_developmental_curriculum",
-        "version": "3.73.0",
+        "version": "3.74.0",
         "depends_on": [
             "humanoid_adaptation",
             "somatomotor_waves",
@@ -6067,6 +6099,7 @@ def manifest() -> dict:
             refresh_inverse_kinematic_query_rule(),
             score_inverse_kinematic_forward_models_rule(),
             apply_capability_goal_rule(),
+            project_completed_plan_to_deployment_goal_rule(),
             synchronize_developmental_motor_task_rule(),
             retire_orientation_authority_outside_orientation_manifold_rule(),
             release_stale_recovery_program_rule(),

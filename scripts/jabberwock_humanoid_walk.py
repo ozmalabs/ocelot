@@ -3009,6 +3009,9 @@ def _run_arm(
                     ),
                     "development_effector_coverage_complete": 0,
                     "development_learning_active": 0,
+                    "developmental_deployment_mode": int(
+                        locomotion.get("developmental_deployment_mode", 0)
+                    ),
                     "latest_development_receipt_seq": 0,
                     "embodied_developmental_mastery_count": 0,
                     "developmental_cross_body_warm_start_count": 0,
@@ -3799,7 +3802,7 @@ def _run_arm(
             agent.inner.set_attr(
                 development_context,
                 "development_learning_active",
-                1,
+                int(not locomotion.get("developmental_deployment_mode", 0)),
             )
         agent.inner.set_attr(episode, "phase", "locomotion")
         _write_state(

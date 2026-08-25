@@ -2756,7 +2756,34 @@ def complete_self_directed_learning_plan_rule():
             Gt(Count(learning_plan_steps()), L(0)),
             Eq(Count(required_incomplete), L(0)),
         ),
-        "effects": [["set_attr", "plan", "status", "completed"]],
+        "effects": [
+            ["set_attr", "plan", "status", "completed"],
+            ["set_attr", "episode", "active_embodied_developmental_goal", "inactive"],
+            ["set_attr", "episode", "active_embodied_developmental_capability", "inactive"],
+        ],
+    }
+
+
+def retire_active_capability_after_plan_completion_rule():
+    return {
+        "name": "ed_retire_active_capability_after_plan_completion",
+        "area": "general_cognition",
+        "latency_class": "hard_realtime",
+        "order": -998,
+        "batch": True,
+        "comment": "A completed finite plan has no active developmental "
+        "experiment. Remove stale active edges before a downstream deployment "
+        "bridge projects its normal task objective.",
+        "match": [
+            ["episode", "has_self_directed_learning_plan", "plan"],
+            ["episode", "has_active_embodied_developmental_capability", "instance"],
+        ],
+        "where": Eq(A("plan", "status"), L("completed")),
+        "effects": [
+            ["del_edge", "episode", "has_active_embodied_developmental_capability", "instance"],
+            ["set_attr", "episode", "active_embodied_developmental_goal", "inactive"],
+            ["set_attr", "episode", "active_embodied_developmental_capability", "inactive"],
+        ],
     }
 
 
@@ -4604,14 +4631,19 @@ def warm_start_similar_body_rule():
 
 
 def recall_exact_body_capability_rule():
+    deployment = Eq(P0("episode", "developmental_deployment_mode"), L(1))
     return {
         "name": "ed_recall_exact_body_capability_for_local_reverification",
         "area": "general_cognition",
         "latency_class": "hard_realtime",
+        "order": -1000,
         "batch": False,
-        "comment": "An exact structural body can reopen a retained ability "
-        "at the verification boundary. Recall has zero output authority and "
-        "requires a fresh successful receipt before mastery is restored.",
+        "comment": "An exact structural body reopens a retained ability at "
+        "the verification boundary during learning. In an explicitly "
+        "declared deployment episode, exact-body identity closes the finite "
+        "developmental prior immediately; actuator output remains governed "
+        "by the separate situated motor manifold gate. Cross-body recall "
+        "still requires local verification.",
         "match": [
             ["agent", "has_embodied_development_episode", "episode"],
             ["episode", "has_embodied_developmental_capability", "instance"],
@@ -4636,12 +4668,16 @@ def recall_exact_body_capability_rule():
                 "add_edge", "instance",
                 "recalls_exact_embodied_developmental_capability", "memory",
             ],
-            ["set_attr", "instance", "status", "retention_due"],
+            ["set_attr", "instance", "status", T(If(
+                deployment, L("mastered"), L("retention_due")
+            ))],
             ["set_attr", "instance", "retention_start_seq", T(Minus(
                 P0("episode", "latest_development_receipt_seq"),
                 P0("episode", "development_evidence_window"),
             ))],
-            ["set_attr", "instance", "warm_start_requires_verification", 1],
+            ["set_attr", "instance", "warm_start_requires_verification", T(
+                If(deployment, L(0), L(1))
+            )],
             ["set_attr", "episode", "developmental_exact_body_recall_count", T(
                 Plus(
                     P0("episode", "developmental_exact_body_recall_count"),
@@ -4711,7 +4747,7 @@ def manifest() -> dict:
             })
     return {
         "id": "embodied_development",
-        "version": "2.29.0",
+        "version": "2.31.0",
         "depends_on": [
             "decision_core", "cognitive_pareto", "metacognitive_learning",
             "metacognitive_program_discrimination",
@@ -5088,6 +5124,7 @@ def manifest() -> dict:
             complete_learning_plan_step_rule(),
             release_learning_plan_step_rule(),
             complete_self_directed_learning_plan_rule(),
+            retire_active_capability_after_plan_completion_rule(),
             store_partial_capability_experience_rule(),
             update_partial_capability_experience_rule(),
             store_partial_capability_context_rule(),

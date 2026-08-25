@@ -1,6 +1,6 @@
 {
  "id": "embodied_development",
- "version": "2.29.0",
+ "version": "2.31.0",
  "depends_on": [
   "decision_core",
   "cognitive_pareto",
@@ -13846,8 +13846,9 @@
    "name": "ed_recall_exact_body_capability_for_local_reverification",
    "area": "general_cognition",
    "latency_class": "hard_realtime",
+   "order": -1000,
    "batch": false,
-   "comment": "An exact structural body can reopen a retained ability at the verification boundary. Recall has zero output authority and requires a fresh successful receipt before mastery is restored.",
+   "comment": "An exact structural body reopens a retained ability at the verification boundary during learning. In an explicitly declared deployment episode, exact-body identity closes the finite developmental prior immediately; actuator output remains governed by the separate situated motor manifold gate. Cross-body recall still requires local verification.",
    "match": [
     [
      "agent",
@@ -14000,7 +14001,43 @@
      "set_attr",
      "instance",
      "status",
-     "retention_due"
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "developmental_deployment_mode"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "mastered"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "retention_due"
+       }
+      }
+     }
     ],
     [
      "set_attr",
@@ -14050,7 +14087,43 @@
      "set_attr",
      "instance",
      "warm_start_requires_verification",
-     1
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "developmental_deployment_mode"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0
+       },
+       "other": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
     ],
     [
      "set_attr",
@@ -47743,6 +47816,73 @@
      "plan",
      "status",
      "completed"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "active_embodied_developmental_goal",
+     "inactive"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "active_embodied_developmental_capability",
+     "inactive"
+    ]
+   ]
+  },
+  {
+   "name": "ed_retire_active_capability_after_plan_completion",
+   "area": "general_cognition",
+   "latency_class": "hard_realtime",
+   "order": -998,
+   "batch": true,
+   "comment": "A completed finite plan has no active developmental experiment. Remove stale active edges before a downstream deployment bridge projects its normal task objective.",
+   "match": [
+    [
+     "episode",
+     "has_self_directed_learning_plan",
+     "plan"
+    ],
+    [
+     "episode",
+     "has_active_embodied_developmental_capability",
+     "instance"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Attr",
+     "node": {
+      "type": "Var",
+      "name": "plan"
+     },
+     "key": "status"
+    },
+    "b": {
+     "type": "Lit",
+     "value": "completed"
+    }
+   },
+   "effects": [
+    [
+     "del_edge",
+     "episode",
+     "has_active_embodied_developmental_capability",
+     "instance"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "active_embodied_developmental_goal",
+     "inactive"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "active_embodied_developmental_capability",
+     "inactive"
     ]
    ]
   },

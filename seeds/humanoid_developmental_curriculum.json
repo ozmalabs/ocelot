@@ -1,6 +1,6 @@
 {
  "id": "humanoid_developmental_curriculum",
- "version": "3.73.0",
+ "version": "3.74.0",
  "depends_on": [
   "humanoid_adaptation",
   "somatomotor_waves",
@@ -4547,6 +4547,146 @@
      "episode",
      "motor_recovery_primary_ready",
      0
+    ]
+   ]
+  },
+  {
+   "name": "hdc_project_completed_development_to_deployment_goal",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -999,
+   "batch": false,
+   "comment": "A completed finite learning plan retires developmental selection but does not erase the situated task. Explicit deployment projects the normal locomotion objective into the motor controller; the ordinary future-manifold gate still owns action authority.",
+   "match": [
+    [
+     "episode",
+     "projects_embodied_development",
+     "development"
+    ],
+    [
+     "development",
+     "has_self_directed_learning_plan",
+     "plan"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "development"
+         },
+         "key": "developmental_deployment_mode"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "plan"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "completed"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "episode"
+          },
+          "key": "developmental_goal"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "locomotion"
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "key": "developmental_deployment_active"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "episode",
+     "developmental_goal",
+     "locomotion"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "active_developmental_capability",
+     "deployment"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "developmental_deployment_active",
+     1
+    ],
+    [
+     "set_attr",
+     "episode",
+     "locomotion_drive_active",
+     1
     ]
    ]
   },
