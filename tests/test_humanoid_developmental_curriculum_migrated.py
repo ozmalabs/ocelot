@@ -213,6 +213,58 @@ def test_completed_safe_curriculum_records_consecutive_rehearsal_receipts():
     assert attrs["output_authority"] == 0
 
 
+def test_retained_replay_refutes_receipt_grounded_task_effect_shortfall():
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
+    episode = agent.s.add_node("HumanoidEpisode", {})
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "developmental_deployment_mode": 1,
+    })
+    owner = agent.s.add_node("Node", {})
+    path = agent.s.add_node("EmbodiedProgramPath", {
+        "trajectory_replay_issued_seq": 5,
+        "trajectory_replay_completed_seq": 0,
+        "manifold_rejection_count": 0,
+    })
+    transition = agent.s.add_node("ParetoProfile", {
+        "task_progress_units": 3,
+        "current_state_shape_residual_units": 100,
+        "post_state_axis_x_units": 0,
+        "post_state_axis_y_units": 0,
+        "post_state_axis_z_units": 0,
+    })
+    program = agent.s.add_node("HumanoidMotorProgram", {})
+    trial = agent.s.add_node("HumanoidMotorTrial", {"request_seq": 5})
+    outcome = agent.s.add_node("HumanoidTransition", {
+        "development_receipt_closed": 1,
+        "development_directed_units": 1,
+        "development_post_gravity_axis_x_units": 0,
+        "development_post_gravity_axis_y_units": 0,
+        "development_post_gravity_axis_z_units": 0,
+    })
+    _edge(agent, agent.agent, "has_humanoid_episode", episode)
+    _edge(agent, episode, "projects_embodied_development", development)
+    _edge(agent, episode, "has_embodied_deployment_program_owner", owner)
+    _edge(agent, owner, "has_issued_embodied_program_path", path)
+    _edge(agent, path, "has_issued_embodied_program_transition", transition)
+    _edge(agent, transition, "continues_with_embodied_program", program)
+    _edge(agent, episode, "has_humanoid_motor_trial", trial)
+    _edge(agent, trial, "has_humanoid_transition", outcome)
+
+    agent.tick()
+
+    assert transition in agent.inner.neighbours(
+        path, "manifold_blocked_from_embodied_program_transition"
+    )
+    attrs = agent.s.node(path)["attrs"]
+    assert attrs["last_task_effect_residual_units"] == 2
+    assert attrs["last_projected_task_effect_units"] == 3
+    assert attrs["last_realized_task_effect_units"] == 1
+    assert attrs["last_forecast_refutation_kind"] == "task_effect_shortfall"
+    assert attrs["trajectory_replay_completed_seq"] == 5
+
+
 def test_completed_deployment_plan_projects_normal_locomotion_goal():
     from substrate.world_adapter import WorldAdapter
 

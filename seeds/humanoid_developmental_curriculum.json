@@ -61294,7 +61294,7 @@
    "latency_class": "hard_realtime",
    "order": 90,
    "batch": false,
-   "comment": "A retained transition is contextually refuted when its measured endpoint lies farther from the stored endpoint shape than the body lay from its stored entry shape. This compares a residual ratio without a magic tolerance and never rewrites retained evidence.",
+   "comment": "A retained transition is contextually refuted when its measured endpoint lies farther from the stored endpoint shape than the body lay from its stored entry shape, or when its realized task effect falls short of its receipt-grounded task projection. Both are ordinal residuals without a magic tolerance; retained evidence is never rewritten.",
    "match": [
     [
      "episode",
@@ -61421,149 +61421,207 @@
       }
      },
      {
-      "type": "Gt",
-      "a": {
-       "type": "Plus",
-       "items": [
-        {
-         "type": "Abs",
-         "arg": {
-          "type": "Minus",
-          "a": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "transition"
-             },
-             "key": "post_state_axis_x_units"
+      "type": "Or",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "transition"
+               },
+               "key": "post_state_axis_x_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
             },
-            {
-             "type": "Lit",
-             "value": 0
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_post_gravity_axis_x_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
             }
-           ]
+           }
           },
-          "b": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "outcome"
-             },
-             "key": "development_post_gravity_axis_x_units"
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "transition"
+               },
+               "key": "post_state_axis_y_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
             },
-            {
-             "type": "Lit",
-             "value": 0
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_post_gravity_axis_y_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
             }
-           ]
+           }
+          },
+          {
+           "type": "Abs",
+           "arg": {
+            "type": "Minus",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "transition"
+               },
+               "key": "post_state_axis_z_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "outcome"
+               },
+               "key": "development_post_gravity_axis_z_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            }
+           }
           }
-         }
+         ]
         },
-        {
-         "type": "Abs",
-         "arg": {
-          "type": "Minus",
-          "a": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "transition"
-             },
-             "key": "post_state_axis_y_units"
-            },
-            {
-             "type": "Lit",
-             "value": 0
-            }
-           ]
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "transition"
+           },
+           "key": "current_state_shape_residual_units"
           },
-          "b": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "outcome"
-             },
-             "key": "development_post_gravity_axis_y_units"
-            },
-            {
-             "type": "Lit",
-             "value": 0
-            }
-           ]
+          {
+           "type": "Lit",
+           "value": 0
           }
-         }
-        },
-        {
-         "type": "Abs",
-         "arg": {
-          "type": "Minus",
-          "a": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "transition"
-             },
-             "key": "post_state_axis_z_units"
-            },
-            {
-             "type": "Lit",
-             "value": 0
-            }
-           ]
-          },
-          "b": {
-           "type": "Plus",
-           "items": [
-            {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "outcome"
-             },
-             "key": "development_post_gravity_axis_z_units"
-            },
-            {
-             "type": "Lit",
-             "value": 0
-            }
-           ]
-          }
-         }
+         ]
         }
-       ]
-      },
-      "b": {
-       "type": "Plus",
-       "items": [
-        {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "transition"
-         },
-         "key": "current_state_shape_residual_units"
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 0
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "task_progress_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "outcome"
+              },
+              "key": "development_directed_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         ]
         },
-        {
+        "b": {
          "type": "Lit",
          "value": 0
         }
-       ]
-      }
+       }
+      ]
      },
      {
       "type": "Eq",
@@ -61737,6 +61795,178 @@
          }
         }
        ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_task_effect_residual_units",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 0
+        },
+        {
+         "type": "Minus",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "task_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "outcome"
+            },
+            "key": "development_directed_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_projected_task_effect_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "transition"
+         },
+         "key": "task_progress_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_realized_task_effect_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "outcome"
+         },
+         "key": "development_directed_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_forecast_refutation_kind",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Max",
+         "items": [
+          {
+           "type": "Lit",
+           "value": 0
+          },
+          {
+           "type": "Minus",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "transition"
+              },
+              "key": "task_progress_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "outcome"
+              },
+              "key": "development_directed_units"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           }
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": "task_effect_shortfall"
+       },
+       "other": {
+        "type": "Lit",
+        "value": "endpoint_shape_residual"
+       }
       }
      }
     ],
