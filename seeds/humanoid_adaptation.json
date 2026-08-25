@@ -1,6 +1,6 @@
 {
  "id": "humanoid_adaptation",
- "version": "1.32.0",
+ "version": "1.33.0",
  "depends_on": [
   "decision_core",
   "embodied_motor_priors",
@@ -106997,6 +106997,371 @@
           "type": "Lit",
           "value": 0
          }
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "phase_model"
+               },
+               "key": "manifold_refinement_generation"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "episode"
+               },
+               "key": "request_seq"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "phase_model"
+               },
+               "key": "manifold_refinement_progress_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "phase_model"
+               },
+               "key": "manifold_refinement_residual_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Lt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "phase_model"
+               },
+               "key": "manifold_refinement_scored_receipts"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Pick",
+                "source": {
+                 "type": "Neighbours",
+                 "node": {
+                  "type": "Var",
+                  "name": "episode"
+                 },
+                 "edge_type": "projects_embodied_development",
+                 "any_type": false
+                }
+               },
+               "key": "development_evidence_window"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "then": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "policy"
+              },
+              "key": "foveated_program_exploration_authority"
+             },
+             {
+              "type": "Lit",
+              "value": 0.0
+             }
+            ]
+           },
+           {
+            "type": "Min",
+            "items": [
+             {
+              "type": "Lit",
+              "value": 1.0
+             },
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Pick",
+                   "source": {
+                    "type": "Neighbours",
+                    "node": {
+                     "type": "Var",
+                     "name": "episode"
+                    },
+                    "edge_type": "projects_embodied_development",
+                    "any_type": false
+                   }
+                  },
+                  "key": "protective_support_available"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Pick",
+                   "source": {
+                    "type": "Neighbours",
+                    "node": {
+                     "type": "Var",
+                     "name": "episode"
+                    },
+                    "edge_type": "projects_embodied_development",
+                    "any_type": false
+                   }
+                  },
+                  "key": "embodiment_reset_reachable"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           {
+            "type": "Div",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "phase_model"
+               },
+               "key": "manifold_refinement_progress_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0.0
+              }
+             ]
+            },
+            "b": {
+             "type": "Max",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 1
+              },
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "phase_model"
+                 },
+                 "key": "manifold_refinement_residual_units"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              }
+             ]
+            }
+           },
+           {
+            "type": "Div",
+            "a": {
+             "type": "Max",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 0
+              },
+              {
+               "type": "Minus",
+               "a": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Pick",
+                   "source": {
+                    "type": "Neighbours",
+                    "node": {
+                     "type": "Var",
+                     "name": "episode"
+                    },
+                    "edge_type": "projects_embodied_development",
+                    "any_type": false
+                   }
+                  },
+                  "key": "development_evidence_window"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               },
+               "b": {
+                "type": "Plus",
+                "items": [
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "phase_model"
+                  },
+                  "key": "manifold_refinement_scored_receipts"
+                 },
+                 {
+                  "type": "Lit",
+                  "value": 0.0
+                 }
+                ]
+               }
+              }
+             ]
+            },
+            "b": {
+             "type": "Max",
+             "items": [
+              {
+               "type": "Lit",
+               "value": 1
+              },
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Pick",
+                  "source": {
+                   "type": "Neighbours",
+                   "node": {
+                    "type": "Var",
+                    "name": "episode"
+                   },
+                   "edge_type": "projects_embodied_development",
+                   "any_type": false
+                  }
+                 },
+                 "key": "development_evidence_window"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0.0
+                }
+               ]
+              }
+             ]
+            }
+           }
+          ]
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0
+         }
         }
        ]
       }
@@ -107072,16 +107437,33 @@
          }
         },
         {
-         "type": "Nth",
-         "items": {
-          "type": "Attr",
-          "node": {
-           "type": "Var",
-           "name": "phase_model"
+         "type": "Max",
+         "items": [
+          {
+           "type": "Nth",
+           "items": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "phase_model"
+            },
+            "key": "motor_option_valuation_snapshot"
+           },
+           "index": 1
           },
-          "key": "motor_option_valuation_snapshot"
-         },
-         "index": 1
+          {
+           "type": "Nth",
+           "items": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "phase_model"
+            },
+            "key": "motor_option_valuation_snapshot"
+           },
+           "index": 2
+          }
+         ]
         }
        ]
       }
@@ -107102,7 +107484,7 @@
         },
         "key": "motor_option_valuation_snapshot"
        },
-       "index": 1
+       "index": 2
       }
      }
     ],
@@ -107141,7 +107523,7 @@
           },
           "key": "motor_option_valuation_snapshot"
          },
-         "index": 1
+         "index": 2
         }
        ]
       }
@@ -107186,7 +107568,7 @@
             },
             "key": "motor_option_valuation_snapshot"
            },
-           "index": 1
+           "index": 2
           },
           "b": {
            "type": "Lit",

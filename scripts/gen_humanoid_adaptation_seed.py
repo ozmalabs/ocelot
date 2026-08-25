@@ -3879,6 +3879,58 @@ def foveated_program_exploration_value(candidate):
     )
 
 
+def retained_path_manifold_exploration_value(candidate):
+    """Value one learned step toward a missing useful path entrance."""
+    development = Pick(Neighbours(
+        "episode", "projects_embodied_development"
+    ))
+    evidence_window = N0(development, "development_evidence_window")
+    recoverability = Min(
+        L(1.0),
+        Plus(
+            N0(development, "protective_support_available"),
+            N0(development, "embodiment_reset_reachable"),
+        ),
+    )
+    # A generic developmental bridge may pose a receipt-situated, output-null
+    # question asking which learned consequence reduces the residual to a
+    # useful retained future-path entrance.  It annotates opaque candidates;
+    # this selector still owns the action decision.  Both factors are ratios
+    # grounded by the current residual and evidence window, not tuned bonuses.
+    return If(
+        And(
+            Eq(
+                N0(candidate, "manifold_refinement_generation"),
+                P0("episode", "request_seq"),
+            ),
+            Gt(N0(candidate, "manifold_refinement_progress_units"), L(0)),
+            Gt(N0(candidate, "manifold_refinement_residual_units"), L(0)),
+            Lt(
+                N0(candidate, "manifold_refinement_scored_receipts"),
+                evidence_window,
+            ),
+        ),
+        Times(
+            P0("policy", "foveated_program_exploration_authority"),
+            recoverability,
+            Div(
+                N0(candidate, "manifold_refinement_progress_units"),
+                Max(L(1), N0(
+                    candidate, "manifold_refinement_residual_units"
+                )),
+            ),
+            Div(
+                Max(L(0), Minus(
+                    evidence_window,
+                    N0(candidate, "manifold_refinement_scored_receipts"),
+                )),
+                Max(L(1), evidence_window),
+            ),
+        ),
+        L(0),
+    )
+
+
 def walking_cost(candidate):
     velocity_scale = Sqrt(Times(
         P0("policy", "gravity_acceleration"),
@@ -4287,6 +4339,7 @@ def prepare_shared_walking_primary_rule():
     valuation = A("phase_model", "motor_option_valuation_snapshot")
     walking_cost_index = 0
     exploration_value_index = 1
+    manifold_value_index = 2
     return {
         "name": "ha_prepare_shared_walking_primary",
         "area": "humanoid_sensorimotor_adaptation",
@@ -4323,6 +4376,7 @@ def prepare_shared_walking_primary_rule():
                 Vec(
                     walking_cost("phase_model"),
                     foveated_program_exploration_value("phase_model"),
+                    retained_path_manifold_exploration_value("phase_model"),
                 )
             )],
             [
@@ -4338,11 +4392,14 @@ def prepare_shared_walking_primary_rule():
             ["set_attr", "phase_model", "default_value", 0.0],
             ["set_attr", "phase_model", "grounded_value", T(Plus(
                 Minus(L(0.0), Nth(valuation, walking_cost_index)),
-                Nth(valuation, exploration_value_index),
+                Max(
+                    Nth(valuation, exploration_value_index),
+                    Nth(valuation, manifold_value_index),
+                ),
             ))],
             ["set_attr", "phase_model",
              "manifold_refinement_exploration_value", T(
-                 Nth(valuation, exploration_value_index)
+                 Nth(valuation, manifold_value_index)
              )],
             ["set_attr", "episode",
              "maximum_manifold_refinement_exploration_value", T(Max(
@@ -4350,7 +4407,7 @@ def prepare_shared_walking_primary_rule():
                      "episode",
                      "maximum_manifold_refinement_exploration_value",
                  ),
-                 Nth(valuation, exploration_value_index),
+                 Nth(valuation, manifold_value_index),
              ))],
             ["set_attr", "episode",
              "manifold_refinement_exploration_valuation_count", T(Plus(
@@ -4360,7 +4417,7 @@ def prepare_shared_walking_primary_rule():
                  ),
                  If(
                      Gt(
-                         Nth(valuation, exploration_value_index),
+                         Nth(valuation, manifold_value_index),
                          L(0),
                      ),
                      L(1),
@@ -16678,7 +16735,7 @@ def manifest():
     )
     return apply_biological_schedule({
         "id": "humanoid_adaptation",
-        "version": "1.32.0",
+        "version": "1.33.0",
         "depends_on": [
             "decision_core",
             "embodied_motor_priors",
