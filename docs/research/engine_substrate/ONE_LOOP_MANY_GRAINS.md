@@ -114,11 +114,39 @@ not.** Modelled as `predicate -> resolved slots`:
 | meteorologist vs novice | True | False | A strictly finer |
 | mystic vs novice | True | False | A strictly finer |
 
-The meteorologist and the mystic are incomparable — each resolves what the other cannot — while the
-novice is genuinely below both. **"Differently grounded" and "less able" are different relations,
-and only a shaped aperture can tell them apart.** A social simulation that ranked its agents on a
-scalar would collapse the first into the second, which is most of what makes disagreement
-interesting.
+### "Incomparable" was the wrong verdict — they compare by SHAPE MATCH, and the residual is the point
+
+The subsumption table above collapses a shape to a boolean, which is the exact move this entire
+document argues against, made one paragraph after arguing it. Two apertures are not incomparable.
+They are compared the same way as everything else: **decode one against the other and read the
+residual.**
+
+| A (the goal) | B (held) | covered | residual — what A resolves that B cannot |
+|---|---|---|---|
+| meteorologist | mystic | 3 | `[["resolves","reads","object"]]` |
+| meteorologist | novice | 2 | `[["resolves","reads","object"], ["resolves","yields","object"]]` |
+| mystic | meteorologist | 3 | `[["resolves","feels","object"]]` |
+| mystic | novice | 2 | `[["resolves","yields","object"], ["resolves","feels","object"]]` |
+| novice | meteorologist | 2 | **`[]`** |
+| novice | mystic | 2 | **`[]`** |
+
+Three things follow.
+
+**Subsumption is the DEGENERATE case, not the alternative.** The novice's residual against both
+others is empty — that is what "strictly below" means, read off the same operation. The boolean test
+was never a different comparison, only an impoverished reading of this one.
+
+**The pair that does not rank still yields a residual each way**, and each names the blind spot
+exactly: the mystic cannot resolve WHAT is read, the meteorologist cannot resolve what is FELT.
+Nothing is lost by refusing to rank them; the informative answer was underneath the verdict the whole
+time.
+
+**And the meteorologist-against-mystic residual IS the tea-leaf failure.** It is literally
+`resolves(reads, object)` — precisely the distinction whose absence let the mystic ground weather
+prediction on tea leaves. So comparing two apertures **predicts where the other agent will ground
+falsely, in advance and specifically.** For a social simulation that is the difference between
+modelling disagreement and merely permitting it: you can compute what another mind will get wrong,
+and what you would have to teach it. **The residual IS the curriculum.**
 
 ## Honest bounds
 
