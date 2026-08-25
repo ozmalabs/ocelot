@@ -1648,6 +1648,28 @@ REGISTRY.register(Seed(
 ))
 
 REGISTRY.register(Seed(
+    id="theory_residual_concern", version="1.0.0",
+    depends_on=(),
+    installer=_installer_from_manifest("theory_residual_concern"),
+    description="A TARGET-GRAIN RESIDUAL OPENS A CONCERN. A theory is a "
+                "solution shape you try to produce, and THEORY_AS_SHAPE_RESULTS "
+                "showed a target signature decodes against the held codebook "
+                "like any other grain — the residual is exactly the work "
+                "remaining. It also showed the obvious next move is wrong: "
+                "minting that residual turns 'my theory needs radar' into "
+                "'radar is a held capability', reporting covered and residual "
+                "[] while nothing was built. The asymmetry is exact — at the "
+                "OBSERVATION grain a residual is EVIDENCE the world supplied, "
+                "so a mint is warranted; at the TARGET grain it is a DEMAND "
+                "nobody supplied, and minting asserts a capability on the "
+                "strength of wanting one. So the residual opens a SelfConcern "
+                "on the existing human-gated spine (promote → StandingConcern → "
+                "experiment → adopt), and closes ONLY when the residual "
+                "genuinely empties. Nothing in this seed can empty one. "
+                "THEORY_AS_SHAPE_RESULTS.md.",
+))
+
+REGISTRY.register(Seed(
     id="parallax_efference", version="1.0.0",
     depends_on=("vision_motion_group",),
     installer=_installer_from_manifest("parallax_efference"),

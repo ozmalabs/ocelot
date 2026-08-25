@@ -74,3 +74,35 @@ That is a design conclusion this experiment supports but does not test.
   one is untested.
 * **Any benchmark value.** Three synthetic arms with a hand-made vocabulary. Synthetic-proven
   mechanism is not benchmark value, and this is the former.
+
+
+## Built: `seeds/theory_residual_concern.json` (v1.0.0)
+
+The design conclusion above is now a seed, three rules, and the shape of it is the asymmetry:
+
+* `tr_decode_theory` — decode the theory's OWN held signature against the codebook, epoch-gated on
+  the same `codebook_epoch` idiom the sd loop uses, so the decode re-arms whenever the codebook
+  grows;
+* `tr_open_concern` — a non-empty residual mints a `SelfConcern{kind: capability_gap, content: <the
+  residual>}` on the existing human-gated spine (promote → `StandingConcern` → experiment → adopt),
+  content-deduped against every live concern exactly as `gap_awareness` does. It does NOT mint the
+  missing part;
+* `tr_resolve_concern` — the concern closes when the residual has genuinely emptied. **Nothing in
+  this seed can empty a residual.** This rule only observes that one has emptied, and that
+  asymmetry is the entire point.
+
+**Gated, 5/5, and mutation-tested — including the mutation that matters.** Removing any of the three
+rules turns something red (4 / 4 / 1). And re-adding the wishful mint as a fourth rule turns **3
+red, including `test_the_theory_does_NOT_become_reachable_by_wanting_it`** — so the negative control
+demonstrably detects the failure it exists to prevent, rather than passing because nothing ever
+happens. `test_the_concern_resolves_only_when_the_part_IS_genuinely_held` is its positive control:
+without it, "the concern never closes" would pass trivially for a seed that closes nothing.
+
+Adjacent and NOT the same thing: `seeds/goal_residuals.json` holds `GoalResidual` records of
+MEASURED CEILINGS — refuted seams, so a goal-selection collapse cannot re-propose one. Its
+`sig_seam` / `sig_lever` / `sig_target` are identifier tags, not shape signatures. It remembers what
+was refuted; this seed measures what is not yet reachable.
+
+**Still not established** (unchanged from above): where a real theory's shape comes from. The
+relation vocabulary here is authored by hand, and converting any of the 46 existing `Goal` sites to
+carry a shape is untested. That is the hard half and this seed does not touch it.
