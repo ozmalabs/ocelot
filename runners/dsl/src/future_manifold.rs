@@ -215,12 +215,33 @@ pub fn projection_field(
 
     if support {
         let dims = predicted[0].len();
-        retained_by_dim = vec![true; dims];
+        // APERTURE, at the manifold. `policy.future_manifold_resolved_dims` is a
+        // per-dimension 0/1 mask of what this observer can actually resolve;
+        // absent, or the wrong length, means all dimensions resolve and the
+        // audit is byte-identical to before.
+        //
+        // An unresolved dimension is not one that fails — it is one that cannot
+        // be ASSESSED, which is precisely `information_loss`'s question. So the
+        // seed-level quotient (`observer_aperture`: unresolved slots collapse to
+        // one constant) and the manifold-level audit are the same limitation
+        // expressed at two grains, and a narrow observer is measurably STUPID
+        // here rather than merely coarse somewhere else.
+        let resolves = matrix(graph, interner, policy, "future_manifold_resolved_dims")
+            .and_then(|m| m.into_iter().next())
+            .filter(|row| row.len() == dims)
+            .map(|row| row.iter().map(|v| *v != 0.0).collect::<Vec<bool>>())
+            .unwrap_or_else(|| vec![true; dims]);
+        let mut assessed_cells = 0usize;
+        retained_by_dim = resolves.clone();
         residual_shape = vec![vec![0.0; dims]; predicted.len()];
         let audit_horizon = requested_horizon.min(budget);
         for (t, time) in times.iter().enumerate().take(audit_horizon) {
             audited += 1;
             for d in 0..dims {
+                if !resolves[d] {
+                    continue;
+                }
+                assessed_cells += 1;
                 let delta = predicted[t][d] - target[t][d];
                 let residual = delta.abs();
                 let allowed = bounds[t][d] + widths[t][d];
@@ -242,8 +263,11 @@ pub fn projection_field(
         // exactly that. Previously both counters were incremented on this same
         // line and were numerically identical, so an agent that could not tell
         // was indistinguishable from one that told correctly and got bad news.
+        // Counted as cells rather than ticks, because there are now two ways for
+        // a cell to go unassessed and they compose: the budget never reached its
+        // TICK, or the aperture never resolved its DIMENSION.
+        information_loss += (requested_horizon * dims).saturating_sub(assessed_cells) as f64;
         let unassessed_ticks = requested_horizon.saturating_sub(audited);
-        information_loss += (unassessed_ticks * dims) as f64;
         if unassessed_ticks > 0 {
             // Retention over the REQUESTED horizon is unestablished for every
             // dimension once any tick in it went unaudited. Leaving these `true`
@@ -264,9 +288,18 @@ pub fn projection_field(
     let resolved = if !support {
         false
     } else if loss > 0.0 {
+        // Decided early: an escape was located, so the remaining cells cannot
+        // change the verdict.
         true
     } else {
-        audited >= requested_horizon
+        // Everything in the requested horizon was actually ASSESSED. Counting
+        // audited TICKS here instead was a real bug found by the aperture tests:
+        // a fully-blind observer walks every tick, assesses no cell in any of
+        // them, and used to report the projection resolved. `information_loss`
+        // is the right quantity because it already counts both ways a cell goes
+        // unassessed — a tick the budget never reached, and a dimension the
+        // aperture never resolved.
+        information_loss == 0.0
     };
     let termination_code = if !support {
         4.0
@@ -1272,6 +1305,94 @@ mod feasible_selection_tests {
                 "the unreached ticks were not counted as unestablished");
         assert_eq!(starved.retained_width, 0.0,
                    "retention was claimed for ticks nobody audited");
+    }
+
+    #[test]
+    fn an_unresolved_DIMENSION_is_unassessed_not_failed() {
+        // APERTURE AT THE MANIFOLD -- the bridge between the two grains.
+        //
+        // The escaping candidate leaves the tube in dimension 0. An observer that
+        // cannot resolve dimension 0 must NOT report that as a loss: it did not
+        // see a failure, it saw nothing. That is the whole difference between
+        // being wrong and being unable to tell, and it is what makes a narrow
+        // observer measurably stupid here rather than merely coarse elsewhere.
+        let (mut g, mut i, ep, pol, _held, esc) = bench();
+        let blind = &reachable_deformation_set(&g, &mut i, ep, pol, &[esc])[0];
+        assert!(blind.loss > 0.0, "fixture no longer escapes in dimension 0");
+
+        let mask = i.intern("future_manifold_resolved_dims");
+        let row: smallvec::SmallVec<[Value; 4]> = smallvec::smallvec![Value::Float(0.0)];
+        let outer: smallvec::SmallVec<[Value; 4]> =
+            smallvec::smallvec![Value::Tuple(std::sync::Arc::new(row))];
+        g.set_node_attr(pol, mask, Value::Tuple(std::sync::Arc::new(outer)));
+
+        let narrow = &reachable_deformation_set(&g, &mut i, ep, pol, &[esc])[0];
+        assert!(narrow.support, "an aperture mask falsified well-posedness");
+        assert_eq!(narrow.loss, 0.0,
+                   "an unresolvable dimension was reported as a failure rather \
+                    than as unassessed");
+        assert!(narrow.information_loss > 0.0,
+                "the unresolved dimension was not counted as unestablished");
+        assert_eq!(narrow.retained_width, 0.0,
+                   "retention was claimed for a dimension never assessed");
+        assert!(!narrow.resolved, "an unassessable audit reported as resolved");
+    }
+
+    #[test]
+    fn a_full_aperture_mask_is_byte_identical_to_no_mask() {
+        // The default must not move. An all-ones mask is the same audit.
+        let (mut g, mut i, ep, pol, held, esc) = bench();
+        let before = reachable_deformation_set(&g, &mut i, ep, pol, &[held, esc]);
+        let mask = i.intern("future_manifold_resolved_dims");
+        let row: smallvec::SmallVec<[Value; 4]> = smallvec::smallvec![Value::Float(1.0)];
+        let outer: smallvec::SmallVec<[Value; 4]> =
+            smallvec::smallvec![Value::Tuple(std::sync::Arc::new(row))];
+        g.set_node_attr(pol, mask, Value::Tuple(std::sync::Arc::new(outer)));
+        let after = reachable_deformation_set(&g, &mut i, ep, pol, &[held, esc]);
+        assert_eq!(before, after, "an all-resolving mask changed the audit");
+    }
+
+    #[test]
+    fn a_wrong_length_mask_is_ignored_rather_than_half_applied() {
+        // Fail SAFE, not closed, and deliberately: a malformed mask must not
+        // silently blind one dimension. Length is the only thing that can be
+        // checked here, so it is.
+        let (mut g, mut i, ep, pol, held, esc) = bench();
+        let before = reachable_deformation_set(&g, &mut i, ep, pol, &[held, esc]);
+        let mask = i.intern("future_manifold_resolved_dims");
+        let row: smallvec::SmallVec<[Value; 4]> =
+            smallvec::smallvec![Value::Float(0.0), Value::Float(0.0)];
+        let outer: smallvec::SmallVec<[Value; 4]> =
+            smallvec::smallvec![Value::Tuple(std::sync::Arc::new(row))];
+        g.set_node_attr(pol, mask, Value::Tuple(std::sync::Arc::new(outer)));
+        assert_eq!(before, reachable_deformation_set(&g, &mut i, ep, pol, &[held, esc]));
+    }
+
+    #[test]
+    fn narrowing_the_aperture_makes_an_agent_STUPID_not_ignorant_or_stubborn() {
+        // The unified claim, at one grain: compress what an observer resolves and
+        // its signature moves to `unestablished` -- not to an empty family
+        // (ignorant), not to withheld-minimal (stubborn).
+        let (mut g, mut i, ep, pol, held, esc) = bench();
+        set(&mut g, &mut i, held, "intervention", 1.0);
+        set(&mut g, &mut i, esc, "intervention", 1.0);
+
+        let wide = feasible_selection(&g, &mut i, ep, pol, &[held, esc]).expect("well-posed");
+        assert_eq!(wide.selected, vec![held], "the wide observer chooses normally");
+        assert!(wide.unestablished.is_empty());
+
+        let mask = i.intern("future_manifold_resolved_dims");
+        let row: smallvec::SmallVec<[Value; 4]> = smallvec::smallvec![Value::Float(0.0)];
+        let outer: smallvec::SmallVec<[Value; 4]> =
+            smallvec::smallvec![Value::Tuple(std::sync::Arc::new(row))];
+        g.set_node_attr(pol, mask, Value::Tuple(std::sync::Arc::new(outer)));
+
+        let narrow = feasible_selection(&g, &mut i, ep, pol, &[held, esc]).expect("well-posed");
+        assert_eq!(narrow.unestablished.len(), 2, "compression did not read as stupid");
+        assert!(narrow.feasible.is_empty(), "feasibility claimed without assessment");
+        assert!(narrow.selected.is_empty());
+        assert!(narrow.withheld_minimal.is_empty(),
+                "compression is reading as stubbornness -- nothing was withheld");
     }
 
     #[test]
