@@ -1,6 +1,6 @@
 {
   "id": "observer_aperture",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "comment": "Emit seeds/observer_aperture.json -- per-observer APERTURE as graph data.\n\n`PER_OBSERVER_APERTURE.md` established RANGE (`codebook_scope`) is already\ngraph-native and per-observer, and that graded APERTURE is a QUOTIENT: project a\nsignature onto the dimensions the observer resolves, replacing unresolved slots\nwith a CONSTANT (not a wildcard -- WILD says \"anything filled this\", the quotient\nsays \"these are the same thing to me\"), then match literally.\n\nThe projection needs no new Rust. Every codebook already tags slots with\n`dim_types`, and MapList/ZipWith/In/IfThenElse compose the projection over it.\nThis seed makes that a rule an observer node drives, so no Python decides who\nsees what.\n\nBoth halves are projected. Projecting only the goal would decode an observer's\nblurred view against full-detail parts, which is nobody's situation.\n",
   "depends_on": [
     "core"
@@ -80,23 +80,47 @@
           },
           "var_name": "p",
           "predicate": {
-            "type": "Eq",
-            "a": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "p"
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p"
+                  },
+                  "key": "of_name"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "sh"
+                  },
+                  "key": "name"
+                }
               },
-              "key": "of_name"
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "sh"
-              },
-              "key": "name"
-            }
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p"
+                  },
+                  "key": "ap_gen"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "key": "ap_gen"
+                }
+              }
+            ]
           }
         }
       },
@@ -106,6 +130,17 @@
           "pv",
           "ObservedShape",
           {
+            "ap_gen": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "ap_gen"
+              }
+            },
+            "ap_seen": -1.0,
             "of_name": {
               "__term__": {
                 "type": "Attr",
@@ -218,23 +253,47 @@
           },
           "var_name": "p",
           "predicate": {
-            "type": "Eq",
-            "a": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "p"
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p"
+                  },
+                  "key": "of_name"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "sh"
+                  },
+                  "key": "name"
+                }
               },
-              "key": "of_name"
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "sh"
-              },
-              "key": "name"
-            }
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p"
+                  },
+                  "key": "ap_gen"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "key": "ap_gen"
+                }
+              }
+            ]
           }
         }
       },
@@ -244,6 +303,16 @@
           "pp",
           "ObservedShape",
           {
+            "ap_gen": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "ap_gen"
+              }
+            },
             "name": {
               "__term__": {
                 "type": "StringConcat",
@@ -255,6 +324,21 @@
                       "name": "obs"
                     },
                     "key": "name"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": "/"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_gen"
+                    }
                   },
                   {
                     "type": "Lit",
@@ -374,23 +458,55 @@
         "arg": {
           "type": "Eq",
           "a": {
-            "type": "Count",
-            "source": {
-              "type": "Neighbours",
-              "node": {
-                "type": "Var",
-                "name": "obs"
-              },
-              "edge_type": "projected_part"
-            }
-          },
-          "b": {
             "type": "Attr",
             "node": {
               "type": "Var",
               "name": "obs"
             },
-            "key": "ap_scope_n"
+            "key": "ap_scope"
+          },
+          "b": {
+            "type": "MapList",
+            "source": {
+              "type": "FilterList",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "edge_type": "projected_part"
+              },
+              "var_name": "q",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "q"
+                  },
+                  "key": "ap_gen"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "key": "ap_gen"
+                }
+              }
+            },
+            "var_name": "q",
+            "value": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "name"
+            }
           }
         }
       },
@@ -403,12 +519,35 @@
             "__term__": {
               "type": "MapList",
               "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "obs"
+                "type": "FilterList",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "edge_type": "projected_part"
                 },
-                "edge_type": "projected_part"
+                "var_name": "q",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "q"
+                    },
+                    "key": "ap_gen"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "ap_gen"
+                  }
+                }
               },
               "var_name": "q",
               "value": {
@@ -430,12 +569,35 @@
             "__term__": {
               "type": "Count",
               "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "obs"
+                "type": "FilterList",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "edge_type": "projected_part"
                 },
-                "edge_type": "projected_part"
+                "var_name": "q",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "q"
+                    },
+                    "key": "ap_gen"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "ap_gen"
+                  }
+                }
               }
             }
           }
@@ -453,23 +615,50 @@
         ]
       ],
       "where": {
-        "type": "Lt",
-        "a": {
-          "type": "Attr",
-          "node": {
-            "type": "Var",
-            "name": "pv"
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pv"
+                },
+                "key": "ap_seen"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "ap_scope_n"
+              }
+            }
           },
-          "key": "ap_seen"
-        },
-        "b": {
-          "type": "Attr",
-          "node": {
-            "type": "Var",
-            "name": "obs"
-          },
-          "key": "ap_scope_n"
-        }
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pv"
+              },
+              "key": "ap_gen"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_gen"
+            }
+          }
+        ]
       },
       "effects": [
         [
@@ -489,12 +678,47 @@
               },
               "codebook_type": "ObservedShape",
               "codebook_scope": {
-                "type": "Attr",
-                "node": {
-                  "type": "Var",
-                  "name": "obs"
+                "type": "MapList",
+                "source": {
+                  "type": "FilterList",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "edge_type": "projected_part"
+                  },
+                  "var_name": "q",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "ap_gen"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_gen"
+                    }
+                  }
                 },
-                "key": "ap_scope"
+                "var_name": "q",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "q"
+                  },
+                  "key": "name"
+                }
               },
               "field": "covered_count",
               "wild_objects": false
@@ -518,12 +742,47 @@
               },
               "codebook_type": "ObservedShape",
               "codebook_scope": {
-                "type": "Attr",
-                "node": {
-                  "type": "Var",
-                  "name": "obs"
+                "type": "MapList",
+                "source": {
+                  "type": "FilterList",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "edge_type": "projected_part"
+                  },
+                  "var_name": "q",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "ap_gen"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_gen"
+                    }
+                  }
                 },
-                "key": "ap_scope"
+                "var_name": "q",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "q"
+                  },
+                  "key": "name"
+                }
               },
               "field": "residual",
               "wild_objects": false

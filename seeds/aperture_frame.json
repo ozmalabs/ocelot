@@ -1,0 +1,548 @@
+{
+  "id": "aperture_frame",
+  "version": "1.0.0",
+  "comment": "Emit seeds/aperture_frame.json -- APERTURE IS A FRAME: chosen, forced, or negotiated.\n\n`observer_aperture` made aperture graph data, but as a single authored list on the\nobserver -- an acuity it simply HAS. That is incomplete. An aperture is a FRAME\nyou are viewing in, and a frame has provenance: you can choose it, it can be\nforced on you, or you can negotiate it with someone else.\n\nThis is the reference-frame sense, not the Fillmore `Frame` (which is language\nsemantics and is left alone). And it is not a metaphor here: `CLAUDE.md`'s\nframe/continuum invariant puts every lossy or real-valued map in\n`Hom(frame, frame)` rather than inside a frame's coordinates, and the projection\n`observer_aperture` performs IS such a map -- world frame to observer frame, with\nthe collapse marker naming exactly what the map discards.\n\nTwo things follow, and the second is the whole point.\n\n**The effective aperture is a MEET.** Every frame in force narrows what you\nresolve, so `resolves` stops being authored and becomes derived: the fold of\n`Intersect` over your own maximum acuity and every frame currently on you. An\nobserver declares its PHYSIOLOGY (`ap_full`); the frames decide the rest.\n\n**The three modes decode identically and differ entirely in RECOURSE.** This is\nthe testable content -- same residual, three different things you may do about it:\n\n  * CHOSEN -- you narrowed your own attention, so you may widen it unilaterally.\n    An outstanding residual is a reason to look harder, and `ap_relax_chosen`\n    drops the frame and re-arms the decode. Attention, mechanically.\n  * FORCED -- someone or something else narrowed it, and you cannot lift it. An\n    outstanding residual here is a gap you can DETECT and cannot close alone, so\n    it opens a `SelfConcern` on the existing human-gated spine. This is the\n    knowing-THAT-without-knowing-WHAT case from `ONE_LOOP_MANY_GRAINS.md`, one\n    level up: not merely unresolved, but unresolvable BY YOU.\n  * NEGOTIATED -- it binds several parties, so no one may change it alone. A\n    proposal takes effect only when every bound party has accepted; a unilateral\n    accept does nothing at all.\n\nAn agent that can only be forced has no attention; one that can only choose has\nno social constraint; one that cannot negotiate cannot establish common ground.\n",
+  "depends_on": [
+    "observer_aperture"
+  ],
+  "productions": [
+    {
+      "provenance": "seed:aperture_frame:max",
+      "src": {
+        "type": "Observer",
+        "var": "obs"
+      },
+      "edge_type": "holds_aperture_max",
+      "tgt": {
+        "type": "ApertureConfig",
+        "var": "cfg"
+      }
+    },
+    {
+      "provenance": "seed:aperture_frame:chose",
+      "src": {
+        "type": "Observer",
+        "var": "obs"
+      },
+      "edge_type": "chose_aperture",
+      "tgt": {
+        "type": "Aperture",
+        "var": "ap"
+      }
+    },
+    {
+      "provenance": "seed:aperture_frame:forced",
+      "src": {
+        "type": "Observer",
+        "var": "obs"
+      },
+      "edge_type": "forced_aperture",
+      "tgt": {
+        "type": "Aperture",
+        "var": "ap"
+      }
+    },
+    {
+      "provenance": "seed:aperture_frame:agreed",
+      "src": {
+        "type": "Observer",
+        "var": "obs"
+      },
+      "edge_type": "agreed_aperture",
+      "tgt": {
+        "type": "Aperture",
+        "var": "ap"
+      }
+    },
+    {
+      "provenance": "seed:aperture_frame:offers",
+      "src": {
+        "type": "ApertureProposal",
+        "var": "p"
+      },
+      "edge_type": "offers",
+      "tgt": {
+        "type": "Aperture",
+        "var": "ap"
+      }
+    },
+    {
+      "provenance": "seed:aperture_frame:binds",
+      "src": {
+        "type": "ApertureProposal",
+        "var": "p"
+      },
+      "edge_type": "binds",
+      "tgt": {
+        "type": "Observer",
+        "var": "obs"
+      }
+    },
+    {
+      "provenance": "seed:aperture_frame:accepts",
+      "src": {
+        "type": "Observer",
+        "var": "obs"
+      },
+      "edge_type": "accepts",
+      "tgt": {
+        "type": "ApertureProposal",
+        "var": "p"
+      }
+    },
+    {
+      "provenance": "seed:aperture_frame:concern",
+      "src": {
+        "type": "Observer",
+        "var": "obs"
+      },
+      "edge_type": "has_self_concern",
+      "tgt": {
+        "type": "SelfConcern",
+        "var": "sc"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "af_effective_aperture",
+      "comment": "The effective aperture is the MEET of the observer's own maximum acuity and every frame in force on it, whatever the provenance. `resolves` is therefore DERIVED, not authored: an observer declares its physiology (`ap_full`) and the frames decide the rest. Re-arms on any change in how many frames are in force -- which is what makes dropping a chosen frame actually widen perception.",
+      "match": [
+        [
+          "obs",
+          "holds_aperture_max",
+          "cfg"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Count",
+            "source": {
+              "type": "Union",
+              "a": {
+                "type": "Union",
+                "a": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "edge_type": "chose_aperture"
+                },
+                "b": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "edge_type": "forced_aperture"
+                }
+              },
+              "b": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "edge_type": "agreed_aperture"
+              }
+            }
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "obs"
+            },
+            "key": "af_n"
+          }
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "obs",
+          "resolves",
+          {
+            "__term__": {
+              "type": "Fold",
+              "source": {
+                "type": "Union",
+                "a": {
+                  "type": "Union",
+                  "a": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "edge_type": "chose_aperture"
+                  },
+                  "b": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "edge_type": "forced_aperture"
+                  }
+                },
+                "b": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "edge_type": "agreed_aperture"
+                }
+              },
+              "var_name": "fr",
+              "acc_name": "acc",
+              "init": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "ap_full"
+              },
+              "body": {
+                "type": "Intersect",
+                "a": {
+                  "type": "Var",
+                  "name": "acc"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "fr"
+                  },
+                  "key": "resolves"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "obs",
+          "af_n",
+          {
+            "__term__": {
+              "type": "Count",
+              "source": {
+                "type": "Union",
+                "a": {
+                  "type": "Union",
+                  "a": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "edge_type": "chose_aperture"
+                  },
+                  "b": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "edge_type": "forced_aperture"
+                  }
+                },
+                "b": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "edge_type": "agreed_aperture"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "obs",
+          "ap_gen",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "key": "ap_gen"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "af_relax_chosen",
+      "comment": "CHOSEN recourse. You narrowed your own attention, so an outstanding residual is a reason to widen it -- and you may, unilaterally. Dropping the frame re-arms `af_effective_aperture`, which re-arms the decode. Attention as a graph move rather than a parameter.",
+      "match": [
+        [
+          "obs",
+          "chose_aperture",
+          "ap"
+        ],
+        [
+          "obs",
+          "projected",
+          "pv"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pv"
+              },
+              "key": "ap_gen"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_gen"
+            }
+          },
+          {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "pv"
+            },
+            "key": "ap_residual"
+          }
+        ]
+      },
+      "effects": [
+        [
+          "del_edge",
+          "obs",
+          "chose_aperture",
+          "ap"
+        ]
+      ]
+    },
+    {
+      "name": "af_forced_residual_is_a_concern",
+      "comment": "FORCED recourse -- there is none, and that is the point. The residual is identical to the chosen case; what differs is that the observer cannot lift the frame. So it files what it CAN do: record that something here is unresolved and not resolvable by it alone. Knowing THAT without knowing WHAT, one level up -- and it lands on the existing human-gated spine (promote -> StandingConcern -> experiment), so another party can act on it.",
+      "match": [
+        [
+          "obs",
+          "forced_aperture",
+          "ap"
+        ],
+        [
+          "obs",
+          "projected",
+          "pv"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pv"
+                  },
+                  "key": "ap_gen"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "key": "ap_gen"
+                }
+              },
+              {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pv"
+                },
+                "key": "ap_residual"
+              }
+            ]
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "edge_type": "has_self_concern"
+              },
+              "var_name": "c",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "c"
+                  },
+                  "key": "content"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "ap"
+                  },
+                  "key": "name"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "sc",
+          "SelfConcern",
+          {
+            "status": "noted",
+            "source": "forced_aperture",
+            "kind": "capability_gap",
+            "content": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ap"
+                },
+                "key": "name"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "obs",
+          "has_self_concern",
+          "sc"
+        ]
+      ]
+    },
+    {
+      "name": "af_adopt_when_every_party_accepts",
+      "comment": "NEGOTIATED recourse. The frame binds several parties, so no one may change it alone: the offered aperture attaches only once every bound party has accepted. A unilateral accept does nothing -- which is the whole difference from `chose_aperture`, and the reason common ground is not the same operation as attention.",
+      "match": [
+        [
+          "p",
+          "binds",
+          "obs"
+        ],
+        [
+          "p",
+          "offers",
+          "ap"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "InNeighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "p"
+                },
+                "edge_type": "accepts"
+              }
+            },
+            "b": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "p"
+                },
+                "edge_type": "binds"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "edge_type": "agreed_aperture"
+              },
+              "var_name": "a",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Var",
+                  "name": "a"
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "ap"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "obs",
+          "agreed_aperture",
+          "ap"
+        ]
+      ]
+    }
+  ]
+}

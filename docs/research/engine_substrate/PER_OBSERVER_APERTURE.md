@@ -196,6 +196,91 @@ ignorance is unavailable to it rather than merely unexercised.
 Gate: `tests/test_observer_aperture_migrated.py` **8/8**, including the negative control
 (a full-aperture projection must alter nothing) and a fixpoint check.
 
+## APERTURE IS A FRAME — chosen, forced, or negotiated (`seeds/aperture_frame.json` v1.0.0)
+
+`observer_aperture` made aperture graph data, but as a single authored list: an acuity the observer
+simply HAS. That is incomplete. An aperture is the FRAME you are viewing in, and a frame has
+provenance — you can CHOOSE it, it can be FORCED on you, or you can NEGOTIATE it with someone else.
+
+This is the reference-frame sense, not the Fillmore `Frame` in `seeds/design.json` (language
+semantics, left alone). And it is not a metaphor here: `CLAUDE.md`'s frame/continuum invariant puts
+every lossy or real-valued map in `Hom(frame, frame)` rather than inside a frame's coordinates, and
+the projection above IS such a map — world frame to observer frame, with the collapse marker naming
+exactly what the map discards.
+
+**The effective aperture is a MEET.** `resolves` stops being authored and becomes derived: the
+`Fold`/`Intersect` of the observer's own maximum acuity (`ap_full` — its physiology) with every
+frame in force. A frame can only narrow; an aperture offering a dimension the observer's physiology
+lacks does not grant it, and two frames compose by intersection regardless of provenance.
+
+**The three modes DECODE IDENTICALLY and differ entirely in RECOURSE.** That is the whole content
+of the distinction — same world, same held part, same residual, three different available moves:
+
+| mode | recourse | measured |
+|---|---|---|
+| **chosen** | widen unilaterally | frame dropped, `resolves` back to full, residual re-read at full detail |
+| **forced** | none — cannot lift it | stays narrow, residual `[["senses","me","·"]]`, files `SelfConcern{capability_gap}` naming the frame |
+| **negotiated** | requires every bound party | 0 accepts → nothing; **1 accept → nothing**; 2 → attaches to both |
+
+The forced row is `ONE_LOOP_MANY_GRAINS.md`'s knowing-THAT-without-knowing-WHAT one level up: not
+merely unresolved, but unresolvable BY YOU — so it lands on the existing human-gated spine where
+another party can act on it. An agent that can only be forced has no attention; one that can only
+choose has no social constraint; one that cannot negotiate cannot establish common ground.
+
+Gates: `tests/test_aperture_frame_migrated.py` **10/10**, `tests/test_observer_aperture_migrated.py`
+**11/11**. All eight rules across both seeds mutation-tested — every single-rule drop fails at least
+one test.
+
+### Four defects this rung found, three of them in work landed the same day
+
+Recorded because each is a reusable failure mode, not because the fixes are interesting.
+
+**A cached projection survived a frame change.** Dedup was by projected-from name alone, so a forced
+frame narrowed `resolves` while the decode went on reporting a full-detail residual from a view
+taken through the *old* aperture. A view is only valid for the frame it was taken through; both the
+dedup guard and the decode now carry an aperture generation. The two recourse rules needed the same
+filter — before it, the forced arm filed a gap for an observer that, under the frame actually on it,
+grounds cleanly with an empty residual. **A concern about a residual that no longer existed.**
+
+**A count was held where a list had to be read.** After the generation bump, `ap_refresh_scope`
+compared `Count(current-generation parts) = 1` against a **stale** `ap_scope_n = 1` left from the
+previous generation — equal by coincidence, so the rule never re-fired and the scope was never
+written. This is `CLAUDE.md`'s own retracted-baseline lesson at rule scope: *a count can be held; a
+list has to be read.* The guard now compares the scope list itself.
+
+**A rule is not re-armed by an attribute change on a node it only reaches at evaluation time.**
+With `af_relax_chosen`'s guard reading `ap_residual` through `Neighbours` inside an `Exists`, the
+rule was satisfiable and fired when applied directly by index — but **five successive full ticks
+never scheduled it**. Every other seed in this tree that re-arms on state (`tr_epoch_seen`,
+`codebook_epoch`) reads it off a MATCHED var, and this is why. The view is now in the match.
+
+**And the empty-scope inversion came back through the door, at seed level.** The engine fix above
+made a present-but-empty scope restrict correctly — but `ap_refresh_scope` is anchored on a
+`projected_part` edge, so an observer holding NOTHING never fires it and `ap_scope` stays *absent*,
+which reads as unrestricted. The agent who knows nothing sees everything, again, one level up. Fixed
+by reading the scope inline at decode time, where no parts yields the empty list rather than nothing
+at all. **Two related bugs fell out of the same fixture**: the re-arm guard was `Lt`, so an observer
+whose part count never rises could never decode at all; and an absent `ap_seen` compares EQUAL to
+the numeric `0` the counter starts at, so it silently never ran and returned a null verdict.
+
+### And the gate that could not fail
+
+Every test in the first version of `observer_aperture` used ONE observer — and with one observer an
+unrestricted codebook is indistinguishable from a correctly scoped one, because the only parts in
+the store are that observer's own. **The entire range half of the seed was inert, and the 8/8 gate
+could not see it.** It took a second observer to make the difference observable, and a second
+fixture after that to make it *matter*: with both observers holding the same part, an unrestricted
+decode still reaches the right verdict, so the first isolation test only ever gated an assertion
+about the scope attribute. The fixture that bites is asymmetric — `haver` holds a barometer,
+`pauper` holds nothing and sees the same thing at the same acuity, and leakage changes the answer.
+
+A related honest limitation, not fixed: an observer holding nothing reads `covered = None` and
+`residual = null` rather than *"all of it is outstanding"*. `None` is the engine's documented
+"nothing is in your scope at all" (distinct from `0`, "something is in scope and does not cover
+this"), so the isolation claim holds — but the more useful reading for a social simulation would be
+a full residual, and that is an engine-level semantic shared with every other scope user rather than
+something this seed should decide alone.
+
 ### What remains for the full build
 
 * ~~the observer's resolved `dim_types` as graph data on the observer node, and a rule that projects
@@ -208,10 +293,12 @@ Gate: `tests/test_observer_aperture_migrated.py` **8/8**, including the negative
   and until a mint carries the aperture it was formed at, *"I could not resolve this"* and *"there
   was nothing more to resolve"* are the same empty residual. That is the next rung, and it is shared
   with every other grain rather than specific to this seed;
-* **STILL OPEN — aperture as a learned shape.** `resolves` is currently a hand-set list. The
-  document above argues aperture is itself a shape, therefore decodable and mintable by the same
-  loop; nothing here acquires or changes an observer's aperture, so every agent's acuity is
-  authored rather than developed;
+* **PARTLY CLOSED — aperture as a learned shape.** `aperture_frame` makes the effective aperture
+  DERIVED (the meet of physiology and every frame in force) and makes frames attachable, droppable
+  and negotiable at runtime, so an agent's acuity now changes during a run. What is still authored
+  is the vocabulary: `ap_full` and each `Aperture`'s `resolves` are hand-set lists, and nothing
+  MINTS an aperture from observation. Aperture-as-a-shape, decoded and grown by the same loop as
+  everything else, remains argued rather than built;
 * ~~and the question this has not touched: whether a projected decode should be able to MINT. On the
   quotient reading it must not.~~ **SUPERSEDED** — `MINTING_AT_APERTURE.md` retracts this. A
   projected decode MAY mint, and must: minting from an unresolved residual is the only thing a

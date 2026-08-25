@@ -1700,6 +1700,42 @@ REGISTRY.register(Seed(
 ))
 
 REGISTRY.register(Seed(
+    id="aperture_frame", version="1.0.0",
+    depends_on=("observer_aperture",),
+    installer=_installer_from_manifest("aperture_frame"),
+    description="APERTURE IS A FRAME — chosen, forced, or negotiated. "
+                "observer_aperture made aperture graph data, but as a single "
+                "authored list: an acuity the observer simply HAS. An aperture "
+                "is the FRAME you are viewing in, and a frame has provenance. "
+                "Reference-frame sense, not the Fillmore Frame (language "
+                "semantics, untouched) — and not a metaphor: CLAUDE.md's "
+                "frame/continuum invariant puts every lossy or real-valued map "
+                "in Hom(frame, frame) rather than inside a frame's "
+                "coordinates, and observer_aperture's projection IS such a "
+                "map, its collapse marker naming exactly what the map "
+                "discards. Two consequences. The effective aperture is a MEET: "
+                "resolves stops being authored and becomes the Fold-Intersect "
+                "of the observer's own maximum acuity (ap_full, its "
+                "physiology) with every frame in force. And the three modes "
+                "DECODE IDENTICALLY, differing entirely in RECOURSE — same "
+                "residual, three different things you may do about it. CHOSEN: "
+                "you narrowed your own attention, so an outstanding residual "
+                "is a reason to widen it and you may, unilaterally — attention "
+                "as a graph move rather than a parameter. FORCED: there is no "
+                "recourse, which is the point; the residual is identical but "
+                "you cannot lift the frame, so you file what you CAN do — a "
+                "SelfConcern on the human-gated spine, knowing THAT without "
+                "knowing WHAT, one level up, and now not resolvable BY YOU "
+                "alone. NEGOTIATED: the frame binds several parties so nobody "
+                "may change it alone; a proposal attaches only when every "
+                "bound party accepts, and a unilateral accept does nothing. An "
+                "agent that can only be forced has no attention; one that can "
+                "only choose has no social constraint; one that cannot "
+                "negotiate cannot establish common ground. "
+                "PER_OBSERVER_APERTURE.md.",
+))
+
+REGISTRY.register(Seed(
     id="parallax_efference", version="1.0.0",
     depends_on=("vision_motion_group",),
     installer=_installer_from_manifest("parallax_efference"),
