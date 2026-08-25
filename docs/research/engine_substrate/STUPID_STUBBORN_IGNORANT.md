@@ -3,11 +3,13 @@
 From outside, all three present identically: *the agent does not get it.* The question is whether
 the substrate can tell them apart.
 
-**Answer after building the missing piece: two of the three, and not the two I first thought.**
-Ignorance was already separable. Stubbornness was not, and now is — `feasible_selection` was built
-for it (§"Stubborn… SOLVED"). Stupidity looked separable and **is not**: the field that was supposed
-to carry it duplicates another one, which the build exposed (§"What building it falsified"). The
-first draft of this document had that backwards and is corrected in place rather than rewritten.
+**Answer, after two rungs: all three, and the route there was not the one this document first
+claimed.** Ignorance was already separable. Stubbornness was not — `feasible_selection` was built for
+it. Stupidity *looked* separable, was found not to be when the selector exposed that its field was a
+duplicate, and is now separable because `projection_field` was fixed to ask the second question. Both
+corrections are left visible below rather than rewritten away, because the intermediate state — a
+field whose doc comment described a distinction the code did not make — is the more useful thing to
+have on record.
 
 ## The record they live in
 
@@ -33,17 +35,18 @@ paid off in code written before the question was asked.
 | folk term | what is actually limited | field | recourse |
 |---|---|---|---|
 | **IGNORANT** | few candidates reachable at all — you hold little to project | low `reachable_deformations` | acquire parts; cheap, and it works |
-| **STUPID** | you enumerate fine but cannot establish what stays in the tube | **none — `information_loss` duplicates `loss`, see below** | widen aperture — and if the limit is physiological, there is none |
+| **STUPID** | you enumerate fine but cannot establish what stays in the tube | `information_loss` + `resolved == false` — **fixed this rung** | widen aperture, or spend more budget; if the limit is physiological, there is none |
 | **STUBBORN** | the candidate is admissible, projectable, and never selected | `withheld_minimal` — **built this rung** | neither parts nor aperture; only selection |
 | *(not a deficit)* | the audit could not run at all | `support: false`, fail-closed | not the agent's; someone else's or undefined |
 
 Two corrections, both forced by building it.
 
-> **RETRACTED by measurement — see §"What building it falsified" below.** This paragraph claimed
-> `loss` and `information_loss` were different failures, on the strength of the field's doc comment.
-> They are the same number: the audit increments them on the same line and nowhere else. The
-> *distinction* is real and worth having; the *implementation* does not make it, so **stupidity has
-> no field at the manifold** and the row below is aspirational, not descriptive.
+> **RETRACTED, THEN REPAIRED.** This paragraph originally claimed `loss` and `information_loss` were
+> different failures, on the strength of the field's doc comment. Building `feasible_selection`
+> showed they were the same number — incremented on the same line, nowhere else. Rather than soften
+> the claim, the next rung made it true: `projection_field` now counts them separately. The
+> distinction below is therefore descriptive again, but it was aspirational for as long as this
+> document existed, and a doc comment is not evidence that code does what it says.
 
 **Ignorance fails closed, and that is correct.** `counting_narrativium_by_dimension` returns `None`
 for an empty family or any unsupported candidate — *"fails closed rather than being reported as zero
@@ -57,25 +60,46 @@ shape as the seed-level `covered = None` versus `covered = 0` distinction.
 gap — and in the process falsified two of this document's own claims. Both are pinned as tests so
 they cannot drift back.
 
-**`information_loss` is numerically identical to `loss`.** The audit increments them on the same
-line, and nowhere else. The field's doc says *"cells whose retention could not be established"*,
-which is a genuinely different question from *"cells that left the tube"* — the code never asks it.
-Gate: `information_loss_is_currently_a_duplicate_of_loss`.
+**`information_loss` was numerically identical to `loss`.** The audit incremented them on the same
+line and nowhere else, while the field's doc said *"cells whose retention could not be
+established"* — a genuinely different question from *"cells that left the tube"*, which the code
+never asked.
 
-**`resolved` carries no independent information.** `projection_field` sets `support = false` whenever
-`audited < requested_horizon`; `resolved` is then false-if-unsupported, else
+**`resolved` carried no independent information.** `projection_field` set `support = false` whenever
+`audited < requested_horizon`; `resolved` was then false-if-unsupported, else
 `audited >= requested_horizon` — which support already guaranteed. So `resolved == support`, always.
 
-Together these mean an under-resourced projection reads as **unsupported** — *the audit could not
-run* — never as *ran, and could not tell*. **There is currently no way to be stupid at the manifold:
-only absent, wrong, or stubborn.** Starving the projection budget was my intended way to produce a
-stupid agent; it fails the selection closed instead, which the test now asserts, with the assertion
-message naming what a future fix would look like.
+Together these meant an under-resourced projection read as **unsupported** — *the audit could not
+run* — never as *ran, and could not tell*.
 
-So the corrected count is: ignorance and stubbornness are separable today; **stupidity is not**, and
-the reason is a one-line collapse in the audit rather than anything deep. Fixing it means asking the
-second question — which cells could not be assessed, as distinct from which were assessed and
-failed — and that is a change to `projection_field`, not to the selector.
+## The fix — `projection_field` asks the second question
+
+Three changes, each following from the last:
+
+1. **`loss` no longer increments `information_loss`.** A cell that left the tube WAS assessed; its
+   retention is established, as false. `information_loss` now counts only cells inside the requested
+   horizon that the budget never reached — *"could not be assessed at all"*, literally.
+2. **A budget shortfall no longer falsifies `support`.** `support` asks whether the audit is
+   WELL-POSED (shapes, finiteness, geometry); `resolved` asks whether it COMPLETED. Separating them
+   is what gives `resolved` independent meaning and makes the supported-but-undecided state exist at
+   all. Its `termination_code` is `3.0` — not a new code, but the one the sibling implementation
+   already uses for exactly this (`motor_compose.rs`: `if support { 3.0 } else { 4.0 }`).
+3. **A truncated audit may no longer claim retention.** `retained_by_dim` stayed `true` for
+   dimensions over ticks nobody looked at — a latent false claim, masked only because a short audit
+   used to falsify `support` outright. Removing that mask would have made the bug live, so it is
+   fixed in the same change, and it is what keeps every downstream gate closed (below).
+
+**Fail-closed is preserved, and was checked rather than assumed.** `counting_narrativium_by_dimension`
+and `feasible_selection` now require `resolved`, not merely `support`. The only other consumers are
+two gates in `speech.py`: the alignment gate already tested `resolved` explicitly, and the `retained`
+gate — which does *not* — is protected by `retained_width`, now `0` for any unfinished audit. One
+shipped test asserted the old contract (`support == 0` on budget exhaustion) and was updated to the
+sharper one, with assertions pinning every gate that keeps an unfinished projection unusable.
+
+Gates: `information_loss_counts_what_was_not_assessed_not_what_failed`,
+`resolved_is_no_longer_derivable_from_support`,
+`ignorant_stupid_and_stubborn_all_have_distinct_signatures`. Rust lib suite 801 passed; manifold
+Python suites 42 passed.
 
 ## Stubborn: the substrate could not see it, said so — now BUILT
 
@@ -132,12 +156,14 @@ The three should separate on intervention exactly as the two folie-à-deux aetio
 The first row is already measured at seed level —
 `test_acquiring_a_part_RE_ARMS_the_decode` is literally ignorance being cured by acquisition, and
 the pauper fixture is ignorance failing to be cured by anything else. The second row's inertness is
-the puncture test (`APERTURE_PATHOLOGIES.md` §5: two true parts, one distinguishable). The third row is **now runnable at the manifold** and is gated there
-(`ignorant_and_stubborn_separate_but_STUPID_HAS_NO_FIELD_YET`) — a withheld candidate stays minimal
-and unselected under every intervention, because neither parts nor aperture touch selection.
+the puncture test (`APERTURE_PATHOLOGIES.md` §5: two true parts, one distinguishable). All three rows are **now producible at the manifold** and are gated together in
+`ignorant_stupid_and_stubborn_all_have_distinct_signatures`: an empty family fails closed
+(ignorant), a starved budget yields supported-unresolved candidates with non-zero
+`information_loss` and an empty feasible set (stupid), and a withheld candidate stays minimal and
+unselected while nothing is unestablished (stubborn). No two are confusable, and the test asserts
+each one's *absence* of the others' signatures rather than only its own presence.
 
-What remains open, precisely: the **stupid** row cannot be produced at the manifold at all until
-`information_loss` asks its own question, so the 2×2's middle row is exercised only at seed level
-(the puncture test) and not in the manifold audit. And the seed-level and manifold-level versions
-have still never been run as one design — that would need a candidate family generated from an
-agent's own aperture, which nothing does yet.
+What remains open, precisely: the seed-level and manifold-level versions have still never been run
+as **one** design. That needs a candidate family generated from an agent's own aperture — nothing
+does that yet, and until something does, "widen aperture cures stupidity" is measured at seed level
+(the puncture test) and merely *representable*, not demonstrated, at the manifold.
