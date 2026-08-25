@@ -13,6 +13,66 @@
  "edges": [],
  "productions": [
   {
+   "provenance": "humanoid_development:retained_trajectory_shape",
+   "src": {
+    "type": "Agent",
+    "var": "agent"
+   },
+   "edge_type": "has_retained_embodied_program_trajectory_shape",
+   "tgt": {
+    "type": "Node",
+    "var": "owner"
+   }
+  },
+  {
+   "provenance": "humanoid_development:deployment_trajectory_owner",
+   "src": {
+    "type": "HumanoidEpisode",
+    "var": "episode"
+   },
+   "edge_type": "has_embodied_deployment_program_owner",
+   "tgt": {
+    "type": "Node",
+    "var": "owner"
+   }
+  },
+  {
+   "provenance": "humanoid_development:retained_trajectory_transition",
+   "src": {
+    "type": "Node",
+    "var": "owner"
+   },
+   "edge_type": "has_embodied_program_transition",
+   "tgt": {
+    "type": "ParetoProfile",
+    "var": "transition"
+   }
+  },
+  {
+   "provenance": "humanoid_development:retained_transition_source",
+   "src": {
+    "type": "ParetoProfile",
+    "var": "transition"
+   },
+   "edge_type": "starts_from_embodied_program",
+   "tgt": {
+    "type": "HumanoidMotorProgram",
+    "var": "program"
+   }
+  },
+  {
+   "provenance": "humanoid_development:retained_transition_target",
+   "src": {
+    "type": "ParetoProfile",
+    "var": "transition"
+   },
+   "edge_type": "continues_with_embodied_program",
+   "tgt": {
+    "type": "HumanoidMotorProgram",
+    "var": "program"
+   }
+  },
+  {
    "provenance": "humanoid_development:projection",
    "src": {
     "type": "HumanoidEpisode",
@@ -4556,17 +4616,12 @@
    "latency_class": "hard_realtime",
    "order": -999,
    "batch": false,
-   "comment": "A completed finite learning plan retires developmental selection but does not erase the situated task. Explicit deployment projects the normal locomotion objective into the motor controller; the ordinary future-manifold gate still owns action authority.",
+   "comment": "Explicit deployment retires developmental selection authority without asserting that an unfinished plan is mastered. It projects the normal locomotion objective into the motor controller; the ordinary future-manifold gate still owns action authority.",
    "match": [
     [
      "episode",
      "projects_embodied_development",
      "development"
-    ],
-    [
-     "development",
-     "has_self_directed_learning_plan",
-     "plan"
     ]
    ],
    "where": {
@@ -4594,21 +4649,6 @@
       "b": {
        "type": "Lit",
        "value": 1
-      }
-     },
-     {
-      "type": "Eq",
-      "a": {
-       "type": "Attr",
-       "node": {
-        "type": "Var",
-        "name": "plan"
-       },
-       "key": "status"
-      },
-      "b": {
-       "type": "Lit",
-       "value": "completed"
       }
      },
      {
@@ -4687,6 +4727,58 @@
      "episode",
      "locomotion_drive_active",
      1
+    ]
+   ]
+  },
+  {
+   "name": "hdc_retire_developmental_authority_in_deployment",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -1000,
+   "batch": true,
+   "comment": "Deployment may use retained competence without claiming that an unfinished curriculum is mastered. Withdraw only the live developmental selector; the situated motor manifold remains active.",
+   "match": [
+    [
+     "episode",
+     "projects_embodied_development",
+     "development"
+    ],
+    [
+     "development",
+     "has_active_embodied_developmental_capability",
+     "capability"
+    ]
+   ],
+   "where": {
+    "type": "Eq",
+    "a": {
+     "type": "Plus",
+     "items": [
+      {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "development"
+       },
+       "key": "developmental_deployment_mode"
+      },
+      {
+       "type": "Lit",
+       "value": 0
+      }
+     ]
+    },
+    "b": {
+     "type": "Lit",
+     "value": 1
+    }
+   },
+   "effects": [
+    [
+     "del_edge",
+     "development",
+     "has_active_embodied_developmental_capability",
+     "capability"
     ]
    ]
   },
@@ -56488,6 +56580,1185 @@
    ]
   },
   {
+   "name": "hdc_replay_selected_order_n_program_path",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -106,
+   "batch": false,
+   "comment": "System 2 selects an output-null arbitrary-order path; each hard-real-time collapse releases only its next already-grounded compound program through the existing trial and receipt machinery.",
+   "match": [
+    [
+     "agent",
+     "has_humanoid_episode",
+     "episode"
+    ],
+    [
+     "agent",
+     "has_humanoid_policy",
+     "policy"
+    ],
+    [
+     "episode",
+     "projects_embodied_development",
+     "development"
+    ],
+    [
+     "development",
+     "has_active_embodied_developmental_capability",
+     "capability"
+    ],
+    [
+     "capability",
+     "has_selected_embodied_program_path",
+     "path"
+    ],
+    [
+     "path",
+     "contains_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "capability",
+     "has_current_embodied_program_transition_source",
+     "transition"
+    ],
+    [
+     "transition",
+     "continues_with_embodied_program",
+     "memory"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "capability"
+          },
+          "key": "desired_body_state_signature"
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "policy"
+             },
+             "key": "future_manifold_enabled"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "key": "manifold_bounds_ready"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "key": "depth"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "transition"
+         },
+         "key": "verified"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "memory"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "grounded"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "memory"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "ready"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "memory"
+           },
+           "key": "memory_eligible"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "memory"
+             },
+             "key": "experience_retained"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "key": "caregiver_protective_support_available"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "policy"
+              },
+              "key": "future_manifold_enabled"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "episode"
+              },
+              "key": "manifold_bounds_ready"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         ]
+        }
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "FutureManifoldProjection",
+           "episode": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "policy": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "source": {
+            "type": "Var",
+            "name": "path"
+           },
+           "field": "support",
+           "addition": {
+            "type": "Var",
+            "name": "transition"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "FutureManifoldProjection",
+           "episode": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "policy": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "source": {
+            "type": "Var",
+            "name": "path"
+           },
+           "field": "resolved",
+           "addition": {
+            "type": "Var",
+            "name": "transition"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "FutureManifoldProjection",
+           "episode": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "policy": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "source": {
+            "type": "Var",
+            "name": "path"
+           },
+           "field": "information_loss",
+           "addition": {
+            "type": "Var",
+            "name": "transition"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "FutureManifoldProjection",
+             "episode": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "policy": {
+              "type": "Var",
+              "name": "policy"
+             },
+             "source": {
+              "type": "Var",
+              "name": "path"
+             },
+             "field": "effort_supported",
+             "addition": {
+              "type": "Var",
+              "name": "transition"
+             }
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "FutureManifoldProjection",
+             "episode": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "policy": {
+              "type": "Var",
+              "name": "policy"
+             },
+             "source": {
+              "type": "Var",
+              "name": "path"
+             },
+             "field": "effort_authorized",
+             "addition": {
+              "type": "Var",
+              "name": "transition"
+             }
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "memory"
+         },
+         "edge_type": "includes_humanoid_phase_action_model",
+         "any_type": false
+        },
+        "var_name": "trajectory_primary_member",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "trajectory_primary_member"
+          },
+          "key": "token"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "memory"
+          },
+          "key": "primary_token"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "decision_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "action_ready"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "episode"
+        },
+        "edge_type": "has_ready_humanoid_motor_program",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "memory",
+     "status",
+     "ready"
+    ],
+    [
+     "set_attr",
+     "memory",
+     "request_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "collapse_kind",
+     "developmental_order_n_trajectory"
+    ],
+    [
+     "set_attr",
+     "memory",
+     "open_residual_count",
+     1
+    ],
+    [
+     "set_attr",
+     "path",
+     "trajectory_replay_issued_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_support",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "future_manifold_enabled"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "FutureManifoldProjection",
+        "episode": {
+         "type": "Var",
+         "name": "episode"
+        },
+        "policy": {
+         "type": "Var",
+         "name": "policy"
+        },
+        "source": {
+         "type": "Var",
+         "name": "path"
+        },
+        "field": "support",
+        "addition": {
+         "type": "Var",
+         "name": "transition"
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_resolved",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "future_manifold_enabled"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "FutureManifoldProjection",
+        "episode": {
+         "type": "Var",
+         "name": "episode"
+        },
+        "policy": {
+         "type": "Var",
+         "name": "policy"
+        },
+        "source": {
+         "type": "Var",
+         "name": "path"
+        },
+        "field": "resolved",
+        "addition": {
+         "type": "Var",
+         "name": "transition"
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_loss",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "key": "future_manifold_enabled"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "then": {
+        "type": "FutureManifoldProjection",
+        "episode": {
+         "type": "Var",
+         "name": "episode"
+        },
+        "policy": {
+         "type": "Var",
+         "name": "policy"
+        },
+        "source": {
+         "type": "Var",
+         "name": "path"
+        },
+        "field": "loss",
+        "addition": {
+         "type": "Var",
+         "name": "transition"
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": 0
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_ready_humanoid_motor_program",
+     "memory"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_token",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "key": "primary_token"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_secondary_token",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "memory"
+          },
+          "edge_type": "includes_humanoid_phase_action_model",
+          "any_type": false
+         },
+         "var_name": "trajectory_secondary_member",
+         "predicate": {
+          "type": "Not",
+          "arg": {
+           "type": "Exists",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "memory"
+             },
+             "edge_type": "includes_humanoid_phase_action_model",
+             "any_type": false
+            },
+            "var_name": "trajectory_primary_member",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "trajectory_primary_member"
+              },
+              "key": "token"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory"
+              },
+              "key": "primary_token"
+             }
+            }
+           },
+           "var_name": "known_trajectory_primary",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "known_trajectory_primary"
+            },
+            "b": {
+             "type": "Var",
+             "name": "trajectory_secondary_member"
+            }
+           }
+          }
+         }
+        },
+        "var_name": "ranked_trajectory_secondary",
+        "value": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ranked_trajectory_secondary"
+           },
+           "key": "ordinal"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "default": {
+         "type": "Pick",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "memory"
+           },
+           "edge_type": "includes_humanoid_phase_action_model",
+           "any_type": false
+          },
+          "var_name": "trajectory_primary_member",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "trajectory_primary_member"
+            },
+            "key": "token"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "memory"
+            },
+            "key": "primary_token"
+           }
+          }
+         }
+        }
+       },
+       "key": "token"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_response_frames",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 1
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "transition"
+           },
+           "key": "response_frames"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_motor_weight_a",
+     1
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_motor_weight_b",
+     1
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_predicted_dzx",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_predicted_dzy",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_predicted_dwx",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_predicted_dwy",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_predicted_dvx",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_predicted_dvy",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_predicted_dvz",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "decision_kind",
+     "developmental_metaprogram"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_collapse_kind",
+     "developmental_order_n_trajectory"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "decision_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "decision_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "decision_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "action_ready",
+     1
+    ]
+   ]
+  },
+  {
    "name": "hdc_complete_selected_order_n_program_path_from_receipt_context",
    "area": "humanoid_sensorimotor_adaptation",
    "latency_class": "hard_realtime",
@@ -56903,6 +58174,3385 @@
        }
       }
      }
+    ]
+   ]
+  },
+  {
+   "name": "hdc_recruit_retained_trajectory_deployment_tasks",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -111,
+   "batch": false,
+   "comment": "Restoration supplies durable knowledge, not a running cognitive process. Once a receipt-shaped current context exists, explicitly recruit the generic trajectory and Pareto faculties.",
+   "match": [
+    [
+     "episode",
+     "has_embodied_deployment_program_owner",
+     "owner"
+    ],
+    [
+     "owner",
+     "has_current_embodied_program",
+     "current"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "owner"
+         },
+         "key": "trajectory_recruitment_requested"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "owner"
+        },
+        "edge_type": "has_embodied_program_trajectory",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "trajectory_tasks",
+     "SystemTwoTaskSet",
+     {
+      "area": "embodied_program_trajectory",
+      "enabled": 1,
+      "provenance_kind": "retained_program_trajectory_deployment"
+     }
+    ],
+    [
+     "add_node",
+     "pareto_tasks",
+     "SystemTwoTaskSet",
+     {
+      "area": "cognitive_pareto",
+      "enabled": 1,
+      "provenance_kind": "retained_program_trajectory_deployment_pareto"
+     }
+    ],
+    [
+     "add_node",
+     "escalation",
+     "SystemTwoEscalation",
+     {
+      "status": "requested",
+      "reason": "project_retained_future_manifold",
+      "epoch": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "episode"
+          },
+          "key": "request_seq"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "about_context",
+     "current"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "recruits_task_set",
+     "trajectory_tasks"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "recruits_task_set",
+     "pareto_tasks"
+    ],
+    [
+     "set_attr",
+     "owner",
+     "trajectory_recruitment_requested",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "hdc_clear_stale_retained_trajectory_deployment_context",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -110,
+   "batch": true,
+   "match": [
+    [
+     "episode",
+     "has_embodied_deployment_program_owner",
+     "owner"
+    ],
+    [
+     "episode",
+     "has_humanoid_motor_trial",
+     "trial"
+    ],
+    [
+     "trial",
+     "has_humanoid_transition",
+     "outcome"
+    ],
+    [
+     "owner",
+     "has_current_embodied_program_transition_source",
+     "stale_source"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "outcome"
+         },
+         "key": "development_receipt_closed"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trial"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "stale_source"
+            },
+            "key": "pre_orientation_class"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "outcome"
+            },
+            "key": "development_post_orientation_class"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Lt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_x_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "stale_source"
+             },
+             "key": "pre_state_axis_x_minimum_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_x_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "stale_source"
+             },
+             "key": "pre_state_axis_x_maximum_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Lt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_y_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "stale_source"
+             },
+             "key": "pre_state_axis_y_minimum_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_y_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "stale_source"
+             },
+             "key": "pre_state_axis_y_maximum_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Lt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_z_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "stale_source"
+             },
+             "key": "pre_state_axis_z_minimum_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_z_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "stale_source"
+             },
+             "key": "pre_state_axis_z_maximum_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "owner",
+     "has_current_embodied_program_transition_source",
+     "stale_source"
+    ]
+   ]
+  },
+  {
+   "name": "hdc_bind_retained_trajectory_to_deployment_receipt",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -109,
+   "batch": true,
+   "comment": "A retained solution shape is inert until a closed physical receipt locates the body inside its categorical state shape. Bind every matching source so the generic Pareto selector can compare their residuals; this grants no actuator authority.",
+   "match": [
+    [
+     "episode",
+     "has_embodied_deployment_program_owner",
+     "owner"
+    ],
+    [
+     "episode",
+     "projects_embodied_development",
+     "development"
+    ],
+    [
+     "episode",
+     "has_humanoid_motor_trial",
+     "trial"
+    ],
+    [
+     "trial",
+     "has_humanoid_transition",
+     "outcome"
+    ],
+    [
+     "owner",
+     "has_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "transition",
+     "starts_from_embodied_program",
+     "current"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "development"
+         },
+         "key": "developmental_deployment_mode"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "outcome"
+         },
+         "key": "development_receipt_closed"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trial"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "transition"
+         },
+         "key": "verified"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "transition"
+         },
+         "key": "pre_orientation_class"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "outcome"
+         },
+         "key": "development_post_orientation_class"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Lt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "outcome"
+            },
+            "key": "development_post_gravity_axis_x_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "pre_state_axis_x_minimum_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "outcome"
+            },
+            "key": "development_post_gravity_axis_x_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "pre_state_axis_x_maximum_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Lt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "outcome"
+            },
+            "key": "development_post_gravity_axis_y_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "pre_state_axis_y_minimum_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "outcome"
+            },
+            "key": "development_post_gravity_axis_y_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "pre_state_axis_y_maximum_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Lt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "outcome"
+            },
+            "key": "development_post_gravity_axis_z_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "pre_state_axis_z_minimum_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "outcome"
+            },
+            "key": "development_post_gravity_axis_z_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "pre_state_axis_z_maximum_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trial"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "transition"
+         },
+         "key": "last_current_context_request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "owner",
+     "has_current_embodied_program",
+     "current"
+    ],
+    [
+     "add_edge",
+     "owner",
+     "has_current_embodied_program_transition_source",
+     "transition"
+    ],
+    [
+     "set_attr",
+     "transition",
+     "current_state_shape_residual_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "transition"
+             },
+             "key": "pre_state_axis_x_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_x_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "transition"
+             },
+             "key": "pre_state_axis_y_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_y_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "transition"
+             },
+             "key": "pre_state_axis_z_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_z_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "transition",
+     "last_current_context_request_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trial"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "hdc_refresh_retained_trajectory_after_deployment_receipt",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -107,
+   "batch": false,
+   "comment": "A new physical receipt can move the situated path frontier. Request one output-null trajectory/Pareto pass for that receipt; temporal foveation therefore predicts only when needed.",
+   "match": [
+    [
+     "episode",
+     "has_embodied_deployment_program_owner",
+     "owner"
+    ],
+    [
+     "owner",
+     "has_current_embodied_program",
+     "current"
+    ],
+    [
+     "episode",
+     "has_humanoid_motor_trial",
+     "trial"
+    ],
+    [
+     "trial",
+     "has_humanoid_transition",
+     "outcome"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "outcome"
+         },
+         "key": "development_receipt_closed"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trial"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "owner"
+         },
+         "key": "last_trajectory_context_request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "trajectory_tasks",
+     "SystemTwoTaskSet",
+     {
+      "area": "embodied_program_trajectory",
+      "enabled": 1,
+      "provenance_kind": "retained_trajectory_receipt_refresh"
+     }
+    ],
+    [
+     "add_node",
+     "pareto_tasks",
+     "SystemTwoTaskSet",
+     {
+      "area": "cognitive_pareto",
+      "enabled": 1,
+      "provenance_kind": "retained_trajectory_receipt_pareto"
+     }
+    ],
+    [
+     "add_node",
+     "escalation",
+     "SystemTwoEscalation",
+     {
+      "status": "requested",
+      "reason": "refresh_retained_future_manifold",
+      "epoch": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "trial"
+          },
+          "key": "request_seq"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "about_context",
+     "owner"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "recruits_task_set",
+     "trajectory_tasks"
+    ],
+    [
+     "add_edge",
+     "escalation",
+     "recruits_task_set",
+     "pareto_tasks"
+    ],
+    [
+     "set_attr",
+     "owner",
+     "last_trajectory_context_request_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trial"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "hdc_refute_retained_trajectory_forecast_from_receipt",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": 90,
+   "batch": false,
+   "comment": "A retained transition is contextually refuted when its measured endpoint lies farther from the stored endpoint shape than the body lay from its stored entry shape. This compares a residual ratio without a magic tolerance and never rewrites retained evidence.",
+   "match": [
+    [
+     "episode",
+     "has_embodied_deployment_program_owner",
+     "owner"
+    ],
+    [
+     "owner",
+     "has_selected_embodied_program_path",
+     "path"
+    ],
+    [
+     "path",
+     "contains_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "transition",
+     "continues_with_embodied_program",
+     "enacted"
+    ],
+    [
+     "episode",
+     "has_humanoid_motor_trial",
+     "trial"
+    ],
+    [
+     "trial",
+     "enacts_humanoid_motor_program",
+     "enacted"
+    ],
+    [
+     "trial",
+     "has_humanoid_transition",
+     "outcome"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "outcome"
+         },
+         "key": "development_receipt_closed"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trial"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "key": "trajectory_replay_issued_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "transition"
+             },
+             "key": "post_state_axis_x_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_x_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "transition"
+             },
+             "key": "post_state_axis_y_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_y_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "transition"
+             },
+             "key": "post_state_axis_z_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_z_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "transition"
+         },
+         "key": "current_state_shape_residual_units"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "edge_type": "manifold_blocked_from_embodied_program_transition",
+         "any_type": false
+        },
+        "var_name": "known_forecast_block",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Var",
+          "name": "known_forecast_block"
+         },
+         "b": {
+          "type": "Var",
+          "name": "transition"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "path",
+     "manifold_blocked_from_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_endpoint_shape_residual_units",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "transition"
+             },
+             "key": "post_state_axis_x_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_x_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "transition"
+             },
+             "key": "post_state_axis_y_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_y_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        },
+        {
+         "type": "Abs",
+         "arg": {
+          "type": "Minus",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "transition"
+             },
+             "key": "post_state_axis_z_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "outcome"
+             },
+             "key": "development_post_gravity_axis_z_units"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "manifold_rejection_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "path"
+           },
+           "key": "manifold_rejection_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "hdc_complete_retained_trajectory_replay_from_receipt",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": 91,
+   "batch": false,
+   "comment": "The exact enacted endpoint's physical receipt closes one retained replay. Clear selection so the next requested soft pass can re-situate and choose from the changed body shape.",
+   "match": [
+    [
+     "episode",
+     "has_embodied_deployment_program_owner",
+     "owner"
+    ],
+    [
+     "owner",
+     "has_selected_embodied_program_path",
+     "path"
+    ],
+    [
+     "path",
+     "contains_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "transition",
+     "continues_with_embodied_program",
+     "enacted"
+    ],
+    [
+     "episode",
+     "has_humanoid_motor_trial",
+     "trial"
+    ],
+    [
+     "trial",
+     "enacts_humanoid_motor_program",
+     "enacted"
+    ],
+    [
+     "trial",
+     "has_humanoid_transition",
+     "outcome"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "outcome"
+         },
+         "key": "development_receipt_closed"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "trial"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "key": "trajectory_replay_issued_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "key": "trajectory_replay_issued_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "key": "trajectory_replay_completed_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "del_edge",
+     "owner",
+     "has_selected_embodied_program_path",
+     "path"
+    ],
+    [
+     "set_attr",
+     "path",
+     "replay_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "path"
+           },
+           "key": "replay_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "trajectory_replay_completed_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "key": "trajectory_replay_issued_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "owner",
+     "trajectory_replay_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "owner"
+           },
+           "key": "trajectory_replay_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "hdc_clear_stale_retained_trajectory_deployment_source",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -108,
+   "batch": true,
+   "match": [
+    [
+     "episode",
+     "has_embodied_deployment_program_owner",
+     "owner"
+    ],
+    [
+     "owner",
+     "has_current_embodied_program",
+     "current"
+    ]
+   ],
+   "where": {
+    "type": "Not",
+    "arg": {
+     "type": "Exists",
+     "source": {
+      "type": "Neighbours",
+      "node": {
+       "type": "Var",
+       "name": "owner"
+      },
+      "edge_type": "has_current_embodied_program_transition_source",
+      "any_type": false
+     },
+     "var_name": "live_source",
+     "predicate": {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "live_source"
+       },
+       "edge_type": "starts_from_embodied_program",
+       "any_type": false
+      },
+      "var_name": "source_program",
+      "predicate": {
+       "type": "Eq",
+       "a": {
+        "type": "Var",
+        "name": "source_program"
+       },
+       "b": {
+        "type": "Var",
+        "name": "current"
+       }
+      }
+     }
+    }
+   },
+   "effects": [
+    [
+     "del_edge",
+     "owner",
+     "has_current_embodied_program",
+     "current"
+    ]
+   ]
+  },
+  {
+   "name": "hdc_reject_retained_order_n_program_path",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -107,
+   "batch": false,
+   "comment": "A retained path that compresses the current manifold is refuted only from its situated transition source. This prevents a deployment selection from becoming a deadlock while preserving the negative result for the next generic collapse.",
+   "match": [
+    [
+     "agent",
+     "has_humanoid_policy",
+     "policy"
+    ],
+    [
+     "episode",
+     "has_embodied_deployment_program_owner",
+     "owner"
+    ],
+    [
+     "episode",
+     "projects_embodied_development",
+     "development"
+    ],
+    [
+     "owner",
+     "has_selected_embodied_program_path",
+     "path"
+    ],
+    [
+     "owner",
+     "has_current_embodied_program",
+     "current"
+    ],
+    [
+     "path",
+     "contains_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "transition",
+     "starts_from_embodied_program",
+     "current"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "development"
+         },
+         "key": "developmental_deployment_mode"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "edge_type": "manifold_blocked_from_embodied_program_transition",
+         "any_type": false
+        },
+        "var_name": "known_blocked_source",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Var",
+          "name": "known_blocked_source"
+         },
+         "b": {
+          "type": "Var",
+          "name": "transition"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Or",
+       "items": [
+        {
+         "type": "Not",
+         "arg": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "policy"
+               },
+               "key": "future_manifold_enabled"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "episode"
+               },
+               "key": "manifold_bounds_ready"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         }
+        },
+        {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "FutureManifoldProjection",
+            "episode": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "policy": {
+             "type": "Var",
+             "name": "policy"
+            },
+            "source": {
+             "type": "Var",
+             "name": "path"
+            },
+            "field": "support",
+            "addition": {
+             "type": "Var",
+             "name": "transition"
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "FutureManifoldProjection",
+            "episode": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "policy": {
+             "type": "Var",
+             "name": "policy"
+            },
+            "source": {
+             "type": "Var",
+             "name": "path"
+            },
+            "field": "resolved",
+            "addition": {
+             "type": "Var",
+             "name": "transition"
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "FutureManifoldProjection",
+            "episode": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "policy": {
+             "type": "Var",
+             "name": "policy"
+            },
+            "source": {
+             "type": "Var",
+             "name": "path"
+            },
+            "field": "information_loss",
+            "addition": {
+             "type": "Var",
+             "name": "transition"
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Or",
+           "items": [
+            {
+             "type": "Eq",
+             "a": {
+              "type": "FutureManifoldProjection",
+              "episode": {
+               "type": "Var",
+               "name": "episode"
+              },
+              "policy": {
+               "type": "Var",
+               "name": "policy"
+              },
+              "source": {
+               "type": "Var",
+               "name": "path"
+              },
+              "field": "effort_supported",
+              "addition": {
+               "type": "Var",
+               "name": "transition"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Gt",
+             "a": {
+              "type": "FutureManifoldProjection",
+              "episode": {
+               "type": "Var",
+               "name": "episode"
+              },
+              "policy": {
+               "type": "Var",
+               "name": "policy"
+              },
+              "source": {
+               "type": "Var",
+               "name": "path"
+              },
+              "field": "effort_authorized",
+              "addition": {
+               "type": "Var",
+               "name": "transition"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_edge",
+     "path",
+     "manifold_blocked_from_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "del_edge",
+     "owner",
+     "has_selected_embodied_program_path",
+     "path"
+    ],
+    [
+     "set_attr",
+     "path",
+     "manifold_rejection_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "path"
+           },
+           "key": "manifold_rejection_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "hdc_replay_retained_order_n_program_path",
+   "area": "humanoid_sensorimotor_adaptation",
+   "latency_class": "hard_realtime",
+   "order": -106,
+   "batch": false,
+   "comment": "The generic retained owner uses the same manifold gate and motor-program handoff as development. Persistence supplies a solution shape, never a command or stale physical future.",
+   "match": [
+    [
+     "agent",
+     "has_humanoid_policy",
+     "policy"
+    ],
+    [
+     "episode",
+     "has_embodied_deployment_program_owner",
+     "owner"
+    ],
+    [
+     "episode",
+     "projects_embodied_development",
+     "development"
+    ],
+    [
+     "owner",
+     "has_selected_embodied_program_path",
+     "path"
+    ],
+    [
+     "owner",
+     "has_current_embodied_program",
+     "current"
+    ],
+    [
+     "path",
+     "contains_embodied_program_transition",
+     "transition"
+    ],
+    [
+     "transition",
+     "starts_from_embodied_program",
+     "current"
+    ],
+    [
+     "transition",
+     "continues_with_embodied_program",
+     "memory"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "development"
+         },
+         "key": "developmental_deployment_mode"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "path"
+         },
+         "key": "depth"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "transition"
+         },
+         "key": "verified"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "memory"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "grounded"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "memory"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "ready"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "policy"
+              },
+              "key": "future_manifold_enabled"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "episode"
+              },
+              "key": "manifold_bounds_ready"
+             },
+             {
+              "type": "Lit",
+              "value": 0
+             }
+            ]
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
+          }
+         ]
+        }
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "FutureManifoldProjection",
+           "episode": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "policy": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "source": {
+            "type": "Var",
+            "name": "path"
+           },
+           "field": "support",
+           "addition": {
+            "type": "Var",
+            "name": "transition"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Gt",
+          "a": {
+           "type": "FutureManifoldProjection",
+           "episode": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "policy": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "source": {
+            "type": "Var",
+            "name": "path"
+           },
+           "field": "resolved",
+           "addition": {
+            "type": "Var",
+            "name": "transition"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "FutureManifoldProjection",
+           "episode": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "policy": {
+            "type": "Var",
+            "name": "policy"
+           },
+           "source": {
+            "type": "Var",
+            "name": "path"
+           },
+           "field": "information_loss",
+           "addition": {
+            "type": "Var",
+            "name": "transition"
+           }
+          },
+          "b": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         {
+          "type": "Or",
+          "items": [
+           {
+            "type": "Eq",
+            "a": {
+             "type": "FutureManifoldProjection",
+             "episode": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "policy": {
+              "type": "Var",
+              "name": "policy"
+             },
+             "source": {
+              "type": "Var",
+              "name": "path"
+             },
+             "field": "effort_supported",
+             "addition": {
+              "type": "Var",
+              "name": "transition"
+             }
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Gt",
+            "a": {
+             "type": "FutureManifoldProjection",
+             "episode": {
+              "type": "Var",
+              "name": "episode"
+             },
+             "policy": {
+              "type": "Var",
+              "name": "policy"
+             },
+             "source": {
+              "type": "Var",
+              "name": "path"
+             },
+             "field": "effort_authorized",
+             "addition": {
+              "type": "Var",
+              "name": "transition"
+             }
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "memory"
+         },
+         "edge_type": "includes_humanoid_phase_action_model",
+         "any_type": false
+        },
+        "var_name": "retained_trajectory_primary_member",
+        "predicate": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "retained_trajectory_primary_member"
+          },
+          "key": "token"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "memory"
+          },
+          "key": "primary_token"
+         }
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "decision_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "action_ready"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "episode"
+        },
+        "edge_type": "has_ready_humanoid_motor_program",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "memory",
+     "status",
+     "ready"
+    ],
+    [
+     "set_attr",
+     "memory",
+     "request_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "memory",
+     "collapse_kind",
+     "retained_order_n_trajectory"
+    ],
+    [
+     "set_attr",
+     "memory",
+     "open_residual_count",
+     1
+    ],
+    [
+     "set_attr",
+     "path",
+     "trajectory_replay_issued_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "episode",
+     "has_ready_humanoid_motor_program",
+     "memory"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_token",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "memory"
+       },
+       "key": "primary_token"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_secondary_token",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Argmin",
+        "source": {
+         "type": "Filter",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "memory"
+          },
+          "edge_type": "includes_humanoid_phase_action_model",
+          "any_type": false
+         },
+         "var_name": "retained_trajectory_secondary_member",
+         "predicate": {
+          "type": "Not",
+          "arg": {
+           "type": "Exists",
+           "source": {
+            "type": "Filter",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "memory"
+             },
+             "edge_type": "includes_humanoid_phase_action_model",
+             "any_type": false
+            },
+            "var_name": "retained_trajectory_primary_member",
+            "predicate": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "retained_trajectory_primary_member"
+              },
+              "key": "token"
+             },
+             "b": {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "memory"
+              },
+              "key": "primary_token"
+             }
+            }
+           },
+           "var_name": "known_retained_primary",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "known_retained_primary"
+            },
+            "b": {
+             "type": "Var",
+             "name": "retained_trajectory_secondary_member"
+            }
+           }
+          }
+         }
+        },
+        "var_name": "ranked_retained_secondary",
+        "value": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ranked_retained_secondary"
+           },
+           "key": "ordinal"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        "default": {
+         "type": "Pick",
+         "source": {
+          "type": "Filter",
+          "source": {
+           "type": "Neighbours",
+           "node": {
+            "type": "Var",
+            "name": "memory"
+           },
+           "edge_type": "includes_humanoid_phase_action_model",
+           "any_type": false
+          },
+          "var_name": "retained_trajectory_primary_member",
+          "predicate": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "retained_trajectory_primary_member"
+            },
+            "key": "token"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "memory"
+            },
+            "key": "primary_token"
+           }
+          }
+         }
+        }
+       },
+       "key": "token"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_response_frames",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Lit",
+         "value": 1
+        },
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "transition"
+           },
+           "key": "response_frames"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_motor_weight_a",
+     1
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_motor_weight_b",
+     1
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_predicted_dzx",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_predicted_dzy",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_predicted_dwx",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_predicted_dwy",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_predicted_dvx",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_predicted_dvy",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_predicted_dvz",
+     0
+    ],
+    [
+     "set_attr",
+     "episode",
+     "decision_kind",
+     "retained_metaprogram"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "selected_collapse_kind",
+     "retained_order_n_trajectory"
+    ],
+    [
+     "set_attr",
+     "episode",
+     "decision_seq",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "request_seq"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "decision_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "decision_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "action_ready",
+     1
     ]
    ]
   }

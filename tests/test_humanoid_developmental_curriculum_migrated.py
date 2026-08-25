@@ -67,6 +67,14 @@ def test_humanoid_seed_is_an_integer_output_null_bridge():
     assert "park_inactive_program_trajectory_off_hot_frontier" in text
     assert "restore_reactivated_program_trajectory_to_hot_frontier" in text
     assert "clear_selected_trajectory_without_current_state_source" in text
+    assert "hdc_replay_selected_order_n_program_path" in text
+    assert "hdc_bind_retained_trajectory_to_deployment_receipt" in text
+    assert "hdc_recruit_retained_trajectory_deployment_tasks" in text
+    assert "hdc_refresh_retained_trajectory_after_deployment_receipt" in text
+    assert "hdc_complete_retained_trajectory_replay_from_receipt" in text
+    assert "hdc_refute_retained_trajectory_forecast_from_receipt" in text
+    assert "hdc_replay_retained_order_n_program_path" in text
+    assert "hdc_reject_retained_order_n_program_path" in text
     assert "futuremanifoldprojection" in text
     assert "effort_supported" in text
     assert "effort_authorized" in text

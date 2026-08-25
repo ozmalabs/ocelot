@@ -2170,6 +2170,7 @@ def select_learning_plan_step_rule():
             ["step", "plans_learning_capability", "instance"],
         ],
         "where": And(
+            Eq(P0("episode", "development_learning_active"), L(1)),
             Eq(
                 Count(Neighbours("profile", "has_pareto_candidate")),
                 Count(eligible_learning_steps()),
@@ -3782,6 +3783,19 @@ def store_partial_capability_context_rule():
 
 
 def recall_exact_body_experience_rule():
+    exact_mastery_memories = Filter(
+        Neighbours("agent", "has_embodied_developmental_capability_memory"),
+        "exact_mastery_memory",
+        And(
+            Eq(A("instance", "name"),
+               A("exact_mastery_memory", "capability_name")),
+            Eq(A("instance", "goal"), A("exact_mastery_memory", "goal")),
+            Eq(A("instance", "evidence_kind"),
+               A("exact_mastery_memory", "evidence_kind")),
+            Eq(A("exact_mastery_memory", "signature"),
+               A("episode", "body_capability_signature")),
+        ),
+    )
     return {
         "name": "ed_recall_exact_body_partial_experience_without_mastery",
         "area": "general_cognition",
@@ -3800,6 +3814,7 @@ def recall_exact_body_experience_rule():
         ],
         "where": And(
             Eq(P0("instance", "attempt_count"), L(0)),
+            Eq(Count(exact_mastery_memories), L(0)),
             Eq(A("instance", "name"),
                A("experience_memory", "capability_name")),
             Eq(A("instance", "goal"), A("experience_memory", "goal")),
@@ -4631,19 +4646,17 @@ def warm_start_similar_body_rule():
 
 
 def recall_exact_body_capability_rule():
-    deployment = Eq(P0("episode", "developmental_deployment_mode"), L(1))
     return {
         "name": "ed_recall_exact_body_capability_for_local_reverification",
         "area": "general_cognition",
         "latency_class": "hard_realtime",
         "order": -1000,
-        "batch": False,
-        "comment": "An exact structural body reopens a retained ability at "
-        "the verification boundary during learning. In an explicitly "
-        "declared deployment episode, exact-body identity closes the finite "
-        "developmental prior immediately; actuator output remains governed "
-        "by the separate situated motor manifold gate. Cross-body recall "
-        "still requires local verification.",
+        "batch": True,
+        "comment": "An exact structural body preserves retained curriculum "
+        "mastery. This restores an output-null developmental fact, never an "
+        "actuator command; situated motor authority remains governed by the "
+        "separate manifold gate. Cross-body recall still requires local "
+        "verification.",
         "match": [
             ["agent", "has_embodied_development_episode", "episode"],
             ["episode", "has_embodied_developmental_capability", "instance"],
@@ -4668,19 +4681,21 @@ def recall_exact_body_capability_rule():
                 "add_edge", "instance",
                 "recalls_exact_embodied_developmental_capability", "memory",
             ],
-            ["set_attr", "instance", "status", T(If(
-                deployment, L("mastered"), L("retention_due")
-            ))],
+            ["set_attr", "instance", "status", "mastered"],
             ["set_attr", "instance", "retention_start_seq", T(Minus(
                 P0("episode", "latest_development_receipt_seq"),
                 P0("episode", "development_evidence_window"),
             ))],
-            ["set_attr", "instance", "warm_start_requires_verification", T(
-                If(deployment, L(0), L(1))
-            )],
+            ["set_attr", "instance", "warm_start_requires_verification", 0],
             ["set_attr", "episode", "developmental_exact_body_recall_count", T(
                 Plus(
                     P0("episode", "developmental_exact_body_recall_count"),
+                    L(1),
+                )
+            )],
+            ["set_attr", "episode", "embodied_developmental_mastery_count", T(
+                Plus(
+                    P0("episode", "embodied_developmental_mastery_count"),
                     L(1),
                 )
             )],

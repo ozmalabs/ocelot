@@ -252,6 +252,9 @@ def activate_developmental_learning_rule():
         "where": And(
             Eq(A("physical_trial", "available"), L(1)),
             Eq(A("reset", "available"), L(1)),
+            Not(Eq(
+                A("episode", "developmental_deployment_mode"), L(1)
+            )),
             Eq({"type": "Plus", "items": [A("episode", "development_learning_active"), L(0)]}, L(0)),
         ),
         "effects": [

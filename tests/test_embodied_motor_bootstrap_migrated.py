@@ -116,7 +116,9 @@ def _session_agent():
 
 
 def _install_body(agent, *, tokens, direct=True, maximum_observation_horizon_frames=169):
-    episode = agent.s.add_node("EmbodiedDevelopmentEpisode", {})
+    episode = agent.s.add_node(
+        "EmbodiedDevelopmentEpisode", {"development_learning_active": 1}
+    )
     body = agent.s.add_node("EmbodiedBodySchema", {
         "morphology_epoch": 17, "integer_native": 1,
     })

@@ -1669,6 +1669,7 @@ def enact_supervised_motor_program_revision_rule():
             ["revision", "responds_to_cognitive_checkin", "checkin"],
         ],
         "where": And(
+            Eq(A("episode", "development_learning_active"), L(1)),
             Eq(A("revision", "status"), L("proposed")),
             Eq(A("residual", "status"), L("open")),
             Eq(A("process", "status"), L("replan_required")),
@@ -1777,6 +1778,7 @@ def enact_supervised_temporal_aperture_revision_rule():
             ["revision", "responds_to_cognitive_checkin", "checkin"],
         ],
         "where": And(
+            Eq(A("episode", "development_learning_active"), L(1)),
             Eq(A("revision", "status"), L("proposed")),
             Eq(A("revision", "kind"), L("receipt_grounded_temporal_aperture")),
             Eq(A("residual", "status"), L("open")),

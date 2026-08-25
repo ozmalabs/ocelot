@@ -740,6 +740,22 @@ def test_humanoid_adapter_honours_withdrawn_graph_authority():
     assert gate < enact
 
 
+def test_frozen_deployment_has_no_learning_lease_to_withdraw():
+    from scripts.jabberwock_humanoid_walk import (
+        _cognitive_continuation_authorised,
+    )
+
+    agent, development, _, _, _, process = _fixture(span=4)
+    runtime = agent.s.add_node("HumanoidEpisode", {})
+    agent.inner.set_attr(development, "developmental_deployment_mode", 1)
+    agent.inner.set_attr(development, "development_learning_active", 0)
+    agent.inner.set_attr(process, "continuation_authority", 0)
+
+    assert _cognitive_continuation_authorised(
+        agent, runtime, development
+    )
+
+
 def test_authority_boundary_settles_changed_graph_state_without_action(
     monkeypatch,
 ):

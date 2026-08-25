@@ -515,9 +515,146 @@ def test_shape_library_persists_gait_sweep_between_lifetimes():
     assert "stores_humanoid_residual_regime_memory" in production_edges
 
     runner = RUNNER.read_text(encoding="utf-8")
-    assert "MOTOR_LIBRARY_VERSION = 20" in runner
+    assert "MOTOR_LIBRARY_VERSION = 24" in runner
     assert 'shape_row.get("residual_regimes", [])' in runner
     assert '"residual_regimes": residual_regimes' in runner
+
+
+def test_verified_program_trajectory_shape_survives_library_boundary():
+    from scripts.jabberwock_humanoid_adaptation import _edge
+    from scripts.jabberwock_humanoid_walk import (
+        _motor_library_snapshot,
+        _restore_motor_library,
+    )
+    from substrate.world_adapter import WorldAdapter
+
+    def trajectory_fixture():
+        agent = WorldAdapter(seeds=(
+            "humanoid_developmental_curriculum",
+            "embodied_program_trajectory",
+        ))
+        episode = agent.s.add_node("HumanoidEpisode", {})
+        _edge(agent, agent.agent, "has_humanoid_episode", episode)
+        return agent
+
+    signature = (("body", 3, 2, 1),)
+    library = _held_motor_library(signature)
+    second = json.loads(json.dumps(library["body_shapes"][0]["programs"][0]))
+    second["attrs"]["ordinal"] = 6.0
+    second["attrs"]["primary_token"] = "opaque_b"
+    second["members"][0]["token"] = "opaque_b"
+    second["members"][1]["token"] = "opaque_a"
+    library["body_shapes"][0]["programs"].append(second)
+
+    source = trajectory_fixture()
+    _restore_motor_library(source, library)
+    shape = source.inner.neighbours(
+        source.agent, "has_humanoid_body_shape_library"
+    )[0]
+    programs = source.inner.neighbours(
+        shape, "stores_humanoid_motor_program"
+    )
+    owner = source.s.add_node("Node", {
+        "name": "locomotion:test",
+        "goal": "locomotion",
+        "output_authority": 0,
+    })
+    source.inner.add_edge(
+        source.agent,
+        "has_retained_embodied_program_trajectory_shape",
+        owner,
+    )
+    transition = source.s.add_node("ParetoProfile", {
+        "verified": 1,
+        "experience_retained": 1,
+        "pre_orientation_class": 0,
+        "post_orientation_class": 0,
+        "pre_state_axis_x_units": 0,
+        "pre_state_axis_y_units": 0,
+        "pre_state_axis_z_units": 1,
+        "post_state_axis_x_units": 0,
+        "post_state_axis_y_units": 0,
+        "post_state_axis_z_units": 1,
+        "boundary_transition_count": 0,
+        "energy_units": 3,
+        "peak_load_units": 2,
+        "capability_evidence_units": 1,
+        "task_progress_units": 4,
+        "response_frames": 8,
+        "integer_native_trajectory": 1,
+    })
+    source.inner.add_edge(
+        owner, "has_embodied_program_transition", transition
+    )
+    source.inner.add_edge(
+        transition, "starts_from_embodied_program", programs[0]
+    )
+    source.inner.add_edge(
+        transition, "continues_with_embodied_program", programs[1]
+    )
+    snapshot = json.loads(json.dumps(_motor_library_snapshot(source)))
+    assert snapshot["version"] == 24
+    assert len(snapshot["program_trajectory_shapes"]) == 1
+    saved = snapshot["program_trajectory_shapes"][0]["transitions"][0][
+        "attrs"
+    ]
+    assert saved["task_progress_units"] == 4
+    assert saved["output_authority"] == 0
+    for axis, expected in zip(("x", "y", "z"), (0, 0, 1)):
+        assert saved[f"pre_state_axis_{axis}_minimum_units"] == expected
+        assert saved[f"pre_state_axis_{axis}_maximum_units"] == expected
+
+    target = trajectory_fixture()
+    restored = _restore_motor_library(target, snapshot)
+    assert restored["program_trajectory_shape_count"] == 1
+    assert restored["program_trajectory_transition_count"] == 1
+    retained_owner = target.inner.neighbours(
+        target.agent, "has_retained_embodied_program_trajectory_shape"
+    )[0]
+    retained_transition = target.inner.neighbours(
+        retained_owner, "has_embodied_program_transition"
+    )[0]
+    retained_attrs = target.s.node(retained_transition)["attrs"]
+    assert retained_attrs["task_progress_units"] == 4
+    assert retained_attrs["output_authority"] == 0
+    assert retained_attrs["source"] == "library"
+    assert retained_attrs["pre_state_axis_z_minimum_units"] == 1
+    assert retained_attrs["pre_state_axis_z_maximum_units"] == 1
+    assert target.inner.neighbours(
+        retained_owner, "has_selected_embodied_program_path"
+    ) == []
+
+    deployment = trajectory_fixture()
+    deployment_episode = deployment.s.nodes("HumanoidEpisode")[0]
+    deployment_context = deployment.s.add_node(
+        "EmbodiedDevelopmentEpisode",
+        {
+            "developmental_deployment_mode": 1,
+            "development_evidence_window": 4,
+        },
+    )
+    policy = deployment.inner.neighbours(
+        deployment.agent, "has_humanoid_policy"
+    )[0]
+    deployment.inner.set_attr(policy, "future_manifold_enabled", 0)
+    _edge(
+        deployment,
+        deployment_episode,
+        "projects_embodied_development",
+        deployment_context,
+    )
+    deployed = _restore_motor_library(deployment, snapshot)
+    assert deployed["program_trajectory_transition_count"] == 1
+    deployment_owners = deployment.inner.neighbours(
+        deployment_episode, "has_embodied_deployment_program_owner"
+    )
+    assert len(deployment_owners) == 1
+    assert deployment.inner.neighbours(
+        deployment_owners[0], "requests_embodied_program_trajectory"
+    ) == [deployment_context]
+    assert deployment.inner.neighbours(
+        deployment_owners[0], "uses_future_manifold_policy"
+    ) == [policy]
 
 
 def test_shape_library_round_trips_receipt_positive_recovery_basins():
