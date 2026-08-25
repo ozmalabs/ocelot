@@ -153,9 +153,40 @@ literature separated them first.
 not the same operation as spending it, and conflating them produces a quantity
 that changes when you look at it.
 
-**There is no cross-frame accounting.** Different frames and deformation classes
-need not share a unit, an origin, or a scale. There is no universal currency of
-narrativium and no meaningful sum across frames.
+**There is no frame-free accounting** — which is narrower and more useful than
+"no cross-frame accounting", because people obviously do compare across frames
+constantly, and a theory that forbade it would be describing a world nobody
+lives in.
+
+What is forbidden is an *unconverted total*. Different frames need not share a
+unit, an origin, or a scale, and in the hard cases the common dimension is
+absent entirely. What is permitted — and done all the time, by markets, by
+triage, by every cost–benefit exercise — is accounting **through an explicitly
+instantiated conversion**, which the theory does not supply.
+
+Two kinds, and they must not be confused. Where a grounding establishes that
+both frames measure the same underlying quantity, the conversion is *principled*
+— calories to joules. Where it does not, the conversion is a **stipulation**:
+legitimate, usable, and carrying exactly the authority of whoever stipulated it.
+Interpersonal comparison of utility is the standard case, and the classical
+result was never that comparison is impossible — only that it needs a weighting
+no theory of preference provides.
+
+A conversion need not even be a scale factor. Mechanics supplies the example
+inside one grounding: an alteration of motion costs `mv` in impulse and `½mv²`
+in energy, and the ratio between those prices depends on the velocity. A
+state-dependent conversion is still a conversion; it just isn't a unit change,
+and treating it as one is the usual route to a spurious total.
+
+Which yields the test, and it is the same gauge condition applied one level up:
+**a cross-frame conclusion is admissible only if it survives replacing the
+conversion with another the grounding equally permits.** If the answer changes,
+the answer was a property of the exchange rate.
+
+So the rule to carry is not *don't*. It is: **convert if you must, state the
+conversion, and check whether the conclusion survives changing it.** A silent
+conversion is unauditable, and an unstated one is almost always a unit change
+assumed where a stipulation was required.
 
 **And there is no path integration.** This is the sharpest of the four, because
 it forbids the obvious implementation. A sequence of expenditures **cannot be

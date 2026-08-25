@@ -224,6 +224,32 @@ is defined unless some containing grounding explicitly instantiates a common com
 
 This is stronger than saying that units differ. The common dimension itself may be absent.
 
+\subsection*{Conversion is possible, and it is a choice}
+
+The proposition above forbids a \emph{frame-free} sum. It does not forbid accounting across frames, which is performed constantly and usefully --- by markets, by triage, by cost--benefit analysis, by any decision weighing incommensurable goods. What it requires is that such accounting proceed through an explicitly instantiated conversion, and the theory does not supply one.
+
+\begin{definition}[Conversion relation]\label{def:conversion}
+A conversion $\kappa_{W_1\to W_2}$ is an instantiated relation mapping deformation measured in one frame's dimension onto another's. Where it exists, cross-frame accounting is well defined \emph{relative to $\kappa$}:
+\[
+N_{W_1:G}\;+_{\kappa}\;N_{W_2:G}
+\]
+is a quantity in $W_2$'s dimension, and not a frame-free total.
+\end{definition}
+
+\begin{remark}[Principled and stipulated conversions]\label{rem:kappa-kinds}
+Two cases must be kept apart. Where a grounding establishes that both frames measure the same underlying quantity, $\kappa$ is fixed by that grounding and the conversion is principled --- as thermochemical calories to joules. Where no such grounding exists, $\kappa$ is a \emph{stipulation}: legitimate, usable, and carrying exactly the authority of whoever stipulated it. Interpersonal comparison of utility is the standard instance; the classical result is not that comparison is impossible but that it requires a weighting no theory of preference supplies.
+\end{remark}
+
+\begin{remark}[The rate need not be constant]\label{rem:nonconstant-kappa}
+A conversion may exist and still not be a scale factor. Mechanics supplies the example inside a single grounding: one alteration of motion is priced at $m\mathbf v$ in impulse and $\tfrac12 mv^{2}$ in energy, and the ratio between those prices depends on $v$. A conversion that varies with state is still a conversion; it is simply not a unit change, and treating it as one is a common route to a spurious total.
+\end{remark}
+
+\begin{proposition}[Invariance test for cross-frame claims]\label{prop:kappa-invariance}
+A conclusion drawn from cross-frame accounting is admissible only where it is invariant under the legitimate alternatives to $\kappa$. If the conclusion changes when $\kappa$ is replaced by another conversion the grounding equally permits, the conclusion is an artefact of the conversion rather than a fact about the frames.
+\end{proposition}
+
+This is the same gauge condition the companion construction paper imposes on relative weighting, applied one level up. The prohibition worth carrying is therefore narrower and more usable than ``no cross-frame accounting'': \textbf{convert if you must, but state $\kappa$, and check whether the conclusion survives changing it.} A silent conversion is unauditable, and an unstated one is usually a unit change assumed where a stipulation was required.
+
 \section{Replenishment modes}\label{sec:replenishment}
 
 Different groundings may increase Narrativium by structurally different mechanisms.
@@ -370,7 +396,8 @@ Holling's distinction between stability and resilience provides a predecessor fo
 \item \textbf{Measurement/expenditure distinction.} Fails if every grounding requires expenditure to equal the fall in measured Narrativium.
 \item \textbf{Spend-and-gain.} Fails if positive expenditure leading to greater measured future capacity is structurally impossible in every grounding.
 \item \textbf{Conferral/revocation.} Fails if Narrativium can change only through transition of the represented graph.
-\item \textbf{No cross-frame accounting.} Fails if distinct individuating frames necessarily supply a common Narrativium dimension and unit without explicit grounding.
+\item \textbf{No frame-free accounting.} Fails if distinct individuating frames necessarily supply a common Narrativium dimension and unit without explicit grounding. Note that this does not forbid conversion (Definition~\ref{def:conversion}); it forbids an unconverted total.
+\item \textbf{Conversion invariance.} Fails for a claimed cross-frame result if the result is not invariant under the alternative conversions the grounding equally permits (Proposition~\ref{prop:kappa-invariance}). A result surviving only one admissible $\kappa$ is a property of that choice.
 \item \textbf{Narrative horizon.} Fails if a certified revision whose minimum compatible cost exceeds current Narrativium is nevertheless realised under the same frame, deformation class, and accounting.
 \item \textbf{Delayed failure.} Fails for a claimed system class if Narrative-horizon crossing never precedes observable divergence.
 \end{enumerate}
