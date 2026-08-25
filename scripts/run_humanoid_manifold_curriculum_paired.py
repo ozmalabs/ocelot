@@ -909,6 +909,27 @@ def _metrics(run: dict) -> dict:
             "warm_start_shape_recognized", 0
         ),
         "warm_start_program_count": run.get("warm_start_program_count", 0),
+        "loaded_program_trajectory_shape_count": run.get(
+            "motor_library_loaded_program_trajectory_shape_count", 0
+        ),
+        "loaded_program_trajectory_transition_count": run.get(
+            "motor_library_loaded_program_trajectory_transition_count", 0
+        ),
+        "deployment_program_owner_count": run.get(
+            "deployment_program_owner_count", 0
+        ),
+        "deployment_program_owner_current_context_count": run.get(
+            "deployment_program_owner_current_context_count", 0
+        ),
+        "deployment_program_owner_trajectory_count": run.get(
+            "deployment_program_owner_trajectory_count", 0
+        ),
+        "deployment_program_context_diagnostics": run.get(
+            "deployment_program_context_diagnostics", {}
+        ),
+        "developmental_memory_diagnostics": run.get(
+            "developmental_memory_diagnostics", []
+        ),
         "late_shape_library_recognition_count": run.get(
             "late_shape_library_recognition_count", 0
         ),

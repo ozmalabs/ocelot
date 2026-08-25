@@ -1608,7 +1608,7 @@ def test_shape_similarity_controls_cross_body_warm_start(
     assert survey_attrs["output_authority"] == 0
 
 
-def test_exact_body_memory_reopens_retention_but_not_output_authority():
+def test_exact_body_memory_restores_mastery_but_not_output_authority():
     from substrate.world_adapter import WorldAdapter
 
     signature = (("articulated_body", 1), ("link_count", 8))
@@ -1645,10 +1645,76 @@ def test_exact_body_memory_reopens_retention_but_not_output_authority():
         if agent.s.node(node)["attrs"]["goal"] == "effector_discovery"
     )
     attrs = agent.s.node(survey)["attrs"]
-    assert attrs["status"] == "retention_due"
+    assert attrs["status"] == "mastered"
     assert attrs["retention_start_seq"] == 8
-    assert attrs["warm_start_requires_verification"] == 1
+    assert attrs["warm_start_requires_verification"] == 0
     assert attrs["output_authority"] == 0
+
+
+def test_exact_mastery_preempts_partial_experience_recall_deterministically():
+    from substrate.world_adapter import WorldAdapter
+
+    signature = (("articulated_body", 1), ("link_count", 8))
+    agent = WorldAdapter(seeds=("embodied_development",))
+    mastery = agent.s.add_node("EmbodiedDevelopmentalCapabilityMemory", {
+        "signature": signature,
+        "goal": "effector_discovery",
+        "capability_name": "effector_consequence_survey",
+        "evidence_kind": "effector_coverage",
+        "output_authority": 0,
+        "integer_native": 1,
+    })
+    partial = agent.s.add_node("EmbodiedDevelopmentalExperienceMemory", {
+        "signature": signature,
+        "goal": "effector_discovery",
+        "capability_name": "effector_consequence_survey",
+        "evidence_kind": "effector_coverage",
+        "status": "retention_due",
+        "attempt_count": 49,
+        "success_count": 0,
+        "failure_count": 49,
+        "effector_coverage_scored_count": 0,
+        "retention_pending": 1,
+        "output_authority": 0,
+        "integer_native": 1,
+    })
+    agent.inner.add_edge(
+        agent.agent, "has_embodied_developmental_capability_memory", mastery
+    )
+    agent.inner.add_edge(
+        agent.agent, "has_embodied_developmental_experience_memory", partial
+    )
+    episode = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "body_capability_signature": signature,
+        "development_evidence_window": 3,
+        "development_learning_active": 0,
+        "latest_development_receipt_seq": 11,
+        "developmental_exact_body_recall_count": 0,
+        "output_authority": 0,
+        "integer_native": 1,
+    })
+    agent.inner.add_edge(
+        agent.agent, "has_embodied_development_episode", episode
+    )
+
+    agent.tick()
+
+    instance = next(
+        node for node in agent.inner.neighbours(
+            episode, "has_embodied_developmental_capability"
+        )
+        if agent.s.node(node)["attrs"]["name"]
+        == "effector_consequence_survey"
+    )
+    attrs = agent.s.node(instance)["attrs"]
+    assert attrs["status"] == "mastered"
+    assert attrs["attempt_count"] == 0
+    assert agent.inner.neighbours(
+        instance, "recalls_exact_embodied_developmental_capability"
+    ) == [mastery]
+    assert agent.inner.neighbours(
+        instance, "recalls_exact_embodied_developmental_experience"
+    ) == []
 
 
 def test_exact_body_deployment_recall_skips_developmental_reverification():

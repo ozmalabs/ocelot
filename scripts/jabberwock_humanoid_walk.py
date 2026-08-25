@@ -67,7 +67,7 @@ from substrate.world_adapter import WorldAdapter  # noqa: E402
 
 
 DEFAULT_PROTOCOL = ROOT / "protocols" / "humanoid_walking_v1.json"
-MOTOR_LIBRARY_VERSION = 20
+MOTOR_LIBRARY_VERSION = 24
 DEVELOPMENTAL_CURRICULUM_CONTRACT_VERSION = 1
 
 
@@ -217,6 +217,23 @@ def _tick_agent(
     return report
 
 
+def _service_requested_system_two(agent: WorldAdapter) -> bool:
+    """Service graph-requested deliberation before the next motor decision."""
+    requested = [
+        escalation
+        for escalation in agent.s.nodes("SystemTwoEscalation")
+        if agent.s.node(escalation)["attrs"].get("status") == "requested"
+    ]
+    if not requested:
+        return False
+    _tick_agent(agent, service_system_two=True)
+    # Soft cognition is output-null. Publish its selected relation back to
+    # hard realtime so the ordinary motor gate can consume it on this sensed
+    # state; this is scheduler handoff, not another world prediction.
+    _tick_agent(agent)
+    return True
+
+
 def _cognitive_continuation_authorised(
     agent: WorldAdapter,
     episode,
@@ -233,6 +250,16 @@ def _cognitive_continuation_authorised(
             "cognitive_continuation_authority"
         )
         return type(authority) is int and authority == 1
+
+    development_attrs = agent.s.node(development_context)["attrs"]
+    if (
+        development_attrs.get("developmental_deployment_mode") == 1
+        and development_attrs.get("development_learning_active") == 0
+    ):
+        # A frozen controller has no learning process to lease. This closes
+        # only the developmental continuation question; situated actuator
+        # authority remains wholly owned by the ordinary motor/manifold gate.
+        return True
 
     plans = agent.inner.neighbours(
         development_context, "has_self_directed_learning_plan"
@@ -1151,7 +1178,7 @@ def _restore_motor_library(
     )
     if library.get("version") not in {
         3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-        MOTOR_LIBRARY_VERSION,
+        20, 21, 22, 23, MOTOR_LIBRARY_VERSION,
     }:
         raise ValueError(
             "unsupported humanoid motor library version: "
@@ -1177,6 +1204,8 @@ def _restore_motor_library(
     caregiver_support_model_count = 0
     locomotor_phenotype_count = 0
     locomotor_phenotype_family_count = 0
+    program_trajectory_shape_count = 0
+    program_trajectory_transition_count = 0
     episodes = agent.s.nodes("HumanoidEpisode")
     if len(episodes) != 1:
         raise ValueError("motor library restore requires one humanoid episode")
@@ -1294,6 +1323,7 @@ def _restore_motor_library(
             episode, "caregiver_support_calibration_complete", 1
         )
     shapes_by_name = {}
+    programs_by_signature = {}
     for shape_row in _coalesce_body_shape_rows(
         library.get("body_shapes", [])
     ):
@@ -1327,6 +1357,7 @@ def _restore_motor_library(
                 "name",
                 f"{shape_attrs['name']}:motor_program:{library_slot}",
             )
+            retained_signature = program_attrs.get("signature")
             program_attrs["signature"] = motor_program_shape_signature(
                 program_attrs,
                 members,
@@ -1343,6 +1374,13 @@ def _restore_motor_library(
                 "stores_humanoid_motor_program",
                 program,
             )
+            programs_by_signature[program_attrs["signature"]] = program
+            if retained_signature:
+                # v22 closed the endpoint vocabulary but still keyed its
+                # transitions by the live routing label. Accept that label as
+                # an import alias; every new snapshot writes canonical
+                # structural member identity.
+                programs_by_signature[retained_signature] = program
             for member_attrs in members:
                 member = agent.s.add_node(
                     "HumanoidLibraryMotorMember",
@@ -1439,6 +1477,156 @@ def _restore_motor_library(
                     "continues_to_humanoid_recovery_basin",
                     restored_recovery_basins[slot][1],
                 )
+    developments = agent.s.nodes("EmbodiedDevelopmentEpisode")
+    policies = agent.inner.neighbours(
+        agent.agent, "has_humanoid_policy"
+    )
+    trajectory_rows_by_goal = {}
+    trajectory_keys_by_goal = {}
+    for shape_row in library.get("program_trajectory_shapes", []):
+        row_attrs = _restore_library_attrs(shape_row)
+        goal = str(row_attrs.get("goal", ""))
+        combined = trajectory_rows_by_goal.setdefault(goal, {
+            "attrs": {
+                **row_attrs,
+                "name": f"retained:{goal}",
+            },
+            "transitions": [],
+        })
+        known = trajectory_keys_by_goal.setdefault(goal, set())
+        for transition_row in shape_row.get("transitions", []):
+            identity = json.dumps(
+                transition_row, sort_keys=True, separators=(",", ":")
+            )
+            if identity not in known:
+                known.add(identity)
+                combined["transitions"].append(transition_row)
+    for shape_row in trajectory_rows_by_goal.values():
+        transition_groups = {}
+        for transition_row in shape_row["transitions"]:
+            attrs = transition_row["attrs"]
+            key = json.dumps(
+                (
+                    attrs["source_program_signature"],
+                    attrs["target_program_signature"],
+                    attrs["pre_orientation_class"],
+                ),
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+            transition_groups.setdefault(key, []).append(transition_row)
+        for group in transition_groups.values():
+            for axis in ("x", "y", "z"):
+                values = [
+                    int(row["attrs"][f"pre_state_axis_{axis}_units"])
+                    for row in group
+                ]
+                for row in group:
+                    row["attrs"].setdefault(
+                        f"pre_state_axis_{axis}_minimum_units", min(values)
+                    )
+                    row["attrs"].setdefault(
+                        f"pre_state_axis_{axis}_maximum_units", max(values)
+                    )
+        shape_attrs = _restore_library_attrs(shape_row)
+        if shape_attrs.get("output_authority", 0) != 0:
+            raise ValueError("program trajectory shapes must be output-null")
+        shape_attrs["output_authority"] = 0
+        shape_attrs["integer_native"] = 1
+        shape_attrs["status"] = "retained"
+        shape_attrs["source"] = "library"
+        owner = agent.s.add_node(
+            "Node", shape_attrs
+        )
+        _edge(
+            agent,
+            agent.agent,
+            "has_retained_embodied_program_trajectory_shape",
+            owner,
+        )
+        for transition_row in shape_row.get("transitions", []):
+            transition_attrs = _restore_library_attrs(transition_row)
+            source_signature = transition_attrs.pop(
+                "source_program_signature"
+            )
+            target_signature = transition_attrs.pop(
+                "target_program_signature"
+            )
+            source_program = programs_by_signature.get(source_signature)
+            target_program = programs_by_signature.get(target_signature)
+            if source_program is None or target_program is None:
+                # A retained relation cannot be given a different body merely
+                # because one of its endpoint programs is absent. Keep the
+                # artifact valid, but do not instantiate an ungrounded edge.
+                continue
+            if transition_attrs.get("output_authority", 0) != 0:
+                raise ValueError(
+                    "program trajectory transitions must be output-null"
+                )
+            transition_attrs["output_authority"] = 0
+            transition_attrs["verified"] = 1
+            transition_attrs["experience_retained"] = 1
+            transition_attrs["contextual_release_eligible"] = 0
+            transition_attrs["source"] = "library"
+            transition = agent.s.add_node(
+                "ParetoProfile", transition_attrs
+            )
+            _edge(
+                agent, owner,
+                "has_embodied_program_transition", transition,
+            )
+            _edge(
+                agent, transition,
+                "starts_from_embodied_program", source_program,
+            )
+            _edge(
+                agent, transition,
+                "continues_with_embodied_program", target_program,
+            )
+            program_trajectory_transition_count += 1
+        if (
+            len(developments) == 1
+            and len(policies) == 1
+            and str(shape_attrs.get("goal", "")) == "locomotion"
+            and int(agent.s.node(developments[0])["attrs"].get(
+                "developmental_deployment_mode", 0
+            )) == 1
+            and agent.inner.neighbours(
+                owner, "has_embodied_program_transition"
+            )
+        ):
+            development = developments[0]
+            agent.inner.set_attr(
+                development,
+                "trajectory_horizon",
+                max(
+                    2,
+                    int(agent.s.node(development)["attrs"].get(
+                        "development_evidence_window", 2
+                    )),
+                ),
+            )
+            agent.inner.set_attr(
+                development, "trajectory_minimum_selection_depth", 2
+            )
+            _edge(
+                agent, episode,
+                "has_embodied_deployment_program_owner", owner,
+            )
+            _edge(
+                agent, owner,
+                "projects_future_manifold_in_episode", episode,
+            )
+            _edge(
+                agent, owner,
+                "uses_future_manifold_policy", policies[0],
+            )
+            _edge(
+                agent, owner,
+                "requests_embodied_program_trajectory", development,
+            )
+            agent.inner.set_attr(owner, "status", "situated")
+        program_trajectory_shape_count += 1
     plan_hint_count = 0
     plan_hint_stage_count = 0
     for hint_row in _coalesce_plan_hint_rows(library.get("plan_hints", [])):
@@ -1749,6 +1937,14 @@ def _restore_motor_library(
     if caregiver_support_model_count:
         restored["caregiver_support_model_count"] = (
             caregiver_support_model_count
+        )
+    if program_trajectory_shape_count:
+        restored["program_trajectory_shape_count"] = (
+            program_trajectory_shape_count
+        )
+    if program_trajectory_transition_count:
+        restored["program_trajectory_transition_count"] = (
+            program_trajectory_transition_count
         )
     return restored
 
@@ -2102,6 +2298,232 @@ def _motor_library_snapshot(
                 "recovery_basins": recovery_basins,
             })
     body_shapes = _coalesce_body_shape_rows(body_shapes)
+    trajectory_fields = (
+        "verified",
+        "experience_retained",
+        "pre_orientation_class",
+        "post_orientation_class",
+        "pre_state_axis_x_units",
+        "pre_state_axis_y_units",
+        "pre_state_axis_z_units",
+        "pre_state_axis_x_minimum_units",
+        "pre_state_axis_y_minimum_units",
+        "pre_state_axis_z_minimum_units",
+        "pre_state_axis_x_maximum_units",
+        "pre_state_axis_y_maximum_units",
+        "pre_state_axis_z_maximum_units",
+        "post_state_axis_x_units",
+        "post_state_axis_y_units",
+        "post_state_axis_z_units",
+        "boundary_transition_count",
+        "energy_units",
+        "peak_load_units",
+        "capability_evidence_units",
+        "task_progress_units",
+        "response_frames",
+        "integer_native_trajectory",
+    )
+
+    def program_signature(program):
+        attrs = agent.s.node(program)["attrs"]
+        members = [
+            agent.s.node(member)["attrs"]
+            for relation in (
+                "includes_humanoid_phase_action_model",
+                "has_humanoid_library_motor_member",
+            )
+            for member in agent.inner.neighbours(program, relation)
+        ]
+        return motor_program_shape_signature(attrs, members)
+
+    def trajectory_endpoint_program_row(program):
+        attrs = {
+            key: value
+            for key, value in agent.s.node(program)["attrs"].items()
+            if key != "source"
+        }
+        members = [
+            {
+                "token": member_attrs["token"],
+                "ordinal": float(member_attrs.get("ordinal", ordinal)),
+                "support_phase": float(member_attrs.get(
+                    "support_phase", attrs.get("support_phase", -1.0)
+                )),
+            }
+            for relation in (
+                "includes_humanoid_phase_action_model",
+                "has_humanoid_library_motor_member",
+            )
+            for ordinal, member in enumerate(agent.inner.neighbours(
+                program, relation
+            ))
+            for member_attrs in (agent.s.node(member)["attrs"],)
+        ]
+        unique_members = {
+            (
+                str(member["token"]),
+                float(member["ordinal"]),
+                float(member["support_phase"]),
+            ): member
+            for member in members
+        }
+        members = sorted(unique_members.values(), key=lambda member: (
+            float(member["ordinal"]), str(member["token"])
+        ))
+        attrs["signature"] = program_signature(program)
+        attrs["status"] = "grounded"
+        attrs.setdefault("motor_task_context", "locomotion")
+        attrs.setdefault("motor_task_phase", "preparation")
+        return {"attrs": attrs, "members": members}
+
+    trajectory_shapes_by_goal = {}
+    trajectory_transition_keys_by_goal = {}
+    trajectory_endpoint_programs = {}
+    trajectory_owners = []
+    for development in agent.s.nodes("EmbodiedDevelopmentEpisode"):
+        trajectory_owners.extend(agent.inner.neighbours(
+            development, "has_embodied_developmental_capability"
+        ))
+    trajectory_owners.extend(agent.inner.neighbours(
+        agent.agent, "has_retained_embodied_program_trajectory_shape"
+    ))
+    trajectory_owners.extend(
+        owner
+        for episode in agent.s.nodes("HumanoidEpisode")
+        for owner in agent.inner.neighbours(
+            episode, "has_embodied_deployment_program_owner"
+        )
+    )
+    for owner in trajectory_owners:
+        owner_attrs = agent.s.node(owner)["attrs"]
+        transitions = []
+        for transition in agent.inner.neighbours(
+            owner, "has_embodied_program_transition"
+        ):
+            transition_attrs = agent.s.node(transition)["attrs"]
+            if int(transition_attrs.get("verified", 0)) != 1:
+                continue
+            sources = agent.inner.neighbours(
+                transition, "starts_from_embodied_program"
+            )
+            targets = agent.inner.neighbours(
+                transition, "continues_with_embodied_program"
+            )
+            if len(sources) != 1 or len(targets) != 1:
+                continue
+            attrs = {
+                key: transition_attrs[key]
+                for key in trajectory_fields
+                if key in transition_attrs
+            }
+            attrs.update({
+                "source_program_signature": program_signature(sources[0]),
+                "target_program_signature": program_signature(targets[0]),
+                "output_authority": 0,
+            })
+            for program in (sources[0], targets[0]):
+                endpoint = trajectory_endpoint_program_row(program)
+                trajectory_endpoint_programs[json.dumps(
+                    endpoint["attrs"]["signature"],
+                    sort_keys=True,
+                    separators=(",", ":"),
+                )] = endpoint
+            transitions.append({"attrs": attrs})
+        if not transitions:
+            continue
+        transitions.sort(key=lambda row: json.dumps(
+            row["attrs"], sort_keys=True, separators=(",", ":")
+        ))
+        goal = str(owner_attrs.get(
+            "goal", owner_attrs.get("motor_task_context", "locomotion")
+        ))
+        shape = trajectory_shapes_by_goal.setdefault(goal, {
+            "attrs": {
+                "name": f"retained:{goal}",
+                "goal": goal,
+                "motor_task_context": str(owner_attrs.get(
+                    "motor_task_context", goal
+                )),
+                "output_authority": 0,
+                "integer_native": 1,
+            },
+            "transitions": [],
+        })
+        known = trajectory_transition_keys_by_goal.setdefault(goal, set())
+        for transition in transitions:
+            identity = json.dumps(
+                transition, sort_keys=True, separators=(",", ":")
+            )
+            if identity not in known:
+                known.add(identity)
+                shape["transitions"].append(transition)
+    trajectory_shapes = list(trajectory_shapes_by_goal.values())
+    for shape in trajectory_shapes:
+        transition_groups = {}
+        for transition in shape["transitions"]:
+            attrs = transition["attrs"]
+            key = json.dumps(
+                (
+                    attrs["source_program_signature"],
+                    attrs["target_program_signature"],
+                    attrs["pre_orientation_class"],
+                ),
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+            transition_groups.setdefault(key, []).append(transition)
+        for group in transition_groups.values():
+            for axis in ("x", "y", "z"):
+                values = [
+                    int(row["attrs"][f"pre_state_axis_{axis}_units"])
+                    for row in group
+                ]
+                for row in group:
+                    row["attrs"][
+                        f"pre_state_axis_{axis}_minimum_units"
+                    ] = min(values)
+                    row["attrs"][
+                        f"pre_state_axis_{axis}_maximum_units"
+                    ] = max(values)
+        shape["transitions"].sort(key=lambda row: json.dumps(
+            row["attrs"], sort_keys=True, separators=(",", ":")
+        ))
+    trajectory_shapes.sort(key=lambda row: (
+        str(row["attrs"]["goal"]), str(row["attrs"]["name"])
+    ))
+    if trajectory_endpoint_programs:
+        if len(body_shapes) != 1:
+            raise ValueError(
+                "trajectory endpoint consolidation requires one situated "
+                "humanoid body shape"
+            )
+        stored_signatures = {
+            json.dumps(
+                program["attrs"].get("signature")
+                or motor_program_shape_signature(
+                    program["attrs"], program.get("members", [])
+                ),
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+            for program in body_shapes[0]["programs"]
+        }
+        body_shapes[0]["programs"].extend(
+            row
+            for signature, row in sorted(
+                trajectory_endpoint_programs.items()
+            )
+            if signature not in stored_signatures
+        )
+        body_shapes[0]["programs"].sort(key=lambda row: (
+            float(row["attrs"].get("ordinal", 0.0)),
+            str(row["attrs"].get("primary_token", "")),
+            json.dumps(
+                row["attrs"].get("signature", ()),
+                sort_keys=True,
+                separators=(",", ":"),
+            ),
+        ))
     plan_hints = []
     for hint in agent.inner.neighbours(
         agent.agent, "has_embodied_motor_plan_hint_library"
@@ -2391,6 +2813,7 @@ def _motor_library_snapshot(
             developmental_curriculum_contract()
         ),
         "body_shapes": body_shapes,
+        "program_trajectory_shapes": trajectory_shapes,
         "plan_hints": plan_hints,
         "developmental_capabilities": developmental_capabilities,
         "developmental_experiences": developmental_experiences,
@@ -3835,6 +4258,7 @@ def _run_arm(
         )
         for warmup_action in range(maximum_adaptation_actions):
             warmup_actions += 1
+            _service_requested_system_two(agent)
             request_seq += 1
             before = observation
             token, trial, decision = _request_action(
@@ -4192,6 +4616,7 @@ def _run_arm(
                         f"active_request_count={len(agent.inner.neighbours(reset_source, 'has_active_embodied_reset_request'))}"
                     )
                 body_reset_before_action = True
+            _service_requested_system_two(agent)
             request_seq += 1
             before = observation
             # Stamp the state that governs this decision, not the state after
@@ -5248,9 +5673,16 @@ def _run_arm(
             if development_context is not None
             else []
         )
+        deployment_program_owners = agent.inner.neighbours(
+            episode, "has_embodied_deployment_program_owner"
+        )
+        program_trajectory_owners = list({
+            *situated_developmental_capabilities,
+            *deployment_program_owners,
+        })
         program_trajectory_nodes = list({
             trajectory
-            for capability in situated_developmental_capabilities
+            for capability in program_trajectory_owners
             for trajectory in agent.inner.neighbours(
                 capability, "has_embodied_program_trajectory"
             )
@@ -5264,7 +5696,7 @@ def _run_arm(
         ]
         program_transition_nodes = list({
             transition
-            for capability in situated_developmental_capabilities
+            for capability in program_trajectory_owners
             for transition in agent.inner.neighbours(
                 capability, "has_embodied_program_transition"
             )
@@ -5299,21 +5731,21 @@ def _run_arm(
         })
         selected_program_path_nodes = list({
             path
-            for capability in situated_developmental_capabilities
+            for capability in program_trajectory_owners
             for path in agent.inner.neighbours(
                 capability, "has_selected_embodied_program_path"
             )
         })
         capability_current_transition_sources = list({
             transition
-            for capability in situated_developmental_capabilities
+            for capability in program_trajectory_owners
             for transition in agent.inner.neighbours(
                 capability,
                 "has_current_embodied_program_transition_source",
             )
         })
         selected_program_path_rows = []
-        for capability in situated_developmental_capabilities:
+        for capability in program_trajectory_owners:
             capability_attrs = agent.s.node(capability)["attrs"]
             for path in agent.inner.neighbours(
                 capability, "has_selected_embodied_program_path"
@@ -5345,7 +5777,7 @@ def _run_arm(
                 ]
                 selected_program_path_rows.append({
                     "capability": capability_attrs.get(
-                        "name", "unknown"
+                        "name", capability_attrs.get("goal", "unknown")
                     ),
                     "capability_status": capability_attrs.get(
                         "status", "unknown"
@@ -5462,7 +5894,7 @@ def _run_arm(
                 int(agent.s.node(capability)["attrs"].get(
                     "trajectory_replay_count", 0
                 ))
-                for capability in situated_developmental_capabilities
+                for capability in program_trajectory_owners
             ),
             "capability_evidence_transition_count": sum(
                 int(agent.s.node(transition)["attrs"].get(
@@ -6141,9 +6573,86 @@ def _run_arm(
         ),
         key=lambda row: str(row.get("motor_task_context", "general")),
     )
+
+    def deployment_program_context_row(program):
+        attrs = agent.s.node(program)["attrs"]
+        return {
+            "primary_token": attrs.get("primary_token"),
+            "motor_task_context": attrs.get("motor_task_context"),
+            "motor_task_phase": attrs.get("motor_task_phase"),
+            "status": attrs.get("status"),
+            "signature": attrs.get("signature"),
+            "phase_member_tokens": sorted(
+                str(agent.s.node(member)["attrs"].get("token", ""))
+                for member in agent.inner.neighbours(
+                    program, "includes_humanoid_phase_action_model"
+                )
+            ),
+            "library_member_tokens": sorted(
+                str(agent.s.node(member)["attrs"].get("token", ""))
+                for member in agent.inner.neighbours(
+                    program, "has_humanoid_library_motor_member"
+                )
+            ),
+        }
+
+    deployment_owners = agent.inner.neighbours(
+        episode, "has_embodied_deployment_program_owner"
+    )
+    developmental_memory_diagnostics = []
+    if development_context is not None:
+        development_signature = agent.s.node(development_context)["attrs"].get(
+            "body_capability_signature"
+        )
+        instances_by_name = {
+            str(agent.s.node(instance)["attrs"].get("name", "")): instance
+            for instance in agent.inner.neighbours(
+                development_context, "has_embodied_developmental_capability"
+            )
+        }
+        for memory in agent.inner.neighbours(
+            agent.agent, "has_embodied_developmental_capability_memory"
+        ):
+            memory_attrs = agent.s.node(memory)["attrs"]
+            capability_name = str(memory_attrs.get("capability_name", ""))
+            instance = instances_by_name.get(capability_name)
+            instance_attrs = (
+                agent.s.node(instance)["attrs"] if instance is not None else {}
+            )
+            developmental_memory_diagnostics.append({
+                "capability_name": capability_name,
+                "instance_present": int(instance is not None),
+                "signature_matches": int(
+                    memory_attrs.get("signature") == development_signature
+                ),
+                "goal_matches": int(
+                    instance is not None
+                    and memory_attrs.get("goal") == instance_attrs.get("goal")
+                ),
+                "evidence_kind_matches": int(
+                    instance is not None
+                    and memory_attrs.get("evidence_kind")
+                    == instance_attrs.get("evidence_kind")
+                ),
+                "instance_attempt_count": int(instance_attrs.get(
+                    "attempt_count", 0
+                )),
+                "instance_status": instance_attrs.get("status"),
+                "exact_recall_edge_count": (
+                    len(agent.inner.neighbours(
+                        instance,
+                        "recalls_exact_embodied_developmental_capability",
+                    ))
+                    if instance is not None else 0
+                ),
+            })
+        developmental_memory_diagnostics.sort(
+            key=lambda row: row["capability_name"]
+        )
     result = {
         "curriculum_rule_costs": rule_cost_rows,
         "developmental_reset_diagnostics": developmental_reset_diagnostics,
+        "developmental_memory_diagnostics": developmental_memory_diagnostics,
         "mode": mode,
         "developmental_curriculum_contract": current_developmental_contract,
         "developmental_curriculum_contract_digest": (
@@ -6633,6 +7142,49 @@ def _run_arm(
         "motor_library_loaded_program_count": restored_library[
             "program_count"
         ],
+        "motor_library_loaded_program_trajectory_shape_count": (
+            restored_library.get("program_trajectory_shape_count", 0)
+        ),
+        "motor_library_loaded_program_trajectory_transition_count": (
+            restored_library.get("program_trajectory_transition_count", 0)
+        ),
+        "deployment_program_owner_count": len(agent.inner.neighbours(
+            episode, "has_embodied_deployment_program_owner"
+        )),
+        "deployment_program_owner_current_context_count": sum(
+            len(agent.inner.neighbours(
+                owner, "has_current_embodied_program"
+            ))
+            for owner in agent.inner.neighbours(
+                episode, "has_embodied_deployment_program_owner"
+            )
+        ),
+        "deployment_program_owner_trajectory_count": sum(
+            len(agent.inner.neighbours(
+                owner, "has_embodied_program_trajectory"
+            ))
+            for owner in agent.inner.neighbours(
+                episode, "has_embodied_deployment_program_owner"
+            )
+        ),
+        "deployment_program_context_diagnostics": {
+            "last_verified": [
+                deployment_program_context_row(program)
+                for program in agent.inner.neighbours(
+                    episode, "last_verified_humanoid_motor_program"
+                )
+            ],
+            "retained_sources": [
+                deployment_program_context_row(program)
+                for owner in deployment_owners
+                for transition in agent.inner.neighbours(
+                    owner, "has_embodied_program_transition"
+                )
+                for program in agent.inner.neighbours(
+                    transition, "starts_from_embodied_program"
+                )
+            ],
+        },
         "motor_library_loaded_plan_hint_count": restored_library.get(
             "plan_hint_count", 0
         ),

@@ -5963,6 +5963,30 @@
      {
       "type": "Eq",
       "a": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "key": "development_learning_active"
+        },
+        {
+         "type": "Lit",
+         "value": 0
+        }
+       ]
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
        "type": "Count",
        "source": {
         "type": "Neighbours",
@@ -11996,6 +12020,110 @@
      {
       "type": "Eq",
       "a": {
+       "type": "Count",
+       "source": {
+        "type": "Filter",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "agent"
+         },
+         "edge_type": "has_embodied_developmental_capability_memory",
+         "any_type": false
+        },
+        "var_name": "exact_mastery_memory",
+        "predicate": {
+         "type": "And",
+         "items": [
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "instance"
+            },
+            "key": "name"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "exact_mastery_memory"
+            },
+            "key": "capability_name"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "instance"
+            },
+            "key": "goal"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "exact_mastery_memory"
+            },
+            "key": "goal"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "instance"
+            },
+            "key": "evidence_kind"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "exact_mastery_memory"
+            },
+            "key": "evidence_kind"
+           }
+          },
+          {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "exact_mastery_memory"
+            },
+            "key": "signature"
+           },
+           "b": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "key": "body_capability_signature"
+           }
+          }
+         ]
+        }
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
        "type": "Attr",
        "node": {
         "type": "Var",
@@ -13847,8 +13975,8 @@
    "area": "general_cognition",
    "latency_class": "hard_realtime",
    "order": -1000,
-   "batch": false,
-   "comment": "An exact structural body reopens a retained ability at the verification boundary during learning. In an explicitly declared deployment episode, exact-body identity closes the finite developmental prior immediately; actuator output remains governed by the separate situated motor manifold gate. Cross-body recall still requires local verification.",
+   "batch": true,
+   "comment": "An exact structural body preserves retained curriculum mastery. This restores an output-null developmental fact, never an actuator command; situated motor authority remains governed by the separate manifold gate. Cross-body recall still requires local verification.",
    "match": [
     [
      "agent",
@@ -14001,43 +14129,7 @@
      "set_attr",
      "instance",
      "status",
-     {
-      "__term__": {
-       "type": "IfThenElse",
-       "cond": {
-        "type": "Eq",
-        "a": {
-         "type": "Plus",
-         "items": [
-          {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "episode"
-           },
-           "key": "developmental_deployment_mode"
-          },
-          {
-           "type": "Lit",
-           "value": 0
-          }
-         ]
-        },
-        "b": {
-         "type": "Lit",
-         "value": 1
-        }
-       },
-       "then": {
-        "type": "Lit",
-        "value": "mastered"
-       },
-       "other": {
-        "type": "Lit",
-        "value": "retention_due"
-       }
-      }
-     }
+     "mastered"
     ],
     [
      "set_attr",
@@ -14087,43 +14179,7 @@
      "set_attr",
      "instance",
      "warm_start_requires_verification",
-     {
-      "__term__": {
-       "type": "IfThenElse",
-       "cond": {
-        "type": "Eq",
-        "a": {
-         "type": "Plus",
-         "items": [
-          {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "episode"
-           },
-           "key": "developmental_deployment_mode"
-          },
-          {
-           "type": "Lit",
-           "value": 0
-          }
-         ]
-        },
-        "b": {
-         "type": "Lit",
-         "value": 1
-        }
-       },
-       "then": {
-        "type": "Lit",
-        "value": 0
-       },
-       "other": {
-        "type": "Lit",
-        "value": 1
-       }
-      }
-     }
+     0
     ],
     [
      "set_attr",
@@ -14143,6 +14199,39 @@
             "name": "episode"
            },
            "key": "developmental_exact_body_recall_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "episode",
+     "embodied_developmental_mastery_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "embodied_developmental_mastery_count"
           },
           {
            "type": "Lit",
