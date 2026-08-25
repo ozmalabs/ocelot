@@ -1311,6 +1311,7 @@ def run_staged(
     library_in: Path | None = None,
     trajectory_library_in: Path | None = None,
     drop_program_trajectories: bool = False,
+    drop_recovery_paths: bool = False,
     foveated_exploration_authority: bool = False,
 ) -> dict:
     """Run exactly one arm at a finite checkpoint.
@@ -1338,7 +1339,9 @@ def run_staged(
             "trajectory graft and trajectory ablation are mutually exclusive"
         )
     if mode == "training" and (
-        trajectory_library_in is not None or drop_program_trajectories
+        trajectory_library_in is not None
+        or drop_program_trajectories
+        or drop_recovery_paths
     ):
         raise ValueError(
             "trajectory graft or ablation requires a retained input library"
@@ -1405,6 +1408,22 @@ def run_staged(
                 retained_library, protocol
             )
             input_library_metadata["trajectory_variant"] = "ablated"
+        if drop_recovery_paths:
+            retained_library = deepcopy(retained_library)
+            removed_recovery_edges = 0
+            for shape in retained_library.get("body_shapes", ()):
+                for basin in shape.get("recovery_basins", ()):
+                    removed_recovery_edges += len(
+                        basin.get("successor_slots", ())
+                    )
+                    basin["successor_slots"] = []
+            input_library_metadata = _library_metadata(
+                retained_library, protocol
+            )
+            input_library_metadata["recovery_path_variant"] = "ablated"
+            input_library_metadata[
+                "removed_recovery_successor_edge_count"
+            ] = removed_recovery_edges
     configured = _configure(
         protocol,
         action_budget,
@@ -1466,6 +1485,7 @@ def run_staged(
             if trajectory_library_in is not None else None
         ),
         "program_trajectories_ablated": bool(drop_program_trajectories),
+        "recovery_paths_ablated": bool(drop_recovery_paths),
         "library_out": (
             str(library_path) if mode in {"training", "continue"} else None
         ),
@@ -1706,6 +1726,14 @@ def main() -> int:
         action="store_true",
         help="probe the retained library with program trajectories removed",
     )
+    parser.add_argument(
+        "--drop-recovery-paths",
+        action="store_true",
+        help=(
+            "probe a retained library with recovery successor edges removed "
+            "while preserving its basin and action evidence"
+        ),
+    )
     parser.add_argument("--json-out", type=Path)
     parser.add_argument(
         "--counterfactual-treatment-authority",
@@ -1750,6 +1778,7 @@ def main() -> int:
             library_in=args.library_in,
             trajectory_library_in=args.trajectory_library_in,
             drop_program_trajectories=args.drop_program_trajectories,
+            drop_recovery_paths=args.drop_recovery_paths,
             foveated_exploration_authority=(
                 args.foveated_exploration_authority
             ),
