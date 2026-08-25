@@ -21,6 +21,26 @@ The escape lives in dimension 1, which is the dimension stress removes.
 resolved and stays in the tube, so its retention genuinely is established. The compressed agent is
 partially blind, not globally blind, and the record says so.
 
+> **CONDITIONED, one rung later — read this before quoting the table below.**
+> "Stress compresses aperture" names **two** mechanically different things, and this document
+> measured only one:
+>
+> * **A — DIMENSIONAL.** A dimension you could resolve is removed. **Stipulated**: something must
+>   supply the mask, and nothing in the substrate derives it. *This is what was measured here.*
+> * **B — TEMPORAL.** How far ahead you can audit shortens. **Derived**: the projection budget is
+>   already a represented resource.
+>
+> Both raise `information_loss`, both zero `resolved`, and from outside they present as one deficit.
+> But **`G-evidence-is-inert` is a property of A, and would have FAILED under B** — measured:
+> dimensional compression is still unresolved at 64× budget, while temporal compression recovers
+> completely at 8× and sees the escape. The headline below is therefore about a stipulated mechanism,
+> not about stress.
+>
+> They are separable in the record without any intervention (`retained_width`: A leaves other
+> dimensions retained, B establishes nothing) and graded differently (B's deficit moves with the
+> resource, A's is flat). See `COMPRESSION_MODELS_RESULTS.md`; gate
+> `tests/test_compression_models_migrated.py` 5/5.
+
 ## G-evidence-is-inert — the gate the claim lives on
 
 | evidence strength | 1.0 | 3.0 | 8.0 | 32.0 | 128.0 |
