@@ -8021,6 +8021,12 @@ def _run_arm(
         "recovery_recall_admissible_origin_count": final.get(
             "recovery_recall_admissible_origin_count", 0.0
         ),
+        "recovery_recall_geometric_admissible_origin_count": final.get(
+            "recovery_recall_geometric_admissible_origin_count", 0.0
+        ),
+        "recovery_recall_risk_blocked_origin_count": final.get(
+            "recovery_recall_risk_blocked_origin_count", 0.0
+        ),
         **{
             f"recovery_recall_{coordinate}_blocked_origin_count": final.get(
                 f"recovery_recall_{coordinate}_blocked_origin_count", 0.0

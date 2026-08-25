@@ -89,6 +89,13 @@ def test_recalled_recovery_transition_uses_receipt_shape_width():
     assert "incoming_primary_token" in json.dumps(rule["where"])
     assert "incoming_secondary_token" in json.dumps(rule["where"])
     assert "incoming_response_frames" in json.dumps(rule["where"])
+    assert "developmental_deployment_mode" in json.dumps(rule["where"])
+    for field in (
+        "post_normalized_height", "post_vertical_alignment",
+        "post_support_count", "post_contact_count", "post_motion_energy",
+        "mean_normalized_energy", "mean_normalized_peak_load",
+    ):
+        assert field in json.dumps(rule["where"])
     assert "launch_manifold_shape_residual" in release
     assert "launch_manifold_projected_shape_residual" in release
     assert "replay_effort_ratio" in release
@@ -102,6 +109,15 @@ def test_recalled_recovery_transition_uses_receipt_shape_width():
     )
     assert "continues_to_humanoid_recovery_basin" in storage
     assert "incoming_primary_token" in recall
+    assert "recovery_recall_geometric_admissible_origin_count" in recall
+    assert "recovery_recall_risk_blocked_origin_count" in recall
+
+    fallback = json.dumps(
+        _rule(seed, "ha_test_prior_recovery_basin_hint")["where"]
+    )
+    assert "developmental_deployment_mode" in fallback
+    assert "transition_normalized_energy" in fallback
+    assert "transition_normalized_peak_load" in fallback
 
 
 def test_post_sweep_pareto_choice_focuses_one_context_dimension():
@@ -162,6 +178,107 @@ def test_recovery_warm_start_targets_its_observed_post_shape():
         "contact_count", "motion_energy",
     ):
         assert f"target_{coordinate}" in program
+
+
+def test_deployment_recovery_path_yields_to_dominating_local_receipt():
+    from scripts.jabberwock_humanoid_adaptation import _edge
+
+    signature = (("body", 3, 2, 1), ("support", 0, 1))
+    agent, episode = _motor_library_fixture(signature)
+    agent.tick()
+
+    origin = agent.s.add_node("HumanoidRecoveryBasin", {
+        "ordinal": 1.0,
+        "status": "situated",
+    })
+    safer = agent.s.add_node("HumanoidRecoveryBasinAction", {
+        "primary_token": "safer_local",
+        "secondary_token": "safer_local",
+        "member_count": 1.0,
+        "experience_count": 1.0,
+        "mean_height_gain": 0.1,
+        "mean_alignment_gain": 0.1,
+        "mean_support_gain": 1.0,
+        "mean_contact_gain": 1.0,
+        "mean_motion_reduction": 1.0,
+        "mean_translation_gain": 0.0,
+        "mean_whole_body_support_gain": 0.0,
+        "mean_normalized_energy": 0.1,
+        "mean_normalized_peak_load": 0.5,
+        "response_frames": 8.0,
+        "motor_weight_a": 1.0,
+        "motor_weight_b": 1.0,
+        "post_normalized_height": 0.5,
+        "post_vertical_alignment": 0.5,
+        "post_support_count": 2.0,
+        "post_contact_count": 4.0,
+        "post_motion_energy": 0.1,
+    })
+    successor = agent.s.add_node("HumanoidRecoveryBasin", {
+        "ordinal": 2.0,
+        "status": "situated",
+        "incoming_primary_token": "riskier_path",
+        "incoming_secondary_token": "riskier_path",
+        "incoming_response_frames": 8.0,
+        "incoming_motor_weight_a": 1.0,
+        "incoming_motor_weight_b": 1.0,
+        "incoming_normalized_height": 0.2,
+        "incoming_vertical_alignment": 0.0,
+        "incoming_support_count": 1.0,
+        "incoming_contact_count": 2.0,
+        "incoming_motion_energy": 0.0,
+        "normalized_height": 0.4,
+        "vertical_alignment": 0.4,
+        "support_count": 1.0,
+        "contact_count": 3.0,
+        "motion_energy": 0.2,
+        "transition_normalized_energy": 0.2,
+        "transition_normalized_peak_load": 1.0,
+    })
+    current = agent.s.add_node("HumanoidRecoveryBasin", {
+        "ordinal": 1.0,
+        "status": "situated",
+        "warm_start_tested": 0.0,
+    })
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "developmental_deployment_mode": 1.0,
+        "development_learning_active": 0.0,
+    })
+    _edge(agent, origin, "has_humanoid_recovery_basin_action", safer)
+    _edge(agent, origin, "continues_to_humanoid_recovery_basin", successor)
+    _edge(agent, current, "inherits_humanoid_recovery_actions_from", origin)
+    _edge(agent, episode, "has_humanoid_recovery_basin", current)
+    _edge(agent, episode, "has_current_humanoid_recovery_basin", current)
+    _edge(agent, episode, "projects_embodied_development", development)
+
+    for key, value in {
+        "phase": "locomotion",
+        "recovery_mode": 1.0,
+        "upright": 0.0,
+        "action_ready": 0.0,
+        "reset_requested": 0.0,
+        "state_z": 0.2,
+        "state_qx": 0.0,
+        "state_qy": 0.0,
+        "state_qz": 0.0,
+        "state_qw": 1.0,
+        "state_vx": 0.0,
+        "state_vy": 0.0,
+        "state_vz": 0.0,
+        "state_wx": 0.0,
+        "state_wy": 0.0,
+        "active_support_count": 1.0,
+        "state_contact_count_raw": 2.0,
+        "request_seq": 1.0,
+    }.items():
+        agent.inner.set_attr(episode, key, value)
+
+    agent.tick()
+
+    attrs = agent.s.node(episode)["attrs"]
+    assert attrs["selected_token"] == "safer_local"
+    assert attrs.get("recovery_path_hint_count", 0.0) == 0.0
+    assert attrs["recovery_warm_start_count"] == 1.0
 
 
 def test_warm_repertoire_cannot_buy_authority_with_a_fall():
