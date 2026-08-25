@@ -5961,6 +5961,18 @@ def _run_arm(
                     )
                     for program in target_programs
                 ),
+                "last_task_effect_residual_units": path_attrs.get(
+                    "last_task_effect_residual_units", 0
+                ),
+                "last_projected_task_effect_units": path_attrs.get(
+                    "last_projected_task_effect_units", 0
+                ),
+                "last_realized_task_effect_units": path_attrs.get(
+                    "last_realized_task_effect_units", 0
+                ),
+                "last_forecast_refutation_kind": path_attrs.get(
+                    "last_forecast_refutation_kind"
+                ),
                 **{
                     field: path_attrs.get(
                         f"last_manifold_projection_{field}"

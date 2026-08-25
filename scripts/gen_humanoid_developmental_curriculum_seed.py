@@ -4859,6 +4859,13 @@ def refute_retained_trajectory_forecast_from_receipt_rule():
         ))
         for axis in ("x", "y", "z")
     ))
+    task_effect_residual = Max(
+        L(0),
+        Minus(
+            P0("transition", "task_progress_units"),
+            P0("outcome", "development_directed_units"),
+        ),
+    )
     return {
         "name": "hdc_refute_retained_trajectory_forecast_from_receipt",
         "area": "humanoid_sensorimotor_adaptation",
@@ -4867,8 +4874,10 @@ def refute_retained_trajectory_forecast_from_receipt_rule():
         "batch": False,
         "comment": "A retained transition is contextually refuted when its "
         "measured endpoint lies farther from the stored endpoint shape than "
-        "the body lay from its stored entry shape. This compares a residual "
-        "ratio without a magic tolerance and never rewrites retained evidence.",
+        "the body lay from its stored entry shape, or when its realized task "
+        "effect falls short of its receipt-grounded task projection. Both are "
+        "ordinal residuals without a magic tolerance; retained evidence is "
+        "never rewritten.",
         "match": [
             ["episode", "has_embodied_deployment_program_owner", "owner"],
             ["episode", "projects_embodied_development", "development"],
@@ -4885,9 +4894,12 @@ def refute_retained_trajectory_forecast_from_receipt_rule():
                 P0("trial", "request_seq"),
                 P0("path", "trajectory_replay_issued_seq"),
             ),
-            Gt(
-                endpoint_residual,
-                P0("transition", "current_state_shape_residual_units"),
+            Or(
+                Gt(
+                    endpoint_residual,
+                    P0("transition", "current_state_shape_residual_units"),
+                ),
+                Gt(task_effect_residual, L(0)),
             ),
             Eq(Count(Filter(
                 Neighbours(
@@ -4907,6 +4919,20 @@ def refute_retained_trajectory_forecast_from_receipt_rule():
             ["set_attr", "path", "last_endpoint_shape_residual_units", T(
                 endpoint_residual
             )],
+            ["set_attr", "path", "last_task_effect_residual_units", T(
+                task_effect_residual
+            )],
+            ["set_attr", "path", "last_projected_task_effect_units", T(
+                P0("transition", "task_progress_units")
+            )],
+            ["set_attr", "path", "last_realized_task_effect_units", T(
+                P0("outcome", "development_directed_units")
+            )],
+            ["set_attr", "path", "last_forecast_refutation_kind", T(If(
+                Gt(task_effect_residual, L(0)),
+                L("task_effect_shortfall"),
+                L("endpoint_shape_residual"),
+            ))],
             ["set_attr", "path", "manifold_rejection_count", T(Plus(
                 P0("path", "manifold_rejection_count"), L(1)
             ))],
