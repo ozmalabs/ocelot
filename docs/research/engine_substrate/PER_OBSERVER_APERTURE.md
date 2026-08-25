@@ -88,14 +88,69 @@ Audited: every `codebook_scope` site in the tree — `can_native_reimplementatio
 **No seed passes a literal empty list.** So separating the two cases changes nothing that currently
 runs, and gives a social experiment the primitive it needs.
 
-## Not done
+## FIXED
 
-The change alters documented, intentional engine semantics on `ShapeDecode`'s path, so it is
-recorded here rather than made. What is needed to make it is small; what is needed to make it
-*safely* is the both-modes comparison this tree already expects of an engine default, and a decision
-that `[]` ≠ absent is the contract you want.
+`apply_scope` now distinguishes the two cases, via a named predicate so the semantics are testable
+without constructing a codebook:
 
-Also unmeasured: whether `wild_objects` is the right aperture knob for social use at all. It is
-all-or-nothing per call, and `CLAUDE.md` records the codebook-side wildcard path as **retired** for
-conflating consistent substitution with incoherent novelty — so a graded per-observer aperture, as
-opposed to a graded per-observer RANGE, has no mechanism here yet.
+```rust
+fn scope_is_declared(sc_val: &Value) -> bool { !matches!(sc_val, Value::None) }
+```
+
+`Value::None` — a scope asked for but the attribute absent — stays unrestricted, preserving
+`reflex_net`. Anything else, **including a present-but-empty collection**, restricts. The doc comment
+that claimed the mirroring is corrected in place: scope and exclude are DUALS, so excluding an empty
+set is a no-op while scoping to one is total restriction, and mirroring them was the error.
+
+Measured after: `scope []` goes from **2 (the whole codebook)** to seeing nothing, and the
+graph-native social case now reads engineer 2 / mathematician 0 / **child (knows nothing) nothing**.
+Rust lib suite **792 passed, 0 failed**, including the new
+`an_empty_scope_is_a_declaration_but_a_none_scope_is_not`.
+
+The resulting distinction is meaningful rather than sloppy: `None` means *nothing is in your scope at
+all* (the same as naming a part that does not exist), while `0` means *something is in scope but does
+not cover this*.
+
+## Started: graded per-observer APERTURE, as a QUOTIENT rather than a wildcard
+
+`wild_objects` is all-or-nothing per call, and `CLAUDE.md` records the codebook-side wildcard path as
+**retired** for conflating consistent substitution with incoherent novelty. The retirement is right,
+and it points at the correct operation: WILD means *"matches anything"*, which discards WHICH
+substitution occurred. Limited perception is not that. It is **"these are the same thing to me"** —
+a quotient.
+
+So: project a signature onto the dimensions the observer resolves, replacing unresolved slots with a
+CONSTANT rather than a wildcard, and match LITERALLY. Two shapes differing only in dimensions an
+observer cannot resolve become literally equal *for that observer* — an honest equivalence class,
+claiming nothing about what filled the slot.
+
+**Validated.** Four world shapes, three observers:
+
+| observer | distinguishable things |
+|---|---|
+| expert (all slots) | 4 of 4 |
+| layman (predicate + subject) | 4 of 4 |
+| **glancer (predicate only)** | **2 of 4** — aileron/throttle/tiller collapse into one class, still distinct from `colour` |
+
+**And it needs NO new Rust.** The vocabulary is already there: real codebooks tag every slot with
+`dim_types`, populated across the corpus as `val` 789, `pred` 263, `idx` 263 — a ready-made
+three-level aperture. The projection composes from existing Terms:
+
+```
+MapList(over relations,
+        ZipWith(slot, dim_type,
+                IfThenElse(In(dim_type, resolved), slot, marker)))
+```
+
+Measured live: expert `{pred,val}` keeps full detail; glancer `{pred}` renders
+`[["controls","·","·"], ["controls","·","·"]]` — the two relations now literally identical.
+
+### What remains for the full build
+
+* the observer's resolved `dim_types` as graph data on the observer node, and a rule that projects
+  through it — the `codebook_scope = Attr(who, "knows")` pattern, one level down;
+* projecting the CODEBOOK as well as the goal, so an observer decodes its own quotient of the world
+  rather than a quotiented goal against full-detail parts;
+* and the question this has not touched: whether a projected decode should be able to MINT. On the
+  quotient reading it must not — an observer minting from what it cannot resolve is inventing
+  detail, which is the target-grain wishful-thinking failure in another costume.

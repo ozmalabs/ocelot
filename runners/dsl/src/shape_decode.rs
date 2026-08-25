@@ -962,14 +962,35 @@ fn apply_exclude(
 
 /// `apply_scope` — the inclusion twin of `apply_exclude`. RESTRICTS the
 /// codebook to parts whose own `name` is in the `codebook_scope` set (a
+/// Does this evaluated `codebook_scope` value DECLARE a scope?
+///
+/// `Value::None` does not — a scope was asked for but the attribute is absent,
+/// which leaves the codebook unrestricted. That is load-bearing:
+/// `seeds/reflex_net.json` passes `codebook_scope = Attr(rn, basin_parts)` while
+/// no node in that seed carries a `basin_parts` attribute, so every net takes
+/// this path.
+///
+/// EVERYTHING ELSE DOES, INCLUDING AN EMPTY COLLECTION. "This observer knows
+/// nothing" is a declaration, not the absence of one, and it must restrict to
+/// nothing. The previous behaviour let an empty scope fall through an
+/// `!is_empty()` guard and leave the codebook UNRESTRICTED, so the
+/// least-informed observer scored the whole codebook's maximum — silently, and
+/// inverted. See `PER_OBSERVER_APERTURE.md`.
+fn scope_is_declared(sc_val: &Value) -> bool {
+    !matches!(sc_val, Value::None)
+}
+
 /// set of part names, case-insensitive), so a decode can run against a
 /// PER-NET basin subset of a shared codebook (e.g. a reflex net's own
-/// `basin_parts`) rather than every part of the type. A `None` scope, or
-/// one evaluating to an empty set, leaves the codebook unrestricted —
-/// exactly mirroring `apply_exclude`'s `!excl.is_empty()` guard, so a net
-/// with no declared basin decodes against the whole codebook (backward
-/// compatible: every existing `ShapeDecode` without `codebook_scope` is
-/// unchanged).
+/// `basin_parts`) rather than every part of the type. An ABSENT scope, or one
+/// evaluating to `Value::None`, leaves the codebook unrestricted — so a net with
+/// no declared basin decodes against the whole codebook, and every existing
+/// `ShapeDecode` without `codebook_scope` is unchanged.
+///
+/// A PRESENT-BUT-EMPTY scope restricts to NOTHING. It does not mirror
+/// `apply_exclude`'s `!excl.is_empty()` guard, because scope and exclude are
+/// DUALS: excluding an empty set is a no-op, scoping to an empty set is total
+/// restriction.
 fn apply_scope(
     parts: &mut Vec<Part>,
     scope_idx: Option<TermIdx>,
@@ -979,10 +1000,28 @@ fn apply_scope(
 ) {
     let Some(sc_idx) = scope_idx else { return };
     let sc_val = evaluate(arena, sc_idx, env, ctx);
-    let scope = collect_part_names(&sc_val, ctx, "codebook_scope");
-    if !scope.is_empty() {
-        parts.retain(|p| scope.contains(&p.name.to_lowercase()));
+    // `Value::None` — a scope was ASKED FOR but the attribute is absent — stays
+    // "no scope declared" and leaves the codebook unrestricted. That is the
+    // load-bearing case and the only one: `seeds/reflex_net.json` passes
+    // `codebook_scope = Attr(rn, basin_parts)` while NO node in that seed
+    // carries a `basin_parts` attribute at all, so every net takes this path.
+    if !scope_is_declared(&sc_val) {
+        return;
     }
+    // A PRESENT-BUT-EMPTY scope is a different statement: "this observer knows
+    // nothing". It must restrict to nothing.
+    //
+    // This used to fall through the `!scope.is_empty()` guard below and leave
+    // the codebook UNRESTRICTED, documented as "exactly mirroring
+    // `apply_exclude`'s `!excl.is_empty()` guard". The mirroring was the error:
+    // scope and exclude are DUALS, so their empty cases are not symmetric.
+    // Excluding an empty set is correctly a no-op; scoping to an empty set is
+    // TOTAL restriction. Conflating them made the least-informed observer the
+    // most privileged one — measured, an agent scoped to `[]` scored the whole
+    // codebook's maximum — which is the one inversion a social experiment
+    // cannot tolerate, and it was silent. See PER_OBSERVER_APERTURE.md.
+    let scope = collect_part_names(&sc_val, ctx, "codebook_scope");
+    parts.retain(|p| scope.contains(&p.name.to_lowercase()));
 }
 
 /// One `plan` entry — the Rust twin of `compose_design_for_goal`'s
@@ -8928,5 +8967,34 @@ mod meta_shape_first_class_tests {
             _ => Vec::new(),
         };
         assert_eq!(got, vec!["buyer".to_string(), "lot".to_string()]);
+    }
+
+
+    /// AN OBSERVER WHO KNOWS NOTHING MUST SEE NOTHING.
+    ///
+    /// A present-but-EMPTY `codebook_scope` used to fall through an
+    /// `!is_empty()` guard and leave the codebook UNRESTRICTED — documented as
+    /// mirroring `apply_exclude`. The mirroring was the error: scope and exclude
+    /// are DUALS, so excluding an empty set is a no-op while scoping to one is
+    /// TOTAL restriction. The effect was that the least-informed observer scored
+    /// the whole codebook's maximum, silently — the one inversion a social
+    /// simulation cannot tolerate.
+    ///
+    /// `Value::None` must stay unrestricted, and that half is load-bearing:
+    /// `seeds/reflex_net.json` passes `Attr(rn, basin_parts)` while no node in
+    /// that seed carries the attribute, so every net takes that path.
+    #[test]
+    fn an_empty_scope_is_a_declaration_but_a_none_scope_is_not() {
+        use crate::value::Value;
+
+        assert!(!scope_is_declared(&Value::None),
+                "Value::None must leave the codebook unrestricted (reflex_net)");
+
+        assert!(scope_is_declared(&Value::List(std::sync::Arc::new(Default::default()))),
+                "a PRESENT-BUT-EMPTY scope declares 'knows nothing' and must restrict");
+
+        assert!(scope_is_declared(&Value::List(std::sync::Arc::new(
+                    smallvec::smallvec![Value::Str(Sym::default())]))),
+                "a named scope declares a restriction");
     }
 }
