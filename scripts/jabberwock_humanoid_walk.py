@@ -833,6 +833,63 @@ def _coalesce_library_rows(
     return list(selected.values())
 
 
+def _recovery_basin_row_identity(row: dict[str, Any]) -> str:
+    """Name a situated basin independently of row-local successor slots."""
+    attrs = row.get("attrs", row)
+    identity = (
+        attrs.get("ordinal"),
+        attrs.get("configuration_shape"),
+        attrs.get("incoming_primary_token"),
+        attrs.get("incoming_secondary_token"),
+        attrs.get("incoming_support_count"),
+        attrs.get("incoming_contact_count"),
+        attrs.get("incoming_motion_energy"),
+    )
+    return json.dumps(identity, sort_keys=True, separators=(",", ":"))
+
+
+def _coalesce_recovery_basin_rows(
+    duplicate_shapes: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Merge basin evidence after resolving each shape-local edge slot."""
+    selected: dict[str, dict[str, Any]] = {}
+    successor_identities: dict[str, set[str]] = {}
+    for shape in duplicate_shapes:
+        basins = shape.get("recovery_basins", ())
+        identities = [_recovery_basin_row_identity(row) for row in basins]
+        for slot, row in enumerate(basins):
+            identity = identities[slot]
+            previous = selected.get(identity)
+            if previous is None or _library_row_preference(row) > (
+                _library_row_preference(previous)
+            ):
+                selected[identity] = row
+            successors = successor_identities.setdefault(identity, set())
+            for successor_slot in row.get("successor_slots", ()):
+                successor_index = int(successor_slot)
+                if successor_index < 0 or successor_index >= len(identities):
+                    raise ValueError(
+                        "recovery basin successor slot is outside its shape "
+                        f"library during coalescence: {successor_index}"
+                    )
+                successors.add(identities[successor_index])
+
+    ordered_identities = list(selected)
+    slots = {
+        identity: slot for slot, identity in enumerate(ordered_identities)
+    }
+    merged = []
+    for identity in ordered_identities:
+        row = dict(selected[identity])
+        row["successor_slots"] = sorted(
+            slots[successor]
+            for successor in successor_identities.get(identity, ())
+            if successor in slots
+        )
+        merged.append(row)
+    return merged
+
+
 def _coalesce_body_shape_rows(
     rows: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
@@ -867,6 +924,11 @@ def _coalesce_body_shape_rows(
         preferred = max(duplicates, key=_library_row_preference)
         combined = {"attrs": dict(preferred.get("attrs", {}))}
         for collection, identity_fields in child_identities.items():
+            if collection == "recovery_basins":
+                combined[collection] = _coalesce_recovery_basin_rows(
+                    duplicates
+                )
+                continue
             children = [
                 child
                 for duplicate in duplicates
@@ -2271,6 +2333,23 @@ def _motor_library_snapshot(
                 recovery_basin_identity(basin),
                 [],
             ).append(basin)
+        topology_recovery_basins = list(all_stored_recovery_basins)
+        for recovery_episode in agent.s.nodes("HumanoidEpisode"):
+            if shape not in agent.inner.neighbours(
+                recovery_episode,
+                "recognizes_humanoid_body_shape",
+            ):
+                continue
+            topology_recovery_basins.extend(agent.inner.neighbours(
+                recovery_episode,
+                "has_humanoid_recovery_basin",
+            ))
+        topology_recovery_basin_groups = {}
+        for topology_basin in dict.fromkeys(topology_recovery_basins):
+            topology_recovery_basin_groups.setdefault(
+                recovery_basin_identity(topology_basin),
+                [],
+            ).append(topology_basin)
         selected_by_identity = {
             identity: max(
                 members,
@@ -2292,10 +2371,6 @@ def _motor_library_snapshot(
                 str(basin),
             ),
         )
-        selected_for_basin = {
-            basin: selected_by_identity[recovery_basin_identity(basin)]
-            for basin in all_stored_recovery_basins
-        }
         recovery_basin_slots = {
             basin: slot
             for slot, basin in enumerate(stored_recovery_basins)
@@ -2327,16 +2402,23 @@ def _motor_library_snapshot(
                 "attrs": basin_attrs,
                 "actions": actions,
                 "successor_slots": sorted({
-                    recovery_basin_slots[selected_for_basin[successor]]
-                    for equivalent in recovery_basin_groups[
+                    recovery_basin_slots[
+                        selected_by_identity[
+                            recovery_basin_identity(successor)
+                        ]
+                    ]
+                    for equivalent in topology_recovery_basin_groups[
                         recovery_basin_identity(basin)
                     ]
                     for successor in agent.inner.neighbours(
                         equivalent,
                         "continues_to_humanoid_recovery_basin",
                     )
-                    if successor in selected_for_basin
-                    and selected_for_basin[successor] in recovery_basin_slots
+                    if recovery_basin_identity(successor)
+                    in selected_by_identity
+                    and selected_by_identity[
+                        recovery_basin_identity(successor)
+                    ] in recovery_basin_slots
                 }),
             })
         if (
@@ -5055,6 +5137,23 @@ def _run_arm(
                 "energetic_window_seq": receipt_energetic_window_seq,
                 "response_frames": decision["selected_response_frames"],
                 "decision_kind": decision["decision_kind"],
+                "recovery_promotion_audited": int(trial_after.get(
+                    "recovery_promotion_audited", 0
+                )),
+                **{
+                    f"recovery_promotion_{name}": int(trial_after.get(
+                        f"recovery_promotion_{name}", 0
+                    ))
+                    for name in (
+                        "alphabet_exhausted", "compound",
+                        "outcome_progress", "postural_progress",
+                        "pareto_novel", "configuration_changed",
+                        "metastable_or_supported", "fallen",
+                        "structural_ready", "progress_ready",
+                        "novel_shape_ready", "physical_boundary_ready",
+                        "cumulative_boundary_ready",
+                    )
+                },
                 "collapse_kind": decision.get(
                     "selected_collapse_kind",
                     trial_after.get("collapse_kind", "unclassified"),
@@ -7910,6 +8009,27 @@ def _run_arm(
         "recovery_path_hint_count": final.get(
             "recovery_path_hint_count", 0.0
         ),
+        "recovery_recall_useful_basin_count": final.get(
+            "recovery_recall_useful_basin_count", 0.0
+        ),
+        "recovery_recall_successor_origin_count": final.get(
+            "recovery_recall_successor_origin_count", 0.0
+        ),
+        "recovery_recall_replayable_successor_origin_count": final.get(
+            "recovery_recall_replayable_successor_origin_count", 0.0
+        ),
+        "recovery_recall_admissible_origin_count": final.get(
+            "recovery_recall_admissible_origin_count", 0.0
+        ),
+        **{
+            f"recovery_recall_{coordinate}_blocked_origin_count": final.get(
+                f"recovery_recall_{coordinate}_blocked_origin_count", 0.0
+            )
+            for coordinate in (
+                "normalized_height", "vertical_alignment", "support_count",
+                "contact_count", "motion_energy",
+            )
+        },
         "recovery_reanchor_count": final.get(
             "recovery_reanchor_count", 0.0
         ),
@@ -8053,6 +8173,53 @@ def _run_arm(
     }
     if motor_library_out is not None:
         _request_motor_library_consolidation(agent, episode)
+        recognized_shapes = agent.inner.neighbours(
+            episode, "recognizes_humanoid_body_shape"
+        )
+        result["post_consolidation_recovery_topology"] = [
+            {
+                "ordinal": agent.s.node(basin)["attrs"].get("ordinal"),
+                "request_seq": agent.s.node(basin)["attrs"].get(
+                    "request_seq"
+                ),
+                "incoming_primary_token": agent.s.node(basin)["attrs"].get(
+                    "incoming_primary_token"
+                ),
+                "shape_indexed_exact": any(
+                    basin in agent.inner.neighbours(
+                        recognized_shape,
+                        "stores_humanoid_recovery_basin",
+                    )
+                    for recognized_shape in recognized_shapes
+                ),
+                "successors": [
+                    {
+                        "ordinal": agent.s.node(successor)["attrs"].get(
+                            "ordinal"
+                        ),
+                        "request_seq": agent.s.node(successor)["attrs"].get(
+                            "request_seq"
+                        ),
+                        "incoming_primary_token": agent.s.node(successor)[
+                            "attrs"
+                        ].get("incoming_primary_token"),
+                        "shape_indexed_exact": any(
+                            successor in agent.inner.neighbours(
+                                recognized_shape,
+                                "stores_humanoid_recovery_basin",
+                            )
+                            for recognized_shape in recognized_shapes
+                        ),
+                    }
+                    for successor in agent.inner.neighbours(
+                        basin, "continues_to_humanoid_recovery_basin"
+                    )
+                ],
+            }
+            for basin in agent.inner.neighbours(
+                episode, "has_humanoid_recovery_basin"
+            )
+        ]
         snapshot = _motor_library_snapshot(agent)
         motor_library_out.parent.mkdir(parents=True, exist_ok=True)
         motor_library_out.write_text(

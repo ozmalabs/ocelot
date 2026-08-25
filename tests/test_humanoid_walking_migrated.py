@@ -69,6 +69,40 @@ def test_missing_path_shape_is_an_output_null_exploration_question():
     assert "foveated_program_exploration_authority" in valued
 
 
+def test_recalled_recovery_transition_uses_receipt_shape_width():
+    seed = json.loads(SEED.read_text(encoding="utf-8"))
+    rule = _rule(seed, "ha_test_recalled_recovery_path_transition")
+    release = json.dumps(rule)
+
+    for coordinate in (
+        "normalized_height",
+        "vertical_alignment",
+        "support_count",
+        "contact_count",
+        "motion_energy",
+    ):
+        assert f"incoming_{coordinate}" in release
+        assert f"launch_manifold_residual_{coordinate}" in release
+        assert f"launch_manifold_span_{coordinate}" in release
+        assert f"launch_manifold_projected_{coordinate}" in release
+    assert "state_motor_configuration_shape" not in json.dumps(rule["where"])
+    assert "incoming_primary_token" in json.dumps(rule["where"])
+    assert "incoming_secondary_token" in json.dumps(rule["where"])
+    assert "incoming_response_frames" in json.dumps(rule["where"])
+    assert "launch_manifold_shape_residual" in release
+    assert "launch_manifold_projected_shape_residual" in release
+    assert "output_authority" not in release
+
+    storage = json.dumps(
+        _rule(seed, "ha_store_recovery_basin_by_body_shape")
+    )
+    recall = json.dumps(
+        _rule(seed, "ha_recall_shape_indexed_recovery_basin_hint")
+    )
+    assert "continues_to_humanoid_recovery_basin" in storage
+    assert "incoming_primary_token" in recall
+
+
 def test_post_sweep_pareto_choice_focuses_one_context_dimension():
     seed = json.loads(SEED.read_text(encoding="utf-8"))
     policy = next(
@@ -930,6 +964,73 @@ def test_shape_library_round_trips_receipt_positive_recovery_basins():
     assert restored_agent.s.node(restored_episode)["attrs"][
         "recovery_warm_start_count"
     ] == 1.0
+    assert restored_agent.s.node(restored_episode)["attrs"][
+        "recovery_recall_replayable_successor_origin_count"
+    ] == 0.0
+    assert restored_agent.s.node(restored_episode)["attrs"][
+        "recovery_recall_admissible_origin_count"
+    ] == 0.0
+
+
+def test_body_shape_coalescing_remaps_recovery_edges_by_identity():
+    from scripts.jabberwock_humanoid_walk import _coalesce_body_shape_rows
+
+    shape_attrs = {"signature": [["body", 3, 2, 1]]}
+    origin = {
+        "attrs": {"ordinal": 1.0, "configuration_shape": [0, 0]},
+        "actions": [],
+        "successor_slots": [1],
+    }
+    legacy_successor = {
+        "attrs": {"ordinal": 2.0, "configuration_shape": [0, 1]},
+        "actions": [],
+        "successor_slots": [],
+    }
+    evidenced_origin = {
+        **origin,
+        "actions": [{"primary_token": "opaque_a"}],
+    }
+    causal_successor = {
+        "attrs": {
+            "ordinal": 2.0,
+            "configuration_shape": [1, 0],
+            "incoming_primary_token": "opaque_a",
+            "incoming_secondary_token": "opaque_b",
+            "incoming_response_frames": 8.0,
+        },
+        "actions": [],
+        "successor_slots": [],
+    }
+
+    merged = _coalesce_body_shape_rows([
+        {
+            "attrs": shape_attrs,
+            "programs": [],
+            "motor_transitions": [],
+            "coordination_challenges": [],
+            "residual_regimes": [],
+            "recovery_basins": [origin, legacy_successor],
+        },
+        {
+            "attrs": shape_attrs,
+            "programs": [],
+            "motor_transitions": [],
+            "coordination_challenges": [],
+            "residual_regimes": [],
+            "recovery_basins": [evidenced_origin, causal_successor],
+        },
+    ])
+
+    basins = merged[0]["recovery_basins"]
+    merged_origin = next(
+        row for row in basins
+        if row["attrs"]["configuration_shape"] == [0, 0]
+    )
+    successors = [basins[slot] for slot in merged_origin["successor_slots"]]
+    assert len(successors) == 2
+    assert {
+        row["attrs"].get("incoming_primary_token") for row in successors
+    } == {None, "opaque_a"}
 
 
 def test_shape_matched_library_warm_starts_without_host_actuator_mapping():

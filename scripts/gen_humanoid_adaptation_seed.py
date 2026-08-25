@@ -8730,8 +8730,84 @@ def recall_shape_recovery_basin_rule():
             recovery_action_has_progress("stored_action_candidate"),
         ),
     )
-    nearest = Argmin(
+    admissible_path_origins = Filter(
+        stored,
+        "stored_path_origin",
+        Exists(
+            Neighbours(
+                "stored_path_origin",
+                "continues_to_humanoid_recovery_basin",
+            ),
+            "stored_path_successor",
+            And(
+                recovery_successor_is_replayable("stored_path_successor"),
+                recovery_successor_launch_manifold_contains(
+                    "stored_path_successor"
+                ),
+            ),
+        ),
+    )
+    recall_frontier = Filter(
         useful,
+        "stored_recall_candidate",
+        Or(
+            Eq(Count(admissible_path_origins), L(0)),
+            Exists(
+                admissible_path_origins,
+                "admissible_path_origin",
+                Eq(
+                    V("admissible_path_origin"),
+                    V("stored_recall_candidate"),
+                ),
+            ),
+        ),
+    )
+    successor_origins = Filter(
+        stored,
+        "stored_successor_origin",
+        Gt(Count(Neighbours(
+            "stored_successor_origin",
+            "continues_to_humanoid_recovery_basin",
+        )), L(0)),
+    )
+    replayable_successor_origins = Filter(
+        successor_origins,
+        "stored_replayable_origin",
+        Exists(
+            Neighbours(
+                "stored_replayable_origin",
+                "continues_to_humanoid_recovery_basin",
+            ),
+            "stored_replayable_successor",
+            recovery_successor_is_replayable(
+                "stored_replayable_successor"
+            ),
+        ),
+    )
+
+    def coordinate_blocked_origins(coordinate):
+        origin = f"{coordinate}_blocked_origin"
+        successor = f"{coordinate}_blocked_successor"
+        return Filter(
+            successor_origins,
+            origin,
+            Exists(
+                Neighbours(
+                    origin, "continues_to_humanoid_recovery_basin"
+                ),
+                successor,
+                Gt(
+                    recovery_successor_launch_residual(
+                        successor, coordinate
+                    ),
+                    recovery_successor_transition_span(
+                        successor, coordinate
+                    ),
+                ),
+            ),
+        )
+    nearest = Argmin(
+        recall_frontier,
         "stored_basin_candidate",
         Plus(
             Abs(Minus(
@@ -8753,8 +8829,12 @@ def recall_shape_recovery_basin_rule():
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
         "batch": False,
-        "comment": "A settled fallen body recalls the closest useful recovery "
-        "basin held by its exact decoded body shape. A transient falling sample "
+        "comment": "A settled fallen body first restricts recall to useful "
+        "stored basins with both a concrete causal action receipt and a "
+        "successor launch manifold containing the live receipt; within that "
+        "structural frontier it recalls the closest "
+        "height/alignment basin. If no successor is currently admissible, the "
+        "closest useful basin remains the fallback. A transient falling sample "
         "is not an indexing frame. The recalled basin is "
         "only a search hint: its action must earn a fresh receipt from the "
         "present configuration and load.",
@@ -8772,7 +8852,7 @@ def recall_shape_recovery_basin_rule():
             Eq(Count(Neighbours(
                 "basin", "inherits_humanoid_recovery_actions_from"
             )), L(0.0)),
-            Gt(Count(useful), L(0.0)),
+            Gt(Count(recall_frontier), L(0.0)),
             Eq(V("stored_basin"), nearest),
         ),
         "effects": [
@@ -8784,6 +8864,31 @@ def recall_shape_recovery_basin_rule():
             ],
             ["set_attr", "basin", "warm_start_tested", 0.0],
             ["set_attr", "basin", "source", "shape_recovery_warm_start"],
+            ["set_attr", "episode", "recovery_recall_useful_basin_count", T(
+                Count(useful)
+            )],
+            ["set_attr", "episode", "recovery_recall_successor_origin_count", T(
+                Count(successor_origins)
+            )],
+            [
+                "set_attr", "episode",
+                "recovery_recall_replayable_successor_origin_count",
+                T(Count(replayable_successor_origins)),
+            ],
+            ["set_attr", "episode", "recovery_recall_admissible_origin_count", T(
+                Count(admissible_path_origins)
+            )],
+            *[
+                [
+                    "set_attr", "episode",
+                    f"recovery_recall_{coordinate}_blocked_origin_count",
+                    T(Count(coordinate_blocked_origins(coordinate))),
+                ]
+                for coordinate in (
+                    "normalized_height", "vertical_alignment",
+                    "support_count", "contact_count", "motion_energy",
+                )
+            ],
         ],
     }
 
@@ -8796,9 +8901,12 @@ def store_recovery_basin_by_body_shape_rule():
         "latency_class": "hard_realtime",
         "batch": False,
         "comment": "At the explicit lifetime boundary, retain situated "
-        "recovery basins with a receipt-positive action under the already "
-        "decoded body shape. This reuses the motor library's morphology "
-        "index instead of introducing a canonical home pose.",
+        "recovery basins with either a receipt-positive local action or a "
+        "confirmed successor edge under the already decoded body shape. A "
+        "path origin is causal evidence even when its opening action is "
+        "locally dominated; path value and one-step value are not the same "
+        "objective. This reuses the motor library's morphology index instead "
+        "of introducing a canonical home pose.",
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
             ["episode", "recognizes_humanoid_body_shape", "shape"],
@@ -8807,16 +8915,23 @@ def store_recovery_basin_by_body_shape_rule():
         "where": And(
             Eq(P0("episode", "library_consolidation_requested"), L(1.0)),
             Eq(A("basin", "status"), L("situated")),
-            Exists(
-                recovery_basin_actions(),
-                "basin_action_candidate",
-                And(
-                    recovery_action_has_progress("basin_action_candidate"),
-                    Not(recovery_action_dominated(
-                        V("basin_action_candidate"),
-                        "basin",
-                    )),
+            Or(
+                Exists(
+                    recovery_basin_actions(),
+                    "basin_action_candidate",
+                    And(
+                        recovery_action_has_progress(
+                            "basin_action_candidate"
+                        ),
+                        Not(recovery_action_dominated(
+                            V("basin_action_candidate"),
+                            "basin",
+                        )),
+                    ),
                 ),
+                Gt(Count(Neighbours(
+                    "basin", "continues_to_humanoid_recovery_basin"
+                )), L(0.0)),
             ),
             Not(Exists(
                 stored,
@@ -9380,6 +9495,121 @@ def route_recalled_recovery_successor_rule():
     }
 
 
+def recovery_successor_launch_coordinate(stored_successor, coordinate):
+    if coordinate == "normalized_height":
+        return Div(
+            P0("episode", "state_z"),
+            P0("episode", "standing_reference_z"),
+        )
+    if coordinate == "vertical_alignment":
+        return body_z_z("episode", "state")
+    if coordinate == "support_count":
+        return P0("episode", "active_support_count")
+    if coordinate == "contact_count":
+        return P0("episode", "state_contact_count_raw")
+    if coordinate == "motion_energy":
+        return recovery_current_motion_energy()
+    raise ValueError(f"unknown recovery successor coordinate: {coordinate}")
+
+
+def recovery_successor_launch_residual(stored_successor, coordinate):
+    return Abs(Minus(
+        recovery_successor_launch_coordinate(stored_successor, coordinate),
+        P0(stored_successor, f"incoming_{coordinate}"),
+    ))
+
+
+def recovery_successor_transition_span(stored_successor, coordinate):
+    """Receipt-defined width from the stored launch to its successor."""
+    return Abs(Minus(
+        P0(stored_successor, coordinate),
+        P0(stored_successor, f"incoming_{coordinate}"),
+    ))
+
+
+def recovery_successor_projected_coordinate(stored_successor, coordinate):
+    """Apply the stored receipt delta once to the live recovery coordinate."""
+    return Plus(
+        recovery_successor_launch_coordinate(stored_successor, coordinate),
+        Minus(
+            P0(stored_successor, coordinate),
+            P0(stored_successor, f"incoming_{coordinate}"),
+        ),
+    )
+
+
+def recovery_successor_coordinate_approaches(stored_successor, coordinate):
+    current_target_residual = Abs(Minus(
+        P0(stored_successor, coordinate),
+        recovery_successor_launch_coordinate(stored_successor, coordinate),
+    ))
+    projected_target_residual = Abs(Minus(
+        P0(stored_successor, coordinate),
+        recovery_successor_projected_coordinate(
+            stored_successor, coordinate
+        ),
+    ))
+    return Lt(projected_target_residual, current_target_residual)
+
+
+RECOVERY_SUCCESSOR_COORDINATES = (
+    "normalized_height",
+    "vertical_alignment",
+    "support_count",
+    "contact_count",
+    "motion_energy",
+)
+
+
+def recovery_successor_shape_residual(stored_successor, *, projected=False):
+    coordinates = (
+        recovery_successor_projected_coordinate(stored_successor, coordinate)
+        if projected
+        else recovery_successor_launch_coordinate(stored_successor, coordinate)
+        for coordinate in RECOVERY_SUCCESSOR_COORDINATES
+    )
+    return Plus(*(
+        Times(
+            Minus(P0(stored_successor, coordinate), value),
+            Minus(P0(stored_successor, coordinate), value),
+        )
+        for coordinate, value in zip(
+            RECOVERY_SUCCESSOR_COORDINATES,
+            coordinates,
+            strict=True,
+        )
+    ))
+
+
+def recovery_successor_is_replayable(stored_successor):
+    """A path edge is usable only when its causal motor receipt survived."""
+    return And(
+        Not(Eq(A(stored_successor, "incoming_primary_token"), L(None))),
+        Not(Eq(A(stored_successor, "incoming_secondary_token"), L(None))),
+        Gt(P0(stored_successor, "incoming_response_frames"), L(0.0)),
+    )
+
+
+def recovery_successor_launch_manifold_contains(stored_successor):
+    """Containment or strict reduction of the projected shape residual."""
+    contained = And(*(
+        Not(Gt(
+                recovery_successor_launch_residual(
+                    stored_successor, coordinate
+                ),
+                recovery_successor_transition_span(
+                    stored_successor, coordinate
+                ),
+            ))
+        for coordinate in RECOVERY_SUCCESSOR_COORDINATES
+    ))
+    projected_approaches = Lt(
+        recovery_successor_shape_residual(stored_successor, projected=True),
+        recovery_successor_shape_residual(stored_successor),
+    )
+    return Or(contained, projected_approaches)
+
+
 def choose_recalled_recovery_path_transition_rule():
     current_motion_energy = recovery_current_motion_energy()
     return {
@@ -9388,10 +9618,11 @@ def choose_recalled_recovery_path_transition_rule():
         "latency_class": "hard_realtime",
         "batch": False,
         "comment": "Test the compound that caused a retained successor edge "
-        "when the live body re-enters its receipt-derived dynamical context. "
-        "Decoded configuration, contact topology, and the observed normalized "
-        "motion-energy ceiling gate release without a clock or canonical pose. "
-        "It remains a hint: "
+        "when each live height, alignment, support, contact, and motion "
+        "coordinate either lies within that transition's receipt-defined "
+        "launch span or its one-step stored delta strictly reduces residual "
+        "to the successor. This is projected path-shape math, not an exact "
+        "pose or scalar tolerance. It remains a hint: "
         "the present body and load must provide a fresh receipt.",
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
@@ -9410,23 +9641,8 @@ def choose_recalled_recovery_path_transition_rule():
             Eq(P0("episode", "reset_requested"), L(0.0)),
             Eq(Count(ACTIVE_RECOVERY_PROGRAMS), L(0.0)),
             Eq(P0("basin", "warm_start_tested"), L(0.0)),
-            Not(Eq(A("stored_successor", "incoming_primary_token"), L(None))),
-            Eq(
-                A("episode", "state_motor_configuration_shape"),
-                A("stored_successor", "incoming_configuration_shape"),
-            ),
-            Eq(
-                P0("episode", "active_support_count"),
-                P0("stored_successor", "incoming_support_count"),
-            ),
-            Eq(
-                P0("episode", "state_contact_count_raw"),
-                P0("stored_successor", "incoming_contact_count"),
-            ),
-            Not(Gt(
-                current_motion_energy,
-                P0("stored_successor", "incoming_motion_energy"),
-            )),
+            recovery_successor_is_replayable("stored_successor"),
+            recovery_successor_launch_manifold_contains("stored_successor"),
         ),
         "effects": [
             ["add_node", "program", "HumanoidRecoveryProgram", {
@@ -9483,6 +9699,47 @@ def choose_recalled_recovery_path_transition_rule():
                 ),
                 "target_motion_energy": T(
                     P0("stored_successor", "motion_energy")
+                ),
+                **{
+                    f"launch_manifold_residual_{coordinate}": T(
+                        recovery_successor_launch_residual(
+                            "stored_successor", coordinate
+                        )
+                    )
+                    for coordinate in (
+                        "normalized_height", "vertical_alignment",
+                        "support_count", "contact_count", "motion_energy",
+                    )
+                },
+                **{
+                    f"launch_manifold_span_{coordinate}": T(
+                        recovery_successor_transition_span(
+                            "stored_successor", coordinate
+                        )
+                    )
+                    for coordinate in (
+                        "normalized_height", "vertical_alignment",
+                        "support_count", "contact_count", "motion_energy",
+                    )
+                },
+                **{
+                    f"launch_manifold_projected_{coordinate}": T(
+                        recovery_successor_projected_coordinate(
+                            "stored_successor", coordinate
+                        )
+                    )
+                    for coordinate in (
+                        "normalized_height", "vertical_alignment",
+                        "support_count", "contact_count", "motion_energy",
+                    )
+                },
+                "launch_manifold_shape_residual": T(
+                    recovery_successor_shape_residual("stored_successor")
+                ),
+                "launch_manifold_projected_shape_residual": T(
+                    recovery_successor_shape_residual(
+                        "stored_successor", projected=True
+                    )
                 ),
             }],
             [
@@ -10354,24 +10611,23 @@ def update_recovery_basin_action_rule():
 
 
 def promote_recovery_basin_rule():
-    support_gain = Gt(recovery_support_gain(), L(0.0))
-    contact_gain = Gt(recovery_contact_gain(), L(0.0))
-    metastable_or_supported = Or(
-        recovery_state_is_quiet(),
-        support_gain,
-        contact_gain,
-    )
     return {
         "name": "ha_promote_receipt_confirmed_recovery_basin",
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
         "batch": False,
         "comment": "Promote a new situated recovery basin only when a "
-        "receipt-confirmed compound crosses the current posture boundary. "
+        "receipt-confirmed compound's total effect from its program launch "
+        "crosses the current posture boundary. The boundary receipt need not "
+        "itself improve a "
+        "coordinate: requiring that would make a multi-tick program unable "
+        "to name a state reached after an earlier dynamic step. Dynamic "
+        "intermediate states are path shape, not noise: normalized motion "
+        "energy is retained on the successor and fresh replay must remain "
+        "inside its launch manifold. "
         "Singleton receipts remain local affordance evidence, so transient "
         "support changes cannot restart the alphabet survey. A changed decoded "
-        "configuration must become quiet or acquire foot/general-body contact. "
-        "The transition must improve at least one postural coordinate; lower "
+        "configuration must cross a postural coordinate. Lower "
         "motion alone updates the present basin instead of fragmenting it. Action "
         "dominance controls command reuse but cannot erase a newly observed "
         "body state; transition energy and peak load stay on the path for later "
@@ -10417,14 +10673,12 @@ def promote_recovery_basin_rule():
                 ),
                 Gt(P0("trial", "bundle_member_count"), L(1.0)),
             ),
-            recovery_outcome_has_progress(),
             recovery_successor_has_postural_progress(),
             Not(recovery_successor_is_dominated_by_previous()),
             Not(Eq(
                 A("previous", "configuration_shape"),
                 A("outcome", "post_motor_configuration_shape"),
             )),
-            metastable_or_supported,
             Eq(P0("episode", "upright"), L(0.0)),
         ),
         "effects": [
@@ -10528,6 +10782,121 @@ def promote_recovery_basin_rule():
                 P0("episode", "get_up_attempt_count")
             )],
             ["set_attr", "outcome", "recovery_basin_considered", 1.0],
+        ],
+    }
+
+
+def audit_recovery_successor_promotion_rule():
+    """Expose each causal promotion predicate without changing authority."""
+    support_gain = Gt(recovery_support_gain(), L(0.0))
+    contact_gain = Gt(recovery_contact_gain(), L(0.0))
+    metastable_or_supported = Or(
+        recovery_state_is_quiet(),
+        support_gain,
+        contact_gain,
+    )
+    predicates = {
+        "alphabet_exhausted": Eq(
+            Count(untried_recovery_models("previous")), L(0.0)
+        ),
+        "compound": Gt(P0("trial", "bundle_member_count"), L(1.0)),
+        "outcome_progress": recovery_outcome_has_progress(),
+        "postural_progress": recovery_successor_has_postural_progress(),
+        "pareto_novel": Not(
+            recovery_successor_is_dominated_by_previous()
+        ),
+        "configuration_changed": Not(Eq(
+            A("previous", "configuration_shape"),
+            A("outcome", "post_motor_configuration_shape"),
+        )),
+        "metastable_or_supported": metastable_or_supported,
+        "fallen": Eq(P0("episode", "upright"), L(0.0)),
+    }
+    predicates.update({
+        "structural_ready": And(
+            predicates["alphabet_exhausted"],
+            predicates["compound"],
+        ),
+        "progress_ready": And(
+            predicates["alphabet_exhausted"],
+            predicates["compound"],
+            predicates["outcome_progress"],
+            predicates["postural_progress"],
+        ),
+        "novel_shape_ready": And(
+            predicates["alphabet_exhausted"],
+            predicates["compound"],
+            predicates["outcome_progress"],
+            predicates["postural_progress"],
+            predicates["pareto_novel"],
+            predicates["configuration_changed"],
+        ),
+        "physical_boundary_ready": And(
+            predicates["alphabet_exhausted"],
+            predicates["compound"],
+            predicates["outcome_progress"],
+            predicates["postural_progress"],
+            predicates["pareto_novel"],
+            predicates["configuration_changed"],
+            predicates["metastable_or_supported"],
+            predicates["fallen"],
+        ),
+        "cumulative_boundary_ready": And(
+            predicates["alphabet_exhausted"],
+            predicates["compound"],
+            predicates["postural_progress"],
+            predicates["pareto_novel"],
+            predicates["configuration_changed"],
+            predicates["metastable_or_supported"],
+            predicates["fallen"],
+        ),
+    })
+    return {
+        "name": "ha_audit_recovery_successor_promotion",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "comment": "Record the independent receipt-grounded reasons a "
+        "recovery program can or cannot name a successor basin. This rule is "
+        "output-null diagnostic evidence and grants no motor or promotion "
+        "authority.",
+        "match": [
+            ["agent", "has_humanoid_episode", "episode"],
+            [
+                "episode", "has_current_humanoid_recovery_basin", "previous"
+            ],
+            [
+                "previous", "has_humanoid_recovery_program", "program"
+            ],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "starts_from_humanoid_recovery_basin", "previous"],
+            ["trial", "has_humanoid_transition", "outcome"],
+        ],
+        "where": And(
+            Eq(P0("trial", "recovery_promotion_audited"), L(0.0)),
+            Eq(P0("trial", "request_seq"), P0("episode", "request_seq")),
+            Eq(A("program", "primary_token"), A("trial", "token")),
+            Eq(
+                A("program", "secondary_token"),
+                A("trial", "secondary_token"),
+            ),
+            Eq(
+                P0("program", "last_request_seq"),
+                P0("trial", "request_seq"),
+            ),
+            Eq(P0("outcome", "receipt_verified"), L(1.0)),
+            Eq(P0("outcome", "recovery_basin_considered"), L(0.0)),
+        ),
+        "effects": [
+            ["set_attr", "trial", "recovery_promotion_audited", 1.0],
+            *[
+                [
+                    "set_attr", "trial",
+                    f"recovery_promotion_{name}",
+                    T(If(predicate, L(1.0), L(0.0))),
+                ]
+                for name, predicate in predicates.items()
+            ],
         ],
     }
 
@@ -16735,7 +17104,7 @@ def manifest():
     )
     return apply_biological_schedule({
         "id": "humanoid_adaptation",
-        "version": "1.33.0",
+        "version": "1.35.0",
         "depends_on": [
             "decision_core",
             "embodied_motor_priors",
@@ -17677,6 +18046,7 @@ def manifest():
             prime_motor_sequence_context_rule(),
             break_motor_sequence_on_recovery_rule(),
             close_phase_adaptation_rule(),
+            audit_recovery_successor_promotion_rule(),
             promote_recovery_basin_rule(),
             learn_recovery_basin_action_rule(),
             update_recovery_basin_action_rule(),

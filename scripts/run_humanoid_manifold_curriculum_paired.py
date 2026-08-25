@@ -143,6 +143,10 @@ def _metrics(run: dict) -> dict:
     future_manifold = run.get("future_manifold") or {}
     cognitive = run.get("cognitive_supervision") or {}
     trace = run.get("trace") or []
+    recovery_promotion_rows = [
+        row for row in trace
+        if int(row.get("recovery_promotion_audited", 0)) == 1
+    ]
     support_audit_rows = [
         row for row in trace
         if int(row.get("support_counterfactual_audit_seq", 0)) > 0
@@ -792,6 +796,90 @@ def _metrics(run: dict) -> dict:
             for row in trace
         ),
         "recovery_mode_at_end": run.get("recovery_mode_at_end", 0),
+        "recovery_basin_count": int(run.get("recovery_basin_count", 0)),
+        "recovery_basin_transition_count": int(run.get(
+            "recovery_basin_transition_count", 0
+        )),
+        "recovery_basin_action_count": int(run.get(
+            "recovery_basin_action_count", 0
+        )),
+        "recovery_warm_start_count": int(run.get(
+            "recovery_warm_start_count", 0
+        )),
+        "recovery_path_recall_count": int(run.get(
+            "recovery_path_recall_count", 0
+        )),
+        "recovery_path_hint_count": int(run.get(
+            "recovery_path_hint_count", 0
+        )),
+        "recovery_recall_useful_basin_count": int(run.get(
+            "recovery_recall_useful_basin_count", 0
+        )),
+        "recovery_recall_successor_origin_count": int(run.get(
+            "recovery_recall_successor_origin_count", 0
+        )),
+        "recovery_recall_replayable_successor_origin_count": int(run.get(
+            "recovery_recall_replayable_successor_origin_count", 0
+        )),
+        "recovery_recall_admissible_origin_count": int(run.get(
+            "recovery_recall_admissible_origin_count", 0
+        )),
+        "recovery_promotion_audit_count": len(recovery_promotion_rows),
+        **{
+            f"recovery_promotion_{name}_count": sum(
+                int(row.get(f"recovery_promotion_{name}", 0))
+                for row in recovery_promotion_rows
+            )
+            for name in (
+                "alphabet_exhausted", "compound", "outcome_progress",
+                "postural_progress", "pareto_novel",
+                "configuration_changed", "metastable_or_supported", "fallen",
+                "structural_ready", "progress_ready", "novel_shape_ready",
+                "physical_boundary_ready", "cumulative_boundary_ready",
+            )
+        },
+        **{
+            f"recovery_recall_{coordinate}_blocked_origin_count": int(run.get(
+                f"recovery_recall_{coordinate}_blocked_origin_count", 0
+            ))
+            for coordinate in (
+                "normalized_height", "vertical_alignment", "support_count",
+                "contact_count", "motion_energy",
+            )
+        },
+        "recovery_reanchor_count": int(run.get(
+            "recovery_reanchor_count", 0
+        )),
+        "recovery_program_count": int(run.get(
+            "recovery_program_count", 0
+        )),
+        "recovery_program_repeat_count": int(run.get(
+            "recovery_program_repeat_count", 0
+        )),
+        "recovery_program_termination_count": int(run.get(
+            "recovery_program_termination_count", 0
+        )),
+        "live_recovery_successor_edge_count": sum(
+            len(row.get("successor_ordinals") or [])
+            for row in (run.get("recovery_basins") or [])
+        ),
+        "live_recovery_basin_topology": [
+            {
+                key: row.get(key)
+                for key in (
+                    "ordinal", "request_seq", "configuration_shape",
+                    "incoming_primary_token", "incoming_secondary_token",
+                    "incoming_response_frames", "incoming_normalized_height",
+                    "normalized_height", "incoming_vertical_alignment",
+                    "vertical_alignment", "incoming_motion_energy",
+                    "motion_energy", "successor_ordinals",
+                )
+            } | {"action_count": len(row.get("actions") or [])}
+            for row in (run.get("recovery_basins") or [])
+        ],
+        "post_consolidation_recovery_topology": run.get(
+            "post_consolidation_recovery_topology", []
+        ),
         "situated_trajectory_context_active_at_end": run.get(
             "situated_trajectory_context_active_at_end", 0
         ),
