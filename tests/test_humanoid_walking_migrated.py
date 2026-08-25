@@ -180,6 +180,41 @@ def test_recovery_warm_start_targets_its_observed_post_shape():
         assert f"target_{coordinate}" in program
 
 
+def test_unconsumed_armed_recovery_program_retires_at_request_boundary():
+    from scripts.jabberwock_humanoid_adaptation import _edge
+
+    seed = json.loads(SEED.read_text(encoding="utf-8"))
+    retirement = json.dumps(
+        _rule(seed, "ha_retire_condition_terminated_recovery_program")
+    )
+    assert '"armed"' in retirement
+    assert "last_request_seq" in retirement
+    assert "request_seq" in retirement
+
+    agent, episode = _motor_library_fixture((("body", 3, 2, 1),))
+    agent.tick()
+    basin = agent.s.add_node("HumanoidRecoveryBasin", {
+        "status": "situated",
+        "request_seq": 1.0,
+    })
+    program = agent.s.add_node("HumanoidRecoveryProgram", {
+        "status": "armed",
+        "last_request_seq": 1.0,
+    })
+    _edge(agent, episode, "has_current_humanoid_recovery_basin", basin)
+    _edge(agent, episode, "has_active_humanoid_recovery_program", program)
+    _edge(agent, program, "starts_from_humanoid_recovery_basin", basin)
+    agent.inner.set_attr(episode, "request_seq", 2.0)
+    agent.inner.set_attr(episode, "upright", 0.0)
+
+    agent.tick()
+
+    assert program not in agent.inner.neighbours(
+        episode, "has_active_humanoid_recovery_program"
+    )
+    assert agent.s.node(program)["attrs"]["status"] == "retained"
+
+
 def test_deployment_recovery_path_yields_to_dominating_local_receipt():
     from scripts.jabberwock_humanoid_adaptation import _edge
 

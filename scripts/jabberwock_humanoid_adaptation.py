@@ -682,6 +682,71 @@ def _request_action(
                 agent.agent, "has_humanoid_policy"
             )
         ]
+        recovery_rows = []
+        for basin in agent.inner.neighbours(
+            episode, "has_current_humanoid_recovery_basin"
+        ):
+            basin_attrs = dict(agent.s.node(basin)["attrs"])
+            actions = agent.inner.neighbours(
+                basin, "has_humanoid_recovery_basin_action"
+            )
+            inherited = agent.inner.neighbours(
+                basin, "inherits_humanoid_recovery_actions_from"
+            )
+            singleton_rows = [
+                dict(agent.s.node(action)["attrs"])
+                for action in actions
+                if agent.s.node(action)["attrs"].get("member_count") == 1.0
+            ]
+            pair_rows = [
+                dict(agent.s.node(action)["attrs"])
+                for action in actions
+                if agent.s.node(action)["attrs"].get("member_count") == 2.0
+            ]
+            recovery_rows.append({
+                "attrs": {
+                    key: basin_attrs.get(key)
+                    for key in (
+                        "status", "warm_start_tested",
+                        "composition_settling_tested", "request_seq",
+                    )
+                },
+                "action_count": len(actions),
+                "singleton_count": len(singleton_rows),
+                "pair_count": len(pair_rows),
+                "singleton_tokens": [
+                    row.get("primary_token") for row in singleton_rows
+                ],
+                "pair_tokens": [
+                    (row.get("primary_token"), row.get("secondary_token"))
+                    for row in pair_rows
+                ],
+                "inherited": [
+                    {
+                        "action_count": len(agent.inner.neighbours(
+                            previous,
+                            "has_humanoid_recovery_basin_action",
+                        )),
+                        "successor_count": len(agent.inner.neighbours(
+                            previous,
+                            "continues_to_humanoid_recovery_basin",
+                        )),
+                    }
+                    for previous in inherited
+                ],
+            })
+        selected_recovery_primaries = [
+            dict(agent.s.node(action)["attrs"])
+            for action in agent.inner.neighbours(
+                episode, "has_selected_humanoid_recovery_primary"
+            )
+        ]
+        active_recovery_programs = [
+            dict(agent.s.node(program)["attrs"])
+            for program in agent.inner.neighbours(
+                episode, "has_active_humanoid_recovery_program"
+            )
+        ]
         raise RuntimeError(
             f"graph emitted no action for request {request_seq}: "
             f"phase={attrs.get('phase')!r}, "
@@ -704,6 +769,10 @@ def _request_action(
             f"current_support_models={current_support_models[:4]!r}, "
             f"policy_rows={policy_rows!r}, "
             f"authority_programs={authority_programs!r}, "
+            f"recovery_rows={recovery_rows!r}, "
+            f"selected_recovery_primaries="
+            f"{selected_recovery_primaries!r}, "
+            f"active_recovery_programs={active_recovery_programs!r}, "
             f"wave_programs={wave_programs!r}, "
             f"programs={programs!r}"
         )
