@@ -1,0 +1,363 @@
+{
+  "id": "arousal_horizon",
+  "version": "1.0.0",
+  "comment": "Emit seeds/arousal_horizon.json -- THE PLANNING HORIZON IS DERIVED, NOT SET.\n\n`STRESS_COMPRESSES_APERTURE_RESULTS.md` and `COMPRESSION_MODELS_RESULTS.md` both\nclose on the same admission: the compression was STIPULATED. A mask or a budget\nwas handed to the rule by a fixture, and nothing in the substrate said why stress\nshould produce either. This derives it.\n\nTHE DERIVATION. An agent can only plan as far ahead as it can stay regulated. So\nits projection budget is the time until its own projected arousal leaves its own\nwindow of tolerance -- and that is not a new computation. It is EXACTLY the escape\nthe future-manifold audit already performs, run on the arousal dimension with the\nwindow as the allowed tube:\n\n    window [lo, hi]  ->  target = centre, bounds = half-width\n    projected arousal  ->  future_manifold_values\n    earliest_decisive_tick  ->  the projection budget\n\nNo new scalar, no stress coefficient, no tuned rate. The window is already\nnarrowed and widened by `arousal_window_coreg`'s own episode rules (dysregulation\nwithout co-regulation NARROWS; successful co-regulation WIDENS), so the whole\nchain runs on machinery that predates this question:\n\n    stressor -> arousal rises -> dysregulation -> window narrows\n             -> arousal escapes the window SOONER -> horizon shortens\n\nwhich is the TEMPORAL compression of `COMPRESSION_MODELS_RESULTS.md`, now derived\nrather than supplied. It predicts the graded, resource-shaped deficit that\ndocument measured for model B, and it predicts recovery through co-regulation\nwidening the window -- not through the agent being handed more budget.\n\nNote the capacity policy is separate from the task policy on purpose: auditing\n\"how far can I stay regulated\" needs a budget of its own, and reading it off the\npolicy being derived would be circular. `cap` is the agent's physiological\nceiling; the derived budget is what the window leaves of it.\n",
+  "depends_on": [
+    "arousal_window_coreg"
+  ],
+  "productions": [
+    {
+      "provenance": "seed:arousal_horizon:capacity",
+      "src": {
+        "type": "Agent",
+        "var": "who"
+      },
+      "edge_type": "has_projection_capacity",
+      "tgt": {
+        "type": "ProjectionCapacity",
+        "var": "cap"
+      }
+    },
+    {
+      "provenance": "seed:arousal_horizon:governs",
+      "src": {
+        "type": "Agent",
+        "var": "who"
+      },
+      "edge_type": "governs_horizon",
+      "tgt": {
+        "type": "ManifoldPolicy",
+        "var": "pol"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "ah_window_as_tube",
+      "comment": "The window of tolerance IS a tube: an allowed band around a centre, exactly the shape `future_manifold_bounds` already describes. Writing it in that form is a restatement, not a model -- centre and half-width are read off the window's own lo/hi, and the row count comes from the projected arousal itself so the two always agree in length.",
+      "match": [
+        [
+          "who",
+          "has_affective_state",
+          "aff"
+        ],
+        [
+          "who",
+          "has_window",
+          "wot"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "aff"
+            },
+            "key": "future_manifold_bounds"
+          },
+          "b": {
+            "type": "MapList",
+            "source": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "key": "arousal_projection"
+            },
+            "var_name": "slice",
+            "value": {
+              "type": "Vec",
+              "items": [
+                {
+                  "type": "Div",
+                  "a": {
+                    "type": "Minus",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "wot"
+                      },
+                      "key": "hi"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "wot"
+                      },
+                      "key": "lo"
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 2.0
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "aff",
+          "future_manifold_target",
+          {
+            "__term__": {
+              "type": "MapList",
+              "source": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "aff"
+                },
+                "key": "arousal_projection"
+              },
+              "var_name": "slice",
+              "value": {
+                "type": "Vec",
+                "items": [
+                  {
+                    "type": "Div",
+                    "a": {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "wot"
+                          },
+                          "key": "lo"
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "wot"
+                          },
+                          "key": "hi"
+                        }
+                      ]
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 2.0
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "aff",
+          "future_manifold_bounds",
+          {
+            "__term__": {
+              "type": "MapList",
+              "source": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "aff"
+                },
+                "key": "arousal_projection"
+              },
+              "var_name": "slice",
+              "value": {
+                "type": "Vec",
+                "items": [
+                  {
+                    "type": "Div",
+                    "a": {
+                      "type": "Minus",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "wot"
+                        },
+                        "key": "hi"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "wot"
+                        },
+                        "key": "lo"
+                      }
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 2.0
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "ah_derive_horizon_from_regulation",
+      "comment": "THE DERIVATION. The projection budget is the tick at which projected arousal would leave the window -- how far ahead the agent can plan while staying regulated. `earliest_decisive_tick` is 0 when nothing escapes, which means the whole capacity is available, so 0 reads as the ceiling rather than as no horizon at all. Nothing here is tuned: the number comes from the same escape audit any other candidate gets.",
+      "match": [
+        [
+          "who",
+          "has_affective_state",
+          "aff"
+        ],
+        [
+          "who",
+          "has_projection_capacity",
+          "cap"
+        ],
+        [
+          "who",
+          "governs_horizon",
+          "pol"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "pol"
+            },
+            "key": "future_manifold_projection_budget"
+          },
+          "b": {
+            "type": "IfThenElse",
+            "cond": {
+              "type": "Gt",
+              "a": {
+                "type": "FutureManifoldProjection",
+                "episode": {
+                  "type": "Var",
+                  "name": "aff"
+                },
+                "policy": {
+                  "type": "Var",
+                  "name": "cap"
+                },
+                "source": {
+                  "type": "Var",
+                  "name": "aff"
+                },
+                "field": "earliest_decisive_tick"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 0.0
+              }
+            },
+            "then": {
+              "type": "FutureManifoldProjection",
+              "episode": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "policy": {
+                "type": "Var",
+                "name": "cap"
+              },
+              "source": {
+                "type": "Var",
+                "name": "aff"
+              },
+              "field": "earliest_decisive_tick"
+            },
+            "other": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cap"
+              },
+              "key": "future_manifold_projection_budget"
+            }
+          }
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "pol",
+          "future_manifold_projection_budget",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "FutureManifoldProjection",
+                  "episode": {
+                    "type": "Var",
+                    "name": "aff"
+                  },
+                  "policy": {
+                    "type": "Var",
+                    "name": "cap"
+                  },
+                  "source": {
+                    "type": "Var",
+                    "name": "aff"
+                  },
+                  "field": "earliest_decisive_tick"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "FutureManifoldProjection",
+                "episode": {
+                  "type": "Var",
+                  "name": "aff"
+                },
+                "policy": {
+                  "type": "Var",
+                  "name": "cap"
+                },
+                "source": {
+                  "type": "Var",
+                  "name": "aff"
+                },
+                "field": "earliest_decisive_tick"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cap"
+                },
+                "key": "future_manifold_projection_budget"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "pol",
+          "ah_derived",
+          1.0
+        ]
+      ]
+    }
+  ]
+}
