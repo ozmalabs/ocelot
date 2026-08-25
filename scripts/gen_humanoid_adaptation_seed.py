@@ -1207,9 +1207,9 @@ def bind_motor_plan_hint_stage_basin_rule():
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
         "batch": True,
-        "comment": "A stage may point System 2 toward a locally grounded "
-        "program with the same relation shape. This edge is evidence about "
-        "where to search, never actuator authority.",
+        "comment": "A harvested stage points System 2 to the exact local "
+        "program ordinal from which it was derived. This indexed identity "
+        "join is evidence about where to search, never actuator authority.",
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
             ["episode", "considers_humanoid_motor_plan_hint", "hint"],
@@ -1228,18 +1228,11 @@ def bind_motor_plan_hint_stage_basin_rule():
                 L(0),
             ),
             Eq(A("program", "status"), L("grounded")),
+            Not(Eq(A("stage", "source_program_ordinal"), L(None))),
             Not(already_suggested),
             Eq(
-                Count(exact_plan_hint_stage_shape(
-                    "program", "stage", "residual"
-                )),
-                L(0),
-            ),
-            Eq(
-                exact_plan_hint_stage_shape(
-                    "program", "stage", "covered_count"
-                ),
-                Count(A("program", "signature")),
+                PI0("stage", "source_program_ordinal"),
+                PI0("program", "ordinal"),
             ),
         ),
         "effects": [
@@ -1296,9 +1289,10 @@ def bind_abstract_plan_hint_stage_basin_rule():
         "latency_class": "background",
         "batch": False,
         "comment": "Biological and robotics priors share only task-context "
-        "and task-phase relations with body-local programs. ShapeDecode "
-        "routes those abstract stages into improving search basins; exact "
-        "tokens and actuator authority remain local and receipt-gated.",
+        "and task-phase relations with body-local programs. Their canonical "
+        "routing-shape index joins abstract stages to improving search "
+        "basins; exact tokens and actuator authority remain local and "
+        "receipt-gated.",
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
             ["episode", "considers_humanoid_motor_plan_hint", "hint"],
@@ -1317,20 +1311,16 @@ def bind_abstract_plan_hint_stage_basin_rule():
                 L(0),
             ),
             Eq(A("program", "status"), L("grounded")),
-            Not(Eq(A("stage", "routing_signature"), L(None))),
-            Not(Eq(A("program", "name"), L(None))),
+            Not(Eq(A("stage", "motor_task_context"), L(None))),
+            Not(Eq(A("stage", "motor_task_phase"), L(None))),
             Not(already_suggested),
             Eq(
-                Count(routed_plan_hint_stage_shape(
-                    "stage", "program", "residual"
-                )),
-                L(0),
+                A("stage", "motor_task_context"),
+                A("routing_shape", "motor_task_context"),
             ),
             Eq(
-                routed_plan_hint_stage_shape(
-                    "stage", "program", "covered_count"
-                ),
-                Count(A("stage", "routing_signature")),
+                A("stage", "motor_task_phase"),
+                A("routing_shape", "motor_task_phase"),
             ),
         ),
         "effects": [

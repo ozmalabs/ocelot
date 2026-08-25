@@ -304,6 +304,8 @@ def build() -> dict:
                         ["motor_task_context", row["context"]],
                         ["motor_task_phase", phase],
                     ],
+                    "motor_task_context": row["context"],
+                    "motor_task_phase": phase,
                     "output_authority": 0,
                     "integer_native": 1,
                 },
