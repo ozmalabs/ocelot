@@ -9182,6 +9182,10 @@ def retire_recovery_program_rule():
         "name": "ha_retire_condition_terminated_recovery_program",
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
+        "comment": "Retire a condition-terminated program, a program whose "
+        "basin ended, or an armed launch that crossed a request boundary "
+        "without receiving its matching motor trial. An unconsumed launch is "
+        "not an active future.",
         "match": [
             ["agent", "has_humanoid_episode", "episode"],
             ["episode", "has_active_humanoid_recovery_program", "program"],
@@ -9189,6 +9193,13 @@ def retire_recovery_program_rule():
         ],
         "where": Or(
             Eq(A("program", "status"), L("terminated")),
+            And(
+                Eq(A("program", "status"), L("armed")),
+                Lt(
+                    P0("program", "last_request_seq"),
+                    P0("episode", "request_seq"),
+                ),
+            ),
             Eq(P0("episode", "upright"), L(1.0)),
             Not(Exists(
                 CURRENT_RECOVERY_BASINS,

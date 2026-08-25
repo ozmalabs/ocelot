@@ -172295,6 +172295,7 @@
    "name": "ha_retire_condition_terminated_recovery_program",
    "area": "humanoid_sensorimotor_adaptation",
    "latency_class": "hard_realtime",
+   "comment": "Retire a condition-terminated program, a program whose basin ended, or an armed launch that crossed a request boundary without receiving its matching motor trial. An unconsumed launch is not an active future.",
    "match": [
     [
      "agent",
@@ -172329,6 +172330,63 @@
        "type": "Lit",
        "value": "terminated"
       }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "program"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "armed"
+        }
+       },
+       {
+        "type": "Lt",
+        "a": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "program"
+           },
+           "key": "last_request_seq"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        },
+        "b": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "episode"
+           },
+           "key": "request_seq"
+          },
+          {
+           "type": "Lit",
+           "value": 0.0
+          }
+         ]
+        }
+       }
+      ]
      },
      {
       "type": "Eq",
