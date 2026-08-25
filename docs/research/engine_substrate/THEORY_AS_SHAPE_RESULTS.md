@@ -106,3 +106,57 @@ was refuted; this seed measures what is not yet reachable.
 **Still not established** (unchanged from above): where a real theory's shape comes from. The
 relation vocabulary here is authored by hand, and converting any of the 46 existing `Goal` sites to
 carry a shape is untested. That is the hard half and this seed does not touch it.
+
+
+## Where a theory's shape comes from — shape math, and the frame is measurable
+
+The gap left open above ("where does a real theory's shape come from") has an answer that is not
+"someone authors it": **you pick a starting point you already hold and iterate it against everything
+through order N.** A problem adjacent to one you hold is easy; a problem you have no reference frame
+for is intractable.
+
+That makes tractability a DISTANCE, and the distance is directly measurable with the algebra already
+in `term.rs`. Anti-unify the target against each held shape and read the SPECIFICITY of the least
+general generalisation — the fraction of leaf positions the lgg pins rather than leaving WILD. An
+all-WILD lgg means nothing is shared: no frame.
+
+Held: `wing = [has(airframe,wing), controls(aileron,wing)]`,
+`engine = [has(airframe,engine), controls(throttle,engine)]`.
+
+| target | lgg specificity | verdict |
+|---|---|---|
+| `radar` — same two-relation shape | **0.50** | derivable; template `[has(airframe,·?·), controls(·?·,·?·)]` |
+| `gear` — one relation, shares `has(airframe,·)` | **0.67** | derivable |
+| `proof` — different predicates AND arity | **0.00** | **no reference frame** |
+
+The separation is sharp — 0.50/0.67 against 0.00, nothing between — and it lands where the framing
+predicts: the alien target has no frame, and the two adjacent ones do, with `gear` (which shares
+more of the one relation it has) scoring HIGHER than `radar`.
+
+### The operational finding: iterate over PARTS, not whole shapes
+
+**The first run of this got `gear` wrong, and the way it got it wrong is the useful part.**
+Anti-unifying whole SIGNATURES, `gear` scored 0.00 — reported as intractable — because it carries one
+relation where `wing` carries two, and differing arity collapses the entire lgg to WILD. That
+conflates *"different length"* with *"nothing shared"*.
+
+Aligning relation-to-relation instead — each target relation against its best-matching held relation
+— moves `gear` from 0.00 to 0.67 while leaving `proof` at 0.00 and `radar` unchanged. So:
+
+> **"Iterate it against anything and everything" has to mean iterating over PARTS.** Whole-shape
+> anti-unification produces FALSE INTRACTABILITY: a problem you have a perfectly good frame for
+> reads as unreachable purely because it is a different size. An agent using the whole-shape form
+> would abandon tractable problems and never learn why.
+
+That is a failure mode worth naming, because it is silent — an all-WILD lgg looks exactly like a
+genuinely alien problem.
+
+### Not established
+
+* **Order N.** Only order 1 was measured — one transform from one held shape. Composing transforms
+  (adjacent-to-adjacent-to-target) is untested, and it is what "through order N" actually means.
+* **The threshold.** 0.3 was used to print a verdict; the measured gap is 0.50/0.67 vs 0.00, so
+  nothing here fixes where the line sits, and on this tree's own standing rule a bare threshold is a
+  number standing where a shape belongs.
+* **Scale.** Three targets, two held shapes, a hand-made vocabulary. Synthetic-proven mechanism, not
+  benchmark value.
