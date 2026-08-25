@@ -1736,6 +1736,31 @@ REGISTRY.register(Seed(
 ))
 
 REGISTRY.register(Seed(
+    id="aperture_belief_gate", version="1.0.0",
+    depends_on=("observer_aperture",),
+    installer=_installer_from_manifest("aperture_belief_gate"),
+    description="WHAT YOU CANNOT RESOLVE CANNOT DISCONFIRM YOU — the bridge "
+                "between two disorder mechanisms this tree models separately. "
+                "psychosis_grounding gates evidence by CONFIDENCE: the reality "
+                "pull is divided by (1+conf), so a confident prior down-weights "
+                "contradictory evidence (aberrant precision) — the evidence "
+                "arrives and is discounted. observer_aperture gates evidence by "
+                "APERTURE: an unresolved dimension is quotiented away and a "
+                "covering decode leaves an EMPTY residual — nothing to discount "
+                "because nothing arrived. This seed writes the second into the "
+                "variable the first already reads: `obs` carries the "
+                "disconfirming content only when the current-generation percept "
+                "view has a non-empty residual, otherwise it mirrors the belief "
+                "and the pull is exactly zero (the same construction the "
+                "psychosis seed documents for a sycophantic confirmer). The two "
+                "stay distinguishable in the arithmetic, which is the point: "
+                "precision gating DIVIDES a non-zero pull, aperture gating "
+                "ZEROES it. Inert by construction — matches on holds_belief, so "
+                "a graph without that edge is unchanged. Prereg: "
+                "APERTURE_AETIOLOGY_CROSSOVER_PREREG.md (block 365000).",
+))
+
+REGISTRY.register(Seed(
     id="parallax_efference", version="1.0.0",
     depends_on=("vision_motion_group",),
     installer=_installer_from_manifest("parallax_efference"),

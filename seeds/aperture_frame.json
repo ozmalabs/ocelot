@@ -1,6 +1,6 @@
 {
   "id": "aperture_frame",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "comment": "Emit seeds/aperture_frame.json -- APERTURE IS A FRAME: chosen, forced, or negotiated.\n\n`observer_aperture` made aperture graph data, but as a single authored list on the\nobserver -- an acuity it simply HAS. That is incomplete. An aperture is a FRAME\nyou are viewing in, and a frame has provenance: you can choose it, it can be\nforced on you, or you can negotiate it with someone else.\n\nThis is the reference-frame sense, not the Fillmore `Frame` (which is language\nsemantics and is left alone). And it is not a metaphor here: `CLAUDE.md`'s\nframe/continuum invariant puts every lossy or real-valued map in\n`Hom(frame, frame)` rather than inside a frame's coordinates, and the projection\n`observer_aperture` performs IS such a map -- world frame to observer frame, with\nthe collapse marker naming exactly what the map discards.\n\nTwo things follow, and the second is the whole point.\n\n**The effective aperture is a MEET.** Every frame in force narrows what you\nresolve, so `resolves` stops being authored and becomes derived: the fold of\n`Intersect` over your own maximum acuity and every frame currently on you. An\nobserver declares its PHYSIOLOGY (`ap_full`); the frames decide the rest.\n\n**The three modes decode identically and differ entirely in RECOURSE.** This is\nthe testable content -- same residual, three different things you may do about it:\n\n  * CHOSEN -- you narrowed your own attention, so you may widen it unilaterally.\n    An outstanding residual is a reason to look harder, and `ap_relax_chosen`\n    drops the frame and re-arms the decode. Attention, mechanically.\n  * FORCED -- someone or something else narrowed it, and you cannot lift it. An\n    outstanding residual here is a gap you can DETECT and cannot close alone, so\n    it opens a `SelfConcern` on the existing human-gated spine. This is the\n    knowing-THAT-without-knowing-WHAT case from `ONE_LOOP_MANY_GRAINS.md`, one\n    level up: not merely unresolved, but unresolvable BY YOU.\n  * NEGOTIATED -- it binds several parties, so no one may change it alone. A\n    proposal takes effect only when every bound party has accepted; a unilateral\n    accept does nothing at all.\n\nAn agent that can only be forced has no attention; one that can only choose has\nno social constraint; one that cannot negotiate cannot establish common ground.\n",
   "depends_on": [
     "observer_aperture"
@@ -76,6 +76,42 @@
       "tgt": {
         "type": "Observer",
         "var": "obs"
+      }
+    },
+    {
+      "provenance": "seed:aperture_frame:retracts",
+      "src": {
+        "type": "ApertureRetraction",
+        "var": "r"
+      },
+      "edge_type": "retracts",
+      "tgt": {
+        "type": "Aperture",
+        "var": "ap"
+      }
+    },
+    {
+      "provenance": "seed:aperture_frame:retraction-binds",
+      "src": {
+        "type": "ApertureRetraction",
+        "var": "r"
+      },
+      "edge_type": "binds",
+      "tgt": {
+        "type": "Observer",
+        "var": "obs"
+      }
+    },
+    {
+      "provenance": "seed:aperture_frame:accepts-retraction",
+      "src": {
+        "type": "Observer",
+        "var": "obs"
+      },
+      "edge_type": "accepts_retraction",
+      "tgt": {
+        "type": "ApertureRetraction",
+        "var": "r"
       }
     },
     {
@@ -538,6 +574,60 @@
       "effects": [
         [
           "add_edge",
+          "obs",
+          "agreed_aperture",
+          "ap"
+        ]
+      ]
+    },
+    {
+      "name": "af_retract_when_every_party_accepts",
+      "comment": "RENEGOTIATION -- the only way out of a negotiated frame, and the exact mirror of adoption: it comes off when every bound party accepts that it should, and not before. A frame one party could drop alone would just be a chosen frame with extra steps, which is why `af_relax_chosen` deliberately never touches this edge.\n\nRecorded because it was not designed: this rule was missing until APERTURE_PATHOLOGIES.md asked what the SECOND intervention on a shared blind spot would be. The rule the machinery lacked turned out to be the treatment the mechanism implies. Dropping the edge re-arms `af_effective_aperture` (the frame count changes), which bumps the generation, which invalidates every view taken through the retracted frame -- so perception genuinely widens rather than the edge merely disappearing.",
+      "match": [
+        [
+          "r",
+          "binds",
+          "obs"
+        ],
+        [
+          "r",
+          "retracts",
+          "ap"
+        ],
+        [
+          "obs",
+          "agreed_aperture",
+          "ap"
+        ]
+      ],
+      "where": {
+        "type": "Gte",
+        "a": {
+          "type": "Count",
+          "source": {
+            "type": "InNeighbours",
+            "node": {
+              "type": "Var",
+              "name": "r"
+            },
+            "edge_type": "accepts_retraction"
+          }
+        },
+        "b": {
+          "type": "Count",
+          "source": {
+            "type": "Neighbours",
+            "node": {
+              "type": "Var",
+              "name": "r"
+            },
+            "edge_type": "binds"
+          }
+        }
+      },
+      "effects": [
+        [
+          "del_edge",
           "obs",
           "agreed_aperture",
           "ap"
