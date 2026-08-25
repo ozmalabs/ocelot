@@ -1,0 +1,220 @@
+{
+  "id": "learning_aperture_gate",
+  "version": "1.0.0",
+  "comment": "Emit seeds/learning_aperture_gate.json -- AN OBSERVATION REACHES THE LEARNER\nONLY IF ITS DIMENSION IS RESOLVED.\n\nThird occurrence of one shape, kept deliberately identical to the other two:\n\n  * `abg_gate_observation` gates a BELIEF's reality channel on the manifold\n    residual;\n  * `future_manifold.rs`'s aperture mask gates a PROJECTION's per-dimension\n    assessment;\n  * this gates a LEARNER's observation channel.\n\nMembership is read from graph data (`In(item.obs_dim, aff.stress_resolves_dims)`),\nnever a tuned coefficient.\n\nWhat makes this one alarming rather than merely symmetric: `lp_residual` computes\n`residual = |obs - held|`. An observation the agent cannot resolve arrives looking\nlike what it already predicted, so the residual is ZERO -- and zero is not \"I could\nnot tell\", it is the signal for \"I have mastered this\". A compressed learner is\ntherefore dropped from attention AS IF LEARNED.\n\n`obs_established` is written alongside so the two zeroes are at least separable by\nsomething. Nothing in `learning_progress_curiosity` reads it yet; that is the\nfinding, not the fix.\n\nPrereg: STRESS_COMPRESSES_APERTURE_PREREG.md addendum (block 366500).\n",
+  "depends_on": [],
+  "productions": [
+    {
+      "provenance": "seed:learning_aperture_gate:gates-attention",
+      "src": {
+        "type": "AffectiveState",
+        "var": "aff"
+      },
+      "edge_type": "gates_attention",
+      "tgt": {
+        "type": "CuriosityHub",
+        "var": "hub"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "lag_gate_observation",
+      "comment": "The learner observes `obs_true` only in dimensions it can resolve. In a dimension it cannot, the observation is indistinguishable from its own held prediction -- so `obs` is set to `held`, which is exactly what an unresolvable difference looks like from inside. `obs_established` records which happened. Guarded on the current value so the fixpoint terminates.",
+      "match": [
+        [
+          "aff",
+          "gates_attention",
+          "hub"
+        ],
+        [
+          "hub",
+          "has_attention_item",
+          "item"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "And",
+          "items": [
+            {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "obs"
+              },
+              "b": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "In",
+                  "member": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "item"
+                    },
+                    "key": "obs_dim"
+                  },
+                  "container": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "aff"
+                    },
+                    "key": "stress_resolves_dims"
+                  }
+                },
+                "then": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "item"
+                  },
+                  "key": "obs_true"
+                },
+                "other": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "item"
+                  },
+                  "key": "held"
+                }
+              }
+            },
+            {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "obs_established"
+              },
+              "b": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "In",
+                  "member": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "item"
+                    },
+                    "key": "obs_dim"
+                  },
+                  "container": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "aff"
+                    },
+                    "key": "stress_resolves_dims"
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": 1.0
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              }
+            }
+          ]
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "item",
+          "obs",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "In",
+                "member": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "item"
+                  },
+                  "key": "obs_dim"
+                },
+                "container": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "aff"
+                  },
+                  "key": "stress_resolves_dims"
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "obs_true"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "held"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "item",
+          "obs_established",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "In",
+                "member": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "item"
+                  },
+                  "key": "obs_dim"
+                },
+                "container": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "aff"
+                  },
+                  "key": "stress_resolves_dims"
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1.0
+              },
+              "other": {
+                "type": "Lit",
+                "value": 0.0
+              }
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}
