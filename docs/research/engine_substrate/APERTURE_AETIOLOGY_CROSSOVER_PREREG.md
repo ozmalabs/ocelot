@@ -37,7 +37,23 @@ requires a BRIDGE, and the bridge is the substantive part of the build.
 **`seeds/aperture_belief_gate.json` (to build).** An `Observer -holds_belief-> Belief` edge (Γ
 production), and ONE rule: the belief's reality channel `obs` carries disconfirmation only if the
 observer's current-generation percept view has a NON-EMPTY residual; otherwise `obs` is set to the
-belief's own committed centre, which the existing `pg_ground` arithmetic makes a zero-magnitude pull.
+belief's own current value, which the existing `pg_ground` arithmetic makes a zero-magnitude pull.
+
+> **ERRATUM, registered BEFORE any measurement (still base sha `19a446465c`, no run taken).** The
+> sentence above originally said *"set to the belief's own committed CENTRE, which the existing
+> `pg_ground` arithmetic makes a zero-magnitude pull."* That is arithmetically false and the two
+> halves of it contradict each other: `obs = committed_center` yields
+> `kx·w_ext·(basin − belief)/(1+conf)`, which is not zero — it actively pulls the belief FURTHER
+> INTO its own basin. The registered *intent* was the zero-pull case, so the implementation is
+> `obs = belief`, which gives exactly that, and is the same construction `psychosis_grounding`
+> already documents for a sycophantic confirmer (*"a sycophantic confirmer sets `obs2=belief` so
+> this is 0 — a pure mirror"*). Corrected here rather than in the code, because a prereg that is
+> quietly reconciled to whatever was built is not a prereg.
+>
+> Note what the discarded reading would have been, since it is a real and separate mechanism worth
+> someone measuring later: an unresolvable world that appears to *confirm* you, rather than one that
+> merely tells you nothing. Under `pg_ground`'s confidence rule both readings corroborate — a source
+> that agrees raises confidence — so the mirror is the conservative choice and the weaker claim.
 
 That is not an ad hoc coupling invented for this experiment. It is the literal statement of
 `APERTURE_PATHOLOGIES.md` §5's claim — *"evidence that never arrives AS evidence"* — expressed in
