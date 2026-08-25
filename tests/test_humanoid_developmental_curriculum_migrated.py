@@ -264,6 +264,12 @@ def test_retained_replay_refutes_receipt_grounded_task_effect_shortfall():
     assert attrs["last_realized_task_effect_units"] == 1
     assert attrs["last_forecast_refutation_kind"] == "task_effect_shortfall"
     assert attrs["trajectory_replay_completed_seq"] == 5
+    assert agent.s.node(transition)["attrs"][
+        "situated_forecast_counterexample_count"
+    ] == 1
+    assert agent.s.node(transition)["attrs"].get(
+        "situated_forecast_confirmation_count", 0
+    ) == 0
 
 
 def test_completed_deployment_plan_projects_normal_locomotion_goal():

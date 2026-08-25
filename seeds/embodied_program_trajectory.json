@@ -3848,7 +3848,7 @@
    "area": "cognitive_pareto",
    "latency_class": "soft_realtime",
    "batch": false,
-   "comment": "Pareto removes only refuted paths. Temporal foveation first restricts choice to the shortest sufficient prefix. When a situated manifold context exists, a second Pareto restriction removes only paths dominated in all seven conditional retained-future dimensions; no scalar capacity score is formed. Situated task, evidence, and practice coordinates order the surviving tradeoffs. Selection grants no actuator authority.",
+   "comment": "Pareto removes only refuted paths. Temporal foveation first restricts choice to the shortest sufficient prefix. When a situated manifold context exists, a second Pareto restriction removes only paths dominated in all seven conditional retained-future dimensions; no scalar capacity score is formed. Situated task, evidence, and practice coordinates order the surviving tradeoffs. Receipt counterexamples suspend reuse when they no longer leave a positive transition forecast evidence ratio. Selection grants no actuator authority.",
    "match": [
     [
      "owner",
@@ -4184,31 +4184,82 @@
                 }
                },
                {
-                "type": "Not",
-                "arg": {
-                 "type": "Exists",
-                 "source": {
-                  "type": "Neighbours",
-                  "node": {
-                   "type": "Var",
-                   "name": "frontier_path"
-                  },
-                  "edge_type": "manifold_blocked_from_embodied_program_transition",
-                  "any_type": false
-                 },
-                 "var_name": "blocked_state_transition",
-                 "predicate": {
-                  "type": "Eq",
+                "type": "And",
+                "items": [
+                 {
+                  "type": "Gt",
                   "a": {
-                   "type": "Var",
-                   "name": "blocked_state_transition"
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Lit",
+                     "value": 1
+                    },
+                    {
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "path_next_transition"
+                       },
+                       "key": "situated_forecast_confirmation_count"
+                      },
+                      {
+                       "type": "Lit",
+                       "value": 0
+                      }
+                     ]
+                    }
+                   ]
                   },
                   "b": {
-                   "type": "Var",
-                   "name": "path_next_transition"
+                   "type": "Plus",
+                   "items": [
+                    {
+                     "type": "Attr",
+                     "node": {
+                      "type": "Var",
+                      "name": "path_next_transition"
+                     },
+                     "key": "situated_forecast_counterexample_count"
+                    },
+                    {
+                     "type": "Lit",
+                     "value": 0
+                    }
+                   ]
+                  }
+                 },
+                 {
+                  "type": "Not",
+                  "arg": {
+                   "type": "Exists",
+                   "source": {
+                    "type": "Neighbours",
+                    "node": {
+                     "type": "Var",
+                     "name": "frontier_path"
+                    },
+                    "edge_type": "manifold_blocked_from_embodied_program_transition",
+                    "any_type": false
+                   },
+                   "var_name": "blocked_state_transition",
+                   "predicate": {
+                    "type": "Eq",
+                    "a": {
+                     "type": "Var",
+                     "name": "blocked_state_transition"
+                    },
+                    "b": {
+                     "type": "Var",
+                     "name": "path_next_transition"
+                    }
+                   }
                   }
                  }
-                }
+                ]
                }
               ]
              }
@@ -4252,31 +4303,82 @@
                  }
                 },
                 {
-                 "type": "Not",
-                 "arg": {
-                  "type": "Exists",
-                  "source": {
-                   "type": "Neighbours",
-                   "node": {
-                    "type": "Var",
-                    "name": "frontier_path"
-                   },
-                   "edge_type": "manifold_blocked_from_embodied_program_transition",
-                   "any_type": false
-                  },
-                  "var_name": "blocked_state_transition",
-                  "predicate": {
-                   "type": "Eq",
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Gt",
                    "a": {
-                    "type": "Var",
-                    "name": "blocked_state_transition"
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": 1
+                     },
+                     {
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "current_transition_source"
+                        },
+                        "key": "situated_forecast_confirmation_count"
+                       },
+                       {
+                        "type": "Lit",
+                        "value": 0
+                       }
+                      ]
+                     }
+                    ]
                    },
                    "b": {
-                    "type": "Var",
-                    "name": "current_transition_source"
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "current_transition_source"
+                      },
+                      "key": "situated_forecast_counterexample_count"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    ]
+                   }
+                  },
+                  {
+                   "type": "Not",
+                   "arg": {
+                    "type": "Exists",
+                    "source": {
+                     "type": "Neighbours",
+                     "node": {
+                      "type": "Var",
+                      "name": "frontier_path"
+                     },
+                     "edge_type": "manifold_blocked_from_embodied_program_transition",
+                     "any_type": false
+                    },
+                    "var_name": "blocked_state_transition",
+                    "predicate": {
+                     "type": "Eq",
+                     "a": {
+                      "type": "Var",
+                      "name": "blocked_state_transition"
+                     },
+                     "b": {
+                      "type": "Var",
+                      "name": "current_transition_source"
+                     }
+                    }
                    }
                   }
-                 }
+                 ]
                 }
                ]
               }
@@ -4611,31 +4713,82 @@
                   }
                  },
                  {
-                  "type": "Not",
-                  "arg": {
-                   "type": "Exists",
-                   "source": {
-                    "type": "Neighbours",
-                    "node": {
-                     "type": "Var",
-                     "name": "frontier_path"
-                    },
-                    "edge_type": "manifold_blocked_from_embodied_program_transition",
-                    "any_type": false
-                   },
-                   "var_name": "blocked_state_transition",
-                   "predicate": {
-                    "type": "Eq",
+                  "type": "And",
+                  "items": [
+                   {
+                    "type": "Gt",
                     "a": {
-                     "type": "Var",
-                     "name": "blocked_state_transition"
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Lit",
+                       "value": 1
+                      },
+                      {
+                       "type": "Plus",
+                       "items": [
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "path_next_transition"
+                         },
+                         "key": "situated_forecast_confirmation_count"
+                        },
+                        {
+                         "type": "Lit",
+                         "value": 0
+                        }
+                       ]
+                      }
+                     ]
                     },
                     "b": {
-                     "type": "Var",
-                     "name": "path_next_transition"
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "path_next_transition"
+                       },
+                       "key": "situated_forecast_counterexample_count"
+                      },
+                      {
+                       "type": "Lit",
+                       "value": 0
+                      }
+                     ]
+                    }
+                   },
+                   {
+                    "type": "Not",
+                    "arg": {
+                     "type": "Exists",
+                     "source": {
+                      "type": "Neighbours",
+                      "node": {
+                       "type": "Var",
+                       "name": "frontier_path"
+                      },
+                      "edge_type": "manifold_blocked_from_embodied_program_transition",
+                      "any_type": false
+                     },
+                     "var_name": "blocked_state_transition",
+                     "predicate": {
+                      "type": "Eq",
+                      "a": {
+                       "type": "Var",
+                       "name": "blocked_state_transition"
+                      },
+                      "b": {
+                       "type": "Var",
+                       "name": "path_next_transition"
+                      }
+                     }
                     }
                    }
-                  }
+                  ]
                  }
                 ]
                }
@@ -4679,31 +4832,82 @@
                    }
                   },
                   {
-                   "type": "Not",
-                   "arg": {
-                    "type": "Exists",
-                    "source": {
-                     "type": "Neighbours",
-                     "node": {
-                      "type": "Var",
-                      "name": "frontier_path"
-                     },
-                     "edge_type": "manifold_blocked_from_embodied_program_transition",
-                     "any_type": false
-                    },
-                    "var_name": "blocked_state_transition",
-                    "predicate": {
-                     "type": "Eq",
+                   "type": "And",
+                   "items": [
+                    {
+                     "type": "Gt",
                      "a": {
-                      "type": "Var",
-                      "name": "blocked_state_transition"
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Lit",
+                        "value": 1
+                       },
+                       {
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "current_transition_source"
+                          },
+                          "key": "situated_forecast_confirmation_count"
+                         },
+                         {
+                          "type": "Lit",
+                          "value": 0
+                         }
+                        ]
+                       }
+                      ]
                      },
                      "b": {
-                      "type": "Var",
-                      "name": "current_transition_source"
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "current_transition_source"
+                        },
+                        "key": "situated_forecast_counterexample_count"
+                       },
+                       {
+                        "type": "Lit",
+                        "value": 0
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "type": "Not",
+                     "arg": {
+                      "type": "Exists",
+                      "source": {
+                       "type": "Neighbours",
+                       "node": {
+                        "type": "Var",
+                        "name": "frontier_path"
+                       },
+                       "edge_type": "manifold_blocked_from_embodied_program_transition",
+                       "any_type": false
+                      },
+                      "var_name": "blocked_state_transition",
+                      "predicate": {
+                       "type": "Eq",
+                       "a": {
+                        "type": "Var",
+                        "name": "blocked_state_transition"
+                       },
+                       "b": {
+                        "type": "Var",
+                        "name": "current_transition_source"
+                       }
+                      }
                      }
                     }
-                   }
+                   ]
                   }
                  ]
                 }
@@ -5044,31 +5248,82 @@
                      }
                     },
                     {
-                     "type": "Not",
-                     "arg": {
-                      "type": "Exists",
-                      "source": {
-                       "type": "Neighbours",
-                       "node": {
-                        "type": "Var",
-                        "name": "frontier_path"
-                       },
-                       "edge_type": "manifold_blocked_from_embodied_program_transition",
-                       "any_type": false
-                      },
-                      "var_name": "blocked_state_transition",
-                      "predicate": {
-                       "type": "Eq",
+                     "type": "And",
+                     "items": [
+                      {
+                       "type": "Gt",
                        "a": {
-                        "type": "Var",
-                        "name": "blocked_state_transition"
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Lit",
+                          "value": 1
+                         },
+                         {
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "path_next_transition"
+                            },
+                            "key": "situated_forecast_confirmation_count"
+                           },
+                           {
+                            "type": "Lit",
+                            "value": 0
+                           }
+                          ]
+                         }
+                        ]
                        },
                        "b": {
-                        "type": "Var",
-                        "name": "path_next_transition"
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "path_next_transition"
+                          },
+                          "key": "situated_forecast_counterexample_count"
+                         },
+                         {
+                          "type": "Lit",
+                          "value": 0
+                         }
+                        ]
+                       }
+                      },
+                      {
+                       "type": "Not",
+                       "arg": {
+                        "type": "Exists",
+                        "source": {
+                         "type": "Neighbours",
+                         "node": {
+                          "type": "Var",
+                          "name": "frontier_path"
+                         },
+                         "edge_type": "manifold_blocked_from_embodied_program_transition",
+                         "any_type": false
+                        },
+                        "var_name": "blocked_state_transition",
+                        "predicate": {
+                         "type": "Eq",
+                         "a": {
+                          "type": "Var",
+                          "name": "blocked_state_transition"
+                         },
+                         "b": {
+                          "type": "Var",
+                          "name": "path_next_transition"
+                         }
+                        }
                        }
                       }
-                     }
+                     ]
                     }
                    ]
                   }
@@ -5112,31 +5367,82 @@
                       }
                      },
                      {
-                      "type": "Not",
-                      "arg": {
-                       "type": "Exists",
-                       "source": {
-                        "type": "Neighbours",
-                        "node": {
-                         "type": "Var",
-                         "name": "frontier_path"
-                        },
-                        "edge_type": "manifold_blocked_from_embodied_program_transition",
-                        "any_type": false
-                       },
-                       "var_name": "blocked_state_transition",
-                       "predicate": {
-                        "type": "Eq",
+                      "type": "And",
+                      "items": [
+                       {
+                        "type": "Gt",
                         "a": {
-                         "type": "Var",
-                         "name": "blocked_state_transition"
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Lit",
+                           "value": 1
+                          },
+                          {
+                           "type": "Plus",
+                           "items": [
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "current_transition_source"
+                             },
+                             "key": "situated_forecast_confirmation_count"
+                            },
+                            {
+                             "type": "Lit",
+                             "value": 0
+                            }
+                           ]
+                          }
+                         ]
                         },
                         "b": {
-                         "type": "Var",
-                         "name": "current_transition_source"
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "current_transition_source"
+                           },
+                           "key": "situated_forecast_counterexample_count"
+                          },
+                          {
+                           "type": "Lit",
+                           "value": 0
+                          }
+                         ]
+                        }
+                       },
+                       {
+                        "type": "Not",
+                        "arg": {
+                         "type": "Exists",
+                         "source": {
+                          "type": "Neighbours",
+                          "node": {
+                           "type": "Var",
+                           "name": "frontier_path"
+                          },
+                          "edge_type": "manifold_blocked_from_embodied_program_transition",
+                          "any_type": false
+                         },
+                         "var_name": "blocked_state_transition",
+                         "predicate": {
+                          "type": "Eq",
+                          "a": {
+                           "type": "Var",
+                           "name": "blocked_state_transition"
+                          },
+                          "b": {
+                           "type": "Var",
+                           "name": "current_transition_source"
+                          }
+                         }
                         }
                        }
-                      }
+                      ]
                      }
                     ]
                    }
@@ -5536,31 +5842,82 @@
                       }
                      },
                      {
-                      "type": "Not",
-                      "arg": {
-                       "type": "Exists",
-                       "source": {
-                        "type": "Neighbours",
-                        "node": {
-                         "type": "Var",
-                         "name": "frontier_path"
-                        },
-                        "edge_type": "manifold_blocked_from_embodied_program_transition",
-                        "any_type": false
-                       },
-                       "var_name": "blocked_state_transition",
-                       "predicate": {
-                        "type": "Eq",
+                      "type": "And",
+                      "items": [
+                       {
+                        "type": "Gt",
                         "a": {
-                         "type": "Var",
-                         "name": "blocked_state_transition"
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Lit",
+                           "value": 1
+                          },
+                          {
+                           "type": "Plus",
+                           "items": [
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "path_next_transition"
+                             },
+                             "key": "situated_forecast_confirmation_count"
+                            },
+                            {
+                             "type": "Lit",
+                             "value": 0
+                            }
+                           ]
+                          }
+                         ]
                         },
                         "b": {
-                         "type": "Var",
-                         "name": "path_next_transition"
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "path_next_transition"
+                           },
+                           "key": "situated_forecast_counterexample_count"
+                          },
+                          {
+                           "type": "Lit",
+                           "value": 0
+                          }
+                         ]
+                        }
+                       },
+                       {
+                        "type": "Not",
+                        "arg": {
+                         "type": "Exists",
+                         "source": {
+                          "type": "Neighbours",
+                          "node": {
+                           "type": "Var",
+                           "name": "frontier_path"
+                          },
+                          "edge_type": "manifold_blocked_from_embodied_program_transition",
+                          "any_type": false
+                         },
+                         "var_name": "blocked_state_transition",
+                         "predicate": {
+                          "type": "Eq",
+                          "a": {
+                           "type": "Var",
+                           "name": "blocked_state_transition"
+                          },
+                          "b": {
+                           "type": "Var",
+                           "name": "path_next_transition"
+                          }
+                         }
                         }
                        }
-                      }
+                      ]
                      }
                     ]
                    }
@@ -5604,31 +5961,82 @@
                        }
                       },
                       {
-                       "type": "Not",
-                       "arg": {
-                        "type": "Exists",
-                        "source": {
-                         "type": "Neighbours",
-                         "node": {
-                          "type": "Var",
-                          "name": "frontier_path"
-                         },
-                         "edge_type": "manifold_blocked_from_embodied_program_transition",
-                         "any_type": false
-                        },
-                        "var_name": "blocked_state_transition",
-                        "predicate": {
-                         "type": "Eq",
+                       "type": "And",
+                       "items": [
+                        {
+                         "type": "Gt",
                          "a": {
-                          "type": "Var",
-                          "name": "blocked_state_transition"
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Lit",
+                            "value": 1
+                           },
+                           {
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "current_transition_source"
+                              },
+                              "key": "situated_forecast_confirmation_count"
+                             },
+                             {
+                              "type": "Lit",
+                              "value": 0
+                             }
+                            ]
+                           }
+                          ]
                          },
                          "b": {
-                          "type": "Var",
-                          "name": "current_transition_source"
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "current_transition_source"
+                            },
+                            "key": "situated_forecast_counterexample_count"
+                           },
+                           {
+                            "type": "Lit",
+                            "value": 0
+                           }
+                          ]
+                         }
+                        },
+                        {
+                         "type": "Not",
+                         "arg": {
+                          "type": "Exists",
+                          "source": {
+                           "type": "Neighbours",
+                           "node": {
+                            "type": "Var",
+                            "name": "frontier_path"
+                           },
+                           "edge_type": "manifold_blocked_from_embodied_program_transition",
+                           "any_type": false
+                          },
+                          "var_name": "blocked_state_transition",
+                          "predicate": {
+                           "type": "Eq",
+                           "a": {
+                            "type": "Var",
+                            "name": "blocked_state_transition"
+                           },
+                           "b": {
+                            "type": "Var",
+                            "name": "current_transition_source"
+                           }
+                          }
                          }
                         }
-                       }
+                       ]
                       }
                      ]
                     }
@@ -5969,31 +6377,82 @@
                          }
                         },
                         {
-                         "type": "Not",
-                         "arg": {
-                          "type": "Exists",
-                          "source": {
-                           "type": "Neighbours",
-                           "node": {
-                            "type": "Var",
-                            "name": "frontier_path"
-                           },
-                           "edge_type": "manifold_blocked_from_embodied_program_transition",
-                           "any_type": false
-                          },
-                          "var_name": "blocked_state_transition",
-                          "predicate": {
-                           "type": "Eq",
+                         "type": "And",
+                         "items": [
+                          {
+                           "type": "Gt",
                            "a": {
-                            "type": "Var",
-                            "name": "blocked_state_transition"
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Lit",
+                              "value": 1
+                             },
+                             {
+                              "type": "Plus",
+                              "items": [
+                               {
+                                "type": "Attr",
+                                "node": {
+                                 "type": "Var",
+                                 "name": "path_next_transition"
+                                },
+                                "key": "situated_forecast_confirmation_count"
+                               },
+                               {
+                                "type": "Lit",
+                                "value": 0
+                               }
+                              ]
+                             }
+                            ]
                            },
                            "b": {
-                            "type": "Var",
-                            "name": "path_next_transition"
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "path_next_transition"
+                              },
+                              "key": "situated_forecast_counterexample_count"
+                             },
+                             {
+                              "type": "Lit",
+                              "value": 0
+                             }
+                            ]
+                           }
+                          },
+                          {
+                           "type": "Not",
+                           "arg": {
+                            "type": "Exists",
+                            "source": {
+                             "type": "Neighbours",
+                             "node": {
+                              "type": "Var",
+                              "name": "frontier_path"
+                             },
+                             "edge_type": "manifold_blocked_from_embodied_program_transition",
+                             "any_type": false
+                            },
+                            "var_name": "blocked_state_transition",
+                            "predicate": {
+                             "type": "Eq",
+                             "a": {
+                              "type": "Var",
+                              "name": "blocked_state_transition"
+                             },
+                             "b": {
+                              "type": "Var",
+                              "name": "path_next_transition"
+                             }
+                            }
                            }
                           }
-                         }
+                         ]
                         }
                        ]
                       }
@@ -6037,31 +6496,82 @@
                           }
                          },
                          {
-                          "type": "Not",
-                          "arg": {
-                           "type": "Exists",
-                           "source": {
-                            "type": "Neighbours",
-                            "node": {
-                             "type": "Var",
-                             "name": "frontier_path"
-                            },
-                            "edge_type": "manifold_blocked_from_embodied_program_transition",
-                            "any_type": false
-                           },
-                           "var_name": "blocked_state_transition",
-                           "predicate": {
-                            "type": "Eq",
+                          "type": "And",
+                          "items": [
+                           {
+                            "type": "Gt",
                             "a": {
-                             "type": "Var",
-                             "name": "blocked_state_transition"
+                             "type": "Plus",
+                             "items": [
+                              {
+                               "type": "Lit",
+                               "value": 1
+                              },
+                              {
+                               "type": "Plus",
+                               "items": [
+                                {
+                                 "type": "Attr",
+                                 "node": {
+                                  "type": "Var",
+                                  "name": "current_transition_source"
+                                 },
+                                 "key": "situated_forecast_confirmation_count"
+                                },
+                                {
+                                 "type": "Lit",
+                                 "value": 0
+                                }
+                               ]
+                              }
+                             ]
                             },
                             "b": {
-                             "type": "Var",
-                             "name": "current_transition_source"
+                             "type": "Plus",
+                             "items": [
+                              {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "current_transition_source"
+                               },
+                               "key": "situated_forecast_counterexample_count"
+                              },
+                              {
+                               "type": "Lit",
+                               "value": 0
+                              }
+                             ]
+                            }
+                           },
+                           {
+                            "type": "Not",
+                            "arg": {
+                             "type": "Exists",
+                             "source": {
+                              "type": "Neighbours",
+                              "node": {
+                               "type": "Var",
+                               "name": "frontier_path"
+                              },
+                              "edge_type": "manifold_blocked_from_embodied_program_transition",
+                              "any_type": false
+                             },
+                             "var_name": "blocked_state_transition",
+                             "predicate": {
+                              "type": "Eq",
+                              "a": {
+                               "type": "Var",
+                               "name": "blocked_state_transition"
+                              },
+                              "b": {
+                               "type": "Var",
+                               "name": "current_transition_source"
+                              }
+                             }
                             }
                            }
-                          }
+                          ]
                          }
                         ]
                        }
@@ -7647,31 +8157,82 @@
                  }
                 },
                 {
-                 "type": "Not",
-                 "arg": {
-                  "type": "Exists",
-                  "source": {
-                   "type": "Neighbours",
-                   "node": {
-                    "type": "Var",
-                    "name": "frontier_path"
-                   },
-                   "edge_type": "manifold_blocked_from_embodied_program_transition",
-                   "any_type": false
-                  },
-                  "var_name": "blocked_state_transition",
-                  "predicate": {
-                   "type": "Eq",
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Gt",
                    "a": {
-                    "type": "Var",
-                    "name": "blocked_state_transition"
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": 1
+                     },
+                     {
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "path_next_transition"
+                        },
+                        "key": "situated_forecast_confirmation_count"
+                       },
+                       {
+                        "type": "Lit",
+                        "value": 0
+                       }
+                      ]
+                     }
+                    ]
                    },
                    "b": {
-                    "type": "Var",
-                    "name": "path_next_transition"
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "path_next_transition"
+                      },
+                      "key": "situated_forecast_counterexample_count"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    ]
+                   }
+                  },
+                  {
+                   "type": "Not",
+                   "arg": {
+                    "type": "Exists",
+                    "source": {
+                     "type": "Neighbours",
+                     "node": {
+                      "type": "Var",
+                      "name": "frontier_path"
+                     },
+                     "edge_type": "manifold_blocked_from_embodied_program_transition",
+                     "any_type": false
+                    },
+                    "var_name": "blocked_state_transition",
+                    "predicate": {
+                     "type": "Eq",
+                     "a": {
+                      "type": "Var",
+                      "name": "blocked_state_transition"
+                     },
+                     "b": {
+                      "type": "Var",
+                      "name": "path_next_transition"
+                     }
+                    }
                    }
                   }
-                 }
+                 ]
                 }
                ]
               }
@@ -7715,31 +8276,82 @@
                   }
                  },
                  {
-                  "type": "Not",
-                  "arg": {
-                   "type": "Exists",
-                   "source": {
-                    "type": "Neighbours",
-                    "node": {
-                     "type": "Var",
-                     "name": "frontier_path"
-                    },
-                    "edge_type": "manifold_blocked_from_embodied_program_transition",
-                    "any_type": false
-                   },
-                   "var_name": "blocked_state_transition",
-                   "predicate": {
-                    "type": "Eq",
+                  "type": "And",
+                  "items": [
+                   {
+                    "type": "Gt",
                     "a": {
-                     "type": "Var",
-                     "name": "blocked_state_transition"
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Lit",
+                       "value": 1
+                      },
+                      {
+                       "type": "Plus",
+                       "items": [
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "current_transition_source"
+                         },
+                         "key": "situated_forecast_confirmation_count"
+                        },
+                        {
+                         "type": "Lit",
+                         "value": 0
+                        }
+                       ]
+                      }
+                     ]
                     },
                     "b": {
-                     "type": "Var",
-                     "name": "current_transition_source"
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "current_transition_source"
+                       },
+                       "key": "situated_forecast_counterexample_count"
+                      },
+                      {
+                       "type": "Lit",
+                       "value": 0
+                      }
+                     ]
+                    }
+                   },
+                   {
+                    "type": "Not",
+                    "arg": {
+                     "type": "Exists",
+                     "source": {
+                      "type": "Neighbours",
+                      "node": {
+                       "type": "Var",
+                       "name": "frontier_path"
+                      },
+                      "edge_type": "manifold_blocked_from_embodied_program_transition",
+                      "any_type": false
+                     },
+                     "var_name": "blocked_state_transition",
+                     "predicate": {
+                      "type": "Eq",
+                      "a": {
+                       "type": "Var",
+                       "name": "blocked_state_transition"
+                      },
+                      "b": {
+                       "type": "Var",
+                       "name": "current_transition_source"
+                      }
+                     }
                     }
                    }
-                  }
+                  ]
                  }
                 ]
                }
@@ -8360,31 +8972,82 @@
                  }
                 },
                 {
-                 "type": "Not",
-                 "arg": {
-                  "type": "Exists",
-                  "source": {
-                   "type": "Neighbours",
-                   "node": {
-                    "type": "Var",
-                    "name": "frontier_path"
-                   },
-                   "edge_type": "manifold_blocked_from_embodied_program_transition",
-                   "any_type": false
-                  },
-                  "var_name": "blocked_state_transition",
-                  "predicate": {
-                   "type": "Eq",
+                 "type": "And",
+                 "items": [
+                  {
+                   "type": "Gt",
                    "a": {
-                    "type": "Var",
-                    "name": "blocked_state_transition"
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": 1
+                     },
+                     {
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "path_next_transition"
+                        },
+                        "key": "situated_forecast_confirmation_count"
+                       },
+                       {
+                        "type": "Lit",
+                        "value": 0
+                       }
+                      ]
+                     }
+                    ]
                    },
                    "b": {
-                    "type": "Var",
-                    "name": "path_next_transition"
+                    "type": "Plus",
+                    "items": [
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "path_next_transition"
+                      },
+                      "key": "situated_forecast_counterexample_count"
+                     },
+                     {
+                      "type": "Lit",
+                      "value": 0
+                     }
+                    ]
+                   }
+                  },
+                  {
+                   "type": "Not",
+                   "arg": {
+                    "type": "Exists",
+                    "source": {
+                     "type": "Neighbours",
+                     "node": {
+                      "type": "Var",
+                      "name": "frontier_path"
+                     },
+                     "edge_type": "manifold_blocked_from_embodied_program_transition",
+                     "any_type": false
+                    },
+                    "var_name": "blocked_state_transition",
+                    "predicate": {
+                     "type": "Eq",
+                     "a": {
+                      "type": "Var",
+                      "name": "blocked_state_transition"
+                     },
+                     "b": {
+                      "type": "Var",
+                      "name": "path_next_transition"
+                     }
+                    }
                    }
                   }
-                 }
+                 ]
                 }
                ]
               }
@@ -8428,31 +9091,82 @@
                   }
                  },
                  {
-                  "type": "Not",
-                  "arg": {
-                   "type": "Exists",
-                   "source": {
-                    "type": "Neighbours",
-                    "node": {
-                     "type": "Var",
-                     "name": "frontier_path"
-                    },
-                    "edge_type": "manifold_blocked_from_embodied_program_transition",
-                    "any_type": false
-                   },
-                   "var_name": "blocked_state_transition",
-                   "predicate": {
-                    "type": "Eq",
+                  "type": "And",
+                  "items": [
+                   {
+                    "type": "Gt",
                     "a": {
-                     "type": "Var",
-                     "name": "blocked_state_transition"
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Lit",
+                       "value": 1
+                      },
+                      {
+                       "type": "Plus",
+                       "items": [
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "current_transition_source"
+                         },
+                         "key": "situated_forecast_confirmation_count"
+                        },
+                        {
+                         "type": "Lit",
+                         "value": 0
+                        }
+                       ]
+                      }
+                     ]
                     },
                     "b": {
-                     "type": "Var",
-                     "name": "current_transition_source"
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "current_transition_source"
+                       },
+                       "key": "situated_forecast_counterexample_count"
+                      },
+                      {
+                       "type": "Lit",
+                       "value": 0
+                      }
+                     ]
+                    }
+                   },
+                   {
+                    "type": "Not",
+                    "arg": {
+                     "type": "Exists",
+                     "source": {
+                      "type": "Neighbours",
+                      "node": {
+                       "type": "Var",
+                       "name": "frontier_path"
+                      },
+                      "edge_type": "manifold_blocked_from_embodied_program_transition",
+                      "any_type": false
+                     },
+                     "var_name": "blocked_state_transition",
+                     "predicate": {
+                      "type": "Eq",
+                      "a": {
+                       "type": "Var",
+                       "name": "blocked_state_transition"
+                      },
+                      "b": {
+                       "type": "Var",
+                       "name": "current_transition_source"
+                      }
+                     }
                     }
                    }
-                  }
+                  ]
                  }
                 ]
                }
@@ -8793,31 +9507,82 @@
                     }
                    },
                    {
-                    "type": "Not",
-                    "arg": {
-                     "type": "Exists",
-                     "source": {
-                      "type": "Neighbours",
-                      "node": {
-                       "type": "Var",
-                       "name": "frontier_path"
-                      },
-                      "edge_type": "manifold_blocked_from_embodied_program_transition",
-                      "any_type": false
-                     },
-                     "var_name": "blocked_state_transition",
-                     "predicate": {
-                      "type": "Eq",
+                    "type": "And",
+                    "items": [
+                     {
+                      "type": "Gt",
                       "a": {
-                       "type": "Var",
-                       "name": "blocked_state_transition"
+                       "type": "Plus",
+                       "items": [
+                        {
+                         "type": "Lit",
+                         "value": 1
+                        },
+                        {
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "path_next_transition"
+                           },
+                           "key": "situated_forecast_confirmation_count"
+                          },
+                          {
+                           "type": "Lit",
+                           "value": 0
+                          }
+                         ]
+                        }
+                       ]
                       },
                       "b": {
-                       "type": "Var",
-                       "name": "path_next_transition"
+                       "type": "Plus",
+                       "items": [
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "path_next_transition"
+                         },
+                         "key": "situated_forecast_counterexample_count"
+                        },
+                        {
+                         "type": "Lit",
+                         "value": 0
+                        }
+                       ]
+                      }
+                     },
+                     {
+                      "type": "Not",
+                      "arg": {
+                       "type": "Exists",
+                       "source": {
+                        "type": "Neighbours",
+                        "node": {
+                         "type": "Var",
+                         "name": "frontier_path"
+                        },
+                        "edge_type": "manifold_blocked_from_embodied_program_transition",
+                        "any_type": false
+                       },
+                       "var_name": "blocked_state_transition",
+                       "predicate": {
+                        "type": "Eq",
+                        "a": {
+                         "type": "Var",
+                         "name": "blocked_state_transition"
+                        },
+                        "b": {
+                         "type": "Var",
+                         "name": "path_next_transition"
+                        }
+                       }
                       }
                      }
-                    }
+                    ]
                    }
                   ]
                  }
@@ -8861,31 +9626,82 @@
                      }
                     },
                     {
-                     "type": "Not",
-                     "arg": {
-                      "type": "Exists",
-                      "source": {
-                       "type": "Neighbours",
-                       "node": {
-                        "type": "Var",
-                        "name": "frontier_path"
-                       },
-                       "edge_type": "manifold_blocked_from_embodied_program_transition",
-                       "any_type": false
-                      },
-                      "var_name": "blocked_state_transition",
-                      "predicate": {
-                       "type": "Eq",
+                     "type": "And",
+                     "items": [
+                      {
+                       "type": "Gt",
                        "a": {
-                        "type": "Var",
-                        "name": "blocked_state_transition"
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Lit",
+                          "value": 1
+                         },
+                         {
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "current_transition_source"
+                            },
+                            "key": "situated_forecast_confirmation_count"
+                           },
+                           {
+                            "type": "Lit",
+                            "value": 0
+                           }
+                          ]
+                         }
+                        ]
                        },
                        "b": {
-                        "type": "Var",
-                        "name": "current_transition_source"
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "current_transition_source"
+                          },
+                          "key": "situated_forecast_counterexample_count"
+                         },
+                         {
+                          "type": "Lit",
+                          "value": 0
+                         }
+                        ]
+                       }
+                      },
+                      {
+                       "type": "Not",
+                       "arg": {
+                        "type": "Exists",
+                        "source": {
+                         "type": "Neighbours",
+                         "node": {
+                          "type": "Var",
+                          "name": "frontier_path"
+                         },
+                         "edge_type": "manifold_blocked_from_embodied_program_transition",
+                         "any_type": false
+                        },
+                        "var_name": "blocked_state_transition",
+                        "predicate": {
+                         "type": "Eq",
+                         "a": {
+                          "type": "Var",
+                          "name": "blocked_state_transition"
+                         },
+                         "b": {
+                          "type": "Var",
+                          "name": "current_transition_source"
+                         }
+                        }
                        }
                       }
-                     }
+                     ]
                     }
                    ]
                   }
@@ -9243,31 +10059,82 @@
                   }
                  },
                  {
-                  "type": "Not",
-                  "arg": {
-                   "type": "Exists",
-                   "source": {
-                    "type": "Neighbours",
-                    "node": {
-                     "type": "Var",
-                     "name": "frontier_path"
-                    },
-                    "edge_type": "manifold_blocked_from_embodied_program_transition",
-                    "any_type": false
-                   },
-                   "var_name": "blocked_state_transition",
-                   "predicate": {
-                    "type": "Eq",
+                  "type": "And",
+                  "items": [
+                   {
+                    "type": "Gt",
                     "a": {
-                     "type": "Var",
-                     "name": "blocked_state_transition"
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Lit",
+                       "value": 1
+                      },
+                      {
+                       "type": "Plus",
+                       "items": [
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "path_next_transition"
+                         },
+                         "key": "situated_forecast_confirmation_count"
+                        },
+                        {
+                         "type": "Lit",
+                         "value": 0
+                        }
+                       ]
+                      }
+                     ]
                     },
                     "b": {
-                     "type": "Var",
-                     "name": "path_next_transition"
+                     "type": "Plus",
+                     "items": [
+                      {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "path_next_transition"
+                       },
+                       "key": "situated_forecast_counterexample_count"
+                      },
+                      {
+                       "type": "Lit",
+                       "value": 0
+                      }
+                     ]
+                    }
+                   },
+                   {
+                    "type": "Not",
+                    "arg": {
+                     "type": "Exists",
+                     "source": {
+                      "type": "Neighbours",
+                      "node": {
+                       "type": "Var",
+                       "name": "frontier_path"
+                      },
+                      "edge_type": "manifold_blocked_from_embodied_program_transition",
+                      "any_type": false
+                     },
+                     "var_name": "blocked_state_transition",
+                     "predicate": {
+                      "type": "Eq",
+                      "a": {
+                       "type": "Var",
+                       "name": "blocked_state_transition"
+                      },
+                      "b": {
+                       "type": "Var",
+                       "name": "path_next_transition"
+                      }
+                     }
                     }
                    }
-                  }
+                  ]
                  }
                 ]
                }
@@ -9311,31 +10178,82 @@
                    }
                   },
                   {
-                   "type": "Not",
-                   "arg": {
-                    "type": "Exists",
-                    "source": {
-                     "type": "Neighbours",
-                     "node": {
-                      "type": "Var",
-                      "name": "frontier_path"
-                     },
-                     "edge_type": "manifold_blocked_from_embodied_program_transition",
-                     "any_type": false
-                    },
-                    "var_name": "blocked_state_transition",
-                    "predicate": {
-                     "type": "Eq",
+                   "type": "And",
+                   "items": [
+                    {
+                     "type": "Gt",
                      "a": {
-                      "type": "Var",
-                      "name": "blocked_state_transition"
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Lit",
+                        "value": 1
+                       },
+                       {
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "current_transition_source"
+                          },
+                          "key": "situated_forecast_confirmation_count"
+                         },
+                         {
+                          "type": "Lit",
+                          "value": 0
+                         }
+                        ]
+                       }
+                      ]
                      },
                      "b": {
-                      "type": "Var",
-                      "name": "current_transition_source"
+                      "type": "Plus",
+                      "items": [
+                       {
+                        "type": "Attr",
+                        "node": {
+                         "type": "Var",
+                         "name": "current_transition_source"
+                        },
+                        "key": "situated_forecast_counterexample_count"
+                       },
+                       {
+                        "type": "Lit",
+                        "value": 0
+                       }
+                      ]
+                     }
+                    },
+                    {
+                     "type": "Not",
+                     "arg": {
+                      "type": "Exists",
+                      "source": {
+                       "type": "Neighbours",
+                       "node": {
+                        "type": "Var",
+                        "name": "frontier_path"
+                       },
+                       "edge_type": "manifold_blocked_from_embodied_program_transition",
+                       "any_type": false
+                      },
+                      "var_name": "blocked_state_transition",
+                      "predicate": {
+                       "type": "Eq",
+                       "a": {
+                        "type": "Var",
+                        "name": "blocked_state_transition"
+                       },
+                       "b": {
+                        "type": "Var",
+                        "name": "current_transition_source"
+                       }
+                      }
                      }
                     }
-                   }
+                   ]
                   }
                  ]
                 }
@@ -9676,31 +10594,82 @@
                      }
                     },
                     {
-                     "type": "Not",
-                     "arg": {
-                      "type": "Exists",
-                      "source": {
-                       "type": "Neighbours",
-                       "node": {
-                        "type": "Var",
-                        "name": "frontier_path"
-                       },
-                       "edge_type": "manifold_blocked_from_embodied_program_transition",
-                       "any_type": false
-                      },
-                      "var_name": "blocked_state_transition",
-                      "predicate": {
-                       "type": "Eq",
+                     "type": "And",
+                     "items": [
+                      {
+                       "type": "Gt",
                        "a": {
-                        "type": "Var",
-                        "name": "blocked_state_transition"
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Lit",
+                          "value": 1
+                         },
+                         {
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "path_next_transition"
+                            },
+                            "key": "situated_forecast_confirmation_count"
+                           },
+                           {
+                            "type": "Lit",
+                            "value": 0
+                           }
+                          ]
+                         }
+                        ]
                        },
                        "b": {
-                        "type": "Var",
-                        "name": "path_next_transition"
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "path_next_transition"
+                          },
+                          "key": "situated_forecast_counterexample_count"
+                         },
+                         {
+                          "type": "Lit",
+                          "value": 0
+                         }
+                        ]
+                       }
+                      },
+                      {
+                       "type": "Not",
+                       "arg": {
+                        "type": "Exists",
+                        "source": {
+                         "type": "Neighbours",
+                         "node": {
+                          "type": "Var",
+                          "name": "frontier_path"
+                         },
+                         "edge_type": "manifold_blocked_from_embodied_program_transition",
+                         "any_type": false
+                        },
+                        "var_name": "blocked_state_transition",
+                        "predicate": {
+                         "type": "Eq",
+                         "a": {
+                          "type": "Var",
+                          "name": "blocked_state_transition"
+                         },
+                         "b": {
+                          "type": "Var",
+                          "name": "path_next_transition"
+                         }
+                        }
                        }
                       }
-                     }
+                     ]
                     }
                    ]
                   }
@@ -9744,31 +10713,82 @@
                       }
                      },
                      {
-                      "type": "Not",
-                      "arg": {
-                       "type": "Exists",
-                       "source": {
-                        "type": "Neighbours",
-                        "node": {
-                         "type": "Var",
-                         "name": "frontier_path"
-                        },
-                        "edge_type": "manifold_blocked_from_embodied_program_transition",
-                        "any_type": false
-                       },
-                       "var_name": "blocked_state_transition",
-                       "predicate": {
-                        "type": "Eq",
+                      "type": "And",
+                      "items": [
+                       {
+                        "type": "Gt",
                         "a": {
-                         "type": "Var",
-                         "name": "blocked_state_transition"
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Lit",
+                           "value": 1
+                          },
+                          {
+                           "type": "Plus",
+                           "items": [
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "current_transition_source"
+                             },
+                             "key": "situated_forecast_confirmation_count"
+                            },
+                            {
+                             "type": "Lit",
+                             "value": 0
+                            }
+                           ]
+                          }
+                         ]
                         },
                         "b": {
-                         "type": "Var",
-                         "name": "current_transition_source"
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "current_transition_source"
+                           },
+                           "key": "situated_forecast_counterexample_count"
+                          },
+                          {
+                           "type": "Lit",
+                           "value": 0
+                          }
+                         ]
+                        }
+                       },
+                       {
+                        "type": "Not",
+                        "arg": {
+                         "type": "Exists",
+                         "source": {
+                          "type": "Neighbours",
+                          "node": {
+                           "type": "Var",
+                           "name": "frontier_path"
+                          },
+                          "edge_type": "manifold_blocked_from_embodied_program_transition",
+                          "any_type": false
+                         },
+                         "var_name": "blocked_state_transition",
+                         "predicate": {
+                          "type": "Eq",
+                          "a": {
+                           "type": "Var",
+                           "name": "blocked_state_transition"
+                          },
+                          "b": {
+                           "type": "Var",
+                           "name": "current_transition_source"
+                          }
+                         }
                         }
                        }
-                      }
+                      ]
                      }
                     ]
                    }
@@ -10168,31 +11188,82 @@
                       }
                      },
                      {
-                      "type": "Not",
-                      "arg": {
-                       "type": "Exists",
-                       "source": {
-                        "type": "Neighbours",
-                        "node": {
-                         "type": "Var",
-                         "name": "frontier_path"
-                        },
-                        "edge_type": "manifold_blocked_from_embodied_program_transition",
-                        "any_type": false
-                       },
-                       "var_name": "blocked_state_transition",
-                       "predicate": {
-                        "type": "Eq",
+                      "type": "And",
+                      "items": [
+                       {
+                        "type": "Gt",
                         "a": {
-                         "type": "Var",
-                         "name": "blocked_state_transition"
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Lit",
+                           "value": 1
+                          },
+                          {
+                           "type": "Plus",
+                           "items": [
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "path_next_transition"
+                             },
+                             "key": "situated_forecast_confirmation_count"
+                            },
+                            {
+                             "type": "Lit",
+                             "value": 0
+                            }
+                           ]
+                          }
+                         ]
                         },
                         "b": {
-                         "type": "Var",
-                         "name": "path_next_transition"
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "path_next_transition"
+                           },
+                           "key": "situated_forecast_counterexample_count"
+                          },
+                          {
+                           "type": "Lit",
+                           "value": 0
+                          }
+                         ]
+                        }
+                       },
+                       {
+                        "type": "Not",
+                        "arg": {
+                         "type": "Exists",
+                         "source": {
+                          "type": "Neighbours",
+                          "node": {
+                           "type": "Var",
+                           "name": "frontier_path"
+                          },
+                          "edge_type": "manifold_blocked_from_embodied_program_transition",
+                          "any_type": false
+                         },
+                         "var_name": "blocked_state_transition",
+                         "predicate": {
+                          "type": "Eq",
+                          "a": {
+                           "type": "Var",
+                           "name": "blocked_state_transition"
+                          },
+                          "b": {
+                           "type": "Var",
+                           "name": "path_next_transition"
+                          }
+                         }
                         }
                        }
-                      }
+                      ]
                      }
                     ]
                    }
@@ -10236,31 +11307,82 @@
                        }
                       },
                       {
-                       "type": "Not",
-                       "arg": {
-                        "type": "Exists",
-                        "source": {
-                         "type": "Neighbours",
-                         "node": {
-                          "type": "Var",
-                          "name": "frontier_path"
-                         },
-                         "edge_type": "manifold_blocked_from_embodied_program_transition",
-                         "any_type": false
-                        },
-                        "var_name": "blocked_state_transition",
-                        "predicate": {
-                         "type": "Eq",
+                       "type": "And",
+                       "items": [
+                        {
+                         "type": "Gt",
                          "a": {
-                          "type": "Var",
-                          "name": "blocked_state_transition"
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Lit",
+                            "value": 1
+                           },
+                           {
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "current_transition_source"
+                              },
+                              "key": "situated_forecast_confirmation_count"
+                             },
+                             {
+                              "type": "Lit",
+                              "value": 0
+                             }
+                            ]
+                           }
+                          ]
                          },
                          "b": {
-                          "type": "Var",
-                          "name": "current_transition_source"
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "current_transition_source"
+                            },
+                            "key": "situated_forecast_counterexample_count"
+                           },
+                           {
+                            "type": "Lit",
+                            "value": 0
+                           }
+                          ]
+                         }
+                        },
+                        {
+                         "type": "Not",
+                         "arg": {
+                          "type": "Exists",
+                          "source": {
+                           "type": "Neighbours",
+                           "node": {
+                            "type": "Var",
+                            "name": "frontier_path"
+                           },
+                           "edge_type": "manifold_blocked_from_embodied_program_transition",
+                           "any_type": false
+                          },
+                          "var_name": "blocked_state_transition",
+                          "predicate": {
+                           "type": "Eq",
+                           "a": {
+                            "type": "Var",
+                            "name": "blocked_state_transition"
+                           },
+                           "b": {
+                            "type": "Var",
+                            "name": "current_transition_source"
+                           }
+                          }
                          }
                         }
-                       }
+                       ]
                       }
                      ]
                     }
@@ -10601,31 +11723,82 @@
                          }
                         },
                         {
-                         "type": "Not",
-                         "arg": {
-                          "type": "Exists",
-                          "source": {
-                           "type": "Neighbours",
-                           "node": {
-                            "type": "Var",
-                            "name": "frontier_path"
-                           },
-                           "edge_type": "manifold_blocked_from_embodied_program_transition",
-                           "any_type": false
-                          },
-                          "var_name": "blocked_state_transition",
-                          "predicate": {
-                           "type": "Eq",
+                         "type": "And",
+                         "items": [
+                          {
+                           "type": "Gt",
                            "a": {
-                            "type": "Var",
-                            "name": "blocked_state_transition"
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Lit",
+                              "value": 1
+                             },
+                             {
+                              "type": "Plus",
+                              "items": [
+                               {
+                                "type": "Attr",
+                                "node": {
+                                 "type": "Var",
+                                 "name": "path_next_transition"
+                                },
+                                "key": "situated_forecast_confirmation_count"
+                               },
+                               {
+                                "type": "Lit",
+                                "value": 0
+                               }
+                              ]
+                             }
+                            ]
                            },
                            "b": {
-                            "type": "Var",
-                            "name": "path_next_transition"
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "path_next_transition"
+                              },
+                              "key": "situated_forecast_counterexample_count"
+                             },
+                             {
+                              "type": "Lit",
+                              "value": 0
+                             }
+                            ]
+                           }
+                          },
+                          {
+                           "type": "Not",
+                           "arg": {
+                            "type": "Exists",
+                            "source": {
+                             "type": "Neighbours",
+                             "node": {
+                              "type": "Var",
+                              "name": "frontier_path"
+                             },
+                             "edge_type": "manifold_blocked_from_embodied_program_transition",
+                             "any_type": false
+                            },
+                            "var_name": "blocked_state_transition",
+                            "predicate": {
+                             "type": "Eq",
+                             "a": {
+                              "type": "Var",
+                              "name": "blocked_state_transition"
+                             },
+                             "b": {
+                              "type": "Var",
+                              "name": "path_next_transition"
+                             }
+                            }
                            }
                           }
-                         }
+                         ]
                         }
                        ]
                       }
@@ -10669,31 +11842,82 @@
                           }
                          },
                          {
-                          "type": "Not",
-                          "arg": {
-                           "type": "Exists",
-                           "source": {
-                            "type": "Neighbours",
-                            "node": {
-                             "type": "Var",
-                             "name": "frontier_path"
-                            },
-                            "edge_type": "manifold_blocked_from_embodied_program_transition",
-                            "any_type": false
-                           },
-                           "var_name": "blocked_state_transition",
-                           "predicate": {
-                            "type": "Eq",
+                          "type": "And",
+                          "items": [
+                           {
+                            "type": "Gt",
                             "a": {
-                             "type": "Var",
-                             "name": "blocked_state_transition"
+                             "type": "Plus",
+                             "items": [
+                              {
+                               "type": "Lit",
+                               "value": 1
+                              },
+                              {
+                               "type": "Plus",
+                               "items": [
+                                {
+                                 "type": "Attr",
+                                 "node": {
+                                  "type": "Var",
+                                  "name": "current_transition_source"
+                                 },
+                                 "key": "situated_forecast_confirmation_count"
+                                },
+                                {
+                                 "type": "Lit",
+                                 "value": 0
+                                }
+                               ]
+                              }
+                             ]
                             },
                             "b": {
-                             "type": "Var",
-                             "name": "current_transition_source"
+                             "type": "Plus",
+                             "items": [
+                              {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "current_transition_source"
+                               },
+                               "key": "situated_forecast_counterexample_count"
+                              },
+                              {
+                               "type": "Lit",
+                               "value": 0
+                              }
+                             ]
+                            }
+                           },
+                           {
+                            "type": "Not",
+                            "arg": {
+                             "type": "Exists",
+                             "source": {
+                              "type": "Neighbours",
+                              "node": {
+                               "type": "Var",
+                               "name": "frontier_path"
+                              },
+                              "edge_type": "manifold_blocked_from_embodied_program_transition",
+                              "any_type": false
+                             },
+                             "var_name": "blocked_state_transition",
+                             "predicate": {
+                              "type": "Eq",
+                              "a": {
+                               "type": "Var",
+                               "name": "blocked_state_transition"
+                              },
+                              "b": {
+                               "type": "Var",
+                               "name": "current_transition_source"
+                              }
+                             }
                             }
                            }
-                          }
+                          ]
                          }
                         ]
                        }
@@ -12064,31 +13288,82 @@
                       }
                      },
                      {
-                      "type": "Not",
-                      "arg": {
-                       "type": "Exists",
-                       "source": {
-                        "type": "Neighbours",
-                        "node": {
-                         "type": "Var",
-                         "name": "frontier_path"
-                        },
-                        "edge_type": "manifold_blocked_from_embodied_program_transition",
-                        "any_type": false
-                       },
-                       "var_name": "blocked_state_transition",
-                       "predicate": {
-                        "type": "Eq",
+                      "type": "And",
+                      "items": [
+                       {
+                        "type": "Gt",
                         "a": {
-                         "type": "Var",
-                         "name": "blocked_state_transition"
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Lit",
+                           "value": 1
+                          },
+                          {
+                           "type": "Plus",
+                           "items": [
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "path_next_transition"
+                             },
+                             "key": "situated_forecast_confirmation_count"
+                            },
+                            {
+                             "type": "Lit",
+                             "value": 0
+                            }
+                           ]
+                          }
+                         ]
                         },
                         "b": {
-                         "type": "Var",
-                         "name": "path_next_transition"
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "path_next_transition"
+                           },
+                           "key": "situated_forecast_counterexample_count"
+                          },
+                          {
+                           "type": "Lit",
+                           "value": 0
+                          }
+                         ]
+                        }
+                       },
+                       {
+                        "type": "Not",
+                        "arg": {
+                         "type": "Exists",
+                         "source": {
+                          "type": "Neighbours",
+                          "node": {
+                           "type": "Var",
+                           "name": "frontier_path"
+                          },
+                          "edge_type": "manifold_blocked_from_embodied_program_transition",
+                          "any_type": false
+                         },
+                         "var_name": "blocked_state_transition",
+                         "predicate": {
+                          "type": "Eq",
+                          "a": {
+                           "type": "Var",
+                           "name": "blocked_state_transition"
+                          },
+                          "b": {
+                           "type": "Var",
+                           "name": "path_next_transition"
+                          }
+                         }
                         }
                        }
-                      }
+                      ]
                      }
                     ]
                    }
@@ -12132,31 +13407,82 @@
                        }
                       },
                       {
-                       "type": "Not",
-                       "arg": {
-                        "type": "Exists",
-                        "source": {
-                         "type": "Neighbours",
-                         "node": {
-                          "type": "Var",
-                          "name": "frontier_path"
-                         },
-                         "edge_type": "manifold_blocked_from_embodied_program_transition",
-                         "any_type": false
-                        },
-                        "var_name": "blocked_state_transition",
-                        "predicate": {
-                         "type": "Eq",
+                       "type": "And",
+                       "items": [
+                        {
+                         "type": "Gt",
                          "a": {
-                          "type": "Var",
-                          "name": "blocked_state_transition"
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Lit",
+                            "value": 1
+                           },
+                           {
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "current_transition_source"
+                              },
+                              "key": "situated_forecast_confirmation_count"
+                             },
+                             {
+                              "type": "Lit",
+                              "value": 0
+                             }
+                            ]
+                           }
+                          ]
                          },
                          "b": {
-                          "type": "Var",
-                          "name": "current_transition_source"
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "current_transition_source"
+                            },
+                            "key": "situated_forecast_counterexample_count"
+                           },
+                           {
+                            "type": "Lit",
+                            "value": 0
+                           }
+                          ]
+                         }
+                        },
+                        {
+                         "type": "Not",
+                         "arg": {
+                          "type": "Exists",
+                          "source": {
+                           "type": "Neighbours",
+                           "node": {
+                            "type": "Var",
+                            "name": "frontier_path"
+                           },
+                           "edge_type": "manifold_blocked_from_embodied_program_transition",
+                           "any_type": false
+                          },
+                          "var_name": "blocked_state_transition",
+                          "predicate": {
+                           "type": "Eq",
+                           "a": {
+                            "type": "Var",
+                            "name": "blocked_state_transition"
+                           },
+                           "b": {
+                            "type": "Var",
+                            "name": "current_transition_source"
+                           }
+                          }
                          }
                         }
-                       }
+                       ]
                       }
                      ]
                     }
@@ -12497,31 +13823,82 @@
                          }
                         },
                         {
-                         "type": "Not",
-                         "arg": {
-                          "type": "Exists",
-                          "source": {
-                           "type": "Neighbours",
-                           "node": {
-                            "type": "Var",
-                            "name": "frontier_path"
-                           },
-                           "edge_type": "manifold_blocked_from_embodied_program_transition",
-                           "any_type": false
-                          },
-                          "var_name": "blocked_state_transition",
-                          "predicate": {
-                           "type": "Eq",
+                         "type": "And",
+                         "items": [
+                          {
+                           "type": "Gt",
                            "a": {
-                            "type": "Var",
-                            "name": "blocked_state_transition"
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Lit",
+                              "value": 1
+                             },
+                             {
+                              "type": "Plus",
+                              "items": [
+                               {
+                                "type": "Attr",
+                                "node": {
+                                 "type": "Var",
+                                 "name": "path_next_transition"
+                                },
+                                "key": "situated_forecast_confirmation_count"
+                               },
+                               {
+                                "type": "Lit",
+                                "value": 0
+                               }
+                              ]
+                             }
+                            ]
                            },
                            "b": {
-                            "type": "Var",
-                            "name": "path_next_transition"
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "path_next_transition"
+                              },
+                              "key": "situated_forecast_counterexample_count"
+                             },
+                             {
+                              "type": "Lit",
+                              "value": 0
+                             }
+                            ]
+                           }
+                          },
+                          {
+                           "type": "Not",
+                           "arg": {
+                            "type": "Exists",
+                            "source": {
+                             "type": "Neighbours",
+                             "node": {
+                              "type": "Var",
+                              "name": "frontier_path"
+                             },
+                             "edge_type": "manifold_blocked_from_embodied_program_transition",
+                             "any_type": false
+                            },
+                            "var_name": "blocked_state_transition",
+                            "predicate": {
+                             "type": "Eq",
+                             "a": {
+                              "type": "Var",
+                              "name": "blocked_state_transition"
+                             },
+                             "b": {
+                              "type": "Var",
+                              "name": "path_next_transition"
+                             }
+                            }
                            }
                           }
-                         }
+                         ]
                         }
                        ]
                       }
@@ -12565,31 +13942,82 @@
                           }
                          },
                          {
-                          "type": "Not",
-                          "arg": {
-                           "type": "Exists",
-                           "source": {
-                            "type": "Neighbours",
-                            "node": {
-                             "type": "Var",
-                             "name": "frontier_path"
-                            },
-                            "edge_type": "manifold_blocked_from_embodied_program_transition",
-                            "any_type": false
-                           },
-                           "var_name": "blocked_state_transition",
-                           "predicate": {
-                            "type": "Eq",
+                          "type": "And",
+                          "items": [
+                           {
+                            "type": "Gt",
                             "a": {
-                             "type": "Var",
-                             "name": "blocked_state_transition"
+                             "type": "Plus",
+                             "items": [
+                              {
+                               "type": "Lit",
+                               "value": 1
+                              },
+                              {
+                               "type": "Plus",
+                               "items": [
+                                {
+                                 "type": "Attr",
+                                 "node": {
+                                  "type": "Var",
+                                  "name": "current_transition_source"
+                                 },
+                                 "key": "situated_forecast_confirmation_count"
+                                },
+                                {
+                                 "type": "Lit",
+                                 "value": 0
+                                }
+                               ]
+                              }
+                             ]
                             },
                             "b": {
-                             "type": "Var",
-                             "name": "current_transition_source"
+                             "type": "Plus",
+                             "items": [
+                              {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "current_transition_source"
+                               },
+                               "key": "situated_forecast_counterexample_count"
+                              },
+                              {
+                               "type": "Lit",
+                               "value": 0
+                              }
+                             ]
+                            }
+                           },
+                           {
+                            "type": "Not",
+                            "arg": {
+                             "type": "Exists",
+                             "source": {
+                              "type": "Neighbours",
+                              "node": {
+                               "type": "Var",
+                               "name": "frontier_path"
+                              },
+                              "edge_type": "manifold_blocked_from_embodied_program_transition",
+                              "any_type": false
+                             },
+                             "var_name": "blocked_state_transition",
+                             "predicate": {
+                              "type": "Eq",
+                              "a": {
+                               "type": "Var",
+                               "name": "blocked_state_transition"
+                              },
+                              "b": {
+                               "type": "Var",
+                               "name": "current_transition_source"
+                              }
+                             }
                             }
                            }
-                          }
+                          ]
                          }
                         ]
                        }
@@ -12989,31 +14417,82 @@
                           }
                          },
                          {
-                          "type": "Not",
-                          "arg": {
-                           "type": "Exists",
-                           "source": {
-                            "type": "Neighbours",
-                            "node": {
-                             "type": "Var",
-                             "name": "frontier_path"
-                            },
-                            "edge_type": "manifold_blocked_from_embodied_program_transition",
-                            "any_type": false
-                           },
-                           "var_name": "blocked_state_transition",
-                           "predicate": {
-                            "type": "Eq",
+                          "type": "And",
+                          "items": [
+                           {
+                            "type": "Gt",
                             "a": {
-                             "type": "Var",
-                             "name": "blocked_state_transition"
+                             "type": "Plus",
+                             "items": [
+                              {
+                               "type": "Lit",
+                               "value": 1
+                              },
+                              {
+                               "type": "Plus",
+                               "items": [
+                                {
+                                 "type": "Attr",
+                                 "node": {
+                                  "type": "Var",
+                                  "name": "path_next_transition"
+                                 },
+                                 "key": "situated_forecast_confirmation_count"
+                                },
+                                {
+                                 "type": "Lit",
+                                 "value": 0
+                                }
+                               ]
+                              }
+                             ]
                             },
                             "b": {
-                             "type": "Var",
-                             "name": "path_next_transition"
+                             "type": "Plus",
+                             "items": [
+                              {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "path_next_transition"
+                               },
+                               "key": "situated_forecast_counterexample_count"
+                              },
+                              {
+                               "type": "Lit",
+                               "value": 0
+                              }
+                             ]
+                            }
+                           },
+                           {
+                            "type": "Not",
+                            "arg": {
+                             "type": "Exists",
+                             "source": {
+                              "type": "Neighbours",
+                              "node": {
+                               "type": "Var",
+                               "name": "frontier_path"
+                              },
+                              "edge_type": "manifold_blocked_from_embodied_program_transition",
+                              "any_type": false
+                             },
+                             "var_name": "blocked_state_transition",
+                             "predicate": {
+                              "type": "Eq",
+                              "a": {
+                               "type": "Var",
+                               "name": "blocked_state_transition"
+                              },
+                              "b": {
+                               "type": "Var",
+                               "name": "path_next_transition"
+                              }
+                             }
                             }
                            }
-                          }
+                          ]
                          }
                         ]
                        }
@@ -13057,31 +14536,82 @@
                            }
                           },
                           {
-                           "type": "Not",
-                           "arg": {
-                            "type": "Exists",
-                            "source": {
-                             "type": "Neighbours",
-                             "node": {
-                              "type": "Var",
-                              "name": "frontier_path"
-                             },
-                             "edge_type": "manifold_blocked_from_embodied_program_transition",
-                             "any_type": false
-                            },
-                            "var_name": "blocked_state_transition",
-                            "predicate": {
-                             "type": "Eq",
+                           "type": "And",
+                           "items": [
+                            {
+                             "type": "Gt",
                              "a": {
-                              "type": "Var",
-                              "name": "blocked_state_transition"
+                              "type": "Plus",
+                              "items": [
+                               {
+                                "type": "Lit",
+                                "value": 1
+                               },
+                               {
+                                "type": "Plus",
+                                "items": [
+                                 {
+                                  "type": "Attr",
+                                  "node": {
+                                   "type": "Var",
+                                   "name": "current_transition_source"
+                                  },
+                                  "key": "situated_forecast_confirmation_count"
+                                 },
+                                 {
+                                  "type": "Lit",
+                                  "value": 0
+                                 }
+                                ]
+                               }
+                              ]
                              },
                              "b": {
-                              "type": "Var",
-                              "name": "current_transition_source"
+                              "type": "Plus",
+                              "items": [
+                               {
+                                "type": "Attr",
+                                "node": {
+                                 "type": "Var",
+                                 "name": "current_transition_source"
+                                },
+                                "key": "situated_forecast_counterexample_count"
+                               },
+                               {
+                                "type": "Lit",
+                                "value": 0
+                               }
+                              ]
+                             }
+                            },
+                            {
+                             "type": "Not",
+                             "arg": {
+                              "type": "Exists",
+                              "source": {
+                               "type": "Neighbours",
+                               "node": {
+                                "type": "Var",
+                                "name": "frontier_path"
+                               },
+                               "edge_type": "manifold_blocked_from_embodied_program_transition",
+                               "any_type": false
+                              },
+                              "var_name": "blocked_state_transition",
+                              "predicate": {
+                               "type": "Eq",
+                               "a": {
+                                "type": "Var",
+                                "name": "blocked_state_transition"
+                               },
+                               "b": {
+                                "type": "Var",
+                                "name": "current_transition_source"
+                               }
+                              }
                              }
                             }
-                           }
+                           ]
                           }
                          ]
                         }
@@ -13422,31 +14952,82 @@
                              }
                             },
                             {
-                             "type": "Not",
-                             "arg": {
-                              "type": "Exists",
-                              "source": {
-                               "type": "Neighbours",
-                               "node": {
-                                "type": "Var",
-                                "name": "frontier_path"
-                               },
-                               "edge_type": "manifold_blocked_from_embodied_program_transition",
-                               "any_type": false
-                              },
-                              "var_name": "blocked_state_transition",
-                              "predicate": {
-                               "type": "Eq",
+                             "type": "And",
+                             "items": [
+                              {
+                               "type": "Gt",
                                "a": {
-                                "type": "Var",
-                                "name": "blocked_state_transition"
+                                "type": "Plus",
+                                "items": [
+                                 {
+                                  "type": "Lit",
+                                  "value": 1
+                                 },
+                                 {
+                                  "type": "Plus",
+                                  "items": [
+                                   {
+                                    "type": "Attr",
+                                    "node": {
+                                     "type": "Var",
+                                     "name": "path_next_transition"
+                                    },
+                                    "key": "situated_forecast_confirmation_count"
+                                   },
+                                   {
+                                    "type": "Lit",
+                                    "value": 0
+                                   }
+                                  ]
+                                 }
+                                ]
                                },
                                "b": {
-                                "type": "Var",
-                                "name": "path_next_transition"
+                                "type": "Plus",
+                                "items": [
+                                 {
+                                  "type": "Attr",
+                                  "node": {
+                                   "type": "Var",
+                                   "name": "path_next_transition"
+                                  },
+                                  "key": "situated_forecast_counterexample_count"
+                                 },
+                                 {
+                                  "type": "Lit",
+                                  "value": 0
+                                 }
+                                ]
+                               }
+                              },
+                              {
+                               "type": "Not",
+                               "arg": {
+                                "type": "Exists",
+                                "source": {
+                                 "type": "Neighbours",
+                                 "node": {
+                                  "type": "Var",
+                                  "name": "frontier_path"
+                                 },
+                                 "edge_type": "manifold_blocked_from_embodied_program_transition",
+                                 "any_type": false
+                                },
+                                "var_name": "blocked_state_transition",
+                                "predicate": {
+                                 "type": "Eq",
+                                 "a": {
+                                  "type": "Var",
+                                  "name": "blocked_state_transition"
+                                 },
+                                 "b": {
+                                  "type": "Var",
+                                  "name": "path_next_transition"
+                                 }
+                                }
                                }
                               }
-                             }
+                             ]
                             }
                            ]
                           }
@@ -13490,31 +15071,82 @@
                               }
                              },
                              {
-                              "type": "Not",
-                              "arg": {
-                               "type": "Exists",
-                               "source": {
-                                "type": "Neighbours",
-                                "node": {
-                                 "type": "Var",
-                                 "name": "frontier_path"
-                                },
-                                "edge_type": "manifold_blocked_from_embodied_program_transition",
-                                "any_type": false
-                               },
-                               "var_name": "blocked_state_transition",
-                               "predicate": {
-                                "type": "Eq",
+                              "type": "And",
+                              "items": [
+                               {
+                                "type": "Gt",
                                 "a": {
-                                 "type": "Var",
-                                 "name": "blocked_state_transition"
+                                 "type": "Plus",
+                                 "items": [
+                                  {
+                                   "type": "Lit",
+                                   "value": 1
+                                  },
+                                  {
+                                   "type": "Plus",
+                                   "items": [
+                                    {
+                                     "type": "Attr",
+                                     "node": {
+                                      "type": "Var",
+                                      "name": "current_transition_source"
+                                     },
+                                     "key": "situated_forecast_confirmation_count"
+                                    },
+                                    {
+                                     "type": "Lit",
+                                     "value": 0
+                                    }
+                                   ]
+                                  }
+                                 ]
                                 },
                                 "b": {
-                                 "type": "Var",
-                                 "name": "current_transition_source"
+                                 "type": "Plus",
+                                 "items": [
+                                  {
+                                   "type": "Attr",
+                                   "node": {
+                                    "type": "Var",
+                                    "name": "current_transition_source"
+                                   },
+                                   "key": "situated_forecast_counterexample_count"
+                                  },
+                                  {
+                                   "type": "Lit",
+                                   "value": 0
+                                  }
+                                 ]
+                                }
+                               },
+                               {
+                                "type": "Not",
+                                "arg": {
+                                 "type": "Exists",
+                                 "source": {
+                                  "type": "Neighbours",
+                                  "node": {
+                                   "type": "Var",
+                                   "name": "frontier_path"
+                                  },
+                                  "edge_type": "manifold_blocked_from_embodied_program_transition",
+                                  "any_type": false
+                                 },
+                                 "var_name": "blocked_state_transition",
+                                 "predicate": {
+                                  "type": "Eq",
+                                  "a": {
+                                   "type": "Var",
+                                   "name": "blocked_state_transition"
+                                  },
+                                  "b": {
+                                   "type": "Var",
+                                   "name": "current_transition_source"
+                                  }
+                                 }
                                 }
                                }
-                              }
+                              ]
                              }
                             ]
                            }
@@ -14852,31 +16484,82 @@
                      }
                     },
                     {
-                     "type": "Not",
-                     "arg": {
-                      "type": "Exists",
-                      "source": {
-                       "type": "Neighbours",
-                       "node": {
-                        "type": "Var",
-                        "name": "frontier_path"
-                       },
-                       "edge_type": "manifold_blocked_from_embodied_program_transition",
-                       "any_type": false
-                      },
-                      "var_name": "blocked_state_transition",
-                      "predicate": {
-                       "type": "Eq",
+                     "type": "And",
+                     "items": [
+                      {
+                       "type": "Gt",
                        "a": {
-                        "type": "Var",
-                        "name": "blocked_state_transition"
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Lit",
+                          "value": 1
+                         },
+                         {
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "path_next_transition"
+                            },
+                            "key": "situated_forecast_confirmation_count"
+                           },
+                           {
+                            "type": "Lit",
+                            "value": 0
+                           }
+                          ]
+                         }
+                        ]
                        },
                        "b": {
-                        "type": "Var",
-                        "name": "path_next_transition"
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "path_next_transition"
+                          },
+                          "key": "situated_forecast_counterexample_count"
+                         },
+                         {
+                          "type": "Lit",
+                          "value": 0
+                         }
+                        ]
+                       }
+                      },
+                      {
+                       "type": "Not",
+                       "arg": {
+                        "type": "Exists",
+                        "source": {
+                         "type": "Neighbours",
+                         "node": {
+                          "type": "Var",
+                          "name": "frontier_path"
+                         },
+                         "edge_type": "manifold_blocked_from_embodied_program_transition",
+                         "any_type": false
+                        },
+                        "var_name": "blocked_state_transition",
+                        "predicate": {
+                         "type": "Eq",
+                         "a": {
+                          "type": "Var",
+                          "name": "blocked_state_transition"
+                         },
+                         "b": {
+                          "type": "Var",
+                          "name": "path_next_transition"
+                         }
+                        }
                        }
                       }
-                     }
+                     ]
                     }
                    ]
                   }
@@ -14920,31 +16603,82 @@
                       }
                      },
                      {
-                      "type": "Not",
-                      "arg": {
-                       "type": "Exists",
-                       "source": {
-                        "type": "Neighbours",
-                        "node": {
-                         "type": "Var",
-                         "name": "frontier_path"
-                        },
-                        "edge_type": "manifold_blocked_from_embodied_program_transition",
-                        "any_type": false
-                       },
-                       "var_name": "blocked_state_transition",
-                       "predicate": {
-                        "type": "Eq",
+                      "type": "And",
+                      "items": [
+                       {
+                        "type": "Gt",
                         "a": {
-                         "type": "Var",
-                         "name": "blocked_state_transition"
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Lit",
+                           "value": 1
+                          },
+                          {
+                           "type": "Plus",
+                           "items": [
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "current_transition_source"
+                             },
+                             "key": "situated_forecast_confirmation_count"
+                            },
+                            {
+                             "type": "Lit",
+                             "value": 0
+                            }
+                           ]
+                          }
+                         ]
                         },
                         "b": {
-                         "type": "Var",
-                         "name": "current_transition_source"
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "current_transition_source"
+                           },
+                           "key": "situated_forecast_counterexample_count"
+                          },
+                          {
+                           "type": "Lit",
+                           "value": 0
+                          }
+                         ]
+                        }
+                       },
+                       {
+                        "type": "Not",
+                        "arg": {
+                         "type": "Exists",
+                         "source": {
+                          "type": "Neighbours",
+                          "node": {
+                           "type": "Var",
+                           "name": "frontier_path"
+                          },
+                          "edge_type": "manifold_blocked_from_embodied_program_transition",
+                          "any_type": false
+                         },
+                         "var_name": "blocked_state_transition",
+                         "predicate": {
+                          "type": "Eq",
+                          "a": {
+                           "type": "Var",
+                           "name": "blocked_state_transition"
+                          },
+                          "b": {
+                           "type": "Var",
+                           "name": "current_transition_source"
+                          }
+                         }
                         }
                        }
-                      }
+                      ]
                      }
                     ]
                    }
@@ -15285,31 +17019,82 @@
                         }
                        },
                        {
-                        "type": "Not",
-                        "arg": {
-                         "type": "Exists",
-                         "source": {
-                          "type": "Neighbours",
-                          "node": {
-                           "type": "Var",
-                           "name": "frontier_path"
-                          },
-                          "edge_type": "manifold_blocked_from_embodied_program_transition",
-                          "any_type": false
-                         },
-                         "var_name": "blocked_state_transition",
-                         "predicate": {
-                          "type": "Eq",
+                        "type": "And",
+                        "items": [
+                         {
+                          "type": "Gt",
                           "a": {
-                           "type": "Var",
-                           "name": "blocked_state_transition"
+                           "type": "Plus",
+                           "items": [
+                            {
+                             "type": "Lit",
+                             "value": 1
+                            },
+                            {
+                             "type": "Plus",
+                             "items": [
+                              {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "path_next_transition"
+                               },
+                               "key": "situated_forecast_confirmation_count"
+                              },
+                              {
+                               "type": "Lit",
+                               "value": 0
+                              }
+                             ]
+                            }
+                           ]
                           },
                           "b": {
-                           "type": "Var",
-                           "name": "path_next_transition"
+                           "type": "Plus",
+                           "items": [
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "path_next_transition"
+                             },
+                             "key": "situated_forecast_counterexample_count"
+                            },
+                            {
+                             "type": "Lit",
+                             "value": 0
+                            }
+                           ]
+                          }
+                         },
+                         {
+                          "type": "Not",
+                          "arg": {
+                           "type": "Exists",
+                           "source": {
+                            "type": "Neighbours",
+                            "node": {
+                             "type": "Var",
+                             "name": "frontier_path"
+                            },
+                            "edge_type": "manifold_blocked_from_embodied_program_transition",
+                            "any_type": false
+                           },
+                           "var_name": "blocked_state_transition",
+                           "predicate": {
+                            "type": "Eq",
+                            "a": {
+                             "type": "Var",
+                             "name": "blocked_state_transition"
+                            },
+                            "b": {
+                             "type": "Var",
+                             "name": "path_next_transition"
+                            }
+                           }
                           }
                          }
-                        }
+                        ]
                        }
                       ]
                      }
@@ -15353,31 +17138,82 @@
                          }
                         },
                         {
-                         "type": "Not",
-                         "arg": {
-                          "type": "Exists",
-                          "source": {
-                           "type": "Neighbours",
-                           "node": {
-                            "type": "Var",
-                            "name": "frontier_path"
-                           },
-                           "edge_type": "manifold_blocked_from_embodied_program_transition",
-                           "any_type": false
-                          },
-                          "var_name": "blocked_state_transition",
-                          "predicate": {
-                           "type": "Eq",
+                         "type": "And",
+                         "items": [
+                          {
+                           "type": "Gt",
                            "a": {
-                            "type": "Var",
-                            "name": "blocked_state_transition"
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Lit",
+                              "value": 1
+                             },
+                             {
+                              "type": "Plus",
+                              "items": [
+                               {
+                                "type": "Attr",
+                                "node": {
+                                 "type": "Var",
+                                 "name": "current_transition_source"
+                                },
+                                "key": "situated_forecast_confirmation_count"
+                               },
+                               {
+                                "type": "Lit",
+                                "value": 0
+                               }
+                              ]
+                             }
+                            ]
                            },
                            "b": {
-                            "type": "Var",
-                            "name": "current_transition_source"
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "current_transition_source"
+                              },
+                              "key": "situated_forecast_counterexample_count"
+                             },
+                             {
+                              "type": "Lit",
+                              "value": 0
+                             }
+                            ]
+                           }
+                          },
+                          {
+                           "type": "Not",
+                           "arg": {
+                            "type": "Exists",
+                            "source": {
+                             "type": "Neighbours",
+                             "node": {
+                              "type": "Var",
+                              "name": "frontier_path"
+                             },
+                             "edge_type": "manifold_blocked_from_embodied_program_transition",
+                             "any_type": false
+                            },
+                            "var_name": "blocked_state_transition",
+                            "predicate": {
+                             "type": "Eq",
+                             "a": {
+                              "type": "Var",
+                              "name": "blocked_state_transition"
+                             },
+                             "b": {
+                              "type": "Var",
+                              "name": "current_transition_source"
+                             }
+                            }
                            }
                           }
-                         }
+                         ]
                         }
                        ]
                       }
@@ -15767,31 +17603,82 @@
                     }
                    },
                    {
-                    "type": "Not",
-                    "arg": {
-                     "type": "Exists",
-                     "source": {
-                      "type": "Neighbours",
-                      "node": {
-                       "type": "Var",
-                       "name": "frontier_path"
-                      },
-                      "edge_type": "manifold_blocked_from_embodied_program_transition",
-                      "any_type": false
-                     },
-                     "var_name": "blocked_state_transition",
-                     "predicate": {
-                      "type": "Eq",
+                    "type": "And",
+                    "items": [
+                     {
+                      "type": "Gt",
                       "a": {
-                       "type": "Var",
-                       "name": "blocked_state_transition"
+                       "type": "Plus",
+                       "items": [
+                        {
+                         "type": "Lit",
+                         "value": 1
+                        },
+                        {
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "path_next_transition"
+                           },
+                           "key": "situated_forecast_confirmation_count"
+                          },
+                          {
+                           "type": "Lit",
+                           "value": 0
+                          }
+                         ]
+                        }
+                       ]
                       },
                       "b": {
-                       "type": "Var",
-                       "name": "path_next_transition"
+                       "type": "Plus",
+                       "items": [
+                        {
+                         "type": "Attr",
+                         "node": {
+                          "type": "Var",
+                          "name": "path_next_transition"
+                         },
+                         "key": "situated_forecast_counterexample_count"
+                        },
+                        {
+                         "type": "Lit",
+                         "value": 0
+                        }
+                       ]
+                      }
+                     },
+                     {
+                      "type": "Not",
+                      "arg": {
+                       "type": "Exists",
+                       "source": {
+                        "type": "Neighbours",
+                        "node": {
+                         "type": "Var",
+                         "name": "frontier_path"
+                        },
+                        "edge_type": "manifold_blocked_from_embodied_program_transition",
+                        "any_type": false
+                       },
+                       "var_name": "blocked_state_transition",
+                       "predicate": {
+                        "type": "Eq",
+                        "a": {
+                         "type": "Var",
+                         "name": "blocked_state_transition"
+                        },
+                        "b": {
+                         "type": "Var",
+                         "name": "path_next_transition"
+                        }
+                       }
                       }
                      }
-                    }
+                    ]
                    }
                   ]
                  }
@@ -15835,31 +17722,82 @@
                      }
                     },
                     {
-                     "type": "Not",
-                     "arg": {
-                      "type": "Exists",
-                      "source": {
-                       "type": "Neighbours",
-                       "node": {
-                        "type": "Var",
-                        "name": "frontier_path"
-                       },
-                       "edge_type": "manifold_blocked_from_embodied_program_transition",
-                       "any_type": false
-                      },
-                      "var_name": "blocked_state_transition",
-                      "predicate": {
-                       "type": "Eq",
+                     "type": "And",
+                     "items": [
+                      {
+                       "type": "Gt",
                        "a": {
-                        "type": "Var",
-                        "name": "blocked_state_transition"
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Lit",
+                          "value": 1
+                         },
+                         {
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "current_transition_source"
+                            },
+                            "key": "situated_forecast_confirmation_count"
+                           },
+                           {
+                            "type": "Lit",
+                            "value": 0
+                           }
+                          ]
+                         }
+                        ]
                        },
                        "b": {
-                        "type": "Var",
-                        "name": "current_transition_source"
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "current_transition_source"
+                          },
+                          "key": "situated_forecast_counterexample_count"
+                         },
+                         {
+                          "type": "Lit",
+                          "value": 0
+                         }
+                        ]
+                       }
+                      },
+                      {
+                       "type": "Not",
+                       "arg": {
+                        "type": "Exists",
+                        "source": {
+                         "type": "Neighbours",
+                         "node": {
+                          "type": "Var",
+                          "name": "frontier_path"
+                         },
+                         "edge_type": "manifold_blocked_from_embodied_program_transition",
+                         "any_type": false
+                        },
+                        "var_name": "blocked_state_transition",
+                        "predicate": {
+                         "type": "Eq",
+                         "a": {
+                          "type": "Var",
+                          "name": "blocked_state_transition"
+                         },
+                         "b": {
+                          "type": "Var",
+                          "name": "current_transition_source"
+                         }
+                        }
                        }
                       }
-                     }
+                     ]
                     }
                    ]
                   }
@@ -16200,31 +18138,82 @@
                        }
                       },
                       {
-                       "type": "Not",
-                       "arg": {
-                        "type": "Exists",
-                        "source": {
-                         "type": "Neighbours",
-                         "node": {
-                          "type": "Var",
-                          "name": "frontier_path"
-                         },
-                         "edge_type": "manifold_blocked_from_embodied_program_transition",
-                         "any_type": false
-                        },
-                        "var_name": "blocked_state_transition",
-                        "predicate": {
-                         "type": "Eq",
+                       "type": "And",
+                       "items": [
+                        {
+                         "type": "Gt",
                          "a": {
-                          "type": "Var",
-                          "name": "blocked_state_transition"
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Lit",
+                            "value": 1
+                           },
+                           {
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "path_next_transition"
+                              },
+                              "key": "situated_forecast_confirmation_count"
+                             },
+                             {
+                              "type": "Lit",
+                              "value": 0
+                             }
+                            ]
+                           }
+                          ]
                          },
                          "b": {
-                          "type": "Var",
-                          "name": "path_next_transition"
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "path_next_transition"
+                            },
+                            "key": "situated_forecast_counterexample_count"
+                           },
+                           {
+                            "type": "Lit",
+                            "value": 0
+                           }
+                          ]
+                         }
+                        },
+                        {
+                         "type": "Not",
+                         "arg": {
+                          "type": "Exists",
+                          "source": {
+                           "type": "Neighbours",
+                           "node": {
+                            "type": "Var",
+                            "name": "frontier_path"
+                           },
+                           "edge_type": "manifold_blocked_from_embodied_program_transition",
+                           "any_type": false
+                          },
+                          "var_name": "blocked_state_transition",
+                          "predicate": {
+                           "type": "Eq",
+                           "a": {
+                            "type": "Var",
+                            "name": "blocked_state_transition"
+                           },
+                           "b": {
+                            "type": "Var",
+                            "name": "path_next_transition"
+                           }
+                          }
                          }
                         }
-                       }
+                       ]
                       }
                      ]
                     }
@@ -16268,31 +18257,82 @@
                         }
                        },
                        {
-                        "type": "Not",
-                        "arg": {
-                         "type": "Exists",
-                         "source": {
-                          "type": "Neighbours",
-                          "node": {
-                           "type": "Var",
-                           "name": "frontier_path"
-                          },
-                          "edge_type": "manifold_blocked_from_embodied_program_transition",
-                          "any_type": false
-                         },
-                         "var_name": "blocked_state_transition",
-                         "predicate": {
-                          "type": "Eq",
+                        "type": "And",
+                        "items": [
+                         {
+                          "type": "Gt",
                           "a": {
-                           "type": "Var",
-                           "name": "blocked_state_transition"
+                           "type": "Plus",
+                           "items": [
+                            {
+                             "type": "Lit",
+                             "value": 1
+                            },
+                            {
+                             "type": "Plus",
+                             "items": [
+                              {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "current_transition_source"
+                               },
+                               "key": "situated_forecast_confirmation_count"
+                              },
+                              {
+                               "type": "Lit",
+                               "value": 0
+                              }
+                             ]
+                            }
+                           ]
                           },
                           "b": {
-                           "type": "Var",
-                           "name": "current_transition_source"
+                           "type": "Plus",
+                           "items": [
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "current_transition_source"
+                             },
+                             "key": "situated_forecast_counterexample_count"
+                            },
+                            {
+                             "type": "Lit",
+                             "value": 0
+                            }
+                           ]
+                          }
+                         },
+                         {
+                          "type": "Not",
+                          "arg": {
+                           "type": "Exists",
+                           "source": {
+                            "type": "Neighbours",
+                            "node": {
+                             "type": "Var",
+                             "name": "frontier_path"
+                            },
+                            "edge_type": "manifold_blocked_from_embodied_program_transition",
+                            "any_type": false
+                           },
+                           "var_name": "blocked_state_transition",
+                           "predicate": {
+                            "type": "Eq",
+                            "a": {
+                             "type": "Var",
+                             "name": "blocked_state_transition"
+                            },
+                            "b": {
+                             "type": "Var",
+                             "name": "current_transition_source"
+                            }
+                           }
                           }
                          }
-                        }
+                        ]
                        }
                       ]
                      }
@@ -16643,31 +18683,82 @@
                      }
                     },
                     {
-                     "type": "Not",
-                     "arg": {
-                      "type": "Exists",
-                      "source": {
-                       "type": "Neighbours",
-                       "node": {
-                        "type": "Var",
-                        "name": "frontier_path"
-                       },
-                       "edge_type": "manifold_blocked_from_embodied_program_transition",
-                       "any_type": false
-                      },
-                      "var_name": "blocked_state_transition",
-                      "predicate": {
-                       "type": "Eq",
+                     "type": "And",
+                     "items": [
+                      {
+                       "type": "Gt",
                        "a": {
-                        "type": "Var",
-                        "name": "blocked_state_transition"
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Lit",
+                          "value": 1
+                         },
+                         {
+                          "type": "Plus",
+                          "items": [
+                           {
+                            "type": "Attr",
+                            "node": {
+                             "type": "Var",
+                             "name": "path_next_transition"
+                            },
+                            "key": "situated_forecast_confirmation_count"
+                           },
+                           {
+                            "type": "Lit",
+                            "value": 0
+                           }
+                          ]
+                         }
+                        ]
                        },
                        "b": {
-                        "type": "Var",
-                        "name": "path_next_transition"
+                        "type": "Plus",
+                        "items": [
+                         {
+                          "type": "Attr",
+                          "node": {
+                           "type": "Var",
+                           "name": "path_next_transition"
+                          },
+                          "key": "situated_forecast_counterexample_count"
+                         },
+                         {
+                          "type": "Lit",
+                          "value": 0
+                         }
+                        ]
+                       }
+                      },
+                      {
+                       "type": "Not",
+                       "arg": {
+                        "type": "Exists",
+                        "source": {
+                         "type": "Neighbours",
+                         "node": {
+                          "type": "Var",
+                          "name": "frontier_path"
+                         },
+                         "edge_type": "manifold_blocked_from_embodied_program_transition",
+                         "any_type": false
+                        },
+                        "var_name": "blocked_state_transition",
+                        "predicate": {
+                         "type": "Eq",
+                         "a": {
+                          "type": "Var",
+                          "name": "blocked_state_transition"
+                         },
+                         "b": {
+                          "type": "Var",
+                          "name": "path_next_transition"
+                         }
+                        }
                        }
                       }
-                     }
+                     ]
                     }
                    ]
                   }
@@ -16711,31 +18802,82 @@
                       }
                      },
                      {
-                      "type": "Not",
-                      "arg": {
-                       "type": "Exists",
-                       "source": {
-                        "type": "Neighbours",
-                        "node": {
-                         "type": "Var",
-                         "name": "frontier_path"
-                        },
-                        "edge_type": "manifold_blocked_from_embodied_program_transition",
-                        "any_type": false
-                       },
-                       "var_name": "blocked_state_transition",
-                       "predicate": {
-                        "type": "Eq",
+                      "type": "And",
+                      "items": [
+                       {
+                        "type": "Gt",
                         "a": {
-                         "type": "Var",
-                         "name": "blocked_state_transition"
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Lit",
+                           "value": 1
+                          },
+                          {
+                           "type": "Plus",
+                           "items": [
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "current_transition_source"
+                             },
+                             "key": "situated_forecast_confirmation_count"
+                            },
+                            {
+                             "type": "Lit",
+                             "value": 0
+                            }
+                           ]
+                          }
+                         ]
                         },
                         "b": {
-                         "type": "Var",
-                         "name": "current_transition_source"
+                         "type": "Plus",
+                         "items": [
+                          {
+                           "type": "Attr",
+                           "node": {
+                            "type": "Var",
+                            "name": "current_transition_source"
+                           },
+                           "key": "situated_forecast_counterexample_count"
+                          },
+                          {
+                           "type": "Lit",
+                           "value": 0
+                          }
+                         ]
+                        }
+                       },
+                       {
+                        "type": "Not",
+                        "arg": {
+                         "type": "Exists",
+                         "source": {
+                          "type": "Neighbours",
+                          "node": {
+                           "type": "Var",
+                           "name": "frontier_path"
+                          },
+                          "edge_type": "manifold_blocked_from_embodied_program_transition",
+                          "any_type": false
+                         },
+                         "var_name": "blocked_state_transition",
+                         "predicate": {
+                          "type": "Eq",
+                          "a": {
+                           "type": "Var",
+                           "name": "blocked_state_transition"
+                          },
+                          "b": {
+                           "type": "Var",
+                           "name": "current_transition_source"
+                          }
+                         }
                         }
                        }
-                      }
+                      ]
                      }
                     ]
                    }
@@ -17076,31 +19218,82 @@
                         }
                        },
                        {
-                        "type": "Not",
-                        "arg": {
-                         "type": "Exists",
-                         "source": {
-                          "type": "Neighbours",
-                          "node": {
-                           "type": "Var",
-                           "name": "frontier_path"
-                          },
-                          "edge_type": "manifold_blocked_from_embodied_program_transition",
-                          "any_type": false
-                         },
-                         "var_name": "blocked_state_transition",
-                         "predicate": {
-                          "type": "Eq",
+                        "type": "And",
+                        "items": [
+                         {
+                          "type": "Gt",
                           "a": {
-                           "type": "Var",
-                           "name": "blocked_state_transition"
+                           "type": "Plus",
+                           "items": [
+                            {
+                             "type": "Lit",
+                             "value": 1
+                            },
+                            {
+                             "type": "Plus",
+                             "items": [
+                              {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "path_next_transition"
+                               },
+                               "key": "situated_forecast_confirmation_count"
+                              },
+                              {
+                               "type": "Lit",
+                               "value": 0
+                              }
+                             ]
+                            }
+                           ]
                           },
                           "b": {
-                           "type": "Var",
-                           "name": "path_next_transition"
+                           "type": "Plus",
+                           "items": [
+                            {
+                             "type": "Attr",
+                             "node": {
+                              "type": "Var",
+                              "name": "path_next_transition"
+                             },
+                             "key": "situated_forecast_counterexample_count"
+                            },
+                            {
+                             "type": "Lit",
+                             "value": 0
+                            }
+                           ]
+                          }
+                         },
+                         {
+                          "type": "Not",
+                          "arg": {
+                           "type": "Exists",
+                           "source": {
+                            "type": "Neighbours",
+                            "node": {
+                             "type": "Var",
+                             "name": "frontier_path"
+                            },
+                            "edge_type": "manifold_blocked_from_embodied_program_transition",
+                            "any_type": false
+                           },
+                           "var_name": "blocked_state_transition",
+                           "predicate": {
+                            "type": "Eq",
+                            "a": {
+                             "type": "Var",
+                             "name": "blocked_state_transition"
+                            },
+                            "b": {
+                             "type": "Var",
+                             "name": "path_next_transition"
+                            }
+                           }
                           }
                          }
-                        }
+                        ]
                        }
                       ]
                      }
@@ -17144,31 +19337,82 @@
                          }
                         },
                         {
-                         "type": "Not",
-                         "arg": {
-                          "type": "Exists",
-                          "source": {
-                           "type": "Neighbours",
-                           "node": {
-                            "type": "Var",
-                            "name": "frontier_path"
-                           },
-                           "edge_type": "manifold_blocked_from_embodied_program_transition",
-                           "any_type": false
-                          },
-                          "var_name": "blocked_state_transition",
-                          "predicate": {
-                           "type": "Eq",
+                         "type": "And",
+                         "items": [
+                          {
+                           "type": "Gt",
                            "a": {
-                            "type": "Var",
-                            "name": "blocked_state_transition"
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Lit",
+                              "value": 1
+                             },
+                             {
+                              "type": "Plus",
+                              "items": [
+                               {
+                                "type": "Attr",
+                                "node": {
+                                 "type": "Var",
+                                 "name": "current_transition_source"
+                                },
+                                "key": "situated_forecast_confirmation_count"
+                               },
+                               {
+                                "type": "Lit",
+                                "value": 0
+                               }
+                              ]
+                             }
+                            ]
                            },
                            "b": {
-                            "type": "Var",
-                            "name": "current_transition_source"
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "current_transition_source"
+                              },
+                              "key": "situated_forecast_counterexample_count"
+                             },
+                             {
+                              "type": "Lit",
+                              "value": 0
+                             }
+                            ]
+                           }
+                          },
+                          {
+                           "type": "Not",
+                           "arg": {
+                            "type": "Exists",
+                            "source": {
+                             "type": "Neighbours",
+                             "node": {
+                              "type": "Var",
+                              "name": "frontier_path"
+                             },
+                             "edge_type": "manifold_blocked_from_embodied_program_transition",
+                             "any_type": false
+                            },
+                            "var_name": "blocked_state_transition",
+                            "predicate": {
+                             "type": "Eq",
+                             "a": {
+                              "type": "Var",
+                              "name": "blocked_state_transition"
+                             },
+                             "b": {
+                              "type": "Var",
+                              "name": "current_transition_source"
+                             }
+                            }
                            }
                           }
-                         }
+                         ]
                         }
                        ]
                       }
@@ -17568,31 +19812,82 @@
                          }
                         },
                         {
-                         "type": "Not",
-                         "arg": {
-                          "type": "Exists",
-                          "source": {
-                           "type": "Neighbours",
-                           "node": {
-                            "type": "Var",
-                            "name": "frontier_path"
-                           },
-                           "edge_type": "manifold_blocked_from_embodied_program_transition",
-                           "any_type": false
-                          },
-                          "var_name": "blocked_state_transition",
-                          "predicate": {
-                           "type": "Eq",
+                         "type": "And",
+                         "items": [
+                          {
+                           "type": "Gt",
                            "a": {
-                            "type": "Var",
-                            "name": "blocked_state_transition"
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Lit",
+                              "value": 1
+                             },
+                             {
+                              "type": "Plus",
+                              "items": [
+                               {
+                                "type": "Attr",
+                                "node": {
+                                 "type": "Var",
+                                 "name": "path_next_transition"
+                                },
+                                "key": "situated_forecast_confirmation_count"
+                               },
+                               {
+                                "type": "Lit",
+                                "value": 0
+                               }
+                              ]
+                             }
+                            ]
                            },
                            "b": {
-                            "type": "Var",
-                            "name": "path_next_transition"
+                            "type": "Plus",
+                            "items": [
+                             {
+                              "type": "Attr",
+                              "node": {
+                               "type": "Var",
+                               "name": "path_next_transition"
+                              },
+                              "key": "situated_forecast_counterexample_count"
+                             },
+                             {
+                              "type": "Lit",
+                              "value": 0
+                             }
+                            ]
+                           }
+                          },
+                          {
+                           "type": "Not",
+                           "arg": {
+                            "type": "Exists",
+                            "source": {
+                             "type": "Neighbours",
+                             "node": {
+                              "type": "Var",
+                              "name": "frontier_path"
+                             },
+                             "edge_type": "manifold_blocked_from_embodied_program_transition",
+                             "any_type": false
+                            },
+                            "var_name": "blocked_state_transition",
+                            "predicate": {
+                             "type": "Eq",
+                             "a": {
+                              "type": "Var",
+                              "name": "blocked_state_transition"
+                             },
+                             "b": {
+                              "type": "Var",
+                              "name": "path_next_transition"
+                             }
+                            }
                            }
                           }
-                         }
+                         ]
                         }
                        ]
                       }
@@ -17636,31 +19931,82 @@
                           }
                          },
                          {
-                          "type": "Not",
-                          "arg": {
-                           "type": "Exists",
-                           "source": {
-                            "type": "Neighbours",
-                            "node": {
-                             "type": "Var",
-                             "name": "frontier_path"
-                            },
-                            "edge_type": "manifold_blocked_from_embodied_program_transition",
-                            "any_type": false
-                           },
-                           "var_name": "blocked_state_transition",
-                           "predicate": {
-                            "type": "Eq",
+                          "type": "And",
+                          "items": [
+                           {
+                            "type": "Gt",
                             "a": {
-                             "type": "Var",
-                             "name": "blocked_state_transition"
+                             "type": "Plus",
+                             "items": [
+                              {
+                               "type": "Lit",
+                               "value": 1
+                              },
+                              {
+                               "type": "Plus",
+                               "items": [
+                                {
+                                 "type": "Attr",
+                                 "node": {
+                                  "type": "Var",
+                                  "name": "current_transition_source"
+                                 },
+                                 "key": "situated_forecast_confirmation_count"
+                                },
+                                {
+                                 "type": "Lit",
+                                 "value": 0
+                                }
+                               ]
+                              }
+                             ]
                             },
                             "b": {
-                             "type": "Var",
-                             "name": "current_transition_source"
+                             "type": "Plus",
+                             "items": [
+                              {
+                               "type": "Attr",
+                               "node": {
+                                "type": "Var",
+                                "name": "current_transition_source"
+                               },
+                               "key": "situated_forecast_counterexample_count"
+                              },
+                              {
+                               "type": "Lit",
+                               "value": 0
+                              }
+                             ]
+                            }
+                           },
+                           {
+                            "type": "Not",
+                            "arg": {
+                             "type": "Exists",
+                             "source": {
+                              "type": "Neighbours",
+                              "node": {
+                               "type": "Var",
+                               "name": "frontier_path"
+                              },
+                              "edge_type": "manifold_blocked_from_embodied_program_transition",
+                              "any_type": false
+                             },
+                             "var_name": "blocked_state_transition",
+                             "predicate": {
+                              "type": "Eq",
+                              "a": {
+                               "type": "Var",
+                               "name": "blocked_state_transition"
+                              },
+                              "b": {
+                               "type": "Var",
+                               "name": "current_transition_source"
+                              }
+                             }
                             }
                            }
-                          }
+                          ]
                          }
                         ]
                        }
@@ -18001,31 +20347,82 @@
                             }
                            },
                            {
-                            "type": "Not",
-                            "arg": {
-                             "type": "Exists",
-                             "source": {
-                              "type": "Neighbours",
-                              "node": {
-                               "type": "Var",
-                               "name": "frontier_path"
-                              },
-                              "edge_type": "manifold_blocked_from_embodied_program_transition",
-                              "any_type": false
-                             },
-                             "var_name": "blocked_state_transition",
-                             "predicate": {
-                              "type": "Eq",
+                            "type": "And",
+                            "items": [
+                             {
+                              "type": "Gt",
                               "a": {
-                               "type": "Var",
-                               "name": "blocked_state_transition"
+                               "type": "Plus",
+                               "items": [
+                                {
+                                 "type": "Lit",
+                                 "value": 1
+                                },
+                                {
+                                 "type": "Plus",
+                                 "items": [
+                                  {
+                                   "type": "Attr",
+                                   "node": {
+                                    "type": "Var",
+                                    "name": "path_next_transition"
+                                   },
+                                   "key": "situated_forecast_confirmation_count"
+                                  },
+                                  {
+                                   "type": "Lit",
+                                   "value": 0
+                                  }
+                                 ]
+                                }
+                               ]
                               },
                               "b": {
-                               "type": "Var",
-                               "name": "path_next_transition"
+                               "type": "Plus",
+                               "items": [
+                                {
+                                 "type": "Attr",
+                                 "node": {
+                                  "type": "Var",
+                                  "name": "path_next_transition"
+                                 },
+                                 "key": "situated_forecast_counterexample_count"
+                                },
+                                {
+                                 "type": "Lit",
+                                 "value": 0
+                                }
+                               ]
+                              }
+                             },
+                             {
+                              "type": "Not",
+                              "arg": {
+                               "type": "Exists",
+                               "source": {
+                                "type": "Neighbours",
+                                "node": {
+                                 "type": "Var",
+                                 "name": "frontier_path"
+                                },
+                                "edge_type": "manifold_blocked_from_embodied_program_transition",
+                                "any_type": false
+                               },
+                               "var_name": "blocked_state_transition",
+                               "predicate": {
+                                "type": "Eq",
+                                "a": {
+                                 "type": "Var",
+                                 "name": "blocked_state_transition"
+                                },
+                                "b": {
+                                 "type": "Var",
+                                 "name": "path_next_transition"
+                                }
+                               }
                               }
                              }
-                            }
+                            ]
                            }
                           ]
                          }
@@ -18069,31 +20466,82 @@
                              }
                             },
                             {
-                             "type": "Not",
-                             "arg": {
-                              "type": "Exists",
-                              "source": {
-                               "type": "Neighbours",
-                               "node": {
-                                "type": "Var",
-                                "name": "frontier_path"
-                               },
-                               "edge_type": "manifold_blocked_from_embodied_program_transition",
-                               "any_type": false
-                              },
-                              "var_name": "blocked_state_transition",
-                              "predicate": {
-                               "type": "Eq",
+                             "type": "And",
+                             "items": [
+                              {
+                               "type": "Gt",
                                "a": {
-                                "type": "Var",
-                                "name": "blocked_state_transition"
+                                "type": "Plus",
+                                "items": [
+                                 {
+                                  "type": "Lit",
+                                  "value": 1
+                                 },
+                                 {
+                                  "type": "Plus",
+                                  "items": [
+                                   {
+                                    "type": "Attr",
+                                    "node": {
+                                     "type": "Var",
+                                     "name": "current_transition_source"
+                                    },
+                                    "key": "situated_forecast_confirmation_count"
+                                   },
+                                   {
+                                    "type": "Lit",
+                                    "value": 0
+                                   }
+                                  ]
+                                 }
+                                ]
                                },
                                "b": {
-                                "type": "Var",
-                                "name": "current_transition_source"
+                                "type": "Plus",
+                                "items": [
+                                 {
+                                  "type": "Attr",
+                                  "node": {
+                                   "type": "Var",
+                                   "name": "current_transition_source"
+                                  },
+                                  "key": "situated_forecast_counterexample_count"
+                                 },
+                                 {
+                                  "type": "Lit",
+                                  "value": 0
+                                 }
+                                ]
+                               }
+                              },
+                              {
+                               "type": "Not",
+                               "arg": {
+                                "type": "Exists",
+                                "source": {
+                                 "type": "Neighbours",
+                                 "node": {
+                                  "type": "Var",
+                                  "name": "frontier_path"
+                                 },
+                                 "edge_type": "manifold_blocked_from_embodied_program_transition",
+                                 "any_type": false
+                                },
+                                "var_name": "blocked_state_transition",
+                                "predicate": {
+                                 "type": "Eq",
+                                 "a": {
+                                  "type": "Var",
+                                  "name": "blocked_state_transition"
+                                 },
+                                 "b": {
+                                  "type": "Var",
+                                  "name": "current_transition_source"
+                                 }
+                                }
                                }
                               }
-                             }
+                             ]
                             }
                            ]
                           }

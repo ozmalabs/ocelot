@@ -61972,6 +61972,39 @@
     ],
     [
      "set_attr",
+     "transition",
+     "situated_forecast_counterexample_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "transition"
+           },
+           "key": "situated_forecast_counterexample_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
      "path",
      "manifold_rejection_count",
      {
@@ -62247,6 +62280,73 @@
         {
          "type": "Lit",
          "value": 0
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "transition",
+     "situated_forecast_confirmation_count",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "transition"
+           },
+           "key": "situated_forecast_confirmation_count"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Not",
+          "arg": {
+           "type": "Exists",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "path"
+            },
+            "edge_type": "manifold_blocked_from_embodied_program_transition",
+            "any_type": false
+           },
+           "var_name": "blocked_transition",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Var",
+             "name": "blocked_transition"
+            },
+            "b": {
+             "type": "Var",
+             "name": "transition"
+            }
+           }
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0
+         }
         }
        ]
       }
