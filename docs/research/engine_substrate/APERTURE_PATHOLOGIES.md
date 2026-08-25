@@ -79,6 +79,54 @@ Stable in all three respects. The observer knows something is unaccounted for, c
 human-gated spine, another party could act on it. Contrast §2: same blindness, but detectable and
 declared, because the frame it comes from is not one the observer would have chosen.
 
+## 5. How §2 differs from the folie à deux this tree already had
+
+This tree landed folie à deux in June (`PSYCHOSIS_DEMO_RESULTS.md` P8,
+`seeds/psychosis_grounding.json`, mapped in `SUBSTRATE_DISORDER_MAP.md`). §2 is not a re-run of it
+and not a better version of it. **It is a second, mechanically distinct route to the same
+phenomenon, and the two make opposite predictions.**
+
+| | **P8 — shared BELIEF** | **§2 — shared APERTURE** |
+|---|---|---|
+| what is shared | each belief is the other's confirmer, every tick | one frame, adopted once |
+| the delusion is | a belief held AGAINST evidence | evidence that never arrives AS evidence |
+| mechanism | confirmer pins confidence → `1/(1+conf)` precision gate attenuates the reality pull | the discriminating dimension is quotiented away; residual is empty |
+| state involved | scalar belief + confidence, two basins | no belief, no confidence, no weights, no dynamics |
+| **puncture** | **ground ONE → BOTH collapse to R** | **cannot be punctured by true information** |
+| **coupling** | **stable only while the loop stays CLOSED** | **no loop; maintenance needs no partner** |
+| signature | belief persists at high confidence | **zero concerns filed** |
+
+Both halves measured, with a control:
+
+**Puncture fails.** Hand agent `a` BOTH true parts — the complete, correct discriminating
+information — and ask how many it can tell apart:
+
+| | distinguishable to `a` |
+|---|---|
+| no shared frame (control) | **2 of 2** |
+| shared negotiated frame | **1 of 2** |
+
+Supplying the truth does not help, because *the information arrives through the frame*. P8's
+grounding channel works precisely because the belief is wrong about something it can still perceive;
+here there is nothing wrong to correct.
+
+**There is no loop to close.** `a`'s verdict is identical with the partner present and absent —
+`resolves=['pred','val']`, `covered=2`, `residual=[]` both ways. Adoption is a joint act;
+*maintenance* is not. P8's "the loop is stable only while closed; puncture it anywhere and it
+unwinds" has no counterpart here, because nothing is circulating.
+
+**And the failure form is not authored.** `SUBSTRATE_DISORDER_MAP.md`'s own honest bound on the T1
+psychosis entries is that the update FORM was authored for the reduced harness — a self-grounding
+term, a precision gate, confidence positive feedback, all written to produce the phenomenon. Nothing
+in `aperture_frame` was written to produce a delusion: there is one meet, one drop rule, one
+concern rule, one adoption rule. The pathology is a consequence of the representation. (Its own
+asterisk is different and should be stated plainly: the apertures themselves are hand-set lists,
+nothing mints one, and this is one three-relation fixture.)
+
+The practical reading is that these are two different problems wearing one name. P8's is treatable
+by grounding — supply disconfirmation, the stronger the faster. §2's is not treatable that way at
+all; it needs the *frame* renegotiated, which is a joint act no rule here performs.
+
 ## What this does NOT reproduce
 
 * **Superstition and wishful thinking AT an aperture.** A projected decode reports `covered` /
