@@ -95,3 +95,44 @@ The load-bearing weakness, stated now: **the compression is stipulated, not deri
 the substrate explains *why* stress should compress this particular set of dimensions — the rule
 applies a mask the fixture supplies. Demonstrating that dysregulation compresses aperture is
 therefore a demonstration that the two subsystems COMPOSE, not evidence that they do so in nature.
+
+
+---
+
+## ADDENDUM (block 366500) — the learning half, registered before measuring
+
+§2 recorded the learning claim as unbuilt. It is now being measured, so its predictions are
+registered here first, at base sha `6bf8687`, before `seeds/learning_aperture_gate.json` exists.
+
+**Reading the seed changed the prediction, and the new one is worse.** §2 guessed that a compressed
+aperture would leave `learning_progress` *undefined*. It will not. `lp_residual` computes
+`residual = |obs − held|`, so an observation the agent cannot resolve arrives looking like what it
+already predicted, and the residual is **zero**. Zero is not "I could not tell". Zero is the signal
+for **"I have mastered this"**.
+
+So the registered prediction is not that stress removes the learning signal. It is that stress
+**forges** it:
+
+* **P1** — compressed ⇒ `residual == 0`, `learning_progress == 0`, `attended == 0`. The item is
+  dropped from attention *as if learned*.
+* **P2** — a genuinely MASTERED item (`obs_true == held`, agent regulated) produces the **same
+  values on every learning field**. The two are indistinguishable in the learning signal.
+* **P3** — they are distinguishable only by whether the observation was ESTABLISHED, which nothing
+  in `learning_progress_curiosity` currently records.
+* **P4** — more exposure does not recover the compressed arm, matching the manifold result.
+* **P5** — a regulated agent on the learnable item attends (positive control).
+
+**This is the same defect as `loss ≡ information_loss`, one layer up**, and it is live in a shipped
+seed rather than hypothetical: *residual-zero-because-mastered* and *residual-zero-because-blind*
+are the same number today.
+
+**FAILS IF** the compressed arm's residual is non-zero (then the channel is not really gated), or if
+P2's arms differ on any learning field (then the signal already distinguishes them and there is no
+defect to report), or if exposure recovers the compressed arm (then it is a gain, not an aperture).
+
+Wiring: the gate mirrors `abg_gate_observation` exactly — an observation reaches the learner only if
+its dimension is resolved, membership read from graph data (`In(item.obs_dim, aff.stress_resolves_dims)`),
+never a tuned coefficient. Third occurrence of one shape, deliberately kept identical.
+
+Bound, restated: as with the manifold half, the compression is **stipulated**. This measures whether
+the subsystems compose and what the composition exposes, not why stress compresses anything.
