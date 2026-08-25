@@ -292,3 +292,64 @@ compositional reach is ~k+2 shapes — but nothing here tests it.
 JSON boundary** back into `Substitute` (`TypeError: keys must be str, int, float, bool or None, not
 tuple`). The two Terms compose only when nested so the sigma never leaves the engine — which is how
 a rule would express it anyway, but it means no Python shim can pass a witness between them.
+
+
+## Symbolic vs shape is not a dichotomy — it is an aperture, and the aperture is measurable
+
+**WILD is the aperture control.** A WILD position is SYMBOLIC: opaque, carrying a name and no
+visible structure, matchable only by identity. A pinned position is STRUCTURAL. So a template is not
+"a shape" — it is a per-position aperture setting, and the two things usually opposed are simply its
+endpoints. Measured, in the engine:
+
+| representation | aperture (fraction WILD) |
+|---|---|
+| a fully concrete instance | **0.00** — pure structure, no generality |
+| lgg of two related instances | 0.50 |
+| lgg with something alien | **1.00** — pure symbol, an atom |
+
+The alien case landing at exactly 1.00 is the useful part: **"no reference frame" IS the symbolic
+extreme.** It is not that the frame is poor — it is that the aperture has closed completely and the
+only operation left is identity-matching a token. That is the same fact as §"a frame is what lets
+the template carry the load", read off a different scale.
+
+### The knob is the DIVERSITY of what you generalise over
+
+The intermediate settings are not a theoretical possibility, they are occupied, and the axis is
+smooth. Anti-unifying one instance against progressively more distant ones:
+
+| second instance | aperture |
+|---|---|
+| identical | 0.00 |
+| 1 leaf differs | 0.17 |
+| 2 leaves differ | 0.33 |
+| 3 leaves differ | 0.50 |
+| predicate differs too | 0.83 |
+| wholly alien | 1.00 |
+
+One sixth per differing leaf — monotone, continuous, no gap. So a held codebook entry's generality
+is **decided at MINT time by the SPREAD of what it was minted from**, not by a choice made
+afterwards. Mint from one instance and you have stored a specific memory (aperture 0.00); mint from
+several that vary, and you have stored a shape whose aperture equals their variance.
+
+That is a design consequence with teeth: *how general is what I just learned* is not a separate
+question from *how varied was the evidence*. They are the same number.
+
+### What this does NOT license
+
+The temptation is to read every collapsed representation in this tree as "aperture 1.00" — `mlabel`
+as a region, a cell count as a boundary, `Goal{kind: "flight_objective"}` as a target. **That
+conflates two different collapses.** A kind-tag genuinely is the symbolic endpoint: an opaque token
+with structure that exists but is not exposed. A cell COUNT is not — it is a projection to a scalar,
+which discards structure rather than hiding it, and no aperture setting recovers it. The first can
+be opened; the second has to be recomputed from the thing it summarised.
+
+Worth keeping separate, because "open the aperture" is a cheap fix for the first and impossible for
+the second.
+
+### Method note
+
+The first attempt at this measured the wrong knob: partial `Substitute` sigmas, intended to fill
+some WILDs and leave others. Every non-empty sigma raised (tuple-keyed position paths cannot cross
+the Python JSON boundary) and the exception was swallowed by a `try`, so the probe reported ONE
+reachable setting and looked like evidence for a dichotomy. The diversity knob needs no such
+boundary, which is why it is the one that measures.
