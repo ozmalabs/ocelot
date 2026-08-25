@@ -66,6 +66,60 @@ betweenness; its unreachable limit is the continuum"*, explicitly orthogonal to 
 frontier. Minting coarse and refining later is movement along it. Nothing currently moves along it
 because nothing records where it started.
 
+## A third outcome: the check that PASSES on bad grounding
+
+The two-grain table above is incomplete. *"I can predict the weather from tea leaves"* is neither an
+explanation nor an aspiration — it is a **capability claim that got GROUNDED**. The check ran and
+passed, on bad evidence. So a check is not binary; it returns false positives, and what governs that
+is confidence, self-rating and understanding.
+
+Those turn out to be aperture. **Spurious grounding is coverage that holds at your resolution and
+not at a finer one.** Measured — same architecture, same want, same held parts, differing only in
+what the observer resolves:
+
+| observer | barometer | tea_leaves |
+|---|---|---|
+| meteorologist (resolves the read-object) | grounds | covered 1 — **does not ground** |
+| mystic (cannot resolve WHAT is read) | grounds | covered 2 — **GROUNDS** |
+
+The mystic is not lying and not wishing. At that aperture a barometer and tea leaves are genuinely
+indistinguishable — both read something and yield a forecast — so the grounding is VALID AT THAT
+RESOLUTION. Telling the mystic to check harder is incoherent: not resolving it is what aperture
+means.
+
+So the completed table is:
+
+| grain | residual | mint | failure mode |
+|---|---|---|---|
+| observation | evidence | explanation | superstition — **no check** |
+| target | demand | aspiration | wishful thinking — **no check** |
+| target | demand | **capability** | spurious grounding — **check PASSES, at too coarse an aperture** |
+
+The third is the dangerous one, because it is indistinguishable from success from the inside.
+
+## Aperture is a SHAPE, not a scalar
+
+This section previously treated aperture as a fraction (0.00 → 1.00). That is wrong, and the tea-leaf
+experiment failed once before it was corrected: a UNIFORM aperture measures nothing, because what an
+observer resolves is not uniform. A doctor resolves anatomy finely and engines coarsely. What you
+can resolve is itself STRUCTURED — a function over the shape space, which is to say a shape, and
+therefore decodable, holdable, mintable and learned by the same loop as everything else.
+
+The consequence is not cosmetic. **A scalar acuity totally orders observers; a shaped aperture does
+not.** Modelled as `predicate -> resolved slots`:
+
+| pair | A ⊒ B | B ⊒ A | relation |
+|---|---|---|---|
+| meteorologist vs mystic | False | False | **INCOMPARABLE** |
+| meteorologist vs novice | True | False | A strictly finer |
+| mystic vs novice | True | False | A strictly finer |
+
+The meteorologist and the mystic are incomparable — each resolves what the other cannot — while the
+novice is genuinely below both. **"Differently grounded" and "less able" are different relations,
+and only a shaped aperture can tell them apart.** A social simulation that ranked its agents on a
+scalar would collapse the first into the second, which is most of what makes disagreement
+interesting.
+
 ## Honest bounds
 
 Every number above is from this tree, mostly on small hand-made fixtures. The aperture axis was
