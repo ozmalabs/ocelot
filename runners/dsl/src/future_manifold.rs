@@ -694,14 +694,206 @@ pub fn counting_narrativium_by_dimension(
     )
 }
 
+
+// ---------------------------------------------------------------------------
+// Feasible-set selection — making "admissible but never selected" expressible.
+// ---------------------------------------------------------------------------
+
+/// One candidate's standing under the selection rule.
+///
+/// Like [`DeformationRecord`] this is a RECORD. Nothing here is summed into a
+/// desirability score: the three questions the theory separates — *can I tell?*,
+/// *would it hold?*, *was it taken?* — stay three fields, because collapsing them
+/// is exactly what makes an ignorant, a stupid and a stubborn agent look alike.
+#[derive(Debug, Clone, PartialEq)]
+pub struct SelectionRecord {
+    pub candidate: NodeID,
+    /// The audit ran to completion, so feasibility is KNOWN — either way.
+    /// False is the *stupid* signature: not "it would fail" but "I cannot say".
+    pub established: bool,
+    /// Established AND the projected tube stayed inside the allowed one.
+    pub feasible: bool,
+    /// The represented valuation. `None` means the caller never represented one;
+    /// it is NOT zero cost, and a feasible candidate carrying `None` fails the
+    /// whole selection closed rather than being silently treated as free.
+    pub intervention: Option<f64>,
+    /// Goal ordering, used only to break equal-intervention ties.
+    pub goal_rank: Option<f64>,
+    /// The policy declined this candidate for reasons outside the selection rule.
+    pub withheld: bool,
+}
+
+/// The outcome of applying the selection rule to a reachable set.
+///
+/// # Why this is set-valued
+///
+/// `minimal` and `selected` are families, not winners. The premise of an
+/// admissibility grammar is that a single fixpoint need not be chosen, and a
+/// selector that returned one candidate would re-impose exactly the choice the
+/// grammar exists to avoid. `tie_breadth` is published so a caller can see how
+/// much freedom it actually had.
+///
+/// # What makes stubbornness visible
+///
+/// `withheld_minimal` is the set of candidates that were established, feasible,
+/// minimal under the represented valuation, and best under goals — and were still
+/// not taken. That is the theory's *"always-admissible but never-selected
+/// candidate contributes no realised reachability"*, as a countable set rather
+/// than a sentence. An agent with a large `withheld_minimal` is not ignorant (its
+/// candidates exist), not stupid (their feasibility was established): it is
+/// declining futures that would have worked and cost no more.
+///
+/// The substrate does not decide that this is a pathology. It makes the
+/// difference between what would have worked and what was taken legible, and
+/// leaves the reading to the caller.
+#[derive(Debug, Clone, PartialEq)]
+pub struct FeasibleSelection {
+    pub records: Vec<SelectionRecord>,
+    /// Candidates whose feasibility could not be established — the STUPID axis.
+    pub unestablished: Vec<NodeID>,
+    /// Established and would leave the tube. Correctly rejected, not a deficit.
+    pub infeasible: Vec<NodeID>,
+    pub feasible: Vec<NodeID>,
+    /// Feasible, minimum-intervention, goal-best — before withholding.
+    pub minimal: Vec<NodeID>,
+    /// `minimal` less whatever the policy withheld.
+    pub selected: Vec<NodeID>,
+    /// Minimal-and-would-have-worked, yet not taken — the STUBBORN axis.
+    pub withheld_minimal: Vec<NodeID>,
+    /// `minimal.len()` — how set-valued the decision genuinely was.
+    pub tie_breadth: usize,
+}
+
+/// Apply the substrate's own decision rule to a reachable deformation set.
+///
+/// The rule is not invented here; it is the engine-wide boundary stated in
+/// `CLAUDE.md`: *"Execution chooses the minimum sufficient action/intervention
+/// that keeps the projected tube inside it; goals break equal-intervention
+/// ties."* Read literally, in that order:
+///
+/// 1. FEASIBLE — the projected tube stays inside the allowed tube (`loss == 0`),
+///    and that was actually established (`support && resolved`);
+/// 2. MINIMUM SUFFICIENT — least represented `intervention` among the feasible;
+/// 3. GOALS BREAK TIES — among those, greatest `goal_rank`, and only among those.
+///    Goals never override intervention; they order what intervention left equal.
+///
+/// Ties are kept, not broken arbitrarily. Intervention equality is EXACT on the
+/// represented value: a tolerance would be a scalar knob standing in for a shape,
+/// and a caller wanting one quantises its own valuation, where it has the units.
+///
+/// Fails closed (`None`) on an empty family, an unsupported candidate, or a
+/// feasible candidate with no represented valuation — the last because "minimum
+/// sufficient" over an unrepresented cost is not a smaller number, it is not a
+/// question. This mirrors [`counting_narrativium_by_dimension`], which refuses to
+/// report unestablished reachability as zero capacity.
+pub fn feasible_selection(
+    graph: &TypedGraph,
+    interner: &mut Interner,
+    episode: NodeID,
+    policy: NodeID,
+    candidates: &[NodeID],
+) -> Option<FeasibleSelection> {
+    if candidates.is_empty() {
+        return None;
+    }
+    let deformations = reachable_deformation_set(graph, interner, episode, policy, candidates);
+    if deformations.iter().any(|record| !record.support) {
+        return None;
+    }
+    let interner = &*interner;
+
+    let records: Vec<SelectionRecord> = deformations
+        .iter()
+        .map(|d| {
+            let established = d.support && d.resolved;
+            SelectionRecord {
+                candidate: d.candidate,
+                established,
+                feasible: established && d.loss == 0.0,
+                intervention: scalar(graph, interner, d.candidate, "intervention"),
+                goal_rank: scalar(graph, interner, d.candidate, "goal_rank"),
+                withheld: scalar(graph, interner, d.candidate, "withheld")
+                    .map(|v| v != 0.0)
+                    .unwrap_or(false),
+            }
+        })
+        .collect();
+
+    let pick = |f: &dyn Fn(&SelectionRecord) -> bool| -> Vec<NodeID> {
+        records.iter().filter(|r| f(r)).map(|r| r.candidate).collect()
+    };
+    let unestablished = pick(&|r| !r.established);
+    let infeasible = pick(&|r| r.established && !r.feasible);
+    let feasible = pick(&|r| r.feasible);
+
+    // A feasible candidate with no represented valuation makes "minimum
+    // sufficient" unanswerable. Refuse rather than rank it as free.
+    if records.iter().any(|r| r.feasible && r.intervention.is_none()) {
+        return None;
+    }
+
+    let minimum = records
+        .iter()
+        .filter(|r| r.feasible)
+        .filter_map(|r| r.intervention)
+        .fold(None::<f64>, |acc, v| Some(match acc {
+            Some(best) if best <= v => best,
+            _ => v,
+        }));
+
+    let minimal: Vec<NodeID> = match minimum {
+        None => Vec::new(),                     // nothing feasible: honest, not a failure
+        Some(min) => {
+            let at_min: Vec<&SelectionRecord> = records
+                .iter()
+                .filter(|r| r.feasible && r.intervention == Some(min))
+                .collect();
+            // Goals order only what intervention left equal.
+            let best_goal = at_min.iter().filter_map(|r| r.goal_rank).fold(
+                None::<f64>,
+                |acc, v| Some(match acc {
+                    Some(best) if best >= v => best,
+                    _ => v,
+                }),
+            );
+            match best_goal {
+                None => at_min.iter().map(|r| r.candidate).collect(),
+                Some(best) => at_min
+                    .iter()
+                    .filter(|r| r.goal_rank == Some(best))
+                    .map(|r| r.candidate)
+                    .collect(),
+            }
+        }
+    };
+
+    let withheld_of = |id: NodeID| {
+        records.iter().any(|r| r.candidate == id && r.withheld)
+    };
+    let selected: Vec<NodeID> = minimal.iter().copied().filter(|id| !withheld_of(*id)).collect();
+    let withheld_minimal: Vec<NodeID> =
+        minimal.iter().copied().filter(|id| withheld_of(*id)).collect();
+
+    Some(FeasibleSelection {
+        tie_breadth: minimal.len(),
+        records,
+        unestablished,
+        infeasible,
+        feasible,
+        minimal,
+        selected,
+        withheld_minimal,
+    })
+}
+
 #[cfg(test)]
-mod reachable_set_tests {
+pub(crate) mod reachable_set_tests {
     use super::*;
     use rustc_hash::FxHashMap;
 
     /// Build an episode with a flat target tube and two candidates: one whose
     /// projected continuation stays inside tolerance, one that leaves it.
-    fn bench() -> (TypedGraph, Interner, NodeID, NodeID, NodeID, NodeID) {
+    pub(crate) fn bench() -> (TypedGraph, Interner, NodeID, NodeID, NodeID, NodeID) {
         let mut g = TypedGraph::new();
         let mut i = Interner::new();
         let ty = i.intern("N");
@@ -850,5 +1042,201 @@ mod reachable_set_tests {
             None,
             "an absent dimension is not a measured zero",
         );
+    }
+}
+
+#[cfg(test)]
+mod feasible_selection_tests {
+    use super::*;
+    use rustc_hash::FxHashMap;
+
+    /// The reachable-set bench, plus the two represented quantities selection
+    /// needs: a valuation, and whatever the policy chose to withhold.
+    fn bench() -> (TypedGraph, Interner, NodeID, NodeID, NodeID, NodeID) {
+        super::reachable_set_tests::bench()
+    }
+
+    fn set(g: &mut TypedGraph, i: &mut Interner, n: NodeID, k: &str, v: f64) {
+        let sym = i.intern(k);
+        g.set_node_attr(n, sym, Value::Float(v));
+    }
+
+    fn ids(v: &[NodeID]) -> Vec<NodeID> {
+        let mut out = v.to_vec();
+        out.sort();
+        out
+    }
+
+    #[test]
+    fn an_escaping_candidate_is_infeasible_not_unestablished() {
+        // The distinction the whole audit turns on: correctly foreseeing that
+        // something leaves the tube is not a deficit, and must not read as one.
+        let (mut g, mut i, ep, pol, held, esc) = bench();
+        set(&mut g, &mut i, held, "intervention", 1.0);
+        set(&mut g, &mut i, esc, "intervention", 1.0);
+        let sel = feasible_selection(&g, &mut i, ep, pol, &[held, esc]).expect("supported");
+        assert_eq!(sel.feasible, vec![held]);
+        assert_eq!(sel.infeasible, vec![esc]);
+        assert!(sel.unestablished.is_empty(), "nothing was left undecided here");
+    }
+
+    #[test]
+    fn minimum_sufficient_intervention_wins_and_goals_only_break_ties() {
+        // CLAUDE.md's rule, read in order: a goal must NOT buy a more expensive
+        // candidate. If it could, "minimum sufficient" would be advisory.
+        let (mut g, mut i, ep, pol, cheap, _esc) = bench();
+        let vals = i.intern("future_manifold_values");
+        let ty = i.intern("N");
+        let slice = |xs: &[f64]| {
+            let sv: smallvec::SmallVec<[Value; 4]> = xs.iter().map(|x| Value::Float(*x)).collect();
+            Value::Tuple(std::sync::Arc::new(sv))
+        };
+        let traj = |rows: &[&[f64]]| {
+            let sv: smallvec::SmallVec<[Value; 4]> = rows.iter().map(|r| slice(r)).collect();
+            Value::Tuple(std::sync::Arc::new(sv))
+        };
+        let dear = g.insert_node(ty, FxHashMap::default());
+        g.set_node_attr(dear, vals, traj(&[&[0.0], &[0.1], &[0.0]]));
+
+        set(&mut g, &mut i, cheap, "intervention", 1.0);
+        set(&mut g, &mut i, cheap, "goal_rank", 0.0);
+        set(&mut g, &mut i, dear, "intervention", 5.0);
+        set(&mut g, &mut i, dear, "goal_rank", 99.0);
+
+        let sel = feasible_selection(&g, &mut i, ep, pol, &[cheap, dear]).expect("supported");
+        assert_eq!(sel.minimal, vec![cheap],
+                   "a high goal rank bought a more expensive intervention");
+        assert_eq!(sel.tie_breadth, 1);
+    }
+
+    #[test]
+    fn equal_intervention_ties_are_kept_not_broken_arbitrarily() {
+        // Set-valued by design: a selector that returned one candidate would
+        // re-impose the single fixpoint the admissibility grammar exists to avoid.
+        let (mut g, mut i, ep, pol, a, _esc) = bench();
+        let vals = i.intern("future_manifold_values");
+        let ty = i.intern("N");
+        let slice = |xs: &[f64]| {
+            let sv: smallvec::SmallVec<[Value; 4]> = xs.iter().map(|x| Value::Float(*x)).collect();
+            Value::Tuple(std::sync::Arc::new(sv))
+        };
+        let traj = |rows: &[&[f64]]| {
+            let sv: smallvec::SmallVec<[Value; 4]> = rows.iter().map(|r| slice(r)).collect();
+            Value::Tuple(std::sync::Arc::new(sv))
+        };
+        let b = g.insert_node(ty, FxHashMap::default());
+        g.set_node_attr(b, vals, traj(&[&[0.0], &[0.3], &[0.0]]));
+        set(&mut g, &mut i, a, "intervention", 2.0);
+        set(&mut g, &mut i, b, "intervention", 2.0);
+
+        let sel = feasible_selection(&g, &mut i, ep, pol, &[a, b]).expect("supported");
+        assert_eq!(ids(&sel.minimal), ids(&[a, b]));
+        assert_eq!(sel.tie_breadth, 2, "the tie was collapsed to a single winner");
+    }
+
+    #[test]
+    fn a_feasible_candidate_with_no_represented_valuation_fails_closed() {
+        // "Minimum sufficient" over an unrepresented cost is not a smaller
+        // number, it is not a question. Ranking it free would launder the gap.
+        let (mut g, mut i, ep, pol, held, esc) = bench();
+        set(&mut g, &mut i, esc, "intervention", 1.0);
+        assert!(feasible_selection(&g, &mut i, ep, pol, &[held, esc]).is_none(),
+                "a feasible candidate with no valuation was ranked anyway");
+    }
+
+    #[test]
+    fn an_empty_family_fails_closed() {
+        let (g, mut i, ep, pol, _held, _esc) = bench();
+        assert!(feasible_selection(&g, &mut i, ep, pol, &[]).is_none());
+    }
+
+    #[test]
+    fn stubbornness_is_visible_as_withheld_minimal() {
+        // THE POINT OF THIS MODULE. Before it, a candidate that was established,
+        // feasible, minimal, and simply not taken was indistinguishable from one
+        // that never existed -- the admissible bound never asks what was chosen.
+        // Here the two agents differ in exactly one represented bit and the audit
+        // separates them.
+        let (mut g, mut i, ep, pol, held, esc) = bench();
+        set(&mut g, &mut i, held, "intervention", 1.0);
+        set(&mut g, &mut i, esc, "intervention", 1.0);
+
+        let open = feasible_selection(&g, &mut i, ep, pol, &[held, esc]).expect("supported");
+        assert_eq!(open.selected, vec![held]);
+        assert!(open.withheld_minimal.is_empty());
+
+        set(&mut g, &mut i, held, "withheld", 1.0);
+        let stubborn = feasible_selection(&g, &mut i, ep, pol, &[held, esc]).expect("supported");
+
+        assert_eq!(stubborn.minimal, vec![held], "it was still the right move");
+        assert!(stubborn.selected.is_empty(), "and it was not taken");
+        assert_eq!(stubborn.withheld_minimal, vec![held],
+                   "stubbornness is not countable -- the audit cannot see it");
+    }
+
+    #[test]
+    fn ignorant_and_stubborn_separate_but_STUPID_HAS_NO_FIELD_YET() {
+        // The diagnostic claim, honestly bounded by what the audit can express.
+        //
+        // STUPID_STUBBORN_IGNORANT.md claimed three separable axes. Building the
+        // selector showed only two of them exist. Pinned here so the claim cannot
+        // drift back:
+        //
+        //   * `resolved` carries NO independent information. `projection_field`
+        //     sets `support = false` whenever `audited < requested_horizon`, and
+        //     `resolved` is then defined as false-if-unsupported, else
+        //     `audited >= requested_horizon` -- which support already guaranteed.
+        //     So `resolved == support`, always.
+        //   * `information_loss` is incremented on the SAME line as `loss` and
+        //     nowhere else, so the two are numerically identical. The field's own
+        //     doc says "cells whose retention could not be ESTABLISHED", which is
+        //     a genuinely different question from "cells that left the tube" --
+        //     but the code never asks it.
+        //
+        // Consequence: an under-resourced projection reads as UNSUPPORTED (the
+        // audit could not run), never as "ran, but could not tell". There is
+        // currently no way to be stupid at the manifold -- only absent, wrong, or
+        // stubborn.
+        let (mut g, mut i, ep, pol, held, esc) = bench();
+        set(&mut g, &mut i, held, "intervention", 1.0);
+        set(&mut g, &mut i, esc, "intervention", 1.0);
+
+        // IGNORANT: nothing to project at all.
+        assert!(feasible_selection(&g, &mut i, ep, pol, &[]).is_none());
+
+        // STUBBORN: established, feasible, minimal -- and not taken.
+        set(&mut g, &mut i, held, "withheld", 1.0);
+        let stubborn = feasible_selection(&g, &mut i, ep, pol, &[held, esc]).expect("supported");
+        assert!(stubborn.selected.is_empty());
+        assert_eq!(stubborn.withheld_minimal.len(), 1);
+        assert!(stubborn.unestablished.is_empty(),
+                "a stubborn agent knew perfectly well; that is what makes it stubborn");
+
+        // STUPID: not producible. Starving the budget below the horizon does not
+        // yield an unresolved audit -- it yields an unsupported one, and the whole
+        // selection fails closed rather than reporting a candidate it could not
+        // assess.
+        let budget = i.intern("future_manifold_projection_budget");
+        g.set_node_attr(pol, budget, Value::Float(1.0));
+        assert!(feasible_selection(&g, &mut i, ep, pol, &[held, esc]).is_none(),
+                "an under-budgeted projection became assessable -- if this now \
+                 passes, `resolved` has been given independent meaning and the \
+                 stupid axis is finally representable");
+    }
+
+    #[test]
+    fn information_loss_is_currently_a_duplicate_of_loss() {
+        // Pins the defect above at its source rather than at one call site. These
+        // are supposed to be different questions -- what left the tube, versus
+        // what could not be established -- and the audit increments them together.
+        let (mut g, mut i, ep, pol, _held, esc) = bench();
+        let records = reachable_deformation_set(&g, &mut i, ep, pol, &[esc]);
+        let escaping = &records[0];
+        assert!(escaping.loss > 0.0, "fixture no longer escapes the tube");
+        assert_eq!(escaping.information_loss, escaping.loss,
+                   "information_loss has diverged from loss -- if this fails the \
+                    field has been given its own meaning, which is the fix, and \
+                    STUPID_STUBBORN_IGNORANT.md should be updated to match");
+        set(&mut g, &mut i, esc, "intervention", 1.0);
     }
 }
