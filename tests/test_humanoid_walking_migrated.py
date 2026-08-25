@@ -515,7 +515,7 @@ def test_shape_library_persists_gait_sweep_between_lifetimes():
     assert "stores_humanoid_residual_regime_memory" in production_edges
 
     runner = RUNNER.read_text(encoding="utf-8")
-    assert "MOTOR_LIBRARY_VERSION = 24" in runner
+    assert "MOTOR_LIBRARY_VERSION = 25" in runner
     assert 'shape_row.get("residual_regimes", [])' in runner
     assert '"residual_regimes": residual_regimes' in runner
 
@@ -523,6 +523,7 @@ def test_shape_library_persists_gait_sweep_between_lifetimes():
 def test_verified_program_trajectory_shape_survives_library_boundary():
     from scripts.jabberwock_humanoid_adaptation import _edge
     from scripts.jabberwock_humanoid_walk import (
+        MOTOR_LIBRARY_VERSION,
         _motor_library_snapshot,
         _restore_motor_library,
     )
@@ -553,6 +554,21 @@ def test_verified_program_trajectory_shape_survives_library_boundary():
     )[0]
     programs = source.inner.neighbours(
         shape, "stores_humanoid_motor_program"
+    )
+    endpoint = source.s.add_node("HumanoidMotorProgram", {
+        "primary_token": "opaque_endpoint",
+        "motor_task_context": "locomotion",
+        "motor_task_phase": "execution",
+        "support_phase": 0,
+        "output_authority": 0,
+    })
+    endpoint_member = source.s.add_node("HumanoidLibraryMotorMember", {
+        "token": "opaque_endpoint",
+        "ordinal": 0,
+        "support_phase": 0,
+    })
+    source.inner.add_edge(
+        endpoint, "has_humanoid_library_motor_member", endpoint_member
     )
     owner = source.s.add_node("Node", {
         "name": "locomotion:test",
@@ -590,10 +606,12 @@ def test_verified_program_trajectory_shape_survives_library_boundary():
         transition, "starts_from_embodied_program", programs[0]
     )
     source.inner.add_edge(
-        transition, "continues_with_embodied_program", programs[1]
+        transition, "continues_with_embodied_program", endpoint
     )
     snapshot = json.loads(json.dumps(_motor_library_snapshot(source)))
-    assert snapshot["version"] == 24
+    assert snapshot["version"] == MOTOR_LIBRARY_VERSION
+    assert len(snapshot["body_shapes"][0]["programs"]) == 2
+    assert len(snapshot["program_trajectory_endpoint_programs"]) == 1
     assert len(snapshot["program_trajectory_shapes"]) == 1
     saved = snapshot["program_trajectory_shapes"][0]["transitions"][0][
         "attrs"
@@ -608,6 +626,7 @@ def test_verified_program_trajectory_shape_survives_library_boundary():
     restored = _restore_motor_library(target, snapshot)
     assert restored["program_trajectory_shape_count"] == 1
     assert restored["program_trajectory_transition_count"] == 1
+    assert restored["program_trajectory_endpoint_program_count"] == 1
     retained_owner = target.inner.neighbours(
         target.agent, "has_retained_embodied_program_trajectory_shape"
     )[0]
@@ -623,6 +642,19 @@ def test_verified_program_trajectory_shape_survives_library_boundary():
     assert target.inner.neighbours(
         retained_owner, "has_selected_embodied_program_path"
     ) == []
+    retained_targets = target.inner.neighbours(
+        retained_transition, "continues_with_embodied_program"
+    )
+    assert len(retained_targets) == 1
+    assert target.s.node(retained_targets[0])["attrs"][
+        "trajectory_endpoint_only"
+    ] == 1
+    target_shape = target.inner.neighbours(
+        target.agent, "has_humanoid_body_shape_library"
+    )[0]
+    assert retained_targets[0] not in target.inner.neighbours(
+        target_shape, "stores_humanoid_motor_program"
+    )
 
     deployment = trajectory_fixture()
     deployment_episode = deployment.s.nodes("HumanoidEpisode")[0]

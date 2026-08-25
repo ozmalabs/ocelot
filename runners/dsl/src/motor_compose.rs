@@ -1718,16 +1718,16 @@ impl<'a> HumanoidComposer<'a> {
     /// as-yet unobserved pair interaction. Conflicting duplicate evidence is
     /// still unsupported. The missing interaction is never invented as zero:
     /// its count is carried into the manifold's information-loss dimension.
-    fn manifold_effect_with_unknown_pairs(
-        &self,
-        members: &[usize],
-    ) -> Option<([f64; 7], f64)> {
+    fn manifold_effect_with_unknown_pairs(&self, members: &[usize]) -> Option<([f64; 7], f64)> {
         if members.is_empty()
             || members.iter().any(|index| {
                 !self.active(*index)
                     || !self.models[*index].initialized
                     || !self.manifold_anchor_present(self.models[*index].node)
-                    || self.models[*index].effect.iter().any(|value| !value.is_finite())
+                    || self.models[*index]
+                        .effect
+                        .iter()
+                        .any(|value| !value.is_finite())
             })
         {
             return None;
@@ -1756,9 +1756,7 @@ impl<'a> HumanoidComposer<'a> {
         let mut unknown_pairs = 0.0;
         for left in 0..members.len() {
             for right in left + 1..members.len() {
-                if self.models[members[left]].exafferent
-                    || self.models[members[right]].exafferent
-                {
+                if self.models[members[left]].exafferent || self.models[members[right]].exafferent {
                     continue;
                 }
                 let a = self.models[members[left]].token;
@@ -1880,9 +1878,7 @@ impl<'a> HumanoidComposer<'a> {
                     return None;
                 }
                 for key in 0..7 {
-                    effect[key] += matches[0].residual[key]
-                        * recruitment_scale
-                        * recruitment_scale;
+                    effect[key] += matches[0].residual[key] * recruitment_scale * recruitment_scale;
                 }
             }
         }
@@ -1918,11 +1914,7 @@ impl<'a> HumanoidComposer<'a> {
     /// exactly linear-plus-quadratic in uniform recruitment, so every first
     /// shape-bound intersection is solved analytically rather than approached
     /// with a fixed increment or iteration count.
-    fn maximum_admissible_recruitment_scale(
-        &self,
-        members: &[usize],
-        upper: f64,
-    ) -> Option<f64> {
+    fn maximum_admissible_recruitment_scale(&self, members: &[usize], upper: f64) -> Option<f64> {
         if !upper.is_finite() || upper < 1.0 {
             return None;
         }
@@ -2113,7 +2105,12 @@ impl<'a> HumanoidComposer<'a> {
                     fattr(self.graph, self.interner, model.node, "anchor_vx"),
                     fattr(self.graph, self.interner, model.node, "anchor_vy"),
                     fattr(self.graph, self.interner, model.node, "anchor_vz"),
-                    fattr(self.graph, self.interner, model.node, "anchor_lateral_offset"),
+                    fattr(
+                        self.graph,
+                        self.interner,
+                        model.node,
+                        "anchor_lateral_offset",
+                    ),
                 ];
                 let projected = [
                     fraction * effect[0],
@@ -2168,14 +2165,24 @@ impl<'a> HumanoidComposer<'a> {
             for member in members {
                 let model = &self.models[*member];
                 let anchors = [
-                    "anchor_z_x", "anchor_z_y", "anchor_wx", "anchor_wy",
-                    "anchor_vx", "anchor_vy", "anchor_vz", "anchor_lateral_offset",
+                    "anchor_z_x",
+                    "anchor_z_y",
+                    "anchor_wx",
+                    "anchor_wy",
+                    "anchor_vx",
+                    "anchor_vy",
+                    "anchor_vz",
+                    "anchor_lateral_offset",
                 ];
                 let projected = [
-                    fraction * effect[0], fraction * effect[1],
-                    fraction * effect[3], fraction * effect[2],
-                    fraction * effect[4], fraction * effect[5],
-                    fraction * effect[6], fraction * effect[5],
+                    fraction * effect[0],
+                    fraction * effect[1],
+                    fraction * effect[3],
+                    fraction * effect[2],
+                    fraction * effect[4],
+                    fraction * effect[5],
+                    fraction * effect[6],
+                    fraction * effect[5],
                 ];
                 for component in 0..8 {
                     let delta = projected[component]
@@ -2776,7 +2783,13 @@ pub fn future_manifold_projection_field(
         if name == "narrativium_snapshot" || narrativium_dimension.is_some() {
             let conditional = name.starts_with("conditional_narrativium_");
             let counts = cached_path_family_narrativium(
-                graph, interner, episode, policy, source, addition, conditional,
+                graph,
+                interner,
+                episode,
+                policy,
+                source,
+                addition,
+                conditional,
             );
             if name == "narrativium_snapshot" {
                 return counts.map_or(Value::None, |(reachable, retained)| {
@@ -2890,9 +2903,7 @@ pub fn future_manifold_projection_field(
             addition_is_humanoid_program = !addition_members.is_empty()
                 && interner
                     .lookup("has_humanoid_phase_action_model")
-                    .is_some_and(|edge| {
-                        !graph.neighbours(episode, Some(edge)).is_empty()
-                    });
+                    .is_some_and(|edge| !graph.neighbours(episode, Some(edge)).is_empty());
         }
         if addition_members.is_empty() {
             addition_members.push(a);
@@ -3107,7 +3118,11 @@ impl FutureProjectionReport {
                     .ok()
                     .filter(|index| *index < self.retained.len())
                     .or_else(|| COMPONENTS.iter().position(|component| *component == suffix))
-                    .or_else(|| HUMANOID_KEYS.iter().position(|component| *component == suffix));
+                    .or_else(|| {
+                        HUMANOID_KEYS
+                            .iter()
+                            .position(|component| *component == suffix)
+                    });
                 represented
                     .map(|_| if self.support { 1.0 } else { 0.0 })
                     .unwrap_or(0.0)
@@ -3345,14 +3360,17 @@ fn projection_snapshot(
         "effort_authorized",
     )
     .unwrap_or(0.0);
-    Value::Tuple(std::sync::Arc::new(vec![
-        Value::Float(report.field("support")),
-        Value::Float(report.field("resolved")),
-        Value::Float(report.field("loss")),
-        Value::Float(report.field("information_loss")),
-        Value::Float(effort_supported),
-        Value::Float(effort_authorized),
-    ].into()))
+    Value::Tuple(std::sync::Arc::new(
+        vec![
+            Value::Float(report.field("support")),
+            Value::Float(report.field("resolved")),
+            Value::Float(report.field("loss")),
+            Value::Float(report.field("information_loss")),
+            Value::Float(effort_supported),
+            Value::Float(effort_authorized),
+        ]
+        .into(),
+    ))
 }
 
 /// One immutable view of the projected manifold shape used by audit rules.
@@ -3373,7 +3391,11 @@ fn projection_shape_snapshot(report: &FutureProjectionReport) -> Value {
     fields.extend(report.residual);
     fields.extend(report.applied_bounds);
     Value::Tuple(std::sync::Arc::new(
-        fields.into_iter().map(Value::Float).collect::<Vec<_>>().into(),
+        fields
+            .into_iter()
+            .map(Value::Float)
+            .collect::<Vec<_>>()
+            .into(),
     ))
 }
 
@@ -3388,17 +3410,40 @@ fn projection_audit_snapshot(
     effort_exposure_count: Option<f64>,
 ) -> Value {
     const FIELDS: [&str; 34] = [
-        "support", "resolved", "loss", "information_loss", "horizon",
-        "anchor_count", "refinement_count", "termination_code",
-        "exploration_authority", "effort_supported", "projected_effort",
-        "ideal_effort", "effort_scale", "effort_residual", "time_compression",
-        "width_compression", "information_compression",
-        "compression_dimension_count", "manifold_compression", "effort_authorized",
-        "situated_support_0", "situated_support_1", "situated_support_2",
-        "situated_support_3", "situated_support_4", "situated_support_5",
-        "situated_support_6", "applied_bound_0", "applied_bound_1",
-        "applied_bound_2", "applied_bound_3", "applied_bound_4",
-        "applied_bound_5", "applied_bound_6",
+        "support",
+        "resolved",
+        "loss",
+        "information_loss",
+        "horizon",
+        "anchor_count",
+        "refinement_count",
+        "termination_code",
+        "exploration_authority",
+        "effort_supported",
+        "projected_effort",
+        "ideal_effort",
+        "effort_scale",
+        "effort_residual",
+        "time_compression",
+        "width_compression",
+        "information_compression",
+        "compression_dimension_count",
+        "manifold_compression",
+        "effort_authorized",
+        "situated_support_0",
+        "situated_support_1",
+        "situated_support_2",
+        "situated_support_3",
+        "situated_support_4",
+        "situated_support_5",
+        "situated_support_6",
+        "applied_bound_0",
+        "applied_bound_1",
+        "applied_bound_2",
+        "applied_bound_3",
+        "applied_bound_4",
+        "applied_bound_5",
+        "applied_bound_6",
     ];
     let values = FIELDS
         .into_iter()
@@ -3613,7 +3658,11 @@ fn humanoid_narrativium_dimension(field: &str) -> Option<usize> {
         .ok()
         .filter(|index| *index < HUMANOID_KEYS.len())
         .or_else(|| COMPONENTS.iter().position(|component| *component == suffix))
-        .or_else(|| HUMANOID_KEYS.iter().position(|component| *component == suffix))
+        .or_else(|| {
+            HUMANOID_KEYS
+                .iter()
+                .position(|component| *component == suffix)
+        })
 }
 
 /// Count distinct projected future shapes beside `selected`. Projected time
@@ -3642,9 +3691,7 @@ fn path_family_narrativium(
         graph.neighbours(trajectories[0], candidate_edge)
     };
     let selected_depth = fattr(graph, interner, selected, "depth");
-    candidates.retain(|candidate| {
-        fattr(graph, interner, *candidate, "depth") == selected_depth
-    });
+    candidates.retain(|candidate| fattr(graph, interner, *candidate, "depth") == selected_depth);
     let decision_anchor = current_transition.or_else(|| {
         condition_on_first_transition
             .then(|| humanoid_path_segments(graph, interner, selected, None))
@@ -3663,7 +3710,9 @@ fn path_family_narrativium(
     }
     if let Some(dominated_edge) = interner.lookup("is_dominated_by_pareto_candidate") {
         candidates.retain(|candidate| {
-            graph.neighbours(*candidate, Some(dominated_edge)).is_empty()
+            graph
+                .neighbours(*candidate, Some(dominated_edge))
+                .is_empty()
         });
     }
     if let (Some(anchor), Some(blocked_edge)) = (
@@ -3824,13 +3873,34 @@ fn rebind_humanoid_program_members(
     all_models: &[NodeID],
     program: NodeID,
 ) -> Option<(Vec<usize>, Vec<NodeID>)> {
-    let member_edge = interner.lookup("includes_humanoid_phase_action_model")?;
-    let historical = graph.neighbours(program, Some(member_edge));
-    if historical.is_empty() {
+    let mut descriptors = Vec::new();
+    for edge_name in [
+        "includes_humanoid_phase_action_model",
+        "includes_humanoid_action_model",
+    ] {
+        if let Some(member_edge) = interner.lookup(edge_name) {
+            for member in graph.neighbours(program, Some(member_edge)) {
+                if !descriptors.contains(&member) {
+                    descriptors.push(member);
+                }
+            }
+        }
+    }
+    // A retained trajectory endpoint deliberately remains detached from the
+    // warm proposal population.  Its output-null library members are enough
+    // to identify the current episode's learned analysis-by-synthesis models;
+    // resolving them here does not grant the retained program authority.
+    if descriptors.is_empty() {
+        if let Some(member_edge) = interner.lookup("has_humanoid_library_motor_member") {
+            descriptors = graph.neighbours(program, Some(member_edge));
+        }
+    }
+    if descriptors.is_empty() {
         return None;
     }
-    let mut rebound = Vec::with_capacity(historical.len());
-    for node in &historical {
+    let mut rebound = Vec::with_capacity(descriptors.len());
+    let mut rebound_models = Vec::with_capacity(descriptors.len());
+    for node in &descriptors {
         let index = if fattr(graph, interner, *node, "exafferent") > 0.5 {
             all_models
                 .iter()
@@ -3838,11 +3908,13 @@ fn rebind_humanoid_program_members(
                 .filter(|index| composer.active(*index))
         } else {
             let token = sattr(graph, interner, *node, "token");
-            let group = fattr(graph, interner, *node, "actuator_group");
+            let ordinal = fattr(graph, interner, *node, "ordinal");
+            let support_phase = fattr(graph, interner, *node, "support_phase");
             all_models.iter().enumerate().find_map(|(index, known)| {
                 (composer.active(index)
                     && sattr(graph, interner, *known, "token") == token
-                    && fattr(graph, interner, *known, "actuator_group") == group)
+                    && fattr(graph, interner, *known, "ordinal") == ordinal
+                    && fattr(graph, interner, *known, "support_phase") == support_phase)
                     .then_some(index)
             })
         }?;
@@ -3850,8 +3922,9 @@ fn rebind_humanoid_program_members(
             return None;
         }
         rebound.push(index);
+        rebound_models.push(all_models[index]);
     }
-    Some((rebound, historical))
+    Some((rebound, rebound_models))
 }
 
 #[derive(Clone, Copy)]
@@ -3878,7 +3951,11 @@ fn persistent_takeoff_development_evidence(
     let Some(development) = graph.neighbours(episode, Some(projects)).into_iter().next() else {
         return false;
     };
-    let Some(capability) = graph.neighbours(development, Some(active)).into_iter().next() else {
+    let Some(capability) = graph
+        .neighbours(development, Some(active))
+        .into_iter()
+        .next()
+    else {
         return false;
     };
     let window = fattr(graph, interner, development, "development_evidence_window");
@@ -3928,9 +4005,9 @@ fn takeoff_recruitment_projection(
         return unsupported;
     }
     let composer = HumanoidComposer::build(graph, interner, episode, policy, &all_models);
-    let Some((members, _)) = rebind_humanoid_program_members(
-        graph, interner, &composer, &all_models, program,
-    ) else {
+    let Some((members, _)) =
+        rebind_humanoid_program_members(graph, interner, &composer, &all_models, program)
+    else {
         return unsupported;
     };
     let Some(effect) = composer.manifold_effect(&members) else {
@@ -3947,8 +4024,12 @@ fn takeoff_recruitment_projection(
         return unsupported;
     }
     let target = fattr(
-        graph, interner, episode, "self_takeoff_target_velocity_scale",
-    ) * (gravity * height).sqrt() / prior;
+        graph,
+        interner,
+        episode,
+        "self_takeoff_target_velocity_scale",
+    ) * (gravity * height).sqrt()
+        / prior;
     let target_delta = target - fattr(graph, interner, episode, "state_vz");
     let required_ratio = if target_delta <= predicted_dvz {
         1.0
@@ -3997,9 +4078,7 @@ fn takeoff_recruitment_projection(
     }
     let target_admissible = composer
         .manifold_path_at_recruitment_scale(&members, required_ratio)
-        .is_some_and(|(anchor_loss, escaped, _, _)| {
-            escaped == 0.0 && anchor_loss.is_finite()
-        });
+        .is_some_and(|(anchor_loss, escaped, _, _)| escaped == 0.0 && anchor_loss.is_finite());
     let selected_ratio = if target_admissible {
         required_ratio
     } else {
@@ -4048,7 +4127,12 @@ fn future_humanoid_manifold_projection_for_path(
     policy: NodeID,
     path: NodeID,
     current_transition: Option<NodeID>,
-) -> (FutureProjectionReport, Vec<NodeID>, usize, Vec<(i32, [f64; 7])>) {
+) -> (
+    FutureProjectionReport,
+    Vec<NodeID>,
+    usize,
+    Vec<(i32, [f64; 7])>,
+) {
     let unsupported = || {
         (
             unsupported_future_projection_report(graph, interner, episode, policy),
@@ -4073,6 +4157,13 @@ fn future_humanoid_manifold_projection_for_path(
         .lookup("has_humanoid_phase_action_model")
         .map(|edge| graph.neighbours(episode, Some(edge)))
         .unwrap_or_default();
+    if let Some(edge) = interner.lookup("has_humanoid_action_model") {
+        for model in graph.neighbours(episode, Some(edge)) {
+            if !all_models.contains(&model) {
+                all_models.push(model);
+            }
+        }
+    }
     if all_models.is_empty() {
         return unsupported();
     }
@@ -4357,8 +4448,12 @@ fn future_humanoid_manifold_projection_for_members(
         // different support geometry, orientation, task, or response horizon.
         // The producing domain must explicitly publish that identity before
         // the projector may prefer the whole model to pair decomposition.
-        let complete_model =
-            fattr(graph, interner, program, "whole_program_projection_authority") > 0.5
+        let complete_model = fattr(
+            graph,
+            interner,
+            program,
+            "whole_program_projection_authority",
+        ) > 0.5
             && fattr(graph, interner, program, "receipt_learned") > 0.5
             && fattr(graph, interner, program, "experience_count") > 0.0
             && fattr(graph, interner, program, "member_count") == members.len() as f64
@@ -4382,11 +4477,8 @@ fn future_humanoid_manifold_projection_for_members(
                     .lookup(key)
                     .is_some_and(|symbol| graph.node(program).attrs.contains_key(&symbol))
             });
-        complete_model.then(|| {
-            std::array::from_fn(|index| {
-                fattr(graph, interner, program, &keys[index])
-            })
-        })
+        complete_model
+            .then(|| std::array::from_fn(|index| fattr(graph, interner, program, &keys[index])))
     });
     let exact_path = if let Some(effect) = observed_effect {
         composer.manifold_path_for_observed_effect(&members, effect)
@@ -4406,10 +4498,9 @@ fn future_humanoid_manifold_projection_for_members(
         None
     };
     let path = exact_path.or_else(|| {
-        uncertain_path
-            .map(|(anchor_loss, escaped, residual, decisive, _)| {
-                (anchor_loss, escaped, residual, decisive)
-            })
+        uncertain_path.map(|(anchor_loss, escaped, residual, decisive, _)| {
+            (anchor_loss, escaped, residual, decisive)
+        })
     });
     let unknown_pair_information_loss = uncertain_path
         .map(|(_, _, _, _, unknown_pairs)| unknown_pairs)
