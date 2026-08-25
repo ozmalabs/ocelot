@@ -94,11 +94,51 @@ to a pattern over *any* addressable thing would let `rule_is_derivable` be graph
 Rust — and would give the 9 existing Γ-minting rules something larger to grow. This is a bigger
 change and touches `check_edge`, the hottest admissibility path.
 
-**(c) Manifold shapes in the codebook.** The most valuable and the least supported by existing
-evidence. If a tube were a `ShapeSignature`, then "this decision is the same shape as that one"
-becomes decidable, and manifold momentum stops being something the caller must carry. But nothing
-here has measured that solution-shapes recur often enough to be worth a codebook — and on this
-tree's own standing rule, that measurement comes before the build.
+**(c) A THEORY IS A SOLUTION SHAPE YOU TRY TO PRODUCE — and this was framed wrongly above.**
+
+An earlier draft of this section asked whether solution-shapes RECUR often enough to justify a
+codebook. That is a caching argument and it is the wrong question. The point of holding a solution
+shape is not to recognise that this decision resembles a past one; it is to be able to say **what
+the desired state looks like**, so that what you are producing can be compared against it. A theory
+is a shape you attempt to produce, and testing it is the residual.
+
+That reframing makes the gap measurable, and the measurement is unambiguous.
+
+**What the substrate writes down when it wants something:**
+
+| type | sites | attributes |
+|---|---|---|
+| `Goal` | 46 | `kind`, `status`, `source`, `verified`, `predicate`, `concept`, `objective`, `label` |
+| `SelfConcern` | 26 | `status`, `source`, `kind`, `content`, `predicate`, `metric` |
+| `Hypothesis` | 4 | `kind`, `key`, `conf`, `eff_kind`, `action`, `status`, `trials` |
+
+A desired state is **a kind-tag plus a pointer** — `"flight_objective"`,
+`objective: "f16_objective_altitude"`, a `predicate` copied from a parse. It records WHICH goal is
+held and which handler should run. **Nothing in it says what the wanted state looks like.**
+
+**Rules in the whole tree linking a want-type to a shape signature: 2.** Both are `ps_goal` /
+`ps_goal_top` in `program_synthesis.json` — where the domain forces it, because a program's target
+IS an example shape. That is an existence proof, in-tree, that a shape-valued goal is expressible.
+
+The consequence is structural: **you cannot compute a residual against a goal.** It is satisfied or
+it is not. So goal-directed work has no gradient — when a goal is unmet there is nothing to decode,
+which is why the composer needs a 7-way kind dispatch and why experiments are judge/adopt rather
+than residual-driven. Contrast the sd loop, where an unmet expectation IS the residual and the
+residual IS what gets minted.
+
+**The machinery already exists; only the holding is missing.** `future_manifold.rs` computes a shape
+residual against a desired shape ALREADY — `retained_by_dim`, `retained_width`, escape location,
+per-dimension, fail-closed. What it lacks is that its desired shape is *"the episode's allowed
+tube"*, constructed per assessment from contract attributes and discarded after. The residual
+apparatus is built. The thing it compares against is not held.
+
+So the smallest real step is not "measure recurrence". It is: **take the one place where a goal
+already IS a shape (`program_synthesis`'s `ps_goal`), and test whether that shape can live in the
+same codebook `ShapeDecode` already reads.** `META_SHAPE_FIRST_CLASS_RESULTS.md` established that
+the codebook loader is grain-agnostic — proven by reading it, not assumed — so the question is
+whether a target-shape is just another grain. If it is, a theory becomes a codebook entry, a
+projection is decoded against it, and a mint means the theory needs a part it does not have. That is
+the sd loop with the target in the codebook slot.
 
 ## 5. The honest boundary of this document
 
