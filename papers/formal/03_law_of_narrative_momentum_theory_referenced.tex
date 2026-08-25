@@ -147,34 +147,43 @@ Ordinary physical momentum and Narrative momentum have the same structural form 
 
 The law is stated first without reference to direction, because Graphic Equalisation defines none. Realised collapse induces an \emph{order} over events; it does not supply a basis, an orientation, or a vector space. Direction is a frame's optional instrumentation (Section~\ref{sec:momentum-present}), and a law that presupposed it would be a claim about representations rather than about reachability. The directional statement is recovered below as the special case for frames that instantiate a directional dimension.
 
-\begin{hypothesis}[Law of Narrative Momentum, restriction form]\label{hyp:narrative-momentum}
-Let $S$ be operative history-bearing structure that survives a realised transition and remains materially unchanged across the next one. Then the admissible possibility set at that step, and any weighting over it, is conditioned on $S$:
+\begin{hypothesis}[Law of Narrative Momentum, cost form]\label{hyp:narrative-momentum}
+Let $S$ be operative history-bearing structure that survives a realised transition and remains materially unchanged across the next one. Then for each admissible continuation $a\in\Poss(G_{t+1})$, the cost of $a$ is conditioned on $S$:
 \[
 \boxed{
-\Poss(G_{t+1})
-\;=\;
-\Poss\!\left(G_{t+1}\mid S\right)
-\;\neq\;
-\Poss\!\left(G_{t+1}\mid \text{$S$ absent}\right),
+C(a\mid S)
+=
+\begin{cases}
+C_{0}(a) & \text{$a$ reuses $S$,}\\[2pt]
+C_{0}(a)+C_{\mathrm{alt}}(S,a) & \text{$a$ requires $S$ altered or replaced,}
+\end{cases}
 }
 \]
-and the conditioning is not arbitrary. Continuations that \emph{reuse} $S$ are admitted on the terms $S$ already establishes, whereas continuations requiring $S$ to be altered or replaced are admitted only where the interaction that alters $S$ is itself admissible and its cost is borne.
+where $C_{\mathrm{alt}}$ is the cost of the interaction that alters $S$.
 \end{hypothesis}
 
+\begin{remark}[What is conditioned, and what is not]\label{rem:membership-vs-cost}
+\textbf{$\Gamma$ decides membership; Narrative decides cost.} Nothing leaves the admissible set because of history. The set is what the admissibility grammar admits, and surviving structure prices the members. This division is what keeps the two quantities separable: an account that let history remove continuations would have Narrative doing $\Gamma$'s work, and no way to tell which was responsible for an absence.
+\end{remark}
+
 \begin{remark}[Nothing pushes]\label{rem:nothing-pushes}
-The hypothesis posits no force, no tendency, and no stored impetus. The asymmetry is entirely that \emph{reuse is free and alteration is not}: $S$ is already instantiated, so a continuation that employs it requires nothing further, while one that contradicts it requires an interaction that changes it. Persistence is what an unaltered structure looks like from the next step, not something acting.
+The hypothesis posits no force, no tendency, and no stored impetus. The whole asymmetry is that \emph{continuing costs nothing and altering costs}: $S$ is already instantiated, so a continuation employing it requires no further expenditure, while one contradicting it must pay $C_{\mathrm{alt}}$. Persistence is what an unaltered structure looks like from the next step, not something acting on the graph.
+\end{remark}
+
+\begin{remark}[Irreversibility is a limit case, not a removal]\label{rem:irreversibility}
+Where $C_{\mathrm{alt}}(S,a)$ exceeds any expenditure available in the frame, $a$ is unreachable in practice while remaining admissible. From inside the frame this is indistinguishable from inadmissibility; it is different in kind, and conflating them relocates a budget fact into the grammar. Irreversibility is therefore frame- and budget-relative rather than absolute, consistent with the companion manifold paper's treatment of it as a property of a deformation rather than of an act.
 \end{remark}
 
 \begin{corollary}[Material redirection]\label{cor:redirection}
-Redirection therefore requires an interaction that changes the relations carrying $S$. It is not achieved by preference over continuations, by representing a different continuation, or by intending one: those leave $S$ instantiated, and the conditioning stands.
+Redirection therefore requires paying $C_{\mathrm{alt}}$ --- an interaction that changes the relations carrying $S$. It is not achieved by preference over continuations, by representing a different continuation, or by intending one: those leave $S$ instantiated, so the price stands and the cheap continuations remain the ones that reuse it.
 \end{corollary}
 
 \begin{corollary}[Directional form]\label{cor:directional}
-Where frame $W$ instantiates a directional dimension and $\Narr_{W:G,t}$ is operative, the conditioning of Hypothesis~\ref{hyp:narrative-momentum} projects into that dimension, and subsequent reachable geometry retains a directional component aligned with the continuation the Narrative represents. This is the statement in directional language, and it holds only where the frame supplies the direction. Two frames may instantiate opposed directional dimensions over the same $S$ and disagree about the sign of the retained component while agreeing on the conditioning that produces it.
+Where frame $W$ instantiates a directional dimension and $\Narr_{W:G,t}$ is operative, the cost conditioning of Hypothesis~\ref{hyp:narrative-momentum} projects into that dimension, and subsequent reachable geometry retains a directional component aligned with the continuation the Narrative represents --- because the cheapest continuations are those reusing $S$. This is the statement in directional language, and it holds only where the frame supplies the direction. Two frames may instantiate opposed directional dimensions over the same $S$ and disagree about the sign of the retained component while agreeing on the conditioning that produces it.
 \end{corollary}
 
 \begin{remark}[Why the restriction form is the substrate-level statement]
-Under the directional statement alone, a frame with no directional dimension makes the law vacuous, which would be a strange property for a claim about what is reachable. The restriction form applies wherever a possibility set exists, requires no basis, and is invariant under the choice of one --- a gauge condition of the same kind the companion construction paper imposes on relative weighting. The measured groundings below are of this form: a worn route does not possess a direction, it possesses differential cost, and two travellers moving oppositely along it experience opposite directions from identical structure.
+Under the directional statement alone, a frame with no directional dimension makes the law vacuous, which would be a strange property for a claim about what is reachable. The cost form applies wherever a possibility set exists, requires no basis, and is invariant under the choice of one --- a gauge condition of the same kind the companion construction paper imposes on relative weighting. The measured groundings below are of this form: a worn route does not possess a direction, it possesses differential cost, and two travellers moving oppositely along it experience opposite directions from identical structure.
 \end{remark}
 
 The key recursion is
@@ -233,6 +242,18 @@ Classical momentum is a constrained quantitative grounding. In a mechanical fram
 \]
 The present theory does not redefine classical momentum. It identifies the same abstract ingredients---frame-relative history-bearing state, direction, persistence, and redirection---in a domain where the quantitative law is already exact.
 
+\begin{remark}[Under the cost form the correspondence is an identity, not an analogy]\label{rem:impulse}
+Newton's first law is the statement that continuing costs nothing. Altering motion requires impulse, and the impulse needed to bring a body to rest is
+\[
+J=\Delta\mathbf p=m\mathbf v,
+\]
+so \emph{the momentum of a body is exactly the cost of stopping it}. Hypothesis~\ref{hyp:narrative-momentum} is that sentence with the currency left unspecified: $C_{\mathrm{alt}}$ in the mechanical grounding is impulse, and mass is the exchange rate converting a desired change of motion into required expenditure.
+\end{remark}
+
+\begin{remark}[Two currencies for one alteration]\label{rem:currencies}
+The same alteration has two established mechanical prices: $m\mathbf v$ in impulse and $\tfrac12 m v^{2}$ in energy. They are not proportional, and neither is more correct. This is a concrete instance of the commitment that costs need not share a unit or an origin across frames or classes --- a point that otherwise reads as a hedge, and which classical mechanics already demonstrates within a single grounding.
+\end{remark}
+
 The analogy must not be overread. Narrative is not asserted to have SI momentum units, and non-mechanical groundings need not obey conservation of mechanical momentum.
 
 \section{Cognitive and institutional groundings}\label{sec:groundings}
@@ -264,7 +285,7 @@ Graphic Equalisation supplies the causal reason the pattern works: only present 
 \item \textbf{Dimension/value typing.} Fails if absence of the Narrative relation must be represented as a numerical value of Narrative rather than as absence of the dimension.
 \item \textbf{Discrete Narrative.} Fails if Narrative-dependent observable behaviour requires a non-discrete primitive that no dynamically quantised discrete representation can preserve.
 \item \textbf{Historical sufficiency.} Fails if erased history with no present causal trace systematically changes future transition structure.
-\item \textbf{Narrative Momentum (restriction form).} Fails for a specified system class if a continuation requiring operative history-bearing structure to be altered is admitted on the same terms as one reusing it, in the absence of any interaction that alters that structure. This is the primary commitment, and it is testable without a directional dimension.
+\item \textbf{Narrative Momentum (cost form).} Fails for a specified system class if a continuation requiring operative history-bearing structure to be altered carries no greater cost than one reusing it, absent any interaction that alters that structure. This is the primary commitment, and it is testable without a directional dimension. It also fails if history is found to remove continuations from the admissible set rather than to price them, which would place the effect in $\Gamma$ (Remark~\ref{rem:membership-vs-cost}).
 \item \textbf{Narrative Momentum (directional form).} Fails for a frame instantiating a directional dimension if operative Narrative-supporting structure and its represented direction persist while the associated directional tendency repeatedly vanishes or reverses without a relevant interaction. Failure here without failure of the restriction form indicts the frame's directional instrumentation rather than the law.
 \item \textbf{Structural lock-in.} Fails if increasing the structure that must be revised systematically lowers minimum revision cost after relevant capacity and geometry are controlled.
 \item \textbf{History-sensitive projection.} Fails if histories that produce different operative present relations never produce different reachable projections in the claimed domain; conversely, the hypothesis is misapplied if different histories with identical causally complete present state are claimed to produce different deterministic successors.

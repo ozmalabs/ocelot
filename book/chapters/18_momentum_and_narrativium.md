@@ -55,26 +55,42 @@ directional dimension, and then it has directions; the substrate does not supply
 one, and a law that presupposed one would be a claim about representations
 rather than about what is reachable.
 
-So the law is about the **possibility set**:
+So the law is about **cost**:
 
 > Where history-bearing structure survives a transition and stays materially
-> unchanged, the admissible continuations at the next step are **conditioned on
-> that structure** — and not arbitrarily. Continuations that **reuse** it are
-> admitted on the terms it already establishes. Continuations that require it to
-> be **altered** are admitted only where the interaction that alters it is
-> itself admissible, and its cost is borne.
+> unchanged, the **cost** of each admissible continuation is conditioned on it.
+> Continuations that **reuse** the structure cost what it already establishes.
+> Continuations that require it to be **altered** cost that, plus the
+> alteration.
+
+Note what is *not* conditioned. **Γ decides membership; Narrative decides
+price.** Nothing leaves the admissible set because of history — you can walk
+anywhere in the park. The path is cheaper. Keeping those separate is what makes
+the two quantities tellable apart: an account where history removed options
+would have Narrative doing Γ's job, with no way to say which was responsible for
+an absence.
 
 The recursion underneath it is one line:
 
 > **history survives as structure ⇒ history enters the next possibility
 > relation.**
 
-**And nothing pushes.** There is no force here, no stored impetus, no tendency.
-The whole asymmetry is that **reuse is free and alteration is not** — the
-structure is already there, so a continuation that employs it needs nothing
-further, while one that contradicts it needs an interaction that changes it.
-Persistence is what an unaltered structure looks like from the next step, not
-something acting.
+**And nothing pushes.** No force, no stored impetus, no tendency. The whole
+asymmetry is that **continuing costs nothing and stopping is expensive.**
+
+Which is not an analogy to physical momentum. It is what physical momentum *is*.
+Newton's first law says continuing is free. Changing motion requires impulse,
+and the impulse needed to bring a body to rest is exactly `mv` — **the momentum
+of a thing is the price of stopping it.** The law above is that sentence with
+the currency left open: in a mechanical frame the alteration cost is impulse,
+and mass is the exchange rate turning a wanted change of motion into required
+expenditure.
+
+There's a detail there worth keeping, because it rescues a commitment that
+otherwise reads as a hedge. The same alteration has *two* established mechanical
+prices — `mv` in impulse, `½mv²` in energy. They aren't proportional and neither
+is more correct. Classical mechanics already demonstrates, inside one grounding,
+that costs need not share a unit.
 
 From which the clause that makes it a claim rather than a mood falls out as a
 consequence rather than an extra assertion: **material redirection requires an
@@ -95,6 +111,19 @@ in the structure.
 Chapter 13's path is the clean case. **The worn ground has no direction. It has
 differential cost.** Two people walking opposite ways along it experience
 opposite directions from identical structure, and neither is wrong.
+
+And chapter 13's wear table is not an illustration of this law — it is the law's
+quantity, measured. A movement-cost multiplier of 1.0000, 0.9038, 0.8075,
+0.7113, 0.6500 as the structure accumulates over forty crossings, returning to
+0.9991 after four hundred idle turns. That is `C(a | S)` falling as `S`
+accumulates and rising as it fades, on one cell, in a running world.
+
+**One limit case, because it is where the distinction blurs.** Irreversibility
+looks like removal from the set and isn't: it is alteration cost exceeding
+anything the frame can pay. From inside, that is indistinguishable from
+inadmissibility. It is different in kind — one is a budget fact, the other is
+Γ — and conflating them relocates the first into the second. Which also means
+irreversibility is frame- and budget-relative rather than absolute.
 
 The law is deterministic. Where an observer does not represent every determining
 dimension, an ensemble statistic across many cases can test directional
@@ -212,10 +241,12 @@ with a park rather than an equation.
   constrains continuation *without* having left present structure — where the
   past acts directly — §18.1 is wrong, and with it chapter 14's history
   principle.
-- **The restriction, which is the primary commitment.** If a continuation
-  requiring the surviving structure to be *altered* is admitted on the same
-  terms as one reusing it, with no interaction that alters it, the law fails —
-  and this is testable in a frame with no directional dimension at all.
+- **The cost conditioning, which is the primary commitment.** If a continuation
+  requiring the surviving structure to be *altered* costs no more than one
+  reusing it, absent any interaction that alters it, the law fails — and this is
+  testable in a frame with no directional dimension at all. It fails equally if
+  history turns out to *remove* continuations rather than price them, since that
+  would put the effect in Γ.
 - **The redirection clause**, which follows from it. If Narrative direction can
   be materially changed without changing the relations carrying the operative
   history, the law's sharpest consequence fails. The desire-path setup can test
