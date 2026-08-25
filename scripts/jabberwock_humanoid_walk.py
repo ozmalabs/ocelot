@@ -2957,6 +2957,12 @@ def _phase_model_rows(agent: WorldAdapter, episode) -> list[dict[str, Any]]:
                 "mean_dvz",
                 "mean_input_energy_joules",
                 "support_loss_ema",
+                "manifold_refinement_generation",
+                "manifold_refinement_cost_units",
+                "manifold_refinement_residual_units",
+                "manifold_refinement_progress_units",
+                "manifold_refinement_scored_receipts",
+                "manifold_refinement_exploration_value",
             )
         })
     return sorted(
@@ -6357,6 +6363,16 @@ def _run_arm(
     )
     lateral_offset = float(observation["base_position"][1]) - start_y
     phase_models_after_walk = _phase_model_rows(agent, episode)
+    manifold_refinement_questions = [
+        dict(agent.s.node(question)["attrs"])
+        for question in agent.s.nodes("EmbodiedPhysicsQuestion")
+        if agent.s.node(question)["attrs"].get("kind")
+        == "missing_retained_path_entrance"
+    ]
+    manifold_refinement_scored_models = [
+        row for row in phase_models_after_walk
+        if int(row.get("manifold_refinement_generation") or 0) > 0
+    ]
     phase_before_by_context = {
         (row["token"], row["support_phase"], row["context_id"]): row
         for row in phase_models_after_adaptation
@@ -7792,6 +7808,28 @@ def _run_arm(
         "phase_models_before_walk": phase_models_before_walk,
         "phase_models_after_adaptation": phase_models_after_adaptation,
         "phase_models_after_walk": phase_models_after_walk,
+        "manifold_refinement_question_count": len(
+            manifold_refinement_questions
+        ),
+        "active_manifold_refinement_question_count": sum(
+            row.get("status") == "active"
+            for row in manifold_refinement_questions
+        ),
+        "maximum_manifold_refinement_question_residual_units": max((
+            int(row.get("entry_residual_units", 0))
+            for row in manifold_refinement_questions
+        ), default=0),
+        "manifold_refinement_scored_model_count": len(
+            manifold_refinement_scored_models
+        ),
+        "manifold_refinement_positive_progress_model_count": sum(
+            int(row.get("manifold_refinement_progress_units") or 0) > 0
+            for row in manifold_refinement_scored_models
+        ),
+        "maximum_manifold_refinement_progress_units": max((
+            int(row.get("manifold_refinement_progress_units") or 0)
+            for row in manifold_refinement_scored_models
+        ), default=0),
         "maximum_manifold_refinement_exploration_value": agent.s.node(
             episode
         )["attrs"].get(

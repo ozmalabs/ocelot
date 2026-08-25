@@ -36,6 +36,39 @@ def test_foveated_exploration_preserves_exact_singleton_program_identity():
     assert "allow_expansion" in synthesis
 
 
+def test_missing_path_shape_is_an_output_null_exploration_question():
+    adaptation = json.loads(SEED.read_text(encoding="utf-8"))
+    curriculum = json.loads(
+        (ROOT / "seeds" / "humanoid_developmental_curriculum.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    opener = _rule(
+        curriculum, "hdc_open_missing_retained_path_entrance_question"
+    )
+    scorer = _rule(
+        curriculum, "hdc_score_local_models_against_missing_path_entrance"
+    )
+    valuation = _rule(adaptation, "ha_prepare_shared_walking_primary")
+
+    opened = json.dumps(opener)
+    scored = json.dumps(scorer)
+    valued = json.dumps(valuation)
+    question_attrs = opener["effects"][0][3]
+
+    assert question_attrs["output_authority"] == 0
+    assert question_attrs["inverse_by_forward_model"] == 1
+    assert "entry_residual_units" in opened
+    assert "situated_forecast_counterexample_count" in opened
+    assert "task_progress_units" in opened
+    assert "capability_evidence_units" in opened
+    assert "mean_dzx" in scored
+    assert "mean_dzy" in scored
+    assert "manifold_refinement_progress_units" in scored
+    assert "manifold_refinement_progress_units" in valued
+    assert "foveated_program_exploration_authority" in valued
+
+
 def test_post_sweep_pareto_choice_focuses_one_context_dimension():
     seed = json.loads(SEED.read_text(encoding="utf-8"))
     policy = next(

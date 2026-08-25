@@ -219,13 +219,26 @@ def developmental_evidence_rank(
         ),
         P0(phase_candidate, "inverse_kinematic_cost_units"),
     )
-    return If(
+    goal_relative_rank = If(
         Gt(integer_node_attr(
             developmental_action_model(phase_candidate),
             "development_receipt_count",
         ), L(0)),
         learned_rank,
         Neg(physics_evidence_units("capability", phase_candidate)),
+    )
+    return If(
+        And(
+            Eq(
+                P0(phase_candidate, "manifold_refinement_generation"),
+                P0("episode", "request_seq"),
+            ),
+            Gt(P0(
+                phase_candidate, "manifold_refinement_progress_units"
+            ), L(0)),
+        ),
+        P0(phase_candidate, "manifold_refinement_cost_units"),
+        goal_relative_rank,
     )
 
 
@@ -372,6 +385,46 @@ def expected_action_units(candidate, key):
 def squared_residual(target, predicted):
     residual = Minus(target, predicted)
     return Times(residual, residual)
+
+
+def manifold_refinement_questions(development="development"):
+    return Filter(
+        Neighbours(development, "has_active_manifold_refinement_question"),
+        "known_manifold_refinement_question",
+        Eq(A("known_manifold_refinement_question", "status"), L("active")),
+    )
+
+
+def signed_effect_unit(effect):
+    """Reduce a learned continuous consequence to an ordinal shape step."""
+    return If(Gt(effect, L(0)), L(1), If(Lt(effect, L(0)), L(-1), L(0)))
+
+
+def manifold_refinement_candidate_residual(question, candidate):
+    """L1 entrance-shape residual after one learned opaque consequence."""
+    return Plus(
+        Abs(Minus(
+            P0(question, "target_axis_x_units"),
+            Plus(
+                P0(question, "current_axis_x_units"),
+                signed_effect_unit(P0(candidate, "mean_dzx")),
+            ),
+        )),
+        Abs(Minus(
+            P0(question, "target_axis_y_units"),
+            Plus(
+                P0(question, "current_axis_y_units"),
+                signed_effect_unit(P0(candidate, "mean_dzy")),
+            ),
+        )),
+        # The local motor model represents the two independent body-z
+        # coordinates. Preserve the observed third-axis residual rather than
+        # inventing a dependent prediction for it.
+        Abs(Minus(
+            P0(question, "target_axis_z_units"),
+            P0(question, "current_axis_z_units"),
+        )),
+    )
 
 
 def inverse_kinematic_rank(query="query", candidate="candidate"):
@@ -596,6 +649,199 @@ def score_inverse_kinematic_forward_models_rule():
             ["set_attr", "candidate", "inverse_scored_receipt_count", T(P0(
                 "action_model", "development_receipt_count"
             ))],
+        ],
+    }
+
+
+def retained_manifold_refinement_targets(owner="owner", outcome="outcome"):
+    """Entrances to useful transitions with positive forecast evidence."""
+    return Filter(
+        Neighbours(owner, "has_embodied_program_transition"),
+        "refinement_target",
+        And(
+            Eq(P0("refinement_target", "verified"), L(1)),
+            Gt(
+                Plus(
+                    L(1),
+                    P0(
+                        "refinement_target",
+                        "situated_forecast_confirmation_count",
+                    ),
+                ),
+                P0(
+                    "refinement_target",
+                    "situated_forecast_counterexample_count",
+                ),
+            ),
+            Or(
+                Gt(P0(
+                    "refinement_target", "boundary_transition_count"
+                ), L(0)),
+                Gt(P0(
+                    "refinement_target", "task_progress_units"
+                ), L(0)),
+                Gt(P0(
+                    "refinement_target", "capability_evidence_units"
+                ), L(0)),
+            ),
+        ),
+    )
+
+
+def manifold_refinement_entry_residual(
+    target="refinement_target", outcome="outcome"
+):
+    return Plus(*(
+        Abs(Minus(
+            P0(target, f"pre_state_axis_{axis}_units"),
+            P0(outcome, f"development_post_gravity_axis_{axis}_units"),
+        ))
+        for axis in ("x", "y", "z")
+    ))
+
+
+def open_manifold_refinement_question_rule():
+    targets = retained_manifold_refinement_targets()
+    selected = Argmin(
+        targets,
+        "refinement_option",
+        manifold_refinement_entry_residual("refinement_option"),
+        V("owner"),
+    )
+    return {
+        "name": "hdc_open_missing_retained_path_entrance_question",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -104,
+        "batch": False,
+        "comment": "When the current receipt is outside every useful retained "
+        "path entrance, pose the nearest entrance-shape residual as an "
+        "output-null analysis-by-synthesis question. The question carries no "
+        "program or actuator authority.",
+        "match": [
+            ["episode", "projects_embodied_development", "development"],
+            ["episode", "has_embodied_deployment_program_owner", "owner"],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "has_humanoid_transition", "outcome"],
+            ["owner", "has_embodied_program_transition", "target"],
+        ],
+        "where": And(
+            Eq(P0("development", "developmental_deployment_mode"), L(1)),
+            Eq(P0("outcome", "development_receipt_closed"), L(1)),
+            Eq(P0("trial", "request_seq"), P0("episode", "request_seq")),
+            Gt(Count(targets), L(0)),
+            Eq(V("target"), selected),
+            Gt(manifold_refinement_entry_residual("target"), L(0)),
+            Eq(Count(manifold_refinement_questions()), L(0)),
+        ),
+        "effects": [
+            ["add_node", "question", "EmbodiedPhysicsQuestion", {
+                "kind": "missing_retained_path_entrance",
+                "status": "active",
+                "generation": T(P0("episode", "request_seq")),
+                "target_transition_ref": T(V("target")),
+                "entry_residual_units": T(
+                    manifold_refinement_entry_residual("target")
+                ),
+                **{
+                    f"current_axis_{axis}_units": T(P0(
+                        "outcome",
+                        f"development_post_gravity_axis_{axis}_units",
+                    ))
+                    for axis in ("x", "y", "z")
+                },
+                **{
+                    f"target_axis_{axis}_units": T(P0(
+                        "target", f"pre_state_axis_{axis}_units"
+                    ))
+                    for axis in ("x", "y", "z")
+                },
+                "inverse_by_forward_model": 1,
+                "requires_local_verification": 1,
+                "integer_native": 1,
+                "output_authority": 0,
+            }],
+            ["add_edge", "development",
+             "has_manifold_refinement_question", "question"],
+            ["add_edge", "development",
+             "has_active_manifold_refinement_question", "question"],
+            ["add_edge", "question", "targets_embodied_program_transition", "target"],
+            ["set_attr", "development", "manifold_refinement_generation", T(
+                Plus(P0("development", "manifold_refinement_generation"), L(1))
+            )],
+        ],
+    }
+
+
+def archive_stale_manifold_refinement_question_rule():
+    return {
+        "name": "hdc_archive_stale_missing_path_entrance_question",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -105,
+        "batch": True,
+        "comment": "A path-entrance question is situated in one closed "
+        "receipt. Archive it before the next receipt poses a new residual.",
+        "match": [
+            ["episode", "projects_embodied_development", "development"],
+            ["development", "has_active_manifold_refinement_question", "question"],
+        ],
+        "where": Lt(
+            P0("question", "generation"), P0("episode", "request_seq")
+        ),
+        "effects": [
+            ["del_edge", "development",
+             "has_active_manifold_refinement_question", "question"],
+            ["set_attr", "question", "status", "archived"],
+        ],
+    }
+
+
+def score_manifold_refinement_forward_models_rule():
+    residual_after = manifold_refinement_candidate_residual(
+        "question", "candidate"
+    )
+    return {
+        "name": "hdc_score_local_models_against_missing_path_entrance",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -103,
+        "batch": True,
+        "comment": "Ask each receipt-learned opaque consequence whether one "
+        "ordinal body-shape step reduces the missing path-entrance residual. "
+        "This only annotates analysis candidates; it cannot select or enact.",
+        "match": [
+            ["episode", "projects_embodied_development", "development"],
+            ["development", "has_active_manifold_refinement_question", "question"],
+            ["episode", "has_humanoid_phase_action_model", "candidate"],
+            ["candidate", "generalizes_humanoid_action_model", "action_model"],
+        ],
+        "where": And(
+            Gt(P0("action_model", "development_receipt_count"), L(0)),
+            Not(Eq(
+                P0("candidate", "manifold_refinement_generation"),
+                Plus(P0("question", "generation"), L(1)),
+            )),
+        ),
+        "effects": [
+            ["set_attr", "candidate", "manifold_refinement_cost_units", T(
+                residual_after
+            )],
+            ["set_attr", "candidate", "manifold_refinement_residual_units", T(
+                P0("question", "entry_residual_units")
+            )],
+            ["set_attr", "candidate", "manifold_refinement_progress_units", T(
+                Max(
+                    L(0),
+                    Minus(P0("question", "entry_residual_units"), residual_after),
+                )
+            )],
+            ["set_attr", "candidate", "manifold_refinement_generation", T(
+                Plus(P0("question", "generation"), L(1))
+            )],
+            ["set_attr", "candidate", "manifold_refinement_scored_receipts", T(
+                P0("action_model", "development_receipt_count")
+            )],
         ],
     }
 
@@ -5758,8 +6004,20 @@ def restore_reactivated_program_trajectory_rule():
 
 
 def wave_phase_candidates(cell="cell", plan="plan"):
+    indexed = Neighbours(cell, "indexes_humanoid_wave_local_command")
+    refinement_current = lambda candidate: And(
+        Eq(
+            P0(candidate, "manifold_refinement_generation"),
+            P0("episode", "request_seq"),
+        ),
+        Gt(P0(candidate, "manifold_refinement_progress_units"), L(0)),
+    )
+    has_refining_candidate = Exists(
+        indexed, "known_refining_wave_candidate",
+        refinement_current("known_refining_wave_candidate"),
+    )
     return Filter(
-        Neighbours(cell, "indexes_humanoid_wave_local_command"),
+        indexed,
         "wave_candidate",
         And(
             Eq(
@@ -5774,6 +6032,10 @@ def wave_phase_candidates(cell="cell", plan="plan"):
                     P0("wave_candidate", "actuator_group"),
                 ),
             )),
+            Or(
+                Not(has_refining_candidate),
+                refinement_current("wave_candidate"),
+            ),
         ),
     )
 
@@ -7307,7 +7569,7 @@ def replay_positive_takeoff_derivative_program_rule():
 def manifest() -> dict:
     return {
         "id": "humanoid_developmental_curriculum",
-        "version": "3.74.0",
+        "version": "3.75.0",
         "depends_on": [
             "humanoid_adaptation",
             "somatomotor_waves",
@@ -7406,6 +7668,24 @@ def manifest() -> dict:
                 "src": {"type": "EmbodiedDevelopmentEpisode", "var": "development"},
                 "edge_type": "has_active_embodied_inverse_kinematic_query",
                 "tgt": {"type": "EmbodiedInverseKinematicQuery", "var": "query"},
+            },
+            {
+                "provenance": "humanoid_development:manifold_refinement_question",
+                "src": {"type": "EmbodiedDevelopmentEpisode", "var": "development"},
+                "edge_type": "has_manifold_refinement_question",
+                "tgt": {"type": "EmbodiedPhysicsQuestion", "var": "question"},
+            },
+            {
+                "provenance": "humanoid_development:active_manifold_refinement_question",
+                "src": {"type": "EmbodiedDevelopmentEpisode", "var": "development"},
+                "edge_type": "has_active_manifold_refinement_question",
+                "tgt": {"type": "EmbodiedPhysicsQuestion", "var": "question"},
+            },
+            {
+                "provenance": "humanoid_development:manifold_refinement_target",
+                "src": {"type": "EmbodiedPhysicsQuestion", "var": "question"},
+                "edge_type": "targets_embodied_program_transition",
+                "tgt": {"type": "Node", "var": "transition"},
             },
             {
                 "provenance": "humanoid_development:inverse_query_capability",
@@ -7527,6 +7807,9 @@ def manifest() -> dict:
             bind_inverse_query_to_generic_goal_rule(),
             refresh_inverse_kinematic_query_rule(),
             score_inverse_kinematic_forward_models_rule(),
+            archive_stale_manifold_refinement_question_rule(),
+            open_manifold_refinement_question_rule(),
+            score_manifold_refinement_forward_models_rule(),
             apply_capability_goal_rule(),
             project_completed_plan_to_deployment_goal_rule(),
             retire_developmental_authority_in_deployment_rule(),

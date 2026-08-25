@@ -747,7 +747,7 @@ def _metrics(run: dict) -> dict:
             enacted_development_context_outcomes
         ),
         "manifold_refinement_exploration_model_count": sum(
-            float(row.get("manifold_refinement_exploration_value", 0.0)) > 0.0
+            float(row.get("manifold_refinement_exploration_value") or 0.0) > 0.0
             for row in phase_models_after_walk
         ),
         "maximum_manifold_refinement_exploration_value": max(
@@ -756,13 +756,31 @@ def _metrics(run: dict) -> dict:
             )),
             max((
                 float(row.get(
-                    "manifold_refinement_exploration_value", 0.0
-                ))
+                    "manifold_refinement_exploration_value"
+                ) or 0.0)
                 for row in phase_models_after_walk
             ), default=0.0),
         ),
         "manifold_refinement_exploration_valuation_count": int(run.get(
             "manifold_refinement_exploration_valuation_count", 0
+        )),
+        "manifold_refinement_question_count": int(run.get(
+            "manifold_refinement_question_count", 0
+        )),
+        "active_manifold_refinement_question_count": int(run.get(
+            "active_manifold_refinement_question_count", 0
+        )),
+        "maximum_manifold_refinement_question_residual_units": int(run.get(
+            "maximum_manifold_refinement_question_residual_units", 0
+        )),
+        "manifold_refinement_scored_model_count": int(run.get(
+            "manifold_refinement_scored_model_count", 0
+        )),
+        "manifold_refinement_positive_progress_model_count": int(run.get(
+            "manifold_refinement_positive_progress_model_count", 0
+        )),
+        "maximum_manifold_refinement_progress_units": int(run.get(
+            "maximum_manifold_refinement_progress_units", 0
         )),
         "orientation_class_transition_counts": dict(Counter(
             f"{row.get('orientation_class_before', 0)}->"
