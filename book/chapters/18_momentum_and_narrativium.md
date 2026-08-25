@@ -47,23 +47,54 @@ this chapter is about.
 
 ## 18.2 The law
 
-Where a frame carries a Narrative — history represented as a first-class
-dimension rather than merely having happened — and the relations supporting that
-Narrative remain materially unchanged across the next transition, then
-**subsequent reachable geometry retains a directional component aligned with the
-continuation that Narrative represents** [PAPER-03-1].
+The law is easiest to state in directional language and shouldn't be, because
+**nothing in the substrate defines a direction.** Collapse induces an *order*
+over events — this happened after that — and an order is not a vector. There's
+no basis, no orientation, nothing to point along. A frame may instantiate a
+directional dimension, and then it has directions; the substrate does not supply
+one, and a law that presupposed one would be a claim about representations
+rather than about what is reachable.
+
+So the law is about the **possibility set**:
+
+> Where history-bearing structure survives a transition and stays materially
+> unchanged, the admissible continuations at the next step are **conditioned on
+> that structure** — and not arbitrarily. Continuations that **reuse** it are
+> admitted on the terms it already establishes. Continuations that require it to
+> be **altered** are admitted only where the interaction that alters it is
+> itself admissible, and its cost is borne.
 
 The recursion underneath it is one line:
 
 > **history survives as structure ⇒ history enters the next possibility
 > relation.**
 
-And the clause that makes it a claim rather than a mood: **material redirection
-requires an interaction that changes the relations carrying the operative
-history.** Not an intention to go elsewhere. Not a decision. An interaction that
-changes the carrying structure. You do not turn a desire path by wanting a
-different route; you turn it by walking somewhere else often enough to wear a
-different strip, or by putting a fence across the first one.
+**And nothing pushes.** There is no force here, no stored impetus, no tendency.
+The whole asymmetry is that **reuse is free and alteration is not** — the
+structure is already there, so a continuation that employs it needs nothing
+further, while one that contradicts it needs an interaction that changes it.
+Persistence is what an unaltered structure looks like from the next step, not
+something acting.
+
+From which the clause that makes it a claim rather than a mood falls out as a
+consequence rather than an extra assertion: **material redirection requires an
+interaction that changes the relations carrying the history.** Not an intention
+to go elsewhere, not a decision — because those leave the structure standing and
+the conditioning intact. You do not turn a desire path by wanting a different
+route. You turn it by walking somewhere else often enough to wear a different
+strip, or by putting a fence across the first one.
+
+**The directional version is the special case** [PAPER-03-1]. Where a frame does
+instantiate a direction, the conditioning projects into it and reachable
+geometry retains a directional component aligned with what the Narrative
+represents. Two frames with opposed directional dimensions over the same
+structure will disagree about the sign while agreeing entirely about the
+conditioning that produced it — which is the tell that the direction was never
+in the structure.
+
+Chapter 13's path is the clean case. **The worn ground has no direction. It has
+differential cost.** Two people walking opposite ways along it experience
+opposite directions from identical structure, and neither is wrong.
 
 The law is deterministic. Where an observer does not represent every determining
 dimension, an ensemble statistic across many cases can test directional
@@ -181,11 +212,19 @@ with a park rather than an equation.
   constrains continuation *without* having left present structure — where the
   past acts directly — §18.1 is wrong, and with it chapter 14's history
   principle.
-- **The redirection clause.** If Narrative direction can be materially changed
-  without changing the relations carrying the operative history, the law's
-  sharpest claim fails. This is the most testable thing in the chapter and the
-  desire-path setup can test it: fence one path, wear another, measure whether
-  anything short of that redirects traffic.
+- **The restriction, which is the primary commitment.** If a continuation
+  requiring the surviving structure to be *altered* is admitted on the same
+  terms as one reusing it, with no interaction that alters it, the law fails —
+  and this is testable in a frame with no directional dimension at all.
+- **The redirection clause**, which follows from it. If Narrative direction can
+  be materially changed without changing the relations carrying the operative
+  history, the law's sharpest consequence fails. The desire-path setup can test
+  it: fence one path, wear another, measure whether anything short of that
+  redirects traffic.
+- **The directional form separately.** If it fails where the restriction form
+  holds, that indicts the frame's directional instrumentation rather than the
+  law — which is a distinction the old single-statement version could not
+  make.
 - **No path integration.** If a summed per-tick expenditure reliably predicts a
   later narrativium measurement, then either the definition or the prohibition
   is wrong. Neither has been measured, because the second quantity cannot yet be
