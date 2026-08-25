@@ -8399,6 +8399,15 @@ def recovery_action_frontier(basin="basin"):
     )
 
 
+def recovery_positive_action_frontier(basin="basin"):
+    """Receipt-backed local alternatives that remain Pareto-relevant."""
+    return Filter(
+        recovery_action_frontier(basin),
+        "positive_recovery_frontier_candidate",
+        recovery_action_has_progress("positive_recovery_frontier_candidate"),
+    )
+
+
 def recovery_action_has_progress(action):
     return Or(*[
         Gt(N0(action, field), L(0.0))
@@ -8724,7 +8733,7 @@ def recall_shape_recovery_basin_rule():
             recovery_action_has_progress("stored_action_candidate"),
         ),
     )
-    admissible_path_origins = Filter(
+    geometrically_admissible_path_origins = Filter(
         stored,
         "stored_path_origin",
         Exists(
@@ -8741,10 +8750,34 @@ def recall_shape_recovery_basin_rule():
             ),
         ),
     )
+    admissible_path_origins = Filter(
+        geometrically_admissible_path_origins,
+        "risk_admissible_path_origin",
+        Exists(
+            Neighbours(
+                "risk_admissible_path_origin",
+                "continues_to_humanoid_recovery_basin",
+            ),
+            "risk_admissible_path_successor",
+            And(
+                recovery_successor_is_replayable(
+                    "risk_admissible_path_successor"
+                ),
+                recovery_successor_launch_manifold_contains(
+                    "risk_admissible_path_successor"
+                ),
+                recovery_successor_risk_authorized(
+                    "risk_admissible_path_successor",
+                    "risk_admissible_path_origin",
+                ),
+            ),
+        ),
+    )
     recall_frontier = Filter(
         useful,
         "stored_recall_candidate",
         Or(
+            recovery_deployment_active(),
             Eq(Count(admissible_path_origins), L(0)),
             Exists(
                 admissible_path_origins,
@@ -8823,12 +8856,16 @@ def recall_shape_recovery_basin_rule():
         "area": "humanoid_sensorimotor_adaptation",
         "latency_class": "hard_realtime",
         "batch": False,
-        "comment": "A settled fallen body first restricts recall to useful "
-        "stored basins with both a concrete causal action receipt and a "
-        "successor launch manifold containing the live receipt; within that "
-        "structural frontier it recalls the closest "
-        "height/alignment basin. If no successor is currently admissible, the "
-        "closest useful basin remains the fallback. A transient falling sample "
+        "comment": "A settled fallen body in learning prioritizes useful "
+        "stored basins with a concrete causal action receipt and a successor "
+        "launch manifold containing the live receipt. Deployment first "
+        "preserves the closest useful situated context, then rejects its path "
+        "when the unavoidable first projected state is Pareto-dominated by a "
+        "safer local receipt or synthesized effort would displace an exact "
+        "receipt. Learning remains relaxed. Within the resulting frontier it "
+        "recalls the closest height/alignment basin. If no successor is "
+        "currently admissible, the closest useful basin remains the fallback. "
+        "A transient falling sample "
         "is not an indexing frame. The recalled basin is "
         "only a search hint: its action must earn a fresh receipt from the "
         "present configuration and load.",
@@ -8872,6 +8909,19 @@ def recall_shape_recovery_basin_rule():
             ["set_attr", "episode", "recovery_recall_admissible_origin_count", T(
                 Count(admissible_path_origins)
             )],
+            [
+                "set_attr", "episode",
+                "recovery_recall_geometric_admissible_origin_count",
+                T(Count(geometrically_admissible_path_origins)),
+            ],
+            [
+                "set_attr", "episode",
+                "recovery_recall_risk_blocked_origin_count",
+                T(Minus(
+                    Count(geometrically_admissible_path_origins),
+                    Count(admissible_path_origins),
+                )),
+            ],
             *[
                 [
                     "set_attr", "episode",
@@ -9629,6 +9679,156 @@ def recovery_successor_launch_manifold_contains(stored_successor):
     return Or(contained, projected_approaches)
 
 
+def recovery_successor_is_dominated_by_local_action(
+    stored_successor,
+    stored_origin,
+):
+    """Whether a safer local receipt dominates the path's required prefix.
+
+    Every continuation through ``stored_successor`` must first incur this
+    observed state, effort, load, and time.  A later continuation therefore
+    cannot compensate for a strict loss at this prefix: it can add futures,
+    but cannot retroactively preserve the futures already removed.  This is
+    the order-one, temporally foveated risk projection; deeper path shape is
+    only relevant after its unavoidable prefix survives the gate.  The same
+    gate also preserves information: an unverified synthesized effort cannot
+    replace an otherwise available exact local receipt in deployment.
+    """
+    alternatives = Filter(
+        recovery_positive_action_frontier(stored_origin),
+        "recovery_path_fallback",
+        And(
+            Not(Lt(
+                P0("recovery_path_fallback", "post_normalized_height"),
+                P0(stored_successor, "normalized_height"),
+            )),
+            Not(Lt(
+                P0("recovery_path_fallback", "post_vertical_alignment"),
+                P0(stored_successor, "vertical_alignment"),
+            )),
+            Not(Lt(
+                P0("recovery_path_fallback", "post_support_count"),
+                P0(stored_successor, "support_count"),
+            )),
+            Not(Lt(
+                P0("recovery_path_fallback", "post_contact_count"),
+                P0(stored_successor, "contact_count"),
+            )),
+            Not(Gt(
+                P0("recovery_path_fallback", "post_motion_energy"),
+                P0(stored_successor, "motion_energy"),
+            )),
+            Not(Gt(
+                P0("recovery_path_fallback", "mean_normalized_energy"),
+                P0(stored_successor, "transition_normalized_energy"),
+            )),
+            Not(Gt(
+                P0("recovery_path_fallback", "mean_normalized_peak_load"),
+                P0(stored_successor, "transition_normalized_peak_load"),
+            )),
+            Not(Gt(
+                P0("recovery_path_fallback", "response_frames"),
+                P0(stored_successor, "incoming_response_frames"),
+            )),
+            Or(
+                Gt(
+                    P0("recovery_path_fallback", "post_normalized_height"),
+                    P0(stored_successor, "normalized_height"),
+                ),
+                Gt(
+                    P0("recovery_path_fallback", "post_vertical_alignment"),
+                    P0(stored_successor, "vertical_alignment"),
+                ),
+                Gt(
+                    P0("recovery_path_fallback", "post_support_count"),
+                    P0(stored_successor, "support_count"),
+                ),
+                Gt(
+                    P0("recovery_path_fallback", "post_contact_count"),
+                    P0(stored_successor, "contact_count"),
+                ),
+                Lt(
+                    P0("recovery_path_fallback", "post_motion_energy"),
+                    P0(stored_successor, "motion_energy"),
+                ),
+                Lt(
+                    P0("recovery_path_fallback", "mean_normalized_energy"),
+                    P0(stored_successor, "transition_normalized_energy"),
+                ),
+                Lt(
+                    P0("recovery_path_fallback", "mean_normalized_peak_load"),
+                    P0(stored_successor, "transition_normalized_peak_load"),
+                ),
+                Lt(
+                    P0("recovery_path_fallback", "response_frames"),
+                    P0(stored_successor, "incoming_response_frames"),
+                ),
+            ),
+        ),
+    )
+    exact_receipts = Filter(
+        recovery_positive_action_frontier(stored_origin),
+        "recovery_path_exact_receipt",
+        And(
+            Eq(
+                A("recovery_path_exact_receipt", "primary_token"),
+                A(stored_successor, "incoming_primary_token"),
+            ),
+            Eq(
+                A("recovery_path_exact_receipt", "secondary_token"),
+                A(stored_successor, "incoming_secondary_token"),
+            ),
+            Eq(
+                P0("recovery_path_exact_receipt", "response_frames"),
+                P0(stored_successor, "incoming_response_frames"),
+            ),
+            Eq(
+                P0("recovery_path_exact_receipt", "motor_weight_a"),
+                P0(stored_successor, "incoming_motor_weight_a"),
+            ),
+            Eq(
+                P0("recovery_path_exact_receipt", "motor_weight_b"),
+                P0(stored_successor, "incoming_motor_weight_b"),
+            ),
+        ),
+    )
+    synthesized_effort_displaces_exact_receipt = And(
+        Lt(recovery_successor_replay_effort_ratio(stored_successor), L(1.0)),
+        Gt(Count(exact_receipts), L(0.0)),
+    )
+    return Or(
+        Gt(Count(alternatives), L(0.0)),
+        synthesized_effort_displaces_exact_receipt,
+    )
+
+
+def recovery_deployment_active():
+    """Deployment is owned by the projected developmental process."""
+    deployment_contexts = Filter(
+        Neighbours("episode", "projects_embodied_development"),
+        "recovery_risk_development",
+        Eq(
+            P0("recovery_risk_development", "developmental_deployment_mode"),
+            L(1.0),
+        ),
+    )
+    return Or(
+        Eq(P0("episode", "developmental_deployment_mode"), L(1.0)),
+        Gt(Count(deployment_contexts), L(0.0)),
+    )
+
+
+def recovery_successor_risk_authorized(stored_successor, stored_origin):
+    """Relax path risk while learning; enforce future preservation in use."""
+    return Or(
+        Not(recovery_deployment_active()),
+        Not(recovery_successor_is_dominated_by_local_action(
+            stored_successor,
+            stored_origin,
+        )),
+    )
+
+
 def choose_recalled_recovery_path_transition_rule():
     current_motion_energy = recovery_current_motion_energy()
     return {
@@ -9668,6 +9868,9 @@ def choose_recalled_recovery_path_transition_rule():
                 L(0.0),
             ),
             recovery_successor_launch_manifold_contains("stored_successor"),
+            recovery_successor_risk_authorized(
+                "stored_successor", "stored_previous"
+            ),
         ),
         "effects": [
             ["add_node", "program", "HumanoidRecoveryProgram", {
@@ -9877,6 +10080,28 @@ def choose_recovery_basin_warm_start_rule():
         recovery_action_context_cost("warm_frontier_candidate"),
         V("previous"),
     )
+    authorized_successors = Filter(
+        Neighbours(
+            "previous",
+            "continues_to_humanoid_recovery_basin",
+        ),
+        "warm_path_successor",
+        And(
+            recovery_successor_is_replayable("warm_path_successor"),
+            Gt(
+                recovery_successor_transition_shape_residual(
+                    "warm_path_successor"
+                ),
+                L(0.0),
+            ),
+            recovery_successor_launch_manifold_contains(
+                "warm_path_successor"
+            ),
+            recovery_successor_risk_authorized(
+                "warm_path_successor", "previous"
+            ),
+        ),
+    )
     return {
         "name": "ha_test_prior_recovery_basin_hint",
         "area": "humanoid_sensorimotor_adaptation",
@@ -9903,10 +10128,7 @@ def choose_recovery_basin_warm_start_rule():
             Eq(P0("episode", "reset_requested"), L(0.0)),
             Eq(Count(ACTIVE_RECOVERY_PROGRAMS), L(0.0)),
             Eq(P0("basin", "warm_start_tested"), L(0.0)),
-            Eq(Count(Neighbours(
-                "previous",
-                "continues_to_humanoid_recovery_basin",
-            )), L(0.0)),
+            Eq(Count(authorized_successors), L(0.0)),
             Gt(Count(frontier), L(0.0)),
             Eq(V("hint_action"), best),
         ),

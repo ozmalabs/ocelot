@@ -824,6 +824,12 @@ def _metrics(run: dict) -> dict:
         "recovery_recall_admissible_origin_count": int(run.get(
             "recovery_recall_admissible_origin_count", 0
         )),
+        "recovery_recall_geometric_admissible_origin_count": int(run.get(
+            "recovery_recall_geometric_admissible_origin_count", 0
+        )),
+        "recovery_recall_risk_blocked_origin_count": int(run.get(
+            "recovery_recall_risk_blocked_origin_count", 0
+        )),
         "recovery_promotion_audit_count": len(recovery_promotion_rows),
         **{
             f"recovery_promotion_{name}_count": sum(
