@@ -353,3 +353,61 @@ some WILDs and leave others. Every non-empty sigma raised (tuple-keyed position 
 the Python JSON boundary) and the exception was swallowed by a `try`, so the probe reported ONE
 reachable setting and looked like evidence for a dichotomy. The diversity knob needs no such
 boundary, which is why it is the one that measures.
+
+
+## Different agents have different ranges — and aperture turns out NOT to be a stored property
+
+If aperture is real, then agents differ along it, and along what they hold. Both halves were tested.
+The first holds. The second does not, and the way it fails says what this substrate actually does.
+
+### Range binds, and it is agent-relative
+
+Frame quality — the best explained fraction over an agent's held shapes — for one target against
+three codebooks:
+
+| target | engineer (mech only) | mathematician (math only) | generalist (both) |
+|---|---|---|---|
+| a control surface | **0.33** | **0.00** | 0.33 |
+| a proof step | **0.00** | **0.33** | 0.33 |
+
+`0.00` is the symbolic extreme: to that agent the target is an opaque token, every candidate answer
+as expensive as the question. **The same problem is tractable for one agent and intractable for
+another, and the difference is only what is held.**
+
+### But a held entry's APERTURE does nothing — three nulls
+
+I expected a wider-minted entry to reach further. It does not, measured three ways:
+
+1. **Against lgg matching: no effect.** Narrow (aperture 0.00) and wide (0.50) entries score
+   identically on every target — same reach (3/5), same explanatory mass (1.00). And they must:
+   `lgg(entry, target)` re-derives the aperture from scratch, so pre-generalising an entry only
+   discards information the matcher would have discarded anyway.
+2. **Against `Covers` — the matcher the sd loop actually runs — it is WORSE.** A part carrying WILD
+   literals covers **nothing at all**, not even an exact match (narrow 2, wide 0). `Covers` is
+   literal.
+3. **The wildcard path exists, and was deliberately retired.** `wild_objects: true` does cover
+   same-shape-different-objects (2 vs 0) — but the aperture is applied BY THE MATCHER at match time,
+   never stored in the part. And `CLAUDE.md` records that this path was retired precisely because
+   *"it was an unconstrained transform that conflated consistent substitution with incoherent
+   novelty"*, replaced by `TransformDecode` recording an explicit `Transform{dim, delta}`.
+
+### So the substrate refuses to store aperture, and it is right to
+
+A stored WILD says *"something goes here"* and forgets WHICH substitution was made. A `Transform`
+says *"this shape, with THIS delta on THIS dimension"* and keeps it. The first is lossy in exactly
+the way that makes a consistent renaming indistinguishable from arbitrary novelty; the second is the
+rung-2 ladder this arc already built.
+
+Which corrects the framing one level up. **Aperture is real as a MEASUREMENT — the axis exists, it
+is smooth, and 1.00 is genuinely the symbolic extreme. It is not real as a STORED PROPERTY of what
+an agent holds.** What differs between agents is:
+
+* **range** — the concrete shapes held (measured above: binds hard, 0.33 vs 0.00);
+* **the transform vocabulary** — which deltas along which dimensions the agent can express, since
+  that is what stands in for aperture here;
+* **grain** — the observation resolution, which bounds the finest distinction available and which
+  nothing here measured.
+
+"Different forms of life have different apertures" survives, then, but the mechanism is not that
+they store blurrier shapes. It is that they hold different things and can express different
+transforms between them.
