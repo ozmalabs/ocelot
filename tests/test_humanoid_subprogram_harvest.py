@@ -47,6 +47,12 @@ def _program(ordinal, tokens, *, progress=0.0):
     }
 
 
+def _install_episode(agent, attrs=None):
+    episode = agent.s.add_node("HumanoidEpisode", attrs or {})
+    agent.inner.add_edge(agent.agent, "has_humanoid_episode", episode)
+    return episode
+
+
 def test_harvester_copies_structure_and_leaves_identity_to_shape_decode():
     base = _library([_program(4, ("a", "b"), progress=0.1)])
     source = _library([
@@ -75,6 +81,7 @@ def test_graph_shape_decode_collapses_harvested_program_identity():
         _program(0, ("a", "b"), progress=0.1),
         _program(1, ("a", "b"), progress=99.0),
     ])
+    _install_episode(agent, {"body_shape_initialized": 1.0})
     _restore_motor_library(agent, library)
     agent.tick()
     shape = agent.inner.neighbours(
@@ -177,9 +184,7 @@ def test_graph_plan_hint_recruits_search_index_without_releasing_action():
             }}],
         }],
     }
-    restored = _restore_motor_library(agent, library)
-    assert restored["plan_hint_count"] == 1
-    episode = agent.s.add_node("HumanoidEpisode", {
+    episode = _install_episode(agent, {
         "motor_plan_query_signature": (("motor_task", "locomotion"),),
         "motor_plan_hint_count": 0.0,
         "motor_plan_hint_escalation_count": 0.0,
@@ -187,7 +192,8 @@ def test_graph_plan_hint_recruits_search_index_without_releasing_action():
         "state_seq": 1.0,
         "action_ready": 0.0,
     })
-    agent.inner.add_edge(agent.agent, "has_humanoid_episode", episode)
+    restored = _restore_motor_library(agent, library)
+    assert restored["plan_hint_count"] == 1
     program = agent.s.add_node("HumanoidMotorProgram", {
         "name": "program:test:grounded",
         "signature": signature,
@@ -248,10 +254,9 @@ def test_graph_recruits_plan_hints_for_the_active_task_context():
             for context in ("locomotion", "self_takeoff")
         ],
     }
-    _restore_motor_library(agent, library)
     locomotion_signature = (("motor_task", "locomotion"),)
     takeoff_signature = (("motor_task", "self_takeoff"),)
-    episode = agent.s.add_node("HumanoidEpisode", {
+    episode = _install_episode(agent, {
         "motor_plan_query_signature": locomotion_signature,
         "motor_plan_active_query_context": "locomotion",
         "motor_plan_locomotion_query_signature": locomotion_signature,
@@ -263,7 +268,7 @@ def test_graph_recruits_plan_hints_for_the_active_task_context():
         "state_seq": 1.0,
         "action_ready": 0.0,
     })
-    agent.inner.add_edge(agent.agent, "has_humanoid_episode", episode)
+    _restore_motor_library(agent, library)
 
     agent.tick()
     considered = agent.inner.neighbours(
@@ -308,7 +313,14 @@ def test_plan_hint_rules_have_no_actuator_release_effects():
         "ha_route_abstract_motor_plan_hint_stage_basin",
     }
     encoded = json.dumps(rules)
-    assert "ShapeDecode" in encoded
+    indexed_routing = json.dumps({
+        name: rule
+        for name, rule in rules.items()
+        if name != "ha_consider_shape_matched_motor_plan_hint"
+    })
+    assert "ShapeDecode" not in indexed_routing
+    assert "realizes_embodied_motor_routing_shape" in indexed_routing
+    assert "source_program_ordinal" in indexed_routing
     assert "SystemTwoEscalation" not in encoded
     for forbidden in (
         "selected_token",

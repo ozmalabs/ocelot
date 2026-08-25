@@ -1688,6 +1688,17 @@ def _restore_motor_library(
             )
         for stage_row in hint_row.get("stages", []):
             stage_attrs = _restore_library_attrs(stage_row)
+            routing_signature = dict(stage_attrs.get(
+                "routing_signature", ()
+            ))
+            stage_attrs.setdefault(
+                "motor_task_context",
+                routing_signature.get("motor_task_context"),
+            )
+            stage_attrs.setdefault(
+                "motor_task_phase",
+                routing_signature.get("motor_task_phase"),
+            )
             if stage_attrs.get("output_authority", 0) != 0:
                 raise ValueError("motor plan hint stages must be output-null")
             stage_attrs["source"] = "library_hint"

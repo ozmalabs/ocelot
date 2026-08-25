@@ -147,6 +147,12 @@ def harvest_libraries(
                                 )),
                             ),
                         ),
+                        "motor_task_context": str(attrs.get(
+                            "motor_task_context", "locomotion"
+                        )),
+                        "motor_task_phase": str(attrs.get(
+                            "motor_task_phase", "preparation"
+                        )),
                         "output_authority": 0.0,
                     }})
                 for context in contexts:
