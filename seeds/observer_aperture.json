@@ -1,0 +1,551 @@
+{
+  "id": "observer_aperture",
+  "version": "1.0.0",
+  "comment": "Emit seeds/observer_aperture.json -- per-observer APERTURE as graph data.\n\n`PER_OBSERVER_APERTURE.md` established RANGE (`codebook_scope`) is already\ngraph-native and per-observer, and that graded APERTURE is a QUOTIENT: project a\nsignature onto the dimensions the observer resolves, replacing unresolved slots\nwith a CONSTANT (not a wildcard -- WILD says \"anything filled this\", the quotient\nsays \"these are the same thing to me\"), then match literally.\n\nThe projection needs no new Rust. Every codebook already tags slots with\n`dim_types`, and MapList/ZipWith/In/IfThenElse compose the projection over it.\nThis seed makes that a rule an observer node drives, so no Python decides who\nsees what.\n\nBoth halves are projected. Projecting only the goal would decode an observer's\nblurred view against full-detail parts, which is nobody's situation.\n",
+  "depends_on": [
+    "core"
+  ],
+  "productions": [
+    {
+      "provenance": "seed:observer_aperture:perceives",
+      "src": {
+        "type": "Observer",
+        "var": "obs"
+      },
+      "edge_type": "perceives",
+      "tgt": {
+        "type": "ShapeSignature",
+        "var": "sh"
+      }
+    },
+    {
+      "provenance": "seed:observer_aperture:holds-part",
+      "src": {
+        "type": "Observer",
+        "var": "obs"
+      },
+      "edge_type": "holds_part",
+      "tgt": {
+        "type": "ShapeSignature",
+        "var": "sh"
+      }
+    },
+    {
+      "provenance": "seed:observer_aperture:projected",
+      "src": {
+        "type": "Observer",
+        "var": "obs"
+      },
+      "edge_type": "projected",
+      "tgt": {
+        "type": "ObservedShape",
+        "var": "pv"
+      }
+    },
+    {
+      "provenance": "seed:observer_aperture:projected-part",
+      "src": {
+        "type": "Observer",
+        "var": "obs"
+      },
+      "edge_type": "projected_part",
+      "tgt": {
+        "type": "ObservedShape",
+        "var": "pp"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "ap_project_percept",
+      "comment": "An observer's view of a thing it perceives is its own QUOTIENT of that thing -- the slots it resolves kept, the rest collapsed to one constant. Per-call, over the SHARED store: many partial views of one world rather than a private world per agent.",
+      "match": [
+        [
+          "obs",
+          "perceives",
+          "sh"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Exists",
+          "source": {
+            "type": "Neighbours",
+            "node": {
+              "type": "Var",
+              "name": "obs"
+            },
+            "edge_type": "projected"
+          },
+          "var_name": "p",
+          "predicate": {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p"
+              },
+              "key": "of_name"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sh"
+              },
+              "key": "name"
+            }
+          }
+        }
+      },
+      "effects": [
+        [
+          "add_node",
+          "pv",
+          "ObservedShape",
+          {
+            "of_name": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "sh"
+                },
+                "key": "name"
+              }
+            },
+            "observer": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "name"
+              }
+            },
+            "kind": "percept",
+            "signature": {
+              "__term__": {
+                "type": "MapList",
+                "source": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "sh"
+                  },
+                  "key": "signature"
+                },
+                "var_name": "rel",
+                "value": {
+                  "type": "ZipWith",
+                  "a": {
+                    "type": "Var",
+                    "name": "rel"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sh"
+                    },
+                    "key": "dim_types"
+                  },
+                  "a_name": "slot",
+                  "b_name": "dt",
+                  "value": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "In",
+                      "member": {
+                        "type": "Var",
+                        "name": "dt"
+                      },
+                      "container": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "obs"
+                        },
+                        "key": "resolves"
+                      }
+                    },
+                    "then": {
+                      "type": "Var",
+                      "name": "slot"
+                    },
+                    "other": {
+                      "type": "Lit",
+                      "value": "\u00b7"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "obs",
+          "projected",
+          "pv"
+        ]
+      ]
+    },
+    {
+      "name": "ap_project_held",
+      "comment": "The observer's OWN codebook, projected through the same aperture. Projecting only the percept would decode a blurred observation against full-detail held parts, which is nobody's situation: what an observer holds was itself acquired through its aperture.",
+      "match": [
+        [
+          "obs",
+          "holds_part",
+          "sh"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Exists",
+          "source": {
+            "type": "Neighbours",
+            "node": {
+              "type": "Var",
+              "name": "obs"
+            },
+            "edge_type": "projected_part"
+          },
+          "var_name": "p",
+          "predicate": {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p"
+              },
+              "key": "of_name"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sh"
+              },
+              "key": "name"
+            }
+          }
+        }
+      },
+      "effects": [
+        [
+          "add_node",
+          "pp",
+          "ObservedShape",
+          {
+            "name": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "name"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": "/"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sh"
+                    },
+                    "key": "name"
+                  }
+                ]
+              }
+            },
+            "of_name": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "sh"
+                },
+                "key": "name"
+              }
+            },
+            "observer": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "name"
+              }
+            },
+            "kind": "held",
+            "signature": {
+              "__term__": {
+                "type": "MapList",
+                "source": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "sh"
+                  },
+                  "key": "signature"
+                },
+                "var_name": "rel",
+                "value": {
+                  "type": "ZipWith",
+                  "a": {
+                    "type": "Var",
+                    "name": "rel"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sh"
+                    },
+                    "key": "dim_types"
+                  },
+                  "a_name": "slot",
+                  "b_name": "dt",
+                  "value": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "In",
+                      "member": {
+                        "type": "Var",
+                        "name": "dt"
+                      },
+                      "container": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "obs"
+                        },
+                        "key": "resolves"
+                      }
+                    },
+                    "then": {
+                      "type": "Var",
+                      "name": "slot"
+                    },
+                    "other": {
+                      "type": "Lit",
+                      "value": "\u00b7"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "obs",
+          "projected_part",
+          "pp"
+        ]
+      ]
+    },
+    {
+      "name": "ap_refresh_scope",
+      "comment": "APERTURE and RANGE compose. The quotient decides what an observer can TELL APART; the scope decides what it HOLDS. An observer's scope is exactly the set of its own projected parts, so a decode reads that observer's quotient of the world and nobody else's -- over the one shared store, no private copy per agent. Re-arms whenever the observer acquires another part.",
+      "match": [
+        [
+          "obs",
+          "projected_part",
+          "pp"
+        ]
+      ],
+      "where": {
+        "type": "Not",
+        "arg": {
+          "type": "Eq",
+          "a": {
+            "type": "Count",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "edge_type": "projected_part"
+            }
+          },
+          "b": {
+            "type": "Attr",
+            "node": {
+              "type": "Var",
+              "name": "obs"
+            },
+            "key": "ap_scope_n"
+          }
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "obs",
+          "ap_scope",
+          {
+            "__term__": {
+              "type": "MapList",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "edge_type": "projected_part"
+              },
+              "var_name": "q",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "name"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "obs",
+          "ap_scope_n",
+          {
+            "__term__": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "edge_type": "projected_part"
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "ap_decode_percept",
+      "comment": "Decode the observer's QUOTIENT of what it sees against its QUOTIENT of what it holds. Projecting only the goal would decode a blurred observation against full-detail parts, which is nobody's situation. The covered/residual pair is the whole point: an observer can read a NON-EMPTY residual -- know that something here is not covered -- without being able to resolve what it is, because resolving it needs the very dimension the projection collapsed. Knowing THAT, without knowing WHAT (ONE_LOOP_MANY_GRAINS.md).",
+      "match": [
+        [
+          "obs",
+          "projected",
+          "pv"
+        ]
+      ],
+      "where": {
+        "type": "Lt",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "pv"
+          },
+          "key": "ap_seen"
+        },
+        "b": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "obs"
+          },
+          "key": "ap_scope_n"
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "pv",
+          "ap_covered",
+          {
+            "__term__": {
+              "type": "ShapeDecode",
+              "goal": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pv"
+                },
+                "key": "signature"
+              },
+              "codebook_type": "ObservedShape",
+              "codebook_scope": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "ap_scope"
+              },
+              "field": "covered_count",
+              "wild_objects": false
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "pv",
+          "ap_residual",
+          {
+            "__term__": {
+              "type": "ShapeDecode",
+              "goal": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pv"
+                },
+                "key": "signature"
+              },
+              "codebook_type": "ObservedShape",
+              "codebook_scope": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "ap_scope"
+              },
+              "field": "residual",
+              "wild_objects": false
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "pv",
+          "ap_seen",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_scope_n"
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}
