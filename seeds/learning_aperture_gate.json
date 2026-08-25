@@ -95,7 +95,7 @@
                   "type": "Var",
                   "name": "item"
                 },
-                "key": "obs_established"
+                "key": "obs_unassessable"
               },
               "b": {
                 "type": "IfThenElse",
@@ -120,11 +120,11 @@
                 },
                 "then": {
                   "type": "Lit",
-                  "value": 1.0
+                  "value": 0.0
                 },
                 "other": {
                   "type": "Lit",
-                  "value": 0.0
+                  "value": 1.0
                 }
               }
             }
@@ -173,6 +173,43 @@
                   "name": "item"
                 },
                 "key": "held"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "item",
+          "obs_unassessable",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "In",
+                "member": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "item"
+                  },
+                  "key": "obs_dim"
+                },
+                "container": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "aff"
+                  },
+                  "key": "stress_resolves_dims"
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": 0.0
+              },
+              "other": {
+                "type": "Lit",
+                "value": 1.0
               }
             }
           }

@@ -52,9 +52,8 @@ The consequence is worse here than at the manifold, because the collapse is not 
 stops attending to exactly the things it has gone blind to, and its own learning signal reports that
 it has mastered them.
 
-**This document does not fix that.** `obs_established` exists only because the gate writes it. Making
-the pipeline read it — so that an unestablished observation cannot decay interest — is a change to
-`learning_progress_curiosity` and is not made here.
+**Fixed below**, in `learning_progress_curiosity` v1.1.0. The table above is the defect as measured
+in v1.0.0 and is retained as the before-state.
 
 ## A confound caught before it was reported
 
@@ -71,6 +70,59 @@ from the sibling suite, which silently skipped the entire file — the measure i
 matplotlib.
 
 Gates: `tests/test_learning_aperture_migrated.py` 9/9.
+
+## THE FIX — `learning_progress_curiosity` v1.1.0, two guards
+
+An observation that did not arrive must not enter the chain that produces a mastery verdict. Two
+rules now carry an assessability guard, and **only two**:
+
+* `lp_residual` — an unassessable tick writes no residual, so a zero is never *fabricated* from an
+  observation that never came;
+* `lp_interest` — interest does not decay on a tick that established nothing. Decay asserts *"this
+  item has stopped repaying attention"*, which such a tick cannot support.
+
+**Polarity is load-bearing.** The flag is `obs_unassessable == 1`, the MARKED case — not a positive
+`established` flag. An absent numeric attr compares EQUAL to `0.0` in this engine, so a positive flag
+would read as *unestablished* on every item that never heard of it, i.e. every existing caller. Absent
+means assessable, and byte-identity is preserved.
+
+Measured after:
+
+| arm | `residual` | `progress` | `interest` | `attended` |
+|---|---|---|---|---|
+| LEARNABLE | 6.0 | −5.0 | 1024.0 | 1.0 |
+| **COMPRESSED** | 0.0 | 0.0 | **1024.0** | **1.0** |
+| MASTERED | 0.0 | 0.0 | 0.0 | 0.0 |
+| **GOES_BLIND** (learns 12 ticks, then compressed) | **3.0 — preserved** | −5.0 | 256.0 | 1.0 |
+
+Blindness and mastery are now distinguishable, and an agent that goes blind mid-learning **keeps what
+it established** instead of having it overwritten with zero.
+
+### What mutation testing removed, and it was most of what I wrote
+
+The first version of this fix had **six** guards and a new rule. Mutation testing dismantled it:
+
+* **`lp_hold_unassessable` — DELETED.** A new rule freezing the interest clock, justified in its own
+  comment by a delayed-decay failure that *does not occur*: traced with and without it across a blind
+  window and a reopening, the interest and residual series are **byte-identical**. The rationale was
+  plausible and confabulated.
+* **Guards on `lp_fast`, `lp_slow`, `lp_progress`, `lp_gate` — REMOVED.** With `lp_residual` guarded
+  the residual is frozen and these recompute to the same values from it. Identical over a 68-tick
+  blind period, guarded or not.
+* **The measurement itself was reproducing the defect.** Every original arm started from a zero
+  residual, so a *fabricated* zero and a *preserved* zero were the same number — the exact collapse
+  under test, inside the instrument. Dropping the pipeline guards changed nothing until the
+  `GOES_BLIND` arm existed. That arm is why any guard here is falsifiable at all.
+
+Final mutation state: unguarding `lp_residual` fails 1 test, unguarding `lp_interest` fails 3. No
+surviving change is undetectable.
+
+### Regression on the shipped seed
+
+`scripts/learning_progress_measure.py`'s full criteria set — G1 noisy-TV, G2 leave-the-unresolved,
+G3 commit-net, G4 integer-native / default-off byte-identity / source audit — is **identical before
+and after**, all 15 true. Run directly with figure rendering stubbed (it needs `matplotlib`, absent
+here; the criteria do not).
 
 ## Honest bounds
 

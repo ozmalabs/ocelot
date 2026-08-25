@@ -54,30 +54,53 @@ def test_a_regulated_agent_learns_the_learnable_item(arms):
     assert a["obs_established"] == 1.0
 
 
-def test_stress_makes_the_item_look_LEARNED(arms):
-    """P1. Not "the signal degrades" — the item is dropped from attention with
-    exactly the profile of something mastered."""
+def test_stress_FREEZES_the_learning_state_rather_than_concluding_mastery(arms):
+    """What P1 became after the fix, and the delta is the whole point.
+
+    MEASURED BEFORE (v1.0.0): residual 0, progress 0, attended 0 — the compressed
+    item was dropped from attention with exactly the profile of something
+    mastered. That was the defect this line of work found.
+
+    AFTER (v1.1.0): residual and progress are still 0, but only because the chain
+    never ran on an unassessable tick — they are the item's untouched initial
+    state, not a verdict — and the item stays attended. Stress freezes what the
+    agent knows about the item; it no longer concludes anything about it."""
     c = arms["compressed"]
-    assert c["residual"] == 0.0
+    assert c["residual"] == 0.0, "an unarrived observation produced a residual"
     assert c["learning_progress"] == 0.0
-    assert c["attended"] == 0.0
+    assert c["attended"] == 1.0, (
+        "the compressed item was dropped from attention — the pipeline is still "
+        "reading a frozen state as a mastery verdict")
 
 
-def test_compressed_and_mastered_are_indistinguishable_in_the_learning_signal(arms):
-    """THE FINDING, and it is a defect in a shipped seed rather than a feature.
+def test_blindness_no_longer_reads_as_mastery(arms):
+    """THE FIX. Previously every field `learning_progress_curiosity` computed was
+    identical for an agent that had mastered an item and one that could not
+    perceive it — the same collapse `loss == information_loss` was at the manifold,
+    one layer up, and live in a shipped seed.
 
-    Every field `learning_progress_curiosity` computes is identical for an agent
-    that has mastered an item and an agent that cannot perceive it. This is the
-    same collapse as `loss == information_loss` was at the manifold, one layer up:
-    residual-zero-because-mastered and residual-zero-because-blind are one number.
-
-    If this test ever fails, the seed has grown a way to tell them apart, which is
-    the fix — update the results document rather than this expectation."""
+    `learning_progress_curiosity` v1.1.0 skips the residual→progress→gate chain on
+    an unassessable tick, so a zero residual is never fabricated from an
+    observation that did not arrive. The two arms must now differ."""
     c, m = arms["compressed"], arms["mastered"]
-    for field in LEARNING_FIELDS:
-        assert c[field] == m[field], (
-            f"{field} differs ({c[field]} vs {m[field]}) — the learning signal "
-            f"now distinguishes blindness from mastery")
+    differing = [f for f in LEARNING_FIELDS if c[f] != m[f]]
+    assert differing, (
+        "blindness is still indistinguishable from mastery on every learning "
+        "field — the assessability guard is not reaching the pipeline")
+    assert c["attended"] == 1.0 and m["attended"] == 0.0, (
+        f"the compressed item must stay attended and the mastered one must not: "
+        f"{c['attended']} vs {m['attended']}")
+    assert c["interest"] > 0.0 and m["interest"] == 0.0, (
+        f"interest decayed on a tick that established nothing: {c['interest']}")
+
+
+def test_the_residual_is_never_FABRICATED_from_an_unarrived_observation(arms):
+    """The mechanism behind the fix, pinned separately from its consequence. The
+    compressed arm's residual is not a measured zero — it is the item's untouched
+    initial state, because the chain never ran."""
+    c = arms["compressed"]
+    assert c["residual"] == 0.0 and c["learning_progress"] == 0.0
+    assert c["obs_established"] == 0.0, "the gate did not mark the tick"
 
 
 def test_only_establishment_separates_them(arms):
@@ -108,3 +131,25 @@ def test_the_gate_actually_fires():
         "the gate did not fire — this suite would be measuring the item's "
         "initial state, not a compressed observation")
     assert compressed["obs"] == 0.0
+
+
+def test_going_blind_MID_LEARNING_preserves_the_residual_it_had_earned():
+    """THE TEST THAT MAKES THE PIPELINE GUARDS LOAD-BEARING, and it exists because
+    mutation testing said they were not.
+
+    Every other arm here starts from a zero residual, so a FABRICATED zero and a
+    PRESERVED zero are the same number — the very collapse under test, reproduced
+    inside the measurement. Dropping the assessability guards from `lp_residual`
+    and friends changed nothing until this arm existed.
+
+    An agent that has learned something about an item and then loses the ability
+    to perceive it must KEEP what it established. Overwriting that with zero would
+    not merely fail to learn — it would erase prior learning and report mastery
+    for the erasure."""
+    s = M._summary(M._run(False, LEARNABLE, blind_after=12))
+    assert s["obs_established"] == 0.0, "the arm is not actually blind at the end"
+    assert s["residual"] > 0.0, (
+        f"the residual was overwritten with zero once the agent went blind "
+        f"({s['residual']}) — an unarrived observation is erasing established "
+        f"learning and reading as mastery")
+    assert s["attended"] == 1.0, "the item was dropped from attention while unresolved"

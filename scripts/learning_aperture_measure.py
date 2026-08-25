@@ -38,7 +38,13 @@ def _manifest(name):
     return json.load(open(os.path.join(ROOT, "seeds", f"{name}.json")))
 
 
-def _run(dysregulated, obs_seq, held=0.0, ticks=24):
+def _run(dysregulated, obs_seq, held=0.0, ticks=24, blind_after=None):
+    """`blind_after` runs the agent REGULATED for that many ticks and then
+    compresses. Without it every compressed arm starts from a zero residual, so a
+    fabricated zero and a preserved zero are the same number — which is exactly
+    the collapse under test, reproduced in the measurement itself. Mutation
+    testing found that: dropping the pipeline's assessability guards changed
+    nothing until this arm existed."""
     s, agent = boot_core()
     inner = s._inner
     inner.load_seed_manifest(LP.manifest_for(LP.SEED_ID), agent)
@@ -64,6 +70,10 @@ def _run(dysregulated, obs_seq, held=0.0, ticks=24):
 
     traj = []
     for t in range(ticks):
+        if blind_after is not None:
+            s.set_attr(aff, "dysregulated", 1.0 if t >= blind_after else 0.0)
+            s.set_attr(aff, "stress_resolves_dims",
+                       ["d0"] if t >= blind_after else ["d0", "d1"])
         # the adapter writes what the WORLD presented; the gate decides what the
         # learner actually observes.
         s.set_attr(item, "obs_true", float(obs_seq[t % len(obs_seq)]))
@@ -96,6 +106,9 @@ def main():
         "LEARNABLE(regulated)":  _run(False, LEARNABLE),
         "COMPRESSED(stressed)":  _run(True, LEARNABLE),
         "MASTERED(regulated)":   _run(False, MASTERED),
+        # learns for a while, THEN goes blind -- the arm that makes the
+        # pipeline's assessability guards load-bearing
+        "GOES_BLIND(mid-learning)": _run(False, LEARNABLE, blind_after=12),
     }
     out = {"prereg": "STRESS_COMPRESSES_APERTURE_PREREG.md#addendum",
            "block": 366500,
