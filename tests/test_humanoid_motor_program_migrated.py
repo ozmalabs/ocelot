@@ -2116,8 +2116,8 @@ def test_settled_warm_basin_tests_causal_stored_transition_first():
     assert attrs["token"] == "motor_b"
     assert attrs["secondary_token"] == "motor_c"
     assert attrs["bundle_member_count"] == 2.0
-    assert attrs["motor_weight_a"] == 7.5
-    assert attrs["motor_weight_b"] == 6.5
+    assert 1.0 < attrs["motor_weight_a"] < 7.5
+    assert 1.0 < attrs["motor_weight_b"] < 6.5
     assert agent.s.node(episode)["attrs"]["recovery_path_hint_count"] == 1.0
     program = agent.inner.neighbours(
         episode,
@@ -2132,8 +2132,9 @@ def test_settled_warm_basin_tests_causal_stored_transition_first():
     assert program_attrs["target_support_count"] == 2.0
     assert program_attrs["target_contact_count"] == 6.0
     assert program_attrs["target_motion_energy"] == 0.1
-    assert program_attrs["motor_weight_a"] == 7.5
-    assert program_attrs["motor_weight_b"] == 6.5
+    assert 0.0 < program_attrs["replay_effort_ratio"] < 1.0
+    assert program_attrs["motor_weight_a"] == attrs["motor_weight_a"]
+    assert program_attrs["motor_weight_b"] == attrs["motor_weight_b"]
     assert list(program_attrs["launch_configuration_shape"]) == incoming_shape
 
 

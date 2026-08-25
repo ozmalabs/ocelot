@@ -8492,12 +8492,7 @@ def recovery_successor_has_postural_progress():
 
 
 def recovery_outcome_approaches_program_target():
-    """Keep target approach as a vector, allowing temporary tradeoffs.
-
-    A recovery stage may exchange support, contact, or motion for height and
-    alignment. Requiring every target distance to improve would silently
-    scalarize that physical choice into a monotone safety gate.
-    """
+    """Require the actual post-shape residual to approach the target shape."""
     pre_distances = (
         Abs(Minus(
             Div(
@@ -8548,14 +8543,13 @@ def recovery_outcome_approaches_program_target():
             P0("program", "target_motion_energy"),
         )),
     )
-    return Or(*[
-            Lt(post_distance, pre_distance)
-            for pre_distance, post_distance in zip(
-                pre_distances,
-                post_distances,
-                strict=True,
-            )
-        ])
+    pre_shape_residual = Plus(*(
+        Times(distance, distance) for distance in pre_distances
+    ))
+    post_shape_residual = Plus(*(
+        Times(distance, distance) for distance in post_distances
+    ))
+    return Lt(post_shape_residual, pre_shape_residual)
 
 
 def recovery_outcome_dominated(basin="previous"):
@@ -9581,6 +9575,31 @@ def recovery_successor_shape_residual(stored_successor, *, projected=False):
     ))
 
 
+def recovery_successor_transition_shape_residual(stored_successor):
+    return Plus(*(
+        Times(
+            recovery_successor_transition_span(stored_successor, coordinate),
+            recovery_successor_transition_span(stored_successor, coordinate),
+        )
+        for coordinate in RECOVERY_SUCCESSOR_COORDINATES
+    ))
+
+
+def recovery_successor_replay_effort_ratio(stored_successor):
+    """Adapt stored effort by live/original target-shape distance."""
+    return Min(
+        L(1.0),
+        Div(
+            Sqrt(recovery_successor_shape_residual(stored_successor)),
+            Sqrt(
+                recovery_successor_transition_shape_residual(
+                    stored_successor
+                )
+            ),
+        ),
+    )
+
+
 def recovery_successor_is_replayable(stored_successor):
     """A path edge is usable only when its causal motor receipt survived."""
     return And(
@@ -9642,6 +9661,12 @@ def choose_recalled_recovery_path_transition_rule():
             Eq(Count(ACTIVE_RECOVERY_PROGRAMS), L(0.0)),
             Eq(P0("basin", "warm_start_tested"), L(0.0)),
             recovery_successor_is_replayable("stored_successor"),
+            Gt(
+                recovery_successor_transition_shape_residual(
+                    "stored_successor"
+                ),
+                L(0.0),
+            ),
             recovery_successor_launch_manifold_contains("stored_successor"),
         ),
         "effects": [
@@ -9659,12 +9684,27 @@ def choose_recalled_recovery_path_transition_rule():
                 ),
                 "motor_weight_a": T(Max(
                     L(1.0),
-                    P0("stored_successor", "incoming_motor_weight_a"),
+                    Times(
+                        P0("stored_successor", "incoming_motor_weight_a"),
+                        recovery_successor_replay_effort_ratio(
+                            "stored_successor"
+                        ),
+                    ),
                 )),
                 "motor_weight_b": T(Max(
                     L(1.0),
-                    P0("stored_successor", "incoming_motor_weight_b"),
+                    Times(
+                        P0("stored_successor", "incoming_motor_weight_b"),
+                        recovery_successor_replay_effort_ratio(
+                            "stored_successor"
+                        ),
+                    ),
                 )),
+                "replay_effort_ratio": T(
+                    recovery_successor_replay_effort_ratio(
+                        "stored_successor"
+                    )
+                ),
                 "last_receipt_progress": 0.0,
                 "repeat_count": 0.0,
                 "last_request_seq": T(P0("episode", "request_seq")),
@@ -9771,11 +9811,21 @@ def choose_recalled_recovery_path_transition_rule():
             )],
             ["set_attr", "episode", "selected_motor_weight_a", T(Max(
                 L(1.0),
-                P0("stored_successor", "incoming_motor_weight_a"),
+                Times(
+                    P0("stored_successor", "incoming_motor_weight_a"),
+                    recovery_successor_replay_effort_ratio(
+                        "stored_successor"
+                    ),
+                ),
             ))],
             ["set_attr", "episode", "selected_motor_weight_b", T(Max(
                 L(1.0),
-                P0("stored_successor", "incoming_motor_weight_b"),
+                Times(
+                    P0("stored_successor", "incoming_motor_weight_b"),
+                    recovery_successor_replay_effort_ratio(
+                        "stored_successor"
+                    ),
+                ),
             ))],
             ["set_attr", "episode", "selected_predicted_dvx", 0.0],
             ["set_attr", "episode", "selected_predicted_dvy", 0.0],
@@ -9863,7 +9913,7 @@ def choose_recovery_basin_warm_start_rule():
         "effects": [
             ["add_node", "program", "HumanoidRecoveryProgram", {
                 "status": "armed",
-                "termination_kind": "basin_exit_or_pareto_loss",
+                "termination_kind": "stored_launch_approach_or_pareto_loss",
                 "primary_token": T(A("hint_action", "primary_token")),
                 "secondary_token": T(A("hint_action", "secondary_token")),
                 "response_frames": T(P0("hint_action", "response_frames")),
@@ -9894,6 +9944,21 @@ def choose_recovery_basin_warm_start_rule():
                 ),
                 "launch_motion_energy": T(
                     recovery_current_motion_energy()
+                ),
+                "target_normalized_height": T(
+                    P0("hint_action", "post_normalized_height")
+                ),
+                "target_vertical_alignment": T(
+                    P0("hint_action", "post_vertical_alignment")
+                ),
+                "target_support_count": T(
+                    P0("hint_action", "post_support_count")
+                ),
+                "target_contact_count": T(
+                    P0("hint_action", "post_contact_count")
+                ),
+                "target_motion_energy": T(
+                    P0("hint_action", "post_motion_energy")
                 ),
             }],
             [

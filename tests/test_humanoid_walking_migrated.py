@@ -91,6 +91,7 @@ def test_recalled_recovery_transition_uses_receipt_shape_width():
     assert "incoming_response_frames" in json.dumps(rule["where"])
     assert "launch_manifold_shape_residual" in release
     assert "launch_manifold_projected_shape_residual" in release
+    assert "replay_effort_ratio" in release
     assert "output_authority" not in release
 
     storage = json.dumps(
@@ -146,6 +147,21 @@ def test_recovery_is_a_first_class_pareto_process_not_a_scalar_score():
     assert 'context="humanoid_recovery_basin"' in runner
     assert 'attrs["pareto_frontier"]' in runner
     assert 'attrs["dominated_by"]' in runner
+
+
+def test_recovery_warm_start_targets_its_observed_post_shape():
+    seed = json.loads(SEED.read_text(encoding="utf-8"))
+    rule = _rule(seed, "ha_test_prior_recovery_basin_hint")
+    program = rule["effects"][0][3]
+
+    assert program["termination_kind"] == (
+        "stored_launch_approach_or_pareto_loss"
+    )
+    for coordinate in (
+        "normalized_height", "vertical_alignment", "support_count",
+        "contact_count", "motion_energy",
+    ):
+        assert f"target_{coordinate}" in program
 
 
 def test_warm_repertoire_cannot_buy_authority_with_a_fall():
