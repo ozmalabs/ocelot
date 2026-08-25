@@ -183,6 +183,22 @@ being no variables at all. And *undisclosed* dimensions are not counted either:
 they are already determined, so a frame with outstanding ignorance is still at
 its own present.
 
+A deep-sea fish has two of these at once, and separating them is the point.
+
+**Water is uniform, therefore invisible.** The dimension is instantiated — the
+fish is acted on by pressure, buoyancy, drag — but the value never varies, so it
+never produces a residual, so nothing ever makes it a distinction. That is not
+ignorance. It is chapter 1's Troxler fade at the scale of a lifetime: a change
+detector goes blind to what does not change, and water never changes.
+
+**Things that are not fish are NULL.** Not undisclosed, not undetermined — the
+dimension is not instantiated at all, so there is nothing to look for and no
+question the fish can fail to answer.
+
+One animal, both failure modes, and they cannot be merged: the first is a
+distinction that stopped earning, the second is a distinction that never
+existed.
+
 The middle two are the pair English collapses, and they behave differently under
 every operation that matters. **Undisclosed** is ignorance — a value exists, some
 frame may hold it, and observation or inference can obtain it. **Undetermined**

@@ -107,6 +107,34 @@ book is about was first imported into its own repository on 10 August 2026.
 
 ---
 
+## What the work actually consists of
+
+A confession about being wrong would be the wrong record, so it is worth saying
+what the work is instead.
+
+The mistaken beliefs — the ones I can list — are the boring part. The process
+underneath is: **work out what shape the missing piece is, shove candidates into
+it until something fits well enough to carry on, and watch the hole change shape
+as a result.** Then again.
+
+Which is the same loop this book spends nineteen chapters describing, run on my
+own understanding. A residual is not an error term; it has a *form*. Naming that
+form precisely is most of the work, and the fill is comparatively cheap — a
+sharply-shaped hole rejects nearly every candidate, and the rejection is what
+does the teaching. *Something has to select among what is admitted* is a hole
+specific enough that quantum measurement visibly fits it. *Something is missing
+here* is not a hole at all.
+
+**And the failure mode is a fill that vaguely fits.** Loose fits are necessary —
+demand a perfect one at every step and nothing proceeds — but a loose fill can
+close a hole to further inspection, and then nobody looks again. *Step 1 graphs,
+step 2 magic* was exactly that: a filler vague enough that its author stopped
+examining the shape of what was missing. So the loose fit has to stay *marked as
+loose*, which is what provisional grounding does mechanically and what writing
+a preregistration does socially.
+
+So the history below is a sequence of hole shapes rather than a list of errors.
+
 ## Four things, four ways of arriving
 
 Worth stopping on, because presenting `G = (g, r, Γ)` as a spare reasoned-out
@@ -333,6 +361,38 @@ vocabulary exists to say what I mean, and it will be one page rather than a
 theme.
 
 ---
+
+## Why there is a book and not only papers
+
+One structural thing, because it determines whether any of this lands.
+
+**Almost none of the components here is new**, and the papers say so directly
+rather than as a courtesy. Typed graphs, admissibility grammars, fixpoint
+closure, description-length criteria, frame-relative measurement, actualisation
+operators — every part has a literature, and most have several. So a reader who
+checks the parts will find each one known or borrowed, and will be **right every
+time**. The physicist finds the collapse borrowed. The cognitive scientist finds
+the affect canonical. The computer scientist finds the fixpoints classical.
+Three correct verdicts, and the claim untouched.
+
+Because the claim is the **arrangement**. And chapter 5 measures what a
+parts-only reading costs: real handwritten strokes fall into only five to seven
+quantised classes, far too few to identify a character by its inventory, so
+identity lives in how they are arranged — worth twenty-one percentage points
+over the bag-of-parts reading. This work has the same property. Read for the
+components and you get the multiset, which is unremarkable by construction.
+
+That is not a complaint about readers. Reading a paper narrowly is what papers
+are *for*, and it is the correct mode for checking a claim. It is simply the
+wrong aperture for a claim about composition, and opening an aperture is
+expensive — which is exactly what chapter 2 says about apertures in general.
+
+**So the papers and this book are two apertures on one body of work**, not a
+formal version and a friendly one. The papers are narrow by design: definitions,
+propositions, falsifiers, each checkable in isolation. The book is wide by
+design: sequence, recurrence, the same shape turning up in an eye, a town, a
+motor system and a codebook. A reader who takes only the papers gets the
+multiset — which is what that aperture returns, and not a failure of the papers.
 
 ## How to read what follows
 

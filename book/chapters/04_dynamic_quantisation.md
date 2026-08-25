@@ -58,8 +58,15 @@ form the migration took.
 A residual could mint immediately. It must not, and the ordering is the design
 [SD-1].
 
-**Rung 1 — recognise.** The observation is already covered by what is held.
-Nothing is added. This is the common case and it is the cheapest.
+**Rung 1 — recognise.** The observation is covered well enough by what is held
+that nothing is worth adding. This is the common case and the cheapest.
+
+Note what that does *not* say. It does not say the residual is zero — chapter
+14's standpoint axiom guarantees it never is, since every view is partial. The
+ladder is not asking *is there a residual*, a question with a standing answer.
+It is asking whether **this** residual pays: whether acting on it compresses.
+Which is also why the loop terminates. Not because residual runs out, which it
+cannot, but because it stops earning.
 
 **Rung 2 — transform in the existing basis.** The residual is one uniform step
 along a dimension the codebook already has. A rotated shape, a shifted one, a

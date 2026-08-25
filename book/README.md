@@ -25,7 +25,12 @@ alone.
 ## The formal papers
 
 The five written preprints live in **`../papers/formal/`** and stay the citable
-artefacts. Each chapter carries a pointer of the form *the formal statement is
+artefacts. **They are not a formal version of this book; they are a different
+aperture on the same work** — narrow by design, each claim checkable in
+isolation, which is the correct mode for evaluating a claim and the wrong one
+for evaluating a composition. The book is the wide aperture: sequence,
+recurrence, one shape in many domains. A reader who takes only the papers gets
+the multiset. Each chapter carries a pointer of the form *the formal statement is
 Paper N §M*, and drafts **by subtraction** from them.
 
 ## The book, in one paragraph

@@ -193,6 +193,47 @@ completion condition, so any ending is a chosen cut.
 
 ---
 
+## 2.5a Aperture
+
+The intensive axis has a second name once it is pointed at representations, and
+it is worth having because it does a great deal of work later.
+
+**To represent something is to narrow.** A representation that lost nothing
+would not be standing for anything — it would be the thing, or a re-embodiment
+of it in another substrate. Loss is what makes a representation *about*
+something rather than being it. So representation sits at some position on the
+refinement axis: **aperture**, how much of the structure is admitted.
+
+Two positions on that axis have names that usually get treated as kinds:
+
+- A **shape** is a representation at wide aperture. Structure is retained, and
+  identity lives in the arrangement — permute the parts and you have destroyed
+  it.
+- A **symbol** is a representation at minimum aperture. Only identity survives.
+  Rename it consistently and nothing is lost, because the arrangement was
+  already discarded.
+
+They are not two types of representation. They are one axis at two positions,
+which has a consequence: **you can narrow a shape into a symbol, and you cannot
+widen a symbol into a shape you never had.** The aperture only closes over
+something already present. Where a system tries to widen a handle whose
+structure was never there, it does not recover structure — it *invents* it, and
+language history records that in bulk under folk etymology.
+
+**Losslessness, incidentally, is frame-relative too.** An archive is the same
+information as the file *to a frame holding the inverse map*, and nearly pure
+loss to one without it. So even the distinction between representing and
+re-embodying is a relation rather than a kind — which is the third time this
+chapter's invariant has dissolved a proposed pair of types into one relation
+seen from two frames.
+
+**And changing aperture is expensive**, which is why it is worth tracking. A
+fixed aperture needs one grain and no controller. A range needs a codebook at
+several grains at once plus the machinery to select among them — which is
+exactly what chapter 1's foveation, chapter 4's per-dimension resolution, and
+chapter 7's incremental decoding are. That machinery is the cost of being able
+to open and close.
+
 ## 2.6 A base is a dimension
 
 The invariant pays for itself in a place that looks unrelated: what to do about

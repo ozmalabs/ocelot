@@ -54,6 +54,20 @@ checkable: when these claims were true of the substrate.
 > be read off its filename.** `v22` is not the twenty-second version any more
 > than `scaling.png` was the scaling result.
 
+## Reading aperture
+
+These papers are narrow by design and should be, but the design has a cost worth
+knowing. The components used here are individually established and are cited as
+such, so a reader evaluating each part against its own field's standard will
+find each one known or borrowed and will be locally correct every time. **The
+claim is the arrangement**, and it is not reachable that way — which is why
+paper 01 now carries a composition claim and its own falsifier before the
+component ones.
+
+**The book in `../book/` is the wide aperture on the same work**, not a
+plain-language edition of it. A reader who takes only the papers gets the
+multiset.
+
 **The book being built from these papers lives in `../book/`.** Start at
 `../book/README.md`.
 

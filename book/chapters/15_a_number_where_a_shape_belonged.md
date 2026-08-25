@@ -208,6 +208,35 @@ label field, no rule was removed, and the contour is built but not yet ordered,
 quantised, or decoded — which is the entire reason a contour beats a label, and
 it is designed and unbuilt.
 
+## 15.4b When a number is the right answer
+
+The chapter would be wrong if it read as *scalars are always the defect*,
+because this book depends on one that isn't.
+
+Chapter 10's affect core takes a structured appraisal and produces valence and
+arousal — two numbers. That is not a shape replaced by a scalar. It is a
+**compressed report of a structure that still exists** and can be decompressed
+on demand. The distinction is exact and it is the whole of the difference:
+
+- A scalar **standing in for** a structure that was never built — the census
+  above. There is nothing behind the number, so nothing can be recovered, and
+  when the number fails there is no way to ask why.
+- A scalar as a **compressed report of** a structure that is still there — a
+  channel. The number is cheap to read, and the structure remains available when
+  the reading is disputed.
+
+Which is why a low-bit summary is the right design for an affect signal and the
+wrong one for a learning rate. If you need cost estimates constantly and cannot
+afford to compute them explicitly, a channel that reports the gradient is
+exactly what compression recommends. The failure is not the number. It is a
+number with nothing behind it.
+
+This also names what the awkwardness in §15.1's regress *was*. A felt sense that
+a design is wrong is a compressed cost reading — good recall, poor precision,
+which is the profile of a proposal rather than a verdict. It tells you where to
+look and is unreliable about what you will find. The scaling exponent is the
+verdict layer, and §15.4a's flood is the case where the two agreed.
+
 ## 15.5 The live bug, stated plainly
 
 One confirmed site is not a design debt but a defect that corrupts silently, and

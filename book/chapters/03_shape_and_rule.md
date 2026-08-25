@@ -150,7 +150,14 @@ faculty runs.
 That is bad in the obvious way. It is worse in a way that took longer to see.
 
 **A recogniser that always returns an answer can never produce a residual. And a
-grain with no residual can never grow.** The mint path for meta-shapes had been
+grain with no residual can never grow.**
+
+Or more precisely, since chapter 14's standpoint axiom already guarantees the
+residual exists: a recogniser that always answers has not eliminated its
+residual, because it *cannot*. Every view is from somewhere, so every view is
+partial, so something is always left out. What such a recogniser has destroyed
+is its own **access** to a residual that is guaranteed to be there. The defect
+was never an absent remainder. It was blindness to a certain one. The mint path for meta-shapes had been
 absent the whole time, and it had been absent *invisibly*, because nothing ever
 failed to be recognised. Every novel observation was confidently filed under
 whichever held shape came first in the alphabet. The growth failure presented as
