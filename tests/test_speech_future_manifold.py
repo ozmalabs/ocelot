@@ -57,6 +57,23 @@ def test_sign_future_escape_is_reported_at_the_observed_slice():
 
 
 def test_sign_future_projection_fails_closed_when_budget_cannot_cover_horizon():
+    """A budget that cannot cover the horizon must not yield a usable projection.
+
+    The state this reports changed deliberately. It used to read `support == 0`
+    — *the audit could not run* — which was false: the audit is perfectly
+    well-posed and simply ran out of budget partway. Conflating the two also left
+    `resolved` derivable from `support`, so the field carried no information, and
+    made "ran, and could not establish retention" inexpressible.
+
+    So the honest report is now SUPPORTED (well-posed) and UNRESOLVED (did not
+    finish), with the unreached cells counted as `information_loss` — the field
+    whose own contract is *cells whose retention could not be established*, and
+    which previously duplicated `loss` exactly.
+
+    What must NOT change is that nothing downstream can act on it, and the
+    assertions below pin every gate that protects that: `resolved` is 0 (the
+    alignment path checks it), and `retained_width` is 0 (the `retained` path
+    checks that instead). An unaudited tick may never be reported as retained."""
     s = Substrate()
     speech.seed_speech_grammar(s)
     lexicon = speech.open_lexicon(s)
@@ -67,8 +84,13 @@ def test_sign_future_projection_fails_closed_when_budget_cannot_cover_horizon():
         [[0.0], [0.0]], [[0.0], [0.0]],
         projection_budget=1,
     )
-    assert report["support"] == 0.0
-    assert report["resolved"] == 0.0
+    assert report["support"] == 1.0, "a short budget falsified well-posedness"
+    assert report["resolved"] == 0.0, "an unfinished audit reported as resolved"
+    assert report["information_loss"] > 0.0, (
+        "the unreached cells were not counted as unestablished")
+    assert report["loss"] == 0.0, "nothing left the tube in the audited prefix"
+    assert report["retained_width"] == 0.0, (
+        "retention was claimed over ticks the audit never reached")
 
 
 def test_sign_future_projection_rejects_sparse_unproved_time_coordinates():

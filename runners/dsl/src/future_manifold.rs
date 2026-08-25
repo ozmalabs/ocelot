@@ -179,7 +179,10 @@ pub fn projection_field(
     let physical_horizon_supported = physical_raw <= 0.0
         || (physical_raw.is_finite() && physical_raw.fract() == 0.0 && physical_raw >= 1.0);
 
-    let mut support = budget >= 1
+    // No longer `mut`: the only thing that used to reassign it was the budget
+    // shortfall, which is now `resolved`'s business. Well-posedness is decided
+    // once, from the shapes, and does not depend on how far the audit got.
+    let support = budget >= 1
         && budget_raw.is_finite()
         && (budget as f64 - budget_raw).abs() < f64::EPSILON
         && physical_horizon_supported
@@ -225,19 +228,39 @@ pub fn projection_field(
                     residual_shape[t][d] = delta.signum() * (residual - allowed);
                     retained_by_dim[d] = false;
                     loss += 1.0;
-                    information_loss += 1.0;
                     if earliest_decisive_tick == 0.0 {
                         earliest_decisive_tick = *time as f64;
                     }
                 }
             }
         }
-        retained_width = retained_by_dim.iter().filter(|v| **v).count() as f64;
-        if audited < requested_horizon {
-            support = false;
+        // `information_loss` now asks its OWN question. Not "what left the tube"
+        // — that is `loss`, and such a cell WAS assessed, so its retention is
+        // established, as false — but "what could not be assessed at all".
+        //
+        // Cells inside the requested horizon that the budget never reached are
+        // exactly that. Previously both counters were incremented on this same
+        // line and were numerically identical, so an agent that could not tell
+        // was indistinguishable from one that told correctly and got bad news.
+        let unassessed_ticks = requested_horizon.saturating_sub(audited);
+        information_loss += (unassessed_ticks * dims) as f64;
+        if unassessed_ticks > 0 {
+            // Retention over the REQUESTED horizon is unestablished for every
+            // dimension once any tick in it went unaudited. Leaving these `true`
+            // claimed retention for ticks nobody looked at — latent until now
+            // only because a short audit used to falsify `support` outright.
+            for retained in retained_by_dim.iter_mut() {
+                *retained = false;
+            }
         }
+        retained_width = retained_by_dim.iter().filter(|v| **v).count() as f64;
     }
 
+    // A budget shortfall no longer falsifies `support`. `support` asks whether
+    // the audit is WELL-POSED (shapes, finiteness, geometry); `resolved` asks
+    // whether it COMPLETED. Collapsing them made an under-resourced projection
+    // report "could not run" when it had run and could not finish — and left
+    // `resolved` derivable from `support`, carrying no information of its own.
     let resolved = if !support {
         false
     } else if loss > 0.0 {
@@ -247,6 +270,11 @@ pub fn projection_field(
     };
     let termination_code = if !support {
         4.0
+    } else if !resolved {
+        // Supported, undecided. The same code the sibling implementation already
+        // uses for this state (`motor_compose.rs`: `if support { 3.0 } else
+        // { 4.0 }`), so the two agree rather than inventing a second vocabulary.
+        3.0
     } else if loss > 0.0 {
         1.0
     } else {
@@ -633,7 +661,11 @@ pub fn counting_narrativium_by_dimension(
         return None;
     }
     let records = reachable_deformation_set(graph, interner, episode, policy, candidates);
-    if records.iter().any(|record| !record.support) {
+    // Requires RESOLVED, not merely supported. `support` no longer implies the
+    // audit finished, and reporting an unfinished audit's retention as capacity
+    // is exactly the "zero capacity versus not established" confusion this
+    // function exists to refuse.
+    if records.iter().any(|record| !record.support || !record.resolved) {
         return None;
     }
     let trajectories: Vec<Vec<Vec<f64>>> = candidates
@@ -1175,33 +1207,16 @@ mod feasible_selection_tests {
     }
 
     #[test]
-    fn ignorant_and_stubborn_separate_but_STUPID_HAS_NO_FIELD_YET() {
-        // The diagnostic claim, honestly bounded by what the audit can express.
-        //
-        // STUPID_STUBBORN_IGNORANT.md claimed three separable axes. Building the
-        // selector showed only two of them exist. Pinned here so the claim cannot
-        // drift back:
-        //
-        //   * `resolved` carries NO independent information. `projection_field`
-        //     sets `support = false` whenever `audited < requested_horizon`, and
-        //     `resolved` is then defined as false-if-unsupported, else
-        //     `audited >= requested_horizon` -- which support already guaranteed.
-        //     So `resolved == support`, always.
-        //   * `information_loss` is incremented on the SAME line as `loss` and
-        //     nowhere else, so the two are numerically identical. The field's own
-        //     doc says "cells whose retention could not be ESTABLISHED", which is
-        //     a genuinely different question from "cells that left the tube" --
-        //     but the code never asks it.
-        //
-        // Consequence: an under-resourced projection reads as UNSUPPORTED (the
-        // audit could not run), never as "ran, but could not tell". There is
-        // currently no way to be stupid at the manifold -- only absent, wrong, or
-        // stubborn.
+    fn ignorant_stupid_and_stubborn_all_have_distinct_signatures() {
+        // The diagnostic claim, now complete. The same observable failure --
+        // nothing got selected -- reads three different ways in the record, and
+        // no two of them are confusable.
         let (mut g, mut i, ep, pol, held, esc) = bench();
         set(&mut g, &mut i, held, "intervention", 1.0);
         set(&mut g, &mut i, esc, "intervention", 1.0);
 
-        // IGNORANT: nothing to project at all.
+        // IGNORANT: nothing to project at all. Fails closed -- "not established",
+        // never "zero capacity".
         assert!(feasible_selection(&g, &mut i, ep, pol, &[]).is_none());
 
         // STUBBORN: established, feasible, minimal -- and not taken.
@@ -1212,31 +1227,64 @@ mod feasible_selection_tests {
         assert!(stubborn.unestablished.is_empty(),
                 "a stubborn agent knew perfectly well; that is what makes it stubborn");
 
-        // STUPID: not producible. Starving the budget below the horizon does not
-        // yield an unresolved audit -- it yields an unsupported one, and the whole
-        // selection fails closed rather than reporting a candidate it could not
-        // assess.
+        // STUPID: the audit runs and cannot finish. Starving the budget below the
+        // horizon used to falsify `support` outright, so this case was previously
+        // unreachable -- the agent reported "could not run" rather than "ran, and
+        // could not tell".
+        set(&mut g, &mut i, held, "withheld", 0.0);
         let budget = i.intern("future_manifold_projection_budget");
         g.set_node_attr(pol, budget, Value::Float(1.0));
-        assert!(feasible_selection(&g, &mut i, ep, pol, &[held, esc]).is_none(),
-                "an under-budgeted projection became assessable -- if this now \
-                 passes, `resolved` has been given independent meaning and the \
-                 stupid axis is finally representable");
+        let stupid = feasible_selection(&g, &mut i, ep, pol, &[held, esc]).expect("well-posed");
+        assert_eq!(stupid.unestablished.len(), 2,
+                   "an unfinished audit was reported as decided");
+        assert!(stupid.feasible.is_empty(),
+                "a candidate was called feasible without its retention established");
+        assert!(stupid.minimal.is_empty() && stupid.selected.is_empty());
+        assert!(stupid.withheld_minimal.is_empty(),
+                "stupidity is reading as stubbornness -- nothing was withheld here");
     }
 
     #[test]
-    fn information_loss_is_currently_a_duplicate_of_loss() {
-        // Pins the defect above at its source rather than at one call site. These
-        // are supposed to be different questions -- what left the tube, versus
-        // what could not be established -- and the audit increments them together.
-        let (mut g, mut i, ep, pol, _held, esc) = bench();
-        let records = reachable_deformation_set(&g, &mut i, ep, pol, &[esc]);
-        let escaping = &records[0];
+    fn information_loss_counts_what_was_not_assessed_not_what_failed() {
+        // The fix, at its source. These are different questions and now have
+        // different answers:
+        //   * a cell that left the tube WAS assessed -- retention established,
+        //     as false -- so it is `loss` and NOT information loss;
+        //   * a cell the budget never reached was not assessed at all, so it is
+        //     information loss and NOT `loss`.
+        let (mut g, mut i, ep, pol, held, esc) = bench();
+
+        // Assessed and outside: pure loss, nothing unestablished.
+        let escaping = &reachable_deformation_set(&g, &mut i, ep, pol, &[esc])[0];
         assert!(escaping.loss > 0.0, "fixture no longer escapes the tube");
-        assert_eq!(escaping.information_loss, escaping.loss,
-                   "information_loss has diverged from loss -- if this fails the \
-                    field has been given its own meaning, which is the fix, and \
-                    STUPID_STUBBORN_IGNORANT.md should be updated to match");
-        set(&mut g, &mut i, esc, "intervention", 1.0);
+        assert_eq!(escaping.information_loss, 0.0,
+                   "a cell that was assessed and failed is being counted as \
+                    unassessable");
+
+        // Never reached: pure information loss, nothing outside.
+        let budget = i.intern("future_manifold_projection_budget");
+        g.set_node_attr(pol, budget, Value::Float(1.0));
+        let starved = &reachable_deformation_set(&g, &mut i, ep, pol, &[held])[0];
+        assert!(starved.support, "a short budget falsified well-posedness");
+        assert!(!starved.resolved, "an unfinished audit reported as resolved");
+        assert_eq!(starved.loss, 0.0, "nothing left the tube in the audited part");
+        assert!(starved.information_loss > 0.0,
+                "the unreached ticks were not counted as unestablished");
+        assert_eq!(starved.retained_width, 0.0,
+                   "retention was claimed for ticks nobody audited");
+    }
+
+    #[test]
+    fn resolved_is_no_longer_derivable_from_support() {
+        // The second half of the collapse. Before the fix `resolved == support`
+        // always, so the field carried nothing; a starved audit must now be
+        // supported AND unresolved, which is the state that never existed.
+        let (mut g, mut i, ep, pol, held, _esc) = bench();
+        let budget = i.intern("future_manifold_projection_budget");
+        g.set_node_attr(pol, budget, Value::Float(1.0));
+        let r = &reachable_deformation_set(&g, &mut i, ep, pol, &[held])[0];
+        assert!(r.support && !r.resolved,
+                "support={} resolved={} -- the two are still collapsed",
+                r.support, r.resolved);
     }
 }
