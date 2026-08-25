@@ -84,6 +84,7 @@ def test_humanoid_seed_is_an_integer_output_null_bridge():
     assert "has_humanoid_library_motor_member" in text
     assert "has_issued_embodied_program_path" in text
     assert "has_issued_embodied_program_transition" in text
+    assert "task_effect_supported" in text
     assert "futuremanifoldprojection" in text
     assert "effort_supported" in text
     assert "effort_authorized" in text

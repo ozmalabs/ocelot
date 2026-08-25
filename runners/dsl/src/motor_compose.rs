@@ -3022,6 +3022,10 @@ struct FutureProjectionReport {
     max_shape_order: f64,
     earliest_decisive_tick: f64,
     minimum_exafferent_scale: f64,
+    task_effect_supported: bool,
+    projected_task_effect: f64,
+    retained_task_effect: f64,
+    task_effect_residual: f64,
     residual: [f64; 7],
     retained: [f64; 7],
     situated_support: [f64; 7],
@@ -3079,6 +3083,10 @@ impl FutureProjectionReport {
             "max_shape_order" => self.max_shape_order,
             "earliest_decisive_tick" => self.earliest_decisive_tick,
             "minimum_exafferent_scale" => self.minimum_exafferent_scale,
+            "task_effect_supported" => self.task_effect_supported as i32 as f64,
+            "projected_task_effect" => self.projected_task_effect,
+            "retained_task_effect" => self.retained_task_effect,
+            "task_effect_residual" => self.task_effect_residual,
             key if key.starts_with("residual_") => key[9..]
                 .parse::<usize>()
                 .ok()
@@ -3531,6 +3539,10 @@ fn unsupported_future_projection_report(
         max_shape_order: 0.0,
         earliest_decisive_tick: 0.0,
         minimum_exafferent_scale: 0.0,
+        task_effect_supported: false,
+        projected_task_effect: 0.0,
+        retained_task_effect: 0.0,
+        task_effect_residual: 0.0,
         residual: [0.0; 7],
         retained: [0.0; 7],
         situated_support,
@@ -4297,6 +4309,17 @@ fn future_humanoid_manifold_projection_for_path(
         .unwrap_or(0.0);
     let information_loss =
         (loss - safety.information_loss_allowance * information_authority).max(0.0);
+    let retained_task_effect = segments
+        .iter()
+        .map(|segment| fattr(graph, interner, segment.transition, "task_progress_units"))
+        .sum::<f64>();
+    let projected_task_effect = fattr(graph, interner, episode, "heading_x") * cumulative[0];
+    let task_effect_supported = retained_task_effect <= 0.0 || projected_task_effect > 0.0;
+    let task_effect_residual = if task_effect_supported {
+        0.0
+    } else {
+        retained_task_effect
+    };
     let effort_exposure_count = segments.len();
     (
         FutureProjectionReport {
@@ -4319,6 +4342,10 @@ fn future_humanoid_manifold_projection_for_path(
             max_shape_order: if anchor_count > 1 { 1.0 } else { 0.0 },
             earliest_decisive_tick: decisive,
             minimum_exafferent_scale: 0.0,
+            task_effect_supported,
+            projected_task_effect,
+            retained_task_effect,
+            task_effect_residual,
             residual,
             retained,
             situated_support,
@@ -4625,6 +4652,10 @@ fn future_humanoid_manifold_projection_for_members(
         max_shape_order: if anchor_count > 1.0 { 1.0 } else { 0.0 },
         earliest_decisive_tick: decisive,
         minimum_exafferent_scale,
+        task_effect_supported: true,
+        projected_task_effect: 0.0,
+        retained_task_effect: 0.0,
+        task_effect_residual: 0.0,
         residual,
         retained: [retained_value; 7],
         situated_support: report_support,
@@ -6307,6 +6338,10 @@ fn future_manifold_projection_for_members_legacy(
         max_shape_order: 0.0,
         earliest_decisive_tick: if loss > 0.0 { horizon } else { 0.0 },
         minimum_exafferent_scale: 0.0,
+        task_effect_supported: true,
+        projected_task_effect: 0.0,
+        retained_task_effect: 0.0,
+        task_effect_residual: 0.0,
         residual: shape_residual,
         retained,
         situated_support,
@@ -6677,6 +6712,10 @@ fn future_manifold_projection_for_members_foveated(
         max_shape_order,
         earliest_decisive_tick,
         minimum_exafferent_scale: 0.0,
+        task_effect_supported: true,
+        projected_task_effect: 0.0,
+        retained_task_effect: 0.0,
+        task_effect_residual: 0.0,
         residual,
         retained,
         situated_support,

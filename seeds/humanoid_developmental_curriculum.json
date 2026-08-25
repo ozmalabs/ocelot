@@ -63015,6 +63015,114 @@
     [
      "set_attr",
      "path",
+     "last_manifold_projection_task_effect_supported",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "task_effect_supported",
+       "addition": {
+        "type": "Var",
+        "name": "transition"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_projected_task_effect",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "projected_task_effect",
+       "addition": {
+        "type": "Var",
+        "name": "transition"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_retained_task_effect",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "retained_task_effect",
+       "addition": {
+        "type": "Var",
+        "name": "transition"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
+     "last_manifold_projection_task_effect_residual",
+     {
+      "__term__": {
+       "type": "FutureManifoldProjection",
+       "episode": {
+        "type": "Var",
+        "name": "episode"
+       },
+       "policy": {
+        "type": "Var",
+        "name": "policy"
+       },
+       "source": {
+        "type": "Var",
+        "name": "path"
+       },
+       "field": "task_effect_residual",
+       "addition": {
+        "type": "Var",
+        "name": "transition"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "path",
      "last_manifold_projection_audit_seq",
      {
       "__term__": {
@@ -63146,153 +63254,72 @@
      {
       "type": "Not",
       "arg": {
-       "type": "Or",
+       "type": "And",
        "items": [
         {
-         "type": "Not",
-         "arg": {
-          "type": "And",
-          "items": [
-           {
-            "type": "Gt",
-            "a": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "policy"
-               },
-               "key": "future_manifold_enabled"
-              },
-              {
-               "type": "Lit",
-               "value": 0
-              }
-             ]
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
-           },
-           {
-            "type": "Gt",
-            "a": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "episode"
-               },
-               "key": "manifold_bounds_ready"
-              },
-              {
-               "type": "Lit",
-               "value": 0
-              }
-             ]
-            },
-            "b": {
-             "type": "Lit",
-             "value": 0
-            }
-           }
-          ]
-         }
-        },
-        {
-         "type": "And",
+         "type": "Or",
          "items": [
           {
-           "type": "Gt",
-           "a": {
-            "type": "FutureManifoldProjection",
-            "episode": {
-             "type": "Var",
-             "name": "episode"
-            },
-            "policy": {
-             "type": "Var",
-             "name": "policy"
-            },
-            "source": {
-             "type": "Var",
-             "name": "path"
-            },
-            "field": "support",
-            "addition": {
-             "type": "Var",
-             "name": "transition"
-            }
-           },
-           "b": {
-            "type": "Lit",
-            "value": 0
+           "type": "Not",
+           "arg": {
+            "type": "And",
+            "items": [
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "policy"
+                 },
+                 "key": "future_manifold_enabled"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             {
+              "type": "Gt",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "episode"
+                 },
+                 "key": "manifold_bounds_ready"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            ]
            }
           },
           {
-           "type": "Gt",
-           "a": {
-            "type": "FutureManifoldProjection",
-            "episode": {
-             "type": "Var",
-             "name": "episode"
-            },
-            "policy": {
-             "type": "Var",
-             "name": "policy"
-            },
-            "source": {
-             "type": "Var",
-             "name": "path"
-            },
-            "field": "resolved",
-            "addition": {
-             "type": "Var",
-             "name": "transition"
-            }
-           },
-           "b": {
-            "type": "Lit",
-            "value": 0
-           }
-          },
-          {
-           "type": "Eq",
-           "a": {
-            "type": "FutureManifoldProjection",
-            "episode": {
-             "type": "Var",
-             "name": "episode"
-            },
-            "policy": {
-             "type": "Var",
-             "name": "policy"
-            },
-            "source": {
-             "type": "Var",
-             "name": "path"
-            },
-            "field": "information_loss",
-            "addition": {
-             "type": "Var",
-             "name": "transition"
-            }
-           },
-           "b": {
-            "type": "Lit",
-            "value": 0
-           }
-          },
-          {
-           "type": "Or",
+           "type": "And",
            "items": [
             {
-             "type": "Eq",
+             "type": "Gt",
              "a": {
               "type": "FutureManifoldProjection",
               "episode": {
@@ -63307,7 +63334,7 @@
                "type": "Var",
                "name": "path"
               },
-              "field": "effort_supported",
+              "field": "support",
               "addition": {
                "type": "Var",
                "name": "transition"
@@ -63334,7 +63361,7 @@
                "type": "Var",
                "name": "path"
               },
-              "field": "effort_authorized",
+              "field": "resolved",
               "addition": {
                "type": "Var",
                "name": "transition"
@@ -63344,8 +63371,153 @@
               "type": "Lit",
               "value": 0
              }
+            },
+            {
+             "type": "Eq",
+             "a": {
+              "type": "FutureManifoldProjection",
+              "episode": {
+               "type": "Var",
+               "name": "episode"
+              },
+              "policy": {
+               "type": "Var",
+               "name": "policy"
+              },
+              "source": {
+               "type": "Var",
+               "name": "path"
+              },
+              "field": "information_loss",
+              "addition": {
+               "type": "Var",
+               "name": "transition"
+              }
+             },
+             "b": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            {
+             "type": "Or",
+             "items": [
+              {
+               "type": "Eq",
+               "a": {
+                "type": "FutureManifoldProjection",
+                "episode": {
+                 "type": "Var",
+                 "name": "episode"
+                },
+                "policy": {
+                 "type": "Var",
+                 "name": "policy"
+                },
+                "source": {
+                 "type": "Var",
+                 "name": "path"
+                },
+                "field": "effort_supported",
+                "addition": {
+                 "type": "Var",
+                 "name": "transition"
+                }
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0
+               }
+              },
+              {
+               "type": "Gt",
+               "a": {
+                "type": "FutureManifoldProjection",
+                "episode": {
+                 "type": "Var",
+                 "name": "episode"
+                },
+                "policy": {
+                 "type": "Var",
+                 "name": "policy"
+                },
+                "source": {
+                 "type": "Var",
+                 "name": "path"
+                },
+                "field": "effort_authorized",
+                "addition": {
+                 "type": "Var",
+                 "name": "transition"
+                }
+               },
+               "b": {
+                "type": "Lit",
+                "value": 0
+               }
+              }
+             ]
             }
            ]
+          }
+         ]
+        },
+        {
+         "type": "Or",
+         "items": [
+          {
+           "type": "Not",
+           "arg": {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "path"
+               },
+               "key": "task_progress_units"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          },
+          {
+           "type": "Gt",
+           "a": {
+            "type": "FutureManifoldProjection",
+            "episode": {
+             "type": "Var",
+             "name": "episode"
+            },
+            "policy": {
+             "type": "Var",
+             "name": "policy"
+            },
+            "source": {
+             "type": "Var",
+             "name": "path"
+            },
+            "field": "task_effect_supported",
+            "addition": {
+             "type": "Var",
+             "name": "transition"
+            }
+           },
+           "b": {
+            "type": "Lit",
+            "value": 0
+           }
           }
          ]
         }
@@ -63794,6 +63966,65 @@
           ]
          }
         ]
+       }
+      ]
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Gt",
+         "a": {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "path"
+            },
+            "key": "task_progress_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         "b": {
+          "type": "Lit",
+          "value": 0
+         }
+        }
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "FutureManifoldProjection",
+         "episode": {
+          "type": "Var",
+          "name": "episode"
+         },
+         "policy": {
+          "type": "Var",
+          "name": "policy"
+         },
+         "source": {
+          "type": "Var",
+          "name": "path"
+         },
+         "field": "task_effect_supported",
+         "addition": {
+          "type": "Var",
+          "name": "transition"
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
        }
       ]
      },
