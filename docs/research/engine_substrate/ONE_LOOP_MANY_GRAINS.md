@@ -148,6 +148,70 @@ falsely, in advance and specifically.** For a social simulation that is the diff
 modelling disagreement and merely permitting it: you can compute what another mind will get wrong,
 and what you would have to teach it. **The residual IS the curriculum.**
 
+## KNOWING THAT, WITHOUT KNOWING WHAT — a blind spot's existence is detectable even when its content is not
+
+A probe run here concluded *"every aperture looks complete from inside"*. **That was false, and the
+probe was rigged**: it modelled self-perception as an aperture intersected with itself, which returns
+everything by construction. It measured its own assumption. The claim is retracted, and it is worth
+retracting loudly, because the true statement is both more useful and already what the substrate
+does.
+
+**You can understand that there are things you do not understand, and accept them, without being
+able to resolve them.** The two halves have different requirements:
+
+* **resolving WHAT is missing** needs the distinction you lack — unavailable, by definition;
+* **detecting THAT something is missing** needs only that your decode failed to cover — and coverage
+  is a property of the decode, not of the thing you failed to decode.
+
+That second one is exactly what a residual IS here, and it is why `unknown = absence, first-class`
+is load-bearing rather than a slogan. The mechanism for honest ignorance already exists; the earlier
+probe simply could not see it, having defined it away.
+
+Measured on five weather episodes, same world, three observers:
+
+| observer | episode-kinds told apart | failures it can OBSERVE | can it ATTRIBUTE the failure |
+|---|---|---|---|
+| meteorologist (resolves the read-object) | 5 of 5 | **2 of 5** | yes — `leaf 1/3 right`, `pressure 2/2 right` |
+| mystic (cannot resolve WHAT is read) | 4 of 5 | **2 of 5** | **no** — one bucket, `3/5 right` |
+
+**The mystic counts its own failures exactly as accurately as the expert.** Nothing about its
+aperture prevents it noticing that its forecasts are wrong two times in five. What its aperture
+prevents is saying which sign was responsible, because attribution requires the very distinction it
+lacks. So `MINTING_AT_APERTURE.md`'s storm-god is not the whole picture: an agent at low aperture can
+hold *"my model of thunder is incomplete"* alongside the god, and the two are not in tension.
+
+### Three levels, and the third is the dangerous one
+
+Detecting a residual is not free either — it requires the DISCONFIRMING SIGNAL to be above aperture,
+which is a weaker requirement than resolving the residual but still a requirement. Adding a third
+observer that cannot resolve the outcome-object:
+
+| level | what it needs | observer | failures observed |
+|---|---|---|---|
+| **resolves** the residual | the discriminating distinction | meteorologist | 2 |
+| **detects** it, cannot resolve it | the failure signal above aperture | mystic | 2 |
+| **blind** — no residual exists for it | — | zealot | **0** |
+
+The zealot does not resolve `outcome`, so prediction and result are the same thing to it and nothing
+ever disagrees. **Its theory is unfalsifiable not because it is defended but because the
+disconfirming signal is below its aperture.** That is a mechanically different pathology from the
+mystic's, and it is the only one of the three where honest humility is unavailable rather than
+merely unexercised — there is nothing to be humble about, from inside.
+
+Which sharpens the spurious-grounding row of the table above. The mystic's tea-leaf grounding is a
+check passing at too coarse an aperture, and the mystic *can* accumulate evidence against it. The
+zealot's cannot be checked at all. Telling either to "check harder" is incoherent, but for different
+reasons, and only one of them can be reached by supplying more episodes.
+
+### Why this matters for the build rather than only for the account
+
+An unresolvable-but-detected residual is a first-class, holdable thing — which is what
+`SelfConcern{capability_gap}` already is. So the honest-ignorance case needs no new mechanism: it is
+the same concern-opening path as `theory_residual_concern`, with the content being *"something here I
+cannot decode"* rather than a named missing part. What it does need is the aperture attribute this
+document already identified as missing at all 182 mint sites — because *"I could not resolve this"*
+and *"there was nothing more to resolve"* are the same empty residual without it.
+
 ## Honest bounds
 
 Every number above is from this tree, mostly on small hand-made fixtures. The aperture axis was
@@ -155,3 +219,10 @@ measured on six variants of one shape; range on three codebooks and two targets;
 distinction is a design argument supported by one seed and its mutation test, not a result. None of
 this shows the loop is sufficient for anything, only that these five parameters are real here,
 independent, and account for more phenomena together than any of them does alone.
+
+The three-level table is five episodes and three hand-specified apertures — it demonstrates that the
+levels are mechanically distinct and that the middle one is reachable, not how common any of them
+is. Its own predecessor was a rigged probe that survived long enough to be written down, which is the
+better argument for reading every one of these tables for what it constructed rather than what it
+concluded: **the self-estimate probe reported a clean result and the result was an artefact of its
+own setup.** It was caught by an outside correction, not by anything internal to the measurement.

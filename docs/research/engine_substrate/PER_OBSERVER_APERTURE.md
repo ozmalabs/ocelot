@@ -145,12 +145,78 @@ MapList(over relations,
 Measured live: expert `{pred,val}` keeps full detail; glancer `{pred}` renders
 `[["controls","·","·"], ["controls","·","·"]]` — the two relations now literally identical.
 
+### BUILT — `seeds/observer_aperture.json` v1.0.0, four rules, zero new Rust
+
+The observer's aperture is graph data on the observer node (`resolves`, a list of
+`dim_types`), and four rules do the rest — `ap_project_percept`, `ap_project_held`,
+`ap_refresh_scope`, `ap_decode_percept`. No Python decides who sees what.
+
+**Both halves are projected**, which was the second open item. Projecting only the goal would
+decode a blurred observation against full-detail held parts, which is nobody's situation: what
+an observer holds was itself acquired through its aperture. A projected part is named
+`<observer>/<part>` so two agents' quotients of the same world part are distinct parts in the
+one shared store.
+
+**APERTURE and RANGE compose, and the composition is the mechanism.** The quotient decides what
+an observer can TELL APART; `codebook_scope` decides what it HOLDS. `ap_refresh_scope` sets the
+observer's scope to exactly the names of its own projected parts, so `ap_decode_percept` reads
+that observer's quotient of the world and nobody else's — over the shared store, no private
+copy per agent. This is also the first consumer of the empty-scope fix above: an observer that
+has projected nothing now decodes against nothing rather than against everything.
+
+Γ is declared rather than bypassed — four productions covering `perceives`, `holds_part`,
+`projected`, `projected_part`. `CLAUDE.md` enumerates 159/634 rule-carrying seeds minting edges
+through zero productions; this one is not among them. (The first run failed loudly with
+`Γ rejects: type 'Observer' not in vocabulary`, which is the check doing its job.)
+
+Measured, one shared store, three acuities over four world shapes:
+
+| observer | resolves | can tell apart | percepts held |
+|---|---|---|---|
+| expert | `pred, val, obj` | **4 of 4** | 4 |
+| glancer | `pred` | **2 of 4** | 4 |
+| blind | *(nothing)* | **1 of 4** | 4 |
+
+**Collapsing is not deleting** — the blind observer still counts four things while telling them
+apart as one. The quotient is a claim about DISCRIMINATION, not about existence.
+
+And the two results the seed exists for, both now produced by rules rather than by a probe:
+
+| held / seen | meteorologist (`pred,val,obj`) | mystic (`pred,val`) | zealot (`val`) |
+|---|---|---|---|
+| barometer / **tea_leaves** | covered 1, residual `[["reads","me","leaf_pattern"]]` | covered 2, residual `[]` — **GROUNDS** | — |
+| barometer / **omen** | covered 1, residual `[["senses","me","dream_image"]]` | covered 1, residual `[["senses","me","·"]]` | covered 2, residual `[]` |
+
+The second row is the correction in `ONE_LOOP_MANY_GRAINS.md`, mechanised. The mystic's residual
+is NON-EMPTY — it knows something here is unaccounted for — and its content carries the
+unresolved marker, so it cannot say what. **Knowing THAT, without knowing WHAT.** The zealot,
+which cannot resolve the predicate at all, sees no residual: nothing to detect, so honest
+ignorance is unavailable to it rather than merely unexercised.
+
+Gate: `tests/test_observer_aperture_migrated.py` **8/8**, including the negative control
+(a full-aperture projection must alter nothing) and a fixpoint check.
+
 ### What remains for the full build
 
-* the observer's resolved `dim_types` as graph data on the observer node, and a rule that projects
-  through it — the `codebook_scope = Attr(who, "knows")` pattern, one level down;
-* projecting the CODEBOOK as well as the goal, so an observer decodes its own quotient of the world
-  rather than a quotiented goal against full-detail parts;
-* and the question this has not touched: whether a projected decode should be able to MINT. On the
-  quotient reading it must not — an observer minting from what it cannot resolve is inventing
-  detail, which is the target-grain wishful-thinking failure in another costume.
+* ~~the observer's resolved `dim_types` as graph data on the observer node, and a rule that projects
+  through it~~ — **DONE**, `resolves` + `ap_project_percept`;
+* ~~projecting the CODEBOOK as well as the goal~~ — **DONE**, `ap_project_held` +
+  `ap_refresh_scope`;
+* **STILL OPEN — the mint.** A projected decode currently reports `ap_covered` / `ap_residual` and
+  stops. It does not mint, and per the retraction below it should. What blocks it is not a decision
+  but a missing attribute: `MINTING_AT_APERTURE.md` measures 182 mint sites recording no resolution,
+  and until a mint carries the aperture it was formed at, *"I could not resolve this"* and *"there
+  was nothing more to resolve"* are the same empty residual. That is the next rung, and it is shared
+  with every other grain rather than specific to this seed;
+* **STILL OPEN — aperture as a learned shape.** `resolves` is currently a hand-set list. The
+  document above argues aperture is itself a shape, therefore decodable and mintable by the same
+  loop; nothing here acquires or changes an observer's aperture, so every agent's acuity is
+  authored rather than developed;
+* ~~and the question this has not touched: whether a projected decode should be able to MINT. On the
+  quotient reading it must not.~~ **SUPERSEDED** — `MINTING_AT_APERTURE.md` retracts this. A
+  projected decode MAY mint, and must: minting from an unresolved residual is the only thing a
+  limited observer can do, and theory of mind is precisely that. What the mint needs is not a
+  prohibition but the aperture it was minted at, so that a coarse entity can later be REFINED rather
+  than only contradicted. `ONE_LOOP_MANY_GRAINS.md` adds the further case this build has to support:
+  an observer can DETECT a residual it cannot RESOLVE, so a projected decode must be able to report
+  incomplete coverage without being able to name what is missing.

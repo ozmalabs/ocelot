@@ -1670,6 +1670,36 @@ REGISTRY.register(Seed(
 ))
 
 REGISTRY.register(Seed(
+    id="observer_aperture", version="1.0.0",
+    depends_on=(),
+    installer=_installer_from_manifest("observer_aperture"),
+    description="GRADED PER-OBSERVER APERTURE, AS A QUOTIENT. Limiting what "
+                "each agent can resolve is the precondition for any social "
+                "dynamic — without partial views there is no belief "
+                "divergence, no theory of mind, no privacy, no deception, and "
+                "every agent is the same agent. RANGE was already graph-native "
+                "and per-call (codebook_scope read off the asker's own node); "
+                "APERTURE was all-or-nothing (wild_objects). This grades it. "
+                "NOT as a wildcard — CLAUDE.md records the codebook-side "
+                "wildcard as retired for conflating consistent substitution "
+                "with incoherent novelty, and that retirement is right: WILD "
+                "means 'anything matched', which discards WHICH substitution "
+                "occurred. Limited perception is not that. It is 'these are "
+                "the same thing to me' — a QUOTIENT. So a signature is "
+                "projected onto the dim_types the observer resolves, "
+                "unresolved slots collapsing to one CONSTANT, and matched "
+                "literally: two shapes differing only in dimensions an "
+                "observer cannot resolve become literally equal FOR THAT "
+                "OBSERVER, claiming nothing about what filled the slot. Both "
+                "percept and held codebook are projected — projecting only the "
+                "goal would decode a blurred observation against full-detail "
+                "parts, which is nobody's situation. Zero new Rust: the "
+                "dim_types vocabulary is already populated across the corpus "
+                "and MapList/ZipWith/In/IfThenElse compose the projection. "
+                "PER_OBSERVER_APERTURE.md, ONE_LOOP_MANY_GRAINS.md.",
+))
+
+REGISTRY.register(Seed(
     id="parallax_efference", version="1.0.0",
     depends_on=("vision_motion_group",),
     installer=_installer_from_manifest("parallax_efference"),
