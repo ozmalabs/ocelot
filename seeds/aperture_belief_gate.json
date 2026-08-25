@@ -1,0 +1,121 @@
+{
+  "id": "aperture_belief_gate",
+  "version": "1.0.0",
+  "comment": "Emit seeds/aperture_belief_gate.json -- WHAT YOU CANNOT RESOLVE CANNOT DISCONFIRM YOU.\n\nThe bridge between two disorder mechanisms this tree models separately.\n\n`psychosis_grounding` gates evidence by CONFIDENCE: the reality pull is divided by\n(1+conf), so a confident prior down-weights contradictory evidence. Aberrant\nprecision. The evidence arrives and is discounted.\n\n`observer_aperture` + `aperture_frame` gate evidence by APERTURE: a dimension the\nobserver does not resolve is quotiented away, and a decode that covers leaves an\nEMPTY residual. There is nothing to discount, because nothing arrived.\n\nThis seed writes the second one into the variable the first one already reads.\nThe observer's reality channel `obs` carries the disconfirming content only when\nits current-generation percept view has a NON-EMPTY residual. Otherwise `obs` is\nset to the belief's own current value -- a pure mirror, `(obs - belief) = 0`,\nexactly the construction `psychosis_grounding` already documents for a sycophantic\nconfirmer.\n\nThe two remain distinguishable in the arithmetic, which is the point:\n**precision gating DIVIDES a non-zero pull; aperture gating ZEROES it.** One is a\nbelief held against evidence; the other is evidence that never arrives as\nevidence. Prereg: APERTURE_AETIOLOGY_CROSSOVER_PREREG.md (block 365000).\n\nINERT by construction: the rule matches on `holds_belief`, so a graph without that\nedge is unchanged.\n",
+  "depends_on": [
+    "observer_aperture"
+  ],
+  "productions": [
+    {
+      "provenance": "seed:aperture_belief_gate:holds-belief",
+      "src": {
+        "type": "Observer",
+        "var": "obs"
+      },
+      "edge_type": "holds_belief",
+      "tgt": {
+        "type": "Belief",
+        "var": "b"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "abg_gate_observation",
+      "comment": "The reality channel delivers disconfirmation only if the observer can RESOLVE it. A non-empty residual on the view taken through the aperture currently in force means something is unaccounted for, so `obs` carries the truthful content (`abg_truth`) and `pg_ground` corrects as usual. An empty residual means the world, AS SEEN, is fully covered by what is held -- so `obs` mirrors the belief and the pull is exactly zero. Not a smaller correction: no correction, and no information. Matched on the CURRENT generation so a retracted frame immediately restores the channel.",
+      "match": [
+        [
+          "o",
+          "holds_belief",
+          "b"
+        ],
+        [
+          "o",
+          "projected",
+          "pv"
+        ]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "pv"
+          },
+          "key": "ap_gen"
+        },
+        "b": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "o"
+          },
+          "key": "ap_gen"
+        }
+      },
+      "effects": [
+        [
+          "set_attr_if_different",
+          "b",
+          "obs",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pv"
+                },
+                "key": "ap_residual"
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "abg_truth"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "belief"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr_if_different",
+          "b",
+          "abg_channel_open",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pv"
+                },
+                "key": "ap_residual"
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1.0
+              },
+              "other": {
+                "type": "Lit",
+                "value": 0.0
+              }
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}
