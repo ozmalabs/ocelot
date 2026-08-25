@@ -220,3 +220,75 @@ That is a straightforward redesign and it is not done here.
 
 So: the closure is real and it branches hard; the MEET direction is the part that iterates; and
 whether the specificity gradient tames the search is **still open**.
+
+
+## The redesign: Unify excluded — and the composition closure turns out to be FINITE
+
+Expanding by anti-unification and substitution ONLY (no `Unify`, which does not close over the
+space) makes the closure well-defined. It also answers a question the earlier run could not ask.
+
+**The MEET-only closure SATURATES, immediately, on every held set tried:**
+
+| held set | generators | closure | layer sizes |
+|---|---|---|---|
+| 3 regular (same 2-relation shape) | 3 | 5 | [3, 2, 0] |
+| 5 regular | 5 | 7 | [5, 2, 0] |
+| mixed arity (1, 2, 3 relations) | 3 | 4 | [3, 1, 0] |
+| heterogeneous predicates | 3 | 4 | [3, 1, 0] |
+| deep nesting | 2 | 3 | [2, 1, 0] |
+
+Every one saturates at **order 2**, with a closure of about *generators + 2*. That is not an
+artifact of a regular corpus — it holds across arity, predicate vocabulary and nesting depth, and it
+is explicable: anti-unification GENERALISES, and generalisation converges (`lgg(lgg(a,b), c)` is
+just `lgg(a,b,c)`).
+
+**So composition is not where the countable infinity is.** Composing what you hold gets you a
+handful of templates and then stops.
+
+## Where the infinity actually is, and why "no frame" is intractable rather than slow
+
+The infinity is in INSTANTIATION. A template with WILDs admits a binding for every term there is,
+and those terms can themselves be instantiated templates. That splits the search into two halves
+that could not be more different:
+
+* choosing a **TEMPLATE** — finite, tiny (≈ k+2), and rankable by lgg specificity;
+* choosing a **BINDING** — countably infinite.
+
+And the second half is not searched at all, because **the target determines it**. Composed
+in-engine — `Substitute(template = AntiUnifyWitness(t, target)[0], sigma = …[1][1])` — the target is
+reconstructed exactly.
+
+**But reconstruction is NOT the signal, and this is the correction that matters.** It succeeds for
+an ALIEN target too. In the worst case the lgg collapses to `WILD` and the sigma carries the whole
+target, so `Substitute` rebuilds it either way. Success proves nothing.
+
+What differs is the SPLIT — an MDL question, not a success/failure one:
+
+| target | leaves | template pins | binding must carry | explained by the frame |
+|---|---|---|---|---|
+| real (`radar`) | 6 | 3 | 3 | **50%** |
+| alien (`proof`) | 6 | **0** | **6** | **0%** |
+
+**A frame is what lets the template carry the load.** With none, the binding is the entire answer —
+you have reconstructed the target *from itself*, learned nothing, and the "derivation" is a tautology.
+That is why *no reference frame* is intractable rather than merely slow: not that the search is
+long, but that **every candidate answer is as expensive as the question**, so there is no gradient to
+descend.
+
+### Consequences for the search, and what remains open
+
+The specificity gradient operates on the FINITE half — template choice — which is a much weaker
+claim than "it tames a countably infinite search", and a much more tractable one. Whether ranking
+templates by specificity beats picking arbitrarily is **still not measured**; with closures of size
+4–7 it may not matter at all, and the honest expectation is that it does not.
+
+Also unmeasured: whether MINTING (which adds a generator, and so multiplies the closure) is where
+practical reach actually comes from. The saturation result points that way — a fixed codebook's
+compositional reach is ~k+2 shapes — but nothing here tests it.
+
+### An incidental engine finding
+
+`AntiUnifyWitness`'s sigmas are keyed by position-PATH tuples, so they **cannot cross the Python
+JSON boundary** back into `Substitute` (`TypeError: keys must be str, int, float, bool or None, not
+tuple`). The two Terms compose only when nested so the sigma never leaves the engine — which is how
+a rule would express it anyway, but it means no Python shim can pass a witness between them.
