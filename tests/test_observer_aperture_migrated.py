@@ -68,7 +68,7 @@ FORECAST = {
 
 def _observer(s, name, resolves):
     return s.add_node("Observer", {"name": name, "resolves": resolves,
-                                   "ap_scope_n": 0.0})
+                                   "ap_scope_n": 0.0, "ap_gen": 0.0})
 
 
 def _part(s, world, name):
@@ -172,9 +172,12 @@ def test_the_held_codebook_is_projected_too_not_only_the_goal():
     assert len(held) == 1, f"the held part was not projected: {held}"
     assert UNRESOLVED in _dump(held[0]["signature"]), (
         "the held part came through at full detail — only the goal was projected")
-    assert held[0]["name"] == "mystic/barometer", (
-        "a projected part must be named per-observer, or two agents' quotients of "
-        "the same world part collide in the shared store")
+    assert held[0]["name"] == "mystic/0.0/barometer", (
+        "a projected part must be named per-observer AND per aperture generation. "
+        "Per-observer, or two agents' quotients of the same world part collide in "
+        "the shared store; per-generation, because a view taken through a "
+        "superseded frame keeps the same `of_name` and `load_parts` dedups by "
+        "name, so which quotient survives would depend on node iteration order")
 
 
 def test_the_projection_reaches_a_fixpoint():
@@ -252,3 +255,123 @@ def test_the_unfalsifiable_observer_sees_no_residual_at_all():
         f"expected nothing outstanding for an observer that cannot resolve the "
         f"predicate, got {zealot['ap_residual']}")
     assert zealot["ap_covered"] == 2, zealot
+
+
+def test_two_observers_over_one_store_do_not_read_each_others_parts():
+    """THE GATE THAT WAS MISSING, and it was missing in the way that matters.
+
+    Every test above uses ONE observer — and with one observer an unrestricted
+    codebook is indistinguishable from a correctly scoped one, because the only
+    parts in the store are that observer's own. So the range half of this seed
+    could be, and for a while was, completely inert without a single test
+    failing. It took a second observer to make the difference observable.
+
+    Two observers, one shared store, the SAME world parts, different acuity: each
+    must decode against its own quotient and reach its own verdict."""
+    s, ag = boot_core()
+    load_seeds_into(s, ag, SEEDS)
+    fine = _observer(s, "fine", ["pred", "val", "obj"])
+    coarse = _observer(s, "coarse", ["pred", "val"])
+    bar = _part(s, FORECAST, "barometer")
+    tea = _part(s, FORECAST, "tea_leaves")
+    for o in (fine, coarse):
+        s.add_edge(o, "holds_part", bar)
+        s.add_edge(o, "perceives", tea)
+    s.tick(500_000)
+
+    verdicts = {}
+    for name in ("fine", "coarse"):
+        pv = _views(s, "percept", name)
+        assert len(pv) == 1, f"{name} has {len(pv)} percept views"
+        verdicts[name] = pv[0]
+
+    assert verdicts["fine"]["ap_residual"], (
+        "the fine observer grounded tea leaves on a barometer")
+    assert not verdicts["coarse"]["ap_residual"], (
+        f"the coarse observer did not ground: {verdicts['coarse']['ap_residual']}")
+
+    # and each one's scope names only its OWN projected parts
+    for name, o in (("fine", fine), ("coarse", coarse)):
+        scope = list(s.node(o)["attrs"].get("ap_scope") or [])
+        assert scope, f"{name} has an EMPTY scope — the range half is inert"
+        assert all(p.startswith(f"{name}/") for p in scope), (
+            f"{name}'s scope reaches another observer's parts: {scope}")
+
+
+def test_an_observer_THAT_HOLDS_NOTHING_cannot_ground_on_another_agents_parts():
+    """THE SHARP ISOLATION TEST, and the one that found a real hole.
+
+    The test above asserts each observer's scope names only its own parts, but it
+    does not show the scope MATTERS: with both observers holding the same part an
+    unrestricted decode reaches the right verdict anyway, so dropping the scope
+    rule broke only the assertion about the scope itself.
+
+    This fixture makes leakage change the answer. `haver` holds a barometer;
+    `pauper` holds NOTHING and sees the same thing at the same acuity. If the
+    pauper reaches the haver's parts it grounds on borrowed structure — and it
+    did, because `ap_refresh_scope` is anchored on a `projected_part` edge, so an
+    observer with no parts never fires it and `ap_scope` stays ABSENT. Absent
+    reads as unrestricted. That is the empty-scope inversion one level up from the
+    engine fix that closed it: the agent who knows nothing sees everything. Fixed
+    by reading the scope INLINE at decode time, where no parts yields the empty
+    list rather than nothing at all."""
+    s, ag = boot_core()
+    load_seeds_into(s, ag, SEEDS)
+    haver = _observer(s, "haver", ["pred", "val"])
+    pauper = _observer(s, "pauper", ["pred", "val"])
+    s.add_edge(haver, "holds_part", _part(s, FORECAST, "barometer"))
+    tea = _part(s, FORECAST, "tea_leaves")
+    for o in (haver, pauper):
+        s.add_edge(o, "perceives", tea)
+    s.tick(500_000)
+
+    hv = _views(s, "percept", "haver")[0]
+    pv = _views(s, "percept", "pauper")[0]
+
+    assert hv["ap_covered"] == 2 and not hv["ap_residual"], (
+        f"the haver should ground at this acuity: {hv}")
+
+    # the rule RAN for the pauper -- without this the test passes for a decode
+    # that never happened, which is the same null verdict.
+    assert pv["ap_seen"] == 0.0, (
+        f"the pauper never decoded at all (ap_seen={pv.get('ap_seen')!r}), so a "
+        f"null verdict below would prove nothing")
+    assert pv["ap_covered"] != 2, (
+        f"the pauper covered {pv['ap_covered']} holding NOTHING — it is decoding "
+        f"against another agent's parts")
+    assert pv["ap_covered"] is None, (
+        f"expected the documented 'nothing in scope' verdict, got "
+        f"{pv['ap_covered']!r} — `None` means nothing is in your scope at all, "
+        f"which is exactly the pauper's situation, while `0` would mean something "
+        f"is in scope and does not cover this")
+
+
+def test_acquiring_a_part_RE_ARMS_the_decode():
+    """`ap_refresh_scope`'s real job, and until this test nothing exercised it.
+
+    Once the decode read its scope inline, the refresh rule's only remaining
+    purpose was the re-arm counter — so dropping it broke exactly one assertion
+    about the published `ap_scope` attribute and nothing about behaviour. That is
+    a rule held in place by bookkeeping rather than by consequence.
+
+    The consequence is this: an observer that could not account for what it saw,
+    and then ACQUIRES the missing part, must decode again and ground. It is the
+    same codebook-grows-re-arm idiom the sd loop runs on."""
+    s, ag = boot_core()
+    load_seeds_into(s, ag, SEEDS)
+    o = _observer(s, "learner", ["pred", "val"])
+    s.add_edge(o, "perceives", _part(s, FORECAST, "tea_leaves"))
+    s.tick(500_000)
+
+    before = _views(s, "percept", "learner")[0]
+    assert before["ap_covered"] is None, (
+        f"the learner holds nothing yet covered {before['ap_covered']}")
+
+    s.add_edge(o, "holds_part", _part(s, FORECAST, "barometer"))
+    s.tick(500_000)
+
+    after = _views(s, "percept", "learner")[0]
+    assert after["ap_covered"] == 2, (
+        f"acquiring the part did not re-arm the decode: covered "
+        f"{after['ap_covered']!r}, ap_seen {after['ap_seen']!r}")
+    assert not after["ap_residual"]
