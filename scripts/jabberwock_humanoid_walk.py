@@ -67,7 +67,7 @@ from substrate.world_adapter import WorldAdapter  # noqa: E402
 
 
 DEFAULT_PROTOCOL = ROOT / "protocols" / "humanoid_walking_v1.json"
-MOTOR_LIBRARY_VERSION = 24
+MOTOR_LIBRARY_VERSION = 25
 DEVELOPMENTAL_CURRICULUM_CONTRACT_VERSION = 1
 
 
@@ -1178,7 +1178,7 @@ def _restore_motor_library(
     )
     if library.get("version") not in {
         3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-        20, 21, 22, 23, MOTOR_LIBRARY_VERSION,
+        20, 21, 22, 23, 24, MOTOR_LIBRARY_VERSION,
     }:
         raise ValueError(
             "unsupported humanoid motor library version: "
@@ -1206,6 +1206,7 @@ def _restore_motor_library(
     locomotor_phenotype_family_count = 0
     program_trajectory_shape_count = 0
     program_trajectory_transition_count = 0
+    program_trajectory_endpoint_program_count = 0
     episodes = agent.s.nodes("HumanoidEpisode")
     if len(episodes) != 1:
         raise ValueError("motor library restore requires one humanoid episode")
@@ -1477,6 +1478,47 @@ def _restore_motor_library(
                     "continues_to_humanoid_recovery_basin",
                     restored_recovery_basins[slot][1],
                 )
+    for endpoint_slot, program_row in enumerate(
+        library.get("program_trajectory_endpoint_programs", []),
+        start=1,
+    ):
+        program_attrs = _restore_library_attrs(program_row)
+        members = [
+            dict(member) for member in program_row.get("members", [])
+        ]
+        program_attrs.pop("motor_tokens", None)
+        program_attrs.setdefault("motor_task_context", "locomotion")
+        program_attrs.setdefault("motor_task_phase", "execution")
+        program_attrs.setdefault(
+            "name", f"retained:trajectory_endpoint:{endpoint_slot}"
+        )
+        retained_signature = program_attrs.get("signature")
+        signature = motor_program_shape_signature(program_attrs, members)
+        if signature in programs_by_signature:
+            continue
+        if program_attrs.get("output_authority", 0) != 0:
+            raise ValueError(
+                "program trajectory endpoint programs must be output-null"
+            )
+        program_attrs["signature"] = signature
+        program_attrs["status"] = "trajectory_endpoint"
+        program_attrs["source"] = "library"
+        program_attrs["output_authority"] = 0
+        program_attrs["trajectory_endpoint_only"] = 1
+        program = agent.s.add_node("HumanoidMotorProgram", program_attrs)
+        programs_by_signature[signature] = program
+        if retained_signature:
+            programs_by_signature[retained_signature] = program
+        for member_attrs in members:
+            member = agent.s.add_node(
+                "HumanoidLibraryMotorMember", dict(member_attrs)
+            )
+            _edge(
+                agent, program,
+                "has_humanoid_library_motor_member", member,
+            )
+        program_trajectory_endpoint_program_count += 1
+
     developments = agent.s.nodes("EmbodiedDevelopmentEpisode")
     policies = agent.inner.neighbours(
         agent.agent, "has_humanoid_policy"
@@ -1946,6 +1988,10 @@ def _restore_motor_library(
         restored["program_trajectory_transition_count"] = (
             program_trajectory_transition_count
         )
+    if program_trajectory_endpoint_program_count:
+        restored["program_trajectory_endpoint_program_count"] = (
+            program_trajectory_endpoint_program_count
+        )
     return restored
 
 
@@ -2330,6 +2376,7 @@ def _motor_library_snapshot(
             agent.s.node(member)["attrs"]
             for relation in (
                 "includes_humanoid_phase_action_model",
+                "includes_humanoid_action_model",
                 "has_humanoid_library_motor_member",
             )
             for member in agent.inner.neighbours(program, relation)
@@ -2352,6 +2399,7 @@ def _motor_library_snapshot(
             }
             for relation in (
                 "includes_humanoid_phase_action_model",
+                "includes_humanoid_action_model",
                 "has_humanoid_library_motor_member",
             )
             for ordinal, member in enumerate(agent.inner.neighbours(
@@ -2491,39 +2539,23 @@ def _motor_library_snapshot(
     trajectory_shapes.sort(key=lambda row: (
         str(row["attrs"]["goal"]), str(row["attrs"]["name"])
     ))
-    if trajectory_endpoint_programs:
-        if len(body_shapes) != 1:
-            raise ValueError(
-                "trajectory endpoint consolidation requires one situated "
-                "humanoid body shape"
-            )
-        stored_signatures = {
-            json.dumps(
-                program["attrs"].get("signature")
-                or motor_program_shape_signature(
-                    program["attrs"], program.get("members", [])
-                ),
-                sort_keys=True,
-                separators=(",", ":"),
-            )
-            for program in body_shapes[0]["programs"]
-        }
-        body_shapes[0]["programs"].extend(
-            row
-            for signature, row in sorted(
-                trajectory_endpoint_programs.items()
-            )
-            if signature not in stored_signatures
-        )
-        body_shapes[0]["programs"].sort(key=lambda row: (
-            float(row["attrs"].get("ordinal", 0.0)),
-            str(row["attrs"].get("primary_token", "")),
-            json.dumps(
-                row["attrs"].get("signature", ()),
-                sort_keys=True,
-                separators=(",", ":"),
+    stored_program_signatures = {
+        json.dumps(
+            program["attrs"].get("signature")
+            or motor_program_shape_signature(
+                program["attrs"], program.get("members", [])
             ),
-        ))
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        for shape in body_shapes
+        for program in shape["programs"]
+    }
+    trajectory_endpoint_program_rows = [
+        row
+        for signature, row in sorted(trajectory_endpoint_programs.items())
+        if signature not in stored_program_signatures
+    ]
     plan_hints = []
     for hint in agent.inner.neighbours(
         agent.agent, "has_embodied_motor_plan_hint_library"
@@ -2814,6 +2846,9 @@ def _motor_library_snapshot(
         ),
         "body_shapes": body_shapes,
         "program_trajectory_shapes": trajectory_shapes,
+        "program_trajectory_endpoint_programs": (
+            trajectory_endpoint_program_rows
+        ),
         "plan_hints": plan_hints,
         "developmental_capabilities": developmental_capabilities,
         "developmental_experiences": developmental_experiences,
@@ -5834,6 +5869,119 @@ def _run_arm(
         selected_program_path_rows.sort(key=lambda row: (
             str(row["capability"]), int(row["depth"])
         ))
+        ordinary_action_tokens = {
+            str(agent.s.node(model)["attrs"].get("token", ""))
+            for model in agent.inner.neighbours(
+                episode, "has_humanoid_action_model"
+            )
+        }
+        phase_action_keys = {
+            (
+                str(agent.s.node(model)["attrs"].get("token", "")),
+                float(agent.s.node(model)["attrs"].get(
+                    "support_phase", -1.0
+                )),
+            )
+            for model in agent.inner.neighbours(
+                episode, "has_humanoid_phase_action_model"
+            )
+        }
+        rejected_program_path_rows = []
+        for path in program_path_nodes:
+            path_attrs = agent.s.node(path)["attrs"]
+            rejection_count = int(path_attrs.get(
+                "manifold_rejection_count", 0
+            ))
+            blocked_sources = agent.inner.neighbours(
+                path, "manifold_blocked_from_embodied_program_transition"
+            )
+            if rejection_count <= 0 and not blocked_sources:
+                continue
+            path_transitions = agent.inner.neighbours(
+                path, "contains_embodied_program_transition"
+            )
+            target_programs = [
+                program
+                for transition in path_transitions
+                for program in agent.inner.neighbours(
+                    transition, "continues_with_embodied_program"
+                )
+            ]
+            rejected_program_path_rows.append({
+                "depth": int(path_attrs.get("depth", 0)),
+                "manifold_rejection_count": rejection_count,
+                "blocked_source_count": len(blocked_sources),
+                "transition_count": len(path_transitions),
+                "origin_count": len(agent.inner.neighbours(
+                    path, "starts_from_embodied_program"
+                )),
+                "terminal_count": len(agent.inner.neighbours(
+                    path, "continues_with_embodied_program"
+                )),
+                "target_program_count": len(target_programs),
+                "target_statuses": sorted(
+                    str(agent.s.node(program)["attrs"].get(
+                        "status", "unknown"
+                    ))
+                    for program in target_programs
+                ),
+                "target_library_member_count": sum(
+                    len(agent.inner.neighbours(
+                        program, "has_humanoid_library_motor_member"
+                    ))
+                    for program in target_programs
+                ),
+                "target_ordinary_action_candidate_count": sum(
+                    str(agent.s.node(member)["attrs"].get("token", ""))
+                    in ordinary_action_tokens
+                    for program in target_programs
+                    for member in agent.inner.neighbours(
+                        program, "has_humanoid_library_motor_member"
+                    )
+                ),
+                "target_phase_action_candidate_count": sum(
+                    (
+                        str(agent.s.node(member)["attrs"].get("token", "")),
+                        float(agent.s.node(member)["attrs"].get(
+                            "support_phase", -1.0
+                        )),
+                    ) in phase_action_keys
+                    for program in target_programs
+                    for member in agent.inner.neighbours(
+                        program, "has_humanoid_library_motor_member"
+                    )
+                ),
+                "target_live_member_count": sum(
+                    sum(
+                        len(agent.inner.neighbours(program, relation))
+                        for relation in (
+                            "includes_humanoid_phase_action_model",
+                            "includes_humanoid_action_model",
+                        )
+                    )
+                    for program in target_programs
+                ),
+                **{
+                    field: path_attrs.get(
+                        f"last_manifold_projection_{field}"
+                    )
+                    for field in (
+                        "support", "resolved", "loss", "information_loss",
+                        "horizon", "anchor_count", "refinement_count",
+                        "termination_code", "effort_supported",
+                        "projected_effort", "ideal_effort", "effort_scale",
+                        "effort_residual", "time_compression",
+                        "width_compression", "information_compression",
+                        "compression_dimension_count", "manifold_compression",
+                        "effort_authorized",
+                    )
+                },
+            })
+        rejected_program_path_rows.sort(key=lambda row: (
+            int(row["depth"]),
+            int(row["manifold_rejection_count"]),
+            json.dumps(row, sort_keys=True, separators=(",", ":")),
+        ))
         episode_effector_models = agent.inner.neighbours(
             episode, "has_embodied_effector_model"
         )
@@ -5856,6 +6004,7 @@ def _run_arm(
             ), default=0),
             "selected_path_count": len(selected_program_path_nodes),
             "selected_paths": selected_program_path_rows,
+            "rejected_paths": rejected_program_path_rows,
             "manifold_rejection_count": sum(
                 int(agent.s.node(path)["attrs"].get(
                     "manifold_rejection_count", 0

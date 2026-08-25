@@ -53,6 +53,10 @@ def Nth(items, index):
     return {"type": "Nth", "items": items, "index": index}
 
 
+def Union(left, right):
+    return {"type": "Union", "a": left, "b": right}
+
+
 def trajectory_manifold_projection(
     source: str,
     field: str,
@@ -4310,6 +4314,294 @@ def same_humanoid_program_shape(left: str, right: str):
     )
 
 
+def open_post_curriculum_locomotion_rehearsal_rule():
+    plan_steps = Neighbours("plan", "has_learning_plan_step")
+    unfinished = Filter(
+        plan_steps,
+        "unfinished_rehearsal_step",
+        Not(Eq(A("unfinished_rehearsal_step", "status"), L("completed"))),
+    )
+    return {
+        "name": "hdc_open_post_curriculum_locomotion_rehearsal",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -112,
+        "batch": False,
+        "comment": "After finite curriculum mastery, safe continuation "
+        "records the ordinary controller's deployment-like locomotion "
+        "receipts in a generic output-null owner. It neither selects nor "
+        "enacts a retained path during rehearsal. The ordinary controller "
+        "receives the same locomotion objective as deployment while learning "
+        "safety and receipt retention remain active.",
+        "match": [
+            ["episode", "projects_embodied_development", "development"],
+            ["development", "has_self_directed_learning_plan", "plan"],
+        ],
+        "where": And(
+            Eq(P0("development", "development_learning_active"), L(1)),
+            Eq(P0("development", "developmental_deployment_mode"), L(0)),
+            Eq(A("episode", "phase"), L("locomotion")),
+            Gt(Count(plan_steps), L(0)),
+            Eq(Count(unfinished), L(0)),
+            Eq(Count(Neighbours(
+                "episode", "has_embodied_deployment_program_owner"
+            )), L(0)),
+        ),
+        "effects": [
+            ["add_node", "owner", "Node", {
+                "name": "rehearsal:locomotion",
+                "goal": "locomotion",
+                "motor_task_context": "locomotion",
+                "status": "rehearsing",
+                "post_curriculum_rehearsal": 1,
+                "last_rehearsal_receipt_seq": 0,
+                "output_authority": 0,
+                "integer_native": 1,
+            }],
+            [
+                "add_edge", "episode",
+                "has_embodied_deployment_program_owner", "owner",
+            ],
+            ["set_attr", "episode", "developmental_goal", "locomotion"],
+            [
+                "set_attr", "episode", "active_developmental_capability",
+                "rehearsal",
+            ],
+            ["set_attr", "episode", "locomotion_drive_active", 1],
+        ],
+    }
+
+
+def bind_first_post_curriculum_rehearsal_program_rule():
+    return {
+        "name": "hdc_bind_first_post_curriculum_rehearsal_program",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 90,
+        "batch": False,
+        "match": [
+            ["episode", "has_embodied_deployment_program_owner", "owner"],
+            ["episode", "projects_embodied_development", "development"],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "enacts_humanoid_motor_program", "current"],
+            ["trial", "has_humanoid_transition", "outcome"],
+        ],
+        "where": And(
+            Eq(P0("owner", "post_curriculum_rehearsal"), L(1)),
+            Eq(P0("development", "development_learning_active"), L(1)),
+            Eq(P0("development", "developmental_deployment_mode"), L(0)),
+            Eq(P0("outcome", "development_receipt_closed"), L(1)),
+            Eq(P0("trial", "request_seq"), P0("episode", "request_seq")),
+            Eq(Count(Neighbours(
+                "owner", "has_current_embodied_program"
+            )), L(0)),
+        ),
+        "effects": [
+            ["add_edge", "owner", "has_current_embodied_program", "current"],
+            ["set_attr", "owner", "last_rehearsal_receipt_seq", T(
+                P0("trial", "request_seq")
+            )],
+        ],
+    }
+
+
+def reify_post_curriculum_rehearsal_trial_program_rule():
+    enacted_programs = Neighbours("trial", "enacts_humanoid_motor_program")
+    synthesized_programs = Neighbours(
+        "trial", "synthesized_humanoid_motor_program"
+    )
+    return {
+        "name": "hdc_reify_post_curriculum_rehearsal_trial_program",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 87,
+        "batch": False,
+        "comment": "An ordinary singleton or recovery action is already a "
+        "motor program in the generic sense even when the walking subsystem "
+        "did not synthesize a program node. Reify its receipt-grounded "
+        "structure output-null so rehearsal can retain the actual action.",
+        "match": [
+            ["episode", "has_embodied_deployment_program_owner", "owner"],
+            ["episode", "projects_embodied_development", "development"],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "uses_humanoid_action_model", "primary"],
+            ["trial", "has_humanoid_transition", "outcome"],
+        ],
+        "where": And(
+            Eq(P0("owner", "post_curriculum_rehearsal"), L(1)),
+            Eq(P0("development", "development_learning_active"), L(1)),
+            Eq(P0("development", "developmental_deployment_mode"), L(0)),
+            Eq(P0("outcome", "development_receipt_closed"), L(1)),
+            Eq(P0("trial", "request_seq"), P0("episode", "request_seq")),
+            Eq(Count(enacted_programs), L(0)),
+            Eq(Count(synthesized_programs), L(0)),
+        ),
+        "effects": [
+            ["add_node", "program", "HumanoidMotorProgram", {
+                "status": "grounded",
+                "memory_eligible": 1,
+                "receipt_reified": 1,
+                "receipt_seq": T(P0("trial", "request_seq")),
+                "primary_token": T(A("trial", "token")),
+                "secondary_token": T(A("trial", "secondary_token")),
+                "member_count": T(P0("trial", "bundle_member_count")),
+                "support_phase": T(P0("trial", "support_phase")),
+                "response_frames": T(P0("trial", "response_frames")),
+                "motor_task_context": T(A("trial", "motor_task_context")),
+                "motor_task_phase": "execution",
+                "output_authority": 0,
+                "integer_native": 1,
+            }],
+            [
+                "add_edge", "trial",
+                "enacts_humanoid_motor_program", "program",
+            ],
+            [
+                "add_edge", "program",
+                "includes_humanoid_phase_action_model", "primary",
+            ],
+        ],
+    }
+
+
+def bind_post_curriculum_rehearsal_secondary_member_rule():
+    members = Neighbours("program", "includes_humanoid_phase_action_model")
+    matching_secondary = Filter(
+        members,
+        "known_rehearsal_secondary",
+        Eq(
+            A("known_rehearsal_secondary", "token"),
+            A("trial", "secondary_token"),
+        ),
+    )
+    return {
+        "name": "hdc_bind_post_curriculum_rehearsal_secondary_member",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 88,
+        "batch": False,
+        "comment": "Preserve the full enacted bundle shape when ordinary "
+        "recovery selected a mechanically distinct secondary actuator.",
+        "match": [
+            ["episode", "has_embodied_deployment_program_owner", "owner"],
+            ["episode", "projects_embodied_development", "development"],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "enacts_humanoid_motor_program", "program"],
+            ["episode", "has_humanoid_action_model", "secondary"],
+        ],
+        "where": And(
+            Eq(P0("owner", "post_curriculum_rehearsal"), L(1)),
+            Eq(P0("development", "development_learning_active"), L(1)),
+            Eq(P0("development", "developmental_deployment_mode"), L(0)),
+            Eq(P0("program", "receipt_reified"), L(1)),
+            Eq(P0("trial", "request_seq"), P0("episode", "request_seq")),
+            Not(Eq(A("trial", "token"), A("trial", "secondary_token"))),
+            Eq(A("secondary", "token"), A("trial", "secondary_token")),
+            Eq(Count(matching_secondary), L(0)),
+        ),
+        "effects": [[
+            "add_edge", "program",
+            "includes_humanoid_phase_action_model", "secondary",
+        ]],
+    }
+
+
+def record_post_curriculum_rehearsal_transition_rule():
+    return {
+        "name": "hdc_record_post_curriculum_rehearsal_transition",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": 89,
+        "batch": False,
+        "comment": "Consecutive causally closed ordinary motor receipts "
+        "define the deployment-like path. The relation is retained evidence "
+        "only and has no output authority.",
+        "match": [
+            ["episode", "has_embodied_deployment_program_owner", "owner"],
+            ["episode", "projects_embodied_development", "development"],
+            ["owner", "has_current_embodied_program", "previous"],
+            ["episode", "has_humanoid_motor_trial", "trial"],
+            ["trial", "enacts_humanoid_motor_program", "current"],
+            ["trial", "has_humanoid_transition", "outcome"],
+        ],
+        "where": And(
+            Eq(P0("owner", "post_curriculum_rehearsal"), L(1)),
+            Eq(P0("development", "development_learning_active"), L(1)),
+            Eq(P0("development", "developmental_deployment_mode"), L(0)),
+            Eq(P0("outcome", "development_receipt_closed"), L(1)),
+            Eq(P0("trial", "request_seq"), P0("episode", "request_seq")),
+            Gt(
+                P0("trial", "request_seq"),
+                P0("owner", "last_rehearsal_receipt_seq"),
+            ),
+        ),
+        "effects": [
+            ["add_node", "transition", "ParetoProfile", {
+                "verified": 1,
+                "experience_retained": 1,
+                "contextual_release_eligible": 0,
+                "pre_orientation_class": T(P0(
+                    "outcome", "development_pre_orientation_class"
+                )),
+                "post_orientation_class": T(P0(
+                    "outcome", "development_post_orientation_class"
+                )),
+                **{
+                    f"pre_state_axis_{axis}_units": T(P0(
+                        "outcome",
+                        f"development_pre_gravity_axis_{axis}_units",
+                    ))
+                    for axis in ("x", "y", "z")
+                },
+                **{
+                    f"post_state_axis_{axis}_units": T(P0(
+                        "outcome",
+                        f"development_post_gravity_axis_{axis}_units",
+                    ))
+                    for axis in ("x", "y", "z")
+                },
+                "boundary_transition_count": T(Plus(
+                    P0("outcome", "development_quarter_turn_transition"),
+                    P0("outcome", "development_half_turn_transition"),
+                )),
+                "energy_units": T(P0(
+                    "outcome", "development_energy_units"
+                )),
+                "peak_load_units": T(P0(
+                    "outcome", "development_peak_load_units"
+                )),
+                "capability_evidence_units": 1,
+                "task_progress_units": T(Max(
+                    L(0), P0("outcome", "development_directed_units")
+                )),
+                "response_frames": T(P0("trial", "response_frames")),
+                "receipt_seq": T(P0("trial", "request_seq")),
+                "integer_native_trajectory": 1,
+                "output_authority": 0,
+            }],
+            [
+                "add_edge", "owner",
+                "has_embodied_program_transition", "transition",
+            ],
+            [
+                "add_edge", "transition",
+                "starts_from_embodied_program", "previous",
+            ],
+            [
+                "add_edge", "transition",
+                "continues_with_embodied_program", "current",
+            ],
+            [
+                "del_edge", "owner", "has_current_embodied_program", "previous",
+            ],
+            ["add_edge", "owner", "has_current_embodied_program", "current"],
+            ["set_attr", "owner", "last_rehearsal_receipt_seq", T(
+                P0("trial", "request_seq")
+            )],
+        ],
+    }
+
+
 def recruit_retained_trajectory_deployment_tasks_rule():
     return {
         "name": "hdc_recruit_retained_trajectory_deployment_tasks",
@@ -4322,9 +4614,11 @@ def recruit_retained_trajectory_deployment_tasks_rule():
         "explicitly recruit the generic trajectory and Pareto faculties.",
         "match": [
             ["episode", "has_embodied_deployment_program_owner", "owner"],
+            ["episode", "projects_embodied_development", "development"],
             ["owner", "has_current_embodied_program", "current"],
         ],
         "where": And(
+            Eq(P0("development", "developmental_deployment_mode"), L(1)),
             Eq(P0("owner", "trajectory_recruitment_requested"), L(0)),
             Eq(Count(Neighbours(
                 "owner", "has_embodied_program_trajectory"
@@ -4457,11 +4751,13 @@ def refresh_retained_trajectory_after_receipt_rule():
         "receipt; temporal foveation therefore predicts only when needed.",
         "match": [
             ["episode", "has_embodied_deployment_program_owner", "owner"],
+            ["episode", "projects_embodied_development", "development"],
             ["owner", "has_current_embodied_program", "current"],
             ["episode", "has_humanoid_motor_trial", "trial"],
             ["trial", "has_humanoid_transition", "outcome"],
         ],
         "where": And(
+            Eq(P0("development", "developmental_deployment_mode"), L(1)),
             Eq(P0("outcome", "development_receipt_closed"), L(1)),
             Gt(
                 P0("trial", "request_seq"),
@@ -4507,14 +4803,15 @@ def complete_retained_trajectory_replay_rule():
         "pass can re-situate and choose from the changed body shape.",
         "match": [
             ["episode", "has_embodied_deployment_program_owner", "owner"],
-            ["owner", "has_selected_embodied_program_path", "path"],
-            ["path", "contains_embodied_program_transition", "transition"],
+            ["episode", "projects_embodied_development", "development"],
+            ["owner", "has_issued_embodied_program_path", "path"],
+            ["path", "has_issued_embodied_program_transition", "transition"],
             ["transition", "continues_with_embodied_program", "enacted"],
             ["episode", "has_humanoid_motor_trial", "trial"],
-            ["trial", "enacts_humanoid_motor_program", "enacted"],
             ["trial", "has_humanoid_transition", "outcome"],
         ],
         "where": And(
+            Eq(P0("development", "developmental_deployment_mode"), L(1)),
             Eq(P0("outcome", "development_receipt_closed"), L(1)),
             Eq(
                 P0("trial", "request_seq"),
@@ -4529,6 +4826,14 @@ def complete_retained_trajectory_replay_rule():
             [
                 "del_edge", "owner",
                 "has_selected_embodied_program_path", "path",
+            ],
+            [
+                "del_edge", "owner",
+                "has_issued_embodied_program_path", "path",
+            ],
+            [
+                "del_edge", "path",
+                "has_issued_embodied_program_transition", "transition",
             ],
             ["set_attr", "path", "replay_count", T(Plus(
                 P0("path", "replay_count"), L(1)
@@ -4566,14 +4871,15 @@ def refute_retained_trajectory_forecast_from_receipt_rule():
         "ratio without a magic tolerance and never rewrites retained evidence.",
         "match": [
             ["episode", "has_embodied_deployment_program_owner", "owner"],
-            ["owner", "has_selected_embodied_program_path", "path"],
-            ["path", "contains_embodied_program_transition", "transition"],
+            ["episode", "projects_embodied_development", "development"],
+            ["owner", "has_issued_embodied_program_path", "path"],
+            ["path", "has_issued_embodied_program_transition", "transition"],
             ["transition", "continues_with_embodied_program", "enacted"],
             ["episode", "has_humanoid_motor_trial", "trial"],
-            ["trial", "enacts_humanoid_motor_program", "enacted"],
             ["trial", "has_humanoid_transition", "outcome"],
         ],
         "where": And(
+            Eq(P0("development", "developmental_deployment_mode"), L(1)),
             Eq(P0("outcome", "development_receipt_closed"), L(1)),
             Eq(
                 P0("trial", "request_seq"),
@@ -4627,6 +4933,7 @@ def clear_stale_retained_trajectory_deployment_context_rule():
         "batch": True,
         "match": [
             ["episode", "has_embodied_deployment_program_owner", "owner"],
+            ["episode", "projects_embodied_development", "development"],
             ["episode", "has_humanoid_motor_trial", "trial"],
             ["trial", "has_humanoid_transition", "outcome"],
             [
@@ -4635,6 +4942,7 @@ def clear_stale_retained_trajectory_deployment_context_rule():
             ],
         ],
         "where": And(
+            Eq(P0("development", "developmental_deployment_mode"), L(1)),
             Eq(P0("outcome", "development_receipt_closed"), L(1)),
             Eq(
                 P0("trial", "request_seq"),
@@ -4691,19 +4999,23 @@ def clear_stale_retained_trajectory_source_rule():
         "batch": True,
         "match": [
             ["episode", "has_embodied_deployment_program_owner", "owner"],
+            ["episode", "projects_embodied_development", "development"],
             ["owner", "has_current_embodied_program", "current"],
         ],
-        "where": Not(Exists(
-            Neighbours(
-                "owner", "has_current_embodied_program_transition_source"
-            ),
-            "live_source",
-            Exists(
-                Neighbours("live_source", "starts_from_embodied_program"),
-                "source_program",
-                Eq(V("source_program"), V("current")),
-            ),
-        )),
+        "where": And(
+            Eq(P0("development", "developmental_deployment_mode"), L(1)),
+            Not(Exists(
+                Neighbours(
+                    "owner", "has_current_embodied_program_transition_source"
+                ),
+                "live_source",
+                Exists(
+                    Neighbours("live_source", "starts_from_embodied_program"),
+                    "source_program",
+                    Eq(V("source_program"), V("current")),
+                ),
+            )),
+        ),
         "effects": [[
             "del_edge", "owner", "has_current_embodied_program", "current",
         ]],
@@ -4711,7 +5023,13 @@ def clear_stale_retained_trajectory_source_rule():
 
 
 def replay_retained_order_n_program_path_rule():
-    members = Neighbours("memory", "includes_humanoid_phase_action_model")
+    members = Union(
+        Union(
+            Neighbours("memory", "includes_humanoid_phase_action_model"),
+            Neighbours("memory", "includes_humanoid_action_model"),
+        ),
+        Neighbours("memory", "has_humanoid_library_motor_member"),
+    )
     primary = Filter(
         members,
         "retained_trajectory_primary_member",
@@ -4763,6 +5081,8 @@ def replay_retained_order_n_program_path_rule():
             Or(
                 Eq(A("memory", "status"), L("grounded")),
                 Eq(A("memory", "status"), L("ready")),
+                Eq(A("memory", "status"), L("library")),
+                Eq(A("memory", "status"), L("trajectory_endpoint")),
             ),
             trajectory_manifold_release_allowed("path", "transition"),
             Gt(Count(primary), L(0)),
@@ -4770,6 +5090,9 @@ def replay_retained_order_n_program_path_rule():
             Eq(P0("episode", "action_ready"), L(0)),
             Eq(Count(Neighbours(
                 "episode", "has_ready_humanoid_motor_program"
+            )), L(0)),
+            Eq(Count(Neighbours(
+                "owner", "has_issued_embodied_program_path"
             )), L(0)),
         ),
         "effects": [
@@ -4782,6 +5105,14 @@ def replay_retained_order_n_program_path_rule():
             ["set_attr", "path", "trajectory_replay_issued_seq", T(P0(
                 "episode", "request_seq"
             ))],
+            [
+                "add_edge", "owner",
+                "has_issued_embodied_program_path", "path",
+            ],
+            [
+                "add_edge", "path",
+                "has_issued_embodied_program_transition", "transition",
+            ],
             ["add_edge", "episode", "has_ready_humanoid_motor_program", "memory"],
             ["set_attr", "episode", "selected_token", T(A(
                 "memory", "primary_token"
@@ -4811,6 +5142,97 @@ def replay_retained_order_n_program_path_rule():
             ))],
             ["set_attr", "episode", "action_ready", 1],
         ],
+    }
+
+
+def bind_selected_retained_program_member_rule():
+    return {
+        "name": "hdc_bind_selected_retained_program_member",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -109,
+        "batch": True,
+        "comment": "Retained serialized members remain detached from the "
+        "ordinary warm proposal pool. Once a path is selected, bind each "
+        "opaque member of its target to the matching current-body phase model "
+        "so normal trial machinery can enact that one situated program.",
+        "match": [
+            ["episode", "has_embodied_deployment_program_owner", "owner"],
+            ["episode", "projects_embodied_development", "development"],
+            ["owner", "has_selected_embodied_program_path", "path"],
+            ["path", "contains_embodied_program_transition", "transition"],
+            ["transition", "continues_with_embodied_program", "memory"],
+            ["memory", "has_humanoid_library_motor_member", "retained_member"],
+            ["episode", "has_humanoid_phase_action_model", "phase_model"],
+        ],
+        "where": And(
+            Eq(P0("development", "developmental_deployment_mode"), L(1)),
+            Eq(
+                P0("retained_member", "ordinal"),
+                P0("phase_model", "ordinal"),
+            ),
+            Eq(
+                P0("retained_member", "support_phase"),
+                P0("phase_model", "support_phase"),
+            ),
+            Eq(Count(Filter(
+                Neighbours(
+                    "memory", "includes_humanoid_phase_action_model"
+                ),
+                "known_selected_endpoint_member",
+                Eq(
+                    V("known_selected_endpoint_member"),
+                    V("phase_model"),
+                ),
+            )), L(0)),
+        ),
+        "effects": [[
+            "add_edge", "memory",
+            "includes_humanoid_phase_action_model", "phase_model",
+        ]],
+    }
+
+
+def bind_selected_retained_action_model_member_rule():
+    return {
+        "name": "hdc_bind_selected_retained_action_model_member",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -109,
+        "batch": True,
+        "comment": "Recovery and singleton programs are learned by the "
+        "ordinary opaque action-model population rather than phase models. "
+        "Bind that already-grounded model only after retained path selection.",
+        "match": [
+            ["episode", "has_embodied_deployment_program_owner", "owner"],
+            ["episode", "projects_embodied_development", "development"],
+            ["owner", "has_selected_embodied_program_path", "path"],
+            ["path", "contains_embodied_program_transition", "transition"],
+            ["transition", "continues_with_embodied_program", "memory"],
+            ["memory", "has_humanoid_library_motor_member", "retained_member"],
+            ["episode", "has_humanoid_action_model", "action_model"],
+        ],
+        "where": And(
+            Eq(P0("development", "developmental_deployment_mode"), L(1)),
+            Eq(
+                P0("retained_member", "ordinal"),
+                P0("action_model", "ordinal"),
+            ),
+            Eq(Count(Filter(
+                Neighbours(
+                    "memory", "includes_humanoid_action_model"
+                ),
+                "known_selected_action_member",
+                Eq(
+                    V("known_selected_action_member"),
+                    V("action_model"),
+                ),
+            )), L(0)),
+        ),
+        "effects": [[
+            "add_edge", "memory",
+            "includes_humanoid_action_model", "action_model",
+        ]],
     }
 
 
@@ -4860,6 +5282,54 @@ def reject_retained_order_n_program_path_rule():
                 P0("path", "manifold_rejection_count"), L(1)
             ))],
         ],
+    }
+
+
+def audit_retained_order_n_program_path_manifold_rule():
+    fields = (
+        "support", "resolved", "loss", "information_loss", "horizon",
+        "anchor_count", "refinement_count", "termination_code",
+        "effort_supported", "projected_effort", "ideal_effort",
+        "effort_scale", "effort_residual", "time_compression",
+        "width_compression", "information_compression",
+        "compression_dimension_count", "manifold_compression",
+        "effort_authorized",
+    )
+    return {
+        "name": "hdc_audit_retained_order_n_program_path_manifold",
+        "area": "humanoid_sensorimotor_adaptation",
+        "latency_class": "hard_realtime",
+        "order": -108,
+        "batch": False,
+        "comment": "Persist the pure future-manifold projection used by the "
+        "release gate before a selected retained path is accepted or refuted. "
+        "The audit is output-null and receipt-sequenced.",
+        "match": [
+            ["agent", "has_humanoid_policy", "policy"],
+            ["episode", "has_embodied_deployment_program_owner", "owner"],
+            ["episode", "projects_embodied_development", "development"],
+            ["owner", "has_selected_embodied_program_path", "path"],
+            ["owner", "has_current_embodied_program", "current"],
+            ["path", "contains_embodied_program_transition", "transition"],
+            ["transition", "starts_from_embodied_program", "current"],
+        ],
+        "where": And(
+            Eq(P0("development", "developmental_deployment_mode"), L(1)),
+            Gt(
+                P0("episode", "request_seq"),
+                P0("path", "last_manifold_projection_audit_seq"),
+            ),
+        ),
+        "effects": [
+            [
+                "set_attr", "path", f"last_manifold_projection_{field}",
+                T(trajectory_manifold_projection("path", field, "transition")),
+            ]
+            for field in fields
+        ] + [[
+            "set_attr", "path", "last_manifold_projection_audit_seq",
+            T(P0("episode", "request_seq")),
+        ]],
     }
 
 
@@ -6573,6 +7043,18 @@ def manifest() -> dict:
                 "tgt": {"type": "Node", "var": "owner"},
             },
             {
+                "provenance": "humanoid_development:issued_deployment_path",
+                "src": {"type": "Node", "var": "owner"},
+                "edge_type": "has_issued_embodied_program_path",
+                "tgt": {"type": "EmbodiedProgramPath", "var": "path"},
+            },
+            {
+                "provenance": "humanoid_development:issued_deployment_transition",
+                "src": {"type": "EmbodiedProgramPath", "var": "path"},
+                "edge_type": "has_issued_embodied_program_transition",
+                "tgt": {"type": "ParetoProfile", "var": "transition"},
+            },
+            {
                 "provenance": "humanoid_development:retained_trajectory_transition",
                 "src": {"type": "Node", "var": "owner"},
                 "edge_type": "has_embodied_program_transition",
@@ -6589,6 +7071,12 @@ def manifest() -> dict:
                 "src": {"type": "ParetoProfile", "var": "transition"},
                 "edge_type": "continues_with_embodied_program",
                 "tgt": {"type": "HumanoidMotorProgram", "var": "program"},
+            },
+            {
+                "provenance": "humanoid_development:selected_retained_action_model",
+                "src": {"type": "HumanoidMotorProgram", "var": "program"},
+                "edge_type": "includes_humanoid_action_model",
+                "tgt": {"type": "HumanoidActionModel", "var": "action_model"},
             },
             {
                 "provenance": "humanoid_development:projection",
@@ -6839,6 +7327,11 @@ def manifest() -> dict:
             complete_selected_order_n_program_path_rule(),
             archive_selected_trajectory_after_capability_mastery_rule(),
             park_inactive_program_trajectory_rule(),
+            open_post_curriculum_locomotion_rehearsal_rule(),
+            reify_post_curriculum_rehearsal_trial_program_rule(),
+            bind_post_curriculum_rehearsal_secondary_member_rule(),
+            bind_first_post_curriculum_rehearsal_program_rule(),
+            record_post_curriculum_rehearsal_transition_rule(),
             recruit_retained_trajectory_deployment_tasks_rule(),
             clear_stale_retained_trajectory_deployment_context_rule(),
             bind_retained_trajectory_deployment_context_rule(),
@@ -6846,6 +7339,7 @@ def manifest() -> dict:
             refute_retained_trajectory_forecast_from_receipt_rule(),
             complete_retained_trajectory_replay_rule(),
             clear_stale_retained_trajectory_source_rule(),
+            audit_retained_order_n_program_path_manifold_rule(),
             reject_retained_order_n_program_path_rule(),
             replay_retained_order_n_program_path_rule(),
         ],

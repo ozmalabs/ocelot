@@ -73,14 +73,144 @@ def test_humanoid_seed_is_an_integer_output_null_bridge():
     assert "hdc_refresh_retained_trajectory_after_deployment_receipt" in text
     assert "hdc_complete_retained_trajectory_replay_from_receipt" in text
     assert "hdc_refute_retained_trajectory_forecast_from_receipt" in text
+    assert "hdc_open_post_curriculum_locomotion_rehearsal" in text
+    assert "hdc_bind_first_post_curriculum_rehearsal_program" in text
+    assert "hdc_record_post_curriculum_rehearsal_transition" in text
+    assert "hdc_reify_post_curriculum_rehearsal_trial_program" in text
+    assert "hdc_bind_post_curriculum_rehearsal_secondary_member" in text
     assert "hdc_replay_retained_order_n_program_path" in text
     assert "hdc_reject_retained_order_n_program_path" in text
+    assert "hdc_audit_retained_order_n_program_path_manifold" in text
+    assert "has_humanoid_library_motor_member" in text
+    assert "has_issued_embodied_program_path" in text
+    assert "has_issued_embodied_program_transition" in text
     assert "futuremanifoldprojection" in text
     assert "effort_supported" in text
     assert "effort_authorized" in text
     assert "open_goal_relative_inverse_kinematic_bootstrap" in text
     assert "knows_embodied_inverse_kinematics" in text
     assert "home" not in text
+
+
+def test_completed_safe_curriculum_records_consecutive_rehearsal_receipts():
+    from substrate.world_adapter import WorldAdapter
+
+    agent = WorldAdapter(seeds=("humanoid_developmental_curriculum",))
+    episode = agent.s.add_node("HumanoidEpisode", {
+        "phase": "locomotion",
+        "request_seq": 7,
+    })
+    development = agent.s.add_node("EmbodiedDevelopmentEpisode", {
+        "development_learning_active": 1,
+        "developmental_deployment_mode": 0,
+    })
+    plan = agent.s.add_node("SelfDirectedLearningPlan", {})
+    step = agent.s.add_node("SelfDirectedLearningPlanStep", {
+        "status": "completed",
+    })
+    first_model = agent.s.add_node("HumanoidActionModel", {
+        "token": "first",
+    })
+    first_trial = agent.s.add_node("HumanoidMotorTrial", {
+        "request_seq": 7,
+        "response_frames": 2,
+        "token": "first",
+        "secondary_token": "first",
+        "bundle_member_count": 1,
+        "motor_task_context": "locomotion",
+    })
+    first_outcome = agent.s.add_node("HumanoidTransition", {
+        "development_receipt_closed": 1,
+    })
+    _edge(agent, agent.agent, "has_humanoid_episode", episode)
+    _edge(agent, episode, "projects_embodied_development", development)
+    _edge(agent, development, "has_self_directed_learning_plan", plan)
+    _edge(agent, plan, "has_learning_plan_step", step)
+    _edge(agent, episode, "has_humanoid_action_model", first_model)
+    _edge(agent, episode, "has_humanoid_motor_trial", first_trial)
+    _edge(agent, first_trial, "uses_humanoid_action_model", first_model)
+    _edge(agent, first_trial, "has_humanoid_transition", first_outcome)
+
+    agent.tick()
+
+    owners = agent.inner.neighbours(
+        episode, "has_embodied_deployment_program_owner"
+    )
+    assert len(owners) == 1
+    owner = owners[0]
+    assert agent.s.node(owner)["attrs"]["output_authority"] == 0
+    episode_attrs = agent.s.node(episode)["attrs"]
+    assert episode_attrs["developmental_goal"] == "locomotion"
+    assert episode_attrs["active_developmental_capability"] == "rehearsal"
+    assert episode_attrs["locomotion_drive_active"] == 1
+    assert agent.s.node(development)["attrs"][
+        "developmental_deployment_mode"
+    ] == 0
+    first_programs = agent.inner.neighbours(
+        first_trial, "enacts_humanoid_motor_program"
+    )
+    assert len(first_programs) == 1
+    first = first_programs[0]
+    assert agent.s.node(first)["attrs"]["receipt_reified"] == 1
+    assert agent.inner.neighbours(
+        owner, "has_current_embodied_program"
+    ) == [first]
+    assert not agent.inner.neighbours(
+        owner, "has_embodied_program_transition"
+    )
+
+    second_model = agent.s.add_node("HumanoidActionModel", {
+        "token": "second",
+    })
+    second_trial = agent.s.add_node("HumanoidMotorTrial", {
+        "request_seq": 8,
+        "response_frames": 3,
+        "token": "second",
+        "secondary_token": "second",
+        "bundle_member_count": 1,
+        "motor_task_context": "locomotion",
+    })
+    second_outcome = agent.s.add_node("HumanoidTransition", {
+        "development_receipt_closed": 1,
+        "development_pre_orientation_class": 1,
+        "development_post_orientation_class": 1,
+        "development_pre_gravity_axis_x_units": 10,
+        "development_post_gravity_axis_x_units": 12,
+        "development_directed_units": 2,
+        "development_energy_units": 4,
+        "development_peak_load_units": 3,
+    })
+    agent.inner.set_attr(episode, "request_seq", 8)
+    _edge(agent, episode, "has_humanoid_action_model", second_model)
+    _edge(agent, episode, "has_humanoid_motor_trial", second_trial)
+    _edge(agent, second_trial, "uses_humanoid_action_model", second_model)
+    _edge(agent, second_trial, "has_humanoid_transition", second_outcome)
+
+    agent.tick()
+
+    transitions = agent.inner.neighbours(
+        owner, "has_embodied_program_transition"
+    )
+    assert len(transitions) == 1
+    second_programs = agent.inner.neighbours(
+        second_trial, "enacts_humanoid_motor_program"
+    )
+    assert len(second_programs) == 1
+    second = second_programs[0]
+    transition = transitions[0]
+    assert agent.inner.neighbours(
+        transition, "starts_from_embodied_program"
+    ) == [first]
+    assert agent.inner.neighbours(
+        transition, "continues_with_embodied_program"
+    ) == [second]
+    assert agent.inner.neighbours(
+        owner, "has_current_embodied_program"
+    ) == [second]
+    attrs = agent.s.node(transition)["attrs"]
+    assert attrs["task_progress_units"] == 2
+    assert attrs["energy_units"] == 4
+    assert attrs["output_authority"] == 0
 
 
 def test_completed_deployment_plan_projects_normal_locomotion_goal():

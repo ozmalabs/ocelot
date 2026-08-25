@@ -20,6 +20,7 @@ for _path in (ROOT, ROOT / "runners" / "dsl" / "python"):
         sys.path.insert(0, str(_path))
 
 from scripts.jabberwock_humanoid_walk import (
+    MOTOR_LIBRARY_VERSION,
     _run_arm,
     developmental_curriculum_contract,
 )
@@ -1202,6 +1203,8 @@ def run_staged(
     mode: str,
     library_path: Path,
     library_in: Path | None = None,
+    trajectory_library_in: Path | None = None,
+    drop_program_trajectories: bool = False,
     foveated_exploration_authority: bool = False,
 ) -> dict:
     """Run exactly one arm at a finite checkpoint.
@@ -1224,6 +1227,16 @@ def run_staged(
         raise ValueError(f"staged {mode} requires --library-in")
     if mode == "training" and library_in is not None:
         raise ValueError("staged training cannot consume --library-in")
+    if trajectory_library_in is not None and drop_program_trajectories:
+        raise ValueError(
+            "trajectory graft and trajectory ablation are mutually exclusive"
+        )
+    if mode == "training" and (
+        trajectory_library_in is not None or drop_program_trajectories
+    ):
+        raise ValueError(
+            "trajectory graft or ablation requires a retained input library"
+        )
     if (
         mode == "continue"
         and library_in is not None
@@ -1247,6 +1260,45 @@ def run_staged(
             raise ValueError(
                 "retained motor library curriculum contract does not match"
             )
+        if trajectory_library_in is not None:
+            trajectory_library = json.loads(
+                trajectory_library_in.read_text(encoding="utf-8")
+            )
+            if not isinstance(trajectory_library, dict):
+                raise ValueError("trajectory motor library must be a JSON object")
+            trajectory_metadata = _library_metadata(
+                trajectory_library, protocol
+            )
+            if not trajectory_metadata.get(
+                "curriculum_contract_matches", False
+            ):
+                raise ValueError(
+                    "trajectory motor library curriculum contract does not match"
+                )
+            retained_library = deepcopy(retained_library)
+            retained_library["version"] = MOTOR_LIBRARY_VERSION
+            for key in (
+                "program_trajectory_shapes",
+                "program_trajectory_endpoint_programs",
+            ):
+                retained_library[key] = deepcopy(
+                    trajectory_library.get(key, [])
+                )
+            input_library_metadata = _library_metadata(
+                retained_library, protocol
+            )
+            input_library_metadata["trajectory_variant"] = "grafted"
+            input_library_metadata["trajectory_source"] = str(
+                trajectory_library_in
+            )
+        elif drop_program_trajectories:
+            retained_library = deepcopy(retained_library)
+            retained_library["program_trajectory_shapes"] = []
+            retained_library["program_trajectory_endpoint_programs"] = []
+            input_library_metadata = _library_metadata(
+                retained_library, protocol
+            )
+            input_library_metadata["trajectory_variant"] = "ablated"
     configured = _configure(
         protocol,
         action_budget,
@@ -1303,6 +1355,11 @@ def run_staged(
             foveated_exploration_authority
         ),
         "library_in": str(library_in) if library_in is not None else None,
+        "trajectory_library_in": (
+            str(trajectory_library_in)
+            if trajectory_library_in is not None else None
+        ),
+        "program_trajectories_ablated": bool(drop_program_trajectories),
         "library_out": (
             str(library_path) if mode in {"training", "continue"} else None
         ),
@@ -1530,6 +1587,19 @@ def main() -> int:
     parser.add_argument("--evaluation-actions", type=int, default=360)
     parser.add_argument("--library-out", type=Path, default=DEFAULT_LIBRARY)
     parser.add_argument("--library-in", type=Path)
+    parser.add_argument(
+        "--trajectory-library-in",
+        type=Path,
+        help=(
+            "graft only output-null program trajectory shapes/endpoints from "
+            "this library onto --library-in for a causal probe"
+        ),
+    )
+    parser.add_argument(
+        "--drop-program-trajectories",
+        action="store_true",
+        help="probe the retained library with program trajectories removed",
+    )
     parser.add_argument("--json-out", type=Path)
     parser.add_argument(
         "--counterfactual-treatment-authority",
@@ -1572,6 +1642,8 @@ def main() -> int:
             mode=args.staged_mode,
             library_path=args.library_out,
             library_in=args.library_in,
+            trajectory_library_in=args.trajectory_library_in,
+            drop_program_trajectories=args.drop_program_trajectories,
             foveated_exploration_authority=(
                 args.foveated_exploration_authority
             ),
