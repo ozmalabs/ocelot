@@ -5754,6 +5754,25 @@ def _run_arm(
                 trajectory, "has_pareto_candidate"
             )
         })
+        online_state_coverage_transitions = [
+            transition
+            for transition in program_transition_nodes
+            if int(agent.s.node(transition)["attrs"].get(
+                "online_state_coverage", 0
+            )) > 0
+        ]
+        transition_sources = {
+            transition: agent.inner.neighbours(
+                transition, "starts_from_embodied_program"
+            )
+            for transition in program_transition_nodes
+        }
+        transition_targets = {
+            transition: agent.inner.neighbours(
+                transition, "continues_with_embodied_program"
+            )
+            for transition in program_transition_nodes
+        }
         active_capability_transition_nodes = list({
             transition
             for capability in active_developmental_capabilities
@@ -6022,6 +6041,54 @@ def _run_arm(
                 - len(active_program_trajectory_nodes)
             ),
             "verified_transition_count": len(program_transition_nodes),
+            "online_state_coverage_transition_count": sum(
+                int(agent.s.node(transition)["attrs"].get(
+                    "online_state_coverage", 0
+                )) > 0
+                for transition in program_transition_nodes
+            ),
+            "online_state_coverage_composable_pair_count": sum(
+                bool(set(transition_targets[online_transition]) & set(
+                    transition_sources[candidate]
+                ))
+                for online_transition in online_state_coverage_transitions
+                for candidate in program_transition_nodes
+                if online_transition != candidate
+            ),
+            "online_state_coverage_transitions": [
+                {
+                    "receipt_seq": int(agent.s.node(transition)["attrs"].get(
+                        "receipt_seq", 0
+                    )),
+                    "source_programs": [
+                        {
+                            key: agent.s.node(program)["attrs"].get(key)
+                            for key in (
+                                "name", "primary_token", "status",
+                                "receipt_seq", "signature",
+                            )
+                        }
+                        for program in transition_sources[transition]
+                    ],
+                    "target_programs": [
+                        {
+                            key: agent.s.node(program)["attrs"].get(key)
+                            for key in (
+                                "name", "primary_token", "status",
+                                "receipt_seq", "signature",
+                            )
+                        }
+                        for program in transition_targets[transition]
+                    ],
+                }
+                for transition in online_state_coverage_transitions
+            ],
+            "online_state_coverage_observation_count": sum(
+                int(agent.s.node(owner)["attrs"].get(
+                    "online_state_coverage_count", 0
+                ))
+                for owner in deployment_program_owners
+            ),
             "path_count": len(program_path_nodes),
             "maximum_path_depth": max((
                 int(agent.s.node(path)["attrs"].get("depth", 0))
@@ -6061,6 +6128,30 @@ def _run_arm(
             "maximum_expansion_budget_units": max((
                 int(agent.s.node(trajectory)["attrs"].get(
                     "expansion_budget_units", 0
+                ))
+                for trajectory in program_trajectory_nodes
+            ), default=0),
+            "maximum_initial_transition_population": max((
+                int(agent.s.node(trajectory)["attrs"].get(
+                    "initial_transition_population", 0
+                ))
+                for trajectory in program_trajectory_nodes
+            ), default=0),
+            "maximum_late_transition_expansion_allowance": max((
+                int(agent.s.node(trajectory)["attrs"].get(
+                    "late_transition_expansion_allowance", 0
+                ))
+                for trajectory in program_trajectory_nodes
+            ), default=0),
+            "maximum_late_transition_expansion_used": max((
+                int(agent.s.node(trajectory)["attrs"].get(
+                    "late_transition_expansion_used", 0
+                ))
+                for trajectory in program_trajectory_nodes
+            ), default=0),
+            "maximum_active_expansion_horizon": max((
+                int(agent.s.node(trajectory)["attrs"].get(
+                    "active_expansion_horizon", 0
                 ))
                 for trajectory in program_trajectory_nodes
             ), default=0),

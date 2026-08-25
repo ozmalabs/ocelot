@@ -123,7 +123,6 @@ def open_trajectory_rule() -> dict:
         "composition under a horizon held by its current budget context.",
         "match": [
             ["owner", "requests_embodied_program_trajectory", "budget"],
-            ["owner", "has_current_embodied_program", "current_program"],
         ],
         "where": And(
             Gt(P0("budget", "trajectory_horizon"), L(0)),
@@ -139,6 +138,9 @@ def open_trajectory_rule() -> dict:
                 )),
                 "minimum_selection_depth": T(minimum_depth),
                 "expansion_count": 0,
+                "initial_transition_population": T(Count(Neighbours(
+                    "owner", "has_embodied_program_transition"
+                ))),
                 "last_foveation_deepening_expansion_count": -1,
                 "selection_count": 0,
                 "selected_task_progress_units": 0,
@@ -149,6 +151,8 @@ def open_trajectory_rule() -> dict:
                 "capacity_dominated_path_count": 0,
                 "last_capacity_candidate_count": 0,
                 "last_capacity_frontier_count": 0,
+                "late_transition_expansion_allowance": 0,
+                "late_transition_expansion_used": 0,
                 **{
                     f"selected_conditional_narrativium_retained_{dimension}": 0
                     for dimension in range(7)
@@ -159,7 +163,6 @@ def open_trajectory_rule() -> dict:
             }],
             ["add_edge", "owner", "has_embodied_program_trajectory", "trajectory"],
             ["add_edge", "trajectory", "uses_embodied_program_budget", "budget"],
-            ["add_edge", "trajectory", "starts_from_embodied_program", "current_program"],
         ],
     }
 
@@ -177,7 +180,9 @@ def mint_base_path_rule() -> dict:
         "latency_class": "soft_realtime",
         "batch": True,
         "comment": "Every verified edge is the depth-one prefix. Its state "
-        "coordinates and costs remain separate Pareto dimensions.",
+        "coordinates and costs remain separate Pareto dimensions. Evidence "
+        "arriving after the trajectory opened grants only horizon-scaled "
+        "incremental composition work.",
         "match": [
             ["owner", "has_embodied_program_trajectory", "trajectory"],
             ["owner", "has_embodied_program_transition", "transition"],
@@ -234,6 +239,31 @@ def mint_base_path_rule() -> dict:
             ["add_edge", "path", "contains_embodied_program_transition", "transition"],
             ["add_edge", "path", "contains_embodied_program", "origin_program"],
             ["add_edge", "path", "contains_embodied_program", "terminal_program"],
+            [
+                "set_attr", "trajectory",
+                "late_transition_expansion_allowance", T(Max(
+                    P0(
+                        "trajectory",
+                        "late_transition_expansion_allowance",
+                    ),
+                    Times(
+                        Max(
+                            L(0),
+                            Minus(
+                                Count(Neighbours(
+                                    "owner",
+                                    "has_embodied_program_transition",
+                                )),
+                                P0(
+                                    "trajectory",
+                                    "initial_transition_population",
+                                ),
+                            ),
+                        ),
+                        P0("trajectory", "active_expansion_horizon"),
+                    ),
+                )),
+            ],
             *path_values(
                 orientation=span,
                 task_progress=task_progress,
@@ -288,6 +318,25 @@ def extend_path_rule() -> dict:
         P0("trajectory", "active_expansion_horizon"),
         Count(transitions),
     )
+    legacy_expansion_available = And(
+        Lt(P0("trajectory", "expansion_count"), expansion_budget),
+        Lt(
+            Count(Neighbours("trajectory", "has_pareto_candidate")),
+            expansion_budget,
+        ),
+    )
+    incremental_extension = And(
+        Gt(P0("transition", "incremental_trajectory_evidence"), L(0)),
+        Not(Exists(
+            Neighbours("parent", "contains_embodied_program_transition"),
+            "nonincremental_prefix_transition",
+            Eq(P0(
+                "nonincremental_prefix_transition",
+                "incremental_trajectory_evidence",
+            ), L(0)),
+        )),
+    )
+    late_expansion_available = incremental_extension
     known_extensions = Filter(
         Neighbours("parent", "has_embodied_program_path_extension"),
         "known_extension",
@@ -332,7 +381,9 @@ def extend_path_rule() -> dict:
         "latency_class": "soft_realtime",
         "batch": False,
         "comment": "Extend prefixes only through a shared program state and "
-        "only while the situated graph horizon remains open.",
+        "only while the situated graph horizon remains open. Incremental "
+        "work composes wholly incremental chains, so a new observation cannot "
+        "unlock an unfinished restored-graph backlog.",
         "match": [
             ["owner", "has_embodied_program_trajectory", "trajectory"],
             ["trajectory", "has_pareto_candidate", "parent"],
@@ -352,11 +403,7 @@ def extend_path_rule() -> dict:
                 P0("parent", "depth"),
                 P0("trajectory", "active_expansion_horizon"),
             ),
-            Lt(P0("trajectory", "expansion_count"), expansion_budget),
-            Lt(
-                Count(Neighbours("trajectory", "has_pareto_candidate")),
-                expansion_budget,
-            ),
+            Or(legacy_expansion_available, late_expansion_available),
             Not(Exists(
                 Neighbours("parent", "contains_embodied_program"),
                 "known_program",
@@ -414,6 +461,13 @@ def extend_path_rule() -> dict:
             ["set_attr", "trajectory", "expansion_budget_units", T(
                 expansion_budget
             )],
+            [
+                "set_attr", "trajectory",
+                "late_transition_expansion_used", T(Plus(
+                    P0("trajectory", "late_transition_expansion_used"),
+                    If(incremental_extension, L(1), L(0)),
+                )),
+            ],
             *path_values(
                 orientation=span,
                 task_progress=task_progress,

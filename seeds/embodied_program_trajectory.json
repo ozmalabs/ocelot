@@ -239,11 +239,6 @@
      "owner",
      "requests_embodied_program_trajectory",
      "budget"
-    ],
-    [
-     "owner",
-     "has_current_embodied_program",
-     "current_program"
     ]
    ],
    "where": {
@@ -400,6 +395,20 @@
        }
       },
       "expansion_count": 0,
+      "initial_transition_population": {
+       "__term__": {
+        "type": "Count",
+        "source": {
+         "type": "Neighbours",
+         "node": {
+          "type": "Var",
+          "name": "owner"
+         },
+         "edge_type": "has_embodied_program_transition",
+         "any_type": false
+        }
+       }
+      },
       "last_foveation_deepening_expansion_count": -1,
       "selection_count": 0,
       "selected_task_progress_units": 0,
@@ -410,6 +419,8 @@
       "capacity_dominated_path_count": 0,
       "last_capacity_candidate_count": 0,
       "last_capacity_frontier_count": 0,
+      "late_transition_expansion_allowance": 0,
+      "late_transition_expansion_used": 0,
       "selected_conditional_narrativium_retained_0": 0,
       "selected_conditional_narrativium_retained_1": 0,
       "selected_conditional_narrativium_retained_2": 0,
@@ -433,12 +444,6 @@
      "trajectory",
      "uses_embodied_program_budget",
      "budget"
-    ],
-    [
-     "add_edge",
-     "trajectory",
-     "starts_from_embodied_program",
-     "current_program"
     ]
    ]
   },
@@ -631,7 +636,7 @@
    "area": "embodied_program_trajectory",
    "latency_class": "soft_realtime",
    "batch": true,
-   "comment": "Every verified edge is the depth-one prefix. Its state coordinates and costs remain separate Pareto dimensions.",
+   "comment": "Every verified edge is the depth-one prefix. Its state coordinates and costs remain separate Pareto dimensions. Evidence arriving after the trajectory opened grants only horizon-scaled incremental composition work.",
    "match": [
     [
      "owner",
@@ -1168,6 +1173,98 @@
      "path",
      "contains_embodied_program",
      "terminal_program"
+    ],
+    [
+     "set_attr",
+     "trajectory",
+     "late_transition_expansion_allowance",
+     {
+      "__term__": {
+       "type": "Max",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "trajectory"
+           },
+           "key": "late_transition_expansion_allowance"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "Times",
+         "items": [
+          {
+           "type": "Max",
+           "items": [
+            {
+             "type": "Lit",
+             "value": 0
+            },
+            {
+             "type": "Minus",
+             "a": {
+              "type": "Count",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "owner"
+               },
+               "edge_type": "has_embodied_program_transition",
+               "any_type": false
+              }
+             },
+             "b": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "trajectory"
+                },
+                "key": "initial_transition_population"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "trajectory"
+             },
+             "key": "active_expansion_horizon"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
     ],
     [
      "add_node",
@@ -1722,7 +1819,7 @@
    "area": "embodied_program_trajectory",
    "latency_class": "soft_realtime",
    "batch": false,
-   "comment": "Extend prefixes only through a shared program state and only while the situated graph horizon remains open.",
+   "comment": "Extend prefixes only through a shared program state and only while the situated graph horizon remains open. Incremental work composes wholly incremental chains, so a new observation cannot unlock an unfinished restored-graph backlog.",
    "match": [
     [
      "owner",
@@ -1893,107 +1990,186 @@
       }
      },
      {
-      "type": "Lt",
-      "a": {
-       "type": "Plus",
-       "items": [
-        {
-         "type": "Attr",
-         "node": {
-          "type": "Var",
-          "name": "trajectory"
+      "type": "Or",
+      "items": [
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Lt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "trajectory"
+             },
+             "key": "expansion_count"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "trajectory"
+               },
+               "key": "active_expansion_horizon"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            {
+             "type": "Count",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "owner"
+              },
+              "edge_type": "has_embodied_program_transition",
+              "any_type": false
+             }
+            }
+           ]
+          }
          },
-         "key": "expansion_count"
-        },
-        {
-         "type": "Lit",
-         "value": 0
-        }
-       ]
-      },
-      "b": {
-       "type": "Plus",
-       "items": [
-        {
-         "type": "Plus",
-         "items": [
-          {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "trajectory"
-           },
-           "key": "active_expansion_horizon"
+         {
+          "type": "Lt",
+          "a": {
+           "type": "Count",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "trajectory"
+            },
+            "edge_type": "has_pareto_candidate",
+            "any_type": false
+           }
           },
-          {
+          "b": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "trajectory"
+               },
+               "key": "active_expansion_horizon"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            {
+             "type": "Count",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "owner"
+              },
+              "edge_type": "has_embodied_program_transition",
+              "any_type": false
+             }
+            }
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "type": "And",
+        "items": [
+         {
+          "type": "Gt",
+          "a": {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "transition"
+             },
+             "key": "incremental_trajectory_evidence"
+            },
+            {
+             "type": "Lit",
+             "value": 0
+            }
+           ]
+          },
+          "b": {
            "type": "Lit",
            "value": 0
           }
-         ]
-        },
-        {
-         "type": "Count",
-         "source": {
-          "type": "Neighbours",
-          "node": {
-           "type": "Var",
-           "name": "owner"
-          },
-          "edge_type": "has_embodied_program_transition",
-          "any_type": false
+         },
+         {
+          "type": "Not",
+          "arg": {
+           "type": "Exists",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "parent"
+            },
+            "edge_type": "contains_embodied_program_transition",
+            "any_type": false
+           },
+           "var_name": "nonincremental_prefix_transition",
+           "predicate": {
+            "type": "Eq",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "nonincremental_prefix_transition"
+               },
+               "key": "incremental_trajectory_evidence"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           }
+          }
          }
-        }
-       ]
-      }
-     },
-     {
-      "type": "Lt",
-      "a": {
-       "type": "Count",
-       "source": {
-        "type": "Neighbours",
-        "node": {
-         "type": "Var",
-         "name": "trajectory"
-        },
-        "edge_type": "has_pareto_candidate",
-        "any_type": false
+        ]
        }
-      },
-      "b": {
-       "type": "Plus",
-       "items": [
-        {
-         "type": "Plus",
-         "items": [
-          {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "trajectory"
-           },
-           "key": "active_expansion_horizon"
-          },
-          {
-           "type": "Lit",
-           "value": 0
-          }
-         ]
-        },
-        {
-         "type": "Count",
-         "source": {
-          "type": "Neighbours",
-          "node": {
-           "type": "Var",
-           "name": "owner"
-          },
-          "edge_type": "has_embodied_program_transition",
-          "any_type": false
-         }
-        }
-       ]
-      }
+      ]
      },
      {
       "type": "Not",
@@ -2725,6 +2901,115 @@
           },
           "edge_type": "has_embodied_program_transition",
           "any_type": false
+         }
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "trajectory",
+     "late_transition_expansion_used",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "trajectory"
+           },
+           "key": "late_transition_expansion_used"
+          },
+          {
+           "type": "Lit",
+           "value": 0
+          }
+         ]
+        },
+        {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "And",
+          "items": [
+           {
+            "type": "Gt",
+            "a": {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "transition"
+               },
+               "key": "incremental_trajectory_evidence"
+              },
+              {
+               "type": "Lit",
+               "value": 0
+              }
+             ]
+            },
+            "b": {
+             "type": "Lit",
+             "value": 0
+            }
+           },
+           {
+            "type": "Not",
+            "arg": {
+             "type": "Exists",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "parent"
+              },
+              "edge_type": "contains_embodied_program_transition",
+              "any_type": false
+             },
+             "var_name": "nonincremental_prefix_transition",
+             "predicate": {
+              "type": "Eq",
+              "a": {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "nonincremental_prefix_transition"
+                 },
+                 "key": "incremental_trajectory_evidence"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              "b": {
+               "type": "Lit",
+               "value": 0
+              }
+             }
+            }
+           }
+          ]
+         },
+         "then": {
+          "type": "Lit",
+          "value": 1
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0
          }
         }
        ]
