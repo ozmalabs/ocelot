@@ -1,8 +1,13 @@
 # Stupid, stubborn, ignorant — three different fields, not three degrees
 
 From outside, all three present identically: *the agent does not get it.* The question is whether
-the substrate can tell them apart. Two of the three it already can, in fields that exist today and
-were built for other reasons. The third it **cannot**, and it knows exactly why.
+the substrate can tell them apart.
+
+**Answer after building the missing piece: two of the three, and not the two I first thought.**
+Ignorance was already separable. Stubbornness was not, and now is — `feasible_selection` was built
+for it (§"Stubborn… SOLVED"). Stupidity looked separable and **is not**: the field that was supposed
+to carry it duplicates another one, which the build exposed (§"What building it falsified"). The
+first draft of this document had that backwards and is corrected in place rather than rewritten.
 
 ## The record they live in
 
@@ -28,19 +33,17 @@ paid off in code written before the question was asked.
 | folk term | what is actually limited | field | recourse |
 |---|---|---|---|
 | **IGNORANT** | few candidates reachable at all — you hold little to project | low `reachable_deformations` | acquire parts; cheap, and it works |
-| **STUPID** | you enumerate fine but cannot establish what stays in the tube | high **`information_loss`** | widen aperture — and if the limit is physiological, there is none |
-| **STUBBORN** | the candidate is admissible, projectable, and never selected | **no field — see below** | — |
+| **STUPID** | you enumerate fine but cannot establish what stays in the tube | **none — `information_loss` duplicates `loss`, see below** | widen aperture — and if the limit is physiological, there is none |
+| **STUBBORN** | the candidate is admissible, projectable, and never selected | `withheld_minimal` — **built this rung** | neither parts nor aperture; only selection |
 | *(not a deficit)* | the audit could not run at all | `support: false`, fail-closed | not the agent's; someone else's or undefined |
 
-Two things worth pulling out.
+Two corrections, both forced by building it.
 
-**`loss` and `information_loss` are different failures, and only one of them is stupidity.** `loss`
-counts cells that left the allowed tube — you projected correctly and the news is bad. That is
-accurate pessimism, not a deficit. `information_loss` counts cells *whose retention could not be
-established*. **Knowing-that versus knowing-what, at the manifold**, which is the same split as the
-mystic's detectable-but-unresolvable residual (`ONE_LOOP_MANY_GRAINS.md`) and the aperture-gated
-reality channel (`APERTURE_AETIOLOGY_CROSSOVER_RESULTS.md`) — third independent occurrence of one
-shape, in three subsystems built separately.
+> **RETRACTED by measurement — see §"What building it falsified" below.** This paragraph claimed
+> `loss` and `information_loss` were different failures, on the strength of the field's doc comment.
+> They are the same number: the audit increments them on the same line and nowhere else. The
+> *distinction* is real and worth having; the *implementation* does not make it, so **stupidity has
+> no field at the manifold** and the row below is aspirational, not descriptive.
 
 **Ignorance fails closed, and that is correct.** `counting_narrativium_by_dimension` returns `None`
 for an empty family or any unsupported candidate — *"fails closed rather than being reported as zero
@@ -48,7 +51,33 @@ capacity."* An agent that holds nothing does not report that no future is reacha
 reachability is **not established**. Honest ignorance is already the coded default here, in the same
 shape as the seed-level `covered = None` versus `covered = 0` distinction.
 
-## Stubborn is the one the substrate cannot see, and it says so
+## What building it falsified
+
+`feasible_selection` (`future_manifold.rs`, 8 Rust tests, lib suite 800 passed) closes the stubborn
+gap — and in the process falsified two of this document's own claims. Both are pinned as tests so
+they cannot drift back.
+
+**`information_loss` is numerically identical to `loss`.** The audit increments them on the same
+line, and nowhere else. The field's doc says *"cells whose retention could not be established"*,
+which is a genuinely different question from *"cells that left the tube"* — the code never asks it.
+Gate: `information_loss_is_currently_a_duplicate_of_loss`.
+
+**`resolved` carries no independent information.** `projection_field` sets `support = false` whenever
+`audited < requested_horizon`; `resolved` is then false-if-unsupported, else
+`audited >= requested_horizon` — which support already guaranteed. So `resolved == support`, always.
+
+Together these mean an under-resourced projection reads as **unsupported** — *the audit could not
+run* — never as *ran, and could not tell*. **There is currently no way to be stupid at the manifold:
+only absent, wrong, or stubborn.** Starving the projection budget was my intended way to produce a
+stupid agent; it fails the selection closed instead, which the test now asserts, with the assertion
+message naming what a future fix would look like.
+
+So the corrected count is: ignorance and stubbornness are separable today; **stupidity is not**, and
+the reason is a one-line collapse in the audit rather than anything deep. Fixing it means asking the
+second question — which cells could not be assessed, as distinct from which were assessed and
+failed — and that is a change to `projection_field`, not to the selector.
+
+## Stubborn: the substrate could not see it, said so — now BUILT
 
 Stubbornness at manifold level is precisely *admissible, projectable, never selected* — and the
 source names that gap in the same breath as the distinction:
@@ -62,10 +91,27 @@ source names that gap in the same breath as the distinction:
 hits.* So `reachable_deformation_set` returns an **upper bound**, and a caller treating it as
 realised reachability *"is overstating its own capability."*
 
-**Consequence, stated plainly: at the manifold the substrate can currently distinguish ignorant from
-stupid, and can distinguish neither from stubborn.** A stubborn agent and a capable one produce the
-same admissible bound, because the bound never asks what was chosen. That is a real limitation and
-it has a named location rather than being a mystery.
+**That was the state before this rung. It is now built.** `feasible_selection` applies the substrate's
+own decision rule — `CLAUDE.md`'s *"minimum sufficient action/intervention that keeps the projected
+tube inside it; goals break equal-intervention ties"*, read literally and in that order — and
+publishes `withheld_minimal`: candidates that were established, feasible, minimal under the
+represented valuation, and best under goals, and were **still not taken**. The theory's
+*"always-admissible but never-selected candidate contributes no realised reachability"* is now a
+countable set rather than a sentence.
+
+Three properties worth stating because they were choices:
+
+* **set-valued.** `minimal` and `selected` are families and `tie_breadth` is published. A selector
+  returning one candidate would re-impose the single fixpoint an admissibility grammar exists to
+  avoid.
+* **goals never buy a more expensive candidate.** They order only what intervention left equal —
+  gated by `minimum_sufficient_intervention_wins_and_goals_only_break_ties`.
+* **fails closed on an unrepresented valuation.** "Minimum sufficient" over an unrepresented cost is
+  not a smaller number, it is not a question; ranking such a candidate as free would launder the gap
+  exactly the way a scalar narrativium would.
+
+The substrate does not decide that withholding is a pathology. It makes the difference between what
+would have worked and what was taken legible, and leaves the reading to the caller.
 
 Stubbornness *does* have a cheap form that is already measured, one level down:
 `APERTURE_PATHOLOGIES.md` §1 — an agent keeps exactly the chosen frames under which it has no
@@ -86,11 +132,12 @@ The three should separate on intervention exactly as the two folie-à-deux aetio
 The first row is already measured at seed level —
 `test_acquiring_a_part_RE_ARMS_the_decode` is literally ignorance being cured by acquisition, and
 the pauper fixture is ignorance failing to be cured by anything else. The second row's inertness is
-the puncture test (`APERTURE_PATHOLOGIES.md` §5: two true parts, one distinguishable). **The third
-row cannot be run**, because producing a stubborn agent requires a selection step the substrate does
-not have.
+the puncture test (`APERTURE_PATHOLOGIES.md` §5: two true parts, one distinguishable). The third row is **now runnable at the manifold** and is gated there
+(`ignorant_and_stubborn_separate_but_STUPID_HAS_NO_FIELD_YET`) — a withheld candidate stays minimal
+and unselected under every intervention, because neither parts nor aperture touch selection.
 
-So this document claims exactly one thing beyond the mapping: the diagnostic 2×2 is two-thirds
-already-measured and one-third blocked on a gap that predates the question. It has not been run as a
-single design, and the manifold-level version has not been run at all — everything above about
-`DeformationRecord` is read off the source and its own comments, not measured.
+What remains open, precisely: the **stupid** row cannot be produced at the manifold at all until
+`information_loss` asks its own question, so the 2×2's middle row is exercised only at seed level
+(the puncture test) and not in the manifold audit. And the seed-level and manifold-level versions
+have still never been run as one design — that would need a candidate family generated from an
+agent's own aperture, which nothing does yet.
