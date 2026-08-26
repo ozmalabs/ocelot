@@ -456,10 +456,28 @@ Two collapses are ordered only where a boundary relates them; collapses not so r
 \end{proposition}
 Time was accordingly a \emph{total} order imposed where only a partial one is required; removing the substrate time dimension removes the over-ordering, not the precedence. This is the same conclusion reached, from engineering necessity, by distributed systems without a shared clock: the happens-before relation is a partial order with per-process sequence counters and no global instant \citep{lamport1978}, and consistency across processes is an expensive coordinated property rather than the default \citep{brewer2000}. The non-atomicity this implies --- a graph's state may be altered by another write while its own rules are mid-run --- is not a defect here but the expected regime; robustness is obtained by re-running to fixed point (a raced deformation becomes residual and is re-offered), not by locking.
 
+\begin{remark}[Globally asynchronous, locally synchronous]\label{rem:gals}
+The partial order permits both synchrony and asynchrony, and by the governing principle that only rules-running is compulsory (Remark~\ref{rem:nothing-compulsory}), neither is required and both occur. Where a boundary couples collapses, they are ordered together --- a local synchronous domain, which is what a bound or driven subgraph is; where no boundary relates them, they are asynchronous. A subgraph may accordingly be \emph{ticked} by a containing frame $N$ levels above it (the driven mode of Proposition~\ref{prop:no-start-end}, a rule in a superframe advancing the subframe's succession) or run on its own change (the closed, self-looping mode). Synchrony is the coupled case and costs a coupling write; asynchrony is the uncoupled default. The substrate is therefore globally asynchronous and locally synchronous where coupling exists --- the architecture distributed hardware knows as GALS \citep{chapiro1984} --- and bound physical systems (an atom, an orbit, a lattice) are exactly its local synchronous domains, while causally disconnected regions are its asynchrony. Any earlier phrasing suggesting the substrate is \emph{entirely} asynchronous should be read in this sharper form.
+\end{remark}
+
 \begin{proposition}[No intrinsic first or last; entry is chosen from the container]\label{prop:no-start-end}
 By Axiom~$-1$ the event order has no intrinsic start and no intrinsic end: a first would complete the order backward and a last would complete it forward, and neither is available. A subgraph process that does not terminate within itself is therefore begun not from within --- it has no first rule --- but by a rule in a containing frame that chooses an entry point into the subgraph's open order.
 \end{proposition}
 This is why a grounding's initial and boundary conditions are supplied separately from its laws: the laws are the ordering, which fixes no start, so the entry must be imposed from outside, contingently. It is also the substrate description of booting a situated graph, and of the ``no natural ending'' that follows for any such order --- one enters and leaves at chosen points, neither of which is intrinsic to the material.
+
+\section{The rule runner and its coupling}\label{sec:rule-runner}
+
+The provenance of $r$ (Section~\ref{sec:scope}) records that operative transformation requires something that performs it: a construction that runs needs a rule runner. That runner is real, and the clarification here is about \emph{where} it is and what a frame can know of it.
+
+\begin{proposition}[The rule runner is separable from the graph, and need not be the same substrate]\label{prop:rule-runner}
+A graph is data --- nodes, relations, and rules --- and its rules are executed by a rule runner. The two are separable: the same graph may be run by different runners, and a runner need not be the substrate the graph describes or is ``in.'' Where the compute is done is therefore a fact about the \emph{coupling} between graph and runner, not about the graph alone.
+\end{proposition}
+At one extreme the coupling is tight --- the graph is fused to its runner, as matter running its own change or a mind running on the tissue that is it --- and the compute is local, in the graph, inseparable. At the other it is loose --- the graph is data executed by a separate interpreter --- and the compute is done in the runner, elsewhere, while the graph becomes portable: copyable, relocatable, and run at whatever rate the runner supplies (Section~\ref{sec:time-not-primitive}). This separability is the condition for the copyable-generator and clock-independence results (Proposition~\ref{prop:copyable-generators}, and the Seldon paper's dependent-clock remark): a graph welded to its runner has none of them, a graph loosely coupled has all of them.
+
+\begin{proposition}[A frame cannot determine its rule runner from inside]\label{prop:runner-opaque}
+The asynchronous, locally synchronous structure a frame observes (Remark~\ref{rem:gals}) is the graph's \emph{internal} view and does not fix its runner's actual mode. A hidden central runner may execute a graph serially, one change at a time, while the graph --- lacking any access to the runner's clock --- appears asynchronous and concurrent to itself. More generally, a frame has no boundary to the substrate that runs it, so its runner lies beyond the frame's epistemic boundary in exactly the sense of Section~\ref{sec:scope}: unseeable from within, not merely unseen.
+\end{proposition}
+This is constructively demonstrable rather than merely argued. A computation realised inside another rule system --- a graph whose rules are implemented within the mechanics of a game or a universal cellular automaton \citep{berlekamp1982} --- is a blind subframe: from inside it computes at its own change-count and has no means to detect that its ``compute'' is the tokens of the host, or that the host may be advancing it by a single serial loop. Building one confirms the opacity directly, and puts the observer of any frame on the same footing. Consequently the question ``where is the universe's compute done'' has the precise form: it depends on the universe's coupling to its own rule runner --- self-running, or hosted on a substrate not itself --- and is undetermined from inside. The theory declines to decide it; it is a question about a coupling below the frontier, and the demonstrable opacity is why no internal observation settles it.
 
 \section{Determinism and apparent stochasticity}\label{sec:determinism}
 
@@ -547,6 +565,8 @@ The individual ingredients of Graphic Equalisation have substantial prior art. T
 \item \textbf{Cost is the write.} Fails if a substrate operation other than writing a delta carries an irreducible cost --- if reading, holding a standing delta, or the boundary relation itself must be paid for independently of any write they occasion.
 \item \textbf{No direct self-alteration.} Fails by exhibiting a graph that alters its own operative frame without either altering a subgraph or completing a round trip through a containing frame --- a reflexive write to its own running $r$ or $\Gamma$. Its observed absence is a contingent regularity, so this is the commitment most open to a constructed counterexample.
 \item \textbf{Partial-order sufficiency.} Fails if realised dynamics require a total order over collapses in distinct frames --- a global simultaneity --- rather than only the boundary-induced partial order.
+\item \textbf{Globally-async/locally-sync.} Fails if coupling never induces local synchrony (boundary-related collapses remain unordered) or if synchrony is forced without coupling (a global instant exists independent of any boundary).
+\item \textbf{Rule-runner opacity.} Fails if a frame can determine by internal observation alone whether its rules are executed by its own substrate or by a separate runner --- if any in-frame test distinguishes self-running from hosted execution, or reveals whether a serial hidden runner underlies an apparently asynchronous frame.
 \end{enumerate}
 
 \section{Conclusion}
@@ -573,6 +593,12 @@ Charles H. Bennett.
 \newblock Logical reversibility of computation.
 \newblock \emph{IBM Journal of Research and Development}, 17(6):525--532, 1973.
 
+\bibitem[Berlekamp et~al.(1982)Berlekamp, Conway, and Guy]{berlekamp1982}
+Elwyn R. Berlekamp, John H. Conway, and Richard K. Guy.
+\newblock \emph{Winning Ways for Your Mathematical Plays}.
+\newblock Academic Press, London, 1982.
+\newblock (Universality of Conway's Game of Life.)
+
 \bibitem[Bohm(1952)]{bohm1952}
 David Bohm.
 \newblock A suggested interpretation of the quantum theory in terms of ``hidden'' variables. I and II.
@@ -587,6 +613,11 @@ Luca Bombelli, Joohan Lee, David Meyer, and Rafael D. Sorkin.
 Eric A. Brewer.
 \newblock Towards robust distributed systems.
 \newblock In \emph{Proceedings of the 19th ACM Symposium on Principles of Distributed Computing (PODC)}, keynote, 2000.
+
+\bibitem[Chapiro(1984)]{chapiro1984}
+Daniel M. Chapiro.
+\newblock \emph{Globally-Asynchronous Locally-Synchronous Systems}.
+\newblock PhD thesis, Stanford University, 1984.
 
 \bibitem[Ehrig et~al.(2006)Ehrig, Ehrig, Prange, and Taentzer]{ehrig2006}
 Hartmut Ehrig, Karsten Ehrig, Ulrike Prange, and Gabriele Taentzer.
