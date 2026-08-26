@@ -74,14 +74,25 @@ writes and one write leave the same value. Under the revised theory that reasoni
 > *"the single cost is the write, paid by the rules"* — and the falsifier: *"**Cost is the write.**
 > Fails if a substrate operation other than writing a delta carries an irreducible cost."*
 
-If cost **is** the write, then emitting five identical writes where the committed engine emits one is
-a **five-fold cost**, on the only quantity the theory says is real. State-identity is no longer
-sufficient for benignity; the write count is itself the thing being paid. **A divergence that was
-correctly benign under a state-based cost model is a real regression under a write-based one.**
+> **CORRECTED, immediately after publication and before anything was built on it.** The paragraph
+> below originally claimed the N-versus-1 write list is *"a five-fold cost"* at runtime. **It is not,
+> and I should have read the fallback path before writing it.** `substrate.rs` is explicit: *"If two
+> of them write the same place they were each computed blind to the other, so the set is NOT
+> independent and the sequential committed path below runs instead."* Contention **falls back**, so
+> the writes that actually land are the committed ones — one, not N. The divergence is in the
+> *derived proposal list*, which is then discarded. `unsound = 0` is the same fact seen from the
+> other side: all 58 were flagged, hence all fell back.
 
-This is not a defect Stage A introduced — it is a defect the new cost model *makes visible*, and it
-would be invisible to any check that compares graphs rather than write lists. Compare mode happens
-to compare write lists, which is why it is measurable at all.
+The cost point survives, but it is a different cost with a different mechanism. Derivation is
+apply-then-undo: on a contended drain Stage A pays **N speculative applies plus N undos, and then
+the committed sequential run happens anyway**. Under *"the single cost is the write, paid by the
+rules"* that is strictly **more** writing than not speculating at all — the waste is the speculation,
+not the commit.
+
+So the revised reading is narrower and still real: state-identity was never the right benignity test
+under a write-based cost model, but what it hides here is **wasted speculative work on contended
+drains**, not inflated committed state. That is also what a static contention test would buy —
+refusing up front instead of deriving and discarding.
 
 ## What this settles
 
