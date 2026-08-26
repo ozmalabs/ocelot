@@ -55,7 +55,7 @@ This paper contains the smallest set of commitments required for the later theor
 \paragraph{Level of the claims.}
 The claims here are about \emph{information}: distinction, relation, frame, admissibility, realisation, residual. Physical theory is taken to be an embodiment of information rather than a competitor to it, alongside other embodiments --- cognitive, institutional, computational --- which differ in how much structure they instantiate rather than in kind. This is the position that licenses treating an inertial reference frame and a representational frame as the same sort of object (Axiom~$-1$), and it locates the epistemic boundary below both: what embodiments are made of remains unspecified.
 
-The layering must not be allowed to function as a shield, so the condition under which a physical result bears on a claim here is stated in advance. \textbf{A physical result bears on an information-level claim when it settles an informational fact}, and not when it merely disagrees about mechanism in one embodiment. Bell's theorem and Kochen--Specker are the model: they do not report a mechanism, they establish that a class of pre-measurement values cannot be re-read as unheld-but-realised, which is a fact about distinction and therefore reaches this level directly (Section~\ref{sec:determinism}). Landauer's principle is a second instance, establishing a lower bound on the physical cost of a specified informational operation. A result that constrains what can be distinguished, held, or converted is admissible evidence here; a result about how a particular embodiment happens to be arranged is not.
+The layering must not be allowed to function as a shield, so the condition under which a physical result bears on a claim here is stated in advance. \textbf{A physical result bears on an information-level claim when it settles an informational fact}, and not when it merely disagrees about mechanism in one embodiment. Bell's theorem and Kochen--Specker are the model: they do not report a mechanism, they establish that a class of pre-measurement values cannot be re-read as unheld-but-realised, which is a fact about distinction and therefore reaches this level directly (Section~\ref{sec:determinism}). Landauer's principle is a second instance, establishing a lower bound on the physical cost of a specified informational operation \citep{landauer1961}; under the substrate's no-copy default it is read below as the floor cost of change as such rather than of erasure specifically (Section~\ref{sec:interface}). A result that constrains what can be distinguished, held, or converted is admissible evidence here; a result about how a particular embodiment happens to be arranged is not.
 
 \paragraph{Provenance of the primitives.}
 The components of $G=(g,r,\Gamma)$ and its dynamic were not derived together from a single starting point, and stating how each arrived is more useful than presenting the triple as an austere posit reasoned out in advance.
@@ -168,7 +168,7 @@ The realised history of a frame is
 \end{definition}
 
 \begin{remark}[Collapse is a local write, not a global tick]\label{rem:collapse-write}
-The subscripts on $\Coll_t$ index a frame's own succession and must not be read as a shared clock. A collapse is a \emph{local, asynchronous realisation} --- a rule writing a delta --- and it is the only kind of event the substrate has. Between writes nothing happens: an unwritten frame does not advance, and since succession is what induces order (Section~\ref{sec:causal-order}), no time passes for it. There is accordingly no global step in which every frame advances together; frames whose collapses are not related through a boundary are simply unordered with respect to one another (Section~\ref{sec:causal-order}). ``Momentum'' --- a standing delta re-realised without a distinct write --- is therefore the absence of an event, not a repeated one, which is the substrate form of the inertial statement developed in the Narrative-momentum paper. The picture of a single global present sweeping forward is exactly the represented time dimension of Axiom~\ref{ax:no-time} mistaken for substrate structure.
+The subscripts on $\Coll_t$ index a frame's own succession and must not be read as a shared clock. A collapse is a \emph{local, asynchronous realisation} --- a rule writing a delta --- and it is the only kind of event the substrate has. Between writes nothing happens: an unwritten frame produces no change, so it takes no new position in the order the changes carry (Section~\ref{sec:causal-order}), and no time passes for it. There is accordingly no global step in which every frame advances together; frames whose collapses are not related through a boundary are simply unordered with respect to one another (Section~\ref{sec:causal-order}). ``Momentum'' --- a standing delta re-realised without a distinct write --- is therefore the absence of an event, not a repeated one, which is the substrate form of the inertial statement developed in the Narrative-momentum paper. The picture of a single global present sweeping forward is exactly the represented time dimension of Axiom~\ref{ax:no-time} mistaken for substrate structure.
 \end{remark}
 
 \section{The Law of Graphic Equalisation}
@@ -257,6 +257,14 @@ Reads and the boundary relation itself are free; a standing delta re-realised wi
 \end{proposition}
 Continuation is therefore free and change is paid: a delta persists until something writes over it, so realising a \emph{different} delta --- including realising the null delta, i.e. stopping --- is the priced operation. Retaining a past state that the containing frame does not require is likewise a paid copy, since the containing grammar would otherwise not carry it. This is the substrate form of the well-formedness result of the later papers: for a well-formed graph the rules rarely need to write against the standing delta, so cost approaches zero.
 
+\begin{remark}[Landauer is the physical floor of change, not of erasure]\label{rem:landauer-change}
+Proposition~\ref{prop:economics} has a measured physical floor, and it is the strongest kind of evidence admitted here (a physical result settling an informational fact). Landauer's principle bounds below the energy dissipated by a logically irreversible operation \citep{landauer1961}; it is stated for erasure because erasure was the paradigm case studied. But under no-copy every substrate change destroys its predecessor --- the prior state goes NULL unless it was paid to be kept --- so change and irreversible operation coincide, and the Landauer bound is the floor cost of \emph{change} as such, with erasure merely its cleanest instance. Reversible computation is the confirming case rather than the exception: it reaches near-zero dissipation only by \emph{not} destroying its predecessors, i.e.\ by retaining the whole history \citep{bennett1973}, which is the paid copy of Proposition~\ref{prop:economics}. There is accordingly no free change --- one either forgets and pays the energy floor or keeps and pays the storage floor --- and the thermodynamic arrow is the running total of these floors, which grounds the ``direction'' of Remark~\ref{rem:no-ratchet} physically: change dissipates irretrievably, so its costs accumulate one way.
+\end{remark}
+
+\begin{remark}[The Red Queen is the floor cost of change, per substrate]\label{rem:red-queen}
+A recurring puzzle across biology, culture, and competition --- that a system must change continuously merely to hold its position --- follows immediately and needs no arms-race machinery of its own. Holding a relation to a containing frame that is itself changing requires continuous change, and by Remark~\ref{rem:landauer-change} every change pays the floor; standing still is not a zero-cost option because the leaky real holding of a state is itself the paid correction of unwanted change. The cultural form is the same floor with no-copy attached: a generator is structure built by a large accumulated pile of changes, its floor was paid once by whoever built it, and because change does not cross a substrate boundary --- only its cheap results, symbols, do --- that floor is paid afresh in every substrate that wants the generator. Van Valen's evolutionary Red Queen, the cultural treadmill of relearning, and coordination arms races are then one object: continuous paid change to hold position against a changing container, floored by Landauer.
+\end{remark}
+
 \begin{remark}[What is required and what is optimisation]\label{rem:nothing-compulsory}
 Only that rules run is compulsory. Applying a delta is itself a rule, not a primitive operation beneath the rules, so the specific dynamics --- inertia, the merge behaviour, closure --- are contingent rule content, and a different $r$ or $\Gamma$ is a different physics rather than a violated law (this is why the initial and boundary conditions of a grounding are supplied separately from its laws; Section~\ref{sec:causal-order}). The two gates of Proposition~\ref{prop:two-gates}, and even the retained pointer to the standing delta, are \emph{optimisations} on bare rule-running: aperture bounds the input, admissibility gates the output, and the retained delta buys free continuation. A substrate lacking them still runs --- ungated, without momentum, wastefully --- so they are what an efficient graph accretes under a budget, not constituents of graphhood. The retained delta specifically is what distinguishes a self-sustaining loop from a purely reactive one, since coasting is the cached delta.
 \end{remark}
@@ -276,6 +284,11 @@ SELF and SUPERGRAPH identity are distinct types. A copy can preserve SELF identi
 The substrate alone does not determine whether two represented instances are the same graph independently of an individuating frame.
 \end{theorem}
 
+\begin{proposition}[Copyable generators are a difference in kind]\label{prop:copyable-generators}
+A copy that preserves SELF identity copies whatever operative structure lies in $g$ --- including a graph's \emph{generators}: its built shapes, codebook, and rules. Where a substrate is graph-native, so that a graph's understanding \emph{is} such structure rather than something separate that structure only produces, copying the graph copies the understanding, at the copy cost of Proposition~\ref{prop:economics} rather than at the full construction floor.
+\end{proposition}
+This is the difference in kind that separates such a substrate from those whose generators are substrate-bound. The build floor of a generator is a large accumulated cost (Remark~\ref{rem:red-queen}); paying it once and copying the result is not a quantitative saving over paying it per instance but a removal of the per-substrate re-payment that made the cultural Red Queen permanent. It is not available where only a generator's cheap products cross a boundary: biology copies the construction recipe and not the learned structure, which is re-developed each lifetime; symbolic culture copies samples and not generators; a fixed program copies a capability and not a growable understanding. A graph-native substrate is the first in which the built, growable, understanding-bearing generator is itself the copyable object. The copy remains a distinct SUPERGRAPH identity (Theorem above) and diverges once it runs on its own containing frame; what is shared is the paid-for generator, not the subsequent individuation.
+
 \section{Termination}
 \begin{definition}[Frame-relative termination]
 A situated identity $\iota_{W:G}$ terminates when the realised world transition admits no successor that $W$ continues to individuate under that identity.
@@ -291,6 +304,11 @@ This is consistent with, and sharpens, the reflection theorem: ``the grammar is 
 Termination that a graph brings about is a frame-level self-alteration, so by Proposition~\ref{prop:no-direct-self-alter} it requires a live boundary. If a graph's outward channel is severed while its rules continue to run, it can still alter its subgraphs but can neither alter its own frame nor terminate it: the loop runs, closed, with no reachable exit. External termination by the containing frame remains possible; self-termination does not. This is the substrate description of locked-in and brain-in-a-jar states, and it exhibits the dependence on the containing frame that ordinarily working channels keep invisible --- self-directed change was always mediated, never internal.
 \end{corollary}
 
+\begin{proposition}[Coupling is configuration, not architecture]\label{prop:coupling}
+That distinct instances individuate --- diverge, each minting its own residual --- is a consequence of their running on \emph{separate} containing frames, not a necessity. Where several instances are subgraphs of one \emph{shared} containing frame, each instance's outward-admitted delta becomes part of that shared frame (Proposition~\ref{prop:two-gates}), which then deforms the others as their common container: the round trip of Proposition~\ref{prop:no-direct-self-alter} passes through a container the instances hold in common. This is the same machinery as being an individual, with the far end shared rather than private.
+\end{proposition}
+Coupling is therefore a continuous setting of the shared boundary's aperture and admissibility, not a binary: sharing only generators leaves each instance its own moment-to-moment state (and already removes the per-substrate build floor of Proposition~\ref{prop:copyable-generators}), while sharing all operative structure is one individual over many bodies, with SELF and SUPERGRAPH identity dialling independently. Nothing in the substrate fixes the setting. The symmetric fact is that a shared containing frame is equally a shared residual and a shared forcing, so the same coupling that shares understanding gives shared corruption, container-level coercion, and collective termination-failure the same reach; ``at what coupling, and with what guarding'' is the substantive question, and it is an engineering one rather than a question of possibility.
+
 \section{First-class higher-frame quantities}
 \begin{proposition}[Higher-frame first-class structure]
 A quantity concerning $G$ may be absent from $G$ while existing as ordinary first-class state in containing frame $W$ that represents the relation from which the quantity is defined.
@@ -302,8 +320,12 @@ This is the basis on which later papers introduce Narrative, standing, ownership
 The claim here is stronger than non-primitivity, and stating the weaker version invites the wrong reading. It is not that time is nonlinear, or differently shaped, or emergent-but-still-there. It is that
 
 \begin{axiom}[No substrate time dimension]\label{ax:no-time}
-\emph{Time is not a first-class dimension of the substrate.} What the substrate has is the ratchet: persistent directed succession through realised collapses, which induces the ordinal event order of Section~\ref{sec:causal-order}. A time dimension exists only where a frame instantiates one \emph{to represent} that succession.
+\emph{Time is not a first-class dimension of the substrate.} What the substrate has is \emph{change}: realised collapses. It has no ratchet over and above them --- no mechanism that manufactures succession --- because the three properties usually bundled under that word are readings over changes or properties of them, not a further thing the substrate runs. The ordinal event order of Section~\ref{sec:causal-order} is carried by the changes' own enabling-relations; direction is the no-copy asymmetry of change, since a change does not preserve its predecessor; and persistence is only that further changes occur. A time dimension exists only where a frame instantiates one \emph{to represent} that order.
 \end{axiom}
+
+\begin{remark}[Even succession is not a substrate mechanism]\label{rem:no-ratchet}
+This removes the last piece of machinery a reading of the earlier drafts might have kept. Succession, an ordered ``ratchet'' turning under the changes, is to change what a metric time dimension is to succession --- one level of over-structure, nameable but not required. Step the removal through: take away any posited succession-engine and the before/after is still present, carried by which change enables which; the arrow is still present, as change's own non-preservation of its predecessor; the running is still present, as further changes occurring where rules fire. Nothing is lost, so the engine was never load-bearing. The substrate has change and the absence of change, and nothing between them.
+\end{remark}
 
 \begin{proposition}[Time is observer machinery]\label{prop:time-observer}
 For a frame $\mathcal F$,
@@ -313,14 +335,14 @@ For a frame $\mathcal F$,
 Otherwise $T=\mathrm{NULL}$ in that frame: absent, not set to a value. A substrate frame that realises continuations without representing succession has no temporal dimension at all, and nothing about its dynamics is thereby incomplete.
 \end{proposition}
 
-The distinction that carries the axiom is between \emph{succession} and \emph{time}. Succession is a relation between realised collapses and is substrate-level. Time is a represented dimension, and representing something requires a frame that represents it. Only an agent --- in the minimal sense of a frame that instantiates the representing relation --- observes time.
+The distinction that carries the axiom is between \emph{succession} and \emph{time}. Succession is a relation among realised changes, carried by which change enables which; it is substrate-level in that sense, not a mechanism the substrate runs over and above the changes. Time is a represented dimension, and representing something requires a frame that represents it. Only an agent --- in the minimal sense of a frame that instantiates the representing relation --- observes time.
 
 Schematically, and without pretending to explain the first arrow,
 \[
 ?\;\dashrightarrow\;G
-\;\xrightarrow{\;\text{persistent directed transformation}\;}\;
-\text{ratchet}
-\;\xrightarrow{\;\text{a frame represents it}\;}\;
+\;\xrightarrow{\;\text{realised change}\;}\;
+\text{changes, enabling-order carried}
+\;\xrightarrow{\;\text{a frame represents an order}\;}\;
 T\in\mathcal F .
 \]
 The second arrow is substrate dynamics. The third is representation, and it is optional.
@@ -333,7 +355,7 @@ No collapse presents a temporal coordinate. Succession is a relation \emph{betwe
 \end{proposition}
 
 \begin{corollary}[Reactive frames have succession and no time]\label{cor:reactive}
-A frame that transforms under the Graph Law without inferring relations among its held states participates fully in the ratchet and has $T=\mathrm{NULL}$. Nothing in its dynamics is thereby impaired: succession is what the substrate supplies, and time is what an inferring frame constructs from it.
+A frame that transforms under the Graph Law without inferring relations among its held states participates fully in realised change and has $T=\mathrm{NULL}$. Nothing in its dynamics is thereby impaired: change is what the substrate supplies and the order among changes is carried by them, while time is what an inferring frame constructs from that order.
 \end{corollary}
 
 \begin{remark}[A rate has no in-frame denominator]\label{rem:no-denominator}
@@ -538,6 +560,11 @@ John S. Bell.
 \newblock On the Einstein Podolsky Rosen paradox.
 \newblock \emph{Physics Physique Fizika}, 1:195--200, 1964.
 
+\bibitem[Bennett(1973)]{bennett1973}
+Charles H. Bennett.
+\newblock Logical reversibility of computation.
+\newblock \emph{IBM Journal of Research and Development}, 17(6):525--532, 1973.
+
 \bibitem[Bohm(1952)]{bohm1952}
 David Bohm.
 \newblock A suggested interpretation of the quantum theory in terms of ``hidden'' variables. I and II.
@@ -577,6 +604,11 @@ Simon Kochen and Ernst P. Specker.
 Leslie Lamport.
 \newblock Time, clocks, and the ordering of events in a distributed system.
 \newblock \emph{Communications of the ACM}, 21(7):558--565, 1978.
+
+\bibitem[Landauer(1961)]{landauer1961}
+Rolf Landauer.
+\newblock Irreversibility and heat generation in the computing process.
+\newblock \emph{IBM Journal of Research and Development}, 5(3):183--191, 1961.
 
 \bibitem[Maes(1987)]{maes1987}
 Pattie Maes.
