@@ -190,8 +190,7 @@ static DIVERGED_RULES: std::sync::Mutex<Vec<String>> = std::sync::Mutex::new(Vec
 /// that something changed; the residual has to be READ to be explained, and
 /// this repo's own baseline lesson is that a characterisation can be held while
 /// a list has to be looked at.
-static SAMPLES: std::sync::Mutex<Vec<(String, String, String)>> =
-    std::sync::Mutex::new(Vec::new());
+static SAMPLES: std::sync::Mutex<Vec<(String, String, String)>> = std::sync::Mutex::new(Vec::new());
 const SAMPLES_PER_RULE: usize = 3;
 
 static COMPARE_ENV: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
@@ -202,7 +201,9 @@ pub fn compare_mode() -> bool {
     }
     *COMPARE_ENV.get_or_init(|| {
         matches!(
-            std::env::var("OZMA_STAGE_A_COMPARE").unwrap_or_default().as_str(),
+            std::env::var("OZMA_STAGE_A_COMPARE")
+                .unwrap_or_default()
+                .as_str(),
             "1" | "true" | "on" | "yes"
         )
     })
@@ -230,8 +231,14 @@ pub fn unsound_stats() -> (u64, Vec<String>) {
 /// Record one drain's Stage-A-vs-committed comparison.
 pub fn record_comparison(rule: &str, stage_a: &[Proposal], committed: &[Proposal]) {
     COMPARED_DRAINS.fetch_add(1, Ordering::Relaxed);
-    let a = format!("{:?}", stage_a.iter().map(|p| &p.writes).collect::<Vec<_>>());
-    let c = format!("{:?}", committed.iter().map(|p| &p.writes).collect::<Vec<_>>());
+    let a = format!(
+        "{:?}",
+        stage_a.iter().map(|p| &p.writes).collect::<Vec<_>>()
+    );
+    let c = format!(
+        "{:?}",
+        committed.iter().map(|p| &p.writes).collect::<Vec<_>>()
+    );
     if a == c {
         return;
     }
@@ -311,7 +318,67 @@ fn rule_has_read_write_dependency(rule: &crate::rewrite::RewriteRule) -> bool {
     rule.write_set.iter().any(|w| rule.read_set.contains(w))
 }
 
-pub fn rule_is_derivable(rule: &crate::rewrite::RewriteRule, _arena: &crate::term::TermArena) -> bool {
+/// Does this rule's own shape permit two DISTINCT bindings to write the same
+/// target node?
+///
+/// This is the CONTENTION half of coupling, and it is a different question from
+/// [`rule_has_read_write_dependency`], which is the TEMPORAL half. §5f concluded
+/// that "no refinement of a write-set relation can see" a read-dependence; the
+/// settling measurement (`STAGE_A_COUPLING_RESULTS.md`) found the exact mirror —
+/// no refinement of a read-write test can see write contention. The two are
+/// complementary, and only together do they classify a drain the way the
+/// revised theory's globally-asynchronous/locally-synchronous reading needs.
+///
+/// The measured case was `comprehend_familiar`: it reads STRUCTURE (the
+/// in-degree of `denotes` on `meaning`) and writes an ATTRIBUTE (`familiar` on
+/// `meaning`), so its read and write sets are disjoint and the temporal test
+/// calls it uncoupled — while every `m` denoting one meaning is a separate
+/// binding writing that same node.
+///
+/// # The test, and why it is this coarse
+///
+/// A written variable `V` cannot be contended if no two distinct bindings can
+/// agree on `V` — which is guaranteed exactly when `V` is the rule's only match
+/// variable. With any second variable free, two bindings may share `V` and
+/// differ elsewhere, which is the shape above. Deciding it more finely would
+/// need the match graph's functional dependencies, which are a property of the
+/// DATA and not of the rule, so no static test can be both sound and tight here.
+///
+/// Sound (never misses a contention), deliberately conservative, and its cost is
+/// reported rather than hidden: see the accompanying results document for what
+/// share of the corpus this additionally refuses.
+fn rule_has_write_contention(rule: &crate::rewrite::RewriteRule) -> bool {
+    use crate::rewrite::Effect;
+
+    // Variables the match binds. One variable => bindings are distinct in it.
+    let mut vars: rustc_hash::FxHashSet<Sym> = Default::default();
+    for e in &rule.match_edges {
+        vars.insert(e.src_var);
+        vars.insert(e.tgt_var);
+    }
+    if vars.len() <= 1 {
+        return false;
+    }
+
+    // Does any effect write a node the match bound (as opposed to one this
+    // firing minted, which is fresh per binding and cannot be contended)?
+    // Attribute writes onto a MATCHED node, plus the structural rewrite that
+    // targets one. Edge effects are deliberately left to the dynamic write-set
+    // relation for now: whether they need covering here is an empirical
+    // question, and the measurement answers it by whether divergence reaches
+    // zero with this test alone.
+    rule.effects.iter().any(|e| match e {
+        Effect::SetAttr { var, .. }
+        | Effect::SetAttrIfDifferent { var, .. } => vars.contains(var),
+        Effect::ReplaceValue { old_var, .. } => vars.contains(old_var),
+        _ => false,
+    })
+}
+
+pub fn rule_is_derivable(
+    rule: &crate::rewrite::RewriteRule,
+    _arena: &crate::term::TermArena,
+) -> bool {
     use crate::rewrite::Effect;
 
     if rule
@@ -322,7 +389,11 @@ pub fn rule_is_derivable(rule: &crate::rewrite::RewriteRule, _arena: &crate::ter
         return false;
     }
 
-    !rule_has_read_write_dependency(rule)
+    // BOTH halves of coupling. Temporal: one binding's write feeds another's
+    // read. Contention: two bindings write the same target. Either is a boundary
+    // relating the bindings' collapses, so either disqualifies the drain from
+    // being treated as an uncoupled set.
+    !rule_has_read_write_dependency(rule) && !rule_has_write_contention(rule)
 }
 
 /// Read the forward delta of a firing that has been applied but NOT yet undone.
@@ -367,7 +438,12 @@ pub fn capture(
                             .iter()
                             .filter_map(|(k, _)| attrs.get(k).map(|v| (*k, v.clone())))
                             .collect();
-                        writes.push(Write::AddNodeIfAbsent { slot, type_, dedup, attrs });
+                        writes.push(Write::AddNodeIfAbsent {
+                            slot,
+                            type_,
+                            dedup,
+                            attrs,
+                        });
                     }
                     _ => writes.push(Write::AddNode { slot, type_, attrs }),
                 }
@@ -384,7 +460,12 @@ pub fn capture(
                     attrs,
                 });
             }
-            UndoStep::DeletedEdge { src, edge_type, tgt, .. } => {
+            UndoStep::DeletedEdge {
+                src,
+                edge_type,
+                tgt,
+                ..
+            } => {
                 writes.push(Write::DelEdge {
                     src: as_ref(*src, &slots),
                     edge_type: *edge_type,
@@ -405,7 +486,10 @@ pub fn capture(
                 // Unreachable for derivable rules (`rule_is_derivable` excludes
                 // them). Kept explicit so a future effect that emits this step
                 // fails loudly here rather than silently losing a delete.
-                debug_assert!(false, "NodeDeleted captured for a rule that passed rule_is_derivable");
+                debug_assert!(
+                    false,
+                    "NodeDeleted captured for a rule that passed rule_is_derivable"
+                );
             }
         }
     }
@@ -466,8 +550,14 @@ pub fn conflicts(proposals: &[Proposal]) -> bool {
         for w in &p.writes {
             match w {
                 Write::AddNode { .. } | Write::AddNodeIfAbsent { .. } => {}
-                Write::AddEdge { src, tgt, .. } => { add(src); add(tgt); }
-                Write::DelEdge { src, tgt, .. } => { add(src); add(tgt); }
+                Write::AddEdge { src, tgt, .. } => {
+                    add(src);
+                    add(tgt);
+                }
+                Write::DelEdge { src, tgt, .. } => {
+                    add(src);
+                    add(tgt);
+                }
                 Write::SetAttr { node, .. } => add(node),
             }
         }
@@ -509,7 +599,12 @@ pub fn commit(proposal: &Proposal, graph: &mut TypedGraph) {
                 let nid = graph.insert_node(*type_, attrs.clone());
                 minted.push(nid);
             }
-            Write::AddNodeIfAbsent { type_, dedup, attrs, .. } => {
+            Write::AddNodeIfAbsent {
+                type_,
+                dedup,
+                attrs,
+                ..
+            } => {
                 // Same subset semantics as the effect itself: an existing node
                 // matches when it carries every dedup pair, and may carry more.
                 let found = graph.nodes_of_type(*type_).into_iter().find(|cand| {
@@ -522,12 +617,21 @@ pub fn commit(proposal: &Proposal, graph: &mut TypedGraph) {
                 };
                 minted.push(nid);
             }
-            Write::AddEdge { src, edge_type, tgt, attrs } => {
+            Write::AddEdge {
+                src,
+                edge_type,
+                tgt,
+                attrs,
+            } => {
                 if let (Some(s), Some(t)) = (resolve(src, &minted), resolve(tgt, &minted)) {
                     let _ = graph.insert_edge(s, *edge_type, t, attrs.clone());
                 }
             }
-            Write::DelEdge { src, edge_type, tgt } => {
+            Write::DelEdge {
+                src,
+                edge_type,
+                tgt,
+            } => {
                 if let (Some(s), Some(t)) = (resolve(src, &minted), resolve(tgt, &minted)) {
                     if let Some(idx) = graph.edge_idx(s, *edge_type, t) {
                         graph.delete_edge(idx);
@@ -544,7 +648,6 @@ pub fn commit(proposal: &Proposal, graph: &mut TypedGraph) {
             }
         }
     }
-
 }
 
 #[cfg(test)]
@@ -570,13 +673,20 @@ mod tests {
         // reads `mlabel` — the FOLD/PROPAGATION shape
         let reads_same = arena.add(crate::term::TermNode::Attr { node: var, key: k });
         // reads a DIFFERENT key — independent, must stay derivable
-        let reads_other = arena.add(crate::term::TermNode::Attr { node: var, key: other });
+        let reads_other = arena.add(crate::term::TermNode::Attr {
+            node: var,
+            key: other,
+        });
 
         // derive_access is what populates read_set/write_set, so the rule must
         // go through it -- exactly as `add_rule` does on the way in.
         let mk = |value| {
             let mut r = RewriteRule {
-                effects: vec![Effect::SetAttr { var: v, key: k, value }],
+                effects: vec![Effect::SetAttr {
+                    var: v,
+                    key: k,
+                    value,
+                }],
                 ..RewriteRule::default()
             };
             r.derive_access(&arena);
@@ -592,8 +702,79 @@ mod tests {
             "reading a DIFFERENT key is not a read-write dependency"
         );
         assert!(
-            rule_is_derivable(&mk(EffectArg::Literal(crate::value::Value::Float(1.0))), &arena),
+            rule_is_derivable(
+                &mk(EffectArg::Literal(crate::value::Value::Float(1.0))),
+                &arena
+            ),
             "a literal write has nothing to read"
         );
+    }
+}
+
+#[cfg(test)]
+mod contention_tests {
+    use crate::rewrite::{Effect, EffectArg, MatchEdge, RewriteRule};
+    use crate::value::Value;
+
+    fn rule(edges: Vec<(&str, &str, &str)>, writes_var: Option<&str>) -> (RewriteRule, crate::sym::Interner) {
+        let mut i = crate::sym::Interner::new();
+        let mut r = RewriteRule::default();
+        r.match_edges = edges
+            .into_iter()
+            .map(|(s, e, t)| MatchEdge {
+                src_var: i.intern(s),
+                edge_type: i.intern(e),
+                tgt_var: i.intern(t),
+            })
+            .collect();
+        if let Some(v) = writes_var {
+            r.effects = vec![Effect::SetAttr {
+                var: i.intern(v),
+                key: i.intern("familiar"),
+                value: EffectArg::Literal(Value::Float(1.0)),
+            }];
+        }
+        (r, i)
+    }
+
+    #[test]
+    fn the_measured_divergence_shape_is_now_refused() {
+        // `comprehend_familiar`: match [m, denotes, meaning], set meaning.familiar.
+        // Its read and write sets are DISJOINT — it reads structure, writes an
+        // attribute — so the temporal test called it uncoupled and Stage A
+        // batched it, while every `m` denoting one meaning writes that same node.
+        let (r, _i) = rule(vec![("m", "denotes", "meaning")], Some("meaning"));
+        assert!(super::rule_has_write_contention(&r),
+                "the one rule the settling measurement caught is still batchable");
+    }
+
+    #[test]
+    fn a_single_variable_match_cannot_be_contended() {
+        // With one variable, distinct bindings differ in it by construction, so
+        // no two can write the same target. This is the whole basis of the test
+        // and it must not be conservative here or Stage A has no domain at all.
+        let (r, _i) = rule(vec![("x", "self_edge", "x")], Some("x"));
+        assert!(!super::rule_has_write_contention(&r));
+    }
+
+    #[test]
+    fn a_rule_that_writes_no_matched_node_is_not_contended() {
+        // Minting a fresh node per binding cannot contend: the target is new
+        // each time. Only writes onto a MATCHED var are at risk.
+        let (r, _i) = rule(vec![("a", "e", "b")], None);
+        assert!(!super::rule_has_write_contention(&r));
+    }
+
+    #[test]
+    fn contention_is_checked_INDEPENDENTLY_of_the_temporal_test() {
+        // The point of the pair: this rule has disjoint read/write sets, so
+        // `rule_has_read_write_dependency` is false, and contention is the ONLY
+        // thing standing between it and a wrong batch. If the two tests were
+        // ever collapsed into one, the settling measurement's divergence would
+        // come straight back.
+        let (r, _i) = rule(vec![("m", "denotes", "meaning")], Some("meaning"));
+        assert!(!super::rule_has_read_write_dependency(&r),
+                "fixture no longer isolates contention from temporal coupling");
+        assert!(super::rule_has_write_contention(&r));
     }
 }
