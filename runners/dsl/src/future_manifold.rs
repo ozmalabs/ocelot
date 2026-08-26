@@ -882,28 +882,46 @@ pub fn feasible_selection(
     if candidates.is_empty() {
         return None;
     }
-    let deformations = reachable_deformation_set(graph, interner, episode, policy, candidates);
-    if deformations.iter().any(|record| !record.support) {
-        return None;
-    }
+    // Selection needs only support, resolution and loss.  Asking
+    // `reachable_deformation_set` for them used to recompute the same shape for
+    // every published field and retained dimension.  The native snapshot is
+    // deliberately a single audit, so candidate-family arbitration remains
+    // O(candidates * shape) rather than O(candidates * shape * dimensions).
+    let snapshot_field = interner.intern("snapshot");
     let interner = &*interner;
 
-    let records: Vec<SelectionRecord> = deformations
+    let records: Vec<SelectionRecord> = candidates
         .iter()
-        .map(|d| {
-            let established = d.support && d.resolved;
-            SelectionRecord {
-                candidate: d.candidate,
+        .map(|candidate| {
+            let snapshot = projection_field(
+                graph,
+                interner,
+                episode,
+                policy,
+                *candidate,
+                None,
+                snapshot_field,
+            )?;
+            let fields = sequence(&snapshot)?;
+            let support = number(fields.first()?)? != 0.0;
+            let resolved = number(fields.get(1)?)? != 0.0;
+            let loss = number(fields.get(2)?)?;
+            if !support {
+                return None;
+            }
+            let established = resolved;
+            Some(SelectionRecord {
+                candidate: *candidate,
                 established,
-                feasible: established && d.loss == 0.0,
-                intervention: scalar(graph, interner, d.candidate, "intervention"),
-                goal_rank: scalar(graph, interner, d.candidate, "goal_rank"),
-                withheld: scalar(graph, interner, d.candidate, "withheld")
+                feasible: established && loss == 0.0,
+                intervention: scalar(graph, interner, *candidate, "intervention"),
+                goal_rank: scalar(graph, interner, *candidate, "goal_rank"),
+                withheld: scalar(graph, interner, *candidate, "withheld")
                     .map(|v| v != 0.0)
                     .unwrap_or(false),
-            }
+            })
         })
-        .collect();
+        .collect::<Option<Vec<_>>>()?;
 
     let pick = |f: &dyn Fn(&SelectionRecord) -> bool| -> Vec<NodeID> {
         records.iter().filter(|r| f(r)).map(|r| r.candidate).collect()
