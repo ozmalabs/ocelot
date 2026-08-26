@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-24}\\[2pt]24 August 2026}
+\date{\textbf{Draft \textemdash\ draft-2026-08-26}\\[2pt]26 August 2026}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-24}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-26}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-24}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-26}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-24} (24 August 2026).
+\textbf{DRAFT --- draft-2026-08-26} (26 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -112,6 +112,16 @@ No parent pointer, world model, affordance catalogue, Narrative, Prospect, Value
 Any additional structure required only by a particular capability class is represented content or grounding, not a primitive of graphhood, unless a graph lacking it cannot participate in the basic realised transition relation.
 \end{proposition}
 
+\begin{remark}[The triple, unpacked in dependency order]\label{rem:dependency-order}
+The three components of $G$ resolve into five constituents ordered by requirement, each presupposing the one before it:
+\[
+\boxed{\text{nodes}\;\to\;\text{relations}\;\to\;\text{rules}\;\to\;\text{delta}\;\to\;\text{grammar}.}
+\]
+\emph{Nodes} are bare distinctions --- the minimal difference that makes a difference; a node alone carries almost no content. \emph{Relations} structure nodes and require them as relata; this is where content lives, and a node's identity is its relations. \emph{Rules} ($r$) act on relational structure and require relations to match. \emph{Delta} is the change a rule writes and requires rules, since only a rule produces one. \emph{Grammar} ($\Gamma$) gates which deltas are admissible and requires deltas to gate, which is why it is last. Nodes and relations are $g$; delta is $r$'s product, made explicit; grammar is $\Gamma$.
+
+Two cautions. First, this constructive order does not contradict the relational primacy of Axiom~$-1$: constructively nodes precede relations (relata come first), while semantically relations precede nodes (a node means nothing unheld by relations); both hold on different axes. Second, the order is a dependency partial order, not a temporal one --- nodes are not a first \emph{moment} but the least-dependent constituent, consistent with the absence of any substrate time (Section~\ref{sec:time-not-primitive}).
+\end{remark}
+
 \section{Discrete sufficiency}
 \begin{hypothesis}[Discrete sufficiency]
 Every quantity required internally by the present substrate can be represented by discrete distinguishable states at the operative frame and resolution.
@@ -156,6 +166,10 @@ The term is inherited from quantum measurement theory, where a formal distinctio
 The realised history of a frame is
 \[\Hist=G_0\xrightarrow{\Coll_0}G_1\xrightarrow{\Coll_1}G_2\rightarrow\cdots.\]
 \end{definition}
+
+\begin{remark}[Collapse is a local write, not a global tick]\label{rem:collapse-write}
+The subscripts on $\Coll_t$ index a frame's own succession and must not be read as a shared clock. A collapse is a \emph{local, asynchronous realisation} --- a rule writing a delta --- and it is the only kind of event the substrate has. Between writes nothing happens: an unwritten frame does not advance, and since succession is what induces order (Section~\ref{sec:causal-order}), no time passes for it. There is accordingly no global step in which every frame advances together; frames whose collapses are not related through a boundary are simply unordered with respect to one another (Section~\ref{sec:causal-order}). ``Momentum'' --- a standing delta re-realised without a distinct write --- is therefore the absence of an event, not a repeated one, which is the substrate form of the inertial statement developed in the Narrative-momentum paper. The picture of a single global present sweeping forward is exactly the represented time dimension of Axiom~\ref{ax:no-time} mistaken for substrate structure.
+\end{remark}
 
 \section{The Law of Graphic Equalisation}
 \begin{hypothesis}[Law of Graphic Equalisation]
@@ -209,6 +223,44 @@ A previous success, failure, attempt, or residual has no later causal force mere
 \end{proposition}
 Thus a graph with no feedback machinery can derive the same failed transformation repeatedly. This is compatible with the classical control-theoretic distinction between plant dynamics and feedback: a controller changes future action only insofar as measured error is coupled back into its state or control law \citep{wiener1948,ashby1956}.
 
+\begin{proposition}[Residual is what a containing grammar does not admit]\label{prop:residual-inadmissible}
+When a graph-originated deformation is offered to a containing frame $W$ across $\mathcal B_{W:G}$, what $W$ admits under $\Gamma_W$ merges into $W$; what $\Gamma_W$ does not admit is not merged and remains in place. The residual is exactly this non-admitted remainder:
+\[
+\boxed{\epsilon \;=\; \delta^R \ominus \delta^P \;=\; \text{the part of the offered deformation }\Gamma_W\text{ does not admit.}}
+\]
+\end{proposition}
+This locates the residual as the negative of an admissibility judgement rather than as an independently produced quantity, and it is what makes the merge non-destructive: what fits is absorbed, and what does not is left untouched, not deleted. A deformation may pass the graph's own $\Gamma_G$ (admissible to itself) yet fail the containing $\Gamma_W$ (inadmissible to its frame); the residual is precisely that gap between a graph's grammar and its container's.
+
+\begin{corollary}[Growth is grammar extension]\label{cor:mint-is-grammar}
+A residual is absorbed either by a containing frame extending $\Gamma_W$ to admit it, or by paying to copy it out (Section~\ref{sec:interface}); otherwise it persists and is re-offered. The first route is the substrate form of \emph{minting} a new distinction: the residual does not fit because it is inadmissible, so admitting it requires extending the grammar, and extending the grammar is the act by which a previously inadmissible deformation becomes recognisable. Recognition and growth are therefore one mechanism gated at one place --- the residual is where the shape a graph decodes and the grammar that admits it meet.
+\end{corollary}
+
+\section{The frame interface and its economics}\label{sec:interface}
+
+The boundary of Section~\ref{sec:collapse-law} can be characterised by what actually crosses it and what it costs, and the characterisation is unexpectedly thin.
+
+\begin{proposition}[One interface, two gates]\label{prop:two-gates}
+A situated graph meets its containing frame through a single relation, and what an observation from that frame delivers is not distinct in kind from what the containing frame imposes: to a subgraph, being observed \emph{is} being deformed by its container. That one relation is gated twice, by the same kind of admissibility grammar on its two faces:
+\[
+\boxed{\underbrace{\text{aperture}}_{\Gamma\text{ on the input}}\;\longrightarrow\;\underbrace{\text{rules}}_{r}\;\longrightarrow\;\underbrace{\text{admissibility}}_{\Gamma\text{ on the output}}.}
+\]
+\emph{Aperture} limits, by grain, which of the container's deformation enters the rules; \emph{admissibility} limits which of the rules' deltas may merge outward (Proposition~\ref{prop:residual-inadmissible}). Execution runs between the two.
+\end{proposition}
+
+This distinguishes two ways a candidate is excluded, with opposite consequences. What falls below \emph{aperture} never enters and is therefore \emph{absent} --- it is NULL to the frame (Definition~\ref{def:states}), not a residual, and produces no disturbance. What fails \emph{admissibility} has entered, been operated on, and cannot merge; it is residual, and it persists and is re-offered (Corollary~\ref{cor:mint-is-grammar}). The first is a limit of perception, the second a limit of expression, and phenomena of the ``stuck, repeating'' kind belong exclusively to the second.
+
+\begin{proposition}[The single cost is the write, and rules pay it]\label{prop:economics}
+Reads and the boundary relation itself are free; a standing delta re-realised without a distinct write (momentum) is free; the only operation that costs is writing a delta, and only $r$ writes. Hence
+\[
+\boxed{\text{cost is paid by rules.}}
+\]
+\end{proposition}
+Continuation is therefore free and change is paid: a delta persists until something writes over it, so realising a \emph{different} delta --- including realising the null delta, i.e. stopping --- is the priced operation. Retaining a past state that the containing frame does not require is likewise a paid copy, since the containing grammar would otherwise not carry it. This is the substrate form of the well-formedness result of the later papers: for a well-formed graph the rules rarely need to write against the standing delta, so cost approaches zero.
+
+\begin{remark}[What is required and what is optimisation]\label{rem:nothing-compulsory}
+Only that rules run is compulsory. Applying a delta is itself a rule, not a primitive operation beneath the rules, so the specific dynamics --- inertia, the merge behaviour, closure --- are contingent rule content, and a different $r$ or $\Gamma$ is a different physics rather than a violated law (this is why the initial and boundary conditions of a grounding are supplied separately from its laws; Section~\ref{sec:causal-order}). The two gates of Proposition~\ref{prop:two-gates}, and even the retained pointer to the standing delta, are \emph{optimisations} on bare rule-running: aperture bounds the input, admissibility gates the output, and the retained delta buys free continuation. A substrate lacking them still runs --- ungated, without momentum, wastefully --- so they are what an efficient graph accretes under a budget, not constituents of graphhood. The retained delta specifically is what distinguishes a self-sustaining loop from a purely reactive one, since coasting is the cached delta.
+\end{remark}
+
 \section{SELF and SUPERGRAPH identity}
 \begin{definition}[SELF identity]
 SELF identity is optional represented content inside $g$ by which a graph identifies itself.
@@ -229,6 +281,15 @@ The substrate alone does not determine whether two represented instances are the
 A situated identity $\iota_{W:G}$ terminates when the realised world transition admits no successor that $W$ continues to individuate under that identity.
 \end{definition}
 Termination is not successful refusal of world forcing. Nor need it erase copied SELF identity. If $G$ is individuated by several frames, it may terminate in one and continue in another.
+
+\begin{proposition}[Self-alteration is a round trip through the container]\label{prop:no-direct-self-alter}
+So far as is observed, a graph holds no capability to alter its own frame directly. A graph may alter its \emph{subgraphs} directly (they are its content) and may alter its \emph{containing} frame by offering a delta across $\mathcal B_{W:G}$; alteration of the graph's own frame occurs only as the return leg of that offer --- the container, of which the graph is a subgraph, alters it back. Frame-level self-change is therefore a round trip through the containing frame, not a reflexive write.
+\end{proposition}
+This is consistent with, and sharpens, the reflection theorem: ``the grammar is the loop'' is realised through the boundary, not as a direct edge from a frame to itself. Its absence is expected rather than surprising --- a direct self-write would be a write into the rules currently executing, the worst case of the concurrency in Section~\ref{sec:determinism}'s frame-limited view; the round trip is safer because the container returns the change as a gated deformation. And it may be actively excluded: most containing grammars carry no production admitting a direct self-altering delta, and admitting one would itself be a self-alteration requiring the very route it would install, so the capability is self-locked and can be opened only from the container.
+
+\begin{corollary}[Severing the channel removes termination]\label{cor:locked-in}
+Termination that a graph brings about is a frame-level self-alteration, so by Proposition~\ref{prop:no-direct-self-alter} it requires a live boundary. If a graph's outward channel is severed while its rules continue to run, it can still alter its subgraphs but can neither alter its own frame nor terminate it: the loop runs, closed, with no reachable exit. External termination by the containing frame remains possible; self-termination does not. This is the substrate description of locked-in and brain-in-a-jar states, and it exhibits the dependence on the containing frame that ordinarily working channels keep invisible --- self-directed change was always mediated, never internal.
+\end{corollary}
 
 \section{First-class higher-frame quantities}
 \begin{proposition}[Higher-frame first-class structure]
@@ -274,6 +335,10 @@ No collapse presents a temporal coordinate. Succession is a relation \emph{betwe
 \begin{corollary}[Reactive frames have succession and no time]\label{cor:reactive}
 A frame that transforms under the Graph Law without inferring relations among its held states participates fully in the ratchet and has $T=\mathrm{NULL}$. Nothing in its dynamics is thereby impaired: succession is what the substrate supplies, and time is what an inferring frame constructs from it.
 \end{corollary}
+
+\begin{remark}[A rate has no in-frame denominator]\label{rem:no-denominator}
+A realised delta is a difference, not a difference \emph{per} anything: what a frame holds is $\Delta$, never $\Delta/\Delta T$, because $\Delta T$ is the inferred dimension of Proposition~\ref{prop:time-inferred} and is not available in-frame to divide by. A rate is thus a second construction --- an observer dividing an accumulated $\Delta$ by its own count of writes --- and is cross-frame in the same sense that a metric duration is. This is why a substrate law must be stated in $\Delta$ rather than in a rate: ``constant motion'' is a standing $\Delta$ re-realised without a write (Remark~\ref{rem:collapse-write}), not a velocity. It also diagnoses a familiar regress in constructed learners, where every adaptive rate is found to need a reference rate without end: the regress is the signature of placing a cross-frame quantity in-frame, and it disappears when the held quantity is the difference itself.
+\end{remark}
 
 This orders two capabilities that are usually treated as independent. Inference is not a faculty a temporal agent happens to have; it is the precondition for being a temporal agent at all. It also grades: the temporal structure a frame holds is bounded by the inferential structure it can construct, so ``how much time'' a frame has is a question about its inference and not about the world.
 
@@ -354,6 +419,18 @@ Metric time is a grounding, e.g.
 \[\theta:\mathcal H_G\to\mathbb R,\qquad e_a\prec e_b\Rightarrow\theta(e_a)<\theta(e_b).\]
 The separation between a primitive causal partial order and additional metric structure has a close analogue in causal-set approaches to spacetime \citep{bombelli1987}. The present substrate does not assume causal-set dynamics; the citation marks the established precedent for keeping order and metric distinct.
 
+The chained notation $e_0\prec e_1\prec\cdots$ is the \emph{in-frame} sequence and should not be read as global. Rules require ordering --- closure and cause-before-effect both presuppose it --- but the requirement is a \emph{partial} order, weaker than time.
+
+\begin{proposition}[Partial, not total; carried by the rules]\label{prop:partial-order}
+Two collapses are ordered only where a boundary relates them; collapses not so related are unordered --- concurrent, incomparable. The ordering is intrinsic to the rules, since one delta's being what enables another's match is precisely their precedence, so no external clock is needed to impose it. A single frame's own writes are totally ordered (its inferred time, Section~\ref{sec:time-not-primitive}); across frames only the partial order holds, and a total order is one frame's linearisation of it.
+\end{proposition}
+Time was accordingly a \emph{total} order imposed where only a partial one is required; removing the substrate time dimension removes the over-ordering, not the precedence. This is the same conclusion reached, from engineering necessity, by distributed systems without a shared clock: the happens-before relation is a partial order with per-process sequence counters and no global instant \citep{lamport1978}, and consistency across processes is an expensive coordinated property rather than the default \citep{brewer2000}. The non-atomicity this implies --- a graph's state may be altered by another write while its own rules are mid-run --- is not a defect here but the expected regime; robustness is obtained by re-running to fixed point (a raced deformation becomes residual and is re-offered), not by locking.
+
+\begin{proposition}[No intrinsic first or last; entry is chosen from the container]\label{prop:no-start-end}
+By Axiom~$-1$ the event order has no intrinsic start and no intrinsic end: a first would complete the order backward and a last would complete it forward, and neither is available. A subgraph process that does not terminate within itself is therefore begun not from within --- it has no first rule --- but by a rule in a containing frame that chooses an entry point into the subgraph's open order.
+\end{proposition}
+This is why a grounding's initial and boundary conditions are supplied separately from its laws: the laws are the ordering, which fixes no start, so the entry must be imposed from outside, contingently. It is also the substrate description of booting a situated graph, and of the ``no natural ending'' that follows for any such order --- one enters and leaves at chosen points, neither of which is intrinsic to the material.
+
 \section{Determinism and apparent stochasticity}\label{sec:determinism}
 
 \begin{proposition}[Graph-law determinism]\label{prop:determinism}
@@ -425,7 +502,7 @@ The individual ingredients of Graphic Equalisation have substantial prior art. T
 
 \paragraph{Information and minimum description.} The preference for the smallest sufficient ontology follows the same methodological direction as information-theoretic and minimum-description-length approaches: do not introduce representational structure that buys no additional explanatory or predictive distinction \citep{shannon1948,rissanen1978}. This motivates but does not prove the Discrete Sufficiency Hypothesis.
 
-\section{Falsifiability commitments}
+\section{Falsifiability commitments}\label{sec:falsifiability}
 \paragraph{Composition.} Prior to the component commitments below: the arrangement claim of Section~\ref{sec:scope} fails if the structure's recurrence across unrelated domains is an artefact of description rather than a property of those domains. Evidence against it would be a demonstration that any sufficiently rich domain can be rendered in this vocabulary with equal facility, including domains chosen adversarially to lack the structure. Evidence for it is independent re-derivation, in a domain's own idiom, without reference to this theory.
 \begin{enumerate}[leftmargin=*]
 \item \textbf{Minimal graph sufficiency.} Fails if basic realised graph dynamics require a primitive beyond $(g,r,\Gamma)$ rather than represented or relational structure.
@@ -436,12 +513,18 @@ The individual ingredients of Graphic Equalisation have substantial prior art. T
 \item \textbf{No implicit historical state.} Fails if an unrepresented past event alters later transition structure despite leaving no causal trace in graph or boundary state.
 \item \textbf{Frame-relative identity.} Fails if sameness and persistence are derivable from $(g,r,\Gamma)$ alone without individuation.
 \item \textbf{Higher-frame first-class structure.} Fails if a containing graph cannot possess ordinary relational state about a lower graph unless the same quantity is primitive inside the lower graph.
+\item \textbf{Residual is inadmissibility.} Fails if a graph-originated deformation can be left as residual by a containing frame that nonetheless admits it under $\Gamma_W$, or absorbed while inadmissible, so that residual and non-admission come apart.
+\item \textbf{Cost is the write.} Fails if a substrate operation other than writing a delta carries an irreducible cost --- if reading, holding a standing delta, or the boundary relation itself must be paid for independently of any write they occasion.
+\item \textbf{No direct self-alteration.} Fails by exhibiting a graph that alters its own operative frame without either altering a subgraph or completing a round trip through a containing frame --- a reflexive write to its own running $r$ or $\Gamma$. Its observed absence is a contingent regularity, so this is the commitment most open to a constructed counterexample.
+\item \textbf{Partial-order sufficiency.} Fails if realised dynamics require a total order over collapses in distinct frames --- a global simultaneity --- rather than only the boundary-induced partial order.
 \end{enumerate}
 
 \section{Conclusion}
 The theory is deliberately small. A graph need not know what it is, where it is, what will happen, or what it wants. Present structure determines admissible continuation; interaction and collapse produce realised history; realised history changes the antecedent from which subsequent possibility is generated.
 
 Recursion requires no external homunculus. Where the grammar acts on its own represented structure, the grammar is the loop. World forcing is not self-action, residual is discrepancy rather than diagnosis, history matters only where it survives as present structure, and identity exists only under individuation by a frame.
+
+Pressed for what is compulsory, the theory keeps almost nothing. Only that rules run: applying a delta is itself a rule, the two gates of the interface and the retained standing delta are optimisations, and the single cost is the write, paid by the rules. The interface reduces to a container relation gated by aperture inward and admissibility outward; a collapse is a local asynchronous write and the only event; the residual is exactly what a containing grammar does not admit, so recognition and growth meet there; ordering is required but only as a partial order the rules carry themselves, with no substrate time and no global instant; the event order has no intrinsic first or last, so entry is chosen from a container; and a graph cannot alter its own frame directly, only across the boundary, which is why a severed channel removes not just action but termination. What survives every attempted removal is a container relation across which rules run, and the specific laws above it --- inertia, closure, the shape of collapse --- are contingent rule content rather than necessities, which is the sense in which this substrate underlies groundings without dictating them.
 
 \begin{thebibliography}{99}
 
@@ -465,6 +548,11 @@ Luca Bombelli, Joohan Lee, David Meyer, and Rafael D. Sorkin.
 \newblock Space-time as a causal set.
 \newblock \emph{Physical Review Letters}, 59:521--524, 1987.
 
+\bibitem[Brewer(2000)]{brewer2000}
+Eric A. Brewer.
+\newblock Towards robust distributed systems.
+\newblock In \emph{Proceedings of the 19th ACM Symposium on Principles of Distributed Computing (PODC)}, keynote, 2000.
+
 \bibitem[Ehrig et~al.(2006)Ehrig, Ehrig, Prange, and Taentzer]{ehrig2006}
 Hartmut Ehrig, Karsten Ehrig, Ulrike Prange, and Gabriele Taentzer.
 \newblock \emph{Fundamentals of Algebraic Graph Transformation}.
@@ -484,6 +572,11 @@ E. T. Jaynes.
 Simon Kochen and Ernst P. Specker.
 \newblock The problem of hidden variables in quantum mechanics.
 \newblock \emph{Journal of Mathematics and Mechanics}, 17:59--87, 1967.
+
+\bibitem[Lamport(1978)]{lamport1978}
+Leslie Lamport.
+\newblock Time, clocks, and the ordering of events in a distributed system.
+\newblock \emph{Communications of the ACM}, 21(7):558--565, 1978.
 
 \bibitem[Maes(1987)]{maes1987}
 Pattie Maes.
