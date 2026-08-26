@@ -242,7 +242,7 @@ def test_graph_selector_uses_analysis_by_synthesis_for_program_paths():
         "token": "escaping-cheaper-path",
         "ordinal": 99.0,
         "actuator_group": 99.0,
-        "mean_dvx": 2.0,
+        "mean_dvx": 1.2,
     })
     escaping_model = agent.s.add_node(
         "HumanoidPhaseActionModel", escaping_attrs
@@ -292,6 +292,38 @@ def test_graph_selector_uses_analysis_by_synthesis_for_program_paths():
     assert list(agent.inner.evaluate(
         _selection_term("infeasible"), bindings
     )) == [escaping]
+    assert tuple(agent.inner.evaluate(
+        _selection_term("audit_snapshot"), bindings
+    )) == (2, 0, 1, 1, 1, 1, 0, 1)
+
+    _learning_safety(
+        agent,
+        ep,
+        protective_support_available=1.0,
+        protective_support_effectiveness=1.0,
+    )
+    for key, value in {
+        "body_mass": 10.0,
+        "state_qx": 0.0,
+        "state_qy": 0.0,
+        "support_sensor_count": 1.0,
+        "active_support_count": 1.0,
+        "state_support_0_force": 100.0,
+        "state_contact_force_newtons": 100.0,
+        "caregiver_protective_support_requested": 1.0,
+    }.items():
+        agent.inner.set_attr(ep, key, value)
+    agent.inner.set_attr(policy, "gravity_acceleration", 10.0)
+
+    assert _value(
+        agent, ep, policy, escaping, "exploration_authority"
+    ) > 0.0
+    assert list(agent.inner.evaluate(
+        _selection_term(), bindings
+    )) == [escaping]
+    assert tuple(agent.inner.evaluate(
+        _selection_term("audit_snapshot"), bindings
+    )) == (2, 0, 0, 2, 1, 1, 0, 1)
 
 
 def test_humanoid_narrativium_counts_distinct_sibling_path_shapes_per_axis():

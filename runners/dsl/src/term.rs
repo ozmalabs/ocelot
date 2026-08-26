@@ -3142,6 +3142,8 @@ pub enum TermNode {
         field: Sym,
     },
     /// Set-valued minimum-sufficient arbitration over projected candidates.
+    /// `audit_snapshot` returns counts in candidate, unestablished,
+    /// infeasible, feasible, minimal, selected, withheld-minimal and tie order.
     FutureManifoldSelection {
         episode: TermIdx,
         policy: TermIdx,
@@ -9671,6 +9673,16 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 "selected" => nodes(&selection.selected),
                 "withheld_minimal" => nodes(&selection.withheld_minimal),
                 "tie_breadth" => Value::Int(selection.tie_breadth as i64),
+                "audit_snapshot" => Value::Tuple(Arc::new(smallvec::smallvec![
+                    Value::Int(candidate_nodes.len() as i64),
+                    Value::Int(selection.unestablished.len() as i64),
+                    Value::Int(selection.infeasible.len() as i64),
+                    Value::Int(selection.feasible.len() as i64),
+                    Value::Int(selection.minimal.len() as i64),
+                    Value::Int(selection.selected.len() as i64),
+                    Value::Int(selection.withheld_minimal.len() as i64),
+                    Value::Int(selection.tie_breadth as i64),
+                ])),
                 "supported" => Value::Bool(true),
                 _ => Value::None,
             }
