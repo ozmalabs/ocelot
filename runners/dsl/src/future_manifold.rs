@@ -1325,6 +1325,30 @@ mod feasible_selection_tests {
             "the cheaper escaping candidate was selected outside the manifold",
         );
 
+        let audit_field = i.intern("audit_snapshot");
+        let audit_selection = arena.add(TermNode::FutureManifoldSelection {
+            episode,
+            policy,
+            candidates,
+            field: audit_field,
+            snapshot_field: snapshot,
+        });
+        let mut audit_env: Env = smallvec::smallvec![];
+        let mut audit_ctx = EvalCtx::new(&g, &i);
+        assert_eq!(
+            evaluate(&arena, audit_selection, &mut audit_env, &mut audit_ctx),
+            Value::Tuple(std::sync::Arc::new(smallvec::smallvec![
+                Value::Int(2),
+                Value::Int(0),
+                Value::Int(1),
+                Value::Int(1),
+                Value::Int(1),
+                Value::Int(1),
+                Value::Int(0),
+                Value::Int(1),
+            ])),
+        );
+
         let mut reflected_graph = TypedGraph::new();
         let reflected = crate::reflect::term_to_subgraph(
             &loaded,

@@ -712,12 +712,14 @@ def test_order_n_release_projects_the_selected_path_not_only_its_next_program():
     assert "selected_path_narrativium_retained_dvz" in encoded
 
 
-@pytest.mark.parametrize(("terminal_dvx", "released"), (
-    (-0.25, True),
-    (0.5, False),
+@pytest.mark.parametrize(("terminal_dvx", "supported", "released"), (
+    (-0.25, False, True),
+    (0.5, False, False),
+    (0.5, True, True),
 ))
 def test_generic_order_n_path_releases_only_its_next_compound_program(
     terminal_dvx,
+    supported,
     released,
 ):
     from substrate.world_adapter import WorldAdapter
@@ -769,6 +771,31 @@ def test_generic_order_n_path_releases_only_its_next_compound_program(
         agent, development,
         "has_active_embodied_developmental_capability", capability,
     )
+    if supported:
+        safety = agent.s.add_node("LearningSafetyContext", {
+            "verified": 1,
+            "reset_reachable": 0,
+            "reset_cost_units": 1000,
+            "protective_support_available": 1,
+            "protective_support_effectiveness": 1,
+            "recovery_path_count": 0,
+            "required_horizon_units": 4,
+            "exploration_width_budget": 1,
+            "exploration_information_budget": 1,
+        })
+        _edge(agent, episode, "has_learning_safety_context", safety)
+        for key, value in {
+            "body_mass": 10,
+            "state_qx": 0,
+            "state_qy": 0,
+            "support_sensor_count": 1,
+            "active_support_count": 1,
+            "state_support_0_force": 100,
+            "state_contact_force_newtons": 100,
+            "caregiver_protective_support_requested": 1,
+        }.items():
+            agent.inner.set_attr(episode, key, value)
+        agent.inner.set_attr(policy, "gravity_acceleration", 10)
     programs = []
     for ordinal, token in enumerate(("origin", "next", "terminal")):
         program = agent.s.add_node("HumanoidMotorProgram", {
