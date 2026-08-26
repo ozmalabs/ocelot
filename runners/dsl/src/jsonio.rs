@@ -338,6 +338,7 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::ShapeDecode { .. } => "ShapeDecode",
         TermNode::MotorCompose { .. } => "MotorCompose",
         TermNode::FutureManifoldProjection { .. } => "FutureManifoldProjection",
+        TermNode::FutureManifoldSelection { .. } => "FutureManifoldSelection",
         TermNode::TransformDecode { .. } => "TransformDecode",
         TermNode::NetForward { .. } => "NetForward",
         TermNode::DimInfer { .. } => "DimInfer",
@@ -1170,6 +1171,18 @@ fn write_fields(node: &TermNode, arena: &TermArena, interner: &Interner, m: &mut
             m.insert("policy".into(), child(*policy, arena, interner));
             m.insert("source".into(), child(*source, arena, interner));
             m.insert("addition".into(), opt_child(*addition, arena, interner));
+            m.insert("field".into(), sym_str(*field, interner));
+        }
+        TermNode::FutureManifoldSelection {
+            episode,
+            policy,
+            candidates,
+            field,
+            ..
+        } => {
+            m.insert("episode".into(), child(*episode, arena, interner));
+            m.insert("policy".into(), child(*policy, arena, interner));
+            m.insert("candidates".into(), child(*candidates, arena, interner));
             m.insert("field".into(), sym_str(*field, interner));
         }
         TermNode::TransformDecode {
@@ -2575,6 +2588,13 @@ fn read_term(
             source: child_of("source", obj, arena, interner, variant)?,
             addition: opt_child_of("addition", obj, arena, interner)?,
             field: get_optional_sym("field", interner),
+        },
+        "FutureManifoldSelection" => TermNode::FutureManifoldSelection {
+            episode: child_of("episode", obj, arena, interner, variant)?,
+            policy: child_of("policy", obj, arena, interner, variant)?,
+            candidates: child_of("candidates", obj, arena, interner, variant)?,
+            field: get_optional_sym("field", interner),
+            snapshot_field: interner.intern("snapshot"),
         },
         "TransformDecode" => TermNode::TransformDecode {
             goal: child_of("goal", obj, arena, interner, variant)?,
