@@ -885,8 +885,14 @@ def test_generic_order_n_path_releases_only_its_next_compound_program(
     selected = agent.inner.neighbours(
         capability, "has_selected_embodied_program_path"
     )
-    assert len(selected) == 1
-    assert agent.s.node(selected[0])["attrs"]["depth"] == 2
+    if released:
+        assert len(selected) == 1
+        assert agent.s.node(selected[0])["attrs"]["depth"] == 2
+    else:
+        # The core risk selector now classifies an escaping synthesis before
+        # it can acquire even output-null selected-path status; execution no
+        # longer needs to rediscover the same refusal at its later gate.
+        assert selected == []
     assert agent.inner.neighbours(
         episode, "has_ready_humanoid_motor_program"
     ) == ([programs[1]] if released else [])

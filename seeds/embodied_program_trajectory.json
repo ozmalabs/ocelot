@@ -1094,6 +1094,25 @@
         ]
        }
       },
+      "intervention": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "transition"
+          },
+          "key": "energy_units"
+         },
+         {
+          "type": "Lit",
+          "value": 0
+         }
+        ]
+       }
+      },
       "peak_load_units": {
        "__term__": {
         "type": "Plus",
@@ -2725,6 +2744,47 @@
         ]
        }
       },
+      "intervention": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "parent"
+            },
+            "key": "energy_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         },
+         {
+          "type": "Plus",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "transition"
+            },
+            "key": "energy_units"
+           },
+           {
+            "type": "Lit",
+            "value": 0
+           }
+          ]
+         }
+        ]
+       }
+      },
       "peak_load_units": {
        "__term__": {
         "type": "Max",
@@ -4133,7 +4193,7 @@
    "area": "cognitive_pareto",
    "latency_class": "soft_realtime",
    "batch": false,
-   "comment": "Pareto removes only refuted paths. Temporal foveation first restricts choice to the shortest sufficient prefix. When a situated manifold context exists, a second Pareto restriction removes only paths dominated in all seven conditional retained-future dimensions; no scalar capacity score is formed. Situated task, evidence, and practice coordinates order the surviving tradeoffs. Receipt counterexamples suspend reuse when they no longer leave a positive transition forecast evidence ratio. Selection grants no actuator authority.",
+   "comment": "Pareto removes only refuted paths. Temporal foveation first restricts choice to the shortest sufficient prefix. When a situated manifold context exists, a second Pareto restriction removes only paths dominated in all seven conditional retained-future dimensions; no scalar capacity score is formed. The generic risk selector then admits only fully projected, effort-authorized minimum-intervention paths. Situated task, evidence, and practice coordinates deterministically order only the surviving equal-cost set. Receipt counterexamples suspend reuse when they no longer leave a positive transition forecast evidence ratio. Selection grants no actuator authority.",
    "match": [
     [
      "owner",
@@ -4706,8 +4766,9 @@
        "name": "path"
       },
       "b": {
-       "type": "Argmin",
-       "source": {
+       "type": "Let",
+       "name": "risk_candidates",
+       "value": {
         "type": "Filter",
         "source": {
          "type": "Filter",
@@ -7902,307 +7963,26 @@
          ]
         }
        },
-       "var_name": "frontier_path",
-       "value": {
-        "type": "Plus",
-        "items": [
-         {
-          "type": "Times",
-          "items": [
-           {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Attr",
-              "node": {
-               "type": "Var",
-               "name": "frontier_path"
-              },
-              "key": "current_state_shape_residual_units"
-             },
-             {
-              "type": "Lit",
-              "value": 0
-             }
-            ]
-           },
-           {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "trajectory"
-                },
-                "key": "active_expansion_horizon"
-               },
-               {
-                "type": "Lit",
-                "value": 0
-               }
-              ]
-             },
-             {
-              "type": "Lit",
-              "value": 1
-             }
-            ]
-           },
-           {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "trajectory"
-                },
-                "key": "active_expansion_horizon"
-               },
-               {
-                "type": "Lit",
-                "value": 0
-               }
-              ]
-             },
-             {
-              "type": "Lit",
-              "value": 1
-             }
-            ]
-           },
-           {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "trajectory"
-                },
-                "key": "active_expansion_horizon"
-               },
-               {
-                "type": "Lit",
-                "value": 0
-               }
-              ]
-             },
-             {
-              "type": "Lit",
-              "value": 1
-             }
-            ]
-           }
-          ]
-         },
-         {
-          "type": "Times",
-          "items": [
-           {
-            "type": "Neg",
-            "arg": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "frontier_path"
-               },
-               "key": "task_progress_units"
-              },
-              {
-               "type": "Lit",
-               "value": 0
-              }
-             ]
-            }
-           },
-           {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "trajectory"
-                },
-                "key": "active_expansion_horizon"
-               },
-               {
-                "type": "Lit",
-                "value": 0
-               }
-              ]
-             },
-             {
-              "type": "Lit",
-              "value": 1
-             }
-            ]
-           },
-           {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "trajectory"
-                },
-                "key": "active_expansion_horizon"
-               },
-               {
-                "type": "Lit",
-                "value": 0
-               }
-              ]
-             },
-             {
-              "type": "Lit",
-              "value": 1
-             }
-            ]
-           }
-          ]
-         },
-         {
-          "type": "Times",
-          "items": [
-           {
-            "type": "Neg",
-            "arg": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "frontier_path"
-               },
-               "key": "capability_evidence_units"
-              },
-              {
-               "type": "Lit",
-               "value": 0
-              }
-             ]
-            }
-           },
-           {
-            "type": "Plus",
-            "items": [
-             {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "trajectory"
-                },
-                "key": "active_expansion_horizon"
-               },
-               {
-                "type": "Lit",
-                "value": 0
-               }
-              ]
-             },
-             {
-              "type": "Lit",
-              "value": 1
-             }
-            ]
-           }
-          ]
-         },
-         {
-          "type": "Plus",
-          "items": [
-           {
-            "type": "Attr",
-            "node": {
-             "type": "Var",
-             "name": "frontier_path"
-            },
-            "key": "replay_count"
-           },
-           {
-            "type": "Lit",
-            "value": 0
-           }
-          ]
-         }
-        ]
-       },
-       "default": {
+       "body": {
         "type": "Argmin",
         "source": {
-         "type": "Filter",
-         "source": {
-          "type": "Neighbours",
-          "node": {
-           "type": "Var",
-           "name": "trajectory"
-          },
-          "edge_type": "has_pareto_candidate",
-          "any_type": false
-         },
-         "var_name": "frontier_path",
-         "predicate": {
+         "type": "IfThenElse",
+         "cond": {
           "type": "And",
           "items": [
            {
             "type": "Eq",
             "a": {
-             "type": "Attr",
-             "node": {
-              "type": "Var",
-              "name": "frontier_path"
-             },
-             "key": "kind"
-            },
-            "b": {
-             "type": "Lit",
-             "value": "embodied_program_path"
-            }
-           },
-           {
-            "type": "Eq",
-            "a": {
-             "type": "Plus",
-             "items": [
-              {
-               "type": "Attr",
-               "node": {
-                "type": "Var",
-                "name": "frontier_path"
-               },
-               "key": "verified"
+             "type": "Count",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "owner"
               },
-              {
-               "type": "Lit",
-               "value": 0
-              }
-             ]
+              "edge_type": "projects_future_manifold_in_episode",
+              "any_type": false
+             }
             },
             "b": {
              "type": "Lit",
@@ -8210,123 +7990,6 @@
             }
            },
            {
-            "type": "Not",
-            "arg": {
-             "type": "Lt",
-             "a": {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "frontier_path"
-                },
-                "key": "depth"
-               },
-               {
-                "type": "Lit",
-                "value": 0
-               }
-              ]
-             },
-             "b": {
-              "type": "Plus",
-              "items": [
-               {
-                "type": "Attr",
-                "node": {
-                 "type": "Var",
-                 "name": "trajectory"
-                },
-                "key": "minimum_selection_depth"
-               },
-               {
-                "type": "Lit",
-                "value": 0
-               }
-              ]
-             }
-            }
-           },
-           {
-            "type": "Or",
-            "items": [
-             {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "frontier_path"
-                 },
-                 "key": "orientation_span_units"
-                },
-                {
-                 "type": "Lit",
-                 "value": 0
-                }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
-             },
-             {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "frontier_path"
-                 },
-                 "key": "task_progress_units"
-                },
-                {
-                 "type": "Lit",
-                 "value": 0
-                }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
-             },
-             {
-              "type": "Gt",
-              "a": {
-               "type": "Plus",
-               "items": [
-                {
-                 "type": "Attr",
-                 "node": {
-                  "type": "Var",
-                  "name": "frontier_path"
-                 },
-                 "key": "capability_evidence_units"
-                },
-                {
-                 "type": "Lit",
-                 "value": 0
-                }
-               ]
-              },
-              "b": {
-               "type": "Lit",
-               "value": 0
-              }
-             }
-            ]
-           },
-           {
             "type": "Eq",
             "a": {
              "type": "Count",
@@ -8334,13 +7997,64 @@
               "type": "Neighbours",
               "node": {
                "type": "Var",
-               "name": "frontier_path"
+               "name": "owner"
               },
-              "edge_type": "contains_embodied_program_transition",
+              "edge_type": "uses_future_manifold_policy",
               "any_type": false
              }
             },
             "b": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         },
+         "then": {
+          "type": "FutureManifoldSelection",
+          "episode": {
+           "type": "Pick",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "owner"
+            },
+            "edge_type": "projects_future_manifold_in_episode",
+            "any_type": false
+           }
+          },
+          "policy": {
+           "type": "Pick",
+           "source": {
+            "type": "Neighbours",
+            "node": {
+             "type": "Var",
+             "name": "owner"
+            },
+            "edge_type": "uses_future_manifold_policy",
+            "any_type": false
+           }
+          },
+          "candidates": {
+           "type": "Var",
+           "name": "risk_candidates"
+          },
+          "field": "selected"
+         },
+         "other": {
+          "type": "Var",
+          "name": "risk_candidates"
+         }
+        },
+        "var_name": "frontier_path",
+        "value": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Times",
+           "items": [
+            {
              "type": "Plus",
              "items": [
               {
@@ -8349,30 +8063,15 @@
                 "type": "Var",
                 "name": "frontier_path"
                },
-               "key": "depth"
+               "key": "current_state_shape_residual_units"
               },
               {
                "type": "Lit",
                "value": 0
               }
              ]
-            }
-           },
-           {
-            "type": "Eq",
-            "a": {
-             "type": "Count",
-             "source": {
-              "type": "Neighbours",
-              "node": {
-               "type": "Var",
-               "name": "frontier_path"
-              },
-              "edge_type": "contains_embodied_program",
-              "any_type": false
-             }
             },
-            "b": {
+            {
              "type": "Plus",
              "items": [
               {
@@ -8382,9 +8081,61 @@
                  "type": "Attr",
                  "node": {
                   "type": "Var",
-                  "name": "frontier_path"
+                  "name": "trajectory"
                  },
-                 "key": "depth"
+                 "key": "active_expansion_horizon"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              {
+               "type": "Lit",
+               "value": 1
+              }
+             ]
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "trajectory"
+                 },
+                 "key": "active_expansion_horizon"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              {
+               "type": "Lit",
+               "value": 1
+              }
+             ]
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "trajectory"
+                 },
+                 "key": "active_expansion_horizon"
                 },
                 {
                  "type": "Lit",
@@ -8398,289 +8149,152 @@
               }
              ]
             }
-           },
-           {
-            "type": "Or",
-            "items": [
-             {
-              "type": "Exists",
-              "source": {
-               "type": "Neighbours",
-               "node": {
-                "type": "Var",
-                "name": "frontier_path"
-               },
-               "edge_type": "contains_embodied_program_transition",
-               "any_type": false
-              },
-              "var_name": "path_next_transition",
-              "predicate": {
-               "type": "And",
-               "items": [
-                {
-                 "type": "Exists",
-                 "source": {
-                  "type": "Neighbours",
-                  "node": {
-                   "type": "Var",
-                   "name": "path_next_transition"
-                  },
-                  "edge_type": "starts_from_embodied_program",
-                  "any_type": false
-                 },
-                 "var_name": "path_next_source",
-                 "predicate": {
-                  "type": "Eq",
-                  "a": {
-                   "type": "Var",
-                   "name": "path_next_source"
-                  },
-                  "b": {
-                   "type": "Var",
-                   "name": "current_program"
-                  }
-                 }
-                },
-                {
-                 "type": "And",
-                 "items": [
-                  {
-                   "type": "Gt",
-                   "a": {
-                    "type": "Plus",
-                    "items": [
-                     {
-                      "type": "Lit",
-                      "value": 1
-                     },
-                     {
-                      "type": "Plus",
-                      "items": [
-                       {
-                        "type": "Attr",
-                        "node": {
-                         "type": "Var",
-                         "name": "path_next_transition"
-                        },
-                        "key": "situated_forecast_confirmation_count"
-                       },
-                       {
-                        "type": "Lit",
-                        "value": 0
-                       }
-                      ]
-                     }
-                    ]
-                   },
-                   "b": {
-                    "type": "Plus",
-                    "items": [
-                     {
-                      "type": "Attr",
-                      "node": {
-                       "type": "Var",
-                       "name": "path_next_transition"
-                      },
-                      "key": "situated_forecast_counterexample_count"
-                     },
-                     {
-                      "type": "Lit",
-                      "value": 0
-                     }
-                    ]
-                   }
-                  },
-                  {
-                   "type": "Not",
-                   "arg": {
-                    "type": "Exists",
-                    "source": {
-                     "type": "Neighbours",
-                     "node": {
-                      "type": "Var",
-                      "name": "frontier_path"
-                     },
-                     "edge_type": "manifold_blocked_from_embodied_program_transition",
-                     "any_type": false
-                    },
-                    "var_name": "blocked_state_transition",
-                    "predicate": {
-                     "type": "Eq",
-                     "a": {
-                      "type": "Var",
-                      "name": "blocked_state_transition"
-                     },
-                     "b": {
-                      "type": "Var",
-                      "name": "path_next_transition"
-                     }
-                    }
-                   }
-                  }
-                 ]
-                }
-               ]
-              }
-             },
-             {
-              "type": "Exists",
-              "source": {
-               "type": "Neighbours",
-               "node": {
-                "type": "Var",
-                "name": "owner"
-               },
-               "edge_type": "has_current_embodied_program_transition_source",
-               "any_type": false
-              },
-              "var_name": "current_transition_source",
-              "predicate": {
-               "type": "Exists",
-               "source": {
-                "type": "Neighbours",
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Neg",
+             "arg": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
                 "node": {
                  "type": "Var",
                  "name": "frontier_path"
                 },
-                "edge_type": "contains_embodied_program_transition",
-                "any_type": false
+                "key": "task_progress_units"
                },
-               "var_name": "path_state_transition",
-               "predicate": {
-                "type": "And",
-                "items": [
-                 {
-                  "type": "Eq",
-                  "a": {
-                   "type": "Var",
-                   "name": "path_state_transition"
-                  },
-                  "b": {
-                   "type": "Var",
-                   "name": "current_transition_source"
-                  }
-                 },
-                 {
-                  "type": "And",
-                  "items": [
-                   {
-                    "type": "Gt",
-                    "a": {
-                     "type": "Plus",
-                     "items": [
-                      {
-                       "type": "Lit",
-                       "value": 1
-                      },
-                      {
-                       "type": "Plus",
-                       "items": [
-                        {
-                         "type": "Attr",
-                         "node": {
-                          "type": "Var",
-                          "name": "current_transition_source"
-                         },
-                         "key": "situated_forecast_confirmation_count"
-                        },
-                        {
-                         "type": "Lit",
-                         "value": 0
-                        }
-                       ]
-                      }
-                     ]
-                    },
-                    "b": {
-                     "type": "Plus",
-                     "items": [
-                      {
-                       "type": "Attr",
-                       "node": {
-                        "type": "Var",
-                        "name": "current_transition_source"
-                       },
-                       "key": "situated_forecast_counterexample_count"
-                      },
-                      {
-                       "type": "Lit",
-                       "value": 0
-                      }
-                     ]
-                    }
-                   },
-                   {
-                    "type": "Not",
-                    "arg": {
-                     "type": "Exists",
-                     "source": {
-                      "type": "Neighbours",
-                      "node": {
-                       "type": "Var",
-                       "name": "frontier_path"
-                      },
-                      "edge_type": "manifold_blocked_from_embodied_program_transition",
-                      "any_type": false
-                     },
-                     "var_name": "blocked_state_transition",
-                     "predicate": {
-                      "type": "Eq",
-                      "a": {
-                       "type": "Var",
-                       "name": "blocked_state_transition"
-                      },
-                      "b": {
-                       "type": "Var",
-                       "name": "current_transition_source"
-                      }
-                     }
-                    }
-                   }
-                  ]
-                 }
-                ]
+               {
+                "type": "Lit",
+                "value": 0
                }
-              }
-             }
-            ]
-           },
-           {
-            "type": "Eq",
-            "a": {
-             "type": "Count",
-             "source": {
-              "type": "Neighbours",
-              "node": {
-               "type": "Var",
-               "name": "frontier_path"
-              },
-              "edge_type": "is_dominated_by_pareto_candidate",
-              "any_type": false
+              ]
              }
             },
-            "b": {
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "trajectory"
+                 },
+                 "key": "active_expansion_horizon"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              {
+               "type": "Lit",
+               "value": 1
+              }
+             ]
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "trajectory"
+                 },
+                 "key": "active_expansion_horizon"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              {
+               "type": "Lit",
+               "value": 1
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Neg",
+             "arg": {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "frontier_path"
+                },
+                "key": "capability_evidence_units"
+               },
+               {
+                "type": "Lit",
+                "value": 0
+               }
+              ]
+             }
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Plus",
+               "items": [
+                {
+                 "type": "Attr",
+                 "node": {
+                  "type": "Var",
+                  "name": "trajectory"
+                 },
+                 "key": "active_expansion_horizon"
+                },
+                {
+                 "type": "Lit",
+                 "value": 0
+                }
+               ]
+              },
+              {
+               "type": "Lit",
+               "value": 1
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "Plus",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "frontier_path"
+             },
+             "key": "replay_count"
+            },
+            {
              "type": "Lit",
              "value": 0
             }
-           }
-          ]
-         }
-        },
-        "var_name": "shallow_frontier_path",
-        "value": {
-         "type": "Plus",
-         "items": [
-          {
-           "type": "Attr",
-           "node": {
-            "type": "Var",
-            "name": "shallow_frontier_path"
-           },
-           "key": "depth"
-          },
-          {
-           "type": "Lit",
-           "value": 0
+           ]
           }
          ]
         },

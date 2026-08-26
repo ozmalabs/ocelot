@@ -100,6 +100,8 @@ def test_seed_is_reproducible_generic_integer_and_output_null():
         )
     assert "projects_future_manifold_in_episode" in encoded
     assert "uses_future_manifold_policy" in encoded
+    assert "futuremanifoldselection" in encoded
+    assert '"intervention"' in encoded
     assert generated["depends_on"] == ["cognitive_pareto"]
 
 

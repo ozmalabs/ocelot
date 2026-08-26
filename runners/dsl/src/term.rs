@@ -9626,13 +9626,32 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                     candidate_nodes.push(*node);
                 }
             }
-            let Some(selection) = crate::future_manifold::feasible_selection_with_snapshot(
+            let Some(selection) = crate::future_manifold::feasible_selection_with_projector(
                 ctx.graph,
                 ctx.interner,
-                ep,
-                po,
                 &candidate_nodes,
-                *snapshot_field,
+                |candidate| {
+                    crate::future_manifold::projection_field(
+                        ctx.graph,
+                        ctx.interner,
+                        ep,
+                        po,
+                        candidate,
+                        None,
+                        *snapshot_field,
+                    )
+                    .or_else(|| {
+                        Some(crate::motor_compose::future_manifold_projection_field(
+                            ctx.graph,
+                            ctx.interner,
+                            ep,
+                            po,
+                            candidate,
+                            None,
+                            *snapshot_field,
+                        ))
+                    })
+                },
             ) else {
                 return Value::None;
             };
