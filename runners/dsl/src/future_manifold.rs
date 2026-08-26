@@ -858,7 +858,8 @@ pub struct FeasibleSelection {
 /// ties."* Read literally, in that order:
 ///
 /// 1. FEASIBLE — the projected tube stays inside the allowed tube (`loss == 0`),
-///    and that was actually established (`support && resolved`);
+///    that was actually established (`support && resolved`), and represented
+///    above-normal effort is authorized by compression of the manifold;
 /// 2. MINIMUM SUFFICIENT — least represented `intervention` among the feasible;
 /// 3. GOALS BREAK TIES — among those, greatest `goal_rank`, and only among those.
 ///    Goals never override intervention; they order what intervention left equal.
@@ -901,6 +902,32 @@ pub(crate) fn feasible_selection_with_snapshot(
     candidates: &[NodeID],
     snapshot_field: Sym,
 ) -> Option<FeasibleSelection> {
+    feasible_selection_with_projector(graph, interner, candidates, |candidate| {
+        projection_field(
+            graph,
+            interner,
+            episode,
+            policy,
+            candidate,
+            None,
+            snapshot_field,
+        )
+    })
+}
+
+/// Apply feasible-set selection to snapshots supplied by the active synthesis
+/// adapter.  The generic matrix contract and domain analysis-by-synthesis
+/// adapters therefore share one selection law; only their projection source
+/// differs.
+pub(crate) fn feasible_selection_with_projector<F>(
+    graph: &TypedGraph,
+    interner: &Interner,
+    candidates: &[NodeID],
+    mut snapshot: F,
+) -> Option<FeasibleSelection>
+where
+    F: FnMut(NodeID) -> Option<Value>,
+{
     if candidates.is_empty() {
         return None;
     }
@@ -912,19 +939,19 @@ pub(crate) fn feasible_selection_with_snapshot(
     let records: Vec<SelectionRecord> = candidates
         .iter()
         .map(|candidate| {
-            let snapshot = projection_field(
-                graph,
-                interner,
-                episode,
-                policy,
-                *candidate,
-                None,
-                snapshot_field,
-            )?;
+            let snapshot = snapshot(*candidate)?;
             let fields = sequence(&snapshot)?;
             let support = number(fields.first()?)? != 0.0;
             let resolved = number(fields.get(1)?)? != 0.0;
             let loss = number(fields.get(2)?)?;
+            let effort_supported = fields
+                .get(4)
+                .and_then(|value| number(value))
+                .is_some_and(|value| value != 0.0);
+            let effort_authorized = fields
+                .get(5)
+                .and_then(|value| number(value))
+                .is_some_and(|value| value != 0.0);
             if !support {
                 return None;
             }
@@ -932,7 +959,9 @@ pub(crate) fn feasible_selection_with_snapshot(
             Some(SelectionRecord {
                 candidate: *candidate,
                 established,
-                feasible: established && loss == 0.0,
+                feasible: established
+                    && loss == 0.0
+                    && (!effort_supported || effort_authorized),
                 intervention: scalar(graph, interner, *candidate, "intervention"),
                 goal_rank: scalar(graph, interner, *candidate, "goal_rank"),
                 withheld: scalar(graph, interner, *candidate, "withheld")
@@ -1354,6 +1383,34 @@ mod feasible_selection_tests {
         assert_eq!(sel.minimal, vec![cheap],
                    "a high goal rank bought a more expensive intervention");
         assert_eq!(sel.tie_breadth, 1);
+    }
+
+    #[test]
+    fn ideal_effort_is_part_of_feasibility_not_a_later_advisory_gate() {
+        let (mut g, mut i, _ep, _pol, normal, compressed) = bench();
+        set(&mut g, &mut i, normal, "intervention", 1.0);
+        set(&mut g, &mut i, compressed, "intervention", 2.0);
+        let tuple = |effort_authorized: f64| {
+            Value::Tuple(std::sync::Arc::new(smallvec::smallvec![
+                Value::Float(1.0),
+                Value::Float(1.0),
+                Value::Float(0.0),
+                Value::Float(0.0),
+                Value::Float(1.0),
+                Value::Float(effort_authorized),
+            ]))
+        };
+
+        let selection = feasible_selection_with_projector(
+            &g,
+            &i,
+            &[normal, compressed],
+            |candidate| Some(tuple(if candidate == compressed { 1.0 } else { 0.0 })),
+        )
+        .expect("snapshots are supported");
+
+        assert_eq!(selection.infeasible, vec![normal]);
+        assert_eq!(selection.selected, vec![compressed]);
     }
 
     #[test]

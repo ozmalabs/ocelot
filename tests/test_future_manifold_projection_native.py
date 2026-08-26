@@ -24,6 +24,16 @@ def _term(field, *, addition=False):
     return term
 
 
+def _selection_term(field="selected"):
+    return {
+        "type": "FutureManifoldSelection",
+        "episode": {"type": "Var", "name": "ep"},
+        "policy": {"type": "Var", "name": "po"},
+        "candidates": {"type": "Var", "name": "candidates"},
+        "field": field,
+    }
+
+
 def _bench(*, member_forward=0.0, bound=1.0, neutral_forward=0.0,
            context_delta_forward=0.0, context_gain_forward=0.0,
            member_context_count=2.0, specified_prior=False,
@@ -212,6 +222,76 @@ def test_humanoid_projection_exposes_narrativium_by_humanoid_axis():
     agent, ep, policy, path, _ = _humanoid_path_bench([0.1], bound=1.0)
     assert _value(agent, ep, policy, path, "narrativium_reachable_dvx") == 1.0
     assert _value(agent, ep, policy, path, "narrativium_retained_dvx") == 1.0
+
+
+def test_graph_selector_uses_analysis_by_synthesis_for_program_paths():
+    agent, ep, policy, retained, transitions = _humanoid_path_bench(
+        [0.1], bound=1.0
+    )
+    origin = agent.inner.neighbours(
+        retained, "starts_from_embodied_program"
+    )[0]
+    retained_terminal = agent.inner.neighbours(
+        transitions[0], "continues_with_embodied_program"
+    )[0]
+    retained_model = agent.inner.neighbours(
+        retained_terminal, "includes_humanoid_phase_action_model"
+    )[0]
+    escaping_attrs = dict(agent.s.node(retained_model)["attrs"])
+    escaping_attrs.update({
+        "token": "escaping-cheaper-path",
+        "ordinal": 99.0,
+        "actuator_group": 99.0,
+        "mean_dvx": 2.0,
+    })
+    escaping_model = agent.s.add_node(
+        "HumanoidPhaseActionModel", escaping_attrs
+    )
+    _edge(agent, ep, "has_humanoid_phase_action_model", escaping_model)
+    escaping_terminal = agent.s.add_node("HumanoidMotorProgram", {
+        "status": "grounded", "memory_eligible": 1.0,
+    })
+    _edge(
+        agent, escaping_terminal,
+        "includes_humanoid_phase_action_model", escaping_model,
+    )
+    escaping_transition = agent.s.add_node("EmbodiedProgramTransition", {
+        "verified": 1.0, "response_frames": 1.0,
+    })
+    _edge(
+        agent, escaping_transition,
+        "starts_from_embodied_program", origin,
+    )
+    _edge(
+        agent, escaping_transition,
+        "continues_with_embodied_program", escaping_terminal,
+    )
+    escaping = agent.s.add_node("ParetoCandidate", {
+        "kind": "embodied_program_path", "depth": 1.0,
+        "intervention": 1.0,
+    })
+    _edge(agent, escaping, "starts_from_embodied_program", origin)
+    _edge(
+        agent, escaping, "continues_with_embodied_program",
+        escaping_terminal,
+    )
+    _edge(
+        agent, escaping, "contains_embodied_program_transition",
+        escaping_transition,
+    )
+    agent.inner.set_attr(retained, "intervention", 2.0)
+    bindings = {
+        "ep": ep,
+        "po": policy,
+        "candidates": [escaping, retained],
+    }
+
+    assert list(agent.inner.evaluate(
+        _selection_term(), bindings
+    )) == [retained]
+    assert list(agent.inner.evaluate(
+        _selection_term("infeasible"), bindings
+    )) == [escaping]
 
 
 def test_humanoid_narrativium_counts_distinct_sibling_path_shapes_per_axis():

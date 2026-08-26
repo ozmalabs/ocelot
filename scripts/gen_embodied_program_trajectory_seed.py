@@ -48,12 +48,26 @@ from scripts.gen_humanoid_adaptation_seed import (  # noqa: E402
 P0 = PI0
 
 
+def Let(name: str, value, body):
+    return {"type": "Let", "name": name, "value": value, "body": body}
+
+
 def future_manifold_projection(episode, policy, source: str, field: str):
     return {
         "type": "FutureManifoldProjection",
         "episode": episode,
         "policy": policy,
         "source": V(source),
+        "field": field,
+    }
+
+
+def future_manifold_selection(episode, policy, candidates, field: str):
+    return {
+        "type": "FutureManifoldSelection",
+        "episode": episode,
+        "policy": policy,
+        "candidates": candidates,
         "field": field,
     }
 
@@ -223,6 +237,7 @@ def mint_base_path_rule() -> dict:
                 "capability_evidence_units": T(evidence),
                 "task_progress_units": T(task_progress),
                 "energy_units": T(energy),
+                "intervention": T(energy),
                 "peak_load_units": T(peak_load),
                 "replay_count": 0,
                 "verified": 1,
@@ -438,6 +453,7 @@ def extend_path_rule() -> dict:
                 "capability_evidence_units": T(evidence),
                 "task_progress_units": T(task_progress),
                 "energy_units": T(energy),
+                "intervention": T(energy),
                 "peak_load_units": T(peak_load),
                 "replay_count": 0,
                 "verified": 1,
@@ -740,33 +756,47 @@ def select_frontier_path_rule() -> dict:
     rank_span = Plus(
         P0("trajectory", "active_expansion_horizon"), L(1)
     )
-    selected = Argmin(
+    risk_candidates = V("risk_candidates")
+    selected = Let(
+        "risk_candidates",
         capacity_frontier,
-        "frontier_path",
-        Plus(
-            Times(
-                P0(
-                    "frontier_path",
-                    "current_state_shape_residual_units",
+        Argmin(
+            If(
+                manifold_context_ready,
+                future_manifold_selection(
+                    Pick(manifold_episodes),
+                    Pick(manifold_policies),
+                    risk_candidates,
+                    "selected",
                 ),
-                rank_span,
-                rank_span,
-                rank_span,
+                risk_candidates,
             ),
-            Times(
-                Neg(P0("frontier_path", "task_progress_units")),
-                rank_span,
-                rank_span,
+            "frontier_path",
+            Plus(
+                Times(
+                    P0(
+                        "frontier_path",
+                        "current_state_shape_residual_units",
+                    ),
+                    rank_span,
+                    rank_span,
+                    rank_span,
+                ),
+                Times(
+                    Neg(P0("frontier_path", "task_progress_units")),
+                    rank_span,
+                    rank_span,
+                ),
+                Times(
+                    Neg(P0(
+                        "frontier_path", "capability_evidence_units"
+                    )),
+                    rank_span,
+                ),
+                P0("frontier_path", "replay_count"),
             ),
-            Times(
-                Neg(P0(
-                    "frontier_path", "capability_evidence_units"
-                )),
-                rank_span,
-            ),
-            P0("frontier_path", "replay_count"),
+            V("owner"),
         ),
-        shallowest,
     )
     return {
         "name": "ept_collapse_frontier_to_one_practice_path",
@@ -777,9 +807,11 @@ def select_frontier_path_rule() -> dict:
         "first restricts choice to the shortest sufficient prefix. When a "
         "situated manifold context exists, a second Pareto restriction "
         "removes only paths dominated in all seven conditional retained-"
-        "future dimensions; no scalar capacity score is formed. Situated "
-        "task, evidence, and practice coordinates order the surviving "
-        "tradeoffs. Receipt counterexamples suspend reuse when they no "
+        "future dimensions; no scalar capacity score is formed. The generic "
+        "risk selector then admits only fully projected, effort-authorized "
+        "minimum-intervention paths. Situated task, evidence, and practice "
+        "coordinates deterministically order only the surviving equal-cost "
+        "set. Receipt counterexamples suspend reuse when they no "
         "longer leave a positive transition forecast evidence ratio. "
         "Selection grants no actuator authority.",
         "match": [
