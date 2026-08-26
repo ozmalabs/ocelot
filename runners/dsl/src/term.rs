@@ -3141,6 +3141,14 @@ pub enum TermNode {
         addition: Option<TermIdx>,
         field: Sym,
     },
+    /// Set-valued minimum-sufficient arbitration over projected candidates.
+    FutureManifoldSelection {
+        episode: TermIdx,
+        policy: TermIdx,
+        candidates: TermIdx,
+        field: Sym,
+        snapshot_field: Sym,
+    },
 }
 
 /// Arena for a Term tree. Childless to outside callers — construction
@@ -3828,6 +3836,19 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
             source: copy_subtree(src, dst, source),
             addition: addition.map(|a| copy_subtree(src, dst, a)),
             field,
+        },
+        TermNode::FutureManifoldSelection {
+            episode,
+            policy,
+            candidates,
+            field,
+            snapshot_field,
+        } => TermNode::FutureManifoldSelection {
+            episode: copy_subtree(src, dst, episode),
+            policy: copy_subtree(src, dst, policy),
+            candidates: copy_subtree(src, dst, candidates),
+            field,
+            snapshot_field,
         },
         TermNode::TransformDecode {
             goal,
@@ -9582,6 +9603,59 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 )
             }
         }
+        TermNode::FutureManifoldSelection {
+            episode,
+            policy,
+            candidates,
+            field,
+            snapshot_field,
+        } => {
+            let Value::Node(ep) = evaluate(arena, *episode, env, ctx) else {
+                return Value::None;
+            };
+            let Value::Node(po) = evaluate(arena, *policy, env, ctx) else {
+                return Value::None;
+            };
+            let candidate_values = evaluate(arena, *candidates, env, ctx);
+            let mut candidate_nodes: Vec<NodeID> = Vec::new();
+            for value in candidate_values.iter() {
+                let Value::Node(node) = value else {
+                    return Value::None;
+                };
+                if !candidate_nodes.contains(node) {
+                    candidate_nodes.push(*node);
+                }
+            }
+            let Some(selection) = crate::future_manifold::feasible_selection_with_snapshot(
+                ctx.graph,
+                ctx.interner,
+                ep,
+                po,
+                &candidate_nodes,
+                *snapshot_field,
+            ) else {
+                return Value::None;
+            };
+            let nodes = |values: &[NodeID]| {
+                Value::Tuple(Arc::new(
+                    values
+                        .iter()
+                        .map(|node| Value::Node(*node))
+                        .collect::<SmallVec<[Value; 4]>>(),
+                ))
+            };
+            match ctx.interner.resolve(*field) {
+                "unestablished" => nodes(&selection.unestablished),
+                "infeasible" => nodes(&selection.infeasible),
+                "feasible" => nodes(&selection.feasible),
+                "minimal" => nodes(&selection.minimal),
+                "selected" => nodes(&selection.selected),
+                "withheld_minimal" => nodes(&selection.withheld_minimal),
+                "tie_breadth" => Value::Int(selection.tie_breadth as i64),
+                "supported" => Value::Bool(true),
+                _ => Value::None,
+            }
+        }
         TermNode::TransformDecode {
             goal,
             codebook_type,
@@ -13694,6 +13768,16 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
             if let Some(a) = addition {
                 out.push(*a);
             }
+        }
+        TermNode::FutureManifoldSelection {
+            episode,
+            policy,
+            candidates,
+            ..
+        } => {
+            out.push(*episode);
+            out.push(*policy);
+            out.push(*candidates);
         }
         TermNode::TransformDecode { goal, exclude, .. } => {
             out.push(*goal);

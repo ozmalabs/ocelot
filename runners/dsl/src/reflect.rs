@@ -2764,6 +2764,37 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
                 },
             ],
         ),
+        TermNode::FutureManifoldSelection {
+            episode,
+            policy,
+            candidates,
+            field,
+            snapshot_field,
+        } => (
+            "FutureManifoldSelection",
+            vec![
+                Child {
+                    name: "episode",
+                    child: *episode,
+                },
+                Child {
+                    name: "policy",
+                    child: *policy,
+                },
+                Child {
+                    name: "candidates",
+                    child: *candidates,
+                },
+                ScalarSym {
+                    name: "field",
+                    value: *field,
+                },
+                ScalarSym {
+                    name: "snapshot_field",
+                    value: *snapshot_field,
+                },
+            ],
+        ),
         TermNode::TransformDecode {
             goal,
             codebook_type,
@@ -4782,6 +4813,13 @@ fn reconstruct(
             exclude: take_opt_child!("exclude"),
             max_dims: get_int("max_dims")?,
             field: get_sym("field")?,
+        },
+        "FutureManifoldSelection" => TermNode::FutureManifoldSelection {
+            episode: take_child!("episode"),
+            policy: take_child!("policy"),
+            candidates: take_child!("candidates"),
+            field: get_sym("field")?,
+            snapshot_field: get_sym("snapshot_field")?,
         },
         "NetForward" => TermNode::NetForward {
             assemblage: take_child!("assemblage"),

@@ -879,6 +879,28 @@ pub fn feasible_selection(
     policy: NodeID,
     candidates: &[NodeID],
 ) -> Option<FeasibleSelection> {
+    let snapshot_field = interner.intern("snapshot");
+    feasible_selection_with_snapshot(
+        graph,
+        interner,
+        episode,
+        policy,
+        candidates,
+        snapshot_field,
+    )
+}
+
+/// Read-only selection entry used by graph Term evaluation.  Its parser owns
+/// interning the snapshot field; evaluation itself must not mutate the symbol
+/// table hidden behind an immutable graph context.
+pub(crate) fn feasible_selection_with_snapshot(
+    graph: &TypedGraph,
+    interner: &Interner,
+    episode: NodeID,
+    policy: NodeID,
+    candidates: &[NodeID],
+    snapshot_field: Sym,
+) -> Option<FeasibleSelection> {
     if candidates.is_empty() {
         return None;
     }
@@ -887,9 +909,6 @@ pub fn feasible_selection(
     // every published field and retained dimension.  The native snapshot is
     // deliberately a single audit, so candidate-family arbitration remains
     // O(candidates * shape) rather than O(candidates * shape * dimensions).
-    let snapshot_field = interner.intern("snapshot");
-    let interner = &*interner;
-
     let records: Vec<SelectionRecord> = candidates
         .iter()
         .map(|candidate| {
@@ -1228,6 +1247,84 @@ mod feasible_selection_tests {
         assert_eq!(sel.feasible, vec![held]);
         assert_eq!(sel.infeasible, vec![esc]);
         assert!(sel.unestablished.is_empty(), "nothing was left undecided here");
+    }
+
+    #[test]
+    fn graph_term_selects_the_set_without_host_arbitration() {
+        use crate::jsonio::{term_from_json, term_to_json};
+        use crate::term::{evaluate, Env, EvalCtx, TermArena, TermNode};
+
+        let (mut g, mut i, ep, pol, held, esc) = bench();
+        set(&mut g, &mut i, held, "intervention", 1.0);
+        set(&mut g, &mut i, esc, "intervention", 0.0);
+        let selected = i.intern("selected");
+        let snapshot = i.intern("snapshot");
+
+        let mut arena = TermArena::new();
+        let episode = arena.add(TermNode::Lit {
+            value: Value::Node(ep),
+        });
+        let policy = arena.add(TermNode::Lit {
+            value: Value::Node(pol),
+        });
+        let candidates = arena.add(TermNode::Lit {
+            value: Value::Tuple(std::sync::Arc::new(smallvec::smallvec![
+                Value::Node(held),
+                Value::Node(esc),
+            ])),
+        });
+        let selection = arena.add(TermNode::FutureManifoldSelection {
+            episode,
+            policy,
+            candidates,
+            field: selected,
+            snapshot_field: snapshot,
+        });
+
+        // Exercise the actual seed wire form, not only a directly-constructed
+        // enum: the graph owns this decision after JSON loading too.
+        let json = term_to_json(&arena, selection, &i);
+        let mut loaded = TermArena::new();
+        let loaded_selection = term_from_json(&json, &mut loaded, &mut i).unwrap();
+        let mut env: Env = smallvec::smallvec![];
+        let mut ctx = EvalCtx::new(&g, &i);
+        assert_eq!(
+            evaluate(&loaded, loaded_selection, &mut env, &mut ctx),
+            Value::Tuple(std::sync::Arc::new(smallvec::smallvec![Value::Node(
+                held
+            )])),
+            "the cheaper escaping candidate was selected outside the manifold",
+        );
+
+        let mut reflected_graph = TypedGraph::new();
+        let reflected = crate::reflect::term_to_subgraph(
+            &loaded,
+            loaded_selection,
+            &mut reflected_graph,
+            &mut i,
+        );
+        let mut rebuilt = TermArena::new();
+        let rebuilt_selection = crate::reflect::term_from_subgraph(
+            &reflected_graph,
+            &i,
+            reflected,
+            &mut rebuilt,
+        )
+        .unwrap();
+        let mut rebuilt_env: Env = smallvec::smallvec![];
+        let mut rebuilt_ctx = EvalCtx::new(&g, &i);
+        assert_eq!(
+            evaluate(
+                &rebuilt,
+                rebuilt_selection,
+                &mut rebuilt_env,
+                &mut rebuilt_ctx,
+            ),
+            Value::Tuple(std::sync::Arc::new(smallvec::smallvec![Value::Node(
+                held
+            )])),
+            "reflection changed the graph-owned selection",
+        );
     }
 
     #[test]

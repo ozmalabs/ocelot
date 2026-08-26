@@ -12,7 +12,7 @@
 
 use crate::term::TermNode;
 
-pub const NUM_TERM_VARIANTS: usize = 234;
+pub const NUM_TERM_VARIANTS: usize = 235;
 
 /// Variant names in DECLARATION ORDER. Index == `variant_index()`.
 pub static TERM_VARIANT_NAMES: [&str; NUM_TERM_VARIANTS] = [
@@ -250,6 +250,7 @@ pub static TERM_VARIANT_NAMES: [&str; NUM_TERM_VARIANTS] = [
     "SynthEnumerate",
     "ParetoDominates",
     "FutureManifoldProjection",
+    "FutureManifoldSelection",
 ];
 
 impl TermNode {
@@ -492,6 +493,7 @@ impl TermNode {
             TermNode::SynthEnumerate { .. } => 231,
             TermNode::ParetoDominates { .. } => 232,
             TermNode::FutureManifoldProjection { .. } => 233,
+            TermNode::FutureManifoldSelection { .. } => 234,
         }
     }
 }
