@@ -161,6 +161,12 @@ pub fn projection_field(
     let predicted = matrix(graph, interner, candidate, "future_manifold_values")?;
     let target = matrix(graph, interner, episode, "future_manifold_target")?;
     let bounds = matrix(graph, interner, episode, "future_manifold_bounds")?;
+    // Optional orientation of each manifold dimension.  Zero preserves the
+    // original symmetric tube; +1 means that larger values preserve at least
+    // as much future capacity, and -1 means that smaller values do.  This lets
+    // a graph express a partial order (height/support versus load/time) without
+    // inventing a scalar score or an arbitrary finite opposite bound.
+    let directions = matrix(graph, interner, episode, "future_manifold_directions");
     let widths = matrix(graph, interner, candidate, "future_manifold_widths")
         .unwrap_or_else(|| vec![vec![0.0; predicted.first().map_or(0, Vec::len)]; predicted.len()]);
     let times = time_coordinates(graph, interner, candidate, predicted.len())?;
@@ -198,6 +204,14 @@ pub fn projection_field(
         && width(&predicted) == width(&target)
         && width(&predicted) == width(&bounds)
         && width(&predicted) == width(&widths)
+        && directions.as_ref().map_or(true, |values| {
+            flat_shape(values) == flat_shape(&predicted)
+                && all_finite(values)
+                && values
+                    .iter()
+                    .flatten()
+                    .all(|value| *value == -1.0 || *value == 0.0 || *value == 1.0)
+        })
         && all_finite(&predicted)
         && all_finite(&target)
         && all_finite(&bounds)
@@ -243,10 +257,17 @@ pub fn projection_field(
                 }
                 assessed_cells += 1;
                 let delta = predicted[t][d] - target[t][d];
-                let residual = delta.abs();
                 let allowed = bounds[t][d] + widths[t][d];
-                if residual > allowed {
-                    residual_shape[t][d] = delta.signum() * (residual - allowed);
+                let direction = directions.as_ref().map_or(0.0, |values| values[t][d]);
+                let excess = if direction > 0.0 {
+                    -delta - allowed
+                } else if direction < 0.0 {
+                    delta - allowed
+                } else {
+                    delta.abs() - allowed
+                };
+                if excess > 0.0 {
+                    residual_shape[t][d] = delta.signum() * excess;
                     retained_by_dim[d] = false;
                     loss += 1.0;
                     if earliest_decisive_tick == 0.0 {
@@ -1054,6 +1075,52 @@ pub(crate) mod reachable_set_tests {
             !set[0].support,
             "a candidate with no trajectory must fail closed, got {:?}",
             set[0]
+        );
+    }
+
+    #[test]
+    fn directed_dimensions_express_future_capacity_partial_orders() {
+        let (mut g, mut i, episode, policy, held, escaping) = bench();
+        let tuple = |values: &[f64]| {
+            Value::Tuple(std::sync::Arc::new(
+                values
+                    .iter()
+                    .map(|value| Value::Float(*value))
+                    .collect::<smallvec::SmallVec<[Value; 4]>>(),
+            ))
+        };
+        let matrix = |rows: &[&[f64]]| {
+            Value::Tuple(std::sync::Arc::new(
+                rows.iter()
+                    .map(|row| tuple(row))
+                    .collect::<smallvec::SmallVec<[Value; 4]>>(),
+            ))
+        };
+        let target = i.intern("future_manifold_target");
+        let bounds = i.intern("future_manifold_bounds");
+        let directions = i.intern("future_manifold_directions");
+        let values = i.intern("future_manifold_values");
+        let horizon = i.intern("future_manifold_physical_horizon");
+        let loss = i.intern("loss");
+        g.set_node_attr(episode, target, matrix(&[&[0.5, 0.5]]));
+        g.set_node_attr(episode, bounds, matrix(&[&[0.0, 0.0]]));
+        g.set_node_attr(episode, directions, matrix(&[&[1.0, -1.0]]));
+        g.set_node_attr(policy, horizon, Value::Float(1.0));
+
+        // More retained height and less load are both inside the directed
+        // tube, even though neither is equal to the receipt-backed target.
+        g.set_node_attr(held, values, matrix(&[&[0.8, 0.2]]));
+        assert_eq!(
+            projection_field(&g, &i, episode, policy, held, None, loss),
+            Some(Value::Float(0.0)),
+        );
+
+        // Less height and more load each remove a future, so both dimensions
+        // are reported rather than collapsed into a compensating score.
+        g.set_node_attr(escaping, values, matrix(&[&[0.4, 0.6]]));
+        assert_eq!(
+            projection_field(&g, &i, episode, policy, escaping, None, loss),
+            Some(Value::Float(2.0)),
         );
     }
 
