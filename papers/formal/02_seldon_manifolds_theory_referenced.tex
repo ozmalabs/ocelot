@@ -11,7 +11,6 @@
 \newtheorem{definition}{Definition}[section]
 \newtheorem{proposition}[definition]{Proposition}
 \newtheorem{hypothesis}[definition]{Hypothesis}
-\newtheorem{theorem}[definition]{Theorem}
 \newtheorem{corollary}[definition]{Corollary}
 \theoremstyle{remark}
 \newtheorem*{remark}{Remark}
@@ -54,16 +53,17 @@ Graphic Equalisation requires only admissible continuation and deterministic col
 
 The construction is deterministic at substrate level. A Seldon manifold is not a probability distribution over multiple outcomes of one causally complete antecedent. It is a representation of different deterministic continuations obtained under different admissible interventions, future interactions, or unresolved containing conditions represented by the frame. If all causally relevant future conditions and interventions are fixed, the represented continuation collapses to one trajectory.
 
-The manifold need not be smooth or continuous; ``manifold'' denotes structured reachable geometry. Its dimensions are instantiated only where represented, its values are discrete at operative resolution, and its quantisation may change dynamically. Goals, where represented, define acceptable subsets; Muchness measures retained distinguishable future possibility; irreversibility removes reachable distinctions; and control deforms the reachable geometry. No primitive is added to graphhood.
+The manifold need not be smooth or continuous; ``manifold'' denotes structured reachable geometry. Its dimensions are instantiated only where represented, its values are discrete at operative resolution, and its quantisation may change dynamically. Two distinctions are developed at length: what such a projection is a projection \emph{over} --- the \emph{undetermined}, which collapse has yet to fix, as against the \emph{undisclosed}, which is realised but not held by this frame --- and \emph{causal depth}, the additional determining structure supplied by containing frames rather than by earlier times. Goals, where represented, define acceptable subsets; Muchness measures retained distinguishable future possibility; irreversibility removes reachable distinctions; and control deforms the reachable geometry. No primitive is added to graphhood.
 \end{abstract}
 
 \section{Scope and relationship to prior work}\label{sec:scope}
 
-Reachable sets, viability kernels, capture basins, invariant sets, dynamic programming, and model-predictive control are established parts of control theory and applied mathematics \citep{bellman1957,aubin1990,aubin1991,mitchell2005,rawlings2017}. Hamilton--Jacobi reachability in particular treats sets of states that can be reached or avoided under nonlinear and hybrid dynamics rather than privileging a single forecast trajectory \citep{mitchell2005,bansal2017}. Viability theory distinguishes states from which constraints can continue to be satisfied under admissible control \citep{aubin1990,aubin1991}.
-
-The Seldon-manifold construction does not claim those ideas as new. Its contribution is the placement of reachable-set structure inside the Graphic Equalisation frame architecture: reachability is explicitly frame-relative, recursively generated from the graph law, discretely represented at operative resolution, able to gain or lose represented dimensions, and separated from both collapse and Narrativium. ``Seldon manifold'' names that combined object and its role in the wider theory.
+Reachable sets, viability kernels, capture basins, invariant sets, dynamic programming, Hamilton--Jacobi reachability, and model-predictive control are established parts of control theory and applied mathematics \citep{bellman1957,aubin1990,aubin1991,mitchell2005,bansal2017,rawlings2017}; this paper claims none of them as new, and its contribution is their placement inside the Graphic Equalisation frame architecture, stated in full in Section~\ref{sec:positioning}.
 
 \section{Dependency on Graphic Equalisation}\label{sec:dependency}
+
+\paragraph{Reading for the claim.}
+As in the foundational paper, the components used here are individually established and cited as such; the claim is their arrangement, which is not reachable by evaluating those components separately, since they are stipulated to be known. The composition's own falsifiability commitment is stated in the foundational paper and is inherited here.
 
 Let
 \[
@@ -99,11 +99,6 @@ If the frame fixes the causally complete antecedent, all future interventions, a
 This distinction is important because classical reachability and viability theory often permit disturbances, controls, or differential inclusions to generate sets of possible states \citep{aubin1991,mitchell2005}. The Seldon construction can represent the same set-valued geometry without interpreting that set as fundamental stochasticity.
 
 \section{Standing of the construction}\label{sec:standing}
-
-\paragraph{Reading for the claim.}
-As in the foundational paper, the components used here are individually established and are cited as such. The claim is the arrangement, and it is not reachable by evaluating the components separately, since those are stipulated to be known. The composition's own falsifiability commitment is stated in the foundational paper and is inherited here.
-
-
 
 Before the definitions, a boundary on what is being claimed, because the natural reading of what follows is stronger than the position of this paper.
 
@@ -303,7 +298,7 @@ Suppose the represented no-intervention alternative exists and its continuation 
 \end{proposition}
 
 \begin{remark}
-``No intervention'' here is an instantiated alternative with a defined consequence. It is not NULL. The proposition therefore does not identify absence with a zero-valued action.
+``No intervention'' here is an instantiated alternative with a defined consequence, not NULL (Definition~\ref{def:dimension}); the proposition does not identify absence with a zero-valued action.
 \end{remark}
 
 \begin{figure}[t]
@@ -355,7 +350,7 @@ Where the Muchness dimension is instantiated before and after the intervention, 
 \[
 I_{\Frame}(u)=\max\!\left(0,\Much_t-\Much_{t+1}^{(u)}\right).
 \]
-Here $0$ is a legitimate value on an existing irreversibility dimension; it does not denote absence of the dimension.
+Here $0$ is a legitimate value on an existing irreversibility dimension, not absence of the dimension (Definition~\ref{def:dimension}).
 
 The option value of preserving reversible choices under uncertain future information has a long history in economics \citep{arrow1974,henry1974,dixit1994}. The present definition is more primitive: it identifies irreversibility structurally with loss of reachable distinctions. No substrate-level probability distribution is required. If a frame overlays probabilities on unresolved future conditions, an expected irreversibility statistic is an epistemic derived quantity, not part of the deterministic Graph Law.
 
@@ -403,25 +398,7 @@ This hypothesis is compatible with the general minimum-description-length princi
 
 \section{Relationship to Narrativium and Narrative}\label{sec:downstream}
 
-The present paper distinguishes retained future possibility from future-shaping capacity:
-\[
-\boxed{
-\Much=\text{retained distinguishable future possibility},
-\qquad
-N=\text{capacity to deform it}.
-}
-\]
-Narrativium is developed separately. Narrative is also unnecessary for defining $\Seldon$, but where a containing frame carries operative history-bearing state, that state may orient the manifold; this is the subject of Narrative Momentum.
-
-\section{Positioning and novelty}\label{sec:positioning}
-
-The paper's relationship to established work can be summarised as follows.
-
-\begin{description}[leftmargin=*,style=nextline]
-\item[Established prior art.] Reachable sets, viability kernels, invariant and capture sets, dynamic programming, model-predictive feasible sets, Hamilton--Jacobi reachability, adaptive numerical resolution, and option value under irreversibility are established \citep{bellman1957,aubin1991,mitchell2005,berger1984,arrow1974,rawlings2017}.
-\item[Structural synthesis.] The Seldon manifold treats these set-valued future structures as a frame-relative representation generated downstream of deterministic Graphic Equalisation and evaluated only on instantiated dimensions at operative discrete resolution.
-\item[Specific contributions.] The terminology and formal roles of the Seldon manifold and Muchness; the explicit separation of local admissibility, counterfactual reachable geometry, deterministic collapse, Muchness, and Narrativium; dimension-instantiation discipline (NULL is not zero); and the decision-relevant reachability-compression hypothesis are claims of this framework.
-\end{description}
+The present paper distinguishes retained distinguishable future possibility ($\Much$) from the capacity to deform it ($N$); the contrast is set out in full in the companion Narrativium paper, which develops $N$. Narrative is also unnecessary for defining $\Seldon$, but where a containing frame carries operative history-bearing state, that state may orient the manifold; this is the subject of Narrative Momentum.
 
 \section{Causal depth is not temporal distance}\label{sec:depth}
 
@@ -465,6 +442,16 @@ manifold as observer machinery ahead of the present.}
 \end{figure}
 
 This matters for what an explanation is permitted to assume. A theory that located determining structure in earlier temporal states would require arbitrarily deep access to a past that no frame holds. Locating it in containing frames requires only structure that is instantiated now.
+
+\section{Positioning and novelty}\label{sec:positioning}
+
+The paper's relationship to established work can be summarised as follows.
+
+\begin{description}[leftmargin=*,style=nextline]
+\item[Established prior art.] Reachable sets, viability kernels, invariant and capture sets, dynamic programming, model-predictive feasible sets, Hamilton--Jacobi reachability, adaptive numerical resolution, and option value under irreversibility are established \citep{bellman1957,aubin1991,mitchell2005,berger1984,arrow1974,rawlings2017}.
+\item[Structural synthesis.] The Seldon manifold treats these set-valued future structures as a frame-relative representation generated downstream of deterministic Graphic Equalisation and evaluated only on instantiated dimensions at operative discrete resolution.
+\item[Specific contributions.] The terminology and formal roles of the Seldon manifold and Muchness; the explicit separation of local admissibility, counterfactual reachable geometry, deterministic collapse, Muchness, and Narrativium; dimension-instantiation discipline (NULL is not zero); and the decision-relevant reachability-compression hypothesis are claims of this framework.
+\end{description}
 
 \section{Falsifiability commitments}\label{sec:falsifiability}
 
