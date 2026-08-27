@@ -228,12 +228,45 @@ self-similarity. The residual has shrunk from "which theory?" to the sharp, boun
 **"does self-similarity force the composite to be a complex frame over product outcomes?"** —
 plus the OPT precondition.
 
-## Overall status after the calculation
+## Correction: complex QM is contingent, not forced
 
-The Born/Hilbert residual now stands as: (i) **Level 0** — the substrate instantiates an OPT
-(sketched, the largest caveat); (ii) **self-similarity-at-composition** forces the complex
-composite (argued and directional, not forced); with the two distinctively-quantum axioms
-(continuity, purification) supplied natively and complex-at-one-system solid. Every step is
-rated, none is a proof, and the complex-vs-real decider now points at complex for a stated
-substrate reason rather than being a blank gap. This is the smallest and most localised the
-residual has been in the programme — and still an attempt.
+The framing above — "does self-similarity **force** the complex composite?" as an open gap —
+was a **misframing**, and the correction matters more than the calculation. **Self-similarity
+is not required. Almost everything in a graph substrate is optional.** The compulsory core is
+only structure, rules, subgraph-hood, and an admissibility grammar (`prop:minimal-universe`);
+everything else — self-similarity, complex-over-real, `N=3`, the gauge group — is contingent
+rule-content.
+
+So the substrate does not, and should not, **force** complex quantum theory. It **admits**
+complex QM as one admissible configuration (the self-similar complex composition), and our
+universe's selection of it is **self-location**, exactly as with the number of spatial
+dimensions or the gauge group. Real QM is another admissible configuration; the substrate
+admits both and forces neither. Trying to force complex over real would **contradict the
+framework's own stance** that it never forces contingent physics.
+
+This dissolves the "local-tomography gap." It was never a gap to be closed by a forcing
+argument — it is the **signature of a contingent selection**. The two-subframe calculation
+above is then read correctly not as "the substrate proves complex" but as "**the admissible
+complex configuration yields `K_AB = 16`; the admissible real one yields `10`; our universe is
+the former, self-located**" — the same status as every other contingent constant in the
+programme.
+
+Given the contingent choice, the Born rule and Hilbert structure follow via the mapping and
+the cited reconstructions — which is how the framework treats **all** physics: shapes follow
+from contingent rule-content, the rule-content itself never forced.
+
+## Overall status (corrected)
+
+The Born/Hilbert result stands as: the substrate **admits** the structures from which quantum
+theory follows — an OPT of Narratives/projections/continuations/nesting (Level 0, sketched),
+complex closure-phase amplitudes, free-continuation continuity, entanglement-purification, and
+self-similar complex composition — and **complex QM is the contingent, self-located selection
+among them**, not a forced consequence. The two distinctively-quantum axioms (continuity,
+purification) are supplied natively; complex-at-one-system is solid; and given the contingent
+composition, `K_AB = 16` (Born + complex Hilbert) follows.
+
+What is **not** claimed: that the substrate forces QM (it forces almost nothing — that is the
+point); nor that Level 0 is established (the OPT instantiation is sketched). What **is**
+claimed: QM is an admissible, self-located configuration whose distinctive content the
+substrate supplies natively and whose shapes then follow — the same honest status as `N=3` and
+the gauge group, no stronger and no weaker.
