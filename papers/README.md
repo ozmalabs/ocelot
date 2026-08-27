@@ -1,6 +1,6 @@
 # papers/ — the formal record
 
-`formal/` holds the seven written preprints (LaTeX, theorem environments,
+`formal/` holds the eight written preprints (LaTeX, theorem environments,
 proofs, falsifiability sections). They are the **citable artefacts**, and they
 do not disappear when the book is written: each book chapter carries a pointer
 of the form *the formal statement is Paper N §M*, and the chapter drafts by
@@ -12,6 +12,7 @@ subtraction from them.
 | `formal/01a_graphic_equalisation_physics_grounding.tex` | The Law of Graphic Equalisation — Physics Grounding (c, relativity, constants, the second law) |
 | `formal/01b_graphic_equalisation_mind_and_self_grounding.tex` | The Law of Graphic Equalisation — Mind and Self Grounding (frames, the run/record, free will, personal identity, death) |
 | `formal/02_seldon_manifolds_theory_referenced.tex` | Seldon Manifolds — Theory |
+| `formal/02a_seldon_manifolds_psychological_grounding.tex` | Seldon Manifolds — Psychological Grounding (forward models, acceptable regions, the aperture of one embodiment) |
 | `formal/03_law_of_narrative_momentum_theory_referenced.tex` | The Law of Narrative Momentum — Theory |
 | `formal/04_narrativium_theory_referenced.tex` | Narrativium — Theory |
 | `formal/05_constructive_graphic_equalisation_implementation_referenced.tex` | A Constructive Realisation of Graphic Equalisation |
@@ -25,12 +26,12 @@ further bodies are built but included by no paper (`fig01_boundary`,
 
 ## Version
 
-All seven carry the same draft string in three places — the title block, a boxed
+All eight carry the same draft string in three places — the title block, a boxed
 notice under the title, and the footer of every page:
 
 > **`draft-2026-08-27`** · 27 August 2026
 
-They are circulated for comment, not as finished results. **Bump all seven
+They are circulated for comment, not as finished results. **Bump all eight
 together**, so a reader comparing two papers is never comparing two drafts, and
 keep the string identical across the title, the notice and the footer. The
 version is deliberately a date rather than a number: these papers are revised in
