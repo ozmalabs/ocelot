@@ -270,3 +270,12 @@ point); nor that Level 0 is established (the OPT instantiation is sketched). Wha
 claimed: QM is an admissible, self-located configuration whose distinctive content the
 substrate supplies natively and whose shapes then follow — the same honest status as `N=3` and
 the gauge group, no stronger and no weaker.
+
+**The precise verb: the framework *recovers* Born, it does not *derive* it per se.** Derivation
+(per se) would force Born as a unique necessity from primitives; recovery reproduces the known
+rule within the framework, given its admitted structures and contingent selections. That is
+what happened: some steps are forced *given the premises* (the squared modulus, from
+no-privilege + decohered additivity), while the premises themselves are admitted and contingent
+(complex, linear, self-similar). Recovery is the honest verb and the correct one — a contingent
+law can only be recovered given its rule-content, never derived as compelled. Every use of
+"derive" for the overall Born rule in earlier drafts should be read as "recover."
