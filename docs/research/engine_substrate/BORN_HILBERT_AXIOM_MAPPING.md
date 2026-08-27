@@ -1,0 +1,186 @@
+# Born and Hilbert from the substrate: an axiom-by-axiom mapping attempt
+
+**Status: ATTEMPT, not a proof.** Dated 2026-08-27. This note checks, one axiom at a
+time, whether the Graphic Equalisation substrate supplies the operational axioms from
+which the informational reconstructions of quantum theory *derive* complex Hilbert space
+and the Born rule. If the mapping holds, "Born + Hilbert" reduces to those cited theorems.
+It does **not** here — the mapping is rated per axiom (SOLID / PLAUSIBLE / GAP), and the
+residual is localised, not closed. Sizing follows the project rule: the components are the
+cited theorems; the contribution is only the mapping, and it is partial.
+
+The two reconstructions used:
+
+- **Hardy (2001)**, *Quantum Theory From Five Reasonable Axioms* (arXiv:quant-ph/0101012).
+  Five axioms; classical probability theory satisfies the first four and fails the fifth.
+- **CDP (2011)** — Chiribella, D'Ariano, Perinotti, *Informational derivation of quantum
+  theory*, Phys. Rev. A 84, 012311. Six principles single out quantum theory over real/
+  quaternionic and classical.
+
+Both live inside the **operational-probabilistic / generalized-probabilistic-theory
+(OPT/GPT) framework**: states as vectors in a convex set, effects, transformations,
+and a composition (tensor) rule. That framework is a *precondition* for either axiom set,
+so the mapping has two levels.
+
+---
+
+## Level 0 — does the substrate instantiate an OPT at all?
+
+Before any axiom applies, the graph substrate must be an OPT. The natural identification:
+
+| OPT ingredient | substrate |
+|---|---|
+| state | a frame's **internal Narrative** — the vector of its current rule set |
+| effect / measurement | a **cross-frame projection** — reading the Narrative in another rule set; outcomes are realised collapses |
+| transformation | a **rule** (a write); the identity transformation is **free continuation** (empty rule set, no write) |
+| convex mixture | a probabilistic **ensemble of realisations** |
+| composition (tensor) | **subframe nesting** in a superframe |
+
+This is a genre-match, and it is **sketched, not established**. The honest gaps at Level 0:
+convexity of the state space (that ensembles of realisations form a convex set with the
+right face structure) is asserted, not derived; and that effects and transformations satisfy
+the OPT linearity/composition axioms is exactly what Level 1 is trying to earn, so there is
+some circularity to watch. **Level 0 is the largest single caveat in this note.** Everything
+below is conditional on the substrate being an OPT in the first place.
+
+---
+
+## Level 1a — the Hardy five
+
+**Axiom 1 (Probabilities).** Operational probabilities exist as limiting relative
+frequencies over ensembles. *Substrate:* realisation is collapse, a local write; over an
+ensemble of realisations from one Poss, outcome frequencies exist and are the weights.
+**Rating: SOLID** (modulo Level 0's ensemble/convexity assumption).
+
+**Axiom 2 (Simplicity).** For a given number `N` of distinguishable states, the number of
+degrees of freedom `K` takes the least value consistent with the other axioms (`K = N^r`,
+`r` minimal). *Substrate:* the whole programme is MDL/Occam — the sd loop mints a quantum
+only when the residual will not fit, the growth ladder is Occam-ordered, descriptions are
+minimal by construction. "K minimal" is native. **Rating: PLAUSIBLE** — a genre-match
+(the substrate prefers minimal descriptions) rather than a proof that the specific `K–N`
+minimisation Hardy needs is the one the substrate enforces.
+
+**Axiom 3 (Subspaces).** A system confined to an `M`-dimensional subspace of an `N`-state
+system behaves exactly as an `M`-state system. *Substrate:* a **sub-frame is a frame**
+(self-similarity, runner-recursion); foveated restriction to a subset of distinctions
+behaves as a smaller frame (the aperture / `space_quantize` foveation). **Rating:
+PLAUSIBLE** — the substrate has subframe-as-frame consistency; that it matches Hardy's
+exact subspace closure is not shown.
+
+**Axiom 4 (Composite systems).** `N_AB = N_A · N_B` and `K_AB = K_A · K_B`. The second
+equality is **local tomography** — a composite state is fixed by local (product)
+measurement statistics. *Substrate:* subframe nesting gives `N` multiplication for
+independent subframes; `K` multiplication (local tomography) is the subtle one.
+**This is the crux, and the concentrated residual.** Local tomography is precisely the
+axiom that selects **complex** Hilbert space over **real** (real QM violates it) — so the
+substrate must be shown to be local-tomographic, not real-QM-like. What the substrate has
+in its favour: the **phase is genuine** (from "phase = position on the closure cycle,"
+U(1) — a real-amplitude theory has no phase and no interference), so the substrate is
+already committed to complex at the *single-system* level. What is **not** shown: that this
+complex-ness propagates to composites as `K_AB = K_A K_B` rather than the real alternative
+— i.e. that subframe composition preserves the phase structure jointly. **Rating: GAP
+(the decisive one).** Note also the tension to watch: entanglement-as-a-superframe-dimension
+must be the *local-tomographic* kind of global correlation (captured by joint local
+statistics), not extra non-tomographic global information — complex QM is local-tomographic
+*and* has entanglement, so there is no contradiction, but the substrate's composition has to
+land on that side and that is unproven here.
+
+**Axiom 5 (Continuity).** There is a **continuous reversible transformation between any two
+pure states.** This is *the* quantum-selecting axiom: classical probability theory satisfies
+1–4 and fails exactly this (classical pure states are discrete; no continuous reversible
+path between them), and it is what forces `K = N²` (quantum) over `K = N` (classical).
+*Substrate:* **free continuation.** A free continuation is a **no-write**, hence reversible
+(a write is the only irreversible operation); and it is **continuous** — the phase is
+position on the cycle, a continuous U(1), so free evolution continuously rotates the
+Narrative-vector between pure states. The substrate's most native object — persistence as
+the free default — *is* Hardy's continuous reversible transformation. **Rating: SOLID**,
+and it is the crux axiom. This is the strongest single result of the mapping: the substrate
+supplies the very axiom that distinguishes quantum from classical, from its own first-law
+(free continuation) machinery, with no added assumption.
+
+**Hardy tally:** SOLID ×2 (Axioms 1 and 5 — including the quantum-selecting crux),
+PLAUSIBLE ×2 (2, 3), GAP ×1 (4, local tomography / complex-vs-real).
+
+---
+
+## Level 1b — the CDP six (cross-check)
+
+**Causality.** No signalling from the future; preparation marginals are independent of the
+later measurement choice. *Substrate:* in-frame ordering; collapse is a local write; no
+cross-frame write into the past (`prop:run-record`, delayed-choice without retrocausality).
+**Rating: SOLID.**
+
+**Perfect distinguishability.** Every state not completely mixed is perfectly
+distinguishable from some other. *Substrate:* distinctions are first-class (Axiom −1: a
+difference that makes a difference); a non-mixed state carries a distinction, hence is
+distinguishable. **Rating: PLAUSIBLE.**
+
+**Ideal compression.** Every source has a lossless minimal encoding, recoverable
+reversibly. *Substrate:* native MDL/compression; the sd loop's minimal codebook.
+**Rating: PLAUSIBLE→SOLID** (compression is a core commitment).
+
+**Local distinguishability (local tomography).** Same content as Hardy Axiom 4, and the
+**same GAP** — the complex-vs-real crux. **Rating: GAP.**
+
+**Pure conditioning (atomicity).** An atomic measurement on a pure state leaves pure
+conditional states. *Substrate:* collapse of a pure Narrative yields a definite (pure)
+realised outcome. **Rating: PLAUSIBLE.**
+
+**Purification.** Every state has a purification, essentially unique. *Substrate:*
+**entanglement as a superframe dimension** — a mixed subframe state is the restriction of a
+pure superframe state (`rem:mixed`/`sec:entanglement` in the physics paper). This is
+*literally* purification. CDP identify purification as the most characteristically quantum
+principle (it fails classically). **Rating: SOLID.**
+
+**CDP tally:** SOLID ×2 (causality, purification — including CDP's quantum-crux),
+PLAUSIBLE ×3, GAP ×1 (local tomography).
+
+---
+
+## The convergence, and the concentrated residual
+
+Two independent reconstructions, two *different* "most quantum" axioms — Hardy's
+**continuity** of reversible transformations, CDP's **purification** — and the substrate
+supplies **each natively from a different one of its own principles**: continuity from
+**free continuation** (the first law), purification from **entanglement-as-superframe**.
+That two separate reconstructions' crux axioms are both already-present substrate structure
+is the substantive positive finding.
+
+Everything else rates PLAUSIBLE (probability, simplicity/compression, subspaces,
+distinguishability, pure-conditioning) — genre-matches to native commitments, not proofs —
+**except one axiom that is both non-trivial and unmet: local tomography** (Hardy 4 / CDP 4),
+which is exactly the axiom that selects **complex** Hilbert space over real. The residual is
+therefore *concentrated*, not diffuse:
+
+1. **Level 0:** show the substrate instantiates an OPT (convex state space, effects,
+   transformations, tensor) — the precondition, only sketched.
+2. **Local tomography:** show subframe composition gives `K_AB = K_A K_B` (complex), i.e.
+   that the single-system closure-phase propagates to composites — the complex-vs-real
+   decider, and the one clear GAP.
+
+If both are discharged, the PLAUSIBLE axioms would still need tightening from genre-match to
+statement-match, and then Hardy's or CDP's theorem delivers complex Hilbert space and the
+Born rule.
+
+---
+
+## What this note does and does not establish
+
+- **Does:** locate the reconstruction axioms against substrate principles; show the two
+  crux ("most quantum") axioms are supplied natively; reduce the open problem from "posit
+  Hilbert + unitarity" to **two named, checkable items** (OPT-instantiation and local
+  tomography) plus the tightening of the plausible axioms.
+- **Does not:** prove any mapping rigorously; establish the OPT structure; decide complex
+  vs real (that *is* the local-tomography GAP); or re-derive the reconstruction theorems
+  (they are cited).
+- **Honest headline:** the frontier is now **one GAP (local tomography) and one
+  precondition (OPT-instantiation)**, with the distinctively-quantum axioms already met.
+  That is the smallest and most localised the Born/Hilbert residual has been in this
+  programme — and it is still open.
+
+## Next concrete step
+
+Attack local tomography directly: model the smallest composite (two two-state subframes) in
+the substrate, compute whether the joint state is fixed by product-projection statistics
+(`K_AB = 4·4 = 16` complex vs `K_AB = 10` real for two rebits), and check which the
+substrate's nesting-plus-closure-phase yields. That single calculation would either close
+the complex-vs-real GAP or falsify the whole route — a bounded, decisive test.
