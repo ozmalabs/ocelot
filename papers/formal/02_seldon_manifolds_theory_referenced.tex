@@ -323,23 +323,27 @@ for progress. No differentiable structure is required by the substrate; a graph 
 The manifold as defined says which continuations are reachable. It does not say that they are
 equally easy, and they are not. A manifold therefore admits a scalar field over it --- a cost
 assigned to each represented continuation --- and the geometry of that field is as informative as
-the extent of the manifold itself. What the scalar \emph{is} is supplied by the companion papers,
-where surviving history-bearing structure prices continuations rather than removing them, and where
-the capacity to pay is itself a frame-relative quantity; the present paper needs only that some such
+the extent of the manifold itself. What the scalar \emph{is} is supplied by the companions --- Narrative Momentum, where surviving
+history-bearing structure prices continuations rather than removing them, and Narrativium, where the
+capacity to pay is itself a frame-relative quantity --- the present paper needs only that some such
 field exists over $\Seldon_{h,\rho}(\Frame_t)$ and is frame-relative in the same way the manifold is.
 
 \begin{definition}[Cost field and contours]\label{def:contours}
-Let $C_{\Frame}$ assign to each continuation in $\Seldon_{h,\rho}(\Frame_t)$ the cost, in that
-frame's terms, of reaching it. Its level sets are the \emph{contours} of the manifold, and the
-region enclosed by a contour is the set of continuations reachable within that budget. A
-\emph{basin} is a region whose cheapest continuations lead back into it, so that leaving requires
-paying more than remaining.
+Where the frame instantiates the relevant dimension, let $C_{\Frame}$ assign to each continuation in
+$\Seldon_{h,\rho}(\Frame_t)$ the cost, in that frame's terms, of reaching it; where it does not, the
+field is \textsc{null} there rather than large (Definition~\ref{def:dimension}). Its sublevel sets
+$\{C_{\Frame}\le k\}$ are the within-budget regions and their boundaries the \emph{contours}. A
+\emph{basin} is a region whose cheapest successors lie within it, so that leaving costs more than
+remaining.
 \end{definition}
 
 Two properties make this more than a way of drawing the manifold. The first is that the field has a
-default direction of travel. Retaining structure is free and altering it is priced, so a frame that
-does nothing does not stay still: it follows the descent, and the descent is where the narrative
-goes. Contours therefore make a projection visible that the bare reachable set does not --- not
+default direction of travel, and the reason is not that doing nothing is free. It is the companion
+law's: continuations reusing surviving structure are the cheapest ones, and that structure carries
+the frame along rather than holding it at a point, so a frame that does nothing is carried down its
+cheapest continuation rather than staying put. The descent is where the narrative goes. This is a
+pattern the foundational paper holds at the strength the evidence supports rather than a universal
+of the substrate. Contours therefore make a projection visible that the bare reachable set does not --- not
 which futures are possible, which is the manifold's extent, but which are \emph{cheap}, which is
 its shape.
 
@@ -350,34 +354,36 @@ contour beyond which the required payment exceeds what the frame has. Whether a 
 frame is therefore not a property of the basin alone but of the basin against that frame's capacity,
 which is why the same landscape confines one frame and not another.
 
-Three consequences worth stating. Deformation, in the sense of the control section above, is
-re-shaping this field rather than moving within it: an intervention that changes what things cost
-changes where the descent leads, which is a larger change than moving a frame to a different point
-at fixed cost. Competing deformation is competing re-shaping, and the ridges are where the
-competition is decided. And a frame with enough capacity is not confined by any basin the landscape
-contains --- basins say where the cheap path runs, never where a frame must go.
+Two consequences worth stating. Deformation, in the sense of the control section below, re-shapes
+this field rather than moving within it, which is a larger change than moving a frame at fixed cost.
+And a frame with enough capacity is not confined by any basin the landscape contains --- basins say
+where the cheap path runs, never where a frame must go.
 
 A cost field alone is not the whole of it, and taking it for the whole is the error the
 construction most invites. Cost is a flow --- what reaching a continuation takes --- while what
-matters equally is the state left behind it: the capacity a frame expects to have \emph{after}
-arriving, in the terms the companion papers give that capacity. A full manifold carries both.
+matters equally is the state left behind it: write $K_{\Frame}$ for the capacity a frame expects to
+have \emph{after} arriving, in the terms the companion papers give that capacity and under the same
+instantiation condition as $C_{\Frame}$. A full manifold carries both.
 
-The two fields would collapse into one if capacity were purely depletive, so that what remains were
-simply what was held less what was spent. The companion account denies exactly this: an expenditure
-can net-gain, and capacity is not a stock drawn down. So the fields are independent, and their
-divergence carries the structure. An expensive continuation that raises capacity and a cheap one
-that lowers it are the two cases a single field cannot represent, and both are ordinary.
+The two fields collapse into one wherever capacity is purely depletive, so that what remains is
+what was held less what was spent. The companion account establishes no such law and exhibits
+transitions that net-gain, so the fields are not in general reducible to one another --- though it
+also names groundings that do supply a conserved accounting, and there the two coincide. The
+construction below is stated for the groundings where they do not. What their divergence buys is the
+representation of two cases a single field cannot carry: an expensive continuation that raises
+capacity, and a cheap one that lowers it.
 
 \begin{definition}[Trap]\label{def:trap}
-A \emph{trap} is a region in which the two fields anti-correlate: cheap to enter, capacity-reducing
-while occupied, and expensive to leave. A basin is merely a place the cheap path returns to; a trap
-is a basin whose occupancy erodes the means of leaving it.
+For frame $\Frame$, a \emph{trap} is a basin of $C_{\Frame}$ on which $K_{\Frame}$ is decreasing ---
+the cost descent and the capacity descent run together. A basin is a place the cheap path returns
+to; a trap is a basin whose occupancy erodes the means of leaving it, which is a property of the two
+fields jointly and not of the cost field's asymmetry alone.
 \end{definition}
 
 Two consequences follow, and they are the practical content of the section. Descent on cost alone is
 the wrong policy on a two-field landscape: it is greedy, and a frame that can look further will pay a
 ridge to reach a position of higher capacity, which is a move the cost field alone represents as
-simply worse. And the reversibility preference stated above acquires its reason here --- a reversible
+simply worse. And the reversibility preference stated below acquires its reason here --- a reversible
 action is one that preserves capacity, so preferring reversibility is preferring the second field
 where the first is indifferent, which is why the preference is not merely caution.
 
@@ -390,27 +396,31 @@ about which parts of the terrain will move.
 \begin{definition}[Deformability]\label{def:deformability}
 For frame $\Frame$, the \emph{deformability} of a region of its manifold is the cost, in that
 frame's terms, of altering the fields over that region --- of changing what continuations there
-cost, or what capacity they leave. It is a field in its own right, defined over the same manifold,
+cost, or what capacity they leave. Write it $\partial_{\Frame}$: a field in its own right over the
+same manifold, under the same instantiation condition,
 and like the others it is frame-relative: it measures what this frame can move, not what is movable.
 \end{definition}
 
-This is the structure one level up, and it does not run away. Changing a landscape is priced;
-changing what it costs to change a landscape is priced again; and since capacity is finite, the
-recursion terminates in practice at the level a frame can still afford, which is usually the first.
-The regress is bounded by the same economy that generates it.
+This is the structure one level up. Changing a landscape is priced, and changing what it costs to
+change a landscape is priced again; each level is defined whether or not anything can reach it. What
+finite capacity bounds is not which levels exist but which a frame can act at, so the regress is
+operationally truncated rather than definitionally terminated --- and a frame instantiating no
+capacity dimension at all has no economy here to truncate it.
 
 What the third field makes visible is \emph{leverage}. The interesting locations are not where the
 terrain is most dramatic but where deformability is low and the effect on the descent is large ---
 a ridge that can be lowered cheaply and re-routes everything below it, or a basin whose lip can be
-breached at a price some frame can pay. That ratio, small push to large change in where the narrative
-runs, is what the companion account describes as loading a container with cheap changes that compel
-expensive responses; here it is a place on a map. It is also what makes the minimum-intervention
-result above well posed: minimum with respect to what, is answered by the deformability field, and
-without it ``smallest sufficient push'' names no particular quantity.
+breached at a price some frame can pay. That ratio --- small outlay to large change in where the
+narrative runs --- is the companion account's loading lever seen as a location: what is injected is
+expensive for the container to re-cohere, and cheap only relative to that response. Where a grounding supplies a cost ordering over
+interventions, it is the companion's minimum revision cost that any minimality claim ranges over;
+deformability prices something else --- altering the field rather than acting within it --- and the
+two should not be run together.
 
 Two things this does not license. Regions of high deformability cost are not immovable --- they are
 expensive relative to a given frame's capacity, and another frame, or the same one later, may reach
-them; the field records a price, never a prohibition. And competing deformation, in the section
+them; the field records a price, not a prohibition --- prohibition is admissibility's business
+(Definition~\ref{def:irreversible}), not cost's. And competing deformation, in the section
 below, is competition over this field rather than over position: two frames re-shaping the same
 region are not moving a contested object between them but disagreeing about what the terrain should
 cost, which is why the contest is decided at the ridges rather than at the point either occupies.
@@ -594,13 +604,10 @@ because the fields are several and are not scalarised into one objective, what i
 non-dominated position rather than a maximum --- a dynamic Pareto discipline, dynamic because both
 the manifold and the acceptable region move as the frame does.
 
-Three things follow that an optimising treatment does not give. It is cheap, since the recurring
-operation is a membership test against a region rather than the computation of an optimum. It
-preserves capacity, because a frame not chasing a maximum is not spending to reach one, and what is
-unspent is what the second field records. And the available responses to a projected departure
-include re-shaping the terrain as well as steering across it, so ``act'' is not confined to
-intervention on the frame's own trajectory --- which is why the deformability field belongs to the
-same discipline rather than to a separate theory of control.
+What an optimising treatment does not give is that the recurring operation is a membership test
+rather than the computation of an optimum, that a frame not chasing a maximum does not spend to
+reach one, and that the admissible response to a projected departure includes re-shaping the terrain
+as well as steering across it.
 
 None of which displaces the established work: where the question genuinely is one of extent, the
 existing machinery answers it and answers it better, and the fields above are defined over exactly
