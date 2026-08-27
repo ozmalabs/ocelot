@@ -12,9 +12,9 @@ Equalisation* (Theory; Physics Grounding; Mind and Self Grounding).
 ## 1. The substrate, in one paragraph
 
 Reality is modelled as typed graphs plus **admissibility rules** (a grammar of which edges may
-exist). A **frame** is a subgraph that runs; its **state** is an internal "Narrative" — a
-directional quantity over the frame's outcomes, carrying a magnitude and a **phase** that is
-position on a **closure cycle** (a loop that a realisation must close), so amplitudes are
+exist). A **frame** is a subgraph that runs; its **state** is an internal "Narrative" — the standing structure it
+carries forward. Where a frame instantiates a direction (optional in general, present in this
+setting), that Narrative has a magnitude and a **phase** that is position on a **closure cycle** (a loop that a realisation must close), so amplitudes are
 complex, `r·e^{iθ}`. A **realisation** is a collapse: a local write that picks one outcome from
 the admissible set, with a weight. Realisations are strictly ordered (no in-frame concurrency).
 Nothing is privileged: there is no god's-eye frame, and no privileged phase origin or
@@ -29,11 +29,12 @@ a dimension of the superframe.
 The substrate **recovers** the Born rule — reproduces it within its own structures, given its
 admitted primitives and a contingent, self-located selection — rather than **deriving** it as a
 forced necessity. Derivation-per-se would compel Born from primitives; the framework forces
-almost nothing (that is the point of a graph substrate: the compulsory core is only structure,
-rules, subgraph-hood, and an admissibility grammar — everything else is contingent rule-content,
-as with the number of spatial dimensions or the gauge group). Every distinctively-quantum
+almost nothing (that is the point of a graph substrate: what survives every attempted removal is
+a container relation across which rules run, and essentially everything else is contingent
+rule-content, as with the number of spatial dimensions or the gauge group). Every distinctively-quantum
 ingredient is supplied by a substrate principle; the **cited reconstruction theorems**
-(Gleason 1957; Hardy 2001; Chiribella–D'Ariano–Perinotti 2011) supply the uniqueness. The only
+(Gleason 1957; Hardy 2001; Masanes–Müller 2011; Chiribella–D'Ariano–Perinotti 2011) supply the
+uniqueness. The only
 real claim is the **arrangement** — each component is individually known.
 
 ## 3. Level 0 — the substrate is an operational-probabilistic theory (core-established)
@@ -77,8 +78,10 @@ natively, from a *different* principle.
 **The squared modulus** is then *forced given* complex, linear amplitudes and no privileged
 phase: decohered alternatives are classically exclusive, so their probabilities add, and
 averaging the combined modulus over the relative phase,
-`⟨f(|a·e^{iθ}+b|)⟩_θ = f(|a|)+f(|b|)` (the cross-term averages to zero), whose unique natural
-solution is `f(x)∝x²`. Two supporting identifications: the **inner product** is the cross-frame
+`⟨f(|a·e^{iθ}+b|)⟩_θ = f(|a|)+f(|b|)` (the cross-term averages to zero). The square
+`f(x)∝x²` satisfies this and the obvious alternatives do not (a quartic overshoots by the
+surviving `⟨cos²⟩=½` term; the linear undershoots). That **selects** the square among the natural
+candidates; it does not prove it unique, and the uniqueness is exactly what Gleason supplies. Two supporting identifications: the **inner product** is the cross-frame
 projection (one frame's Narrative read in another's basis); **unitarity** is that a free
 continuation is a no-write (it preserves the Narrative and every projection of it).
 
@@ -92,10 +95,11 @@ For two two-state systems (Hardy's `K` = fiducial degrees of freedom incl. norma
 | real (rebit) | 3 | 10 | 9 | **fails** (10 > 9) |
 | complex (qubit) | 4 | 16 | 16 | **holds** |
 
-The substrate is already complex at one system (the closure-phase gives the Bloch sphere,
-`K=4`, not the real disk's `K=3`). A superframe, being a frame, is a complex closure-phase
-Narrative over the product outcome set, giving `K_AB = 16` — local-tomographic, complex. But the
-framework forces almost nothing: **complex-over-real is contingent rule-content, self-located**,
+A closure-phase frame is *consistent with* complex amplitudes at one system (the Bloch sphere,
+`K=4`, rather than the real disk's `K=3`) — though a phase-less frame is equally constructible,
+and the substrate requires neither. Read that way, a superframe, being a frame, is a complex
+closure-phase Narrative over the product outcome set, giving `K_AB = 16` — local-tomographic,
+complex. But the framework forces almost nothing: **complex-over-real is contingent rule-content, self-located**,
 exactly as the number of spatial dimensions is. So local tomography is not a gap to be closed by
 a forcing argument — it is the signature of a contingent selection, and a real-amplitude
 composition (`K_AB=10`) is another admissible configuration. Our universe is the complex one,
@@ -105,9 +109,11 @@ self-located.
 
 On one substrate, quantum theory and relativity are not rivals: **collapse** is an in-frame
 *event* (a local write, discrete), **relativity** a cross-frame *map* (continuous), joined at
-`c`. Special and general relativity reconcile as one change-budget (with `c`-invariance a
-theorem — that part is *proof*); the quantum–relativity reconciliation is *structural* (one
-substrate, the event/map seam) with Born *recovered*. This is emphatically **not** a quantum
+`c`. Special and general relativity reconcile as one change-budget, with `c`-invariance a theorem
+given the substrate's own units (the unit-reading itself is definitional and carries no risk; the
+falsifiable content is the cross-frame claim that aperture self-calibrates, so that two frames in
+relative motion cannot be exhibited reading different `c` for one signal). The quantum–relativity
+reconciliation is *structural* — one substrate, the event/map seam — with Born *recovered*. This is emphatically **not** a quantum
 theory of gravity: no field is quantised, no metric derived, no dimensionless constant fixed.
 What is reconciled is the *conflict*, at the level of shape.
 
@@ -122,7 +128,23 @@ you at:
 2. **The squaring argument** — is the phase-average uniqueness (`f∝x²`) tight enough, or does it
    need the full Gleason content?
 3. **Composition** — under the natural reading the composite is local-tomographic (complex); is
-   that reading forced, permitted, or wrong?
+   that reading forced, permitted, or wrong? Your and Masanes' formulation is the one I would
+   most like tested against this, since its requirements are stated on single systems plus a
+   composition rule — which is exactly the seam where the substrate's answer turns contingent
+   rather than forced, and where I am least confident the mapping is doing honest work.
 
 Honest boundaries restated: draft, not peer-reviewed; shape-level, not quantitative; the claim
 is the arrangement; *recover*, not *derive*.
+
+---
+
+## References
+
+- A. M. Gleason (1957). Measures on the closed subspaces of a Hilbert space. *J. Math. Mech.* 6,
+  885–893.
+- L. Hardy (2001). Quantum theory from five reasonable axioms. arXiv:quant-ph/0101012.
+- Ll. Masanes and M. P. Müller (2011). A derivation of quantum theory from physical requirements.
+  *New J. Phys.* 13, 063001.
+- G. Chiribella, G. M. D'Ariano and P. Perinotti (2011). Informational derivation of quantum
+  theory. *Phys. Rev. A* 84, 012311.
+- C. Rovelli (1996). Relational quantum mechanics. *Int. J. Theor. Phys.* 35, 1637–1678.

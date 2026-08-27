@@ -11,9 +11,10 @@ foundations.
 
 The starting point is an information substrate: reality as typed graphs plus admissibility
 rules, with time, frames, and physics emergent rather than assumed. It recovers the *shapes*
-of special and general relativity as one change-budget (with c's invariance a theorem, not a
-postulate), and — the part for you — it appears to supply the operational axioms your and
-Hardy's / CDP's reconstructions start from:
+of special and general relativity as one change-budget (c is each frame's own throughput unit,
+so its invariance is a theorem rather than a postulate — the content being the cross-frame
+claim, since the unit-reading alone is definitional), and — the part for you — it appears to
+supply the operational axioms your and Masanes', Hardy's, and CDP's reconstructions start from:
 
 - The classical convex/affine backbone of an OPT falls out of weighted, ordered realisations
   plus a "present-structure-acts" (Markov) first law — states as equivalence classes, affine
@@ -33,8 +34,9 @@ quantum theory and relativity at the level of shape, on one substrate, no more.
 
 I'd value your read on one specific thing: whether the mapping from these substrate principles
 to the reconstruction axioms is sound, or exactly where it breaks. I've written it up as a
-short axiom-by-axiom note (rated honestly, per axiom, with the residuals named), alongside
-three short papers. Could I send them?
+short axiom-by-axiom note — rated per axiom, with the residuals named rather than smoothed —
+and there are two background papers behind it. Could I send the note, or the note and the
+papers, whichever is less of an imposition?
 
 With respect for your time,
 Matthew Parslow
