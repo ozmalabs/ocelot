@@ -26,7 +26,7 @@ contain zero figures, which that document treats as the first gap to close.
 All five carry the same draft string in three places — the title block, a boxed
 notice under the title, and the footer of every page:
 
-> **`draft-2026-08-24`** · 24 August 2026
+> **`draft-2026-08-27`** · 27 August 2026
 
 They are circulated for comment, not as finished results. **Bump all five
 together**, so a reader comparing two papers is never comparing two drafts, and
