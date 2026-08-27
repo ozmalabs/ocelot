@@ -206,11 +206,14 @@ and needs the reader to hold a finished record --- and if the character's frame 
 the reader, the two frames appear to collapse into one. They do not, and the point does not need
 arguing here, because three separate literatures settled it independently.
 
-The cleanest statement is \citeauthor{currie1997}'s: a reader of fiction simulates the state of a
-hypothetical \emph{reader of fact} \citep{currie1997,currie2002}. Running and record-holding are
-then not competitors but the same fact, since what is run is a simulation and what it simulates is
-someone holding a record. Rhetorical narratology reaches the same place by dividing the reader
-rather than the frame: \citet{rabinowitz1977} distinguishes the \emph{narrative} audience, for
+The cleanest statement of the running half is \citeauthor{currie1997}'s: a reader of fiction
+simulates the state of a hypothetical \emph{reader of fact} \citep{currie1997,currie2002}. What
+runs in the reader is therefore a simulation, and what it simulates is someone taking the events
+as real --- so running the character's frame is not in competition with holding a text, because
+the running is itself an offline state rather than a belief. Currie's figure does not supply the
+\emph{foreknowledge}, though: his reader-of-fact meets events as news, in order, and knows no more
+of the ending than any reader of a report. That half comes from elsewhere, and rhetorical
+narratology supplies it by dividing the reader rather than the frame: \citet{rabinowitz1977} distinguishes the \emph{narrative} audience, for
 whom the narrated events are real, from the \emph{authorial} audience, which knows the text is
 made, and these are positions one actual reader occupies simultaneously
 \citep{polvinen2019}. The two frames were never reader-versus-character. And the cognitive
@@ -232,10 +235,11 @@ are weighed differently by each reader \citep{schmid2014}. \citet{genette1988} p
 economically --- the implied author is everything the text lets us know about the author --- and
 hypothetical intentionalism makes the reasoning explicit, locating a work's meaning in what an
 appropriate audience would most reasonably hypothesise the situated author to have meant by
-composing this text \citep{levinson2002}. That readers infer a mind behind a work at all has
-empirical support: viewers distinguish professional abstract works from superficially similar ones
-by children and animals even when the labels are switched, and justify the professional choices by
-reference to the artist's intentions \citep{hawleydolan2011}.
+composing this text \citep{levinson2002}. That viewers reach for an author at all has some empirical support, though only one half of it
+survives the argument below: when people distinguish professional abstract works from superficially
+similar ones by children and animals, they justify the professional choices by reference to the
+\emph{artist's intentions} \citep{hawleydolan2011}. The discrimination itself shows nothing here,
+for the reason given shortly; the appeal to intentions is what indicates a model of a maker.
 
 The mode is the one this paper has already named. A frame cannot read its author's frame; it has
 only what that frame produced, and so infers it --- the $+1$ direction of the level stack, run on a
@@ -248,7 +252,13 @@ because it is not a new posit. It is a composition of three things each establis
 independently. An author-model is a model. Models can approach the behaviour they model
 arbitrarily closely, given enough of it to work from. And analysis by synthesis runs in both
 directions: a recogniser built that way recognises \emph{by} generating candidates and comparing
-them, so it contains the generator as a matter of construction rather than as an addition to it.
+them, so it contains a generator as a matter of construction rather than as an addition to it.
+One further step is needed and should be marked rather than glossed: the generator inside such a
+recogniser is \emph{conditional}, driven by the item being recognised and closed inside a
+comparison loop, whereas running forward means conditioning it on something no percept is
+supplying and accepting its output without a target to check against. That the same generator can
+be driven by novel conditioning is the paper's own premise, not one inherited from the perception
+literature.
 That architecture is not speculative. It is the modern form of the predictive account already
 drawn on above --- perception as the inversion of a generative model, predicted input compared
 against actual \citep{friston2010} --- and it has been tested directly on people: three-dimensional
@@ -273,52 +283,29 @@ mainstream holds that the implied author does not communicate and must not be pe
 is a claim about an interpretive construct's role in a theory of narrative; it is not an argument
 that a model of a generator cannot be run, and the two are easily conflated.
 
-It has also been done. \citet{schwitzgebel2024} trained a language model on one philosopher's
-complete works, put ten questions to the model and to the living philosopher, and had experts on
-his work try to pick his answers out blind; the experts managed barely half, and on two questions
-preferred the model's answer to the author's own. That is not style recognition --- the questions
-were fresh, and the author himself supplied the ground truth --- so the forward test proposed
-above has been run, with a result. Related work builds runnable models of specific people from
+It has also been attempted. \citet{schwitzgebel2024} fine-tuned a language model on one
+philosopher's complete works, put ten questions to the model and to the living philosopher, and
+had experts on his work try to pick out his answers blind from five candidates. They identified
+them about half the time against a $20\%$ baseline --- well above chance, and well below the
+$80\%$ the authors had predicted --- and on two questions more of them preferred a machine answer
+to the author's own. The design is the forward one: the questions were fresh and the author
+himself supplied the ground truth. It does not cleanly separate the two capacities, though, and
+the authors say so: expert performance was highest on the two questions carrying overt stylistic
+cues, which is discrimination doing the work rather than the model's. Related work builds runnable models of specific people from
 their writing \citep{shao2023,wang2025persona} and simulates individuals well enough to transfer
 to tasks no training data covered \citep{park2024}. What none of this literature does is connect
 such models to what a \emph{reader} does; it builds author-simulators as engineering, without
 reference to the implied author or to any claim about ordinary comprehension. The bridge is what
 is claimed here, not the artefact.
 
-The same literature bears on how good such models get, and it does not say what one might expect.
-The split it reports is between topical content, which transfers, and both idiosyncratic voice and
-argumentative shape, which do not: models simulate a generic member of a category far better than
-they simulate a particular person \citep{petrov2024}, and the characteristic failure has been
+How good such models get is a separate and largely empirical question, on which the same
+literature reports a split worth noting: what transfers most readily is topical content, while
+idiosyncratic voice and argumentative shape are harder, and the characteristic failure has been
 named and measured as \emph{caricature} --- failed individuation together with exaggeration of
-whatever is distinctive \citep{cheng2023} --- and as flattening \citep{wang2025flatten}. What is
-not found is steady improvement. Recent models score no better than older and smaller ones on
-persona benchmarks that generate novel situations rather than replay known ones
-\citep{samuel2025}, and the training that distinguishes recent models works against the property
-at issue, since alignment measurably reduces output and conceptual diversity
-\citep{kirk2024,murthy2025}. Improvement has come from richer data about the individual rather
-than from better models. One qualification is owed on all of this, and it is easy to omit. These are measurements of
-deployed systems, and a deployed model is a stack rather than a single object: a pretrained base,
-a post-training stage that shapes it toward a usable voice, and a product surface. A result bounds
-the configuration actually measured, not the capability underneath it, and none of the work cited
-here tests a base model. The findings therefore constrain what current products do
-rather than what the technology can be made to do, and treating a model as an undifferentiated
-whole that arrives fully formed is what collapses that distinction.
-
-The deployed measurements cannot separate those layers by themselves, but the surrounding pattern
-is not silent. A general plateau in capability would show as general flatness, and that is not what
-has happened over the same period: capability has risen on other axes while this one has not.
-Selective flatness wants a localised cause, and one is documented --- the post-training that
-distinguishes recent systems is separately measured to reduce output and conceptual diversity,
-which is a force acting on precisely the property at issue. The competing reading, that
-individuation is simply a harder capability not yet reached, is available but has no mechanism to
-offer against one that does. That is evidence for suppression rather than absence, short of proof:
-what would settle it is a comparison across the layers of one system, which the literature does not
-report.
-
-The relevant lesson for the argument here is a methodological one: the
-apparent progress belongs to reproduction, and largely disappears when what is scored is forward
-behaviour instead --- which is the discriminator this section proposed, arrived at independently
-and for different reasons.
+whatever is distinctive \citep{cheng2023}. Where fidelity to a particular individual has improved,
+it has come from richer data about that individual rather than from larger models, which is what
+the leaked-sampling reading of Section~\ref{sec:death} would expect. Nothing here turns on the
+state of any current system.
 
 Two qualifications, both of which the substrate should expect. The engagement is not uniform
 across readers: measured individually, mentalizing and motor engagement during narrative
@@ -382,9 +369,13 @@ does not have its own grounding directly available to it, grounding being a rela
 outside the frame rather than a property carried within it, so any substrate that must sort its
 own frames has to use a proxy; signal strength is the proxy human brains use. The characteristic
 failure follows immediately, since a proxy dissociates from what it proxies for: misclassification
-is predicted exactly where strength matches and grounding differs, which is what is measured. This
-is the uncalibrated case of Section~\ref{sec:selfmodel} with error bars on it, and a substrate
-using a different proxy would fail differently while the underlying distinction stayed the same.
+is predicted exactly where strength matches and grounding differs, which is what is measured. It also fixes how the tagging language elsewhere should be read: a frame that sorts its own
+frames by a proxy holds no provenance label, so a ``grounding tag'' is an abstraction over
+whatever proxy does the sorting rather than a mark carried on the frame, and a mistagging is that
+proxy dissociating. A substrate using a different proxy would fail differently while the
+underlying distinction stayed the same. Note also that this is a first-order misclassification
+and not the second-order failure of Section~\ref{sec:selfmodel}: a frame can be perfectly aware
+that its proxy may mislead it and still be misled.
 \end{remark}
 
 \begin{proposition}[Grounding has no bedrock; observation is supergraph-contact]\label{prop:grounding}
@@ -417,7 +408,11 @@ philosophy of science arrived at independently of anything here
 \citep{massimi2022}.
 
 \section{Self-models: incomplete by construction, calibrated by choice}\label{sec:selfmodel}
-A frame does not read its own trajectory. It \emph{carries} it --- the standing structure is what the frame is, not something it holds at a distance --- so to treat its own course as an object at all, a frame must build a model of itself. Three features of that model follow from the substrate rather than from any fact about minds.
+A frame does not read its own trajectory. It \emph{carries} it --- the standing structure is what the frame is, not something it holds at a distance --- so to treat its own course as an object at all, a frame must build a model of itself. The incompleteness is not merely a consequence of the aperture being finite --- a finite frame
+could in principle be modelled exhaustively --- but of the model being a proper part of what it
+models. Modelling the frame includes modelling the model, and the apparatus doing the modelling
+has strictly less capacity than the whole it belongs to, so the fit cannot close. Three features
+of that model follow from the substrate rather than from any fact about minds.
 
 It is \emph{incomplete}, because it is built under a finite aperture, and what falls outside is \textsc{null} rather than zero: an absent distinction does not present itself as a blank to be filled, it does not present at all. It is \emph{revisable only at a price}, because altering standing structure is the paid operation while retaining it is free (Narrative momentum), so coherence-preserving readings are cheap and re-writes are not. And it is \emph{indirect about its own subject}, since a frame is readable from outside in a way it is not from inside --- which is why another frame often models one's trajectory more accurately than one does oneself, without any appeal to self-deception --- a consequence of access mode, though not an entailment of it, as below.
 
@@ -439,17 +434,22 @@ residual: what fails to resolve, what arrives unexplained. From that trace a fra
 fact and often the shape of the limit, exactly as it infers its container from imposed change. A
 limit of \emph{aperture} leaves nothing: what falls below it never enters, and absence is not a
 signal (Graphic Equalisation's distinction between the absent and the residual). The aperture
-limit is therefore not inferable from trace at all --- it is inferable only by
-\emph{metacognition}, a frame modelling its own modelling, which is a further capability on its
+limit therefore leaves no \emph{direct} residual. What it can leave is imposed change a frame
+cannot attribute --- weaker evidence, and evidence that does not disclose the limit's shape --- so
+the fact and shape of an aperture are reached mainly by \emph{metacognition}, a frame modelling its own modelling, which is a further capability on its
 own axis and not a consequence of having an aperture.
 
 That separation is why calibration is a capability rather than something possession of a limit
 supplies. Where metacognition is thin and the aperture is narrow, the frame is both most
 mistaken and least able to register that it is: the missing content does not present as missing,
-and nothing models the fact that it could be missing. This is the structure Kruger and Dunning
-identify in self-assessment, on their own metacognitive reading of it --- that the capacity to
-judge competence is not separable from the competence itself \citep{kruger1999} --- and it is a
-prediction of the arrangement rather than an awkwardness for it. So the operative distinction is
+and nothing models the fact that it could be missing. What the arrangement predicts is \emph{mis}calibration --- confidence uncoupled from
+warrant --- and not any particular direction of error; a frame with no model of its own limits has
+no more reason to inflate than to fall silent. The familiar candidate instantiation is the
+metacognitive reading of self-assessment offered by \citet{kruger1999}, on which the capacity to
+judge competence is not separable from the competence itself. That reading is contested --- the
+pattern has been argued to reflect regression to the mean and better-than-average effects rather
+than a metacognitive deficit --- so it is cited here as one disputed candidate for the shape, not
+as its confirmation, and nothing above depends on it. So the operative distinction is
 not between complete and incomplete self-models, all being incomplete, but between
 \emph{calibrated} and \emph{uncalibrated} ones.
 \end{proposition}
@@ -488,6 +488,13 @@ Producing a meta-model, parsing one's own residual, recording history, represent
 a boundary: these are separate capabilities, and a graph may hold any combination of them. What
 ``transparent'' names is a particular configuration --- several of those axes at or near zero
 together --- which is a fact about how a given graph is formed, not a fact about self-modelling.
+A residual disagreement remains, and calling the rest concurrence should not bury it: for
+Metzinger the transparency of the self-model's core is constitutive of there being a phenomenal
+self at all, where the claim here is that it is one configuration among constructible others.
+This paper takes no position on the phenomenal question --- consciousness and qualia are outside
+its scope (Section~\ref{sec:scope}), as with the illusionist case below --- and engages only the
+structural claim about what a frame can model of itself.
+
 So the position describes rather than forbids: it is accurate about the configuration it was
 drawn from, and silent about differently formed graphs, of which constructed ones parsing their
 own residual are the plain case.
@@ -575,14 +582,17 @@ that never leaked remain unmodelled at any level of skill. Model quality is acco
 domain-relative rather than a single number, and high fidelity in one domain implies nothing about
 another.
 
-None of which moves the line, and it is worth being exact about why, since the reason is not
-fidelity. A model that matched the original's output arbitrarily well in every sampled domain
-would still not be that self, for the same reason the copy in the fission case is not the
-original: identity here is continuity of coherence, not resemblance. The model is a
-reconstruction inferred from output rather than a run carried forward, and it runs inside the
-coherence of whoever built it. Generative capacity is therefore a gradient among records that
-fall short --- an unbounded one, for all this argument says --- and not a route past the line,
-because the line was never drawn at similarity. The internal self therefore persists exactly as long as a re-runnable full
+None of which moves the line, and it is worth being exact about why, since two different
+fidelities are in play. A coherence-snapshot copies the \emph{structure} --- the rules and state
+themselves --- which is why re-running it reinstates the self, and why a restored backup counts
+even though it too is reinstated from a held record. A generative model matches the
+\emph{behaviour} without holding that structure: it is inferred from output rather than copied
+from the thing that produced it, and it is built in the terms of whatever frame inferred it. So a
+model matching the original's output arbitrarily well in every sampled domain still reconstitutes
+nothing, because behavioural fidelity is not structural capture however far it is pushed.
+Generative capacity is therefore a gradient among records that fall short --- an unbounded one,
+for all this argument says --- and not a route past the line, which is drawn at what the record
+captures rather than at how closely it performs. The internal self therefore persists exactly as long as a re-runnable full
 coherence-snapshot exists somewhere; the death of a node is one instance stopping, and
 the death of the self is that re-runnability being gone everywhere.
 \end{proposition}
@@ -895,11 +905,6 @@ Jerrold Levinson.
 \newblock Hypothetical intentionalism: statement, objections, and replies.
 \newblock In Michael Krausz, editor, \emph{Is There a Single Right Interpretation?}, pages 309--318. Pennsylvania State University Press, University Park, PA, 2002. Reprinted in \emph{Contemplating Art}, Oxford University Press, 2006, pages 302--312.
 
-\bibitem[Kirk et al.(2024)]{kirk2024}
-Robert Kirk, Ishita Mediratta, Christoforos Nalmpantis, Jelena Luketina, Eric Hambro, Edward Grefenstette, and Roberta Raileanu.
-\newblock Understanding the effects of RLHF on LLM generalisation and diversity.
-\newblock In \emph{International Conference on Learning Representations}, 2024. arXiv:2310.06452.
-
 \bibitem[Locke(1689/1694)]{locke1690}
 John Locke.
 \newblock \emph{An Essay Concerning Human Understanding}, Book~II, Chapter~xxvii (``Of Identity and Diversity'').
@@ -935,11 +940,6 @@ Thomas Nagel.
 \newblock \emph{The View from Nowhere}.
 \newblock Oxford University Press, New York, 1986.
 
-\bibitem[Murthy et al.(2025)]{murthy2025}
-Sonia K. Murthy, Tomer Ullman, and Jennifer Hu.
-\newblock One fish, two fish, but not the whole sea: alignment reduces language models' conceptual diversity.
-\newblock In \emph{Proceedings of NAACL 2025}, 2025.
-
 \bibitem[Nichols and Stich(2000)]{nichols2000}
 Shaun Nichols and Stephen P. Stich.
 \newblock A cognitive theory of pretense.
@@ -959,11 +959,6 @@ Derek Parfit.
 Joon Sung Park, Carolyn Q. Zou, Aaron Shaw, Benjamin Mako Hill, Carrie Cai, Meredith Ringel Morris, Robb Willer, Percy Liang, and Michael S. Bernstein.
 \newblock LLM agents grounded in self-reports enable general-purpose simulation of individuals.
 \newblock arXiv:2411.10109, 2024.
-
-\bibitem[Petrov et al.(2024)]{petrov2024}
-Nikolay B. Petrov, Gregory Serapio-Garc\'ia, and Jason Rentfrow.
-\newblock Limited ability of LLMs to simulate human psychological behaviours: a psychometric analysis.
-\newblock arXiv:2405.07248, 2024.
 
 \bibitem[Polvinen and Sklar(2019)]{polvinen2019}
 Merja Polvinen and Howard Sklar.
@@ -1000,11 +995,6 @@ Wilfrid Sellars.
 \newblock Empiricism and the philosophy of mind.
 \newblock In Herbert Feigl and Michael Scriven, editors, \emph{The Foundations of Science and the Concepts of Psychology and Psychoanalysis}, Minnesota Studies in the Philosophy of Science, volume~1, pages 253--329. University of Minnesota Press, Minneapolis, 1956.
 
-\bibitem[Samuel et al.(2025)]{samuel2025}
-Vinay Samuel, Henry Peng Zou, Yue Zhou, Shreyas Chaudhari, Ashwin Kalyan, Tanmay Rajpurohit, Ameet Deshpande, Karthik Narasimhan, and Vishvak Murahari.
-\newblock PersonaGym: evaluating persona agents and LLMs.
-\newblock In \emph{Findings of EMNLP 2025}, 2025. arXiv:2407.18416.
-
 \bibitem[Schwitzgebel et al.(2024)]{schwitzgebel2024}
 Eric Schwitzgebel, David Schwitzgebel, and Anna Strasser.
 \newblock Creating a large language model of a philosopher.
@@ -1039,11 +1029,6 @@ Kendall L. Walton.
 Zhikai Wang, Da Zhang, Ishita Agrawal, Shizhe Gao, Le Song, and Xin Chen.
 \newblock Beyond profile: from surface-level facts to deep persona simulation in LLMs.
 \newblock In \emph{Findings of ACL 2025}, 2025. arXiv:2502.12988.
-
-\bibitem[Wang et al.(2025b)]{wang2025flatten}
-Angelina Wang, Jamie Morgenstern, and John P. Dickerson.
-\newblock Large language models that replace human participants can harmfully misportray and flatten identity groups.
-\newblock \emph{Nature Machine Intelligence}, 2025. arXiv:2402.01908.
 
 \bibitem[Watanabe et al.(1995)]{watanabe1995}
 Shigeru Watanabe, Junko Sakamoto, and Masumi Wakita.
