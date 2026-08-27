@@ -318,6 +318,53 @@ Where local direction is meaningful, let $\mathbf g_t$ be a represented preferre
 \]
 for progress. No differentiable structure is required by the substrate; a graph grounding may instead use an ordering or directed edge relation.
 
+\section{Cost contours and basins}\label{sec:contours}
+
+The manifold as defined says which continuations are reachable. It does not say that they are
+equally easy, and they are not. A manifold therefore admits a scalar field over it --- a cost
+assigned to each represented continuation --- and the geometry of that field is as informative as
+the extent of the manifold itself. What the scalar \emph{is} is supplied by the companion papers,
+where surviving history-bearing structure prices continuations rather than removing them, and where
+the capacity to pay is itself a frame-relative quantity; the present paper needs only that some such
+field exists over $\Seldon_{h,\rho}(\Frame_t)$ and is frame-relative in the same way the manifold is.
+
+\begin{definition}[Cost field and contours]\label{def:contours}
+Let $C_{\Frame}$ assign to each continuation in $\Seldon_{h,\rho}(\Frame_t)$ the cost, in that
+frame's terms, of reaching it. Its level sets are the \emph{contours} of the manifold, and the
+region enclosed by a contour is the set of continuations reachable within that budget. A
+\emph{basin} is a region whose cheapest continuations lead back into it, so that leaving requires
+paying more than remaining.
+\end{definition}
+
+Two properties make this more than a way of drawing the manifold. The first is that the field has a
+default direction of travel. Retaining structure is free and altering it is priced, so a frame that
+does nothing does not stay still: it follows the descent, and the descent is where the narrative
+goes. Contours therefore make a projection visible that the bare reachable set does not --- not
+which futures are possible, which is the manifold's extent, but which are \emph{cheap}, which is
+its shape.
+
+The second is that basins are where the substrate's persistence phenomena live. A frame inside a
+basin will return to it under every cheap continuation, and will leave only by paying the ridge; the
+structural lock-in of the companion account is a basin read from above, and the horizon is the
+contour beyond which the required payment exceeds what the frame has. Whether a basin holds a given
+frame is therefore not a property of the basin alone but of the basin against that frame's capacity,
+which is why the same landscape confines one frame and not another.
+
+Three consequences worth stating. Deformation, in the sense of the control section above, is
+re-shaping this field rather than moving within it: an intervention that changes what things cost
+changes where the descent leads, which is a larger change than moving a frame to a different point
+at fixed cost. Competing deformation is competing re-shaping, and the ridges are where the
+competition is decided. And a frame with enough capacity is not confined by any basin the landscape
+contains --- basins say where the cheap path runs, never where a frame must go.
+
+Honest boundary: this is a claim about the \emph{shape} of the field and not its values. Where the
+basins lie relative to a frame's capacity, which ridges separate them, and which way the descent
+runs are the content; the metric that would put numbers on the contours is supplied by a grounding,
+if it is available at all, and nothing here asserts that the field is computable for a given system.
+Nor does the field add anything to the manifold's extent: a continuation priced beyond any available
+capacity remains reachable in principle and is excluded by cost, not by admissibility, which is the
+distinction the companion law turns on.
+
 \section{Muchness}\label{sec:muchness}
 
 \begin{definition}[Muchness]\label{def:muchness}
@@ -456,6 +503,7 @@ The paper's relationship to established work can be summarised as follows.
 \section{Falsifiability commitments}\label{sec:falsifiability}
 
 \begin{enumerate}[leftmargin=*]
+\item \textbf{Cost contours and basins.} Fails if the continuations a frame actually takes, absent intervention, are not the cheap ones --- if the descent direction of the cost field does not predict where an uninterrupted frame goes --- or if persistence in a region can be exhibited with no corresponding basin, or a basin with no corresponding persistence. (The claim is about the field's shape relative to a frame's capacity, not about the values of any metric over it.)
 \item \textbf{Deterministic counterfactual typing.} Fails if the Seldon construction requires multiple fundamentally random realised outcomes from one causally complete antecedent rather than multiple deterministic continuations under differing represented future conditions.
 \item \textbf{Reachability utility.} Fails for a claimed task class if reachable geometry cannot preserve distinctions needed for prediction or control that trajectory-level representation preserves.
 \item \textbf{Dimension/value typing.} Fails if an absent future dimension must be represented as the numerical value zero rather than remaining undefined until instantiated.
