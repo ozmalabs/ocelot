@@ -177,10 +177,63 @@ Born rule.
   That is the smallest and most localised the Born/Hilbert residual has been in this
   programme — and it is still open.
 
-## Next concrete step
+## The two-subframe calculation (attempted)
 
-Attack local tomography directly: model the smallest composite (two two-state subframes) in
-the substrate, compute whether the joint state is fixed by product-projection statistics
-(`K_AB = 4·4 = 16` complex vs `K_AB = 10` real for two rebits), and check which the
-substrate's nesting-plus-closure-phase yields. That single calculation would either close
-the complex-vs-real GAP or falsify the whole route — a bounded, decisive test.
+**Honest flag: this computes the *natural* substrate composition and reads off the
+dimension; the result turns on that composition being the right reading of self-similarity,
+which is argued, not forced. It is not an independent proof that the substrate is complex.**
+
+Hardy's `K` (fiducial degrees of freedom, including normalisation) for a two-state system
+(`N=2`) and its self-composite (`N=4`):
+
+| theory | `K` at `N=2` | `K` at `N=4` | `K_A·K_B` | local tomography |
+|---|---|---|---|---|
+| classical | 2 | 4 | 4 | holds (but fails continuity) |
+| real (rebit) | 3 | **10** | 9 | **FAILS** (10 > 9) |
+| complex (qubit) | 4 | **16** | 16 | **holds** |
+| quaternionic | 6 | 28 | 36 | fails |
+
+Continuity (Hardy 5) excludes classical; **local tomography excludes real** — its composite
+carries 10 parameters, one more than the 9 any product measurement can read. Complex is the
+theory satisfying both. So the decisive number is the substrate composite's `K`: **16
+(complex) or 10 (real)**.
+
+**Single system.** The substrate's phase is position on the closure cycle, a continuous
+`U(1)`; amplitudes are `(a_0,a_1) ∈ ℂ²`, quotiented by global phase (no-privilege) and norm
+→ the Bloch **sphere**, `K = 4`. Not the real disk (`K = 3`, no phase), not the classical
+segment (`K = 2`). **The substrate is already complex at one system** — the closure-phase is
+the complex commitment, and this part is solid.
+
+**Composite.** A superframe is a frame (self-similarity, runner-recursion), so its state is
+the same object: a complex closure-phase directional Narrative over its outcome set. The
+composite outcome set is the product `{00,01,10,11}` (`N_AB = N_A·N_B`), so the joint state
+is `(a_{00},a_{01},a_{10},a_{11}) ∈ ℂ⁴`, quotiented by one global phase and norm →
+`K_AB = N_AB² = 16 = 4·4 = K_A·K_B`. **Local tomography holds, and the substrate composite is
+the complex qubit pair, not the rebit pair.**
+
+**Why real is excluded, in substrate terms.** Real QM's extra global parameter (10 vs 9) is
+the one a product measurement cannot see. It exists only if the composite amplitudes are
+**real** — phase-less. But self-similarity says every frame, the superframe included, carries
+the closure-phase. A real composite would be a superframe that is *not* a closure-phase frame
+like its subframes: **real QM requires breaking self-similarity at composition.** The
+substrate's self-similarity therefore selects complex over real.
+
+**Honest residual.** Under the natural composition — superframe = complex closure-phase frame
+over the product outcome set — the answer is unambiguous: `K_AB = 16`, complex,
+local-tomographic. What is *not* forced from a lower primitive is that self-similarity **must**
+be read this way rather than permitting a real or exotic composite; and Level 0 (that the
+substrate is an OPT at all) still stands. So the local-tomography gap is **not closed, but it
+now has a direction and a reason**: the substrate points at complex, and real would cost
+self-similarity. The residual has shrunk from "which theory?" to the sharp, bounded question
+**"does self-similarity force the composite to be a complex frame over product outcomes?"** —
+plus the OPT precondition.
+
+## Overall status after the calculation
+
+The Born/Hilbert residual now stands as: (i) **Level 0** — the substrate instantiates an OPT
+(sketched, the largest caveat); (ii) **self-similarity-at-composition** forces the complex
+composite (argued and directional, not forced); with the two distinctively-quantum axioms
+(continuity, purification) supplied natively and complex-at-one-system solid. Every step is
+rated, none is a proof, and the complex-vs-real decider now points at complex for a stated
+substrate reason rather than being a blank gap. This is the smallest and most localised the
+residual has been in the programme — and still an attempt.
