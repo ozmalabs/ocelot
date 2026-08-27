@@ -35,12 +35,10 @@ Before any axiom applies, the graph substrate must be an OPT. The natural identi
 | convex mixture | a probabilistic **ensemble of realisations** |
 | composition (tensor) | **subframe nesting** in a superframe |
 
-This is a genre-match, and it is **sketched, not established**. The honest gaps at Level 0:
-convexity of the state space (that ensembles of realisations form a convex set with the
-right face structure) is asserted, not derived; and that effects and transformations satisfy
-the OPT linearity/composition axioms is exactly what Level 1 is trying to earn, so there is
-some circularity to watch. **Level 0 is the largest single caveat in this note.** Everything
-below is conditional on the substrate being an OPT in the first place.
+This is a genre-match. It was originally the largest single caveat in this note; it is
+**worked out in "Level 0, worked out" below** and now stands as *core-established, with only
+technical GPT-hygiene conditions pending* — a real strengthening. Everything in Level 1 is
+still conditional on that core, but the core is no longer a blank assertion.
 
 ---
 
@@ -228,6 +226,69 @@ self-similarity. The residual has shrunk from "which theory?" to the sharp, boun
 **"does self-similarity force the composite to be a complex frame over product outcomes?"** —
 plus the OPT precondition.
 
+## Level 0, worked out
+
+**Result: the core OPT structure is established from the substrate's own machinery; only
+technical GPT-hygiene conditions remain. Rating: core SOLID, conditions pending.**
+
+The key that makes Level 0 tractable is seeing what the OPT convex structure *is*. The
+convexity of the state space and the **affinity** of effects are the **classical-probability
+backbone** — total probability over ordered branchings — **distinct from, and prior to, the
+quantum superposition linearity** that Level 1 worries about. Every probabilistic theory has
+this backbone. The substrate has it by construction, because realisations carry weights,
+compose in order, and depend only on the present.
+
+Ingredient by ingredient:
+
+- **Systems.** A system is a frame type (a subgraph with an outcome set). Solid.
+- **States are well-defined equivalence classes.** A GPT state is an equivalence class of
+  preparations with identical statistics — which requires that statistics depend only on the
+  prepared state, not on how it was prepared (no preparation-memory, Markov). The substrate
+  supplies exactly this: **history is optional and the present structure is what acts** (the
+  momentum paper's first law — a Narrative carries only its current structure forward, and a
+  delta is a write to *that*). Future statistics depend only on the current Narrative, so
+  operational equivalence holds and states are well-defined. Solid, and native.
+- **Convex state space.** The mixture `λP + (1−λ)Q` is the preparation "realise a
+  `λ`-weighted coin; on one branch prepare `P`, on the other `Q`." The substrate has weighted
+  realisations (collapse with a weight) and ordered composition, so this preparation exists
+  and its statistics are the `λ`-mixture. The state space is closed under probabilistic
+  mixture. Solid.
+- **Affine effects (the crux).** An effect `e` gives an outcome probability. By total
+  probability over the coin-branching,
+  `e(λP + (1−λ)Q) = λ·e(P) + (1−λ)·e(Q)` — effects are affine on the convex state space. This
+  is the law of total probability applied to ordered realisations, nothing quantum. Solid,
+  and it is the classical backbone, *not* the superposition linearity of Level 1.
+- **Transformations.** Rules (writes) map states to states and compose (ordered); free
+  continuation (the empty rule set, a no-write) is the identity and is reversible. A
+  transformation monoid with reversibles. Solid.
+- **Composition.** Subframe nesting composes systems; a joint preparation lives over the
+  product outcome set. *Existence* of composition is Level 0 and solid; whether it is the
+  complex/local-tomographic one is the **contingent** Level-1 layer, handled above, not a
+  Level-0 requirement.
+- **Probabilities.** The pairing ⟨effect, state⟩ is the realisation weight, in `[0,1]`,
+  normalised over a complete measurement. Solid.
+
+So the substrate **is** an operational-probabilistic theory at the core: convex states, affine
+effects, a transformation monoid with reversibles, composition, and normalised probabilities —
+each supplied by the substrate's weighted, ordered realisations and its history-optional,
+present-structure-acts first law, resting on the classical total-probability backbone rather
+than on any quantum assumption.
+
+**Honest residuals (technical, not core):** finite/tomographic dimension (that a state is fixed
+by finitely many fiducial effects — plausible for finite frames via the aperture, unproven in
+general); topological hygiene (closed/compact convex state space); the full OPT
+composition axioms (associativity of sequential and parallel composition, the interchange law
+— should follow from the ordering and nesting of realisations, but each needs checking); and
+the no-restriction/effect-realisability niceties. None of these is the "does it convex-linearise
+at all" worry that Level 0 originally named; that worry is resolved. What remains is
+GPT-hygiene, plausible for finite frames and not yet all proven.
+
+**Two-layer picture this yields.** The substrate is a GPT *necessarily* (the classical
+total-probability backbone, from realisation-with-weights + present-structure-acts); quantum
+theory is the *contingent* GPT selected on top of it by the quantum axioms (complex closure-
+phase, free-continuation continuity, entanglement-purification, self-similar composition).
+Level 0 is the necessary layer; Level 1 is the contingent selection — cleanly separated.
+
 ## Correction: complex QM is contingent, not forced
 
 The framing above — "does self-similarity **force** the complex composite?" as an open gap —
@@ -258,10 +319,12 @@ from contingent rule-content, the rule-content itself never forced.
 ## Overall status (corrected)
 
 The Born/Hilbert result stands as: the substrate **admits** the structures from which quantum
-theory follows — an OPT of Narratives/projections/continuations/nesting (Level 0, sketched),
-complex closure-phase amplitudes, free-continuation continuity, entanglement-purification, and
-self-similar complex composition — and **complex QM is the contingent, self-located selection
-among them**, not a forced consequence. The two distinctively-quantum axioms (continuity,
+theory follows — an OPT of Narratives/projections/continuations/nesting (Level 0, now
+**core-established**: convex states, affine effects, composing transformations, composition,
+from the substrate's weighted ordered realisations and history-optional first law; only
+technical GPT-hygiene conditions pending), complex closure-phase amplitudes, free-continuation
+continuity, entanglement-purification, and self-similar complex composition — and **complex QM
+is the contingent, self-located selection among them**, not a forced consequence. The two distinctively-quantum axioms (continuity,
 purification) are supplied natively; complex-at-one-system is solid; and given the contingent
 composition, `K_AB = 16` (Born + complex Hilbert) follows.
 
