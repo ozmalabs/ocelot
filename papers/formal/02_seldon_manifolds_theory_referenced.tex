@@ -381,6 +381,40 @@ simply worse. And the reversibility preference stated above acquires its reason 
 action is one that preserves capacity, so preferring reversibility is preferring the second field
 where the first is indifferent, which is why the preference is not merely caution.
 
+So far the landscape has been something to read. The point of the construction is that it is also
+something to change: a frame does not only descend a field, it re-shapes the field others descend,
+and the control section below treats that as the primary operation rather than an afterthought.
+Representing it needs one more thing, because contours show where the narrative goes and say nothing
+about which parts of the terrain will move.
+
+\begin{definition}[Deformability]\label{def:deformability}
+For frame $\Frame$, the \emph{deformability} of a region of its manifold is the cost, in that
+frame's terms, of altering the fields over that region --- of changing what continuations there
+cost, or what capacity they leave. It is a field in its own right, defined over the same manifold,
+and like the others it is frame-relative: it measures what this frame can move, not what is movable.
+\end{definition}
+
+This is the structure one level up, and it does not run away. Changing a landscape is priced;
+changing what it costs to change a landscape is priced again; and since capacity is finite, the
+recursion terminates in practice at the level a frame can still afford, which is usually the first.
+The regress is bounded by the same economy that generates it.
+
+What the third field makes visible is \emph{leverage}. The interesting locations are not where the
+terrain is most dramatic but where deformability is low and the effect on the descent is large ---
+a ridge that can be lowered cheaply and re-routes everything below it, or a basin whose lip can be
+breached at a price some frame can pay. That ratio, small push to large change in where the narrative
+runs, is what the companion account describes as loading a container with cheap changes that compel
+expensive responses; here it is a place on a map. It is also what makes the minimum-intervention
+result above well posed: minimum with respect to what, is answered by the deformability field, and
+without it ``smallest sufficient push'' names no particular quantity.
+
+Two things this does not license. Regions of high deformability cost are not immovable --- they are
+expensive relative to a given frame's capacity, and another frame, or the same one later, may reach
+them; the field records a price, never a prohibition. And competing deformation, in the section
+below, is competition over this field rather than over position: two frames re-shaping the same
+region are not moving a contested object between them but disagreeing about what the terrain should
+cost, which is why the contest is decided at the ridges rather than at the point either occupies.
+
 Honest boundary: this is a claim about the \emph{shape} of the fields and not their values. Where the basins lie relative to a frame's capacity, where the two
 fields diverge, which ridges separate them, and which way the descent runs are the content; the metric that would put numbers on the contours is supplied by a grounding,
 if it is available at all, and nothing here asserts that the field is computable for a given system.
@@ -526,7 +560,7 @@ The paper's relationship to established work can be summarised as follows.
 \section{Falsifiability commitments}\label{sec:falsifiability}
 
 \begin{enumerate}[leftmargin=*]
-\item \textbf{Cost contours and basins.} Fails if the continuations a frame actually takes, absent intervention, are not the cheap ones --- if the descent direction of the cost field does not predict where an uninterrupted frame goes --- or if persistence in a region can be exhibited with no corresponding basin, or a basin with no corresponding persistence. It fails also if the two fields cannot come apart --- if expected capacity after an action is always the capacity before it less the cost, so that no expensive continuation ever raises capacity and no cheap one lowers it. (The claim is about the fields' shape relative to a frame's capacity, not about the values of any metric over them.)
+\item \textbf{Cost contours and basins.} Fails if the continuations a frame actually takes, absent intervention, are not the cheap ones --- if the descent direction of the cost field does not predict where an uninterrupted frame goes --- or if persistence in a region can be exhibited with no corresponding basin, or a basin with no corresponding persistence. It fails also if leverage is not real --- if the cost of deforming a region never varies across the manifold, so that no location offers a cheaper change with a larger effect than another, which would leave minimum-intervention claims without a quantity to minimise. And it fails if the two fields cannot come apart --- if expected capacity after an action is always the capacity before it less the cost, so that no expensive continuation ever raises capacity and no cheap one lowers it. (The claim is about the fields' shape relative to a frame's capacity, not about the values of any metric over them.)
 \item \textbf{Deterministic counterfactual typing.} Fails if the Seldon construction requires multiple fundamentally random realised outcomes from one causally complete antecedent rather than multiple deterministic continuations under differing represented future conditions.
 \item \textbf{Reachability utility.} Fails for a claimed task class if reachable geometry cannot preserve distinctions needed for prediction or control that trajectory-level representation preserves.
 \item \textbf{Dimension/value typing.} Fails if an absent future dimension must be represented as the numerical value zero rather than remaining undefined until instantiated.
