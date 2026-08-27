@@ -267,6 +267,34 @@ mainstream holds that the implied author does not communicate and must not be pe
 is a claim about an interpretive construct's role in a theory of narrative; it is not an argument
 that a model of a generator cannot be run, and the two are easily conflated.
 
+It has also been done. \citet{schwitzgebel2024} trained a language model on one philosopher's
+complete works, put ten questions to the model and to the living philosopher, and had experts on
+his work try to pick his answers out blind; the experts managed barely half, and on two questions
+preferred the model's answer to the author's own. That is not style recognition --- the questions
+were fresh, and the author himself supplied the ground truth --- so the forward test proposed
+above has been run, with a result. Related work builds runnable models of specific people from
+their writing \citep{shao2023,wang2025persona} and simulates individuals well enough to transfer
+to tasks no training data covered \citep{park2024}. What none of this literature does is connect
+such models to what a \emph{reader} does; it builds author-simulators as engineering, without
+reference to the implied author or to any claim about ordinary comprehension. The bridge is what
+is claimed here, not the artefact.
+
+The same literature bears on how good such models get, and it does not say what one might expect.
+The split it reports is between topical content, which transfers, and both idiosyncratic voice and
+argumentative shape, which do not: models simulate a generic member of a category far better than
+they simulate a particular person \citep{petrov2024}, and the characteristic failure has been
+named and measured as \emph{caricature} --- failed individuation together with exaggeration of
+whatever is distinctive \citep{cheng2023} --- and as flattening \citep{wang2025flatten}. What is
+not found is steady improvement. Recent models score no better than older and smaller ones on
+persona benchmarks that generate novel situations rather than replay known ones
+\citep{samuel2025}, and the training that distinguishes recent models works against the property
+at issue, since alignment measurably reduces output and conceptual diversity
+\citep{kirk2024,murthy2025}. Improvement has come from richer data about the individual rather
+than from better models. The relevant lesson for the argument here is a methodological one: the
+apparent progress belongs to reproduction, and largely disappears when what is scored is forward
+behaviour instead --- which is the discriminator this section proposed, arrived at independently
+and for different reasons.
+
 Two qualifications, both of which the substrate should expect. The engagement is not uniform
 across readers: measured individually, mentalizing and motor engagement during narrative
 comprehension \emph{trade off} against one another rather than rising together
@@ -737,6 +765,11 @@ Nicolaus Copernicus.
 \newblock \emph{De revolutionibus orbium coelestium, libri VI}.
 \newblock Nuremberg: Johannes Petreius, 1543.
 
+\bibitem[Cheng et al.(2023)]{cheng2023}
+Myra Cheng, Tiziano Piccardi, and Diyi Yang.
+\newblock CoMPosT: characterizing and evaluating caricature in LLM simulations.
+\newblock In \emph{Proceedings of EMNLP 2023}, 2023. arXiv:2310.11501.
+
 \bibitem[Currie(1997)]{currie1997}
 Gregory Currie.
 \newblock The paradox of caring: fiction and the philosophy of mind.
@@ -837,6 +870,11 @@ Jerrold Levinson.
 \newblock Hypothetical intentionalism: statement, objections, and replies.
 \newblock In Michael Krausz, editor, \emph{Is There a Single Right Interpretation?}, pages 309--318. Pennsylvania State University Press, University Park, PA, 2002. Reprinted in \emph{Contemplating Art}, Oxford University Press, 2006, pages 302--312.
 
+\bibitem[Kirk et al.(2024)]{kirk2024}
+Robert Kirk, Ishita Mediratta, Christoforos Nalmpantis, Jelena Luketina, Eric Hambro, Edward Grefenstette, and Roberta Raileanu.
+\newblock Understanding the effects of RLHF on LLM generalisation and diversity.
+\newblock In \emph{International Conference on Learning Representations}, 2024. arXiv:2310.06452.
+
 \bibitem[Locke(1689/1694)]{locke1690}
 John Locke.
 \newblock \emph{An Essay Concerning Human Understanding}, Book~II, Chapter~xxvii (``Of Identity and Diversity'').
@@ -872,6 +910,11 @@ Thomas Nagel.
 \newblock \emph{The View from Nowhere}.
 \newblock Oxford University Press, New York, 1986.
 
+\bibitem[Murthy et al.(2025)]{murthy2025}
+Sonia K. Murthy, Tomer Ullman, and Jennifer Hu.
+\newblock One fish, two fish, but not the whole sea: alignment reduces language models' conceptual diversity.
+\newblock In \emph{Proceedings of NAACL 2025}, 2025.
+
 \bibitem[Nichols and Stich(2000)]{nichols2000}
 Shaun Nichols and Stephen P. Stich.
 \newblock A cognitive theory of pretense.
@@ -886,6 +929,16 @@ Annabel D. Nijhof and Roel M. Willems.
 Derek Parfit.
 \newblock \emph{Reasons and Persons}.
 \newblock Clarendon Press, Oxford, 1984.
+
+\bibitem[Park et al.(2024)]{park2024}
+Joon Sung Park, Carolyn Q. Zou, Aaron Shaw, Benjamin Mako Hill, Carrie Cai, Meredith Ringel Morris, Robb Willer, Percy Liang, and Michael S. Bernstein.
+\newblock LLM agents grounded in self-reports enable general-purpose simulation of individuals.
+\newblock arXiv:2411.10109, 2024.
+
+\bibitem[Petrov et al.(2024)]{petrov2024}
+Nikolay B. Petrov, Gregory Serapio-Garc\'ia, and Jason Rentfrow.
+\newblock Limited ability of LLMs to simulate human psychological behaviours: a psychometric analysis.
+\newblock arXiv:2405.07248, 2024.
 
 \bibitem[Polvinen and Sklar(2019)]{polvinen2019}
 Merja Polvinen and Howard Sklar.
@@ -922,6 +975,21 @@ Wilfrid Sellars.
 \newblock Empiricism and the philosophy of mind.
 \newblock In Herbert Feigl and Michael Scriven, editors, \emph{The Foundations of Science and the Concepts of Psychology and Psychoanalysis}, Minnesota Studies in the Philosophy of Science, volume~1, pages 253--329. University of Minnesota Press, Minneapolis, 1956.
 
+\bibitem[Samuel et al.(2025)]{samuel2025}
+Vinay Samuel, Henry Peng Zou, Yue Zhou, Shreyas Chaudhari, Ashwin Kalyan, Tanmay Rajpurohit, Ameet Deshpande, Karthik Narasimhan, and Vishvak Murahari.
+\newblock PersonaGym: evaluating persona agents and LLMs.
+\newblock In \emph{Findings of EMNLP 2025}, 2025. arXiv:2407.18416.
+
+\bibitem[Schwitzgebel et al.(2024)]{schwitzgebel2024}
+Eric Schwitzgebel, David Schwitzgebel, and Anna Strasser.
+\newblock Creating a large language model of a philosopher.
+\newblock \emph{Mind \& Language}, 39(2):237--259, 2024.
+
+\bibitem[Shao et al.(2023)]{shao2023}
+Yunfan Shao, Linyang Li, Junqi Dai, and Xipeng Qiu.
+\newblock Character-LLM: a trainable agent for role-playing.
+\newblock In \emph{Proceedings of EMNLP 2023}, 2023. arXiv:2310.10158.
+
 \bibitem[Schmid(2014)]{schmid2014}
 Wolf Schmid.
 \newblock Implied author.
@@ -941,6 +1009,16 @@ Benedict de Spinoza.
 Kendall L. Walton.
 \newblock Fearing fictions.
 \newblock \emph{The Journal of Philosophy}, 75(1):5--27, 1978.
+
+\bibitem[Wang et al.(2025a)]{wang2025persona}
+Zhikai Wang, Da Zhang, Ishita Agrawal, Shizhe Gao, Le Song, and Xin Chen.
+\newblock Beyond profile: from surface-level facts to deep persona simulation in LLMs.
+\newblock In \emph{Findings of ACL 2025}, 2025. arXiv:2502.12988.
+
+\bibitem[Wang et al.(2025b)]{wang2025flatten}
+Angelina Wang, Jamie Morgenstern, and John P. Dickerson.
+\newblock Large language models that replace human participants can harmfully misportray and flatten identity groups.
+\newblock \emph{Nature Machine Intelligence}, 2025. arXiv:2402.01908.
 
 \bibitem[Watanabe et al.(1995)]{watanabe1995}
 Shigeru Watanabe, Junko Sakamoto, and Masumi Wakita.
