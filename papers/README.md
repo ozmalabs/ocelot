@@ -1,6 +1,6 @@
 # papers/ — the formal record
 
-`formal/` holds the five written preprints (LaTeX, theorem environments,
+`formal/` holds the seven written preprints (LaTeX, theorem environments,
 proofs, falsifiability sections). They are the **citable artefacts**, and they
 do not disappear when the book is written: each book chapter carries a pointer
 of the form *the formal statement is Paper N §M*, and drafts by subtraction
@@ -17,18 +17,20 @@ from them.
 | `formal/05_constructive_graphic_equalisation_implementation_referenced.tex` | A Constructive Realisation of Graphic Equalisation |
 
 `figures/` holds paper figures — **a committed generator script plus its
-output**, never an output alone. None are drawn yet; the plan for all of them
-(papers and book together) is `../book/FIGURES.md`. The papers currently
-contain zero figures, which that document treats as the first gap to close.
+output**, never an output alone; the plan for all of them (papers and book
+together) is `../book/FIGURES.md`. Paper 02 currently includes two figures. Five
+further bodies are built but included by no paper (`fig01_boundary`,
+`fig01_collapse_dynamic`, `fig03_narrative_momentum`, `fig04_horizon`,
+`fig05_executor_round`) — wiring those in is the first gap to close.
 
 ## Version
 
-All five carry the same draft string in three places — the title block, a boxed
+All seven carry the same draft string in three places — the title block, a boxed
 notice under the title, and the footer of every page:
 
 > **`draft-2026-08-27`** · 27 August 2026
 
-They are circulated for comment, not as finished results. **Bump all five
+They are circulated for comment, not as finished results. **Bump all seven
 together**, so a reader comparing two papers is never comparing two drafts, and
 keep the string identical across the title, the notice and the footer. The
 version is deliberately a date rather than a number: these papers are revised in
