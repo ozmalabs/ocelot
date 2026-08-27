@@ -9,6 +9,7 @@ from them.
 | file | title |
 |---|---|
 | `formal/01_law_of_graphic_equalisation_theory_referenced.tex` | The Law of Graphic Equalisation — Theory |
+| `formal/01a_graphic_equalisation_physics_grounding.tex` | The Law of Graphic Equalisation — Physics Grounding (c, relativity, constants, the second law) |
 | `formal/02_seldon_manifolds_theory_referenced.tex` | Seldon Manifolds — Theory |
 | `formal/03_law_of_narrative_momentum_theory_referenced.tex` | The Law of Narrative Momentum — Theory |
 | `formal/04_narrativium_theory_referenced.tex` | Narrativium — Theory |
