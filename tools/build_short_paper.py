@@ -48,7 +48,27 @@ def parse_falsifiers(tex):
 
 
 def preamble_of(tex):
-    return tex.split(r'\begin{document}')[0]
+    """The long paper's preamble, minus anything the spec supplies itself.
+
+    Title, author and date are the short paper's own; leaving the long paper's
+    in place emits two of each and makes the identity depend on which came last.
+    The running footer is rewritten to name the source revision, because a
+    generated file should say what it was generated from.
+    """
+    pre = tex.split(r'\begin{document}')[0]
+    out = []
+    for line in pre.split('\n'):
+        if re.match(r'\\(title|author|date)\{', line):
+            continue
+        out.append(line)
+    pre = '\n'.join(out)
+
+    rev = re.search(r'document revision (\d+)', tex)
+    src = re.search(r'\\textsc\{(draft-\S*?)[\\}]', tex)
+    stamp = (src.group(1) if src else 'draft') + ' / short form / from long r' + \
+            (rev.group(1) if rev else '?')
+    pre = re.sub(r'\\textsc\{draft-[^}]*\}', lambda m: '\\textsc{' + stamp + '}', pre)
+    return pre
 
 
 def main(spec_path):
