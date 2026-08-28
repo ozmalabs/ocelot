@@ -12,9 +12,17 @@ refusal predicate turns out to be the thing the new theory most needs — a coup
 > *"Only that rules run is compulsory. Applying a delta is itself a rule, not a primitive operation
 > beneath the rules."* (§Nothing compulsory)
 
-> *"A collapse is a local asynchronous write and the only event; ordering is required but only as a
-> partial order the rules carry themselves, with no substrate time and no global instant."*
-> (Conclusion)
+> *"A collapse is a **local realisation** — a rule writing a delta — and it is the only kind of event
+> the substrate has (**its synchrony or asynchrony with other collapses is set by coupling**).
+> Between writes nothing happens: an unwritten frame produces no change, so it takes no new position
+> in the order the changes carry, and no time passes for it."* (§Collapse)
+>
+> **QUOTE CORRECTED 2026-08-28.** This document originally quoted the conclusion as *"a collapse is a
+> local **asynchronous** write and the only event…"*. **That sentence no longer exists**: the
+> conclusion was rewritten, and "asynchronous" was removed from the definition of collapse and made a
+> property of coupling. The argument below is unaffected — it argues exactly that synchrony must come
+> from a coupling — but the wording it leaned on was superseded within two days, and a superseded
+> quote is a superseded quote.
 
 > *"The non-atomicity this implies — a graph's state may be altered by another write while its own
 > rules are mid-run — **is not a defect here but the expected regime**; robustness is obtained by
