@@ -27,7 +27,11 @@ is a floor in the physical substrate, not the price in any — and a frame canno
 charge, which is why continuation presents as free from inside. Nothing in the mapping below depends
 on the economics: what it uses is that free continuation is *injective*, hence reversible, which is a
 structural fact independent of what anything charges for it.
-The invariant speed `c` is the frame's own change-throughput unit, `1` by construction. Frames
+The invariant speed `c` is the frame's own change-throughput unit, `1` by construction — and
+therefore not directly readable from inside, since any in-frame measurement is funded by the same
+throughput and returns `1` whatever the underlying rate. A frame reaches a *number* for `c` only
+indirectly, by measurement plus retention plus inference, which is both why the unit-reading carries
+no risk and why the cross-frame claim is empirical at all. Frames
 compose by **nesting** (a subframe in a superframe); a correlation invisible in each subframe is
 a dimension of the superframe.
 
