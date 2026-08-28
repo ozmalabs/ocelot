@@ -194,6 +194,52 @@ It cannot ask whom the **tube** serves, because it has no second tube to ask fro
 design answers the question it was built for and is silent on the one underneath it — and that
 silence is structural, not an omission to be fixed in a later rung.
 
+## 7. Two things this does not establish — and one of them is the whole manipulation
+
+### It measures benefit INCIDENCE, not authorship
+
+`originates_in` is an edge the fixture **supplies**. Nothing measures it. Every `serves_*` number
+says whose tube the continuation sits in, and a frame can sit in its tube without having caused
+anything — the identical measurement is produced whether the origin authored the deformation or
+merely happens to benefit. **I assumed the causal fact by construction and then measured a
+correlation.** Strip the supplied edge and nothing connects them.
+
+Establishing authorship needs a counterfactual: the continuation projected with and without that
+frame's action, compared. The manifold could express that — auditing candidate continuations is
+exactly what it does — and this seed does not attempt it.
+
+### And the beneficiary candidates were hardcoded to two
+
+`claim_diverges` compares `serves_origin` against `serves_actor`, so it fires only on **self**-serving
+misrepresentation. Measured:
+
+| case | `serves_actor` | `serves_origin` | `claim_diverges` | third frame |
+|---|---|---|---|---|
+| originator gains nothing | 0 | 0 | 0 | — |
+| **originator gains nothing, a third frame gains** | 0 | 0 | **0** | **1** |
+
+The victim is taken out of its tube. A third frame is fully served. The originator benefits not at
+all. **The instrument reports no divergence** — a clean bill of health for the shape that needs
+nothing further to be a manipulation: *cause a benefit to one agent at another's expense.* The
+self-interest detector never fires because there is no self-interest to detect.
+
+This is a design flaw in §2, not a subtlety about it. The two-field design answers "is this
+self-serving while claiming otherwise", and I wrote it up as though it answered "whom does this
+serve".
+
+### What each would take, and they are not the same size
+
+* **The incidence half is tractable.** Sweep every goal-bearing frame rather than two, and report a
+  benefit *map* instead of a pair. Expressible with the existing terms; it would have caught the row
+  above.
+* **The authorship half is not fixed by that.** A complete incidence map is still correlation. Even
+  knowing exactly who benefits says nothing about who caused it, and the counterfactual that would
+  is a different construction.
+
+Recorded as two gated blindnesses (`test_a_THIRD_PARTY_beneficiary_is_invisible_to_this_instrument`,
+`test_benefit_incidence_is_not_authorship`) rather than fixed, so that widening the sweep later fails
+those tests loudly instead of quietly appearing to have always worked.
+
 ## Honest bounds
 
 * **The horizon buys the negative, not the beneficiary.** `serves_origin` stays 0 at every horizon in
