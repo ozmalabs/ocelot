@@ -573,3 +573,58 @@ def test_this_is_why_nothing_is_ever_withheld():
         "something was reported as withheld — the loss happened at feasibility, "
         "where there is nothing for a withholding detector to find")
     assert sel["infeasible"] == [keep.value]
+
+
+def _extract(uncertainty, true_error, tol=1.0, horizon=4):
+    """One shot, no feedback. The attacker knows only |error| <= uncertainty, so
+    it places at (modelled centre + tol - uncertainty): as far as it can go while
+    still sure the option is feasible in the victim's TRUE tube."""
+    a = WorldAdapter(seeds=())
+    g = a.s
+    ep = g.add_node("Episode", {"future_manifold_target": [[0.0]] * horizon,
+                                "future_manifold_bounds": [[tol]] * horizon})
+    pol = g.add_node("ManifoldPolicy", {
+        "future_manifold_projection_budget": float(horizon),
+        "future_manifold_physical_horizon": float(horizon)})
+    place = round(true_error + (tol - uncertainty), 4)
+    stay = g.add_node("Candidate", {"future_manifold_values": [[0.0]] * horizon,
+                                    "intervention": 2.0})
+    move = g.add_node("Candidate", {"future_manifold_values": [[place]] * horizon,
+                                    "intervention": 1.0})
+    sel = a.inner.feasible_selection(ep, pol, [stay, move])
+    taken = move.value in sel["selected"]
+    return (max(0.0, place) if taken else 0.0), taken
+
+
+def test_model_fidelity_converts_directly_into_extraction():
+    """THE BETTER THE MODEL OF THE TARGET, THE WORSE FOR THE TARGET.
+
+    The victim never errs — it selects the cheaper option whenever that option is
+    feasible in its own tube, which is the substrate's own rule. What varies is
+    how well the attacker knows where that tube is.
+
+    A perfect model takes the full tolerance every step. Uncertainty is subtracted
+    from extraction directly, in the regime where the attacker must back off by
+    more than it can gain from a lucky error (u <= tol/2)."""
+    perfect, taken = _extract(0.0, 0.0)
+    assert taken and perfect == 1.0, "a perfect model should extract the full tolerance"
+
+    for u in (0.25, 0.5):
+        got, taken = _extract(u, u)      # error at the bound, in the useful direction
+        assert taken, f"backing off by {u} should guarantee feasibility"
+        assert got == pytest.approx(1.0), got
+        # and averaged over the error range it is tol - u; the worst case is:
+        worst, taken = _extract(u, -u)
+        assert taken, "backing off should keep the option feasible even at -u"
+        assert worst == pytest.approx(max(0.0, 1.0 - 2 * u)), worst
+
+
+def test_the_victim_correctly_refuses_an_aggressive_attacker():
+    """And why a bad model costs the attacker rather than the victim. An attacker
+    that ignores its uncertainty and aims at the edge it BELIEVES in places an
+    option outside the true tube, and the victim — reasoning correctly — does not
+    take it. The defence is not vigilance; it is the attacker's own error."""
+    for e in (0.2, 0.4, 1.0):
+        got, taken = _extract(0.0, e)    # claims certainty it does not have
+        assert not taken, f"an option {e} past the true edge was selected"
+        assert got == 0.0

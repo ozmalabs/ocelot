@@ -321,6 +321,65 @@ nothing after that.
 adds is the location. **The failure is not in the reasoning, the evidence, the attention, or the
 will. It is upstream of all of them, at the point where the set of live options is formed.**
 
+## 10. Model fidelity converts directly into extraction
+
+The victim never errs. It selects the cheaper option whenever that option is feasible in its own
+tube — the substrate's own rule, run exactly. What varies is only how well the attacker knows where
+that tube is.
+
+One shot, no feedback. The attacker knows a bound `u` on its error and places at
+`modelled centre + (tolerance − u)`: as far as it can go while still certain the option is feasible.
+
+| uncertainty `u` | mean drift extracted | `tolerance − u` | failures |
+|---|---|---|---|
+| **0.00** | **1.000** | 1.00 | 0 |
+| 0.25 | 0.750 | 0.75 | 0 |
+| 0.50 | 0.500 | 0.50 | 0 |
+| 0.75 | 0.357 | 0.25 | 0 |
+| 1.00 | 0.286 | 0.00 | 0 |
+
+**Exact for `u ≤ tolerance/2`: every unit of uncertainty about the target is a unit of drift the
+attacker cannot safely take.** Above that the mean sits *above* the line, and the reason is worth
+stating rather than smoothing: with a poor model some errors land in the attacker's favour, so the
+average is propped up by luck. It buys no reliability — the direction of the drift becomes a coin
+flip, while a perfect model takes the full tolerance in the intended direction every time. **A good
+model buys reliability, not merely magnitude.**
+
+The failures column is zero throughout because backing off by `u` guarantees feasibility. An attacker
+that instead ignores its uncertainty and aims at the edge it *believes* in gets nothing at all:
+
+| model error | 0.0 | 0.2 | 0.4 | 1.0 |
+|---|---|---|---|---|
+| selected | ✓ | ✗ | ✗ | ✗ |
+| extracted | 1.00 | **0.00** | **0.00** | **0.00** |
+
+**The victim's defence here is not vigilance — it is the attacker's own error.** The option lands
+outside the true tube and the victim, reasoning correctly, does not take it.
+
+### Which is the last thing the arc has to say, and the worst of them
+
+Modelling another agent well is the same capability whether the intent is to teach or to extract —
+§1's "no second primitive", now with a rate attached. A teacher who models a student precisely can
+place the next step exactly where it will be taken; so can anyone else, and the substrate offers no
+way to tell which is happening from the deformation alone (§2, §7). **The value of a model of you, to
+someone acting on you, scales with its fidelity, and there is no defensive asymmetry to appeal to.**
+
+### Three measurement errors, recorded because each flattered a different answer
+
+This was harder to measure honestly than it looked, and I got it wrong three times:
+
+1. **A probing oracle.** The first version searched for the largest accepted placement by walking
+   back until selected — which hands the attacker ground-truth feedback and converges to perfect
+   knowledge regardless of its model. It reported a flat 1.00 at every error. *Accidental finding
+   worth keeping: an attacker that can probe repeatedly does not need a good model, because probing
+   substitutes for modelling.*
+2. **A degenerate construction.** The second placed at `error + (tolerance − error)`, which is
+   `tolerance` identically. It measured arithmetic, not behaviour.
+3. **An absolute-value metric.** The third counted drift *away* from the attacker's aim as
+   extraction, which made large uncertainty look better than small.
+
+Each error produced a plausible table. None was caught by the numbers looking wrong.
+
 ## Honest bounds
 
 * **The horizon buys the negative, not the beneficiary.** `serves_origin` stays 0 at every horizon in
