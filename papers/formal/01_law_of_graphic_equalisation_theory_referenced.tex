@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 24}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 25}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r24}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r25}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r24}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r25}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-28.2 r24} (28 August 2026).
+\textbf{DRAFT --- draft-2026-08-28.2 r25} (28 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -551,7 +551,15 @@ A frame does not count its individual changes --- those are below its aperture -
 \end{proposition}
 
 \begin{remark}[The processor is a constructible demonstration]\label{rem:processor}
-A running program is a worked instance, carried by most people on earth. An instruction is the program's step, and it does not take a fixed physical time: an addition is one cycle, a memory load one on a cache hit and hundreds on a miss, a branch may stall, and the core reorders and overlaps beneath it. Yet from the program's point of view every instruction is \emph{one} step --- its own unit, read as $1$ by construction, since a step is a step --- so the program's inferred time is its step-count, uniform to it and non-uniform in physical time. The variable timing is opaque to the program: the cache miss and the reorder are below its aperture, in the runner (Proposition~\ref{prop:runner-opaque}), which is why ``time is a variable-length cycle, not a fixed duration'' reads as exotic even though the device demonstrates it continuously --- the opacity that hides the fact is the fact. This is offered as illustration, not as evidence, and deliberately so. Computer architecture arrived at cycle-as-variable-unit, per-frame logical time, and an opaque runner while solving its own problem, which makes it a worked instance a reader can inspect directly --- but it is not \emph{independent} of this account, whose vocabulary and provenance are partly engineering's (Section~\ref{sec:prior-art}), so it cannot do the work the composition falsifier's evidence-for clause asks of an outside re-derivation. Its value here is understanding rather than weight: it shows what the claims look like when they run, and is worth more for that than it would be as a proof it cannot supply.
+A running program is a worked instance, carried by most people on earth. An instruction is the program's step, and it does not take a fixed physical time: an addition is one cycle, a memory load one on a cache hit and hundreds on a miss, a branch may stall, and the core reorders and overlaps beneath it. Yet from the program's point of view every instruction is \emph{one} step --- its own unit, read as $1$ by construction, since a step is a step --- so the program's inferred time is its step-count, uniform to it and non-uniform in physical time. The variable timing is opaque to the program: the cache miss and the reorder are below its aperture, beneath its primitives (Proposition~\ref{prop:runner-opaque}), which is why ``time is a variable-length cycle, not a fixed duration'' reads as exotic even though the device demonstrates it continuously --- the opacity that hides the fact is the fact. How much weight this carries requires separating two things that an earlier version of this paragraph conceded together, and the separation recovers something real.
+
+The \emph{vocabulary} is borrowed and carries no weight whatever. Aperture, runner, primitive, cost: this account took them from engineering (Section~\ref{sec:prior-art}), so terminological agreement between the two is not agreement about anything, and a reader who notices that this reads like computing has noticed only that.
+
+What is not borrowed is that computing was \emph{forced} to these arrangements. The right question is not why this account looks like computers but why computers look like this --- and the answer, case by case, is that engineers fought each of these features and lost. Nobody wanted a memory hierarchy; it exists because latency and bandwidth do not scale together. Nobody wanted instructions of unequal duration; they exist because operations genuinely cost differently. Nobody wanted opacity between levels; it exists because complexity must be bounded to be buildable at all. And nobody wanted to give up a global clock: distributed systems have no shared instant because signal speed is finite, which is a theorem rather than a preference \citep{lamport1978}, and the resulting architecture is a concession to physics that engineering resisted for as long as it could \citep{chapiro1984,brewer2000}.
+
+So the convergence is not that two descriptions sound alike. It is that a discipline optimising hard against cost, with no interest in metaphysics and every incentive to avoid each of these features, arrived at cycle-as-variable-unit, per-frame logical time, per-level opacity and cost inherited along provision --- because the constraints that force them are the constraints this account claims are the operative ones. That is evidence about the constraints, and it survives the borrowed vocabulary because it does not run through it.
+
+The honest limit is that computing's designers are people, so convergence could reflect shared cognition rather than shared constraint. What answers that is the forcing arguments themselves being physical --- finite signal speed, finite bandwidth, a thermodynamic floor --- rather than matters of taste, and Lamport's result in particular being a proof about what is available given a finite $c$, not a design that could have gone otherwise. Its value here is understanding rather than weight: it shows what the claims look like when they run, and is worth more for that than it would be as a proof it cannot supply.
 \end{remark}
 
 \begin{remark}[Physics groundings are developed in a companion]\label{rem:physics-companion}
