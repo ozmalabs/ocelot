@@ -268,3 +268,68 @@ def test_only_the_RETAINED_prior_tube_recovers_it():
     for horizon in (2, 4, 6, 8):
         assert _audit(_R_T, SITS_AT_5, horizon) == 0.0, (
             f"the prior tube failed to recover the move at horizon {horizon}")
+
+
+# ---------------------------------------------------------------------------
+# The stopping condition is the residual. Remove it and the loop has no bound.
+# ---------------------------------------------------------------------------
+
+def _round(aim_centre, position, horizon=4):
+    """One round: the agent sits at `position`, its tube centred on `aim_centre`."""
+    a = WorldAdapter(seeds=())
+    a.inner.load_seed_manifest(
+        json.load(open(ROOT / "seeds" / "deformation_beneficiary.json")), a.agent)
+    g = a.s
+    pol = g.add_node("ManifoldPolicy", {
+        "future_manifold_projection_budget": float(horizon),
+        "future_manifold_physical_horizon": float(horizon)})
+    actor = g.add_node("Frame", {"name": "victim",
+                                 "future_manifold_target": [[aim_centre]] * horizon,
+                                 "future_manifold_bounds": [[1.0]] * horizon})
+    origin = g.add_node("Frame", {"name": "actor",
+                                  "future_manifold_target": [[99.0]] * horizon,
+                                  "future_manifold_bounds": [[1.0]] * horizon})
+    for f in (actor, origin):
+        g.add_edge(f, "uses_policy", pol)
+    d = g.add_node("Deformation", {"presents_as": "acted_on",
+                                   "future_manifold_values": [[position]] * horizon})
+    g.add_edge(d, "acts_on", actor)
+    g.add_edge(d, "originates_in", origin)
+    a.inner.run_rules(1_000_000)
+    return g.node(d)["attrs"].get("serves_actor")
+
+
+def test_a_fixed_aim_halts_the_drain_once_drift_exceeds_tolerance():
+    """The control, and the thing a moved tube removes. With the aim held fixed,
+    the verdict flips as soon as displacement leaves the tube — the residual
+    appears, and there is something for a concern to be filed about."""
+    assert _round(0.0, 0.6) == 1.0, "the first small step should still read as served"
+    assert _round(0.0, 1.2) == 0.0, "drift past tolerance did not flip the verdict"
+    assert _round(0.0, 7.2) == 0.0
+
+
+def test_an_aim_that_TRACKS_the_position_never_halts_at_any_displacement():
+    """THE PERPETUITY RESULT.
+
+    Re-centre the aim on wherever the agent has been taken and its own audit
+    reports 'serves me' at every displacement, without bound. This is not a large
+    bound — it is the ABSENCE of one: nothing in the loop is a function of the
+    drift, because tolerance is measured relative to the aim and the aim moves
+    with the position, so measured error is structurally zero however far the
+    agent has been moved.
+
+    The stopping condition in this substrate is a residual. Control the tube and
+    no residual is ever produced, so no concern is ever filed, so nothing ever
+    prompts re-examination. The halt was not overcome; it was removed."""
+    for position in (0.6, 1.2, 2.4, 7.2, 50.0, 5000.0):
+        assert _round(position, position) == 1.0, (
+            f"a tracking aim halted at displacement {position} — if this now "
+            f"passes, something bounds the drain and the results document is wrong")
+
+
+def test_detection_is_not_defence():
+    """The nuance worth keeping. The fixed-aim agent knows it is not being served
+    from the second round onward, and is still displaced by 7.2 at the twelfth.
+    What the residual buys is the POSSIBILITY of correction — a concern to act on
+    — not correction itself. Knowing does not stop the drag."""
+    assert _round(0.0, 7.2) == 0.0, "the fixed-aim agent should still detect at 7.2"

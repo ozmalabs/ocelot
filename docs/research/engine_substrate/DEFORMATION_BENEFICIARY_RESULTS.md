@@ -115,6 +115,45 @@ change; row C is produced by handing the audit the old target by hand. A `prior_
 that flags divergence between held and prior aim is the obvious shape, and the harder half —
 detecting a change in Γ itself — is not obviously the same shape and is not attempted here.
 
+## 5. The drain has no bound, because the stopping condition is what was removed
+
+The halt in this substrate **is** the residual: a residual opens a concern, and a concern is what
+makes an agent re-examine. Control the tube and no residual is produced, at any displacement.
+
+Twelve rounds, each step dragging the agent further from its original aim:
+
+| | round 1 | 2 | 4 | 12 | halted |
+|---|---|---|---|---|---|
+| **aim fixed** | serves me | **not serving me** | not | not | **round 2** |
+| **aim tracks the position** | serves me | serves me | serves me | serves me | **never** — drift 7.2 and rising |
+
+Gated out to displacement **5000** with the same verdict. **This is not a large bound; it is the
+absence of one.** Nothing in the loop is a function of the drift, because tolerance is measured
+relative to the aim and the aim moves with the position, so measured error is structurally zero
+however far the agent has been taken. The halt was not overcome — it was removed, and the agent
+continues to select correctly by its own current lights the entire time.
+
+Same for the admissibility route, and more quietly: an option removed from Γ is never proposed, so it
+never appears as withheld (`feasible_selection`'s `withheld_minimal` is empty), and there is no trace
+of the alternative that would have served them.
+
+### Detection is not defence
+
+Worth keeping separate, because the fixed-aim arm makes it plain: that agent **knows** it is not
+being served from round 2 onward, and is still displaced by 7.2 at round 12. The residual buys the
+*possibility* of correction — a concern to act on — not correction. Knowing does not stop the drag;
+it only makes the drag reportable.
+
+### What is and is not claimed here
+
+The measured quantities are the verdict and the displacement. **Narrativium proper was not
+measured** — `counting_narrativium_by_dimension` was not run, and no measure over reachable
+deformation is computed in this fixture. What is shown is narrower and sufficient for the mechanism:
+each round is a realised expenditure, no internal signal terminates the sequence, and the agent's own
+audit certifies every step. Whether the expenditure is *unbounded* in the narrativium sense is a
+stronger claim than this fixture supports, and the reason to expect it is structural rather than
+measured — there is no term in the loop that grows with the drift.
+
 ## Honest bounds
 
 * **The horizon buys the negative, not the beneficiary.** `serves_origin` stays 0 at every horizon in
