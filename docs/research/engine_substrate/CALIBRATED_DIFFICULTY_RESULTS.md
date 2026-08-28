@@ -77,6 +77,39 @@ the authorship, or whether the aim was moved. It is the agent auditing its own r
 which is precisely why it survives attacks that defeat every outward-looking instrument in the arc:
 there is nothing in it for an adversary to arrange, short of arranging the record.
 
+### Built into the seed — `learning_progress_curiosity` v1.2.0
+
+Two rules, `lp_review_step` and `lp_review_reduce`, computing the reduction as graph data rather than
+as post-hoc analysis over a stored trajectory. **No history is kept**: net is the distance from where
+the record began, gross is a running sum, and both update in constant space.
+
+| | `review_net` | `review_gross` | reduction |
+|---|---|---|---|
+| exhaustible | 20 | 30 | 0.667 |
+| calibrated | 18 | 274 | 0.066 |
+
+Exactly reproducing the post-hoc figures. Both rules mutation-gated; the shipped criteria set (G1–G4,
+15 of 15) is **identical to its pre-change baseline**.
+
+Three defects found while building it, each of which produced plausible numbers:
+
+1. **Racing `lp_learn`.** The first version recomputed the residual inline from `obs` and `held`,
+   which races `lp_learn`'s update of `held` inside the same fixpoint and under-counted expenditure
+   by a fifth. Fixed by keying off `epoch` — set by `lp_advance` when the tick *closes* — rather than
+   `input_epoch`, which the adapter sets when it *opens*, so the settled residual is what gets
+   reduced.
+2. **Charging the opening tick.** With `review_prev` unset on the first firing it added
+   `|residual − 0|`, inflating gross by exactly the starting residual — 21 in both arms, which
+   depressed every ratio equally and so looked like nothing.
+3. **Breaking integer-nativeness.** Storing the ratio as a float set `G4a_integer_native` to
+   **false**, caught by the shipped criteria rather than by any test I wrote. The fix is not a cast:
+   **a ratio is a cross-frame reading and never a coordinate in one frame**, so the seed publishes
+   the two integers and the reduction belongs to whoever is comparing. `CLAUDE.md`'s own in-frame/
+   cross-frame rule, arrived at by breaking it.
+
+An accumulator inside a fixpoint is the hazard no other rule in this seed carries, and it is why both
+rules are keyed to fire exactly once per settled tick.
+
 ### A metric that failed, kept so it is not tried again
 
 *"How often does it return to a state it has been in"* is the obvious reduction and does not work:

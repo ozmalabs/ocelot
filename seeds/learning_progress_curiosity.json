@@ -1,6 +1,6 @@
 {
   "id": "learning_progress_curiosity",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "self_load_only": true,
   "depends_on": [],
   "area": "retina",
@@ -1504,6 +1504,344 @@
                 "name": "delib"
               },
               "key": "step"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "lp_review_step",
+      "comment": "WHOLE-RECORD REVIEW, accumulated. Every other signal in this seed is LOCAL \u2014 `learning_progress` is a first difference \u2014 and a source that renews its difficulty exactly when it would have been exhausted is indistinguishable from real learning at every single tick (CALIBRATED_DIFFICULTY_RESULTS.md). What separates them is the whole trajectory reduced as one object.\\n\\nKeyed off `epoch` (set by `lp_advance` when the tick CLOSES) rather than `input_epoch` (set by the adapter when it OPENS), so it reduces the SETTLED residual. Keying it the other way raced `lp_learn`'s update of `held` and under-counted the expenditure by a fifth. It needs no history: NET is the distance from where the record began, GROSS is a running sum of per-tick movement, and both update in constant space. Fires EXACTLY ONCE per input epoch \u2014 an accumulator inside a fixpoint would otherwise re-add on every pass, which no other rule in this seed risks because no other rule accumulates. Skips an unassessable tick for the same reason `lp_residual` does: nothing was established, so nothing moved.",
+      "match": [
+        [
+          "hub",
+          "has_curiosity_params",
+          "cp"
+        ],
+        [
+          "hub",
+          "has_attention_item",
+          "item"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cp"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "obs_unassessable"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "review_epoch"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "epoch"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "item",
+          "review_gross",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "item"
+                  },
+                  "key": "review_gross"
+                },
+                {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "item"
+                      },
+                      "key": "review_started"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 1.0
+                    }
+                  },
+                  "then": {
+                    "type": "Abs",
+                    "arg": {
+                      "type": "Minus",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "item"
+                        },
+                        "key": "residual"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "item"
+                        },
+                        "key": "review_prev"
+                      }
+                    }
+                  },
+                  "other": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "item",
+          "review_first",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "item"
+                  },
+                  "key": "review_started"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "review_first"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "residual"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "item",
+          "review_prev",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "item"
+              },
+              "key": "residual"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "item",
+          "review_started",
+          1.0
+        ],
+        [
+          "set_attr",
+          "item",
+          "review_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "item"
+              },
+              "key": "epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "lp_review_reduce",
+      "comment": "Publishes the two INTEGERS the reduction needs \u2014 net displacement and gross expenditure \u2014 and deliberately does NOT store their ratio. This seed is integer-native (its own G4a gate), and a stored float ratio broke that; more to the point a ratio is a CROSS-FRAME reading, never a coordinate in one frame, so it belongs to whoever is comparing rather than to the item. Measured on the two trajectories: 20/30 for a record that learned something and finished, against 18/274 for one that expended 274 to move 18.\\n\\nPublished as a QUESTION, not a verdict, and drives nothing: a low ratio is equally a hard problem, a fallow period or a long plateau, and an agent treating it as proof of capture would have acquired a new pathology rather than a defence. Guarded on gross > 0 so an idle item reports nothing rather than reporting zero.",
+      "match": [
+        [
+          "hub",
+          "has_curiosity_params",
+          "cp"
+        ],
+        [
+          "hub",
+          "has_attention_item",
+          "item"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cp"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "item"
+              },
+              "key": "review_gross"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "review_reduced_at"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "review_epoch"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "item",
+          "review_net",
+          {
+            "__term__": {
+              "type": "Abs",
+              "arg": {
+                "type": "Minus",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "item"
+                  },
+                  "key": "review_prev"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "item"
+                  },
+                  "key": "review_first"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "item",
+          "review_reduced_at",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "item"
+              },
+              "key": "review_epoch"
             }
           }
         ]

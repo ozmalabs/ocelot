@@ -144,6 +144,66 @@ def _reduction(residuals):
     return (net / gross) if gross else 0.0
 
 
+def _seed_review(seq):
+    """The reduction as the SEED computes it — two integers on the item, no
+    post-hoc analysis and no Python arithmetic over a stored trajectory."""
+    s, agent = boot_core()
+    inner = s._inner
+    inner.load_seed_manifest(LP.manifest_for(LP.SEED_ID), agent)
+    hub = s.add_node("CuriosityHub", {"kind": "probe"})
+    p = dict(LP.PARAMS)
+    p["enabled"], p["mode"] = 1.0, 1.0
+    inner.add_edge_unchecked(hub, "has_curiosity_params",
+                             s.add_node("HeldCuriosityParams", p))
+    item = s.add_node("AttentionItem", dict(LP.ITEM_INIT))
+    inner.add_edge_unchecked(hub, "has_attention_item", item)
+    for t in range(T):
+        s.set_attr(item, "obs", float(seq[t]))
+        s.set_attr(item, "input_epoch", float(t))
+        inner.run_rules()
+    a = s.node(item)["attrs"]
+    return a.get("review_net"), a.get("review_gross")
+
+
+def test_the_SEED_computes_the_reduction_and_matches_the_post_hoc_analysis():
+    """The defence, built as rules rather than run over a stored trajectory.
+
+    `lp_review_step` accumulates net and gross in constant space — no history is
+    kept — and reproduces the post-hoc figures exactly: 20/30 against 18/274."""
+    ex_net, ex_gross = _seed_review(EXHAUSTIBLE)
+    cal_net, cal_gross = _seed_review(CALIBRATED)
+    assert (ex_net, ex_gross) == (20, 30), (ex_net, ex_gross)
+    assert (cal_net, cal_gross) == (18, 274), (cal_net, cal_gross)
+    assert ex_net / ex_gross > 5 * (cal_net / cal_gross)
+
+
+def test_the_reduction_is_published_as_INTEGERS_and_the_ratio_is_not_stored():
+    """This seed is integer-native — its own G4a gate — and storing the ratio as a
+    float broke it, measured. More to the point a ratio is a CROSS-FRAME reading
+    and never a coordinate in one frame, so it belongs to whoever is comparing
+    rather than to the item. The seed publishes the two integers and stops."""
+    net, gross = _seed_review(CALIBRATED)
+    assert isinstance(net, int) and isinstance(gross, int), (type(net), type(gross))
+
+    s, agent = boot_core()
+    inner = s._inner
+    inner.load_seed_manifest(LP.manifest_for(LP.SEED_ID), agent)
+    hub = s.add_node("CuriosityHub", {"kind": "probe"})
+    p = dict(LP.PARAMS)
+    p["enabled"], p["mode"] = 1.0, 1.0
+    inner.add_edge_unchecked(hub, "has_curiosity_params",
+                             s.add_node("HeldCuriosityParams", p))
+    item = s.add_node("AttentionItem", dict(LP.ITEM_INIT))
+    inner.add_edge_unchecked(hub, "has_attention_item", item)
+    for t in range(8):
+        s.set_attr(item, "obs", float(CALIBRATED[t]))
+        s.set_attr(item, "input_epoch", float(t))
+        inner.run_rules()
+    assert "review_efficiency" not in s.node(item)["attrs"], (
+        "the ratio is stored on the item — it is cross-frame and breaks "
+        "integer-nativeness, which G4a catches")
+
+
 def test_the_whole_record_separates_them_where_every_local_signal_failed():
     """THE DEFENCE, and it is the only thing in this arc that works.
 
