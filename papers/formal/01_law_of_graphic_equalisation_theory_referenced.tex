@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 21}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 22}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r21}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r22}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r21}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r22}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-28.2 r21} (28 August 2026).
+\textbf{DRAFT --- draft-2026-08-28.2 r22} (28 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -563,11 +563,17 @@ The reading of $c$ as a frame's own change-throughput unit, and the shapes that 
 The provenance of $r$ (Section~\ref{sec:scope}) records that operative transformation requires something that performs it: a construction that runs needs a rule runner. That runner is real, and the clarification here is about \emph{where} it is and what a frame can know of it.
 
 \begin{definition}[Rule runner]\label{def:runner}
-A graph's \emph{rule runner} is whatever performs its rules --- the thing that makes a rule's firing
-happen, as distinct from the rule, which is graph data. A runner is not a substance apart from graph
-(Proposition~\ref{prop:runner-recursion}): it is itself graph that runs, on a runner of its own. The
-term names a role in a coupling, not a layer of the world, and which structure occupies that role for
-a given graph is a contingent fact about how the graph is run.
+\emph{Runner} names a role, held \emph{per operator} rather than per graph: for each primitive a graph
+invokes, the runner of that operator is whatever performs it --- as distinct from the rule that
+invokes it, which is graph data. A runner is not a substance apart from graph
+(Proposition~\ref{prop:runner-recursion}); it is graph that runs, on runners of its own.
+
+Nothing requires a graph to have \emph{one}. Its operators may be provided by different supergraphs,
+and a primitive may be \emph{passed through} an intervening structure that relays rather than
+performs it, so the provider of an operator need not be the level immediately beneath the graph that
+uses it. The provision relation is therefore a graph like everything else here, and the singular
+possessive --- \emph{its} runner --- is available only where a grounding happens to supply exactly
+one.
 \end{definition}
 
 \begin{proposition}[The rule runner is separable from the graph, and need not be the same substrate]\label{prop:rule-runner}
@@ -585,9 +591,9 @@ What is not contingent is weaker and survives reflection: \emph{no level is self
 This is constructively demonstrable rather than merely argued. A computation realised inside another rule system --- a graph whose rules are implemented within the mechanics of a game or a universal cellular automaton \citep{berlekamp1982} --- is a blind subframe: from inside it computes at its own change-count and has no means to detect that its ``compute'' is the tokens of the host, or that the host may be advancing it by a single serial loop. Building one confirms the opacity directly, and puts the observer of any frame on the same footing. Consequently the question ``where is the universe's compute done'' has the precise form: it depends on the universe's coupling to its own rule runner --- self-running, or hosted on a substrate not itself --- and is undetermined from inside. The theory declines to decide it; it is a question about a coupling below the frontier, and the demonstrable opacity is why no internal observation settles it.
 
 \begin{proposition}[The runner is itself graph that runs; operators are its running]\label{prop:runner-recursion}
-A runner is not a substance apart from graph data. The operators a graph's rules invoke are provided by its runner, and the runner provides them because \emph{its} rules run on \emph{its} runner, and so on. A graph's ``primitives'' are therefore the observable running of the graph one level down, exposed as an operator set --- code over machine code over microcode over silicon over electromagnetism over quantum physics --- with no primitive runner at the base. The regress bottoms not at a floor but at the epistemic frontier of Section~\ref{sec:scope}: below the lowest measured level is the unclaimed pre-relational substrate.
+A runner is not a substance apart from graph data. The operators a graph's rules invoke are provided by its runner, and the runner provides them because \emph{its} rules run on \emph{its} runner, and so on. A graph's ``primitives'' are therefore the observable running of other graphs, exposed as an operator set, with no primitive runner at the base. A single chain --- code over machine code over microcode over silicon over electromagnetism over quantum physics --- is one path through that provision, and a common one, but not its shape: a process takes arithmetic from its processor, file operations from a kernel that relays them to a device, and remote calls from a machine that is not beneath it in any sense. Fan-out and relay are ordinary, and the tower is the degenerate case in which provision happens to be a chain. The regress bottoms not at a floor but at the epistemic frontier of Section~\ref{sec:scope}: below the lowest measured level is the unclaimed pre-relational substrate.
 \end{proposition}
-Two consequences. Opacity is per level (Proposition~\ref{prop:runner-opaque}): a graph uses its operators and cannot see beneath them, so its operator set is its frontier. And economics is inherited down the stack: an operator costs what its runner charges, which costs what \emph{its} runner charges, to the physical floor (Remark~\ref{rem:landauer-change}) --- one bill passed upward, so the cost of a thought is the biological cost is the biochemical cost is the electromagnetic cost. The same form, graph data that runs, sits at every level: each level \emph{is} the structure, because a runner is the same kind of thing it runs.
+Two consequences, and the first is sharper than an earlier statement of it. Opacity is per \emph{operator} rather than per level (Proposition~\ref{prop:runner-opaque}): a graph uses its operators and cannot see beneath any of them, so its operator set is its frontier --- and since provision may fan out, it cannot tell which of its operators share a provider and which do not. Two primitives supplied by one supergraph and two supplied by different ones are in-frame indistinguishable, so a graph does not know how many runners it has, or that the number is one. And economics is inherited along provision: an operator costs what the runner of that operator charges, which costs what \emph{its} providers charge, down to whatever floors each route reaches (Remark~\ref{rem:landauer-change}). Where provision is a chain this is one bill passed upward, and the cost of a thought is the biological cost is the biochemical cost is the electromagnetic cost; where it is not, it is a sum over provenances whose routes may differ in length and may not all terminate at the same floor. The same form, graph data that runs, sits at every level: each level \emph{is} the structure, because a runner is the same kind of thing it runs.
 
 A rule's action, moreover, is a \emph{pointer} into its runner, not a copy of the work. The work is done once, in the runner, and every rule invoking that operator points to the same doing --- like a shared operation defined once and called from everywhere, never re-implemented. Two things follow. Work is never duplicated, which is why copying a generator copies its pointers and shares the pointed-to work: the copy costs only its addressing, not its labour (the economic root of the copyable-generator result, Proposition~\ref{prop:copyable-generators}). And a rule's rate is not a property of the rule but the rate of the operation its pointer lands on --- a shallow, cheap tier or a deep, slow one. Rules take different rates because they point to work done at different depths of the stack, and the rate is inherited from there rather than assigned as a knob on the rule: to make a rule faster one points its action at faster work, never tunes a rate parameter it does not have.
 

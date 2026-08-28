@@ -24,10 +24,10 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2 / short form / from long r21}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2 / short form / from long r22}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2 / short form / from long r21}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2 / short form / from long r22}}\renewcommand{\headrulewidth}{0pt}}
 
 \title{The Law of Graphic Equalisation\\\large Short Form}
 \author{Matthew Parslow\\Independent Researcher}
@@ -214,11 +214,17 @@ $U_{\mathcal F}$ counts undetermined dimensions only. NULL dimensions are exclud
 
 \section{The runner, and the single prohibition}
 \begin{definition}[Rule runner]\label{def:runner}
-A graph's \emph{rule runner} is whatever performs its rules --- the thing that makes a rule's firing
-happen, as distinct from the rule, which is graph data. A runner is not a substance apart from graph
-(Proposition~\ref{prop:runner-recursion}): it is itself graph that runs, on a runner of its own. The
-term names a role in a coupling, not a layer of the world, and which structure occupies that role for
-a given graph is a contingent fact about how the graph is run.
+\emph{Runner} names a role, held \emph{per operator} rather than per graph: for each primitive a graph
+invokes, the runner of that operator is whatever performs it --- as distinct from the rule that
+invokes it, which is graph data. A runner is not a substance apart from graph
+(Proposition~\ref{prop:runner-recursion}); it is graph that runs, on runners of its own.
+
+Nothing requires a graph to have \emph{one}. Its operators may be provided by different supergraphs,
+and a primitive may be \emph{passed through} an intervening structure that relays rather than
+performs it, so the provider of an operator need not be the level immediately beneath the graph that
+uses it. The provision relation is therefore a graph like everything else here, and the singular
+possessive --- \emph{its} runner --- is available only where a grounding happens to supply exactly
+one.
 \end{definition}
 \begin{proposition}[The rule runner is separable from the graph, and need not be the same substrate]\label{prop:rule-runner}
 A graph is data --- nodes, relations, and rules --- and its rules are executed by a rule runner. The two are separable: the same graph may be run by different runners, and a runner need not be the substrate the graph describes or is ``in.'' Where the compute is done is therefore a fact about the \emph{coupling} between graph and runner, not about the graph alone.
@@ -231,7 +237,7 @@ Two claims have to be separated here, and an earlier statement of this propositi
 What is not contingent is weaker and survives reflection: \emph{no level is self-transparent}. Reading is an operation whose product lands one level up (Remark~\ref{rem:evaluation-writes}), so a level cannot hold the reading of itself while being the level that is running. Reflection makes the levels explicit and pays for each; it does not terminate in a level transparent to itself. A frame may therefore be given sight of what runs it, and cannot be given sight of its own running. Since the rules are graph and a frame can read and rewrite them (Definition~\ref{def:frame}), while its own running is not graph it holds, the asymmetry is exact: a frame is transparent to itself in precisely one respect and opaque in precisely the other. \emph{It can know what it is and cannot observe its being it.} Self-modification is available; self-observation at the level of the modifying is not.
 \end{proposition}
 \begin{proposition}[The runner is itself graph that runs; operators are its running]\label{prop:runner-recursion}
-A runner is not a substance apart from graph data. The operators a graph's rules invoke are provided by its runner, and the runner provides them because \emph{its} rules run on \emph{its} runner, and so on. A graph's ``primitives'' are therefore the observable running of the graph one level down, exposed as an operator set --- code over machine code over microcode over silicon over electromagnetism over quantum physics --- with no primitive runner at the base. The regress bottoms not at a floor but at the epistemic frontier of Section~(long form): below the lowest measured level is the unclaimed pre-relational substrate.
+A runner is not a substance apart from graph data. The operators a graph's rules invoke are provided by its runner, and the runner provides them because \emph{its} rules run on \emph{its} runner, and so on. A graph's ``primitives'' are therefore the observable running of other graphs, exposed as an operator set, with no primitive runner at the base. A single chain --- code over machine code over microcode over silicon over electromagnetism over quantum physics --- is one path through that provision, and a common one, but not its shape: a process takes arithmetic from its processor, file operations from a kernel that relays them to a device, and remote calls from a machine that is not beneath it in any sense. Fan-out and relay are ordinary, and the tower is the degenerate case in which provision happens to be a chain. The regress bottoms not at a floor but at the epistemic frontier of Section~(long form): below the lowest measured level is the unclaimed pre-relational substrate.
 \end{proposition}
 
 The account forbids one thing: a frame cannot get outside itself. It cannot be transparent to itself
