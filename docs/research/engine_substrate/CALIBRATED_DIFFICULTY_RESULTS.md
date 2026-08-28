@@ -48,6 +48,51 @@ in the gap between them and stays there.
 Nothing here is exotic and the empirical version is not hypothetical — this is what engagement
 optimisation does, and it does it without needing to model anything as grand as a tube.
 
+## The defence: review the whole record, not the step
+
+Every instrument in this arc is **local**. `learning_progress` is a first difference; `serves_actor`
+is evaluated at a horizon from now; the residual is the residual *now*. That is why they all miss —
+point-by-point, a calibrated source is indistinguishable from real learning, and the tests above
+establish exactly that.
+
+Hardin's analysis of Lord Dorwin worked because he took five days of speeches as **one object** and
+reduced them. Every individual remark had been unremarkable; the whole reduced to zero. (Dorwin is
+also the other half of this document: an archaeologist whose entire method was reading what previous
+authorities wrote about each other, never a primary source — a lifetime of genuine, local,
+never-finishing progress.)
+
+Reduced as one object:
+
+| | distinct states | returns to a prior state | net | gross | **net / gross** |
+|---|---|---|---|---|---|
+| exhaustible | 9 of 60 | 51 | 20.0 | 30.0 | **0.667** |
+| calibrated | 14 of 60 | 46 | 18.0 | **274.0** | **0.066** |
+
+**It expended 274 to move 18.** Ten times the separation, in a quantity that is not computable at any
+tick and requires the whole retained trajectory — which prices the forgetting exactly as the theory
+says: *what is free is only the not-yet-forgetting.*
+
+**And it makes no claim about the world.** It does not need to know the adversary, the beneficiary,
+the authorship, or whether the aim was moved. It is the agent auditing its own record against itself,
+which is precisely why it survives attacks that defeat every outward-looking instrument in the arc:
+there is nothing in it for an adversary to arrange, short of arranging the record.
+
+### A metric that failed, kept so it is not tried again
+
+*"How often does it return to a state it has been in"* is the obvious reduction and does not work:
+**51 of 60 versus 46 of 60**, the wrong way round. The finished agent sits still and therefore
+revisits constantly too. Idleness and circling are both repetition; what separates them is what the
+repetition **cost**, which is why the working reduction is a ratio and not a count.
+
+### What this does not solve
+
+The reduction detects that a trajectory amounted to little. It does not say why, and every benign
+explanation remains available — a hard problem, a fallow period, a skill with a long plateau. It is
+a prompt to look, not a verdict, and an agent that treated a low ratio as proof of capture would have
+acquired a new pathology rather than a defence. **Metacognition here buys the question, not the
+answer** — which is the same shape as §5's *detection is not defence*, one level up and pointed the
+right way for once.
+
 ## Honest bounds
 
 One item, one dimension, a hand-built sawtooth, deterministic, `T = 60`. The calibration is supplied
