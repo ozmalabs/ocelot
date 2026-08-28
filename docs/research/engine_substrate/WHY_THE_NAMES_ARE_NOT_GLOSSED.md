@@ -5,6 +5,32 @@
 (Adams) — and glosses none of them. This note records why, because the reason is a position rather
 than a preference, and because a reviewer will ask.
 
+## The primary reason: it is what happened
+
+Everything below this section is a benefit, and none of it is the reason. The reason is that the
+names are **provenance**. The Seldon manifold came from having a psychohistory-shaped object in mind
+and wanting to formalise it; Narrativium came from Pratchett's narrative causality; Muchness came
+from Carroll. That is the actual route by which the work arrived, and the names record it.
+
+Which makes concealment the dishonest option rather than the modest one. Presenting these objects
+under neutral technical names would imply a derivation that did not occur --- it would suggest the
+constructions were reached from the literature they are positioned against, when they were reached
+from fiction and only afterwards checked against that literature. Scrubbing the origin is not
+restraint; it is **a falsification of method**, and a quiet one, because nothing in the resulting
+paper would look wrong.
+
+This is the same discipline the corpus already applies elsewhere and would be inconsistent to
+suspend here. Nulls are reported as headline findings rather than buried. Self-corrections are left
+in the text --- *"an earlier draft of this paragraph had the two confused"* --- instead of being
+silently repaired. The failure rate of the corpus's own methods is recorded. A body of work that
+reports its own errors in the text while laundering where its ideas came from would be keeping the
+wrong half of the record.
+
+**The check that keeps this honest rather than decorative:** name what actually seeded the work, and
+do not name what did not. A fictional name retrofitted onto a construction that arrived some other
+way would be the dishonest version of this policy, and would deserve every objection the policy
+otherwise deflects.
+
 ## The debt is real and is usually hidden
 
 Fiction has seeded working science repeatedly, and the record is better than the field's habits
@@ -45,7 +71,7 @@ So the policy is not *"people who know will know"* — that is only its effect. 
 the load-bearing move: naming the thing openly and then declining to defend it is a stronger position
 than either hiding it or apologising for it.
 
-## The reach argument, which is the real one
+## The reach argument, which is a consequence and not the reason
 
 Millions of people read Pratchett. They did not read Marx.
 
@@ -114,8 +140,10 @@ just name.
 
 ### The technique's own hazard, which has to be stated
 
-A move that reliably makes criticism expensive deserves suspicion from the person using it, and three
-things follow.
+A move that reliably makes criticism expensive deserves suspicion from the person using it --- though
+less than it would if the naming were a technique, which it is not. The strategic effect is a side
+effect of reporting provenance accurately, and one cannot be manipulating a reader by telling them
+truthfully where something came from. Three things still follow.
 
 It works for bad work exactly as well as for good. Pricing an objection is not answering it, and
 nothing about a well-defended flank makes the position behind it correct.
