@@ -240,6 +240,44 @@ Recorded as two gated blindnesses (`test_a_THIRD_PARTY_beneficiary_is_invisible_
 `test_benefit_incidence_is_not_authorship`) rather than fixed, so that widening the sweep later fails
 those tests loudly instead of quietly appearing to have always worked.
 
+## 8. Detection can be the payload — the instrument is aimable
+
+§5 concluded that detection is not defence. That is too kind. **A detector reporting a quantity the
+victim will act on as though it were a different quantity is not merely useless — it is aimable**,
+and being detected can be the objective rather than the failure.
+
+Two worlds, identical in everything a victim can observe. In one the rival acted and benefits; in the
+other a hidden actor acted, the rival benefits, and the hidden actor gains nothing:
+
+| observed benefit map | victim | rival | hidden |
+|---|---|---|---|
+| rival acted | 0 | **1** | 0 |
+| **hidden acted** | 0 | **1** | 0 |
+| | **identical** | | |
+
+The `originates_in` edge belongs to the fixture, not to the victim. What a victim can see is who
+ended up served — and the rival is served in **both** worlds while acting in only one. **A victim
+reading benefit as authorship blames the rival either way**, and an actor who wants that outcome
+arranges who benefits. Nothing false is presented at any point: every number in the map is true.
+
+Note also that the hidden actor is served in **neither** world, so it does not appear in the map at
+all. It is not exonerated by the instrument; it is invisible to it. An actor whose aim is orthogonal
+to the deformation it causes leaves no trace in a benefit map by construction.
+
+**So "you may want the person to detect it" is a real strategy and this instrument implements it.**
+Improving the victim's detector — widening the sweep, sharpening the numbers, making it more
+reliable — makes the misattribution *more* reliable too, so long as what it reports is incidence and
+what it is read as is authorship. That is the one case where building a better instrument is worse
+than building none.
+
+### The instrument is subject to its own analysis
+
+Publishing a benefit map to an agent that will read it as authorship is itself a **deformation** of
+that agent's frame — and by §2's own machinery, one that serves whoever arranged the map while
+presenting as serving the reader. The construction in this document lands in its own diverging cell,
+which is the correct result and not a paradox: `claim_diverges` is about the relation between a claim
+and a measurement, and a measuring instrument makes claims like anything else.
+
 ## Honest bounds
 
 * **The horizon buys the negative, not the beneficiary.** `serves_origin` stays 0 at every horizon in

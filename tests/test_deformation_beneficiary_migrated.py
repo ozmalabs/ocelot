@@ -448,3 +448,57 @@ def test_benefit_incidence_is_not_authorship():
     # by the supplied edge rather than by anything computed
     assert at_benefiting["beneficiary_well_formed"] == 1.0
     assert at_benefiting["serves_origin"] == 0.0
+
+
+def _benefit_map(author):
+    """Who ends up served — the part a victim can actually observe. The
+    `originates_in` edge belongs to the fixture, not to the victim."""
+    a = WorldAdapter(seeds=())
+    a.inner.load_seed_manifest(
+        json.load(open(ROOT / "seeds" / "deformation_beneficiary.json")), a.agent)
+    g = a.s
+    pol = g.add_node("ManifoldPolicy", {"future_manifold_projection_budget": 4.0,
+                                        "future_manifold_physical_horizon": 4.0})
+    mk = lambda n, aim: g.add_node("Frame", {"name": n,
+                                             "future_manifold_target": [[aim]] * 4,
+                                             "future_manifold_bounds": [[1.0]] * 4})
+    victim, rival, hidden = mk("victim", 0.0), mk("rival", 5.0), mk("hidden", 99.0)
+    for f in (victim, rival, hidden):
+        g.add_edge(f, "uses_policy", pol)
+    d = g.add_node("Deformation", {"presents_as": "acted_on",
+                                   "future_manifold_values": [[5.0]] * 4})
+    g.add_edge(d, "acts_on", victim)
+    g.add_edge(d, "originates_in", rival if author == "rival" else hidden)
+    a.inner.run_rules(1_000_000)
+    term = {"type": "FutureManifoldProjection", "episode": {"type": "Var", "name": "f"},
+            "policy": {"type": "Var", "name": "p"}, "source": {"type": "Var", "name": "d"},
+            "field": "retained_width"}
+    return {n: a.inner.evaluate(term, {"f": f, "p": pol, "d": d})
+            for n, f in (("victim", victim), ("rival", rival), ("hidden", hidden))}
+
+
+def test_the_benefit_map_cannot_name_the_author_and_can_be_ARRANGED():
+    """DETECTION CAN BE THE PAYLOAD, not the failure.
+
+    Two worlds. In one the rival acted and benefits; in the other a hidden actor
+    acted, the rival benefits, and the hidden actor gains nothing. The benefit map
+    — the only part a victim can observe, since `originates_in` is the fixture's
+    edge and not theirs — is IDENTICAL.
+
+    So a victim reading benefit as authorship blames the rival in both worlds, and
+    an actor who wants that outcome need only arrange who benefits. Nothing false
+    is presented at any point; every number in the map is true.
+
+    This sharpens `test_detection_is_not_defence`: a detector reporting a quantity
+    the victim will act on as though it were a different quantity is not merely
+    useless, it is aimable. A victim with no detector blames nobody; a victim with
+    an incidence detector blames whoever was arranged to benefit."""
+    acted = _benefit_map("rival")
+    did_not_act = _benefit_map("hidden")
+    assert acted == did_not_act, (
+        "the benefit map distinguished the author — if this now fails, something "
+        "computes authorship and the results document is stale")
+    assert acted["rival"] == 1.0, "the rival is served in both worlds"
+    assert acted["hidden"] == 0.0, (
+        "the hidden actor should be served in neither, and so absent from the map "
+        "entirely — invisible rather than exonerated")
