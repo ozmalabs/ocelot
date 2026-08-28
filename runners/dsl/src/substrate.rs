@@ -8,9 +8,7 @@
 //! analogue of the Python `with substrate.transform()` context manager:
 //! all mutations buffered, rollback on Err, commit on Ok.
 
-use crate::checker::{
-    evaluate_weight, production_admits, CheckOutcome, ConsistencyChecker,
-};
+use crate::checker::{evaluate_weight, production_admits, CheckOutcome, ConsistencyChecker};
 use crate::ext::Counters;
 use crate::grammar::ProdIdx;
 use crate::graph::{EdgeIdx, EdgeKey, NodeID, TypedGraph};
@@ -64,8 +62,7 @@ pub struct Substrate {
     rule_edge_type_deps: Vec<rustc_hash::FxHashSet<Sym>>,
     /// Inverse differential index: graph key -> consumers in stable RuleIdx
     /// order. This is the serial, byte-compatible floor for area scheduling.
-    rule_readers_by_key:
-        rustc_hash::FxHashMap<crate::rewrite::RuleKey, Vec<usize>>,
+    rule_readers_by_key: rustc_hash::FxHashMap<crate::rewrite::RuleKey, Vec<usize>>,
     /// Rules whose opaque reads require conservative wake-up.
     rule_reads_any: Vec<usize>,
     /// Per-rule: true iff the rule has a `where_` clause. Conservative
@@ -572,10 +569,10 @@ impl Substrate {
     /// shape_cache — every call is O(1) per candidate on cache hit.
     /// Callers (Filter primitive, custom enumeration) use this for
     /// arbitrary candidate sets without hitting the dispatch path.
-    pub fn shape_filter_terms(&mut self,
-                                candidates: &[crate::term::TermIdx])
-        -> Vec<crate::term::TermIdx>
-    {
+    pub fn shape_filter_terms(
+        &mut self,
+        candidates: &[crate::term::TermIdx],
+    ) -> Vec<crate::term::TermIdx> {
         let Some(target) = self.active_shape_target else {
             return candidates.to_vec();
         };
@@ -626,7 +623,8 @@ impl Substrate {
     /// How many active rules currently carry a pushdown plan, and their names.
     /// The positive control for "pushdown is actually engaged on this world".
     pub fn pushdown_armed(&self) -> Vec<String> {
-        self.rules.iter()
+        self.rules
+            .iter()
             .filter(|r| r.active && !r.where_conjuncts.is_empty())
             .map(|r| self.interner.resolve(r.name).to_string())
             .collect()
@@ -670,14 +668,16 @@ impl Substrate {
     /// path. Holding it constant keeps the four variants comparable.
     ///
     /// Returns (variant_name, micros_total, bindings_visited) per variant.
-    pub fn profile_rule_match(&mut self, rule_name: &str, reps: usize)
-        -> Vec<(String, u64, u64)>
-    {
+    pub fn profile_rule_match(&mut self, rule_name: &str, reps: usize) -> Vec<(String, u64, u64)> {
         let name_sym = match self.interner.lookup(rule_name) {
             Some(s) => s,
             None => return Vec::new(),
         };
-        let rule_idx = match self.rules.iter().position(|r| r.name == name_sym && r.active) {
+        let rule_idx = match self
+            .rules
+            .iter()
+            .position(|r| r.name == name_sym && r.active)
+        {
             Some(i) => i,
             None => return Vec::new(),
         };
@@ -685,9 +685,15 @@ impl Substrate {
 
         // A trivial attr-free where: Eq(Lit(1), Lit(1)). Allocated once, in the
         // arena (append-only; adding unreachable Terms changes no rule).
-        let lit_a = self.terms.add(crate::term::TermNode::Lit { value: crate::value::Value::Int(1) });
-        let lit_b = self.terms.add(crate::term::TermNode::Lit { value: crate::value::Value::Int(1) });
-        let triv = self.terms.add(crate::term::TermNode::Eq { a: lit_a, b: lit_b });
+        let lit_a = self.terms.add(crate::term::TermNode::Lit {
+            value: crate::value::Value::Int(1),
+        });
+        let lit_b = self.terms.add(crate::term::TermNode::Lit {
+            value: crate::value::Value::Int(1),
+        });
+        let triv = self
+            .terms
+            .add(crate::term::TermNode::Eq { a: lit_a, b: lit_b });
 
         // EVERY stripped variant MUST clear `where_conjuncts`. A clone inherits
         // the pushdown plan, and `extend_each` runs pushdown off the PLAN, not
@@ -732,9 +738,18 @@ impl Substrate {
             for _ in 0..reps.max(1) {
                 bindings = 0;
                 crate::rewrite::match_rule_each(
-                    &rule, &self.terms, &self.graph, &self.interner,
-                    Some(&self.concepts), Some(&self.framebuffers), None, None,
-                    |_b| { bindings += 1; true },
+                    &rule,
+                    &self.terms,
+                    &self.graph,
+                    &self.interner,
+                    Some(&self.concepts),
+                    Some(&self.framebuffers),
+                    None,
+                    None,
+                    |_b| {
+                        bindings += 1;
+                        true
+                    },
                 );
             }
             let micros = t0.elapsed().as_micros() as u64 / (reps.max(1) as u64);
@@ -746,18 +761,30 @@ impl Substrate {
     /// Self-instrumentation: (rule_name, accumulated micros, times processed) per rule.
     /// The observation the agent reads to diagnose its OWN tick — which rule dominates.
     pub fn rule_costs_report(&self) -> Vec<(String, u64, u64, u64)> {
-        self.rules.iter().enumerate().map(|(i, r)| {
-            (self.interner.resolve(r.name).to_string(),
-             self.rule_cost_micros.get(i).copied().unwrap_or(0),
-             self.rule_cost_count.get(i).copied().unwrap_or(0),
-             self.rule_cost_progress.get(i).copied().unwrap_or(0))
-        }).collect()
+        self.rules
+            .iter()
+            .enumerate()
+            .map(|(i, r)| {
+                (
+                    self.interner.resolve(r.name).to_string(),
+                    self.rule_cost_micros.get(i).copied().unwrap_or(0),
+                    self.rule_cost_count.get(i).copied().unwrap_or(0),
+                    self.rule_cost_progress.get(i).copied().unwrap_or(0),
+                )
+            })
+            .collect()
     }
 
     pub fn reset_rule_costs(&mut self) {
-        for c in self.rule_cost_micros.iter_mut() { *c = 0; }
-        for n in self.rule_cost_count.iter_mut() { *n = 0; }
-        for p in self.rule_cost_progress.iter_mut() { *p = 0; }
+        for c in self.rule_cost_micros.iter_mut() {
+            *c = 0;
+        }
+        for n in self.rule_cost_count.iter_mut() {
+            *n = 0;
+        }
+        for p in self.rule_cost_progress.iter_mut() {
+            *p = 0;
+        }
     }
 
     /// FALLBACK TRACE / H1 — `(rule_name, attr_key, hits)`: this rule read that
@@ -768,9 +795,11 @@ impl Substrate {
         crate::fallback_trace::defaulted_raw()
             .into_iter()
             .map(|(r, k, n)| {
-                (self.interner.resolve(r).to_string(),
-                 self.interner.resolve(k).to_string(),
-                 n)
+                (
+                    self.interner.resolve(r).to_string(),
+                    self.interner.resolve(k).to_string(),
+                    n,
+                )
             })
             .collect()
     }
@@ -794,11 +823,13 @@ impl Substrate {
     ///  · the rule's where-clause Shape is compatible with the target.
     /// O(1) per call after first walk: shape_cache hits on every
     /// subsequent call for the same rule.
-    pub fn rule_in_negative_space(
-        &mut self, idx: crate::rewrite::RuleIdx
-    ) -> bool {
-        let Some(target) = self.active_shape_target else { return false };
-        if (idx.0 as usize) >= self.rules.len() { return false; }
+    pub fn rule_in_negative_space(&mut self, idx: crate::rewrite::RuleIdx) -> bool {
+        let Some(target) = self.active_shape_target else {
+            return false;
+        };
+        if (idx.0 as usize) >= self.rules.len() {
+            return false;
+        }
         let Some(where_idx) = self.rules[idx.0 as usize].where_ else {
             return false;
         };
@@ -813,9 +844,7 @@ impl Substrate {
     /// Rule-engine code reading function-shape can call this without
     /// repeating Term-tree walks. See `crate::shape::assess_shape`
     /// for the walker implementation.
-    pub fn shape_of_term(&mut self, idx: crate::term::TermIdx)
-        -> crate::shape::Shape
-    {
+    pub fn shape_of_term(&mut self, idx: crate::term::TermIdx) -> crate::shape::Shape {
         self.shape_cache.assess_and_cache(idx, &self.terms)
     }
 
@@ -855,15 +884,16 @@ impl Substrate {
     /// what `checker.grammar` holds for anything added through this one
     /// method (see `grammar_reflect.rs`'s module doc for the honest
     /// boundary: this is a mirror, not yet a single source of truth).
-    pub fn add_production(
-        &mut self,
-        p: crate::grammar::Production,
-    ) -> crate::grammar::ProdIdx {
+    pub fn add_production(&mut self, p: crate::grammar::Production) -> crate::grammar::ProdIdx {
         let root = match self.gamma_graph_root {
             Some(r) => r,
             None => {
-                let type_sym = self.interner.intern(crate::grammar_reflect::GAMMA_GRAMMAR_NODE);
-                let r = self.graph.insert_node(type_sym, rustc_hash::FxHashMap::default());
+                let type_sym = self
+                    .interner
+                    .intern(crate::grammar_reflect::GAMMA_GRAMMAR_NODE);
+                let r = self
+                    .graph
+                    .insert_node(type_sym, rustc_hash::FxHashMap::default());
                 self.gamma_graph_root = Some(r);
                 r
             }
@@ -963,7 +993,9 @@ impl Substrate {
             if self.rule_edge_type_deps[i].contains(&edge_type) {
                 if tel {
                     self.dirty_marks[1] += 1;
-                    if !self.rule_dirty[i] { self.dirty_marks[7] += 1; }
+                    if !self.rule_dirty[i] {
+                        self.dirty_marks[7] += 1;
+                    }
                 }
                 self.rule_dirty[i] = true;
             }
@@ -983,17 +1015,19 @@ impl Substrate {
     /// call this, so the append-only incremental win is preserved.
     #[inline]
     fn invalidate_readers_of_deleted_edge_type(&mut self, edge_type: Sym) {
-        if !self.incremental_match { return; }
+        if !self.incremental_match {
+            return;
+        }
         // THE UNSOUND-RETRACTION FALSIFIER: skip the where-reader cursor clear
         // entirely, so a delete that FLIPS a `Not Exists` where on a stable edge
         // is silently missed — the observable retraction (a slot that should
         // open when its blocking edge is deleted) never fires. Must diverge from
         // the full rescan. Measurement use only.
-        if self.incremental_match_unsound { return; }
+        if self.incremental_match_unsound {
+            return;
+        }
         for i in 0..self.rule_edge_type_deps.len() {
-            if !self.rule_edge_type_deps[i].contains(&edge_type)
-                || i >= self.rule_cursors.len()
-            {
+            if !self.rule_edge_type_deps[i].contains(&edge_type) || i >= self.rule_cursors.len() {
                 continue;
             }
             // A rule that MATCHES `et` is already handled by the per-edge-type
@@ -1005,7 +1039,9 @@ impl Substrate {
             // WHERE-ONLY reader (reads `et`, does not match it) needs the cursor
             // cleared, because per-type versioning of its OWN match types would
             // not see `et`'s deletion flip its where.
-            let matches_et = self.rules[i].match_edges.iter()
+            let matches_et = self.rules[i]
+                .match_edges
+                .iter()
                 .any(|me| me.edge_type == edge_type);
             if !matches_et {
                 self.rule_cursors[i].clear();
@@ -1046,10 +1082,14 @@ impl Substrate {
             if self.rule_has_where[i] {
                 if tel {
                     self.dirty_marks[2] += 1;
-                    if !self.rule_dirty[i] { self.dirty_marks[8] += 1; }
+                    if !self.rule_dirty[i] {
+                        self.dirty_marks[8] += 1;
+                    }
                 }
                 self.rule_dirty[i] = true;
-                if incr && i < self.rule_cursors.len() { self.rule_cursors[i].clear(); }
+                if incr && i < self.rule_cursors.len() {
+                    self.rule_cursors[i].clear();
+                }
             }
         }
     }
@@ -1077,7 +1117,7 @@ impl Substrate {
             self.dirty_marks[5] += 1;
         }
         if self.dirty_overaggressive {
-            return;   // THE FALSIFIER: wake nobody. MUST break byte-identity.
+            return; // THE FALSIFIER: wake nobody. MUST break byte-identity.
         }
         for j in 0..self.rules.len() {
             let has_where = self.rule_has_where[j];
@@ -1085,14 +1125,19 @@ impl Substrate {
                 let rj = &self.rules[j];
                 (
                     rj.reads_any,
-                    ty.map_or(false, |t| rj.read_set.contains(&crate::rewrite::RuleKey::Type(t))),
-                    keys.iter().any(|k| rj.read_set.contains(&crate::rewrite::RuleKey::Attr(*k))),
+                    ty.map_or(false, |t| {
+                        rj.read_set.contains(&crate::rewrite::RuleKey::Type(t))
+                    }),
+                    keys.iter()
+                        .any(|k| rj.read_set.contains(&crate::rewrite::RuleKey::Attr(*k))),
                 )
             };
             if reads_any || type_hit || (attr_hit && has_where) {
                 if tel {
                     self.dirty_marks[2] += 1;
-                    if !self.rule_dirty[j] { self.dirty_marks[8] += 1; }
+                    if !self.rule_dirty[j] {
+                        self.dirty_marks[8] += 1;
+                    }
                 }
                 self.rule_dirty[j] = true;
                 self.rule_cursors[j].clear();
@@ -1101,17 +1146,27 @@ impl Substrate {
     }
 
     /// GAMMA_COLLAPSE_ALGORITHM spike control. DEFAULT FALSE — see the field doc.
-    pub fn set_gamma_residual_capture(&mut self, on: bool) { self.gamma_residual_capture = on; }
+    pub fn set_gamma_residual_capture(&mut self, on: bool) {
+        self.gamma_residual_capture = on;
+    }
 
     /// Block 187000 controls. `precise_dirty` DEFAULT FALSE — see the field doc.
-    pub fn set_precise_dirty(&mut self, on: bool) { self.precise_dirty = on; }
+    pub fn set_precise_dirty(&mut self, on: bool) {
+        self.precise_dirty = on;
+    }
     pub fn set_dirty_telemetry(&mut self, on: bool) {
         self.dirty_telemetry = on;
-        if !on { self.dirty_marks = [0; 9]; }
+        if !on {
+            self.dirty_marks = [0; 9];
+        }
     }
-    pub fn set_dirty_overaggressive(&mut self, on: bool) { self.dirty_overaggressive = on; }
+    pub fn set_dirty_overaggressive(&mut self, on: bool) {
+        self.dirty_overaggressive = on;
+    }
     /// Block 188000 controls. Both DEFAULT FALSE — see the field docs.
-    pub fn set_binding_projection(&mut self, on: bool) { self.binding_projection = on; }
+    pub fn set_binding_projection(&mut self, on: bool) {
+        self.binding_projection = on;
+    }
     pub fn set_projection_overaggressive(&mut self, on: bool) {
         self.projection_overaggressive = on;
     }
@@ -1128,7 +1183,9 @@ impl Substrate {
     }
 
     /// Block 192000 controls. Both DEFAULT FALSE — see the field docs.
-    pub fn set_incremental_match(&mut self, on: bool) { self.incremental_match = on; }
+    pub fn set_incremental_match(&mut self, on: bool) {
+        self.incremental_match = on;
+    }
     pub fn set_incremental_match_unsound(&mut self, on: bool) {
         self.incremental_match_unsound = on;
     }
@@ -1143,7 +1200,8 @@ impl Substrate {
         self.graph.log_attr_writes = on;
         if on {
             if self.rule_dirty_nodes.len() < self.rules.len() {
-                self.rule_dirty_nodes.resize(self.rules.len(), Default::default());
+                self.rule_dirty_nodes
+                    .resize(self.rules.len(), Default::default());
             }
             if self.rule_pred_retract_ok.len() < self.rules.len() {
                 self.rule_pred_retract_ok.resize(self.rules.len(), false);
@@ -1293,7 +1351,9 @@ impl Substrate {
                     (
                         self.interner.resolve(r.name).to_string(),
                         self.interner.resolve(r.area).to_string(),
-                        pv.iter().map(|s| self.interner.resolve(*s).to_string()).collect(),
+                        pv.iter()
+                            .map(|s| self.interner.resolve(*s).to_string())
+                            .collect(),
                     )
                 })
             })
@@ -1337,27 +1397,41 @@ impl Substrate {
     /// post-match dedup.
     #[inline]
     fn projection_cold_path(&self, rule: &crate::rewrite::RewriteRule) -> bool {
-        self.binding_projection
-            && rule.project_vars.is_some()
-            && rule.match_edges.len() == 1
+        self.binding_projection && rule.project_vars.is_some() && rule.match_edges.len() == 1
     }
-    pub fn dirty_marks(&self) -> [u64; 9] { self.dirty_marks }
-    pub fn reset_dirty_marks(&mut self) { self.dirty_marks = [0; 9]; }
+    pub fn dirty_marks(&self) -> [u64; 9] {
+        self.dirty_marks
+    }
+    pub fn reset_dirty_marks(&mut self) {
+        self.dirty_marks = [0; 9];
+    }
     /// How many ACTIVE rules currently hold a dirty bit — the residual the next
     /// settlement event will face. Read-only introspection.
     pub fn dirty_rule_count(&self) -> usize {
-        self.rule_dirty.iter().enumerate()
-            .filter(|(i, d)| **d && self.rules[*i].active).count()
+        self.rule_dirty
+            .iter()
+            .enumerate()
+            .filter(|(i, d)| **d && self.rules[*i].active)
+            .count()
     }
     /// `(rule name, area)` for every ACTIVE rule currently holding a dirty bit —
     /// so a diagnosis can name WHICH rule keeps an area awake, instead of
     /// reporting a count.
     pub fn dirty_rule_names(&self) -> Vec<(String, String)> {
-        self.rules.iter().enumerate()
+        self.rules
+            .iter()
+            .enumerate()
             .filter(|(i, r)| r.active && self.rule_dirty[*i])
-            .map(|(_, r)| (self.interner.resolve(r.name).to_string(),
-                           if r.area == Sym::default() { "global".to_string() }
-                           else { self.interner.resolve(r.area).to_string() }))
+            .map(|(_, r)| {
+                (
+                    self.interner.resolve(r.name).to_string(),
+                    if r.area == Sym::default() {
+                        "global".to_string()
+                    } else {
+                        self.interner.resolve(r.area).to_string()
+                    },
+                )
+            })
             .collect()
     }
 
@@ -1367,8 +1441,12 @@ impl Substrate {
     /// rule system: force everything dirty, run the committed loop, and it must
     /// make ZERO progress. A missed wake would show up here as progress.
     pub fn force_all_dirty(&mut self) {
-        for d in self.rule_dirty.iter_mut() { *d = true; }
-        for c in self.rule_cursors.iter_mut() { c.clear(); }
+        for d in self.rule_dirty.iter_mut() {
+            *d = true;
+        }
+        for c in self.rule_cursors.iter_mut() {
+            c.clear();
+        }
         self.edge_delete_version += 1;
         self.any_mutation = true;
     }
@@ -1377,19 +1455,27 @@ impl Substrate {
     /// read-only introspection so a diagnosis can NAME the attribute that keeps
     /// an area awake instead of inferring it.
     pub fn rules_reading_attr(&self, key: Sym) -> Vec<(String, String)> {
-        self.rules.iter()
-            .filter(|r| r.active
-                    && r.read_set.contains(&crate::rewrite::RuleKey::Attr(key)))
-            .map(|r| (self.interner.resolve(r.name).to_string(),
-                      if r.area == Sym::default() { "global".to_string() }
-                      else { self.interner.resolve(r.area).to_string() }))
+        self.rules
+            .iter()
+            .filter(|r| r.active && r.read_set.contains(&crate::rewrite::RuleKey::Attr(key)))
+            .map(|r| {
+                (
+                    self.interner.resolve(r.name).to_string(),
+                    if r.area == Sym::default() {
+                        "global".to_string()
+                    } else {
+                        self.interner.resolve(r.area).to_string()
+                    },
+                )
+            })
             .collect()
     }
 
     /// The set of AREAS holding at least one dirty active rule, in canonical
     /// `area_groups` order. The per-tick "how much of the cortex woke" number.
     pub fn dirty_area_names(&self) -> Vec<String> {
-        self.area_groups().into_iter()
+        self.area_groups()
+            .into_iter()
             .filter(|(_, idxs)| idxs.iter().any(|&i| self.rule_dirty[i]))
             .map(|(a, _)| self.interner.resolve(a).to_string())
             .collect()
@@ -1408,17 +1494,24 @@ impl Substrate {
                 self.dirty_marks[0] += self.rule_dirty.len() as u64;
                 self.dirty_marks[6] += n;
             }
-            for d in self.rule_dirty.iter_mut() { *d = true; }
+            for d in self.rule_dirty.iter_mut() {
+                *d = true;
+            }
             // An imprecise (writes_any) effect may flip where-clauses on ALREADY-matched edges. The
             // semi-naive cursor only re-scans NEW edges, so invalidate every cursor to force a full
             // re-match — the same correctness guarantee mark_node_mutation gives external writes.
-            for c in self.rule_cursors.iter_mut() { c.clear(); }
+            for c in self.rule_cursors.iter_mut() {
+                c.clear();
+            }
             self.graph.attr_write_log.clear(); // block 292000: blanket path takes no frontier
             return;
         }
         let wset: smallvec::SmallVec<[crate::rewrite::RuleKey; 16]> =
             self.rules[fired].write_set.iter().copied().collect();
-        if wset.is_empty() { self.graph.attr_write_log.clear(); return; }
+        if wset.is_empty() {
+            self.graph.attr_write_log.clear();
+            return;
+        }
         for j in 0..self.rules.len() {
             // FIXPOINT-SETTLE FIX. There used to be an
             // `if self.rule_dirty[j] { continue; }` early-out here. It was
@@ -1454,12 +1547,16 @@ impl Substrate {
             // semi-naive cursor only re-scans new edges, so it can miss a Type flip.
             let has_where = self.rule_has_where[j];
             let rj = &self.rules[j];
-            let hits_structural = wset.iter().any(|k|
+            let hits_structural = wset.iter().any(|k| {
                 rj.read_set.contains(k)
-                && matches!(k, crate::rewrite::RuleKey::Edge(_) | crate::rewrite::RuleKey::Type(_)));
-            let hits_attr = wset.iter().any(|k|
-                rj.read_set.contains(k)
-                && matches!(k, crate::rewrite::RuleKey::Attr(_)));
+                    && matches!(
+                        k,
+                        crate::rewrite::RuleKey::Edge(_) | crate::rewrite::RuleKey::Type(_)
+                    )
+            });
+            let hits_attr = wset
+                .iter()
+                .any(|k| rj.read_set.contains(k) && matches!(k, crate::rewrite::RuleKey::Attr(_)));
             if rj.reads_any || hits_structural || (hits_attr && has_where) {
                 // An ATTR/TYPE write a consumer reads can flip its where on an ALREADY-matched edge
                 // (e.g. probe_action 0→Select makes a release-rule fire on an existing has_feature edge).
@@ -1469,13 +1566,15 @@ impl Substrate {
                 // fixpoints with edge churn pay nothing. A where-LESS Attr-only hit gets neither
                 // re-dirtied nor cursor-cleared (its bindings can't change from an attr value).
                 // Mirrors mark_node_mutation for rule effects.
-                let type_hit = wset.iter().any(|k|
-                    rj.read_set.contains(k)
-                    && matches!(k, crate::rewrite::RuleKey::Type(_)));
+                let type_hit = wset.iter().any(|k| {
+                    rj.read_set.contains(k) && matches!(k, crate::rewrite::RuleKey::Type(_))
+                });
                 let attr_flip = rj.reads_any || type_hit || (hits_attr && has_where);
                 if self.dirty_telemetry {
                     self.dirty_marks[0] += 1;
-                    if !self.rule_dirty[j] { self.dirty_marks[6] += 1; }
+                    if !self.rule_dirty[j] {
+                        self.dirty_marks[6] += 1;
+                    }
                 }
                 self.rule_dirty[j] = true;
                 if attr_flip {
@@ -1492,7 +1591,8 @@ impl Substrate {
                         && self.rule_pred_retract_ok.get(j).copied().unwrap_or(false);
                     if covered {
                         if j >= self.rule_dirty_nodes.len() {
-                            self.rule_dirty_nodes.resize(self.rules.len(), Default::default());
+                            self.rule_dirty_nodes
+                                .resize(self.rules.len(), Default::default());
                         }
                         for &(nid, wkey) in self.graph.attr_write_log.iter() {
                             if rj.read_set.contains(&crate::rewrite::RuleKey::Attr(wkey)) {
@@ -1568,7 +1668,11 @@ impl Substrate {
                 // Charge a reject to every candidate that failed its
                 // where-clause (the candidates exist by definition of
                 // Type-1 — vocabulary present but no admission).
-                for pi in self.checker.grammar.candidates(src_type, edge_type, tgt_type) {
+                for pi in self
+                    .checker
+                    .grammar
+                    .candidates(src_type, edge_type, tgt_type)
+                {
                     self.counters.on_production_reject(*pi);
                 }
                 // GAMMA_COLLAPSE_ALGORITHM spike (see field doc on
@@ -1611,7 +1715,7 @@ impl Substrate {
 
     pub fn remove_node(&mut self, nid: NodeID) -> bool {
         let had_edges = !self.graph.out_edges_slice(nid, None).is_empty()
-                     || !self.graph.in_edges_slice(nid, None).is_empty();
+            || !self.graph.in_edges_slice(nid, None).is_empty();
         // 187000: a DELETION must never be under-approximated. Snapshot the
         // node's type, attr keys and INCIDENT EDGE TYPES before it is gone, so
         // the precise path can wake the readers of each — the edge types via the
@@ -1623,22 +1727,35 @@ impl Substrate {
         ) = if self.precise_dirty && self.graph.has_node(nid) {
             let n = self.graph.node(nid);
             let mut ets: smallvec::SmallVec<[Sym; 8]> = smallvec::SmallVec::new();
-            for idx in self.graph.out_edges_slice(nid, None).iter()
+            for idx in self
+                .graph
+                .out_edges_slice(nid, None)
+                .iter()
                 .chain(self.graph.in_edges_slice(nid, None).iter())
             {
                 let et = self.graph.edge(*idx).edge_type;
-                if !ets.contains(&et) { ets.push(et); }
+                if !ets.contains(&et) {
+                    ets.push(et);
+                }
             }
-            (Some(n.type_), n.attrs.iter().map(|(k, _)| *k).collect(), ets)
+            (
+                Some(n.type_),
+                n.attrs.iter().map(|(k, _)| *k).collect(),
+                ets,
+            )
         } else {
             (None, smallvec::SmallVec::new(), smallvec::SmallVec::new())
         };
         let precise = self.precise_dirty;
         let ok = self.graph.delete_node(nid).is_some();
         if ok {
-            if had_edges { self.edge_delete_version += 1; }
+            if had_edges {
+                self.edge_delete_version += 1;
+            }
             if precise {
-                for et in edge_types { self.mark_edge_type_dirty(et); }
+                for et in edge_types {
+                    self.mark_edge_type_dirty(et);
+                }
                 self.mark_external_write(ty, &keys);
             } else {
                 self.mark_node_mutation();
@@ -1672,7 +1789,9 @@ impl Substrate {
             }
             if self.dirty_telemetry {
                 self.dirty_marks[3] += 1;
-                if unchanged { self.dirty_marks[4] += 1; }
+                if unchanged {
+                    self.dirty_marks[4] += 1;
+                }
             }
             if unchanged && self.precise_dirty {
                 return;
@@ -1710,17 +1829,20 @@ impl Substrate {
             let has_where = self.rule_has_where[j];
             let (reads_any, attr_hit) = {
                 let rj = &self.rules[j];
-                (rj.reads_any, rj.read_set.contains(&crate::rewrite::RuleKey::Attr(key)))
+                (
+                    rj.reads_any,
+                    rj.read_set.contains(&crate::rewrite::RuleKey::Attr(key)),
+                )
             };
             if !(reads_any || (attr_hit && has_where)) {
                 continue;
             }
             self.rule_dirty[j] = true;
-            let covered = self.rule_pred_retract_ok.get(j).copied().unwrap_or(false)
-                && !reads_any; // a reads_any rule cannot be node-scoped soundly
+            let covered = self.rule_pred_retract_ok.get(j).copied().unwrap_or(false) && !reads_any; // a reads_any rule cannot be node-scoped soundly
             if covered {
                 if j >= self.rule_dirty_nodes.len() {
-                    self.rule_dirty_nodes.resize(self.rules.len(), Default::default());
+                    self.rule_dirty_nodes
+                        .resize(self.rules.len(), Default::default());
                 }
                 self.rule_dirty_nodes[j].insert(nid);
                 // KEEP the cursor: no edge changed, so the node-seeded path
@@ -1734,13 +1856,17 @@ impl Substrate {
     pub fn set_type(&mut self, nid: NodeID, new_type: Sym) {
         let old_type = if self.precise_dirty && self.graph.has_node(nid) {
             Some(self.graph.node(nid).type_)
-        } else { None };
+        } else {
+            None
+        };
         self.graph.set_node_type(nid, new_type);
         if self.precise_dirty {
             // A retype changes membership of BOTH type buckets; wake readers of
             // each. Structural, so unconditional (no where-clause requirement).
             if let Some(t) = old_type {
-                if t != new_type { self.mark_external_write(Some(t), &[]); }
+                if t != new_type {
+                    self.mark_external_write(Some(t), &[]);
+                }
             }
             self.mark_external_write(Some(new_type), &[]);
         } else {
@@ -1794,7 +1920,10 @@ impl Substrate {
         candidate_tgt_attrs: FxHashMap<Sym, Value>,
     ) -> bool {
         let src_type = self.graph.node(src).type_;
-        let cand = self.checker.grammar.candidates(src_type, edge_type, candidate_tgt_type);
+        let cand = self
+            .checker
+            .grammar
+            .candidates(src_type, edge_type, candidate_tgt_type);
         if cand.is_empty() {
             return false;
         }
@@ -1834,7 +1963,9 @@ impl Substrate {
 
         // Slow path: materialise a scratch node, run the full check,
         // remove it. Matches Python's `_insert_node`-then-delete probe.
-        let scratch = self.graph.insert_node(candidate_tgt_type, candidate_tgt_attrs);
+        let scratch = self
+            .graph
+            .insert_node(candidate_tgt_type, candidate_tgt_attrs);
         let result = self.checker.check_edge(
             &self.graph,
             &self.interner,
@@ -1987,11 +2118,19 @@ impl Substrate {
         let src_var = self.interner.intern("a");
         let tgt_var = self.interner.intern("b");
         let weight = crate::grammar::Grammar::default_weight(&mut self.terms);
-        let provenance = self.interner.intern("shares_shape (salient order-N shape neighbour)");
+        let provenance = self
+            .interner
+            .intern("shares_shape (salient order-N shape neighbour)");
         let prod = crate::grammar::Production {
-            src: crate::grammar::NodePattern { type_: shape_t, var: src_var },
+            src: crate::grammar::NodePattern {
+                type_: shape_t,
+                var: src_var,
+            },
             edge_type: edge_t,
-            tgt: crate::grammar::NodePattern { type_: shape_t, var: tgt_var },
+            tgt: crate::grammar::NodePattern {
+                type_: shape_t,
+                var: tgt_var,
+            },
             where_: None,
             weight,
             provenance,
@@ -2031,7 +2170,11 @@ impl Substrate {
 
         // Ensure the edge type is admissible (declare once; cheap if
         // already declared).
-        if !self.checker.grammar.knows_edge_type(self.interner.intern("shares_shape")) {
+        if !self
+            .checker
+            .grammar
+            .knows_edge_type(self.interner.intern("shares_shape"))
+        {
             self.declare_shares_shape();
         }
         let edge_t = self.interner.intern("shares_shape");
@@ -2096,9 +2239,15 @@ impl Substrate {
         let weight = crate::grammar::Grammar::default_weight(&mut self.terms);
         let prov = self.interner.intern(provenance);
         let prod = crate::grammar::Production {
-            src: crate::grammar::NodePattern { type_: shape_t, var: src_var },
+            src: crate::grammar::NodePattern {
+                type_: shape_t,
+                var: src_var,
+            },
             edge_type: edge_t,
-            tgt: crate::grammar::NodePattern { type_: shape_t, var: tgt_var },
+            tgt: crate::grammar::NodePattern {
+                type_: shape_t,
+                var: tgt_var,
+            },
             where_: None,
             weight,
             provenance: prov,
@@ -2135,7 +2284,11 @@ impl Substrate {
         self.set_attr(node, sig_key, Value::Tuple(std::sync::Arc::new(sig_tuple)));
 
         // Ensure the edge type is admissible (declare once; cheap if known).
-        if !self.checker.grammar.knows_edge_type(self.interner.intern(edge_type)) {
+        if !self
+            .checker
+            .grammar
+            .knows_edge_type(self.interner.intern(edge_type))
+        {
             self.declare_relation_edge(edge_type, provenance);
         }
         let edge_t = self.interner.intern(edge_type);
@@ -2192,7 +2345,11 @@ impl Substrate {
         }
 
         // Ensure the edge type is admissible.
-        if !self.checker.grammar.knows_edge_type(self.interner.intern(edge_type)) {
+        if !self
+            .checker
+            .grammar
+            .knows_edge_type(self.interner.intern(edge_type))
+        {
             self.declare_relation_edge(edge_type, provenance);
         }
         let edge_t = self.interner.intern(edge_type);
@@ -2237,7 +2394,11 @@ impl Substrate {
             signature.iter().map(|&x| Value::Int(x)).collect();
         self.set_attr(node, sig_key, Value::Tuple(std::sync::Arc::new(sig_tuple)));
 
-        if !self.checker.grammar.knows_edge_type(self.interner.intern(edge_type)) {
+        if !self
+            .checker
+            .grammar
+            .knows_edge_type(self.interner.intern(edge_type))
+        {
             self.declare_relation_edge(edge_type, provenance);
         }
         let edge_t = self.interner.intern(edge_type);
@@ -2348,14 +2509,14 @@ impl Substrate {
             hash = hash.wrapping_mul(0x100000001b3);
         }
         let hash = hash & (i64::MAX as u64);
-        if hash == 0 { 1 } else { hash }
+        if hash == 0 {
+            1
+        } else {
+            hash
+        }
     }
 
-    fn rule_clause_value(
-        &mut self,
-        rule_index: usize,
-        field: RulePatchField,
-    ) -> Value {
+    fn rule_clause_value(&mut self, rule_index: usize, field: RulePatchField) -> Value {
         let j = match field {
             RulePatchField::Where => self.rules[rule_index]
                 .where_
@@ -2365,9 +2526,7 @@ impl Substrate {
                 self.rules[rule_index]
                     .effects
                     .iter()
-                    .map(|effect| {
-                        crate::py::effect_to_json(effect, &self.terms, &self.interner)
-                    })
+                    .map(|effect| crate::py::effect_to_json(effect, &self.terms, &self.interner))
                     .collect(),
             ),
         };
@@ -2383,9 +2542,9 @@ impl Substrate {
         &self,
         idx: crate::rewrite::RuleIdx,
     ) -> Option<(crate::rewrite::RuleUid, u64, u64, bool)> {
-        self.rules.get(idx.0 as usize).map(|rule| {
-            (rule.uid, rule.revision, rule.content_hash, rule.active)
-        })
+        self.rules
+            .get(idx.0 as usize)
+            .map(|rule| (rule.uid, rule.revision, rule.content_hash, rule.active))
     }
 
     fn stage_rule_patch(
@@ -2423,11 +2582,7 @@ impl Substrate {
         let parsed = match field {
             RulePatchField::Where => {
                 let j = crate::graph_rules::value_to_json(proposed_clause, &self.interner);
-                match crate::jsonio::term_from_json(
-                    &j,
-                    &mut self.terms,
-                    &mut self.interner,
-                ) {
+                match crate::jsonio::term_from_json(&j, &mut self.terms, &mut self.interner) {
                     Ok(idx) => {
                         replacement.where_ = Some(idx);
                         true
@@ -2583,9 +2738,7 @@ impl Substrate {
     /// / `run_rules`. Rules are kept in insertion order; `run_rules`
     /// scans them in that order to pick the first match per step.
     pub fn add_rule(&mut self, mut rule: crate::rewrite::RewriteRule) -> crate::rewrite::RuleIdx {
-        if rule.uid.0 == 0
-            || self.rules.iter().any(|installed| installed.uid == rule.uid)
-        {
+        if rule.uid.0 == 0 || self.rules.iter().any(|installed| installed.uid == rule.uid) {
             while self
                 .rules
                 .iter()
@@ -2663,7 +2816,10 @@ impl Substrate {
             crate::rewrite::RuleKey::Edge(s) => (2u8, s.0),
         });
         for key in read_keys {
-            self.rule_readers_by_key.entry(key).or_default().push(idx_usize);
+            self.rule_readers_by_key
+                .entry(key)
+                .or_default()
+                .push(idx_usize);
         }
         if rule.reads_any {
             self.rule_reads_any.push(idx_usize);
@@ -2688,12 +2844,16 @@ impl Substrate {
             let k = rule.match_edges.len();
             let mut seen: rustc_hash::FxHashSet<Sym> = Default::default();
             let no_repeat = rule.match_edges.iter().all(|me| seen.insert(me.edge_type));
-            let add_only = rule.effects.iter().all(|e| matches!(e,
-                crate::rewrite::Effect::AddEdge { .. }
-                | crate::rewrite::Effect::AddNode { .. }
-                | crate::rewrite::Effect::AddNodeIfAbsent { .. }
-                | crate::rewrite::Effect::SetAttr { .. }
-                | crate::rewrite::Effect::SetAttrIfDifferent { .. }));
+            let add_only = rule.effects.iter().all(|e| {
+                matches!(
+                    e,
+                    crate::rewrite::Effect::AddEdge { .. }
+                        | crate::rewrite::Effect::AddNode { .. }
+                        | crate::rewrite::Effect::AddNodeIfAbsent { .. }
+                        | crate::rewrite::Effect::SetAttr { .. }
+                        | crate::rewrite::Effect::SetAttrIfDifferent { .. }
+                )
+            });
             // SOUNDNESS (block 292000): the node-seeded re-evaluator only wakes
             // bindings incident to a CHANGED node, which is correct iff every
             // attr the rule reads lives on a match-bound node. A rule that reads
@@ -2705,8 +2865,12 @@ impl Substrate {
             // to the cursor-clear full re-scan (byte-identical), while a purely
             // local rule (the flood's `mv_relax`) keeps the fast frontier path.
             let local_reads = !crate::rewrite::rule_reads_attr_via_node_set(&rule, &self.terms);
-            rule.where_.is_some() && k >= 1 && no_repeat && !rule.reads_external
-                && add_only && local_reads
+            rule.where_.is_some()
+                && k >= 1
+                && no_repeat
+                && !rule.reads_external
+                && add_only
+                && local_reads
         };
         self.rule_pred_retract_ok.push(ok);
         // JIT compile the where-clause if all its Terms are kernel
@@ -2721,7 +2885,9 @@ impl Substrate {
                 let mut order: Vec<Sym> = Vec::new();
                 for me in &rule.match_edges {
                     for v in [me.src_var, me.tgt_var] {
-                        if seen.insert(v) { order.push(v); }
+                        if seen.insert(v) {
+                            order.push(v);
+                        }
                     }
                 }
                 crate::jit::CompiledWhere::try_compile(&self.terms, where_idx, &order)
@@ -2807,14 +2973,24 @@ impl Substrate {
         crate::scale_audit::begin_rule_enumeration(idx.0);
         let rule = self.rules[idx.0 as usize].clone();
         let Some(b) = crate::rewrite::match_rule(
-            &rule, &self.terms, &self.graph, &self.interner, Some(&self.concepts),
+            &rule,
+            &self.terms,
+            &self.graph,
+            &self.interner,
+            Some(&self.concepts),
             Some(&self.framebuffers),
         ) else {
             return false;
         };
         crate::rewrite::apply_rule(
-            &rule, &b, &mut self.terms, &mut self.graph, &mut self.interner,
-            Some(&mut self.concepts), Some(&self.framebuffers), false,
+            &rule,
+            &b,
+            &mut self.terms,
+            &mut self.graph,
+            &mut self.interner,
+            Some(&mut self.concepts),
+            Some(&self.framebuffers),
+            false,
         );
         // A single one-shot apply has no fixpoint loop to drain the
         // perception-as-action queue from — drain it here so a rule
@@ -2872,9 +3048,14 @@ impl Substrate {
         // worth reasoning about.
         self.eval_cache.clear_graph_dependent();
         let progressed = crate::rewrite::batch_apply_rule(
-            &rule, &mut self.terms, &mut self.graph, &mut self.interner,
-            Some(&mut self.concepts), Some(&self.framebuffers),
-            Some(&mut self.eval_cache), None,
+            &rule,
+            &mut self.terms,
+            &mut self.graph,
+            &mut self.interner,
+            Some(&mut self.concepts),
+            Some(&self.framebuffers),
+            Some(&mut self.eval_cache),
+            None,
         );
         self.eval_cache.clear_graph_dependent();
         // Same reason `apply_rule_once` drains here: a one-shot apply has no
@@ -2942,12 +3123,15 @@ impl Substrate {
         if !self.predicate_retraction {
             return None;
         }
-        if !self.rule_pred_retract_ok.get(rule_idx).copied().unwrap_or(false) {
+        if !self
+            .rule_pred_retract_ok
+            .get(rule_idx)
+            .copied()
+            .unwrap_or(false)
+        {
             return None;
         }
-        if rule_idx >= self.rule_dirty_nodes.len()
-            || self.rule_dirty_nodes[rule_idx].is_empty()
-        {
+        if rule_idx >= self.rule_dirty_nodes.len() || self.rule_dirty_nodes[rule_idx].is_empty() {
             return None;
         }
         let rule_clone = self.rules[rule_idx].clone();
@@ -3029,10 +3213,20 @@ impl Substrate {
                         initial.insert(drive_me.tgt_var, e_tgt);
                     }
                     crate::rewrite::match_rule_each_with_initial(
-                        &sub_rule, &initial, &self.terms, &self.graph,
-                        &self.interner, Some(&self.concepts), Some(&self.framebuffers),
-                        Some(&mut self.eval_cache), jit_for_this,
-                        |b| { crate::scale_audit::binding_cloned(); bindings.push(b.clone()); true },
+                        &sub_rule,
+                        &initial,
+                        &self.terms,
+                        &self.graph,
+                        &self.interner,
+                        Some(&self.concepts),
+                        Some(&self.framebuffers),
+                        Some(&mut self.eval_cache),
+                        jit_for_this,
+                        |b| {
+                            crate::scale_audit::binding_cloned();
+                            bindings.push(b.clone());
+                            true
+                        },
                     );
                 }
             }
@@ -3050,8 +3244,15 @@ impl Substrate {
                 continue;
             }
             let outcome = crate::rewrite::apply_rule_full(
-                &rule_clone, &b, &mut self.terms, &mut self.graph,
-                &mut self.interner, Some(&mut self.concepts), Some(&self.framebuffers), None, true,
+                &rule_clone,
+                &b,
+                &mut self.terms,
+                &mut self.graph,
+                &mut self.interner,
+                Some(&mut self.concepts),
+                Some(&self.framebuffers),
+                None,
+                true,
             );
             if outcome.progressed {
                 progressed_any = true;
@@ -3063,7 +3264,11 @@ impl Substrate {
         // Consumed this rule's dirty-node set. Re-store cursors at the current
         // (unchanged) lengths + versions so the next visit is valid.
         self.rule_dirty_nodes[rule_idx].clear();
-        let ets: Vec<Sym> = rule_clone.match_edges.iter().map(|me| me.edge_type).collect();
+        let ets: Vec<Sym> = rule_clone
+            .match_edges
+            .iter()
+            .map(|me| me.edge_type)
+            .collect();
         for et in ets {
             let len = self.graph.edges_by_type(et).len();
             let ver = self.cursor_version(et);
@@ -3078,8 +3283,12 @@ impl Substrate {
         let tr = self.dbg_traced(rule_idx);
         let k = rule_clone.match_edges.len();
         if k == 0 {
-            if tr { eprintln!("[TRACE-IM] {}: bail k==0 (no match edges) -> None (full re-match)",
-                              self.interner.resolve(rule_clone.name)); }
+            if tr {
+                eprintln!(
+                    "[TRACE-IM] {}: bail k==0 (no match edges) -> None (full re-match)",
+                    self.interner.resolve(rule_clone.name)
+                );
+            }
             return None;
         }
         // PERCEPTION-AS-ACTION: a `reads_external` rule's where-clause can
@@ -3096,8 +3305,10 @@ impl Substrate {
         // cheap for the tiny match patterns these look-rules actually
         // have, and it re-evaluates the where-clause fresh every call.
         if rule_clone.reads_external {
-            if tr { eprintln!("[TRACE-IM] {}: bail reads_external (FbFrameSeq-gated) -> None (full re-match, polled every pass)",
-                              self.interner.resolve(rule_clone.name)); }
+            if tr {
+                eprintln!("[TRACE-IM] {}: bail reads_external (FbFrameSeq-gated) -> None (full re-match, polled every pass)",
+                              self.interner.resolve(rule_clone.name));
+            }
             return None;
         }
         // Defer rules whose match-edges repeat an edge_type — would need
@@ -3131,10 +3342,12 @@ impl Substrate {
                     cursor_starts.insert(me.edge_type, c);
                 }
                 other => {
-                    if tr { eprintln!("[TRACE-IM] {}: cursor for edge_type '{}' is {} (expected_dv={}) -> None (full re-match)",
+                    if tr {
+                        eprintln!("[TRACE-IM] {}: cursor for edge_type '{}' is {} (expected_dv={}) -> None (full re-match)",
                         self.interner.resolve(rule_clone.name), self.interner.resolve(me.edge_type),
                         match other { Some((c, dv)) => format!("STALE(c={},dv={})", c, dv), None => "MISSING".into() },
-                        expected); }
+                        expected);
+                    }
                     return None;
                 }
             }
@@ -3143,7 +3356,8 @@ impl Substrate {
         // Snapshot the new-edges range at each driving position BEFORE
         // we start applying effects (which mutate edges_by_type).
         let new_edges_per_pos: Vec<Vec<crate::graph::EdgeIdx>> = rule_clone
-            .match_edges.iter()
+            .match_edges
+            .iter()
             .map(|me| {
                 let edges = self.graph.edges_by_type(me.edge_type);
                 let start = *cursor_starts.get(&me.edge_type).unwrap();
@@ -3168,9 +3382,16 @@ impl Substrate {
         // full-rescans, exactly as the committed engine does (via its post-hoc
         // global `edge_delete_version` bump). Under OFF this equals the committed
         // store value (global, constant across try_incremental_match).
-        let lengths_before: Vec<(Sym, usize, u64)> = rule_clone.match_edges.iter()
-            .map(|me| (me.edge_type, self.graph.edges_by_type(me.edge_type).len(),
-                       self.cursor_version(me.edge_type)))
+        let lengths_before: Vec<(Sym, usize, u64)> = rule_clone
+            .match_edges
+            .iter()
+            .map(|me| {
+                (
+                    me.edge_type,
+                    self.graph.edges_by_type(me.edge_type).len(),
+                    self.cursor_version(me.edge_type),
+                )
+            })
             .collect();
 
         // EMPTY-MATCH PROOF (block 189000), site 3 of 3. The driver loops below
@@ -3188,18 +3409,22 @@ impl Substrate {
         }
 
         #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
-        let jit_for_this = self.rule_where_jit.get(rule_idx)
-            .and_then(|j| j.as_ref());
+        let jit_for_this = self.rule_where_jit.get(rule_idx).and_then(|j| j.as_ref());
         #[cfg(not(all(target_arch = "x86_64", target_os = "linux")))]
         let jit_for_this: Option<&crate::jit::CompiledWhere> = None;
 
         if tr {
             let counts: Vec<usize> = new_edges_per_pos.iter().map(|v| v.len()).collect();
-            eprintln!("[TRACE-IM] {}: cursors VALID -> INCREMENTAL path; new_edges_per_pos={:?} {}",
-                self.interner.resolve(rule_clone.name), counts,
+            eprintln!(
+                "[TRACE-IM] {}: cursors VALID -> INCREMENTAL path; new_edges_per_pos={:?} {}",
+                self.interner.resolve(rule_clone.name),
+                counts,
                 if counts.iter().all(|&n| n == 0) {
                     "*** ALL ZERO: no new driving edges -> nothing scanned -> rule CANNOT fire this pass even if its where is now true (the stable-edge attr-gated bug) ***"
-                } else { "" });
+                } else {
+                    ""
+                }
+            );
         }
 
         let mut progressed_any = false;
@@ -3255,10 +3480,20 @@ impl Substrate {
                 // graph and could invalidate the matcher's iteration.
                 let mut bindings: Vec<crate::rewrite::Binding> = Vec::new();
                 crate::rewrite::match_rule_each_with_initial(
-                    &sub_rule, &initial, &self.terms, &self.graph,
-                    &self.interner, Some(&self.concepts), Some(&self.framebuffers),
-                    Some(&mut self.eval_cache), jit_for_this,
-                    |b| { crate::scale_audit::binding_cloned(); bindings.push(b.clone()); true },
+                    &sub_rule,
+                    &initial,
+                    &self.terms,
+                    &self.graph,
+                    &self.interner,
+                    Some(&self.concepts),
+                    Some(&self.framebuffers),
+                    Some(&mut self.eval_cache),
+                    jit_for_this,
+                    |b| {
+                        crate::scale_audit::binding_cloned();
+                        bindings.push(b.clone());
+                        true
+                    },
                 );
 
                 for b in bindings {
@@ -3270,8 +3505,15 @@ impl Substrate {
                         continue;
                     }
                     let outcome = crate::rewrite::apply_rule_full(
-                        &rule_clone, &b, &mut self.terms, &mut self.graph,
-                        &mut self.interner, Some(&mut self.concepts), Some(&self.framebuffers), None, true,
+                        &rule_clone,
+                        &b,
+                        &mut self.terms,
+                        &mut self.graph,
+                        &mut self.interner,
+                        Some(&mut self.concepts),
+                        Some(&self.framebuffers),
+                        None,
+                        true,
                     );
                     if outcome.progressed {
                         // Multi-spec fan-out fix: keep draining the
@@ -3319,11 +3561,15 @@ impl Substrate {
         // pre-fix code did at this exit point AND was duplicating
         // inside the loop on first progress.
         for (et, len, ver) in lengths_before {
-            self.rule_cursors[rule_idx]
-                .insert(et, (len, ver));
+            self.rule_cursors[rule_idx].insert(et, (len, ver));
         }
-        if tr { eprintln!("[TRACE-IM] {}: INCREMENTAL done, progressed={}",
-                          self.interner.resolve(rule_clone.name), progressed_any); }
+        if tr {
+            eprintln!(
+                "[TRACE-IM] {}: INCREMENTAL done, progressed={}",
+                self.interner.resolve(rule_clone.name),
+                progressed_any
+            );
+        }
         Some(progressed_any)
     }
 
@@ -3422,11 +3668,9 @@ impl Substrate {
                             result_revision_key,
                             Value::Int(actual as i64),
                         ),
-                        RulePatchError::StaleContentHash { actual } => self.set_attr(
-                            patch_node,
-                            result_hash_key,
-                            Value::Int(actual as i64),
-                        ),
+                        RulePatchError::StaleContentHash { actual } => {
+                            self.set_attr(patch_node, result_hash_key, Value::Int(actual as i64))
+                        }
                         _ => {}
                     }
                 }
@@ -3451,8 +3695,12 @@ impl Substrate {
             // rule_from_node + add_rule so it runs live on the next pass. Name-guarded -> idempotent.
             if field == "__mint__" {
                 if let Value::Node(nid) = val {
-                    match crate::graph_rules::rule_from_node(&self.graph, nid, &mut self.terms,
-                                                             &mut self.interner) {
+                    match crate::graph_rules::rule_from_node(
+                        &self.graph,
+                        nid,
+                        &mut self.terms,
+                        &mut self.interner,
+                    ) {
                         Some(mut rule) => {
                             // A Rule node compiled by the live graph is newly
                             // authored even if its JSON originated as a copy
@@ -3470,16 +3718,8 @@ impl Substrate {
                                     let revision_key = self.interner.intern("revision");
                                     let hash_key = self.interner.intern("content_hash");
                                     self.set_attr(nid, uid_key, Value::Int(uid.0 as i64));
-                                    self.set_attr(
-                                        nid,
-                                        revision_key,
-                                        Value::Int(revision as i64),
-                                    );
-                                    self.set_attr(
-                                        nid,
-                                        hash_key,
-                                        Value::Int(content_hash as i64),
-                                    );
+                                    self.set_attr(nid, revision_key, Value::Int(revision as i64));
+                                    self.set_attr(nid, hash_key, Value::Int(content_hash as i64));
                                 }
                                 self.any_mutation = true;
                                 eprintln!("[self-build] minted live rule '{}'", nm);
@@ -3493,10 +3733,11 @@ impl Substrate {
                 continue;
             }
             let name_sym = self.interner.intern(&name);
-            let matches: Vec<usize> = self.rules.iter().enumerate()
-                .filter_map(|(i, rule)| {
-                    (rule.active && rule.name == name_sym).then_some(i)
-                })
+            let matches: Vec<usize> = self
+                .rules
+                .iter()
+                .enumerate()
+                .filter_map(|(i, rule)| (rule.active && rule.name == name_sym).then_some(i))
                 .collect();
             if matches.is_empty() {
                 eprintln!("[self-repair] SetRuleClause: no live rule named '{}'", name);
@@ -3581,7 +3822,12 @@ impl Substrate {
                 continue;
             };
             let surprise = crate::net_forward::net_collapse_step(
-                &mut self.graph, &self.interner, asm, &input, &target, eta,
+                &mut self.graph,
+                &self.interner,
+                asm,
+                &input,
+                &target,
+                eta,
             );
             // EMA of surprise (smoother than the raw per-step value) — the
             // rolling signal the convergence rule gates on.
@@ -3591,7 +3837,8 @@ impl Substrate {
                 _ => surprise,
             };
             let ema = 0.85 * prev + 0.15 * surprise;
-            self.graph.set_node_attr(rn, surprise_key, crate::value::Value::Float(ema));
+            self.graph
+                .set_node_attr(rn, surprise_key, crate::value::Value::Float(ema));
         }
     }
 
@@ -3620,8 +3867,7 @@ impl Substrate {
         // a RuleIdx), so an index-keyed tally is not comparable across
         // arms. Cleared after the attempt so that reflex / production /
         // bare-evaluate reads are never mis-attributed to it.
-        crate::fallback_trace::set_current_rule(
-            Some(self.rules[rule_idx].name));
+        crate::fallback_trace::set_current_rule(Some(self.rules[rule_idx].name));
         // Semi-naive fast path: 1-edge rules with a valid cursor
         // process only edges new since last visit. Falls back to
         // full re-match for k-edge rules and for rules whose
@@ -3640,10 +3886,16 @@ impl Substrate {
                 self.note_empty_match_skip(rule_idx);
                 false
             } else {
-            crate::rewrite::batch_apply_rule(
-                &rule, &mut self.terms, &mut self.graph, &mut self.interner,
-                Some(&mut self.concepts), Some(&self.framebuffers), Some(&mut self.eval_cache), None,
-            )
+                crate::rewrite::batch_apply_rule(
+                    &rule,
+                    &mut self.terms,
+                    &mut self.graph,
+                    &mut self.interner,
+                    Some(&mut self.concepts),
+                    Some(&self.framebuffers),
+                    Some(&mut self.eval_cache),
+                    None,
+                )
             };
             // batch_apply mutated edges/attrs mid-pass; the run_rules loop
             // only clears the eval_cache at iteration TOP, but later rules
@@ -3662,8 +3914,7 @@ impl Substrate {
         } else {
             let rule = self.rules[rule_idx].clone();
             #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
-            let jit_for_this = self.rule_where_jit.get(rule_idx)
-                .and_then(|j| j.as_ref());
+            let jit_for_this = self.rule_where_jit.get(rule_idx).and_then(|j| j.as_ref());
             #[cfg(not(all(target_arch = "x86_64", target_os = "linux")))]
             let jit_for_this: Option<&crate::jit::CompiledWhere> = None;
             // Multi-spec fan-out fix (cold-cursor fallback).
@@ -3730,13 +3981,22 @@ impl Substrate {
                 };
                 let mut raw: Vec<crate::rewrite::Binding> = Vec::new();
                 crate::rewrite::match_rule_each(
-                    &enum_rule, &self.terms, &self.graph, &self.interner,
-                    Some(&self.concepts), Some(&self.framebuffers),
-                    Some(&mut self.eval_cache), None,
-                    |b| { crate::scale_audit::binding_cloned(); raw.push(b.clone()); true },
+                    &enum_rule,
+                    &self.terms,
+                    &self.graph,
+                    &self.interner,
+                    Some(&self.concepts),
+                    Some(&self.framebuffers),
+                    Some(&mut self.eval_cache),
+                    None,
+                    |b| {
+                        crate::scale_audit::binding_cloned();
+                        raw.push(b.clone());
+                        true
+                    },
                 );
-                let mut seen_proj: rustc_hash::FxHashSet<
-                    smallvec::SmallVec<[(Sym, NodeID); 8]>> = Default::default();
+                let mut seen_proj: rustc_hash::FxHashSet<smallvec::SmallVec<[(Sym, NodeID); 8]>> =
+                    Default::default();
                 let mut reps: Vec<crate::rewrite::Binding> = Vec::new();
                 for b in raw {
                     if seen_proj.insert(self.binding_key(&rule, &b)) {
@@ -3752,20 +4012,37 @@ impl Substrate {
                 };
                 for rep in reps {
                     crate::rewrite::match_rule_each_with_initial(
-                        &check_rule, &rep, &self.terms, &self.graph,
-                        &self.interner, Some(&self.concepts),
-                        Some(&self.framebuffers), Some(&mut self.eval_cache),
+                        &check_rule,
+                        &rep,
+                        &self.terms,
+                        &self.graph,
+                        &self.interner,
+                        Some(&self.concepts),
+                        Some(&self.framebuffers),
+                        Some(&mut self.eval_cache),
                         jit_for_this,
-                        |b| { bindings.push(b.clone()); true },
+                        |b| {
+                            bindings.push(b.clone());
+                            true
+                        },
                     );
                 }
             } else {
-            crate::rewrite::match_rule_each(
-                &rule, &self.terms, &self.graph, &self.interner,
-                Some(&self.concepts), Some(&self.framebuffers), Some(&mut self.eval_cache),
-                jit_for_this,
-                |b| { crate::scale_audit::binding_cloned(); bindings.push(b.clone()); true },
-            );
+                crate::rewrite::match_rule_each(
+                    &rule,
+                    &self.terms,
+                    &self.graph,
+                    &self.interner,
+                    Some(&self.concepts),
+                    Some(&self.framebuffers),
+                    Some(&mut self.eval_cache),
+                    jit_for_this,
+                    |b| {
+                        crate::scale_audit::binding_cloned();
+                        bindings.push(b.clone());
+                        true
+                    },
+                );
             }
             if self.dbg_traced(rule_idx) {
                 eprintln!("[TRACE-FULL] {}: FULL re-match (cold/invalidated cursor); bindings found = {} {}",
@@ -3781,8 +4058,8 @@ impl Substrate {
             // STAGE A staging area — empty and untouched when the flag is off.
             let compare_here = crate::stage_a::compare_mode()
                 && crate::stage_a::rule_is_derivable(&rule, &self.terms);
-            let stage_a_here = crate::stage_a::enabled()
-                && crate::stage_a::rule_is_derivable(&rule, &self.terms);
+            let stage_a_here =
+                crate::stage_a::enabled() && crate::stage_a::rule_is_derivable(&rule, &self.terms);
             if crate::stage_a::enabled() && !stage_a_here {
                 crate::stage_a::note_excluded_drain();
             }
@@ -3797,20 +4074,31 @@ impl Substrate {
             let mut stage_a_committed = false;
             if stage_a_here {
                 let mut derived: Vec<crate::stage_a::Proposal> = Vec::new();
-                let mut seen: rustc_hash::FxHashSet<
-                    smallvec::SmallVec<[(Sym, NodeID); 8]>> = Default::default();
+                let mut seen: rustc_hash::FxHashSet<smallvec::SmallVec<[(Sym, NodeID); 8]>> =
+                    Default::default();
                 for b in &bindings {
                     if !seen.insert(self.binding_key(&rule, b)) {
                         continue;
                     }
                     let out = crate::rewrite::apply_rule_full(
-                        &rule, b, &mut self.terms, &mut self.graph,
-                        &mut self.interner, Some(&mut self.concepts),
-                        Some(&self.framebuffers), None, true,
+                        &rule,
+                        b,
+                        &mut self.terms,
+                        &mut self.graph,
+                        &mut self.interner,
+                        Some(&mut self.concepts),
+                        Some(&self.framebuffers),
+                        None,
+                        true,
                     );
                     if out.progressed {
                         derived.push(crate::stage_a::capture(
-                            &rule, &out.undo, &out.undo_src, &self.graph, true));
+                            &rule,
+                            &out.undo,
+                            &out.undo_src,
+                            &self.graph,
+                            true,
+                        ));
                     }
                     crate::rewrite::undo_apply(out.undo, &mut self.graph);
                 }
@@ -3830,27 +4118,38 @@ impl Substrate {
             // normally below — so the graph ends up exactly where it would have.
             if compare_here {
                 let mut derived: Vec<crate::stage_a::Proposal> = Vec::new();
-                let mut seen: rustc_hash::FxHashSet<
-                    smallvec::SmallVec<[(Sym, NodeID); 8]>> = Default::default();
+                let mut seen: rustc_hash::FxHashSet<smallvec::SmallVec<[(Sym, NodeID); 8]>> =
+                    Default::default();
                 for b in &bindings {
                     if !seen.insert(self.binding_key(&rule, b)) {
                         continue;
                     }
                     let out = crate::rewrite::apply_rule_full(
-                        &rule, b, &mut self.terms, &mut self.graph,
-                        &mut self.interner, Some(&mut self.concepts),
-                        Some(&self.framebuffers), None, true,
+                        &rule,
+                        b,
+                        &mut self.terms,
+                        &mut self.graph,
+                        &mut self.interner,
+                        Some(&mut self.concepts),
+                        Some(&self.framebuffers),
+                        None,
+                        true,
                     );
                     if out.progressed {
                         derived.push(crate::stage_a::capture(
-                            &rule, &out.undo, &out.undo_src, &self.graph, true));
+                            &rule,
+                            &out.undo,
+                            &out.undo_src,
+                            &self.graph,
+                            true,
+                        ));
                     }
                     crate::rewrite::undo_apply(out.undo, &mut self.graph);
                 }
                 proposals = derived;
             }
-            let mut seen_bindings: rustc_hash::FxHashSet<
-                smallvec::SmallVec<[(Sym, NodeID); 8]>> = Default::default();
+            let mut seen_bindings: rustc_hash::FxHashSet<smallvec::SmallVec<[(Sym, NodeID); 8]>> =
+                Default::default();
             for b in bindings {
                 if stage_a_committed {
                     break;
@@ -3872,8 +4171,15 @@ impl Substrate {
                     None
                 };
                 let outcome = crate::rewrite::apply_rule_full(
-                    &rule, &b, &mut self.terms, &mut self.graph,
-                    &mut self.interner, Some(&mut self.concepts), Some(&self.framebuffers), None, true,
+                    &rule,
+                    &b,
+                    &mut self.terms,
+                    &mut self.graph,
+                    &mut self.interner,
+                    Some(&mut self.concepts),
+                    Some(&self.framebuffers),
+                    None,
+                    true,
                 );
                 // STAGE A: derive against ONE immutable base. Capture the
                 // firing's forward delta, then undo it so the NEXT binding
@@ -3887,7 +4193,12 @@ impl Substrate {
                         // Committed path: capture what THIS firing produced with
                         // earlier bindings' writes visible, and leave it applied.
                         committed.push(crate::stage_a::capture(
-                            &rule, &outcome.undo, &outcome.undo_src, &self.graph, true));
+                            &rule,
+                            &outcome.undo,
+                            &outcome.undo_src,
+                            &self.graph,
+                            true,
+                        ));
                     }
                     res = true;
                     progressed_here += 1;
@@ -3919,15 +4230,17 @@ impl Substrate {
             // edge_type this rule reads so the next visit
             // takes the incremental fast path.
             let edge_types: Vec<Sym> = self.rules[rule_idx]
-                .match_edges.iter().map(|me| me.edge_type).collect();
+                .match_edges
+                .iter()
+                .map(|me| me.edge_type)
+                .collect();
             for et in edge_types {
                 let len = self.graph.edges_by_type(et).len();
                 // Block 192000: store the per-type version under ON (global under
                 // OFF — byte-identical), so this freshly-established cursor is
                 // validated against its own edge type's deletes next visit.
                 let ver = self.cursor_version(et);
-                self.rule_cursors[rule_idx]
-                    .insert(et, (len, ver));
+                self.rule_cursors[rule_idx].insert(et, (len, ver));
             }
             res
         };
@@ -3935,9 +4248,13 @@ impl Substrate {
         if let Some(c) = self.rule_cost_micros.get_mut(rule_idx) {
             *c += __cost_t0.elapsed().as_micros() as u64;
         }
-        if let Some(n) = self.rule_cost_count.get_mut(rule_idx) { *n += 1; }
+        if let Some(n) = self.rule_cost_count.get_mut(rule_idx) {
+            *n += 1;
+        }
         if progressed {
-            if let Some(p) = self.rule_cost_progress.get_mut(rule_idx) { *p += 1; }
+            if let Some(p) = self.rule_cost_progress.get_mut(rule_idx) {
+                *p += 1;
+            }
             // slice (b): wake only the rules that read what `rule_idx`
             // wrote, not every rule. Over-approx write-set ⇒ a superset
             // of true consumers ⇒ correct (never misses), just fewer.
@@ -3957,10 +4274,12 @@ impl Substrate {
             // actually delete; add-only rules keep the fast
             // incremental-cursor path intact.
             let deletes = self.rules[rule_idx].effects.iter().any(|e| {
-                matches!(e,
+                matches!(
+                    e,
                     crate::rewrite::Effect::DelNode { .. }
-                    | crate::rewrite::Effect::DelEdge { .. }
-                    | crate::rewrite::Effect::ReplaceValue { .. })
+                        | crate::rewrite::Effect::DelEdge { .. }
+                        | crate::rewrite::Effect::ReplaceValue { .. }
+                )
             });
             if deletes {
                 self.edge_delete_version += 1;
@@ -3977,7 +4296,9 @@ impl Substrate {
                 // delete-effecting rule pays the full invalidation, as it does
                 // under OFF.
                 if self.incremental_match {
-                    for c in self.rule_cursors.iter_mut() { c.clear(); }
+                    for c in self.rule_cursors.iter_mut() {
+                        c.clear();
+                    }
                 }
                 self.eval_cache.clear_graph_dependent();
             }
@@ -4065,7 +4386,11 @@ impl Substrate {
         self.counters.concept_shape_pruned = 0;
 
         let mut report = SettleReport::default();
-        let cap = if budget_per_area == 0 { usize::MAX } else { budget_per_area };
+        let cap = if budget_per_area == 0 {
+            usize::MAX
+        } else {
+            budget_per_area
+        };
 
         for _round in 0..max_rounds {
             // Between-pass drains — identical to `run_rules_opts`'s, and for
@@ -4138,9 +4463,10 @@ impl Substrate {
                 // this scan of its own rule-index list; it never touches the
                 // graph. "An area with NO dirty input does NO work."
                 let dirty_now: Vec<usize> = match &snap {
-                    Some(s) => rule_indices.iter().copied()
-                        .filter(|&i| s[i]).collect(),
-                    None => rule_indices.iter().copied()
+                    Some(s) => rule_indices.iter().copied().filter(|&i| s[i]).collect(),
+                    None => rule_indices
+                        .iter()
+                        .copied()
                         .filter(|&i| self.rule_dirty[i] && self.rules[i].active)
                         .collect(),
                 };
@@ -4306,8 +4632,11 @@ impl Substrate {
 
         // Visited-state fingerprints. Allocated ONLY when detection is on,
         // so the default path pays not even an empty set's construction.
-        let mut seen: Option<rustc_hash::FxHashSet<u64>> =
-            if detect_cycles { Some(Default::default()) } else { None };
+        let mut seen: Option<rustc_hash::FxHashSet<u64>> = if detect_cycles {
+            Some(Default::default())
+        } else {
+            None
+        };
         if let Some(s) = seen.as_mut() {
             // The ENTRY state counts: a loop that returns to where it
             // started is a cycle like any other.
@@ -4389,10 +4718,12 @@ impl Substrate {
             // Snapshot dirty bits for this iteration. Rules marked dirty
             // BY this iteration's effects fire next iteration. Tombstoned
             // rules are excluded — never scheduled, never applied.
-            let to_try: Vec<usize> = self.rule_dirty.iter().enumerate()
+            let to_try: Vec<usize> = self
+                .rule_dirty
+                .iter()
+                .enumerate()
                 .filter_map(|(i, &d)| {
-                    if d
-                        && self.rules[i].active
+                    if d && self.rules[i].active
                         && latency_filter
                             .map(|class| self.rules[i].latency_class == class)
                             .unwrap_or(true)
@@ -4408,17 +4739,23 @@ impl Substrate {
             if std::env::var("SUBSTRATE_TRACE_RULE").is_ok() {
                 for i in 0..self.rules.len() {
                     if self.dbg_traced(i) {
-                        eprintln!("[TRACE-RR] step {}: {} dirty={} has_where={} reads_any={}",
-                            steps, self.interner.resolve(self.rules[i].name), self.rule_dirty[i],
+                        eprintln!(
+                            "[TRACE-RR] step {}: {} dirty={} has_where={} reads_any={}",
+                            steps,
+                            self.interner.resolve(self.rules[i].name),
+                            self.rule_dirty[i],
                             self.rule_has_where.get(i).copied().unwrap_or(false),
-                            self.rules[i].reads_any);
+                            self.rules[i].reads_any
+                        );
                     }
                 }
             }
             // Clear bits — they'll be re-set if this iteration's effects
             // mutate types those rules read. Without this clear, a fired
             // rule would re-mark itself perpetually.
-            for &i in &to_try { self.rule_dirty[i] = false; }
+            for &i in &to_try {
+                self.rule_dirty[i] = false;
+            }
             self.any_mutation = false;
 
             let mut any_progress = false;
@@ -4493,12 +4830,8 @@ impl Substrate {
         };
         let has_concept = self.interner.intern("has_concept");
         let owned = crate::rewrite::mt_owned_nodes(&self.graph, mt, has_concept);
-        let cloned_rules: Vec<crate::rewrite::RewriteRule> = self
-            .rules
-            .iter()
-            .filter(|r| r.active)
-            .cloned()
-            .collect();
+        let cloned_rules: Vec<crate::rewrite::RewriteRule> =
+            self.rules.iter().filter(|r| r.active).cloned().collect();
         let rule_refs: Vec<&crate::rewrite::RewriteRule> = cloned_rules.iter().collect();
         crate::rewrite::run_rules_opts_scoped(
             &rule_refs,
@@ -4569,12 +4902,16 @@ impl Substrate {
             if c + 1 < w && values[idx] == values[idx + 1] {
                 let a = find(&mut parent, idx);
                 let b = find(&mut parent, idx + 1);
-                if a != b { parent[a] = b; }
+                if a != b {
+                    parent[a] = b;
+                }
             }
             if r + 1 < h && values[idx] == values[idx + w] {
                 let a = find(&mut parent, idx);
                 let b = find(&mut parent, idx + w);
-                if a != b { parent[a] = b; }
+                if a != b {
+                    parent[a] = b;
+                }
             }
         }
         let mut groups: HashMap<usize, Vec<usize>> = HashMap::new();
@@ -4587,26 +4924,50 @@ impl Substrate {
         for (_root, idxs) in groups.into_iter() {
             let value = values[idxs[0]];
             let count = idxs.len() as f64;
-            let mut sy = 0.0f64; let mut sx = 0.0f64;
-            let mut minr = usize::MAX; let mut minc = usize::MAX;
-            let mut maxr = 0usize; let mut maxc = 0usize;
+            let mut sy = 0.0f64;
+            let mut sx = 0.0f64;
+            let mut minr = usize::MAX;
+            let mut minc = usize::MAX;
+            let mut maxr = 0usize;
+            let mut maxc = 0usize;
             let mut cells: HashSet<usize> = HashSet::with_capacity(idxs.len());
             for &i in &idxs {
                 sy += (i / w) as f64;
                 sx += (i % w) as f64;
-                if i / w < minr { minr = i / w; }
-                if i % w < minc { minc = i % w; }
-                if i / w > maxr { maxr = i / w; }
-                if i % w > maxc { maxc = i % w; }
+                if i / w < minr {
+                    minr = i / w;
+                }
+                if i % w < minc {
+                    minc = i % w;
+                }
+                if i / w > maxr {
+                    maxr = i / w;
+                }
+                if i % w > maxc {
+                    maxc = i % w;
+                }
                 cells.insert(i);
             }
-            comps.push(Comp { value, cells, count, cy: sy / count, cx: sx / count,
-                              minr, minc, maxr, maxc });
+            comps.push(Comp {
+                value,
+                cells,
+                count,
+                cy: sy / count,
+                cx: sx / count,
+                minr,
+                minc,
+                maxr,
+                maxc,
+            });
         }
-        if comps.is_empty() { return; }
+        if comps.is_empty() {
+            return;
+        }
         let mut ground_i = 0usize;
         for (i, cmp) in comps.iter().enumerate() {
-            if cmp.count > comps[ground_i].count { ground_i = i; }
+            if cmp.count > comps[ground_i].count {
+                ground_i = i;
+            }
         }
 
         self.track_comps(game_nid, &comps, ground_i, cell_ids);
@@ -4652,9 +5013,20 @@ impl Substrate {
         let frame = num(s.graph.node(game_nid).attrs.get(&k_frame));
         let n = cell_ids.len();
         let mut id_to_index: HashMap<i64, usize> = HashMap::with_capacity(n);
-        for idx in 0..n { id_to_index.insert(cell_ids[idx], idx); }
+        for idx in 0..n {
+            id_to_index.insert(cell_ids[idx], idx);
+        }
 
-        struct Prior { nid: NodeID, value: i32, cells: HashSet<usize>, cy: f64, cx: f64, count: f64, drow: f64, dcol: f64 }
+        struct Prior {
+            nid: NodeID,
+            value: i32,
+            cells: HashSet<usize>,
+            cy: f64,
+            cx: f64,
+            count: f64,
+            drow: f64,
+            dcol: f64,
+        }
         let mut priors: Vec<Prior> = Vec::new();
         for r in s.graph.neighbours(game_nid, Some(has_region)) {
             let nd = s.graph.node(r);
@@ -4668,9 +5040,20 @@ impl Substrate {
             let pdcol = num(nd.attrs.get(&k_dcol));
             let mut pcells: HashSet<usize> = HashSet::new();
             for cnid in s.graph.in_neighbours(r, Some(within)) {
-                if let Some(&i) = id_to_index.get(&(cnid.0 as i64)) { pcells.insert(i); }
+                if let Some(&i) = id_to_index.get(&(cnid.0 as i64)) {
+                    pcells.insert(i);
+                }
             }
-            priors.push(Prior { nid: r, value: pval, cells: pcells, cy: pcy, cx: pcx, count: pcount, drow: pdrow, dcol: pdcol });
+            priors.push(Prior {
+                nid: r,
+                value: pval,
+                cells: pcells,
+                cy: pcy,
+                cx: pcx,
+                count: pcount,
+                drow: pdrow,
+                dcol: pdcol,
+            });
         }
 
         // ── PHASE A: existing cross-frame matching, DECISION-ONLY ──────────
@@ -4689,12 +5072,21 @@ impl Substrate {
             let mut best: Option<usize> = None;
             let mut best_ov = 0usize;
             for (pi, p) in priors.iter().enumerate() {
-                if used.contains(&pi) || p.value != cmp.value { continue; }
+                if used.contains(&pi) || p.value != cmp.value {
+                    continue;
+                }
                 let ov = cmp.cells.intersection(&p.cells).count();
-                if ov > best_ov { best_ov = ov; best = Some(pi); }
+                if ov > best_ov {
+                    best_ov = ov;
+                    best = Some(pi);
+                }
             }
             let mut matched = best.map_or(false, |pi| {
-                let m = if cmp.count < priors[pi].count { cmp.count } else { priors[pi].count };
+                let m = if cmp.count < priors[pi].count {
+                    cmp.count
+                } else {
+                    priors[pi].count
+                };
                 2.0 * (best_ov as f64) >= m
             });
             if !matched {
@@ -4703,11 +5095,21 @@ impl Substrate {
                 let mut bc: Option<usize> = None;
                 let mut bd = f64::INFINITY;
                 for (pi, p) in priors.iter().enumerate() {
-                    if used.contains(&pi) || p.value != cmp.value { continue; }
+                    if used.contains(&pi) || p.value != cmp.value {
+                        continue;
+                    }
                     let d = (cmp.cy - p.cy).abs() + (cmp.cx - p.cx).abs();
-                    if d < bd { bd = d; bc = Some(pi); }
+                    if d < bd {
+                        bd = d;
+                        bc = Some(pi);
+                    }
                 }
-                if let Some(pi) = bc { if bd <= radius { best = Some(pi); matched = true; } }
+                if let Some(pi) = bc {
+                    if bd <= radius {
+                        best = Some(pi);
+                        matched = true;
+                    }
+                }
             }
             if matched {
                 let pi = best.unwrap();
@@ -4739,20 +5141,34 @@ impl Substrate {
         //   it never over-reaches; (3) the predicted match must still fall
         //   within the same `span+2` radius — clearly better than birth.
         for (ci, cmp) in comps.iter().enumerate() {
-            if assigned[ci].is_some() { continue; }
+            if assigned[ci].is_some() {
+                continue;
+            }
             let span = ((cmp.maxr - cmp.minr).max(cmp.maxc - cmp.minc) + 1) as f64;
             let radius = span + 2.0;
             let mut bc: Option<usize> = None;
             let mut bd = f64::INFINITY;
             for (pi, p) in priors.iter().enumerate() {
-                if used.contains(&pi) || p.value != cmp.value { continue; }
-                if p.drow == 0.0 && p.dcol == 0.0 { continue; }
+                if used.contains(&pi) || p.value != cmp.value {
+                    continue;
+                }
+                if p.drow == 0.0 && p.dcol == 0.0 {
+                    continue;
+                }
                 let pred_cy = p.cy + p.drow;
                 let pred_cx = p.cx + p.dcol;
                 let d = (cmp.cy - pred_cy).abs() + (cmp.cx - pred_cx).abs();
-                if d < bd { bd = d; bc = Some(pi); }
+                if d < bd {
+                    bd = d;
+                    bc = Some(pi);
+                }
             }
-            if let Some(pi) = bc { if bd <= radius { used.insert(pi); assigned[ci] = Some(pi); } }
+            if let Some(pi) = bc {
+                if bd <= radius {
+                    used.insert(pi);
+                    assigned[ci] = Some(pi);
+                }
+            }
         }
 
         // ── PHASE C: apply the assignment — update matched priors in place,
@@ -4776,20 +5192,42 @@ impl Substrate {
                 let dcol = cmp.cx - priors[pi].cx;
                 s.set_attr(nid, k_drow, Value::Float(drow));
                 s.set_attr(nid, k_dcol, Value::Float(dcol));
-                let changed = drow != 0.0 || dcol != 0.0
-                    || cmp.count != priors[pi].count || cmp.value != priors[pi].value;
-                if changed { s.set_attr(nid, k_changed, Value::Float(frame)); }
-                s.set_attr(nid, k_ground, Value::Float(if is_ground { 1.0 } else { 0.0 }));
+                let changed = drow != 0.0
+                    || dcol != 0.0
+                    || cmp.count != priors[pi].count
+                    || cmp.value != priors[pi].value;
+                if changed {
+                    s.set_attr(nid, k_changed, Value::Float(frame));
+                }
+                s.set_attr(
+                    nid,
+                    k_ground,
+                    Value::Float(if is_ground { 1.0 } else { 0.0 }),
+                );
                 if is_ground {
                     for &idx in cmp.cells.difference(&priors[pi].cells) {
-                        let _ = s.add_edge(NodeID(cell_ids[idx] as u32), within, nid, FxHashMap::default());
+                        let _ = s.add_edge(
+                            NodeID(cell_ids[idx] as u32),
+                            within,
+                            nid,
+                            FxHashMap::default(),
+                        );
                     }
                 } else {
                     for &idx in priors[pi].cells.difference(&cmp.cells) {
-                        s.remove_edge(EdgeKey { src: NodeID(cell_ids[idx] as u32), edge_type: within, tgt: nid });
+                        s.remove_edge(EdgeKey {
+                            src: NodeID(cell_ids[idx] as u32),
+                            edge_type: within,
+                            tgt: nid,
+                        });
                     }
                     for &idx in cmp.cells.difference(&priors[pi].cells) {
-                        let _ = s.add_edge(NodeID(cell_ids[idx] as u32), within, nid, FxHashMap::default());
+                        let _ = s.add_edge(
+                            NodeID(cell_ids[idx] as u32),
+                            within,
+                            nid,
+                            FxHashMap::default(),
+                        );
                     }
                 }
             } else {
@@ -4808,13 +5246,24 @@ impl Substrate {
                 let nid = s.add_node(region_t, attrs);
                 let _ = s.add_edge(game_nid, has_region, nid, FxHashMap::default());
                 for &idx in &cmp.cells {
-                    let _ = s.add_edge(NodeID(cell_ids[idx] as u32), within, nid, FxHashMap::default());
+                    let _ = s.add_edge(
+                        NodeID(cell_ids[idx] as u32),
+                        within,
+                        nid,
+                        FxHashMap::default(),
+                    );
                 }
-                s.set_attr(nid, k_ground, Value::Float(if is_ground { 1.0 } else { 0.0 }));
+                s.set_attr(
+                    nid,
+                    k_ground,
+                    Value::Float(if is_ground { 1.0 } else { 0.0 }),
+                );
             }
         }
         for (pi, p) in priors.iter().enumerate() {
-            if !used.contains(&pi) { s.remove_node(p.nid); }
+            if !used.contains(&pi) {
+                s.remove_node(p.nid);
+            }
         }
     }
 
@@ -4867,10 +5316,30 @@ impl Substrate {
             let c = idx % w;
             let r = idx / w;
             let mut mx = 0.0f64;
-            if c + 1 < w { let d = vdist(vy, vx, idx, idx + 1); if d > mx { mx = d; } }
-            if c > 0     { let d = vdist(vy, vx, idx, idx - 1); if d > mx { mx = d; } }
-            if r + 1 < h { let d = vdist(vy, vx, idx, idx + w); if d > mx { mx = d; } }
-            if r > 0     { let d = vdist(vy, vx, idx, idx - w); if d > mx { mx = d; } }
+            if c + 1 < w {
+                let d = vdist(vy, vx, idx, idx + 1);
+                if d > mx {
+                    mx = d;
+                }
+            }
+            if c > 0 {
+                let d = vdist(vy, vx, idx, idx - 1);
+                if d > mx {
+                    mx = d;
+                }
+            }
+            if r + 1 < h {
+                let d = vdist(vy, vx, idx, idx + w);
+                if d > mx {
+                    mx = d;
+                }
+            }
+            if r > 0 {
+                let d = vdist(vy, vx, idx, idx - w);
+                if d > mx {
+                    mx = d;
+                }
+            }
             pd[idx] = mx;
         }
 
@@ -4890,12 +5359,16 @@ impl Substrate {
             if c + 1 < w && vdist(vy, vx, idx, idx + 1) <= tol {
                 let a = find(&mut parent, idx);
                 let b = find(&mut parent, idx + 1);
-                if a != b { parent[a] = b; }
+                if a != b {
+                    parent[a] = b;
+                }
             }
             if r + 1 < h && vdist(vy, vx, idx, idx + w) <= tol {
                 let a = find(&mut parent, idx);
                 let b = find(&mut parent, idx + w);
-                if a != b { parent[a] = b; }
+                if a != b {
+                    parent[a] = b;
+                }
             }
         }
         let mut groups: HashMap<usize, Vec<usize>> = HashMap::new();
@@ -4905,21 +5378,39 @@ impl Substrate {
         }
 
         // components carrying their MEAN motion vector
-        struct MComp { idxs: Vec<usize>, mvy: f64, mvx: f64, count: f64 }
+        struct MComp {
+            idxs: Vec<usize>,
+            mvy: f64,
+            mvx: f64,
+            count: f64,
+        }
         let mut mcomps: Vec<MComp> = Vec::new();
         for (_root, idxs) in groups.into_iter() {
             let count = idxs.len() as f64;
-            let mut sy = 0.0f64; let mut sx = 0.0f64;
-            for &i in &idxs { sy += vy[i]; sx += vx[i]; }
-            mcomps.push(MComp { mvy: sy / count, mvx: sx / count, count, idxs });
+            let mut sy = 0.0f64;
+            let mut sx = 0.0f64;
+            for &i in &idxs {
+                sy += vy[i];
+                sx += vx[i];
+            }
+            mcomps.push(MComp {
+                mvy: sy / count,
+                mvx: sx / count,
+                count,
+                idxs,
+            });
         }
-        if mcomps.is_empty() { return; }
+        if mcomps.is_empty() {
+            return;
+        }
 
         // --- REFERENCE FRAME FALLS OUT: the dominant motion is the largest
         //     group's vector (mo_dominant). Order is preserved into `comps`.
         let mut ground_i = 0usize;
         for (i, m) in mcomps.iter().enumerate() {
-            if m.count > mcomps[ground_i].count { ground_i = i; }
+            if m.count > mcomps[ground_i].count {
+                ground_i = i;
+            }
         }
         let dom_vy = mcomps[ground_i].mvy;
         let dom_vx = mcomps[ground_i].mvx;
@@ -4933,22 +5424,42 @@ impl Substrate {
             let dx = m.mvx - dom_vx;
             let contrast = (dy * dy + dx * dx).sqrt();
             let value = if contrast > tol { 1 } else { 0 };
-            let mut sy = 0.0f64; let mut sx = 0.0f64;
-            let mut minr = usize::MAX; let mut minc = usize::MAX;
-            let mut maxr = 0usize; let mut maxc = 0usize;
+            let mut sy = 0.0f64;
+            let mut sx = 0.0f64;
+            let mut minr = usize::MAX;
+            let mut minc = usize::MAX;
+            let mut maxr = 0usize;
+            let mut maxc = 0usize;
             let mut cells: std::collections::HashSet<usize> =
                 std::collections::HashSet::with_capacity(m.idxs.len());
             for &i in &m.idxs {
                 sy += (i / w) as f64;
                 sx += (i % w) as f64;
-                if i / w < minr { minr = i / w; }
-                if i % w < minc { minc = i % w; }
-                if i / w > maxr { maxr = i / w; }
-                if i % w > maxc { maxc = i % w; }
+                if i / w < minr {
+                    minr = i / w;
+                }
+                if i % w < minc {
+                    minc = i % w;
+                }
+                if i / w > maxr {
+                    maxr = i / w;
+                }
+                if i % w > maxc {
+                    maxc = i % w;
+                }
                 cells.insert(i);
             }
-            comps.push(Comp { value, cells, count: m.count, cy: sy / m.count, cx: sx / m.count,
-                              minr, minc, maxr, maxc });
+            comps.push(Comp {
+                value,
+                cells,
+                count: m.count,
+                cy: sy / m.count,
+                cx: sx / m.count,
+                minr,
+                minc,
+                maxr,
+                maxc,
+            });
         }
 
         // record the DERIVED tolerance + dominant vector on the game node (for
@@ -4962,7 +5473,6 @@ impl Substrate {
 
         self.track_comps(game_nid, &comps, ground_i, cell_ids);
     }
-
 
     // --- GRAPH LAW #6: domain-general trans-frame identity --------------
     //
@@ -5003,7 +5513,13 @@ impl Substrate {
         radius: f64,
     ) -> TrackIdentityResult {
         let m = crate::term::track_identity_correspondence(
-            &self.graph, prev_ids, cur_ids, feature_key, category_key, extent_key, radius,
+            &self.graph,
+            prev_ids,
+            cur_ids,
+            feature_key,
+            category_key,
+            extent_key,
+            radius,
         );
         for &(prev_nid, cur_nid) in &m.matched {
             let id_v = match self.graph.node(prev_nid).attrs.get(&identity_key).cloned() {
@@ -5024,7 +5540,11 @@ impl Substrate {
         for &cur_nid in &m.births {
             self.set_attr(cur_nid, identity_key, Value::Int(cur_nid.0 as i64));
         }
-        TrackIdentityResult { matched: m.matched, births: m.births, deaths: m.deaths }
+        TrackIdentityResult {
+            matched: m.matched,
+            births: m.births,
+            deaths: m.deaths,
+        }
     }
 
     /// PERCEPTION-AS-ACTION twin for trans-frame identity: drain
@@ -5036,8 +5556,18 @@ impl Substrate {
     /// established for `Effect::FbSample`.
     pub(crate) fn apply_pending_track_identity(&mut self) {
         let pending = std::mem::take(&mut self.graph.pending_track_identity);
-        for (prev_ids, cur_ids, feature_key, category_key, extent_key, identity_key, radius) in pending {
-            self.track_identity(&prev_ids, &cur_ids, feature_key, category_key, extent_key, identity_key, radius);
+        for (prev_ids, cur_ids, feature_key, category_key, extent_key, identity_key, radius) in
+            pending
+        {
+            self.track_identity(
+                &prev_ids,
+                &cur_ids,
+                feature_key,
+                category_key,
+                extent_key,
+                identity_key,
+                radius,
+            );
         }
     }
 
@@ -5078,7 +5608,9 @@ impl Substrate {
         grid_h: usize,
     ) -> Result<FbSampleResult, String> {
         let Some(handle) = self.framebuffers.get(&fb_id) else {
-            return Err(format!("fb_sample: no framebuffer attached with fb_id {fb_id}"));
+            return Err(format!(
+                "fb_sample: no framebuffer attached with fb_id {fb_id}"
+            ));
         };
         let current_seq = handle.current_seq();
         let cache_valid = handle
@@ -5100,7 +5632,13 @@ impl Substrate {
         let (payload, seq, torn) = handle.read_frame(crate::framebuffer::DEFAULT_MAX_RETRIES);
         let header = handle.header;
         let values = crate::framebuffer::downsample_quantize(
-            &payload, header.width, header.height, header.stride, grid_w, grid_h, 4,
+            &payload,
+            header.width,
+            header.height,
+            header.stride,
+            grid_w,
+            grid_h,
+            4,
         );
 
         // Mint (first call) or reuse (subsequent calls, cache still
@@ -5125,7 +5663,10 @@ impl Substrate {
                     let idx = gy * grid_w + gx;
                     let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
                     attrs.insert(world_type_k, Value::Str(cell_kind));
-                    attrs.insert(world_id_k, Value::Str(self.interner.intern(&format!("{gy}_{gx}"))));
+                    attrs.insert(
+                        world_id_k,
+                        Value::Str(self.interner.intern(&format!("{gy}_{gx}"))),
+                    );
                     attrs.insert(row_k, Value::Float(gy as f64));
                     attrs.insert(col_k, Value::Float(gx as f64));
                     attrs.insert(value_k, Value::Float(values[idx] as f64));
@@ -5136,14 +5677,23 @@ impl Substrate {
             }
             ids
         } else {
-            self.framebuffers[&fb_id].cell_cache.as_ref().unwrap().cell_ids.clone()
+            self.framebuffers[&fb_id]
+                .cell_cache
+                .as_ref()
+                .unwrap()
+                .cell_ids
+                .clone()
         };
 
         if !need_new_cells {
             // Update `value` on the existing cells in place.
             let value_k = self.interner.intern("value");
             for idx in 0..cell_ids.len() {
-                self.set_attr(NodeID(cell_ids[idx] as u32), value_k, Value::Float(values[idx] as f64));
+                self.set_attr(
+                    NodeID(cell_ids[idx] as u32),
+                    value_k,
+                    Value::Float(values[idx] as f64),
+                );
             }
         }
 
@@ -5158,10 +5708,22 @@ impl Substrate {
 
         if let Some(handle) = self.framebuffers.get_mut(&fb_id) {
             handle.last_sampled_seq = seq;
-            handle.cell_cache = Some(crate::framebuffer::CellCache { grid_w, grid_h, game, cell_ids });
+            handle.cell_cache = Some(crate::framebuffer::CellCache {
+                grid_w,
+                grid_h,
+                game,
+                cell_ids,
+            });
         }
 
-        Ok(FbSampleResult { fb_id, frame_seq: seq, unchanged: false, torn, grid_w, grid_h })
+        Ok(FbSampleResult {
+            fb_id,
+            frame_seq: seq,
+            unchanged: false,
+            torn,
+            grid_w,
+            grid_h,
+        })
     }
 }
 
@@ -5284,10 +5846,7 @@ mod tests {
         assert_ne!(hash0, 0);
         let epoch0 = s.gamma_epoch.current();
 
-        let false_clause = term_clause(
-            &mut s,
-            serde_json::json!({"type": "Lit", "value": false}),
-        );
+        let false_clause = term_clause(&mut s, serde_json::json!({"type": "Lit", "value": false}));
         let receipt = s
             .apply_rule_patch(uid, rev0, hash0, "where", false_clause)
             .expect("fresh CAS patch must commit");
@@ -5301,7 +5860,9 @@ mod tests {
         assert!(s.rule_where_jit[idx.0 as usize].is_none());
         assert!(matches!(
             s.terms.get(s.rules[idx.0 as usize].where_.unwrap()),
-            TermNode::Lit { value: Value::Bool(false) }
+            TermNode::Lit {
+                value: Value::Bool(false)
+            }
         ));
 
         let receipt2 = s
@@ -5320,7 +5881,9 @@ mod tests {
         );
         assert!(matches!(
             s.terms.get(s.rules[idx.0 as usize].where_.unwrap()),
-            TermNode::Lit { value: Value::Bool(true) }
+            TermNode::Lit {
+                value: Value::Bool(true)
+            }
         ));
     }
 
@@ -5335,10 +5898,7 @@ mod tests {
         let terms_before = s.terms.nodes.len();
         let epoch_before = s.gamma_epoch.current();
         let dirty_before = s.rule_dirty.clone();
-        let stale_clause = term_clause(
-            &mut s,
-            serde_json::json!({"type": "Lit", "value": false}),
-        );
+        let stale_clause = term_clause(&mut s, serde_json::json!({"type": "Lit", "value": false}));
         // Account for the test-side Value construction: it interns strings but
         // appends no Terms. The transaction itself must append none on stale CAS.
         let terms_before_stale = s.terms.nodes.len();
@@ -5354,18 +5914,15 @@ mod tests {
         ));
         assert_eq!(s.terms.nodes.len(), terms_before_stale);
         assert_eq!(s.rules[idx.0 as usize].where_, where_before);
-        assert_eq!(s.rule_metadata(idx).unwrap(), (uid, revision, content_hash, true));
+        assert_eq!(
+            s.rule_metadata(idx).unwrap(),
+            (uid, revision, content_hash, true)
+        );
         assert_eq!(s.gamma_epoch.current(), epoch_before);
         assert_eq!(s.rule_dirty, dirty_before);
 
         assert!(matches!(
-            s.apply_rule_patch(
-                uid,
-                revision,
-                content_hash,
-                "where",
-                Value::Int(7),
-            ),
+            s.apply_rule_patch(uid, revision, content_hash, "where", Value::Int(7),),
             Err(RulePatchError::MalformedClause)
         ));
         assert_eq!(
@@ -5374,7 +5931,10 @@ mod tests {
             "partial parser allocations must roll back on malformed clauses"
         );
         assert_eq!(s.rules[idx.0 as usize].where_, where_before);
-        assert_eq!(s.rule_metadata(idx).unwrap(), (uid, revision, content_hash, true));
+        assert_eq!(
+            s.rule_metadata(idx).unwrap(),
+            (uid, revision, content_hash, true)
+        );
         assert_eq!(s.gamma_epoch.current(), epoch_before);
         assert!(terms_before <= terms_before_stale);
     }
@@ -5389,10 +5949,7 @@ mod tests {
         let terms_before = s.terms.nodes.len();
         let epoch_before = s.gamma_epoch.current();
         let dirty_before = s.rule_dirty.clone();
-        let clause = term_clause(
-            &mut s,
-            serde_json::json!({"type": "Lit", "value": false}),
-        );
+        let clause = term_clause(&mut s, serde_json::json!({"type": "Lit", "value": false}));
         let terms_after_clause_value = s.terms.nodes.len();
 
         assert!(matches!(
@@ -5405,7 +5962,9 @@ mod tests {
         assert!(terms_before <= terms_after_clause_value);
         assert!(matches!(
             s.terms.get(s.rules[idx.0 as usize].where_.unwrap()),
-            TermNode::Lit { value: Value::Bool(true) }
+            TermNode::Lit {
+                value: Value::Bool(true)
+            }
         ));
     }
 
@@ -5419,26 +5978,25 @@ mod tests {
         let before_a = s.rule_metadata(a).unwrap();
         let before_b = s.rule_metadata(b).unwrap();
         let epoch = s.gamma_epoch.current();
-        let clause = term_clause(
-            &mut s,
-            serde_json::json!({"type": "Lit", "value": false}),
-        );
-        s.graph.pending_rule_edits.push((
-            "duplicate".to_string(),
-            "where".to_string(),
-            clause,
-        ));
+        let clause = term_clause(&mut s, serde_json::json!({"type": "Lit", "value": false}));
+        s.graph
+            .pending_rule_edits
+            .push(("duplicate".to_string(), "where".to_string(), clause));
         s.apply_pending_rule_edits();
         assert_eq!(s.rule_metadata(a).unwrap(), before_a);
         assert_eq!(s.rule_metadata(b).unwrap(), before_b);
         assert_eq!(s.gamma_epoch.current(), epoch);
         assert!(matches!(
             s.terms.get(s.rules[a.0 as usize].where_.unwrap()),
-            TermNode::Lit { value: Value::Bool(true) }
+            TermNode::Lit {
+                value: Value::Bool(true)
+            }
         ));
         assert!(matches!(
             s.terms.get(s.rules[b.0 as usize].where_.unwrap()),
-            TermNode::Lit { value: Value::Bool(true) }
+            TermNode::Lit {
+                value: Value::Bool(true)
+            }
         ));
     }
 
@@ -5466,10 +6024,7 @@ mod tests {
         attrs.insert(field_key, Value::Str(where_sym));
         attrs.insert(
             proposed_key,
-            term_clause(
-                &mut s,
-                serde_json::json!({"type": "Lit", "value": false}),
-            ),
+            term_clause(&mut s, serde_json::json!({"type": "Lit", "value": false})),
         );
         let patch = s.add_node(patch_type, attrs);
         let agent_type = s.interner.intern("Agent");
@@ -5517,7 +6072,11 @@ mod tests {
         original.add_rule(first);
         original.add_rule(second);
         let metadata: Vec<_> = (0..original.rules.len())
-            .map(|i| original.rule_metadata(crate::rewrite::RuleIdx(i as u32)).unwrap())
+            .map(|i| {
+                original
+                    .rule_metadata(crate::rewrite::RuleIdx(i as u32))
+                    .unwrap()
+            })
             .collect();
         assert_ne!(metadata[0].0, metadata[1].0);
         let exported: Vec<_> = original
@@ -5528,16 +6087,17 @@ mod tests {
 
         let mut restored = empty_substrate();
         for json in &exported {
-            let rule = crate::py::parse_rule_json_pub(
-                json,
-                &mut restored.terms,
-                &mut restored.interner,
-            )
-            .unwrap();
+            let rule =
+                crate::py::parse_rule_json_pub(json, &mut restored.terms, &mut restored.interner)
+                    .unwrap();
             restored.add_rule(rule);
         }
         let restored_metadata: Vec<_> = (0..restored.rules.len())
-            .map(|i| restored.rule_metadata(crate::rewrite::RuleIdx(i as u32)).unwrap())
+            .map(|i| {
+                restored
+                    .rule_metadata(crate::rewrite::RuleIdx(i as u32))
+                    .unwrap()
+            })
             .collect();
         assert_eq!(restored_metadata, metadata);
     }
@@ -5591,7 +6151,8 @@ mod tests {
         let a = s.interner.intern("a");
         let b = s.interner.intern("b");
         s.add_rule(crate::rewrite::RewriteRule {
-            name, match_edges: vec![crate::rewrite::MatchEdge {
+            name,
+            match_edges: vec![crate::rewrite::MatchEdge {
                 src_var: a,
                 edge_type: et,
                 tgt_var: b,
@@ -5617,9 +6178,15 @@ mod tests {
         let prov = s.interner.intern("test:added");
         let w = Grammar::default_weight(&mut s.terms);
         s.add_production(Production {
-            src: NodePattern { type_: alive, var: src_var },
+            src: NodePattern {
+                type_: alive,
+                var: src_var,
+            },
             edge_type: adj,
-            tgt: NodePattern { type_: alive, var: tgt_var },
+            tgt: NodePattern {
+                type_: alive,
+                var: tgt_var,
+            },
             where_: None,
             weight: w,
             provenance: prov,
@@ -5648,53 +6215,110 @@ mod tests {
         let alive = s.interner.intern("AliveCell");
         let w1 = Grammar::default_weight(&mut s.terms);
         let (v_a, v_b, et1, prov1) = (
-            s.interner.intern("a"), s.interner.intern("b"),
-            s.interner.intern("mirror_check_1"), s.interner.intern("test:mirror_1"),
+            s.interner.intern("a"),
+            s.interner.intern("b"),
+            s.interner.intern("mirror_check_1"),
+            s.interner.intern("test:mirror_1"),
         );
         s.add_production(Production {
-            src: NodePattern { type_: alive, var: v_a },
+            src: NodePattern {
+                type_: alive,
+                var: v_a,
+            },
             edge_type: et1,
-            tgt: NodePattern { type_: alive, var: v_b },
+            tgt: NodePattern {
+                type_: alive,
+                var: v_b,
+            },
             where_: None,
             weight: w1,
             provenance: prov1,
         });
         let v_c = s.interner.intern("c");
         let lhs = s.terms.add(TermNode::Var { name: v_c });
-        let rhs = s.terms.add(TermNode::Lit { value: Value::Int(3) });
+        let rhs = s.terms.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
         let where2 = s.terms.add(TermNode::Gt { a: lhs, b: rhs });
         let w2 = Grammar::default_weight(&mut s.terms);
         let (v_d, et2, prov2) = (
             s.interner.intern("d"),
-            s.interner.intern("mirror_check_2"), s.interner.intern("test:mirror_2"),
+            s.interner.intern("mirror_check_2"),
+            s.interner.intern("test:mirror_2"),
         );
         s.add_production(Production {
-            src: NodePattern { type_: alive, var: v_c },
+            src: NodePattern {
+                type_: alive,
+                var: v_c,
+            },
             edge_type: et2,
-            tgt: NodePattern { type_: alive, var: v_d },
+            tgt: NodePattern {
+                type_: alive,
+                var: v_d,
+            },
             where_: Some(where2),
             weight: w2,
             provenance: prov2,
         });
 
-        let root = s.gamma_graph_root().expect("mirror root should exist after add_production");
+        let root = s
+            .gamma_graph_root()
+            .expect("mirror root should exist after add_production");
         let mut mirror_arena = TermArena::new();
-        let rebuilt = crate::grammar_reflect::grammar_from_graph(&s.graph, root, &mut mirror_arena, &s.interner)
-            .expect("grammar_from_graph should reconstruct the mirror written by add_production");
+        let rebuilt = crate::grammar_reflect::grammar_from_graph(
+            &s.graph,
+            root,
+            &mut mirror_arena,
+            &s.interner,
+        )
+        .expect("grammar_from_graph should reconstruct the mirror written by add_production");
 
-        assert_eq!(rebuilt.productions.len(), s.checker.grammar.productions.len());
-        for (from_struct, from_graph) in s.checker.grammar.productions.iter().zip(rebuilt.productions.iter()) {
-            assert_eq!(s.interner.resolve(from_struct.src.type_), s.interner.resolve(from_graph.src.type_));
-            assert_eq!(s.interner.resolve(from_struct.src.var), s.interner.resolve(from_graph.src.var));
-            assert_eq!(s.interner.resolve(from_struct.edge_type), s.interner.resolve(from_graph.edge_type));
-            assert_eq!(s.interner.resolve(from_struct.tgt.type_), s.interner.resolve(from_graph.tgt.type_));
-            assert_eq!(s.interner.resolve(from_struct.tgt.var), s.interner.resolve(from_graph.tgt.var));
-            assert_eq!(s.interner.resolve(from_struct.provenance), s.interner.resolve(from_graph.provenance));
-            let struct_where = from_struct.where_.map(|w| crate::jsonio::term_to_json(&s.terms, w, &s.interner));
-            let graph_where = from_graph.where_.map(|w| crate::jsonio::term_to_json(&mirror_arena, w, &s.interner));
+        assert_eq!(
+            rebuilt.productions.len(),
+            s.checker.grammar.productions.len()
+        );
+        for (from_struct, from_graph) in s
+            .checker
+            .grammar
+            .productions
+            .iter()
+            .zip(rebuilt.productions.iter())
+        {
+            assert_eq!(
+                s.interner.resolve(from_struct.src.type_),
+                s.interner.resolve(from_graph.src.type_)
+            );
+            assert_eq!(
+                s.interner.resolve(from_struct.src.var),
+                s.interner.resolve(from_graph.src.var)
+            );
+            assert_eq!(
+                s.interner.resolve(from_struct.edge_type),
+                s.interner.resolve(from_graph.edge_type)
+            );
+            assert_eq!(
+                s.interner.resolve(from_struct.tgt.type_),
+                s.interner.resolve(from_graph.tgt.type_)
+            );
+            assert_eq!(
+                s.interner.resolve(from_struct.tgt.var),
+                s.interner.resolve(from_graph.tgt.var)
+            );
+            assert_eq!(
+                s.interner.resolve(from_struct.provenance),
+                s.interner.resolve(from_graph.provenance)
+            );
+            let struct_where = from_struct
+                .where_
+                .map(|w| crate::jsonio::term_to_json(&s.terms, w, &s.interner));
+            let graph_where = from_graph
+                .where_
+                .map(|w| crate::jsonio::term_to_json(&mirror_arena, w, &s.interner));
             assert_eq!(struct_where, graph_where);
-            let struct_weight = crate::jsonio::term_to_json(&s.terms, from_struct.weight, &s.interner);
-            let graph_weight = crate::jsonio::term_to_json(&mirror_arena, from_graph.weight, &s.interner);
+            let struct_weight =
+                crate::jsonio::term_to_json(&s.terms, from_struct.weight, &s.interner);
+            let graph_weight =
+                crate::jsonio::term_to_json(&mirror_arena, from_graph.weight, &s.interner);
             assert_eq!(struct_weight, graph_weight);
         }
 
@@ -5718,31 +6342,37 @@ mod tests {
         let b = s.add_node(alive, FxHashMap::default());
         let adj = s.interner.lookup("adjacent_to").unwrap();
         let _ = s.add_edge(a, adj, b, FxHashMap::default());
-        assert_eq!(s.gamma_epoch().current(), start,
-                   "G mutations are not Γ mutations");
+        assert_eq!(
+            s.gamma_epoch().current(),
+            start,
+            "G mutations are not Γ mutations"
+        );
     }
 
     /// Dispatcher created with `with_shared_epoch(substrate.gamma_epoch())`
     /// observes the substrate's Γ-mutation bumps end-to-end.
     #[test]
     fn dispatcher_with_shared_epoch_sees_substrate_mutations() {
+        use crate::code_cache::{CodeCacheConfig, CodeSize};
         use crate::l2_adaptive::{AdaptiveDispatcher, TierUpPolicy};
         use crate::l2_dispatch::Scheduler;
-        use crate::code_cache::{CodeCacheConfig, CodeSize};
 
-        struct FakeJit { size: usize }
+        struct FakeJit {
+            size: usize,
+        }
         impl CodeSize for FakeJit {
-            fn code_size_bytes(&self) -> usize { self.size }
+            fn code_size_bytes(&self) -> usize {
+                self.size
+            }
         }
 
         let mut s = empty_substrate();
-        let dispatcher: AdaptiveDispatcher<FakeJit> =
-            AdaptiveDispatcher::with_shared_epoch(
-                Scheduler::new(1),
-                TierUpPolicy::default(),
-                CodeCacheConfig { max_bytes: 1024 },
-                s.gamma_epoch(),
-            );
+        let dispatcher: AdaptiveDispatcher<FakeJit> = AdaptiveDispatcher::with_shared_epoch(
+            Scheduler::new(1),
+            TierUpPolicy::default(),
+            CodeCacheConfig { max_bytes: 1024 },
+            s.gamma_epoch(),
+        );
 
         let kind = s.interner.intern("rule_a");
         dispatcher.install_compiled(kind, FakeJit { size: 100 });
@@ -5754,7 +6384,8 @@ mod tests {
         let x = s.interner.intern("x");
         let y = s.interner.intern("y");
         s.add_rule(crate::rewrite::RewriteRule {
-            name, match_edges: vec![crate::rewrite::MatchEdge {
+            name,
+            match_edges: vec![crate::rewrite::MatchEdge {
                 src_var: x,
                 edge_type: et,
                 tgt_var: y,
@@ -5765,9 +6396,11 @@ mod tests {
         });
 
         // Dispatcher cache invalidated through shared Epoch.
-        assert!(!dispatcher.has_fresh_cached(kind),
-                "shared epoch bump from substrate must invalidate \
-                 dispatcher cache");
+        assert!(
+            !dispatcher.has_fresh_cached(kind),
+            "shared epoch bump from substrate must invalidate \
+                 dispatcher cache"
+        );
         dispatcher.shutdown();
     }
 
@@ -5817,9 +6450,15 @@ mod tests {
         let w = Grammar::default_weight(&mut s.terms);
         // Add Dead→adj→Dead so Dead is in vocab.
         s.checker.grammar.add(Production {
-            src: NodePattern { type_: dead, var: src_var },
+            src: NodePattern {
+                type_: dead,
+                var: src_var,
+            },
             edge_type: adj,
-            tgt: NodePattern { type_: dead, var: tgt_var },
+            tgt: NodePattern {
+                type_: dead,
+                var: tgt_var,
+            },
             where_: None,
             weight: w,
             provenance: prov,
@@ -5827,12 +6466,19 @@ mod tests {
         let a = s.add_node(alive, FxHashMap::default());
         let b = s.add_node(dead, FxHashMap::default());
         match s.add_edge(a, adj, b, FxHashMap::default()) {
-            Err(InadmissibleEdge::Type1NoProduction { src_type, edge_type, tgt_type }) => {
+            Err(InadmissibleEdge::Type1NoProduction {
+                src_type,
+                edge_type,
+                tgt_type,
+            }) => {
                 assert_eq!(src_type, alive);
                 assert_eq!(edge_type, adj);
                 assert_eq!(tgt_type, dead);
             }
-            other => panic!("expected Type-1 for known-vocab/no-production; got {:?}", other),
+            other => panic!(
+                "expected Type-1 for known-vocab/no-production; got {:?}",
+                other
+            ),
         }
     }
 
@@ -5853,9 +6499,15 @@ mod tests {
         let prov = s.interner.intern("test:dead_only2");
         let w = Grammar::default_weight(&mut s.terms);
         s.checker.grammar.add(Production {
-            src: NodePattern { type_: dead, var: src_var },
+            src: NodePattern {
+                type_: dead,
+                var: src_var,
+            },
             edge_type: adj,
-            tgt: NodePattern { type_: dead, var: tgt_var },
+            tgt: NodePattern {
+                type_: dead,
+                var: tgt_var,
+            },
             where_: None,
             weight: w,
             provenance: prov,
@@ -5865,7 +6517,11 @@ mod tests {
         let nodes_before = s.graph.node_count();
         assert!(!s.gamma_residual_capture, "must default to false");
         match s.add_edge(a, adj, b, FxHashMap::default()) {
-            Err(InadmissibleEdge::Type1NoProduction { src_type, edge_type, tgt_type }) => {
+            Err(InadmissibleEdge::Type1NoProduction {
+                src_type,
+                edge_type,
+                tgt_type,
+            }) => {
                 assert_eq!(src_type, alive);
                 assert_eq!(edge_type, adj);
                 assert_eq!(tgt_type, dead);
@@ -5873,10 +6529,14 @@ mod tests {
             other => panic!("expected Type-1; got {:?}", other),
         }
         assert_eq!(
-            s.graph.node_count(), nodes_before,
+            s.graph.node_count(),
+            nodes_before,
             "capture off must mint NOTHING — the committed default path is byte-unchanged"
         );
-        assert!(s.gamma_residual_root.is_none(), "root must not be lazily created when capture is off");
+        assert!(
+            s.gamma_residual_root.is_none(),
+            "root must not be lazily created when capture is off"
+        );
     }
 
     /// Capture ON: two rejections of the SAME triple mint two `GammaResidual`
@@ -5895,9 +6555,15 @@ mod tests {
         let prov = s.interner.intern("test:dead_only3");
         let w = Grammar::default_weight(&mut s.terms);
         s.checker.grammar.add(Production {
-            src: NodePattern { type_: dead, var: src_var },
+            src: NodePattern {
+                type_: dead,
+                var: src_var,
+            },
             edge_type: adj,
-            tgt: NodePattern { type_: dead, var: tgt_var },
+            tgt: NodePattern {
+                type_: dead,
+                var: tgt_var,
+            },
             where_: None,
             weight: w,
             provenance: prov,
@@ -5911,7 +6577,11 @@ mod tests {
 
         let residual_type = s.interner.lookup("GammaResidual").unwrap();
         let residuals = s.graph.nodes_of_type(residual_type);
-        assert_eq!(residuals.len(), 2, "one GammaResidual node per rejection, no Rust-side dedup");
+        assert_eq!(
+            residuals.len(),
+            2,
+            "one GammaResidual node per rejection, no Rust-side dedup"
+        );
 
         let src_key = s.interner.lookup("src_type").unwrap();
         let edge_key = s.interner.lookup("edge_type").unwrap();
@@ -5924,7 +6594,9 @@ mod tests {
         }
 
         // Both anchored under the SAME lazily-created root.
-        let root = s.gamma_residual_root.expect("root must be created once capture is on");
+        let root = s
+            .gamma_residual_root
+            .expect("root must be created once capture is on");
         let residual_edge = s.interner.lookup("gamma_residual").unwrap();
         let anchored = s.graph.out_edges_idx(root, Some(residual_edge));
         assert_eq!(anchored.len(), 2);
@@ -5947,18 +6619,30 @@ mod tests {
         let tgt_var = s.interner.intern("tgt4");
         let w1 = Grammar::default_weight(&mut s.terms);
         s.checker.grammar.add(Production {
-            src: NodePattern { type_: dead, var: src_var },
+            src: NodePattern {
+                type_: dead,
+                var: src_var,
+            },
             edge_type: adj,
-            tgt: NodePattern { type_: dead, var: tgt_var },
+            tgt: NodePattern {
+                type_: dead,
+                var: tgt_var,
+            },
             where_: None,
             weight: w1,
             provenance: s.interner.intern("test:dead_only4"),
         });
         let w2 = Grammar::default_weight(&mut s.terms);
         s.checker.grammar.add(Production {
-            src: NodePattern { type_: dead, var: src_var },
+            src: NodePattern {
+                type_: dead,
+                var: src_var,
+            },
             edge_type: far,
-            tgt: NodePattern { type_: dead, var: tgt_var },
+            tgt: NodePattern {
+                type_: dead,
+                var: tgt_var,
+            },
             where_: None,
             weight: w2,
             provenance: s.interner.intern("test:dead_only5"),
@@ -5998,9 +6682,11 @@ mod tests {
             let b = tx.add_node(alive, FxHashMap::default());
             tx.add_edge(a, adj, b, FxHashMap::default())?;
             // Force a rollback by returning Err.
-            let dead = tx.substrate.interner.lookup("DeadCell").unwrap_or_else(|| {
-                tx.substrate.interner.intern("DeadCell")
-            });
+            let dead = tx
+                .substrate
+                .interner
+                .lookup("DeadCell")
+                .unwrap_or_else(|| tx.substrate.interner.intern("DeadCell"));
             let c = tx.add_node(dead, FxHashMap::default());
             tx.add_edge(a, adj, c, FxHashMap::default()).map(|_| ())
         });
@@ -6035,11 +6721,19 @@ mod tests {
         let tgt_var = s.interner.lookup("tgt").unwrap();
         let prov = s.interner.intern("test:second_alive_adj");
         // Second production with weight 2.5.
-        let two_five = s.terms.add(TermNode::Lit { value: Value::Float(2.5) });
+        let two_five = s.terms.add(TermNode::Lit {
+            value: Value::Float(2.5),
+        });
         s.checker.grammar.add(Production {
-            src: NodePattern { type_: alive, var: src_var },
+            src: NodePattern {
+                type_: alive,
+                var: src_var,
+            },
             edge_type: adj,
-            tgt: NodePattern { type_: alive, var: tgt_var },
+            tgt: NodePattern {
+                type_: alive,
+                var: tgt_var,
+            },
             where_: None,
             weight: two_five,
             provenance: prov,
@@ -6072,7 +6766,9 @@ mod tests {
         let n2 = s.graph.insert_node(n, FxHashMap::default());
         // Open vocabulary — empty grammar admits unchecked through tests.
         // Inject one A edge directly into the graph.
-        s.graph.insert_edge(n1, a, n2, FxHashMap::default()).unwrap();
+        s.graph
+            .insert_edge(n1, a, n2, FxHashMap::default())
+            .unwrap();
 
         // Two rules: one over A, one over B. Each effect is a no-op
         // (re-add the same edge) so they never progress; we only care
@@ -6080,7 +6776,9 @@ mod tests {
         let rule_a = crate::rewrite::RewriteRule {
             name: s.interner.intern("rule_A"),
             match_edges: vec![crate::rewrite::MatchEdge {
-                src_var: x, edge_type: a, tgt_var: y,
+                src_var: x,
+                edge_type: a,
+                tgt_var: y,
             }],
             where_: None,
             effects: vec![],
@@ -6089,7 +6787,9 @@ mod tests {
         let rule_b = crate::rewrite::RewriteRule {
             name: s.interner.intern("rule_B"),
             match_edges: vec![crate::rewrite::MatchEdge {
-                src_var: x, edge_type: b, tgt_var: y,
+                src_var: x,
+                edge_type: b,
+                tgt_var: y,
             }],
             where_: None,
             effects: vec![],
@@ -6104,8 +6804,11 @@ mod tests {
         // First tick: both rules evaluated (neither progresses because
         // effects are empty); bits clear after.
         s.run_rules(100);
-        assert_eq!(s.rule_dirty, vec![false, false],
-                   "after a clean fixed-point pass, both rules clean");
+        assert_eq!(
+            s.rule_dirty,
+            vec![false, false],
+            "after a clean fixed-point pass, both rules clean"
+        );
 
         // Now mutate via the substrate (so dirty tracking fires) — add
         // another A edge. Rule A should be marked dirty; rule B not.
@@ -6113,7 +6816,9 @@ mod tests {
         // bypass admissibility (test scaffold) but use add_edge for
         // dirty-tracking — set up an open grammar first.
         let prov = s.interner.intern("test:open");
-        let weight = s.terms.add(crate::term::TermNode::Lit { value: Value::Float(1.0) });
+        let weight = s.terms.add(crate::term::TermNode::Lit {
+            value: Value::Float(1.0),
+        });
         s.checker.grammar.add(crate::grammar::Production {
             src: crate::grammar::NodePattern { type_: n, var: x },
             edge_type: a,
@@ -6123,7 +6828,10 @@ mod tests {
             provenance: prov,
         });
         s.add_edge(n1, a, n3, FxHashMap::default()).unwrap();
-        assert_eq!(s.rule_dirty[0], true, "rule_A should be dirty after A-edge insert");
+        assert_eq!(
+            s.rule_dirty[0], true,
+            "rule_A should be dirty after A-edge insert"
+        );
         assert_eq!(s.rule_dirty[1], false, "rule_B should remain clean");
     }
 
@@ -6142,11 +6850,19 @@ mod tests {
         let y = s.interner.intern("y");
         // Open vocabulary for the test rule.
         let prov = s.interner.intern("test:open");
-        let weight = s.terms.add(crate::term::TermNode::Lit { value: Value::Float(1.0) });
+        let weight = s.terms.add(crate::term::TermNode::Lit {
+            value: Value::Float(1.0),
+        });
         s.checker.grammar.add(crate::grammar::Production {
-            src: crate::grammar::NodePattern { type_: cell, var: x },
+            src: crate::grammar::NodePattern {
+                type_: cell,
+                var: x,
+            },
             edge_type: adj,
-            tgt: crate::grammar::NodePattern { type_: cell, var: y },
+            tgt: crate::grammar::NodePattern {
+                type_: cell,
+                var: y,
+            },
             where_: None,
             weight,
             provenance: prov,
@@ -6155,45 +6871,64 @@ mod tests {
         // Kernel where: TypeOf(x) == AliveCell
         let x_var = s.terms.add(crate::term::TermNode::Var { name: x });
         let tof = s.terms.add(crate::term::TermNode::TypeOf { node: x_var });
-        let alive_lit = s.terms.add(crate::term::TermNode::Lit { value: Value::Str(alive) });
-        let eq = s.terms.add(crate::term::TermNode::Eq { a: tof, b: alive_lit });
+        let alive_lit = s.terms.add(crate::term::TermNode::Lit {
+            value: Value::Str(alive),
+        });
+        let eq = s.terms.add(crate::term::TermNode::Eq {
+            a: tof,
+            b: alive_lit,
+        });
         let alive_name = s.interner.intern("alive_test");
         s.add_rule(crate::rewrite::RewriteRule {
             name: alive_name,
             match_edges: vec![crate::rewrite::MatchEdge {
-                src_var: x, edge_type: adj, tgt_var: y,
+                src_var: x,
+                edge_type: adj,
+                tgt_var: y,
             }],
             where_: Some(eq),
             effects: vec![],
             ..Default::default()
         });
-        assert!(s.rule_where_jit[0].is_some(),
-                "kernel where-clause should JIT compile");
+        assert!(
+            s.rule_where_jit[0].is_some(),
+            "kernel where-clause should JIT compile"
+        );
 
         // Non-kernel where: Sum over neighbours (Filter/source-of-source)
         // The JIT doesn't handle Sum yet → expect None.
         let nbrs = s.terms.add(crate::term::TermNode::Neighbours {
-            node: x_var, edge_type: adj, any_type: false,
+            node: x_var,
+            edge_type: adj,
+            any_type: false,
         });
         let n_var = s.interner.intern("n");
         let n_t = s.terms.add(crate::term::TermNode::Var { name: n_var });
         let sum = s.terms.add(crate::term::TermNode::Sum {
-            source: nbrs, var_name: n_var, value: n_t,
+            source: nbrs,
+            var_name: n_var,
+            value: n_t,
         });
-        let zero = s.terms.add(crate::term::TermNode::Lit { value: Value::Int(0) });
+        let zero = s.terms.add(crate::term::TermNode::Lit {
+            value: Value::Int(0),
+        });
         let gt = s.terms.add(crate::term::TermNode::Gt { a: sum, b: zero });
         let sum_name = s.interner.intern("sum_test");
         s.add_rule(crate::rewrite::RewriteRule {
             name: sum_name,
             match_edges: vec![crate::rewrite::MatchEdge {
-                src_var: x, edge_type: adj, tgt_var: y,
+                src_var: x,
+                edge_type: adj,
+                tgt_var: y,
             }],
             where_: Some(gt),
             effects: vec![],
             ..Default::default()
         });
-        assert!(s.rule_where_jit[1].is_none(),
-                "Sum-using where-clause should NOT JIT compile (interpreter fallback)");
+        assert!(
+            s.rule_where_jit[1].is_none(),
+            "Sum-using where-clause should NOT JIT compile (interpreter fallback)"
+        );
     }
 
     /// Microbenchmark: Conway-style tick latency. Run with
@@ -6212,14 +6947,22 @@ mod tests {
         let active_et = s.interner.intern("active_edge");
         // Make the grammar open for all edge types we'll use.
         let prov = s.interner.intern("bench:open");
-        let weight = s.terms.add(crate::term::TermNode::Lit { value: Value::Float(1.0) });
+        let weight = s.terms.add(crate::term::TermNode::Lit {
+            value: Value::Float(1.0),
+        });
         let src_var = s.interner.intern("src");
         let tgt_var = s.interner.intern("tgt");
         for et in [adj, active_et] {
             s.checker.grammar.add(crate::grammar::Production {
-                src: crate::grammar::NodePattern { type_: cell, var: src_var },
+                src: crate::grammar::NodePattern {
+                    type_: cell,
+                    var: src_var,
+                },
                 edge_type: et,
-                tgt: crate::grammar::NodePattern { type_: cell, var: tgt_var },
+                tgt: crate::grammar::NodePattern {
+                    type_: cell,
+                    var: tgt_var,
+                },
                 where_: None,
                 weight,
                 provenance: prov,
@@ -6258,7 +7001,9 @@ mod tests {
             s.add_rule(crate::rewrite::RewriteRule {
                 name,
                 match_edges: vec![crate::rewrite::MatchEdge {
-                    src_var: x, edge_type: active_et, tgt_var: y,
+                    src_var: x,
+                    edge_type: active_et,
+                    tgt_var: y,
                 }],
                 where_: None,
                 effects: vec![],
@@ -6266,10 +7011,12 @@ mod tests {
             });
         }
 
-        eprintln!("\n=== Conway bench ({} cells, {} edges, {} rules) ===",
-                  s.graph.node_count(),
-                  s.graph.edge_count(),
-                  s.rules.len());
+        eprintln!(
+            "\n=== Conway bench ({} cells, {} edges, {} rules) ===",
+            s.graph.node_count(),
+            s.graph.edge_count(),
+            s.rules.len()
+        );
 
         // First run: every rule starts dirty so we expect full evaluation.
         let t0 = Instant::now();
@@ -6285,7 +7032,11 @@ mod tests {
             let _ = s.run_rules(100);
             total += t.elapsed();
         }
-        eprintln!("{} clean-tick run_rules avg: {:?}", N_TICKS, total / N_TICKS);
+        eprintln!(
+            "{} clean-tick run_rules avg: {:?}",
+            N_TICKS,
+            total / N_TICKS
+        );
         eprintln!("(should be sub-microsecond if differential firing works)");
 
         // Mutating run: insert a new edge, re-tick.
@@ -6313,22 +7064,34 @@ mod tests {
 
         // --- Graph setup: 5 node types, 3 edge types, 5000 nodes, ~15K edges.
         let types: Vec<Sym> = ["Concept", "Frame", "Microtheory", "Mention", "Sign"]
-            .iter().map(|n| s.interner.intern(n)).collect();
+            .iter()
+            .map(|n| s.interner.intern(n))
+            .collect();
         let edge_types: Vec<Sym> = ["evokes", "denotes", "isa"]
-            .iter().map(|n| s.interner.intern(n)).collect();
+            .iter()
+            .map(|n| s.interner.intern(n))
+            .collect();
 
         // Open grammar for all (type, edge_type, type) triples we'll use.
         let prov = s.interner.intern("profile:open");
-        let weight = s.terms.add(crate::term::TermNode::Lit { value: Value::Float(1.0) });
+        let weight = s.terms.add(crate::term::TermNode::Lit {
+            value: Value::Float(1.0),
+        });
         let src_v = s.interner.intern("src");
         let tgt_v = s.interner.intern("tgt");
         for &et in &edge_types {
             for &t_from in &types {
                 for &t_to in &types {
                     s.checker.grammar.add(crate::grammar::Production {
-                        src: crate::grammar::NodePattern { type_: t_from, var: src_v },
+                        src: crate::grammar::NodePattern {
+                            type_: t_from,
+                            var: src_v,
+                        },
                         edge_type: et,
-                        tgt: crate::grammar::NodePattern { type_: t_to, var: tgt_v },
+                        tgt: crate::grammar::NodePattern {
+                            type_: t_to,
+                            var: tgt_v,
+                        },
                         where_: None,
                         weight,
                         provenance: prov,
@@ -6364,7 +7127,9 @@ mod tests {
             for _ in 0..3 {
                 let j = (next_rand() as usize) % nodes.len();
                 let et = edge_types[(next_rand() as usize) % edge_types.len()];
-                if s.add_edge(nodes[i], et, nodes[j], FxHashMap::default()).is_ok() {
+                if s.add_edge(nodes[i], et, nodes[j], FxHashMap::default())
+                    .is_ok()
+                {
                     edges_added += 1;
                 }
             }
@@ -6384,7 +7149,9 @@ mod tests {
             s.add_rule(crate::rewrite::RewriteRule {
                 name,
                 match_edges: vec![crate::rewrite::MatchEdge {
-                    src_var: x, edge_type: edge_types[k % edge_types.len()], tgt_var: y,
+                    src_var: x,
+                    edge_type: edge_types[k % edge_types.len()],
+                    tgt_var: y,
                 }],
                 where_: None,
                 effects: vec![],
@@ -6404,7 +7171,9 @@ mod tests {
             s.add_rule(crate::rewrite::RewriteRule {
                 name,
                 match_edges: vec![crate::rewrite::MatchEdge {
-                    src_var: x, edge_type: edge_types[k % edge_types.len()], tgt_var: y,
+                    src_var: x,
+                    edge_type: edge_types[k % edge_types.len()],
+                    tgt_var: y,
                 }],
                 where_: Some(eq),
                 effects: vec![],
@@ -6422,12 +7191,16 @@ mod tests {
                 any_type: false,
             });
             let cnt = s.terms.add(crate::term::TermNode::Count { source: nbrs });
-            let two = s.terms.add(crate::term::TermNode::Lit { value: Value::Int(2) });
+            let two = s.terms.add(crate::term::TermNode::Lit {
+                value: Value::Int(2),
+            });
             let gt = s.terms.add(crate::term::TermNode::Gt { a: cnt, b: two });
             s.add_rule(crate::rewrite::RewriteRule {
                 name,
                 match_edges: vec![crate::rewrite::MatchEdge {
-                    src_var: x, edge_type: edge_types[k % edge_types.len()], tgt_var: y,
+                    src_var: x,
+                    edge_type: edge_types[k % edge_types.len()],
+                    tgt_var: y,
                 }],
                 where_: Some(gt),
                 effects: vec![],
@@ -6443,13 +7216,19 @@ mod tests {
                 name,
                 match_edges: vec![
                     crate::rewrite::MatchEdge {
-                        src_var: x, edge_type: edge_types[0], tgt_var: y,
+                        src_var: x,
+                        edge_type: edge_types[0],
+                        tgt_var: y,
                     },
                     crate::rewrite::MatchEdge {
-                        src_var: y, edge_type: edge_types[1], tgt_var: z,
+                        src_var: y,
+                        edge_type: edge_types[1],
+                        tgt_var: z,
                     },
                     crate::rewrite::MatchEdge {
-                        src_var: x, edge_type: edge_types[2], tgt_var: z,
+                        src_var: x,
+                        edge_type: edge_types[2],
+                        tgt_var: z,
                     },
                 ],
                 where_: None,
@@ -6468,16 +7247,25 @@ mod tests {
         let with_where = s.rule_has_where.iter().filter(|&&w| w).count();
 
         eprintln!("\n=== Real-workload profile ===");
-        eprintln!("graph: {} nodes, {} edges (added {})",
-                  s.graph.node_count(), s.graph.edge_count(), edges_added);
-        eprintln!("rules: {} total ({} with where-clause; {} JIT-compiled)",
-                  total_rules, with_where, jit_count);
+        eprintln!(
+            "graph: {} nodes, {} edges (added {})",
+            s.graph.node_count(),
+            s.graph.edge_count(),
+            edges_added
+        );
+        eprintln!(
+            "rules: {} total ({} with where-clause; {} JIT-compiled)",
+            total_rules, with_where, jit_count
+        );
 
         // --- Phase 1: a single full tick from cold state.
         let t = Instant::now();
         let first_steps = s.run_rules(1000);
         let dt_first = t.elapsed();
-        eprintln!("\nfirst tick (all rules dirty): {} steps, {:?}", first_steps, dt_first);
+        eprintln!(
+            "\nfirst tick (all rules dirty): {} steps, {:?}",
+            first_steps, dt_first
+        );
 
         // --- Phase 2: 100 idle ticks (no mutation between).
         let mut total = std::time::Duration::ZERO;
@@ -6504,8 +7292,12 @@ mod tests {
             total_mut += t.elapsed();
         }
         let avg_mut = total_mut / N_MUT;
-        eprintln!("mutate+tick × {} avg: {:?} ({:.1} steps/tick)",
-                  N_MUT, avg_mut, mut_steps_total as f64 / N_MUT as f64);
+        eprintln!(
+            "mutate+tick × {} avg: {:?} ({:.1} steps/tick)",
+            N_MUT,
+            avg_mut,
+            mut_steps_total as f64 / N_MUT as f64
+        );
 
         // --- Cache stats at the end.
         eprintln!("\neval_cache at end:");
@@ -6538,10 +7330,18 @@ mod tests {
         let prov = s.interner.intern("test:multi_spec");
         let w = crate::grammar::Grammar::default_weight(&mut s.terms);
         s.add_production(crate::grammar::Production {
-            src: crate::grammar::NodePattern { type_: trigger_t, var: src_var },
+            src: crate::grammar::NodePattern {
+                type_: trigger_t,
+                var: src_var,
+            },
             edge_type: edge_et,
-            tgt: crate::grammar::NodePattern { type_: spec_t, var: tgt_var },
-            where_: None, weight: w, provenance: prov,
+            tgt: crate::grammar::NodePattern {
+                type_: spec_t,
+                var: tgt_var,
+            },
+            where_: None,
+            weight: w,
+            provenance: prov,
         });
 
         // One trigger + THREE specs, all wired before any rule fires —
@@ -6553,7 +7353,8 @@ mod tests {
             let mut attrs = FxHashMap::default();
             attrs.insert(key, Value::Int(i));
             let spec = s.add_node(spec_t, attrs);
-            s.add_edge(trigger, edge_et, spec, FxHashMap::default()).unwrap();
+            s.add_edge(trigger, edge_et, spec, FxHashMap::default())
+                .unwrap();
             specs.push(spec);
         }
 
@@ -6562,14 +7363,17 @@ mod tests {
         let spec_var_t = s.terms.add(crate::term::TermNode::Var { name: tgt_var });
         let spec_id_key = s.interner.intern("spec_id");
         let spec_id_term = s.terms.add(crate::term::TermNode::Attr {
-            node: spec_var_t, key: spec_id_key,
+            node: spec_var_t,
+            key: spec_id_key,
         });
         let patch_name = s.interner.intern("emit_patch");
         let patch_var = s.interner.intern("p");
         s.add_rule(crate::rewrite::RewriteRule {
             name: patch_name,
             match_edges: vec![crate::rewrite::MatchEdge {
-                src_var, edge_type: edge_et, tgt_var,
+                src_var,
+                edge_type: edge_et,
+                tgt_var,
             }],
             where_: None,
             effects: vec![crate::rewrite::Effect::AddNode {
@@ -6586,9 +7390,12 @@ mod tests {
         // Single tick — should fan out across all 3 specs.
         let _ = s.run_rules(100);
         let n_patches = s.graph.nodes_of_type(patch_t).len();
-        assert_eq!(n_patches, 3,
-                   "multi-spec fan-out: 3 specs, 1 tick, expected 3 \
-                    patches; got {}", n_patches);
+        assert_eq!(
+            n_patches, 3,
+            "multi-spec fan-out: 3 specs, 1 tick, expected 3 \
+                    patches; got {}",
+            n_patches
+        );
     }
 
     // --- remove_rule (tombstone semantics) ------------------------------
@@ -6611,10 +7418,16 @@ mod tests {
         let mint_on_trigger = s.interner.intern("mint_on_trigger");
         let idx = s.add_rule(crate::rewrite::RewriteRule {
             name: mint_on_trigger,
-            match_edges: vec![crate::rewrite::MatchEdge { src_var, edge_type: et, tgt_var }],
+            match_edges: vec![crate::rewrite::MatchEdge {
+                src_var,
+                edge_type: et,
+                tgt_var,
+            }],
             where_: None,
             effects: vec![crate::rewrite::Effect::AddNode {
-                new_var, type_: minted_t, attrs: vec![],
+                new_var,
+                type_: minted_t,
+                attrs: vec![],
             }],
             ..Default::default()
         });
@@ -6624,14 +7437,23 @@ mod tests {
         assert_eq!(s.graph.nodes_of_type(minted_t).len(), 1);
 
         // Remove it — first call reports success.
-        assert!(s.remove_rule(idx), "first remove_rule call deactivates a live rule");
+        assert!(
+            s.remove_rule(idx),
+            "first remove_rule call deactivates a live rule"
+        );
 
         // Never fires again, even though the same admissible binding
         // still exists in the graph (removal isn't "consume the match
         // once", it's "this rule is gone").
-        assert!(!s.apply_rule_once(idx), "tombstoned rule must not match/apply");
-        assert_eq!(s.graph.nodes_of_type(minted_t).len(), 1,
-                   "no new node minted by a removed rule");
+        assert!(
+            !s.apply_rule_once(idx),
+            "tombstoned rule must not match/apply"
+        );
+        assert_eq!(
+            s.graph.nodes_of_type(minted_t).len(),
+            1,
+            "no new node minted by a removed rule"
+        );
 
         // Double-remove is safe / idempotent (no panic, reports no-op).
         assert!(!s.remove_rule(idx), "second remove_rule call is a no-op");
@@ -6640,7 +7462,11 @@ mod tests {
         assert!(!s.remove_rule(crate::rewrite::RuleIdx(9999)));
 
         // The slot is tombstoned, not compacted — the index space is stable.
-        assert_eq!(s.rules.len(), 1, "remove_rule must not shrink/reindex the rule store");
+        assert_eq!(
+            s.rules.len(),
+            1,
+            "remove_rule must not shrink/reindex the rule store"
+        );
     }
 
     #[test]
@@ -6657,26 +7483,42 @@ mod tests {
 
         let n1 = s.graph.insert_node(n, FxHashMap::default());
         let n2 = s.graph.insert_node(n, FxHashMap::default());
-        s.graph.insert_edge(n1, a_et, n2, FxHashMap::default()).unwrap();
-        s.graph.insert_edge(n1, b_et, n2, FxHashMap::default()).unwrap();
+        s.graph
+            .insert_edge(n1, a_et, n2, FxHashMap::default())
+            .unwrap();
+        s.graph
+            .insert_edge(n1, b_et, n2, FxHashMap::default())
+            .unwrap();
 
         let rule_a_name = s.interner.intern("rule_A");
         let idx_a = s.add_rule(crate::rewrite::RewriteRule {
             name: rule_a_name,
-            match_edges: vec![crate::rewrite::MatchEdge { src_var: x, edge_type: a_et, tgt_var: y }],
+            match_edges: vec![crate::rewrite::MatchEdge {
+                src_var: x,
+                edge_type: a_et,
+                tgt_var: y,
+            }],
             where_: None,
             effects: vec![crate::rewrite::Effect::AddNode {
-                new_var, type_: minted_a, attrs: vec![],
+                new_var,
+                type_: minted_a,
+                attrs: vec![],
             }],
             ..Default::default()
         });
         let rule_b_name = s.interner.intern("rule_B");
         let _idx_b = s.add_rule(crate::rewrite::RewriteRule {
             name: rule_b_name,
-            match_edges: vec![crate::rewrite::MatchEdge { src_var: x, edge_type: b_et, tgt_var: y }],
+            match_edges: vec![crate::rewrite::MatchEdge {
+                src_var: x,
+                edge_type: b_et,
+                tgt_var: y,
+            }],
             where_: None,
             effects: vec![crate::rewrite::Effect::AddNode {
-                new_var, type_: minted_b, attrs: vec![],
+                new_var,
+                type_: minted_b,
+                attrs: vec![],
             }],
             ..Default::default()
         });
@@ -6684,10 +7526,16 @@ mod tests {
         assert!(s.remove_rule(idx_a));
 
         s.run_rules(100);
-        assert_eq!(s.graph.nodes_of_type(minted_a).len(), 0,
-                   "removed rule_A must not fire");
-        assert_eq!(s.graph.nodes_of_type(minted_b).len(), 1,
-                   "sibling rule_B must still fire normally after rule_A is removed");
+        assert_eq!(
+            s.graph.nodes_of_type(minted_a).len(),
+            0,
+            "removed rule_A must not fire"
+        );
+        assert_eq!(
+            s.graph.nodes_of_type(minted_b).len(),
+            1,
+            "sibling rule_B must still fire normally after rule_A is removed"
+        );
     }
 
     /// Regression guard for the exact hazard `remove_rule`'s doc comment
@@ -6708,15 +7556,23 @@ mod tests {
 
         let n1 = s.graph.insert_node(n, FxHashMap::default());
         let n2 = s.graph.insert_node(n, FxHashMap::default());
-        s.graph.insert_edge(n1, et, n2, FxHashMap::default()).unwrap();
+        s.graph
+            .insert_edge(n1, et, n2, FxHashMap::default())
+            .unwrap();
 
         let mint_on_e = s.interner.intern("mint_on_e");
         let idx = s.add_rule(crate::rewrite::RewriteRule {
             name: mint_on_e,
-            match_edges: vec![crate::rewrite::MatchEdge { src_var: x, edge_type: et, tgt_var: y }],
+            match_edges: vec![crate::rewrite::MatchEdge {
+                src_var: x,
+                edge_type: et,
+                tgt_var: y,
+            }],
             where_: None,
             effects: vec![crate::rewrite::Effect::AddNode {
-                new_var, type_: minted, attrs: vec![],
+                new_var,
+                type_: minted,
+                attrs: vec![],
             }],
             ..Default::default()
         });
@@ -6729,22 +7585,31 @@ mod tests {
         // Open production so the CHECKED `add_edge` (which drives
         // `mark_edge_type_dirty`) is admissible for edge_type `et`.
         let prov = s.interner.intern("test:open_remove_rule");
-        let weight = s.terms.add(crate::term::TermNode::Lit { value: Value::Float(1.0) });
+        let weight = s.terms.add(crate::term::TermNode::Lit {
+            value: Value::Float(1.0),
+        });
         s.checker.grammar.add(crate::grammar::Production {
             src: crate::grammar::NodePattern { type_: n, var: x },
             edge_type: et,
             tgt: crate::grammar::NodePattern { type_: n, var: y },
-            where_: None, weight, provenance: prov,
+            where_: None,
+            weight,
+            provenance: prov,
         });
         let n3 = s.graph.insert_node(n, FxHashMap::default());
         s.add_edge(n1, et, n3, FxHashMap::default()).unwrap();
-        assert_eq!(s.rule_dirty[idx.0 as usize], true,
-                   "mark_edge_type_dirty doesn't know about removal — the bit CAN be re-set");
+        assert_eq!(
+            s.rule_dirty[idx.0 as usize], true,
+            "mark_edge_type_dirty doesn't know about removal — the bit CAN be re-set"
+        );
 
         // But run_rules's `active` filter must still keep it from firing.
         s.run_rules(100);
-        assert_eq!(s.graph.nodes_of_type(minted).len(), 1,
-                   "tombstoned rule must not fire even with a fresh new edge on its own edge_type");
+        assert_eq!(
+            s.graph.nodes_of_type(minted).len(),
+            1,
+            "tombstoned rule must not fire even with a fresh new edge on its own edge_type"
+        );
     }
 
     // --- FIXPOINT SETTLE: run_rules must not return over unsettled state ---
@@ -6785,10 +7650,18 @@ mod tests {
         let prov = s.interner.intern("test:settle");
         let w = crate::grammar::Grammar::default_weight(&mut s.terms);
         s.add_production(crate::grammar::Production {
-            src: crate::grammar::NodePattern { type_: node_t, var: v_a },
+            src: crate::grammar::NodePattern {
+                type_: node_t,
+                var: v_a,
+            },
             edge_type: tag,
-            tgt: crate::grammar::NodePattern { type_: node_t, var: v_b },
-            where_: None, weight: w, provenance: prov,
+            tgt: crate::grammar::NodePattern {
+                type_: node_t,
+                var: v_b,
+            },
+            where_: None,
+            weight: w,
+            provenance: prov,
         });
 
         let mut on1 = FxHashMap::default();
@@ -6799,35 +7672,59 @@ mod tests {
         // R2 arm: the gate attribute is present BEFORE the first binding is
         // ever evaluated — the motion rung's actual fix, reproduced here.
         let mut n1_attrs = FxHashMap::default();
-        if pre_open_gate { n1_attrs.insert(k_go, Value::Int(1)); }
+        if pre_open_gate {
+            n1_attrs.insert(k_go, Value::Int(1));
+        }
         let n1 = s.graph.insert_node(node_t, n1_attrs);
         let n2 = s.graph.insert_node(node_t, FxHashMap::default());
 
-        s.graph.insert_edge(s1, step, s2, FxHashMap::default()).unwrap();
-        s.graph.insert_edge(s2, step, s3, FxHashMap::default()).unwrap();
-        s.graph.insert_edge(s3, gate, n1, FxHashMap::default()).unwrap();
-        s.graph.insert_edge(n1, link, n2, FxHashMap::default()).unwrap();
+        s.graph
+            .insert_edge(s1, step, s2, FxHashMap::default())
+            .unwrap();
+        s.graph
+            .insert_edge(s2, step, s3, FxHashMap::default())
+            .unwrap();
+        s.graph
+            .insert_edge(s3, gate, n1, FxHashMap::default())
+            .unwrap();
+        s.graph
+            .insert_edge(n1, link, n2, FxHashMap::default())
+            .unwrap();
 
-        let one = s.terms.add(crate::term::TermNode::Lit { value: Value::Int(1) });
-        let zero = s.terms.add(crate::term::TermNode::Lit { value: Value::Int(0) });
+        let one = s.terms.add(crate::term::TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let zero = s.terms.add(crate::term::TermNode::Lit {
+            value: Value::Int(0),
+        });
 
         let nm_churn = s.interner.intern("churn");
         // churn (idx 0)
         let a_var = s.terms.add(crate::term::TermNode::Var { name: v_a });
-        let a_on = s.terms.add(crate::term::TermNode::Attr { node: a_var, key: k_on });
+        let a_on = s.terms.add(crate::term::TermNode::Attr {
+            node: a_var,
+            key: k_on,
+        });
         let churn_where = s.terms.add(crate::term::TermNode::Eq { a: a_on, b: one });
         s.add_rule(crate::rewrite::RewriteRule {
             name: nm_churn,
             match_edges: vec![crate::rewrite::MatchEdge {
-                src_var: v_a, edge_type: step, tgt_var: v_b }],
+                src_var: v_a,
+                edge_type: step,
+                tgt_var: v_b,
+            }],
             where_: Some(churn_where),
             effects: vec![
                 crate::rewrite::Effect::SetAttrIfDifferent {
-                    var: v_b, key: k_on,
+                    var: v_b,
+                    key: k_on,
                     value: crate::rewrite::EffectArg::Literal(Value::Int(1)),
                 },
                 crate::rewrite::Effect::AddEdge {
-                    src_var: v_b, edge_type: tag, tgt_var: v_b, attrs: vec![],
+                    src_var: v_b,
+                    edge_type: tag,
+                    tgt_var: v_b,
+                    attrs: vec![],
                 },
             ],
             ..Default::default()
@@ -6838,15 +7735,22 @@ mod tests {
         let v_p = s.interner.intern("p");
         let v_q = s.interner.intern("q");
         let p_var = s.terms.add(crate::term::TermNode::Var { name: v_p });
-        let p_on = s.terms.add(crate::term::TermNode::Attr { node: p_var, key: k_on });
+        let p_on = s.terms.add(crate::term::TermNode::Attr {
+            node: p_var,
+            key: k_on,
+        });
         let gate_where = s.terms.add(crate::term::TermNode::Eq { a: p_on, b: one });
         s.add_rule(crate::rewrite::RewriteRule {
             name: nm_open_gate,
             match_edges: vec![crate::rewrite::MatchEdge {
-                src_var: v_p, edge_type: gate, tgt_var: v_q }],
+                src_var: v_p,
+                edge_type: gate,
+                tgt_var: v_q,
+            }],
             where_: Some(gate_where),
             effects: vec![crate::rewrite::Effect::SetAttrIfDifferent {
-                var: v_q, key: k_go,
+                var: v_q,
+                key: k_go,
                 value: crate::rewrite::EffectArg::Literal(Value::Int(1)),
             }],
             ..Default::default()
@@ -6857,22 +7761,35 @@ mod tests {
         let v_x = s.interner.intern("x");
         let v_y = s.interner.intern("y");
         let x_var = s.terms.add(crate::term::TermNode::Var { name: v_x });
-        let x_go = s.terms.add(crate::term::TermNode::Attr { node: x_var, key: k_go });
+        let x_go = s.terms.add(crate::term::TermNode::Attr {
+            node: x_var,
+            key: k_go,
+        });
         let go_is_1 = s.terms.add(crate::term::TermNode::Eq { a: x_go, b: one });
         let x_tags = s.terms.add(crate::term::TermNode::Neighbours {
-            node: x_var, edge_type: tag, any_type: false });
+            node: x_var,
+            edge_type: tag,
+            any_type: false,
+        });
         let n_tags = s.terms.add(crate::term::TermNode::Count { source: x_tags });
-        let no_tags = s.terms.add(crate::term::TermNode::Eq { a: n_tags, b: zero });
+        let no_tags = s
+            .terms
+            .add(crate::term::TermNode::Eq { a: n_tags, b: zero });
         let consume_where = s.terms.add(crate::term::TermNode::And {
-            items: vec![go_is_1, no_tags] });
+            items: vec![go_is_1, no_tags],
+        });
         let v_m = s.interner.intern("m");
         s.add_rule(crate::rewrite::RewriteRule {
             name: nm_consume,
             match_edges: vec![crate::rewrite::MatchEdge {
-                src_var: v_x, edge_type: link, tgt_var: v_y }],
+                src_var: v_x,
+                edge_type: link,
+                tgt_var: v_y,
+            }],
             where_: Some(consume_where),
             effects: vec![crate::rewrite::Effect::AddNodeIfAbsent {
-                new_var: v_m, type_: marker_t,
+                new_var: v_m,
+                type_: marker_t,
                 attrs: vec![(k_go, crate::rewrite::EffectArg::Literal(Value::Int(1)))],
             }],
             ..Default::default()
@@ -6917,8 +7834,11 @@ mod tests {
 
         // The precondition the assertion below is ABOUT: the attribute write
         // DID land, so `consume`'s where-clause is genuinely true.
-        assert_eq!(s.graph.node(n1).attrs.get(&k_go), Some(&Value::Int(1)),
-                   "precondition: open_gate must have written go=1 on n1");
+        assert_eq!(
+            s.graph.node(n1).attrs.get(&k_go),
+            Some(&Value::Int(1)),
+            "precondition: open_gate must have written go=1 on n1"
+        );
 
         let markers = s.graph.nodes_of_type(marker_t).len();
 
@@ -6926,12 +7846,14 @@ mod tests {
         // reached a fixed point. This is the settle check, in the reader.
         let extra = s.run_rules(1000);
 
-        assert_eq!(markers, 1,
-                   "run_rules({steps}) reported a fixed point, but `consume`'s \
+        assert_eq!(
+            markers, 1,
+            "run_rules({steps}) reported a fixed point, but `consume`'s \
                     where-clause is TRUE on n1 -[link]-> n2 and was never \
                     applied: {markers} Markers minted, expected 1. A further \
                     run_rules made {extra} more steps — a fixed point that is \
-                    not a fixed point.");
+                    not a fixed point."
+        );
     }
 
     /// **R2 — the motion rung's fix, reproduced.** The identical graph and the
@@ -6943,7 +7865,10 @@ mod tests {
     fn settle_repro_settles_when_the_attribute_is_present_before_the_first_pass() {
         let (mut s, marker_t, _n1) = settle_repro(true);
         let _ = s.run_rules(1000);
-        assert_eq!(s.graph.nodes_of_type(marker_t).len(), 1,
-                   "control: with go=1 present up front, consume MUST fire");
+        assert_eq!(
+            s.graph.nodes_of_type(marker_t).len(),
+            1,
+            "control: with go=1 present up front, consume MUST fire"
+        );
     }
 }

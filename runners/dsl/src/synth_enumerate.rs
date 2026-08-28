@@ -222,7 +222,8 @@ use smallvec::SmallVec;
 
 use crate::sym::{Interner, Sym};
 use crate::term::{
-    evaluate, DerivedOpDef, DerivedOpPool, DerivedOpRegistry, Env, EvalCtx, TermArena, TermIdx, TermNode,
+    evaluate, DerivedOpDef, DerivedOpPool, DerivedOpRegistry, Env, EvalCtx, TermArena, TermIdx,
+    TermNode,
 };
 use crate::value::{cmp_value, SurfaceKind, Value};
 
@@ -302,8 +303,18 @@ const DICT_FILTER_MAX_CANDIDATES: u64 = 300_000;
 /// where the three land instead (evidence-gated, the same discipline
 /// `TUPLE_BUILD_OPS` already uses for `op:TupleOf`).
 const DEFAULT_OPS: &[&str] = &[
-    "Plus", "Times", "Minus", "Div", "Min", "Max", "Abs", "Neg",
-    "Gt", "Lt", "Eq", "IfThenElse",
+    "Plus",
+    "Times",
+    "Minus",
+    "Div",
+    "Min",
+    "Max",
+    "Abs",
+    "Neg",
+    "Gt",
+    "Lt",
+    "Eq",
+    "IfThenElse",
 ];
 
 fn surf(s: &str) -> Value {
@@ -311,7 +322,10 @@ fn surf(s: &str) -> Value {
 }
 
 fn surf_string(s: String) -> Value {
-    Value::Surface(SurfaceKind::Text, Arc::from(s.into_bytes().into_boxed_slice()))
+    Value::Surface(
+        SurfaceKind::Text,
+        Arc::from(s.into_bytes().into_boxed_slice()),
+    )
 }
 
 // ---------------------------------------------------------------------------
@@ -378,8 +392,8 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     // is a plain DSL-Term search, not a ProgEval-with-oracles search —
     // these two reuse EXISTING DSL string Terms, the same kernel-table
     // discipline as every arithmetic op above). ---
-    ("Concat", OpKind::Binary),   // -> StringConcat{parts:[a,b]}
-    ("CaseFold", OpKind::Unary),  // -> CaseFold{text} (Python str.lower())
+    ("Concat", OpKind::Binary),  // -> StringConcat{parts:[a,b]}
+    ("CaseFold", OpKind::Unary), // -> CaseFold{text} (Python str.lower())
     // --- Arc4-S4: list/iteration composition (search reach) — reuses
     // EXISTING pure DSL Terms (Count/Sum/MaxOver/MinOver/IndexAt/Last/
     // Fold/FilterList/MapList), never a new Term variant. See the module
@@ -399,10 +413,10 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     // the PROPOSAL layer, not the execution layer.  Each of these four
     // exposes an ALREADY-SHIPPED, already-pure DSL Term as a composable op
     // name — ZERO new `TermNode` variants, exactly the arc-4 S4 shape. ---
-    ("TupleOf", OpKind::Binary),           // -> Vec{items:[a,b]}
-    ("ProdList", OpKind::ListUnary),       // -> Prod{source, item, Var(item)}  (the SumList twin)
-    ("ConcatList", OpKind::ListBinary),    // -> Fold{b, acc<-a, Append(acc,item)} (the JoinList precedent)
-    ("ArgMaxLenOver", OpKind::ListUnary),  // -> Argmax{source, item, Count(Var(item))} (the MaxLenOver arg-twin)
+    ("TupleOf", OpKind::Binary),          // -> Vec{items:[a,b]}
+    ("ProdList", OpKind::ListUnary),      // -> Prod{source, item, Var(item)}  (the SumList twin)
+    ("ConcatList", OpKind::ListBinary), // -> Fold{b, acc<-a, Append(acc,item)} (the JoinList precedent)
+    ("ArgMaxLenOver", OpKind::ListUnary), // -> Argmax{source, item, Count(Var(item))} (the MaxLenOver arg-twin)
     // --- CEILING_REASSESSMENT_4 (PROGRAM_SYNTHESIS_CEILING_REASSESSMENT_4_
     // PREREG.md §3.2, tasks 111/140): a FOLDED reduction of the already-
     // shipped 2-arg `Intersect`/`Union` Set Terms across a variable-length
@@ -411,8 +425,8 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     // sequence too; this is the same shape with a Set op as the body).
     // ZERO new `TermNode` variant: `Fold`/`Intersect`/`Union`/`IndexAt`/
     // `Var`/`Lit` are all pre-existing, already-wired Terms. ---
-    ("IntersectAll", OpKind::ListUnary),   // -> Fold{source, init:IndexAt(source,0), body:Intersect(acc,item)}
-    ("UnionAll", OpKind::ListUnary),       // -> Fold{source, init:IndexAt(source,0), body:Union(acc,item)}
+    ("IntersectAll", OpKind::ListUnary), // -> Fold{source, init:IndexAt(source,0), body:Intersect(acc,item)}
+    ("UnionAll", OpKind::ListUnary), // -> Fold{source, init:IndexAt(source,0), body:Union(acc,item)}
     // --- PROGRAM_SYNTHESIS_DICTFROMPAIRS_PREREG.md §3-4 (tasks 277/465):
     // Python's `dict(pairs)` — build a `Value::Dict` from a RUNTIME-LENGTH
     // list of (key,value) pairs. `MkDict{items}` alone can't (its `items`
@@ -422,34 +436,34 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     // a time, via already-shipped `MkDict` (single-pair) folded in with
     // already-shipped `DictMerge` (later pair wins a key collision --
     // Python's own duplicate-key rule). ZERO new `TermNode` variant. ---
-    ("DictFromPairs", OpKind::ListUnary),  // -> Fold{source, init:MkDict([]), body:DictMerge(acc, MkDict([IndexAt(item,0),IndexAt(item,1)]))}
+    ("DictFromPairs", OpKind::ListUnary), // -> Fold{source, init:MkDict([]), body:DictMerge(acc, MkDict([IndexAt(item,0),IndexAt(item,1)]))}
     // --- Rung 1 (PROGRAM_SYNTHESIS_STRUCTURAL_CEILING_REASSESSMENT_
     // PREREG.md §5.1, `STRUCTURAL_CEILING.md` §9's own priced order):
     // Tier-1 stdlib Term ports. Each is a NEW `TermNode` variant (unlike
     // tier-0's zero-new-variant exposures) that ports a behaviour
     // `ProgEval` already runs — CLAUDE.md's third, sanctioned "new
     // primitive" pathway, not a shape/codebook growth. ---
-    ("Replace", OpKind::Ternary),      // -> Replace{text,old,new} (str.replace)
-    ("Str", OpKind::Unary),            // -> Str{value} (Python str())
-    ("Split", OpKind::Binary),         // -> Split{text,sep} (str.split)
-    ("StrCount", OpKind::Binary),      // -> StrCount{text,sub} (substring count)
-    ("Round", OpKind::Binary),         // -> Round{value,ndigits} (2-arg round())
-    ("Reverse", OpKind::Unary),        // -> Reverse{seq} (type-preserving reversed())
-    ("IndexedMap", OpKind::IndexedMap),// -> IndexedMap{source,item,index,value}
-    ("Capitalize", OpKind::Unary),     // -> Capitalize{text} (str.capitalize)
-    ("ParseInt", OpKind::Unary),       // -> ParseInt{text} (Python int(s))
+    ("Replace", OpKind::Ternary), // -> Replace{text,old,new} (str.replace)
+    ("Str", OpKind::Unary),       // -> Str{value} (Python str())
+    ("Split", OpKind::Binary),    // -> Split{text,sep} (str.split)
+    ("StrCount", OpKind::Binary), // -> StrCount{text,sub} (substring count)
+    ("Round", OpKind::Binary),    // -> Round{value,ndigits} (2-arg round())
+    ("Reverse", OpKind::Unary),   // -> Reverse{seq} (type-preserving reversed())
+    ("IndexedMap", OpKind::IndexedMap), // -> IndexedMap{source,item,index,value}
+    ("Capitalize", OpKind::Unary), // -> Capitalize{text} (str.capitalize)
+    ("ParseInt", OpKind::Unary),  // -> ParseInt{text} (Python int(s))
     // Deliberately LAST (§5.1): the largest blast radius of the ten.
-    ("Slice", OpKind::Ternary),        // -> Slice{seq,start,stop} (negative-index-correct, type-general)
+    ("Slice", OpKind::Ternary), // -> Slice{seq,start,stop} (negative-index-correct, type-general)
     // --- SetLit/DictItems rung (PROGRAM_SYNTHESIS_SETLIT_DICTITEMS_
     // PREREG.md): the PROPOSAL layer for Sets. `Union`/`Intersect`/
     // `MapSet` already exist as pure, already-shipped Terms (`term.rs`)
     // — the gap was purely that this OP_TABLE never exposed them. `Sort`
     // is the one new `TermNode` this rung adds, via the already-vetted
     // zero-blast-radius `cmp_value_lex` reuse (Rung 3's own Step 2). ---
-    ("Sort", OpKind::Unary),           // -> Sort{seq} (type-preserving ascending sort)
-    ("SetMap", OpKind::ListMap),       // -> MapSet{source,item,<template>} (the MapList twin, returns a Set)
+    ("Sort", OpKind::Unary), // -> Sort{seq} (type-preserving ascending sort)
+    ("SetMap", OpKind::ListMap), // -> MapSet{source,item,<template>} (the MapList twin, returns a Set)
     ("Intersect", OpKind::ListBinary), // -> Intersect{a,b} (the shipped Set/FrozenSet Term, direct)
-    ("Union", OpKind::ListBinary),     // -> Union{a,b} (the shipped Set/FrozenSet Term, direct)
+    ("Union", OpKind::ListBinary), // -> Union{a,b} (the shipped Set/FrozenSet Term, direct)
     // --- DictItems/SortBy rung (PROGRAM_SYNTHESIS_DICTITEMS_SORTBY_
     // PREREG.md, task 475 `sort_counter`/`Counter.most_common()`):
     // `DictItems` is `Sort`-class (Unary, general `by_size` pool, zero new
@@ -457,8 +471,8 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     // registration path verbatim (the `SetMap`/`IndexedMap` precedent) —
     // its template is a SORT KEY, not an output value (see `build_list_ho`
     // and the evaluator in term.rs). ---
-    ("DictItems", OpKind::Unary),      // -> DictItems{seq} (dict.items() as a Tuple of (k,v) pairs)
-    ("SortBy", OpKind::ListMap),       // -> SortBy{source,item,<key template>} (stable sort by projected key)
+    ("DictItems", OpKind::Unary), // -> DictItems{seq} (dict.items() as a Tuple of (k,v) pairs)
+    ("SortBy", OpKind::ListMap), // -> SortBy{source,item,<key template>} (stable sort by projected key)
     // --- GroupCount/DictMerge rung (PROGRAM_SYNTHESIS_GROUPCOUNT_
     // DICTMERGE_PREREG.md, tasks 88/87 — priced by ARC6_STRUCTURAL_CEILING
     // §4.3 / CEILING_REASSESSMENT_2 §6.4 as 1-new-Term-each stdlib ports,
@@ -466,8 +480,8 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     // `Sort`/`DictItems`-class (Unary, general `by_size` pool). `DictMerge`
     // is Binary — a 3-way merge composes via nesting, the SAME
     // `ConcatList(ConcatList(a,b),c)` precedent task 108 already uses. ---
-    ("GroupCount", OpKind::Unary),     // -> GroupCount{seq} (Counter(seq) as a Dict of element->count)
-    ("DictMerge", OpKind::Binary),     // -> DictMerge{a,b} (dict.update semantics: b wins over a on key conflict)
+    ("GroupCount", OpKind::Unary), // -> GroupCount{seq} (Counter(seq) as a Dict of element->count)
+    ("DictMerge", OpKind::Binary), // -> DictMerge{a,b} (dict.update semantics: b wins over a on key conflict)
     // --- PROGRAM_SYNTHESIS_ZIP_ELEMENTWISE_PREREG.md (an 8-task MBPP
     // cluster — 259/261/273/282/399/401/429/445 — all needing Python's
     // `zip(a, b)` paired with a per-pair binary combiner). `ZipWith` is a
@@ -484,8 +498,8 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     // a caller building its own op list) CAN name them; the bare-scalar
     // typed default (below) is the only unconditional consumer — see that
     // branch's own comment for why it is scoped this narrowly. ---
-    ("Mod", OpKind::Binary),   // -> Mod{a,b} (Python a % b)
-    ("Sqrt", OpKind::Unary),   // -> Sqrt{arg} (Python math.sqrt)
+    ("Mod", OpKind::Binary), // -> Mod{a,b} (Python a % b)
+    ("Sqrt", OpKind::Unary), // -> Sqrt{arg} (Python math.sqrt)
     // --- UNREGISTERED_OPS_WITNESS_CHECK_PREREG.md: `Shl`/`BitXor`/`BitAnd`
     // are already-shipped, already-evaluated `TermNode` variants (`term.rs`)
     // that had no general, freestanding `OP_TABLE` entry (`BitAnd`/`BitXor`
@@ -497,9 +511,9 @@ const OP_TABLE: &[(&str, OpKind)] = &[
     // mask check). Registered here so an explicit `ops` request can name
     // them; the bare-scalar typed default (below) is the only unconditional
     // consumer, scoped exactly like `Mod`/`Sqrt`. ---
-    ("Shl", OpKind::Binary),      // -> Shl{a,b} (Python a << b)
-    ("BitXor", OpKind::Binary),   // -> BitXor{a,b} (Python a ^ b)
-    ("BitAnd", OpKind::Binary),   // -> BitAnd{a,b} (Python a & b)
+    ("Shl", OpKind::Binary),    // -> Shl{a,b} (Python a << b)
+    ("BitXor", OpKind::Binary), // -> BitXor{a,b} (Python a ^ b)
+    ("BitAnd", OpKind::Binary), // -> BitAnd{a,b} (Python a & b)
     // `XorList` (task 119, "element that appears only once"): the
     // `IntersectAll`/`UnionAll`/`DictFromPairs` `Fold`-composition
     // precedent -- reduce a list with `BitXor` seeded at 0. Zero new
@@ -516,14 +530,25 @@ const OP_TABLE: &[(&str, OpKind)] = &[
 /// construction reads as "arithmetic PLUS list ops", matching the module
 /// doc's framing.
 const LIST_EXTRA_OPS: &[&str] = &[
-    "Len", "SumList", "MaxList", "MinList", "MaxLenOver", "MinLenOver",
-    "First", "LastElem", "JoinList", "FilterList", "MapList",
+    "Len",
+    "SumList",
+    "MaxList",
+    "MinList",
+    "MaxLenOver",
+    "MinLenOver",
+    "First",
+    "LastElem",
+    "JoinList",
+    "FilterList",
+    "MapList",
     // Arc6 tier-0 — APPENDED, never interleaved: within one size the growth
     // loop walks `op_list` in order, so every pre-existing op still registers
     // (and so still claims its signature) ahead of these four.  A widening
     // can therefore only find a solution EARLIER or at a size where none
     // existed — never displace one.
-    "ProdList", "ConcatList", "ArgMaxLenOver",
+    "ProdList",
+    "ConcatList",
+    "ArgMaxLenOver",
     // Rung 1 — APPENDED (same discipline). ONLY `Reverse`/`Slice` (cheap,
     // linear Unary/Ternary registration — O(by_size[size-1]), the same
     // cost class as every pre-existing Unary/Binary op) live here
@@ -580,12 +605,20 @@ const TUPLE_BUILD_OPS: &[&str] = &["TupleOf"];
 /// found:false` with `DEFAULT_OPS` included vs. `found:true` at 74830
 /// tested without it).
 const SET_DEFAULT_OPS: &[&str] = &[
-    "Eq", "IfThenElse", "Sort", "Reverse", "Slice", "SetMap", "Intersect", "Union",
+    "Eq",
+    "IfThenElse",
+    "Sort",
+    "Reverse",
+    "Slice",
+    "SetMap",
+    "Intersect",
+    "Union",
     // CEILING_REASSESSMENT_4 (tasks 111/140): the FOLDED, variable-arity
     // twins of the `Intersect`/`Union` pair two lines up — same bucket,
     // same `ListUnary` cheap registration cost, live-verified end-to-end
     // (`PROGRAM_SYNTHESIS_CEILING_REASSESSMENT_4_PREREG.md` §3.1).
-    "IntersectAll", "UnionAll",
+    "IntersectAll",
+    "UnionAll",
 ];
 
 /// GroupCount/DictMerge rung: the `SET_DEFAULT_OPS` precedent for a spec
@@ -621,8 +654,15 @@ const SET_DEFAULT_OPS: &[&str] = &[
 /// the full paired MBPP battery (exact task-id set diff), not just argued:
 /// neither new op composes any dict-merge-shaped candidate at or below
 /// task 87's own solution size.
-const DICT_DEFAULT_OPS: &[&str] =
-    &["Eq", "IfThenElse", "GroupCount", "DictMerge", "DictFromPairs", "DictItems", "FilterList"];
+const DICT_DEFAULT_OPS: &[&str] = &[
+    "Eq",
+    "IfThenElse",
+    "GroupCount",
+    "DictMerge",
+    "DictFromPairs",
+    "DictItems",
+    "FilterList",
+];
 
 fn table_kind(name: &str) -> Option<OpKind> {
     OP_TABLE.iter().find(|(n, _)| *n == name).map(|(_, k)| *k)
@@ -633,7 +673,10 @@ fn table_kind(name: &str) -> Option<OpKind> {
 /// (iterating a Dict's own `.iter()` semantics are keys-only elsewhere in
 /// this engine; a dict-shaped reduction is out of this widening's scope).
 fn is_listlike(v: &Value) -> bool {
-    matches!(v, Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_))
+    matches!(
+        v,
+        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_)
+    )
 }
 
 /// generator.py's DEFAULT_OPS twin for a STRING-shaped spec (Q1 typed
@@ -664,9 +707,19 @@ fn is_listlike(v: &Value) -> bool {
 /// (built below, itself evidence-gated). Both are cheap ListUnary/ListMap
 /// registrations, not a new arity class.
 const DEFAULT_STR_OPS: &[&str] = &[
-    "Concat", "CaseFold", "Eq", "IfThenElse",
-    "Replace", "Split", "StrCount", "Capitalize", "Reverse", "Slice", "Str",
-    "MapList", "JoinList",
+    "Concat",
+    "CaseFold",
+    "Eq",
+    "IfThenElse",
+    "Replace",
+    "Split",
+    "StrCount",
+    "Capitalize",
+    "Reverse",
+    "Slice",
+    "Str",
+    "MapList",
+    "JoinList",
 ];
 
 /// Build-A's own narrow fallback (`DERIVED_OPERATOR_TIER_RESULTS.md` §4,
@@ -679,7 +732,11 @@ const DEFAULT_STR_OPS: &[&str] = &[
 /// trusts that gate the same way every existing `build_*` function
 /// already trusts `op_list` to only ever hand it a table-recognized
 /// name.
-fn call_fallback(name: &str, args: Vec<TermIdx>, derived_names: &FxHashMap<String, Sym>) -> TermNode {
+fn call_fallback(
+    name: &str,
+    args: Vec<TermIdx>,
+    derived_names: &FxHashMap<String, Sym>,
+) -> TermNode {
     match derived_names.get(name) {
         Some(sym) => TermNode::Call { name: *sym, args },
         None => unreachable!("op filtered through OP_TABLE or derived_ops"),
@@ -689,49 +746,122 @@ fn call_fallback(name: &str, args: Vec<TermIdx>, derived_names: &FxHashMap<Strin
 /// Build the TermNode for an op over already-arena'd children.
 fn build_op(name: &str, kids: &[TermIdx], derived_names: &FxHashMap<String, Sym>) -> TermNode {
     match name {
-        "Plus" => TermNode::Plus { items: kids.to_vec() },
-        "Times" => TermNode::Times { items: kids.to_vec() },
-        "Minus" => TermNode::Minus { a: kids[0], b: kids[1] },
-        "Div" => TermNode::Div { a: kids[0], b: kids[1] },
-        "Min" => TermNode::Min { items: kids.to_vec() },
-        "Max" => TermNode::Max { items: kids.to_vec() },
+        "Plus" => TermNode::Plus {
+            items: kids.to_vec(),
+        },
+        "Times" => TermNode::Times {
+            items: kids.to_vec(),
+        },
+        "Minus" => TermNode::Minus {
+            a: kids[0],
+            b: kids[1],
+        },
+        "Div" => TermNode::Div {
+            a: kids[0],
+            b: kids[1],
+        },
+        "Min" => TermNode::Min {
+            items: kids.to_vec(),
+        },
+        "Max" => TermNode::Max {
+            items: kids.to_vec(),
+        },
         "Abs" => TermNode::Abs { arg: kids[0] },
         "Neg" => TermNode::Neg { arg: kids[0] },
-        "Gt" => TermNode::Gt { a: kids[0], b: kids[1] },
-        "Lt" => TermNode::Lt { a: kids[0], b: kids[1] },
-        "Gte" => TermNode::Gte { a: kids[0], b: kids[1] },
-        "Lte" => TermNode::Lte { a: kids[0], b: kids[1] },
-        "Eq" => TermNode::Eq { a: kids[0], b: kids[1] },
-        "And" => TermNode::And { items: kids.to_vec() },
-        "Or" => TermNode::Or { items: kids.to_vec() },
+        "Gt" => TermNode::Gt {
+            a: kids[0],
+            b: kids[1],
+        },
+        "Lt" => TermNode::Lt {
+            a: kids[0],
+            b: kids[1],
+        },
+        "Gte" => TermNode::Gte {
+            a: kids[0],
+            b: kids[1],
+        },
+        "Lte" => TermNode::Lte {
+            a: kids[0],
+            b: kids[1],
+        },
+        "Eq" => TermNode::Eq {
+            a: kids[0],
+            b: kids[1],
+        },
+        "And" => TermNode::And {
+            items: kids.to_vec(),
+        },
+        "Or" => TermNode::Or {
+            items: kids.to_vec(),
+        },
         "Not" => TermNode::Not { arg: kids[0] },
-        "IfThenElse" => TermNode::IfThenElse { cond: kids[0], then: kids[1], other: kids[2] },
-        "Concat" => TermNode::StringConcat { parts: kids.to_vec() },
+        "IfThenElse" => TermNode::IfThenElse {
+            cond: kids[0],
+            then: kids[1],
+            other: kids[2],
+        },
+        "Concat" => TermNode::StringConcat {
+            parts: kids.to_vec(),
+        },
         "CaseFold" => TermNode::CaseFold { text: kids[0] },
         // Arc6 tier-0 `op:TupleOf` — the shipped `Vec` Term, which builds a
         // Tuple.  Binary because that is the arity a fixed-shape op can
         // have here; a variable-arity tuple is NOT reachable this way and is
         // recorded as such (see the tier-0 results document).
-        "TupleOf" => TermNode::Vec_ { items: kids.to_vec() },
+        "TupleOf" => TermNode::Vec_ {
+            items: kids.to_vec(),
+        },
         // Rung 1 Tier-1 stdlib Term ports.
-        "Replace" => TermNode::Replace { text: kids[0], old: kids[1], new: kids[2] },
+        "Replace" => TermNode::Replace {
+            text: kids[0],
+            old: kids[1],
+            new: kids[2],
+        },
         "Str" => TermNode::Str { value: kids[0] },
-        "Split" => TermNode::Split { text: kids[0], sep: kids[1] },
-        "StrCount" => TermNode::StrCount { text: kids[0], sub: kids[1] },
-        "Round" => TermNode::Round { value: kids[0], ndigits: kids[1] },
+        "Split" => TermNode::Split {
+            text: kids[0],
+            sep: kids[1],
+        },
+        "StrCount" => TermNode::StrCount {
+            text: kids[0],
+            sub: kids[1],
+        },
+        "Round" => TermNode::Round {
+            value: kids[0],
+            ndigits: kids[1],
+        },
         "Reverse" => TermNode::Reverse { seq: kids[0] },
         "Capitalize" => TermNode::Capitalize { text: kids[0] },
         "ParseInt" => TermNode::ParseInt { text: kids[0] },
-        "Slice" => TermNode::Slice { seq: kids[0], start: kids[1], stop: kids[2] },
+        "Slice" => TermNode::Slice {
+            seq: kids[0],
+            start: kids[1],
+            stop: kids[2],
+        },
         "Sort" => TermNode::Sort { seq: kids[0] },
         "DictItems" => TermNode::DictItems { seq: kids[0] },
         "GroupCount" => TermNode::GroupCount { seq: kids[0] },
-        "DictMerge" => TermNode::DictMerge { a: kids[0], b: kids[1] },
-        "Mod" => TermNode::Mod { a: kids[0], b: kids[1] },
+        "DictMerge" => TermNode::DictMerge {
+            a: kids[0],
+            b: kids[1],
+        },
+        "Mod" => TermNode::Mod {
+            a: kids[0],
+            b: kids[1],
+        },
         "Sqrt" => TermNode::Sqrt { arg: kids[0] },
-        "Shl" => TermNode::Shl { a: kids[0], b: kids[1] },
-        "BitXor" => TermNode::BitXor { a: kids[0], b: kids[1] },
-        "BitAnd" => TermNode::BitAnd { a: kids[0], b: kids[1] },
+        "Shl" => TermNode::Shl {
+            a: kids[0],
+            b: kids[1],
+        },
+        "BitXor" => TermNode::BitXor {
+            a: kids[0],
+            b: kids[1],
+        },
+        "BitAnd" => TermNode::BitAnd {
+            a: kids[0],
+            b: kids[1],
+        },
         _ => call_fallback(name, kids.to_vec(), derived_names),
     }
 }
@@ -743,50 +873,95 @@ fn build_op(name: &str, kids: &[TermIdx], derived_names: &FxHashMap<String, Sym>
 /// call), so this `&mut TermArena` borrow of `search.scratch` ends before
 /// `search.register` needs `&mut search` — see the call sites below.
 fn build_list_unary(
-    name: &str, source: TermIdx, item: Sym, acc: Sym, scratch: &mut TermArena,
+    name: &str,
+    source: TermIdx,
+    item: Sym,
+    acc: Sym,
+    scratch: &mut TermArena,
     derived_names: &FxHashMap<String, Sym>,
 ) -> TermNode {
     match name {
         "Len" => TermNode::Count { source },
         "SumList" => {
             let v = scratch.add(TermNode::Var { name: item });
-            TermNode::Sum { source, var_name: item, value: v }
+            TermNode::Sum {
+                source,
+                var_name: item,
+                value: v,
+            }
         }
         "MaxList" => {
             let v = scratch.add(TermNode::Var { name: item });
-            TermNode::MaxOver { source, var_name: item, value: v, default: None }
+            TermNode::MaxOver {
+                source,
+                var_name: item,
+                value: v,
+                default: None,
+            }
         }
         "MinList" => {
             let v = scratch.add(TermNode::Var { name: item });
-            TermNode::MinOver { source, var_name: item, value: v, default: None }
+            TermNode::MinOver {
+                source,
+                var_name: item,
+                value: v,
+                default: None,
+            }
         }
         "MaxLenOver" => {
             let iv = scratch.add(TermNode::Var { name: item });
             let cnt = scratch.add(TermNode::Count { source: iv });
-            TermNode::MaxOver { source, var_name: item, value: cnt, default: None }
+            TermNode::MaxOver {
+                source,
+                var_name: item,
+                value: cnt,
+                default: None,
+            }
         }
         "MinLenOver" => {
             let iv = scratch.add(TermNode::Var { name: item });
             let cnt = scratch.add(TermNode::Count { source: iv });
-            TermNode::MinOver { source, var_name: item, value: cnt, default: None }
+            TermNode::MinOver {
+                source,
+                var_name: item,
+                value: cnt,
+                default: None,
+            }
         }
         "First" => {
-            let zero = scratch.add(TermNode::Lit { value: Value::Int(0) });
-            TermNode::IndexAt { seq: source, index: zero }
+            let zero = scratch.add(TermNode::Lit {
+                value: Value::Int(0),
+            });
+            TermNode::IndexAt {
+                seq: source,
+                index: zero,
+            }
         }
         "LastElem" => TermNode::Last { seq: source },
         "JoinList" => {
             let accv = scratch.add(TermNode::Var { name: acc });
             let itemv = scratch.add(TermNode::Var { name: item });
-            let body = scratch.add(TermNode::StringConcat { parts: vec![accv, itemv] });
+            let body = scratch.add(TermNode::StringConcat {
+                parts: vec![accv, itemv],
+            });
             let init = scratch.add(TermNode::Lit { value: surf("") });
-            TermNode::Fold { source, var_name: item, acc_name: acc, init, body }
+            TermNode::Fold {
+                source,
+                var_name: item,
+                acc_name: acc,
+                init,
+                body,
+            }
         }
         // Arc6 tier-0 `op:ProdList` — the `SumList` twin, over the shipped
         // `Prod` Term.
         "ProdList" => {
             let v = scratch.add(TermNode::Var { name: item });
-            TermNode::Prod { source, var_name: item, value: v }
+            TermNode::Prod {
+                source,
+                var_name: item,
+                value: v,
+            }
         }
         // Arc6 tier-0 `op:ArgMaxLenOver` — the ARG-twin of the shipped
         // `MaxLenOver`, over the shipped `Argmax` Term: same source, same
@@ -794,7 +969,12 @@ fn build_list_unary(
         "ArgMaxLenOver" => {
             let iv = scratch.add(TermNode::Var { name: item });
             let cnt = scratch.add(TermNode::Count { source: iv });
-            TermNode::Argmax { source, var_name: item, value: cnt, default: None }
+            TermNode::Argmax {
+                source,
+                var_name: item,
+                value: cnt,
+                default: None,
+            }
         }
         // CEILING_REASSESSMENT_4 `op:IntersectAll`/`op:UnionAll` (tasks
         // 111/140, PREREG §3.1-3.2): reduce a variable-length outer
@@ -806,20 +986,42 @@ fn build_list_unary(
         // `Union(A,A)=A`) — live-verified end-to-end against all three
         // fixture rows (including held-out) for both target tasks.
         "IntersectAll" => {
-            let zero = scratch.add(TermNode::Lit { value: Value::Int(0) });
-            let init = scratch.add(TermNode::IndexAt { seq: source, index: zero });
+            let zero = scratch.add(TermNode::Lit {
+                value: Value::Int(0),
+            });
+            let init = scratch.add(TermNode::IndexAt {
+                seq: source,
+                index: zero,
+            });
             let accv = scratch.add(TermNode::Var { name: acc });
             let itemv = scratch.add(TermNode::Var { name: item });
             let body = scratch.add(TermNode::Intersect { a: accv, b: itemv });
-            TermNode::Fold { source, var_name: item, acc_name: acc, init, body }
+            TermNode::Fold {
+                source,
+                var_name: item,
+                acc_name: acc,
+                init,
+                body,
+            }
         }
         "UnionAll" => {
-            let zero = scratch.add(TermNode::Lit { value: Value::Int(0) });
-            let init = scratch.add(TermNode::IndexAt { seq: source, index: zero });
+            let zero = scratch.add(TermNode::Lit {
+                value: Value::Int(0),
+            });
+            let init = scratch.add(TermNode::IndexAt {
+                seq: source,
+                index: zero,
+            });
             let accv = scratch.add(TermNode::Var { name: acc });
             let itemv = scratch.add(TermNode::Var { name: item });
             let body = scratch.add(TermNode::Union { a: accv, b: itemv });
-            TermNode::Fold { source, var_name: item, acc_name: acc, init, body }
+            TermNode::Fold {
+                source,
+                var_name: item,
+                acc_name: acc,
+                init,
+                body,
+            }
         }
         // UNREGISTERED_OPS_WITNESS_CHECK_PREREG.md (task 119, "element that
         // appears only once in a sorted array"): XOR-reduce the whole list,
@@ -831,11 +1033,19 @@ fn build_list_unary(
         // 0)` (XOR's identity element is 0, unlike Intersect/Union which
         // need a real first element to seed from).
         "XorList" => {
-            let zero = scratch.add(TermNode::Lit { value: Value::Int(0) });
+            let zero = scratch.add(TermNode::Lit {
+                value: Value::Int(0),
+            });
             let accv = scratch.add(TermNode::Var { name: acc });
             let itemv = scratch.add(TermNode::Var { name: item });
             let body = scratch.add(TermNode::BitXor { a: accv, b: itemv });
-            TermNode::Fold { source, var_name: item, acc_name: acc, init: zero, body }
+            TermNode::Fold {
+                source,
+                var_name: item,
+                acc_name: acc,
+                init: zero,
+                body,
+            }
         }
         // PROGRAM_SYNTHESIS_DICTFROMPAIRS_PREREG.md §3-4: Python's
         // `dict(pairs)`. `init` is the empty dict; each fold step merges in
@@ -846,14 +1056,32 @@ fn build_list_unary(
             let empty = scratch.add(TermNode::MkDict { items: vec![] });
             let accv = scratch.add(TermNode::Var { name: acc });
             let key_item = scratch.add(TermNode::Var { name: item });
-            let key_idx = scratch.add(TermNode::Lit { value: Value::Int(0) });
-            let key = scratch.add(TermNode::IndexAt { seq: key_item, index: key_idx });
+            let key_idx = scratch.add(TermNode::Lit {
+                value: Value::Int(0),
+            });
+            let key = scratch.add(TermNode::IndexAt {
+                seq: key_item,
+                index: key_idx,
+            });
             let val_item = scratch.add(TermNode::Var { name: item });
-            let val_idx = scratch.add(TermNode::Lit { value: Value::Int(1) });
-            let val = scratch.add(TermNode::IndexAt { seq: val_item, index: val_idx });
-            let pair = scratch.add(TermNode::MkDict { items: vec![key, val] });
+            let val_idx = scratch.add(TermNode::Lit {
+                value: Value::Int(1),
+            });
+            let val = scratch.add(TermNode::IndexAt {
+                seq: val_item,
+                index: val_idx,
+            });
+            let pair = scratch.add(TermNode::MkDict {
+                items: vec![key, val],
+            });
             let body = scratch.add(TermNode::DictMerge { a: accv, b: pair });
-            TermNode::Fold { source, var_name: item, acc_name: acc, init: empty, body }
+            TermNode::Fold {
+                source,
+                var_name: item,
+                acc_name: acc,
+                init: empty,
+                body,
+            }
         }
         _ => call_fallback(name, vec![source], derived_names),
     }
@@ -866,15 +1094,29 @@ fn build_list_unary(
 /// measured, §7.3 — so `Fold`+`Append` is the real route, and both Terms
 /// are already shipped.)
 fn build_list_binary(
-    name: &str, a: TermIdx, b: TermIdx, item: Sym, acc: Sym, scratch: &mut TermArena,
+    name: &str,
+    a: TermIdx,
+    b: TermIdx,
+    item: Sym,
+    acc: Sym,
+    scratch: &mut TermArena,
     derived_names: &FxHashMap<String, Sym>,
 ) -> TermNode {
     match name {
         "ConcatList" => {
             let accv = scratch.add(TermNode::Var { name: acc });
             let itemv = scratch.add(TermNode::Var { name: item });
-            let body = scratch.add(TermNode::Append { seq: accv, item: itemv });
-            TermNode::Fold { source: b, var_name: item, acc_name: acc, init: a, body }
+            let body = scratch.add(TermNode::Append {
+                seq: accv,
+                item: itemv,
+            });
+            TermNode::Fold {
+                source: b,
+                var_name: item,
+                acc_name: acc,
+                init: a,
+                body,
+            }
         }
         // SetLit/DictItems rung: `Union`/`Intersect` are already-shipped,
         // already-pure Set Terms — no Fold/Append scaffolding needed,
@@ -894,7 +1136,7 @@ fn build_list_binary(
 /// recognize.
 fn list_binary_extra_cost(name: &str, derived_extra: &FxHashMap<String, usize>) -> usize {
     match name {
-        "ConcatList" => 3, // Fold{.., body: Append(Var(acc), Var(item))}
+        "ConcatList" => 3,          // Fold{.., body: Append(Var(acc), Var(item))}
         "Intersect" | "Union" => 0, // direct TermNode wrap, no injected nodes.
         _ => derived_extra.get(name).copied().unwrap_or(0),
     }
@@ -914,21 +1156,43 @@ fn list_binary_extra_cost(name: &str, derived_extra: &FxHashMap<String, usize>) 
 /// doc's own §3.1: "the three template pools are NOT argument sources
 /// for a top-level op"). Added for literal completeness with step 2's
 /// five-function list, not because it is reachable today.
-fn build_list_ho(name: &str, source: TermIdx, tmpl: TermIdx, item: Sym, derived_names: &FxHashMap<String, Sym>) -> TermNode {
+fn build_list_ho(
+    name: &str,
+    source: TermIdx,
+    tmpl: TermIdx,
+    item: Sym,
+    derived_names: &FxHashMap<String, Sym>,
+) -> TermNode {
     match name {
-        "FilterList" => TermNode::FilterList { source, var_name: item, predicate: tmpl },
-        "MapList" => TermNode::MapList { source, var_name: item, value: tmpl },
+        "FilterList" => TermNode::FilterList {
+            source,
+            var_name: item,
+            predicate: tmpl,
+        },
+        "MapList" => TermNode::MapList {
+            source,
+            var_name: item,
+            value: tmpl,
+        },
         // SetLit/DictItems rung: `SetMap` is `MapList`'s SET-returning
         // twin — same `OpKind::ListMap` registration path, same
         // `map_templates_by_size` pool, only the built Term differs
         // (`MapSet` instead of `MapList`).
-        "SetMap" => TermNode::MapSet { source, var_name: item, value: tmpl },
+        "SetMap" => TermNode::MapSet {
+            source,
+            var_name: item,
+            value: tmpl,
+        },
         // DictItems/SortBy rung: same `OpKind::ListMap` registration path,
         // same `map_templates_by_size` pool — `tmpl` here is the SORT KEY
         // template, not an output-value template (the built `TermNode`
         // holds it as `key`, and the evaluator sorts the ORIGINAL elements
         // by it, keeping them unchanged — see term.rs `SortBy`).
-        "SortBy" => TermNode::SortBy { source, var_name: item, key: tmpl },
+        "SortBy" => TermNode::SortBy {
+            source,
+            var_name: item,
+            key: tmpl,
+        },
         _ => call_fallback(name, vec![source, tmpl], derived_names),
     }
 }
@@ -944,9 +1208,21 @@ fn build_list_ho(name: &str, source: TermIdx, tmpl: TermIdx, item: Sym, derived_
 /// under this slice's own arity/pool inference (no path routes an
 /// unrecognized name into `OpKind::IndexedMap` today) — added for
 /// literal completeness with step 2's five-function list.
-fn build_indexed_map(name: &str, source: TermIdx, tmpl: TermIdx, item: Sym, index: Sym, derived_names: &FxHashMap<String, Sym>) -> TermNode {
+fn build_indexed_map(
+    name: &str,
+    source: TermIdx,
+    tmpl: TermIdx,
+    item: Sym,
+    index: Sym,
+    derived_names: &FxHashMap<String, Sym>,
+) -> TermNode {
     if name == "IndexedMap" {
-        TermNode::IndexedMap { source, item_name: item, index_name: index, value: tmpl }
+        TermNode::IndexedMap {
+            source,
+            item_name: item,
+            index_name: index,
+            value: tmpl,
+        }
     } else {
         call_fallback(name, vec![source, tmpl], derived_names)
     }
@@ -962,11 +1238,22 @@ fn build_indexed_map(name: &str, source: TermIdx, tmpl: TermIdx, item: Sym, inde
 /// unrecognized name into `OpKind::ZipMap` today) — added for the same
 /// literal-completeness reason that precedent's own comment gives.
 fn build_zip_with(
-    name: &str, a: TermIdx, b: TermIdx, tmpl: TermIdx, a_name: Sym, b_name: Sym,
+    name: &str,
+    a: TermIdx,
+    b: TermIdx,
+    tmpl: TermIdx,
+    a_name: Sym,
+    b_name: Sym,
     derived_names: &FxHashMap<String, Sym>,
 ) -> TermNode {
     if name == "ZipWith" {
-        TermNode::ZipWith { a, b, a_name, b_name, value: tmpl }
+        TermNode::ZipWith {
+            a,
+            b,
+            a_name,
+            b_name,
+            value: tmpl,
+        }
     } else {
         call_fallback(name, vec![a, b, tmpl], derived_names)
     }
@@ -1008,15 +1295,15 @@ fn build_zip_elementwise_op(name: &str, x: TermIdx, y: TermIdx) -> TermNode {
 /// correct per-name rather than assuming a uniform "+1".
 fn list_unary_extra_cost(name: &str, derived_extra: &FxHashMap<String, usize>) -> usize {
     match name {
-        "Len" => 0,           // Count{source} — no other child
-        "SumList" => 1,       // Sum{source, value:Var(item)}
-        "MaxList" => 1,       // MaxOver{source, value:Var(item)}
-        "MinList" => 1,       // MinOver{source, value:Var(item)}
-        "MaxLenOver" => 2,    // MaxOver{source, value:Count(Var(item))}
-        "MinLenOver" => 2,    // MinOver{source, value:Count(Var(item))}
-        "First" => 1,         // IndexAt{seq:source, index:Lit(0)}
-        "LastElem" => 0,      // Last{seq:source} — no other child
-        "JoinList" => 4,      // Fold{source, init:Lit("")(1), body:Concat(acc,item)(3)}
+        "Len" => 0,        // Count{source} — no other child
+        "SumList" => 1,    // Sum{source, value:Var(item)}
+        "MaxList" => 1,    // MaxOver{source, value:Var(item)}
+        "MinList" => 1,    // MinOver{source, value:Var(item)}
+        "MaxLenOver" => 2, // MaxOver{source, value:Count(Var(item))}
+        "MinLenOver" => 2, // MinOver{source, value:Count(Var(item))}
+        "First" => 1,      // IndexAt{seq:source, index:Lit(0)}
+        "LastElem" => 0,   // Last{seq:source} — no other child
+        "JoinList" => 4,   // Fold{source, init:Lit("")(1), body:Concat(acc,item)(3)}
         // Arc6 tier-0.
         "ProdList" => 1,      // Prod{source, value:Var(item)}
         "ArgMaxLenOver" => 2, // Argmax{source, value:Count(Var(item))}
@@ -1227,7 +1514,13 @@ fn parse_derived_op_meta(
     }
     let extra_cost = obj.get("extra_cost").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
     let template_json = obj.get("template")?.clone();
-    Some(DerivedOpMeta { name, name_sym, params, extra_cost, template_json })
+    Some(DerivedOpMeta {
+        name,
+        name_sym,
+        params,
+        extra_cost,
+        template_json,
+    })
 }
 
 /// Arity/pool -> `OpKind`, build-A's own narrow inference
@@ -1239,7 +1532,9 @@ fn derived_op_kind(meta: &DerivedOpMeta) -> Option<OpKind> {
     match pools.as_slice() {
         [DerivedOpPool::General] => Some(OpKind::Unary),
         [DerivedOpPool::General, DerivedOpPool::General] => Some(OpKind::Binary),
-        [DerivedOpPool::General, DerivedOpPool::General, DerivedOpPool::General] => Some(OpKind::Ternary),
+        [DerivedOpPool::General, DerivedOpPool::General, DerivedOpPool::General] => {
+            Some(OpKind::Ternary)
+        }
         [DerivedOpPool::List] => Some(OpKind::ListUnary),
         [DerivedOpPool::List, DerivedOpPool::List] => Some(OpKind::ListBinary),
         _ => None,
@@ -1263,8 +1558,16 @@ fn build_derived_op_registry(
         let Some(body) = parse_excluded_term(&meta.template_json, scratch, &var_by_name) else {
             continue; // malformed template — skip this entry, never fatal (the `exclude` discipline)
         };
-        let params: Vec<(Sym, DerivedOpPool)> = meta.params.iter().map(|(_, s, p)| (*s, *p)).collect();
-        registry.insert(meta.name_sym, DerivedOpDef { params, body, extra_cost: meta.extra_cost });
+        let params: Vec<(Sym, DerivedOpPool)> =
+            meta.params.iter().map(|(_, s, p)| (*s, *p)).collect();
+        registry.insert(
+            meta.name_sym,
+            DerivedOpDef {
+                params,
+                body,
+                extra_cost: meta.extra_cost,
+            },
+        );
     }
     registry
 }
@@ -1319,7 +1622,11 @@ enum SigVal {
 }
 
 fn norm_bits(f: f64) -> u64 {
-    if f == 0.0 { 0.0f64.to_bits() } else { f.to_bits() }
+    if f == 0.0 {
+        0.0f64.to_bits()
+    } else {
+        f.to_bits()
+    }
 }
 
 /// Recursive canonical repr for container/other Values — length-
@@ -1431,7 +1738,11 @@ fn slot_matches(got: &SigVal, want: &SigVal) -> bool {
 }
 
 fn matches_target(sig: &[SigVal], target: &[SigVal]) -> bool {
-    sig.len() == target.len() && sig.iter().zip(target.iter()).all(|(s, t)| slot_matches(s, t))
+    sig.len() == target.len()
+        && sig
+            .iter()
+            .zip(target.iter())
+            .all(|(s, t)| slot_matches(s, t))
 }
 
 // ---------------------------------------------------------------------------
@@ -1552,10 +1863,15 @@ fn literal_witness_cost(
         return 1; // row-invariant single character: genuine task constant.
     }
     let is_input_witness = envs.iter().any(|row| {
-        row.iter().any(|(_, v)| value_str(v, interner).is_some_and(|sv| sv.contains(s)))
+        row.iter()
+            .any(|(_, v)| value_str(v, interner).is_some_and(|sv| sv.contains(s)))
     });
     if is_input_witness {
-        return if char_count == 1 { alphabet_char_cost(alphabet_size) } else { 1 };
+        return if char_count == 1 {
+            alphabet_char_cost(alphabet_size)
+        } else {
+            1
+        };
     }
     if row_invariant {
         return 1; // row-invariant: a genuine task constant.
@@ -1567,7 +1883,11 @@ fn literal_witness_cost(
             char_count.max(1) // single-witness output quote.
         };
     }
-    if char_count == 1 { alphabet_char_cost(alphabet_size) } else { 1 } // conservative default.
+    if char_count == 1 {
+        alphabet_char_cost(alphabet_size)
+    } else {
+        1
+    } // conservative default.
 }
 
 /// `ceil(log2(alphabet_size))`, floored at 1 — the MDL bits to select one
@@ -1665,8 +1985,12 @@ fn term_json(
             "name": names.get(name).cloned().unwrap_or_default(),
         }),
         TermNode::Lit { value } => json!({ "type": "Lit", "value": lit_json(value, interner) }),
-        TermNode::Plus { items } | TermNode::Times { items } | TermNode::Min { items }
-        | TermNode::Max { items } | TermNode::And { items } | TermNode::Or { items } => {
+        TermNode::Plus { items }
+        | TermNode::Times { items }
+        | TermNode::Min { items }
+        | TermNode::Max { items }
+        | TermNode::And { items }
+        | TermNode::Or { items } => {
             let t = match arena.get(idx) {
                 TermNode::Plus { .. } => "Plus",
                 TermNode::Times { .. } => "Times",
@@ -1725,9 +2049,15 @@ fn term_json(
         TermNode::Eq { a, b } => json!({
             "type": "Eq", "a": term_json(arena, *a, names, interner), "b": term_json(arena, *b, names, interner)
         }),
-        TermNode::Abs { arg } => json!({ "type": "Abs", "arg": term_json(arena, *arg, names, interner) }),
-        TermNode::Neg { arg } => json!({ "type": "Neg", "arg": term_json(arena, *arg, names, interner) }),
-        TermNode::Not { arg } => json!({ "type": "Not", "arg": term_json(arena, *arg, names, interner) }),
+        TermNode::Abs { arg } => {
+            json!({ "type": "Abs", "arg": term_json(arena, *arg, names, interner) })
+        }
+        TermNode::Neg { arg } => {
+            json!({ "type": "Neg", "arg": term_json(arena, *arg, names, interner) })
+        }
+        TermNode::Not { arg } => {
+            json!({ "type": "Not", "arg": term_json(arena, *arg, names, interner) })
+        }
         TermNode::IfThenElse { cond, then, other } => json!({
             "type": "IfThenElse",
             "cond": term_json(arena, *cond, names, interner),
@@ -1754,41 +2084,81 @@ fn term_json(
         TermNode::Count { source } => json!({
             "type": "Count", "source": term_json(arena, *source, names, interner),
         }),
-        TermNode::Sum { source, var_name, value } => json!({
+        TermNode::Sum {
+            source,
+            var_name,
+            value,
+        } => json!({
             "type": "Sum",
             "source": term_json(arena, *source, names, interner),
             "var_name": names.get(var_name).cloned().unwrap_or_default(),
             "value": term_json(arena, *value, names, interner),
         }),
-        TermNode::MaxOver { source, var_name, value, default } => {
+        TermNode::MaxOver {
+            source,
+            var_name,
+            value,
+            default,
+        } => {
             let mut m = serde_json::Map::new();
             m.insert("type".to_string(), json!("MaxOver"));
-            m.insert("source".to_string(), term_json(arena, *source, names, interner));
-            m.insert("var_name".to_string(), json!(names.get(var_name).cloned().unwrap_or_default()));
-            m.insert("value".to_string(), term_json(arena, *value, names, interner));
+            m.insert(
+                "source".to_string(),
+                term_json(arena, *source, names, interner),
+            );
+            m.insert(
+                "var_name".to_string(),
+                json!(names.get(var_name).cloned().unwrap_or_default()),
+            );
+            m.insert(
+                "value".to_string(),
+                term_json(arena, *value, names, interner),
+            );
             if let Some(d) = default {
                 m.insert("default".to_string(), term_json(arena, *d, names, interner));
             }
             serde_json::Value::Object(m)
         }
-        TermNode::MinOver { source, var_name, value, default } => {
+        TermNode::MinOver {
+            source,
+            var_name,
+            value,
+            default,
+        } => {
             let mut m = serde_json::Map::new();
             m.insert("type".to_string(), json!("MinOver"));
-            m.insert("source".to_string(), term_json(arena, *source, names, interner));
-            m.insert("var_name".to_string(), json!(names.get(var_name).cloned().unwrap_or_default()));
-            m.insert("value".to_string(), term_json(arena, *value, names, interner));
+            m.insert(
+                "source".to_string(),
+                term_json(arena, *source, names, interner),
+            );
+            m.insert(
+                "var_name".to_string(),
+                json!(names.get(var_name).cloned().unwrap_or_default()),
+            );
+            m.insert(
+                "value".to_string(),
+                term_json(arena, *value, names, interner),
+            );
             if let Some(d) = default {
                 m.insert("default".to_string(), term_json(arena, *d, names, interner));
             }
             serde_json::Value::Object(m)
         }
-        TermNode::FilterList { source, var_name, predicate } => json!({
+        TermNode::FilterList {
+            source,
+            var_name,
+            predicate,
+        } => json!({
             "type": "FilterList",
             "source": term_json(arena, *source, names, interner),
             "var_name": names.get(var_name).cloned().unwrap_or_default(),
             "predicate": term_json(arena, *predicate, names, interner),
         }),
-        TermNode::MapList { source, var_name, value } => json!({
+        TermNode::MapList {
+            source,
+            var_name,
+            value,
+        } => json!({
             "type": "MapList",
             "source": term_json(arena, *source, names, interner),
             "var_name": names.get(var_name).cloned().unwrap_or_default(),
@@ -1802,7 +2172,13 @@ fn term_json(
         TermNode::Last { seq } => json!({
             "type": "Last", "seq": term_json(arena, *seq, names, interner),
         }),
-        TermNode::Fold { source, var_name, acc_name, init, body } => json!({
+        TermNode::Fold {
+            source,
+            var_name,
+            acc_name,
+            init,
+            body,
+        } => json!({
             "type": "Fold",
             "source": term_json(arena, *source, names, interner),
             "var_name": names.get(var_name).cloned().unwrap_or_default(),
@@ -1817,18 +2193,36 @@ fn term_json(
             "type": "Vec",
             "items": items.iter().map(|i| term_json(arena, *i, names, interner)).collect::<Vec<_>>(),
         }),
-        TermNode::Prod { source, var_name, value } => json!({
+        TermNode::Prod {
+            source,
+            var_name,
+            value,
+        } => json!({
             "type": "Prod",
             "source": term_json(arena, *source, names, interner),
             "var_name": names.get(var_name).cloned().unwrap_or_default(),
             "value": term_json(arena, *value, names, interner),
         }),
-        TermNode::Argmax { source, var_name, value, default } => {
+        TermNode::Argmax {
+            source,
+            var_name,
+            value,
+            default,
+        } => {
             let mut m = serde_json::Map::new();
             m.insert("type".to_string(), json!("Argmax"));
-            m.insert("source".to_string(), term_json(arena, *source, names, interner));
-            m.insert("var_name".to_string(), json!(names.get(var_name).cloned().unwrap_or_default()));
-            m.insert("value".to_string(), term_json(arena, *value, names, interner));
+            m.insert(
+                "source".to_string(),
+                term_json(arena, *source, names, interner),
+            );
+            m.insert(
+                "var_name".to_string(),
+                json!(names.get(var_name).cloned().unwrap_or_default()),
+            );
+            m.insert(
+                "value".to_string(),
+                term_json(arena, *value, names, interner),
+            );
             if let Some(d) = default {
                 m.insert("default".to_string(), term_json(arena, *d, names, interner));
             }
@@ -1875,7 +2269,12 @@ fn term_json(
         TermNode::Reverse { seq } => json!({
             "type": "Reverse", "seq": term_json(arena, *seq, names, interner),
         }),
-        TermNode::IndexedMap { source, item_name, index_name, value } => json!({
+        TermNode::IndexedMap {
+            source,
+            item_name,
+            index_name,
+            value,
+        } => json!({
             "type": "IndexedMap",
             "source": term_json(arena, *source, names, interner),
             "item_name": names.get(item_name).cloned().unwrap_or_default(),
@@ -1898,7 +2297,11 @@ fn term_json(
         TermNode::Sort { seq } => json!({
             "type": "Sort", "seq": term_json(arena, *seq, names, interner),
         }),
-        TermNode::MapSet { source, var_name, value } => json!({
+        TermNode::MapSet {
+            source,
+            var_name,
+            value,
+        } => json!({
             "type": "MapSet",
             "source": term_json(arena, *source, names, interner),
             "var_name": names.get(var_name).cloned().unwrap_or_default(),
@@ -1918,7 +2321,11 @@ fn term_json(
         TermNode::DictItems { seq } => json!({
             "type": "DictItems", "seq": term_json(arena, *seq, names, interner),
         }),
-        TermNode::SortBy { source, var_name, key } => json!({
+        TermNode::SortBy {
+            source,
+            var_name,
+            key,
+        } => json!({
             "type": "SortBy",
             "source": term_json(arena, *source, names, interner),
             "var_name": names.get(var_name).cloned().unwrap_or_default(),
@@ -1938,7 +2345,13 @@ fn term_json(
         // the first time the search renders a `ZipWith` candidate — the
         // SAME finding `GROUPCOUNT_DICTMERGE_RESULTS.md` §4 already hit
         // for `MkDict`, avoided here by adding the arm up front).
-        TermNode::ZipWith { a, b, a_name, b_name, value } => json!({
+        TermNode::ZipWith {
+            a,
+            b,
+            a_name,
+            b_name,
+            value,
+        } => json!({
             "type": "ZipWith",
             "a": term_json(arena, *a, names, interner),
             "b": term_json(arena, *b, names, interner),
@@ -2015,11 +2428,18 @@ fn lit_repr(v: &Value, interner: &Interner) -> String {
 }
 
 /// generator.py's `_term_str` — readable infix-ish rendering.
-fn term_str(arena: &TermArena, idx: TermIdx, names: &FxHashMap<Sym, String>, interner: &Interner) -> String {
+fn term_str(
+    arena: &TermArena,
+    idx: TermIdx,
+    names: &FxHashMap<Sym, String>,
+    interner: &Interner,
+) -> String {
     match arena.get(idx) {
         TermNode::Var { name } => names.get(name).cloned().unwrap_or_default(),
         TermNode::Lit { value } => lit_repr(value, interner),
-        TermNode::Plus { items } | TermNode::Times { items } | TermNode::And { items }
+        TermNode::Plus { items }
+        | TermNode::Times { items }
+        | TermNode::And { items }
         | TermNode::Or { items } => {
             let sym = match arena.get(idx) {
                 TermNode::Plus { .. } => "+",
@@ -2027,25 +2447,79 @@ fn term_str(arena: &TermArena, idx: TermIdx, names: &FxHashMap<Sym, String>, int
                 TermNode::And { .. } => "and",
                 _ => "or",
             };
-            let kids: Vec<String> = items.iter().map(|i| term_str(arena, *i, names, interner)).collect();
+            let kids: Vec<String> = items
+                .iter()
+                .map(|i| term_str(arena, *i, names, interner))
+                .collect();
             format!("({})", kids.join(&format!(" {sym} ")))
         }
         TermNode::Min { items } | TermNode::Max { items } => {
-            let sym = if matches!(arena.get(idx), TermNode::Min { .. }) { "min" } else { "max" };
-            let kids: Vec<String> = items.iter().map(|i| term_str(arena, *i, names, interner)).collect();
+            let sym = if matches!(arena.get(idx), TermNode::Min { .. }) {
+                "min"
+            } else {
+                "max"
+            };
+            let kids: Vec<String> = items
+                .iter()
+                .map(|i| term_str(arena, *i, names, interner))
+                .collect();
             format!("{sym}({})", kids.join(", "))
         }
-        TermNode::Minus { a, b } => format!("({} - {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
-        TermNode::Div { a, b } => format!("({} / {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
-        TermNode::IDiv { a, b } => format!("({} // {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
-        TermNode::BitAnd { a, b } => format!("({} & {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
-        TermNode::BitXor { a, b } => format!("({} ^ {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
-        TermNode::Shl { a, b } => format!("({} << {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
-        TermNode::Gt { a, b } => format!("({} > {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
-        TermNode::Lt { a, b } => format!("({} < {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
-        TermNode::Gte { a, b } => format!("({} >= {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
-        TermNode::Lte { a, b } => format!("({} <= {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
-        TermNode::Eq { a, b } => format!("({} == {})", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)),
+        TermNode::Minus { a, b } => format!(
+            "({} - {})",
+            term_str(arena, *a, names, interner),
+            term_str(arena, *b, names, interner)
+        ),
+        TermNode::Div { a, b } => format!(
+            "({} / {})",
+            term_str(arena, *a, names, interner),
+            term_str(arena, *b, names, interner)
+        ),
+        TermNode::IDiv { a, b } => format!(
+            "({} // {})",
+            term_str(arena, *a, names, interner),
+            term_str(arena, *b, names, interner)
+        ),
+        TermNode::BitAnd { a, b } => format!(
+            "({} & {})",
+            term_str(arena, *a, names, interner),
+            term_str(arena, *b, names, interner)
+        ),
+        TermNode::BitXor { a, b } => format!(
+            "({} ^ {})",
+            term_str(arena, *a, names, interner),
+            term_str(arena, *b, names, interner)
+        ),
+        TermNode::Shl { a, b } => format!(
+            "({} << {})",
+            term_str(arena, *a, names, interner),
+            term_str(arena, *b, names, interner)
+        ),
+        TermNode::Gt { a, b } => format!(
+            "({} > {})",
+            term_str(arena, *a, names, interner),
+            term_str(arena, *b, names, interner)
+        ),
+        TermNode::Lt { a, b } => format!(
+            "({} < {})",
+            term_str(arena, *a, names, interner),
+            term_str(arena, *b, names, interner)
+        ),
+        TermNode::Gte { a, b } => format!(
+            "({} >= {})",
+            term_str(arena, *a, names, interner),
+            term_str(arena, *b, names, interner)
+        ),
+        TermNode::Lte { a, b } => format!(
+            "({} <= {})",
+            term_str(arena, *a, names, interner),
+            term_str(arena, *b, names, interner)
+        ),
+        TermNode::Eq { a, b } => format!(
+            "({} == {})",
+            term_str(arena, *a, names, interner),
+            term_str(arena, *b, names, interner)
+        ),
         TermNode::Abs { arg } => format!("abs({})", term_str(arena, *arg, names, interner)),
         TermNode::Neg { arg } => format!("neg({})", term_str(arena, *arg, names, interner)),
         TermNode::Not { arg } => format!("not({})", term_str(arena, *arg, names, interner)),
@@ -2056,49 +2530,84 @@ fn term_str(arena: &TermArena, idx: TermIdx, names: &FxHashMap<Sym, String>, int
             term_str(arena, *other, names, interner),
         ),
         TermNode::StringConcat { parts } => {
-            let kids: Vec<String> = parts.iter().map(|i| term_str(arena, *i, names, interner)).collect();
+            let kids: Vec<String> = parts
+                .iter()
+                .map(|i| term_str(arena, *i, names, interner))
+                .collect();
             format!("({})", kids.join(" + "))
         }
-        TermNode::CaseFold { text } => format!("lower({})", term_str(arena, *text, names, interner)),
+        TermNode::CaseFold { text } => {
+            format!("lower({})", term_str(arena, *text, names, interner))
+        }
         // --- Arc4-S4: readable (never re-parsed) renderings for the new
         // list/iteration composites. ---
         TermNode::Count { source } => format!("len({})", term_str(arena, *source, names, interner)),
-        TermNode::Sum { source, var_name, value } => format!(
+        TermNode::Sum {
+            source,
+            var_name,
+            value,
+        } => format!(
             "sum({} for {} in {})",
             term_str(arena, *value, names, interner),
             names.get(var_name).cloned().unwrap_or_default(),
             term_str(arena, *source, names, interner),
         ),
-        TermNode::MaxOver { source, var_name, value, .. } => format!(
+        TermNode::MaxOver {
+            source,
+            var_name,
+            value,
+            ..
+        } => format!(
             "max({} for {} in {})",
             term_str(arena, *value, names, interner),
             names.get(var_name).cloned().unwrap_or_default(),
             term_str(arena, *source, names, interner),
         ),
-        TermNode::MinOver { source, var_name, value, .. } => format!(
+        TermNode::MinOver {
+            source,
+            var_name,
+            value,
+            ..
+        } => format!(
             "min({} for {} in {})",
             term_str(arena, *value, names, interner),
             names.get(var_name).cloned().unwrap_or_default(),
             term_str(arena, *source, names, interner),
         ),
-        TermNode::FilterList { source, var_name, predicate } => format!(
+        TermNode::FilterList {
+            source,
+            var_name,
+            predicate,
+        } => format!(
             "[{} for {} in {} if {}]",
             names.get(var_name).cloned().unwrap_or_default(),
             names.get(var_name).cloned().unwrap_or_default(),
             term_str(arena, *source, names, interner),
             term_str(arena, *predicate, names, interner),
         ),
-        TermNode::MapList { source, var_name, value } => format!(
+        TermNode::MapList {
+            source,
+            var_name,
+            value,
+        } => format!(
             "[{} for {} in {}]",
             term_str(arena, *value, names, interner),
             names.get(var_name).cloned().unwrap_or_default(),
             term_str(arena, *source, names, interner),
         ),
         TermNode::IndexAt { seq, index } => format!(
-            "{}[{}]", term_str(arena, *seq, names, interner), term_str(arena, *index, names, interner)
+            "{}[{}]",
+            term_str(arena, *seq, names, interner),
+            term_str(arena, *index, names, interner)
         ),
         TermNode::Last { seq } => format!("{}[-1]", term_str(arena, *seq, names, interner)),
-        TermNode::Fold { source, var_name, acc_name, init, body } => format!(
+        TermNode::Fold {
+            source,
+            var_name,
+            acc_name,
+            init,
+            body,
+        } => format!(
             "fold({}, {}={}, {} -> {})",
             term_str(arena, *source, names, interner),
             names.get(acc_name).cloned().unwrap_or_default(),
@@ -2108,16 +2617,28 @@ fn term_str(arena: &TermArena, idx: TermIdx, names: &FxHashMap<Sym, String>, int
         ),
         // --- Arc6 tier-0 renderings (readable, never re-parsed). ---
         TermNode::Vec_ { items } => {
-            let kids: Vec<String> = items.iter().map(|i| term_str(arena, *i, names, interner)).collect();
+            let kids: Vec<String> = items
+                .iter()
+                .map(|i| term_str(arena, *i, names, interner))
+                .collect();
             format!("({})", kids.join(", "))
         }
-        TermNode::Prod { source, var_name, value } => format!(
+        TermNode::Prod {
+            source,
+            var_name,
+            value,
+        } => format!(
             "prod({} for {} in {})",
             term_str(arena, *value, names, interner),
             names.get(var_name).cloned().unwrap_or_default(),
             term_str(arena, *source, names, interner),
         ),
-        TermNode::Argmax { source, var_name, value, .. } => format!(
+        TermNode::Argmax {
+            source,
+            var_name,
+            value,
+            ..
+        } => format!(
             "argmax({} for {} in {})",
             term_str(arena, *value, names, interner),
             names.get(var_name).cloned().unwrap_or_default(),
@@ -2142,23 +2663,42 @@ fn term_str(arena: &TermArena, idx: TermIdx, names: &FxHashMap<Sym, String>, int
         ),
         TermNode::Str { value } => format!("str({})", term_str(arena, *value, names, interner)),
         TermNode::Split { text, sep } => format!(
-            "{}.split({})", term_str(arena, *text, names, interner), term_str(arena, *sep, names, interner)
+            "{}.split({})",
+            term_str(arena, *text, names, interner),
+            term_str(arena, *sep, names, interner)
         ),
         TermNode::StrCount { text, sub } => format!(
-            "{}.count({})", term_str(arena, *text, names, interner), term_str(arena, *sub, names, interner)
+            "{}.count({})",
+            term_str(arena, *text, names, interner),
+            term_str(arena, *sub, names, interner)
         ),
         TermNode::Round { value, ndigits } => format!(
-            "round({}, {})", term_str(arena, *value, names, interner), term_str(arena, *ndigits, names, interner)
+            "round({}, {})",
+            term_str(arena, *value, names, interner),
+            term_str(arena, *ndigits, names, interner)
         ),
-        TermNode::Reverse { seq } => format!("reversed({})", term_str(arena, *seq, names, interner)),
-        TermNode::IndexedMap { source, item_name, index_name, value } => format!(
+        TermNode::Reverse { seq } => {
+            format!("reversed({})", term_str(arena, *seq, names, interner))
+        }
+        TermNode::IndexedMap {
+            source,
+            item_name,
+            index_name,
+            value,
+        } => format!(
             "[{} for {}, {} in enumerate({})]",
             term_str(arena, *value, names, interner),
             names.get(index_name).cloned().unwrap_or_default(),
             names.get(item_name).cloned().unwrap_or_default(),
             term_str(arena, *source, names, interner),
         ),
-        TermNode::ZipWith { a, b, a_name, b_name, value } => format!(
+        TermNode::ZipWith {
+            a,
+            b,
+            a_name,
+            b_name,
+            value,
+        } => format!(
             "[{} for {}, {} in zip({}, {})]",
             term_str(arena, *value, names, interner),
             names.get(a_name).cloned().unwrap_or_default(),
@@ -2166,7 +2706,9 @@ fn term_str(arena: &TermArena, idx: TermIdx, names: &FxHashMap<Sym, String>, int
             term_str(arena, *a, names, interner),
             term_str(arena, *b, names, interner),
         ),
-        TermNode::Capitalize { text } => format!("{}.capitalize()", term_str(arena, *text, names, interner)),
+        TermNode::Capitalize { text } => {
+            format!("{}.capitalize()", term_str(arena, *text, names, interner))
+        }
         TermNode::ParseInt { text } => format!("int({})", term_str(arena, *text, names, interner)),
         TermNode::Slice { seq, start, stop } => format!(
             "{}[{}:{}]",
@@ -2176,22 +2718,37 @@ fn term_str(arena: &TermArena, idx: TermIdx, names: &FxHashMap<Sym, String>, int
         ),
         // SetLit/DictItems rung.
         TermNode::Sort { seq } => format!("sorted({})", term_str(arena, *seq, names, interner)),
-        TermNode::MapSet { source, var_name, value } => format!(
+        TermNode::MapSet {
+            source,
+            var_name,
+            value,
+        } => format!(
             "{{{} for {} in {}}}",
             term_str(arena, *value, names, interner),
             names.get(var_name).cloned().unwrap_or_default(),
             term_str(arena, *source, names, interner),
         ),
         TermNode::Intersect { a, b } => format!(
-            "{} & {}", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)
+            "{} & {}",
+            term_str(arena, *a, names, interner),
+            term_str(arena, *b, names, interner)
         ),
         TermNode::Union { a, b } => format!(
-            "{} | {}", term_str(arena, *a, names, interner), term_str(arena, *b, names, interner)
+            "{} | {}",
+            term_str(arena, *a, names, interner),
+            term_str(arena, *b, names, interner)
         ),
         // Derived-operator tier — see `term_json`'s matching `Call` arm.
         TermNode::Call { name, args } => {
-            let kids: Vec<String> = args.iter().map(|a| term_str(arena, *a, names, interner)).collect();
-            format!("{}({})", names.get(name).cloned().unwrap_or_default(), kids.join(", "))
+            let kids: Vec<String> = args
+                .iter()
+                .map(|a| term_str(arena, *a, names, interner))
+                .collect();
+            format!(
+                "{}({})",
+                names.get(name).cloned().unwrap_or_default(),
+                kids.join(", ")
+            )
         }
         _ => "?".to_string(),
     }
@@ -2259,7 +2816,13 @@ impl Search {
         self.register_kind(node, size, ctx, false)
     }
 
-    fn register_kind(&mut self, node: TermNode, size: usize, ctx: &mut EvalCtx, compose: bool) -> Reg {
+    fn register_kind(
+        &mut self,
+        node: TermNode,
+        size: usize,
+        ctx: &mut EvalCtx,
+        compose: bool,
+    ) -> Reg {
         if self.tested >= self.max_candidates {
             return Reg::Budget;
         }
@@ -2293,7 +2856,11 @@ impl Search {
                 self.list_by_size[size].push(idx);
             }
         }
-        if solved { Reg::Solved(idx) } else { Reg::Stored }
+        if solved {
+            Reg::Solved(idx)
+        } else {
+            Reg::Stored
+        }
     }
 
     /// Pre-seed an EXCLUDED candidate's signature into `seen` — never
@@ -2341,7 +2908,12 @@ fn finish(
         _ => (Value::None, Value::None, Value::None),
     };
     let (tested, distinct, pruned, inadm) = match search {
-        Some(s) => (s.tested as i64, s.seen.len() as i64, s.pruned_equiv as i64, s.inadmissible as i64),
+        Some(s) => (
+            s.tested as i64,
+            s.seen.len() as i64,
+            s.pruned_equiv as i64,
+            s.inadmissible as i64,
+        ),
         None => (0, 0, 0, 0),
     };
     let mut pairs: Vec<(Value, Value)> = vec![
@@ -2394,14 +2966,26 @@ pub(crate) fn eval_synth_enumerate(
     env: &mut Env,
     ctx: &mut EvalCtx,
 ) -> Value {
-    let max_size = (if max_size <= 0 { DEFAULT_MAX_SIZE } else { max_size }) as usize;
+    let max_size = (if max_size <= 0 {
+        DEFAULT_MAX_SIZE
+    } else {
+        max_size
+    }) as usize;
     // `ZIP_MAX_CANDIDATES`'s own doc comment: remember whether the CALLER
     // asked for the engine's own default budget (`<= 0`) before it is
     // overwritten below — an explicit caller-supplied budget (e.g.
     // `prog_moves.py`'s `_PROBE_MAX_CANDIDATES`) must never be widened.
     let caller_wants_default_candidates = max_candidates <= 0;
-    let max_candidates = (if max_candidates <= 0 { DEFAULT_MAX_CANDIDATES } else { max_candidates }) as u64;
-    let saturate_k = (if saturate_k <= 0 { DEFAULT_SATURATE_K } else { saturate_k }) as usize;
+    let max_candidates = (if max_candidates <= 0 {
+        DEFAULT_MAX_CANDIDATES
+    } else {
+        max_candidates
+    }) as u64;
+    let saturate_k = (if saturate_k <= 0 {
+        DEFAULT_SATURATE_K
+    } else {
+        saturate_k
+    }) as usize;
 
     // --- Parse the spec (rows of {inputs, output}) ---
     // Q1: the OUTPUT type is no longer restricted to numeric/bool — any
@@ -2439,7 +3023,9 @@ pub(crate) fn eval_synth_enumerate(
                         let sym = local_sym(ctx.interner, &mut extra, &mut next_placeholder, &name);
                         (sym, name)
                     }
-                    None => return finish(None, None, "invalid_examples", false, field, ctx.interner),
+                    None => {
+                        return finish(None, None, "invalid_examples", false, field, ctx.interner)
+                    }
                 },
             };
             if !names.contains_key(&sym) {
@@ -2460,7 +3046,9 @@ pub(crate) fn eval_synth_enumerate(
     // so a winning candidate that uses them serializes with a stable
     // string, exactly like every real spec variable.
     let item_sym = local_sym(ctx.interner, &mut extra, &mut next_placeholder, "__item");
-    names.entry(item_sym).or_insert_with(|| "__item".to_string());
+    names
+        .entry(item_sym)
+        .or_insert_with(|| "__item".to_string());
     let acc_sym = local_sym(ctx.interner, &mut extra, &mut next_placeholder, "__acc");
     names.entry(acc_sym).or_insert_with(|| "__acc".to_string());
     // Arc6 tier-0 `tmpl:nested_reduction`: the SECOND bound variable — the
@@ -2469,12 +3057,16 @@ pub(crate) fn eval_synth_enumerate(
     // `names` table is complete before it moves into `Search`, exactly like
     // `__item`/`__acc`.
     let inner_sym = local_sym(ctx.interner, &mut extra, &mut next_placeholder, "__inner");
-    names.entry(inner_sym).or_insert_with(|| "__inner".to_string());
+    names
+        .entry(inner_sym)
+        .or_insert_with(|| "__inner".to_string());
     // Rung 1 `op:IndexedMap`: the SECOND bound variable an indexed-map
     // body needs (the element's own 0-based position). Same `local_sym`
     // precedent, minted unconditionally and cheaply.
     let index_sym = local_sym(ctx.interner, &mut extra, &mut next_placeholder, "__index");
-    names.entry(index_sym).or_insert_with(|| "__index".to_string());
+    names
+        .entry(index_sym)
+        .or_insert_with(|| "__index".to_string());
     // `ZIP_ELEMENTWISE` rung `op:ZipWith`: the two bound variables a
     // zip-body needs (one per zipped pair, OUTER level). A SEPARATE,
     // distinctly-named INNER pair (`__zi`/`__zj`) is minted too, for the
@@ -2502,7 +3094,10 @@ pub(crate) fn eval_synth_enumerate(
     let is_str_val = |v: &Value| matches!(v, Value::Str(_) | Value::Surface(SurfaceKind::Text, _));
     let spec_is_string_shaped = !outputs.is_empty()
         && outputs.iter().all(is_str_val)
-        && envs.iter().flat_map(|e| e.iter()).all(|(_, v)| is_str_val(v));
+        && envs
+            .iter()
+            .flat_map(|e| e.iter())
+            .all(|(_, v)| is_str_val(v));
 
     // Arc4-S4: a spec whose OUTPUT is list-shaped, OR whose variable
     // values are CONSISTENTLY list-shaped (same var, every row) is
@@ -2535,15 +3130,26 @@ pub(crate) fn eval_synth_enumerate(
         .filter(|s| {
             !envs.is_empty()
                 && envs.iter().all(|e| {
-                    e.iter().find(|(vs, _)| vs == s).map(|(_, v)| is_listlike(v)).unwrap_or(false)
+                    e.iter()
+                        .find(|(vs, _)| vs == s)
+                        .map(|(_, v)| is_listlike(v))
+                        .unwrap_or(false)
                 })
         })
         .collect();
     let spec_has_two_zippable_list_vars = zippable_list_vars.iter().enumerate().any(|(i, s1)| {
         zippable_list_vars.iter().skip(i + 1).any(|s2| {
             envs.iter().all(|e| {
-                let l1 = e.iter().find(|(vs, _)| vs == s1).and_then(|(_, v)| items_of(v)).map(|it| it.len());
-                let l2 = e.iter().find(|(vs, _)| vs == s2).and_then(|(_, v)| items_of(v)).map(|it| it.len());
+                let l1 = e
+                    .iter()
+                    .find(|(vs, _)| vs == s1)
+                    .and_then(|(_, v)| items_of(v))
+                    .map(|it| it.len());
+                let l2 = e
+                    .iter()
+                    .find(|(vs, _)| vs == s2)
+                    .and_then(|(_, v)| items_of(v))
+                    .map(|it| it.len());
                 l1.is_some() && l1 == l2
             })
         })
@@ -2557,7 +3163,9 @@ pub(crate) fn eval_synth_enumerate(
     // SetLit/DictItems rung: the SAME narrow output-type gate as
     // `spec_output_is_listlike`, for Set/FrozenSet — see `SET_DEFAULT_OPS`.
     let spec_output_is_setlike = !outputs.is_empty()
-        && outputs.iter().all(|v| matches!(v, Value::Set(_) | Value::FrozenSet(_)));
+        && outputs
+            .iter()
+            .all(|v| matches!(v, Value::Set(_) | Value::FrozenSet(_)));
     // Rung 1: EVIDENCE-gated string/float method ops (`TUPLE_BUILD_OPS`'s
     // own discipline, generalised past output-shape to ANY-row content
     // evidence). Loose "ANY row, any var or the output" tests — NOT the
@@ -2566,10 +3174,16 @@ pub(crate) fn eval_synth_enumerate(
     // (e.g. `int(s)`) still genuinely needs `ParseInt`/`Str`, and a spec
     // is never penalised for having the evidence absent (the bucket is
     // simply empty, byte-identical to today).
-    let spec_has_string_value = envs.iter().flat_map(|e| e.iter()).any(|(_, v)| is_str_val(v))
+    let spec_has_string_value = envs
+        .iter()
+        .flat_map(|e| e.iter())
+        .any(|(_, v)| is_str_val(v))
         || outputs.iter().any(is_str_val);
     let is_float_val = |v: &Value| matches!(v, Value::Float(_) | Value::Rational(_, _));
-    let spec_has_float_value = envs.iter().flat_map(|e| e.iter()).any(|(_, v)| is_float_val(v))
+    let spec_has_float_value = envs
+        .iter()
+        .flat_map(|e| e.iter())
+        .any(|(_, v)| is_float_val(v))
         || outputs.iter().any(is_float_val);
     // DictItems/SortBy rung (PREREG §4): a spec with a top-level
     // Dict-shaped VARIABLE (never a nested one — the same shallow,
@@ -2581,7 +3195,10 @@ pub(crate) fn eval_synth_enumerate(
     // so this evidence gate can only ever ADD ops to a spec that is not
     // already solved, never touch one that is.
     let is_dict_val = |v: &Value| matches!(v, Value::Dict(_));
-    let spec_has_dict_value = envs.iter().flat_map(|e| e.iter()).any(|(_, v)| is_dict_val(v));
+    let spec_has_dict_value = envs
+        .iter()
+        .flat_map(|e| e.iter())
+        .any(|(_, v)| is_dict_val(v));
     // GroupCount/DictMerge rung: the OUTPUT-shape twin of `spec_has_dict_
     // value` above, mirroring `spec_output_is_listlike`/`spec_output_is_
     // setlike`'s own already-measured-safe discipline (an output-type gate,
@@ -2610,7 +3227,9 @@ pub(crate) fn eval_synth_enumerate(
     // the unconditional `LIST_EXTRA_OPS` bucket entirely and is offered
     // only when this concrete evidence is present.
     let has_dup = |v: &Value| -> bool {
-        let Some(items) = items_of(v) else { return false };
+        let Some(items) = items_of(v) else {
+            return false;
+        };
         for i in 0..items.len() {
             for j in (i + 1)..items.len() {
                 if items[i] == items[j] {
@@ -2620,8 +3239,8 @@ pub(crate) fn eval_synth_enumerate(
         }
         false
     };
-    let spec_has_repeated_list_element = envs.iter().flat_map(|e| e.iter()).any(|(_, v)| has_dup(v))
-        || outputs.iter().any(has_dup);
+    let spec_has_repeated_list_element =
+        envs.iter().flat_map(|e| e.iter()).any(|(_, v)| has_dup(v)) || outputs.iter().any(has_dup);
     // Map-template-pool rung (PROGRAM_SYNTHESIS_CEILING_REASSESSMENT_2_
     // PREREG.md §3): nested, ONE-LEVEL-DOWN evidence — does a list-shaped
     // var/output have elements that are THEMSELVES list-shaped ("a list of
@@ -2652,14 +3271,23 @@ pub(crate) fn eval_synth_enumerate(
     // Same grain, for FLOAT elements (task 419, "round every number of a
     // given list") — `spec_has_float_value`'s flat top-level test never
     // sees a Float nested one level inside a List var/output either.
-    let spec_has_float_list_elements = envs.iter().flat_map(|e| e.iter()).any(|(_, v)| {
-        items_of(v).is_some_and(|items| items.iter().any(is_float_val))
-    }) || outputs.iter().any(|v| {
-        items_of(v).is_some_and(|items| items.iter().any(is_float_val))
-    });
+    let spec_has_float_list_elements = envs
+        .iter()
+        .flat_map(|e| e.iter())
+        .any(|(_, v)| items_of(v).is_some_and(|items| items.iter().any(is_float_val)))
+        || outputs
+            .iter()
+            .any(|v| items_of(v).is_some_and(|items| items.iter().any(is_float_val)));
     let mut extra_evidence_ops: Vec<&str> = Vec::new();
     if spec_has_string_value {
-        extra_evidence_ops.extend(["Replace", "Split", "StrCount", "Capitalize", "Str", "ParseInt"]);
+        extra_evidence_ops.extend([
+            "Replace",
+            "Split",
+            "StrCount",
+            "Capitalize",
+            "Str",
+            "ParseInt",
+        ]);
     }
     if spec_has_float_value {
         extra_evidence_ops.push("Round");
@@ -2689,8 +3317,11 @@ pub(crate) fn eval_synth_enumerate(
         // narrow the bucket, don't widen the budget.
         SET_DEFAULT_OPS.to_vec()
     } else if spec_is_list_shaped {
-        let mut v: Vec<&str> =
-            DEFAULT_OPS.iter().chain(LIST_EXTRA_OPS.iter()).copied().collect();
+        let mut v: Vec<&str> = DEFAULT_OPS
+            .iter()
+            .chain(LIST_EXTRA_OPS.iter())
+            .copied()
+            .collect();
         if spec_output_is_listlike {
             v.extend(TUPLE_BUILD_OPS.iter().copied());
         }
@@ -2746,8 +3377,8 @@ pub(crate) fn eval_synth_enumerate(
         // shape as `Round` being offered to a spec with no float value
         // would be, except this one is additionally gated to never even
         // apply until this rung's own `Str(item)` map-template exists.
-        let spec_output_is_bare_int = !outputs.is_empty()
-            && outputs.iter().all(|v| matches!(v, Value::Int(_)));
+        let spec_output_is_bare_int =
+            !outputs.is_empty() && outputs.iter().all(|v| matches!(v, Value::Int(_)));
         if !spec_output_is_listlike
             && spec_output_is_bare_int
             && !spec_has_string_value
@@ -2900,7 +3531,9 @@ pub(crate) fn eval_synth_enumerate(
                     .iter()
                     .filter_map(|v| value_str(v, ctx.interner))
                     .filter_map(|text| serde_json::from_str::<serde_json::Value>(&text).ok())
-                    .filter_map(|j| parse_derived_op_meta(&j, ctx.interner, &mut extra, &mut next_placeholder))
+                    .filter_map(|j| {
+                        parse_derived_op_meta(&j, ctx.interner, &mut extra, &mut next_placeholder)
+                    })
                     .collect(),
                 None => Vec::new(),
             }
@@ -2915,7 +3548,9 @@ pub(crate) fn eval_synth_enumerate(
     // `__item`/`__acc`/every spec variable, via THIS table, never
     // `Interner::resolve` directly.
     for meta in &derived_metas {
-        names.entry(meta.name_sym).or_insert_with(|| meta.name.clone());
+        names
+            .entry(meta.name_sym)
+            .or_insert_with(|| meta.name.clone());
         for (pname, psym, _pool) in &meta.params {
             names.entry(*psym).or_insert_with(|| pname.clone());
         }
@@ -2942,7 +3577,9 @@ pub(crate) fn eval_synth_enumerate(
                                 .and_then(|m| derived_op_kind(m).map(|k| (n.clone(), k)))
                         })
                         .collect(),
-                    None => return finish(None, None, "invalid_examples", false, field, ctx.interner),
+                    None => {
+                        return finish(None, None, "invalid_examples", false, field, ctx.interner)
+                    }
                 },
             }
         }
@@ -2964,9 +3601,14 @@ pub(crate) fn eval_synth_enumerate(
             let xv = evaluate(arena, t, env, ctx);
             match items_of(&xv) {
                 Some(items) => {
-                    let names: Vec<String> =
-                        items.iter().filter_map(|v| value_str(v, ctx.interner)).collect();
-                    op_list.into_iter().filter(|(n, _)| !names.iter().any(|x| x == n)).collect()
+                    let names: Vec<String> = items
+                        .iter()
+                        .filter_map(|v| value_str(v, ctx.interner))
+                        .collect();
+                    op_list
+                        .into_iter()
+                        .filter(|(n, _)| !names.iter().any(|x| x == n))
+                        .collect()
                 }
                 None => op_list,
             }
@@ -2990,7 +3632,9 @@ pub(crate) fn eval_synth_enumerate(
                         }
                         out
                     }
-                    None => return finish(None, None, "invalid_examples", false, field, ctx.interner),
+                    None => {
+                        return finish(None, None, "invalid_examples", false, field, ctx.interner)
+                    }
                 },
             }
         }
@@ -3043,8 +3687,10 @@ pub(crate) fn eval_synth_enumerate(
     // `PBE_STRING_BENCHMARK_RESULTS.md` §2.2 measured and named. Computed
     // ONCE here (not per-leaf) and threaded through to every
     // `literal_witness_cost` call below.
-    let alphabet_size =
-        str_consts.iter().filter(|v| value_str(v, ctx.interner).is_some_and(|s| s.chars().count() == 1)).count();
+    let alphabet_size = str_consts
+        .iter()
+        .filter(|v| value_str(v, ctx.interner).is_some_and(|s| s.chars().count() == 1))
+        .count();
     // MDL_OCCAM_WITNESS_PRICING: `str_consts` is registered as leaves
     // SEPARATELY from `const_set` (below, at the leaf-registration loop),
     // each at its own witness-priced size, instead of being merged in here
@@ -3108,8 +3754,12 @@ pub(crate) fn eval_synth_enumerate(
         let ev = evaluate(arena, t, env, ctx);
         if let Some(items) = items_of(&ev) {
             for it in items {
-                let Some(text) = value_str(&it, ctx.interner) else { continue };
-                let Ok(j) = serde_json::from_str::<serde_json::Value>(&text) else { continue };
+                let Some(text) = value_str(&it, ctx.interner) else {
+                    continue;
+                };
+                let Ok(j) = serde_json::from_str::<serde_json::Value>(&text) else {
+                    continue;
+                };
                 // Parsed directly into the search's OWN scratch arena —
                 // no interner mutation needed (Var names resolve
                 // against the spec's own `var_by_name`; Lit values
@@ -3138,782 +3788,919 @@ pub(crate) fn eval_synth_enumerate(
     // to the exact entry `ctx.derived_ops` holds) plus each entry's own
     // `extra_cost` (consulted only by the two shapes that already have
     // an extra-cost concept — `ListUnary`/`ListBinary`).
-    let derived_names: FxHashMap<String, Sym> =
-        derived_metas.iter().map(|m| (m.name.clone(), m.name_sym)).collect();
-    let derived_extra: FxHashMap<String, usize> =
-        derived_metas.iter().map(|m| (m.name.clone(), m.extra_cost)).collect();
+    let derived_names: FxHashMap<String, Sym> = derived_metas
+        .iter()
+        .map(|m| (m.name.clone(), m.name_sym))
+        .collect();
+    let derived_extra: FxHashMap<String, usize> = derived_metas
+        .iter()
+        .map(|m| (m.name.clone(), m.extra_cost))
+        .collect();
 
     let result = with_derived_ops(ctx, derived_registry, |ctx| {
-
-    macro_rules! reg {
-        ($node:expr, $size:expr) => {
-            match search.register($node, $size, ctx) {
-                Reg::Solved(idx) => {
-                    return finish(Some(&search), Some((idx, $size)), "solved", false, field, ctx.interner)
+        macro_rules! reg {
+            ($node:expr, $size:expr) => {
+                match search.register($node, $size, ctx) {
+                    Reg::Solved(idx) => {
+                        return finish(
+                            Some(&search),
+                            Some((idx, $size)),
+                            "solved",
+                            false,
+                            field,
+                            ctx.interner,
+                        )
+                    }
+                    Reg::Budget => {
+                        return finish(Some(&search), None, "budget", false, field, ctx.interner)
+                    }
+                    _ => {}
                 }
-                Reg::Budget => {
-                    return finish(Some(&search), None, "budget", false, field, ctx.interner)
-                }
-                _ => {}
-            }
-        };
-    }
-
-    // size 1: leaves — vars first (first-appearance order), then consts.
-    for sym in var_order.clone() {
-        reg!(TermNode::Var { name: sym }, 1);
-    }
-    for c in const_set.clone() {
-        reg!(TermNode::Lit { value: c }, 1);
-    }
-    // MDL_OCCAM_WITNESS_PRICING (design doc §2 slice 1): each string
-    // literal registers at its OWN witness-priced size instead of the
-    // uniform 1 above — see `literal_witness_cost`'s doc comment. Data-
-    // derived and row-invariant literals still register at cost 1
-    // (byte-identical to before, and in the SAME relative order as before,
-    // since only the priced-up subset is now absent from `by_size[1]`).
-    // `value_str` always succeeds here (`str_consts` is built exclusively
-    // via `surf_string`, above); `unwrap_or_default` is defensive only.
-    for c in str_consts.clone() {
-        let s = value_str(&c, ctx.interner).unwrap_or_default();
-        let cost = literal_witness_cost(&s, &search.envs, &outputs, ctx.interner, alphabet_size);
-        if cost > max_size {
-            // Priced beyond this search's own size budget: registering it
-            // would index `by_size` out of bounds, and it could never be
-            // reached by the growth loop regardless -- this IS the fix's
-            // whole point, a single-witness output quote should not be a
-            // cheap building block. Skip it entirely (not counted toward
-            // `tested`, exactly like an already-excluded signature).
-            continue;
+            };
         }
-        reg!(TermNode::Lit { value: c }, cost);
-    }
 
-    // Arc4-S4: build the FilterList/MapList template pools — ONCE, never
-    // counted toward `tested`/budget (the `exclude`-preseeding discipline:
-    // these are shared subtrees, not enumerated candidates in their own
-    // right). Skipped entirely (zero cost) unless the caller's op
-    // inventory actually contains the relevant op name, so a spec that
-    // never requests `FilterList`/`MapList` pays nothing for this.
-    let filter_wanted = op_list.iter().any(|(n, _)| n == "FilterList");
-    // SetLit/DictItems rung: `SetMap` shares `MapList`'s exact template
-    // pool (`OpKind::ListMap`), so it must ALSO gate pool construction —
-    // a spec that requests `SetMap` but never `MapList` would otherwise
-    // build an empty pool and find nothing.
-    let set_map_wanted = op_list.iter().any(|(n, _)| n == "SetMap");
-    // DictItems/SortBy rung: `SortBy` shares `MapList`'s exact template
-    // pool too (same `OpKind::ListMap` reuse as `SetMap`) — must ALSO gate
-    // pool construction, same reasoning as `set_map_wanted` above.
-    let sort_by_wanted = op_list.iter().any(|(n, _)| n == "SortBy");
-    let map_wanted =
-        op_list.iter().any(|(n, _)| n == "MapList") || set_map_wanted || sort_by_wanted;
-    // Rung 1 `op:IndexedMap`.
-    let indexed_map_wanted = op_list.iter().any(|(n, _)| n == "IndexedMap");
-    let template_cap = max_size + 1;
-    let mut filter_templates_by_size: Vec<Vec<TermIdx>> = vec![Vec::new(); template_cap];
-    let mut map_templates_by_size: Vec<Vec<TermIdx>> = vec![Vec::new(); template_cap];
-    // Rung 1: built SEPARATELY from `map_templates_by_size` so that
-    // pool's arena layout (and hence the enumeration order of every
-    // already-shipped `MapList` spec) is never perturbed — the
-    // `tmpl:nested_reduction` precedent.
-    let mut indexed_map_templates_by_size: Vec<Vec<TermIdx>> = vec![Vec::new(); template_cap];
-    // `ZIP_ELEMENTWISE` rung `op:ZipWith`: built in its OWN, independent
-    // block below (never entangled with the filter/map pool construction
-    // above — narrower blast radius, matches `OpKind::ZipMap`'s own doc
-    // comment). `zip_wanted_for_budget` (computed once, above, before
-    // `Search` construction) IS this same check — reused verbatim, never
-    // re-derived, so the budget gate and the template-pool gate can never
-    // disagree about what this call's own resolved op list contains.
-    let zip_wanted = zip_wanted_for_budget;
-    let mut zip_op_templates_by_size: Vec<Vec<TermIdx>> = vec![Vec::new(); template_cap];
-    if filter_wanted || map_wanted || indexed_map_wanted {
-        let numeric_consts: Vec<Value> = const_set
-            .iter()
-            .filter(|v| matches!(v, Value::Int(_) | Value::Float(_) | Value::Rational(_, _)))
-            .cloned()
-            .collect();
-        // Scalar spec variables (excluding the bound __item/__acc, which
-        // are never in var_order) — usable as a predicate/value operand
-        // alongside the item, e.g. `item > threshold`.
-        let scalar_vars: Vec<Sym> = var_order
-            .iter()
-            .cloned()
-            .filter(|s| {
-                search.envs.iter().all(|e| {
-                    e.iter()
-                        .find(|(vs, _)| vs == s)
-                        .map(|(_, v)| matches!(v, Value::Int(_) | Value::Float(_) | Value::Bool(_) | Value::Rational(_, _)))
-                        .unwrap_or(false)
-                })
-            })
-            .collect();
-        // Arc6 tier-0: the LIST-valued spec variables (same "consistently
-        // typed on every row" rule as `scalar_vars` above) — the operand
-        // `tmpl:item_in_listvar` needs.
-        let list_vars: Vec<Sym> = var_order
-            .iter()
-            .cloned()
-            .filter(|s| {
-                search.envs.iter().all(|e| {
-                    e.iter()
-                        .find(|(vs, _)| vs == s)
-                        .map(|(_, v)| is_listlike(v))
-                        .unwrap_or(false)
-                })
-            })
-            .collect();
-        let push = |pool: &mut Vec<Vec<TermIdx>>, idx: TermIdx, sz: usize| {
-            if sz < pool.len() {
-                pool[sz].push(idx);
+        // size 1: leaves — vars first (first-appearance order), then consts.
+        for sym in var_order.clone() {
+            reg!(TermNode::Var { name: sym }, 1);
+        }
+        for c in const_set.clone() {
+            reg!(TermNode::Lit { value: c }, 1);
+        }
+        // MDL_OCCAM_WITNESS_PRICING (design doc §2 slice 1): each string
+        // literal registers at its OWN witness-priced size instead of the
+        // uniform 1 above — see `literal_witness_cost`'s doc comment. Data-
+        // derived and row-invariant literals still register at cost 1
+        // (byte-identical to before, and in the SAME relative order as before,
+        // since only the priced-up subset is now absent from `by_size[1]`).
+        // `value_str` always succeeds here (`str_consts` is built exclusively
+        // via `surf_string`, above); `unwrap_or_default` is defensive only.
+        for c in str_consts.clone() {
+            let s = value_str(&c, ctx.interner).unwrap_or_default();
+            let cost =
+                literal_witness_cost(&s, &search.envs, &outputs, ctx.interner, alphabet_size);
+            if cost > max_size {
+                // Priced beyond this search's own size budget: registering it
+                // would index `by_size` out of bounds, and it could never be
+                // reached by the growth loop regardless -- this IS the fix's
+                // whole point, a single-witness output quote should not be a
+                // cheap building block. Skip it entirely (not counted toward
+                // `tested`, exactly like an already-excluded signature).
+                continue;
             }
-        };
-        if filter_wanted {
-            const CMPS: [CmpKind; 5] =
-                [CmpKind::Gt, CmpKind::Lt, CmpKind::Gte, CmpKind::Lte, CmpKind::Eq];
-            for c in &numeric_consts {
-                for k in CMPS {
-                    // item OP c — size 3 (cmp + Var + Lit).
-                    let iv = search.scratch.add(TermNode::Var { name: item_sym });
-                    let lv = search.scratch.add(TermNode::Lit { value: c.clone() });
-                    let t = search.scratch.add(build_cmp(k, iv, lv));
-                    push(&mut filter_templates_by_size, t, 3);
-                    // len(item) OP c — size 4 (cmp + Count(Var) + Lit).
-                    let iv2 = search.scratch.add(TermNode::Var { name: item_sym });
-                    let cnt = search.scratch.add(TermNode::Count { source: iv2 });
-                    let lv2 = search.scratch.add(TermNode::Lit { value: c.clone() });
-                    let t2 = search.scratch.add(build_cmp(k, cnt, lv2));
-                    push(&mut filter_templates_by_size, t2, 4);
-                }
-            }
-            for v in &scalar_vars {
-                for k in CMPS {
-                    // item OP (another scalar spec variable) — size 3.
-                    let iv = search.scratch.add(TermNode::Var { name: item_sym });
-                    let vv = search.scratch.add(TermNode::Var { name: *v });
-                    let t = search.scratch.add(build_cmp(k, iv, vv));
-                    push(&mut filter_templates_by_size, t, 3);
-                }
-            }
+            reg!(TermNode::Lit { value: c }, cost);
+        }
 
-            // ---- PROGRAM_SYNTHESIS_CEILING_REASSESSMENT_5_PREREG.md
-            // `tmpl:item_mod_eq` (tasks 412 "remove odd numbers",
-            // 426 "filter odd numbers") ----------------------------------
-            // `item % c == r` / `item % c != r` — a modulus/parity
-            // predicate. Mirrors family 1's own `item OP c` construction
-            // exactly (spec-derived numeric consts only, never a
-            // benchmark-specific literal): `c`/`r` are both drawn from the
-            // SAME `numeric_consts` pool every other template family in
-            // this block already uses. Restricted to the mathematically
-            // well-formed range — modulus `c > 1` (mod-by-0/1 is
-            // degenerate: mod 1 is always 0, and this engine's own `Mod`
-            // treats `b == 0` as a 0 short-circuit, `term.rs`'s
-            // `rem_euclid` arm), remainder `0 <= r < c` (the exact range
-            // `Mod`'s own `rem_euclid` semantics can ever produce for a
-            // positive modulus) — a semantic constraint, not a
-            // benchmark-fitted one, that keeps this addition's own
-            // contribution to the pool small (typically 1-2 valid moduli
-            // out of the default 4-constant pool, confirmed live in the
-            // PREREG). Only `Eq`/`Not(Eq(...))` are offered (not the full
-            // 5-way `CMPS` crossing family 1 uses) — a modulus compared
-            // via `Gt`/`Lt` is not a predicate shape any surveyed MBPP
-            // task needs, and omitting it keeps this addition's blast
-            // radius to exactly the two forms 412/426 require, the same
-            // "only build what's witnessed" discipline `ZIP_ELEMENTWISE_
-            // OP_NAMES`'s own fixed 7-op inventory already uses.
-            for c in &numeric_consts {
-                let Value::Int(ci) = c else { continue };
-                if *ci <= 1 {
-                    continue;
+        // Arc4-S4: build the FilterList/MapList template pools — ONCE, never
+        // counted toward `tested`/budget (the `exclude`-preseeding discipline:
+        // these are shared subtrees, not enumerated candidates in their own
+        // right). Skipped entirely (zero cost) unless the caller's op
+        // inventory actually contains the relevant op name, so a spec that
+        // never requests `FilterList`/`MapList` pays nothing for this.
+        let filter_wanted = op_list.iter().any(|(n, _)| n == "FilterList");
+        // SetLit/DictItems rung: `SetMap` shares `MapList`'s exact template
+        // pool (`OpKind::ListMap`), so it must ALSO gate pool construction —
+        // a spec that requests `SetMap` but never `MapList` would otherwise
+        // build an empty pool and find nothing.
+        let set_map_wanted = op_list.iter().any(|(n, _)| n == "SetMap");
+        // DictItems/SortBy rung: `SortBy` shares `MapList`'s exact template
+        // pool too (same `OpKind::ListMap` reuse as `SetMap`) — must ALSO gate
+        // pool construction, same reasoning as `set_map_wanted` above.
+        let sort_by_wanted = op_list.iter().any(|(n, _)| n == "SortBy");
+        let map_wanted =
+            op_list.iter().any(|(n, _)| n == "MapList") || set_map_wanted || sort_by_wanted;
+        // Rung 1 `op:IndexedMap`.
+        let indexed_map_wanted = op_list.iter().any(|(n, _)| n == "IndexedMap");
+        let template_cap = max_size + 1;
+        let mut filter_templates_by_size: Vec<Vec<TermIdx>> = vec![Vec::new(); template_cap];
+        let mut map_templates_by_size: Vec<Vec<TermIdx>> = vec![Vec::new(); template_cap];
+        // Rung 1: built SEPARATELY from `map_templates_by_size` so that
+        // pool's arena layout (and hence the enumeration order of every
+        // already-shipped `MapList` spec) is never perturbed — the
+        // `tmpl:nested_reduction` precedent.
+        let mut indexed_map_templates_by_size: Vec<Vec<TermIdx>> = vec![Vec::new(); template_cap];
+        // `ZIP_ELEMENTWISE` rung `op:ZipWith`: built in its OWN, independent
+        // block below (never entangled with the filter/map pool construction
+        // above — narrower blast radius, matches `OpKind::ZipMap`'s own doc
+        // comment). `zip_wanted_for_budget` (computed once, above, before
+        // `Search` construction) IS this same check — reused verbatim, never
+        // re-derived, so the budget gate and the template-pool gate can never
+        // disagree about what this call's own resolved op list contains.
+        let zip_wanted = zip_wanted_for_budget;
+        let mut zip_op_templates_by_size: Vec<Vec<TermIdx>> = vec![Vec::new(); template_cap];
+        if filter_wanted || map_wanted || indexed_map_wanted {
+            let numeric_consts: Vec<Value> = const_set
+                .iter()
+                .filter(|v| matches!(v, Value::Int(_) | Value::Float(_) | Value::Rational(_, _)))
+                .cloned()
+                .collect();
+            // Scalar spec variables (excluding the bound __item/__acc, which
+            // are never in var_order) — usable as a predicate/value operand
+            // alongside the item, e.g. `item > threshold`.
+            let scalar_vars: Vec<Sym> = var_order
+                .iter()
+                .cloned()
+                .filter(|s| {
+                    search.envs.iter().all(|e| {
+                        e.iter()
+                            .find(|(vs, _)| vs == s)
+                            .map(|(_, v)| {
+                                matches!(
+                                    v,
+                                    Value::Int(_)
+                                        | Value::Float(_)
+                                        | Value::Bool(_)
+                                        | Value::Rational(_, _)
+                                )
+                            })
+                            .unwrap_or(false)
+                    })
+                })
+                .collect();
+            // Arc6 tier-0: the LIST-valued spec variables (same "consistently
+            // typed on every row" rule as `scalar_vars` above) — the operand
+            // `tmpl:item_in_listvar` needs.
+            let list_vars: Vec<Sym> = var_order
+                .iter()
+                .cloned()
+                .filter(|s| {
+                    search.envs.iter().all(|e| {
+                        e.iter()
+                            .find(|(vs, _)| vs == s)
+                            .map(|(_, v)| is_listlike(v))
+                            .unwrap_or(false)
+                    })
+                })
+                .collect();
+            let push = |pool: &mut Vec<Vec<TermIdx>>, idx: TermIdx, sz: usize| {
+                if sz < pool.len() {
+                    pool[sz].push(idx);
                 }
-                for r in &numeric_consts {
-                    let Value::Int(ri) = r else { continue };
-                    if *ri < 0 || *ri >= *ci {
+            };
+            if filter_wanted {
+                const CMPS: [CmpKind; 5] = [
+                    CmpKind::Gt,
+                    CmpKind::Lt,
+                    CmpKind::Gte,
+                    CmpKind::Lte,
+                    CmpKind::Eq,
+                ];
+                for c in &numeric_consts {
+                    for k in CMPS {
+                        // item OP c — size 3 (cmp + Var + Lit).
+                        let iv = search.scratch.add(TermNode::Var { name: item_sym });
+                        let lv = search.scratch.add(TermNode::Lit { value: c.clone() });
+                        let t = search.scratch.add(build_cmp(k, iv, lv));
+                        push(&mut filter_templates_by_size, t, 3);
+                        // len(item) OP c — size 4 (cmp + Count(Var) + Lit).
+                        let iv2 = search.scratch.add(TermNode::Var { name: item_sym });
+                        let cnt = search.scratch.add(TermNode::Count { source: iv2 });
+                        let lv2 = search.scratch.add(TermNode::Lit { value: c.clone() });
+                        let t2 = search.scratch.add(build_cmp(k, cnt, lv2));
+                        push(&mut filter_templates_by_size, t2, 4);
+                    }
+                }
+                for v in &scalar_vars {
+                    for k in CMPS {
+                        // item OP (another scalar spec variable) — size 3.
+                        let iv = search.scratch.add(TermNode::Var { name: item_sym });
+                        let vv = search.scratch.add(TermNode::Var { name: *v });
+                        let t = search.scratch.add(build_cmp(k, iv, vv));
+                        push(&mut filter_templates_by_size, t, 3);
+                    }
+                }
+
+                // ---- PROGRAM_SYNTHESIS_CEILING_REASSESSMENT_5_PREREG.md
+                // `tmpl:item_mod_eq` (tasks 412 "remove odd numbers",
+                // 426 "filter odd numbers") ----------------------------------
+                // `item % c == r` / `item % c != r` — a modulus/parity
+                // predicate. Mirrors family 1's own `item OP c` construction
+                // exactly (spec-derived numeric consts only, never a
+                // benchmark-specific literal): `c`/`r` are both drawn from the
+                // SAME `numeric_consts` pool every other template family in
+                // this block already uses. Restricted to the mathematically
+                // well-formed range — modulus `c > 1` (mod-by-0/1 is
+                // degenerate: mod 1 is always 0, and this engine's own `Mod`
+                // treats `b == 0` as a 0 short-circuit, `term.rs`'s
+                // `rem_euclid` arm), remainder `0 <= r < c` (the exact range
+                // `Mod`'s own `rem_euclid` semantics can ever produce for a
+                // positive modulus) — a semantic constraint, not a
+                // benchmark-fitted one, that keeps this addition's own
+                // contribution to the pool small (typically 1-2 valid moduli
+                // out of the default 4-constant pool, confirmed live in the
+                // PREREG). Only `Eq`/`Not(Eq(...))` are offered (not the full
+                // 5-way `CMPS` crossing family 1 uses) — a modulus compared
+                // via `Gt`/`Lt` is not a predicate shape any surveyed MBPP
+                // task needs, and omitting it keeps this addition's blast
+                // radius to exactly the two forms 412/426 require, the same
+                // "only build what's witnessed" discipline `ZIP_ELEMENTWISE_
+                // OP_NAMES`'s own fixed 7-op inventory already uses.
+                for c in &numeric_consts {
+                    let Value::Int(ci) = c else { continue };
+                    if *ci <= 1 {
                         continue;
                     }
-                    // item % c == r — size 5 (Eq + Mod + Var + Lit + Lit).
-                    let iv = search.scratch.add(TermNode::Var { name: item_sym });
-                    let cv = search.scratch.add(TermNode::Lit { value: c.clone() });
-                    let md = search.scratch.add(TermNode::Mod { a: iv, b: cv });
-                    let rv = search.scratch.add(TermNode::Lit { value: r.clone() });
-                    let eq = search.scratch.add(TermNode::Eq { a: md, b: rv });
-                    push(&mut filter_templates_by_size, eq, 5);
-                    // item % c != r — size 6 (Not + the above, the same
-                    // "+1 for the negated form" idiom `tmpl:item_in_listvar`
-                    // uses immediately below for `in`/`not in`).
-                    let iv2 = search.scratch.add(TermNode::Var { name: item_sym });
-                    let cv2 = search.scratch.add(TermNode::Lit { value: c.clone() });
-                    let md2 = search.scratch.add(TermNode::Mod { a: iv2, b: cv2 });
-                    let rv2 = search.scratch.add(TermNode::Lit { value: r.clone() });
-                    let eq2 = search.scratch.add(TermNode::Eq { a: md2, b: rv2 });
-                    let ne2 = search.scratch.add(TermNode::Not { arg: eq2 });
-                    push(&mut filter_templates_by_size, ne2, 6);
+                    for r in &numeric_consts {
+                        let Value::Int(ri) = r else { continue };
+                        if *ri < 0 || *ri >= *ci {
+                            continue;
+                        }
+                        // item % c == r — size 5 (Eq + Mod + Var + Lit + Lit).
+                        let iv = search.scratch.add(TermNode::Var { name: item_sym });
+                        let cv = search.scratch.add(TermNode::Lit { value: c.clone() });
+                        let md = search.scratch.add(TermNode::Mod { a: iv, b: cv });
+                        let rv = search.scratch.add(TermNode::Lit { value: r.clone() });
+                        let eq = search.scratch.add(TermNode::Eq { a: md, b: rv });
+                        push(&mut filter_templates_by_size, eq, 5);
+                        // item % c != r — size 6 (Not + the above, the same
+                        // "+1 for the negated form" idiom `tmpl:item_in_listvar`
+                        // uses immediately below for `in`/`not in`).
+                        let iv2 = search.scratch.add(TermNode::Var { name: item_sym });
+                        let cv2 = search.scratch.add(TermNode::Lit { value: c.clone() });
+                        let md2 = search.scratch.add(TermNode::Mod { a: iv2, b: cv2 });
+                        let rv2 = search.scratch.add(TermNode::Lit { value: r.clone() });
+                        let eq2 = search.scratch.add(TermNode::Eq { a: md2, b: rv2 });
+                        let ne2 = search.scratch.add(TermNode::Not { arg: eq2 });
+                        push(&mut filter_templates_by_size, ne2, 6);
+                    }
                 }
-            }
 
-            // ---- Arc6 tier-0 `tmpl:item_in_listvar` ----------------------
-            // `item in <list var>` / `item not in <list var>`, over the
-            // SHIPPED `In` Term.  The pool already compares the bound item
-            // to a scalar variable; it had no way to ask whether the item
-            // is a MEMBER of another list-valued argument — the one thing a
-            // two-list spec (`drop the elements of a that appear in b`)
-            // needs.  General by construction: EVERY list-shaped spec
-            // variable, never a named one.
-            for v in &list_vars {
-                // item in v — size 3 (In + Var + Var).
-                let iv = search.scratch.add(TermNode::Var { name: item_sym });
-                let vv = search.scratch.add(TermNode::Var { name: *v });
-                let t = search.scratch.add(TermNode::In { member: iv, container: vv });
-                push(&mut filter_templates_by_size, t, 3);
-                // item not in v — size 4 (Not + the above).
-                let iv2 = search.scratch.add(TermNode::Var { name: item_sym });
-                let vv2 = search.scratch.add(TermNode::Var { name: *v });
-                let inn = search.scratch.add(TermNode::In { member: iv2, container: vv2 });
-                let notn = search.scratch.add(TermNode::Not { arg: inn });
-                push(&mut filter_templates_by_size, notn, 4);
-            }
-
-            // ---- Arc6 tier-0 `tmpl:len_item_vs_var` ----------------------
-            // `len(item) OP <scalar var>` — size 4.  The pool could already
-            // compare `len(item)` to a CONSTANT and the bare item to a
-            // VARIABLE; the missing cell of that 2x2 is the length against a
-            // variable, which is what a spec that passes the target length
-            // as an argument needs.  Filling a hole in an existing product,
-            // not a new idea.
-            for v in &scalar_vars {
-                for k in CMPS {
+                // ---- Arc6 tier-0 `tmpl:item_in_listvar` ----------------------
+                // `item in <list var>` / `item not in <list var>`, over the
+                // SHIPPED `In` Term.  The pool already compares the bound item
+                // to a scalar variable; it had no way to ask whether the item
+                // is a MEMBER of another list-valued argument — the one thing a
+                // two-list spec (`drop the elements of a that appear in b`)
+                // needs.  General by construction: EVERY list-shaped spec
+                // variable, never a named one.
+                for v in &list_vars {
+                    // item in v — size 3 (In + Var + Var).
                     let iv = search.scratch.add(TermNode::Var { name: item_sym });
-                    let cnt = search.scratch.add(TermNode::Count { source: iv });
                     let vv = search.scratch.add(TermNode::Var { name: *v });
-                    let t = search.scratch.add(build_cmp(k, cnt, vv));
-                    push(&mut filter_templates_by_size, t, 4);
+                    let t = search.scratch.add(TermNode::In {
+                        member: iv,
+                        container: vv,
+                    });
+                    push(&mut filter_templates_by_size, t, 3);
+                    // item not in v — size 4 (Not + the above).
+                    let iv2 = search.scratch.add(TermNode::Var { name: item_sym });
+                    let vv2 = search.scratch.add(TermNode::Var { name: *v });
+                    let inn = search.scratch.add(TermNode::In {
+                        member: iv2,
+                        container: vv2,
+                    });
+                    let notn = search.scratch.add(TermNode::Not { arg: inn });
+                    push(&mut filter_templates_by_size, notn, 4);
+                }
+
+                // ---- Arc6 tier-0 `tmpl:len_item_vs_var` ----------------------
+                // `len(item) OP <scalar var>` — size 4.  The pool could already
+                // compare `len(item)` to a CONSTANT and the bare item to a
+                // VARIABLE; the missing cell of that 2x2 is the length against a
+                // variable, which is what a spec that passes the target length
+                // as an argument needs.  Filling a hole in an existing product,
+                // not a new idea.
+                for v in &scalar_vars {
+                    for k in CMPS {
+                        let iv = search.scratch.add(TermNode::Var { name: item_sym });
+                        let cnt = search.scratch.add(TermNode::Count { source: iv });
+                        let vv = search.scratch.add(TermNode::Var { name: *v });
+                        let t = search.scratch.add(build_cmp(k, cnt, vv));
+                        push(&mut filter_templates_by_size, t, 4);
+                    }
+                }
+
+                // ---- Arc6 tier-0 `tmpl:nested_reduction` ---------------------
+                // A QUANTIFIER OVER THE BOUND ITEM, inside the predicate:
+                // `max/min/sum(<inner> for __inner in item) OP <rhs>`.  This is
+                // S4 §4.4's named architectural seam — it widens the template
+                // grammar from flat to ONE level of nesting (never to a full
+                // recursive sub-search: the inner body is drawn from a pool, it
+                // is not enumerated).
+                //
+                // The inner grammar is DELIBERATELY the SAME per-element
+                // grammar the shipped MapList template pool already uses, only
+                // over a second locally-fabricated bound variable — so the unit
+                // introduces no new arithmetic and stays diffable against a pool
+                // written from the operator list alone.  (Consequence, recorded
+                // rather than patched around: the pool has {+, -, *} and no
+                // `Mod`, so a DIVISIBILITY quantifier is not reachable here.)
+                //
+                // It is duplicated rather than factored out of the MapList pool
+                // below on purpose: that pool is shipped, its construction order
+                // fixes the arena layout and hence the enumeration order of
+                // every already-passing list spec, and this widening must not
+                // perturb it.
+                {
+                    const REDUCERS: [&str; 3] = ["MaxOver", "MinOver", "Sum"];
+                    // The inner value pool, over `__inner` — same shapes, same
+                    // order as the MapList pool.
+                    let mut inner: Vec<(TermIdx, usize)> = Vec::new();
+                    let idn = search.scratch.add(TermNode::Var { name: inner_sym });
+                    inner.push((idn, 1));
+                    let iv = search.scratch.add(TermNode::Var { name: inner_sym });
+                    let cnt = search.scratch.add(TermNode::Count { source: iv });
+                    inner.push((cnt, 2));
+                    let iv2 = search.scratch.add(TermNode::Var { name: inner_sym });
+                    let cf = search.scratch.add(TermNode::CaseFold { text: iv2 });
+                    inner.push((cf, 2));
+                    for c in &numeric_consts {
+                        let a1 = search.scratch.add(TermNode::Var { name: inner_sym });
+                        let b1 = search.scratch.add(TermNode::Lit { value: c.clone() });
+                        let plus = search.scratch.add(TermNode::Plus {
+                            items: vec![a1, b1],
+                        });
+                        inner.push((plus, 3));
+                        let a2 = search.scratch.add(TermNode::Var { name: inner_sym });
+                        let b2 = search.scratch.add(TermNode::Lit { value: c.clone() });
+                        let minus = search.scratch.add(TermNode::Minus { a: a2, b: b2 });
+                        inner.push((minus, 3));
+                        let a3 = search.scratch.add(TermNode::Lit { value: c.clone() });
+                        let b3 = search.scratch.add(TermNode::Var { name: inner_sym });
+                        let rminus = search.scratch.add(TermNode::Minus { a: a3, b: b3 });
+                        inner.push((rminus, 3));
+                        let a4 = search.scratch.add(TermNode::Var { name: inner_sym });
+                        let b4 = search.scratch.add(TermNode::Lit { value: c.clone() });
+                        let times = search.scratch.add(TermNode::Times {
+                            items: vec![a4, b4],
+                        });
+                        inner.push((times, 3));
+                    }
+                    for k in [0i64, -1i64] {
+                        let ivk = search.scratch.add(TermNode::Var { name: inner_sym });
+                        let lit = search.scratch.add(TermNode::Lit {
+                            value: Value::Int(k),
+                        });
+                        let ix = search.scratch.add(TermNode::IndexAt {
+                            seq: ivk,
+                            index: lit,
+                        });
+                        inner.push((ix, 3));
+                    }
+                    for v in &scalar_vars {
+                        let ivv = search.scratch.add(TermNode::Var { name: inner_sym });
+                        let vv = search.scratch.add(TermNode::Var { name: *v });
+                        let ix = search.scratch.add(TermNode::IndexAt {
+                            seq: ivv,
+                            index: vv,
+                        });
+                        inner.push((ix, 3));
+                    }
+                    // The right-hand sides a reduction is compared against: the
+                    // same const/scalar-variable operands every other filter
+                    // template already uses.  Size 1 each.
+                    let mut rhs: Vec<TermIdx> = Vec::new();
+                    for c in &numeric_consts {
+                        rhs.push(search.scratch.add(TermNode::Lit { value: c.clone() }));
+                    }
+                    for v in &scalar_vars {
+                        rhs.push(search.scratch.add(TermNode::Var { name: *v }));
+                    }
+                    for red in REDUCERS {
+                        for (body, body_sz) in inner.iter().copied() {
+                            // R{source: Var(item), var_name: __inner, value: body}
+                            //   size = 1 (the reduction) + 1 (Var(item)) + body
+                            let red_sz = 2 + body_sz;
+                            if red_sz + 2 >= template_cap {
+                                continue; // cmp + rhs would overrun max_size
+                            }
+                            let src = search.scratch.add(TermNode::Var { name: item_sym });
+                            let node = match red {
+                                "MaxOver" => TermNode::MaxOver {
+                                    source: src,
+                                    var_name: inner_sym,
+                                    value: body,
+                                    default: None,
+                                },
+                                "MinOver" => TermNode::MinOver {
+                                    source: src,
+                                    var_name: inner_sym,
+                                    value: body,
+                                    default: None,
+                                },
+                                _ => TermNode::Sum {
+                                    source: src,
+                                    var_name: inner_sym,
+                                    value: body,
+                                },
+                            };
+                            let r = search.scratch.add(node);
+                            for rv in rhs.iter().copied() {
+                                for k in CMPS {
+                                    let t = search.scratch.add(build_cmp(k, r, rv));
+                                    push(&mut filter_templates_by_size, t, red_sz + 2);
+                                }
+                            }
+                        }
+                    }
                 }
             }
-
-            // ---- Arc6 tier-0 `tmpl:nested_reduction` ---------------------
-            // A QUANTIFIER OVER THE BOUND ITEM, inside the predicate:
-            // `max/min/sum(<inner> for __inner in item) OP <rhs>`.  This is
-            // S4 §4.4's named architectural seam — it widens the template
-            // grammar from flat to ONE level of nesting (never to a full
-            // recursive sub-search: the inner body is drawn from a pool, it
-            // is not enumerated).
-            //
-            // The inner grammar is DELIBERATELY the SAME per-element
-            // grammar the shipped MapList template pool already uses, only
-            // over a second locally-fabricated bound variable — so the unit
-            // introduces no new arithmetic and stays diffable against a pool
-            // written from the operator list alone.  (Consequence, recorded
-            // rather than patched around: the pool has {+, -, *} and no
-            // `Mod`, so a DIVISIBILITY quantifier is not reachable here.)
-            //
-            // It is duplicated rather than factored out of the MapList pool
-            // below on purpose: that pool is shipped, its construction order
-            // fixes the arena layout and hence the enumeration order of
-            // every already-passing list spec, and this widening must not
-            // perturb it.
-            {
-                const REDUCERS: [&str; 3] = ["MaxOver", "MinOver", "Sum"];
-                // The inner value pool, over `__inner` — same shapes, same
-                // order as the MapList pool.
-                let mut inner: Vec<(TermIdx, usize)> = Vec::new();
-                let idn = search.scratch.add(TermNode::Var { name: inner_sym });
-                inner.push((idn, 1));
-                let iv = search.scratch.add(TermNode::Var { name: inner_sym });
+            if map_wanted {
+                // identity — size 1.
+                let idn = search.scratch.add(TermNode::Var { name: item_sym });
+                push(&mut map_templates_by_size, idn, 1);
+                // len(item) — size 2.
+                let iv = search.scratch.add(TermNode::Var { name: item_sym });
                 let cnt = search.scratch.add(TermNode::Count { source: iv });
-                inner.push((cnt, 2));
-                let iv2 = search.scratch.add(TermNode::Var { name: inner_sym });
+                push(&mut map_templates_by_size, cnt, 2);
+                // lower(item) — size 2 (no-op/harmless on a non-string item —
+                // DSL semantics govern, exactly like the top-level CaseFold op).
+                let iv2 = search.scratch.add(TermNode::Var { name: item_sym });
                 let cf = search.scratch.add(TermNode::CaseFold { text: iv2 });
-                inner.push((cf, 2));
+                push(&mut map_templates_by_size, cf, 2);
                 for c in &numeric_consts {
-                    let a1 = search.scratch.add(TermNode::Var { name: inner_sym });
+                    // item + c, item - c, c - item, item * c — size 3 each.
+                    let a1 = search.scratch.add(TermNode::Var { name: item_sym });
                     let b1 = search.scratch.add(TermNode::Lit { value: c.clone() });
-                    let plus = search.scratch.add(TermNode::Plus { items: vec![a1, b1] });
-                    inner.push((plus, 3));
-                    let a2 = search.scratch.add(TermNode::Var { name: inner_sym });
+                    let plus = search.scratch.add(TermNode::Plus {
+                        items: vec![a1, b1],
+                    });
+                    push(&mut map_templates_by_size, plus, 3);
+                    let a2 = search.scratch.add(TermNode::Var { name: item_sym });
                     let b2 = search.scratch.add(TermNode::Lit { value: c.clone() });
                     let minus = search.scratch.add(TermNode::Minus { a: a2, b: b2 });
-                    inner.push((minus, 3));
+                    push(&mut map_templates_by_size, minus, 3);
                     let a3 = search.scratch.add(TermNode::Lit { value: c.clone() });
-                    let b3 = search.scratch.add(TermNode::Var { name: inner_sym });
+                    let b3 = search.scratch.add(TermNode::Var { name: item_sym });
                     let rminus = search.scratch.add(TermNode::Minus { a: a3, b: b3 });
-                    inner.push((rminus, 3));
-                    let a4 = search.scratch.add(TermNode::Var { name: inner_sym });
+                    push(&mut map_templates_by_size, rminus, 3);
+                    let a4 = search.scratch.add(TermNode::Var { name: item_sym });
                     let b4 = search.scratch.add(TermNode::Lit { value: c.clone() });
-                    let times = search.scratch.add(TermNode::Times { items: vec![a4, b4] });
-                    inner.push((times, 3));
+                    let times = search.scratch.add(TermNode::Times {
+                        items: vec![a4, b4],
+                    });
+                    push(&mut map_templates_by_size, times, 3);
                 }
+                // item[0], item[-1] — size 3 each (extract from a nested
+                // list/tuple element, e.g. "first of each sublist").
                 for k in [0i64, -1i64] {
-                    let ivk = search.scratch.add(TermNode::Var { name: inner_sym });
-                    let lit = search.scratch.add(TermNode::Lit { value: Value::Int(k) });
-                    let ix = search.scratch.add(TermNode::IndexAt { seq: ivk, index: lit });
-                    inner.push((ix, 3));
-                }
-                for v in &scalar_vars {
-                    let ivv = search.scratch.add(TermNode::Var { name: inner_sym });
-                    let vv = search.scratch.add(TermNode::Var { name: *v });
-                    let ix = search.scratch.add(TermNode::IndexAt { seq: ivv, index: vv });
-                    inner.push((ix, 3));
-                }
-                // The right-hand sides a reduction is compared against: the
-                // same const/scalar-variable operands every other filter
-                // template already uses.  Size 1 each.
-                let mut rhs: Vec<TermIdx> = Vec::new();
-                for c in &numeric_consts {
-                    rhs.push(search.scratch.add(TermNode::Lit { value: c.clone() }));
-                }
-                for v in &scalar_vars {
-                    rhs.push(search.scratch.add(TermNode::Var { name: *v }));
-                }
-                for red in REDUCERS {
-                    for (body, body_sz) in inner.iter().copied() {
-                        // R{source: Var(item), var_name: __inner, value: body}
-                        //   size = 1 (the reduction) + 1 (Var(item)) + body
-                        let red_sz = 2 + body_sz;
-                        if red_sz + 2 >= template_cap {
-                            continue; // cmp + rhs would overrun max_size
-                        }
-                        let src = search.scratch.add(TermNode::Var { name: item_sym });
-                        let node = match red {
-                            "MaxOver" => TermNode::MaxOver {
-                                source: src, var_name: inner_sym, value: body, default: None },
-                            "MinOver" => TermNode::MinOver {
-                                source: src, var_name: inner_sym, value: body, default: None },
-                            _ => TermNode::Sum {
-                                source: src, var_name: inner_sym, value: body },
-                        };
-                        let r = search.scratch.add(node);
-                        for rv in rhs.iter().copied() {
-                            for k in CMPS {
-                                let t = search.scratch.add(build_cmp(k, r, rv));
-                                push(&mut filter_templates_by_size, t, red_sz + 2);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if map_wanted {
-            // identity — size 1.
-            let idn = search.scratch.add(TermNode::Var { name: item_sym });
-            push(&mut map_templates_by_size, idn, 1);
-            // len(item) — size 2.
-            let iv = search.scratch.add(TermNode::Var { name: item_sym });
-            let cnt = search.scratch.add(TermNode::Count { source: iv });
-            push(&mut map_templates_by_size, cnt, 2);
-            // lower(item) — size 2 (no-op/harmless on a non-string item —
-            // DSL semantics govern, exactly like the top-level CaseFold op).
-            let iv2 = search.scratch.add(TermNode::Var { name: item_sym });
-            let cf = search.scratch.add(TermNode::CaseFold { text: iv2 });
-            push(&mut map_templates_by_size, cf, 2);
-            for c in &numeric_consts {
-                // item + c, item - c, c - item, item * c — size 3 each.
-                let a1 = search.scratch.add(TermNode::Var { name: item_sym });
-                let b1 = search.scratch.add(TermNode::Lit { value: c.clone() });
-                let plus = search.scratch.add(TermNode::Plus { items: vec![a1, b1] });
-                push(&mut map_templates_by_size, plus, 3);
-                let a2 = search.scratch.add(TermNode::Var { name: item_sym });
-                let b2 = search.scratch.add(TermNode::Lit { value: c.clone() });
-                let minus = search.scratch.add(TermNode::Minus { a: a2, b: b2 });
-                push(&mut map_templates_by_size, minus, 3);
-                let a3 = search.scratch.add(TermNode::Lit { value: c.clone() });
-                let b3 = search.scratch.add(TermNode::Var { name: item_sym });
-                let rminus = search.scratch.add(TermNode::Minus { a: a3, b: b3 });
-                push(&mut map_templates_by_size, rminus, 3);
-                let a4 = search.scratch.add(TermNode::Var { name: item_sym });
-                let b4 = search.scratch.add(TermNode::Lit { value: c.clone() });
-                let times = search.scratch.add(TermNode::Times { items: vec![a4, b4] });
-                push(&mut map_templates_by_size, times, 3);
-            }
-            // item[0], item[-1] — size 3 each (extract from a nested
-            // list/tuple element, e.g. "first of each sublist").
-            for k in [0i64, -1i64] {
-                let iv = search.scratch.add(TermNode::Var { name: item_sym });
-                let lit = search.scratch.add(TermNode::Lit { value: Value::Int(k) });
-                let ix = search.scratch.add(TermNode::IndexAt { seq: iv, index: lit });
-                push(&mut map_templates_by_size, ix, 3);
-            }
-            for v in &scalar_vars {
-                // item[other_scalar_var] — size 3 (e.g. "nth element").
-                let iv = search.scratch.add(TermNode::Var { name: item_sym });
-                let vv = search.scratch.add(TermNode::Var { name: *v });
-                let ix = search.scratch.add(TermNode::IndexAt { seq: iv, index: vv });
-                push(&mut map_templates_by_size, ix, 3);
-            }
-            // SetLit/DictItems rung: sorted(item) — size 2. Gated to
-            // `set_map_wanted` ONLY (not unconditional whenever
-            // `map_wanted`), so every already-shipped `MapList`-only
-            // spec's template pool stays BYTE-IDENTICAL to today — a
-            // spec that never asked for `SetMap` pays nothing for this.
-            // General-purpose (per-element canonicalization, e.g.
-            // "collapse an unordered pair" — not 2-tuple-specific in the
-            // Term itself), reused by MapList too if a future spec's
-            // template search reaches it via `SetMap`'s own gate.
-            //
-            // Map-template-pool rung (task 104, "sort each sublist of
-            // strings"): the SAME `sorted(item)` template is ALSO offered
-            // when the spec has direct nested-list evidence
-            // (`spec_has_list_of_lists`, defined above — a list variable
-            // or output whose OWN elements are themselves list-shaped),
-            // widening past `set_map_wanted`-only without going
-            // unconditional. Emitted once via `Or`, so a spec that is
-            // neither Set-shaped nor list-of-lists pays nothing (byte-
-            // identical to today).
-            if set_map_wanted || spec_has_list_of_lists {
-                let iv = search.scratch.add(TermNode::Var { name: item_sym });
-                let srt = search.scratch.add(TermNode::Sort { seq: iv });
-                push(&mut map_templates_by_size, srt, 2);
-            }
-            // Map-template-pool rung (PROGRAM_SYNTHESIS_CEILING_
-            // REASSESSMENT_2_PREREG.md §3): four more per-element
-            // templates, APPENDED (never interleaved — every existing
-            // template above keeps its exact arena index and pool
-            // position, so any already-shipped `MapList` spec's own
-            // enumeration order is byte-identical to before this rung).
-            // Each is gated on the SAME evidence discipline
-            // `Round`/`IndexedMap`/`DictItems` already use in the op_list
-            // construction above (never unconditional-by-default beyond
-            // that), applied one level down at the per-element grain
-            // `spec_has_string_value`/`spec_has_float_value` don't reach
-            // (they test the OUTER spec value, not the bound item).
-            //
-            // reverse(item) — size 2 (task 456, "reverse each string").
-            // `spec_has_string_value` alone misses 456 (its outer var/
-            // output is a List, never a bare Str) — OR'd with the nested
-            // `spec_has_string_list_elements` evidence above.
-            if spec_has_string_value || spec_has_string_list_elements {
-                let iv = search.scratch.add(TermNode::Var { name: item_sym });
-                let rv = search.scratch.add(TermNode::Reverse { seq: iv });
-                push(&mut map_templates_by_size, rv, 2);
-            }
-            // capitalize(item) — size 2 (tasks 102/411, snake->camel via
-            // `MapList(Split(a,"_"), item, Capitalize(item))`).
-            if spec_has_string_value || spec_has_string_list_elements {
-                let iv = search.scratch.add(TermNode::Var { name: item_sym });
-                let cap = search.scratch.add(TermNode::Capitalize { text: iv });
-                push(&mut map_templates_by_size, cap, 2);
-            }
-            // str(item) — size 2 (tasks 439/421, joining non-string
-            // elements into one string/int). Gated on the SAME
-            // `map_wanted` precondition alone — `Str` is a total,
-            // type-general conversion (unlike `Reverse`/`Capitalize`,
-            // which are only meaningful on string/sequence items), so no
-            // further narrowing is needed beyond already being inside
-            // this `if map_wanted` block.
-            {
-                let iv = search.scratch.add(TermNode::Var { name: item_sym });
-                let s = search.scratch.add(TermNode::Str { value: iv });
-                push(&mut map_templates_by_size, s, 2);
-            }
-            // round(item, c) — size 3 each (task 419, "round every number
-            // ... print the resultant list"). Nested evidence, same
-            // reasoning as `spec_has_string_list_elements` above.
-            if spec_has_float_value || spec_has_float_list_elements {
-                for c in &numeric_consts {
                     let iv = search.scratch.add(TermNode::Var { name: item_sym });
-                    let cv = search.scratch.add(TermNode::Lit { value: c.clone() });
-                    let rnd = search.scratch.add(TermNode::Round { value: iv, ndigits: cv });
-                    push(&mut map_templates_by_size, rnd, 3);
+                    let lit = search.scratch.add(TermNode::Lit {
+                        value: Value::Int(k),
+                    });
+                    let ix = search.scratch.add(TermNode::IndexAt {
+                        seq: iv,
+                        index: lit,
+                    });
+                    push(&mut map_templates_by_size, ix, 3);
+                }
+                for v in &scalar_vars {
+                    // item[other_scalar_var] — size 3 (e.g. "nth element").
+                    let iv = search.scratch.add(TermNode::Var { name: item_sym });
+                    let vv = search.scratch.add(TermNode::Var { name: *v });
+                    let ix = search.scratch.add(TermNode::IndexAt { seq: iv, index: vv });
+                    push(&mut map_templates_by_size, ix, 3);
+                }
+                // SetLit/DictItems rung: sorted(item) — size 2. Gated to
+                // `set_map_wanted` ONLY (not unconditional whenever
+                // `map_wanted`), so every already-shipped `MapList`-only
+                // spec's template pool stays BYTE-IDENTICAL to today — a
+                // spec that never asked for `SetMap` pays nothing for this.
+                // General-purpose (per-element canonicalization, e.g.
+                // "collapse an unordered pair" — not 2-tuple-specific in the
+                // Term itself), reused by MapList too if a future spec's
+                // template search reaches it via `SetMap`'s own gate.
+                //
+                // Map-template-pool rung (task 104, "sort each sublist of
+                // strings"): the SAME `sorted(item)` template is ALSO offered
+                // when the spec has direct nested-list evidence
+                // (`spec_has_list_of_lists`, defined above — a list variable
+                // or output whose OWN elements are themselves list-shaped),
+                // widening past `set_map_wanted`-only without going
+                // unconditional. Emitted once via `Or`, so a spec that is
+                // neither Set-shaped nor list-of-lists pays nothing (byte-
+                // identical to today).
+                if set_map_wanted || spec_has_list_of_lists {
+                    let iv = search.scratch.add(TermNode::Var { name: item_sym });
+                    let srt = search.scratch.add(TermNode::Sort { seq: iv });
+                    push(&mut map_templates_by_size, srt, 2);
+                }
+                // Map-template-pool rung (PROGRAM_SYNTHESIS_CEILING_
+                // REASSESSMENT_2_PREREG.md §3): four more per-element
+                // templates, APPENDED (never interleaved — every existing
+                // template above keeps its exact arena index and pool
+                // position, so any already-shipped `MapList` spec's own
+                // enumeration order is byte-identical to before this rung).
+                // Each is gated on the SAME evidence discipline
+                // `Round`/`IndexedMap`/`DictItems` already use in the op_list
+                // construction above (never unconditional-by-default beyond
+                // that), applied one level down at the per-element grain
+                // `spec_has_string_value`/`spec_has_float_value` don't reach
+                // (they test the OUTER spec value, not the bound item).
+                //
+                // reverse(item) — size 2 (task 456, "reverse each string").
+                // `spec_has_string_value` alone misses 456 (its outer var/
+                // output is a List, never a bare Str) — OR'd with the nested
+                // `spec_has_string_list_elements` evidence above.
+                if spec_has_string_value || spec_has_string_list_elements {
+                    let iv = search.scratch.add(TermNode::Var { name: item_sym });
+                    let rv = search.scratch.add(TermNode::Reverse { seq: iv });
+                    push(&mut map_templates_by_size, rv, 2);
+                }
+                // capitalize(item) — size 2 (tasks 102/411, snake->camel via
+                // `MapList(Split(a,"_"), item, Capitalize(item))`).
+                if spec_has_string_value || spec_has_string_list_elements {
+                    let iv = search.scratch.add(TermNode::Var { name: item_sym });
+                    let cap = search.scratch.add(TermNode::Capitalize { text: iv });
+                    push(&mut map_templates_by_size, cap, 2);
+                }
+                // str(item) — size 2 (tasks 439/421, joining non-string
+                // elements into one string/int). Gated on the SAME
+                // `map_wanted` precondition alone — `Str` is a total,
+                // type-general conversion (unlike `Reverse`/`Capitalize`,
+                // which are only meaningful on string/sequence items), so no
+                // further narrowing is needed beyond already being inside
+                // this `if map_wanted` block.
+                {
+                    let iv = search.scratch.add(TermNode::Var { name: item_sym });
+                    let s = search.scratch.add(TermNode::Str { value: iv });
+                    push(&mut map_templates_by_size, s, 2);
+                }
+                // round(item, c) — size 3 each (task 419, "round every number
+                // ... print the resultant list"). Nested evidence, same
+                // reasoning as `spec_has_string_list_elements` above.
+                if spec_has_float_value || spec_has_float_list_elements {
+                    for c in &numeric_consts {
+                        let iv = search.scratch.add(TermNode::Var { name: item_sym });
+                        let cv = search.scratch.add(TermNode::Lit { value: c.clone() });
+                        let rnd = search.scratch.add(TermNode::Round {
+                            value: iv,
+                            ndigits: cv,
+                        });
+                        push(&mut map_templates_by_size, rnd, 3);
+                    }
+                }
+            }
+            // ---- Rung 1 `op:IndexedMap` templates -------------------------
+            // The (index, element) BINDER `STRUCTURAL_CEILING.md`'s S8 class
+            // names: a value template that may reference the bound POSITION
+            // as well as the bound element. Deliberately its OWN pool (never
+            // shares arena slots with `map_templates_by_size` above).
+            if indexed_map_wanted {
+                // index — size 1 (e.g. "the position itself").
+                let idxn = search.scratch.add(TermNode::Var { name: index_sym });
+                push(&mut indexed_map_templates_by_size, idxn, 1);
+                // item — size 1 (plain MapList-identity is still reachable
+                // through IndexedMap too, so a spec that requests only this
+                // op name isn't missing the trivial case).
+                let itn = search.scratch.add(TermNode::Var { name: item_sym });
+                push(&mut indexed_map_templates_by_size, itn, 1);
+                // (index, item) — size 3: the BINDING itself, directly
+                // closing the S8 gap ("no Term binds an index alongside the
+                // element").
+                let iv1 = search.scratch.add(TermNode::Var { name: index_sym });
+                let iv2 = search.scratch.add(TermNode::Var { name: item_sym });
+                let pair = search.scratch.add(TermNode::Vec_ {
+                    items: vec![iv1, iv2],
+                });
+                push(&mut indexed_map_templates_by_size, pair, 3);
+                // item == index — size 3 (e.g. "the element equal to its own
+                // position").
+                let ev1 = search.scratch.add(TermNode::Var { name: item_sym });
+                let ev2 = search.scratch.add(TermNode::Var { name: index_sym });
+                let eqn = search.scratch.add(TermNode::Eq { a: ev1, b: ev2 });
+                push(&mut indexed_map_templates_by_size, eqn, 3);
+                for c in &numeric_consts {
+                    // index + c, index - c — size 3 each (e.g. 1-based
+                    // position, or an offset lookup).
+                    let a1 = search.scratch.add(TermNode::Var { name: index_sym });
+                    let b1 = search.scratch.add(TermNode::Lit { value: c.clone() });
+                    let plus = search.scratch.add(TermNode::Plus {
+                        items: vec![a1, b1],
+                    });
+                    push(&mut indexed_map_templates_by_size, plus, 3);
+                    let a2 = search.scratch.add(TermNode::Var { name: index_sym });
+                    let b2 = search.scratch.add(TermNode::Lit { value: c.clone() });
+                    let minus = search.scratch.add(TermNode::Minus { a: a2, b: b2 });
+                    push(&mut indexed_map_templates_by_size, minus, 3);
+                }
+                for v in &scalar_vars {
+                    // index == other_scalar_var — size 3 (e.g. "the element
+                    // at the requested position").
+                    let iv = search.scratch.add(TermNode::Var { name: index_sym });
+                    let vv = search.scratch.add(TermNode::Var { name: *v });
+                    let eqv = search.scratch.add(TermNode::Eq { a: iv, b: vv });
+                    push(&mut indexed_map_templates_by_size, eqv, 3);
                 }
             }
         }
-        // ---- Rung 1 `op:IndexedMap` templates -------------------------
-        // The (index, element) BINDER `STRUCTURAL_CEILING.md`'s S8 class
-        // names: a value template that may reference the bound POSITION
-        // as well as the bound element. Deliberately its OWN pool (never
-        // shares arena slots with `map_templates_by_size` above).
-        if indexed_map_wanted {
-            // index — size 1 (e.g. "the position itself").
-            let idxn = search.scratch.add(TermNode::Var { name: index_sym });
-            push(&mut indexed_map_templates_by_size, idxn, 1);
-            // item — size 1 (plain MapList-identity is still reachable
-            // through IndexedMap too, so a spec that requests only this
-            // op name isn't missing the trivial case).
-            let itn = search.scratch.add(TermNode::Var { name: item_sym });
-            push(&mut indexed_map_templates_by_size, itn, 1);
-            // (index, item) — size 3: the BINDING itself, directly
-            // closing the S8 gap ("no Term binds an index alongside the
-            // element").
-            let iv1 = search.scratch.add(TermNode::Var { name: index_sym });
-            let iv2 = search.scratch.add(TermNode::Var { name: item_sym });
-            let pair = search.scratch.add(TermNode::Vec_ { items: vec![iv1, iv2] });
-            push(&mut indexed_map_templates_by_size, pair, 3);
-            // item == index — size 3 (e.g. "the element equal to its own
-            // position").
-            let ev1 = search.scratch.add(TermNode::Var { name: item_sym });
-            let ev2 = search.scratch.add(TermNode::Var { name: index_sym });
-            let eqn = search.scratch.add(TermNode::Eq { a: ev1, b: ev2 });
-            push(&mut indexed_map_templates_by_size, eqn, 3);
-            for c in &numeric_consts {
-                // index + c, index - c — size 3 each (e.g. 1-based
-                // position, or an offset lookup).
-                let a1 = search.scratch.add(TermNode::Var { name: index_sym });
-                let b1 = search.scratch.add(TermNode::Lit { value: c.clone() });
-                let plus = search.scratch.add(TermNode::Plus { items: vec![a1, b1] });
-                push(&mut indexed_map_templates_by_size, plus, 3);
-                let a2 = search.scratch.add(TermNode::Var { name: index_sym });
-                let b2 = search.scratch.add(TermNode::Lit { value: c.clone() });
-                let minus = search.scratch.add(TermNode::Minus { a: a2, b: b2 });
-                push(&mut indexed_map_templates_by_size, minus, 3);
-            }
-            for v in &scalar_vars {
-                // index == other_scalar_var — size 3 (e.g. "the element
-                // at the requested position").
-                let iv = search.scratch.add(TermNode::Var { name: index_sym });
-                let vv = search.scratch.add(TermNode::Var { name: *v });
-                let eqv = search.scratch.add(TermNode::Eq { a: iv, b: vv });
-                push(&mut indexed_map_templates_by_size, eqv, 3);
+
+        // ---- `ZIP_ELEMENTWISE` rung `op:ZipWith` template pool -------------
+        // Built ONCE (never counted toward `tested`/budget — the `FilterList`/
+        // `MapList` pool-construction discipline above), zero cost unless the
+        // caller's op inventory actually contains `ZipWith`. A SMALL, FIXED
+        // set of templates — the exact 7 elementwise binary ops this rung's
+        // 8-task witness population needs (`PROGRAM_SYNTHESIS_ZIP_ELEMENTWISE_
+        // PREREG.md` §2), each in TWO flavours:
+        //   - FLAT (size 3): `OP(Var(__za), Var(__zb))` — the direct per-pair
+        //     combine (tasks 261/273/282/399/429).
+        //   - NESTED (size 6): `ZipWith(Var(__za), Var(__zb), __zi, __zj,
+        //     OP(Var(__zi), Var(__zj)))` — a SECOND `zip` applied to each
+        //     bound pair's own elements, for a tuple-OF-tuples spec (tasks
+        //     259/401/445, each `zip`-ing at BOTH the outer and inner level).
+        // No numeric-constant/scalar-variable cross product (unlike
+        // `filter_templates_by_size`'s six families) — every one of this
+        // rung's 8 witnesses composes the bound pair DIRECTLY, with no
+        // constant or third variable involved, so a bigger pool would only
+        // cost search budget for zero additional reach.
+        if zip_wanted {
+            let push = |pool: &mut Vec<Vec<TermIdx>>, idx: TermIdx, sz: usize| {
+                if sz < pool.len() {
+                    pool[sz].push(idx);
+                }
+            };
+            // (op name, build-fn) — `Max`/`Plus`/`Times` are variadic
+            // (`items: Vec<TermIdx>`), the rest are binary (`a`, `b`); both
+            // shapes reduce to a 2-element application here.
+            for op_name in ZIP_ELEMENTWISE_OP_NAMES {
+                // FLAT: OP(Var(__za), Var(__zb)) — size 3.
+                let za1 = search.scratch.add(TermNode::Var { name: za_sym });
+                let zb1 = search.scratch.add(TermNode::Var { name: zb_sym });
+                let flat = search
+                    .scratch
+                    .add(build_zip_elementwise_op(op_name, za1, zb1));
+                push(&mut zip_op_templates_by_size, flat, 3);
+
+                // NESTED: ZipWith(Var(__za), Var(__zb), __zi, __zj,
+                // OP(Var(__zi), Var(__zj))) — size 6 (1 for the inner
+                // ZipWith node + 1 + 1 for its own Var(__za)/Var(__zb) +
+                // 3 for the size-3 OP(Var(__zi),Var(__zj)) inner value).
+                let za2 = search.scratch.add(TermNode::Var { name: za_sym });
+                let zb2 = search.scratch.add(TermNode::Var { name: zb_sym });
+                let zi = search.scratch.add(TermNode::Var { name: zi_sym });
+                let zj = search.scratch.add(TermNode::Var { name: zj_sym });
+                let inner_op = search
+                    .scratch
+                    .add(build_zip_elementwise_op(op_name, zi, zj));
+                let nested = search.scratch.add(TermNode::ZipWith {
+                    a: za2,
+                    b: zb2,
+                    a_name: zi_sym,
+                    b_name: zj_sym,
+                    value: inner_op,
+                });
+                push(&mut zip_op_templates_by_size, nested, 6);
             }
         }
-    }
 
-    // ---- `ZIP_ELEMENTWISE` rung `op:ZipWith` template pool -------------
-    // Built ONCE (never counted toward `tested`/budget — the `FilterList`/
-    // `MapList` pool-construction discipline above), zero cost unless the
-    // caller's op inventory actually contains `ZipWith`. A SMALL, FIXED
-    // set of templates — the exact 7 elementwise binary ops this rung's
-    // 8-task witness population needs (`PROGRAM_SYNTHESIS_ZIP_ELEMENTWISE_
-    // PREREG.md` §2), each in TWO flavours:
-    //   - FLAT (size 3): `OP(Var(__za), Var(__zb))` — the direct per-pair
-    //     combine (tasks 261/273/282/399/429).
-    //   - NESTED (size 6): `ZipWith(Var(__za), Var(__zb), __zi, __zj,
-    //     OP(Var(__zi), Var(__zj)))` — a SECOND `zip` applied to each
-    //     bound pair's own elements, for a tuple-OF-tuples spec (tasks
-    //     259/401/445, each `zip`-ing at BOTH the outer and inner level).
-    // No numeric-constant/scalar-variable cross product (unlike
-    // `filter_templates_by_size`'s six families) — every one of this
-    // rung's 8 witnesses composes the bound pair DIRECTLY, with no
-    // constant or third variable involved, so a bigger pool would only
-    // cost search budget for zero additional reach.
-    if zip_wanted {
-        let push = |pool: &mut Vec<Vec<TermIdx>>, idx: TermIdx, sz: usize| {
-            if sz < pool.len() {
-                pool[sz].push(idx);
-            }
-        };
-        // (op name, build-fn) — `Max`/`Plus`/`Times` are variadic
-        // (`items: Vec<TermIdx>`), the rest are binary (`a`, `b`); both
-        // shapes reduce to a 2-element application here.
-        for op_name in ZIP_ELEMENTWISE_OP_NAMES {
-            // FLAT: OP(Var(__za), Var(__zb)) — size 3.
-            let za1 = search.scratch.add(TermNode::Var { name: za_sym });
-            let zb1 = search.scratch.add(TermNode::Var { name: zb_sym });
-            let flat = search.scratch.add(build_zip_elementwise_op(op_name, za1, zb1));
-            push(&mut zip_op_templates_by_size, flat, 3);
+        let mut distinct_history: Vec<usize> = vec![search.seen.len()];
 
-            // NESTED: ZipWith(Var(__za), Var(__zb), __zi, __zj,
-            // OP(Var(__zi), Var(__zj))) — size 6 (1 for the inner
-            // ZipWith node + 1 + 1 for its own Var(__za)/Var(__zb) +
-            // 3 for the size-3 OP(Var(__zi),Var(__zj)) inner value).
-            let za2 = search.scratch.add(TermNode::Var { name: za_sym });
-            let zb2 = search.scratch.add(TermNode::Var { name: zb_sym });
-            let zi = search.scratch.add(TermNode::Var { name: zi_sym });
-            let zj = search.scratch.add(TermNode::Var { name: zj_sym });
-            let inner_op = search.scratch.add(build_zip_elementwise_op(op_name, zi, zj));
-            let nested = search.scratch.add(TermNode::ZipWith {
-                a: za2, b: zb2, a_name: zi_sym, b_name: zj_sym, value: inner_op,
-            });
-            push(&mut zip_op_templates_by_size, nested, 6);
-        }
-    }
-
-    let mut distinct_history: Vec<usize> = vec![search.seen.len()];
-
-    // grow sizes 2..=max_size (generator.py's loop, partitions in the
-    // same order; registration interleaved — see module docs).
-    for size in 2..=max_size {
-        for (name, kind) in &op_list {
-            match kind {
-                OpKind::Unary => {
-                    // child has size-1
-                    for child in search.by_size[size - 1].clone() {
-                        reg!(build_op(name, &[child], &derived_names), size);
-                    }
-                }
-                OpKind::Binary => {
-                    // child sizes sum to size-1
-                    let terminal = name == "TupleOf"; // arc6 tier-0, see register_terminal
-                    for sa in 1..size.saturating_sub(1) {
-                        let sb = (size - 1) - sa;
-                        if sb < 1 {
-                            continue;
-                        }
-                        let left = search.by_size[sa].clone();
-                        let right = search.by_size[sb].clone();
-                        for ca in &left {
-                            for cb in &right {
-                                let node = build_op(name, &[*ca, *cb], &derived_names);
-                                let r = if terminal {
-                                    search.register_terminal(node, size, ctx)
-                                } else {
-                                    search.register(node, size, ctx)
-                                };
-                                match r {
-                                    Reg::Solved(idx) => return finish(
-                                        Some(&search), Some((idx, size)), "solved", false, field, ctx.interner),
-                                    Reg::Budget => return finish(
-                                        Some(&search), None, "budget", false, field, ctx.interner),
-                                    _ => {}
-                                }
-                            }
+        // grow sizes 2..=max_size (generator.py's loop, partitions in the
+        // same order; registration interleaved — see module docs).
+        for size in 2..=max_size {
+            for (name, kind) in &op_list {
+                match kind {
+                    OpKind::Unary => {
+                        // child has size-1
+                        for child in search.by_size[size - 1].clone() {
+                            reg!(build_op(name, &[child], &derived_names), size);
                         }
                     }
-                }
-                OpKind::Ternary => {
-                    // cond+then+other sizes sum to size-1
-                    if size < 4 {
-                        continue;
-                    }
-                    for sc in 1..size - 2 {
-                        for st in 1..(size - 1 - sc) {
-                            let so = (size - 1) - sc - st;
-                            if so < 1 {
-                                continue;
-                            }
-                            let conds = search.by_size[sc].clone();
-                            let thens = search.by_size[st].clone();
-                            let others = search.by_size[so].clone();
-                            for cc in &conds {
-                                for tt in &thens {
-                                    for oo in &others {
-                                        reg!(build_op(name, &[*cc, *tt, *oo], &derived_names), size);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                // --- Arc4-S4: list/iteration composition. Source only
-                // ever drawn from `list_by_size` (never the general
-                // `by_size` pool), so these arms are a genuine no-op for
-                // any spec that never registers a list-shaped candidate —
-                // the parity guarantee for every pre-existing spec. ---
-                OpKind::ListUnary => {
-                    // Honest MDL sizing: `size == 1 (this node) + extra
-                    // (the shape's own hidden fixed leaves) + source_size`
-                    // — see `list_unary_extra_cost`.
-                    let extra = list_unary_extra_cost(name, &derived_extra);
-                    if size >= 1 + extra {
-                        let src_size = size - 1 - extra;
-                        if src_size >= 1 {
-                            for child in search.list_by_size[src_size].clone() {
-                                let node = build_list_unary(name, child, item_sym, acc_sym, &mut search.scratch, &derived_names);
-                                reg!(node, size);
-                            }
-                        }
-                    }
-                }
-                OpKind::ListFilter => {
-                    // source size + predicate-template size sum to size-1
-                    for sa in 1..size.saturating_sub(1) {
-                        let st = (size - 1) - sa;
-                        if st < 1 || st >= filter_templates_by_size.len() {
-                            continue;
-                        }
-                        let srcs = search.list_by_size[sa].clone();
-                        let tmpls = filter_templates_by_size[st].clone();
-                        for s_ in &srcs {
-                            for t_ in &tmpls {
-                                reg!(build_list_ho(name, *s_, *t_, item_sym, &derived_names), size);
-                            }
-                        }
-                    }
-                }
-                OpKind::ListMap => {
-                    // source size + value-template size sum to size-1
-                    for sa in 1..size.saturating_sub(1) {
-                        let st = (size - 1) - sa;
-                        if st < 1 || st >= map_templates_by_size.len() {
-                            continue;
-                        }
-                        let srcs = search.list_by_size[sa].clone();
-                        let tmpls = map_templates_by_size[st].clone();
-                        for s_ in &srcs {
-                            for t_ in &tmpls {
-                                reg!(build_list_ho(name, *s_, *t_, item_sym, &derived_names), size);
-                            }
-                        }
-                    }
-                }
-                // Rung 1 `op:IndexedMap` — same shape as `ListMap`, its
-                // OWN template pool (`indexed_map_templates_by_size`).
-                OpKind::IndexedMap => {
-                    for sa in 1..size.saturating_sub(1) {
-                        let st = (size - 1) - sa;
-                        if st < 1 || st >= indexed_map_templates_by_size.len() {
-                            continue;
-                        }
-                        let srcs = search.list_by_size[sa].clone();
-                        let tmpls = indexed_map_templates_by_size[st].clone();
-                        for s_ in &srcs {
-                            for t_ in &tmpls {
-                                reg!(build_indexed_map(name, *s_, *t_, item_sym, index_sym, &derived_names), size);
-                            }
-                        }
-                    }
-                }
-                // `ZIP_ELEMENTWISE` rung `op:ZipWith` — see `OpKind::ZipMap`'s
-                // own doc comment: `a`/`b` are drawn ONLY from
-                // `list_by_size[1]` (raw declared spec variables), so
-                // `size == 1 (node) + 1 (a) + 1 (b) + st (template)`
-                // pins `st` to a SINGLE value per `size`, never a sa x sb
-                // cross product.
-                OpKind::ZipMap => {
-                    if size >= 4 {
-                        let st = size - 3;
-                        if st < zip_op_templates_by_size.len() {
-                            let srcs = search.list_by_size[1].clone();
-                            let tmpls = zip_op_templates_by_size[st].clone();
-                            for ca in &srcs {
-                                for cb in &srcs {
-                                    for t_ in &tmpls {
-                                        reg!(build_zip_with(name, *ca, *cb, *t_, za_sym, zb_sym, &derived_names), size);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                // --- Arc6 tier-0: BOTH children list-shaped (`ConcatList`).
-                // Same `list_by_size`-only sourcing discipline as every
-                // other list arm, so this is a genuine no-op for a spec that
-                // never registers a list-shaped candidate. Both operand
-                // ORDERS are reached by the full sa x sb cross product, the
-                // same way the ordinary Binary arm reaches (a,b) and (b,a).
-                OpKind::ListBinary => {
-                    let extra = list_binary_extra_cost(name, &derived_extra);
-                    if size >= 2 + extra {
-                        let budget = size - 1 - extra; // sa + sb
-                        for sa in 1..budget {
-                            let sb = budget - sa;
+                    OpKind::Binary => {
+                        // child sizes sum to size-1
+                        let terminal = name == "TupleOf"; // arc6 tier-0, see register_terminal
+                        for sa in 1..size.saturating_sub(1) {
+                            let sb = (size - 1) - sa;
                             if sb < 1 {
                                 continue;
                             }
-                            let left = search.list_by_size[sa].clone();
-                            let right = search.list_by_size[sb].clone();
+                            let left = search.by_size[sa].clone();
+                            let right = search.by_size[sb].clone();
                             for ca in &left {
                                 for cb in &right {
-                                    let node = build_list_binary(
-                                        name, *ca, *cb, item_sym, acc_sym, &mut search.scratch, &derived_names);
+                                    let node = build_op(name, &[*ca, *cb], &derived_names);
+                                    let r = if terminal {
+                                        search.register_terminal(node, size, ctx)
+                                    } else {
+                                        search.register(node, size, ctx)
+                                    };
+                                    match r {
+                                        Reg::Solved(idx) => {
+                                            return finish(
+                                                Some(&search),
+                                                Some((idx, size)),
+                                                "solved",
+                                                false,
+                                                field,
+                                                ctx.interner,
+                                            )
+                                        }
+                                        Reg::Budget => {
+                                            return finish(
+                                                Some(&search),
+                                                None,
+                                                "budget",
+                                                false,
+                                                field,
+                                                ctx.interner,
+                                            )
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    OpKind::Ternary => {
+                        // cond+then+other sizes sum to size-1
+                        if size < 4 {
+                            continue;
+                        }
+                        for sc in 1..size - 2 {
+                            for st in 1..(size - 1 - sc) {
+                                let so = (size - 1) - sc - st;
+                                if so < 1 {
+                                    continue;
+                                }
+                                let conds = search.by_size[sc].clone();
+                                let thens = search.by_size[st].clone();
+                                let others = search.by_size[so].clone();
+                                for cc in &conds {
+                                    for tt in &thens {
+                                        for oo in &others {
+                                            reg!(
+                                                build_op(name, &[*cc, *tt, *oo], &derived_names),
+                                                size
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // --- Arc4-S4: list/iteration composition. Source only
+                    // ever drawn from `list_by_size` (never the general
+                    // `by_size` pool), so these arms are a genuine no-op for
+                    // any spec that never registers a list-shaped candidate —
+                    // the parity guarantee for every pre-existing spec. ---
+                    OpKind::ListUnary => {
+                        // Honest MDL sizing: `size == 1 (this node) + extra
+                        // (the shape's own hidden fixed leaves) + source_size`
+                        // — see `list_unary_extra_cost`.
+                        let extra = list_unary_extra_cost(name, &derived_extra);
+                        if size >= 1 + extra {
+                            let src_size = size - 1 - extra;
+                            if src_size >= 1 {
+                                for child in search.list_by_size[src_size].clone() {
+                                    let node = build_list_unary(
+                                        name,
+                                        child,
+                                        item_sym,
+                                        acc_sym,
+                                        &mut search.scratch,
+                                        &derived_names,
+                                    );
                                     reg!(node, size);
                                 }
                             }
                         }
                     }
+                    OpKind::ListFilter => {
+                        // source size + predicate-template size sum to size-1
+                        for sa in 1..size.saturating_sub(1) {
+                            let st = (size - 1) - sa;
+                            if st < 1 || st >= filter_templates_by_size.len() {
+                                continue;
+                            }
+                            let srcs = search.list_by_size[sa].clone();
+                            let tmpls = filter_templates_by_size[st].clone();
+                            for s_ in &srcs {
+                                for t_ in &tmpls {
+                                    reg!(
+                                        build_list_ho(name, *s_, *t_, item_sym, &derived_names),
+                                        size
+                                    );
+                                }
+                            }
+                        }
+                    }
+                    OpKind::ListMap => {
+                        // source size + value-template size sum to size-1
+                        for sa in 1..size.saturating_sub(1) {
+                            let st = (size - 1) - sa;
+                            if st < 1 || st >= map_templates_by_size.len() {
+                                continue;
+                            }
+                            let srcs = search.list_by_size[sa].clone();
+                            let tmpls = map_templates_by_size[st].clone();
+                            for s_ in &srcs {
+                                for t_ in &tmpls {
+                                    reg!(
+                                        build_list_ho(name, *s_, *t_, item_sym, &derived_names),
+                                        size
+                                    );
+                                }
+                            }
+                        }
+                    }
+                    // Rung 1 `op:IndexedMap` — same shape as `ListMap`, its
+                    // OWN template pool (`indexed_map_templates_by_size`).
+                    OpKind::IndexedMap => {
+                        for sa in 1..size.saturating_sub(1) {
+                            let st = (size - 1) - sa;
+                            if st < 1 || st >= indexed_map_templates_by_size.len() {
+                                continue;
+                            }
+                            let srcs = search.list_by_size[sa].clone();
+                            let tmpls = indexed_map_templates_by_size[st].clone();
+                            for s_ in &srcs {
+                                for t_ in &tmpls {
+                                    reg!(
+                                        build_indexed_map(
+                                            name,
+                                            *s_,
+                                            *t_,
+                                            item_sym,
+                                            index_sym,
+                                            &derived_names
+                                        ),
+                                        size
+                                    );
+                                }
+                            }
+                        }
+                    }
+                    // `ZIP_ELEMENTWISE` rung `op:ZipWith` — see `OpKind::ZipMap`'s
+                    // own doc comment: `a`/`b` are drawn ONLY from
+                    // `list_by_size[1]` (raw declared spec variables), so
+                    // `size == 1 (node) + 1 (a) + 1 (b) + st (template)`
+                    // pins `st` to a SINGLE value per `size`, never a sa x sb
+                    // cross product.
+                    OpKind::ZipMap => {
+                        if size >= 4 {
+                            let st = size - 3;
+                            if st < zip_op_templates_by_size.len() {
+                                let srcs = search.list_by_size[1].clone();
+                                let tmpls = zip_op_templates_by_size[st].clone();
+                                for ca in &srcs {
+                                    for cb in &srcs {
+                                        for t_ in &tmpls {
+                                            reg!(
+                                                build_zip_with(
+                                                    name,
+                                                    *ca,
+                                                    *cb,
+                                                    *t_,
+                                                    za_sym,
+                                                    zb_sym,
+                                                    &derived_names
+                                                ),
+                                                size
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // --- Arc6 tier-0: BOTH children list-shaped (`ConcatList`).
+                    // Same `list_by_size`-only sourcing discipline as every
+                    // other list arm, so this is a genuine no-op for a spec that
+                    // never registers a list-shaped candidate. Both operand
+                    // ORDERS are reached by the full sa x sb cross product, the
+                    // same way the ordinary Binary arm reaches (a,b) and (b,a).
+                    OpKind::ListBinary => {
+                        let extra = list_binary_extra_cost(name, &derived_extra);
+                        if size >= 2 + extra {
+                            let budget = size - 1 - extra; // sa + sb
+                            for sa in 1..budget {
+                                let sb = budget - sa;
+                                if sb < 1 {
+                                    continue;
+                                }
+                                let left = search.list_by_size[sa].clone();
+                                let right = search.list_by_size[sb].clone();
+                                for ca in &left {
+                                    for cb in &right {
+                                        let node = build_list_binary(
+                                            name,
+                                            *ca,
+                                            *cb,
+                                            item_sym,
+                                            acc_sym,
+                                            &mut search.scratch,
+                                            &derived_names,
+                                        );
+                                        reg!(node, size);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Saturation early-stop: distinct-behaviour count not growing.
+            distinct_history.push(search.seen.len());
+            if distinct_history.len() > saturate_k {
+                let first = distinct_history[distinct_history.len() - 1 - saturate_k];
+                let last = *distinct_history.last().unwrap();
+                if first == last {
+                    return finish(Some(&search), None, "saturated", true, field, ctx.interner);
                 }
             }
         }
 
-        // Saturation early-stop: distinct-behaviour count not growing.
-        distinct_history.push(search.seen.len());
-        if distinct_history.len() > saturate_k {
-            let first = distinct_history[distinct_history.len() - 1 - saturate_k];
-            let last = *distinct_history.last().unwrap();
-            if first == last {
-                return finish(Some(&search), None, "saturated", true, field, ctx.interner);
-            }
-        }
-    }
-
-    finish(Some(&search), None, "max_size", false, field, ctx.interner)
+        finish(Some(&search), None, "max_size", false, field, ctx.interner)
     });
     result
 }
@@ -4042,9 +4829,9 @@ mod tests {
                 .iter()
                 .map(|s| surf_string(s.to_string()))
                 .collect();
-            let derived_t = self
-                .arena
-                .add(TermNode::Lit { value: Value::Tuple(Arc::new(derived_items)) });
+            let derived_t = self.arena.add(TermNode::Lit {
+                value: Value::Tuple(Arc::new(derived_items)),
+            });
             let t = self.arena.add(TermNode::SynthEnumerate {
                 examples: ex,
                 ops: ops_t,
@@ -4158,9 +4945,18 @@ mod tests {
         };
         assert!(pruned > 0, "expected observational-equivalence pruning");
         let (tested, distinct, inadm) = (
-            match dget(&out, "tested") { Value::Int(n) => n, _ => panic!() },
-            match dget(&out, "distinct") { Value::Int(n) => n, _ => panic!() },
-            match dget(&out, "inadmissible") { Value::Int(n) => n, _ => panic!() },
+            match dget(&out, "tested") {
+                Value::Int(n) => n,
+                _ => panic!(),
+            },
+            match dget(&out, "distinct") {
+                Value::Int(n) => n,
+                _ => panic!(),
+            },
+            match dget(&out, "inadmissible") {
+                Value::Int(n) => n,
+                _ => panic!(),
+            },
         );
         assert_eq!(tested, distinct + pruned + inadm);
     }
@@ -4265,10 +5061,7 @@ mod tests {
     #[test]
     fn field_selector_and_purity() {
         let mut f = Fixture::new();
-        let ex = f.rows(&[
-            (&[("x", 0)], Value::Int(1)),
-            (&[("x", 1)], Value::Int(2)),
-        ]);
+        let ex = f.rows(&[(&[("x", 0)], Value::Int(1)), (&[("x", 1)], Value::Int(2))]);
         let nodes_before = f.graph.node_count();
         let ex_t = f.arena.add(TermNode::Lit { value: ex });
         let field = f.interner.intern("found");
@@ -4418,8 +5211,14 @@ mod tests {
         // produce a tuple. Before this rung the two were indistinguishable.
         let mut f2 = Fixture::new();
         let ex_t = f2.rows_val(&[
-            (&[("lists", a)], tuple_of(vec![Value::Int(1), Value::Int(3)])),
-            (&[("lists", b)], tuple_of(vec![Value::Int(9), Value::Int(7)])),
+            (
+                &[("lists", a)],
+                tuple_of(vec![Value::Int(1), Value::Int(3)]),
+            ),
+            (
+                &[("lists", b)],
+                tuple_of(vec![Value::Int(9), Value::Int(7)]),
+            ),
         ]);
         let ops_t = f2.ops(&["MapList"]);
         let out_t = f2.run(ex_t, Some(ops_t), 9, 0);
@@ -4448,7 +5247,10 @@ mod tests {
         // ever has a `list_by_size` entry to draw from at any size — the
         // loop bodies are true no-ops, matching a saturation halt as soon
         // as the leaf-only distinct count stops growing.
-        assert!(matches!(text(&dget(&out, "halt_reason")).as_str(), "saturated" | "max_size"));
+        assert!(matches!(
+            text(&dget(&out, "halt_reason")).as_str(),
+            "saturated" | "max_size"
+        ));
     }
 
     #[test]
@@ -4585,24 +5387,41 @@ mod tests {
         let b_sym = f.interner.intern("b");
         let av = arena.add(TermNode::Var { name: a_sym });
         let bv = arena.add(TermNode::Var { name: b_sym });
-        let body = arena.add(TermNode::Plus { items: vec![av, bv] });
+        let body = arena.add(TermNode::Plus {
+            items: vec![av, bv],
+        });
         let total2_sym = f.interner.intern("Total2");
         let bogus_sym = f.interner.intern("Bogus"); // interned up front — `ctx` below borrows `f.interner`
         let mut registry = DerivedOpRegistry::default();
         registry.insert(
             total2_sym,
             DerivedOpDef {
-                params: vec![(a_sym, DerivedOpPool::General), (b_sym, DerivedOpPool::General)],
+                params: vec![
+                    (a_sym, DerivedOpPool::General),
+                    (b_sym, DerivedOpPool::General),
+                ],
                 body,
                 extra_cost: 0,
             },
         );
 
-        let x1 = arena.add(TermNode::Lit { value: Value::Int(3) });
-        let x2 = arena.add(TermNode::Lit { value: Value::Int(4) });
-        let call_node = arena.add(TermNode::Call { name: total2_sym, args: vec![x1, x2] });
-        let plus_node = arena.add(TermNode::Plus { items: vec![x1, x2] });
-        let bogus_call = arena.add(TermNode::Call { name: bogus_sym, args: vec![x1, x2] });
+        let x1 = arena.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let x2 = arena.add(TermNode::Lit {
+            value: Value::Int(4),
+        });
+        let call_node = arena.add(TermNode::Call {
+            name: total2_sym,
+            args: vec![x1, x2],
+        });
+        let plus_node = arena.add(TermNode::Plus {
+            items: vec![x1, x2],
+        });
+        let bogus_call = arena.add(TermNode::Call {
+            name: bogus_sym,
+            args: vec![x1, x2],
+        });
 
         let mut env: Env = SmallVec::new();
         let mut ctx = EvalCtx::new(&f.graph, &f.interner);
@@ -4616,7 +5435,10 @@ mod tests {
         // through eval_synth_enumerate) — confirms a MISSING registry
         // entry is `Value::None`, never a panic (the documented "no
         // registered entry -> Value::None" contract).
-        assert_eq!(evaluate(&arena, bogus_call, &mut env, &mut ctx), Value::None);
+        assert_eq!(
+            evaluate(&arena, bogus_call, &mut env, &mut ctx),
+            Value::None
+        );
     }
 
     /// `ctx.derived_ops` is restored to its PREVIOUS value (`None` here)
@@ -4639,7 +5461,9 @@ mod tests {
         };
         let ex_t = f.arena.add(TermNode::Lit { value: ex });
         let derived_t = f.arena.add(TermNode::Lit {
-            value: Value::Tuple(Arc::new(smallvec::smallvec![surf_string(TOTAL2_JSON.to_string())])),
+            value: Value::Tuple(Arc::new(smallvec::smallvec![surf_string(
+                TOTAL2_JSON.to_string()
+            )])),
         });
         let synth_t = f.arena.add(TermNode::SynthEnumerate {
             examples: ex_t,
@@ -4654,9 +5478,16 @@ mod tests {
             field: Sym::default(),
         });
         let total2_sym = f.interner.intern("Total2");
-        let a1 = f.arena.add(TermNode::Lit { value: Value::Int(1) });
-        let a2 = f.arena.add(TermNode::Lit { value: Value::Int(2) });
-        let call_t = f.arena.add(TermNode::Call { name: total2_sym, args: vec![a1, a2] });
+        let a1 = f.arena.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let a2 = f.arena.add(TermNode::Lit {
+            value: Value::Int(2),
+        });
+        let call_t = f.arena.add(TermNode::Call {
+            name: total2_sym,
+            args: vec![a1, a2],
+        });
 
         let mut env: Env = SmallVec::new();
         let mut ctx = EvalCtx::new(&f.graph, &f.interner);
@@ -4664,9 +5495,9 @@ mod tests {
         let synth_out = evaluate(&f.arena, synth_t, &mut env, &mut ctx);
         assert_eq!(dget(&synth_out, "found"), Value::Bool(true)); // the call itself worked
         assert!(ctx.derived_ops.is_none()); // after: restored, not leaked
-        // And a Call node evaluated on this SAME (now-registry-less) ctx
-        // finds nothing — proof the restore is behaviourally real, not
-        // just a field read-out.
+                                            // And a Call node evaluated on this SAME (now-registry-less) ctx
+                                            // finds nothing — proof the restore is behaviourally real, not
+                                            // just a field read-out.
         assert_eq!(evaluate(&f.arena, call_t, &mut env, &mut ctx), Value::None);
     }
 
@@ -4699,20 +5530,29 @@ mod tests {
         assert_eq!(dget(&native, "size"), dget(&derived, "size"));
         assert_eq!(dget(&native, "tested"), dget(&derived, "tested"));
         assert_eq!(dget(&native, "distinct"), dget(&derived, "distinct"));
-        assert_eq!(dget(&native, "pruned_equiv"), dget(&derived, "pruned_equiv"));
+        assert_eq!(
+            dget(&native, "pruned_equiv"),
+            dget(&derived, "pruned_equiv")
+        );
         assert_eq!(dget(&native, "halt_reason"), dget(&derived, "halt_reason"));
 
         let native_term = text(&dget(&native, "term_str"));
         let derived_term = text(&dget(&derived, "term_str"));
         assert!(native_term.contains('+'), "native term_str: {native_term}");
-        assert!(derived_term.starts_with("Total2("), "derived term_str: {derived_term}");
+        assert!(
+            derived_term.starts_with("Total2("),
+            "derived term_str: {derived_term}"
+        );
 
         // Byte-identical VALUE at the winning candidate too, not just
         // matching counters — re-evaluate both winning terms over a
         // fresh row and confirm equal output.
         let native_json = text(&dget(&native, "term"));
         let derived_json = text(&dget(&derived, "term"));
-        assert!(derived_json.contains("\"type\":\"Call\""), "derived term JSON: {derived_json}");
+        assert!(
+            derived_json.contains("\"type\":\"Call\""),
+            "derived term JSON: {derived_json}"
+        );
         assert_ne!(native_json, derived_json); // different node kinds, same behaviour
     }
 

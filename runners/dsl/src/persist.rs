@@ -27,9 +27,9 @@ pub fn encode_value(v: &Value, interner: &Interner) -> J {
         Value::None => J::Null,
         Value::Bool(b) => J::Bool(*b),
         Value::Int(n) => J::Number((*n).into()),
-        Value::Float(f) => {
-            serde_json::Number::from_f64(*f).map(J::Number).unwrap_or(J::Null)
-        }
+        Value::Float(f) => serde_json::Number::from_f64(*f)
+            .map(J::Number)
+            .unwrap_or(J::Null),
         // Exact rational — the PROGRAM value domain's in-frame numeric
         // type. Tagged like every other structural Value here
         // (`__nid__`, `__tuple__`, ...) rather than collapsed to a
@@ -39,7 +39,10 @@ pub fn encode_value(v: &Value, interner: &Interner) -> J {
         // exactly instead of collapsing to float at render time.
         Value::Rational(n, d) => {
             let mut m = Map::new();
-            m.insert("__rational__".into(), J::Array(vec![J::Number((*n).into()), J::Number((*d).into())]));
+            m.insert(
+                "__rational__".into(),
+                J::Array(vec![J::Number((*n).into()), J::Number((*d).into())]),
+            );
             J::Object(m)
         }
         Value::Str(s) => J::String(interner.resolve(*s).to_string()),
@@ -94,10 +97,7 @@ pub fn encode_value(v: &Value, interner: &Interner) -> J {
                 let mut m = Map::new();
                 for (k, v) in pairs.iter() {
                     if let Value::Str(s) = k {
-                        m.insert(
-                            interner.resolve(*s).to_string(),
-                            encode_value(v, interner),
-                        );
+                        m.insert(interner.resolve(*s).to_string(), encode_value(v, interner));
                     }
                 }
                 J::Object(m)
@@ -297,7 +297,9 @@ pub fn graph_to_value(graph: &TypedGraph, interner: &Interner) -> J {
 /// graph, so external indexes keyed by NodeID survive a round-trip.
 pub fn graph_from_value(v: &J, interner: &mut Interner) -> Result<TypedGraph, PersistError> {
     let mut g = TypedGraph::new();
-    let obj = v.as_object().ok_or(PersistError::ShapeMismatch("expected object"))?;
+    let obj = v
+        .as_object()
+        .ok_or(PersistError::ShapeMismatch("expected object"))?;
     let nodes = obj
         .get("nodes")
         .and_then(|n| n.as_array())
@@ -410,16 +412,24 @@ pub fn graph_diff(a: &J, b: &J) -> Result<J, PersistError> {
     let mut idx_a: FxHashMap<u64, &Map<String, J>> = FxHashMap::default();
     idx_a.reserve(nodes_a.len());
     for n in nodes_a {
-        let obj = n.as_object().ok_or(PersistError::ShapeMismatch("node: not an object"))?;
-        let id = obj.get("id").and_then(|v| v.as_u64())
+        let obj = n
+            .as_object()
+            .ok_or(PersistError::ShapeMismatch("node: not an object"))?;
+        let id = obj
+            .get("id")
+            .and_then(|v| v.as_u64())
             .ok_or(PersistError::ShapeMismatch("node: missing/bad id"))?;
         idx_a.insert(id, obj);
     }
     let mut idx_b: FxHashMap<u64, &Map<String, J>> = FxHashMap::default();
     idx_b.reserve(nodes_b.len());
     for n in nodes_b {
-        let obj = n.as_object().ok_or(PersistError::ShapeMismatch("node: not an object"))?;
-        let id = obj.get("id").and_then(|v| v.as_u64())
+        let obj = n
+            .as_object()
+            .ok_or(PersistError::ShapeMismatch("node: not an object"))?;
+        let id = obj
+            .get("id")
+            .and_then(|v| v.as_u64())
             .ok_or(PersistError::ShapeMismatch("node: missing/bad id"))?;
         idx_b.insert(id, obj);
     }
@@ -437,8 +447,14 @@ pub fn graph_diff(a: &J, b: &J) -> Result<J, PersistError> {
                 })));
             }
             Some(&obj_a) => {
-                let attrs_a = obj_a.get("attrs").and_then(|v| v.as_object()).unwrap_or(&empty);
-                let attrs_b = obj_b.get("attrs").and_then(|v| v.as_object()).unwrap_or(&empty);
+                let attrs_a = obj_a
+                    .get("attrs")
+                    .and_then(|v| v.as_object())
+                    .unwrap_or(&empty);
+                let attrs_b = obj_b
+                    .get("attrs")
+                    .and_then(|v| v.as_object())
+                    .unwrap_or(&empty);
                 let mut before = empty_map();
                 let mut after = empty_map();
                 for (k, vb) in attrs_b.iter() {
@@ -475,18 +491,28 @@ pub fn graph_diff(a: &J, b: &J) -> Result<J, PersistError> {
             }
         }
     }
-    let mut nodes_removed: Vec<u64> = idx_a.keys().copied().filter(|id| !idx_b.contains_key(id)).collect();
+    let mut nodes_removed: Vec<u64> = idx_a
+        .keys()
+        .copied()
+        .filter(|id| !idx_b.contains_key(id))
+        .collect();
     nodes_removed.sort_unstable();
     nodes_added.sort_by_key(|(id, _)| *id);
     nodes_changed.sort_by_key(|(id, _)| *id);
 
     // --- edges: index by (src, type, tgt) -------------------------------
     fn edge_key(obj: &Map<String, J>) -> Result<(u64, String, u64), PersistError> {
-        let src = obj.get("src").and_then(|v| v.as_u64())
+        let src = obj
+            .get("src")
+            .and_then(|v| v.as_u64())
             .ok_or(PersistError::ShapeMismatch("edge: missing/bad src"))?;
-        let tgt = obj.get("tgt").and_then(|v| v.as_u64())
+        let tgt = obj
+            .get("tgt")
+            .and_then(|v| v.as_u64())
             .ok_or(PersistError::ShapeMismatch("edge: missing/bad tgt"))?;
-        let ty = obj.get("type").and_then(|v| v.as_str())
+        let ty = obj
+            .get("type")
+            .and_then(|v| v.as_str())
             .ok_or(PersistError::ShapeMismatch("edge: missing/bad type"))?
             .to_string();
         Ok((src, ty, tgt))
@@ -495,24 +521,35 @@ pub fn graph_diff(a: &J, b: &J) -> Result<J, PersistError> {
     let mut set_a: FxHashMap<(u64, String, u64), ()> = FxHashMap::default();
     set_a.reserve(edges_a.len());
     for e in edges_a {
-        let obj = e.as_object().ok_or(PersistError::ShapeMismatch("edge: not an object"))?;
+        let obj = e
+            .as_object()
+            .ok_or(PersistError::ShapeMismatch("edge: not an object"))?;
         set_a.insert(edge_key(obj)?, ());
     }
     let mut set_b: FxHashMap<(u64, String, u64), ()> = FxHashMap::default();
     set_b.reserve(edges_b.len());
     for e in edges_b {
-        let obj = e.as_object().ok_or(PersistError::ShapeMismatch("edge: not an object"))?;
+        let obj = e
+            .as_object()
+            .ok_or(PersistError::ShapeMismatch("edge: not an object"))?;
         set_b.insert(edge_key(obj)?, ());
     }
 
-    let mut edges_added: Vec<(u64, String, u64)> =
-        set_b.keys().filter(|k| !set_a.contains_key(*k)).cloned().collect();
-    let mut edges_removed: Vec<(u64, String, u64)> =
-        set_a.keys().filter(|k| !set_b.contains_key(*k)).cloned().collect();
+    let mut edges_added: Vec<(u64, String, u64)> = set_b
+        .keys()
+        .filter(|k| !set_a.contains_key(*k))
+        .cloned()
+        .collect();
+    let mut edges_removed: Vec<(u64, String, u64)> = set_a
+        .keys()
+        .filter(|k| !set_b.contains_key(*k))
+        .cloned()
+        .collect();
     edges_added.sort();
     edges_removed.sort();
 
-    let edge_json = |(src, ty, tgt): &(u64, String, u64)| json!({ "src": src, "type": ty, "tgt": tgt });
+    let edge_json =
+        |(src, ty, tgt): &(u64, String, u64)| json!({ "src": src, "type": ty, "tgt": tgt });
 
     Ok(json!({
         "nodes_added": nodes_added.into_iter().map(|(_, j)| j).collect::<Vec<J>>(),
@@ -583,7 +620,8 @@ mod tests {
         // Delete one in the middle so the freelist has a gap.
         g.delete_node(b);
         let _d = g.insert_node(t, FxHashMap::default()); // recycles b's slot
-        g.insert_edge(a, adj, NodeID(0), FxHashMap::default()).unwrap(); // self-edge
+        g.insert_edge(a, adj, NodeID(0), FxHashMap::default())
+            .unwrap(); // self-edge
         let id_a_before = a;
 
         let dumped = graph_to_value(&g, &i);
@@ -613,8 +651,17 @@ mod tests {
     // --- graph_diff ------------------------------------------------------
 
     fn empty_diff_lists(d: &J) -> bool {
-        for k in ["nodes_added", "nodes_removed", "nodes_changed", "edges_added", "edges_removed"] {
-            let arr = d.get(k).and_then(|v| v.as_array()).unwrap_or_else(|| panic!("missing '{}'", k));
+        for k in [
+            "nodes_added",
+            "nodes_removed",
+            "nodes_changed",
+            "edges_added",
+            "edges_removed",
+        ] {
+            let arr = d
+                .get(k)
+                .and_then(|v| v.as_array())
+                .unwrap_or_else(|| panic!("missing '{}'", k));
             if !arr.is_empty() {
                 return false;
             }
@@ -636,7 +683,11 @@ mod tests {
         let dumped = graph_to_value(&g, &i);
 
         let d = graph_diff(&dumped, &dumped).expect("diff should succeed");
-        assert!(empty_diff_lists(&d), "identical graphs should diff to empty: {:?}", d);
+        assert!(
+            empty_diff_lists(&d),
+            "identical graphs should diff to empty: {:?}",
+            d
+        );
     }
 
     #[test]
@@ -678,7 +729,10 @@ mod tests {
         assert_eq!(removed, &vec![J::from(doomed.0 as u64)], "{:?}", d);
         assert!(d["nodes_added"].as_array().unwrap().is_empty());
         // `a` untouched -> not in nodes_changed.
-        assert!(!d["nodes_changed"].as_array().unwrap().iter()
+        assert!(!d["nodes_changed"]
+            .as_array()
+            .unwrap()
+            .iter()
             .any(|c| c["id"].as_u64() == Some(a.0 as u64)));
     }
 
@@ -700,9 +754,11 @@ mod tests {
         let mut g_b = graph_from_value(&graph_to_value(&g_a, &i), &mut i).unwrap();
         g_b.node_mut(id).attrs.insert(k_score, Value::Float(2.0)); // changed
         g_b.node_mut(id).attrs.remove(&k_gone); // removed
-        // k_stable untouched; a brand-new key added too.
+                                                // k_stable untouched; a brand-new key added too.
         let k_new = i.intern("new_attr");
-        g_b.node_mut(id).attrs.insert(k_new, Value::Str(i.intern("hi")));
+        g_b.node_mut(id)
+            .attrs
+            .insert(k_new, Value::Str(i.intern("hi")));
         let dumped_b = graph_to_value(&g_b, &i);
 
         let d = graph_diff(&dumped_a, &dumped_b).unwrap();
@@ -717,7 +773,10 @@ mod tests {
         assert!(!after.contains_key("stable_attr"));
         assert_eq!(before.get("score").and_then(|v| v.as_f64()), Some(1.0));
         assert_eq!(after.get("score").and_then(|v| v.as_f64()), Some(2.0));
-        assert_eq!(before.get("will_be_removed").and_then(|v| v.as_bool()), Some(true));
+        assert_eq!(
+            before.get("will_be_removed").and_then(|v| v.as_bool()),
+            Some(true)
+        );
         assert!(!after.contains_key("will_be_removed"));
         assert!(!before.contains_key("new_attr"));
         assert_eq!(after.get("new_attr").and_then(|v| v.as_str()), Some("hi"));
@@ -740,7 +799,8 @@ mod tests {
         // different type -> distinct identity, not a "changed" edge).
         let e = g_b.edge_idx(a, adj, b).unwrap();
         g_b.delete_edge(e);
-        g_b.insert_edge(a, touches, b, FxHashMap::default()).unwrap();
+        g_b.insert_edge(a, touches, b, FxHashMap::default())
+            .unwrap();
         let dumped_b = graph_to_value(&g_b, &i);
 
         let d = graph_diff(&dumped_a, &dumped_b).unwrap();

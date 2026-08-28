@@ -92,9 +92,10 @@ fn value_to_pyobj<'py>(py: Python<'py>, v: &Value, interner: &Interner) -> PyObj
         Value::Int(n) => n.into_py(py),
         Value::Float(f) => f.into_py(py),
         Value::Str(s) => interner.resolve(*s).to_string().into_py(py),
-        Value::Surface(SurfaceKind::Text, bytes) => {
-            std::str::from_utf8(bytes).unwrap_or("").to_string().into_py(py)
-        }
+        Value::Surface(SurfaceKind::Text, bytes) => std::str::from_utf8(bytes)
+            .unwrap_or("")
+            .to_string()
+            .into_py(py),
         Value::Surface(SurfaceKind::Bytes, bytes) => {
             pyo3::types::PyBytes::new_bound(py, bytes).into_py(py)
         }
@@ -149,8 +150,10 @@ pub fn call_tool(name: &str, args: &[Value], interner: &Interner) -> Value {
             Err(_) => return Value::Int(0),
         };
 
-        let py_args: Vec<PyObject> =
-            args.iter().map(|v| value_to_pyobj(py, v, interner)).collect();
+        let py_args: Vec<PyObject> = args
+            .iter()
+            .map(|v| value_to_pyobj(py, v, interner))
+            .collect();
         let tuple = PyTuple::new_bound(py, &py_args);
 
         match handler.bind(py).call1(tuple) {

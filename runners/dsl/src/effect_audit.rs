@@ -226,7 +226,10 @@ pub fn record_multi_binding_drain(rule: &str, n: u64) {
 pub fn multi_binding_stats() -> (u64, Vec<(String, u64)>) {
     (
         MULTI_BINDING_DRAINS.load(Ordering::Relaxed),
-        MULTI_BINDING_RULES.lock().map(|r| r.clone()).unwrap_or_default(),
+        MULTI_BINDING_RULES
+            .lock()
+            .map(|r| r.clone())
+            .unwrap_or_default(),
     )
 }
 

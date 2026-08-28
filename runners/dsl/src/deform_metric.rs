@@ -138,14 +138,28 @@ fn ffd_fit(a: &Value, b: &Value) -> Option<(Vec<[f64; 2]>, Vec<[f64; 2]>, Vec<[f
         bq
     };
     let cell = |x: f64, y: f64, g: usize| -> ([usize; 4], [f64; 4]) {
-        let gx = ((x + r) / (2.0 * r) * (g as f64 - 1.0)).max(0.0).min(g as f64 - 1.0);
-        let gy = ((y + r) / (2.0 * r) * (g as f64 - 1.0)).max(0.0).min(g as f64 - 1.0);
+        let gx = ((x + r) / (2.0 * r) * (g as f64 - 1.0))
+            .max(0.0)
+            .min(g as f64 - 1.0);
+        let gy = ((y + r) / (2.0 * r) * (g as f64 - 1.0))
+            .max(0.0)
+            .min(g as f64 - 1.0);
         let x0 = (gx.floor() as usize).min(g - 2);
         let y0 = (gy.floor() as usize).min(g - 2);
         let fx = gx - x0 as f64;
         let fy = gy - y0 as f64;
-        let idx = [y0 * g + x0, y0 * g + x0 + 1, (y0 + 1) * g + x0, (y0 + 1) * g + x0 + 1];
-        let w = [(1.0 - fx) * (1.0 - fy), fx * (1.0 - fy), (1.0 - fx) * fy, fx * fy];
+        let idx = [
+            y0 * g + x0,
+            y0 * g + x0 + 1,
+            (y0 + 1) * g + x0,
+            (y0 + 1) * g + x0 + 1,
+        ];
+        let w = [
+            (1.0 - fx) * (1.0 - fy),
+            fx * (1.0 - fy),
+            (1.0 - fx) * fy,
+            fx * fy,
+        ];
         (idx, w)
     };
     let step = 0.7;
@@ -277,11 +291,17 @@ pub(crate) fn smooth_deform_components(a: &Value, b: &Value) -> Value {
     let dc = acc.iter().map(|d| d[0] * d[0] + d[1] * d[1]).sum::<f64>() / n as f64;
     let total = residual + 1.5 * dc;
 
-    let target: Vec<[f64; 2]> = (0..n).map(|i| [p0[i][0] + acc[i][0], p0[i][1] + acc[i][1]]).collect();
+    let target: Vec<[f64; 2]> = (0..n)
+        .map(|i| [p0[i][0] + acc[i][0], p0[i][1] + acc[i][1]])
+        .collect();
     let (rotation, shear, log_scale, tx, ty, bending) = match fit_affine(&p0, &target) {
         Some((mat, t)) => {
             let (rot, shr, sx, sy) = decompose_affine(&mat);
-            let log_scale = if sx > 1e-12 && sy > 1e-12 { 0.5 * (sx * sy).ln() } else { 0.0 };
+            let log_scale = if sx > 1e-12 && sy > 1e-12 {
+                0.5 * (sx * sy).ln()
+            } else {
+                0.0
+            };
             let mut bend = 0.0;
             for i in 0..n {
                 let px = mat[0][0] * p0[i][0] + mat[0][1] * p0[i][1] + t[0];

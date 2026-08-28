@@ -173,11 +173,21 @@ pub(crate) fn eval_sigma_lognormal_generate(
 
     let points_val: SmallVec<[Value; 4]> = points
         .iter()
-        .map(|&(px, py)| Value::Tuple(Arc::new(smallvec::smallvec![Value::Float(px), Value::Float(py)])))
+        .map(|&(px, py)| {
+            Value::Tuple(Arc::new(smallvec::smallvec![
+                Value::Float(px),
+                Value::Float(py)
+            ]))
+        })
         .collect();
     let velocity_val: SmallVec<[Value; 4]> = velocities
         .iter()
-        .map(|&(vx, vy)| Value::Tuple(Arc::new(smallvec::smallvec![Value::Float(vx), Value::Float(vy)])))
+        .map(|&(vx, vy)| {
+            Value::Tuple(Arc::new(smallvec::smallvec![
+                Value::Float(vx),
+                Value::Float(vy)
+            ]))
+        })
         .collect();
 
     let result = Value::Dict(Arc::from(vec![
@@ -196,7 +206,10 @@ mod tests {
     use crate::term::TermNode;
 
     fn pt(x: f64, y: f64) -> Value {
-        Value::Tuple(Arc::new(smallvec::smallvec![Value::Float(x), Value::Float(y)]))
+        Value::Tuple(Arc::new(smallvec::smallvec![
+            Value::Float(x),
+            Value::Float(y)
+        ]))
     }
 
     fn prims_value(prims: &[(f64, f64, f64, f64, f64)]) -> Value {
@@ -225,9 +238,17 @@ mod tests {
         n_points: i64,
         field: &str,
     ) -> TermIdx {
-        let p = a.add(TermNode::Lit { value: prims_value(prims) });
-        let s = a.add(TermNode::Lit { value: pt(start.0, start.1) });
-        let field_sym = if field.is_empty() { Sym::default() } else { ir.intern(field) };
+        let p = a.add(TermNode::Lit {
+            value: prims_value(prims),
+        });
+        let s = a.add(TermNode::Lit {
+            value: pt(start.0, start.1),
+        });
+        let field_sym = if field.is_empty() {
+            Sym::default()
+        } else {
+            ir.intern(field)
+        };
         a.add(TermNode::SigmaLognormalGenerate {
             primitives: p,
             start: s,
@@ -268,15 +289,30 @@ mod tests {
         let g = TypedGraph::new();
         let mut a = TermArena::new();
         // One primitive aimed along +x, peak near tau=exp(mu)=exp(-1.2)~0.30.
-        let t = build(&mut a, &mut ir, &[(0.0, -1.2, 0.3, 5.0, 0.0)], (0.0, 0.0), 0.0, 3.0, 60, "");
+        let t = build(
+            &mut a,
+            &mut ir,
+            &[(0.0, -1.2, 0.3, 5.0, 0.0)],
+            (0.0, 0.0),
+            0.0,
+            3.0,
+            60,
+            "",
+        );
         let out = run(&a, t, &g, &ir);
         let pts = points_of(&out);
         assert_eq!(pts.len(), 60);
         assert_eq!(pts[0], (0.0, 0.0), "must start at the given start point");
         // Movement is along +x (theta=0): final y stays ~0, final x > 0.
         let (xf, yf) = pts[pts.len() - 1];
-        assert!(xf > 0.5, "a +x-aimed primitive must move the pen in +x: got {xf}");
-        assert!(yf.abs() < 1e-6, "a +x-aimed primitive must not move the pen off the x-axis: got {yf}");
+        assert!(
+            xf > 0.5,
+            "a +x-aimed primitive must move the pen in +x: got {xf}"
+        );
+        assert!(
+            yf.abs() < 1e-6,
+            "a +x-aimed primitive must not move the pen off the x-axis: got {yf}"
+        );
     }
 
     // --- (2) CONTINUITY: consecutive points are not restricted to any
@@ -288,9 +324,14 @@ mod tests {
         let g = TypedGraph::new();
         let mut a = TermArena::new();
         let t = build(
-            &mut a, &mut ir,
+            &mut a,
+            &mut ir,
             &[(0.0, -1.3, 0.35, 4.0, 0.2), (0.4, -1.0, 0.25, 3.0, 1.1)],
-            (0.0, 0.0), 0.0, 3.0, 50, "",
+            (0.0, 0.0),
+            0.0,
+            3.0,
+            50,
+            "",
         );
         let out = run(&a, t, &g, &ir);
         let pts = points_of(&out);
@@ -304,7 +345,10 @@ mod tests {
             // Quantize coarsely to i64 millis just to hash-compare floats.
             seen.insert(((dx * 1e6).round() as i64, (dy * 1e6).round() as i64));
         }
-        assert!(seen.len() > pts.len() / 2, "step vectors must vary continuously, not collapse onto a small grid");
+        assert!(
+            seen.len() > pts.len() / 2,
+            "step vectors must vary continuously, not collapse onto a small grid"
+        );
     }
 
     // --- (3) two primitives superimpose (a 2-stroke plan is NOT the same
@@ -315,20 +359,41 @@ mod tests {
         let g = TypedGraph::new();
 
         let mut a1 = TermArena::new();
-        let t1 = build(&mut a1, &mut ir, &[(0.0, -1.2, 0.3, 5.0, 0.0)], (0.0, 0.0), 0.0, 3.0, 40, "");
+        let t1 = build(
+            &mut a1,
+            &mut ir,
+            &[(0.0, -1.2, 0.3, 5.0, 0.0)],
+            (0.0, 0.0),
+            0.0,
+            3.0,
+            40,
+            "",
+        );
         let out1 = run(&a1, t1, &g, &ir);
         let pts1 = points_of(&out1);
 
         let mut a2 = TermArena::new();
         let t2 = build(
-            &mut a2, &mut ir,
-            &[(0.0, -1.2, 0.3, 5.0, 0.0), (0.5, -1.2, 0.3, 5.0, std::f64::consts::FRAC_PI_2)],
-            (0.0, 0.0), 0.0, 3.0, 40, "",
+            &mut a2,
+            &mut ir,
+            &[
+                (0.0, -1.2, 0.3, 5.0, 0.0),
+                (0.5, -1.2, 0.3, 5.0, std::f64::consts::FRAC_PI_2),
+            ],
+            (0.0, 0.0),
+            0.0,
+            3.0,
+            40,
+            "",
         );
         let out2 = run(&a2, t2, &g, &ir);
         let pts2 = points_of(&out2);
 
-        assert_ne!(pts1.last(), pts2.last(), "adding a second primitive must change the trajectory");
+        assert_ne!(
+            pts1.last(),
+            pts2.last(),
+            "adding a second primitive must change the trajectory"
+        );
         // The two-primitive plan must pick up some +y motion from the
         // second (theta=90°) primitive that the single-primitive plan lacks.
         assert!(pts2.last().unwrap().1 > pts1.last().unwrap().1 + 0.1);
@@ -340,16 +405,37 @@ mod tests {
         let mut ir = Interner::new();
         let g = TypedGraph::new();
         let mut a = TermArena::new();
-        let t = build(&mut a, &mut ir, &[(0.0, -1.2, 0.3, 5.0, 0.0), (0.3, -1.0, 0.2, 3.0, 0.5)],
-                      (1.0, 2.0), 0.0, 2.0, 20, "n_primitives");
+        let t = build(
+            &mut a,
+            &mut ir,
+            &[(0.0, -1.2, 0.3, 5.0, 0.0), (0.3, -1.0, 0.2, 3.0, 0.5)],
+            (1.0, 2.0),
+            0.0,
+            2.0,
+            20,
+            "n_primitives",
+        );
         let out = run(&a, t, &g, &ir);
         assert_eq!(out, Value::Int(2));
 
         let mut a2 = TermArena::new();
-        let t2 = build(&mut a2, &mut ir, &[(0.0, -1.2, 0.3, 5.0, 0.0)], (1.0, 2.0), 0.0, 2.0, 20, "");
+        let t2 = build(
+            &mut a2,
+            &mut ir,
+            &[(0.0, -1.2, 0.3, 5.0, 0.0)],
+            (1.0, 2.0),
+            0.0,
+            2.0,
+            20,
+            "",
+        );
         let out2 = run(&a2, t2, &g, &ir);
         let pts = points_of(&out2);
-        assert_eq!(pts[0], (1.0, 2.0), "must start at the given `start`, not the origin");
+        assert_eq!(
+            pts[0],
+            (1.0, 2.0),
+            "must start at the given `start`, not the origin"
+        );
     }
 
     // --- (5) degenerate: zero primitives -> the pen never leaves `start`. ---
@@ -379,6 +465,9 @@ mod tests {
         let t2 = build(&mut a2, &mut ir, &prims, (0.0, 0.0), 0.0, 2.5, 30, "");
         let out2 = run(&a2, t2, &g, &ir);
 
-        assert_eq!(out1, out2, "identical motor plans must generate byte-identical trajectories");
+        assert_eq!(
+            out1, out2,
+            "identical motor plans must generate byte-identical trajectories"
+        );
     }
 }

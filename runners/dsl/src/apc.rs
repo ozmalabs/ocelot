@@ -53,7 +53,10 @@ fn dtw_flat(a: &[f32], b: &[f32], t: usize, dim: usize, band: usize) -> f64 {
     let fd = |i: usize, j: usize| -> f64 {
         let (fa, fb) = (&a[i * dim..i * dim + dim], &b[j * dim..j * dim + dim]);
         let mut s = 0.0f64;
-        for k in 0..dim { let d = (fa[k] - fb[k]) as f64; s += d * d; }
+        for k in 0..dim {
+            let d = (fa[k] - fb[k]) as f64;
+            s += d * d;
+        }
         s.sqrt()
     };
     const INF: f64 = 1e18;
@@ -84,8 +87,16 @@ fn dtw_flat(a: &[f32], b: &[f32], t: usize, dim: usize, band: usize) -> f64 {
 /// pos/neg pairs. Returns [recall, dprime, auc, pos_mean, neg_mean].
 #[allow(clippy::too_many_arguments)]
 pub fn nn_recall_and_dprime(
-    trajs: &[f32], n: usize, t: usize, dim: usize,
-    words: &[i64], spk: &[i64], cap_q: usize, n_pos: usize, n_neg: usize, seed: u64,
+    trajs: &[f32],
+    n: usize,
+    t: usize,
+    dim: usize,
+    words: &[i64],
+    spk: &[i64],
+    cap_q: usize,
+    n_pos: usize,
+    n_neg: usize,
+    seed: u64,
 ) -> Vec<f32> {
     let stride = t * dim;
     let tr = |i: usize| &trajs[i * stride..i * stride + stride];
@@ -100,25 +111,45 @@ pub fn nn_recall_and_dprime(
     let mut q: Vec<usize> = (0..n).filter(|&i| wsp[&words[i]].len() >= 2).collect();
     let mut rng = seed.wrapping_mul(0x9E3779B97F4A7C15).wrapping_add(1);
     let mut rnd = |m: usize| -> usize {
-        rng ^= rng << 13; rng ^= rng >> 7; rng ^= rng << 17;
+        rng ^= rng << 13;
+        rng ^= rng >> 7;
+        rng ^= rng << 17;
         (rng >> 33) as usize % m.max(1)
     };
     // cap queries
     if q.len() > cap_q {
-        for i in (1..q.len()).rev() { let j = rnd(i + 1); q.swap(i, j); }
+        for i in (1..q.len()).rev() {
+            let j = rnd(i + 1);
+            q.swap(i, j);
+        }
         q.truncate(cap_q);
     }
     let (mut hit, mut tot) = (0usize, 0usize);
     for &a in &q {
-        let mut dmin = f64::INFINITY; let mut arg = usize::MAX;
+        let mut dmin = f64::INFINITY;
+        let mut arg = usize::MAX;
         for b in 0..n {
-            if spk[b] == spk[a] || b == a { continue; }
+            if spk[b] == spk[a] || b == a {
+                continue;
+            }
             let d = dtw_flat(tr(a), tr(b), t, dim, 8);
-            if d < dmin { dmin = d; arg = b; }
+            if d < dmin {
+                dmin = d;
+                arg = b;
+            }
         }
-        if arg != usize::MAX { tot += 1; if words[arg] == words[a] { hit += 1; } }
+        if arg != usize::MAX {
+            tot += 1;
+            if words[arg] == words[a] {
+                hit += 1;
+            }
+        }
     }
-    let recall = if tot > 0 { hit as f64 / tot as f64 } else { f64::NAN };
+    let recall = if tot > 0 {
+        hit as f64 / tot as f64
+    } else {
+        f64::NAN
+    };
 
     // d': same-word cross-speaker (pos) vs diff-word cross-speaker (neg)
     let mut pos: Vec<f64> = Vec::new();
@@ -128,19 +159,39 @@ pub fn nn_recall_and_dprime(
         guard += 1;
         let w = wlist[rnd(wlist.len())];
         let idx = &byword[&w];
-        if idx.len() < 2 { continue; }
-        let i = idx[rnd(idx.len())]; let j = idx[rnd(idx.len())];
-        if i != j && spk[i] != spk[j] { pos.push(dtw_flat(tr(i), tr(j), t, dim, 8)); }
+        if idx.len() < 2 {
+            continue;
+        }
+        let i = idx[rnd(idx.len())];
+        let j = idx[rnd(idx.len())];
+        if i != j && spk[i] != spk[j] {
+            pos.push(dtw_flat(tr(i), tr(j), t, dim, 8));
+        }
     }
     let mut neg: Vec<f64> = Vec::new();
     guard = 0;
     while neg.len() < n_neg && guard < n_neg * 40 {
         guard += 1;
-        let i = rnd(n); let j = rnd(n);
-        if words[i] != words[j] && spk[i] != spk[j] { neg.push(dtw_flat(tr(i), tr(j), t, dim, 8)); }
+        let i = rnd(n);
+        let j = rnd(n);
+        if words[i] != words[j] && spk[i] != spk[j] {
+            neg.push(dtw_flat(tr(i), tr(j), t, dim, 8));
+        }
     }
-    let mean = |v: &[f64]| if v.is_empty() { 0.0 } else { v.iter().sum::<f64>() / v.len() as f64 };
-    let var = |v: &[f64], m: f64| if v.len() < 2 { 0.0 } else { v.iter().map(|x| (x - m).powi(2)).sum::<f64>() / v.len() as f64 };
+    let mean = |v: &[f64]| {
+        if v.is_empty() {
+            0.0
+        } else {
+            v.iter().sum::<f64>() / v.len() as f64
+        }
+    };
+    let var = |v: &[f64], m: f64| {
+        if v.len() < 2 {
+            0.0
+        } else {
+            v.iter().map(|x| (x - m).powi(2)).sum::<f64>() / v.len() as f64
+        }
+    };
     let (pm, nm) = (mean(&pos), mean(&neg));
     let denom = (0.5 * (var(&pos, pm) + var(&neg, nm))).sqrt() + 1e-9;
     let dprime = (nm - pm) / denom;
@@ -148,12 +199,24 @@ pub fn nn_recall_and_dprime(
     let mut auc = 0.0f64;
     if !pos.is_empty() && !neg.is_empty() {
         let mut wins = 0.0f64;
-        for &p in &pos { for &q in &neg {
-            if q > p { wins += 1.0; } else if (q - p).abs() < 1e-12 { wins += 0.5; }
-        }}
+        for &p in &pos {
+            for &q in &neg {
+                if q > p {
+                    wins += 1.0;
+                } else if (q - p).abs() < 1e-12 {
+                    wins += 0.5;
+                }
+            }
+        }
         auc = wins / (pos.len() as f64 * neg.len() as f64);
     }
-    vec![recall as f32, dprime as f32, auc as f32, pm as f32, nm as f32]
+    vec![
+        recall as f32,
+        dprime as f32,
+        auc as f32,
+        pm as f32,
+        nm as f32,
+    ]
 }
 
 /// DETAIL variant of `nn_recall_and_dprime` for BOOTSTRAP confidence
@@ -166,8 +229,16 @@ pub fn nn_recall_and_dprime(
 /// single flat vector `[n_hit, hits..., n_pos, pos..., n_neg, neg...]`.
 #[allow(clippy::too_many_arguments)]
 pub fn nn_recall_detail(
-    trajs: &[f32], n: usize, t: usize, dim: usize,
-    words: &[i64], spk: &[i64], cap_q: usize, n_pos: usize, n_neg: usize, seed: u64,
+    trajs: &[f32],
+    n: usize,
+    t: usize,
+    dim: usize,
+    words: &[i64],
+    spk: &[i64],
+    cap_q: usize,
+    n_pos: usize,
+    n_neg: usize,
+    seed: u64,
 ) -> Vec<f32> {
     let stride = t * dim;
     let tr = |i: usize| &trajs[i * stride..i * stride + stride];
@@ -181,22 +252,35 @@ pub fn nn_recall_detail(
     let mut q: Vec<usize> = (0..n).filter(|&i| wsp[&words[i]].len() >= 2).collect();
     let mut rng = seed.wrapping_mul(0x9E3779B97F4A7C15).wrapping_add(1);
     let mut rnd = |m: usize| -> usize {
-        rng ^= rng << 13; rng ^= rng >> 7; rng ^= rng << 17;
+        rng ^= rng << 13;
+        rng ^= rng >> 7;
+        rng ^= rng << 17;
         (rng >> 33) as usize % m.max(1)
     };
     if q.len() > cap_q {
-        for i in (1..q.len()).rev() { let j = rnd(i + 1); q.swap(i, j); }
+        for i in (1..q.len()).rev() {
+            let j = rnd(i + 1);
+            q.swap(i, j);
+        }
         q.truncate(cap_q);
     }
     let mut hits: Vec<f32> = Vec::new();
     for &a in &q {
-        let mut dmin = f64::INFINITY; let mut arg = usize::MAX;
+        let mut dmin = f64::INFINITY;
+        let mut arg = usize::MAX;
         for b in 0..n {
-            if spk[b] == spk[a] || b == a { continue; }
+            if spk[b] == spk[a] || b == a {
+                continue;
+            }
             let d = dtw_flat(tr(a), tr(b), t, dim, 8);
-            if d < dmin { dmin = d; arg = b; }
+            if d < dmin {
+                dmin = d;
+                arg = b;
+            }
         }
-        if arg != usize::MAX { hits.push(if words[arg] == words[a] { 1.0 } else { 0.0 }); }
+        if arg != usize::MAX {
+            hits.push(if words[arg] == words[a] { 1.0 } else { 0.0 });
+        }
     }
     let mut pos: Vec<f64> = Vec::new();
     let wlist: Vec<i64> = byword.keys().copied().collect();
@@ -205,16 +289,24 @@ pub fn nn_recall_detail(
         guard += 1;
         let w = wlist[rnd(wlist.len())];
         let idx = &byword[&w];
-        if idx.len() < 2 { continue; }
-        let i = idx[rnd(idx.len())]; let j = idx[rnd(idx.len())];
-        if i != j && spk[i] != spk[j] { pos.push(dtw_flat(tr(i), tr(j), t, dim, 8)); }
+        if idx.len() < 2 {
+            continue;
+        }
+        let i = idx[rnd(idx.len())];
+        let j = idx[rnd(idx.len())];
+        if i != j && spk[i] != spk[j] {
+            pos.push(dtw_flat(tr(i), tr(j), t, dim, 8));
+        }
     }
     let mut neg: Vec<f64> = Vec::new();
     guard = 0;
     while neg.len() < n_neg && guard < n_neg * 40 {
         guard += 1;
-        let i = rnd(n); let j = rnd(n);
-        if words[i] != words[j] && spk[i] != spk[j] { neg.push(dtw_flat(tr(i), tr(j), t, dim, 8)); }
+        let i = rnd(n);
+        let j = rnd(n);
+        if words[i] != words[j] && spk[i] != spk[j] {
+            neg.push(dtw_flat(tr(i), tr(j), t, dim, 8));
+        }
     }
     let mut out: Vec<f32> = Vec::with_capacity(3 + hits.len() + pos.len() + neg.len());
     out.push(hits.len() as f32);
@@ -233,30 +325,58 @@ pub fn nn_recall_detail(
 /// fraction. Returns [purity, n_clusters]. Reuses `dtw_flat` (== DtwTo).
 #[allow(clippy::too_many_arguments)]
 pub fn cluster_purity(
-    trajs: &[f32], n: usize, t: usize, dim: usize, words: &[i64], target: usize, seed: u64,
+    trajs: &[f32],
+    n: usize,
+    t: usize,
+    dim: usize,
+    words: &[i64],
+    target: usize,
+    seed: u64,
 ) -> Vec<f32> {
     let stride = t * dim;
     let tr = |i: usize| &trajs[i * stride..i * stride + stride];
     let mut rng = seed.wrapping_mul(0x9E3779B97F4A7C15).wrapping_add(1);
-    let mut rnd = |m: usize| -> usize { rng ^= rng << 13; rng ^= rng >> 7; rng ^= rng << 17; (rng >> 33) as usize % m.max(1) };
+    let mut rnd = |m: usize| -> usize {
+        rng ^= rng << 13;
+        rng ^= rng >> 7;
+        rng ^= rng << 17;
+        (rng >> 33) as usize % m.max(1)
+    };
     // sample a distance scale from random cross pairs
     let mut ds: Vec<f64> = Vec::new();
-    for _ in 0..400.min(n * n) { let i = rnd(n); let j = rnd(n); if i != j { ds.push(dtw_flat(tr(i), tr(j), t, dim, 8)); } }
-    if ds.is_empty() { return vec![0.0, 0.0]; }
+    for _ in 0..400.min(n * n) {
+        let i = rnd(n);
+        let j = rnd(n);
+        if i != j {
+            ds.push(dtw_flat(tr(i), tr(j), t, dim, 8));
+        }
+    }
+    if ds.is_empty() {
+        return vec![0.0, 0.0];
+    }
     ds.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    let dmin = ds[ds.len() / 20]; let dmax = ds[ds.len() * 19 / 20];
+    let dmin = ds[ds.len() / 20];
+    let dmax = ds[ds.len() * 19 / 20];
     // greedy leader clustering at radius tau -> (assignments, nclusters)
     let leader = |tau: f64| -> (Vec<usize>, usize) {
         let mut leaders: Vec<usize> = Vec::new();
         let mut asg = vec![usize::MAX; n];
         for i in 0..n {
-            let mut best = f64::INFINITY; let mut bl = usize::MAX;
+            let mut best = f64::INFINITY;
+            let mut bl = usize::MAX;
             for (li, &l) in leaders.iter().enumerate() {
                 let d = dtw_flat(tr(i), tr(l), t, dim, 8);
-                if d < best { best = d; bl = li; }
+                if d < best {
+                    best = d;
+                    bl = li;
+                }
             }
-            if bl != usize::MAX && best <= tau { asg[i] = bl; }
-            else { asg[i] = leaders.len(); leaders.push(i); }
+            if bl != usize::MAX && best <= tau {
+                asg[i] = bl;
+            } else {
+                asg[i] = leaders.len();
+                leaders.push(i);
+            }
         }
         (asg, leaders.len())
     };
@@ -267,22 +387,38 @@ pub fn cluster_purity(
         let tau = dmin + (dmax - dmin) * (s as f64) / steps as f64;
         let (asg, nc) = leader(tau);
         let gap = nc.abs_diff(target);
-        if gap < best_gap { best_gap = gap; best_nc = nc; best_asg = asg; }
-        if nc <= target { break; }
+        if gap < best_gap {
+            best_gap = gap;
+            best_nc = nc;
+            best_asg = asg;
+        }
+        if nc <= target {
+            break;
+        }
     }
     // purity over clusters with >=3 members
     use std::collections::HashMap;
     let mut byc: HashMap<usize, Vec<i64>> = HashMap::new();
-    for i in 0..n { byc.entry(best_asg[i]).or_default().push(words[i]); }
+    for i in 0..n {
+        byc.entry(best_asg[i]).or_default().push(words[i]);
+    }
     let mut ps: Vec<f64> = Vec::new();
     for (_, v) in byc.iter() {
-        if v.len() < 3 { continue; }
+        if v.len() < 3 {
+            continue;
+        }
         let mut cnt: HashMap<i64, usize> = HashMap::new();
-        for &w in v { *cnt.entry(w).or_default() += 1; }
+        for &w in v {
+            *cnt.entry(w).or_default() += 1;
+        }
         let maj = *cnt.values().max().unwrap();
         ps.push(maj as f64 / v.len() as f64);
     }
-    let purity = if ps.is_empty() { 0.0 } else { ps.iter().sum::<f64>() / ps.len() as f64 };
+    let purity = if ps.is_empty() {
+        0.0
+    } else {
+        ps.iter().sum::<f64>() / ps.len() as f64
+    };
     vec![purity as f32, best_nc as f32]
 }
 
@@ -300,44 +436,77 @@ pub fn cluster_purity(
 /// speakers. Top-k via power iteration + deflation on C = (1/n) Rᵀ R.
 /// Returns k*dim (row-major, unit eigenvectors).
 pub fn nuisance_subspace(resid: &[f32], n: usize, dim: usize, k: usize, iters: usize) -> Vec<f32> {
-    if n == 0 || dim == 0 { return vec![]; }
+    if n == 0 || dim == 0 {
+        return vec![];
+    }
     // covariance C = (1/n) Rᵀ R  (dim×dim)
     let mut c = vec![0.0f64; dim * dim];
     for r in 0..n {
         let row = &resid[r * dim..r * dim + dim];
         for i in 0..dim {
             let ri = row[i] as f64;
-            if ri == 0.0 { continue; }
+            if ri == 0.0 {
+                continue;
+            }
             let ci = &mut c[i * dim..i * dim + dim];
-            for j in 0..dim { ci[j] += ri * row[j] as f64; }
+            for j in 0..dim {
+                ci[j] += ri * row[j] as f64;
+            }
         }
     }
     let inv = 1.0 / n as f64;
-    for v in c.iter_mut() { *v *= inv; }
+    for v in c.iter_mut() {
+        *v *= inv;
+    }
     let mut rng = 0x2545F4914F6CDD1Du64;
-    let mut rnd = || -> f64 { rng ^= rng << 13; rng ^= rng >> 7; rng ^= rng << 17; ((rng >> 40) as f64) / (1u64 << 24) as f64 - 0.5 };
+    let mut rnd = || -> f64 {
+        rng ^= rng << 13;
+        rng ^= rng >> 7;
+        rng ^= rng << 17;
+        ((rng >> 40) as f64) / (1u64 << 24) as f64 - 0.5
+    };
     let mut out = vec![0.0f32; k * dim];
     for comp in 0..k {
         let mut v = vec![0.0f64; dim];
-        for x in v.iter_mut() { *x = rnd(); }
+        for x in v.iter_mut() {
+            *x = rnd();
+        }
         for _ in 0..iters {
             // w = C v
             let mut w = vec![0.0f64; dim];
             for i in 0..dim {
                 let ci = &c[i * dim..i * dim + dim];
-                let mut s = 0.0; for j in 0..dim { s += ci[j] * v[j]; }
+                let mut s = 0.0;
+                for j in 0..dim {
+                    s += ci[j] * v[j];
+                }
                 w[i] = s;
             }
             let nrm = (w.iter().map(|x| x * x).sum::<f64>()).sqrt() + 1e-12;
-            for i in 0..dim { v[i] = w[i] / nrm; }
+            for i in 0..dim {
+                v[i] = w[i] / nrm;
+            }
         }
         // eigenvalue lambda = vᵀ C v
         let mut cv = vec![0.0f64; dim];
-        for i in 0..dim { let ci = &c[i * dim..i * dim + dim]; let mut s = 0.0; for j in 0..dim { s += ci[j] * v[j]; } cv[i] = s; }
+        for i in 0..dim {
+            let ci = &c[i * dim..i * dim + dim];
+            let mut s = 0.0;
+            for j in 0..dim {
+                s += ci[j] * v[j];
+            }
+            cv[i] = s;
+        }
         let lam: f64 = (0..dim).map(|i| v[i] * cv[i]).sum();
         // deflate C -= lam v vᵀ
-        for i in 0..dim { for j in 0..dim { c[i * dim + j] -= lam * v[i] * v[j]; } }
-        for i in 0..dim { out[comp * dim + i] = v[i] as f32; }
+        for i in 0..dim {
+            for j in 0..dim {
+                c[i * dim + j] -= lam * v[i] * v[j];
+            }
+        }
+        for i in 0..dim {
+            out[comp * dim + i] = v[i] as f32;
+        }
     }
     out
 }
@@ -361,7 +530,12 @@ pub fn nuisance_subspace(resid: &[f32], n: usize, dim: usize, k: usize, iters: u
 /// LIFTED space, so there is no invariance-vs-discrimination trade. Output
 /// per frame: `M` mode magnitudes (k=1..M; k=0/energy dropped since frames
 /// are gain-normalised).
-pub fn logfreq_lift(coch_flat: &[f32], n_frames: usize, n_bands: usize, n_modes: usize) -> Vec<f32> {
+pub fn logfreq_lift(
+    coch_flat: &[f32],
+    n_frames: usize,
+    n_bands: usize,
+    n_modes: usize,
+) -> Vec<f32> {
     let m = n_modes.max(1);
     let mut out = vec![0.0f32; n_frames * m];
     let nb = n_bands.max(1);
@@ -414,7 +588,9 @@ pub fn formant_bands(f1: f32, f2: f32, f3: f32, sigma: f32) -> Vec<f32> {
         let lb = (cf as f64).ln();
         let mut v = 0.0f64;
         for k in 0..3 {
-            if fs[k] <= 0.0 { continue; }
+            if fs[k] <= 0.0 {
+                continue;
+            }
             let d = (lb - fs[k].ln()) / s;
             v += amps[k] * (-0.5 * d * d).exp();
         }
@@ -454,12 +630,26 @@ struct Rnn {
 impl Rnn {
     fn new(din: usize, dh: usize, rng: &mut u64) -> Rnn {
         let mut wf = vec![0.0f32; din * dh];
-        for w in wf.iter_mut() { *w = xavier(rng, din); }
+        for w in wf.iter_mut() {
+            *w = xavier(rng, din);
+        }
         let mut u = vec![0.0f32; dh * dh];
-        for w in u.iter_mut() { *w = xavier(rng, dh) * 0.5; } // small recurrence
+        for w in u.iter_mut() {
+            *w = xavier(rng, dh) * 0.5;
+        } // small recurrence
         let mut wp = vec![0.0f32; dh * din];
-        for w in wp.iter_mut() { *w = xavier(rng, dh); }
-        Rnn { din, dh, wf, u, b: vec![0.0; dh], wp, c: vec![0.0; din] }
+        for w in wp.iter_mut() {
+            *w = xavier(rng, dh);
+        }
+        Rnn {
+            din,
+            dh,
+            wf,
+            u,
+            b: vec![0.0; dh],
+            wp,
+            c: vec![0.0; din],
+        }
     }
 
     /// Forward pass over one sequence (`tu` frames of `din`), forward in
@@ -475,8 +665,12 @@ impl Rnn {
             let ht = &mut h[t * dh..t * dh + dh];
             for j in 0..dh {
                 let mut a = self.b[j];
-                for i in 0..din { a += xt[i] * self.wf[i * dh + j]; }
-                for i in 0..dh { a += hprev[i] * self.u[i * dh + j]; }
+                for i in 0..din {
+                    a += xt[i] * self.wf[i * dh + j];
+                }
+                for i in 0..dh {
+                    a += hprev[i] * self.u[i * dh + j];
+                }
                 ht[j] = a.tanh();
             }
             hprev.copy_from_slice(ht);
@@ -509,12 +703,19 @@ pub fn train(
 ) -> Vec<f32> {
     let mut rng = seed.wrapping_mul(0x9E3779B97F4A7C15).wrapping_add(1);
     let mut fwd = Rnn::new(din, dh, &mut rng);
-    let mut bwd = if bidir { Some(Rnn::new(din, dh, &mut rng)) } else { None };
+    let mut bwd = if bidir {
+        Some(Rnn::new(din, dh, &mut rng))
+    } else {
+        None
+    };
 
     // sequence offsets into frames_flat (in frames)
     let mut offs = Vec::with_capacity(seq_lens.len());
     let mut acc = 0usize;
-    for &l in seq_lens { offs.push(acc); acc += l; }
+    for &l in seq_lens {
+        offs.push(acc);
+        acc += l;
+    }
 
     // momentum buffers
     let mom = 0.9f32;
@@ -535,7 +736,9 @@ pub fn train(
     for ep in 0..epochs {
         // shuffle sequence order
         for i in (1..order.len()).rev() {
-            rng ^= rng << 13; rng ^= rng >> 7; rng ^= rng << 17;
+            rng ^= rng << 13;
+            rng ^= rng >> 7;
+            rng ^= rng << 17;
             let j = (rng >> 33) as usize % (i + 1);
             order.swap(i, j);
         }
@@ -544,36 +747,80 @@ pub fn train(
 
         for &si in &order {
             let tu = seq_lens[si];
-            if tu <= k_ahead + 1 { continue; }
+            if tu <= k_ahead + 1 {
+                continue;
+            }
             let x = &frames_flat[offs[si] * din..(offs[si] + tu) * din];
 
             // ---- FORWARD RNN: predict x_{t+K} ----
-            let (dl, dn) = train_one_dir(&mut fwd, x, tu, din, dh, k_ahead, false,
-                                         shuffle_future, &mut rng,
-                                         lr, mom,
-                                         &mut m_fwf, &mut m_fu, &mut m_fb,
-                                         &mut m_fwp, &mut m_fc, None);
-            tot_loss += dl; tot_n += dn;
+            let (dl, dn) = train_one_dir(
+                &mut fwd,
+                x,
+                tu,
+                din,
+                dh,
+                k_ahead,
+                false,
+                shuffle_future,
+                &mut rng,
+                lr,
+                mom,
+                &mut m_fwf,
+                &mut m_fu,
+                &mut m_fb,
+                &mut m_fwp,
+                &mut m_fc,
+                None,
+            );
+            tot_loss += dl;
+            tot_n += dn;
 
             // ---- BACKWARD RNN: predict x_{t-K} ----
             if let Some(bw) = bwd.as_mut() {
-                let (dl2, dn2) = train_one_dir(bw, x, tu, din, dh, k_ahead, true,
-                                               shuffle_future, &mut rng,
-                                               lr, mom,
-                                               &mut m_bwf, &mut m_bu, &mut m_bb,
-                                               &mut m_bwp, &mut m_bc, None);
-                tot_loss += dl2; tot_n += dn2;
+                let (dl2, dn2) = train_one_dir(
+                    bw,
+                    x,
+                    tu,
+                    din,
+                    dh,
+                    k_ahead,
+                    true,
+                    shuffle_future,
+                    &mut rng,
+                    lr,
+                    mom,
+                    &mut m_bwf,
+                    &mut m_bu,
+                    &mut m_bb,
+                    &mut m_bwp,
+                    &mut m_bc,
+                    None,
+                );
+                tot_loss += dl2;
+                tot_n += dn2;
             }
         }
         if ep == 0 || ep + 1 == epochs || (ep + 1) % (epochs.max(8) / 8).max(1) == 0 {
-            eprintln!("    [apc.train] epoch {:4}: L2 next-frame loss {:.5} (n={})",
-                      ep, tot_loss / tot_n.max(1) as f64, tot_n);
+            eprintln!(
+                "    [apc.train] epoch {:4}: L2 next-frame loss {:.5} (n={})",
+                ep,
+                tot_loss / tot_n.max(1) as f64,
+                tot_n
+            );
         }
     }
 
     // ---- pack model (encode weights only) ----
-    let mut model = Vec::with_capacity(HDR + fwd.wf.len() + fwd.u.len() + fwd.b.len()
-        + if bidir { fwd.wf.len() + fwd.u.len() + fwd.b.len() } else { 0 });
+    let mut model = Vec::with_capacity(
+        HDR + fwd.wf.len()
+            + fwd.u.len()
+            + fwd.b.len()
+            + if bidir {
+                fwd.wf.len() + fwd.u.len() + fwd.b.len()
+            } else {
+                0
+            },
+    );
     model.push(din as f32);
     model.push(dh as f32);
     model.push(if bidir { 1.0 } else { 0.0 });
@@ -604,7 +851,9 @@ pub fn train(
 /// >=1 positive, grad flat `[m*dh]` w.r.t. the raw pooled embeddings).
 fn infonce_grad(emb: &[f32], ids: &[i64], m: usize, dh: usize, tau: f32) -> (f64, Vec<f32>) {
     let mut grad_e = vec![0.0f32; m * dh];
-    if m < 2 { return (0.0, grad_e); }
+    if m < 2 {
+        return (0.0, grad_e);
+    }
     let tau = tau.max(1e-3);
     // unit-normalize
     let mut z = vec![0.0f32; m * dh];
@@ -613,15 +862,20 @@ fn infonce_grad(emb: &[f32], ids: &[i64], m: usize, dh: usize, tau: f32) -> (f64
         let e = &emb[i * dh..i * dh + dh];
         let n = e.iter().map(|v| v * v).sum::<f32>().sqrt().max(1e-8);
         norms[i] = n;
-        for d in 0..dh { z[i * dh + d] = e[d] / n; }
+        for d in 0..dh {
+            z[i * dh + d] = e[d] / n;
+        }
     }
     // full cosine-similarity matrix (symmetric)
     let mut sim = vec![0.0f32; m * m];
     for i in 0..m {
         for j in (i + 1)..m {
             let mut s = 0.0f32;
-            for d in 0..dh { s += z[i * dh + d] * z[j * dh + d]; }
-            sim[i * m + j] = s; sim[j * m + i] = s;
+            for d in 0..dh {
+                s += z[i * dh + d] * z[j * dh + d];
+            }
+            sim[i * m + j] = s;
+            sim[j * m + i] = s;
         }
     }
     let mut grad_z = vec![0.0f32; m * dh];
@@ -629,31 +883,46 @@ fn infonce_grad(emb: &[f32], ids: &[i64], m: usize, dh: usize, tau: f32) -> (f64
     let mut n_anchors = 0usize;
     for i in 0..m {
         let pos: Vec<usize> = (0..m).filter(|&j| j != i && ids[j] == ids[i]).collect();
-        if pos.is_empty() { continue; }
+        if pos.is_empty() {
+            continue;
+        }
         n_anchors += 1;
         let np = pos.len() as f32;
         // stable softmax over a != i
         let mut mx = f32::NEG_INFINITY;
-        for a in 0..m { if a != i { mx = mx.max(sim[i * m + a] / tau); } }
+        for a in 0..m {
+            if a != i {
+                mx = mx.max(sim[i * m + a] / tau);
+            }
+        }
         let mut denom = 0.0f32;
         let mut p = vec![0.0f32; m];
         for a in 0..m {
             if a != i {
                 let e = ((sim[i * m + a] / tau) - mx).exp();
-                p[a] = e; denom += e;
+                p[a] = e;
+                denom += e;
             }
         }
         let denom = denom.max(1e-12);
-        for a in 0..m { if a != i { p[a] /= denom; } }
+        for a in 0..m {
+            if a != i {
+                p[a] /= denom;
+            }
+        }
         for &pp in &pos {
             let logp = (sim[i * m + pp] / tau - mx) - denom.ln();
             loss -= (logp as f64) / (np as f64);
         }
         for a in 0..m {
-            if a == i { continue; }
+            if a == i {
+                continue;
+            }
             let ispos = pos.contains(&a);
             let coeff = (p[a] - if ispos { 1.0 / np } else { 0.0 }) / tau;
-            if coeff == 0.0 { continue; }
+            if coeff == 0.0 {
+                continue;
+            }
             for d in 0..dh {
                 grad_z[i * dh + d] += coeff * z[a * dh + d];
                 grad_z[a * dh + d] += coeff * z[i * dh + d];
@@ -666,9 +935,15 @@ fn infonce_grad(emb: &[f32], ids: &[i64], m: usize, dh: usize, tau: f32) -> (f64
         let zi = &z[i * dh..i * dh + dh];
         let dot: f32 = gz.iter().zip(zi.iter()).map(|(a, b)| a * b).sum();
         let inv_n = 1.0 / norms[i];
-        for d in 0..dh { grad_e[i * dh + d] = (gz[d] - dot * zi[d]) * inv_n; }
+        for d in 0..dh {
+            grad_e[i * dh + d] = (gz[d] - dot * zi[d]) * inv_n;
+        }
     }
-    let mean_loss = if n_anchors > 0 { loss / n_anchors as f64 } else { 0.0 };
+    let mean_loss = if n_anchors > 0 {
+        loss / n_anchors as f64
+    } else {
+        0.0
+    };
     (mean_loss, grad_e)
 }
 
@@ -718,19 +993,30 @@ pub fn train_contrastive(
     use std::collections::HashMap;
     let mut rng = seed.wrapping_mul(0x9E3779B97F4A7C15).wrapping_add(1);
     let mut fwd = Rnn::new(din, dh, &mut rng);
-    let mut bwd = if bidir { Some(Rnn::new(din, dh, &mut rng)) } else { None };
+    let mut bwd = if bidir {
+        Some(Rnn::new(din, dh, &mut rng))
+    } else {
+        None
+    };
 
     let mut offs = Vec::with_capacity(seq_lens.len());
     let mut acc = 0usize;
-    for &l in seq_lens { offs.push(acc); acc += l; }
+    for &l in seq_lens {
+        offs.push(acc);
+        acc += l;
+    }
 
     // group word occurrences by their owning sequence
     let mut by_seq: HashMap<usize, Vec<(usize, usize, i64)>> = HashMap::new();
     for k in 0..word_seq_idx.len() {
         let si = word_seq_idx[k];
-        if si >= seq_lens.len() { continue; }
+        if si >= seq_lens.len() {
+            continue;
+        }
         let (s, e) = (word_start[k], word_end[k].min(seq_lens[si]));
-        if e <= s { continue; }
+        if e <= s {
+            continue;
+        }
         by_seq.entry(si).or_default().push((s, e, word_id[k]));
     }
 
@@ -749,12 +1035,17 @@ pub fn train_contrastive(
     let bsz = batch_size.max(1);
     let mut order: Vec<usize> = (0..seq_lens.len()).collect();
     let mut rnd = |rng: &mut u64, m: usize| -> usize {
-        *rng ^= *rng << 13; *rng ^= *rng >> 7; *rng ^= *rng << 17;
+        *rng ^= *rng << 13;
+        *rng ^= *rng >> 7;
+        *rng ^= *rng << 17;
         (*rng >> 33) as usize % m.max(1)
     };
 
     for ep in 0..epochs {
-        for i in (1..order.len()).rev() { let j = rnd(&mut rng, i + 1); order.swap(i, j); }
+        for i in (1..order.len()).rev() {
+            let j = rnd(&mut rng, i + 1);
+            order.swap(i, j);
+        }
         let mut tot_pred_loss = 0.0f64;
         let mut tot_pred_n = 0usize;
         let mut tot_nce_loss = 0.0f64;
@@ -768,7 +1059,9 @@ pub fn train_contrastive(
                 let tu = seq_lens[si];
                 let x = &frames_flat[offs[si] * din..(offs[si] + tu) * din];
                 hf_chunk.push(fwd.forward(x, tu, false));
-                if let Some(bw) = bwd.as_ref() { hb_chunk.push(bw.forward(x, tu, true)); }
+                if let Some(bw) = bwd.as_ref() {
+                    hb_chunk.push(bw.forward(x, tu, true));
+                }
             }
 
             // ---- phase 2: pool word embeddings (fwd, and bwd if bidir) ----
@@ -780,20 +1073,38 @@ pub fn train_contrastive(
             let mut bwd_emb: Vec<f32> = Vec::new();
             let mut bwd_ids: Vec<i64> = Vec::new();
             for (ci, &si) in chunk.iter().enumerate() {
-                let Some(words) = by_seq.get(&si) else { continue };
+                let Some(words) = by_seq.get(&si) else {
+                    continue;
+                };
                 for &(s, e, id) in words {
                     let span = (e - s).max(1);
                     let mut pooled = vec![0.0f32; dh];
                     let hf = &hf_chunk[ci];
-                    for t in s..e { for d in 0..dh { pooled[d] += hf[t * dh + d]; } }
-                    for d in 0..dh { pooled[d] /= span as f32; }
-                    fwd_rec.push((ci, s, e)); fwd_emb.extend_from_slice(&pooled); fwd_ids.push(id);
+                    for t in s..e {
+                        for d in 0..dh {
+                            pooled[d] += hf[t * dh + d];
+                        }
+                    }
+                    for d in 0..dh {
+                        pooled[d] /= span as f32;
+                    }
+                    fwd_rec.push((ci, s, e));
+                    fwd_emb.extend_from_slice(&pooled);
+                    fwd_ids.push(id);
                     if bidir {
                         let hb = &hb_chunk[ci];
                         let mut poolb = vec![0.0f32; dh];
-                        for t in s..e { for d in 0..dh { poolb[d] += hb[t * dh + d]; } }
-                        for d in 0..dh { poolb[d] /= span as f32; }
-                        bwd_rec.push((ci, s, e)); bwd_emb.extend_from_slice(&poolb); bwd_ids.push(id);
+                        for t in s..e {
+                            for d in 0..dh {
+                                poolb[d] += hb[t * dh + d];
+                            }
+                        }
+                        for d in 0..dh {
+                            poolb[d] /= span as f32;
+                        }
+                        bwd_rec.push((ci, s, e));
+                        bwd_emb.extend_from_slice(&poolb);
+                        bwd_ids.push(id);
                     }
                 }
             }
@@ -801,10 +1112,16 @@ pub fn train_contrastive(
             // ---- shuffled-label control: permute ids WITHIN the batch ----
             if shuffle_word_id {
                 let n = fwd_ids.len();
-                for i in (1..n).rev() { let j = rnd(&mut rng, i + 1); fwd_ids.swap(i, j); }
+                for i in (1..n).rev() {
+                    let j = rnd(&mut rng, i + 1);
+                    fwd_ids.swap(i, j);
+                }
                 if bidir {
                     let nb = bwd_ids.len();
-                    for i in (1..nb).rev() { let j = rnd(&mut rng, i + 1); bwd_ids.swap(i, j); }
+                    for i in (1..nb).rev() {
+                        let j = rnd(&mut rng, i + 1);
+                        bwd_ids.swap(i, j);
+                    }
                 }
             }
 
@@ -814,27 +1131,44 @@ pub fn train_contrastive(
             let (nce_l_b, grad_b) = if bidir {
                 let mb = bwd_rec.len();
                 infonce_grad(&bwd_emb, &bwd_ids, mb, dh, tau)
-            } else { (0.0, vec![]) };
-            if mf > 0 { tot_nce_loss += nce_l_f + nce_l_b; nce_batches += 1; }
+            } else {
+                (0.0, vec![])
+            };
+            if mf > 0 {
+                tot_nce_loss += nce_l_f + nce_l_b;
+                nce_batches += 1;
+            }
 
             // ---- phase 4: spread embedding gradients back over frames ----
-            let mut extra_f: Vec<Vec<f32>> = chunk.iter().map(|&si| vec![0.0f32; seq_lens[si] * dh]).collect();
+            let mut extra_f: Vec<Vec<f32>> = chunk
+                .iter()
+                .map(|&si| vec![0.0f32; seq_lens[si] * dh])
+                .collect();
             for (r, &(ci, s, e)) in fwd_rec.iter().enumerate() {
                 let span = (e - s).max(1) as f32;
                 let scale = lambda_nce / span;
                 for t in s..e {
-                    for d in 0..dh { extra_f[ci][t * dh + d] += grad_f[r * dh + d] * scale; }
+                    for d in 0..dh {
+                        extra_f[ci][t * dh + d] += grad_f[r * dh + d] * scale;
+                    }
                 }
             }
             let mut extra_b: Vec<Vec<f32>> = if bidir {
-                chunk.iter().map(|&si| vec![0.0f32; seq_lens[si] * dh]).collect()
-            } else { vec![] };
+                chunk
+                    .iter()
+                    .map(|&si| vec![0.0f32; seq_lens[si] * dh])
+                    .collect()
+            } else {
+                vec![]
+            };
             if bidir {
                 for (r, &(ci, s, e)) in bwd_rec.iter().enumerate() {
                     let span = (e - s).max(1) as f32;
                     let scale = lambda_nce / span;
                     for t in s..e {
-                        for d in 0..dh { extra_b[ci][t * dh + d] += grad_b[r * dh + d] * scale; }
+                        for d in 0..dh {
+                            extra_b[ci][t * dh + d] += grad_b[r * dh + d] * scale;
+                        }
                     }
                 }
             }
@@ -843,19 +1177,53 @@ pub fn train_contrastive(
             // with the NCE gradient folded into dh_out via extra_dh ----
             for (ci, &si) in chunk.iter().enumerate() {
                 let tu = seq_lens[si];
-                if tu <= k_ahead + 1 { continue; }
+                if tu <= k_ahead + 1 {
+                    continue;
+                }
                 let x = &frames_flat[offs[si] * din..(offs[si] + tu) * din];
-                let (dl, dn) = train_one_dir(&mut fwd, x, tu, din, dh, k_ahead, false,
-                                             shuffle_future, &mut rng, lr, mom,
-                                             &mut m_fwf, &mut m_fu, &mut m_fb,
-                                             &mut m_fwp, &mut m_fc, Some(&extra_f[ci]));
-                tot_pred_loss += dl; tot_pred_n += dn;
+                let (dl, dn) = train_one_dir(
+                    &mut fwd,
+                    x,
+                    tu,
+                    din,
+                    dh,
+                    k_ahead,
+                    false,
+                    shuffle_future,
+                    &mut rng,
+                    lr,
+                    mom,
+                    &mut m_fwf,
+                    &mut m_fu,
+                    &mut m_fb,
+                    &mut m_fwp,
+                    &mut m_fc,
+                    Some(&extra_f[ci]),
+                );
+                tot_pred_loss += dl;
+                tot_pred_n += dn;
                 if let Some(bw) = bwd.as_mut() {
-                    let (dl2, dn2) = train_one_dir(bw, x, tu, din, dh, k_ahead, true,
-                                                   shuffle_future, &mut rng, lr, mom,
-                                                   &mut m_bwf, &mut m_bu, &mut m_bb,
-                                                   &mut m_bwp, &mut m_bc, Some(&extra_b[ci]));
-                    tot_pred_loss += dl2; tot_pred_n += dn2;
+                    let (dl2, dn2) = train_one_dir(
+                        bw,
+                        x,
+                        tu,
+                        din,
+                        dh,
+                        k_ahead,
+                        true,
+                        shuffle_future,
+                        &mut rng,
+                        lr,
+                        mom,
+                        &mut m_bwf,
+                        &mut m_bu,
+                        &mut m_bb,
+                        &mut m_bwp,
+                        &mut m_bc,
+                        Some(&extra_b[ci]),
+                    );
+                    tot_pred_loss += dl2;
+                    tot_pred_n += dn2;
                 }
             }
         }
@@ -866,8 +1234,16 @@ pub fn train_contrastive(
         }
     }
 
-    let mut model = Vec::with_capacity(HDR + fwd.wf.len() + fwd.u.len() + fwd.b.len()
-        + if bidir { fwd.wf.len() + fwd.u.len() + fwd.b.len() } else { 0 });
+    let mut model = Vec::with_capacity(
+        HDR + fwd.wf.len()
+            + fwd.u.len()
+            + fwd.b.len()
+            + if bidir {
+                fwd.wf.len() + fwd.u.len() + fwd.b.len()
+            } else {
+                0
+            },
+    );
     model.push(din as f32);
     model.push(dh as f32);
     model.push(if bidir { 1.0 } else { 0.0 });
@@ -933,15 +1309,27 @@ fn train_one_dir(
         let t = if rev { tu - 1 - step } else { step };
         // target index (raw time)
         let tgt = if rev {
-            if t < k { continue; } else { t - k }
+            if t < k {
+                continue;
+            } else {
+                t - k
+            }
         } else {
-            if t + k >= tu { continue; } else { t + k }
+            if t + k >= tu {
+                continue;
+            } else {
+                t + k
+            }
         };
         let tgt = if shuffle_future {
             // permute the target within valid range -> destroys structure
-            *rng ^= *rng << 13; *rng ^= *rng >> 7; *rng ^= *rng << 17;
+            *rng ^= *rng << 13;
+            *rng ^= *rng >> 7;
+            *rng ^= *rng << 17;
             (*rng >> 33) as usize % tu
-        } else { tgt };
+        } else {
+            tgt
+        };
 
         let ht = &h[t * dh..t * dh + dh];
         // o = h_t Wp + c ; err = o - x_tgt
@@ -949,7 +1337,9 @@ fn train_one_dir(
         let mut err = vec![0.0f32; din];
         for d in 0..din {
             let mut o = net.c[d];
-            for j in 0..dh { o += ht[j] * net.wp[j * din + d]; }
+            for j in 0..dh {
+                o += ht[j] * net.wp[j * din + d];
+            }
             let e = o - xt[d];
             err[d] = e;
             loss += (e * e) as f64;
@@ -965,14 +1355,18 @@ fn train_one_dir(
             }
         }
     }
-    if cnt == 0 { return (0.0, 0); }
+    if cnt == 0 {
+        return (0.0, 0);
+    }
 
     // ---- external gradient injection (e.g. InfoNCE on a pooled word
     // embedding, spread uniformly over its span) — added BEFORE the BPTT
     // sweep so it flows through the same recurrent backprop as the
     // predictive-loss gradient. ----
     if let Some(ed) = extra_dh {
-        for i in 0..dh_out.len() { dh_out[i] += ed[i]; }
+        for i in 0..dh_out.len() {
+            dh_out[i] += ed[i];
+        }
     }
 
     // ---- BPTT sweep (reverse of the forward time order) ----
@@ -992,23 +1386,33 @@ fn train_one_dir(
         for j in 0..dh {
             g_b[j] += da[j];
             let waj = &mut g_wf[..]; // borrow helper
-            for i in 0..din { waj[i * dh + j] += xt[i] * da[j]; }
+            for i in 0..din {
+                waj[i * dh + j] += xt[i] * da[j];
+            }
         }
         // h_prev is the state at the previous *network* step
         let prev_t: Option<usize> = if step == 0 {
             None
-        } else if rev { Some((tu - 1 - step) + 1) } else { Some(t - 1) };
+        } else if rev {
+            Some((tu - 1 - step) + 1)
+        } else {
+            Some(t - 1)
+        };
         if let Some(pt) = prev_t {
             let hprev = &h[pt * dh..pt * dh + dh];
             for j in 0..dh {
-                for i in 0..dh { g_u[i * dh + j] += hprev[i] * da[j]; }
+                for i in 0..dh {
+                    g_u[i * dh + j] += hprev[i] * da[j];
+                }
             }
         }
         // recurrent grad into previous step: dh_prev = da U^T
         let mut dprev = vec![0.0f32; dh];
         for i in 0..dh {
             let mut s = 0.0f32;
-            for j in 0..dh { s += da[j] * net.u[i * dh + j]; }
+            for j in 0..dh {
+                s += da[j] * net.u[i * dh + j];
+            }
             dprev[i] = s;
         }
         dh_next = dprev;
@@ -1017,8 +1421,15 @@ fn train_one_dir(
     // ---- global-norm gradient clip ----
     let clip = 5.0f32;
     let mut nrm = 0.0f64;
-    for v in g_wf.iter().chain(g_u.iter()).chain(g_b.iter())
-        .chain(g_wp.iter()).chain(g_c.iter()) { nrm += (*v as f64) * (*v as f64); }
+    for v in g_wf
+        .iter()
+        .chain(g_u.iter())
+        .chain(g_b.iter())
+        .chain(g_wp.iter())
+        .chain(g_c.iter())
+    {
+        nrm += (*v as f64) * (*v as f64);
+    }
     let nrm = nrm.sqrt() as f32;
     let scale = if nrm > clip { clip / (nrm + 1e-8) } else { 1.0 };
     let inv = scale / cnt as f32;
@@ -1049,11 +1460,19 @@ fn upd(w: &mut [f32], m: &mut [f32], g: &[f32], lr: f32, mom: f32, inv: f32) {
 /// contrastive signal wav2vec2 uses (predict a masked frame's target from
 /// bidirectional context) — distinct from `infonce_grad`'s pooled-word,
 /// class-structured SupCon.
-fn infonce_qk_grad(q: &[f32], k: &[f32], pos_idx: &[usize], m: usize, dt: usize, tau: f32)
-    -> (f64, Vec<f32>, Vec<f32>) {
+fn infonce_qk_grad(
+    q: &[f32],
+    k: &[f32],
+    pos_idx: &[usize],
+    m: usize,
+    dt: usize,
+    tau: f32,
+) -> (f64, Vec<f32>, Vec<f32>) {
     let mut grad_q = vec![0.0f32; m * dt];
     let mut grad_k = vec![0.0f32; m * dt];
-    if m < 2 { return (0.0, grad_q, grad_k); }
+    if m < 2 {
+        return (0.0, grad_q, grad_k);
+    }
     let tau = tau.max(1e-3);
     // unit-normalize q and k
     let (mut qh, mut kh) = (vec![0.0f32; m * dt], vec![0.0f32; m * dt]);
@@ -1062,8 +1481,12 @@ fn infonce_qk_grad(q: &[f32], k: &[f32], pos_idx: &[usize], m: usize, dt: usize,
         let (qi, ki) = (&q[i * dt..i * dt + dt], &k[i * dt..i * dt + dt]);
         let a = qi.iter().map(|v| v * v).sum::<f32>().sqrt().max(1e-8);
         let b = ki.iter().map(|v| v * v).sum::<f32>().sqrt().max(1e-8);
-        qn[i] = a; kn[i] = b;
-        for d in 0..dt { qh[i * dt + d] = qi[d] / a; kh[i * dt + d] = ki[d] / b; }
+        qn[i] = a;
+        kn[i] = b;
+        for d in 0..dt {
+            qh[i * dt + d] = qi[d] / a;
+            kh[i * dt + d] = ki[d] / b;
+        }
     }
     // similarity + softmax per query row over all keys
     let mut grad_qh = vec![0.0f32; m * dt];
@@ -1075,20 +1498,33 @@ fn infonce_qk_grad(q: &[f32], k: &[f32], pos_idx: &[usize], m: usize, dt: usize,
         let mut mx = f32::NEG_INFINITY;
         for j in 0..m {
             let mut s = 0.0f32;
-            for d in 0..dt { s += qh[i * dt + d] * kh[j * dt + d]; }
-            sim[j] = s / tau; if sim[j] > mx { mx = sim[j]; }
+            for d in 0..dt {
+                s += qh[i * dt + d] * kh[j * dt + d];
+            }
+            sim[j] = s / tau;
+            if sim[j] > mx {
+                mx = sim[j];
+            }
         }
         let mut denom = 0.0f32;
         let mut p = vec![0.0f32; m];
-        for j in 0..m { let e = (sim[j] - mx).exp(); p[j] = e; denom += e; }
+        for j in 0..m {
+            let e = (sim[j] - mx).exp();
+            p[j] = e;
+            denom += e;
+        }
         let denom = denom.max(1e-12);
-        for j in 0..m { p[j] /= denom; }
+        for j in 0..m {
+            p[j] /= denom;
+        }
         let pj = pos_idx[i].min(m - 1);
         loss -= ((p[pj].max(1e-12)).ln()) as f64;
         // dL/dsim_ij = (1/tau)(p_j - 1[j==pos]); dsim/dqh_i = kh_j; dsim/dkh_j = qh_i
         for j in 0..m {
             let coeff = (p[j] - if j == pj { 1.0 } else { 0.0 }) / tau;
-            if coeff == 0.0 { continue; }
+            if coeff == 0.0 {
+                continue;
+            }
             for d in 0..dt {
                 grad_qh[i * dt + d] += coeff * kh[j * dt + d];
                 grad_kh[j * dt + d] += coeff * qh[i * dt + d];
@@ -1101,10 +1537,14 @@ fn infonce_qk_grad(q: &[f32], k: &[f32], pos_idx: &[usize], m: usize, dt: usize,
     for i in 0..m {
         let (gq, qi) = (&grad_qh[i * dt..i * dt + dt], &qh[i * dt..i * dt + dt]);
         let dotq: f32 = gq.iter().zip(qi).map(|(a, b)| a * b).sum();
-        for d in 0..dt { grad_q[i * dt + d] = (gq[d] - dotq * qi[d]) / qn[i] * invm; }
+        for d in 0..dt {
+            grad_q[i * dt + d] = (gq[d] - dotq * qi[d]) / qn[i] * invm;
+        }
         let (gk, ki) = (&grad_kh[i * dt..i * dt + dt], &kh[i * dt..i * dt + dt]);
         let dotk: f32 = gk.iter().zip(ki).map(|(a, b)| a * b).sum();
-        for d in 0..dt { grad_k[i * dt + d] = (gk[d] - dotk * ki[d]) / kn[i] * invm; }
+        for d in 0..dt {
+            grad_k[i * dt + d] = (gk[d] - dotk * ki[d]) / kn[i] * invm;
+        }
     }
     (loss / m as f64, grad_q, grad_k)
 }
@@ -1115,8 +1555,19 @@ fn infonce_qk_grad(q: &[f32], k: &[f32], pos_idx: &[usize], m: usize, dt: usize,
 /// recurrent sweep. Used by `train_masked_cpc` where the upstream gradient is
 /// the masked-frame InfoNCE signal at masked positions.
 #[allow(clippy::too_many_arguments)]
-fn bptt_ext(net: &Rnn, x: &[f32], h: &[f32], tu: usize, din: usize, dh: usize, rev: bool,
-            dh_ext: &[f32], g_wf: &mut [f32], g_u: &mut [f32], g_b: &mut [f32]) {
+fn bptt_ext(
+    net: &Rnn,
+    x: &[f32],
+    h: &[f32],
+    tu: usize,
+    din: usize,
+    dh: usize,
+    rev: bool,
+    dh_ext: &[f32],
+    g_wf: &mut [f32],
+    g_u: &mut [f32],
+    g_b: &mut [f32],
+) {
     let mut dh_next = vec![0.0f32; dh];
     for step in (0..tu).rev() {
         let t = if rev { tu - 1 - step } else { step };
@@ -1129,16 +1580,33 @@ fn bptt_ext(net: &Rnn, x: &[f32], h: &[f32], tu: usize, din: usize, dh: usize, r
         let xt = &x[t * din..t * din + din];
         for j in 0..dh {
             g_b[j] += da[j];
-            for i in 0..din { g_wf[i * dh + j] += xt[i] * da[j]; }
+            for i in 0..din {
+                g_wf[i * dh + j] += xt[i] * da[j];
+            }
         }
-        let prev_t: Option<usize> = if step == 0 { None }
-            else if rev { Some((tu - 1 - step) + 1) } else { Some(t - 1) };
+        let prev_t: Option<usize> = if step == 0 {
+            None
+        } else if rev {
+            Some((tu - 1 - step) + 1)
+        } else {
+            Some(t - 1)
+        };
         if let Some(pt) = prev_t {
             let hprev = &h[pt * dh..pt * dh + dh];
-            for j in 0..dh { for i in 0..dh { g_u[i * dh + j] += hprev[i] * da[j]; } }
+            for j in 0..dh {
+                for i in 0..dh {
+                    g_u[i * dh + j] += hprev[i] * da[j];
+                }
+            }
         }
         let mut dprev = vec![0.0f32; dh];
-        for i in 0..dh { let mut s = 0.0f32; for j in 0..dh { s += da[j] * net.u[i * dh + j]; } dprev[i] = s; }
+        for i in 0..dh {
+            let mut s = 0.0f32;
+            for j in 0..dh {
+                s += da[j] * net.u[i * dh + j];
+            }
+            dprev[i] = s;
+        }
         dh_next = dprev;
     }
 }
@@ -1160,27 +1628,56 @@ fn bptt_ext(net: &Rnn, x: &[f32], h: &[f32], tu: usize, din: usize, dh: usize, r
 /// `train_contrastive`, so the `ApcEncode` Term encodes it unchanged.
 #[allow(clippy::too_many_arguments)]
 pub fn train_masked_cpc(
-    frames_flat: &[f32], seq_lens: &[usize], din: usize, dh: usize,
-    epochs: usize, lr: f32, bidir: bool, seed: u64,
-    mask_prob: f32, mask_span: usize, dt: usize, tau: f32, batch_size: usize, shuffle_ctrl: bool,
+    frames_flat: &[f32],
+    seq_lens: &[usize],
+    din: usize,
+    dh: usize,
+    epochs: usize,
+    lr: f32,
+    bidir: bool,
+    seed: u64,
+    mask_prob: f32,
+    mask_span: usize,
+    dt: usize,
+    tau: f32,
+    batch_size: usize,
+    shuffle_ctrl: bool,
 ) -> Vec<f32> {
     let mut rng = seed.wrapping_mul(0x9E3779B97F4A7C15).wrapping_add(1);
     let mut fwd = Rnn::new(din, dh, &mut rng);
-    let mut bwd = if bidir { Some(Rnn::new(din, dh, &mut rng)) } else { None };
+    let mut bwd = if bidir {
+        Some(Rnn::new(din, dh, &mut rng))
+    } else {
+        None
+    };
     let cdim = if bidir { 2 * dh } else { dh };
     let mut wq = vec![0.0f32; cdim * dt];
-    for w in wq.iter_mut() { *w = xavier(&mut rng, cdim); }
+    for w in wq.iter_mut() {
+        *w = xavier(&mut rng, cdim);
+    }
     let mut wk = vec![0.0f32; din * dt];
-    for w in wk.iter_mut() { *w = xavier(&mut rng, din); }
+    for w in wk.iter_mut() {
+        *w = xavier(&mut rng, din);
+    }
 
     let mut offs = Vec::with_capacity(seq_lens.len());
     let mut acc = 0usize;
-    for &l in seq_lens { offs.push(acc); acc += l; }
+    for &l in seq_lens {
+        offs.push(acc);
+        acc += l;
+    }
 
     let mom = 0.9f32;
-    let (mut m_fwf, mut m_fu, mut m_fb) = (vec![0.0f32; din * dh], vec![0.0f32; dh * dh], vec![0.0f32; dh]);
-    let (mut m_bwf, mut m_bu, mut m_bb) = (vec![0.0f32; if bidir { din * dh } else { 0 }],
-        vec![0.0f32; if bidir { dh * dh } else { 0 }], vec![0.0f32; if bidir { dh } else { 0 }]);
+    let (mut m_fwf, mut m_fu, mut m_fb) = (
+        vec![0.0f32; din * dh],
+        vec![0.0f32; dh * dh],
+        vec![0.0f32; dh],
+    );
+    let (mut m_bwf, mut m_bu, mut m_bb) = (
+        vec![0.0f32; if bidir { din * dh } else { 0 }],
+        vec![0.0f32; if bidir { dh * dh } else { 0 }],
+        vec![0.0f32; if bidir { dh } else { 0 }],
+    );
     let mut m_wq = vec![0.0f32; wq.len()];
     let mut m_wk = vec![0.0f32; wk.len()];
 
@@ -1191,17 +1688,21 @@ pub fn train_masked_cpc(
 
     for ep in 0..epochs {
         for i in (1..order.len()).rev() {
-            rng ^= rng << 13; rng ^= rng >> 7; rng ^= rng << 17;
-            let j = (rng >> 33) as usize % (i + 1); order.swap(i, j);
+            rng ^= rng << 13;
+            rng ^= rng >> 7;
+            rng ^= rng << 17;
+            let j = (rng >> 33) as usize % (i + 1);
+            order.swap(i, j);
         }
-        let mut tot_loss = 0.0f64; let mut nb = 0usize;
+        let mut tot_loss = 0.0f64;
+        let mut nb = 0usize;
         for chunk in order.clone().chunks(bsz) {
             // per-seq masked input + forward, collect masked-frame ctx / true-frame keys
-            let mut ci_of: Vec<usize> = Vec::new();      // chunk-local seq index per masked frame
-            let mut t_of: Vec<usize> = Vec::new();       // frame index per masked frame
-            let mut ctx: Vec<f32> = Vec::new();          // m*cdim
-            let mut truex: Vec<f32> = Vec::new();        // m*din
-            let mut xmask: Vec<Vec<f32>> = Vec::new();   // per-seq masked input
+            let mut ci_of: Vec<usize> = Vec::new(); // chunk-local seq index per masked frame
+            let mut t_of: Vec<usize> = Vec::new(); // frame index per masked frame
+            let mut ctx: Vec<f32> = Vec::new(); // m*cdim
+            let mut truex: Vec<f32> = Vec::new(); // m*din
+            let mut xmask: Vec<Vec<f32>> = Vec::new(); // per-seq masked input
             let mut hf_c: Vec<Vec<f32>> = Vec::new();
             let mut hb_c: Vec<Vec<f32>> = Vec::new();
             let mut mask_c: Vec<Vec<bool>> = Vec::new();
@@ -1212,47 +1713,99 @@ pub fn train_masked_cpc(
                 let mut masked = vec![false; tu];
                 if tu > ms + 2 {
                     let target = ((tu as f32) * mp).ceil() as usize;
-                    let mut placed = 0usize; let mut guard = 0usize;
+                    let mut placed = 0usize;
+                    let mut guard = 0usize;
                     while placed < target && guard < tu * 4 {
                         guard += 1;
-                        rng ^= rng << 13; rng ^= rng >> 7; rng ^= rng << 17;
+                        rng ^= rng << 13;
+                        rng ^= rng >> 7;
+                        rng ^= rng << 17;
                         let st = 1 + (rng >> 33) as usize % (tu - ms - 1).max(1);
-                        for o in 0..ms { if st + o < tu - 1 && !masked[st + o] { masked[st + o] = true; placed += 1; } }
+                        for o in 0..ms {
+                            if st + o < tu - 1 && !masked[st + o] {
+                                masked[st + o] = true;
+                                placed += 1;
+                            }
+                        }
                     }
                 }
                 // masked input (masked frames -> 0 ~= z-normed mean)
                 let mut xm = x.to_vec();
-                for t in 0..tu { if masked[t] { for d in 0..din { xm[t * din + d] = 0.0; } } }
+                for t in 0..tu {
+                    if masked[t] {
+                        for d in 0..din {
+                            xm[t * din + d] = 0.0;
+                        }
+                    }
+                }
                 let hf = fwd.forward(&xm, tu, false);
-                let hb = if let Some(bw) = bwd.as_ref() { bw.forward(&xm, tu, true) } else { vec![] };
+                let hb = if let Some(bw) = bwd.as_ref() {
+                    bw.forward(&xm, tu, true)
+                } else {
+                    vec![]
+                };
                 let cci = xmask.len();
                 for t in 0..tu {
-                    if !masked[t] { continue; }
-                    ci_of.push(cci); t_of.push(t);
-                    for d in 0..dh { ctx.push(hf[t * dh + d]); }
-                    if bidir { for d in 0..dh { ctx.push(hb[t * dh + d]); } }
-                    for d in 0..din { truex.push(x[t * din + d]); }
+                    if !masked[t] {
+                        continue;
+                    }
+                    ci_of.push(cci);
+                    t_of.push(t);
+                    for d in 0..dh {
+                        ctx.push(hf[t * dh + d]);
+                    }
+                    if bidir {
+                        for d in 0..dh {
+                            ctx.push(hb[t * dh + d]);
+                        }
+                    }
+                    for d in 0..din {
+                        truex.push(x[t * din + d]);
+                    }
                 }
-                xmask.push(xm); hf_c.push(hf); hb_c.push(hb); mask_c.push(masked);
+                xmask.push(xm);
+                hf_c.push(hf);
+                hb_c.push(hb);
+                mask_c.push(masked);
             }
             let m = ci_of.len();
-            if m < 2 { continue; }
+            if m < 2 {
+                continue;
+            }
             // q = ctx·Wq, k = truex·Wk
             let mut q = vec![0.0f32; m * dt];
             let mut kk = vec![0.0f32; m * dt];
             for r in 0..m {
                 let cr = &ctx[r * cdim..r * cdim + cdim];
-                for d in 0..dt { let mut s = 0.0f32; for c in 0..cdim { s += cr[c] * wq[c * dt + d]; } q[r * dt + d] = s; }
+                for d in 0..dt {
+                    let mut s = 0.0f32;
+                    for c in 0..cdim {
+                        s += cr[c] * wq[c * dt + d];
+                    }
+                    q[r * dt + d] = s;
+                }
                 let xr = &truex[r * din..r * din + din];
-                for d in 0..dt { let mut s = 0.0f32; for c in 0..din { s += xr[c] * wk[c * dt + d]; } kk[r * dt + d] = s; }
+                for d in 0..dt {
+                    let mut s = 0.0f32;
+                    for c in 0..din {
+                        s += xr[c] * wk[c * dt + d];
+                    }
+                    kk[r * dt + d] = s;
+                }
             }
             let mut pos_idx: Vec<usize> = (0..m).collect();
             if shuffle_ctrl {
-                for i in (1..m).rev() { rng ^= rng << 13; rng ^= rng >> 7; rng ^= rng << 17;
-                    let j = (rng >> 33) as usize % (i + 1); pos_idx.swap(i, j); }
+                for i in (1..m).rev() {
+                    rng ^= rng << 13;
+                    rng ^= rng >> 7;
+                    rng ^= rng << 17;
+                    let j = (rng >> 33) as usize % (i + 1);
+                    pos_idx.swap(i, j);
+                }
             }
             let (loss, grad_q, grad_k) = infonce_qk_grad(&q, &kk, &pos_idx, m, dt, tau);
-            tot_loss += loss; nb += 1;
+            tot_loss += loss;
+            nb += 1;
 
             // Wq, Wk grads + grad to ctx
             let mut g_wq = vec![0.0f32; wq.len()];
@@ -1261,43 +1814,110 @@ pub fn train_masked_cpc(
             for r in 0..m {
                 let cr = &ctx[r * cdim..r * cdim + cdim];
                 let gqr = &grad_q[r * dt..r * dt + dt];
-                for c in 0..cdim { for d in 0..dt { g_wq[c * dt + d] += cr[c] * gqr[d]; } }
-                for c in 0..cdim { let mut s = 0.0f32; for d in 0..dt { s += wq[c * dt + d] * gqr[d]; } grad_ctx[r * cdim + c] = s; }
+                for c in 0..cdim {
+                    for d in 0..dt {
+                        g_wq[c * dt + d] += cr[c] * gqr[d];
+                    }
+                }
+                for c in 0..cdim {
+                    let mut s = 0.0f32;
+                    for d in 0..dt {
+                        s += wq[c * dt + d] * gqr[d];
+                    }
+                    grad_ctx[r * cdim + c] = s;
+                }
                 let xr = &truex[r * din..r * din + din];
                 let gkr = &grad_k[r * dt..r * dt + dt];
-                for c in 0..din { for d in 0..dt { g_wk[c * dt + d] += xr[c] * gkr[d]; } }
+                for c in 0..din {
+                    for d in 0..dt {
+                        g_wk[c * dt + d] += xr[c] * gkr[d];
+                    }
+                }
             }
             // scatter grad_ctx into per-seq per-frame dh_ext (fwd + bwd halves)
-            let mut ext_f: Vec<Vec<f32>> = chunk.iter().map(|&si| vec![0.0f32; seq_lens[si] * dh]).collect();
+            let mut ext_f: Vec<Vec<f32>> = chunk
+                .iter()
+                .map(|&si| vec![0.0f32; seq_lens[si] * dh])
+                .collect();
             let mut ext_b: Vec<Vec<f32>> = if bidir {
-                chunk.iter().map(|&si| vec![0.0f32; seq_lens[si] * dh]).collect() } else { vec![] };
+                chunk
+                    .iter()
+                    .map(|&si| vec![0.0f32; seq_lens[si] * dh])
+                    .collect()
+            } else {
+                vec![]
+            };
             for r in 0..m {
                 let (cci, t) = (ci_of[r], t_of[r]);
-                for d in 0..dh { ext_f[cci][t * dh + d] += grad_ctx[r * cdim + d]; }
-                if bidir { for d in 0..dh { ext_b[cci][t * dh + d] += grad_ctx[r * cdim + dh + d]; } }
+                for d in 0..dh {
+                    ext_f[cci][t * dh + d] += grad_ctx[r * cdim + d];
+                }
+                if bidir {
+                    for d in 0..dh {
+                        ext_b[cci][t * dh + d] += grad_ctx[r * cdim + dh + d];
+                    }
+                }
             }
             // BPTT per seq -> accumulate RNN weight grads
-            let (mut g_fwf, mut g_fu, mut g_fb) = (vec![0.0f32; din * dh], vec![0.0f32; dh * dh], vec![0.0f32; dh]);
-            let (mut g_bwf, mut g_bu, mut g_bb) = (vec![0.0f32; if bidir { din * dh } else { 0 }],
-                vec![0.0f32; if bidir { dh * dh } else { 0 }], vec![0.0f32; if bidir { dh } else { 0 }]);
+            let (mut g_fwf, mut g_fu, mut g_fb) = (
+                vec![0.0f32; din * dh],
+                vec![0.0f32; dh * dh],
+                vec![0.0f32; dh],
+            );
+            let (mut g_bwf, mut g_bu, mut g_bb) = (
+                vec![0.0f32; if bidir { din * dh } else { 0 }],
+                vec![0.0f32; if bidir { dh * dh } else { 0 }],
+                vec![0.0f32; if bidir { dh } else { 0 }],
+            );
             for (cci, &si) in chunk.iter().enumerate() {
                 let tu = seq_lens[si];
-                bptt_ext(&fwd, &xmask[cci], &hf_c[cci], tu, din, dh, false, &ext_f[cci],
-                         &mut g_fwf, &mut g_fu, &mut g_fb);
+                bptt_ext(
+                    &fwd,
+                    &xmask[cci],
+                    &hf_c[cci],
+                    tu,
+                    din,
+                    dh,
+                    false,
+                    &ext_f[cci],
+                    &mut g_fwf,
+                    &mut g_fu,
+                    &mut g_fb,
+                );
                 if let Some(bw) = bwd.as_ref() {
-                    bptt_ext(bw, &xmask[cci], &hb_c[cci], tu, din, dh, true, &ext_b[cci],
-                             &mut g_bwf, &mut g_bu, &mut g_bb);
+                    bptt_ext(
+                        bw,
+                        &xmask[cci],
+                        &hb_c[cci],
+                        tu,
+                        din,
+                        dh,
+                        true,
+                        &ext_b[cci],
+                        &mut g_bwf,
+                        &mut g_bu,
+                        &mut g_bb,
+                    );
                 }
             }
             // clip + update (scale by 1/m so the step is invariant to batch masked-count)
             let mut nrm = 0.0f64;
-            for v in g_fwf.iter().chain(g_fu.iter()).chain(g_fb.iter())
-                .chain(g_bwf.iter()).chain(g_bu.iter()).chain(g_bb.iter())
-                .chain(g_wq.iter()).chain(g_wk.iter()) { nrm += (*v as f64) * (*v as f64); }
+            for v in g_fwf
+                .iter()
+                .chain(g_fu.iter())
+                .chain(g_fb.iter())
+                .chain(g_bwf.iter())
+                .chain(g_bu.iter())
+                .chain(g_bb.iter())
+                .chain(g_wq.iter())
+                .chain(g_wk.iter())
+            {
+                nrm += (*v as f64) * (*v as f64);
+            }
             let nrm = nrm.sqrt() as f32;
             let clip = 5.0f32;
             let scale = if nrm > clip { clip / (nrm + 1e-8) } else { 1.0 };
-            let inv = scale;   // grads already the MEAN-loss gradient (infonce_qk_grad divides by m)
+            let inv = scale; // grads already the MEAN-loss gradient (infonce_qk_grad divides by m)
             upd(&mut fwd.wf, &mut m_fwf, &g_fwf, lr, mom, inv);
             upd(&mut fwd.u, &mut m_fu, &g_fu, lr, mom, inv);
             upd(&mut fwd.b, &mut m_fb, &g_fb, lr, mom, inv);
@@ -1310,17 +1930,35 @@ pub fn train_masked_cpc(
             upd(&mut wk, &mut m_wk, &g_wk, lr, mom, inv);
         }
         if ep == 0 || ep + 1 == epochs || (ep + 1) % (epochs.max(8) / 8).max(1) == 0 {
-            eprintln!("    [apc.masked_cpc] epoch {:4}: InfoNCE-frame loss {:.5} (batches={})",
-                      ep, tot_loss / nb.max(1) as f64, nb);
+            eprintln!(
+                "    [apc.masked_cpc] epoch {:4}: InfoNCE-frame loss {:.5} (batches={})",
+                ep,
+                tot_loss / nb.max(1) as f64,
+                nb
+            );
         }
     }
     // pack model (SAME layout as `train` -> ApcEncode reads it unchanged)
-    let mut model = Vec::with_capacity(HDR + fwd.wf.len() + fwd.u.len() + fwd.b.len()
-        + if bidir { fwd.wf.len() + fwd.u.len() + fwd.b.len() } else { 0 });
-    model.push(din as f32); model.push(dh as f32); model.push(if bidir { 1.0 } else { 0.0 });
-    model.extend_from_slice(&fwd.wf); model.extend_from_slice(&fwd.u); model.extend_from_slice(&fwd.b);
+    let mut model = Vec::with_capacity(
+        HDR + fwd.wf.len()
+            + fwd.u.len()
+            + fwd.b.len()
+            + if bidir {
+                fwd.wf.len() + fwd.u.len() + fwd.b.len()
+            } else {
+                0
+            },
+    );
+    model.push(din as f32);
+    model.push(dh as f32);
+    model.push(if bidir { 1.0 } else { 0.0 });
+    model.extend_from_slice(&fwd.wf);
+    model.extend_from_slice(&fwd.u);
+    model.extend_from_slice(&fwd.b);
     if let Some(bw) = bwd.as_ref() {
-        model.extend_from_slice(&bw.wf); model.extend_from_slice(&bw.u); model.extend_from_slice(&bw.b);
+        model.extend_from_slice(&bw.wf);
+        model.extend_from_slice(&bw.u);
+        model.extend_from_slice(&bw.b);
     }
     model
 }
@@ -1332,20 +1970,32 @@ mod cpc_tests {
     fn qk_grad_numeric() {
         // numerical gradient check of infonce_qk_grad (the new frame-level math)
         let (m, dt) = (4usize, 3usize);
-        let q: Vec<f32> = (0..m * dt).map(|i| ((i * 7 % 11) as f32 - 5.0) * 0.13).collect();
-        let k: Vec<f32> = (0..m * dt).map(|i| ((i * 5 % 13) as f32 - 6.0) * 0.11).collect();
+        let q: Vec<f32> = (0..m * dt)
+            .map(|i| ((i * 7 % 11) as f32 - 5.0) * 0.13)
+            .collect();
+        let k: Vec<f32> = (0..m * dt)
+            .map(|i| ((i * 5 % 13) as f32 - 6.0) * 0.11)
+            .collect();
         let pos: Vec<usize> = (0..m).collect();
         let (l0, gq, gk) = infonce_qk_grad(&q, &k, &pos, m, dt, 0.2);
         let eps = 1e-3f32;
         let loss = |qq: &[f32], kk: &[f32]| infonce_qk_grad(qq, kk, &pos, m, dt, 0.2).0;
         let mut max_err = 0.0f64;
         for i in 0..m * dt {
-            let mut qp = q.clone(); qp[i] += eps; let lp = loss(&qp, &k);
-            let mut qm = q.clone(); qm[i] -= eps; let lm = loss(&qm, &k);
+            let mut qp = q.clone();
+            qp[i] += eps;
+            let lp = loss(&qp, &k);
+            let mut qm = q.clone();
+            qm[i] -= eps;
+            let lm = loss(&qm, &k);
             let num = ((lp - lm) / (2.0 * eps as f64)) as f32;
             max_err = max_err.max((num - gq[i]).abs() as f64);
-            let mut kp = k.clone(); kp[i] += eps; let lp = loss(&q, &kp);
-            let mut km = k.clone(); km[i] -= eps; let lm = loss(&q, &km);
+            let mut kp = k.clone();
+            kp[i] += eps;
+            let lp = loss(&q, &kp);
+            let mut km = k.clone();
+            km[i] -= eps;
+            let lm = loss(&q, &km);
             let num = ((lp - lm) / (2.0 * eps as f64)) as f32;
             max_err = max_err.max((num - gk[i]).abs() as f64);
         }
@@ -1368,7 +2018,9 @@ pub fn encode(
     end: i64,
     out_len: usize,
 ) -> (Vec<f32>, usize) {
-    if model.len() < HDR { return (vec![], 0); }
+    if model.len() < HDR {
+        return (vec![], 0);
+    }
     let din = model[0] as usize;
     let dh = model[1] as usize;
     let bidir = model[2] > 0.5;
@@ -1377,25 +2029,54 @@ pub fn encode(
     }
     // unpack
     let mut p = HDR;
-    let wf = &model[p..p + din * dh]; p += din * dh;
-    let u = &model[p..p + dh * dh]; p += dh * dh;
-    let b = &model[p..p + dh]; p += dh;
-    let fwd = Rnn { din, dh, wf: wf.to_vec(), u: u.to_vec(), b: b.to_vec(),
-                    wp: vec![], c: vec![] };
+    let wf = &model[p..p + din * dh];
+    p += din * dh;
+    let u = &model[p..p + dh * dh];
+    p += dh * dh;
+    let b = &model[p..p + dh];
+    p += dh;
+    let fwd = Rnn {
+        din,
+        dh,
+        wf: wf.to_vec(),
+        u: u.to_vec(),
+        b: b.to_vec(),
+        wp: vec![],
+        c: vec![],
+    };
     let hf = fwd.forward(seq_flat, tu, false);
     let hb = if bidir {
-        let wf2 = &model[p..p + din * dh]; p += din * dh;
-        let u2 = &model[p..p + dh * dh]; p += dh * dh;
+        let wf2 = &model[p..p + din * dh];
+        p += din * dh;
+        let u2 = &model[p..p + dh * dh];
+        p += dh * dh;
         let b2 = &model[p..p + dh];
-        let bw = Rnn { din, dh, wf: wf2.to_vec(), u: u2.to_vec(), b: b2.to_vec(),
-                       wp: vec![], c: vec![] };
+        let bw = Rnn {
+            din,
+            dh,
+            wf: wf2.to_vec(),
+            u: u2.to_vec(),
+            b: b2.to_vec(),
+            wp: vec![],
+            c: vec![],
+        };
         Some(bw.forward(seq_flat, tu, true))
-    } else { None };
+    } else {
+        None
+    };
     let rep = if bidir { 2 * dh } else { dh };
 
     // slice range
-    let s = if start < 0 { 0 } else { (start as usize).min(tu.saturating_sub(1)) };
-    let e = if end < 0 || end as usize > tu { tu } else { end as usize };
+    let s = if start < 0 {
+        0
+    } else {
+        (start as usize).min(tu.saturating_sub(1))
+    };
+    let e = if end < 0 || end as usize > tu {
+        tu
+    } else {
+        end as usize
+    };
     let e = e.max(s + 1);
     let span = e - s;
 
@@ -1403,21 +2084,28 @@ pub fn encode(
     let mk = |idx: usize| -> Vec<f32> {
         let mut v = vec![0.0f32; rep];
         v[..dh].copy_from_slice(&hf[idx * dh..idx * dh + dh]);
-        if let Some(hb) = &hb { v[dh..].copy_from_slice(&hb[idx * dh..idx * dh + dh]); }
+        if let Some(hb) = &hb {
+            v[dh..].copy_from_slice(&hb[idx * dh..idx * dh + dh]);
+        }
         v
     };
     let ol = out_len.max(1);
     let mut out = vec![0.0f32; ol * rep];
     for o in 0..ol {
         // linear index into [s,e)
-        let pos = if ol == 1 { s as f32 }
-                  else { s as f32 + (span - 1) as f32 * (o as f32) / (ol - 1) as f32 };
+        let pos = if ol == 1 {
+            s as f32
+        } else {
+            s as f32 + (span - 1) as f32 * (o as f32) / (ol - 1) as f32
+        };
         let lo = pos.floor() as usize;
         let hi = (lo + 1).min(e - 1);
         let fr = pos - lo as f32;
         let a = mk(lo);
         let bb = mk(hi);
-        for d in 0..rep { out[o * rep + d] = a[d] * (1.0 - fr) + bb[d] * fr; }
+        for d in 0..rep {
+            out[o * rep + d] = a[d] * (1.0 - fr) + bb[d] * fr;
+        }
     }
     (out, rep)
 }

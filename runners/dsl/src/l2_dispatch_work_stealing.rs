@@ -34,8 +34,8 @@
 //! throughput. A future "hybrid" could shard per priority class +
 //! steal within class.
 
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::thread::{self, JoinHandle};
 
 use crossbeam_deque::{Injector, Steal, Stealer, Worker};
@@ -57,11 +57,11 @@ impl WorkStealingScheduler {
         let shutdown_flag = Arc::new(AtomicBool::new(false));
 
         // Build per-worker local deques.
-        let local_queues: Vec<Worker<BoxedTask>> =
-            (0..n_workers).map(|_| Worker::<BoxedTask>::new_fifo()).collect();
+        let local_queues: Vec<Worker<BoxedTask>> = (0..n_workers)
+            .map(|_| Worker::<BoxedTask>::new_fifo())
+            .collect();
         // Each worker keeps refs to every other's stealer.
-        let stealers: Vec<Stealer<BoxedTask>> =
-            local_queues.iter().map(|w| w.stealer()).collect();
+        let stealers: Vec<Stealer<BoxedTask>> = local_queues.iter().map(|w| w.stealer()).collect();
         let stealers = Arc::new(stealers);
 
         // Spawn workers, pinned to physical cores when possible.
@@ -71,8 +71,7 @@ impl WorkStealingScheduler {
             let inj = Arc::clone(&injector);
             let stl = Arc::clone(&stealers);
             let sf = Arc::clone(&shutdown_flag);
-            let pin = core_ids.as_ref()
-                .and_then(|ids| ids.get(idx).copied());
+            let pin = core_ids.as_ref().and_then(|ids| ids.get(idx).copied());
             let handle = thread::Builder::new()
                 .name(format!("ws-worker-{}", idx))
                 .spawn(move || {
@@ -85,7 +84,11 @@ impl WorkStealingScheduler {
             workers.push(handle);
         }
 
-        Self { injector, workers, shutdown_flag }
+        Self {
+            injector,
+            workers,
+            shutdown_flag,
+        }
     }
 
     /// Submit a task. Lock-free push into the global injector;
@@ -131,12 +134,18 @@ fn worker_loop(
         //    lock-free transfer.
         loop {
             match injector.steal_batch_and_pop(&local) {
-                Steal::Success(task) => { task(); break; }
+                Steal::Success(task) => {
+                    task();
+                    break;
+                }
                 Steal::Empty => break,
                 Steal::Retry => continue,
             }
         }
-        if local.pop().is_some_and(|t| { t(); true }) {
+        if local.pop().is_some_and(|t| {
+            t();
+            true
+        }) {
             continue;
         }
 
@@ -147,21 +156,35 @@ fn worker_loop(
             let target = (my_idx + offset) % n;
             loop {
                 match stealers[target].steal() {
-                    Steal::Success(task) => { task(); got_one = true; break; }
+                    Steal::Success(task) => {
+                        task();
+                        got_one = true;
+                        break;
+                    }
                     Steal::Empty => break,
                     Steal::Retry => continue,
                 }
             }
-            if got_one { break; }
+            if got_one {
+                break;
+            }
         }
-        if got_one { continue; }
+        if got_one {
+            continue;
+        }
 
         // 4. Nothing to do — check shutdown.
         if shutdown.load(Ordering::Acquire) {
             // Drain anything in injector or own queue before exit.
-            if let Some(task) = local.pop() { task(); continue; }
+            if let Some(task) = local.pop() {
+                task();
+                continue;
+            }
             match injector.steal_batch_and_pop(&local) {
-                Steal::Success(task) => { task(); continue; }
+                Steal::Success(task) => {
+                    task();
+                    continue;
+                }
                 _ => return,
             }
         }
@@ -185,7 +208,9 @@ mod tests {
         let counter = Arc::new(AtomicUsize::new(0));
         for _ in 0..n {
             let c = Arc::clone(&counter);
-            sched.submit(move || { c.fetch_add(1, AtomicOrd::Relaxed); });
+            sched.submit(move || {
+                c.fetch_add(1, AtomicOrd::Relaxed);
+            });
         }
         let deadline = Instant::now() + Duration::from_secs(5);
         while counter.load(AtomicOrd::Relaxed) < n && Instant::now() < deadline {
@@ -210,9 +235,7 @@ mod tests {
             });
         }
         let started = Instant::now();
-        while counter.load(AtomicOrd::Relaxed) < n
-            && started.elapsed() < Duration::from_secs(5)
-        {
+        while counter.load(AtomicOrd::Relaxed) < n && started.elapsed() < Duration::from_secs(5) {
             std::thread::sleep(Duration::from_millis(1));
         }
         assert_eq!(counter.load(AtomicOrd::Relaxed), n);
@@ -230,14 +253,19 @@ mod tests {
         let started = Instant::now();
         for _ in 0..n {
             let c = Arc::clone(&counter);
-            sched.submit(move || { c.fetch_add(1, AtomicOrd::Relaxed); });
+            sched.submit(move || {
+                c.fetch_add(1, AtomicOrd::Relaxed);
+            });
         }
         while counter.load(AtomicOrd::Relaxed) < n {
             std::thread::sleep(Duration::from_micros(100));
         }
         let elapsed = started.elapsed();
         sched.shutdown();
-        assert!(elapsed < Duration::from_secs(2),
-                "100K tasks should complete < 2s; took {:?}", elapsed);
+        assert!(
+            elapsed < Duration::from_secs(2),
+            "100K tasks should complete < 2s; took {:?}",
+            elapsed
+        );
     }
 }

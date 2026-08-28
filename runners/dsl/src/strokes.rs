@@ -241,7 +241,12 @@ fn read_points(v: &Value) -> Vec<(f64, f64)> {
 fn read_bounds(v: &Value) -> Option<(f64, f64, f64, f64)> {
     if let (Value::Tuple(items) | Value::List(items)) = v {
         if items.len() >= 4 {
-            return Some((items[0].as_f64(), items[1].as_f64(), items[2].as_f64(), items[3].as_f64()));
+            return Some((
+                items[0].as_f64(),
+                items[1].as_f64(),
+                items[2].as_f64(),
+                items[3].as_f64(),
+            ));
         }
     }
     None
@@ -343,7 +348,10 @@ pub(crate) fn eval_stroke_quantize(
     let mut headings: Vec<f64> = Vec::with_capacity(n);
     let mut lengths: Vec<f64> = Vec::with_capacity(n);
     for i in 0..n {
-        let v = (resampled[i + 1].0 - resampled[i].0, resampled[i + 1].1 - resampled[i].1);
+        let v = (
+            resampled[i + 1].0 - resampled[i].0,
+            resampled[i + 1].1 - resampled[i].1,
+        );
         headings.push(heading_deg(v));
         lengths.push(dist(resampled[i + 1], resampled[i]));
     }
@@ -368,7 +376,11 @@ pub(crate) fn eval_stroke_quantize(
             let q = quantize_turn(headings[i] - headings[i - 1]);
             (q, wrapped - turn_center(q))
         };
-        let len_frac = if total > 1e-12 { lengths[i] / total } else { 0.0 };
+        let len_frac = if total > 1e-12 {
+            lengths[i] / total
+        } else {
+            0.0
+        };
         let len_q = quantize_len(len_frac);
         let len_residual = len_frac - len_center(len_q);
         relations.push(Value::Tuple(Arc::new(smallvec::smallvec![
@@ -408,10 +420,22 @@ pub(crate) fn eval_stroke_quantize(
         } else {
             (x_q, y_q, orient_q, scale_q)
         };
-        relations.push(Value::Tuple(Arc::new(smallvec::smallvec![Value::Str(pose_x_sym), Value::Int(sx)])));
-        relations.push(Value::Tuple(Arc::new(smallvec::smallvec![Value::Str(pose_y_sym), Value::Int(sy)])));
-        relations.push(Value::Tuple(Arc::new(smallvec::smallvec![Value::Str(pose_o_sym), Value::Int(so)])));
-        relations.push(Value::Tuple(Arc::new(smallvec::smallvec![Value::Str(pose_s_sym), Value::Int(ss)])));
+        relations.push(Value::Tuple(Arc::new(smallvec::smallvec![
+            Value::Str(pose_x_sym),
+            Value::Int(sx)
+        ])));
+        relations.push(Value::Tuple(Arc::new(smallvec::smallvec![
+            Value::Str(pose_y_sym),
+            Value::Int(sy)
+        ])));
+        relations.push(Value::Tuple(Arc::new(smallvec::smallvec![
+            Value::Str(pose_o_sym),
+            Value::Int(so)
+        ])));
+        relations.push(Value::Tuple(Arc::new(smallvec::smallvec![
+            Value::Str(pose_s_sym),
+            Value::Int(ss)
+        ])));
     }
 
     let pose = Value::Dict(Arc::from(vec![
@@ -564,13 +588,17 @@ fn read_relations(v: &Value, interner: &Interner) -> Vec<(String, Vec<f64>)> {
     fn from_tuple(items: &[Value], interner: &Interner) -> Vec<(String, Vec<f64>)> {
         let mut out = Vec::with_capacity(items.len());
         for it in items {
-            let (Value::Tuple(rel) | Value::List(rel)) = it else { continue };
+            let (Value::Tuple(rel) | Value::List(rel)) = it else {
+                continue;
+            };
             if rel.is_empty() {
                 continue;
             }
             let pred = match &rel[0] {
                 Value::Str(sym) => interner.resolve(*sym).to_string(),
-                Value::Surface(SurfaceKind::Text, bytes) => String::from_utf8_lossy(bytes).to_string(),
+                Value::Surface(SurfaceKind::Text, bytes) => {
+                    String::from_utf8_lossy(bytes).to_string()
+                }
                 _ => continue,
             };
             let args: Vec<f64> = rel[1..].iter().map(|x| x.as_f64()).collect();
@@ -579,16 +607,21 @@ fn read_relations(v: &Value, interner: &Interner) -> Vec<(String, Vec<f64>)> {
         out
     }
     fn from_json(text: &str) -> Vec<(String, Vec<f64>)> {
-        let Ok(serde_json::Value::Array(items)) = serde_json::from_str::<serde_json::Value>(text) else {
+        let Ok(serde_json::Value::Array(items)) = serde_json::from_str::<serde_json::Value>(text)
+        else {
             return Vec::new();
         };
         let mut out = Vec::with_capacity(items.len());
         for it in &items {
-            let serde_json::Value::Array(rel) = it else { continue };
+            let serde_json::Value::Array(rel) = it else {
+                continue;
+            };
             if rel.is_empty() {
                 continue;
             }
-            let Some(pred) = rel[0].as_str() else { continue };
+            let Some(pred) = rel[0].as_str() else {
+                continue;
+            };
             let args: Vec<f64> = rel[1..].iter().filter_map(|x| x.as_f64()).collect();
             out.push((pred.to_string(), args));
         }
@@ -663,7 +696,11 @@ pub(crate) fn eval_stroke_render(
     for (pred, args) in &relations {
         match (pred.as_str(), args.as_slice()) {
             ("seg", [i, turn_q, len_q, ..]) => {
-                segs.push((i.round() as i64, turn_q.round() as i64, len_q.round() as i64));
+                segs.push((
+                    i.round() as i64,
+                    turn_q.round() as i64,
+                    len_q.round() as i64,
+                ));
             }
             ("pose_x", [x, ..]) => pose_x_q = Some(x.round() as i64),
             ("pose_y", [y, ..]) => pose_y_q = Some(y.round() as i64),
@@ -686,7 +723,8 @@ pub(crate) fn eval_stroke_render(
         return finish(result, field, ctx.interner);
     }
 
-    let have_pose = pose_x_q.is_some() && pose_y_q.is_some() && pose_o_q.is_some() && pose_s_q.is_some();
+    let have_pose =
+        pose_x_q.is_some() && pose_y_q.is_some() && pose_o_q.is_some() && pose_s_q.is_some();
     let use_pose = apply_pose && have_pose;
 
     let (start_x, start_y, heading0, arc_len) = if use_pose {
@@ -750,7 +788,12 @@ pub(crate) fn eval_stroke_render(
 
     let points_val: SmallVec<[Value; 4]> = out_points
         .iter()
-        .map(|&(x, y)| Value::Tuple(Arc::new(smallvec::smallvec![Value::Float(x), Value::Float(y)])))
+        .map(|&(x, y)| {
+            Value::Tuple(Arc::new(smallvec::smallvec![
+                Value::Float(x),
+                Value::Float(y)
+            ]))
+        })
         .collect();
 
     let result = Value::Dict(Arc::from(vec![
@@ -771,7 +814,10 @@ mod tests {
     // --- test-only construction helpers ---
 
     fn pt(x: f64, y: f64) -> Value {
-        Value::Tuple(Arc::new(smallvec::smallvec![Value::Float(x), Value::Float(y)]))
+        Value::Tuple(Arc::new(smallvec::smallvec![
+            Value::Float(x),
+            Value::Float(y)
+        ]))
     }
 
     fn points_value(pts: &[(f64, f64)]) -> Value {
@@ -816,7 +862,9 @@ mod tests {
         bounds: Option<(f64, f64, f64, f64)>,
         field: &str,
     ) -> TermIdx {
-        let points_t = a.add(TermNode::Lit { value: points_value(points) });
+        let points_t = a.add(TermNode::Lit {
+            value: points_value(points),
+        });
         let bounds_t = bounds.map(|(x0, y0, x1, y1)| {
             let v = Value::Tuple(Arc::new(smallvec::smallvec![
                 Value::Float(x0),
@@ -826,7 +874,11 @@ mod tests {
             ]));
             a.add(TermNode::Lit { value: v })
         });
-        let field_sym = if field.is_empty() { Sym::default() } else { ir.intern(field) };
+        let field_sym = if field.is_empty() {
+            Sym::default()
+        } else {
+            ir.intern(field)
+        };
         a.add(TermNode::StrokeQuantize {
             points: points_t,
             segments,
@@ -866,8 +918,21 @@ mod tests {
         bounds: Option<(f64, f64, f64, f64)>,
         field: &str,
     ) -> TermIdx {
-        build_term_modes(a, ir, s, points, segments, turn_bins, len_bins, grid, scale_bins,
-                         invariant_only, false, bounds, field)
+        build_term_modes(
+            a,
+            ir,
+            s,
+            points,
+            segments,
+            turn_bins,
+            len_bins,
+            grid,
+            scale_bins,
+            invariant_only,
+            false,
+            bounds,
+            field,
+        )
     }
 
     fn run(a: &TermArena, idx: TermIdx, g: &TypedGraph, ir: &Interner) -> Value {
@@ -892,7 +957,9 @@ mod tests {
     }
 
     fn scale(pts: &[(f64, f64)], k: f64, about: (f64, f64)) -> Vec<(f64, f64)> {
-        pts.iter().map(|&(x, y)| (about.0 + (x - about.0) * k, about.1 + (y - about.1) * k)).collect()
+        pts.iter()
+            .map(|&(x, y)| (about.0 + (x - about.0) * k, about.1 + (y - about.1) * k))
+            .collect()
     }
 
     /// An "L": right then up, 2 segments, headings 0° then 90° (a clean
@@ -949,20 +1016,64 @@ mod tests {
         let g = TypedGraph::new();
 
         let mut a1 = TermArena::new();
-        let t1 = build_term(&mut a1, &mut ir, &s, &base, 2, 16, 8, 8, 8, true, None, "signature");
+        let t1 = build_term(
+            &mut a1,
+            &mut ir,
+            &s,
+            &base,
+            2,
+            16,
+            8,
+            8,
+            8,
+            true,
+            None,
+            "signature",
+        );
         let sig1 = run(&a1, t1, &g, &ir);
 
         let mut a2 = TermArena::new();
-        let t2 = build_term(&mut a2, &mut ir, &s, &transformed, 2, 16, 8, 8, 8, true, None, "signature");
+        let t2 = build_term(
+            &mut a2,
+            &mut ir,
+            &s,
+            &transformed,
+            2,
+            16,
+            8,
+            8,
+            8,
+            true,
+            None,
+            "signature",
+        );
         let sig2 = run(&a2, t2, &g, &ir);
 
-        assert_eq!(sig1, sig2, "invariant seg relations must be IDENTICAL under rotate+scale+translate");
+        assert_eq!(
+            sig1, sig2,
+            "invariant seg relations must be IDENTICAL under rotate+scale+translate"
+        );
 
         let mut a3 = TermArena::new();
-        let t3 = build_term(&mut a3, &mut ir, &s, &base, 2, 16, 8, 8, 8, false, None, "pose");
+        let t3 = build_term(
+            &mut a3, &mut ir, &s, &base, 2, 16, 8, 8, 8, false, None, "pose",
+        );
         let pose1 = run(&a3, t3, &g, &ir);
         let mut a4 = TermArena::new();
-        let t4 = build_term(&mut a4, &mut ir, &s, &transformed, 2, 16, 8, 8, 8, false, None, "pose");
+        let t4 = build_term(
+            &mut a4,
+            &mut ir,
+            &s,
+            &transformed,
+            2,
+            16,
+            8,
+            8,
+            8,
+            false,
+            None,
+            "pose",
+        );
         let pose2 = run(&a4, t4, &g, &ir);
         assert_ne!(
             dict_get(&pose1, "orient_q"),
@@ -981,12 +1092,38 @@ mod tests {
         let pts = l_stroke();
 
         let mut a1 = TermArena::new();
-        let t1 = build_term(&mut a1, &mut ir, &s, &pts, 2, 16, 8, 8, 8, true, None, "signature");
+        let t1 = build_term(
+            &mut a1,
+            &mut ir,
+            &s,
+            &pts,
+            2,
+            16,
+            8,
+            8,
+            8,
+            true,
+            None,
+            "signature",
+        );
         let sig_inv = run(&a1, t1, &g, &ir);
         assert_eq!(sig_len(&sig_inv), 2, "2 segments, zero pose relations");
 
         let mut a2 = TermArena::new();
-        let t2 = build_term(&mut a2, &mut ir, &s, &pts, 2, 16, 8, 8, 8, false, None, "signature");
+        let t2 = build_term(
+            &mut a2,
+            &mut ir,
+            &s,
+            &pts,
+            2,
+            16,
+            8,
+            8,
+            8,
+            false,
+            None,
+            "signature",
+        );
         let sig_full = run(&a2, t2, &g, &ir);
         assert_eq!(sig_len(&sig_full), 6, "2 seg + 4 pose relations");
     }
@@ -1006,7 +1143,20 @@ mod tests {
         let pts = l_stroke();
 
         let mut direct_arena = TermArena::new();
-        let direct_term = build_term(&mut direct_arena, &mut ir, &s, &pts, 2, 16, 8, 8, 8, false, None, "");
+        let direct_term = build_term(
+            &mut direct_arena,
+            &mut ir,
+            &s,
+            &pts,
+            2,
+            16,
+            8,
+            8,
+            8,
+            false,
+            None,
+            "",
+        );
         let direct_result = run(&direct_arena, direct_term, &g, &ir);
 
         let term_json = serde_json::json!({
@@ -1024,13 +1174,17 @@ mod tests {
             .expect("StrokeQuantize JSON schema must parse");
         let json_result = run(&json_arena, json_term, &g, &ir);
 
-        assert_eq!(direct_result, json_result, "direct construction and JSON parse must agree");
+        assert_eq!(
+            direct_result, json_result,
+            "direct construction and JSON parse must agree"
+        );
 
         // Re-running the SAME JSON term a second time (fresh arena/
         // interner) must produce byte-identical output — determinism.
         let mut ir2 = Interner::new();
         let mut json_arena2 = TermArena::new();
-        let json_term2 = crate::jsonio::term_from_json(&term_json, &mut json_arena2, &mut ir2).unwrap();
+        let json_term2 =
+            crate::jsonio::term_from_json(&term_json, &mut json_arena2, &mut ir2).unwrap();
         let g2 = TypedGraph::new();
         let json_result2 = run(&json_arena2, json_term2, &g2, &ir2);
         // Compare via re-encoding through each term's own interner
@@ -1039,7 +1193,10 @@ mod tests {
         // Values).
         let enc1 = crate::persist::encode_value(&json_result, &ir);
         let enc2 = crate::persist::encode_value(&json_result2, &ir2);
-        assert_eq!(enc1, enc2, "re-parsing the same JSON must be fully deterministic");
+        assert_eq!(
+            enc1, enc2,
+            "re-parsing the same JSON must be fully deterministic"
+        );
     }
 
     // --- (4) curved vs straight turn profile ---
@@ -1051,14 +1208,43 @@ mod tests {
         let g = TypedGraph::new();
 
         let mut a1 = TermArena::new();
-        let t1 = build_term(&mut a1, &mut ir, &s, &l_stroke(), 6, 16, 8, 8, 8, true, None, "signature");
+        let t1 = build_term(
+            &mut a1,
+            &mut ir,
+            &s,
+            &l_stroke(),
+            6,
+            16,
+            8,
+            8,
+            8,
+            true,
+            None,
+            "signature",
+        );
         let sig_l = run(&a1, t1, &g, &ir);
 
         let mut a2 = TermArena::new();
-        let t2 = build_term(&mut a2, &mut ir, &s, &curved_stroke(), 6, 16, 8, 8, 8, true, None, "signature");
+        let t2 = build_term(
+            &mut a2,
+            &mut ir,
+            &s,
+            &curved_stroke(),
+            6,
+            16,
+            8,
+            8,
+            8,
+            true,
+            None,
+            "signature",
+        );
         let sig_curve = run(&a2, t2, &g, &ir);
 
-        assert_ne!(sig_l, sig_curve, "a sharp-corner L and a smooth arc must quantize to different turn profiles");
+        assert_ne!(
+            sig_l, sig_curve,
+            "a sharp-corner L and a smooth arc must quantize to different turn profiles"
+        );
     }
 
     // --- (5) segments/turn_bins params honored ---
@@ -1071,25 +1257,84 @@ mod tests {
         let pts = curved_stroke();
 
         let mut a4 = TermArena::new();
-        let t4 = build_term(&mut a4, &mut ir, &s, &pts, 4, 16, 8, 8, 8, true, None, "signature");
+        let t4 = build_term(
+            &mut a4,
+            &mut ir,
+            &s,
+            &pts,
+            4,
+            16,
+            8,
+            8,
+            8,
+            true,
+            None,
+            "signature",
+        );
         let sig4 = run(&a4, t4, &g, &ir);
         assert_eq!(sig_len(&sig4), 4);
 
         let mut a10 = TermArena::new();
-        let t10 = build_term(&mut a10, &mut ir, &s, &pts, 10, 16, 8, 8, 8, true, None, "signature");
+        let t10 = build_term(
+            &mut a10,
+            &mut ir,
+            &s,
+            &pts,
+            10,
+            16,
+            8,
+            8,
+            8,
+            true,
+            None,
+            "signature",
+        );
         let sig10 = run(&a10, t10, &g, &ir);
-        assert_eq!(sig_len(&sig10), 10, "different `segments` -> different relation COUNT");
+        assert_eq!(
+            sig_len(&sig10),
+            10,
+            "different `segments` -> different relation COUNT"
+        );
 
         // Different `turn_bins` on the SAME curved stroke changes the
         // quantized turn values (coarser bins collapse distinctions a
         // fine grid preserves) — assert the two signatures differ.
         let mut a_coarse = TermArena::new();
-        let t_coarse = build_term(&mut a_coarse, &mut ir, &s, &pts, 6, 4, 8, 8, 8, true, None, "signature");
+        let t_coarse = build_term(
+            &mut a_coarse,
+            &mut ir,
+            &s,
+            &pts,
+            6,
+            4,
+            8,
+            8,
+            8,
+            true,
+            None,
+            "signature",
+        );
         let sig_coarse = run(&a_coarse, t_coarse, &g, &ir);
         let mut a_fine = TermArena::new();
-        let t_fine = build_term(&mut a_fine, &mut ir, &s, &pts, 6, 32, 8, 8, 8, true, None, "signature");
+        let t_fine = build_term(
+            &mut a_fine,
+            &mut ir,
+            &s,
+            &pts,
+            6,
+            32,
+            8,
+            8,
+            8,
+            true,
+            None,
+            "signature",
+        );
         let sig_fine = run(&a_fine, t_fine, &g, &ir);
-        assert_ne!(sig_coarse, sig_fine, "different `turn_bins` must change the quantized turn values");
+        assert_ne!(
+            sig_coarse, sig_fine,
+            "different `turn_bins` must change the quantized turn values"
+        );
     }
 
     // --- (6) degenerate inputs ---
@@ -1114,7 +1359,20 @@ mod tests {
             let mut ir = Interner::new();
             let s = syms(&mut ir);
             let mut a = TermArena::new();
-            let t = build_term(&mut a, &mut ir, &s, &[(1.0, 1.0)], 4, 16, 8, 8, 8, false, None, "");
+            let t = build_term(
+                &mut a,
+                &mut ir,
+                &s,
+                &[(1.0, 1.0)],
+                4,
+                16,
+                8,
+                8,
+                8,
+                false,
+                None,
+                "",
+            );
             let result = run(&a, t, &g, &ir);
             assert_eq!(dict_get(&result, "n_points"), Value::Int(1));
             assert_eq!(sig_len(&dict_get(&result, "signature")), 0);
@@ -1159,7 +1417,13 @@ mod tests {
     mod ladder_handoff {
         use super::*;
 
-        fn add_stroke_part(g: &mut TypedGraph, ir: &mut Interner, t: Sym, name: &str, sig_json: &str) -> NodeID {
+        fn add_stroke_part(
+            g: &mut TypedGraph,
+            ir: &mut Interner,
+            t: Sym,
+            name: &str,
+            sig_json: &str,
+        ) -> NodeID {
             let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
             attrs.insert(ir.intern("name"), Value::Str(ir.intern(name)));
             attrs.insert(ir.intern("kind"), Value::Str(ir.intern("stroke")));
@@ -1178,19 +1442,26 @@ mod tests {
                 Value::None => J::Null,
                 Value::Bool(b) => J::Bool(*b),
                 Value::Int(n) => J::Number((*n).into()),
-                Value::Float(f) => serde_json::Number::from_f64(*f).map(J::Number).unwrap_or(J::Null),
+                Value::Float(f) => serde_json::Number::from_f64(*f)
+                    .map(J::Number)
+                    .unwrap_or(J::Null),
                 Value::Str(sym) => J::String(ir.resolve(*sym).to_string()),
-                Value::Tuple(items) | Value::List(items) => J::Array(items.iter().map(|it| value_to_plain_json(it, ir)).collect()),
+                Value::Tuple(items) | Value::List(items) => {
+                    J::Array(items.iter().map(|it| value_to_plain_json(it, ir)).collect())
+                }
                 _ => J::Null,
             }
         }
 
         fn dims_as_ints(result: &Value) -> Vec<i64> {
             match dict_get(result, "dims") {
-                Value::Tuple(t) | Value::List(t) => t.iter().filter_map(|v| match v {
-                    Value::Int(i) => Some(*i),
-                    _ => None,
-                }).collect(),
+                Value::Tuple(t) | Value::List(t) => t
+                    .iter()
+                    .filter_map(|v| match v {
+                        Value::Int(i) => Some(*i),
+                        _ => None,
+                    })
+                    .collect(),
                 _ => Vec::new(),
             }
         }
@@ -1200,16 +1471,26 @@ mod tests {
         /// (always a real Sym: it is taken from the OBSERVED relation's
         /// slot 0).
         fn transforms_summary(result: &Value, ir: &Interner) -> Vec<(String, i64, i64)> {
-            let (Value::Tuple(ts) | Value::List(ts)) = dict_get(result, "transforms") else { return Vec::new() };
-            ts.iter().map(|t| {
-                let pred = match dict_get(t, "pred") {
-                    Value::Str(s) => ir.resolve(s).to_string(),
-                    _ => String::new(),
-                };
-                let dim = match dict_get(t, "dim") { Value::Int(i) => i, _ => -1 };
-                let delta = match dict_get(t, "delta") { Value::Int(i) => i, _ => i64::MIN };
-                (pred, dim, delta)
-            }).collect()
+            let (Value::Tuple(ts) | Value::List(ts)) = dict_get(result, "transforms") else {
+                return Vec::new();
+            };
+            ts.iter()
+                .map(|t| {
+                    let pred = match dict_get(t, "pred") {
+                        Value::Str(s) => ir.resolve(s).to_string(),
+                        _ => String::new(),
+                    };
+                    let dim = match dict_get(t, "dim") {
+                        Value::Int(i) => i,
+                        _ => -1,
+                    };
+                    let delta = match dict_get(t, "delta") {
+                        Value::Int(i) => i,
+                        _ => i64::MIN,
+                    };
+                    (pred, dim, delta)
+                })
+                .collect()
         }
 
         const BOUNDS: (f64, f64, f64, f64) = (0.0, 0.0, 4.0, 4.0);
@@ -1242,7 +1523,20 @@ mod tests {
 
             let mut inv_arena = TermArena::new();
             let g0 = TypedGraph::new();
-            let inv_term = build_term(&mut inv_arena, &mut ir, &s, &stroke_a, 2, TURN_BINS, 8, GRID, 8, true, Some(BOUNDS), "signature");
+            let inv_term = build_term(
+                &mut inv_arena,
+                &mut ir,
+                &s,
+                &stroke_a,
+                2,
+                TURN_BINS,
+                8,
+                GRID,
+                8,
+                true,
+                Some(BOUNDS),
+                "signature",
+            );
             let inv_sig = run(&inv_arena, inv_term, &g0, &ir);
             let inv_json = serde_json::to_string(&value_to_plain_json(&inv_sig, &ir)).unwrap();
 
@@ -1256,7 +1550,20 @@ mod tests {
             let transformed = translate(&rotated, cell_w, 0.0);
 
             let mut goal_arena = TermArena::new();
-            let goal_term = build_term(&mut goal_arena, &mut ir, &s, &transformed, 2, TURN_BINS, 8, GRID, 8, false, Some(BOUNDS), "signature");
+            let goal_term = build_term(
+                &mut goal_arena,
+                &mut ir,
+                &s,
+                &transformed,
+                2,
+                TURN_BINS,
+                8,
+                GRID,
+                8,
+                false,
+                Some(BOUNDS),
+                "signature",
+            );
 
             let td = goal_arena.add(TermNode::TransformDecode {
                 goal: goal_term,
@@ -1293,7 +1600,20 @@ mod tests {
 
             let mut full_arena = TermArena::new();
             let g0 = TypedGraph::new();
-            let full_term = build_term(&mut full_arena, &mut ir, &s, &stroke_a, 2, TURN_BINS, 8, GRID, 8, false, Some(BOUNDS), "signature");
+            let full_term = build_term(
+                &mut full_arena,
+                &mut ir,
+                &s,
+                &stroke_a,
+                2,
+                TURN_BINS,
+                8,
+                GRID,
+                8,
+                false,
+                Some(BOUNDS),
+                "signature",
+            );
             let full_sig = run(&full_arena, full_term, &g0, &ir);
             let full_json = serde_json::to_string(&value_to_plain_json(&full_sig, &ir)).unwrap();
 
@@ -1307,7 +1627,20 @@ mod tests {
             let transformed = translate(&rotated, cell_w, 0.0);
 
             let mut goal_arena = TermArena::new();
-            let goal_term = build_term(&mut goal_arena, &mut ir, &s, &transformed, 2, TURN_BINS, 8, GRID, 8, false, Some(BOUNDS), "signature");
+            let goal_term = build_term(
+                &mut goal_arena,
+                &mut ir,
+                &s,
+                &transformed,
+                2,
+                TURN_BINS,
+                8,
+                GRID,
+                8,
+                false,
+                Some(BOUNDS),
+                "signature",
+            );
             let td = goal_arena.add(TermNode::TransformDecode {
                 goal: goal_term,
                 codebook_type: t_type,
@@ -1320,7 +1653,11 @@ mod tests {
             assert_eq!(dict_get(&result, "explained"), Value::Bool(true),
                 "predicate-aware pooling: seg's zero-delta slot-1 group no longer vetoes pose_o/pose_x");
             assert_eq!(dict_get(&result, "base"), Value::Str(ir.intern("StrokeA")));
-            assert_eq!(dims_as_ints(&result), vec![1, 1], "two split dimensions sharing local slot index 1");
+            assert_eq!(
+                dims_as_ints(&result),
+                vec![1, 1],
+                "two split dimensions sharing local slot index 1"
+            );
             let summary = transforms_summary(&result, &ir);
             assert_eq!(summary, vec![
                 ("pose_x".to_string(), 1, 1),
@@ -1340,13 +1677,21 @@ mod tests {
             let py = ir.intern("pose_y");
             let po = ir.intern("pose_o");
             let ps = ir.intern("pose_s");
-            let rel = |p: Sym, v: i64| Value::Tuple(Arc::new(smallvec::smallvec![Value::Str(p), Value::Int(v)]));
+            let rel = |p: Sym, v: i64| {
+                Value::Tuple(Arc::new(smallvec::smallvec![Value::Str(p), Value::Int(v)]))
+            };
 
             let held = Value::Tuple(Arc::new(smallvec::smallvec![
-                rel(px, 0), rel(py, 0), rel(po, 0), rel(ps, 3),
+                rel(px, 0),
+                rel(py, 0),
+                rel(po, 0),
+                rel(ps, 3),
             ]));
             let goal = Value::Tuple(Arc::new(smallvec::smallvec![
-                rel(px, 1), rel(py, 0), rel(po, 1), rel(ps, 3),
+                rel(px, 1),
+                rel(py, 0),
+                rel(po, 1),
+                rel(ps, 3),
             ]));
 
             let mut g = TypedGraph::new();
@@ -1371,10 +1716,10 @@ mod tests {
             assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
             assert_eq!(dims_as_ints(&result), vec![1, 1]);
             let summary = transforms_summary(&result, &ir);
-            assert_eq!(summary, vec![
-                ("pose_x".to_string(), 1, 1),
-                ("pose_o".to_string(), 1, 1),
-            ]);
+            assert_eq!(
+                summary,
+                vec![("pose_x".to_string(), 1, 1), ("pose_o".to_string(), 1, 1),]
+            );
         }
 
         /// (7d) Single relation type only: tier-1 global uniformity
@@ -1386,7 +1731,9 @@ mod tests {
         fn gate7d_single_relation_type_stays_unkeyed_tier1() {
             let mut ir = Interner::new();
             let po = ir.intern("pose_o");
-            let rel = |p: Sym, v: i64| Value::Tuple(Arc::new(smallvec::smallvec![Value::Str(p), Value::Int(v)]));
+            let rel = |p: Sym, v: i64| {
+                Value::Tuple(Arc::new(smallvec::smallvec![Value::Str(p), Value::Int(v)]))
+            };
 
             let held = Value::Tuple(Arc::new(smallvec::smallvec![rel(po, 0)]));
             let goal = Value::Tuple(Arc::new(smallvec::smallvec![rel(po, 1)]));
@@ -1413,7 +1760,11 @@ mod tests {
             assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
             assert_eq!(dims_as_ints(&result), vec![1]);
             let summary = transforms_summary(&result, &ir);
-            assert_eq!(summary, vec![(String::new(), 1, 1)], "tier-1 entry carries NO pred key");
+            assert_eq!(
+                summary,
+                vec![(String::new(), 1, 1)],
+                "tier-1 entry carries NO pred key"
+            );
         }
 
         /// (7e) THE HEADLINE GATE — the design's central claim, end to
@@ -1444,14 +1795,34 @@ mod tests {
             // Held: canonical-pose signature (codebook-entry form).
             let mut canon_arena = TermArena::new();
             let g0 = TypedGraph::new();
-            let canon_term = build_term_modes(&mut canon_arena, &mut ir, &s, &stroke_a, 2, TURN_BINS, 8, GRID, 8,
-                                              false, true, Some(BOUNDS), "signature");
+            let canon_term = build_term_modes(
+                &mut canon_arena,
+                &mut ir,
+                &s,
+                &stroke_a,
+                2,
+                TURN_BINS,
+                8,
+                GRID,
+                8,
+                false,
+                true,
+                Some(BOUNDS),
+                "signature",
+            );
             let canon_sig = run(&canon_arena, canon_term, &g0, &ir);
             let canon_json = serde_json::to_string(&value_to_plain_json(&canon_sig, &ir)).unwrap();
             // Pin the canonical convention itself: pose_s at bin 4 (=
             // scale_bins/2, the bin containing log2 arc_len = 0).
-            assert!(canon_json.contains("[\"pose_s\",4]"), "canonical scale bin must be 4 for scale_bins=8, got {canon_json}");
-            assert!(canon_json.contains("[\"pose_x\",0]") && canon_json.contains("[\"pose_y\",0]") && canon_json.contains("[\"pose_o\",0]"));
+            assert!(
+                canon_json.contains("[\"pose_s\",4]"),
+                "canonical scale bin must be 4 for scale_bins=8, got {canon_json}"
+            );
+            assert!(
+                canon_json.contains("[\"pose_x\",0]")
+                    && canon_json.contains("[\"pose_y\",0]")
+                    && canon_json.contains("[\"pose_o\",0]")
+            );
 
             let mut g = TypedGraph::new();
             let t_type = ir.intern("ShapeSignature");
@@ -1460,14 +1831,26 @@ mod tests {
             // Goal: rotate ONE turn-bin quantum about the start point
             // (start unchanged -> pose_x/pose_y see only the
             // translation), then translate ONE grid cell in x.
-            let bin_deg = 360.0 / TURN_BINS as f64;                  // 22.5 deg
-            let cell_w = (BOUNDS.2 - BOUNDS.0) / GRID as f64;        // 0.5
+            let bin_deg = 360.0 / TURN_BINS as f64; // 22.5 deg
+            let cell_w = (BOUNDS.2 - BOUNDS.0) / GRID as f64; // 0.5
             let rotated = rotate(&stroke_a, bin_deg, stroke_a[0]);
             let transformed = translate(&rotated, cell_w, 0.0);
 
             let mut goal_arena = TermArena::new();
-            let goal_term = build_term(&mut goal_arena, &mut ir, &s, &transformed, 2, TURN_BINS, 8, GRID, 8,
-                                       false, Some(BOUNDS), "signature");
+            let goal_term = build_term(
+                &mut goal_arena,
+                &mut ir,
+                &s,
+                &transformed,
+                2,
+                TURN_BINS,
+                8,
+                GRID,
+                8,
+                false,
+                Some(BOUNDS),
+                "signature",
+            );
             let td = goal_arena.add(TermNode::TransformDecode {
                 goal: goal_term,
                 codebook_type: t_type,
@@ -1477,11 +1860,17 @@ mod tests {
             });
             let result = run(&goal_arena, td, &g, &ir);
 
-            assert_eq!(dict_get(&result, "explained"), Value::Bool(true),
-                "the central claim: a similarity transform IS rung-1 pose-dimension deltas");
+            assert_eq!(
+                dict_get(&result, "explained"),
+                Value::Bool(true),
+                "the central claim: a similarity transform IS rung-1 pose-dimension deltas"
+            );
             assert_eq!(dict_get(&result, "base"), Value::Str(ir.intern("StrokeA")));
             assert_eq!(dict_get(&result, "identity"), Value::Bool(false));
-            assert_eq!(dict_get(&result, "residual_unexplained"), Value::Tuple(Arc::new(SmallVec::new())));
+            assert_eq!(
+                dict_get(&result, "residual_unexplained"),
+                Value::Tuple(Arc::new(SmallVec::new()))
+            );
             assert_eq!(dims_as_ints(&result), vec![1, 1]);
             let summary = transforms_summary(&result, &ir);
             assert_eq!(summary, vec![
@@ -1503,8 +1892,21 @@ mod tests {
 
             let mut canon_arena = TermArena::new();
             let g0 = TypedGraph::new();
-            let canon_term = build_term_modes(&mut canon_arena, &mut ir, &s, &stroke_a, 2, TURN_BINS, 8, GRID, 8,
-                                              false, true, Some(BOUNDS), "signature");
+            let canon_term = build_term_modes(
+                &mut canon_arena,
+                &mut ir,
+                &s,
+                &stroke_a,
+                2,
+                TURN_BINS,
+                8,
+                GRID,
+                8,
+                false,
+                true,
+                Some(BOUNDS),
+                "signature",
+            );
             let canon_sig = run(&canon_arena, canon_term, &g0, &ir);
             let canon_json = serde_json::to_string(&value_to_plain_json(&canon_sig, &ir)).unwrap();
 
@@ -1513,8 +1915,20 @@ mod tests {
             add_stroke_part(&mut g, &mut ir, t_type, "StrokeA", &canon_json);
 
             let mut goal_arena = TermArena::new();
-            let goal_term = build_term(&mut goal_arena, &mut ir, &s, &stroke_a, 2, TURN_BINS, 8, GRID, 8,
-                                       false, Some(BOUNDS), "signature");
+            let goal_term = build_term(
+                &mut goal_arena,
+                &mut ir,
+                &s,
+                &stroke_a,
+                2,
+                TURN_BINS,
+                8,
+                GRID,
+                8,
+                false,
+                Some(BOUNDS),
+                "signature",
+            );
             let td = goal_arena.add(TermNode::TransformDecode {
                 goal: goal_term,
                 codebook_type: t_type,
@@ -1524,7 +1938,11 @@ mod tests {
             });
             let result = run(&goal_arena, td, &g, &ir);
 
-            assert_eq!(dict_get(&result, "explained"), Value::Bool(false), "identity is sd_recognize's case, not a transform");
+            assert_eq!(
+                dict_get(&result, "explained"),
+                Value::Bool(false),
+                "identity is sd_recognize's case, not a transform"
+            );
             assert_eq!(dict_get(&result, "identity"), Value::Bool(true));
         }
     }
@@ -1549,12 +1967,18 @@ mod tests {
         }
 
         fn rel2(ir: &mut Interner, pred: &str, v: i64) -> Value {
-            Value::Tuple(Arc::new(smallvec::smallvec![Value::Str(ir.intern(pred)), Value::Int(v)]))
+            Value::Tuple(Arc::new(smallvec::smallvec![
+                Value::Str(ir.intern(pred)),
+                Value::Int(v)
+            ]))
         }
 
         fn seg_rel(ir: &mut Interner, i: i64, turn_q: i64, len_q: i64) -> Value {
             Value::Tuple(Arc::new(smallvec::smallvec![
-                Value::Str(ir.intern("seg")), Value::Int(i), Value::Int(turn_q), Value::Int(len_q),
+                Value::Str(ir.intern("seg")),
+                Value::Int(i),
+                Value::Int(turn_q),
+                Value::Int(len_q),
             ]))
         }
 
@@ -1598,24 +2022,47 @@ mod tests {
             ir: &mut Interner,
         ) -> TermIdx {
             let bounds_t = bounds.map(|(x0, y0, x1, y1)| {
-                lit(a, Value::Tuple(Arc::new(smallvec::smallvec![
-                    Value::Float(x0), Value::Float(y0), Value::Float(x1), Value::Float(y1),
-                ])))
+                lit(
+                    a,
+                    Value::Tuple(Arc::new(smallvec::smallvec![
+                        Value::Float(x0),
+                        Value::Float(y0),
+                        Value::Float(x1),
+                        Value::Float(y1),
+                    ])),
+                )
             });
-            let field_sym = if field.is_empty() { Sym::default() } else { ir.intern(field) };
+            let field_sym = if field.is_empty() {
+                Sym::default()
+            } else {
+                ir.intern(field)
+            };
             a.add(TermNode::StrokeRender {
-                signature: sig, n_points, apply_pose, turn_bins, len_bins, grid, scale_bins,
-                turn_edges: None, len_edges: None,
-                bounds: bounds_t, field: field_sym,
+                signature: sig,
+                n_points,
+                apply_pose,
+                turn_bins,
+                len_bins,
+                grid,
+                scale_bins,
+                turn_edges: None,
+                len_edges: None,
+                bounds: bounds_t,
+                field: field_sym,
             })
         }
 
         fn points_of(v: &Value) -> Vec<(f64, f64)> {
             match v {
-                Value::Tuple(items) | Value::List(items) => items.iter().filter_map(|it| match it {
-                    Value::Tuple(p) | Value::List(p) if p.len() >= 2 => Some((p[0].as_f64(), p[1].as_f64())),
-                    _ => None,
-                }).collect(),
+                Value::Tuple(items) | Value::List(items) => items
+                    .iter()
+                    .filter_map(|it| match it {
+                        Value::Tuple(p) | Value::List(p) if p.len() >= 2 => {
+                            Some((p[0].as_f64(), p[1].as_f64()))
+                        }
+                        _ => None,
+                    })
+                    .collect(),
                 _ => Vec::new(),
             }
         }
@@ -1626,9 +2073,13 @@ mod tests {
                 Value::None => J::Null,
                 Value::Bool(b) => J::Bool(*b),
                 Value::Int(n) => J::Number((*n).into()),
-                Value::Float(f) => serde_json::Number::from_f64(*f).map(J::Number).unwrap_or(J::Null),
+                Value::Float(f) => serde_json::Number::from_f64(*f)
+                    .map(J::Number)
+                    .unwrap_or(J::Null),
                 Value::Str(sym) => J::String(ir.resolve(*sym).to_string()),
-                Value::Tuple(items) | Value::List(items) => J::Array(items.iter().map(|it| value_to_plain_json(it, ir)).collect()),
+                Value::Tuple(items) | Value::List(items) => {
+                    J::Array(items.iter().map(|it| value_to_plain_json(it, ir)).collect())
+                }
                 _ => J::Null,
             }
         }
@@ -1674,13 +2125,38 @@ mod tests {
 
             let mut a1 = TermArena::new();
             let sig_t = lit(&mut a1, sig.clone());
-            let render_t = render_term(&mut a1, sig_t, 3, true, TURN_BINS, len_bins, GRID, SCALE_BINS, Some(BOUNDS), "points", &mut ir);
+            let render_t = render_term(
+                &mut a1,
+                sig_t,
+                3,
+                true,
+                TURN_BINS,
+                len_bins,
+                GRID,
+                SCALE_BINS,
+                Some(BOUNDS),
+                "points",
+                &mut ir,
+            );
             let rendered = run(&a1, render_t, &g, &ir);
             let pts = points_of(&rendered);
             assert_eq!(pts.len(), 3, "n_points = segments(2) + 1");
 
             let mut a2 = TermArena::new();
-            let requant_t = build_term(&mut a2, &mut ir, &s, &pts, 2, TURN_BINS, len_bins, GRID, SCALE_BINS, false, Some(BOUNDS), "signature");
+            let requant_t = build_term(
+                &mut a2,
+                &mut ir,
+                &s,
+                &pts,
+                2,
+                TURN_BINS,
+                len_bins,
+                GRID,
+                SCALE_BINS,
+                false,
+                Some(BOUNDS),
+                "signature",
+            );
             let sig2 = run(&a2, requant_t, &g, &ir);
 
             assert_eq!(sig2, sig, "StrokeQuantize(StrokeRender(sig)) must recover sig EXACTLY at matching, bin-center-safe params");
@@ -1701,17 +2177,48 @@ mod tests {
             let mut a1 = TermArena::new();
             let sig1 = build_fixture_sig(&mut ir, 3, 1, 2, 5);
             let sig_t1 = lit(&mut a1, sig1.clone());
-            let canon_t = render_term(&mut a1, sig_t1, 6, false, TURN_BINS, LEN_BINS, GRID, SCALE_BINS, Some(BOUNDS), "", &mut ir);
+            let canon_t = render_term(
+                &mut a1,
+                sig_t1,
+                6,
+                false,
+                TURN_BINS,
+                LEN_BINS,
+                GRID,
+                SCALE_BINS,
+                Some(BOUNDS),
+                "",
+                &mut ir,
+            );
             let canon = run(&a1, canon_t, &g, &ir);
             let canon_pts = points_of(&dict_get(&canon, "points"));
-            assert_eq!(dict_get(&canon, "arc_len"), Value::Float(1.0), "canonical arc_len is always 1");
+            assert_eq!(
+                dict_get(&canon, "arc_len"),
+                Value::Float(1.0),
+                "canonical arc_len is always 1"
+            );
 
             let mut a2 = TermArena::new();
             let sig_t2 = lit(&mut a2, sig1);
-            let posed_t = render_term(&mut a2, sig_t2, 6, true, TURN_BINS, LEN_BINS, GRID, SCALE_BINS, Some(BOUNDS), "", &mut ir);
+            let posed_t = render_term(
+                &mut a2,
+                sig_t2,
+                6,
+                true,
+                TURN_BINS,
+                LEN_BINS,
+                GRID,
+                SCALE_BINS,
+                Some(BOUNDS),
+                "",
+                &mut ir,
+            );
             let posed = run(&a2, posed_t, &g, &ir);
             let posed_pts = points_of(&dict_get(&posed, "points"));
-            let posed_arc_len = match dict_get(&posed, "arc_len") { Value::Float(f) => f, other => panic!("expected Float, got {other:?}") };
+            let posed_arc_len = match dict_get(&posed, "arc_len") {
+                Value::Float(f) => f,
+                other => panic!("expected Float, got {other:?}"),
+            };
 
             // Expected transform, re-derived the SAME way eval_stroke_render
             // does (bucket_center / angle_bin_center) — duplicated here
@@ -1723,15 +2230,26 @@ mod tests {
             let heading0_deg = 2.0 * (360.0 / TURN_BINS as f64); // pose_o q=2 -> 45 deg
             let log_scale = -4.0 + (5.0 + 0.5) * (8.0 / SCALE_BINS as f64);
             let arc_len = 2f64.powf(log_scale);
-            assert!((posed_arc_len - arc_len).abs() < 1e-9, "posed arc_len must match the pose_s bin center");
+            assert!(
+                (posed_arc_len - arc_len).abs() < 1e-9,
+                "posed arc_len must match the pose_s bin center"
+            );
 
             assert_eq!(canon_pts.len(), posed_pts.len());
             let rad = heading0_deg.to_radians();
             for (c, p) in canon_pts.iter().zip(posed_pts.iter()) {
                 let ex = start_x + arc_len * (c.0 * rad.cos() - c.1 * rad.sin());
                 let ey = start_y + arc_len * (c.0 * rad.sin() + c.1 * rad.cos());
-                assert!((p.0 - ex).abs() < 1e-9, "posed x mismatch: got {:?}, expected ({ex},{ey})", p);
-                assert!((p.1 - ey).abs() < 1e-9, "posed y mismatch: got {:?}, expected ({ex},{ey})", p);
+                assert!(
+                    (p.0 - ex).abs() < 1e-9,
+                    "posed x mismatch: got {:?}, expected ({ex},{ey})",
+                    p
+                );
+                assert!(
+                    (p.1 - ey).abs() < 1e-9,
+                    "posed y mismatch: got {:?}, expected ({ex},{ey})",
+                    p
+                );
             }
         }
 
@@ -1745,7 +2263,19 @@ mod tests {
             {
                 let mut a = TermArena::new();
                 let empty_sig = lit(&mut a, Value::Tuple(Arc::new(SmallVec::new())));
-                let t = render_term(&mut a, empty_sig, 24, true, TURN_BINS, LEN_BINS, GRID, SCALE_BINS, Some(BOUNDS), "", &mut ir);
+                let t = render_term(
+                    &mut a,
+                    empty_sig,
+                    24,
+                    true,
+                    TURN_BINS,
+                    LEN_BINS,
+                    GRID,
+                    SCALE_BINS,
+                    Some(BOUNDS),
+                    "",
+                    &mut ir,
+                );
                 let result = run(&a, t, &g, &ir);
                 assert_eq!(dict_get(&result, "n_strokes"), Value::Int(1));
                 assert_eq!(dict_get(&result, "arc_len"), Value::Float(0.0));
@@ -1756,10 +2286,26 @@ mod tests {
                 let mut a = TermArena::new();
                 let sig = Value::Tuple(Arc::new(smallvec::smallvec![seg_rel(&mut ir, 0, 0, 4)]));
                 let sig_t = lit(&mut a, sig);
-                let t = render_term(&mut a, sig_t, 5, true, TURN_BINS, LEN_BINS, GRID, SCALE_BINS, Some(BOUNDS), "", &mut ir);
+                let t = render_term(
+                    &mut a,
+                    sig_t,
+                    5,
+                    true,
+                    TURN_BINS,
+                    LEN_BINS,
+                    GRID,
+                    SCALE_BINS,
+                    Some(BOUNDS),
+                    "",
+                    &mut ir,
+                );
                 let result = run(&a, t, &g, &ir);
                 assert_eq!(dict_get(&result, "n_strokes"), Value::Int(1));
-                assert_eq!(dict_get(&result, "arc_len"), Value::Float(1.0), "no pose relations present -> canonical arc_len 1");
+                assert_eq!(
+                    dict_get(&result, "arc_len"),
+                    Value::Float(1.0),
+                    "no pose relations present -> canonical arc_len 1"
+                );
                 assert_eq!(points_of(&dict_get(&result, "points")).len(), 5);
             }
         }
@@ -1777,16 +2323,43 @@ mod tests {
 
             let mut a1 = TermArena::new();
             let sig_t = lit(&mut a1, sig.clone());
-            let t1 = render_term(&mut a1, sig_t, 6, true, TURN_BINS, LEN_BINS, GRID, SCALE_BINS, Some(BOUNDS), "", &mut ir);
+            let t1 = render_term(
+                &mut a1,
+                sig_t,
+                6,
+                true,
+                TURN_BINS,
+                LEN_BINS,
+                GRID,
+                SCALE_BINS,
+                Some(BOUNDS),
+                "",
+                &mut ir,
+            );
             let native_result = run(&a1, t1, &g, &ir);
 
             let json_text = serde_json::to_string(&value_to_plain_json(&sig, &ir)).unwrap();
             let mut a2 = TermArena::new();
             let sig_str_t = lit(&mut a2, Value::Str(ir.intern(&json_text)));
-            let t2 = render_term(&mut a2, sig_str_t, 6, true, TURN_BINS, LEN_BINS, GRID, SCALE_BINS, Some(BOUNDS), "", &mut ir);
+            let t2 = render_term(
+                &mut a2,
+                sig_str_t,
+                6,
+                true,
+                TURN_BINS,
+                LEN_BINS,
+                GRID,
+                SCALE_BINS,
+                Some(BOUNDS),
+                "",
+                &mut ir,
+            );
             let json_result = run(&a2, t2, &g, &ir);
 
-            assert_eq!(native_result, json_result, "native-Tuple and JSON-string signature encodings must render identically");
+            assert_eq!(
+                native_result, json_result,
+                "native-Tuple and JSON-string signature encodings must render identically"
+            );
         }
 
         /// (8e) Determinism across independent JSON-Term parses. Unlike
@@ -1826,7 +2399,10 @@ mod tests {
             let g2 = TypedGraph::new();
             let r2 = run(&a2, t2, &g2, &ir2);
 
-            assert_eq!(r1, r2, "re-parsing the same StrokeRender JSON must be fully deterministic");
+            assert_eq!(
+                r1, r2,
+                "re-parsing the same StrokeRender JSON must be fully deterministic"
+            );
         }
 
         /// (8f) `field` selects one output key, exactly like
@@ -1838,24 +2414,72 @@ mod tests {
 
             let mut a = TermArena::new();
             let sig_t = lit(&mut a, build_fixture_sig(&mut ir, 2, 2, 0, 4));
-            let full_t = render_term(&mut a, sig_t, 5, true, TURN_BINS, LEN_BINS, GRID, SCALE_BINS, Some(BOUNDS), "", &mut ir);
+            let full_t = render_term(
+                &mut a,
+                sig_t,
+                5,
+                true,
+                TURN_BINS,
+                LEN_BINS,
+                GRID,
+                SCALE_BINS,
+                Some(BOUNDS),
+                "",
+                &mut ir,
+            );
             let full = run(&a, full_t, &g, &ir);
 
             let mut a2 = TermArena::new();
             let sig_t2 = lit(&mut a2, build_fixture_sig(&mut ir, 2, 2, 0, 4));
-            let points_t = render_term(&mut a2, sig_t2, 5, true, TURN_BINS, LEN_BINS, GRID, SCALE_BINS, Some(BOUNDS), "points", &mut ir);
+            let points_t = render_term(
+                &mut a2,
+                sig_t2,
+                5,
+                true,
+                TURN_BINS,
+                LEN_BINS,
+                GRID,
+                SCALE_BINS,
+                Some(BOUNDS),
+                "points",
+                &mut ir,
+            );
             let points_only = run(&a2, points_t, &g, &ir);
             assert_eq!(points_only, dict_get(&full, "points"));
 
             let mut a3 = TermArena::new();
             let sig_t3 = lit(&mut a3, build_fixture_sig(&mut ir, 2, 2, 0, 4));
-            let arc_len_t = render_term(&mut a3, sig_t3, 5, true, TURN_BINS, LEN_BINS, GRID, SCALE_BINS, Some(BOUNDS), "arc_len", &mut ir);
+            let arc_len_t = render_term(
+                &mut a3,
+                sig_t3,
+                5,
+                true,
+                TURN_BINS,
+                LEN_BINS,
+                GRID,
+                SCALE_BINS,
+                Some(BOUNDS),
+                "arc_len",
+                &mut ir,
+            );
             let arc_len_only = run(&a3, arc_len_t, &g, &ir);
             assert_eq!(arc_len_only, dict_get(&full, "arc_len"));
 
             let mut a4 = TermArena::new();
             let sig_t4 = lit(&mut a4, build_fixture_sig(&mut ir, 2, 2, 0, 4));
-            let n_strokes_t = render_term(&mut a4, sig_t4, 5, true, TURN_BINS, LEN_BINS, GRID, SCALE_BINS, Some(BOUNDS), "n_strokes", &mut ir);
+            let n_strokes_t = render_term(
+                &mut a4,
+                sig_t4,
+                5,
+                true,
+                TURN_BINS,
+                LEN_BINS,
+                GRID,
+                SCALE_BINS,
+                Some(BOUNDS),
+                "n_strokes",
+                &mut ir,
+            );
             let n_strokes_only = run(&a4, n_strokes_t, &g, &ir);
             assert_eq!(n_strokes_only, Value::Int(1));
         }

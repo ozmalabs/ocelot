@@ -57,9 +57,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use crate::l2_adaptive::HotCounter;
-use crate::l6_cybernetic_feedback::{
-    FeedbackChannel, FeedbackRecommendation,
-};
+use crate::l6_cybernetic_feedback::{FeedbackChannel, FeedbackRecommendation};
 use crate::l6_essential_variables::{EssentialVariable, ViabilityStatus};
 use crate::memory::order_n_shape_salience;
 use crate::sym::Sym;
@@ -137,8 +135,12 @@ impl EffortKnob {
         Arc::clone(&self.level)
     }
 
-    pub fn min_effort(&self) -> u64 { self.min_effort }
-    pub fn max_effort(&self) -> u64 { self.max_effort }
+    pub fn min_effort(&self) -> u64 {
+        self.min_effort
+    }
+    pub fn max_effort(&self) -> u64 {
+        self.max_effort
+    }
 
     /// Current effort level (clamped read).
     pub fn level(&self) -> u64 {
@@ -162,11 +164,8 @@ impl EffortKnob {
 
     pub fn passes_for(&self, level: u64) -> u64 {
         let span = (self.max_effort - self.min_effort).max(1) as f64;
-        let frac = (level.clamp(self.min_effort, self.max_effort) - self.min_effort)
-            as f64
-            / span;
-        let p = self.min_passes as f64
-            + frac * (self.max_passes - self.min_passes) as f64;
+        let frac = (level.clamp(self.min_effort, self.max_effort) - self.min_effort) as f64 / span;
+        let p = self.min_passes as f64 + frac * (self.max_passes - self.min_passes) as f64;
         (p.round() as u64).clamp(self.min_passes, self.max_passes)
     }
 
@@ -178,9 +177,7 @@ impl EffortKnob {
 
     pub fn salience_threshold_for(&self, level: u64) -> f64 {
         let span = (self.max_effort - self.min_effort).max(1) as f64;
-        let frac = (level.clamp(self.min_effort, self.max_effort) - self.min_effort)
-            as f64
-            / span;
+        let frac = (level.clamp(self.min_effort, self.max_effort) - self.min_effort) as f64 / span;
         // frac 0 (min effort) -> hi_threshold; frac 1 (max) -> lo_threshold.
         self.hi_threshold + frac * (self.lo_threshold - self.hi_threshold)
     }
@@ -229,8 +226,7 @@ impl EffortContext {
     /// Time left until the deadline, or `None` if no deadline / already
     /// passed.
     pub fn time_left(&self) -> Option<Duration> {
-        self.deadline
-            .map(|d| d.saturating_duration_since(self.now))
+        self.deadline.map(|d| d.saturating_duration_since(self.now))
     }
 }
 
@@ -282,19 +278,26 @@ pub struct DeadlineEffortChannel {
 }
 
 impl DeadlineEffortChannel {
-    pub fn new(name: impl Into<String>, ctx: SharedContext,
-               knob: EffortKnob, budget_fraction: f64) -> Self {
-        Self { name: name.into(), ctx, knob, budget_fraction }
+    pub fn new(
+        name: impl Into<String>,
+        ctx: SharedContext,
+        knob: EffortKnob,
+        budget_fraction: f64,
+    ) -> Self {
+        Self {
+            name: name.into(),
+            ctx,
+            knob,
+            budget_fraction,
+        }
     }
 
     /// The highest effort level whose pass count fits the budget. Pure;
     /// also used by the pipeline to pre-check feasibility.
-    pub fn fit_effort(&self, time_left: Duration,
-                      per_pass: Duration) -> u64 {
+    pub fn fit_effort(&self, time_left: Duration, per_pass: Duration) -> u64 {
         let budget = time_left.mul_f64(self.budget_fraction);
         let per = per_pass.max(Duration::from_nanos(1));
-        let max_fit_passes = (budget.as_secs_f64() / per.as_secs_f64())
-            .floor() as u64;
+        let max_fit_passes = (budget.as_secs_f64() / per.as_secs_f64()).floor() as u64;
         // Walk effort levels down from max; pick the highest whose
         // passes_for fits. Floors at min_effort (dial bottoms out).
         let mut chosen = self.knob.min_effort();
@@ -308,7 +311,9 @@ impl DeadlineEffortChannel {
 }
 
 impl FeedbackChannel for DeadlineEffortChannel {
-    fn name(&self) -> &str { &self.name }
+    fn name(&self) -> &str {
+        &self.name
+    }
     fn tick(&self) -> Option<FeedbackRecommendation> {
         let ctx = self.ctx.lock().unwrap();
         // Only real-time-single contexts carry a hard deadline floor.
@@ -336,19 +341,29 @@ pub struct ThreadModeEffortChannel {
 }
 
 impl ThreadModeEffortChannel {
-    pub fn new(name: impl Into<String>, ctx: SharedContext,
-               knob: EffortKnob, realtime_ceiling: u64) -> Self {
-        Self { name: name.into(), ctx, knob, realtime_ceiling }
+    pub fn new(
+        name: impl Into<String>,
+        ctx: SharedContext,
+        knob: EffortKnob,
+        realtime_ceiling: u64,
+    ) -> Self {
+        Self {
+            name: name.into(),
+            ctx,
+            knob,
+            realtime_ceiling,
+        }
     }
 }
 
 impl FeedbackChannel for ThreadModeEffortChannel {
-    fn name(&self) -> &str { &self.name }
+    fn name(&self) -> &str {
+        &self.name
+    }
     fn tick(&self) -> Option<FeedbackRecommendation> {
         let ctx = self.ctx.lock().unwrap();
         let lvl = match ctx.thread_mode {
-            ThreadMode::RealtimeSingle =>
-                self.realtime_ceiling.min(self.knob.max_effort()),
+            ThreadMode::RealtimeSingle => self.realtime_ceiling.min(self.knob.max_effort()),
             ThreadMode::OfflineParallel => self.knob.max_effort(),
         };
         Some(rec(lvl as f64, &self.name, 0.0))
@@ -368,19 +383,25 @@ pub struct CpuSlackEffortChannel {
 }
 
 impl CpuSlackEffortChannel {
-    pub fn new(name: impl Into<String>, knob: EffortKnob)
-        -> (Self, Arc<AtomicU64>) {
+    pub fn new(name: impl Into<String>, knob: EffortKnob) -> (Self, Arc<AtomicU64>) {
         let load = Arc::new(AtomicU64::new(0));
-        (Self { name: name.into(), knob, load_permille: Arc::clone(&load) },
-         load)
+        (
+            Self {
+                name: name.into(),
+                knob,
+                load_permille: Arc::clone(&load),
+            },
+            load,
+        )
     }
 }
 
 impl FeedbackChannel for CpuSlackEffortChannel {
-    fn name(&self) -> &str { &self.name }
+    fn name(&self) -> &str {
+        &self.name
+    }
     fn tick(&self) -> Option<FeedbackRecommendation> {
-        let load = (self.load_permille.load(Ordering::Acquire) as f64
-            / 1000.0).clamp(0.0, 1.0);
+        let load = (self.load_permille.load(Ordering::Acquire) as f64 / 1000.0).clamp(0.0, 1.0);
         let span = (self.knob.max_effort() - self.knob.min_effort()) as f64;
         let lvl = self.knob.max_effort() as f64 - load * span;
         Some(rec(lvl.round(), &self.name, load))
@@ -401,19 +422,29 @@ pub struct MemoryPressureEffortChannel {
 }
 
 impl MemoryPressureEffortChannel {
-    pub fn new(name: impl Into<String>, knob: EffortKnob,
-               var: Arc<dyn EssentialVariable>, near_ceiling: u64) -> Self {
-        Self { name: name.into(), knob, var, near_ceiling }
+    pub fn new(
+        name: impl Into<String>,
+        knob: EffortKnob,
+        var: Arc<dyn EssentialVariable>,
+        near_ceiling: u64,
+    ) -> Self {
+        Self {
+            name: name.into(),
+            knob,
+            var,
+            near_ceiling,
+        }
     }
 }
 
 impl FeedbackChannel for MemoryPressureEffortChannel {
-    fn name(&self) -> &str { &self.name }
+    fn name(&self) -> &str {
+        &self.name
+    }
     fn tick(&self) -> Option<FeedbackRecommendation> {
         let lvl = match self.var.status() {
             ViabilityStatus::Nominal => return None,
-            ViabilityStatus::NearEdge =>
-                self.near_ceiling.min(self.knob.max_effort()),
+            ViabilityStatus::NearEdge => self.near_ceiling.min(self.knob.max_effort()),
             ViabilityStatus::Breach => self.knob.min_effort(),
         };
         Some(rec(lvl as f64, &self.name, self.var.current_value()))
@@ -443,10 +474,20 @@ pub struct SurpriseEffortChannel {
 }
 
 impl SurpriseEffortChannel {
-    pub fn new(name: impl Into<String>, ctx: SharedContext,
-               knob: EffortKnob, salient_at: f64,
-               routine_floor: u64) -> Self {
-        Self { name: name.into(), ctx, knob, salient_at, routine_floor }
+    pub fn new(
+        name: impl Into<String>,
+        ctx: SharedContext,
+        knob: EffortKnob,
+        salient_at: f64,
+        routine_floor: u64,
+    ) -> Self {
+        Self {
+            name: name.into(),
+            ctx,
+            knob,
+            salient_at,
+            routine_floor,
+        }
     }
 
     pub fn effort_for_surprise(&self, surprise: f64) -> u64 {
@@ -457,7 +498,9 @@ impl SurpriseEffortChannel {
 }
 
 impl FeedbackChannel for SurpriseEffortChannel {
-    fn name(&self) -> &str { &self.name }
+    fn name(&self) -> &str {
+        &self.name
+    }
     fn tick(&self) -> Option<FeedbackRecommendation> {
         let ctx = self.ctx.lock().unwrap();
         let lvl = self.effort_for_surprise(ctx.surprise);
@@ -478,18 +521,13 @@ impl FeedbackChannel for SurpriseEffortChannel {
 /// "within the context's budget, more on the salient" rule made
 /// explicit, and it is order-independent (unlike last-writer-wins),
 /// which makes the dial's behaviour deterministic + testable.
-pub fn blend_effort(
-    knob: &EffortKnob,
-    recs: &[FeedbackRecommendation],
-) -> u64 {
+pub fn blend_effort(knob: &EffortKnob, recs: &[FeedbackRecommendation]) -> u64 {
     if recs.is_empty() {
         return knob.level();
     }
     let mut chosen = knob.max_effort();
     for r in recs {
-        if r.adjustment_name == EFFORT_ADJUSTMENT
-            && r.target_layer == EFFORT_TARGET
-        {
+        if r.adjustment_name == EFFORT_ADJUSTMENT && r.target_layer == EFFORT_TARGET {
             chosen = chosen.min(r.adjustment_scalar.round() as u64);
         }
     }
@@ -507,12 +545,7 @@ pub fn blend_effort(
 ///     ⇒ damp; a cold kind = novel ⇒ keep).
 /// Novelty multiplier in (0,1]: 1 for an unseen kind, decaying toward a
 /// floor as the kind heats up.
-pub fn surprise_of(
-    traj: &[f64],
-    hot: &HotCounter,
-    kind: Sym,
-    routine_after: u64,
-) -> f64 {
+pub fn surprise_of(traj: &[f64], hot: &HotCounter, kind: Sym, routine_after: u64) -> f64 {
     let salience = order_n_shape_salience(traj);
     let count = hot.count(kind);
     // novelty: 1.0 when unseen, -> 0.25 floor as count -> routine_after.
@@ -595,8 +628,7 @@ impl EffortPipeline {
     /// caller / context); the item is processed only if it clears the
     /// effort-dependent salience gate. If `deadline` is supplied,
     /// reports whether wall-time met it.
-    pub fn run(&self, input: &[f64], surprise: f64,
-               deadline: Option<Instant>) -> PipelineResult {
+    pub fn run(&self, input: &[f64], surprise: f64, deadline: Option<Instant>) -> PipelineResult {
         let effort = self.knob.level();
         let passes = self.knob.passes();
         let threshold = self.knob.salience_threshold();
@@ -627,14 +659,16 @@ impl EffortPipeline {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::l6_cybernetic_feedback::{
-        CyberneticFeedbackLoop, RecommendationApplier,
-    };
+    use crate::l6_cybernetic_feedback::{CyberneticFeedbackLoop, RecommendationApplier};
     use crate::l6_essential_variables::WorkingSetFit;
     use std::sync::Mutex as StdMutex;
 
-    fn ctx(mode: ThreadMode, deadline: Option<Instant>,
-           per_pass: Duration, surprise: f64) -> SharedContext {
+    fn ctx(
+        mode: ThreadMode,
+        deadline: Option<Instant>,
+        per_pass: Duration,
+        surprise: f64,
+    ) -> SharedContext {
         Arc::new(StdMutex::new(EffortContext {
             thread_mode: mode,
             deadline,
@@ -664,28 +698,35 @@ mod tests {
         let k = EffortKnob::default_dial();
         // 1ms per pass; 3ms budget at fraction 0.8 -> 2.4ms -> 2 passes.
         let per = Duration::from_millis(1);
-        let c = ctx(ThreadMode::RealtimeSingle,
-                    Some(Instant::now() + Duration::from_millis(3)),
-                    per, 0.0);
-        let ch = DeadlineEffortChannel::new("dl", Arc::clone(&c),
-                                            k.clone(), 0.8);
+        let c = ctx(
+            ThreadMode::RealtimeSingle,
+            Some(Instant::now() + Duration::from_millis(3)),
+            per,
+            0.0,
+        );
+        let ch = DeadlineEffortChannel::new("dl", Arc::clone(&c), k.clone(), 0.8);
         let r = ch.tick().expect("realtime+deadline emits");
         let lvl = r.adjustment_scalar.round() as u64;
         // passes_for(lvl) must be <= 2.
-        assert!(k.passes_for(lvl) <= 2,
-                "chosen effort {} -> {} passes must fit 2",
-                lvl, k.passes_for(lvl));
+        assert!(
+            k.passes_for(lvl) <= 2,
+            "chosen effort {} -> {} passes must fit 2",
+            lvl,
+            k.passes_for(lvl)
+        );
     }
 
     #[test]
     fn deadline_bottoms_out_when_even_min_cannot_fit() {
         let k = EffortKnob::default_dial();
         // per-pass 10ms, budget 1ms -> 0 passes fit -> floor min effort.
-        let c = ctx(ThreadMode::RealtimeSingle,
-                    Some(Instant::now() + Duration::from_millis(1)),
-                    Duration::from_millis(10), 0.0);
-        let ch = DeadlineEffortChannel::new("dl", Arc::clone(&c),
-                                            k.clone(), 0.8);
+        let c = ctx(
+            ThreadMode::RealtimeSingle,
+            Some(Instant::now() + Duration::from_millis(1)),
+            Duration::from_millis(10),
+            0.0,
+        );
+        let ch = DeadlineEffortChannel::new("dl", Arc::clone(&c), k.clone(), 0.8);
         let r = ch.tick().unwrap();
         assert_eq!(r.adjustment_scalar.round() as u64, k.min_effort());
     }
@@ -693,14 +734,16 @@ mod tests {
     #[test]
     fn offline_no_deadline_silent_lets_surprise_drive_up() {
         let k = EffortKnob::default_dial();
-        let c = ctx(ThreadMode::OfflineParallel, None,
-                    Duration::from_millis(1), 0.5);
-        let dl = DeadlineEffortChannel::new("dl", Arc::clone(&c),
-                                            k.clone(), 0.8);
+        let c = ctx(
+            ThreadMode::OfflineParallel,
+            None,
+            Duration::from_millis(1),
+            0.5,
+        );
+        let dl = DeadlineEffortChannel::new("dl", Arc::clone(&c), k.clone(), 0.8);
         // No deadline channel output offline.
         assert!(dl.tick().is_none());
-        let sp = SurpriseEffortChannel::new("sp", Arc::clone(&c),
-                                            k.clone(), 0.5, 1);
+        let sp = SurpriseEffortChannel::new("sp", Arc::clone(&c), k.clone(), 0.5, 1);
         let r = sp.tick().unwrap();
         // surprise 0.5 == salient_at -> max effort.
         assert_eq!(r.adjustment_scalar.round() as u64, k.max_effort());
@@ -709,12 +752,14 @@ mod tests {
     #[test]
     fn memory_breach_caps_to_min() {
         let k = EffortKnob::default_dial();
-        let wsf: Arc<WorkingSetFit> =
-            Arc::new(WorkingSetFit::new("wsf", 1000, 0.9));
+        let wsf: Arc<WorkingSetFit> = Arc::new(WorkingSetFit::new("wsf", 1000, 0.9));
         wsf.update(950); // breach
         let ch = MemoryPressureEffortChannel::new(
-            "mem", k.clone(),
-            Arc::clone(&wsf) as Arc<dyn EssentialVariable>, 3);
+            "mem",
+            k.clone(),
+            Arc::clone(&wsf) as Arc<dyn EssentialVariable>,
+            3,
+        );
         let r = ch.tick().unwrap();
         assert_eq!(r.adjustment_scalar.round() as u64, k.min_effort());
     }
@@ -737,27 +782,40 @@ mod tests {
     fn full_loop_turns_the_registered_knob() {
         let k = EffortKnob::default_dial();
         // Real-time, tight: 1ms/pass, 2.5ms budget -> ~2 passes -> low.
-        let c = ctx(ThreadMode::RealtimeSingle,
-                    Some(Instant::now() + Duration::from_millis(1000)),
-                    Duration::from_millis(1), 0.5);
+        let c = ctx(
+            ThreadMode::RealtimeSingle,
+            Some(Instant::now() + Duration::from_millis(1000)),
+            Duration::from_millis(1),
+            0.5,
+        );
 
         let mut floop = CyberneticFeedbackLoop::new();
         floop.add(Box::new(SurpriseEffortChannel::new(
-            "surprise", Arc::clone(&c), k.clone(), 0.5, 1)));
+            "surprise",
+            Arc::clone(&c),
+            k.clone(),
+            0.5,
+            1,
+        )));
         floop.add(Box::new(DeadlineEffortChannel::new(
-            "deadline", Arc::clone(&c), k.clone(), 0.8)));
+            "deadline",
+            Arc::clone(&c),
+            k.clone(),
+            0.8,
+        )));
 
         // Register the effort knob with the real applier.
         let mut applier = RecommendationApplier::new();
-        applier.register_knob_u64(EFFORT_ADJUSTMENT, EFFORT_TARGET,
-                                  k.handle());
+        applier.register_knob_u64(EFFORT_ADJUSTMENT, EFFORT_TARGET, k.handle());
 
         // Blend deterministically, then write via the applier's knob.
         let recs = floop.tick();
         let blended = blend_effort(&k, &recs);
         k.set(blended);
-        assert_eq!(applier.knob_value(EFFORT_ADJUSTMENT, EFFORT_TARGET),
-                   Some(blended));
+        assert_eq!(
+            applier.knob_value(EFFORT_ADJUSTMENT, EFFORT_TARGET),
+            Some(blended)
+        );
         // 1s budget @ 1ms/pass -> all 8 passes fit; surprise wants max;
         // so blended == max_effort.
         assert_eq!(blended, k.max_effort());

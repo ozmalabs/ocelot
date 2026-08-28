@@ -115,7 +115,8 @@ impl BasinReport {
 
 /// Write a float-typed edge attribute (creates or updates).
 fn set_edge_float_attr(g: &mut TypedGraph, idx: EdgeIdx, key: Sym, value: f32) {
-    g.edge_attrs_mut(idx).insert(key, Value::Float(value as f64));
+    g.edge_attrs_mut(idx)
+        .insert(key, Value::Float(value as f64));
 }
 
 /// Write a float-typed node attribute (creates or updates).
@@ -291,8 +292,7 @@ fn enumerate_couplings(
     keys: &CanKeys,
 ) -> Vec<(NodeID, NodeID, f32)> {
     let concept_set: rustc_hash::FxHashSet<NodeID> = concepts.iter().copied().collect();
-    let mut seen: rustc_hash::FxHashSet<(NodeID, NodeID)> =
-        rustc_hash::FxHashSet::default();
+    let mut seen: rustc_hash::FxHashSet<(NodeID, NodeID)> = rustc_hash::FxHashSet::default();
     let mut out: Vec<(NodeID, NodeID, f32)> = Vec::new();
     for &i in concepts {
         for &idx in g.out_edges_slice(i, Some(keys.causal_influence_edge)) {
@@ -300,7 +300,11 @@ fn enumerate_couplings(
             if !concept_set.contains(&ed.tgt) {
                 continue;
             }
-            let (a, b) = if i.0 < ed.tgt.0 { (i, ed.tgt) } else { (ed.tgt, i) };
+            let (a, b) = if i.0 < ed.tgt.0 {
+                (i, ed.tgt)
+            } else {
+                (ed.tgt, i)
+            };
             if seen.insert((a, b)) {
                 let w = edge_float_attr(g, idx, keys.weight_attr, 1.0);
                 out.push((a, b, w));
@@ -311,7 +315,11 @@ fn enumerate_couplings(
             if !concept_set.contains(&ed.src) {
                 continue;
             }
-            let (a, b) = if i.0 < ed.src.0 { (i, ed.src) } else { (ed.src, i) };
+            let (a, b) = if i.0 < ed.src.0 {
+                (i, ed.src)
+            } else {
+                (ed.src, i)
+            };
             if seen.insert((a, b)) {
                 let w = edge_float_attr(g, idx, keys.weight_attr, 1.0);
                 out.push((a, b, w));
@@ -502,8 +510,7 @@ pub fn mt_mean_field_with_h_override(
         .collect();
     // Substitute the override: external_field becomes override_h, but
     // identity_field on this node still contributes.
-    let override_identity = node_float_attr(g, override_node,
-                                             keys.identity_field_attr, 0.0);
+    let override_identity = node_float_attr(g, override_node, keys.identity_field_attr, 0.0);
     fields.insert(override_node, override_h + override_identity);
 
     let couplings = build_couplings(g, &concepts, keys);
@@ -681,12 +688,7 @@ pub fn mt_pairwise_similarity(
 ///
 /// The caller must verify the Mt's update_policy allows Hebbian — this
 /// function performs the mechanism without policy check.
-pub fn hebbian_update_J(
-    g: &mut TypedGraph,
-    mt_id: NodeID,
-    keys: &CanKeys,
-    eta: f32,
-) -> usize {
+pub fn hebbian_update_J(g: &mut TypedGraph, mt_id: NodeID, keys: &CanKeys, eta: f32) -> usize {
     let concepts = mt_concepts(g, mt_id, keys.has_concept_edge);
     if concepts.is_empty() {
         return 0;
@@ -732,12 +734,7 @@ pub fn hebbian_update_J(
 /// Applied to every causal_influence edge in Mt. Returns the number of
 /// edges decayed. With Hebbian + decay running together, persistent
 /// co-activation maintains J; transient co-activation fades.
-pub fn decay_J(
-    g: &mut TypedGraph,
-    mt_id: NodeID,
-    keys: &CanKeys,
-    decay_rate: f32,
-) -> usize {
+pub fn decay_J(g: &mut TypedGraph, mt_id: NodeID, keys: &CanKeys, decay_rate: f32) -> usize {
     let concepts = mt_concepts(g, mt_id, keys.has_concept_edge);
     if concepts.is_empty() {
         return 0;
@@ -832,12 +829,7 @@ pub fn nudge_identity(
 ///
 /// Applied to every Concept in Mt. Returns the number of fields decayed.
 /// Recency bias built in: old evidence fades unless reinforced.
-pub fn decay_h(
-    g: &mut TypedGraph,
-    mt_id: NodeID,
-    keys: &CanKeys,
-    decay_rate: f32,
-) -> usize {
+pub fn decay_h(g: &mut TypedGraph, mt_id: NodeID, keys: &CanKeys, decay_rate: f32) -> usize {
     let concepts = mt_concepts(g, mt_id, keys.has_concept_edge);
     let mut updates: Vec<(NodeID, f32)> = Vec::with_capacity(concepts.len());
     for &c in &concepts {
@@ -868,7 +860,12 @@ pub fn apply_evidence_h(
     alpha: f32,
 ) {
     let current = node_float_attr(g, concept_id, keys.external_field_attr, 0.0);
-    set_node_float_attr(g, concept_id, keys.external_field_attr, current + alpha * evidence);
+    set_node_float_attr(
+        g,
+        concept_id,
+        keys.external_field_attr,
+        current + alpha * evidence,
+    );
 }
 
 /// Relax the network: write the mean-field marginal back to each

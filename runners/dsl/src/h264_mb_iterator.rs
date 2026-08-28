@@ -43,21 +43,17 @@
 //! From the substrate's `cabac.rs` constants + H.264 standard Table 9-34.
 
 use crate::cabac::{
-    CabacCtx, CabacDecoder, CabacSliceType, CtxBlockCat,
-    mb_skip_flag_ctx_offset, mb_skip_flag_ctx_idx,
-    decode_p_mb_type, decode_i_mb_type_is_i_nxn,
-    decode_prev_intra4x4_flag, decode_rem_intra4x4,
-    decode_cbp_luma, decode_cbp_chroma,
-    decode_mb_qp_delta, decode_coded_block_flag,
-    decode_residual_block, res_block_spec,
-    decode_mvd, MVD_L0_X_CTX_OFFSET, MVD_L0_Y_CTX_OFFSET,
+    decode_cbp_chroma, decode_cbp_luma, decode_coded_block_flag, decode_i_mb_type_is_i_nxn,
+    decode_mb_qp_delta, decode_mvd, decode_p_mb_type, decode_prev_intra4x4_flag,
+    decode_rem_intra4x4, decode_residual_block, mb_skip_flag_ctx_idx, mb_skip_flag_ctx_offset,
+    res_block_spec, CabacCtx, CabacDecoder, CabacSliceType, CtxBlockCat, MVD_L0_X_CTX_OFFSET,
+    MVD_L0_Y_CTX_OFFSET,
 };
 #[cfg(test)]
 use crate::cabac::{
-    CabacEncoder, encode_i_mb_type_i_nxn, encode_prev_intra4x4_flag,
-    encode_rem_intra4x4, encode_cbp_luma, encode_cbp_chroma,
-    encode_mb_qp_delta, encode_coded_block_flag, encode_residual_block,
-    encode_p_mb_type, encode_mvd,
+    encode_cbp_chroma, encode_cbp_luma, encode_coded_block_flag, encode_i_mb_type_i_nxn,
+    encode_mb_qp_delta, encode_mvd, encode_p_mb_type, encode_prev_intra4x4_flag,
+    encode_rem_intra4x4, encode_residual_block, CabacEncoder,
 };
 use crate::h265_transcode_driver::H264MbDescriptor;
 
@@ -113,21 +109,32 @@ impl H264MbIterator {
     /// neighbours. For multi-row slices the caller should use
     /// `with_pic_width` to pass the real picture width.
     pub fn new(
-        rbsp: Vec<u8>, bit_pos: u64,
-        slice_type: CabacSliceType, slice_qp: i32,
+        rbsp: Vec<u8>,
+        bit_pos: u64,
+        slice_type: CabacSliceType,
+        slice_qp: i32,
         mb_count: usize,
     ) -> Self {
-        Self::with_pic_width(rbsp, bit_pos, slice_type, slice_qp,
-                              mb_count, mb_count as u32)
+        Self::with_pic_width(
+            rbsp,
+            bit_pos,
+            slice_type,
+            slice_qp,
+            mb_count,
+            mb_count as u32,
+        )
     }
 
     /// Construct with explicit picture-width-in-MBs from the SPS. The
     /// iterator uses this to maintain the MV-prediction grid + apply
     /// neighbour-aware MV prediction.
     pub fn with_pic_width(
-        rbsp: Vec<u8>, bit_pos: u64,
-        slice_type: CabacSliceType, slice_qp: i32,
-        mb_count: usize, pic_width_in_mbs: u32,
+        rbsp: Vec<u8>,
+        bit_pos: u64,
+        slice_type: CabacSliceType,
+        slice_qp: i32,
+        mb_count: usize,
+        pic_width_in_mbs: u32,
     ) -> Self {
         // v1: all contexts equiprobable. Production transcoder seeds
         // via the standard's per-(initType, slice_qp) tables.
@@ -135,7 +142,9 @@ impl H264MbIterator {
         Self {
             decoder: CabacDecoder::new(rbsp, bit_pos),
             contexts: vec![CabacCtx::default(); N_CONTEXTS],
-            slice_type, slice_qp, mb_count,
+            slice_type,
+            slice_qp,
+            mb_count,
             mbs_decoded: 0,
             pic_width_in_mbs,
             prev_mb_qp_delta_nonzero: false,
@@ -164,10 +173,9 @@ impl H264MbIterator {
             if let Some(ctx_idx) = mb_skip_flag_ctx_idx(
                 self.slice_type,
                 Some(self.left_mb_skip as u8),
-                Some(self.top_mb_skip as u8))
-            {
-                let bin = self.decoder.decode_bin(
-                    &mut self.contexts[ctx_idx]);
+                Some(self.top_mb_skip as u8),
+            ) {
+                let bin = self.decoder.decode_bin(&mut self.contexts[ctx_idx]);
                 self.left_mb_skip = bin == 1;
                 bin == 1
             } else {
@@ -179,9 +187,11 @@ impl H264MbIterator {
 
         if is_skip {
             return H264MbDescriptor {
-                mb_type: 31,  // Skip
+                mb_type: 31, // Skip
                 intra_mode: None,
-                mv_x: 0, mv_y: 0, ref_pic_id: 0,
+                mv_x: 0,
+                mv_y: 0,
+                ref_pic_id: 0,
                 residual_luma_4x4: [[0; 16]; 16],
                 has_nonzero_residual: false,
             };
@@ -219,19 +229,19 @@ impl H264MbIterator {
         let row_width = self.mv_grid.len();
 
         let (mut mv_x, mut mv_y) = (0i16, 0i16);
-        if matches!(self.slice_type, CabacSliceType::P)
-            && mb_type == 0  // P_L0_16x16
+        if matches!(self.slice_type, CabacSliceType::P) && mb_type == 0
+        // P_L0_16x16
         {
-            let (mvd_x, _) = decode_mvd(
-                &mut self.decoder, &mut self.contexts,
-                MVD_L0_X_CTX_OFFSET);
-            let (mvd_y, _) = decode_mvd(
-                &mut self.decoder, &mut self.contexts,
-                MVD_L0_Y_CTX_OFFSET);
+            let (mvd_x, _) = decode_mvd(&mut self.decoder, &mut self.contexts, MVD_L0_X_CTX_OFFSET);
+            let (mvd_y, _) = decode_mvd(&mut self.decoder, &mut self.contexts, MVD_L0_Y_CTX_OFFSET);
             // Neighbour predictor. Within row y, mv_grid[0..mb_x] is
             // the CURRENT row (left-neighbour material); mv_grid[mb_x..]
             // is the PREVIOUS row (top/top-right neighbour material).
-            let a = if mb_x > 0 { self.mv_grid[mb_x - 1] } else { (0, 0) };
+            let a = if mb_x > 0 {
+                self.mv_grid[mb_x - 1]
+            } else {
+                (0, 0)
+            };
             let b = if mb_y > 0 { self.mv_grid[mb_x] } else { (0, 0) };
             let c = if mb_y > 0 && mb_x + 1 < row_width {
                 self.mv_grid[mb_x + 1]
@@ -247,12 +257,20 @@ impl H264MbIterator {
             //   that one. Otherwise: median3.
             let n_left = if mb_x > 0 { 1 } else { 0 };
             let n_top = if mb_y > 0 { 1 } else { 0 };
-            let n_top_right = if mb_y > 0 && mb_x + 1 < row_width { 1 } else { 0 };
+            let n_top_right = if mb_y > 0 && mb_x + 1 < row_width {
+                1
+            } else {
+                0
+            };
             let n_avail = n_left + n_top + n_top_right;
             let (pred_x, pred_y) = if n_avail == 1 {
-                if n_left == 1 { a }
-                else if n_top == 1 { b }
-                else { c }
+                if n_left == 1 {
+                    a
+                } else if n_top == 1 {
+                    b
+                } else {
+                    c
+                }
             } else {
                 (median3(a.0, b.0, c.0), median3(a.1, b.1, c.1))
             };
@@ -270,17 +288,17 @@ impl H264MbIterator {
         }
 
         // 3. Coded block pattern. v1 passes 0 for neighbour CBPs.
-        let (cbp_luma, _) = decode_cbp_luma(
-            &mut self.decoder, &mut self.contexts, 0, 0);
-        let (_cbp_chroma, _) = decode_cbp_chroma(
-            &mut self.decoder, &mut self.contexts, 0, 0);
+        let (cbp_luma, _) = decode_cbp_luma(&mut self.decoder, &mut self.contexts, 0, 0);
+        let (_cbp_chroma, _) = decode_cbp_chroma(&mut self.decoder, &mut self.contexts, 0, 0);
 
         // 4. mb_qp_delta — only when at least one block is coded.
         let qp_delta_nonzero;
         if cbp_luma != 0 {
             let (delta, _) = decode_mb_qp_delta(
-                &mut self.decoder, &mut self.contexts,
-                self.prev_mb_qp_delta_nonzero);
+                &mut self.decoder,
+                &mut self.contexts,
+                self.prev_mb_qp_delta_nonzero,
+            );
             qp_delta_nonzero = delta != 0;
         } else {
             qp_delta_nonzero = false;
@@ -302,16 +320,17 @@ impl H264MbIterator {
                     continue;
                 }
                 let (cbf, _) = decode_coded_block_flag(
-                    &mut self.decoder, &mut self.contexts,
+                    &mut self.decoder,
+                    &mut self.contexts,
                     CtxBlockCat::Luma4x4,
-                    None, None,
+                    None,
+                    None,
                 );
                 if !cbf {
                     continue;
                 }
                 let spec = res_block_spec(CtxBlockCat::Luma4x4);
-                let (coefs, _) = decode_residual_block(
-                    &mut self.decoder, &mut self.contexts, spec);
+                let (coefs, _) = decode_residual_block(&mut self.decoder, &mut self.contexts, spec);
                 for (i, c) in coefs.iter().take(16).enumerate() {
                     residual_luma_4x4[block_idx][i] = *c;
                 }
@@ -321,7 +340,9 @@ impl H264MbIterator {
         H264MbDescriptor {
             mb_type,
             intra_mode,
-            mv_x, mv_y, ref_pic_id: 0,
+            mv_x,
+            mv_y,
+            ref_pic_id: 0,
             residual_luma_4x4,
             has_nonzero_residual: cbp_luma != 0,
         }
@@ -331,20 +352,20 @@ impl H264MbIterator {
         // For I slices: decode whether mb_type is I_NxN (the path the
         // v1 iterator handles). Other I types fall to a placeholder.
         let (is_i_nxn, _) = decode_i_mb_type_is_i_nxn(
-            &mut self.decoder, &mut self.contexts,
-            self.left_is_i_nxn, self.top_is_i_nxn,
+            &mut self.decoder,
+            &mut self.contexts,
+            self.left_is_i_nxn,
+            self.top_is_i_nxn,
         );
         self.left_is_i_nxn = Some(is_i_nxn);
         if is_i_nxn {
             // Decode the first 4×4 block's intra mode.
-            let (prev_flag, _) = decode_prev_intra4x4_flag(
-                &mut self.decoder, &mut self.contexts);
+            let (prev_flag, _) = decode_prev_intra4x4_flag(&mut self.decoder, &mut self.contexts);
             let intra_mode = if prev_flag {
                 // Predicted (MPM). v1: assume MPM = mode 0.
                 0u8
             } else {
-                let (rem, _) = decode_rem_intra4x4(
-                    &mut self.decoder, &mut self.contexts);
+                let (rem, _) = decode_rem_intra4x4(&mut self.decoder, &mut self.contexts);
                 // rem_intra4x4 is 0..7; map to mode 1..8 by skipping
                 // MPM slot.
                 rem.min(7) + 1
@@ -356,8 +377,7 @@ impl H264MbIterator {
     }
 
     fn decode_p_slice_mb(&mut self) -> (u8, Option<u8>) {
-        let (mb_type, _bins) = decode_p_mb_type(
-            &mut self.decoder, &mut self.contexts);
+        let (mb_type, _bins) = decode_p_mb_type(&mut self.decoder, &mut self.contexts);
         (mb_type, None)
     }
 }
@@ -369,13 +389,14 @@ fn median3(a: i16, b: i16, c: i16) -> i16 {
     let min = a.min(b).min(c);
     // Use i32 to avoid overflow when (a + b + c - max - min) approaches
     // i16 limits. Result always within range since it equals the median.
-    ((a as i32) + (b as i32) + (c as i32)
-        - (max as i32) - (min as i32)) as i16
+    ((a as i32) + (b as i32) + (c as i32) - (max as i32) - (min as i32)) as i16
 }
 
 impl Iterator for H264MbIterator {
     type Item = H264MbDescriptor;
-    fn next(&mut self) -> Option<Self::Item> { self.next_mb() }
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next_mb()
+    }
 }
 
 #[cfg(test)]
@@ -400,9 +421,11 @@ mod tests {
         let mut contexts = vec![CabacCtx::default(); N_CONTEXTS];
         for (i, &mode) in modes.iter().enumerate() {
             encode_i_mb_type_i_nxn(
-                &mut enc, &mut contexts,
+                &mut enc,
+                &mut contexts,
                 if i == 0 { None } else { Some(true) },
-                None);
+                None,
+            );
             encode_prev_intra4x4_flag(&mut enc, &mut contexts, false);
             let rem = if mode == 0 { 0 } else { mode - 1 };
             encode_rem_intra4x4(&mut enc, &mut contexts, rem);
@@ -414,18 +437,21 @@ mod tests {
                     let spec = res_block_spec(CtxBlockCat::Luma4x4);
                     for block_idx in 0..16 {
                         let region = block_idx / 4;
-                        if (cbp_luma_each >> region) & 1 == 0 { continue; }
+                        if (cbp_luma_each >> region) & 1 == 0 {
+                            continue;
+                        }
                         let coefs = &per_block[block_idx];
-                        let any_nonzero =
-                            coefs.iter().any(|c| *c != 0);
+                        let any_nonzero = coefs.iter().any(|c| *c != 0);
                         encode_coded_block_flag(
-                            &mut enc, &mut contexts,
+                            &mut enc,
+                            &mut contexts,
                             CtxBlockCat::Luma4x4,
-                            any_nonzero, None, None,
+                            any_nonzero,
+                            None,
+                            None,
                         );
                         if any_nonzero {
-                            encode_residual_block(
-                                &mut enc, &mut contexts, spec, coefs);
+                            encode_residual_block(&mut enc, &mut contexts, spec, coefs);
                         }
                     }
                 }
@@ -440,8 +466,7 @@ mod tests {
         let modes = [3u8, 5, 1, 7];
         let rbsp = encode_i_nxn_mbs(&modes, 0, None);
 
-        let mut iter = H264MbIterator::new(
-            rbsp, 0, CabacSliceType::I, 26, modes.len());
+        let mut iter = H264MbIterator::new(rbsp, 0, CabacSliceType::I, 26, modes.len());
         let mut got = Vec::new();
         while let Some(mb) = iter.next_mb() {
             got.push(mb);
@@ -449,27 +474,26 @@ mod tests {
         assert_eq!(got.len(), modes.len());
         for (i, mb) in got.iter().enumerate() {
             assert_eq!(mb.mb_type, 0, "MB {} should be I_NxN", i);
-            assert!(mb.intra_mode.is_some(),
-                     "MB {} should have intra mode", i);
+            assert!(mb.intra_mode.is_some(), "MB {} should have intra mode", i);
             assert!(!mb.has_nonzero_residual);
         }
     }
 
     #[test]
     fn cbp_drives_has_nonzero_residual() {
-        let rbsp = encode_i_nxn_mbs(&[0], 0xF, None);  // all 4 blocks coded
-        let mut iter = H264MbIterator::new(
-            rbsp, 0, CabacSliceType::I, 26, 1);
+        let rbsp = encode_i_nxn_mbs(&[0], 0xF, None); // all 4 blocks coded
+        let mut iter = H264MbIterator::new(rbsp, 0, CabacSliceType::I, 26, 1);
         let mb = iter.next_mb().expect("one mb");
-        assert!(mb.has_nonzero_residual,
-                "cbp_luma=0xF should set has_nonzero_residual");
+        assert!(
+            mb.has_nonzero_residual,
+            "cbp_luma=0xF should set has_nonzero_residual"
+        );
     }
 
     #[test]
     fn cbp_zero_yields_zero_residual_flag() {
         let rbsp = encode_i_nxn_mbs(&[0], 0, None);
-        let mut iter = H264MbIterator::new(
-            rbsp, 0, CabacSliceType::I, 26, 1);
+        let mut iter = H264MbIterator::new(rbsp, 0, CabacSliceType::I, 26, 1);
         let mb = iter.next_mb().expect("one mb");
         assert!(!mb.has_nonzero_residual);
     }
@@ -477,8 +501,7 @@ mod tests {
     #[test]
     fn iterator_respects_mb_count() {
         let rbsp = encode_i_nxn_mbs(&[0; 3], 0, None);
-        let mut iter = H264MbIterator::new(
-            rbsp, 0, CabacSliceType::I, 26, 2);  // ask for only 2
+        let mut iter = H264MbIterator::new(rbsp, 0, CabacSliceType::I, 26, 2); // ask for only 2
         let count = (&mut iter).take(10).count();
         assert_eq!(count, 2);
         assert!(iter.next_mb().is_none());
@@ -487,8 +510,7 @@ mod tests {
     #[test]
     fn implements_iterator_trait() {
         let rbsp = encode_i_nxn_mbs(&[0], 0, None);
-        let iter = H264MbIterator::new(
-            rbsp, 0, CabacSliceType::I, 26, 1);
+        let iter = H264MbIterator::new(rbsp, 0, CabacSliceType::I, 26, 1);
         let mbs: Vec<H264MbDescriptor> = iter.collect();
         assert_eq!(mbs.len(), 1);
     }
@@ -505,14 +527,16 @@ mod tests {
             per_block[block_idx][0] = (block_idx as i32) + 1;
         }
         let rbsp = encode_i_nxn_mbs(&[0], 0xF, Some(&per_block));
-        let mut iter = H264MbIterator::new(
-            rbsp, 0, CabacSliceType::I, 26, 1);
+        let mut iter = H264MbIterator::new(rbsp, 0, CabacSliceType::I, 26, 1);
         let mb = iter.next_mb().expect("one mb");
         assert!(mb.has_nonzero_residual);
         for block_idx in 0..16 {
-            assert_eq!(mb.residual_luma_4x4[block_idx][0],
-                       (block_idx as i32) + 1,
-                       "block {} DC coef round-trip", block_idx);
+            assert_eq!(
+                mb.residual_luma_4x4[block_idx][0],
+                (block_idx as i32) + 1,
+                "block {} DC coef round-trip",
+                block_idx
+            );
         }
     }
 
@@ -526,8 +550,7 @@ mod tests {
         per_block[10][0] = 3;
         per_block[15][0] = -1;
         let rbsp = encode_i_nxn_mbs(&[0], 0xF, Some(&per_block));
-        let mut iter = H264MbIterator::new(
-            rbsp, 0, CabacSliceType::I, 26, 1);
+        let mut iter = H264MbIterator::new(rbsp, 0, CabacSliceType::I, 26, 1);
         let mb = iter.next_mb().expect("one mb");
         assert_eq!(mb.residual_luma_4x4[0][0], 7);
         assert_eq!(mb.residual_luma_4x4[5][0], -4);
@@ -535,8 +558,11 @@ mod tests {
         assert_eq!(mb.residual_luma_4x4[15][0], -1);
         // Untouched blocks stay zero.
         for block_idx in [1usize, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14] {
-            assert_eq!(mb.residual_luma_4x4[block_idx], [0; 16],
-                       "block {} should be all-zero", block_idx);
+            assert_eq!(
+                mb.residual_luma_4x4[block_idx], [0; 16],
+                "block {} should be all-zero",
+                block_idx
+            );
         }
     }
 
@@ -548,20 +574,22 @@ mod tests {
         for block_idx in 0..16 {
             per_block[block_idx][0] = (block_idx as i32) + 1;
         }
-        let rbsp = encode_i_nxn_mbs(&[0], 0x1, Some(&per_block));  // bit 0 only
-        let mut iter = H264MbIterator::new(
-            rbsp, 0, CabacSliceType::I, 26, 1);
+        let rbsp = encode_i_nxn_mbs(&[0], 0x1, Some(&per_block)); // bit 0 only
+        let mut iter = H264MbIterator::new(rbsp, 0, CabacSliceType::I, 26, 1);
         let mb = iter.next_mb().expect("one mb");
         // Blocks 0..3 (region 0) decoded.
         for block_idx in 0..4 {
-            assert_eq!(mb.residual_luma_4x4[block_idx][0],
-                       (block_idx as i32) + 1);
+            assert_eq!(mb.residual_luma_4x4[block_idx][0], (block_idx as i32) + 1);
         }
         // Blocks 4..15 (regions 1..3) stay zero.
         for block_idx in 4..16 {
-            assert_eq!(mb.residual_luma_4x4[block_idx], [0; 16],
-                       "block {} (region {}) should stay zero",
-                       block_idx, block_idx / 4);
+            assert_eq!(
+                mb.residual_luma_4x4[block_idx],
+                [0; 16],
+                "block {} (region {}) should stay zero",
+                block_idx,
+                block_idx / 4
+            );
         }
     }
 
@@ -572,8 +600,7 @@ mod tests {
     fn cbp_set_with_zero_coefs_yields_zero_residual() {
         let per_block = [[0i32; 16]; 16];
         let rbsp = encode_i_nxn_mbs(&[0], 0xF, Some(&per_block));
-        let mut iter = H264MbIterator::new(
-            rbsp, 0, CabacSliceType::I, 26, 1);
+        let mut iter = H264MbIterator::new(rbsp, 0, CabacSliceType::I, 26, 1);
         let mb = iter.next_mb().expect("one mb");
         for block_idx in 0..16 {
             assert_eq!(mb.residual_luma_4x4[block_idx], [0; 16]);
@@ -589,17 +616,14 @@ mod tests {
         for &(mvd_x, mvd_y) in mvs.iter() {
             // mb_skip_flag = 0 (not skipped). ctx_idx for first MB
             // with neighbours absent: ctx_offset + 0.
-            let skip_ctx_idx = mb_skip_flag_ctx_idx(
-                CabacSliceType::P, Some(0), Some(0),
-            ).expect("P slice has mb_skip");
+            let skip_ctx_idx = mb_skip_flag_ctx_idx(CabacSliceType::P, Some(0), Some(0))
+                .expect("P slice has mb_skip");
             enc.encode_bin(&mut contexts[skip_ctx_idx], 0);
             // mb_type = 0 (P_L0_16x16)
             encode_p_mb_type(&mut enc, &mut contexts, 0);
             // mvd_x, mvd_y
-            encode_mvd(&mut enc, &mut contexts,
-                       MVD_L0_X_CTX_OFFSET, mvd_x as i32);
-            encode_mvd(&mut enc, &mut contexts,
-                       MVD_L0_Y_CTX_OFFSET, mvd_y as i32);
+            encode_mvd(&mut enc, &mut contexts, MVD_L0_X_CTX_OFFSET, mvd_x as i32);
+            encode_mvd(&mut enc, &mut contexts, MVD_L0_Y_CTX_OFFSET, mvd_y as i32);
             // cbp_luma = 0, cbp_chroma = 0 (no residual)
             encode_cbp_luma(&mut enc, &mut contexts, 0, 0, 0);
             encode_cbp_chroma(&mut enc, &mut contexts, 0, 0, 0);
@@ -621,16 +645,27 @@ mod tests {
         let mvds = [(3i16, -2i16), (0, 0), (-5, 7), (42, -42)];
         let rbsp = encode_p_l0_16x16_mbs(&mvds);
         let mut iter = H264MbIterator::with_pic_width(
-            rbsp, 0, CabacSliceType::P, 26, mvds.len(),
-            mvds.len() as u32);
+            rbsp,
+            0,
+            CabacSliceType::P,
+            26,
+            mvds.len(),
+            mvds.len() as u32,
+        );
         let got: Vec<_> = (&mut iter).collect();
         assert_eq!(got.len(), mvds.len());
         let expected_abs = [(3i16, -2i16), (3, -2), (-2, 5), (40, -37)];
         for (i, (mb, exp)) in got.iter().zip(expected_abs.iter()).enumerate() {
             assert_eq!(mb.mb_type, 0, "MB {} should be P_L0_16x16", i);
-            assert_eq!((mb.mv_x, mb.mv_y), *exp,
-                       "MB {} abs MV: got ({}, {}), want {:?}",
-                       i, mb.mv_x, mb.mv_y, exp);
+            assert_eq!(
+                (mb.mv_x, mb.mv_y),
+                *exp,
+                "MB {} abs MV: got ({}, {}), want {:?}",
+                i,
+                mb.mv_x,
+                mb.mv_y,
+                exp
+            );
         }
     }
 
@@ -651,11 +686,13 @@ mod tests {
     fn first_mb_predictor_is_zero() {
         let mvs = [(5i16, -3i16)];
         let rbsp = encode_p_l0_16x16_mbs(&mvs);
-        let mut iter = H264MbIterator::with_pic_width(
-            rbsp, 0, CabacSliceType::P, 26, 1, 4);
+        let mut iter = H264MbIterator::with_pic_width(rbsp, 0, CabacSliceType::P, 26, 1, 4);
         let mb = iter.next_mb().expect("one mb");
-        assert_eq!((mb.mv_x, mb.mv_y), (5, -3),
-                   "first MB MV should equal the raw MVD");
+        assert_eq!(
+            (mb.mv_x, mb.mv_y),
+            (5, -3),
+            "first MB MV should equal the raw MVD"
+        );
     }
 
     /// Single-row slice: every MB after the first uses the previous
@@ -669,8 +706,7 @@ mod tests {
     fn left_neighbour_predictor_chains_correctly() {
         let mvds = [(10i16, 0i16), (3, 0), (-2, 0)];
         let rbsp = encode_p_l0_16x16_mbs(&mvds);
-        let iter = H264MbIterator::with_pic_width(
-            rbsp, 0, CabacSliceType::P, 26, mvds.len(), 4);
+        let iter = H264MbIterator::with_pic_width(rbsp, 0, CabacSliceType::P, 26, mvds.len(), 4);
         let got: Vec<_> = iter.collect();
         assert_eq!(got[0].mv_x, 10);
         assert_eq!(got[1].mv_x, 13, "MB 1 abs MV should be MVD + left A");
@@ -690,15 +726,20 @@ mod tests {
     fn top_neighbour_predictor_for_second_row() {
         let mvds = [(5i16, 0i16), (0, 0), (0, 7), (1, 1)];
         let rbsp = encode_p_l0_16x16_mbs(&mvds);
-        let iter = H264MbIterator::with_pic_width(
-            rbsp, 0, CabacSliceType::P, 26, mvds.len(), 2);
+        let iter = H264MbIterator::with_pic_width(rbsp, 0, CabacSliceType::P, 26, mvds.len(), 2);
         let got: Vec<_> = iter.collect();
         assert_eq!((got[0].mv_x, got[0].mv_y), (5, 0));
         assert_eq!((got[1].mv_x, got[1].mv_y), (5, 0));
-        assert_eq!((got[2].mv_x, got[2].mv_y), (5, 7),
-                   "MB at (0, 1) should use top neighbour (5, 0) as predictor");
-        assert_eq!((got[3].mv_x, got[3].mv_y), (6, 1),
-                   "MB at (1, 1) should use median(A, B, C)");
+        assert_eq!(
+            (got[2].mv_x, got[2].mv_y),
+            (5, 7),
+            "MB at (0, 1) should use top neighbour (5, 0) as predictor"
+        );
+        assert_eq!(
+            (got[3].mv_x, got[3].mv_y),
+            (6, 1),
+            "MB at (1, 1) should use median(A, B, C)"
+        );
     }
 
     /// Median-of-3 predictor for an interior MB. Set up a slice
@@ -712,27 +753,36 @@ mod tests {
     ///                  MVD (0, 0); abs (20, 0)
     #[test]
     fn interior_mb_uses_median_of_three() {
-        let mvds = [(10i16, 0), (10, 0), (10, 0),   // row 0: (10,0), (20,0), (30,0)
-                     (1, 0), (0, 0), (0, 0)];        // row 1
-        // Compute expected row-0 absolutes: each accumulates by left.
-        // MB 0: pred (0,0); abs (10, 0)
-        // MB 1: pred A=(10,0); MVD (10,0); abs (20, 0)
-        // MB 2: pred A=(20,0); MVD (10,0); abs (30, 0)
+        let mvds = [
+            (10i16, 0),
+            (10, 0),
+            (10, 0), // row 0: (10,0), (20,0), (30,0)
+            (1, 0),
+            (0, 0),
+            (0, 0),
+        ]; // row 1
+           // Compute expected row-0 absolutes: each accumulates by left.
+           // MB 0: pred (0,0); abs (10, 0)
+           // MB 1: pred A=(10,0); MVD (10,0); abs (20, 0)
+           // MB 2: pred A=(20,0); MVD (10,0); abs (30, 0)
         let rbsp = encode_p_l0_16x16_mbs(&mvds);
-        let iter = H264MbIterator::with_pic_width(
-            rbsp, 0, CabacSliceType::P, 26, mvds.len(), 3);
+        let iter = H264MbIterator::with_pic_width(rbsp, 0, CabacSliceType::P, 26, mvds.len(), 3);
         let got: Vec<_> = iter.collect();
         // Verify the row-0 setup.
         assert_eq!(got[0].mv_x, 10);
         assert_eq!(got[1].mv_x, 20);
         assert_eq!(got[2].mv_x, 30);
         // MB at (0, 1): pred = B = top neighbour (10, 0); MVD (1, 0).
-        assert_eq!(got[3].mv_x, 11,
-                   "MB (0,1) should use B as predictor (10) + MVD (1)");
+        assert_eq!(
+            got[3].mv_x, 11,
+            "MB (0,1) should use B as predictor (10) + MVD (1)"
+        );
         // MB at (1, 1): pred = median(A=(11,0), B=(20,0), C=(30,0)) = (20, 0).
         // MVD (0, 0) → abs = (20, 0).
-        assert_eq!(got[4].mv_x, 20,
-                   "MB (1,1) should use median(11, 20, 30) = 20 as predictor");
+        assert_eq!(
+            got[4].mv_x, 20,
+            "MB (1,1) should use median(11, 20, 30) = 20 as predictor"
+        );
     }
 
     /// Zero-MV P MBs: common in static-scene content.
@@ -740,8 +790,7 @@ mod tests {
     fn p_mb_zero_motion_round_trips() {
         let mvs = [(0i16, 0i16); 5];
         let rbsp = encode_p_l0_16x16_mbs(&mvs);
-        let iter = H264MbIterator::new(
-            rbsp, 0, CabacSliceType::P, 26, mvs.len());
+        let iter = H264MbIterator::new(rbsp, 0, CabacSliceType::P, 26, mvs.len());
         let got: Vec<_> = iter.collect();
         assert_eq!(got.len(), mvs.len());
         for mb in &got {
@@ -759,15 +808,17 @@ mod tests {
             per_block[block_idx][0] = 1;
         }
         let rbsp = encode_i_nxn_mbs(&[0, 1, 2], 0xF, Some(&per_block));
-        let iter = H264MbIterator::new(
-            rbsp, 0, CabacSliceType::I, 26, 3);
+        let iter = H264MbIterator::new(rbsp, 0, CabacSliceType::I, 26, 3);
         let mbs: Vec<_> = iter.collect();
         assert_eq!(mbs.len(), 3);
         for mb in &mbs {
             assert!(mb.has_nonzero_residual);
             for block_idx in 0..16 {
-                assert_eq!(mb.residual_luma_4x4[block_idx][0], 1,
-                           "block {} DC should be 1 per MB", block_idx);
+                assert_eq!(
+                    mb.residual_luma_4x4[block_idx][0], 1,
+                    "block {} DC should be 1 per MB",
+                    block_idx
+                );
             }
         }
     }

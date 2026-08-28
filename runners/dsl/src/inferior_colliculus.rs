@@ -138,11 +138,7 @@ fn rectified_lpf(x: &[f32], cutoff_hz: f32, fs: f32) -> Vec<f32> {
 /// envelope-like signals — one event per energy burst, not one per
 /// local oscillation. `refractory_samples` enforces a hard minimum
 /// gap between consecutive events on top of the hysteresis logic.
-fn pick_peaks(
-    signal: &[f32],
-    threshold: f32,
-    refractory_samples: usize,
-) -> Vec<(usize, f32)> {
+fn pick_peaks(signal: &[f32], threshold: f32, refractory_samples: usize) -> Vec<(usize, f32)> {
     if signal.len() < 3 {
         return Vec::new();
     }
@@ -167,9 +163,7 @@ fn pick_peaks(
             }
             if v < release {
                 in_region = false;
-                if (peak_idx as isize - last_emit)
-                    >= refractory_samples as isize
-                {
+                if (peak_idx as isize - last_emit) >= refractory_samples as isize {
                     out.push((peak_idx, peak_val));
                     last_emit = peak_idx as isize;
                 }
@@ -299,8 +293,7 @@ pub fn process_audio(
     let mut summary = IcSummary::default();
     // Per-channel: (band_index, rate_hz, channel_nid, peaks)
     let mut all_peaks: Vec<(usize, f32, NodeID, Vec<NodeID>)> = Vec::new();
-    let refractory_samples =
-        ((config.peak_refractory_ms * 0.001) * fs).max(1.0) as usize;
+    let refractory_samples = ((config.peak_refractory_ms * 0.001) * fs).max(1.0) as usize;
 
     for (band_i, env) in envelopes.iter().enumerate() {
         for &rate_hz in mod_rates_hz {
@@ -318,11 +311,7 @@ pub fn process_audio(
             let energy = rectified_lpf(&bp, (rate_hz * 0.25).max(1.0), fs);
             let db = floor_dbs(&energy, fs);
 
-            let peak_idxs = pick_peaks(
-                &db,
-                config.peak_threshold_db,
-                refractory_samples,
-            );
+            let peak_idxs = pick_peaks(&db, config.peak_threshold_db, refractory_samples);
 
             // Channel summary.
             let peak_val = energy.iter().cloned().fold(0.0f32, f32::max);
@@ -332,20 +321,44 @@ pub fn process_audio(
                 energy.iter().sum::<f32>() / energy.len() as f32
             };
             let mut attrs = FxHashMap::default();
-            set_attr(&mut attrs, substrate, "band_index", Value::Int(band_i as i64));
-            set_attr(&mut attrs, substrate, "centre_hz",
-                       Value::Float(band_centres[band_i] as f64));
-            set_attr(&mut attrs, substrate, "modulation_rate_hz",
-                       Value::Float(rate_hz as f64));
-            set_attr(&mut attrs, substrate, "sample_rate",
-                       Value::Int(sample_rate as i64));
+            set_attr(
+                &mut attrs,
+                substrate,
+                "band_index",
+                Value::Int(band_i as i64),
+            );
+            set_attr(
+                &mut attrs,
+                substrate,
+                "centre_hz",
+                Value::Float(band_centres[band_i] as f64),
+            );
+            set_attr(
+                &mut attrs,
+                substrate,
+                "modulation_rate_hz",
+                Value::Float(rate_hz as f64),
+            );
+            set_attr(
+                &mut attrs,
+                substrate,
+                "sample_rate",
+                Value::Int(sample_rate as i64),
+            );
             set_attr(&mut attrs, substrate, "peak", Value::Float(peak_val as f64));
             set_attr(&mut attrs, substrate, "mean", Value::Float(mean_val as f64));
-            set_attr(&mut attrs, substrate, "n_peaks",
-                       Value::Int(peak_idxs.len() as i64));
+            set_attr(
+                &mut attrs,
+                substrate,
+                "n_peaks",
+                Value::Int(peak_idxs.len() as i64),
+            );
             let ch_nid = substrate.add_node(modch_t, attrs);
             let _ = substrate.graph.insert_edge(
-                audio_stream_nid, has_modch_e, ch_nid, FxHashMap::default(),
+                audio_stream_nid,
+                has_modch_e,
+                ch_nid,
+                FxHashMap::default(),
             );
             summary.channels += 1;
 
@@ -355,20 +368,37 @@ pub fn process_audio(
                 let t_s = *sample as f64 / sample_rate as f64;
                 let mut ea = FxHashMap::default();
                 set_attr(&mut ea, substrate, "time_s", Value::Float(t_s));
-                set_attr(&mut ea, substrate, "band_index",
-                           Value::Int(band_i as i64));
-                set_attr(&mut ea, substrate, "centre_hz",
-                           Value::Float(band_centres[band_i] as f64));
-                set_attr(&mut ea, substrate, "modulation_rate_hz",
-                           Value::Float(rate_hz as f64));
-                set_attr(&mut ea, substrate, "magnitude_db",
-                           Value::Float(*db_val as f64));
+                set_attr(&mut ea, substrate, "band_index", Value::Int(band_i as i64));
+                set_attr(
+                    &mut ea,
+                    substrate,
+                    "centre_hz",
+                    Value::Float(band_centres[band_i] as f64),
+                );
+                set_attr(
+                    &mut ea,
+                    substrate,
+                    "modulation_rate_hz",
+                    Value::Float(rate_hz as f64),
+                );
+                set_attr(
+                    &mut ea,
+                    substrate,
+                    "magnitude_db",
+                    Value::Float(*db_val as f64),
+                );
                 let ev_nid = substrate.add_node(modev_t, ea);
                 let _ = substrate.graph.insert_edge(
-                    audio_stream_nid, has_modev_e, ev_nid, FxHashMap::default(),
+                    audio_stream_nid,
+                    has_modev_e,
+                    ev_nid,
+                    FxHashMap::default(),
                 );
                 let _ = substrate.graph.insert_edge(
-                    ev_nid, from_channel_e, ch_nid, FxHashMap::default(),
+                    ev_nid,
+                    from_channel_e,
+                    ch_nid,
+                    FxHashMap::default(),
                 );
                 event_nids.push(ev_nid);
                 summary.modulation_events += 1;
@@ -395,8 +425,7 @@ pub fn process_audio(
     // count).
 
     let syll_threshold_db = config.peak_threshold_db;
-    let refractory_samples_syll =
-        ((config.peak_refractory_ms * 0.001) * fs).max(1.0) as usize;
+    let refractory_samples_syll = ((config.peak_refractory_ms * 0.001) * fs).max(1.0) as usize;
 
     // Per-band: does this band have any syllable-rate channel with
     // peak energy above a sanity floor? Compute once before the
@@ -438,9 +467,18 @@ pub fn process_audio(
             let mut ea = FxHashMap::default();
             set_attr(&mut ea, substrate, "time_s", Value::Float(t_s));
             set_attr(&mut ea, substrate, "band_index", Value::Int(band_i as i64));
-            set_attr(&mut ea, substrate, "centre_hz",
-                       Value::Float(band_centres[band_i] as f64));
-            set_attr(&mut ea, substrate, "magnitude_db", Value::Float(db_val as f64));
+            set_attr(
+                &mut ea,
+                substrate,
+                "centre_hz",
+                Value::Float(band_centres[band_i] as f64),
+            );
+            set_attr(
+                &mut ea,
+                substrate,
+                "magnitude_db",
+                Value::Float(db_val as f64),
+            );
             let origin_sym = substrate.interner.intern("ic_envelope_peak");
             set_attr(&mut ea, substrate, "origin", Value::Str(origin_sym));
             let ev_nid = substrate.add_node(onset_ev_t, ea);
@@ -460,16 +498,15 @@ pub fn process_audio(
     if !syllable_events.is_empty() {
         let window_s = (config.syllable_window_ms * 0.001) as f64;
         let n_bands = band_centres.len();
-        let min_bands =
-            ((config.syllable_coincidence * n_bands as f32).round().max(2.0)) as usize;
+        let min_bands = ((config.syllable_coincidence * n_bands as f32)
+            .round()
+            .max(2.0)) as usize;
 
         let mut i = 0usize;
         while i < syllable_events.len() {
             let t0 = syllable_events[i].0;
             let mut j = i + 1;
-            while j < syllable_events.len()
-                && syllable_events[j].0 - t0 <= window_s
-            {
+            while j < syllable_events.len() && syllable_events[j].0 - t0 <= window_s {
                 j += 1;
             }
             let mut bands_seen: SmallVec<[usize; 16]> = SmallVec::new();
@@ -480,19 +517,28 @@ pub fn process_audio(
                 }
             }
             if bands_seen.len() >= min_bands {
-                let mean_t: f64 = (i..j)
-                    .map(|k| syllable_events[k].0)
-                    .sum::<f64>()
-                    / (j - i) as f64;
+                let mean_t: f64 =
+                    (i..j).map(|k| syllable_events[k].0).sum::<f64>() / (j - i) as f64;
                 let mut sa = FxHashMap::default();
                 set_attr(&mut sa, substrate, "time_s", Value::Float(mean_t));
-                set_attr(&mut sa, substrate, "n_bands",
-                           Value::Int(bands_seen.len() as i64));
-                set_attr(&mut sa, substrate, "n_member_events",
-                           Value::Int((j - i) as i64));
+                set_attr(
+                    &mut sa,
+                    substrate,
+                    "n_bands",
+                    Value::Int(bands_seen.len() as i64),
+                );
+                set_attr(
+                    &mut sa,
+                    substrate,
+                    "n_member_events",
+                    Value::Int((j - i) as i64),
+                );
                 let syll_nid = substrate.add_node(syll_t, sa);
                 let _ = substrate.graph.insert_edge(
-                    audio_stream_nid, has_syll_e, syll_nid, FxHashMap::default(),
+                    audio_stream_nid,
+                    has_syll_e,
+                    syll_nid,
+                    FxHashMap::default(),
                 );
                 for k in i..j {
                     let _ = substrate.graph.insert_edge(
@@ -511,12 +557,7 @@ pub fn process_audio(
     summary
 }
 
-fn set_attr(
-    attrs: &mut FxHashMap<Sym, Value>,
-    substrate: &mut Substrate,
-    key: &str,
-    v: Value,
-) {
+fn set_attr(attrs: &mut FxHashMap<Sym, Value>, substrate: &mut Substrate, key: &str, v: Value) {
     let k = substrate.interner.intern(key);
     attrs.insert(k, v);
 }

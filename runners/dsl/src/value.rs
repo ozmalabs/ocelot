@@ -18,8 +18,8 @@
 //! total order (`cmp_value`) so two equal frozensets hash to the same
 //! bucket regardless of construction order.
 
-use crate::sym::Sym;
 use crate::graph::NodeID;
+use crate::sym::Sym;
 use smallvec::SmallVec;
 use std::cmp::Ordering;
 use std::sync::Arc;
@@ -283,7 +283,9 @@ impl PartialEq for Value {
             (Value::Bool(a), Value::Int(b)) | (Value::Int(b), Value::Bool(a)) => {
                 (if *a { 1 } else { 0 }) == *b
             }
-            (Value::Int(a), Value::Float(b)) | (Value::Float(b), Value::Int(a)) => (*a as f64) == *b,
+            (Value::Int(a), Value::Float(b)) | (Value::Float(b), Value::Int(a)) => {
+                (*a as f64) == *b
+            }
             (Value::Rational(n1, d1), Value::Rational(n2, d2)) => n1 == n2 && d1 == d2,
             // Cross-frame boundary: a Rational compared against a Float
             // renders to f64 (the map), exactly like Int<->Float above.
@@ -360,12 +362,12 @@ pub fn cmp_value(a: &Value, b: &Value) -> Ordering {
         (Value::Rational(n, d), Value::Int(y)) => (*n as i128).cmp(&(*y as i128 * *d as i128)),
         (Value::Int(x), Value::Rational(n, d)) => (*x as i128 * *d as i128).cmp(&(*n as i128)),
         // Rational vs Float: the cross-frame boundary — render to f64.
-        (Value::Rational(n, d), Value::Float(y)) => {
-            (*n as f64 / *d as f64).partial_cmp(y).unwrap_or(Ordering::Equal)
-        }
-        (Value::Float(x), Value::Rational(n, d)) => {
-            x.partial_cmp(&(*n as f64 / *d as f64)).unwrap_or(Ordering::Equal)
-        }
+        (Value::Rational(n, d), Value::Float(y)) => (*n as f64 / *d as f64)
+            .partial_cmp(y)
+            .unwrap_or(Ordering::Equal),
+        (Value::Float(x), Value::Rational(n, d)) => x
+            .partial_cmp(&(*n as f64 / *d as f64))
+            .unwrap_or(Ordering::Equal),
         (Value::Str(x), Value::Str(y)) => x.0.cmp(&y.0),
         (Value::Node(x), Value::Node(y)) => x.cmp(y),
         (Value::Bool(x), Value::Bool(y)) => x.cmp(y),
@@ -390,17 +392,15 @@ pub fn cmp_value(a: &Value, b: &Value) -> Ordering {
         (Value::Set(xa), Value::Set(ya))
         | (Value::FrozenSet(xa), Value::FrozenSet(ya))
         | (Value::Set(xa), Value::FrozenSet(ya))
-        | (Value::FrozenSet(xa), Value::Set(ya)) => {
-            xa.len().cmp(&ya.len()).then_with(|| {
-                for (x, y) in xa.iter().zip(ya.iter()) {
-                    let c = cmp_value(x, y);
-                    if c != Ordering::Equal {
-                        return c;
-                    }
+        | (Value::FrozenSet(xa), Value::Set(ya)) => xa.len().cmp(&ya.len()).then_with(|| {
+            for (x, y) in xa.iter().zip(ya.iter()) {
+                let c = cmp_value(x, y);
+                if c != Ordering::Equal {
+                    return c;
                 }
-                Ordering::Equal
-            })
-        }
+            }
+            Ordering::Equal
+        }),
         // LOAD-BEARING, and it was a real, measured data-loss bug before it
         // existed (RULE_SIGNATURE_TO_RUST_RESULTS.md §5.1 named it;
         // CMP_VALUE_SURFACE_FIX_RESULTS.md fixed it). Without this arm two
@@ -425,17 +425,15 @@ pub fn cmp_value(a: &Value, b: &Value) -> Ordering {
         (Value::Surface(ka, ba), Value::Surface(kb, bb)) => {
             ka.cmp(kb).then_with(|| ba.as_ref().cmp(bb.as_ref()))
         }
-        (Value::Dict(xa), Value::Dict(ya)) => {
-            xa.len().cmp(&ya.len()).then_with(|| {
-                for ((kx, vx), (ky, vy)) in xa.iter().zip(ya.iter()) {
-                    let c = cmp_value(kx, ky).then_with(|| cmp_value(vx, vy));
-                    if c != Ordering::Equal {
-                        return c;
-                    }
+        (Value::Dict(xa), Value::Dict(ya)) => xa.len().cmp(&ya.len()).then_with(|| {
+            for ((kx, vx), (ky, vy)) in xa.iter().zip(ya.iter()) {
+                let c = cmp_value(kx, ky).then_with(|| cmp_value(vx, vy));
+                if c != Ordering::Equal {
+                    return c;
                 }
-                Ordering::Equal
-            })
-        }
+            }
+            Ordering::Equal
+        }),
         _ => tag(a).cmp(&tag(b)),
     }
 }
@@ -486,12 +484,12 @@ pub fn cmp_value_lex(a: &Value, b: &Value, interner: &crate::sym::Interner) -> O
         }
         (Value::Rational(n, d), Value::Int(y)) => (*n as i128).cmp(&(*y as i128 * *d as i128)),
         (Value::Int(x), Value::Rational(n, d)) => (*x as i128 * *d as i128).cmp(&(*n as i128)),
-        (Value::Rational(n, d), Value::Float(y)) => {
-            (*n as f64 / *d as f64).partial_cmp(y).unwrap_or(Ordering::Equal)
-        }
-        (Value::Float(x), Value::Rational(n, d)) => {
-            x.partial_cmp(&(*n as f64 / *d as f64)).unwrap_or(Ordering::Equal)
-        }
+        (Value::Rational(n, d), Value::Float(y)) => (*n as f64 / *d as f64)
+            .partial_cmp(y)
+            .unwrap_or(Ordering::Equal),
+        (Value::Float(x), Value::Rational(n, d)) => x
+            .partial_cmp(&(*n as f64 / *d as f64))
+            .unwrap_or(Ordering::Equal),
         // THE FIX: resolve both Syms through the interner and compare the
         // underlying bytes, instead of `cmp_value`'s `x.0.cmp(&y.0)` (Sym-id
         // / boot-order compare).
@@ -512,32 +510,28 @@ pub fn cmp_value_lex(a: &Value, b: &Value, interner: &crate::sym::Interner) -> O
         (Value::Set(xa), Value::Set(ya))
         | (Value::FrozenSet(xa), Value::FrozenSet(ya))
         | (Value::Set(xa), Value::FrozenSet(ya))
-        | (Value::FrozenSet(xa), Value::Set(ya)) => {
-            xa.len().cmp(&ya.len()).then_with(|| {
-                for (x, y) in xa.iter().zip(ya.iter()) {
-                    let c = cmp_value_lex(x, y, interner);
-                    if c != Ordering::Equal {
-                        return c;
-                    }
+        | (Value::FrozenSet(xa), Value::Set(ya)) => xa.len().cmp(&ya.len()).then_with(|| {
+            for (x, y) in xa.iter().zip(ya.iter()) {
+                let c = cmp_value_lex(x, y, interner);
+                if c != Ordering::Equal {
+                    return c;
                 }
-                Ordering::Equal
-            })
-        }
+            }
+            Ordering::Equal
+        }),
         (Value::Surface(ka, ba), Value::Surface(kb, bb)) => {
             ka.cmp(kb).then_with(|| ba.as_ref().cmp(bb.as_ref()))
         }
-        (Value::Dict(xa), Value::Dict(ya)) => {
-            xa.len().cmp(&ya.len()).then_with(|| {
-                for ((kx, vx), (ky, vy)) in xa.iter().zip(ya.iter()) {
-                    let c = cmp_value_lex(kx, ky, interner)
-                        .then_with(|| cmp_value_lex(vx, vy, interner));
-                    if c != Ordering::Equal {
-                        return c;
-                    }
+        (Value::Dict(xa), Value::Dict(ya)) => xa.len().cmp(&ya.len()).then_with(|| {
+            for ((kx, vx), (ky, vy)) in xa.iter().zip(ya.iter()) {
+                let c =
+                    cmp_value_lex(kx, ky, interner).then_with(|| cmp_value_lex(vx, vy, interner));
+                if c != Ordering::Equal {
+                    return c;
                 }
-                Ordering::Equal
-            })
-        }
+            }
+            Ordering::Equal
+        }),
         _ => tag(a).cmp(&tag(b)),
     }
 }
@@ -741,7 +735,11 @@ pub fn rational_pow_int((n, d): (i64, i64), exp: i64) -> Option<Value> {
     if exp.unsigned_abs() > 63 {
         return None;
     }
-    let (base_n, base_d): (i128, i128) = if exp < 0 { (d as i128, n as i128) } else { (n as i128, d as i128) };
+    let (base_n, base_d): (i128, i128) = if exp < 0 {
+        (d as i128, n as i128)
+    } else {
+        (n as i128, d as i128)
+    };
     let e = exp.unsigned_abs() as u32;
     let mut num: i128 = 1;
     let mut den: i128 = 1;
@@ -764,7 +762,12 @@ mod tests {
 
     #[test]
     fn set_dedupes_and_sorts() {
-        let s = Value::make_set(vec![Value::Int(3), Value::Int(1), Value::Int(2), Value::Int(1)]);
+        let s = Value::make_set(vec![
+            Value::Int(3),
+            Value::Int(1),
+            Value::Int(2),
+            Value::Int(1),
+        ]);
         let Value::Set(items) = &s else {
             panic!("expected Set")
         };
@@ -916,9 +919,18 @@ mod tests {
     #[test]
     fn rational_cmp_is_exact_cross_multiplication() {
         use std::cmp::Ordering;
-        assert_eq!(cmp_value(&Value::Rational(1, 3), &Value::Rational(1, 2)), Ordering::Less);
-        assert_eq!(cmp_value(&Value::Rational(2, 1), &Value::Int(2)), Ordering::Equal);
-        assert_eq!(cmp_value(&Value::Int(1), &Value::Rational(1, 2)), Ordering::Greater);
+        assert_eq!(
+            cmp_value(&Value::Rational(1, 3), &Value::Rational(1, 2)),
+            Ordering::Less
+        );
+        assert_eq!(
+            cmp_value(&Value::Rational(2, 1), &Value::Int(2)),
+            Ordering::Equal
+        );
+        assert_eq!(
+            cmp_value(&Value::Int(1), &Value::Rational(1, 2)),
+            Ordering::Greater
+        );
     }
 
     // ---------------------------------------------------------------
@@ -965,25 +977,48 @@ mod tests {
     fn surface_ord_agrees_with_eq_in_both_directions() {
         use std::cmp::Ordering;
         // THE CONTRACT the missing arm broke: Ord and Eq must agree.
-        let vals = [text(""), text("a"), text("a0"), text("a1"), text("b"),
-                    bytes(b""), bytes(b"a"), bytes(b"a0")];
+        let vals = [
+            text(""),
+            text("a"),
+            text("a0"),
+            text("a1"),
+            text("b"),
+            bytes(b""),
+            bytes(b"a"),
+            bytes(b"a0"),
+        ];
         for a in vals.iter() {
             for b in vals.iter() {
                 assert_eq!(
                     cmp_value(a, b) == Ordering::Equal,
                     a == b,
-                    "Ord/Eq disagree for {:?} vs {:?}", a, b);
+                    "Ord/Eq disagree for {:?} vs {:?}",
+                    a,
+                    b
+                );
             }
         }
     }
 
     #[test]
     fn surface_ord_is_antisymmetric_and_total() {
-        let vals = [text(""), text("a"), text("a0"), text("ab"), bytes(b"a"), bytes(b"b")];
+        let vals = [
+            text(""),
+            text("a"),
+            text("a0"),
+            text("ab"),
+            bytes(b"a"),
+            bytes(b"b"),
+        ];
         for a in vals.iter() {
             for b in vals.iter() {
-                assert_eq!(cmp_value(a, b), cmp_value(b, a).reverse(),
-                           "antisymmetry broken for {:?} vs {:?}", a, b);
+                assert_eq!(
+                    cmp_value(a, b),
+                    cmp_value(b, a).reverse(),
+                    "antisymmetry broken for {:?} vs {:?}",
+                    a,
+                    b
+                );
             }
         }
     }
@@ -1018,8 +1053,13 @@ mod tests {
         // by payload bytes, so it is genuinely lexicographic. `(Str, Str)`
         // next door still compares interner symbol IDs — separate defect,
         // deliberately untouched here.
-        let mut v = vec![text("where"), text("source"), text("var_name"),
-                         text("a_zzz"), text("b")];
+        let mut v = vec![
+            text("where"),
+            text("source"),
+            text("var_name"),
+            text("a_zzz"),
+            text("b"),
+        ];
         v.sort_by(cmp_value);
         let rendered: Vec<String> = v
             .iter()
@@ -1029,8 +1069,11 @@ mod tests {
             })
             .collect();
         assert_eq!(rendered, vec!["a_zzz", "b", "source", "var_name", "where"]);
-        assert_eq!(cmp_value(&text("a"), &text("ab")), Ordering::Less,
-                   "prefix sorts before its extension, as CPython does");
+        assert_eq!(
+            cmp_value(&text("a"), &text("ab")),
+            Ordering::Less,
+            "prefix sorts before its extension, as CPython does"
+        );
     }
 
     // --- cmp_value_lex: the (Str,Str) follow-on
@@ -1059,8 +1102,11 @@ mod tests {
         // so cmp_value must say zebra < apple (wrong alphabetically).
         let zebra = Value::Str(syms[0]);
         let apple = Value::Str(syms[3]);
-        assert_eq!(cmp_value(&zebra, &apple), Ordering::Less,
-                   "cmp_value must remain Sym-id (boot-history) order, untouched by this rung");
+        assert_eq!(
+            cmp_value(&zebra, &apple),
+            Ordering::Less,
+            "cmp_value must remain Sym-id (boot-history) order, untouched by this rung"
+        );
     }
 
     #[test]
@@ -1070,25 +1116,40 @@ mod tests {
         let (interner, syms) = interner_with_reverse_boot_order();
         let zebra = Value::Str(syms[0]);
         let apple = Value::Str(syms[3]);
-        assert_eq!(cmp_value(&zebra, &apple), Ordering::Less, "boot order: zebra before apple");
-        assert_eq!(cmp_value_lex(&zebra, &apple, &interner), Ordering::Greater,
-                   "lex order: apple before zebra — cmp_value_lex inverts cmp_value's verdict here");
+        assert_eq!(
+            cmp_value(&zebra, &apple),
+            Ordering::Less,
+            "boot order: zebra before apple"
+        );
+        assert_eq!(
+            cmp_value_lex(&zebra, &apple, &interner),
+            Ordering::Greater,
+            "lex order: apple before zebra — cmp_value_lex inverts cmp_value's verdict here"
+        );
         // A full sort by each comparator, on the SAME four strings, gives
         // two different orders — that IS the defect and the fix, live.
         let mut boot_order: Vec<Value> = syms.iter().map(|&s| Value::Str(s)).collect();
         boot_order.sort_by(cmp_value);
         let render = |vs: &[Value]| -> Vec<&str> {
-            vs.iter().map(|v| match v {
-                Value::Str(s) => interner.resolve(*s),
-                _ => unreachable!(),
-            }).collect()
+            vs.iter()
+                .map(|v| match v {
+                    Value::Str(s) => interner.resolve(*s),
+                    _ => unreachable!(),
+                })
+                .collect()
         };
-        assert_eq!(render(&boot_order), vec!["zebra", "mango", "banana", "apple"],
-                   "cmp_value: unchanged boot-history order");
+        assert_eq!(
+            render(&boot_order),
+            vec!["zebra", "mango", "banana", "apple"],
+            "cmp_value: unchanged boot-history order"
+        );
         let mut lex_order: Vec<Value> = syms.iter().map(|&s| Value::Str(s)).collect();
         lex_order.sort_by(|a, b| cmp_value_lex(a, b, &interner));
-        assert_eq!(render(&lex_order), vec!["apple", "banana", "mango", "zebra"],
-                   "cmp_value_lex: real alphabetical order");
+        assert_eq!(
+            render(&lex_order),
+            vec!["apple", "banana", "mango", "zebra"],
+            "cmp_value_lex: real alphabetical order"
+        );
     }
 
     #[test]
@@ -1096,12 +1157,25 @@ mod tests {
         let (interner, syms) = interner_with_reverse_boot_order();
         let zebra = Value::Str(syms[0]);
         let apple = Value::Str(syms[3]);
-        let tup_a = Value::Tuple(Arc::new(SmallVec::from_vec(vec![Value::Int(1), zebra.clone()])));
-        let tup_b = Value::Tuple(Arc::new(SmallVec::from_vec(vec![Value::Int(1), apple.clone()])));
+        let tup_a = Value::Tuple(Arc::new(SmallVec::from_vec(vec![
+            Value::Int(1),
+            zebra.clone(),
+        ])));
+        let tup_b = Value::Tuple(Arc::new(SmallVec::from_vec(vec![
+            Value::Int(1),
+            apple.clone(),
+        ])));
         // Same length, same first slot -> decided by the nested string.
-        assert_eq!(cmp_value(&tup_a, &tup_b), Ordering::Less, "cmp_value: boot order nested");
-        assert_eq!(cmp_value_lex(&tup_a, &tup_b, &interner), Ordering::Greater,
-                   "cmp_value_lex: lex order nested — 'apple' < 'zebra'");
+        assert_eq!(
+            cmp_value(&tup_a, &tup_b),
+            Ordering::Less,
+            "cmp_value: boot order nested"
+        );
+        assert_eq!(
+            cmp_value_lex(&tup_a, &tup_b, &interner),
+            Ordering::Greater,
+            "cmp_value_lex: lex order nested — 'apple' < 'zebra'"
+        );
     }
 
     #[test]
@@ -1117,8 +1191,11 @@ mod tests {
             (Value::Rational(1, 2), Value::Rational(2, 3)),
         ];
         for (a, b) in pairs {
-            assert_eq!(cmp_value(&a, &b), cmp_value_lex(&a, &b, &interner),
-                       "cmp_value_lex must match cmp_value outside (Str,Str): {a:?} vs {b:?}");
+            assert_eq!(
+                cmp_value(&a, &b),
+                cmp_value_lex(&a, &b, &interner),
+                "cmp_value_lex must match cmp_value outside (Str,Str): {a:?} vs {b:?}"
+            );
         }
     }
 

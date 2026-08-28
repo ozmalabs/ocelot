@@ -83,7 +83,9 @@ impl Grammar {
     /// helper, the Python wrapper) that wires up the default
     /// `Lit(1.0)` weight Term without forcing callers to mint it.
     pub fn default_weight(arena: &mut TermArena) -> TermIdx {
-        arena.add(TermNode::Lit { value: Value::Float(1.0) })
+        arena.add(TermNode::Lit {
+            value: Value::Float(1.0),
+        })
     }
 
     /// Lookup productions for an exact `(src_type, edge_type, tgt_type)`

@@ -94,7 +94,11 @@ pub enum BoundaryViolation {
     /// Operation not in registry.
     UnknownOperation(String),
     /// Cross-subsystem call without a registered bridge.
-    MissingBridge { from: MetaShape, to: MetaShape, op: String },
+    MissingBridge {
+        from: MetaShape,
+        to: MetaShape,
+        op: String,
+    },
 }
 
 /// Registry of operations + their owning subsystems + named bridges
@@ -119,10 +123,11 @@ impl SubsystemRegistry {
     }
 
     /// Register a named bridge from `from` to `to`.
-    pub fn register_bridge(&mut self, name: &str,
-                            from: MetaShape, to: MetaShape) {
+    pub fn register_bridge(&mut self, name: &str, from: MetaShape, to: MetaShape) {
         self.bridges.insert(NamedBridge {
-            name: name.to_string(), from, to,
+            name: name.to_string(),
+            from,
+            to,
         });
     }
 
@@ -137,19 +142,23 @@ impl SubsystemRegistry {
     /// Verify a call from `caller_op` to `callee_op`. Returns Ok if
     /// (a) same subsystem (in-subsystem calls are always allowed),
     /// or (b) cross-subsystem AND a bridge exists.
-    pub fn enforce(&self, caller_op: &str, callee_op: &str)
-        -> Result<(), BoundaryViolation>
-    {
-        let caller_sub = self.subsystem_of(caller_op)
-            .ok_or_else(|| BoundaryViolation::UnknownOperation(
-                caller_op.to_string()))?;
-        let callee_sub = self.subsystem_of(callee_op)
-            .ok_or_else(|| BoundaryViolation::UnknownOperation(
-                callee_op.to_string()))?;
-        if caller_sub == callee_sub { return Ok(()); }
-        if self.has_bridge(caller_sub, callee_sub) { return Ok(()); }
+    pub fn enforce(&self, caller_op: &str, callee_op: &str) -> Result<(), BoundaryViolation> {
+        let caller_sub = self
+            .subsystem_of(caller_op)
+            .ok_or_else(|| BoundaryViolation::UnknownOperation(caller_op.to_string()))?;
+        let callee_sub = self
+            .subsystem_of(callee_op)
+            .ok_or_else(|| BoundaryViolation::UnknownOperation(callee_op.to_string()))?;
+        if caller_sub == callee_sub {
+            return Ok(());
+        }
+        if self.has_bridge(caller_sub, callee_sub) {
+            return Ok(());
+        }
         Err(BoundaryViolation::MissingBridge {
-            from: caller_sub, to: callee_sub, op: callee_op.to_string(),
+            from: caller_sub,
+            to: callee_sub,
+            op: callee_op.to_string(),
         })
     }
 
@@ -173,9 +182,9 @@ mod tests {
         // From commit 9bf8370 (analogical thinking output).
         assert_eq!(
             MetaShape::HierarchicalInvarianceBuildup.analogy_weight(),
-            3078);
-        assert_eq!(
-            MetaShape::FeedbackControl.analogy_weight(), 81);
+            3078
+        );
+        assert_eq!(MetaShape::FeedbackControl.analogy_weight(), 81);
     }
 
     #[test]
@@ -212,9 +221,11 @@ mod tests {
         let mut r = SubsystemRegistry::new();
         r.register("dispatch_submit", MetaShape::SelectiveGating);
         r.register("drive_step", MetaShape::FeedbackControl);
-        r.register_bridge("gain_scheduling",
+        r.register_bridge(
+            "gain_scheduling",
             MetaShape::SelectiveGating,
-            MetaShape::FeedbackControl);
+            MetaShape::FeedbackControl,
+        );
         assert!(r.enforce("dispatch_submit", "drive_step").is_ok());
     }
 
@@ -222,8 +233,10 @@ mod tests {
     fn unknown_operation_violates() {
         let r = SubsystemRegistry::new();
         let result = r.enforce("undeclared", "also_undeclared");
-        assert!(matches!(result,
-            Err(BoundaryViolation::UnknownOperation(_))));
+        assert!(matches!(
+            result,
+            Err(BoundaryViolation::UnknownOperation(_))
+        ));
     }
 
     #[test]
@@ -249,8 +262,10 @@ mod tests {
         let mut r = SubsystemRegistry::new();
         // 5 ops in primary, 1 in secondary, etc.
         for i in 0..5 {
-            r.register(&format!("hier_{}", i),
-                MetaShape::HierarchicalInvarianceBuildup);
+            r.register(
+                &format!("hier_{}", i),
+                MetaShape::HierarchicalInvarianceBuildup,
+            );
         }
         r.register("sel_1", MetaShape::SelectiveGating);
         r.register("fb_1", MetaShape::FeedbackControl);
@@ -258,8 +273,11 @@ mod tests {
         let primary = counts[&MetaShape::HierarchicalInvarianceBuildup];
         let feedback = counts[&MetaShape::FeedbackControl];
         // Primary should dominate.
-        assert!(primary > feedback * 2,
-                "primary should dominate; primary={}, feedback={}",
-                primary, feedback);
+        assert!(
+            primary > feedback * 2,
+            "primary should dominate; primary={}, feedback={}",
+            primary,
+            feedback
+        );
     }
 }

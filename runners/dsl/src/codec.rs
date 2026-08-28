@@ -31,26 +31,24 @@
 use crate::jsonio;
 use crate::substrate::Substrate;
 
-const FIELD_GRAMMAR_RULES_JSON: &str =
-    include_str!("codec_field_grammar_rules.json");
+const FIELD_GRAMMAR_RULES_JSON: &str = include_str!("codec_field_grammar_rules.json");
 
 /// Install the universal field-grammar Rule set on `substrate`.
 /// Returns the number of rules added. Safe to call multiple times
 /// (each call adds an independent copy) — but typical use is once
 /// per Substrate, before seeding any per-codec FieldSpec chains.
-pub fn install_field_grammar_rules(substrate: &mut Substrate)
-    -> Result<usize, String>
-{
-    let json: serde_json::Value = serde_json::from_str(
-        FIELD_GRAMMAR_RULES_JSON,
-    )
-    .map_err(|e| format!("bad embedded codec rules JSON: {}", e))?;
-    let arr = json.as_array()
+pub fn install_field_grammar_rules(substrate: &mut Substrate) -> Result<usize, String> {
+    let json: serde_json::Value = serde_json::from_str(FIELD_GRAMMAR_RULES_JSON)
+        .map_err(|e| format!("bad embedded codec rules JSON: {}", e))?;
+    let arr = json
+        .as_array()
         .ok_or_else(|| "rules JSON must be an array".to_string())?;
     let initial = substrate.rules.len();
     for (i, rule_json) in arr.iter().enumerate() {
         let rule = crate::py::parse_rule_json_pub(
-            rule_json, &mut substrate.terms, &mut substrate.interner,
+            rule_json,
+            &mut substrate.terms,
+            &mut substrate.interner,
         )
         .map_err(|e| format!("rule {}: {}", i, e))?;
         // Route through `add_rule` — the SOLE path that makes a newly-installed

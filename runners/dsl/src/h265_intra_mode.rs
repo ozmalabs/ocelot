@@ -45,13 +45,13 @@ pub type H265IntraMode = u8;
 const H264_TO_H265_INTRA_LUT: [H265IntraMode; 9] = [
     26, // Vertical
     10, // Horizontal
-     1, // DC
+    1,  // DC
     22, // Diagonal_Down_Left
     14, // Diagonal_Down_Right
     28, // Vertical_Right
-     8, // Horizontal_Down
+    8,  // Horizontal_Down
     24, // Vertical_Left
-     6, // Horizontal_Up
+    6,  // Horizontal_Up
 ];
 
 /// Remap an H.264 intra-prediction mode to its closest H.265 angular
@@ -70,8 +70,7 @@ pub fn h264_to_h265_intra(mode: H264IntraMode) -> Option<H265IntraMode> {
 
 /// Batch remap of an H.264 mode slice. Caller-allocated output of
 /// equal length. Returns the count actually remapped (skips invalid).
-pub fn h264_to_h265_intra_batch(modes: &[H264IntraMode],
-                                  out: &mut [H265IntraMode]) -> usize {
+pub fn h264_to_h265_intra_batch(modes: &[H264IntraMode], out: &mut [H265IntraMode]) -> usize {
     assert_eq!(modes.len(), out.len());
     let mut n = 0;
     for (i, &m) in modes.iter().enumerate() {
@@ -128,9 +127,11 @@ mod tests {
         let mut seen = [false; 35];
         for m in 0..9u8 {
             let h265 = h264_to_h265_intra(m).unwrap() as usize;
-            assert!(!seen[h265],
-                    "H.264 mode {} maps to already-used H.265 mode {}",
-                    m, h265);
+            assert!(
+                !seen[h265],
+                "H.264 mode {} maps to already-used H.265 mode {}",
+                m, h265
+            );
             seen[h265] = true;
         }
     }
@@ -149,7 +150,7 @@ mod tests {
         let input = [0u8, 9, 2, 255];
         let mut output = [0u8; 4];
         let n = h264_to_h265_intra_batch(&input, &mut output);
-        assert_eq!(n, 2);  // 0 and 2 are valid
+        assert_eq!(n, 2); // 0 and 2 are valid
         assert_eq!(output[0], 26);
         assert_eq!(output[2], 1);
     }

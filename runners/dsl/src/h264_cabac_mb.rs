@@ -44,14 +44,11 @@
 //!      Branch-lean MB dispatch: one match on mb_type per MB.
 
 use crate::cabac::{
-    CabacCtx, CabacDecoder, CtxBlockCat, MbNeighbourState,
-    decode_cbp_chroma, decode_cbp_luma, decode_coded_block_flag,
-    decode_intra_chroma_pred_mode, decode_mb_qp_delta,
-    decode_prev_intra4x4_flag, decode_rem_intra4x4,
-    decode_residual_block, i_mb_type_cond_term_pub,
-    I_MB_TYPE_CTX_OFFSET, RES_BLOCK_SPEC_CHROMA_AC,
-    RES_BLOCK_SPEC_CHROMA_DC, RES_BLOCK_SPEC_INTRA16X16_AC,
-    RES_BLOCK_SPEC_INTRA16X16_DC, RES_BLOCK_SPEC_LUMA_4X4,
+    decode_cbp_chroma, decode_cbp_luma, decode_coded_block_flag, decode_intra_chroma_pred_mode,
+    decode_mb_qp_delta, decode_prev_intra4x4_flag, decode_rem_intra4x4, decode_residual_block,
+    i_mb_type_cond_term_pub, CabacCtx, CabacDecoder, CtxBlockCat, MbNeighbourState,
+    I_MB_TYPE_CTX_OFFSET, RES_BLOCK_SPEC_CHROMA_AC, RES_BLOCK_SPEC_CHROMA_DC,
+    RES_BLOCK_SPEC_INTRA16X16_AC, RES_BLOCK_SPEC_INTRA16X16_DC, RES_BLOCK_SPEC_LUMA_4X4,
 };
 use crate::h264_dct::{dequantize_intra_4x4, idct_add_4x4_h264};
 
@@ -66,7 +63,11 @@ pub enum IMbType {
     /// baseline/main I-slices we target). 16 luma 4x4 sub-block modes.
     INxN,
     /// I_16x16 with (pred_mode 0..3, cbp_chroma 0..2, cbp_luma 0 or 15).
-    I16x16 { pred_mode: u8, cbp_chroma: u8, cbp_luma_nonzero: bool },
+    I16x16 {
+        pred_mode: u8,
+        cbp_chroma: u8,
+        cbp_luma_nonzero: bool,
+    },
     /// I_PCM — raw samples, byte-aligned. Rare; handled but not the
     /// common path.
     IPcm,
@@ -93,8 +94,7 @@ pub fn decode_i_mb_type(
     left_is_inxn: Option<bool>,
     top_is_inxn: Option<bool>,
 ) -> (IMbType, usize) {
-    let inc = i_mb_type_cond_term_pub(left_is_inxn)
-            + i_mb_type_cond_term_pub(top_is_inxn);
+    let inc = i_mb_type_cond_term_pub(left_is_inxn) + i_mb_type_cond_term_pub(top_is_inxn);
     let c0 = I_MB_TYPE_CTX_OFFSET + inc as usize;
     let b0 = dec.decode_bin(&mut ctx[c0]);
     if b0 == 0 {
@@ -119,7 +119,7 @@ pub fn decode_i_mb_type(
     //   binIdx5 pred_msb     : ctx 9
     //   binIdx6 pred_lsb     : ctx 10
     let cbp_luma_bit = dec.decode_bin(&mut ctx[I_MB_TYPE_CTX_OFFSET + 3]); // ctx 6
-    let chroma_pfx = dec.decode_bin(&mut ctx[I_MB_TYPE_CTX_OFFSET + 4]);   // ctx 7
+    let chroma_pfx = dec.decode_bin(&mut ctx[I_MB_TYPE_CTX_OFFSET + 4]); // ctx 7
     let cbp_chroma;
     let bins;
     if chroma_pfx == 1 {
@@ -149,17 +149,25 @@ pub fn decode_i_mb_type(
 
 /// Block index (0..15) -> (row, col) in the 4x4 grid, Figure 6-12 scan.
 const BLOCK_IDX_TO_RC: [(usize, usize); 16] = [
-    (0, 0), (0, 1), (1, 0), (1, 1),
-    (0, 2), (0, 3), (1, 2), (1, 3),
-    (2, 0), (2, 1), (3, 0), (3, 1),
-    (2, 2), (2, 3), (3, 2), (3, 3),
+    (0, 0),
+    (0, 1),
+    (1, 0),
+    (1, 1),
+    (0, 2),
+    (0, 3),
+    (1, 2),
+    (1, 3),
+    (2, 0),
+    (2, 1),
+    (3, 0),
+    (3, 1),
+    (2, 2),
+    (2, 3),
+    (3, 2),
+    (3, 3),
 ];
-const RC_TO_BLOCK_IDX: [[usize; 4]; 4] = [
-    [ 0,  1,  4,  5],
-    [ 2,  3,  6,  7],
-    [ 8,  9, 12, 13],
-    [10, 11, 14, 15],
-];
+const RC_TO_BLOCK_IDX: [[usize; 4]; 4] =
+    [[0, 1, 4, 5], [2, 3, 6, 7], [8, 9, 12, 13], [10, 11, 14, 15]];
 
 /// Full decoded I-macroblock: enough to reconstruct pixels.
 #[derive(Clone, Debug)]
@@ -253,7 +261,8 @@ pub fn decode_i_macroblock(
 
     // ---- mb_type ----
     let (mb_type, _) = decode_i_mb_type(
-        dec, ctx,
+        dec,
+        ctx,
         left.and_then(|l| l.mb_type_is_i_nxn),
         top.and_then(|t| t.mb_type_is_i_nxn),
     );
@@ -289,8 +298,13 @@ pub fn decode_i_macroblock(
         }
         IMbType::INxN => {
             decode_inxn_pred_modes(
-                dec, ctx, &mut mb, left_modes, top_modes,
-                left.is_some(), top.is_some(),
+                dec,
+                ctx,
+                &mut mb,
+                left_modes,
+                top_modes,
+                left.is_some(),
+                top.is_some(),
             );
         }
         IMbType::I16x16 { .. } => {
@@ -301,7 +315,8 @@ pub fn decode_i_macroblock(
 
     // ---- intra_chroma_pred_mode ----
     let (cmode, _) = decode_intra_chroma_pred_mode(
-        dec, ctx,
+        dec,
+        ctx,
         left.and_then(|l| l.intra_chroma_mode),
         top.and_then(|t| t.intra_chroma_mode),
     );
@@ -309,7 +324,11 @@ pub fn decode_i_macroblock(
 
     // ---- coded_block_pattern ----
     match mb_type {
-        IMbType::I16x16 { cbp_chroma, cbp_luma_nonzero, .. } => {
+        IMbType::I16x16 {
+            cbp_chroma,
+            cbp_luma_nonzero,
+            ..
+        } => {
             // CBP is implicit in mb_type for I_16x16.
             mb.cbp_chroma = cbp_chroma;
             mb.cbp_luma = if cbp_luma_nonzero { 0xF } else { 0 };
@@ -324,13 +343,15 @@ pub fn decode_i_macroblock(
             // here (the old default) wrongly yielded condTermFlag = 1
             // and desynced every I_NxN MB on a frame/MB edge.
             let (cbp_l, _) = decode_cbp_luma(
-                dec, ctx,
+                dec,
+                ctx,
                 left.map(|l| l.cbp_luma).unwrap_or(0xF),
                 top.map(|t| t.cbp_luma).unwrap_or(0xF),
             );
             mb.cbp_luma = cbp_l;
             let (cbp_c, _) = decode_cbp_chroma(
-                dec, ctx,
+                dec,
+                ctx,
                 left.map(|l| l.cbp_chroma).unwrap_or(0),
                 top.map(|t| t.cbp_chroma).unwrap_or(0),
             );
@@ -426,7 +447,11 @@ fn decode_inxn_pred_modes(
         } else {
             let (rem, _) = decode_rem_intra4x4(dec, ctx);
             // §8.3.1.1: if rem < pred, mode = rem; else mode = rem + 1.
-            if rem < pred_mode { rem } else { rem + 1 }
+            if rem < pred_mode {
+                rem
+            } else {
+                rem + 1
+            }
         };
         mb.luma4x4_modes[blk] = mode;
     }
@@ -459,25 +484,25 @@ fn decode_residuals(
             Some(t) => t.luma_dc_cbf,
             None => true,
         });
-        let (dc_cbf, _) = decode_coded_block_flag(
-            dec, ctx, CtxBlockCat::Intra16x16Dc, left_cbf, top_cbf,
-        );
+        let (dc_cbf, _) =
+            decode_coded_block_flag(dec, ctx, CtxBlockCat::Intra16x16Dc, left_cbf, top_cbf);
         mb.luma_dc_cbf = dc_cbf;
         if dc_cbf {
-            let (dc, _) = decode_residual_block(
-                dec, ctx, RES_BLOCK_SPEC_INTRA16X16_DC,
-            );
-            for (i, &c) in dc.iter().enumerate() { mb.luma_dc[i] = c; }
+            let (dc, _) = decode_residual_block(dec, ctx, RES_BLOCK_SPEC_INTRA16X16_DC);
+            for (i, &c) in dc.iter().enumerate() {
+                mb.luma_dc[i] = c;
+            }
         }
     }
 
     // ---- luma AC / 4x4 residual ----
-    let luma_blocks_in_8x8: [[usize; 4]; 4] = [
-        [0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15],
-    ];
+    let luma_blocks_in_8x8: [[usize; 4]; 4] =
+        [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]];
     let mut this_cbf = [false; 16];
     for (i8, sub) in luma_blocks_in_8x8.iter().enumerate() {
-        if (mb.cbp_luma >> i8) & 1 == 0 { continue; }
+        if (mb.cbp_luma >> i8) & 1 == 0 {
+            continue;
+        }
         for &blk in sub {
             let (br, bc) = BLOCK_IDX_TO_RC[blk];
             // Unavailable neighbour (MB edge, no neighbour MB) -> intra
@@ -488,12 +513,18 @@ fn decode_residuals(
             let left_cbf = if bc > 0 {
                 Some(this_cbf[RC_TO_BLOCK_IDX[br][bc - 1]])
             } else {
-                Some(left.map(|l| l.luma_cbf[RC_TO_BLOCK_IDX[br][3]]).unwrap_or(true))
+                Some(
+                    left.map(|l| l.luma_cbf[RC_TO_BLOCK_IDX[br][3]])
+                        .unwrap_or(true),
+                )
             };
             let top_cbf = if br > 0 {
                 Some(this_cbf[RC_TO_BLOCK_IDX[br - 1][bc]])
             } else {
-                Some(top.map(|t| t.luma_cbf[RC_TO_BLOCK_IDX[3][bc]]).unwrap_or(true))
+                Some(
+                    top.map(|t| t.luma_cbf[RC_TO_BLOCK_IDX[3][bc]])
+                        .unwrap_or(true),
+                )
             };
             let (cat, spec) = if is_i16 {
                 (CtxBlockCat::Intra16x16Ac, RES_BLOCK_SPEC_INTRA16X16_AC)
@@ -528,23 +559,23 @@ fn decode_residuals(
     if mb.cbp_chroma >= 1 {
         let lc = Some(left.map(|l| l.chroma_dc_cbf_cb).unwrap_or(true));
         let tc = Some(top.map(|t| t.chroma_dc_cbf_cb).unwrap_or(true));
-        let (cb_cbf, _) = decode_coded_block_flag(
-            dec, ctx, CtxBlockCat::ChromaDc, lc, tc,
-        );
+        let (cb_cbf, _) = decode_coded_block_flag(dec, ctx, CtxBlockCat::ChromaDc, lc, tc);
         mb.chroma_dc_cbf_cb = cb_cbf;
         if cb_cbf {
             let (cb, _) = decode_residual_block(dec, ctx, RES_BLOCK_SPEC_CHROMA_DC);
-            for (i, &c) in cb.iter().enumerate() { mb.chroma_dc_cb[i] = c; }
+            for (i, &c) in cb.iter().enumerate() {
+                mb.chroma_dc_cb[i] = c;
+            }
         }
         let lc = Some(left.map(|l| l.chroma_dc_cbf_cr).unwrap_or(true));
         let tc = Some(top.map(|t| t.chroma_dc_cbf_cr).unwrap_or(true));
-        let (cr_cbf, _) = decode_coded_block_flag(
-            dec, ctx, CtxBlockCat::ChromaDc, lc, tc,
-        );
+        let (cr_cbf, _) = decode_coded_block_flag(dec, ctx, CtxBlockCat::ChromaDc, lc, tc);
         mb.chroma_dc_cbf_cr = cr_cbf;
         if cr_cbf {
             let (cr, _) = decode_residual_block(dec, ctx, RES_BLOCK_SPEC_CHROMA_DC);
-            for (i, &c) in cr.iter().enumerate() { mb.chroma_dc_cr[i] = c; }
+            for (i, &c) in cr.iter().enumerate() {
+                mb.chroma_dc_cr[i] = c;
+            }
         }
     }
 
@@ -555,35 +586,51 @@ fn decode_residuals(
     if mb.cbp_chroma == 2 {
         let mut cb_cbf = [false; 4];
         for cb in 0..4 {
-            let r = cb / 2; let c = cb % 2;
-            let left_cbf = if c > 0 { Some(cb_cbf[cb - 1]) }
-                else { Some(left.map(|l| l.chroma_ac_cbf_cb[r * 2 + 1]).unwrap_or(true)) };
-            let top_cbf = if r > 0 { Some(cb_cbf[cb - 2]) }
-                else { Some(top.map(|t| t.chroma_ac_cbf_cb[2 + c]).unwrap_or(true)) };
-            let (cbf, _) = decode_coded_block_flag(
-                dec, ctx, CtxBlockCat::ChromaAc, left_cbf, top_cbf,
-            );
+            let r = cb / 2;
+            let c = cb % 2;
+            let left_cbf = if c > 0 {
+                Some(cb_cbf[cb - 1])
+            } else {
+                Some(left.map(|l| l.chroma_ac_cbf_cb[r * 2 + 1]).unwrap_or(true))
+            };
+            let top_cbf = if r > 0 {
+                Some(cb_cbf[cb - 2])
+            } else {
+                Some(top.map(|t| t.chroma_ac_cbf_cb[2 + c]).unwrap_or(true))
+            };
+            let (cbf, _) =
+                decode_coded_block_flag(dec, ctx, CtxBlockCat::ChromaAc, left_cbf, top_cbf);
             cb_cbf[cb] = cbf;
             if cbf {
                 let (coefs, _) = decode_residual_block(dec, ctx, RES_BLOCK_SPEC_CHROMA_AC);
-                for (i, &v) in coefs.iter().enumerate() { mb.chroma_ac_cb[cb][i] = v; }
+                for (i, &v) in coefs.iter().enumerate() {
+                    mb.chroma_ac_cb[cb][i] = v;
+                }
             }
         }
         mb.chroma_ac_cbf_cb = cb_cbf;
         let mut cr_cbf = [false; 4];
         for cb in 0..4 {
-            let r = cb / 2; let c = cb % 2;
-            let left_cbf = if c > 0 { Some(cr_cbf[cb - 1]) }
-                else { Some(left.map(|l| l.chroma_ac_cbf_cr[r * 2 + 1]).unwrap_or(true)) };
-            let top_cbf = if r > 0 { Some(cr_cbf[cb - 2]) }
-                else { Some(top.map(|t| t.chroma_ac_cbf_cr[2 + c]).unwrap_or(true)) };
-            let (cbf, _) = decode_coded_block_flag(
-                dec, ctx, CtxBlockCat::ChromaAc, left_cbf, top_cbf,
-            );
+            let r = cb / 2;
+            let c = cb % 2;
+            let left_cbf = if c > 0 {
+                Some(cr_cbf[cb - 1])
+            } else {
+                Some(left.map(|l| l.chroma_ac_cbf_cr[r * 2 + 1]).unwrap_or(true))
+            };
+            let top_cbf = if r > 0 {
+                Some(cr_cbf[cb - 2])
+            } else {
+                Some(top.map(|t| t.chroma_ac_cbf_cr[2 + c]).unwrap_or(true))
+            };
+            let (cbf, _) =
+                decode_coded_block_flag(dec, ctx, CtxBlockCat::ChromaAc, left_cbf, top_cbf);
             cr_cbf[cb] = cbf;
             if cbf {
                 let (coefs, _) = decode_residual_block(dec, ctx, RES_BLOCK_SPEC_CHROMA_AC);
-                for (i, &v) in coefs.iter().enumerate() { mb.chroma_ac_cr[cb][i] = v; }
+                for (i, &v) in coefs.iter().enumerate() {
+                    mb.chroma_ac_cr[cb][i] = v;
+                }
             }
         }
         mb.chroma_ac_cbf_cr = cr_cbf;
@@ -606,29 +653,47 @@ fn decode_residuals(
 /// Returns the 4x4 predictor (raster, 16 px).
 pub fn intra4x4_pred(
     mode: u8,
-    above: &[i32; 8],     // p[0..8, -1]  (above + above-right)
-    left: &[i32; 4],      // p[-1, 0..4]
-    above_left: i32,      // p[-1, -1]
+    above: &[i32; 8], // p[0..8, -1]  (above + above-right)
+    left: &[i32; 4],  // p[-1, 0..4]
+    above_left: i32,  // p[-1, -1]
     have_above: bool,
     have_left: bool,
     have_above_right: bool,
 ) -> [i32; 16] {
     let mut p = [0i32; 16];
-    let at = |r: usize, c: usize, v: &mut [i32; 16], val: i32| { v[r * 4 + c] = val; };
+    let at = |r: usize, c: usize, v: &mut [i32; 16], val: i32| {
+        v[r * 4 + c] = val;
+    };
     match mode {
         0 => {
             // Vertical
-            for r in 0..4 { for c in 0..4 { at(r, c, &mut p, above[c]); } }
+            for r in 0..4 {
+                for c in 0..4 {
+                    at(r, c, &mut p, above[c]);
+                }
+            }
         }
         1 => {
             // Horizontal
-            for r in 0..4 { for c in 0..4 { at(r, c, &mut p, left[r]); } }
+            for r in 0..4 {
+                for c in 0..4 {
+                    at(r, c, &mut p, left[r]);
+                }
+            }
         }
         2 => {
             // DC
             let val = if have_above && have_left {
-                (above[0] + above[1] + above[2] + above[3]
-                 + left[0] + left[1] + left[2] + left[3] + 4) >> 3
+                (above[0]
+                    + above[1]
+                    + above[2]
+                    + above[3]
+                    + left[0]
+                    + left[1]
+                    + left[2]
+                    + left[3]
+                    + 4)
+                    >> 3
             } else if have_left {
                 (left[0] + left[1] + left[2] + left[3] + 2) >> 2
             } else if have_above {
@@ -636,37 +701,52 @@ pub fn intra4x4_pred(
             } else {
                 128
             };
-            for k in 0..16 { p[k] = val; }
+            for k in 0..16 {
+                p[k] = val;
+            }
         }
         3 => {
             // Diagonal Down-Left
-            let ar = if have_above_right { [above[4], above[5], above[6], above[7]] }
-                     else { [above[3], above[3], above[3], above[3]] };
-            let a = [above[0], above[1], above[2], above[3], ar[0], ar[1], ar[2], ar[3]];
-            for r in 0..4 { for c in 0..4 {
-                let v = if r == 3 && c == 3 {
-                    (a[6] + 3 * a[7] + 2) >> 2
-                } else {
-                    let i = r + c;
-                    (a[i] + 2 * a[i + 1] + a[i + 2] + 2) >> 2
-                };
-                at(r, c, &mut p, v);
-            }}
+            let ar = if have_above_right {
+                [above[4], above[5], above[6], above[7]]
+            } else {
+                [above[3], above[3], above[3], above[3]]
+            };
+            let a = [
+                above[0], above[1], above[2], above[3], ar[0], ar[1], ar[2], ar[3],
+            ];
+            for r in 0..4 {
+                for c in 0..4 {
+                    let v = if r == 3 && c == 3 {
+                        (a[6] + 3 * a[7] + 2) >> 2
+                    } else {
+                        let i = r + c;
+                        (a[i] + 2 * a[i + 1] + a[i + 2] + 2) >> 2
+                    };
+                    at(r, c, &mut p, v);
+                }
+            }
         }
         4 => {
             // Diagonal Down-Right
             let z = |i: i32| -> i32 {
                 // index over the L-shaped neighbour line:
                 // i in -3..3 maps left(2,1,0), corner, above(0,1,2)
-                if i < 0 { left[(-i - 1) as usize] }
-                else if i == 0 { above_left }
-                else { above[(i - 1) as usize] }
+                if i < 0 {
+                    left[(-i - 1) as usize]
+                } else if i == 0 {
+                    above_left
+                } else {
+                    above[(i - 1) as usize]
+                }
             };
-            for r in 0..4 { for c in 0..4 {
-                let d = c as i32 - r as i32;
-                let v = (z(d - 1) + 2 * z(d) + z(d + 1) + 2) >> 2;
-                at(r, c, &mut p, v);
-            }}
+            for r in 0..4 {
+                for c in 0..4 {
+                    let d = c as i32 - r as i32;
+                    let v = (z(d - 1) + 2 * z(d) + z(d + 1) + 2) >> 2;
+                    at(r, c, &mut p, v);
+                }
+            }
         }
         5 => {
             // Vertical-Right §8.3.1.2.5. Reference samples form an
@@ -676,85 +756,125 @@ pub fn intra4x4_pred(
             // coordinate-system confusion that mis-mapped p[-1,-1]
             // (the corner) to left[0] in the previous code.
             let pp = |x: i32, y: i32| -> i32 {
-                if x == -1 && y == -1 { above_left }
-                else if y == -1 { above[x as usize] }
-                else { left[y as usize] } // x == -1
-            };
-            for r in 0..4 { let y = r as i32; for c in 0..4 { let x = c as i32;
-                let zvr = 2 * x - y;
-                let v = if zvr >= 0 {
-                    if zvr % 2 == 0 {
-                        (pp(x - (y >> 1) - 1, -1) + pp(x - (y >> 1), -1) + 1) >> 1
-                    } else {
-                        (pp(x - (y >> 1) - 2, -1) + 2 * pp(x - (y >> 1) - 1, -1) + pp(x - (y >> 1), -1) + 2) >> 2
-                    }
-                } else if zvr == -1 {
-                    (pp(-1, 0) + 2 * pp(-1, -1) + pp(0, -1) + 2) >> 2
+                if x == -1 && y == -1 {
+                    above_left
+                } else if y == -1 {
+                    above[x as usize]
                 } else {
-                    // zVR == -2 or -3: p[-1, y-1], p[-1, y-2], p[-1, y-3].
-                    (pp(-1, y - 1) + 2 * pp(-1, y - 2) + pp(-1, y - 3) + 2) >> 2
-                };
-                at(r, c, &mut p, v);
-            }}
+                    left[y as usize]
+                } // x == -1
+            };
+            for r in 0..4 {
+                let y = r as i32;
+                for c in 0..4 {
+                    let x = c as i32;
+                    let zvr = 2 * x - y;
+                    let v = if zvr >= 0 {
+                        if zvr % 2 == 0 {
+                            (pp(x - (y >> 1) - 1, -1) + pp(x - (y >> 1), -1) + 1) >> 1
+                        } else {
+                            (pp(x - (y >> 1) - 2, -1)
+                                + 2 * pp(x - (y >> 1) - 1, -1)
+                                + pp(x - (y >> 1), -1)
+                                + 2)
+                                >> 2
+                        }
+                    } else if zvr == -1 {
+                        (pp(-1, 0) + 2 * pp(-1, -1) + pp(0, -1) + 2) >> 2
+                    } else {
+                        // zVR == -2 or -3: p[-1, y-1], p[-1, y-2], p[-1, y-3].
+                        (pp(-1, y - 1) + 2 * pp(-1, y - 2) + pp(-1, y - 3) + 2) >> 2
+                    };
+                    at(r, c, &mut p, v);
+                }
+            }
         }
         6 => {
             // Horizontal-Down §8.3.1.2.6 (transpose of Vertical-Right).
             let pp = |x: i32, y: i32| -> i32 {
-                if x == -1 && y == -1 { above_left }
-                else if y == -1 { above[x as usize] }
-                else { left[y as usize] } // x == -1
-            };
-            for r in 0..4 { let y = r as i32; for c in 0..4 { let x = c as i32;
-                let zhd = 2 * y - x;
-                let v = if zhd >= 0 {
-                    if zhd % 2 == 0 {
-                        (pp(-1, y - (x >> 1) - 1) + pp(-1, y - (x >> 1)) + 1) >> 1
-                    } else {
-                        (pp(-1, y - (x >> 1) - 2) + 2 * pp(-1, y - (x >> 1) - 1) + pp(-1, y - (x >> 1)) + 2) >> 2
-                    }
-                } else if zhd == -1 {
-                    (pp(-1, 0) + 2 * pp(-1, -1) + pp(0, -1) + 2) >> 2
+                if x == -1 && y == -1 {
+                    above_left
+                } else if y == -1 {
+                    above[x as usize]
                 } else {
-                    // zHD == -2 or -3: p[x-1,-1], p[x-2,-1], p[x-3,-1].
-                    (pp(x - 1, -1) + 2 * pp(x - 2, -1) + pp(x - 3, -1) + 2) >> 2
-                };
-                at(r, c, &mut p, v);
-            }}
+                    left[y as usize]
+                } // x == -1
+            };
+            for r in 0..4 {
+                let y = r as i32;
+                for c in 0..4 {
+                    let x = c as i32;
+                    let zhd = 2 * y - x;
+                    let v = if zhd >= 0 {
+                        if zhd % 2 == 0 {
+                            (pp(-1, y - (x >> 1) - 1) + pp(-1, y - (x >> 1)) + 1) >> 1
+                        } else {
+                            (pp(-1, y - (x >> 1) - 2)
+                                + 2 * pp(-1, y - (x >> 1) - 1)
+                                + pp(-1, y - (x >> 1))
+                                + 2)
+                                >> 2
+                        }
+                    } else if zhd == -1 {
+                        (pp(-1, 0) + 2 * pp(-1, -1) + pp(0, -1) + 2) >> 2
+                    } else {
+                        // zHD == -2 or -3: p[x-1,-1], p[x-2,-1], p[x-3,-1].
+                        (pp(x - 1, -1) + 2 * pp(x - 2, -1) + pp(x - 3, -1) + 2) >> 2
+                    };
+                    at(r, c, &mut p, v);
+                }
+            }
         }
         7 => {
             // Vertical-Left
-            let ar = if have_above_right { [above[4], above[5], above[6], above[7]] }
-                     else { [above[3], above[3], above[3], above[3]] };
-            let a = [above[0], above[1], above[2], above[3], ar[0], ar[1], ar[2], ar[3]];
-            for r in 0..4 { for c in 0..4 {
-                let v = if r % 2 == 0 {
-                    (a[c + (r >> 1)] + a[c + (r >> 1) + 1] + 1) >> 1
-                } else {
-                    (a[c + (r >> 1)] + 2 * a[c + (r >> 1) + 1] + a[c + (r >> 1) + 2] + 2) >> 2
-                };
-                at(r, c, &mut p, v);
-            }}
+            let ar = if have_above_right {
+                [above[4], above[5], above[6], above[7]]
+            } else {
+                [above[3], above[3], above[3], above[3]]
+            };
+            let a = [
+                above[0], above[1], above[2], above[3], ar[0], ar[1], ar[2], ar[3],
+            ];
+            for r in 0..4 {
+                for c in 0..4 {
+                    let v = if r % 2 == 0 {
+                        (a[c + (r >> 1)] + a[c + (r >> 1) + 1] + 1) >> 1
+                    } else {
+                        (a[c + (r >> 1)] + 2 * a[c + (r >> 1) + 1] + a[c + (r >> 1) + 2] + 2) >> 2
+                    };
+                    at(r, c, &mut p, v);
+                }
+            }
         }
         8 => {
             // Horizontal-Up
-            for r in 0..4 { for c in 0..4 {
-                let zhu = 2 * r as i32 + c as i32;
-                let v = if zhu < 6 {
-                    if zhu % 2 == 0 {
-                        (left[(r + (c >> 1)) as usize] + left[(r + (c >> 1) + 1).min(3) as usize] + 1) >> 1
+            for r in 0..4 {
+                for c in 0..4 {
+                    let zhu = 2 * r as i32 + c as i32;
+                    let v = if zhu < 6 {
+                        if zhu % 2 == 0 {
+                            (left[(r + (c >> 1)) as usize]
+                                + left[(r + (c >> 1) + 1).min(3) as usize]
+                                + 1)
+                                >> 1
+                        } else {
+                            let i = r + (c >> 1);
+                            (left[i] + 2 * left[(i + 1).min(3)] + left[(i + 2).min(3)] + 2) >> 2
+                        }
+                    } else if zhu == 6 {
+                        (left[2] + 3 * left[3] + 2) >> 2
                     } else {
-                        let i = r + (c >> 1);
-                        (left[i] + 2 * left[(i + 1).min(3)] + left[(i + 2).min(3)] + 2) >> 2
-                    }
-                } else if zhu == 6 {
-                    (left[2] + 3 * left[3] + 2) >> 2
-                } else {
-                    left[3]
-                };
-                at(r, c, &mut p, v);
-            }}
+                        left[3]
+                    };
+                    at(r, c, &mut p, v);
+                }
+            }
         }
-        _ => { for k in 0..16 { p[k] = 128; } }
+        _ => {
+            for k in 0..16 {
+                p[k] = 128;
+            }
+        }
     }
     p
 }
@@ -771,13 +891,24 @@ pub fn intra16x16_pred(
 ) -> [i32; 256] {
     let mut p = [0i32; 256];
     match mode {
-        0 => { // Vertical
-            for r in 0..16 { for c in 0..16 { p[r * 16 + c] = above[c]; } }
+        0 => {
+            // Vertical
+            for r in 0..16 {
+                for c in 0..16 {
+                    p[r * 16 + c] = above[c];
+                }
+            }
         }
-        1 => { // Horizontal
-            for r in 0..16 { for c in 0..16 { p[r * 16 + c] = left[r]; } }
+        1 => {
+            // Horizontal
+            for r in 0..16 {
+                for c in 0..16 {
+                    p[r * 16 + c] = left[r];
+                }
+            }
         }
-        2 => { // DC
+        2 => {
+            // DC
             let val = if have_above && have_left {
                 let s: i32 = above.iter().sum::<i32>() + left.iter().sum::<i32>();
                 (s + 16) >> 5
@@ -785,25 +916,40 @@ pub fn intra16x16_pred(
                 (left.iter().sum::<i32>() + 8) >> 4
             } else if have_above {
                 (above.iter().sum::<i32>() + 8) >> 4
-            } else { 128 };
-            for k in 0..256 { p[k] = val; }
+            } else {
+                128
+            };
+            for k in 0..256 {
+                p[k] = val;
+            }
         }
-        3 => { // Plane, §8.3.3.4
+        3 => {
+            // Plane, §8.3.3.4
             let mut h = 0i32;
             let mut v = 0i32;
-            for x in 0..7 { h += (x as i32 + 1) * (above[8 + x] - above[6 - x]); }
+            for x in 0..7 {
+                h += (x as i32 + 1) * (above[8 + x] - above[6 - x]);
+            }
             h += 8 * (above[15] - above_left);
-            for y in 0..7 { v += (y as i32 + 1) * (left[8 + y] - left[6 - y]); }
+            for y in 0..7 {
+                v += (y as i32 + 1) * (left[8 + y] - left[6 - y]);
+            }
             v += 8 * (left[15] - above_left);
             let b = (5 * h + 32) >> 6;
             let c = (5 * v + 32) >> 6;
             let a = 16 * (above[15] + left[15]);
-            for y in 0..16 { for x in 0..16 {
-                let val = (a + b * (x as i32 - 7) + c * (y as i32 - 7) + 16) >> 5;
-                p[y * 16 + x] = val.max(0).min(255);
-            }}
+            for y in 0..16 {
+                for x in 0..16 {
+                    let val = (a + b * (x as i32 - 7) + c * (y as i32 - 7) + 16) >> 5;
+                    p[y * 16 + x] = val.max(0).min(255);
+                }
+            }
         }
-        _ => { for k in 0..256 { p[k] = 128; } }
+        _ => {
+            for k in 0..256 {
+                p[k] = 128;
+            }
+        }
     }
     p
 }
@@ -820,60 +966,108 @@ pub fn intra_chroma_pred(
 ) -> [i32; 64] {
     let mut p = [0i32; 64];
     match mode {
-        1 => { // Horizontal
-            for r in 0..8 { for c in 0..8 { p[r * 8 + c] = left[r]; } }
+        1 => {
+            // Horizontal
+            for r in 0..8 {
+                for c in 0..8 {
+                    p[r * 8 + c] = left[r];
+                }
+            }
         }
-        2 => { // Vertical
-            for r in 0..8 { for c in 0..8 { p[r * 8 + c] = above[c]; } }
+        2 => {
+            // Vertical
+            for r in 0..8 {
+                for c in 0..8 {
+                    p[r * 8 + c] = above[c];
+                }
+            }
         }
-        3 => { // Plane
+        3 => {
+            // Plane
             let mut h = 0i32;
             let mut v = 0i32;
-            for x in 0..3 { h += (x as i32 + 1) * (above[4 + x] - above[2 - x]); }
+            for x in 0..3 {
+                h += (x as i32 + 1) * (above[4 + x] - above[2 - x]);
+            }
             h += 4 * (above[7] - above_left);
-            for y in 0..3 { v += (y as i32 + 1) * (left[4 + y] - left[2 - y]); }
+            for y in 0..3 {
+                v += (y as i32 + 1) * (left[4 + y] - left[2 - y]);
+            }
             v += 4 * (left[7] - above_left);
             let b = (17 * h + 16) >> 5;
             let c = (17 * v + 16) >> 5;
             let a = 16 * (above[7] + left[7]);
-            for y in 0..8 { for x in 0..8 {
-                let val = (a + b * (x as i32 - 3) + c * (y as i32 - 3) + 16) >> 5;
-                p[y * 8 + x] = val.max(0).min(255);
-            }}
+            for y in 0..8 {
+                for x in 0..8 {
+                    let val = (a + b * (x as i32 - 3) + c * (y as i32 - 3) + 16) >> 5;
+                    p[y * 8 + x] = val.max(0).min(255);
+                }
+            }
         }
-        _ => { // DC, §8.3.4.1 — per 4x4 quadrant.
+        _ => {
+            // DC, §8.3.4.1 — per 4x4 quadrant.
             // Each of the four 4x4 chroma quadrants has its own DC rule.
-            for qy in 0..2 { for qx in 0..2 {
-                let ab = [above[qx * 4], above[qx * 4 + 1], above[qx * 4 + 2], above[qx * 4 + 3]];
-                let lf = [left[qy * 4], left[qy * 4 + 1], left[qy * 4 + 2], left[qy * 4 + 3]];
-                let sa: i32 = ab.iter().sum();
-                let sl: i32 = lf.iter().sum();
-                // Quadrant DC selection per spec Table (use both edges
-                // for the diagonal quadrants only when available).
-                let val = match (qx, qy) {
-                    (0, 0) | (1, 1) => {
-                        if have_above && have_left { (sa + sl + 4) >> 3 }
-                        else if have_left && qx == 0 { (sl + 2) >> 2 }
-                        else if have_above && qx == 1 { (sa + 2) >> 2 }
-                        else if have_left { (sl + 2) >> 2 }
-                        else if have_above { (sa + 2) >> 2 }
-                        else { 128 }
+            for qy in 0..2 {
+                for qx in 0..2 {
+                    let ab = [
+                        above[qx * 4],
+                        above[qx * 4 + 1],
+                        above[qx * 4 + 2],
+                        above[qx * 4 + 3],
+                    ];
+                    let lf = [
+                        left[qy * 4],
+                        left[qy * 4 + 1],
+                        left[qy * 4 + 2],
+                        left[qy * 4 + 3],
+                    ];
+                    let sa: i32 = ab.iter().sum();
+                    let sl: i32 = lf.iter().sum();
+                    // Quadrant DC selection per spec Table (use both edges
+                    // for the diagonal quadrants only when available).
+                    let val = match (qx, qy) {
+                        (0, 0) | (1, 1) => {
+                            if have_above && have_left {
+                                (sa + sl + 4) >> 3
+                            } else if have_left && qx == 0 {
+                                (sl + 2) >> 2
+                            } else if have_above && qx == 1 {
+                                (sa + 2) >> 2
+                            } else if have_left {
+                                (sl + 2) >> 2
+                            } else if have_above {
+                                (sa + 2) >> 2
+                            } else {
+                                128
+                            }
+                        }
+                        (1, 0) => {
+                            if have_above {
+                                (sa + 2) >> 2
+                            } else if have_left {
+                                (sl + 2) >> 2
+                            } else {
+                                128
+                            }
+                        }
+                        _ => {
+                            // (0,1)
+                            if have_left {
+                                (sl + 2) >> 2
+                            } else if have_above {
+                                (sa + 2) >> 2
+                            } else {
+                                128
+                            }
+                        }
+                    };
+                    for y in 0..4 {
+                        for x in 0..4 {
+                            p[(qy * 4 + y) * 8 + (qx * 4 + x)] = val;
+                        }
                     }
-                    (1, 0) => {
-                        if have_above { (sa + 2) >> 2 }
-                        else if have_left { (sl + 2) >> 2 }
-                        else { 128 }
-                    }
-                    _ => { // (0,1)
-                        if have_left { (sl + 2) >> 2 }
-                        else if have_above { (sa + 2) >> 2 }
-                        else { 128 }
-                    }
-                };
-                for y in 0..4 { for x in 0..4 {
-                    p[(qy * 4 + y) * 8 + (qx * 4 + x)] = val;
-                }}
-            }}
+                }
+            }
         }
     }
     p
@@ -888,17 +1082,28 @@ pub fn luma_dc_inverse_hadamard(dc: &[i32; 16], qp: i32) -> [i32; 16] {
     // rows
     let mut t = [0i32; 16];
     for i in 0..4 {
-        let a = dc[4 * i + 0]; let b = dc[4 * i + 1];
-        let c = dc[4 * i + 2]; let d = dc[4 * i + 3];
-        let s0 = a + c; let s1 = a - c; let s2 = b - d; let s3 = b + d;
+        let a = dc[4 * i + 0];
+        let b = dc[4 * i + 1];
+        let c = dc[4 * i + 2];
+        let d = dc[4 * i + 3];
+        let s0 = a + c;
+        let s1 = a - c;
+        let s2 = b - d;
+        let s3 = b + d;
         t[4 * i + 0] = s0 + s3;
         t[4 * i + 1] = s1 + s2;
         t[4 * i + 2] = s1 - s2;
         t[4 * i + 3] = s0 - s3;
     }
     for j in 0..4 {
-        let a = t[j + 0]; let b = t[j + 4]; let c = t[j + 8]; let d = t[j + 12];
-        let s0 = a + c; let s1 = a - c; let s2 = b - d; let s3 = b + d;
+        let a = t[j + 0];
+        let b = t[j + 4];
+        let c = t[j + 8];
+        let d = t[j + 12];
+        let s0 = a + c;
+        let s1 = a - c;
+        let s2 = b - d;
+        let s3 = b + d;
         f[j + 0] = s0 + s3;
         f[j + 4] = s1 + s2;
         f[j + 8] = s1 - s2;
@@ -927,28 +1132,31 @@ pub fn luma_dc_inverse_hadamard(dc: &[i32; 16], qp: i32) -> [i32; 16] {
 /// 4x4 inverse transform with +32/>>6 then runs).
 pub fn chroma_dc_inverse_hadamard(dc: &[i32; 4], qp: i32) -> [i32; 4] {
     // libavcodec Hadamard form (block laid out 00,01,10,11):
-    let a0 = dc[0]; let b0 = dc[1]; let c0 = dc[2]; let d0 = dc[3];
+    let a0 = dc[0];
+    let b0 = dc[1];
+    let c0 = dc[2];
+    let d0 = dc[3];
     let e = a0 - b0;
     let a = a0 + b0;
     let b = c0 - d0;
     let c = c0 + d0;
     let f = [a + c, e + b, a - c, e - b]; // -> blocks 00,01,10,11
-    // §8.5.11 exactly: dcCij = ((f * LevelScale4x4[qP%6][0]) << (qP/6))
-    // >> 5, with LevelScale4x4[..][0] = V0. This dcCij IS the [0]
-    // (DC) transform coefficient handed to the regular 4x4 inverse
-    // transform (idct_add_4x4_h264, which applies the final +32,>>6).
-    // The previous `<< (qP/6 - 1)` form divided by 2 instead of the
-    // spec's >>5, over-scaling chroma DC at every QP (the bug behind
-    // the inxn chroma max_err 46). `((x) << qp_div) >> 5` is exact and
-    // valid for all qp_div >= 0.
-    // §8.5.8 chroma DC scaling for ChromaArrayType==1 (4:2:0), QPc form:
-    //   QPc/6 >= 1 : dcCij = (f * LevelScale(QPc%6,0)) << (QPc/6 - 1)
-    //   QPc/6 == 0 : dcCij = (f * LevelScale(QPc%6,0)) >> 1
-    // The result is the DC transform coefficient handed to the regular
-    // 4x4 inverse transform (idct_add_4x4_h264 applies the final
-    // +32,>>6). Verified bit-exact on chroma-residual content once the
-    // correct QPc (= QPy + chroma_qp_index_offset, the x264 default -2)
-    // is supplied.
+                                          // §8.5.11 exactly: dcCij = ((f * LevelScale4x4[qP%6][0]) << (qP/6))
+                                          // >> 5, with LevelScale4x4[..][0] = V0. This dcCij IS the [0]
+                                          // (DC) transform coefficient handed to the regular 4x4 inverse
+                                          // transform (idct_add_4x4_h264, which applies the final +32,>>6).
+                                          // The previous `<< (qP/6 - 1)` form divided by 2 instead of the
+                                          // spec's >>5, over-scaling chroma DC at every QP (the bug behind
+                                          // the inxn chroma max_err 46). `((x) << qp_div) >> 5` is exact and
+                                          // valid for all qp_div >= 0.
+                                          // §8.5.8 chroma DC scaling for ChromaArrayType==1 (4:2:0), QPc form:
+                                          //   QPc/6 >= 1 : dcCij = (f * LevelScale(QPc%6,0)) << (QPc/6 - 1)
+                                          //   QPc/6 == 0 : dcCij = (f * LevelScale(QPc%6,0)) >> 1
+                                          // The result is the DC transform coefficient handed to the regular
+                                          // 4x4 inverse transform (idct_add_4x4_h264 applies the final
+                                          // +32,>>6). Verified bit-exact on chroma-residual content once the
+                                          // correct QPc (= QPy + chroma_qp_index_offset, the x264 default -2)
+                                          // is supplied.
     let qp_div = qp / 6;
     let qp_mod = (qp.rem_euclid(6)) as usize;
     let v0 = V0_TABLE[qp_mod];
@@ -982,14 +1190,18 @@ pub fn recon_4x4_block(
     }
     let pred_u8: [u8; 16] = {
         let mut pu = [0u8; 16];
-        for k in 0..16 { pu[k] = pred[k].max(0).min(255) as u8; }
+        for k in 0..16 {
+            pu[k] = pred[k].max(0).min(255) as u8;
+        }
         pu
     };
     idct_add_4x4_h264(&w, &pred_u8)
 }
 
 fn z_with_dc(z: &mut [i32; 16], dc_external: bool) -> [i32; 16] {
-    if dc_external { z[0] = 0; }
+    if dc_external {
+        z[0] = 0;
+    }
     *z
 }
 
@@ -1014,7 +1226,8 @@ impl YuvFrame {
         let cw = w / 2;
         let ch = h / 2;
         YuvFrame {
-            w, h,
+            w,
+            h,
             y: vec![0u8; w * h],
             u: vec![0u8; cw * ch],
             v: vec![0u8; cw * ch],
@@ -1051,12 +1264,14 @@ pub fn reconstruct_i_macroblock(
         IMbType::IPcm => {
             // Raw samples ARE the reconstruction — write them straight.
             let h = frame.h;
-            for r in 0..16 { for c in 0..16 {
-                if py0 + r < h && px0 + c < w {
-                    frame.y[(py0 + r) * w + (px0 + c)] =
-                        *mb.pcm_luma.get(r * 16 + c).unwrap_or(&128);
+            for r in 0..16 {
+                for c in 0..16 {
+                    if py0 + r < h && px0 + c < w {
+                        frame.y[(py0 + r) * w + (px0 + c)] =
+                            *mb.pcm_luma.get(r * 16 + c).unwrap_or(&128);
+                    }
                 }
-            }}
+            }
         }
     }
 
@@ -1066,14 +1281,14 @@ pub fn reconstruct_i_macroblock(
         let ch = frame.h / 2;
         let cx0 = mbx * 8;
         let cy0 = mby * 8;
-        for r in 0..8 { for c in 0..8 {
-            if cy0 + r < ch && cx0 + c < cw {
-                frame.u[(cy0 + r) * cw + (cx0 + c)] =
-                    *mb.pcm_cb.get(r * 8 + c).unwrap_or(&128);
-                frame.v[(cy0 + r) * cw + (cx0 + c)] =
-                    *mb.pcm_cr.get(r * 8 + c).unwrap_or(&128);
+        for r in 0..8 {
+            for c in 0..8 {
+                if cy0 + r < ch && cx0 + c < cw {
+                    frame.u[(cy0 + r) * cw + (cx0 + c)] = *mb.pcm_cb.get(r * 8 + c).unwrap_or(&128);
+                    frame.v[(cy0 + r) * cw + (cx0 + c)] = *mb.pcm_cr.get(r * 8 + c).unwrap_or(&128);
+                }
             }
-        }}
+        }
         return;
     }
     let cqp = chroma_qp(qp + chroma_qp_offset);
@@ -1085,10 +1300,11 @@ pub fn reconstruct_i_macroblock(
 /// offset = 0 (default). Valid for QP up to 51.
 pub fn chroma_qp(qp: i32) -> i32 {
     let q = qp.max(0).min(51);
-    if q < 30 { q } else {
+    if q < 30 {
+        q
+    } else {
         const T: [i32; 22] = [
-            29, 30, 31, 32, 32, 33, 34, 34, 35, 35,
-            36, 36, 37, 37, 37, 38, 38, 38, 39, 39, 39, 39,
+            29, 30, 31, 32, 32, 33, 34, 34, 35, 35, 36, 36, 37, 37, 37, 38, 38, 38, 39, 39, 39, 39,
         ];
         T[(q - 30) as usize]
     }
@@ -1115,14 +1331,16 @@ fn recon_luma_i4x4(frame: &mut YuvFrame, mb: &DecodedIMb, px0: usize, py0: usize
         // block is not on the right frame edge AND (by>0). For blocks
         // whose above-right falls in a not-yet-decoded MB region we
         // fall back (handled by the spec substitution in the predictor).
-        let have_above_right = have_above && (bx + 4 + 3 < w)
-            && above_right_decoded(br, bc, px0, w);
+        let have_above_right =
+            have_above && (bx + 4 + 3 < w) && above_right_decoded(br, bc, px0, w);
 
         let mut above = [0i32; 8];
         let mut left = [0i32; 4];
         let mut above_left = 0i32;
         if have_above {
-            for c in 0..4 { above[c] = read_y(frame, (bx + c) as i32, (by - 1) as i32); }
+            for c in 0..4 {
+                above[c] = read_y(frame, (bx + c) as i32, (by - 1) as i32);
+            }
             for c in 0..4 {
                 let xr = bx + 4 + c;
                 above[4 + c] = if have_above_right && xr < w {
@@ -1133,22 +1351,31 @@ fn recon_luma_i4x4(frame: &mut YuvFrame, mb: &DecodedIMb, px0: usize, py0: usize
             }
         }
         if have_left {
-            for r in 0..4 { left[r] = read_y(frame, (bx - 1) as i32, (by + r) as i32); }
+            for r in 0..4 {
+                left[r] = read_y(frame, (bx - 1) as i32, (by + r) as i32);
+            }
         }
         if have_above && have_left {
             above_left = read_y(frame, (bx - 1) as i32, (by - 1) as i32);
         }
 
         let pred = intra4x4_pred(
-            mb.luma4x4_modes[blk], &above, &left, above_left,
-            have_above, have_left, have_above_right,
+            mb.luma4x4_modes[blk],
+            &above,
+            &left,
+            above_left,
+            have_above,
+            have_left,
+            have_above_right,
         );
         let recon = recon_4x4_block(&mb.luma_4x4[blk], &pred, qp, None);
-        for r in 0..4 { for c in 0..4 {
-            if by + r < h && bx + c < w {
-                frame.y[(by + r) * w + (bx + c)] = recon[r * 4 + c];
+        for r in 0..4 {
+            for c in 0..4 {
+                if by + r < h && bx + c < w {
+                    frame.y[(by + r) * w + (bx + c)] = recon[r * 4 + c];
+                }
             }
-        }}
+        }
     }
 }
 
@@ -1193,8 +1420,12 @@ fn above_right_decoded(br: usize, bc: usize, _px0: usize, _w: usize) -> bool {
 /// Reconstruct an I_16x16 luma MB: build the 16x16 predictor, inverse-
 /// Hadamard the DC, then per-4x4 dequant+IDCT-add with the DC injected.
 fn recon_luma_i16x16(
-    frame: &mut YuvFrame, mb: &DecodedIMb,
-    px0: usize, py0: usize, qp: i32, pred_mode: u8,
+    frame: &mut YuvFrame,
+    mb: &DecodedIMb,
+    px0: usize,
+    py0: usize,
+    qp: i32,
+    pred_mode: u8,
 ) {
     let w = frame.w;
     let h = frame.h;
@@ -1204,10 +1435,14 @@ fn recon_luma_i16x16(
     let mut left = [0i32; 16];
     let mut above_left = 0i32;
     if have_above {
-        for c in 0..16 { above[c] = read_y(frame, (px0 + c) as i32, (py0 - 1) as i32); }
+        for c in 0..16 {
+            above[c] = read_y(frame, (px0 + c) as i32, (py0 - 1) as i32);
+        }
     }
     if have_left {
-        for r in 0..16 { left[r] = read_y(frame, (px0 - 1) as i32, (py0 + r) as i32); }
+        for r in 0..16 {
+            left[r] = read_y(frame, (px0 - 1) as i32, (py0 + r) as i32);
+        }
     }
     if have_above && have_left {
         above_left = read_y(frame, (px0 - 1) as i32, (py0 - 1) as i32);
@@ -1223,26 +1458,34 @@ fn recon_luma_i16x16(
         let by = py0 + br * 4;
         // Predictor 4x4 slice from the 16x16 predictor.
         let mut p4 = [0i32; 16];
-        for r in 0..4 { for c in 0..4 {
-            p4[r * 4 + c] = pred[(br * 4 + r) * 16 + (bc * 4 + c)];
-        }}
+        for r in 0..4 {
+            for c in 0..4 {
+                p4[r * 4 + c] = pred[(br * 4 + r) * 16 + (bc * 4 + c)];
+            }
+        }
         // DC index in the 4x4 grid is the raster position (br*4+bc),
         // but the Hadamard output `dc` is indexed by the same raster
         // grid of 4x4 blocks.
         let dc_idx = br * 4 + bc;
         let recon = recon_4x4_block(&mb.luma_4x4[blk], &p4, qp, Some(dc[dc_idx]));
-        for r in 0..4 { for c in 0..4 {
-            if by + r < h && bx + c < w {
-                frame.y[(by + r) * w + (bx + c)] = recon[r * 4 + c];
+        for r in 0..4 {
+            for c in 0..4 {
+                if by + r < h && bx + c < w {
+                    frame.y[(by + r) * w + (bx + c)] = recon[r * 4 + c];
+                }
             }
-        }}
+        }
     }
 }
 
 /// Reconstruct one chroma component (Cb if `is_cb`, else Cr) for an MB.
 fn recon_chroma(
-    frame: &mut YuvFrame, mb: &DecodedIMb,
-    mbx: usize, mby: usize, qp: i32, is_cb: bool,
+    frame: &mut YuvFrame,
+    mb: &DecodedIMb,
+    mbx: usize,
+    mby: usize,
+    qp: i32,
+    is_cb: bool,
 ) {
     let cw = frame.w / 2;
     let ch = frame.h / 2;
@@ -1260,20 +1503,39 @@ fn recon_chroma(
     let mut left = [0i32; 8];
     let mut above_left = 0i32;
     if have_above {
-        for c in 0..8 { above[c] = plane_read(frame, (cx0 + c) as i32, (cy0 - 1) as i32); }
+        for c in 0..8 {
+            above[c] = plane_read(frame, (cx0 + c) as i32, (cy0 - 1) as i32);
+        }
     }
     if have_left {
-        for r in 0..8 { left[r] = plane_read(frame, (cx0 - 1) as i32, (cy0 + r) as i32); }
+        for r in 0..8 {
+            left[r] = plane_read(frame, (cx0 - 1) as i32, (cy0 + r) as i32);
+        }
     }
     if have_above && have_left {
         above_left = plane_read(frame, (cx0 - 1) as i32, (cy0 - 1) as i32);
     }
-    let pred = intra_chroma_pred(mb.intra_chroma_mode, &above, &left, above_left, have_above, have_left);
+    let pred = intra_chroma_pred(
+        mb.intra_chroma_mode,
+        &above,
+        &left,
+        above_left,
+        have_above,
+        have_left,
+    );
 
     // DC inverse Hadamard (2x2) -> 4 DC values, one per 4x4 chroma block.
-    let dc_src = if is_cb { &mb.chroma_dc_cb } else { &mb.chroma_dc_cr };
+    let dc_src = if is_cb {
+        &mb.chroma_dc_cb
+    } else {
+        &mb.chroma_dc_cr
+    };
     let dc = chroma_dc_inverse_hadamard(dc_src, qp);
-    let ac_src = if is_cb { &mb.chroma_ac_cb } else { &mb.chroma_ac_cr };
+    let ac_src = if is_cb {
+        &mb.chroma_ac_cb
+    } else {
+        &mb.chroma_ac_cr
+    };
 
     // 4 chroma 4x4 blocks in raster order within the 8x8.
     for cb in 0..4 {
@@ -1282,21 +1544,27 @@ fn recon_chroma(
         let bx = cx0 + bcx * 4;
         let by = cy0 + bcy * 4;
         let mut p4 = [0i32; 16];
-        for r in 0..4 { for c in 0..4 {
-            p4[r * 4 + c] = pred[(bcy * 4 + r) * 8 + (bcx * 4 + c)];
-        }}
+        for r in 0..4 {
+            for c in 0..4 {
+                p4[r * 4 + c] = pred[(bcy * 4 + r) * 8 + (bcx * 4 + c)];
+            }
+        }
         // AC coefs: 15 values at raster 1..15.
         let mut blk = [0i32; 16];
         if mb.cbp_chroma == 2 {
-            for i in 0..15 { blk[i + 1] = ac_src[cb][i]; }
+            for i in 0..15 {
+                blk[i + 1] = ac_src[cb][i];
+            }
         }
         let recon = recon_4x4_block(&blk, &p4, qp, Some(dc[cb]));
         let plane = if is_cb { &mut frame.u } else { &mut frame.v };
-        for r in 0..4 { for c in 0..4 {
-            if by + r < ch && bx + c < cw {
-                plane[(by + r) * cw + (bx + c)] = recon[r * 4 + c];
+        for r in 0..4 {
+            for c in 0..4 {
+                if by + r < ch && bx + c < cw {
+                    plane[(by + r) * cw + (bx + c)] = recon[r * 4 + c];
+                }
             }
-        }}
+        }
     }
 }
 
@@ -1315,12 +1583,16 @@ mod tests {
     #[test]
     fn intra16x16_vertical_copies_above() {
         let mut above = [0i32; 16];
-        for i in 0..16 { above[i] = 10 + i as i32; }
+        for i in 0..16 {
+            above[i] = 10 + i as i32;
+        }
         let left = [0i32; 16];
         let p = intra16x16_pred(0, &above, &left, 0, true, false);
-        for r in 0..16 { for c in 0..16 {
-            assert_eq!(p[r * 16 + c], above[c]);
-        }}
+        for r in 0..16 {
+            for c in 0..16 {
+                assert_eq!(p[r * 16 + c], above[c]);
+            }
+        }
     }
 
     #[test]

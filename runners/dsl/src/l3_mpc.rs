@@ -99,8 +99,11 @@ impl MpcSolution {
 /// D = diag(q, q, …, q, p_f)  (running cost on y_1..y_{N-1}, terminal on y_N)
 fn build_hessian_and_linear(
     y_0: f64,
-    a: f64, b: f64,
-    q: f64, r: f64, p_f: f64,
+    a: f64,
+    b: f64,
+    q: f64,
+    r: f64,
+    p_f: f64,
     horizon: usize,
 ) -> (Vec<Vec<f64>>, Vec<f64>) {
     let n = horizon;
@@ -113,11 +116,9 @@ fn build_hessian_and_linear(
         }
     }
     // F[k-1] = a^k for k=1..N.
-    let f_vec: Vec<f64> =
-        (1..=n).map(|k| a.powi(k as i32)).collect();
+    let f_vec: Vec<f64> = (1..=n).map(|k| a.powi(k as i32)).collect();
     // D[k-1] = q for k=1..N-1; p_f for k=N.
-    let d_vec: Vec<f64> =
-        (1..=n).map(|k| if k == n { p_f } else { q }).collect();
+    let d_vec: Vec<f64> = (1..=n).map(|k| if k == n { p_f } else { q }).collect();
     // H[i][j] = 2 * (r·δ_ij + Σ_k g[k][i] · d[k] · g[k][j])
     let mut h = vec![vec![0.0_f64; n]; n];
     for i in 0..n {
@@ -153,14 +154,20 @@ fn build_hessian_and_linear(
 /// (horizon ≤ ~50) Hessians substrate's MPC produces.
 fn estimate_max_eigenvalue(h: &[Vec<f64>], iters: usize) -> f64 {
     let n = h.len();
-    if n == 0 { return 1.0; }
+    if n == 0 {
+        return 1.0;
+    }
     let mut v = vec![1.0_f64 / (n as f64).sqrt(); n];
     let mut lambda = 0.0_f64;
     for _ in 0..iters {
         let hv = matvec(h, &v);
         let norm: f64 = hv.iter().map(|x| x * x).sum::<f64>().sqrt();
-        if norm < 1e-15 { return 1.0; }
-        for i in 0..n { v[i] = hv[i] / norm; }
+        if norm < 1e-15 {
+            return 1.0;
+        }
+        for i in 0..n {
+            v[i] = hv[i] / norm;
+        }
         let hv2 = matvec(h, &v);
         lambda = v.iter().zip(hv2.iter()).map(|(a, b)| a * b).sum();
     }
@@ -190,11 +197,16 @@ fn matvec(h: &[Vec<f64>], v: &[f64]) -> Vec<f64> {
 /// unstable plants).
 fn solve_qp(
     y_0: f64,
-    a: f64, b: f64,
-    q: f64, r: f64, p_f: f64,
+    a: f64,
+    b: f64,
+    q: f64,
+    r: f64,
+    p_f: f64,
     horizon: usize,
-    u_min: f64, u_max: f64,
-    max_iter: usize, tolerance: f64,
+    u_min: f64,
+    u_max: f64,
+    max_iter: usize,
+    tolerance: f64,
 ) -> Result<MpcSolution, MpcError> {
     if u_max < u_min {
         return Err(MpcError::InvertedBounds);
@@ -208,7 +220,9 @@ fn solve_qp(
     let (h_mat, lin) = build_hessian_and_linear(y_0, a, b, q, r, p_f, n);
 
     let mut u = vec![0.0_f64; n];
-    for ui in &mut u { *ui = ui.clamp(u_min, u_max); }
+    for ui in &mut u {
+        *ui = ui.clamp(u_min, u_max);
+    }
 
     // Helper: compute cost J(u) = (1/2) u^T H u + lin^T u.
     let cost_of = |u: &[f64]| -> f64 {
@@ -232,7 +246,9 @@ fn solve_qp(
         // ∇J(u) = H u + lin
         let hu = matvec(&h_mat, &u);
         let mut grad = vec![0.0_f64; n];
-        for i in 0..n { grad[i] = hu[i] + lin[i]; }
+        for i in 0..n {
+            grad[i] = hu[i] + lin[i];
+        }
         // Projected gradient (natural residual).
         let mut proj_g = vec![0.0_f64; n];
         for i in 0..n {
@@ -245,12 +261,13 @@ fn solve_qp(
                 proj_g[i] = g;
             }
         }
-        let pg_norm: f64 =
-            proj_g.iter().map(|x| x * x).sum::<f64>().sqrt();
+        let pg_norm: f64 = proj_g.iter().map(|x| x * x).sum::<f64>().sqrt();
         last_norm = pg_norm;
         if pg_norm < tolerance {
             return Ok(MpcSolution {
-                trajectory: u, iterations: iter, final_grad_norm: pg_norm,
+                trajectory: u,
+                iterations: iter,
+                final_grad_norm: pg_norm,
             });
         }
         // Backtracking line search: shrink α until cost decreases.
@@ -258,7 +275,9 @@ fn solve_qp(
         // local minimum.
         let mut backtracks = 0;
         loop {
-            let u_trial: Vec<f64> = u.iter().zip(grad.iter())
+            let u_trial: Vec<f64> = u
+                .iter()
+                .zip(grad.iter())
                 .map(|(uk, gk)| (uk - alpha * gk).clamp(u_min, u_max))
                 .collect();
             let c_trial = cost_of(&u_trial);
@@ -274,14 +293,16 @@ fn solve_qp(
             if alpha < 1e-20 || backtracks > 60 {
                 // Numerical floor reached — accept current u.
                 return Ok(MpcSolution {
-                    trajectory: u, iterations: iter,
+                    trajectory: u,
+                    iterations: iter,
                     final_grad_norm: pg_norm,
                 });
             }
         }
     }
     Err(MpcError::QpDidNotConverge {
-        iterations: max_iter, grad_norm: last_norm,
+        iterations: max_iter,
+        grad_norm: last_norm,
     })
 }
 
@@ -289,10 +310,14 @@ fn solve_qp(
 /// constraints on the control input. Realises the
 /// `mpc_constrained_lookahead` component of the L3 Mt.
 pub struct ScalarMpcController {
-    pub a: f64, pub b: f64,
-    pub q: f64, pub r: f64, pub p_f: f64,
+    pub a: f64,
+    pub b: f64,
+    pub q: f64,
+    pub r: f64,
+    pub p_f: f64,
     pub horizon: usize,
-    pub u_min: f64, pub u_max: f64,
+    pub u_min: f64,
+    pub u_max: f64,
     pub max_iter: usize,
     pub tolerance: f64,
     /// Last QP solve result; useful for monitoring + tests.
@@ -302,14 +327,26 @@ pub struct ScalarMpcController {
 impl ScalarMpcController {
     /// Construct with sensible defaults: max_iter 200, tolerance 1e-6.
     pub fn new(
-        a: f64, b: f64,
-        q: f64, r: f64, p_f: f64,
+        a: f64,
+        b: f64,
+        q: f64,
+        r: f64,
+        p_f: f64,
         horizon: usize,
-        u_min: f64, u_max: f64,
+        u_min: f64,
+        u_max: f64,
     ) -> Self {
         Self {
-            a, b, q, r, p_f, horizon, u_min, u_max,
-            max_iter: 200, tolerance: 1e-6,
+            a,
+            b,
+            q,
+            r,
+            p_f,
+            horizon,
+            u_min,
+            u_max,
+            max_iter: 200,
+            tolerance: 1e-6,
             last_iterations: 0,
         }
     }
@@ -319,10 +356,16 @@ impl ScalarMpcController {
     pub fn solve(&mut self, error: f64) -> Result<MpcSolution, MpcError> {
         let sol = solve_qp(
             error,
-            self.a, self.b,
-            self.q, self.r, self.p_f,
-            self.horizon, self.u_min, self.u_max,
-            self.max_iter, self.tolerance,
+            self.a,
+            self.b,
+            self.q,
+            self.r,
+            self.p_f,
+            self.horizon,
+            self.u_min,
+            self.u_max,
+            self.max_iter,
+            self.tolerance,
         )?;
         self.last_iterations = sol.iterations;
         Ok(sol)
@@ -348,7 +391,9 @@ mod tests {
     use super::*;
     use crate::l3_lqr::ScalarLqrController;
 
-    fn approx(a: f64, b: f64, tol: f64) -> bool { (a - b).abs() < tol }
+    fn approx(a: f64, b: f64, tol: f64) -> bool {
+        (a - b).abs() < tol
+    }
 
     // ---------- QP convergence ----------
 
@@ -366,15 +411,16 @@ mod tests {
         let y_0 = 10.0_f64;
         let (a, b) = (1.0_f64, 1.0_f64);
         let (q, r, p_f) = (1.0_f64, 1.0_f64, 5.0_f64);
-        let _q = q;  // unused in horizon=1 (no running state cost)
+        let _q = q; // unused in horizon=1 (no running state cost)
         let horizon = 1;
-        let sol = solve_qp(
-            y_0, a, b, q, r, p_f,
-            horizon, -1e6, 1e6, 500, 1e-6,
-        ).unwrap();
+        let sol = solve_qp(y_0, a, b, q, r, p_f, horizon, -1e6, 1e6, 500, 1e-6).unwrap();
         let expected = b * p_f * a * y_0 / (r + b * b * p_f);
-        assert!(approx(sol.trajectory[0], expected, 1e-4),
-                "QP single step expected {}, got {}", expected, sol.trajectory[0]);
+        assert!(
+            approx(sol.trajectory[0], expected, 1e-4),
+            "QP single step expected {}, got {}",
+            expected,
+            sol.trajectory[0]
+        );
     }
 
     /// Multi-step QP with no constraints converges and drives error
@@ -384,17 +430,17 @@ mod tests {
     fn qp_multi_step_drives_error_down() {
         let y_0 = 10.0_f64;
         let (a, b) = (1.0_f64, 1.0_f64);
-        let sol = solve_qp(
-            y_0, a, b, 1.0, 1.0, 10.0,
-            20, -100.0, 100.0, 3000, 1e-3,
-        ).unwrap();
+        let sol = solve_qp(y_0, a, b, 1.0, 1.0, 10.0, 20, -100.0, 100.0, 3000, 1e-3).unwrap();
         // Apply trajectory open-loop with the internal sign convention.
         let mut y = y_0;
         for u in &sol.trajectory {
             y = a * y - b * u;
         }
-        assert!(y.abs() < 1.0,
-                "open-loop trajectory should drive y near 0; got {}", y);
+        assert!(
+            y.abs() < 1.0,
+            "open-loop trajectory should drive y near 0; got {}",
+            y
+        );
     }
 
     // ---------- Constraint handling ----------
@@ -405,43 +451,42 @@ mod tests {
     /// u is huge; with u_max=1 it saturates at +1.
     #[test]
     fn mpc_respects_u_max() {
-        let mut mpc = ScalarMpcController::new(
-            1.0, 1.0,
-            1.0, 0.001, 100.0,
-            5, -1.0, 1.0,
-        );
+        let mut mpc = ScalarMpcController::new(1.0, 1.0, 1.0, 0.001, 100.0, 5, -1.0, 1.0);
         let sol = mpc.solve(1000.0).unwrap();
         for (i, u) in sol.trajectory.iter().enumerate() {
-            assert!(*u >= -1.0 - 1e-9 && *u <= 1.0 + 1e-9,
-                    "u[{}] = {} violates bounds [-1, 1]", i, u);
+            assert!(
+                *u >= -1.0 - 1e-9 && *u <= 1.0 + 1e-9,
+                "u[{}] = {} violates bounds [-1, 1]",
+                i,
+                u
+            );
         }
         // First action saturates positively (drive positive error down).
-        assert!(approx(sol.first_action(), 1.0, 1e-3),
-                "first action should saturate near +1.0; got {}",
-                sol.first_action());
+        assert!(
+            approx(sol.first_action(), 1.0, 1e-3),
+            "first action should saturate near +1.0; got {}",
+            sol.first_action()
+        );
     }
 
     /// MPC respects lower bound symmetrically. Negative y_0 →
     /// negative u (saturating at u_min = -1).
     #[test]
     fn mpc_respects_u_min() {
-        let mut mpc = ScalarMpcController::new(
-            1.0, 1.0,
-            1.0, 0.001, 100.0,
-            5, -1.0, 1.0,
-        );
+        let mut mpc = ScalarMpcController::new(1.0, 1.0, 1.0, 0.001, 100.0, 5, -1.0, 1.0);
         let sol = mpc.solve(-1000.0).unwrap();
-        assert!(approx(sol.first_action(), -1.0, 1e-3),
-                "first action should saturate at -1.0; got {}",
-                sol.first_action());
+        assert!(
+            approx(sol.first_action(), -1.0, 1e-3),
+            "first action should saturate at -1.0; got {}",
+            sol.first_action()
+        );
     }
 
     /// Inverted bounds → InvertedBounds error.
     #[test]
     fn mpc_inverted_bounds_returns_error() {
         let r = solve_qp(
-            1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
-            5, 1.0, -1.0,  // inverted!
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 5, 1.0, -1.0, // inverted!
             100, 1e-9,
         );
         assert!(matches!(r, Err(MpcError::InvertedBounds)));
@@ -450,11 +495,7 @@ mod tests {
     /// r = 0 → InvalidParameter (QP not strictly convex).
     #[test]
     fn mpc_zero_input_cost_rejected() {
-        let r = solve_qp(
-            1.0, 1.0, 1.0, 1.0, 0.0, 1.0,
-            5, -1.0, 1.0,
-            100, 1e-9,
-        );
+        let r = solve_qp(1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 5, -1.0, 1.0, 100, 1e-9);
         assert!(matches!(r, Err(MpcError::InvalidParameter { .. })));
     }
 
@@ -465,29 +506,32 @@ mod tests {
     /// (u positive when state below setpoint to push state up).
     #[test]
     fn mpc_step_sign_convention() {
-        let mut mpc = ScalarMpcController::new(
-            1.0, 1.0, 1.0, 1.0, 5.0,
-            5, -10.0, 10.0,
-        );
+        let mut mpc = ScalarMpcController::new(1.0, 1.0, 1.0, 1.0, 5.0, 5, -10.0, 10.0);
         let u_pos_err = mpc.step(5.0, 0.1);
         let u_neg_err = mpc.step(-5.0, 0.1);
-        assert!(u_pos_err > 0.0,
-                "positive error should yield positive u; got {}",
-                u_pos_err);
-        assert!(u_neg_err < 0.0,
-                "negative error should yield negative u; got {}",
-                u_neg_err);
-        assert!(approx(u_pos_err, -u_neg_err, 1e-3),
-                "sign-symmetric expected; got pos={}, neg={}",
-                u_pos_err, u_neg_err);
+        assert!(
+            u_pos_err > 0.0,
+            "positive error should yield positive u; got {}",
+            u_pos_err
+        );
+        assert!(
+            u_neg_err < 0.0,
+            "negative error should yield negative u; got {}",
+            u_neg_err
+        );
+        assert!(
+            approx(u_pos_err, -u_neg_err, 1e-3),
+            "sign-symmetric expected; got pos={}, neg={}",
+            u_pos_err,
+            u_neg_err
+        );
     }
 
     /// Fallback on QP failure: Controller returns 0.0.
     #[test]
     fn mpc_fallback_on_invalid_bounds() {
         let mut mpc = ScalarMpcController::new(
-            1.0, 1.0, 1.0, 1.0, 1.0,
-            5, 1.0, -1.0,  // inverted → solver errors
+            1.0, 1.0, 1.0, 1.0, 1.0, 5, 1.0, -1.0, // inverted → solver errors
         );
         // step() returns 0.0 fallback rather than panicking.
         let u = mpc.step(5.0, 0.1);
@@ -497,10 +541,7 @@ mod tests {
     /// Reset is a no-op (MPC has no integrator state).
     #[test]
     fn mpc_reset_noop() {
-        let mut mpc = ScalarMpcController::new(
-            1.0, 1.0, 1.0, 1.0, 1.0,
-            5, -10.0, 10.0,
-        );
+        let mut mpc = ScalarMpcController::new(1.0, 1.0, 1.0, 1.0, 1.0, 5, -10.0, 10.0);
         let before = mpc.step(5.0, 0.1);
         mpc.reset();
         let after = mpc.step(5.0, 0.1);
@@ -515,12 +556,9 @@ mod tests {
     /// state toward setpoint (positive when error > 0).
     #[test]
     fn mpc_closed_loop_stabilises_mild_instability() {
-        let a = 1.05_f64;  // open-loop unstable
+        let a = 1.05_f64; // open-loop unstable
         let b = 1.0_f64;
-        let mut mpc = ScalarMpcController::new(
-            a, b, 1.0, 1.0, 10.0,
-            10, -5.0, 5.0,
-        );
+        let mut mpc = ScalarMpcController::new(a, b, 1.0, 1.0, 10.0, 10, -5.0, 5.0);
         // Looser tolerance acceptable for closed-loop work — the
         // receding-horizon re-solve recovers from any per-tick
         // sub-optimality.
@@ -529,12 +567,15 @@ mod tests {
         let setpoint = 0.0_f64;
         let mut x: f64 = 10.0;
         for _ in 0..200 {
-            let error = setpoint - x;  // = -x; negative initially
+            let error = setpoint - x; // = -x; negative initially
             let u = mpc.step(error, 0.01);
             x = a * x + b * u;
         }
-        assert!(x.abs() < 1.0,
-                "MPC closed loop should stabilise plant; final x = {}", x);
+        assert!(
+            x.abs() < 1.0,
+            "MPC closed loop should stabilise plant; final x = {}",
+            x
+        );
     }
 
     // ---------- MPC vs LQR cross-validation ----------
@@ -555,22 +596,25 @@ mod tests {
         let error = 5.0_f64;
         let lqr = ScalarLqrController::from_scalar(a, b, q, r).unwrap();
         let lqr_action = lqr.gain * error;
-        let mut mpc = ScalarMpcController::new(
-            a, b, q, r,
-            10.0,
-            30, -1e6, 1e6,
-        );
+        let mut mpc = ScalarMpcController::new(a, b, q, r, 10.0, 30, -1e6, 1e6);
         mpc.tolerance = 1e-4;
         mpc.max_iter = 3000;
         let mpc_action = mpc.solve(error).unwrap().first_action();
         // Same sign required.
-        assert!(mpc_action * lqr_action > 0.0,
-                "MPC + LQR should have matching sign; MPC={}, LQR={}",
-                mpc_action, lqr_action);
+        assert!(
+            mpc_action * lqr_action > 0.0,
+            "MPC + LQR should have matching sign; MPC={}, LQR={}",
+            mpc_action,
+            lqr_action
+        );
         let rel_err = (mpc_action - lqr_action).abs() / lqr_action.abs();
-        assert!(rel_err < 0.2,
-                "MPC long-horizon should approximate LQR within 20%; \
+        assert!(
+            rel_err < 0.2,
+            "MPC long-horizon should approximate LQR within 20%; \
                  MPC={}, LQR={}, rel_err={}",
-                mpc_action, lqr_action, rel_err);
+            mpc_action,
+            lqr_action,
+            rel_err
+        );
     }
 }

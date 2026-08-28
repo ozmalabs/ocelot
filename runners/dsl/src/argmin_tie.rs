@@ -108,7 +108,9 @@ pub fn note_site(selector: &str, key: &str, tie: bool) {
     let m = g.get_or_insert_with(BTreeMap::new);
     let e = m.entry(format!("{selector}\u{1}{key}")).or_insert((0, 0));
     e.0 += 1;
-    if tie { e.1 += 1; }
+    if tie {
+        e.1 += 1;
+    }
 }
 
 /// Flattened `(key, firings, ties)` rows.

@@ -10,17 +10,15 @@
 //! (from the hardware-aware design commit bc4fe5f) against measured
 //! reality on whatever system this is run on.
 
-use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use rustc_hash::FxHashMap;
 use substrate_rs::checker::ConsistencyChecker;
 use substrate_rs::code_cache::CodeCacheConfig;
 use substrate_rs::grammar::Grammar;
-use substrate_rs::l2_adaptive::{
-    AdaptiveDispatcher, TierUpPolicy, TypedTask,
-};
+use substrate_rs::l2_adaptive::{AdaptiveDispatcher, TierUpPolicy, TypedTask};
 use substrate_rs::l2_dispatch::{PriorityClass, Scheduler, Task};
 use substrate_rs::l2_dispatch_work_stealing::WorkStealingScheduler;
 use substrate_rs::l3_drives::KalmanFilter1D;
@@ -87,7 +85,9 @@ fn bench_graph_mutations() {
     let rate = n as f64 / elapsed.as_secs_f64();
     println!(
         "  Inserted {} nodes in {:?} ({:.3} s)",
-        n, elapsed, elapsed.as_secs_f64()
+        n,
+        elapsed,
+        elapsed.as_secs_f64()
     );
     println!("  Throughput: {}", fmt_per_sec(rate));
     print_result(30e6, rate);
@@ -147,7 +147,9 @@ fn bench_kalman_updates() {
     let mut kf = KalmanFilter1D::new(0.0, 100.0, 0.01, 1.0);
 
     // Warm.
-    for _ in 0..10_000 { kf.update(1.0); }
+    for _ in 0..10_000 {
+        kf.update(1.0);
+    }
 
     let start = Instant::now();
     let mut acc = 0.0_f64;
@@ -160,11 +162,15 @@ fn bench_kalman_updates() {
     let rate = n as f64 / elapsed.as_secs_f64();
     println!(
         "  {} 1D Kalman updates in {:?} ({:.3} s)",
-        n, elapsed, elapsed.as_secs_f64()
+        n,
+        elapsed,
+        elapsed.as_secs_f64()
     );
     println!(
         "  Throughput: {}  (acc={:.6}, final x_hat={:.6})",
-        fmt_per_sec(rate), acc, kf.x_hat
+        fmt_per_sec(rate),
+        acc,
+        kf.x_hat
     );
     print_result(250e3, rate);
 }
@@ -187,7 +193,9 @@ fn bench_work_stealing_submit() {
     let start = Instant::now();
     for _ in 0..n {
         let c = Arc::clone(&counter);
-        sched.submit(move || { c.fetch_add(1, Ordering::Relaxed); });
+        sched.submit(move || {
+            c.fetch_add(1, Ordering::Relaxed);
+        });
     }
     while counter.load(Ordering::Relaxed) < n {
         std::thread::sleep(Duration::from_micros(100));
@@ -211,44 +219,58 @@ fn bench_work_stealing_submit() {
 fn build_kalman(dim: usize) -> KalmanFilterND {
     let x0 = {
         let mut m = Mat::zeros(dim, 1);
-        for i in 0..dim { m.set(i, 0, 0.0); }
+        for i in 0..dim {
+            m.set(i, 0, 0.0);
+        }
         m
     };
     let mut p0 = Mat::identity(dim);
-    for i in 0..dim { p0.set(i, i, 100.0); }
-    let a = Mat::identity(dim);   // identity dynamics
-    let c = Mat::identity(dim);   // observe all
+    for i in 0..dim {
+        p0.set(i, i, 100.0);
+    }
+    let a = Mat::identity(dim); // identity dynamics
+    let c = Mat::identity(dim); // observe all
     let mut q = Mat::zeros(dim, dim);
-    for i in 0..dim { q.set(i, i, 0.01); }
+    for i in 0..dim {
+        q.set(i, i, 0.01);
+    }
     let mut r = Mat::zeros(dim, dim);
-    for i in 0..dim { r.set(i, i, 1.0); }
+    for i in 0..dim {
+        r.set(i, i, 1.0);
+    }
     KalmanFilterND::new(x0, p0, a, None, c, q, r).expect("KF construct")
 }
 
 fn bench_kalman_nd(dim: usize, n: usize) {
     print_section(&format!(
         "Benchmark 3{}: {}-dim Kalman update throughput (FP64)",
-        if dim == 4 { "b" } else { "c" }, dim));
+        if dim == 4 { "b" } else { "c" },
+        dim
+    ));
     println!("  Prediction was ~250K updates/sec for ≤64-dim case");
     println!("  (single-core); this is the proper test.");
     println!();
     let mut kf = build_kalman(dim);
     let meas_warm = {
         let mut m = Mat::zeros(dim, 1);
-        for i in 0..dim { m.set(i, 0, (i as f64) * 0.1); }
+        for i in 0..dim {
+            m.set(i, 0, (i as f64) * 0.1);
+        }
         m
     };
     for _ in 0..100 {
         kf.predict(None).unwrap();
         kf.update(&meas_warm).unwrap();
     }
-    let measurements: Vec<Mat> = (0..16).map(|k| {
-        let mut m = Mat::zeros(dim, 1);
-        for i in 0..dim {
-            m.set(i, 0, (i as f64) + 0.1 * (k as f64).sin());
-        }
-        m
-    }).collect();
+    let measurements: Vec<Mat> = (0..16)
+        .map(|k| {
+            let mut m = Mat::zeros(dim, 1);
+            for i in 0..dim {
+                m.set(i, 0, (i as f64) + 0.1 * (k as f64).sin());
+            }
+            m
+        })
+        .collect();
     let start = Instant::now();
     for k in 0..n {
         kf.predict(None).unwrap();
@@ -258,7 +280,9 @@ fn bench_kalman_nd(dim: usize, n: usize) {
     let rate = n as f64 / elapsed.as_secs_f64();
     println!(
         "  {} updates in {:?} ({:.3} s)",
-        n, elapsed, elapsed.as_secs_f64()
+        n,
+        elapsed,
+        elapsed.as_secs_f64()
     );
     println!("  Throughput: {}", fmt_per_sec(rate));
     print_result(250e3, rate);
@@ -267,7 +291,9 @@ fn bench_kalman_nd(dim: usize, n: usize) {
 fn bench_kalman_nd_bf16_cached(dim: usize, n: usize) {
     print_section(&format!(
         "Benchmark 3{}-BF16-CACHED: {}-dim Kalman (BF16 matmul w/ caches)",
-        if dim == 16 { "c" } else { "d" }, dim));
+        if dim == 16 { "c" } else { "d" },
+        dim
+    ));
     println!("  Same as the uncached BF16 path but pre-packs C, C^T");
     println!("  once + P once per update. Amortises 5 of 6 matmul");
     println!("  conversions per update.");
@@ -276,20 +302,24 @@ fn bench_kalman_nd_bf16_cached(dim: usize, n: usize) {
     kf.build_bf16_caches();
     let meas_warm = {
         let mut m = Mat::zeros(dim, 1);
-        for i in 0..dim { m.set(i, 0, (i as f64) * 0.1); }
+        for i in 0..dim {
+            m.set(i, 0, (i as f64) * 0.1);
+        }
         m
     };
     for _ in 0..100 {
         kf.predict_bf16(None).unwrap();
         kf.update_bf16_cached(&meas_warm).unwrap();
     }
-    let measurements: Vec<Mat> = (0..16).map(|k| {
-        let mut m = Mat::zeros(dim, 1);
-        for i in 0..dim {
-            m.set(i, 0, (i as f64) + 0.1 * (k as f64).sin());
-        }
-        m
-    }).collect();
+    let measurements: Vec<Mat> = (0..16)
+        .map(|k| {
+            let mut m = Mat::zeros(dim, 1);
+            for i in 0..dim {
+                m.set(i, 0, (i as f64) + 0.1 * (k as f64).sin());
+            }
+            m
+        })
+        .collect();
     let start = Instant::now();
     for k in 0..n {
         kf.predict_bf16(None).unwrap();
@@ -299,7 +329,9 @@ fn bench_kalman_nd_bf16_cached(dim: usize, n: usize) {
     let rate = n as f64 / elapsed.as_secs_f64();
     println!(
         "  {} updates in {:?} ({:.3} s)",
-        n, elapsed, elapsed.as_secs_f64()
+        n,
+        elapsed,
+        elapsed.as_secs_f64()
     );
     println!("  Throughput: {}", fmt_per_sec(rate));
     print_result(250e3, rate);
@@ -308,27 +340,33 @@ fn bench_kalman_nd_bf16_cached(dim: usize, n: usize) {
 fn bench_kalman_nd_bf16(dim: usize, n: usize) {
     print_section(&format!(
         "Benchmark 3{}-BF16: {}-dim Kalman update (AVX-512 BF16 matmul)",
-        if dim == 16 { "c" } else { "d" }, dim));
+        if dim == 16 { "c" } else { "d" },
+        dim
+    ));
     println!("  Same Kalman, but BF16 matmul for the heavy covariance");
     println!("  updates. Matrix inverse stays FP64 for precision.");
     println!();
     let mut kf = build_kalman(dim);
     let meas_warm = {
         let mut m = Mat::zeros(dim, 1);
-        for i in 0..dim { m.set(i, 0, (i as f64) * 0.1); }
+        for i in 0..dim {
+            m.set(i, 0, (i as f64) * 0.1);
+        }
         m
     };
     for _ in 0..100 {
         kf.predict_bf16(None).unwrap();
         kf.update_bf16(&meas_warm).unwrap();
     }
-    let measurements: Vec<Mat> = (0..16).map(|k| {
-        let mut m = Mat::zeros(dim, 1);
-        for i in 0..dim {
-            m.set(i, 0, (i as f64) + 0.1 * (k as f64).sin());
-        }
-        m
-    }).collect();
+    let measurements: Vec<Mat> = (0..16)
+        .map(|k| {
+            let mut m = Mat::zeros(dim, 1);
+            for i in 0..dim {
+                m.set(i, 0, (i as f64) + 0.1 * (k as f64).sin());
+            }
+            m
+        })
+        .collect();
     let start = Instant::now();
     for k in 0..n {
         kf.predict_bf16(None).unwrap();
@@ -338,7 +376,9 @@ fn bench_kalman_nd_bf16(dim: usize, n: usize) {
     let rate = n as f64 / elapsed.as_secs_f64();
     println!(
         "  {} updates in {:?} ({:.3} s)",
-        n, elapsed, elapsed.as_secs_f64()
+        n,
+        elapsed,
+        elapsed.as_secs_f64()
     );
     println!("  Throughput: {}", fmt_per_sec(rate));
     print_result(250e3, rate);
@@ -365,7 +405,9 @@ fn bench_raw_matmul_64(iters: usize) {
     }
 
     // Warm.
-    for _ in 0..10 { let _ = a.mul(&b); }
+    for _ in 0..10 {
+        let _ = a.mul(&b);
+    }
 
     // FP64 path.
     let start = Instant::now();
@@ -376,11 +418,17 @@ fn bench_raw_matmul_64(iters: usize) {
     }
     let elapsed_fp64 = start.elapsed();
     let rate_fp64 = iters as f64 / elapsed_fp64.as_secs_f64();
-    println!("  FP64 (AVX-512):  {} ({:?}, acc={:.6})",
-             fmt_per_sec(rate_fp64), elapsed_fp64, acc);
+    println!(
+        "  FP64 (AVX-512):  {} ({:?}, acc={:.6})",
+        fmt_per_sec(rate_fp64),
+        elapsed_fp64,
+        acc
+    );
 
     // BF16 path.
-    for _ in 0..10 { let _ = a.mul_bf16(&b); }
+    for _ in 0..10 {
+        let _ = a.mul_bf16(&b);
+    }
     let start = Instant::now();
     let mut acc = 0.0_f64;
     for _ in 0..iters {
@@ -389,8 +437,12 @@ fn bench_raw_matmul_64(iters: usize) {
     }
     let elapsed_bf16 = start.elapsed();
     let rate_bf16 = iters as f64 / elapsed_bf16.as_secs_f64();
-    println!("  BF16 (AVX-512_BF16): {} ({:?}, acc={:.6})",
-             fmt_per_sec(rate_bf16), elapsed_bf16, acc);
+    println!(
+        "  BF16 (AVX-512_BF16): {} ({:?}, acc={:.6})",
+        fmt_per_sec(rate_bf16),
+        elapsed_bf16,
+        acc
+    );
 
     println!();
     println!("  BF16 / FP64 speedup: {:.2}×", rate_bf16 / rate_fp64);
@@ -407,13 +459,15 @@ fn bench_adaptive_dispatcher_typed_submit() {
     println!("  classification.");
     println!();
     let s = Substrate::new(ConsistencyChecker::new(Grammar::new()));
-    let dispatcher: AdaptiveDispatcher<crate::FakeJit> =
-        AdaptiveDispatcher::with_shared_epoch(
-            Scheduler::new(6),
-            TierUpPolicy { threshold: u64::MAX, cooling_threshold: 3 },
-            CodeCacheConfig::default(),
-            s.gamma_epoch(),
-        );
+    let dispatcher: AdaptiveDispatcher<crate::FakeJit> = AdaptiveDispatcher::with_shared_epoch(
+        Scheduler::new(6),
+        TierUpPolicy {
+            threshold: u64::MAX,
+            cooling_threshold: 3,
+        },
+        CodeCacheConfig::default(),
+        s.gamma_epoch(),
+    );
     let n: usize = 100_000;
     let mut interner = s.interner;
     let kind = interner.intern("bench_kind");
@@ -446,7 +500,9 @@ fn bench_adaptive_dispatcher_typed_submit() {
 // FakeJit payload — just need something that impls CodeSize.
 struct FakeJit;
 impl substrate_rs::code_cache::CodeSize for FakeJit {
-    fn code_size_bytes(&self) -> usize { 0 }
+    fn code_size_bytes(&self) -> usize {
+        0
+    }
 }
 
 fn main() {

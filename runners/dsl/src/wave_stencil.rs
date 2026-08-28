@@ -91,7 +91,10 @@ fn as_singleton_param(sub: &Substrate, idx: TermIdx, params_type: Sym) -> Option
 }
 
 fn as_lit_str(sub: &Substrate, idx: TermIdx) -> Option<Sym> {
-    if let TermNode::Lit { value: Value::Str(s) } = sub.terms.get(idx) {
+    if let TermNode::Lit {
+        value: Value::Str(s),
+    } = sub.terms.get(idx)
+    {
         Some(*s)
     } else {
         None
@@ -128,10 +131,7 @@ fn only_set_attrs(rule: &crate::rewrite::RewriteRule) -> bool {
 
 /// The literal `Sym` a `SetAttr(var, key, Literal(Str))` writes, if that is
 /// the shape.
-fn set_state_literal(
-    rule: &crate::rewrite::RewriteRule,
-    k_state: Sym,
-) -> Option<Sym> {
+fn set_state_literal(rule: &crate::rewrite::RewriteRule, k_state: Sym) -> Option<Sym> {
     for (_, key, val) in set_attr_effects(rule) {
         if key == k_state {
             if let EffectArg::Literal(Value::Str(s)) = val {
@@ -215,8 +215,12 @@ pub fn admissible(sub: &Substrate, strict: bool) -> Option<StencilProgram> {
             }
             return None;
         };
-        let Some(where_idx) = rule.where_ else { return None };
-        let Some(conj) = and_items(sub, where_idx) else { return None };
+        let Some(where_idx) = rule.where_ else {
+            return None;
+        };
+        let Some(conj) = and_items(sub, where_idx) else {
+            return None;
+        };
 
         if state_lit == s_refractory {
             // wv_refract: And[ Eq(Attr(c,state), "active"),
@@ -435,7 +439,10 @@ fn where_has_param_guard(sub: &Substrate, conj: &[TermIdx], t_params: Sym) -> bo
 /// byte-identical to `s.tick()`. Writes `state`/`fired_at` back only where they
 /// change, as the SAME `Value` the rules write.
 pub fn apply(sub: &mut Substrate, prog: &StencilProgram) {
-    let t_cell = sub.interner.lookup("RetinaCell").expect("RetinaCell interned");
+    let t_cell = sub
+        .interner
+        .lookup("RetinaCell")
+        .expect("RetinaCell interned");
     let cells: Vec<NodeID> = sub.graph.nodes_of_type(t_cell);
     let n = cells.len();
     if n == 0 {
@@ -465,7 +472,10 @@ pub fn apply(sub: &mut Substrate, prog: &StencilProgram) {
                 REST
             };
         }
-        activated[i] = at.get(&prog.k_activated_at).map(|v| v.as_f64()).unwrap_or(0.0);
+        activated[i] = at
+            .get(&prog.k_activated_at)
+            .map(|v| v.as_f64())
+            .unwrap_or(0.0);
         fired[i] = at.get(&prog.k_fired_at).map(|v| v.as_f64()).unwrap_or(0.0);
     }
 

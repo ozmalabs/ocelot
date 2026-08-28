@@ -268,9 +268,7 @@ pub fn detect_onsets(
                 continue;
             }
             let mut peak = i;
-            while peak + 1 < db.len()
-                && db[peak + 1] > db[peak]
-                && (peak - i) < refractory_samples
+            while peak + 1 < db.len() && db[peak + 1] > db[peak] && (peak - i) < refractory_samples
             {
                 peak += 1;
             }
@@ -466,8 +464,7 @@ pub fn patch_evaluate(
             let centre_t = patch.centre_hz + slope_per_sample * dt;
             let mut sum = 0.0f32;
             for (band_i, env) in envelopes.iter().enumerate() {
-                let w = freq_weight(band_centres[band_i], centre_t,
-                                      patch.freq_sigma_hz);
+                let w = freq_weight(band_centres[band_i], centre_t, patch.freq_sigma_hz);
                 sum += w * env[t];
             }
             combined[t] = sum;
@@ -590,11 +587,7 @@ pub fn synthesize_from_trajectory(
     q_clamp_max: f32,
 ) -> Vec<f32> {
     let n_patches = patches.len();
-    if n_patches == 0
-        || spp == 0
-        || output_samples == 0
-        || traj_flat.len() < n_patches * spp
-    {
+    if n_patches == 0 || spp == 0 || output_samples == 0 || traj_flat.len() < n_patches * spp {
         return vec![0.0; output_samples];
     }
 
@@ -620,7 +613,9 @@ pub fn synthesize_from_trajectory(
     let mut state = seed;
     let mut noise = vec![0.0f32; output_samples];
     for v in &mut noise {
-        state = state.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        state = state
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
         let u = (state >> 33) as u32; // upper 31 bits
         *v = 0.4 * (((u as f32) / (u32::MAX as f32)) * 2.0 - 1.0);
     }
@@ -647,9 +642,7 @@ pub fn synthesize_from_trajectory(
             env[n] = chan[lo] * (1.0 - frac) + chan[hi] * frac;
         }
         // Pick source.
-        let unvoiced = patch.kind == "burst"
-            || patch.is_sibilant
-            || patch.centre_hz > 3500.0;
+        let unvoiced = patch.kind == "burst" || patch.is_sibilant || patch.centre_hz > 3500.0;
         let mut filt: Vec<f32> = if unvoiced {
             noise.clone()
         } else {
@@ -723,7 +716,13 @@ struct KlattResonator {
 
 impl KlattResonator {
     fn new(f_hz: f32, bw_hz: f32, fs: f32) -> Self {
-        let mut r = KlattResonator { a: 1.0, b: 0.0, c: 0.0, y1: 0.0, y2: 0.0 };
+        let mut r = KlattResonator {
+            a: 1.0,
+            b: 0.0,
+            c: 0.0,
+            y1: 0.0,
+            y2: 0.0,
+        };
         r.set(f_hz, bw_hz, fs);
         r
     }
@@ -735,7 +734,8 @@ impl KlattResonator {
         let f = f_hz.clamp(20.0, fs / 2.0 * 0.98);
         let bw = bw_hz.max(20.0);
         let c = -(-2.0 * std::f32::consts::PI * bw / fs).exp();
-        let b = 2.0 * (-std::f32::consts::PI * bw / fs).exp()
+        let b = 2.0
+            * (-std::f32::consts::PI * bw / fs).exp()
             * (2.0 * std::f32::consts::PI * f / fs).cos();
         self.a = 1.0 - b - c;
         self.b = b;
@@ -768,7 +768,8 @@ impl KlattAntiResonator {
         let f = f_hz.clamp(20.0, fs / 2.0 * 0.98);
         let bw = bw_hz.max(20.0);
         let c = -(-2.0 * std::f32::consts::PI * bw / fs).exp();
-        let b = 2.0 * (-std::f32::consts::PI * bw / fs).exp()
+        let b = 2.0
+            * (-std::f32::consts::PI * bw / fs).exp()
             * (2.0 * std::f32::consts::PI * f / fs).cos();
         let a = 1.0 - b - c;
         let ainv = if a.abs() > 1e-9 { 1.0 / a } else { 1.0 };
@@ -810,7 +811,7 @@ fn lf_glottal_period(period: usize, oq: f32, am: f32, ta_frac: f32) -> Vec<f32> 
     let te = (oq.clamp(0.3, 0.9) * t0).max(2.0); // instant of max excitation (open phase end)
     let tp = (am.clamp(0.55, 0.9) * te).max(1.0); // instant of glottal-flow peak
     let ta = (ta_frac.clamp(0.002, 0.2) * t0).max(0.5); // return-phase time-constant
-    // Open-phase growing sinusoid g'(t) = E0 e^{α t} sin(ω_g t), ω_g = π / Tp.
+                                                        // Open-phase growing sinusoid g'(t) = E0 e^{α t} sin(ω_g t), ω_g = π / Tp.
     let wg = std::f32::consts::PI / tp;
     // α from continuity of the LF model (area balance approximation): choose α so
     // the sinusoid reaches its negative peak (the excitation) at Te. A standard
@@ -818,7 +819,7 @@ fn lf_glottal_period(period: usize, oq: f32, am: f32, ta_frac: f32) -> Vec<f32> 
     // (zero-fit) geometric relation α = (1/Te) * ln(Ee_ratio) with Ee_ratio set
     // by the speed/asymmetry so different voices differ. Keep it bounded.
     let alpha = (-(0.5f32).ln()) / te; // growth s.t. amplitude doubles over open phase
-    // Return phase exponential coefficient (closure).
+                                       // Return phase exponential coefficient (closure).
     let eps = 1.0 / ta;
     let mut peak = 1e-6f32;
     for n in 0..period {
@@ -846,7 +847,14 @@ fn lf_glottal_period(period: usize, oq: f32, am: f32, ta_frac: f32) -> Vec<f32> 
 
 /// Build a full-length LF voiced excitation at f0 by concatenating LF periods.
 /// f0 in Hz, fs the sample rate. oq/am/ta as in `lf_glottal_period`.
-fn lf_source(output_samples: usize, fs: f32, f0_hz: f32, oq: f32, am: f32, ta_frac: f32) -> Vec<f32> {
+fn lf_source(
+    output_samples: usize,
+    fs: f32,
+    f0_hz: f32,
+    oq: f32,
+    am: f32,
+    ta_frac: f32,
+) -> Vec<f32> {
     let mut out = vec![0.0f32; output_samples];
     if f0_hz <= 0.0 {
         return out;
@@ -902,11 +910,7 @@ pub fn synthesize_klatt_lf(
     nasal_bw: f32,
 ) -> Vec<f32> {
     let n_patches = patches.len();
-    if n_patches == 0
-        || spp == 0
-        || output_samples == 0
-        || traj_flat.len() < n_patches * spp
-    {
+    if n_patches == 0 || spp == 0 || output_samples == 0 || traj_flat.len() < n_patches * spp {
         return vec![0.0; output_samples];
     }
     let fs_f = fs as f32;
@@ -935,7 +939,11 @@ pub fn synthesize_klatt_lf(
     // --- per-patch envelopes (resampled spp -> output_samples), and the
     // voiced/unvoiced split ---
     let denom = if spp > 1 { (spp - 1) as f32 } else { 1.0 };
-    let out_denom = if output_samples > 1 { (output_samples - 1) as f32 } else { 1.0 };
+    let out_denom = if output_samples > 1 {
+        (output_samples - 1) as f32
+    } else {
+        1.0
+    };
     // Sort patches ascending by centre so the cascade is F1 < F2 < ... (cascade
     // ordering is what gives the correct inter-formant amplitude fall-off).
     let mut order: Vec<usize> = (0..n_patches).collect();
@@ -952,8 +960,7 @@ pub fn synthesize_klatt_lf(
     let mut env_voiced = vec![0.0f32; output_samples];
     for (i, patch) in patches.iter().enumerate() {
         let chan = &traj_flat[i * spp..(i + 1) * spp];
-        let unvoiced =
-            patch.kind == "burst" || patch.is_sibilant || patch.centre_hz > 3500.0;
+        let unvoiced = patch.kind == "burst" || patch.is_sibilant || patch.centre_hz > 3500.0;
         for n in 0..output_samples {
             let src_pos = (n as f32) * denom / out_denom;
             let lo = src_pos as usize;
@@ -990,7 +997,11 @@ pub fn synthesize_klatt_lf(
     }
     // Optional nasal antiresonance (zero) — Klatt's nasal branch.
     let mut anti = if nasal_f > 0.0 {
-        Some(KlattAntiResonator::new(nasal_f.min(nyq), nasal_bw.max(40.0), fs_f))
+        Some(KlattAntiResonator::new(
+            nasal_f.min(nyq),
+            nasal_bw.max(40.0),
+            fs_f,
+        ))
     } else {
         None
     };
@@ -1111,7 +1122,11 @@ pub fn synthesize_formant_track(
         })
         .collect();
 
-    let denom = if output_samples > 1 { (output_samples - 1) as f32 } else { 1.0 };
+    let denom = if output_samples > 1 {
+        (output_samples - 1) as f32
+    } else {
+        1.0
+    };
     let mut out = vec![0.0f32; output_samples];
     let mut cur_frame = usize::MAX;
     for n in 0..output_samples {
@@ -1173,9 +1188,9 @@ pub fn synthesize_formant_track(
 #[derive(Debug, Clone, Copy)]
 pub struct SonorityValley {
     pub sample: usize,
-    pub depth: f32,   // relative drop from the lower flanking peak, in [0,1]
-    pub valley: f32,  // smoothed envelope value at the valley
-    pub peak: f32,    // limiting peak (min of left/right peak)
+    pub depth: f32,  // relative drop from the lower flanking peak, in [0,1]
+    pub valley: f32, // smoothed envelope value at the valley
+    pub peak: f32,   // limiting peak (min of left/right peak)
 }
 
 /// Box-window moving average via cumulative sum — O(n).
@@ -1266,7 +1281,11 @@ pub fn detect_sonority_valleys(
     let mut out: Vec<SonorityValley> = Vec::new();
     for (k, &m_i) in minima.iter().enumerate() {
         let prev_m = if k > 0 { minima[k - 1] } else { 0 };
-        let next_m = if k + 1 < minima.len() { minima[k + 1] } else { n };
+        let next_m = if k + 1 < minima.len() {
+            minima[k + 1]
+        } else {
+            n
+        };
         let mut prev_peak = 0.0f32;
         for j in prev_m..m_i {
             if smoothed[j] > prev_peak {
@@ -2068,8 +2087,8 @@ fn iaif_glottal_flow(frame: &[f32], fs: u32, tract_order: usize, glottal_order: 
     // --- 2) cancel that first tract from the ORIGINAL -> first glottal estimate. ---
     let g1 = fir_inverse(frame, &c_v1);
     let g1_flow = leaky_integrate(&g1, 0.99); // integrate derivative -> flow
-    // --- 3) re-estimate the glottal contribution (low order) on the flow, cancel
-    //        it from the original, RE-estimate the tract (now glottis-free). ---
+                                              // --- 3) re-estimate the glottal contribution (low order) on the flow, cancel
+                                              //        it from the original, RE-estimate the tract (now glottis-free). ---
     let c_g2 = autocorr_lpc_coeffs(&g1_flow, glottal_order);
     let s2 = fir_inverse(frame, &c_g2); // speech with glottal tilt removed
     let c_v2 = autocorr_lpc_coeffs(&s2, tract_order);
@@ -2098,8 +2117,8 @@ fn detect_gci(flow_deriv: &[f32], period: usize) -> Vec<usize> {
     }
     let thr = 0.30 * gmin; // negative
     let guard = (period as f32 * 0.55) as usize; // refractory: >= ~half a period
-    // Collect candidate local minima, then greedily pick the strongest with the
-    // refractory spacing (so each pitch period contributes exactly one GCI).
+                                                 // Collect candidate local minima, then greedily pick the strongest with the
+                                                 // refractory spacing (so each pitch period contributes exactly one GCI).
     let mut cands: Vec<(usize, f32)> = Vec::new();
     for i in 1..n - 1 {
         if flow_deriv[i] < thr
@@ -2113,7 +2132,10 @@ fn detect_gci(flow_deriv: &[f32], period: usize) -> Vec<usize> {
     cands.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
     let mut chosen: Vec<usize> = Vec::new();
     for (idx, _) in cands {
-        if chosen.iter().all(|&c| (c as i64 - idx as i64).unsigned_abs() as usize >= guard) {
+        if chosen
+            .iter()
+            .all(|&c| (c as i64 - idx as i64).unsigned_abs() as usize >= guard)
+        {
             chosen.push(idx);
         }
     }
@@ -2202,8 +2224,10 @@ pub fn glottal_inverse_iaif(frame: &[f32], fs: u32, f0_hz: f32) -> Vec<f32> {
             let mut best_e = f64::INFINITY;
             let mut s = g0;
             while s + cp_len <= g1 {
-                let e: f64 =
-                    frame[s..s + cp_len].iter().map(|&v| (v as f64) * (v as f64)).sum();
+                let e: f64 = frame[s..s + cp_len]
+                    .iter()
+                    .map(|&v| (v as f64) * (v as f64))
+                    .sum();
                 if e < best_e {
                     best_e = e;
                     best_s = s;
@@ -2426,7 +2450,11 @@ pub fn cepstral_formants(
             // parabolic interpolation for a sub-bin peak frequency.
             let (yl, yc, yr) = (env[k - 1], env[k], env[k + 1]);
             let d = yl - 2.0 * yc + yr;
-            let delta = if d.abs() > 1e-12 { 0.5 * (yl - yr) / d } else { 0.0 };
+            let delta = if d.abs() > 1e-12 {
+                0.5 * (yl - yr) / d
+            } else {
+                0.0
+            };
             let f_peak = (k as f64 + delta) * bin_hz;
             // bandwidth: walk left/right until the envelope drops by DROP ln-units.
             let target = yc - DROP;
@@ -2526,14 +2554,20 @@ pub fn f0_cepstral(frame: &[f32], fs: u32, f_lo: f32, f_hi: f32, voicing_thresh:
         let mut acc = logmag[0];
         for k in 1..=half {
             let sign = 2.0; // full spectrum symmetry
-            acc += sign * logmag[k] * (2.0 * std::f64::consts::PI * k as f64 * q as f64 / n as f64).cos();
+            acc += sign
+                * logmag[k]
+                * (2.0 * std::f64::consts::PI * k as f64 * q as f64 / n as f64).cos();
         }
         if acc > best_v {
             best_v = acc;
             best_q = q;
         }
     }
-    let cep_f0 = if best_q > 0 { fs as f32 / best_q as f32 } else { 0.0 };
+    let cep_f0 = if best_q > 0 {
+        fs as f32 / best_q as f32
+    } else {
+        0.0
+    };
     // OCTAVE-ROBUST FUSION: if autocorr is voiced and reads ~2x the cepstral
     // estimate (or vice versa), the higher one is the octave error -> take lower.
     if ac > 0.0 && cep_f0 > 0.0 {
@@ -2959,8 +2993,10 @@ pub fn glottal_warp_residual(
         if glen >= 2 {
             for k in 0..glen {
                 let gi = g_lo + k;
-                let w = 0.5 - 0.5 * (2.0 * std::f32::consts::PI * k as f32
-                    / (glen as f32 - 1.0).max(1.0)).cos();
+                let w = 0.5
+                    - 0.5
+                        * (2.0 * std::f32::consts::PI * k as f32 / (glen as f32 - 1.0).max(1.0))
+                            .cos();
                 let rel = gi as isize - peak_i as isize;
                 let oi = next_out as isize + rel;
                 if oi >= 0 && (oi as usize) < n {
@@ -3646,7 +3682,9 @@ const PI64: f64 = std::f64::consts::PI;
 
 fn coch_bands() -> Vec<f64> {
     let (lo, hi) = (80.0_f64.ln(), 7500.0_f64.ln());
-    (0..COCH_NBANDS).map(|i| (lo + (hi - lo) * (i as f64) / 31.0).exp()).collect()
+    (0..COCH_NBANDS)
+        .map(|i| (lo + (hi - lo) * (i as f64) / 31.0).exp())
+        .collect()
 }
 
 /// Public accessor for the cochleagram band CENTRE frequencies (Hz) — the
@@ -3747,13 +3785,24 @@ pub fn cochleagram(x: &[f32], fs: u32, env_cut: f32, dur_cut: f32, n_frames: usi
 /// composed cmvn_band_term (domains/cmvn.py) — same Sum/Count/Div aggregation over the
 /// stat-frame set, same affine — run in Rust at the I/O boundary like `cochleagram`.
 /// f64 accumulation, f32 result (matches the per-cell Term-eval path it replaces).
-pub fn cmvn(m: &[f32], n_frames: usize, n_bands: usize, eps: f32, do_variance: bool,
-            voiced: &[u8]) -> Vec<f32> {
+pub fn cmvn(
+    m: &[f32],
+    n_frames: usize,
+    n_bands: usize,
+    eps: f32,
+    do_variance: bool,
+    voiced: &[u8],
+) -> Vec<f32> {
     let mut out = vec![0.0f32; n_frames * n_bands];
     if n_frames == 0 || n_bands == 0 {
         return out;
     }
-    let n_stat = voiced.iter().take(n_frames).filter(|&&v| v != 0).count().max(1) as f64;
+    let n_stat = voiced
+        .iter()
+        .take(n_frames)
+        .filter(|&&v| v != 0)
+        .count()
+        .max(1) as f64;
     let epsf = eps as f64;
     for b in 0..n_bands {
         let mut sm = 0.0f64;
@@ -3790,8 +3839,13 @@ pub fn cmvn(m: &[f32], n_frames: usize, n_bands: usize, eps: f32, do_variance: b
 /// centroid matrix row-major n_cent x dim. Same numbers as evaluating Dot(emb, cent)
 /// per WordCentroid node and sorting; this batches it so a large open vocabulary is
 /// one matmul + partial sort instead of n_cent native Term evaluations per chunk.
-pub fn topk_dot(emb: &[f32], cents: &[f32], n_cent: usize, dim: usize, k: usize)
-    -> (Vec<i64>, Vec<f32>) {
+pub fn topk_dot(
+    emb: &[f32],
+    cents: &[f32],
+    n_cent: usize,
+    dim: usize,
+    k: usize,
+) -> (Vec<i64>, Vec<f32>) {
     let mut scores = vec![0.0f32; n_cent];
     for c in 0..n_cent {
         let base = c * dim;
@@ -3806,11 +3860,17 @@ pub fn topk_dot(emb: &[f32], cents: &[f32], n_cent: usize, dim: usize, k: usize)
     // descending by score; partial select then sort the prefix for stable top-k order.
     if kk < n_cent {
         idx.select_nth_unstable_by(kk, |&a, &b| {
-            scores[b].partial_cmp(&scores[a]).unwrap_or(std::cmp::Ordering::Equal)
+            scores[b]
+                .partial_cmp(&scores[a])
+                .unwrap_or(std::cmp::Ordering::Equal)
         });
         idx.truncate(kk);
     }
-    idx.sort_by(|&a, &b| scores[b].partial_cmp(&scores[a]).unwrap_or(std::cmp::Ordering::Equal));
+    idx.sort_by(|&a, &b| {
+        scores[b]
+            .partial_cmp(&scores[a])
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     let out_idx: Vec<i64> = idx.iter().map(|&i| i as i64).collect();
     let out_sc: Vec<f32> = idx.iter().map(|&i| scores[i]).collect();
     (out_idx, out_sc)
@@ -3827,8 +3887,16 @@ pub fn topk_dot(emb: &[f32], cents: &[f32], n_cent: usize, dim: usize, k: usize)
 /// A long span (large qdur) pays a large penalty against a short unit and vice versa, so
 /// the scale-blind fixed-length shape feature becomes scale-aware. dsig_c<=0 -> no
 /// duration term (unknown duration). Returns (top-k indices, scores).
-pub fn topk_match(emb: &[f32], cents: &[f32], dmu: &[f32], dsig: &[f32], n_cent: usize,
-                  dim: usize, k: usize, qdur: f32) -> (Vec<i64>, Vec<f32>) {
+pub fn topk_match(
+    emb: &[f32],
+    cents: &[f32],
+    dmu: &[f32],
+    dsig: &[f32],
+    n_cent: usize,
+    dim: usize,
+    k: usize,
+    qdur: f32,
+) -> (Vec<i64>, Vec<f32>) {
     let mut scores = vec![0.0f32; n_cent];
     for c in 0..n_cent {
         let base = c * dim;
@@ -3847,12 +3915,21 @@ pub fn topk_match(emb: &[f32], cents: &[f32], dmu: &[f32], dsig: &[f32], n_cent:
     let mut idx: Vec<usize> = (0..n_cent).collect();
     if kk < n_cent {
         idx.select_nth_unstable_by(kk, |&a, &b| {
-            scores[b].partial_cmp(&scores[a]).unwrap_or(std::cmp::Ordering::Equal)
+            scores[b]
+                .partial_cmp(&scores[a])
+                .unwrap_or(std::cmp::Ordering::Equal)
         });
         idx.truncate(kk);
     }
-    idx.sort_by(|&a, &b| scores[b].partial_cmp(&scores[a]).unwrap_or(std::cmp::Ordering::Equal));
-    (idx.iter().map(|&i| i as i64).collect(), idx.iter().map(|&i| scores[i]).collect())
+    idx.sort_by(|&a, &b| {
+        scores[b]
+            .partial_cmp(&scores[a])
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+    (
+        idx.iter().map(|&i| i as i64).collect(),
+        idx.iter().map(|&i| scores[i]).collect(),
+    )
 }
 
 /// segment_units: the agent's TP-trough word segmenter, compiled to Rust. Faithful
@@ -3903,17 +3980,27 @@ pub fn segment_units(seqs: &[Vec<i64>], bidirectional: bool, mode: u8) -> Vec<Ve
     } else {
         let n = vals.len();
         let m = n / 2;
-        if n % 2 == 1 { vals[m] } else { 0.5 * (vals[m - 1] + vals[m]) }
+        if n % 2 == 1 {
+            vals[m]
+        } else {
+            0.5 * (vals[m - 1] + vals[m])
+        }
     };
     // (3) per sequence: read troughs off its own TP curve, merge runs into chunks.
     let mut out = Vec::with_capacity(seqs.len());
     for seq in seqs {
         if seq.len() < 2 {
-            out.push(if seq.is_empty() { vec![] } else { vec![seq.len()] });
+            out.push(if seq.is_empty() {
+                vec![]
+            } else {
+                vec![seq.len()]
+            });
             continue;
         }
         let np = seq.len() - 1;
-        let tps: Vec<f64> = (0..np).map(|i| *tp.get(&(seq[i], seq[i + 1])).unwrap_or(&0.0)).collect();
+        let tps: Vec<f64> = (0..np)
+            .map(|i| *tp.get(&(seq[i], seq[i + 1])).unwrap_or(&0.0))
+            .collect();
         // boundary AFTER position i (between unit i and i+1)
         let mut cut = vec![false; np];
         for i in 0..np {
@@ -3953,7 +4040,9 @@ pub fn segment_units(seqs: &[Vec<i64>], bidirectional: bool, mode: u8) -> Vec<Ve
 
 fn log_edges(lo_hz: f64, hi_hz: f64, nbands: usize) -> Vec<f64> {
     let (lo, hi) = (lo_hz.ln(), hi_hz.ln());
-    (0..=nbands).map(|b| (lo + (hi - lo) * b as f64 / nbands as f64).exp()).collect()
+    (0..=nbands)
+        .map(|b| (lo + (hi - lo) * b as f64 / nbands as f64).exp())
+        .collect()
 }
 
 /// fft_ear: nwin temporal windows, each Hanning-windowed, rfft(nfft), magnitude log-pooled into
@@ -3965,14 +4054,20 @@ pub fn fft_ear(x: &[f64], fs: u32, nbands: usize, nwin: usize, nfft: usize) -> V
     let nf = nfft / 2 + 1;
     let fr: Vec<f64> = (0..nf).map(|i| i as f64 * fsf / nfft as f64).collect();
     let bin_idx: Vec<Vec<usize>> = (0..nbands)
-        .map(|b| (0..nf).filter(|&i| fr[i] >= edges[b] && fr[i] < edges[b + 1]).collect())
+        .map(|b| {
+            (0..nf)
+                .filter(|&i| fr[i] >= edges[b] && fr[i] < edges[b + 1])
+                .collect()
+        })
         .collect();
     let n = x.len();
     let mut out = vec![0.0f64; nwin * nbands];
     if n < 32 {
         return out;
     }
-    let bounds: Vec<usize> = (0..=nwin).map(|i| (i as f64 * n as f64 / nwin as f64) as usize).collect();
+    let bounds: Vec<usize> = (0..=nwin)
+        .map(|i| (i as f64 * n as f64 / nwin as f64) as usize)
+        .collect();
     let mut planner = FftPlanner::<f64>::new();
     let fft = planner.plan_fft_forward(nfft);
     for wi in 0..nwin {
@@ -3988,7 +4083,11 @@ pub fn fft_ear(x: &[f64], fs: u32, nbands: usize, nwin: usize, nfft: usize) -> V
         let m = sl.min(nfft);
         let mut buf = vec![Complex::new(0.0f64, 0.0f64); nfft];
         for k in 0..m {
-            let w = if m > 1 { 0.5 - 0.5 * (2.0 * PI64 * k as f64 / (m as f64 - 1.0)).cos() } else { 1.0 };
+            let w = if m > 1 {
+                0.5 - 0.5 * (2.0 * PI64 * k as f64 / (m as f64 - 1.0)).cos()
+            } else {
+                1.0
+            };
             buf[k] = Complex::new(seg[k] * w, 0.0);
         }
         fft.process(&mut buf);
@@ -4010,13 +4109,15 @@ pub fn fft_ear(x: &[f64], fs: u32, nbands: usize, nwin: usize, nfft: usize) -> V
 
 fn ap_autocorr(x: &[f64], p: usize) -> Vec<f64> {
     let n = x.len();
-    (0..=p).map(|k| {
-        let mut s = 0.0;
-        for i in 0..(n - k) {
-            s += x[i] * x[i + k];
-        }
-        s
-    }).collect()
+    (0..=p)
+        .map(|k| {
+            let mut s = 0.0;
+            for i in 0..(n - k) {
+                s += x[i] * x[i + k];
+            }
+            s
+        })
+        .collect()
 }
 
 fn ap_levinson(r: &[f64], p: usize) -> (Vec<f64>, f64) {
@@ -4059,7 +4160,11 @@ fn allpole_window(seg: &[f64], fs: u32, edges: &[f64], order: usize) -> Vec<f64>
     }
     let m = x.len();
     for k in 0..m {
-        let w = if m > 1 { 0.54 - 0.46 * (2.0 * PI64 * k as f64 / (m as f64 - 1.0)).cos() } else { 1.0 };
+        let w = if m > 1 {
+            0.54 - 0.46 * (2.0 * PI64 * k as f64 / (m as f64 - 1.0)).cos()
+        } else {
+            1.0
+        };
         x[k] *= w; // Hamming
     }
     let r = ap_autocorr(&x, order);
@@ -4093,7 +4198,9 @@ pub fn allpole_ear(x: &[f64], fs: u32, nbands: usize, nwin: usize, order: usize)
     if n < 32 {
         return out;
     }
-    let bounds: Vec<usize> = (0..=nwin).map(|i| (i as f64 * n as f64 / nwin as f64) as usize).collect();
+    let bounds: Vec<usize> = (0..=nwin)
+        .map(|i| (i as f64 * n as f64 / nwin as f64) as usize)
+        .collect();
     for wi in 0..nwin {
         let lo_b = bounds[wi];
         let hi_b = (bounds[wi] + 1).max(bounds[wi + 1]).min(n);
@@ -4115,8 +4222,15 @@ pub fn allpole_ear(x: &[f64], fs: u32, nbands: usize, nwin: usize, order: usize)
 /// energy on BOTH sides) >= depth_threshold, greedily accepted deepest-first with >= min_sep_ms
 /// spacing. Returns the inter-word cut sample indices. depth_threshold is the graph-resident,
 /// self-tuned DECISION (the sonority_valley faculty); this is the mechanical DSP it parameterises.
-pub fn sonority_segment(x: &[f64], fs: u32, smoothing_ms: f64, min_sep_ms: f64,
-                        depth_threshold: f64, silence_floor: f64, snap_center: f64) -> Vec<usize> {
+pub fn sonority_segment(
+    x: &[f64],
+    fs: u32,
+    smoothing_ms: f64,
+    min_sep_ms: f64,
+    depth_threshold: f64,
+    silence_floor: f64,
+    snap_center: f64,
+) -> Vec<usize> {
     let m = x.len();
     if m < 64 {
         return vec![];

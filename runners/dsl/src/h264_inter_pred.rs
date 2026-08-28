@@ -36,7 +36,10 @@
 pub enum InterPredError {
     LumaFracOutOfRange(u8),
     ChromaFracOutOfRange(u8),
-    InvalidBlockSize { w: u32, h: u32 },
+    InvalidBlockSize {
+        w: u32,
+        h: u32,
+    },
     /// §8.4.2 — reference samples are addressed by `Clip3(0, src_w-1, x)`
     /// / `Clip3(0, src_h-1, y)`. With `src_w` or `src_h` equal to zero
     /// the clip range becomes `[0, -1]` (lo > hi) which is undefined per
@@ -44,26 +47,38 @@ pub enum InterPredError {
     /// then indexes a zero-length source slice. Reject these inputs at
     /// the function entry as a panic-free defence even though the call
     /// sites should already have screened the reference picture.
-    ZeroDimRef { src_width: usize, src_height: usize },
+    ZeroDimRef {
+        src_width: usize,
+        src_height: usize,
+    },
 }
 
 impl std::fmt::Display for InterPredError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            InterPredError::LumaFracOutOfRange(v) =>
-                write!(f, "fractional luma component {} out of range 0..=3", v),
-            InterPredError::ChromaFracOutOfRange(v) =>
-                write!(f, "fractional chroma component {} out of range 0..=7", v),
-            InterPredError::InvalidBlockSize { w, h } =>
-                write!(f, "block dimensions must be multiples of 4, got {}x{}", w, h),
-            InterPredError::ZeroDimRef { src_width, src_height } =>
-                write!(f, "zero-dim reference plane: src_width={}, src_height={}",
-                       src_width, src_height),
+            InterPredError::LumaFracOutOfRange(v) => {
+                write!(f, "fractional luma component {} out of range 0..=3", v)
+            }
+            InterPredError::ChromaFracOutOfRange(v) => {
+                write!(f, "fractional chroma component {} out of range 0..=7", v)
+            }
+            InterPredError::InvalidBlockSize { w, h } => write!(
+                f,
+                "block dimensions must be multiples of 4, got {}x{}",
+                w, h
+            ),
+            InterPredError::ZeroDimRef {
+                src_width,
+                src_height,
+            } => write!(
+                f,
+                "zero-dim reference plane: src_width={}, src_height={}",
+                src_width, src_height
+            ),
         }
     }
 }
 impl std::error::Error for InterPredError {}
-
 
 pub type InterPredResult<T> = Result<T, InterPredError>;
 

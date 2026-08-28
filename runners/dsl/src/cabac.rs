@@ -42,18 +42,16 @@ const RANGE_TAB_LPS: [[u16; 4]; 64] = [
 /// State transition for MPS (most probable symbol) outcome — §9.3.3.2.4
 /// Table 9-45.
 const TRANS_IDX_MPS: [u8; 64] = [
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-    17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
-    33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
-    49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 62, 63,
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+    27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+    51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 62, 63,
 ];
 
 /// State transition for LPS outcome — §9.3.3.2.4 Table 9-45.
 const TRANS_IDX_LPS: [u8; 64] = [
-    0, 0, 1, 2, 2, 4, 4, 5, 6, 7, 8, 9, 9, 11, 11, 12,
-    13, 13, 15, 15, 16, 16, 18, 18, 19, 19, 21, 21, 22, 22, 23, 24,
-    24, 25, 26, 26, 27, 27, 28, 29, 29, 30, 30, 30, 31, 32, 32, 33,
-    33, 33, 34, 34, 35, 35, 35, 36, 36, 36, 37, 37, 37, 38, 38, 63,
+    0, 0, 1, 2, 2, 4, 4, 5, 6, 7, 8, 9, 9, 11, 11, 12, 13, 13, 15, 15, 16, 16, 18, 18, 19, 19, 21,
+    21, 22, 22, 23, 24, 24, 25, 26, 26, 27, 27, 28, 29, 29, 30, 30, 30, 31, 32, 32, 33, 33, 33, 34,
+    34, 35, 35, 35, 36, 36, 36, 37, 37, 37, 38, 38, 63,
 ];
 
 // Per-context initialisation tables — 1024 contexts × 2 (m, n)
@@ -78,8 +76,8 @@ pub enum CabacSliceType {
 /// One CABAC context: probability state (0..63) + MPS bit value (0/1).
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct CabacCtx {
-    pub p_state_idx: u8,  // 0..63
-    pub val_mps: u8,      // 0 or 1
+    pub p_state_idx: u8, // 0..63
+    pub val_mps: u8,     // 0 or 1
 }
 
 impl CabacCtx {
@@ -97,9 +95,15 @@ impl CabacCtx {
         // conformant decoder (e.g. libavcodec).
         let pre = pre_raw.max(1).min(126) as u8;
         if pre <= 63 {
-            CabacCtx { p_state_idx: 63 - pre, val_mps: 0 }
+            CabacCtx {
+                p_state_idx: 63 - pre,
+                val_mps: 0,
+            }
         } else {
-            CabacCtx { p_state_idx: pre - 64, val_mps: 1 }
+            CabacCtx {
+                p_state_idx: pre - 64,
+                val_mps: 1,
+            }
         }
     }
 }
@@ -130,8 +134,14 @@ pub fn mb_skip_flag_ctx_idx_inc(
     left_neighbour_skip: Option<u8>,
     top_neighbour_skip: Option<u8>,
 ) -> usize {
-    let a = match left_neighbour_skip { Some(0) => 1, _ => 0 };
-    let b = match top_neighbour_skip  { Some(0) => 1, _ => 0 };
+    let a = match left_neighbour_skip {
+        Some(0) => 1,
+        _ => 0,
+    };
+    let b = match top_neighbour_skip {
+        Some(0) => 1,
+        _ => 0,
+    };
     a + b
 }
 
@@ -209,10 +219,7 @@ pub fn encode_p_mb_type(
 
 /// Decode one P-slice mb_type by walking the binarisation tree.
 /// Returns (mb_type, bins_consumed).
-pub fn decode_p_mb_type(
-    decoder: &mut CabacDecoder,
-    contexts: &mut [CabacCtx],
-) -> (u8, usize) {
+pub fn decode_p_mb_type(decoder: &mut CabacDecoder, contexts: &mut [CabacCtx]) -> (u8, usize) {
     let b0 = decoder.decode_bin(&mut contexts[P_MB_TYPE_CTX_OFFSET]);
     if b0 == 0 {
         // P_L0_16x16
@@ -225,9 +232,9 @@ pub fn decode_p_mb_type(
     }
     let b2 = decoder.decode_bin(&mut contexts[P_MB_TYPE_CTX_OFFSET + 2]);
     if b2 == 0 {
-        (1, 3)  // P_L0_L0_16x8
+        (1, 3) // P_L0_L0_16x8
     } else {
-        (2, 3)  // P_L0_L0_8x16
+        (2, 3) // P_L0_L0_8x16
     }
 }
 
@@ -407,14 +414,10 @@ pub fn encode_cbp_luma(
 ) -> usize {
     let mut this_so_far: u8 = 0;
     for i in 0..4 {
-        let (a, b) = cbp_luma_neighbour_bit(
-            i, this_so_far, left_mb_cbp, top_mb_cbp,
-        );
+        let (a, b) = cbp_luma_neighbour_bit(i, this_so_far, left_mb_cbp, top_mb_cbp);
         let inc = cbp_luma_ctx_idx_inc(a, b);
         let bit = (cbp_luma >> i) & 1;
-        encoder.encode_bin(
-            &mut contexts[CBP_LUMA_CTX_OFFSET + inc], bit,
-        );
+        encoder.encode_bin(&mut contexts[CBP_LUMA_CTX_OFFSET + inc], bit);
         this_so_far |= bit << i;
     }
     4
@@ -429,13 +432,9 @@ pub fn decode_cbp_luma(
 ) -> (u8, usize) {
     let mut this_so_far: u8 = 0;
     for i in 0..4 {
-        let (a, b) = cbp_luma_neighbour_bit(
-            i, this_so_far, left_mb_cbp, top_mb_cbp,
-        );
+        let (a, b) = cbp_luma_neighbour_bit(i, this_so_far, left_mb_cbp, top_mb_cbp);
         let inc = cbp_luma_ctx_idx_inc(a, b);
-        let bit = decoder.decode_bin(
-            &mut contexts[CBP_LUMA_CTX_OFFSET + inc],
-        );
+        let bit = decoder.decode_bin(&mut contexts[CBP_LUMA_CTX_OFFSET + inc]);
         this_so_far |= bit << i;
     }
     (this_so_far, 4)
@@ -445,10 +444,7 @@ pub fn decode_cbp_luma(
 ///   condTermFlagA = 1 if left_mb.cbp_chroma != 0
 ///   condTermFlagB = 1 if top_mb.cbp_chroma  != 0
 ///   ctxIdxInc     = condTermFlagA + 2 * condTermFlagB
-fn cbp_chroma_bin0_ctx_idx_inc(
-    left_chroma_cbp: u8,
-    top_chroma_cbp: u8,
-) -> usize {
+fn cbp_chroma_bin0_ctx_idx_inc(left_chroma_cbp: u8, top_chroma_cbp: u8) -> usize {
     let a = if left_chroma_cbp != 0 { 1 } else { 0 };
     let b = if top_chroma_cbp != 0 { 1 } else { 0 };
     a + 2 * b
@@ -456,10 +452,7 @@ fn cbp_chroma_bin0_ctx_idx_inc(
 
 /// ctxIdxInc for coded_block_pattern_chroma bin 1 — gated on
 /// (left.cbp_chroma == 2 / top.cbp_chroma == 2).
-fn cbp_chroma_bin1_ctx_idx_inc(
-    left_chroma_cbp: u8,
-    top_chroma_cbp: u8,
-) -> usize {
+fn cbp_chroma_bin1_ctx_idx_inc(left_chroma_cbp: u8, top_chroma_cbp: u8) -> usize {
     let a = if left_chroma_cbp == 2 { 1 } else { 0 };
     let b = if top_chroma_cbp == 2 { 1 } else { 0 };
     a + 2 * b
@@ -478,9 +471,7 @@ pub fn encode_cbp_chroma(
 ) -> usize {
     let inc0 = cbp_chroma_bin0_ctx_idx_inc(left_chroma_cbp, top_chroma_cbp);
     if cbp_chroma == 0 {
-        encoder.encode_bin(
-            &mut contexts[CBP_CHROMA_CTX_OFFSET + inc0], 0,
-        );
+        encoder.encode_bin(&mut contexts[CBP_CHROMA_CTX_OFFSET + inc0], 0);
         return 1;
     }
     encoder.encode_bin(&mut contexts[CBP_CHROMA_CTX_OFFSET + inc0], 1);
@@ -507,9 +498,7 @@ pub fn decode_cbp_chroma(
         return (0, 1);
     }
     let inc1 = cbp_chroma_bin1_ctx_idx_inc(left_chroma_cbp, top_chroma_cbp);
-    let b1 = decoder.decode_bin(
-        &mut contexts[CBP_CHROMA_CTX_OFFSET + 4 + inc1],
-    );
+    let b1 = decoder.decode_bin(&mut contexts[CBP_CHROMA_CTX_OFFSET + 4 + inc1]);
     (if b1 == 1 { 2 } else { 1 }, 2)
 }
 
@@ -559,8 +548,14 @@ pub fn encode_coded_block_flag(
     left_cbf: Option<bool>,
     top_cbf: Option<bool>,
 ) -> usize {
-    let a = match left_cbf { Some(true) => 1, _ => 0 };
-    let b = match top_cbf  { Some(true) => 1, _ => 0 };
+    let a = match left_cbf {
+        Some(true) => 1,
+        _ => 0,
+    };
+    let b = match top_cbf {
+        Some(true) => 1,
+        _ => 0,
+    };
     let inc = a + 2 * b;
     let ctx = CBF_CTX_OFFSET + cbf_cat_offset(cat) + inc;
     encoder.encode_bin(&mut contexts[ctx], if cbf { 1 } else { 0 });
@@ -575,8 +570,14 @@ pub fn decode_coded_block_flag(
     left_cbf: Option<bool>,
     top_cbf: Option<bool>,
 ) -> (bool, usize) {
-    let a = match left_cbf { Some(true) => 1, _ => 0 };
-    let b = match top_cbf  { Some(true) => 1, _ => 0 };
+    let a = match left_cbf {
+        Some(true) => 1,
+        _ => 0,
+    };
+    let b = match top_cbf {
+        Some(true) => 1,
+        _ => 0,
+    };
     let inc = a + 2 * b;
     let ctx = CBF_CTX_OFFSET + cbf_cat_offset(cat) + inc;
     let b = decoder.decode_bin(&mut contexts[ctx]);
@@ -629,10 +630,10 @@ pub fn encode_i_mb_type_i_nxn(
     left_neighbour_is_i_nxn: Option<bool>,
     top_neighbour_is_i_nxn: Option<bool>,
 ) -> usize {
-    let inc = i_mb_type_cond_term(left_neighbour_is_i_nxn)
-            + i_mb_type_cond_term(top_neighbour_is_i_nxn);
+    let inc =
+        i_mb_type_cond_term(left_neighbour_is_i_nxn) + i_mb_type_cond_term(top_neighbour_is_i_nxn);
     let ctx = I_MB_TYPE_CTX_OFFSET + inc as usize;
-    encoder.encode_bin(&mut contexts[ctx], 0);  // I_NxN → bin "0"
+    encoder.encode_bin(&mut contexts[ctx], 0); // I_NxN → bin "0"
     1
 }
 
@@ -647,8 +648,8 @@ pub fn decode_i_mb_type_is_i_nxn(
     left_neighbour_is_i_nxn: Option<bool>,
     top_neighbour_is_i_nxn: Option<bool>,
 ) -> (bool, usize) {
-    let inc = i_mb_type_cond_term(left_neighbour_is_i_nxn)
-            + i_mb_type_cond_term(top_neighbour_is_i_nxn);
+    let inc =
+        i_mb_type_cond_term(left_neighbour_is_i_nxn) + i_mb_type_cond_term(top_neighbour_is_i_nxn);
     let ctx = I_MB_TYPE_CTX_OFFSET + inc as usize;
     let b = decoder.decode_bin(&mut contexts[ctx]);
     (b == 0, 1)
@@ -738,10 +739,7 @@ pub fn encode_rem_intra4x4(
 /// mode for any rem with an asymmetric bit pattern (no CABAC desync,
 /// since the bin COUNT is identical — which is why chroma stayed
 /// bit-exact while luma intra modes were corrupted).
-pub fn decode_rem_intra4x4(
-    decoder: &mut CabacDecoder,
-    contexts: &mut [CabacCtx],
-) -> (u8, usize) {
+pub fn decode_rem_intra4x4(decoder: &mut CabacDecoder, contexts: &mut [CabacCtx]) -> (u8, usize) {
     let ctx = REM_INTRA4X4_CTX_OFFSET;
     let mut v: u8 = 0;
     for i in 0..3 {
@@ -782,8 +780,8 @@ pub fn encode_intra_chroma_pred_mode(
     top_neighbour_mode: Option<u8>,
 ) -> usize {
     debug_assert!(mode < 4, "intra_chroma must be 0..3, got {}", mode);
-    let inc0 = intra_chroma_cond_term(left_neighbour_mode)
-             + intra_chroma_cond_term(top_neighbour_mode);
+    let inc0 =
+        intra_chroma_cond_term(left_neighbour_mode) + intra_chroma_cond_term(top_neighbour_mode);
     let ctx0 = INTRA_CHROMA_CTX_OFFSET + inc0 as usize;
     let ctx_rest = INTRA_CHROMA_CTX_OFFSET + 3;
     let mut bins = 0;
@@ -809,8 +807,8 @@ pub fn decode_intra_chroma_pred_mode(
     left_neighbour_mode: Option<u8>,
     top_neighbour_mode: Option<u8>,
 ) -> (u8, usize) {
-    let inc0 = intra_chroma_cond_term(left_neighbour_mode)
-             + intra_chroma_cond_term(top_neighbour_mode);
+    let inc0 =
+        intra_chroma_cond_term(left_neighbour_mode) + intra_chroma_cond_term(top_neighbour_mode);
     let ctx0 = INTRA_CHROMA_CTX_OFFSET + inc0 as usize;
     let ctx_rest = INTRA_CHROMA_CTX_OFFSET + 3;
     let mut mode: u8 = 0;
@@ -882,10 +880,7 @@ pub fn encode_p_sub_mb_type(
 }
 
 /// Decode P-slice sub_mb_type. Returns (value, bins).
-pub fn decode_p_sub_mb_type(
-    decoder: &mut CabacDecoder,
-    contexts: &mut [CabacCtx],
-) -> (u8, usize) {
+pub fn decode_p_sub_mb_type(decoder: &mut CabacDecoder, contexts: &mut [CabacCtx]) -> (u8, usize) {
     let b0 = decoder.decode_bin(&mut contexts[P_SUB_MB_TYPE_CTX_OFFSET]);
     if b0 == 1 {
         return (0, 1);
@@ -924,12 +919,15 @@ pub const REF_IDX_L0_CTX_OFFSET: usize = 54;
 
 /// Compute ctxIdxInc for bin 0 of ref_idx_l0 given neighbour state.
 /// Each `*_ref_idx` is None if the neighbour is unavailable.
-pub fn ref_idx_bin0_ctx_inc(
-    left_ref_idx: Option<u8>,
-    top_ref_idx: Option<u8>,
-) -> usize {
-    let a = match left_ref_idx { Some(r) if r > 0 => 1, _ => 0 };
-    let b = match top_ref_idx  { Some(r) if r > 0 => 1, _ => 0 };
+pub fn ref_idx_bin0_ctx_inc(left_ref_idx: Option<u8>, top_ref_idx: Option<u8>) -> usize {
+    let a = match left_ref_idx {
+        Some(r) if r > 0 => 1,
+        _ => 0,
+    };
+    let b = match top_ref_idx {
+        Some(r) if r > 0 => 1,
+        _ => 0,
+    };
     a + 2 * b
 }
 
@@ -949,9 +947,7 @@ pub fn encode_ref_idx_l0(
             1 => 4,
             _ => 5,
         };
-        encoder.encode_bin(
-            &mut contexts[REF_IDX_L0_CTX_OFFSET + ctx_inc], 1,
-        );
+        encoder.encode_bin(&mut contexts[REF_IDX_L0_CTX_OFFSET + ctx_inc], 1);
         bins_emitted += 1;
     }
     if ref_idx < cmax {
@@ -960,9 +956,7 @@ pub fn encode_ref_idx_l0(
             1 => 4,
             _ => 5,
         };
-        encoder.encode_bin(
-            &mut contexts[REF_IDX_L0_CTX_OFFSET + ctx_inc], 0,
-        );
+        encoder.encode_bin(&mut contexts[REF_IDX_L0_CTX_OFFSET + ctx_inc], 0);
         bins_emitted += 1;
     }
     bins_emitted
@@ -984,9 +978,7 @@ pub fn decode_ref_idx_l0(
             1 => 4,
             _ => 5,
         };
-        let bit = decoder.decode_bin(
-            &mut contexts[REF_IDX_L0_CTX_OFFSET + ctx_inc],
-        );
+        let bit = decoder.decode_bin(&mut contexts[REF_IDX_L0_CTX_OFFSET + ctx_inc]);
         bins_consumed += 1;
         if bit == 0 {
             return (count, bins_consumed);
@@ -1059,22 +1051,40 @@ pub struct ResBlockSpec {
 }
 
 pub const RES_BLOCK_SPEC_INTRA16X16_DC: ResBlockSpec = ResBlockSpec {
-    n_coefs: 16, sig_off: 105, last_off: 166, abs_off: 227,
+    n_coefs: 16,
+    sig_off: 105,
+    last_off: 166,
+    abs_off: 227,
 };
 pub const RES_BLOCK_SPEC_INTRA16X16_AC: ResBlockSpec = ResBlockSpec {
-    n_coefs: 15, sig_off: 120, last_off: 181, abs_off: 237,
+    n_coefs: 15,
+    sig_off: 120,
+    last_off: 181,
+    abs_off: 237,
 };
 pub const RES_BLOCK_SPEC_LUMA_4X4: ResBlockSpec = ResBlockSpec {
-    n_coefs: 16, sig_off: 134, last_off: 195, abs_off: 247,
+    n_coefs: 16,
+    sig_off: 134,
+    last_off: 195,
+    abs_off: 247,
 };
 pub const RES_BLOCK_SPEC_CHROMA_DC: ResBlockSpec = ResBlockSpec {
-    n_coefs: 4, sig_off: 149, last_off: 210, abs_off: 257,
+    n_coefs: 4,
+    sig_off: 149,
+    last_off: 210,
+    abs_off: 257,
 };
 pub const RES_BLOCK_SPEC_CHROMA_AC: ResBlockSpec = ResBlockSpec {
-    n_coefs: 15, sig_off: 152, last_off: 213, abs_off: 266,
+    n_coefs: 15,
+    sig_off: 152,
+    last_off: 213,
+    abs_off: 266,
 };
 pub const RES_BLOCK_SPEC_LUMA_8X8: ResBlockSpec = ResBlockSpec {
-    n_coefs: 64, sig_off: 402, last_off: 417, abs_off: 426,
+    n_coefs: 64,
+    sig_off: 402,
+    last_off: 417,
+    abs_off: 426,
 };
 
 pub fn res_block_spec(cat: CtxBlockCat) -> ResBlockSpec {
@@ -1131,7 +1141,11 @@ pub fn encode_coeff_abs_level_minus1(
     }
     if value < unary_max {
         // Terminating 0 bin.
-        let ctx_inc = if prefix_len == 0 { ctx_inc0 } else { ctx_inc_rest };
+        let ctx_inc = if prefix_len == 0 {
+            ctx_inc0
+        } else {
+            ctx_inc_rest
+        };
         encoder.encode_bin(&mut contexts[ctx_offset + ctx_inc], 0);
         bins_emitted += 1;
     } else {
@@ -1178,7 +1192,11 @@ pub fn decode_coeff_abs_level_minus1(
     let mut prefix_len = 0u32;
     let mut bins_consumed = 0;
     loop {
-        let ctx_inc = if prefix_len == 0 { ctx_inc0 } else { ctx_inc_rest };
+        let ctx_inc = if prefix_len == 0 {
+            ctx_inc0
+        } else {
+            ctx_inc_rest
+        };
         let bit = decoder.decode_bin(&mut contexts[ctx_offset + ctx_inc]);
         bins_consumed += 1;
         if bit == 0 {
@@ -1204,7 +1222,7 @@ pub fn decode_coeff_abs_level_minus1(
             panic!("coeff_abs_level UEG0 suffix overflow");
         }
     }
-    let mut z_plus_1: u32 = 1;  // implicit MSB
+    let mut z_plus_1: u32 = 1; // implicit MSB
     for _ in 0..p {
         z_plus_1 = (z_plus_1 << 1) | (decoder.decode_bypass() as u32);
         bins_consumed += 1;
@@ -1219,9 +1237,7 @@ pub fn decode_coeff_abs_level_minus1(
 /// H.264 zigzag scan for 4×4 luma frame coding per §6.4.12.1.
 /// Maps bitstream position (0..15) to raster index (row*4+col).
 /// Verified against x264's ZIGZAG4_FRAME macro in common/dct.c.
-const ZIGZAG_4X4: [usize; 16] = [
-    0, 1, 4, 8, 5, 2, 3, 6, 9, 12, 13, 10, 7, 11, 14, 15,
-];
+const ZIGZAG_4X4: [usize; 16] = [0, 1, 4, 8, 5, 2, 3, 6, 9, 12, 13, 10, 7, 11, 14, 15];
 
 /// Same for 2×2 chroma DC (linear, no actual zigzag — 4 entries).
 const ZIGZAG_2X2: [usize; 4] = [0, 1, 2, 3];
@@ -1259,9 +1275,9 @@ const LINEAR_64: [usize; 64] = {
 fn scan_table_for(n_coefs: usize) -> &'static [usize] {
     match n_coefs {
         16 => &ZIGZAG_4X4,
-        15 => &ZIGZAG_4X4_AC,    // AC-only, indices into 0..14
+        15 => &ZIGZAG_4X4_AC, // AC-only, indices into 0..14
         4 => &ZIGZAG_2X2,
-        64 => &LINEAR_64,         // Luma 8×8 — not in MVP; raster for now
+        64 => &LINEAR_64, // Luma 8×8 — not in MVP; raster for now
         _ => panic!("no scan table for {}-coef residual", n_coefs),
     }
 }
@@ -1295,10 +1311,7 @@ pub fn encode_residual_block(
             break;
         }
         let is_sig = coefs[scan[i]] != 0;
-        encoder.encode_bin(
-            &mut contexts[spec.sig_off + i],
-            if is_sig { 1 } else { 0 },
-        );
+        encoder.encode_bin(&mut contexts[spec.sig_off + i], if is_sig { 1 } else { 0 });
         bins_emitted += 1;
         if is_sig {
             sig_scan_positions.push(i);
@@ -1323,12 +1336,20 @@ pub fn encode_residual_block(
         let v = coefs[scan[scan_pos]];
         let abs_minus1 = (v.abs() - 1) as u32;
         bins_emitted += encode_coeff_abs_level_minus1(
-            encoder, contexts, spec.abs_off,
-            abs_minus1, num_eq1, num_gt1,
+            encoder,
+            contexts,
+            spec.abs_off,
+            abs_minus1,
+            num_eq1,
+            num_gt1,
         );
         encoder.encode_bypass(if v < 0 { 1 } else { 0 });
         bins_emitted += 1;
-        if v.abs() == 1 { num_eq1 += 1; } else { num_gt1 += 1; }
+        if v.abs() == 1 {
+            num_eq1 += 1;
+        } else {
+            num_gt1 += 1;
+        }
     }
     bins_emitted
 }
@@ -1352,9 +1373,7 @@ pub fn decode_residual_block(
         bins_consumed += 1;
         if sig == 1 {
             sig_scan_positions.push(i);
-            let is_last = decoder.decode_bin(
-                &mut contexts[spec.last_off + i],
-            );
+            let is_last = decoder.decode_bin(&mut contexts[spec.last_off + i]);
             bins_consumed += 1;
             if is_last == 1 {
                 hit_last = true;
@@ -1369,15 +1388,18 @@ pub fn decode_residual_block(
     let mut num_eq1 = 0u32;
     let mut num_gt1 = 0u32;
     for &scan_pos in sig_scan_positions.iter().rev() {
-        let (abs_minus1, bins) = decode_coeff_abs_level_minus1(
-            decoder, contexts, spec.abs_off, num_eq1, num_gt1,
-        );
+        let (abs_minus1, bins) =
+            decode_coeff_abs_level_minus1(decoder, contexts, spec.abs_off, num_eq1, num_gt1);
         bins_consumed += bins;
         let sign = decoder.decode_bypass();
         bins_consumed += 1;
         let mag = (abs_minus1 + 1) as i32;
         coefs[scan[scan_pos]] = if sign == 1 { -mag } else { mag };
-        if mag == 1 { num_eq1 += 1; } else { num_gt1 += 1; }
+        if mag == 1 {
+            num_eq1 += 1;
+        } else {
+            num_gt1 += 1;
+        }
     }
     (coefs, bins_consumed)
 }
@@ -1407,7 +1429,11 @@ pub const MVD_UNARY_MAX: u32 = 9;
 /// decode_cabac_mb_mvd loop and §9.3.3.1.1.7:
 ///   binIdx 1: +3, binIdx 2: +4, binIdx 3: +5, binIdx 4+: +6
 fn mvd_bin_inc(bin_idx: u32) -> usize {
-    if bin_idx == 0 { 0 } else { (bin_idx as usize + 2).min(6) }
+    if bin_idx == 0 {
+        0
+    } else {
+        (bin_idx as usize + 2).min(6)
+    }
 }
 
 /// Derive ctxIdxInc for mvd binIdx 0 per §9.3.3.1.1.7 from the
@@ -1416,7 +1442,13 @@ fn mvd_bin_inc(bin_idx: u32) -> usize {
 /// classification thresholds 3 and 33).
 fn mvd_bin0_neighbour_inc(abs_left: i32, abs_top: i32) -> usize {
     let s = abs_left + abs_top;
-    if s < 3 { 0 } else if s < 33 { 1 } else { 2 }
+    if s < 3 {
+        0
+    } else if s < 33 {
+        1
+    } else {
+        2
+    }
 }
 
 pub fn encode_mvd(
@@ -1447,9 +1479,7 @@ pub fn encode_mvd_with_neighbours(
     // decode_cabac_mb_mvd: bin 0 uses ctx_offset+neighbour_inc;
     // subsequent bins step ctxbase by +3 then +1 per bin until it
     // caps at +6.
-    let bin0_inc = mvd_bin0_neighbour_inc(
-        neighbour_abs_left, neighbour_abs_top,
-    );
+    let bin0_inc = mvd_bin0_neighbour_inc(neighbour_abs_left, neighbour_abs_top);
     let prefix_len = abs.min(MVD_UNARY_MAX);
     for i in 0..prefix_len {
         let inc = if i == 0 { bin0_inc } else { mvd_bin_inc(i) };
@@ -1457,7 +1487,11 @@ pub fn encode_mvd_with_neighbours(
         bins_emitted += 1;
     }
     if abs < MVD_UNARY_MAX {
-        let inc = if prefix_len == 0 { bin0_inc } else { mvd_bin_inc(prefix_len) };
+        let inc = if prefix_len == 0 {
+            bin0_inc
+        } else {
+            mvd_bin_inc(prefix_len)
+        };
         encoder.encode_bin(&mut contexts[ctx_offset + inc], 0);
         bins_emitted += 1;
     } else {
@@ -1537,7 +1571,11 @@ pub fn decode_mvd(
     let value = if abs > 0 {
         let sign = decoder.decode_bypass();
         bins_consumed += 1;
-        if sign == 1 { -(abs as i32) } else { abs as i32 }
+        if sign == 1 {
+            -(abs as i32)
+        } else {
+            abs as i32
+        }
     } else {
         0
     };
@@ -1602,8 +1640,12 @@ pub fn encode_residual_4x4_luma(
         let v = coefs[pos];
         let abs_minus1 = (v.abs() - 1) as u32;
         bins_emitted += encode_coeff_abs_level_minus1(
-            encoder, contexts, RES_ABS_LEVEL_CTX_OFFSET,
-            abs_minus1, num_eq1, num_gt1,
+            encoder,
+            contexts,
+            RES_ABS_LEVEL_CTX_OFFSET,
+            abs_minus1,
+            num_eq1,
+            num_gt1,
         );
         encoder.encode_bypass(if v < 0 { 1 } else { 0 });
         bins_emitted += 1;
@@ -1630,15 +1672,11 @@ pub fn decode_residual_4x4_luma(
     let mut sig_positions: Vec<usize> = Vec::new();
     let mut last_pos = 0usize;
     for i in 0..RES_COEF_NUM_LUMA_4X4 - 1 {
-        let sig = decoder.decode_bin(
-            &mut contexts[RES_SIG_COEF_CTX_OFFSET + i],
-        );
+        let sig = decoder.decode_bin(&mut contexts[RES_SIG_COEF_CTX_OFFSET + i]);
         bins_consumed += 1;
         if sig == 1 {
             sig_positions.push(i);
-            let is_last = decoder.decode_bin(
-                &mut contexts[RES_LAST_COEF_CTX_OFFSET + i],
-            );
+            let is_last = decoder.decode_bin(&mut contexts[RES_LAST_COEF_CTX_OFFSET + i]);
             bins_consumed += 1;
             if is_last == 1 {
                 last_pos = i;
@@ -1650,9 +1688,7 @@ pub fn decode_residual_4x4_luma(
     }
     // If we made it to position 14 without a last marker, position
     // 15 is implicit-significant.
-    if sig_positions.last().map(|&p| p) != Some(last_pos)
-        || sig_positions.is_empty()
-    {
+    if sig_positions.last().map(|&p| p) != Some(last_pos) || sig_positions.is_empty() {
         // The loop fell through without hitting is_last == 1 — i.e.
         // last_pos is 15. Mark it sig.
         if !sig_positions.contains(&(RES_COEF_NUM_LUMA_4X4 - 1)) {
@@ -1665,8 +1701,11 @@ pub fn decode_residual_4x4_luma(
     let mut num_gt1 = 0u32;
     for &pos in sig_positions.iter().rev() {
         let (abs_minus1, bins) = decode_coeff_abs_level_minus1(
-            decoder, contexts, RES_ABS_LEVEL_CTX_OFFSET,
-            num_eq1, num_gt1,
+            decoder,
+            contexts,
+            RES_ABS_LEVEL_CTX_OFFSET,
+            num_eq1,
+            num_gt1,
         );
         bins_consumed += bins;
         let sign = decoder.decode_bypass();
@@ -1689,10 +1728,7 @@ pub fn decode_residual_4x4_luma(
 /// slice-type / init_idc table — used by the bin-tracer to
 /// mirror our initial state without copy-pasting the 1024-entry
 /// constant.
-pub fn init_table_mn(
-    slice_type: CabacSliceType,
-    cabac_init_idc: u8,
-) -> &'static [[i8; 2]; 1024] {
+pub fn init_table_mn(slice_type: CabacSliceType, cabac_init_idc: u8) -> &'static [[i8; 2]; 1024] {
     match slice_type {
         CabacSliceType::I => &CABAC_CONTEXT_INIT_I,
         CabacSliceType::P | CabacSliceType::B => match cabac_init_idc {
@@ -1764,7 +1800,9 @@ impl CabacDecoder {
         // than being undefined. `get` (checked) replaces `get_unchecked`
         // here; the bounds check this reintroduces is the same one the
         // `byte_idx + 1 < len` guard below already pays for b1.
-        let byte = self.buffer.get((self.bit_pos >> 3) as usize)
+        let byte = self
+            .buffer
+            .get((self.bit_pos >> 3) as usize)
             .copied()
             .unwrap_or(0);
         let bit = (byte >> (7 - (self.bit_pos & 7))) & 1;
@@ -1778,7 +1816,9 @@ impl CabacDecoder {
     /// the bits in a single byte-spanning extract.
     #[inline(always)]
     fn read_bits_up_to_8(&mut self, n: u32) -> u32 {
-        if n == 0 { return 0; }
+        if n == 0 {
+            return 0;
+        }
         let bp = self.bit_pos;
         let byte_idx = (bp >> 3) as usize;
         let bit_off = (bp & 7) as u32;
@@ -1840,7 +1880,9 @@ impl CabacDecoder {
         // tracked by both encoder/decoder; q_range_idx is masked to
         // 0..3 by the bitmask above.
         let range_lps = unsafe {
-            *RANGE_TAB_LPS.get_unchecked(p_state).get_unchecked(q_range_idx)
+            *RANGE_TAB_LPS
+                .get_unchecked(p_state)
+                .get_unchecked(q_range_idx)
         } as u32;
         self.code_i_range -= range_lps;
 
@@ -1852,14 +1894,10 @@ impl CabacDecoder {
             if p_state == 0 {
                 ctx.val_mps = 1 - ctx.val_mps;
             }
-            ctx.p_state_idx = unsafe {
-                *TRANS_IDX_LPS.get_unchecked(p_state)
-            };
+            ctx.p_state_idx = unsafe { *TRANS_IDX_LPS.get_unchecked(p_state) };
         } else {
             bin_val = ctx.val_mps;
-            ctx.p_state_idx = unsafe {
-                *TRANS_IDX_MPS.get_unchecked(p_state)
-            };
+            ctx.p_state_idx = unsafe { *TRANS_IDX_MPS.get_unchecked(p_state) };
         }
         self.renorm();
         bin_val
@@ -1999,8 +2037,7 @@ impl CabacEncoder {
             let space = 64 - self.bit_count;
             let take = n.min(space);
             if bit != 0 {
-                let mask = (((1u64 << take) - 1).wrapping_shl(0))
-                    << (64 - self.bit_count - take);
+                let mask = (((1u64 << take) - 1).wrapping_shl(0)) << (64 - self.bit_count - take);
                 self.bit_buf |= mask;
             }
             self.bit_count += take;
@@ -2068,7 +2105,9 @@ impl CabacEncoder {
         let q_range_idx = ((self.code_i_range >> 6) & 3) as usize;
         // SAFETY: p_state_idx ∈ 0..63 by spec; q_range_idx masked to 0..3.
         let range_lps = unsafe {
-            *RANGE_TAB_LPS.get_unchecked(p_state).get_unchecked(q_range_idx)
+            *RANGE_TAB_LPS
+                .get_unchecked(p_state)
+                .get_unchecked(q_range_idx)
         } as u32;
         self.code_i_range -= range_lps;
 
@@ -2078,13 +2117,9 @@ impl CabacEncoder {
             if p_state == 0 {
                 ctx.val_mps = 1 - ctx.val_mps;
             }
-            ctx.p_state_idx = unsafe {
-                *TRANS_IDX_LPS.get_unchecked(p_state)
-            };
+            ctx.p_state_idx = unsafe { *TRANS_IDX_LPS.get_unchecked(p_state) };
         } else {
-            ctx.p_state_idx = unsafe {
-                *TRANS_IDX_MPS.get_unchecked(p_state)
-            };
+            ctx.p_state_idx = unsafe { *TRANS_IDX_MPS.get_unchecked(p_state) };
         }
         self.renorm_e();
     }
@@ -2176,7 +2211,7 @@ impl Default for CabacEncoder {
 pub fn encode_p_l0_16x16_mb(
     encoder: &mut CabacEncoder,
     contexts: &mut [CabacCtx],
-    mb: &INxnMbInputs,      // re-using the I_NxN struct shape
+    mb: &INxnMbInputs, // re-using the I_NxN struct shape
     mvd_x: i32,
     mvd_y: i32,
     left_was_p_skip: Option<bool>,
@@ -2204,30 +2239,36 @@ pub fn encode_p_l0_16x16_mb(
 
     // 2. mb_pred: ref_idx not emitted (1 ref); just mvd_l0_x, mvd_l0_y.
     //    Neighbour absMvd derives bin 0 ctxIdxInc per §9.3.3.1.1.7.
-    let (left_abs_x, left_abs_y) = left
-        .map(|l| (l.abs_mvd_x, l.abs_mvd_y))
-        .unwrap_or((0, 0));
-    let (top_abs_x, top_abs_y) = top
-        .map(|t| (t.abs_mvd_x, t.abs_mvd_y))
-        .unwrap_or((0, 0));
+    let (left_abs_x, left_abs_y) = left.map(|l| (l.abs_mvd_x, l.abs_mvd_y)).unwrap_or((0, 0));
+    let (top_abs_x, top_abs_y) = top.map(|t| (t.abs_mvd_x, t.abs_mvd_y)).unwrap_or((0, 0));
     bins += encode_mvd_with_neighbours(
-        encoder, contexts, MVD_L0_X_CTX_OFFSET, mvd_x,
-        left_abs_x, top_abs_x,
+        encoder,
+        contexts,
+        MVD_L0_X_CTX_OFFSET,
+        mvd_x,
+        left_abs_x,
+        top_abs_x,
     );
     bins += encode_mvd_with_neighbours(
-        encoder, contexts, MVD_L0_Y_CTX_OFFSET, mvd_y,
-        left_abs_y, top_abs_y,
+        encoder,
+        contexts,
+        MVD_L0_Y_CTX_OFFSET,
+        mvd_y,
+        left_abs_y,
+        top_abs_y,
     );
 
     // 3. CBP luma + chroma (same as I_NxN walker).
     bins += encode_cbp_luma(
-        encoder, contexts,
+        encoder,
+        contexts,
         mb.cbp_luma,
         left.map(|l| l.cbp_luma).unwrap_or(0xF),
         top.map(|t| t.cbp_luma).unwrap_or(0xF),
     );
     bins += encode_cbp_chroma(
-        encoder, contexts,
+        encoder,
+        contexts,
         mb.cbp_chroma,
         left.map(|l| l.cbp_chroma).unwrap_or(0),
         top.map(|t| t.cbp_chroma).unwrap_or(0),
@@ -2237,21 +2278,17 @@ pub fn encode_p_l0_16x16_mb(
     let any_cbp = mb.cbp_luma != 0 || mb.cbp_chroma != 0;
     if any_cbp {
         let prev_was_zero = left.map(|l| l.mb_qp_delta_was_zero).unwrap_or(true);
-        bins += encode_mb_qp_delta(
-            encoder, contexts, mb.mb_qp_delta, prev_was_zero,
-        );
+        bins += encode_mb_qp_delta(encoder, contexts, mb.mb_qp_delta, prev_was_zero);
     }
 
     // 5. Luma 4×4 residual blocks — same scan + CBF gating as I_NxN.
-    let luma_blocks_in_8x8: [[usize; 4]; 4] = [
-        [0, 1, 2, 3],
-        [4, 5, 6, 7],
-        [8, 9, 10, 11],
-        [12, 13, 14, 15],
-    ];
+    let luma_blocks_in_8x8: [[usize; 4]; 4] =
+        [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]];
     let mut this_mb_cbf = [false; 16];
     for (i_8x8, sub_blocks) in luma_blocks_in_8x8.iter().enumerate() {
-        if (mb.cbp_luma >> i_8x8) & 1 == 0 { continue; }
+        if (mb.cbp_luma >> i_8x8) & 1 == 0 {
+            continue;
+        }
         for &block_idx in sub_blocks {
             let has_coefs = mb.luma_4x4[block_idx].iter().any(|&c| c != 0);
             let (br, bc) = BLOCK_IDX_TO_RC[block_idx];
@@ -2269,14 +2306,18 @@ pub fn encode_p_l0_16x16_mb(
                 top.map(|t| t.luma_cbf[RC_TO_BLOCK_IDX[3][bc]])
             };
             bins += encode_coded_block_flag(
-                encoder, contexts,
+                encoder,
+                contexts,
                 CtxBlockCat::Luma4x4,
-                has_coefs, left_cbf, top_cbf,
+                has_coefs,
+                left_cbf,
+                top_cbf,
             );
             this_mb_cbf[block_idx] = has_coefs;
             if has_coefs {
                 bins += encode_residual_block(
-                    encoder, contexts,
+                    encoder,
+                    contexts,
                     RES_BLOCK_SPEC_LUMA_4X4,
                     &mb.luma_4x4[block_idx],
                 );
@@ -2296,13 +2337,18 @@ pub fn encode_p_l0_16x16_mb(
         let left_cb_dc = left.map(|l| l.chroma_dc_cbf_cb);
         let top_cb_dc = top.map(|t| t.chroma_dc_cbf_cb);
         bins += encode_coded_block_flag(
-            encoder, contexts, CtxBlockCat::ChromaDc,
-            cb_has, left_cb_dc, top_cb_dc,
+            encoder,
+            contexts,
+            CtxBlockCat::ChromaDc,
+            cb_has,
+            left_cb_dc,
+            top_cb_dc,
         );
         this_chroma_dc_cbf_cb = cb_has;
         if cb_has {
             bins += encode_residual_block(
-                encoder, contexts,
+                encoder,
+                contexts,
                 RES_BLOCK_SPEC_CHROMA_DC,
                 &mb.chroma_dc_cb,
             );
@@ -2311,13 +2357,18 @@ pub fn encode_p_l0_16x16_mb(
         let left_cr_dc = left.map(|l| l.chroma_dc_cbf_cr);
         let top_cr_dc = top.map(|t| t.chroma_dc_cbf_cr);
         bins += encode_coded_block_flag(
-            encoder, contexts, CtxBlockCat::ChromaDc,
-            cr_has, left_cr_dc, top_cr_dc,
+            encoder,
+            contexts,
+            CtxBlockCat::ChromaDc,
+            cr_has,
+            left_cr_dc,
+            top_cr_dc,
         );
         this_chroma_dc_cbf_cr = cr_has;
         if cr_has {
             bins += encode_residual_block(
-                encoder, contexts,
+                encoder,
+                contexts,
                 RES_BLOCK_SPEC_CHROMA_DC,
                 &mb.chroma_dc_cr,
             );
@@ -2350,16 +2401,16 @@ pub fn encode_p_l0_16x16_mb(
                 top.map(|t| t.chroma_ac_cbf_cb[2 + col])
             };
             bins += encode_coded_block_flag(
-                encoder, contexts, CtxBlockCat::ChromaAc,
-                has, left_cbf, top_cbf,
+                encoder,
+                contexts,
+                CtxBlockCat::ChromaAc,
+                has,
+                left_cbf,
+                top_cbf,
             );
             this_chroma_ac_cbf_cb[blk_idx] = has;
             if has {
-                bins += encode_residual_block(
-                    encoder, contexts,
-                    RES_BLOCK_SPEC_CHROMA_AC,
-                    blk,
-                );
+                bins += encode_residual_block(encoder, contexts, RES_BLOCK_SPEC_CHROMA_AC, blk);
             }
         }
         // Cr plane AC — same shape
@@ -2379,16 +2430,16 @@ pub fn encode_p_l0_16x16_mb(
                 top.map(|t| t.chroma_ac_cbf_cr[2 + col])
             };
             bins += encode_coded_block_flag(
-                encoder, contexts, CtxBlockCat::ChromaAc,
-                has, left_cbf, top_cbf,
+                encoder,
+                contexts,
+                CtxBlockCat::ChromaAc,
+                has,
+                left_cbf,
+                top_cbf,
             );
             this_chroma_ac_cbf_cr[blk_idx] = has;
             if has {
-                bins += encode_residual_block(
-                    encoder, contexts,
-                    RES_BLOCK_SPEC_CHROMA_AC,
-                    blk,
-                );
+                bins += encode_residual_block(encoder, contexts, RES_BLOCK_SPEC_CHROMA_AC, blk);
             }
         }
     }
@@ -2400,8 +2451,12 @@ pub fn encode_p_l0_16x16_mb(
     // module-private mutable static? No — instead, the caller can
     // recompute them from `mb` by checking nonzero-ness, since the
     // outputs we wrote ARE just the CBFs we computed above.
-    let _ = (this_chroma_dc_cbf_cb, this_chroma_dc_cbf_cr,
-             this_chroma_ac_cbf_cb, this_chroma_ac_cbf_cr);
+    let _ = (
+        this_chroma_dc_cbf_cb,
+        this_chroma_dc_cbf_cr,
+        this_chroma_ac_cbf_cb,
+        this_chroma_ac_cbf_cr,
+    );
 
     (bins, this_mb_cbf)
 }
@@ -2463,9 +2518,7 @@ pub fn encode_p_slice_from_mb_luma(
         assert_eq!(my.len(), n_mbs);
     }
 
-    let mut contexts = init_contexts(
-        CabacSliceType::P, cabac_init_idc, slice_qp,
-    );
+    let mut contexts = init_contexts(CabacSliceType::P, cabac_init_idc, slice_qp);
     let mut enc = CabacEncoder::new();
     // Track per-MB neighbour state for skip + mb_type-is-P + CBF etc.
     #[derive(Clone, Copy)]
@@ -2474,8 +2527,7 @@ pub fn encode_p_slice_from_mb_luma(
         is_p_l0: bool,
         ns: MbNeighbourState,
     }
-    let mut grid: Vec<Vec<Option<PNeighbour>>> =
-        vec![vec![None; mb_width]; mb_height];
+    let mut grid: Vec<Vec<Option<PNeighbour>>> = vec![vec![None; mb_width]; mb_height];
 
     let skip_ctx_offset = mb_skip_flag_ctx_offset(CabacSliceType::P).unwrap();
 
@@ -2492,10 +2544,7 @@ pub fn encode_p_slice_from_mb_luma(
             );
             let skip_ctx = skip_ctx_offset + skip_inc;
             let mb_skip = mb_skip_list[i];
-            enc.encode_bin(
-                &mut contexts[skip_ctx],
-                if mb_skip { 1 } else { 0 },
-            );
+            enc.encode_bin(&mut contexts[skip_ctx], if mb_skip { 1 } else { 0 });
 
             let luma_cbf;
             let is_p_l0;
@@ -2533,10 +2582,8 @@ pub fn encode_p_slice_from_mb_luma(
                     if mb_in.cbp_chroma == 2 {
                         for b in 0..4 {
                             for k in 0..15 {
-                                mb_in.chroma_ac_cb[b][k] =
-                                    ch.chroma_ac_cb[i * 60 + b * 15 + k];
-                                mb_in.chroma_ac_cr[b][k] =
-                                    ch.chroma_ac_cr[i * 60 + b * 15 + k];
+                                mb_in.chroma_ac_cb[b][k] = ch.chroma_ac_cb[i * 60 + b * 15 + k];
+                                mb_in.chroma_ac_cr[b][k] = ch.chroma_ac_cr[i * 60 + b * 15 + k];
                             }
                         }
                     }
@@ -2552,11 +2599,15 @@ pub fn encode_p_slice_from_mb_luma(
                     None => (0, 0),
                 };
                 let (_, cbf) = encode_p_l0_16x16_mb(
-                    &mut enc, &mut contexts,
-                    &mb_in, this_mvd_x, this_mvd_y,
+                    &mut enc,
+                    &mut contexts,
+                    &mb_in,
+                    this_mvd_x,
+                    this_mvd_y,
                     left.map(|l| l.skipped),
                     top.map(|t| t.skipped),
-                    left_ns.as_ref(), top_ns.as_ref(),
+                    left_ns.as_ref(),
+                    top_ns.as_ref(),
                 );
                 luma_cbf = cbf;
                 is_p_l0 = true;
@@ -2575,20 +2626,24 @@ pub fn encode_p_slice_from_mb_luma(
             // Compute the chroma CBFs we wrote for this MB so the
             // next MB's CBF context derivation matches what we
             // encoded (and what the decoder will compute).
-            let (cdc_cb, cdc_cr, cac_cb, cac_cr) = if mb_skip
-                || cbp_chroma_this == 0
-            {
+            let (cdc_cb, cdc_cr, cac_cb, cac_cr) = if mb_skip || cbp_chroma_this == 0 {
                 (false, false, [false; 4], [false; 4])
             } else {
                 let mb_in_base = i;
                 let dc_cb = if let Some(ch) = chroma {
                     ch.chroma_dc_cb[mb_in_base * 4..mb_in_base * 4 + 4]
-                        .iter().any(|&v| v != 0)
-                } else { false };
+                        .iter()
+                        .any(|&v| v != 0)
+                } else {
+                    false
+                };
                 let dc_cr = if let Some(ch) = chroma {
                     ch.chroma_dc_cr[mb_in_base * 4..mb_in_base * 4 + 4]
-                        .iter().any(|&v| v != 0)
-                } else { false };
+                        .iter()
+                        .any(|&v| v != 0)
+                } else {
+                    false
+                };
                 let mut ac_cb = [false; 4];
                 let mut ac_cr = [false; 4];
                 if cbp_chroma_this == 2 {
@@ -2596,10 +2651,12 @@ pub fn encode_p_slice_from_mb_luma(
                         for b in 0..4 {
                             ac_cb[b] = ch.chroma_ac_cb
                                 [mb_in_base * 60 + b * 15..mb_in_base * 60 + (b + 1) * 15]
-                                .iter().any(|&v| v != 0);
+                                .iter()
+                                .any(|&v| v != 0);
                             ac_cr[b] = ch.chroma_ac_cr
                                 [mb_in_base * 60 + b * 15..mb_in_base * 60 + (b + 1) * 15]
-                                .iter().any(|&v| v != 0);
+                                .iter()
+                                .any(|&v| v != 0);
                         }
                     }
                 }
@@ -2659,8 +2716,12 @@ pub fn encode_p_slice_multi(
     assert_eq!(cbp_luma_list.len(), n_mbs);
     assert_eq!(mb_skip_list.len(), n_mbs);
     assert!(n_slices >= 1);
-    assert!(n_slices <= mb_height,
-            "can't split {} MB rows into {} slices", mb_height, n_slices);
+    assert!(
+        n_slices <= mb_height,
+        "can't split {} MB rows into {} slices",
+        mb_height,
+        n_slices
+    );
 
     // Divide MB rows roughly evenly across N slices.
     let rows_per_slice = (mb_height + n_slices - 1) / n_slices;
@@ -2700,8 +2761,7 @@ pub fn encode_p_slice_multi(
             chroma_ac_cr: &ch.chroma_ac_cr[mb_start * 60..mb_end * 60],
         });
         let (mvd_x_sub, mvd_y_sub) = match mvd {
-            Some((x, y)) => (Some(&x[mb_start..mb_end]),
-                             Some(&y[mb_start..mb_end])),
+            Some((x, y)) => (Some(&x[mb_start..mb_end]), Some(&y[mb_start..mb_end])),
             None => (None, None),
         };
         slices.push(Slice {
@@ -2730,9 +2790,15 @@ pub fn encode_p_slice_multi(
                 let first_mb = sl.first_mb;
                 let payload_handle = scope.spawn(move || {
                     encode_p_slice_from_mb_luma(
-                        sl.mb_luma, sl.cbp, sl.skip,
-                        mw, mh, cabac_init_idc, slice_qp,
-                        chroma_ref, mvd_pair,
+                        sl.mb_luma,
+                        sl.cbp,
+                        sl.skip,
+                        mw,
+                        mh,
+                        cabac_init_idc,
+                        slice_qp,
+                        chroma_ref,
+                        mvd_pair,
                     )
                 });
                 (first_mb, payload_handle)
@@ -2760,12 +2826,9 @@ pub fn encode_i_slice_from_mb_luma(
     let n_mbs = mb_width * mb_height;
     assert_eq!(mb_luma.len(), n_mbs * 256);
     assert_eq!(cbp_luma_list.len(), n_mbs);
-    let mut contexts = init_contexts(
-        CabacSliceType::I, cabac_init_idc, slice_qp,
-    );
+    let mut contexts = init_contexts(CabacSliceType::I, cabac_init_idc, slice_qp);
     let mut enc = CabacEncoder::new();
-    let mut grid: Vec<Vec<Option<MbNeighbourState>>> =
-        vec![vec![None; mb_width]; mb_height];
+    let mut grid: Vec<Vec<Option<MbNeighbourState>>> = vec![vec![None; mb_width]; mb_height];
 
     for r in 0..mb_height {
         for c in 0..mb_width {
@@ -2783,9 +2846,7 @@ pub fn encode_i_slice_from_mb_luma(
             mb.mb_qp_delta = 0;
             let left = if c > 0 { grid[r][c - 1].as_ref() } else { None };
             let top = if r > 0 { grid[r - 1][c].as_ref() } else { None };
-            let (_, luma_cbf) = encode_i_nxn_mb(
-                &mut enc, &mut contexts, &mb, left, top,
-            );
+            let (_, luma_cbf) = encode_i_nxn_mb(&mut enc, &mut contexts, &mb, left, top);
             let is_last = r == mb_height - 1 && c == mb_width - 1;
             enc.encode_terminate(if is_last { 1 } else { 0 });
             grid[r][c] = Some(MbNeighbourState {
@@ -2920,20 +2981,28 @@ pub struct MbNeighbourState {
 /// Spec §6.4.3 / Figure 6-12: 4×4 luma block index (0..15) to its
 /// (row, col) position within the 4×4 grid of an MB.
 const BLOCK_IDX_TO_RC: [(usize, usize); 16] = [
-    (0, 0), (0, 1), (1, 0), (1, 1),
-    (0, 2), (0, 3), (1, 2), (1, 3),
-    (2, 0), (2, 1), (3, 0), (3, 1),
-    (2, 2), (2, 3), (3, 2), (3, 3),
+    (0, 0),
+    (0, 1),
+    (1, 0),
+    (1, 1),
+    (0, 2),
+    (0, 3),
+    (1, 2),
+    (1, 3),
+    (2, 0),
+    (2, 1),
+    (3, 0),
+    (3, 1),
+    (2, 2),
+    (2, 3),
+    (3, 2),
+    (3, 3),
 ];
 
 /// Inverse mapping: (row, col) → block_idx. Built from
 /// `BLOCK_IDX_TO_RC` by hand to keep the table const.
-const RC_TO_BLOCK_IDX: [[usize; 4]; 4] = [
-    [ 0,  1,  4,  5],
-    [ 2,  3,  6,  7],
-    [ 8,  9, 12, 13],
-    [10, 11, 14, 15],
-];
+const RC_TO_BLOCK_IDX: [[usize; 4]; 4] =
+    [[0, 1, 4, 5], [2, 3, 6, 7], [8, 9, 12, 13], [10, 11, 14, 15]];
 
 /// Encode one I_NxN macroblock per §7.3.5.1. `left` and `top` are
 /// the neighbour states for context derivation; if a neighbour is
@@ -2954,7 +3023,8 @@ pub fn encode_i_nxn_mb(
 
     // 1. mb_type = I_NxN
     bins += encode_i_mb_type_i_nxn(
-        encoder, contexts,
+        encoder,
+        contexts,
         left.and_then(|l| l.mb_type_is_i_nxn),
         top.and_then(|t| t.mb_type_is_i_nxn),
     );
@@ -2967,7 +3037,8 @@ pub fn encode_i_nxn_mb(
 
     // 4. intra_chroma_pred_mode
     bins += encode_intra_chroma_pred_mode(
-        encoder, contexts,
+        encoder,
+        contexts,
         mb.intra_chroma_pred_mode,
         left.and_then(|l| l.intra_chroma_mode),
         top.and_then(|t| t.intra_chroma_mode),
@@ -2980,13 +3051,15 @@ pub fn encode_i_nxn_mb(
     // a non-bit value (0/1/2) but its inc function already maps
     // 0 → condTermFlag = 0 which IS the unavailable behaviour.
     bins += encode_cbp_luma(
-        encoder, contexts,
+        encoder,
+        contexts,
         mb.cbp_luma,
         left.map(|l| l.cbp_luma).unwrap_or(0xF),
         top.map(|t| t.cbp_luma).unwrap_or(0xF),
     );
     bins += encode_cbp_chroma(
-        encoder, contexts,
+        encoder,
+        contexts,
         mb.cbp_chroma,
         left.map(|l| l.cbp_chroma).unwrap_or(0),
         top.map(|t| t.cbp_chroma).unwrap_or(0),
@@ -2996,9 +3069,7 @@ pub fn encode_i_nxn_mb(
     let any_cbp = mb.cbp_luma != 0 || mb.cbp_chroma != 0;
     if any_cbp {
         let prev_was_zero = left.map(|l| l.mb_qp_delta_was_zero).unwrap_or(true);
-        bins += encode_mb_qp_delta(
-            encoder, contexts, mb.mb_qp_delta, prev_was_zero,
-        );
+        bins += encode_mb_qp_delta(encoder, contexts, mb.mb_qp_delta, prev_was_zero);
     }
 
     // 7. Luma 4×4 residual blocks. Per H.264 Table 6-2 the 16 4×4
@@ -3009,18 +3080,16 @@ pub fn encode_i_nxn_mb(
     //      8×8 block 3 → 4×4 blocks 12, 13, 14, 15
     //    Within each 8×8 block they're scanned in their natural
     //    index order, which IS the §6.4.3 Z-scan within the MB.
-    let luma_blocks_in_8x8: [[usize; 4]; 4] = [
-        [0, 1, 2, 3],
-        [4, 5, 6, 7],
-        [8, 9, 10, 11],
-        [12, 13, 14, 15],
-    ];
+    let luma_blocks_in_8x8: [[usize; 4]; 4] =
+        [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]];
     // Track CBF for each of the 16 4×4 sub-blocks as we encode,
     // so subsequent blocks can derive their CBF ctxIdxInc from
     // in-MB neighbours per §9.3.3.1.1.9.
     let mut this_mb_cbf = [false; 16];
     for (i_8x8, sub_blocks) in luma_blocks_in_8x8.iter().enumerate() {
-        if (mb.cbp_luma >> i_8x8) & 1 == 0 { continue; }
+        if (mb.cbp_luma >> i_8x8) & 1 == 0 {
+            continue;
+        }
         for &block_idx in sub_blocks {
             let has_coefs = mb.luma_4x4[block_idx].iter().any(|&c| c != 0);
             let (br, bc) = BLOCK_IDX_TO_RC[block_idx];
@@ -3034,24 +3103,32 @@ pub fn encode_i_nxn_mb(
             let left_cbf = if bc > 0 {
                 Some(this_mb_cbf[RC_TO_BLOCK_IDX[br][bc - 1]])
             } else {
-                Some(left.map(|l| l.luma_cbf[RC_TO_BLOCK_IDX[br][3]])
-                         .unwrap_or(true))
+                Some(
+                    left.map(|l| l.luma_cbf[RC_TO_BLOCK_IDX[br][3]])
+                        .unwrap_or(true),
+                )
             };
             let top_cbf = if br > 0 {
                 Some(this_mb_cbf[RC_TO_BLOCK_IDX[br - 1][bc]])
             } else {
-                Some(top.map(|t| t.luma_cbf[RC_TO_BLOCK_IDX[3][bc]])
-                        .unwrap_or(true))
+                Some(
+                    top.map(|t| t.luma_cbf[RC_TO_BLOCK_IDX[3][bc]])
+                        .unwrap_or(true),
+                )
             };
             bins += encode_coded_block_flag(
-                encoder, contexts,
+                encoder,
+                contexts,
                 CtxBlockCat::Luma4x4,
-                has_coefs, left_cbf, top_cbf,
+                has_coefs,
+                left_cbf,
+                top_cbf,
             );
             this_mb_cbf[block_idx] = has_coefs;
             if has_coefs {
                 bins += encode_residual_block(
-                    encoder, contexts,
+                    encoder,
+                    contexts,
                     RES_BLOCK_SPEC_LUMA_4X4,
                     &mb.luma_4x4[block_idx],
                 );
@@ -3066,25 +3143,23 @@ pub fn encode_i_nxn_mb(
     // 8. Chroma DC (Cb then Cr) if cbp_chroma >= 1. CBF-gated.
     if mb.cbp_chroma >= 1 {
         let cb_has = mb.chroma_dc_cb.iter().any(|&c| c != 0);
-        bins += encode_coded_block_flag(
-            encoder, contexts, CtxBlockCat::ChromaDc,
-            cb_has, None, None,
-        );
+        bins +=
+            encode_coded_block_flag(encoder, contexts, CtxBlockCat::ChromaDc, cb_has, None, None);
         if cb_has {
             bins += encode_residual_block(
-                encoder, contexts,
+                encoder,
+                contexts,
                 RES_BLOCK_SPEC_CHROMA_DC,
                 &mb.chroma_dc_cb,
             );
         }
         let cr_has = mb.chroma_dc_cr.iter().any(|&c| c != 0);
-        bins += encode_coded_block_flag(
-            encoder, contexts, CtxBlockCat::ChromaDc,
-            cr_has, None, None,
-        );
+        bins +=
+            encode_coded_block_flag(encoder, contexts, CtxBlockCat::ChromaDc, cr_has, None, None);
         if cr_has {
             bins += encode_residual_block(
-                encoder, contexts,
+                encoder,
+                contexts,
                 RES_BLOCK_SPEC_CHROMA_DC,
                 &mb.chroma_dc_cr,
             );
@@ -3095,30 +3170,18 @@ pub fn encode_i_nxn_mb(
     if mb.cbp_chroma == 2 {
         for blk in &mb.chroma_ac_cb {
             let has = blk.iter().any(|&c| c != 0);
-            bins += encode_coded_block_flag(
-                encoder, contexts, CtxBlockCat::ChromaAc,
-                has, None, None,
-            );
+            bins +=
+                encode_coded_block_flag(encoder, contexts, CtxBlockCat::ChromaAc, has, None, None);
             if has {
-                bins += encode_residual_block(
-                    encoder, contexts,
-                    RES_BLOCK_SPEC_CHROMA_AC,
-                    blk,
-                );
+                bins += encode_residual_block(encoder, contexts, RES_BLOCK_SPEC_CHROMA_AC, blk);
             }
         }
         for blk in &mb.chroma_ac_cr {
             let has = blk.iter().any(|&c| c != 0);
-            bins += encode_coded_block_flag(
-                encoder, contexts, CtxBlockCat::ChromaAc,
-                has, None, None,
-            );
+            bins +=
+                encode_coded_block_flag(encoder, contexts, CtxBlockCat::ChromaAc, has, None, None);
             if has {
-                bins += encode_residual_block(
-                    encoder, contexts,
-                    RES_BLOCK_SPEC_CHROMA_AC,
-                    blk,
-                );
+                bins += encode_residual_block(encoder, contexts, RES_BLOCK_SPEC_CHROMA_AC, blk);
             }
         }
     }
@@ -3141,7 +3204,8 @@ pub fn decode_i_nxn_mb(
     // 1. Verify mb_type is I_NxN (caller's responsibility to call
     //    only when they've already established this).
     let (is_i_nxn, b) = decode_i_mb_type_is_i_nxn(
-        decoder, contexts,
+        decoder,
+        contexts,
         left.and_then(|l| l.mb_type_is_i_nxn),
         top.and_then(|t| t.mb_type_is_i_nxn),
     );
@@ -3158,7 +3222,8 @@ pub fn decode_i_nxn_mb(
 
     // 4. intra_chroma_pred_mode
     let (mode, b) = decode_intra_chroma_pred_mode(
-        decoder, contexts,
+        decoder,
+        contexts,
         left.and_then(|l| l.intra_chroma_mode),
         top.and_then(|t| t.intra_chroma_mode),
     );
@@ -3168,14 +3233,16 @@ pub fn decode_i_nxn_mb(
     // 5. CBP — unavailable neighbours pass 0xF for luma (so the
     // bit-inversion in ctxIdxInc gives condTermFlag=0 per spec).
     let (cbp_l, b) = decode_cbp_luma(
-        decoder, contexts,
+        decoder,
+        contexts,
         left.map(|l| l.cbp_luma).unwrap_or(0xF),
         top.map(|t| t.cbp_luma).unwrap_or(0xF),
     );
     bins += b;
     mb.cbp_luma = cbp_l;
     let (cbp_c, b) = decode_cbp_chroma(
-        decoder, contexts,
+        decoder,
+        contexts,
         left.map(|l| l.cbp_chroma).unwrap_or(0),
         top.map(|t| t.cbp_chroma).unwrap_or(0),
     );
@@ -3193,40 +3260,38 @@ pub fn decode_i_nxn_mb(
 
     // 7. Luma residuals — spec ordering [0,1,2,3]/[4,5,6,7]/...
     //    with per-block CBF context from in-MB + cross-MB neighbours.
-    let luma_blocks_in_8x8: [[usize; 4]; 4] = [
-        [0, 1, 2, 3],
-        [4, 5, 6, 7],
-        [8, 9, 10, 11],
-        [12, 13, 14, 15],
-    ];
+    let luma_blocks_in_8x8: [[usize; 4]; 4] =
+        [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]];
     let mut this_mb_cbf = [false; 16];
     for (i_8x8, sub_blocks) in luma_blocks_in_8x8.iter().enumerate() {
-        if (mb.cbp_luma >> i_8x8) & 1 == 0 { continue; }
+        if (mb.cbp_luma >> i_8x8) & 1 == 0 {
+            continue;
+        }
         for &block_idx in sub_blocks {
             let (br, bc) = BLOCK_IDX_TO_RC[block_idx];
             // Same unavailable-as-coded convention as the encoder.
             let left_cbf = if bc > 0 {
                 Some(this_mb_cbf[RC_TO_BLOCK_IDX[br][bc - 1]])
             } else {
-                Some(left.map(|l| l.luma_cbf[RC_TO_BLOCK_IDX[br][3]])
-                         .unwrap_or(true))
+                Some(
+                    left.map(|l| l.luma_cbf[RC_TO_BLOCK_IDX[br][3]])
+                        .unwrap_or(true),
+                )
             };
             let top_cbf = if br > 0 {
                 Some(this_mb_cbf[RC_TO_BLOCK_IDX[br - 1][bc]])
             } else {
-                Some(top.map(|t| t.luma_cbf[RC_TO_BLOCK_IDX[3][bc]])
-                        .unwrap_or(true))
+                Some(
+                    top.map(|t| t.luma_cbf[RC_TO_BLOCK_IDX[3][bc]])
+                        .unwrap_or(true),
+                )
             };
-            let (cbf, b) = decode_coded_block_flag(
-                decoder, contexts, CtxBlockCat::Luma4x4,
-                left_cbf, top_cbf,
-            );
+            let (cbf, b) =
+                decode_coded_block_flag(decoder, contexts, CtxBlockCat::Luma4x4, left_cbf, top_cbf);
             bins += b;
             this_mb_cbf[block_idx] = cbf;
             if cbf {
-                let (coefs, b) = decode_residual_block(
-                    decoder, contexts, RES_BLOCK_SPEC_LUMA_4X4,
-                );
+                let (coefs, b) = decode_residual_block(decoder, contexts, RES_BLOCK_SPEC_LUMA_4X4);
                 bins += b;
                 for (i, &c) in coefs.iter().enumerate() {
                     mb.luma_4x4[block_idx][i] = c;
@@ -3238,56 +3303,52 @@ pub fn decode_i_nxn_mb(
 
     // 8. Chroma DC (CBF-gated, Cb then Cr).
     if mb.cbp_chroma >= 1 {
-        let (cb_cbf, b) = decode_coded_block_flag(
-            decoder, contexts, CtxBlockCat::ChromaDc, None, None,
-        );
+        let (cb_cbf, b) =
+            decode_coded_block_flag(decoder, contexts, CtxBlockCat::ChromaDc, None, None);
         bins += b;
         if cb_cbf {
-            let (cb, b) = decode_residual_block(
-                decoder, contexts, RES_BLOCK_SPEC_CHROMA_DC,
-            );
+            let (cb, b) = decode_residual_block(decoder, contexts, RES_BLOCK_SPEC_CHROMA_DC);
             bins += b;
-            for (i, &c) in cb.iter().enumerate() { mb.chroma_dc_cb[i] = c; }
+            for (i, &c) in cb.iter().enumerate() {
+                mb.chroma_dc_cb[i] = c;
+            }
         }
-        let (cr_cbf, b) = decode_coded_block_flag(
-            decoder, contexts, CtxBlockCat::ChromaDc, None, None,
-        );
+        let (cr_cbf, b) =
+            decode_coded_block_flag(decoder, contexts, CtxBlockCat::ChromaDc, None, None);
         bins += b;
         if cr_cbf {
-            let (cr, b) = decode_residual_block(
-                decoder, contexts, RES_BLOCK_SPEC_CHROMA_DC,
-            );
+            let (cr, b) = decode_residual_block(decoder, contexts, RES_BLOCK_SPEC_CHROMA_DC);
             bins += b;
-            for (i, &c) in cr.iter().enumerate() { mb.chroma_dc_cr[i] = c; }
+            for (i, &c) in cr.iter().enumerate() {
+                mb.chroma_dc_cr[i] = c;
+            }
         }
     }
 
     // 9. Chroma AC
     if mb.cbp_chroma == 2 {
         for blk in &mut mb.chroma_ac_cb {
-            let (cbf, b) = decode_coded_block_flag(
-                decoder, contexts, CtxBlockCat::ChromaAc, None, None,
-            );
+            let (cbf, b) =
+                decode_coded_block_flag(decoder, contexts, CtxBlockCat::ChromaAc, None, None);
             bins += b;
             if cbf {
-                let (coefs, b) = decode_residual_block(
-                    decoder, contexts, RES_BLOCK_SPEC_CHROMA_AC,
-                );
+                let (coefs, b) = decode_residual_block(decoder, contexts, RES_BLOCK_SPEC_CHROMA_AC);
                 bins += b;
-                for (i, &c) in coefs.iter().enumerate() { blk[i] = c; }
+                for (i, &c) in coefs.iter().enumerate() {
+                    blk[i] = c;
+                }
             }
         }
         for blk in &mut mb.chroma_ac_cr {
-            let (cbf, b) = decode_coded_block_flag(
-                decoder, contexts, CtxBlockCat::ChromaAc, None, None,
-            );
+            let (cbf, b) =
+                decode_coded_block_flag(decoder, contexts, CtxBlockCat::ChromaAc, None, None);
             bins += b;
             if cbf {
-                let (coefs, b) = decode_residual_block(
-                    decoder, contexts, RES_BLOCK_SPEC_CHROMA_AC,
-                );
+                let (coefs, b) = decode_residual_block(decoder, contexts, RES_BLOCK_SPEC_CHROMA_AC);
                 bins += b;
-                for (i, &c) in coefs.iter().enumerate() { blk[i] = c; }
+                for (i, &c) in coefs.iter().enumerate() {
+                    blk[i] = c;
+                }
             }
         }
     }
@@ -3323,17 +3384,24 @@ mod tests {
     /// sides must match.
     #[test]
     fn context_round_trip_static_pattern() {
-        let bins: Vec<u8> = vec![1, 1, 0, 1, 1, 1, 0, 0, 1, 0,
-                                  1, 1, 1, 0, 1, 0, 0, 1, 1, 0,
-                                  1, 0, 1, 1, 0, 1, 1, 0, 0, 1];
-        let mut enc_ctx = CabacCtx { p_state_idx: 18, val_mps: 0 };
+        let bins: Vec<u8> = vec![
+            1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0,
+            1,
+        ];
+        let mut enc_ctx = CabacCtx {
+            p_state_idx: 18,
+            val_mps: 0,
+        };
         let mut enc = CabacEncoder::new();
         for &b in &bins {
             enc.encode_bin(&mut enc_ctx, b);
         }
         enc.finish();
 
-        let mut dec_ctx = CabacCtx { p_state_idx: 18, val_mps: 0 };
+        let mut dec_ctx = CabacCtx {
+            p_state_idx: 18,
+            val_mps: 0,
+        };
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
         let mut out = Vec::new();
         for _ in 0..bins.len() {
@@ -3354,26 +3422,56 @@ mod tests {
         // (m=20, n=-15) at qp=26: pre = ((20*26)>>4) + -15 = 32 + -15 = 17
         // 17 <= 63 → p_state_idx = 63-17 = 46, val_mps = 0
         let c = CabacCtx::init_from_mn(20, -15, 26);
-        assert_eq!(c, CabacCtx { p_state_idx: 46, val_mps: 0 });
+        assert_eq!(
+            c,
+            CabacCtx {
+                p_state_idx: 46,
+                val_mps: 0
+            }
+        );
 
         // (m=2, n=54) at qp=26: pre = ((2*26)>>4) + 54 = 3 + 54 = 57
         // 57 <= 63 → p_state_idx = 63-57 = 6, val_mps = 0
         let c = CabacCtx::init_from_mn(2, 54, 26);
-        assert_eq!(c, CabacCtx { p_state_idx: 6, val_mps: 0 });
+        assert_eq!(
+            c,
+            CabacCtx {
+                p_state_idx: 6,
+                val_mps: 0
+            }
+        );
 
         // (m=-28, n=127) at qp=26: pre = ((-28*26)>>4) + 127 = -46 + 127 = 81
         // 81 > 63 → p_state_idx = 81-64 = 17, val_mps = 1
         let c = CabacCtx::init_from_mn(-28, 127, 26);
-        assert_eq!(c, CabacCtx { p_state_idx: 17, val_mps: 1 });
+        assert_eq!(
+            c,
+            CabacCtx {
+                p_state_idx: 17,
+                val_mps: 1
+            }
+        );
 
         // Clip3 sanity per §9.3.1.1.1 — large negative m at high qp
         // clips to preCtxState=1 (NOT 0; spec is Clip3(1, 126, ...)).
         let c = CabacCtx::init_from_mn(-127, -127, 51);
-        assert_eq!(c, CabacCtx { p_state_idx: 62, val_mps: 0 });
+        assert_eq!(
+            c,
+            CabacCtx {
+                p_state_idx: 62,
+                val_mps: 0
+            }
+        );
 
         // Saturation high — large positive m at high qp clips to 126.
         let c = CabacCtx::init_from_mn(127, 127, 51);
-        assert_eq!(c, CabacCtx { p_state_idx: 62, val_mps: 1 });
+        assert_eq!(
+            c,
+            CabacCtx {
+                p_state_idx: 62,
+                val_mps: 1
+            }
+        );
     }
 
     /// 1024 contexts initialised at QP=26 for an I-slice. Cross-check
@@ -3385,9 +3483,21 @@ mod tests {
         assert_eq!(ctxs.len(), 1024);
         // First entry uses (20, -15) per Table 9-12 ctxIdx 0; expected
         // pre=17 above.
-        assert_eq!(ctxs[0], CabacCtx { p_state_idx: 46, val_mps: 0 });
+        assert_eq!(
+            ctxs[0],
+            CabacCtx {
+                p_state_idx: 46,
+                val_mps: 0
+            }
+        );
         // ctxIdx 6 uses (-28, 127): pre=81, val_mps=1.
-        assert_eq!(ctxs[6], CabacCtx { p_state_idx: 17, val_mps: 1 });
+        assert_eq!(
+            ctxs[6],
+            CabacCtx {
+                p_state_idx: 17,
+                val_mps: 1
+            }
+        );
     }
 
     /// mb_skip_flag context selection per §9.3.3.1.1.1.
@@ -3437,7 +3547,7 @@ mod tests {
         let slice_type = CabacSliceType::P;
         let qp = 26;
         let init_idc = 0;
-        let mb_width = 20;  // 320/16 — same as parrot
+        let mb_width = 20; // 320/16 — same as parrot
         let mb_height = 15; // 240/16
         let total = mb_width * mb_height;
 
@@ -3454,7 +3564,7 @@ mod tests {
             let r = i / mb_width;
             let c = i % mb_width;
             let left = if c == 0 { None } else { grid[r][c - 1] };
-            let top  = if r == 0 { None } else { grid[r - 1][c] };
+            let top = if r == 0 { None } else { grid[r - 1][c] };
             let ctx_idx = mb_skip_flag_ctx_idx(slice_type, left, top).unwrap();
             enc.encode_bin(&mut enc_ctxs[ctx_idx], skip);
             grid[r][c] = Some(skip);
@@ -3470,17 +3580,14 @@ mod tests {
             let r = i / mb_width;
             let c = i % mb_width;
             let left = if c == 0 { None } else { decoded_grid[r][c - 1] };
-            let top  = if r == 0 { None } else { decoded_grid[r - 1][c] };
+            let top = if r == 0 { None } else { decoded_grid[r - 1][c] };
             let ctx_idx = mb_skip_flag_ctx_idx(slice_type, left, top).unwrap();
             let bit = dec.decode_bin(&mut dec_ctxs[ctx_idx]);
             decoded_grid[r][c] = Some(bit);
             decoded.push(bit);
         }
 
-        assert_eq!(
-            decoded, skips,
-            "mb_skip_flag round-trip diverged"
-        );
+        assert_eq!(decoded, skips, "mb_skip_flag round-trip diverged");
         // The three relevant contexts (ctxIdx 11/12/13 for P) on
         // both sides must end at the same adaptive state.
         for ctx in 11..=13 {
@@ -3506,8 +3613,7 @@ mod tests {
 
             let mut dec_ctxs = init_contexts(CabacSliceType::P, 0, qp);
             let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
-            let (decoded, bins_consumed) =
-                decode_p_mb_type(&mut dec, &mut dec_ctxs);
+            let (decoded, bins_consumed) = decode_p_mb_type(&mut dec, &mut dec_ctxs);
             assert_eq!(decoded, val);
             assert_eq!(bins_consumed, bins_emitted);
         }
@@ -3519,11 +3625,8 @@ mod tests {
     #[test]
     fn p_mb_type_sequence_round_trip() {
         let seq: Vec<u8> = vec![
-            0, 0, 1, 0, 3, 2, 0, 0, 3, 1,
-            0, 2, 3, 0, 0, 1, 0, 3, 0, 2,
-            0, 0, 0, 1, 3, 0, 2, 0, 1, 0,
-            3, 0, 0, 2, 0, 3, 1, 0, 0, 0,
-            2, 0, 3, 0, 1, 0, 0, 3, 0, 0,
+            0, 0, 1, 0, 3, 2, 0, 0, 3, 1, 0, 2, 3, 0, 0, 1, 0, 3, 0, 2, 0, 0, 0, 1, 3, 0, 2, 0, 1,
+            0, 3, 0, 0, 2, 0, 3, 1, 0, 0, 0, 2, 0, 3, 0, 1, 0, 0, 3, 0, 0,
         ];
 
         let mut enc_ctxs = init_contexts(CabacSliceType::P, 0, 26);
@@ -3556,9 +3659,18 @@ mod tests {
         //   d=-2 → k=4
         //   etc.
         let cases = [
-            (0, 0), (1, 1), (-1, 2), (2, 3), (-2, 4),
-            (3, 5), (-3, 6), (10, 19), (-10, 20),
-            (25, 49), (-25, 50), (26, 51),
+            (0, 0),
+            (1, 1),
+            (-1, 2),
+            (2, 3),
+            (-2, 4),
+            (3, 5),
+            (-3, 6),
+            (10, 19),
+            (-10, 20),
+            (25, 49),
+            (-25, 50),
+            (26, 51),
         ];
         for (d, expected_k) in cases {
             let k = mb_qp_delta_signed_to_unsigned(d);
@@ -3590,16 +3702,13 @@ mod tests {
             let qp = 26;
             let mut enc_ctxs = init_contexts(CabacSliceType::P, 0, qp);
             let mut enc = CabacEncoder::new();
-            encode_mb_qp_delta(
-                &mut enc, &mut enc_ctxs, delta, /*prev_was_zero=*/ true,
-            );
+            encode_mb_qp_delta(&mut enc, &mut enc_ctxs, delta, /*prev_was_zero=*/ true);
             enc.finish();
 
             let mut dec_ctxs = init_contexts(CabacSliceType::P, 0, qp);
             let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
-            let (got, _) = decode_mb_qp_delta(
-                &mut dec, &mut dec_ctxs, /*prev_was_zero=*/ true,
-            );
+            let (got, _) =
+                decode_mb_qp_delta(&mut dec, &mut dec_ctxs, /*prev_was_zero=*/ true);
             assert_eq!(got, delta, "round-trip failed for delta={}", delta);
         }
     }
@@ -3610,8 +3719,7 @@ mod tests {
     #[test]
     fn mb_qp_delta_sequence_round_trip_with_carried_state() {
         let seq: Vec<i32> = vec![
-            0, 1, 0, -1, 0, 0, 2, -3, 0, 5,
-            -5, 0, 0, 10, -10, 0, 1, 1, 0, -1,
+            0, 1, 0, -1, 0, 0, 2, -3, 0, 5, -5, 0, 0, 10, -10, 0, 1, 1, 0, -1,
         ];
         let qp = 26;
         let mut enc_ctxs = init_contexts(CabacSliceType::P, 0, qp);
@@ -3627,8 +3735,7 @@ mod tests {
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
         let mut prev_was_zero_d = true;
         for &expected in &seq {
-            let (got, _) =
-                decode_mb_qp_delta(&mut dec, &mut dec_ctxs, prev_was_zero_d);
+            let (got, _) = decode_mb_qp_delta(&mut dec, &mut dec_ctxs, prev_was_zero_d);
             assert_eq!(got, expected);
             prev_was_zero_d = got == 0;
         }
@@ -3652,9 +3759,7 @@ mod tests {
 
             let mut dec_ctxs = init_contexts(CabacSliceType::P, 0, qp);
             let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
-            let (got, bins) = decode_cbp_luma(
-                &mut dec, &mut dec_ctxs, 0, 0,
-            );
+            let (got, bins) = decode_cbp_luma(&mut dec, &mut dec_ctxs, 0, 0);
             assert_eq!(got, cbp_luma, "cbp_luma 0x{:X} round-trip", cbp_luma);
             assert_eq!(bins, 4);
         }
@@ -3668,17 +3773,13 @@ mod tests {
             let qp = 26;
             let mut enc_ctxs = init_contexts(CabacSliceType::P, 0, qp);
             let mut enc = CabacEncoder::new();
-            let bins = encode_cbp_chroma(
-                &mut enc, &mut enc_ctxs, chroma, 0, 0,
-            );
+            let bins = encode_cbp_chroma(&mut enc, &mut enc_ctxs, chroma, 0, 0);
             assert_eq!(bins, expected_bins);
             enc.finish();
 
             let mut dec_ctxs = init_contexts(CabacSliceType::P, 0, qp);
             let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
-            let (got, _) = decode_cbp_chroma(
-                &mut dec, &mut dec_ctxs, 0, 0,
-            );
+            let (got, _) = decode_cbp_chroma(&mut dec, &mut dec_ctxs, 0, 0);
             assert_eq!(got, chroma);
         }
     }
@@ -3716,11 +3817,8 @@ mod tests {
     fn cbp_sequence_round_trip_with_neighbour_state() {
         // 6 columns × 5 rows. Pre-built CBP values per MB.
         let mb_cbp_luma: Vec<u8> = vec![
-            0x0, 0xF, 0x3, 0xC, 0xA, 0x5,
-            0xF, 0x0, 0x5, 0xA, 0xC, 0x3,
-            0x6, 0x9, 0x3, 0xC, 0x0, 0xF,
-            0xA, 0x5, 0xC, 0x3, 0x9, 0x6,
-            0x0, 0xF, 0xC, 0x3, 0x6, 0x9,
+            0x0, 0xF, 0x3, 0xC, 0xA, 0x5, 0xF, 0x0, 0x5, 0xA, 0xC, 0x3, 0x6, 0x9, 0x3, 0xC, 0x0,
+            0xF, 0xA, 0x5, 0xC, 0x3, 0x9, 0x6, 0x0, 0xF, 0xC, 0x3, 0x6, 0x9,
         ];
         let mb_cbp_chroma: Vec<u8> = (0..30).map(|i| (i % 3) as u8).collect();
         let width = 6;
@@ -3730,10 +3828,7 @@ mod tests {
         let mut enc = CabacEncoder::new();
         let mut enc_luma_grid = vec![vec![0u8; width]; 5];
         let mut enc_chroma_grid = vec![vec![0u8; width]; 5];
-        for (i, (&luma, &chroma)) in mb_cbp_luma.iter()
-            .zip(mb_cbp_chroma.iter())
-            .enumerate()
-        {
+        for (i, (&luma, &chroma)) in mb_cbp_luma.iter().zip(mb_cbp_chroma.iter()).enumerate() {
             let r = i / width;
             let c = i % width;
             let left_luma = if c == 0 { 0 } else { enc_luma_grid[r][c - 1] };
@@ -3741,12 +3836,8 @@ mod tests {
             let left_chroma = if c == 0 { 0 } else { enc_chroma_grid[r][c - 1] };
             let top_chroma = if r == 0 { 0 } else { enc_chroma_grid[r - 1][c] };
 
-            encode_cbp_luma(
-                &mut enc, &mut enc_ctxs, luma, left_luma, top_luma,
-            );
-            encode_cbp_chroma(
-                &mut enc, &mut enc_ctxs, chroma, left_chroma, top_chroma,
-            );
+            encode_cbp_luma(&mut enc, &mut enc_ctxs, luma, left_luma, top_luma);
+            encode_cbp_chroma(&mut enc, &mut enc_ctxs, chroma, left_chroma, top_chroma);
             enc_luma_grid[r][c] = luma;
             enc_chroma_grid[r][c] = chroma;
         }
@@ -3765,27 +3856,19 @@ mod tests {
             let left_chroma = if c == 0 { 0 } else { dec_chroma_grid[r][c - 1] };
             let top_chroma = if r == 0 { 0 } else { dec_chroma_grid[r - 1][c] };
 
-            let (luma, _) = decode_cbp_luma(
-                &mut dec, &mut dec_ctxs, left_luma, top_luma,
-            );
-            let (chroma, _) = decode_cbp_chroma(
-                &mut dec, &mut dec_ctxs, left_chroma, top_chroma,
-            );
-            assert_eq!(luma, mb_cbp_luma[i],
-                "mb {} luma mismatch", i);
-            assert_eq!(chroma, mb_cbp_chroma[i],
-                "mb {} chroma mismatch", i);
+            let (luma, _) = decode_cbp_luma(&mut dec, &mut dec_ctxs, left_luma, top_luma);
+            let (chroma, _) = decode_cbp_chroma(&mut dec, &mut dec_ctxs, left_chroma, top_chroma);
+            assert_eq!(luma, mb_cbp_luma[i], "mb {} luma mismatch", i);
+            assert_eq!(chroma, mb_cbp_chroma[i], "mb {} chroma mismatch", i);
             dec_luma_grid[r][c] = luma;
             dec_chroma_grid[r][c] = chroma;
         }
         // All 4 luma + 2*4 chroma contexts agree at end.
         for ctx in CBP_LUMA_CTX_OFFSET..CBP_LUMA_CTX_OFFSET + 4 {
-            assert_eq!(enc_ctxs[ctx], dec_ctxs[ctx],
-                "cbp_luma ctx {} drift", ctx);
+            assert_eq!(enc_ctxs[ctx], dec_ctxs[ctx], "cbp_luma ctx {} drift", ctx);
         }
         for ctx in CBP_CHROMA_CTX_OFFSET..CBP_CHROMA_CTX_OFFSET + 8 {
-            assert_eq!(enc_ctxs[ctx], dec_ctxs[ctx],
-                "cbp_chroma ctx {} drift", ctx);
+            assert_eq!(enc_ctxs[ctx], dec_ctxs[ctx], "cbp_chroma ctx {} drift", ctx);
         }
     }
 
@@ -3799,15 +3882,23 @@ mod tests {
             let mut enc_ctxs = init_contexts(CabacSliceType::P, 0, 26);
             let mut enc = CabacEncoder::new();
             encode_coeff_abs_level_minus1(
-                &mut enc, &mut enc_ctxs, RES_ABS_LEVEL_CTX_OFFSET,
-                v, 0, 0,
+                &mut enc,
+                &mut enc_ctxs,
+                RES_ABS_LEVEL_CTX_OFFSET,
+                v,
+                0,
+                0,
             );
             enc.finish();
 
             let mut dec_ctxs = init_contexts(CabacSliceType::P, 0, 26);
             let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
             let (got, _) = decode_coeff_abs_level_minus1(
-                &mut dec, &mut dec_ctxs, RES_ABS_LEVEL_CTX_OFFSET, 0, 0,
+                &mut dec,
+                &mut dec_ctxs,
+                RES_ABS_LEVEL_CTX_OFFSET,
+                0,
+                0,
             );
             assert_eq!(got, v, "coeff_abs_level v={} round-trip", v);
         }
@@ -3830,8 +3921,7 @@ mod tests {
 
         let mut dec_ctxs = init_contexts(CabacSliceType::P, 0, 26);
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
-        let (decoded, _) = decode_residual_4x4_luma(
-            &mut dec, &mut dec_ctxs);
+        let (decoded, _) = decode_residual_4x4_luma(&mut dec, &mut dec_ctxs);
         assert_eq!(decoded, coefs);
     }
 
@@ -3839,10 +3929,7 @@ mod tests {
     /// position 15 (implicit-significant in the spec).
     #[test]
     fn residual_4x4_dense_round_trip() {
-        let coefs: [i32; 16] = [
-            10, -8, 6, -4, 3, -2, 1, -1,
-             2,  3, 4,  5, 6,  7, 8,  9,
-        ];
+        let coefs: [i32; 16] = [10, -8, 6, -4, 3, -2, 1, -1, 2, 3, 4, 5, 6, 7, 8, 9];
         let mut enc_ctxs = init_contexts(CabacSliceType::P, 0, 26);
         let mut enc = CabacEncoder::new();
         encode_residual_4x4_luma(&mut enc, &mut enc_ctxs, &coefs);
@@ -3850,8 +3937,7 @@ mod tests {
 
         let mut dec_ctxs = init_contexts(CabacSliceType::P, 0, 26);
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
-        let (decoded, _) = decode_residual_4x4_luma(
-            &mut dec, &mut dec_ctxs);
+        let (decoded, _) = decode_residual_4x4_luma(&mut dec, &mut dec_ctxs);
         assert_eq!(decoded, coefs);
     }
 
@@ -3870,8 +3956,7 @@ mod tests {
 
         let mut dec_ctxs = init_contexts(CabacSliceType::P, 0, 26);
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
-        let (decoded, _) = decode_residual_4x4_luma(
-            &mut dec, &mut dec_ctxs);
+        let (decoded, _) = decode_residual_4x4_luma(&mut dec, &mut dec_ctxs);
         assert_eq!(decoded, coefs);
     }
 
@@ -3890,8 +3975,7 @@ mod tests {
 
         let mut dec_ctxs = init_contexts(CabacSliceType::P, 0, 26);
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
-        let (decoded, _) = decode_residual_4x4_luma(
-            &mut dec, &mut dec_ctxs);
+        let (decoded, _) = decode_residual_4x4_luma(&mut dec, &mut dec_ctxs);
         assert_eq!(decoded, coefs);
     }
 
@@ -3935,14 +4019,12 @@ mod tests {
         let mut dec_ctxs = init_contexts(CabacSliceType::P, 0, 26);
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
         for expected in &blocks {
-            let (decoded, _) = decode_residual_4x4_luma(
-                &mut dec, &mut dec_ctxs);
+            let (decoded, _) = decode_residual_4x4_luma(&mut dec, &mut dec_ctxs);
             assert_eq!(&decoded, expected, "block round-trip");
         }
         // Final adapted state agrees.
         for ctx in RES_SIG_COEF_CTX_OFFSET..RES_SIG_COEF_CTX_OFFSET + 15 {
-            assert_eq!(enc_ctxs[ctx], dec_ctxs[ctx],
-                "sig_coef ctx {} drift", ctx);
+            assert_eq!(enc_ctxs[ctx], dec_ctxs[ctx], "sig_coef ctx {} drift", ctx);
         }
     }
 
@@ -3950,8 +4032,14 @@ mod tests {
     #[test]
     fn residual_block_all_cats_round_trip() {
         use CtxBlockCat::*;
-        for cat in [Intra16x16Dc, Intra16x16Ac, Luma4x4,
-                    ChromaDc, ChromaAc, Luma8x8] {
+        for cat in [
+            Intra16x16Dc,
+            Intra16x16Ac,
+            Luma4x4,
+            ChromaDc,
+            ChromaAc,
+            Luma8x8,
+        ] {
             let spec = res_block_spec(cat);
             let mut coefs = vec![0i32; spec.n_coefs];
             // Sprinkle a few non-zero coefs at specific positions.
@@ -4006,8 +4094,9 @@ mod tests {
     /// mvd component round-trips across the prefix/suffix boundary.
     #[test]
     fn mvd_each_magnitude_round_trips() {
-        let values = [0i32, 1, -1, 5, -5, 8, -8, 9, -9, 10, -10, 50,
-                       -50, 100, -100, 500, -500, 1000, -1000];
+        let values = [
+            0i32, 1, -1, 5, -5, 8, -8, 9, -9, 10, -10, 50, -50, 100, -100, 500, -500, 1000, -1000,
+        ];
         for &v in &values {
             let mut enc_ctxs = init_contexts(CabacSliceType::P, 0, 26);
             let mut enc = CabacEncoder::new();
@@ -4016,9 +4105,7 @@ mod tests {
 
             let mut dec_ctxs = init_contexts(CabacSliceType::P, 0, 26);
             let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
-            let (got, _) = decode_mvd(
-                &mut dec, &mut dec_ctxs, MVD_L0_X_CTX_OFFSET,
-            );
+            let (got, _) = decode_mvd(&mut dec, &mut dec_ctxs, MVD_L0_X_CTX_OFFSET);
             assert_eq!(got, v, "mvd v={} round-trip", v);
         }
     }
@@ -4039,9 +4126,7 @@ mod tests {
         let mut dec_ctxs = init_contexts(CabacSliceType::P, 0, 26);
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
         for &expected in &values {
-            let (got, _) = decode_mvd(
-                &mut dec, &mut dec_ctxs, MVD_L0_X_CTX_OFFSET,
-            );
+            let (got, _) = decode_mvd(&mut dec, &mut dec_ctxs, MVD_L0_X_CTX_OFFSET);
             assert_eq!(got, expected);
         }
     }
@@ -4087,20 +4172,27 @@ mod tests {
                 let mut enc_ctxs = init_contexts(CabacSliceType::P, 0, 26);
                 let mut enc = CabacEncoder::new();
                 encode_ref_idx_l0(
-                    &mut enc, &mut enc_ctxs, ref_idx,
-                    /*bin0_inc=*/ 0, num_ref_minus1,
+                    &mut enc,
+                    &mut enc_ctxs,
+                    ref_idx,
+                    /*bin0_inc=*/ 0,
+                    num_ref_minus1,
                 );
                 enc.finish();
 
                 let mut dec_ctxs = init_contexts(CabacSliceType::P, 0, 26);
                 let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
                 let (got, _) = decode_ref_idx_l0(
-                    &mut dec, &mut dec_ctxs,
-                    /*bin0_inc=*/ 0, num_ref_minus1,
+                    &mut dec,
+                    &mut dec_ctxs,
+                    /*bin0_inc=*/ 0,
+                    num_ref_minus1,
                 );
-                assert_eq!(got, ref_idx,
+                assert_eq!(
+                    got, ref_idx,
                     "ref_idx round-trip failed: cmax={}, val={}",
-                    num_ref_minus1, ref_idx);
+                    num_ref_minus1, ref_idx
+                );
             }
         }
     }
@@ -4116,12 +4208,12 @@ mod tests {
         let height = 5;
         let num_ref_minus1 = 3u8;
         // Generate a deterministic pattern of ref_idx values.
-        let mut refs: Vec<u8> = (0..width * height).map(|i| {
-            ((i * 7) % 4) as u8
-        }).collect();
+        let mut refs: Vec<u8> = (0..width * height).map(|i| ((i * 7) % 4) as u8).collect();
         // Ensure values are in range.
         for r in refs.iter_mut() {
-            if *r > num_ref_minus1 { *r = num_ref_minus1; }
+            if *r > num_ref_minus1 {
+                *r = num_ref_minus1;
+            }
         }
 
         let mut grid = vec![vec![None::<u8>; width]; height];
@@ -4131,9 +4223,7 @@ mod tests {
             let left = if c == 0 { None } else { grid[r][c - 1] };
             let top = if r == 0 { None } else { grid[r - 1][c] };
             let inc = ref_idx_bin0_ctx_inc(left, top);
-            encode_ref_idx_l0(
-                &mut enc, &mut enc_ctxs, val, inc, num_ref_minus1,
-            );
+            encode_ref_idx_l0(&mut enc, &mut enc_ctxs, val, inc, num_ref_minus1);
             grid[r][c] = Some(val);
         }
         enc.finish();
@@ -4147,9 +4237,7 @@ mod tests {
             let left = if c == 0 { None } else { dec_grid[r][c - 1] };
             let top = if r == 0 { None } else { dec_grid[r - 1][c] };
             let inc = ref_idx_bin0_ctx_inc(left, top);
-            let (got, _) = decode_ref_idx_l0(
-                &mut dec, &mut dec_ctxs, inc, num_ref_minus1,
-            );
+            let (got, _) = decode_ref_idx_l0(&mut dec, &mut dec_ctxs, inc, num_ref_minus1);
             assert_eq!(got, refs[i]);
             dec_grid[r][c] = Some(got);
         }
@@ -4241,19 +4329,17 @@ mod tests {
             ] {
                 let mut enc_ctxs = init_contexts(CabacSliceType::I, 0, 26);
                 let mut enc = CabacEncoder::new();
-                encode_intra_chroma_pred_mode(
-                    &mut enc, &mut enc_ctxs, mode, la, ta,
-                );
+                encode_intra_chroma_pred_mode(&mut enc, &mut enc_ctxs, mode, la, ta);
                 enc.finish();
 
                 let mut dec_ctxs = init_contexts(CabacSliceType::I, 0, 26);
                 let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
-                let (got, _) = decode_intra_chroma_pred_mode(
-                    &mut dec, &mut dec_ctxs, la, ta,
-                );
-                assert_eq!(got, mode,
+                let (got, _) = decode_intra_chroma_pred_mode(&mut dec, &mut dec_ctxs, la, ta);
+                assert_eq!(
+                    got, mode,
                     "intra_chroma mode={} left={:?} top={:?}",
-                    mode, la, ta);
+                    mode, la, ta
+                );
             }
         }
     }
@@ -4272,10 +4358,8 @@ mod tests {
             let r = i / mb_width;
             let c = i % mb_width;
             let left = if c == 0 { None } else { grid[r][c - 1] };
-            let top  = if r == 0 { None } else { grid[r - 1][c] };
-            encode_intra_chroma_pred_mode(
-                &mut enc, &mut enc_ctxs, m, left, top,
-            );
+            let top = if r == 0 { None } else { grid[r - 1][c] };
+            encode_intra_chroma_pred_mode(&mut enc, &mut enc_ctxs, m, left, top);
             grid[r][c] = Some(m);
         }
         enc.finish();
@@ -4287,12 +4371,13 @@ mod tests {
             let r = i / mb_width;
             let c = i % mb_width;
             let left = if c == 0 { None } else { decoded_grid[r][c - 1] };
-            let top  = if r == 0 { None } else { decoded_grid[r - 1][c] };
-            let (got, _) = decode_intra_chroma_pred_mode(
-                &mut dec, &mut dec_ctxs, left, top,
+            let top = if r == 0 { None } else { decoded_grid[r - 1][c] };
+            let (got, _) = decode_intra_chroma_pred_mode(&mut dec, &mut dec_ctxs, left, top);
+            assert_eq!(
+                got, modes[i],
+                "MB[{}] expected mode {}, got {}",
+                i, modes[i], got
             );
-            assert_eq!(got, modes[i],
-                "MB[{}] expected mode {}, got {}", i, modes[i], got);
             decoded_grid[r][c] = Some(got);
         }
     }
@@ -4309,9 +4394,7 @@ mod tests {
 
         let mut dec_ctxs = init_contexts(CabacSliceType::I, 0, 26);
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
-        let (got, _) = decode_i_mb_type_is_i_nxn(
-            &mut dec, &mut dec_ctxs, None, None,
-        );
+        let (got, _) = decode_i_mb_type_is_i_nxn(&mut dec, &mut dec_ctxs, None, None);
         assert!(got, "I_NxN round-trip");
     }
 
@@ -4326,11 +4409,9 @@ mod tests {
         for r in 0..3 {
             for c in 0..3 {
                 let left = if c == 0 { None } else { grid[r][c - 1] };
-                let top  = if r == 0 { None } else { grid[r - 1][c] };
-                encode_i_mb_type_i_nxn(
-                    &mut enc, &mut enc_ctxs, left, top,
-                );
-                grid[r][c] = Some(true);  // all I_NxN
+                let top = if r == 0 { None } else { grid[r - 1][c] };
+                encode_i_mb_type_i_nxn(&mut enc, &mut enc_ctxs, left, top);
+                grid[r][c] = Some(true); // all I_NxN
             }
         }
         enc.finish();
@@ -4341,10 +4422,8 @@ mod tests {
         for r in 0..3 {
             for c in 0..3 {
                 let left = if c == 0 { None } else { dgrid[r][c - 1] };
-                let top  = if r == 0 { None } else { dgrid[r - 1][c] };
-                let (got, _) = decode_i_mb_type_is_i_nxn(
-                    &mut dec, &mut dec_ctxs, left, top,
-                );
+                let top = if r == 0 { None } else { dgrid[r - 1][c] };
+                let (got, _) = decode_i_mb_type_is_i_nxn(&mut dec, &mut dec_ctxs, left, top);
                 assert!(got, "MB[{},{}] should be I_NxN", r, c);
                 dgrid[r][c] = Some(true);
             }
@@ -4361,13 +4440,8 @@ mod tests {
         let mut mb = INxnMbInputs::default();
         let s = seed as i32;
         // Block 0 (top-left of MB) — DC+AC residual.
-        mb.luma_4x4[0] = [
-            100 + s, -8, 3, 0,
-            -6,       5, 1, 0,
-            2,        1, 0, 0,
-            0,        0, 0, 0,
-        ];
-        mb.cbp_luma = 0b0001;  // 8×8 block 0 only
+        mb.luma_4x4[0] = [100 + s, -8, 3, 0, -6, 5, 1, 0, 2, 1, 0, 0, 0, 0, 0, 0];
+        mb.cbp_luma = 0b0001; // 8×8 block 0 only
         mb.cbp_chroma = 0;
         mb.intra_chroma_pred_mode = 0;
         mb.mb_qp_delta = 0;
@@ -4379,17 +4453,13 @@ mod tests {
         let mb = make_test_mb(0);
         let mut enc_ctxs = init_contexts(CabacSliceType::I, 0, 26);
         let mut enc = CabacEncoder::new();
-        let (bins, _) = encode_i_nxn_mb(
-            &mut enc, &mut enc_ctxs, &mb, None, None,
-        );
+        let (bins, _) = encode_i_nxn_mb(&mut enc, &mut enc_ctxs, &mb, None, None);
         enc.finish();
         assert!(bins > 0);
 
         let mut dec_ctxs = init_contexts(CabacSliceType::I, 0, 26);
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
-        let (decoded, _, _) = decode_i_nxn_mb(
-            &mut dec, &mut dec_ctxs, None, None,
-        );
+        let (decoded, _, _) = decode_i_nxn_mb(&mut dec, &mut dec_ctxs, None, None);
         assert_eq!(decoded.cbp_luma, mb.cbp_luma);
         assert_eq!(decoded.cbp_chroma, mb.cbp_chroma);
         assert_eq!(decoded.intra_chroma_pred_mode, mb.intra_chroma_pred_mode);
@@ -4398,7 +4468,8 @@ mod tests {
             for j in 0..16 {
                 assert_eq!(
                     decoded.luma_4x4[i][j], mb.luma_4x4[i][j],
-                    "luma[{}][{}]", i, j,
+                    "luma[{}][{}]",
+                    i, j,
                 );
             }
         }
@@ -4407,7 +4478,7 @@ mod tests {
     #[test]
     fn i_nxn_mb_walker_round_trip_with_chroma() {
         let mut mb = make_test_mb(1);
-        mb.cbp_chroma = 1;  // DC only
+        mb.cbp_chroma = 1; // DC only
         mb.chroma_dc_cb = [40, -2, 1, 0];
         mb.chroma_dc_cr = [-30, 1, 0, 0];
 
@@ -4418,9 +4489,7 @@ mod tests {
 
         let mut dec_ctxs = init_contexts(CabacSliceType::I, 0, 26);
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
-        let (decoded, _, _) = decode_i_nxn_mb(
-            &mut dec, &mut dec_ctxs, None, None,
-        );
+        let (decoded, _, _) = decode_i_nxn_mb(&mut dec, &mut dec_ctxs, None, None);
         assert_eq!(decoded.cbp_chroma, 1);
         assert_eq!(decoded.chroma_dc_cb, mb.chroma_dc_cb);
         assert_eq!(decoded.chroma_dc_cr, mb.chroma_dc_cr);
@@ -4437,8 +4506,11 @@ mod tests {
         let mut prev: Option<MbNeighbourState> = None;
         for mb in &mbs {
             let (_, cbf) = encode_i_nxn_mb(
-                &mut enc, &mut enc_ctxs, mb,
-                prev.as_ref(), None,  // same row, no top
+                &mut enc,
+                &mut enc_ctxs,
+                mb,
+                prev.as_ref(),
+                None, // same row, no top
             );
             prev = Some(MbNeighbourState {
                 mb_type_is_i_nxn: Some(true),
@@ -4462,19 +4534,18 @@ mod tests {
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
         let mut prev: Option<MbNeighbourState> = None;
         for (i, expected) in mbs.iter().enumerate() {
-            let (got, _, cbf) = decode_i_nxn_mb(
-                &mut dec, &mut dec_ctxs, prev.as_ref(), None,
-            );
+            let (got, _, cbf) = decode_i_nxn_mb(&mut dec, &mut dec_ctxs, prev.as_ref(), None);
             assert_eq!(got.cbp_luma, expected.cbp_luma, "MB {} cbp_luma", i);
             for j in 0..16 {
                 for k in 0..16 {
                     assert_eq!(
                         got.luma_4x4[j][k], expected.luma_4x4[j][k],
-                        "MB {} luma[{}][{}]", i, j, k,
+                        "MB {} luma[{}][{}]",
+                        i, j, k,
                     );
                 }
             }
-            let _ = cbf;  // silence-unused; the next iteration's prev uses it
+            let _ = cbf; // silence-unused; the next iteration's prev uses it
             prev = Some(MbNeighbourState {
                 mb_type_is_i_nxn: Some(true),
                 cbp_luma: got.cbp_luma,
@@ -4497,8 +4568,14 @@ mod tests {
     /// must round-trip through both modes.
     #[test]
     fn mixed_round_trip_context_and_bypass() {
-        let mut ctx_a = CabacCtx { p_state_idx: 5, val_mps: 1 };
-        let mut ctx_b = CabacCtx { p_state_idx: 30, val_mps: 0 };
+        let mut ctx_a = CabacCtx {
+            p_state_idx: 5,
+            val_mps: 1,
+        };
+        let mut ctx_b = CabacCtx {
+            p_state_idx: 30,
+            val_mps: 0,
+        };
         let mut enc = CabacEncoder::new();
         for i in 0..16 {
             enc.encode_bin(&mut ctx_a, ((i * 7) & 1) as u8);
@@ -4507,8 +4584,14 @@ mod tests {
         }
         enc.finish();
 
-        let mut dec_a = CabacCtx { p_state_idx: 5, val_mps: 1 };
-        let mut dec_b = CabacCtx { p_state_idx: 30, val_mps: 0 };
+        let mut dec_a = CabacCtx {
+            p_state_idx: 5,
+            val_mps: 1,
+        };
+        let mut dec_b = CabacCtx {
+            p_state_idx: 30,
+            val_mps: 0,
+        };
         let mut dec = CabacDecoder::new(enc.buffer.clone(), 0);
         for i in 0..16 {
             assert_eq!(dec.decode_bin(&mut dec_a), ((i * 7) & 1) as u8);
@@ -4517,4 +4600,3 @@ mod tests {
         }
     }
 }
-

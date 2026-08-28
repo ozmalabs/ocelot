@@ -9590,7 +9590,13 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 _ => None,
             });
             if let Some(value) = crate::future_manifold::projection_field(
-                ctx.graph, ctx.interner, ep, po, src, add, *field,
+                ctx.graph,
+                ctx.interner,
+                ep,
+                po,
+                src,
+                add,
+                *field,
             ) {
                 value
             } else {
@@ -10397,42 +10403,34 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             let bv = evaluate(arena, *b, env, ctx);
             Value::Float(banded_dtw(&av, &bv, 8))
         }
-        TermNode::EnigmaCrib { candidate } => {
-            match evaluate(arena, *candidate, env, ctx) {
-                Value::Node(node) => Value::Bool(crate::enigma::crib_admissible(
-                    ctx.graph,
-                    node,
-                    ctx.interner,
-                )),
-                _ => Value::Bool(false),
-            }
-        }
-        TermNode::EnigmaBombe { candidate } => {
-            match evaluate(arena, *candidate, env, ctx) {
-                Value::Node(node) => Value::Bool(crate::enigma::bombe_admissible(
-                    ctx.graph,
-                    node,
-                    ctx.interner,
-                )),
-                _ => Value::Bool(false),
-            }
-        }
-        TermNode::EnigmaBombeWitness { candidate } => {
-            match evaluate(arena, *candidate, env, ctx) {
-                Value::Node(node) => match crate::enigma::bombe_witness(
-                    ctx.graph,
-                    node,
-                    ctx.interner,
-                ) {
+        TermNode::EnigmaCrib { candidate } => match evaluate(arena, *candidate, env, ctx) {
+            Value::Node(node) => Value::Bool(crate::enigma::crib_admissible(
+                ctx.graph,
+                node,
+                ctx.interner,
+            )),
+            _ => Value::Bool(false),
+        },
+        TermNode::EnigmaBombe { candidate } => match evaluate(arena, *candidate, env, ctx) {
+            Value::Node(node) => Value::Bool(crate::enigma::bombe_admissible(
+                ctx.graph,
+                node,
+                ctx.interner,
+            )),
+            _ => Value::Bool(false),
+        },
+        TermNode::EnigmaBombeWitness { candidate } => match evaluate(arena, *candidate, env, ctx) {
+            Value::Node(node) => {
+                match crate::enigma::bombe_witness(ctx.graph, node, ctx.interner) {
                     Some(witness) => Value::Surface(
                         SurfaceKind::Text,
                         Arc::from(witness.into_bytes().into_boxed_slice()),
                     ),
                     None => Value::None,
-                },
-                _ => Value::None,
+                }
             }
-        }
+            _ => Value::None,
+        },
         TermNode::ApcEncode {
             model,
             seq,

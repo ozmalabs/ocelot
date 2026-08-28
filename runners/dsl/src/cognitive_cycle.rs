@@ -213,8 +213,7 @@ fn system_two_turn_owed(substrate: &mut Substrate) -> bool {
         .into_iter()
         .any(|node| {
             let attrs = &substrate.graph.node(node).attrs;
-            enabled_attr(attrs.get(&enabled_key))
-                && attrs.get(&cursor_key) == Some(&Value::Int(1))
+            enabled_attr(attrs.get(&enabled_key)) && attrs.get(&cursor_key) == Some(&Value::Int(1))
         })
 }
 
@@ -328,11 +327,8 @@ fn process_lease_allows_request(substrate: &mut Substrate, request: NodeID) -> b
     let Some(Value::Int(renew_before)) = process_attrs.get(&renew_key) else {
         return false;
     };
-    let Some(Value::Int(request_generation)) = substrate
-        .graph
-        .node(request)
-        .attrs
-        .get(&generation_key)
+    let Some(Value::Int(request_generation)) =
+        substrate.graph.node(request).attrs.get(&generation_key)
     else {
         return false;
     };
@@ -351,11 +347,7 @@ fn process_lease_allows_request(substrate: &mut Substrate, request: NodeID) -> b
 /// Those attributes are optional for compatibility. When present, they are
 /// checked against the request's graph-linked context rather than a host
 /// clock, keeping staleness a property of graph provenance.
-fn request_is_stale(
-    substrate: &mut Substrate,
-    request: NodeID,
-    about_context: Sym,
-) -> bool {
+fn request_is_stale(substrate: &mut Substrate, request: NodeID, about_context: Sym) -> bool {
     let input_epoch_key = substrate.interner.intern("input_epoch");
     let deadline_epoch_key = substrate.interner.intern("deadline_epoch");
     let epoch_key = substrate.interner.intern("epoch");
@@ -460,18 +452,16 @@ fn admit_system_two(substrate: &mut Substrate) -> SystemTwoAdmissions {
         for area in request_areas {
             areas.insert(area);
         }
-        admissions
-            .admitted
-            .push(SystemTwoAdmission {
-                request,
-                areas,
-                parallel_contexts: substrate
-                    .graph
-                    .node(request)
-                    .attrs
-                    .get(&parallel_contexts_key)
-                    == Some(&Value::Int(1)),
-            });
+        admissions.admitted.push(SystemTwoAdmission {
+            request,
+            areas,
+            parallel_contexts: substrate
+                .graph
+                .node(request)
+                .attrs
+                .get(&parallel_contexts_key)
+                == Some(&Value::Int(1)),
+        });
     }
     admissions
 }
@@ -481,9 +471,7 @@ fn admit_system_two(substrate: &mut Substrate) -> SystemTwoAdmissions {
 /// parallel, so rerunning it once per request is redundant and makes cost
 /// scale with the number of concurrent thoughts rather than with graph work.
 /// Non-opted requests and distinct masks retain isolated bounded fair shares.
-fn group_system_two_admissions(
-    admissions: &[SystemTwoAdmission],
-) -> Vec<SystemTwoAdmissionGroup> {
+fn group_system_two_admissions(admissions: &[SystemTwoAdmission]) -> Vec<SystemTwoAdmissionGroup> {
     let mut groups: Vec<SystemTwoAdmissionGroup> = Vec::new();
     for admission in admissions {
         if admission.parallel_contexts {
@@ -542,9 +530,7 @@ fn run_scoped_system_two(
     let hard_realtime = substrate.interner.intern("hard_realtime");
     let active_before: Vec<bool> = substrate.rules.iter().map(|rule| rule.active).collect();
     for rule in &mut substrate.rules {
-        if rule.active
-            && (rule.latency_class == hard_realtime || !areas.contains(&rule.area))
-        {
+        if rule.active && (rule.latency_class == hard_realtime || !areas.contains(&rule.area)) {
             rule.active = false;
         }
     }
@@ -576,8 +562,14 @@ pub fn execute(
     task_workers: usize,
 ) -> CycleReport {
     let fired = crate::reflex_runtime::fire_autonomous(substrate);
-    let mut report =
-        execute_plan(substrate, plan, max_steps, detect_cycles, trace, task_workers);
+    let mut report = execute_plan(
+        substrate,
+        plan,
+        max_steps,
+        detect_cycles,
+        trace,
+        task_workers,
+    );
     report.reflexes_fired = report.reflexes_fired.saturating_add(fired);
     report
 }
@@ -654,9 +646,14 @@ fn execute_plan(
                 task_workers.max(1)
             };
             let task_summary = crate::cognitive_tasks::run_requested(substrate, workers);
-            let task_progress =
-                task_summary.completed + task_summary.failed + task_summary.stale;
-            push_trace(&mut report, substrate, "task_result_fold", task_progress, trace);
+            let task_progress = task_summary.completed + task_summary.failed + task_summary.stale;
+            push_trace(
+                &mut report,
+                substrate,
+                "task_result_fold",
+                task_progress,
+                trace,
+            );
             report.task_summary = Some(task_summary);
             let remaining = max_steps.saturating_sub(report.steps);
             if remaining > 0 {
@@ -672,13 +669,10 @@ fn execute_plan(
             // preceding one.  This matters at max_steps=1: reserving a soft
             // remainder after giving all of that one step to the hard sheet
             // is a starvation proof, not a scheduler.
-            let requested_before =
-                node_status_count(substrate, "SystemTwoEscalation", "requested");
-            let system_two_first = max_steps > 0
-                && requested_before > 0
-                && system_two_turn_owed(substrate);
-            let commits_before =
-                node_status_count(substrate, "SystemOneCommit", "committed");
+            let requested_before = node_status_count(substrate, "SystemTwoEscalation", "requested");
+            let system_two_first =
+                max_steps > 0 && requested_before > 0 && system_two_turn_owed(substrate);
+            let commits_before = node_status_count(substrate, "SystemOneCommit", "committed");
             let fast = substrate.run_rules_latency_opts(
                 hard_realtime,
                 if system_two_first { 0 } else { max_steps },
@@ -687,12 +681,10 @@ fn execute_plan(
             report.steps = fast;
             push_trace(&mut report, substrate, "system_one_settle", fast, trace);
 
-            let commits_after =
-                node_status_count(substrate, "SystemOneCommit", "committed");
+            let commits_after = node_status_count(substrate, "SystemOneCommit", "committed");
             report.system_one_commits = commits_after.saturating_sub(commits_before);
 
-            let requested =
-                node_status_count(substrate, "SystemTwoEscalation", "requested");
+            let requested = node_status_count(substrate, "SystemTwoEscalation", "requested");
             report.needs_system_two = requested > 0;
             let remaining = max_steps.saturating_sub(report.steps);
 
@@ -721,14 +713,11 @@ fn execute_plan(
                         let request_budget =
                             deep_remaining.saturating_add(outstanding - 1) / outstanding;
                         for request in &group.requests {
-                            substrate.set_attr(
-                                *request,
-                                status_key,
-                                Value::Str(admitted_status),
-                            );
+                            substrate.set_attr(*request, status_key, Value::Str(admitted_status));
                         }
-                        report.system_two_escalations =
-                            report.system_two_escalations.saturating_add(group.requests.len());
+                        report.system_two_escalations = report
+                            .system_two_escalations
+                            .saturating_add(group.requests.len());
                         let deep = run_scoped_system_two(
                             substrate,
                             &group.areas,
@@ -736,8 +725,7 @@ fn execute_plan(
                             detect_cycles,
                         );
                         report.steps = report.steps.saturating_add(deep);
-                        report.system_two_steps =
-                            report.system_two_steps.saturating_add(deep);
+                        report.system_two_steps = report.system_two_steps.saturating_add(deep);
                         deep_remaining = deep_remaining.saturating_sub(deep);
                         // `admitted` is an execution token, not a durable
                         // historical state. Preserve any terminal status a
@@ -749,18 +737,10 @@ fn execute_plan(
                             serviced_status
                         };
                         for request in &group.requests {
-                            if substrate
-                                .graph
-                                .node(*request)
-                                .attrs
-                                .get(&status_key)
+                            if substrate.graph.node(*request).attrs.get(&status_key)
                                 == Some(&Value::Str(admitted_status))
                             {
-                                substrate.set_attr(
-                                    *request,
-                                    status_key,
-                                    Value::Str(next),
-                                );
+                                substrate.set_attr(*request, status_key, Value::Str(next));
                             }
                         }
                         push_trace(
@@ -842,13 +822,7 @@ fn execute_plan(
                 } else {
                     "system_one_quiescent"
                 };
-                push_trace(
-                    &mut report,
-                    substrate,
-                    phase,
-                    commits,
-                    trace,
-                );
+                push_trace(&mut report, substrate, phase, commits, trace);
             }
             // The cursor is graph-visible scheduler state.  It advances only
             // when a real bounded turn exists: a hard turn leaves an extant
@@ -856,15 +830,9 @@ fn execute_plan(
             // the hard sheet.  No wall-clock cadence or domain-specific host
             // policy participates.
             if max_steps > 0 {
-                let requested_after = node_status_count(
-                    substrate,
-                    "SystemTwoEscalation",
-                    "requested",
-                );
-                set_system_two_turn_owed(
-                    substrate,
-                    !system_two_first && requested_after > 0,
-                );
+                let requested_after =
+                    node_status_count(substrate, "SystemTwoEscalation", "requested");
+                set_system_two_turn_owed(substrate, !system_two_first && requested_after > 0);
             }
         }
     }
@@ -963,12 +931,20 @@ mod tests {
         let n = substrate.add_node(t, attrs);
 
         let report = execute(&mut substrate, CyclePlan::MasterLegacy, 100, false, true, 1);
-        assert_eq!(substrate.graph.node(n).attrs.get(&current), Some(&Value::Int(3)));
+        assert_eq!(
+            substrate.graph.node(n).attrs.get(&current),
+            Some(&Value::Int(3))
+        );
         assert_eq!(report.clock_commits, 1);
         let phases: Vec<_> = report.trace.iter().map(|e| e.phase).collect();
         assert_eq!(
             phases,
-            vec!["clock_fold", "reflex_boundary", "thread_boundary", "result_fold_boundary"]
+            vec![
+                "clock_fold",
+                "reflex_boundary",
+                "thread_boundary",
+                "result_fold_boundary"
+            ]
         );
     }
 
@@ -978,12 +954,18 @@ mod tests {
         let (policy, _) = supervised_process(&mut substrate, 3, Value::Int(1), 9);
         assert_eq!(advance_cognitive_epoch(&mut substrate), 1);
         let epoch = substrate.interner.intern("cognitive_epoch");
-        assert_eq!(substrate.graph.node(policy).attrs.get(&epoch), Some(&Value::Int(4)));
+        assert_eq!(
+            substrate.graph.node(policy).attrs.get(&epoch),
+            Some(&Value::Int(4))
+        );
 
         let enabled = substrate.interner.intern("enabled");
         substrate.set_attr(policy, enabled, Value::Float(2.0));
         assert_eq!(advance_cognitive_epoch(&mut substrate), 0);
-        assert_eq!(substrate.graph.node(policy).attrs.get(&epoch), Some(&Value::Int(4)));
+        assert_eq!(
+            substrate.graph.node(policy).attrs.get(&epoch),
+            Some(&Value::Int(4))
+        );
     }
 
     #[test]

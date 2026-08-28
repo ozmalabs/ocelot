@@ -490,21 +490,28 @@ impl RewriteRule {
         }
         for eff in &self.effects {
             collect_effect_access(
-                eff, arena, &mut reads, &mut writes, &mut reads_any, &mut writes_any,
+                eff,
+                arena,
+                &mut reads,
+                &mut writes,
+                &mut reads_any,
+                &mut writes_any,
             );
         }
         self.read_set = reads;
         self.write_set = writes;
         self.reads_any = reads_any;
         self.writes_any = writes_any;
-        let order_safe = self.effects.iter().all(|e| matches!(
-            e,
-            Effect::AddEdge { .. }
-            | Effect::AddNode { .. }
-            | Effect::AddNodeIfAbsent { .. }
-            | Effect::SetAttr { .. }
-            | Effect::SetAttrIfDifferent { .. }
-        ));
+        let order_safe = self.effects.iter().all(|e| {
+            matches!(
+                e,
+                Effect::AddEdge { .. }
+                    | Effect::AddNode { .. }
+                    | Effect::AddNodeIfAbsent { .. }
+                    | Effect::SetAttr { .. }
+                    | Effect::SetAttrIfDifferent { .. }
+            )
+        });
         self.batch_safe = order_safe
             && !self.reads_any
             && !self.writes_any
@@ -520,10 +527,7 @@ impl RewriteRule {
     /// BINDING PROJECTION (block 188000) — see `project_vars`. Returns the
     /// referenced match variables when at least one match variable is
     /// referenced nowhere, and every effect is an attribute write.
-    fn derive_projection(
-        &self,
-        arena: &TermArena,
-    ) -> Option<smallvec::SmallVec<[Sym; 4]>> {
+    fn derive_projection(&self, arena: &TermArena) -> Option<smallvec::SmallVec<[Sym; 4]>> {
         if self.match_edges.is_empty() {
             return None;
         }
@@ -578,7 +582,10 @@ impl RewriteRule {
         // produce IDENTICAL results — that is the invariant the §9 gate
         // asserts. It exists so "is this failure mine, or pre-existing?" is a
         // question that can be ANSWERED on one build instead of guessed at.
-        if std::env::var("OZMA_NO_PUSHDOWN").map(|v| v == "1").unwrap_or(false) {
+        if std::env::var("OZMA_NO_PUSHDOWN")
+            .map(|v| v == "1")
+            .unwrap_or(false)
+        {
             return;
         }
         if self.match_edges.len() < 2 {
@@ -608,11 +615,7 @@ impl RewriteRule {
 /// let `extend_each` evaluate a conjunct with an unbound var). Over-collection
 /// (e.g. a lambda's scoped var) is safe and merely disables pushdown for that
 /// conjunct.
-fn collect_term_vars(
-    arena: &TermArena,
-    idx: TermIdx,
-    out: &mut smallvec::SmallVec<[Sym; 4]>,
-) {
+fn collect_term_vars(arena: &TermArena, idx: TermIdx, out: &mut smallvec::SmallVec<[Sym; 4]>) {
     match arena.get(idx) {
         crate::term::TermNode::Var { name } => {
             if !out.contains(name) {
@@ -635,7 +638,9 @@ fn term_reads_fb_frame_seq(arena: &TermArena, idx: TermIdx) -> bool {
     use crate::term::TermNode as T;
     match arena.get(idx) {
         T::FbFrameSeq { .. } => true,
-        other => crate::term::children(other).iter().any(|&c| term_reads_fb_frame_seq(arena, c)),
+        other => crate::term::children(other)
+            .iter()
+            .any(|&c| term_reads_fb_frame_seq(arena, c)),
     }
 }
 
@@ -718,14 +723,14 @@ pub fn rule_reads_attr_via_node_set(rule: &RewriteRule, arena: &TermArena) -> bo
             return true;
         }
     }
-    let arg_reads = |a: &EffectArg| matches!(a, EffectArg::Computed(idx)
-        if term_reads_attr_via_node_set(arena, *idx));
+    let arg_reads = |a: &EffectArg| {
+        matches!(a, EffectArg::Computed(idx)
+        if term_reads_attr_via_node_set(arena, *idx))
+    };
     rule.effects.iter().any(|eff| match eff {
         Effect::AddEdge { attrs, .. }
         | Effect::AddNode { attrs, .. }
-        | Effect::AddNodeIfAbsent { attrs, .. } => {
-            attrs.iter().any(|(_, a)| arg_reads(a))
-        }
+        | Effect::AddNodeIfAbsent { attrs, .. } => attrs.iter().any(|(_, a)| arg_reads(a)),
         Effect::SetAttr { value, .. } | Effect::SetAttrIfDifferent { value, .. } => {
             arg_reads(value)
         }
@@ -751,26 +756,52 @@ fn collect_term_reads(
         T::NodesOfType { node_type } => {
             reads.insert(RuleKey::Type(*node_type));
         }
-        T::NodesWhere { node_type, attr_key, value } => {
+        T::NodesWhere {
+            node_type,
+            attr_key,
+            value,
+        } => {
             reads.insert(RuleKey::Type(*node_type));
             reads.insert(RuleKey::Attr(*attr_key));
             collect_term_reads(arena, *value, reads, reads_any);
         }
-        T::SlideNeighbours { cell, slide, ground } => {
+        T::SlideNeighbours {
+            cell,
+            slide,
+            ground,
+        } => {
             collect_term_reads(arena, *cell, reads, reads_any);
             collect_term_reads(arena, *slide, reads, reads_any);
             collect_term_reads(arena, *ground, reads, reads_any);
             *reads_any = true;
         }
-        T::Neighbours { node, edge_type, any_type }
-        | T::InNeighbours { node, edge_type, any_type } => {
-            if *any_type { *reads_any = true; }
-            else { reads.insert(RuleKey::Edge(*edge_type)); }
+        T::Neighbours {
+            node,
+            edge_type,
+            any_type,
+        }
+        | T::InNeighbours {
+            node,
+            edge_type,
+            any_type,
+        } => {
+            if *any_type {
+                *reads_any = true;
+            } else {
+                reads.insert(RuleKey::Edge(*edge_type));
+            }
             collect_term_reads(arena, *node, reads, reads_any);
         }
-        T::MapNeighbours { source, edge_type, any_type } => {
-            if *any_type { *reads_any = true; }
-            else { reads.insert(RuleKey::Edge(*edge_type)); }
+        T::MapNeighbours {
+            source,
+            edge_type,
+            any_type,
+        } => {
+            if *any_type {
+                *reads_any = true;
+            } else {
+                reads.insert(RuleKey::Edge(*edge_type));
+            }
             collect_term_reads(arena, *source, reads, reads_any);
         }
         T::TypeOf { node } => {
@@ -811,9 +842,13 @@ fn collect_effect_access(
         }
     };
     match eff {
-        Effect::AddEdge { edge_type, attrs, .. } => {
+        Effect::AddEdge {
+            edge_type, attrs, ..
+        } => {
             writes.insert(RuleKey::Edge(*edge_type));
-            for (_, a) in attrs { read_arg(a, reads, reads_any); }
+            for (_, a) in attrs {
+                read_arg(a, reads, reads_any);
+            }
         }
         Effect::DelEdge { edge_type, .. } => {
             writes.insert(RuleKey::Edge(*edge_type));
@@ -833,8 +868,7 @@ fn collect_effect_access(
                 read_arg(a, reads, reads_any);
             }
         }
-        Effect::SetAttr { key, value, .. }
-        | Effect::SetAttrIfDifferent { key, value, .. } => {
+        Effect::SetAttr { key, value, .. } | Effect::SetAttrIfDifferent { key, value, .. } => {
             writes.insert(RuleKey::Attr(*key));
             read_arg(value, reads, reads_any);
         }
@@ -846,7 +880,11 @@ fn collect_effect_access(
             read_arg(name, reads, reads_any);
             read_arg(term, reads, reads_any);
         }
-        Effect::SetRuleClause { rule_name, field, term } => {
+        Effect::SetRuleClause {
+            rule_name,
+            field,
+            term,
+        } => {
             // mutates the rule list (not the graph) — be conservative for dirtying.
             *writes_any = true;
             read_arg(rule_name, reads, reads_any);
@@ -859,7 +897,9 @@ fn collect_effect_access(
             *reads_any = true;
             *writes_any = true;
         }
-        Effect::NetCollapse { input, target, eta, .. } => {
+        Effect::NetCollapse {
+            input, target, eta, ..
+        } => {
             // Mutates the net's WeightTensor data (not statically known
             // here) — conservative writes_any like FbSample.
             *writes_any = true;
@@ -867,7 +907,9 @@ fn collect_effect_access(
             read_arg(target, reads, reads_any);
             read_arg(eta, reads, reads_any);
         }
-        Effect::FbSample { fb, grid_w, grid_h, .. } => {
+        Effect::FbSample {
+            fb, grid_w, grid_h, ..
+        } => {
             // Queues a sample whose eventual mint/update touches
             // Region + WorldInstance/Cell nodes not statically known
             // here — conservative like DelNode/ReplaceValue/DefineConcept.
@@ -876,7 +918,9 @@ fn collect_effect_access(
             read_arg(grid_w, reads, reads_any);
             read_arg(grid_h, reads, reads_any);
         }
-        Effect::TrackIdentity { prev, cur, radius, .. } => {
+        Effect::TrackIdentity {
+            prev, cur, radius, ..
+        } => {
             // Queues an identity assignment whose eventual write set
             // (arbitrary cur nodes' identity_key attr) isn't statically
             // known here — conservative like FbSample.
@@ -966,7 +1010,8 @@ pub fn reorder_match_edges(
 
     // Pick the first edge by smallest edges_by_type cardinality — that's
     // the cheapest "both-unbound" scan. If two edges tie, any is fine.
-    let first_pos = remaining.iter()
+    let first_pos = remaining
+        .iter()
         .min_by_key(|&&i| edges_by_type_card(edges[i].edge_type))
         .copied()
         .unwrap();
@@ -982,13 +1027,17 @@ pub fn reorder_match_edges(
         // wins (the matcher's bound-src/bound-tgt path still scans the
         // (node, edge_type) entry, which is bounded by the edge type's
         // global cardinality).
-        let connected: Vec<usize> = remaining.iter().enumerate()
-            .filter(|(_, &i)| bound.contains(&edges[i].src_var)
-                              || bound.contains(&edges[i].tgt_var))
+        let connected: Vec<usize> = remaining
+            .iter()
+            .enumerate()
+            .filter(|(_, &i)| {
+                bound.contains(&edges[i].src_var) || bound.contains(&edges[i].tgt_var)
+            })
             .map(|(rem_idx, _)| rem_idx)
             .collect();
         let pick_rem_idx = if !connected.is_empty() {
-            *connected.iter()
+            *connected
+                .iter()
                 .min_by_key(|&&ri| edges_by_type_card(edges[remaining[ri]].edge_type))
                 .unwrap()
         } else {
@@ -1042,12 +1091,20 @@ pub fn reorder_match_edges_with_hints(
     let mut out: Vec<MatchEdge> = Vec::with_capacity(edges.len());
 
     while !remaining.is_empty() {
-        let unblocked: Vec<usize> = remaining.iter().copied()
+        let unblocked: Vec<usize> = remaining
+            .iter()
+            .copied()
             .filter(|&i| !is_blocked(i, &bound))
             .collect();
-        let pool: Vec<usize> = if unblocked.is_empty() { remaining.clone() } else { unblocked };
+        let pool: Vec<usize> = if unblocked.is_empty() {
+            remaining.clone()
+        } else {
+            unblocked
+        };
 
-        let connected: Vec<usize> = pool.iter().copied()
+        let connected: Vec<usize> = pool
+            .iter()
+            .copied()
             .filter(|&i| bound.contains(&edges[i].src_var) || bound.contains(&edges[i].tgt_var))
             .collect();
         let choice_set: &[usize] = if bound.is_empty() || connected.is_empty() {
@@ -1055,7 +1112,8 @@ pub fn reorder_match_edges_with_hints(
         } else {
             &connected
         };
-        let pick = *choice_set.iter()
+        let pick = *choice_set
+            .iter()
             .min_by_key(|&&i| edges_by_type_card(edges[i].edge_type))
             .unwrap();
         remaining.retain(|&i| i != pick);
@@ -1082,11 +1140,21 @@ pub fn match_rule(
     framebuffers: Option<&crate::framebuffer::FbRegistry>,
 ) -> Option<Binding> {
     let mut out: Option<Binding> = None;
-    match_rule_each(rule, arena, graph, interner, concepts, framebuffers, None, None, |b| {
-        out = Some(b.clone());
-        // Stop after the first match.
-        false
-    });
+    match_rule_each(
+        rule,
+        arena,
+        graph,
+        interner,
+        concepts,
+        framebuffers,
+        None,
+        None,
+        |b| {
+            out = Some(b.clone());
+            // Stop after the first match.
+            false
+        },
+    );
     out
 }
 
@@ -1110,7 +1178,20 @@ pub fn match_rule_each<F>(
     F: FnMut(&Binding) -> bool,
 {
     let mut binding: Binding = FxHashMap::default();
-    extend_each(rule, 0, &mut binding, arena, graph, interner, concepts, framebuffers, cache, where_jit, 0u64, &mut visit);
+    extend_each(
+        rule,
+        0,
+        &mut binding,
+        arena,
+        graph,
+        interner,
+        concepts,
+        framebuffers,
+        cache,
+        where_jit,
+        0u64,
+        &mut visit,
+    );
 }
 
 /// Like `match_rule_each` but with a pre-seeded binding. Used by the
@@ -1135,7 +1216,20 @@ pub fn match_rule_each_with_initial<F>(
     F: FnMut(&Binding) -> bool,
 {
     let mut binding: Binding = initial.clone();
-    extend_each(rule, 0, &mut binding, arena, graph, interner, concepts, framebuffers, cache, where_jit, 0u64, &mut visit);
+    extend_each(
+        rule,
+        0,
+        &mut binding,
+        arena,
+        graph,
+        interner,
+        concepts,
+        framebuffers,
+        cache,
+        where_jit,
+        0u64,
+        &mut visit,
+    );
 }
 
 /// R10 join-index fast path for the both-unbound match-edge case: if this
@@ -1312,7 +1406,11 @@ where
         }
     }
 
-    let MatchEdge { src_var, edge_type, tgt_var } = &rule.match_edges[i];
+    let MatchEdge {
+        src_var,
+        edge_type,
+        tgt_var,
+    } = &rule.match_edges[i];
     let bound_src = binding.get(src_var).copied();
     let bound_tgt = binding.get(tgt_var).copied();
 
@@ -1339,26 +1437,28 @@ where
         // `via_var` is already bound, probe the declared attr index
         // instead — index-then-verify (see `IndexJoinHint` doc), so
         // correctness never depends on the index being present or fresh.
-        (None, None) => match hinted_candidates(rule, *src_var, *edge_type, *tgt_var, binding, graph) {
-            Some(c) => {
-                cand_path = crate::scale_audit::CandPath::Hinted;
-                c
+        (None, None) => {
+            match hinted_candidates(rule, *src_var, *edge_type, *tgt_var, binding, graph) {
+                Some(c) => {
+                    cand_path = crate::scale_audit::CandPath::Hinted;
+                    c
+                }
+                None => {
+                    cand_path = crate::scale_audit::CandPath::Scan;
+                    // O(matches) via the edges-by-type index — was O(total
+                    // edges) before, which made every rule with an unbound
+                    // first match clause scan the entire graph each tick.
+                    graph
+                        .edges_by_type(*edge_type)
+                        .iter()
+                        .map(|idx| {
+                            let key = graph.edge(*idx).key();
+                            (key.src, key.tgt)
+                        })
+                        .collect()
+                }
             }
-            None => {
-                cand_path = crate::scale_audit::CandPath::Scan;
-                // O(matches) via the edges-by-type index — was O(total
-                // edges) before, which made every rule with an unbound
-                // first match clause scan the entire graph each tick.
-                graph
-                    .edges_by_type(*edge_type)
-                    .iter()
-                    .map(|idx| {
-                        let key = graph.edge(*idx).key();
-                        (key.src, key.tgt)
-                    })
-                    .collect()
-            }
-        },
+        }
     };
     crate::scale_audit::candidates(candidates.len() as u64, cand_path);
 
@@ -1378,14 +1478,35 @@ where
         }
         let prev_src = binding.insert(*src_var, s);
         let prev_tgt = binding.insert(*tgt_var, t);
-        let keep_going = extend_each(rule, i + 1, binding, arena, graph, interner, concepts, framebuffers, cache.as_deref_mut(), where_jit, pushed, visit);
+        let keep_going = extend_each(
+            rule,
+            i + 1,
+            binding,
+            arena,
+            graph,
+            interner,
+            concepts,
+            framebuffers,
+            cache.as_deref_mut(),
+            where_jit,
+            pushed,
+            visit,
+        );
         match prev_src {
-            Some(v) => { binding.insert(*src_var, v); }
-            None => { binding.remove(src_var); }
+            Some(v) => {
+                binding.insert(*src_var, v);
+            }
+            None => {
+                binding.remove(src_var);
+            }
         }
         match prev_tgt {
-            Some(v) => { binding.insert(*tgt_var, v); }
-            None => { binding.remove(tgt_var); }
+            Some(v) => {
+                binding.insert(*tgt_var, v);
+            }
+            None => {
+                binding.remove(tgt_var);
+            }
         }
         if !keep_going {
             return false;
@@ -1460,7 +1581,18 @@ pub fn apply_rule(
     framebuffers: Option<&crate::framebuffer::FbRegistry>,
     record_undo: bool,
 ) -> Vec<UndoStep> {
-    apply_rule_full(rule, binding, arena, graph, interner, concepts, framebuffers, None, record_undo).undo
+    apply_rule_full(
+        rule,
+        binding,
+        arena,
+        graph,
+        interner,
+        concepts,
+        framebuffers,
+        None,
+        record_undo,
+    )
+    .undo
 }
 
 /// Same as `apply_rule` but returns the full outcome including
@@ -1514,16 +1646,34 @@ pub fn apply_rule_full(
             c.clear_traversal();
         }
         match effect {
-            Effect::AddEdge { src_var, edge_type, tgt_var, attrs } => {
+            Effect::AddEdge {
+                src_var,
+                edge_type,
+                tgt_var,
+                attrs,
+            } => {
                 let (Some(&s), Some(&t)) = (b.get(src_var), b.get(tgt_var)) else {
                     continue;
                 };
                 let mut attr_map: FxHashMap<Sym, Value> = FxHashMap::default();
                 for (k, arg) in attrs {
-                    let v = resolve_effect_arg(arg, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
+                    let v = resolve_effect_arg(
+                        arg,
+                        &b,
+                        arena,
+                        graph,
+                        interner,
+                        concepts.as_deref(),
+                        framebuffers,
+                        cache.as_deref_mut(),
+                    );
                     attr_map.insert(*k, v);
                 }
-                let key = EdgeKey { src: s, edge_type: *edge_type, tgt: t };
+                let key = EdgeKey {
+                    src: s,
+                    edge_type: *edge_type,
+                    tgt: t,
+                };
                 let pre_exists = graph.has_edge(s, *edge_type, t);
                 // The Result was previously discarded. `insert_edge` fails when
                 // an endpoint is absent, which is reachable inside one firing
@@ -1551,7 +1701,11 @@ pub fn apply_rule_full(
                     }
                 }
             }
-            Effect::DelEdge { src_var, edge_type, tgt_var } => {
+            Effect::DelEdge {
+                src_var,
+                edge_type,
+                tgt_var,
+            } => {
                 let (Some(&s), Some(&t)) = (b.get(src_var), b.get(tgt_var)) else {
                     continue;
                 };
@@ -1574,18 +1728,52 @@ pub fn apply_rule_full(
                     });
                 }
             }
-            Effect::SetRuleClause { rule_name, field, term } => {
+            Effect::SetRuleClause {
+                rule_name,
+                field,
+                term,
+            } => {
                 // INTRINSIC SELF-REPAIR: queue a rule-clause rewrite. We only hold &mut graph here
                 // (not the rule list), so resolve the args and stash the edit on graph.pending_rule_edits;
                 // Substrate::run_rules drains + applies it between passes where &mut self.rules is free.
-                let name_v = resolve_effect_arg(rule_name, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
-                let field_v = resolve_effect_arg(field, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
-                let term_v = resolve_effect_arg(term, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
+                let name_v = resolve_effect_arg(
+                    rule_name,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                );
+                let field_v = resolve_effect_arg(
+                    field,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                );
+                let term_v = resolve_effect_arg(
+                    term,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                );
                 // Accept a `Value::Str` literal OR a `Value::Surface(Text)`
                 // (StringConcat / other text Terms) for both the rule name
                 // and the field name -- a dynamically-composed mint id must
                 // not be rejected just because it wasn't a frozen Sym.
-                match (value_as_str_like(&name_v, interner), value_as_str_like(&field_v, interner)) {
+                match (
+                    value_as_str_like(&name_v, interner),
+                    value_as_str_like(&field_v, interner),
+                ) {
                     (Some(name_s), Some(field_s)) => {
                         graph.pending_rule_edits.push((name_s, field_s, term_v));
                         progressed = true;
@@ -1623,7 +1811,12 @@ pub fn apply_rule_full(
                     );
                 }
             }
-            Effect::NetCollapse { reflex_net, input, target, eta } => {
+            Effect::NetCollapse {
+                reflex_net,
+                input,
+                target,
+                eta,
+            } => {
                 // SELF-TRAINING: the applier only holds &mut graph (not &mut
                 // Substrate), so resolve args under the binding and QUEUE the
                 // collapse; Substrate::run_rules drains graph.pending_net_collapses
@@ -1632,21 +1825,62 @@ pub fn apply_rule_full(
                 let Some(&rn) = b.get(reflex_net) else {
                     continue;
                 };
-                let in_v = resolve_effect_arg(input, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
-                let tg_v = resolve_effect_arg(target, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
-                let eta_v = resolve_effect_arg(eta, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
+                let in_v = resolve_effect_arg(
+                    input,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                );
+                let tg_v = resolve_effect_arg(
+                    target,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                );
+                let eta_v = resolve_effect_arg(
+                    eta,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                );
                 let to_vec = |v: &Value| -> Vec<f64> {
                     match v {
-                        Value::Tuple(t) | Value::List(t) => t.iter().map(|x| match x {
-                            Value::Float(f) => *f, Value::Int(i) => *i as f64, _ => 0.0,
-                        }).collect(),
-                        Value::Set(s) | Value::FrozenSet(s) => s.iter().map(|x| match x {
-                            Value::Float(f) => *f, Value::Int(i) => *i as f64, _ => 0.0,
-                        }).collect(),
+                        Value::Tuple(t) | Value::List(t) => t
+                            .iter()
+                            .map(|x| match x {
+                                Value::Float(f) => *f,
+                                Value::Int(i) => *i as f64,
+                                _ => 0.0,
+                            })
+                            .collect(),
+                        Value::Set(s) | Value::FrozenSet(s) => s
+                            .iter()
+                            .map(|x| match x {
+                                Value::Float(f) => *f,
+                                Value::Int(i) => *i as f64,
+                                _ => 0.0,
+                            })
+                            .collect(),
                         _ => Vec::new(),
                     }
                 };
-                let eta_f = match eta_v { Value::Float(f) => f, Value::Int(i) => i as f64, _ => 0.0 };
+                let eta_f = match eta_v {
+                    Value::Float(f) => f,
+                    Value::Int(i) => i as f64,
+                    _ => 0.0,
+                };
                 let inv = to_vec(&in_v);
                 let tgv = to_vec(&tg_v);
                 if !inv.is_empty() && !tgv.is_empty() && eta_f > 0.0 {
@@ -1654,7 +1888,12 @@ pub fn apply_rule_full(
                     progressed = true;
                 }
             }
-            Effect::FbSample { fb, game_var, grid_w, grid_h } => {
+            Effect::FbSample {
+                fb,
+                game_var,
+                grid_w,
+                grid_h,
+            } => {
                 // PERCEPTION-AS-ACTION: the applier only holds &mut graph
                 // (not &mut Substrate, which owns the framebuffer registry
                 // + the dirty-tracking node/edge helpers segment_and_track
@@ -1665,9 +1904,36 @@ pub fn apply_rule_full(
                 let Some(&game) = b.get(game_var) else {
                     continue;
                 };
-                let fb_v = resolve_effect_arg(fb, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
-                let gw_v = resolve_effect_arg(grid_w, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
-                let gh_v = resolve_effect_arg(grid_h, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
+                let fb_v = resolve_effect_arg(
+                    fb,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                );
+                let gw_v = resolve_effect_arg(
+                    grid_w,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                );
+                let gh_v = resolve_effect_arg(
+                    grid_h,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                );
                 let fb_id = match fb_v {
                     Value::Int(i) if i >= 0 => Some(i as u32),
                     Value::Float(f) if f >= 0.0 => Some(f as u32),
@@ -1688,35 +1954,94 @@ pub fn apply_rule_full(
                     progressed = true;
                 }
             }
-            Effect::TrackIdentity { prev, cur, feature_key, category_key, extent_key, identity_key, radius } => {
+            Effect::TrackIdentity {
+                prev,
+                cur,
+                feature_key,
+                category_key,
+                extent_key,
+                identity_key,
+                radius,
+            } => {
                 // GRAPH LAW #6: mirrors Effect::FbSample's queue-and-
                 // drain-between-passes pattern exactly — resolve args
                 // under the binding, queue onto graph.pending_track_identity;
                 // Substrate::run_rules drains it via Substrate::track_identity
                 // (where &mut self is free) between passes.
-                let prev_v = resolve_effect_arg(prev, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
-                let cur_v = resolve_effect_arg(cur, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
-                let radius_v = resolve_effect_arg(radius, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
-                let prev_ids: Vec<NodeID> = prev_v.iter().filter_map(|v| match v {
-                    Value::Node(n) => Some(*n),
-                    _ => None,
-                }).collect();
-                let cur_ids: Vec<NodeID> = cur_v.iter().filter_map(|v| match v {
-                    Value::Node(n) => Some(*n),
-                    _ => None,
-                }).collect();
+                let prev_v = resolve_effect_arg(
+                    prev,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                );
+                let cur_v = resolve_effect_arg(
+                    cur,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                );
+                let radius_v = resolve_effect_arg(
+                    radius,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                );
+                let prev_ids: Vec<NodeID> = prev_v
+                    .iter()
+                    .filter_map(|v| match v {
+                        Value::Node(n) => Some(*n),
+                        _ => None,
+                    })
+                    .collect();
+                let cur_ids: Vec<NodeID> = cur_v
+                    .iter()
+                    .filter_map(|v| match v {
+                        Value::Node(n) => Some(*n),
+                        _ => None,
+                    })
+                    .collect();
                 if !cur_ids.is_empty() || !prev_ids.is_empty() {
                     graph.pending_track_identity.push((
-                        prev_ids, cur_ids, *feature_key, *category_key, *extent_key, *identity_key,
+                        prev_ids,
+                        cur_ids,
+                        *feature_key,
+                        *category_key,
+                        *extent_key,
+                        *identity_key,
                         radius_v.as_f64(),
                     ));
                     progressed = true;
                 }
             }
-            Effect::AddNode { new_var, type_, attrs } => {
+            Effect::AddNode {
+                new_var,
+                type_,
+                attrs,
+            } => {
                 let mut attr_map: FxHashMap<Sym, Value> = FxHashMap::default();
                 for (k, arg) in attrs {
-                    let v = resolve_effect_arg(arg, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
+                    let v = resolve_effect_arg(
+                        arg,
+                        &b,
+                        arena,
+                        graph,
+                        interner,
+                        concepts.as_deref(),
+                        framebuffers,
+                        cache.as_deref_mut(),
+                    );
                     attr_map.insert(*k, v);
                 }
                 let nid = graph.insert_node(*type_, attr_map);
@@ -1726,12 +2051,25 @@ pub fn apply_rule_full(
                     undo.push(UndoStep::AddedNode(nid));
                 }
             }
-            Effect::AddNodeIfAbsent { new_var, type_, attrs } => {
+            Effect::AddNodeIfAbsent {
+                new_var,
+                type_,
+                attrs,
+            } => {
                 // Resolve the attrs first so the dedup comparison sees
                 // concrete Values rather than unresolved Terms.
                 let mut attr_pairs: Vec<(Sym, Value)> = Vec::with_capacity(attrs.len());
                 for (k, arg) in attrs {
-                    let v = resolve_effect_arg(arg, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
+                    let v = resolve_effect_arg(
+                        arg,
+                        &b,
+                        arena,
+                        graph,
+                        interner,
+                        concepts.as_deref(),
+                        framebuffers,
+                        cache.as_deref_mut(),
+                    );
                     attr_pairs.push((*k, v));
                 }
                 // Scan the typed-node index for the first existing node
@@ -1746,7 +2084,10 @@ pub fn apply_rule_full(
                     for (k, v) in &attr_pairs {
                         match cand_attrs.get(k) {
                             Some(existing) if existing == v => {}
-                            _ => { all_match = false; break; }
+                            _ => {
+                                all_match = false;
+                                break;
+                            }
                         }
                     }
                     if all_match {
@@ -1794,14 +2135,27 @@ pub fn apply_rule_full(
                 let Some(&nid) = b.get(var) else {
                     continue;
                 };
-                let v = resolve_effect_arg(value, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
+                let v = resolve_effect_arg(
+                    value,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                );
                 let old = graph.node(nid).attrs.get(key).cloned();
                 let changed = old.as_ref() != Some(&v);
                 graph.set_node_attr(nid, *key, v);
                 if changed {
                     progressed = true;
                     if record_undo {
-                        undo.push(UndoStep::AttrSet { nid, key: *key, old });
+                        undo.push(UndoStep::AttrSet {
+                            nid,
+                            key: *key,
+                            old,
+                        });
                     }
                 }
             }
@@ -1809,7 +2163,16 @@ pub fn apply_rule_full(
                 let Some(&nid) = b.get(var) else {
                     continue;
                 };
-                let v = resolve_effect_arg(value, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
+                let v = resolve_effect_arg(
+                    value,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                );
                 let old = graph.node(nid).attrs.get(key).cloned();
                 // Difference from SetAttr: when equal we SKIP THE WRITE
                 // entirely (don't pump set_node_attr's bookkeeping),
@@ -1820,7 +2183,11 @@ pub fn apply_rule_full(
                     graph.set_node_attr(nid, *key, v);
                     progressed = true;
                     if record_undo {
-                        undo.push(UndoStep::AttrSet { nid, key: *key, old });
+                        undo.push(UndoStep::AttrSet {
+                            nid,
+                            key: *key,
+                            old,
+                        });
                     }
                 }
             }
@@ -1853,7 +2220,10 @@ pub fn apply_rule_full(
                     };
                     if record_undo {
                         undo.push(UndoStep::DeletedEdge {
-                            src, edge_type, tgt: old_nid, attrs: attrs.clone(),
+                            src,
+                            edge_type,
+                            tgt: old_nid,
+                            attrs: attrs.clone(),
                         });
                     }
                     graph.delete_edge(old_idx);
@@ -1864,7 +2234,9 @@ pub fn apply_rule_full(
                     if graph.insert_edge(src, edge_type, new_nid, attrs).is_ok() {
                         if record_undo && was_new {
                             undo.push(UndoStep::AddedEdge(EdgeKey {
-                                src, edge_type, tgt: new_nid,
+                                src,
+                                edge_type,
+                                tgt: new_nid,
                             }));
                         }
                         rewired += 1;
@@ -1948,9 +2320,7 @@ pub fn apply_rule_full(
                 // Parse the Term-JSON into the substrate's main arena.
                 // The resulting TermIdx is valid for ConceptResolver
                 // consulted via this same arena.
-                let term_idx = match crate::jsonio::term_from_json(
-                    &serde_term, arena, interner,
-                ) {
+                let term_idx = match crate::jsonio::term_from_json(&serde_term, arena, interner) {
                     Ok(idx) => idx,
                     Err(_) => continue,
                 };
@@ -1982,7 +2352,12 @@ pub fn apply_rule_full(
         }
     }
     undo_src.resize(undo.len(), cur_effect);
-    ApplyOutcome { undo, undo_src, progressed, pending_concepts }
+    ApplyOutcome {
+        undo,
+        undo_src,
+        progressed,
+        pending_concepts,
+    }
 }
 
 /// Inverse of `apply_rule` with `record_undo: true`. Replays the
@@ -1995,18 +2370,21 @@ pub fn undo_apply(undo: Vec<UndoStep>, graph: &mut TypedGraph) {
                     graph.delete_edge(idx);
                 }
             }
-            UndoStep::DeletedEdge { src, edge_type, tgt, attrs } => {
+            UndoStep::DeletedEdge {
+                src,
+                edge_type,
+                tgt,
+                attrs,
+            } => {
                 let _ = graph.insert_edge(src, edge_type, tgt, attrs);
             }
             UndoStep::AddedNode(nid) => {
                 graph.delete_node(nid);
             }
-            UndoStep::AttrSet { nid, key, old } => {
-                match old {
-                    Some(v) => graph.set_node_attr(nid, key, v),
-                    None => graph.remove_node_attr(nid, key),
-                }
-            }
+            UndoStep::AttrSet { nid, key, old } => match old {
+                Some(v) => graph.set_node_attr(nid, key, v),
+                None => graph.remove_node_attr(nid, key),
+            },
             UndoStep::NodeDeleted => {
                 // Can't restore — best-effort no-op. Documented limit.
             }
@@ -2061,11 +2439,12 @@ fn value_to_serde_json(value: &Value, interner: &Interner) -> Option<serde_json:
 fn value_to_term_json(value: &Value, interner: &Interner) -> serde_json::Value {
     use serde_json::Map;
     match value {
-        Value::Tuple(items) | Value::List(items) => {
-            serde_json::Value::Array(
-                items.iter().map(|v| value_to_term_json(v, interner)).collect(),
-            )
-        }
+        Value::Tuple(items) | Value::List(items) => serde_json::Value::Array(
+            items
+                .iter()
+                .map(|v| value_to_term_json(v, interner))
+                .collect(),
+        ),
         Value::Dict(pairs) => {
             // String-keyed dict → bare JSON object. Mixed-key dict
             // can't denote a Term-JSON object (every field name is a
@@ -2073,8 +2452,7 @@ fn value_to_term_json(value: &Value, interner: &Interner) -> serde_json::Value {
             // term_from_json will error out at the next level, which
             // is the right behaviour — the rule asked us to register
             // something that isn't a Term.
-            let all_string_keys =
-                pairs.iter().all(|(k, _)| matches!(k, Value::Str(_)));
+            let all_string_keys = pairs.iter().all(|(k, _)| matches!(k, Value::Str(_)));
             if all_string_keys {
                 let mut m = Map::new();
                 for (k, v) in pairs.iter() {
@@ -2161,8 +2539,18 @@ pub fn run_rules(
     where_jits: &[Option<&crate::jit::CompiledWhere>],
     max_steps: usize,
 ) -> usize {
-    run_rules_opts(rules, arena, graph, interner, concepts, framebuffers, cache,
-                   where_jits, max_steps, false)
+    run_rules_opts(
+        rules,
+        arena,
+        graph,
+        interner,
+        concepts,
+        framebuffers,
+        cache,
+        where_jits,
+        max_steps,
+        false,
+    )
 }
 
 /// `run_rules` with opt-in CYCLE DETECTION. See
@@ -2186,8 +2574,11 @@ pub fn run_rules_opts(
     max_steps: usize,
     detect_cycles: bool,
 ) -> usize {
-    let mut seen: Option<rustc_hash::FxHashSet<u64>> =
-        if detect_cycles { Some(Default::default()) } else { None };
+    let mut seen: Option<rustc_hash::FxHashSet<u64>> = if detect_cycles {
+        Some(Default::default())
+    } else {
+        None
+    };
     if let Some(s) = seen.as_mut() {
         s.insert(graph.state_fingerprint());
     }
@@ -2209,8 +2600,14 @@ pub fn run_rules_opts(
             crate::scale_audit::begin_rule_enumeration(rule_i as u32);
             if rule.batch {
                 if batch_apply_rule(
-                    rule, arena, graph, interner,
-                    concepts.as_deref_mut(), framebuffers, cache.as_deref_mut(), this_jit,
+                    rule,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref_mut(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                    this_jit,
                 ) {
                     steps += 1;
                     any_progress = true;
@@ -2220,11 +2617,21 @@ pub fn run_rules_opts(
             // --- cold path: one progressing binding per pass ---
             let mut found_progressing: Option<Binding> = None;
             let mut bindings: Vec<Binding> = Vec::new();
-            match_rule_each(rule, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut(), this_jit, |b| {
-                crate::scale_audit::binding_cloned();
-                bindings.push(b.clone());
-                true // collect all
-            });
+            match_rule_each(
+                rule,
+                arena,
+                graph,
+                interner,
+                concepts.as_deref(),
+                framebuffers,
+                cache.as_deref_mut(),
+                this_jit,
+                |b| {
+                    crate::scale_audit::binding_cloned();
+                    bindings.push(b.clone());
+                    true // collect all
+                },
+            );
             for b in bindings {
                 // Try the apply but DON'T commit yet — we want to
                 // know if it progresses. Cheapest path: do the apply
@@ -2242,7 +2649,15 @@ pub fn run_rules_opts(
                     None
                 };
                 let outcome = apply_rule_full(
-                    rule, &b, arena, graph, interner, concepts.as_deref_mut(), framebuffers, cache.as_deref_mut(), true,
+                    rule,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref_mut(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                    true,
                 );
                 if outcome.progressed {
                     found_progressing = Some(b);
@@ -2355,8 +2770,11 @@ pub fn run_rules_opts_scoped(
     detect_cycles: bool,
     owned: &rustc_hash::FxHashSet<NodeID>,
 ) -> usize {
-    let mut seen: Option<rustc_hash::FxHashSet<u64>> =
-        if detect_cycles { Some(Default::default()) } else { None };
+    let mut seen: Option<rustc_hash::FxHashSet<u64>> = if detect_cycles {
+        Some(Default::default())
+    } else {
+        None
+    };
     if let Some(s) = seen.as_mut() {
         s.insert(graph.state_fingerprint());
     }
@@ -2373,9 +2791,18 @@ pub fn run_rules_opts_scoped(
                 // collect and apply that the shared function doesn't have.
                 let mut bindings: Vec<Binding> = Vec::new();
                 match_rule_each(
-                    rule, arena, graph, interner,
-                    concepts.as_deref(), framebuffers, cache.as_deref_mut(), None,
-                    |b| { bindings.push(b.clone()); true },
+                    rule,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                    None,
+                    |b| {
+                        bindings.push(b.clone());
+                        true
+                    },
                 );
                 bindings.retain(|b| binding_touches_scope(b, owned));
                 let mut seen_b: rustc_hash::FxHashSet<smallvec::SmallVec<[(Sym, NodeID); 8]>> =
@@ -2389,8 +2816,15 @@ pub fn run_rules_opts_scoped(
                         continue;
                     }
                     let outcome = apply_rule_full(
-                        rule, &b, arena, graph, interner,
-                        concepts.as_deref_mut(), framebuffers, None, false,
+                        rule,
+                        &b,
+                        arena,
+                        graph,
+                        interner,
+                        concepts.as_deref_mut(),
+                        framebuffers,
+                        None,
+                        false,
                     );
                     if outcome.progressed {
                         progressed_any = true;
@@ -2408,16 +2842,32 @@ pub fn run_rules_opts_scoped(
             // cold path, scoped.
             let mut bindings: Vec<Binding> = Vec::new();
             match_rule_each(
-                rule, arena, graph, interner,
-                concepts.as_deref(), framebuffers, cache.as_deref_mut(), None,
-                |b| { bindings.push(b.clone()); true },
+                rule,
+                arena,
+                graph,
+                interner,
+                concepts.as_deref(),
+                framebuffers,
+                cache.as_deref_mut(),
+                None,
+                |b| {
+                    bindings.push(b.clone());
+                    true
+                },
             );
             bindings.retain(|b| binding_touches_scope(b, owned));
             let mut found_progressing = false;
             for b in bindings {
                 let outcome = apply_rule_full(
-                    rule, &b, arena, graph, interner,
-                    concepts.as_deref_mut(), framebuffers, cache.as_deref_mut(), true,
+                    rule,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref_mut(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                    true,
                 );
                 if outcome.progressed {
                     found_progressing = true;
@@ -2473,9 +2923,19 @@ pub fn batch_apply_rule(
                 let mut initial: Binding = rustc_hash::FxHashMap::default();
                 initial.insert(tgt_var, node);
                 match_rule_each_with_initial(
-                    rule, &initial, arena, graph, interner,
-                    concepts.as_deref(), framebuffers, cache.as_deref_mut(), where_jit,
-                    |b| { bindings.push(b.clone()); true },
+                    rule,
+                    &initial,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                    where_jit,
+                    |b| {
+                        bindings.push(b.clone());
+                        true
+                    },
                 );
             }
         }
@@ -2495,9 +2955,18 @@ pub fn batch_apply_rule(
                 bindings = parallel;
             } else {
                 match_rule_each(
-                    rule, arena, graph, interner,
-                    concepts.as_deref(), framebuffers, cache.as_deref_mut(), where_jit,
-                    |b| { bindings.push(b.clone()); true },
+                    rule,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                    where_jit,
+                    |b| {
+                        bindings.push(b.clone());
+                        true
+                    },
                 );
             }
         }
@@ -2509,17 +2978,27 @@ pub fn batch_apply_rule(
         let mut canon: smallvec::SmallVec<[(Sym, NodeID); 8]> =
             b.iter().map(|(s, n)| (*s, *n)).collect();
         canon.sort_by_key(|(s, _)| *s);
-        if !seen.insert(canon) { continue; }
+        if !seen.insert(canon) {
+            continue;
+        }
         let outcome = apply_rule_full(
-            rule, &b, arena, graph, interner,
+            rule,
+            &b,
+            arena,
+            graph,
+            interner,
             // eval_cache memoises Neighbours/Filter/Holds keyed on graph
             // state — invalid once an effect mutates the graph. Apply with
             // None (like the live engine's other apply sites); the match
             // phase above keeps the cache (it runs pre-mutation, coherent).
-            concepts.as_deref_mut(), framebuffers, None,
+            concepts.as_deref_mut(),
+            framebuffers,
+            None,
             /* record_undo */ false,
         );
-        if outcome.progressed { progressed_any = true; }
+        if outcome.progressed {
+            progressed_any = true;
+        }
     }
     progressed_any
 }
@@ -2547,9 +3026,11 @@ fn collect_batch_bindings_parallel(
     if worker_capacity <= 1 || rule.match_edges.is_empty() || where_jit.is_some() {
         return None;
     }
-    if !rule.match_edges.iter().any(|edge| {
-        graph.edges_by_type(edge.edge_type).len() >= worker_capacity
-    }) {
+    if !rule
+        .match_edges
+        .iter()
+        .any(|edge| graph.edges_by_type(edge.edge_type).len() >= worker_capacity)
+    {
         return None;
     }
 
@@ -2623,8 +3104,7 @@ fn collect_batch_bindings_parallel(
         }
     }
     let (frontier, frontier_depth) = frontier?;
-    let roots_per_partition =
-        frontier.len().saturating_add(worker_capacity - 1) / worker_capacity;
+    let roots_per_partition = frontier.len().saturating_add(worker_capacity - 1) / worker_capacity;
     let traced_rule = crate::fallback_trace::current_rule();
     let partitions: Vec<(Vec<Binding>, crate::fallback_trace::LocalCounts)> = frontier
         .par_chunks(roots_per_partition)
@@ -2715,9 +3195,7 @@ mod effect_audit_tests {
         crate::effect_audit::reset();
         crate::effect_audit::set_correct_failed_effects(false);
         let (mut g, mut i, mut a, rule, b) = dangling_link();
-        let out = apply_rule_full(
-            &rule, &b, &mut a, &mut g, &mut i, None, None, None, true,
-        );
+        let out = apply_rule_full(&rule, &b, &mut a, &mut g, &mut i, None, None, None, true);
         let (failed, false_progress, row) = crate::effect_audit::stats();
         assert_eq!(failed, 1, "the discarded Err must be counted");
         assert_eq!(false_progress, 1, "it must be counted as false progress");
@@ -2725,7 +3203,10 @@ mod effect_audit_tests {
         // With the correction explicitly off, the pre-existing behaviour is
         // preserved exactly: progress is still (wrongly) credited. This pins the
         // old semantics so the flag's two states stay distinguishable.
-        assert!(out.progressed, "correction off must reproduce the old behaviour");
+        assert!(
+            out.progressed,
+            "correction off must reproduce the old behaviour"
+        );
         crate::effect_audit::reset();
     }
 
@@ -2737,9 +3218,7 @@ mod effect_audit_tests {
         crate::effect_audit::reset();
         crate::effect_audit::set_correct_failed_effects(true);
         let (mut g, mut i, mut a, rule, b) = dangling_link();
-        let out = apply_rule_full(
-            &rule, &b, &mut a, &mut g, &mut i, None, None, None, true,
-        );
+        let out = apply_rule_full(&rule, &b, &mut a, &mut g, &mut i, None, None, None, true);
         let (failed, false_progress, _) = crate::effect_audit::stats();
         assert_eq!(failed, 1);
         assert_eq!(false_progress, 1, "still counted; only the credit changes");
@@ -2778,9 +3257,7 @@ mod effect_audit_tests {
         let mut b: Binding = FxHashMap::default();
         b.insert(s_var, s);
         b.insert(t_var, t);
-        let out = apply_rule_full(
-            &rule, &b, &mut a, &mut g, &mut i, None, None, None, true,
-        );
+        let out = apply_rule_full(&rule, &b, &mut a, &mut g, &mut i, None, None, None, true);
         let (failed, false_progress, _) = crate::effect_audit::stats();
         assert_eq!(failed, 0, "no failure on a well-formed insert");
         assert_eq!(false_progress, 0);
@@ -2807,7 +3284,8 @@ mod tests {
         let knows = i.intern("knows");
         let alice = g.insert_node(person, FxHashMap::default());
         let bob = g.insert_node(person, FxHashMap::default());
-        g.insert_edge(alice, knows, bob, FxHashMap::default()).unwrap();
+        g.insert_edge(alice, knows, bob, FxHashMap::default())
+            .unwrap();
         let rule = RewriteRule {
             name: i.intern("alice_knows_bob"),
             match_edges: vec![MatchEdge {
@@ -2917,10 +3395,7 @@ mod tests {
         let mut parallel_fallback = crate::fallback_trace::defaulted_raw();
         parallel_fallback.sort();
 
-        assert_eq!(
-            parallel.iter().map(canonical).collect::<Vec<_>>(),
-            serial,
-        );
+        assert_eq!(parallel.iter().map(canonical).collect::<Vec<_>>(), serial,);
         assert_eq!(parallel_fallback, serial_fallback);
         assert!(collect_batch_bindings_parallel(
             &rule, &arena, &graph, &interner, None, None, None, 1,
@@ -2937,7 +3412,8 @@ mod tests {
         let person = i.intern("Person");
         let knows = i.intern("knows");
         let alice = g.insert_node(person, FxHashMap::default());
-        g.insert_edge(alice, knows, alice, FxHashMap::default()).unwrap();
+        g.insert_edge(alice, knows, alice, FxHashMap::default())
+            .unwrap();
         let rule = RewriteRule {
             name: i.intern("a_knows_b"),
             match_edges: vec![MatchEdge {
@@ -2963,11 +3439,19 @@ mod tests {
         alice_attrs.insert(name_key, Value::Str(alice_str));
         let alice = g.insert_node(person, alice_attrs);
         let bob = g.insert_node(person, FxHashMap::default());
-        g.insert_edge(alice, knows, bob, FxHashMap::default()).unwrap();
+        g.insert_edge(alice, knows, bob, FxHashMap::default())
+            .unwrap();
         // Where: Attr(?a, "name") == "alice"
-        let av = a.add(TermNode::Var { name: i.intern("a") });
-        let attr = a.add(TermNode::Attr { node: av, key: name_key });
-        let lit = a.add(TermNode::Lit { value: Value::Str(alice_str) });
+        let av = a.add(TermNode::Var {
+            name: i.intern("a"),
+        });
+        let attr = a.add(TermNode::Attr {
+            node: av,
+            key: name_key,
+        });
+        let lit = a.add(TermNode::Lit {
+            value: Value::Str(alice_str),
+        });
         let eq = a.add(TermNode::Eq { a: attr, b: lit });
         let rule = RewriteRule {
             name: i.intern("named_alice"),
@@ -2991,7 +3475,8 @@ mod tests {
         let knows = i.intern("knows");
         let alice = g.insert_node(person, FxHashMap::default());
         let bob = g.insert_node(person, FxHashMap::default());
-        g.insert_edge(alice, knows, bob, FxHashMap::default()).unwrap();
+        g.insert_edge(alice, knows, bob, FxHashMap::default())
+            .unwrap();
         // Rule: ?a -[knows]-> ?b ⇒ add ?a -[likes]-> ?b
         let rule = RewriteRule {
             name: i.intern("knows_implies_likes"),
@@ -3025,9 +3510,12 @@ mod tests {
         let knows = i.intern("knows");
         let alice = g.insert_node(person, FxHashMap::default());
         let bob = g.insert_node(person, FxHashMap::default());
-        g.insert_edge(alice, knows, bob, FxHashMap::default()).unwrap();
+        g.insert_edge(alice, knows, bob, FxHashMap::default())
+            .unwrap();
         // Effects: add likes edge + set_attr(b, label, "friend")
-        let lit_friend = a.add(TermNode::Lit { value: Value::Str(i.intern("friend")) });
+        let lit_friend = a.add(TermNode::Lit {
+            value: Value::Str(i.intern("friend")),
+        });
         let rule = RewriteRule {
             name: i.intern("friend_tag"),
             match_edges: vec![MatchEdge {
@@ -3107,7 +3595,17 @@ mod tests {
         };
         let mut interner = i;
         let mut a = a;
-        let steps = run_rules(&[&rule], &mut a, &mut g, &mut interner, None, None, None, &[None], 100);
+        let steps = run_rules(
+            &[&rule],
+            &mut a,
+            &mut g,
+            &mut interner,
+            None,
+            None,
+            None,
+            &[None],
+            100,
+        );
         // Should fire once (n1 -r-> n3 was missing, then no more
         // matches because no new ?a -[r]-> ?b -[r]-> ?c chain exists
         // that doesn't already have the transitive edge).
@@ -3137,16 +3635,33 @@ mod tests {
         let c = i.intern("c");
         let d = i.intern("d");
         let input = vec![
-            MatchEdge { src_var: a, edge_type: r1, tgt_var: b },
-            MatchEdge { src_var: c, edge_type: r2, tgt_var: d },
-            MatchEdge { src_var: b, edge_type: r3, tgt_var: c },
+            MatchEdge {
+                src_var: a,
+                edge_type: r1,
+                tgt_var: b,
+            },
+            MatchEdge {
+                src_var: c,
+                edge_type: r2,
+                tgt_var: d,
+            },
+            MatchEdge {
+                src_var: b,
+                edge_type: r3,
+                tgt_var: c,
+            },
         ];
         // Fake cardinality table: r3 is RARER than r1/r2.
         let card = |et: Sym| -> usize {
-            if et == r1 { 100 }
-            else if et == r2 { 100 }
-            else if et == r3 { 5 }
-            else { 999 }
+            if et == r1 {
+                100
+            } else if et == r2 {
+                100
+            } else if et == r3 {
+                5
+            } else {
+                999
+            }
         };
         let reordered = reorder_match_edges(&input, card);
         assert_eq!(reordered.len(), 3);
@@ -3158,9 +3673,13 @@ mod tests {
         bound.insert(reordered[0].src_var);
         bound.insert(reordered[0].tgt_var);
         for me in &reordered[1..] {
-            assert!(bound.contains(&me.src_var) || bound.contains(&me.tgt_var),
-                    "edge {:?} -> {:?} not connected to bound set {:?}",
-                    me.src_var, me.tgt_var, bound);
+            assert!(
+                bound.contains(&me.src_var) || bound.contains(&me.tgt_var),
+                "edge {:?} -> {:?} not connected to bound set {:?}",
+                me.src_var,
+                me.tgt_var,
+                bound
+            );
             bound.insert(me.src_var);
             bound.insert(me.tgt_var);
         }
@@ -3172,7 +3691,11 @@ mod tests {
         let r = i.intern("r");
         let a = i.intern("a");
         let b = i.intern("b");
-        let single = vec![MatchEdge { src_var: a, edge_type: r, tgt_var: b }];
+        let single = vec![MatchEdge {
+            src_var: a,
+            edge_type: r,
+            tgt_var: b,
+        }];
         let reordered = reorder_match_edges(&single, |_| 1);
         assert_eq!(reordered.len(), 1);
         assert_eq!(reordered[0].edge_type, r);
@@ -3193,15 +3716,32 @@ mod tests {
         let m_v = i.intern("m");
         let mention_v = i.intern("mention");
         let mention_ref = a.add(TermNode::Var { name: mention_v });
-        let text_attr = a.add(TermNode::Attr { node: mention_ref, key: text_key });
+        let text_attr = a.add(TermNode::Attr {
+            node: mention_ref,
+            key: text_key,
+        });
         let c_ref = a.add(TermNode::Var { name: c_v });
-        let name_attr = a.add(TermNode::Attr { node: c_ref, key: name_key });
-        let eq = a.add(TermNode::Eq { a: text_attr, b: name_attr });
+        let name_attr = a.add(TermNode::Attr {
+            node: c_ref,
+            key: name_key,
+        });
+        let eq = a.add(TermNode::Eq {
+            a: text_attr,
+            b: name_attr,
+        });
         RewriteRule {
             name: i.intern("join_rule"),
             match_edges: vec![
-                MatchEdge { src_var: agent_v, edge_type: knows, tgt_var: c_v },
-                MatchEdge { src_var: m_v, edge_type: has_mention, tgt_var: mention_v },
+                MatchEdge {
+                    src_var: agent_v,
+                    edge_type: knows,
+                    tgt_var: c_v,
+                },
+                MatchEdge {
+                    src_var: m_v,
+                    edge_type: has_mention,
+                    tgt_var: mention_v,
+                },
             ],
             where_: Some(eq),
             effects: vec![],
@@ -3239,15 +3779,18 @@ mod tests {
 
         let agent = g.insert_node(i.intern("Agent"), FxHashMap::default());
         let knows = i.intern("knows_concept");
-        g.insert_edge(agent, knows, moon_c, FxHashMap::default()).unwrap();
-        g.insert_edge(agent, knows, mars_c, FxHashMap::default()).unwrap();
+        g.insert_edge(agent, knows, moon_c, FxHashMap::default())
+            .unwrap();
+        g.insert_edge(agent, knows, mars_c, FxHashMap::default())
+            .unwrap();
 
         let mut mtn_attrs = FxHashMap::default();
         mtn_attrs.insert(text_key, Value::Str(moon_str));
         let mention_n = g.insert_node(mention_t, mtn_attrs);
         let m = g.insert_node(i.intern("Message"), FxHashMap::default());
         let has_mention = i.intern("has_mention");
-        g.insert_edge(m, has_mention, mention_n, FxHashMap::default()).unwrap();
+        g.insert_edge(m, has_mention, mention_n, FxHashMap::default())
+            .unwrap();
 
         // Declare the index -- the hinted rule's whole point.
         g.declare_attr_index(concept_t, name_key);
@@ -3280,13 +3823,15 @@ mod tests {
         let moon_c = g.insert_node(concept_t, moon_attrs);
         let agent = g.insert_node(i.intern("Agent"), FxHashMap::default());
         let knows = i.intern("knows_concept");
-        g.insert_edge(agent, knows, moon_c, FxHashMap::default()).unwrap();
+        g.insert_edge(agent, knows, moon_c, FxHashMap::default())
+            .unwrap();
         let mut mtn_attrs = FxHashMap::default();
         mtn_attrs.insert(text_key, Value::Str(moon_str));
         let mention_n = g.insert_node(mention_t, mtn_attrs);
         let m = g.insert_node(i.intern("Message"), FxHashMap::default());
         let has_mention = i.intern("has_mention");
-        g.insert_edge(m, has_mention, mention_n, FxHashMap::default()).unwrap();
+        g.insert_edge(m, has_mention, mention_n, FxHashMap::default())
+            .unwrap();
         // NOTE: no g.declare_attr_index call.
 
         let hinted = build_join_rule(&mut i, &mut a, true);
@@ -3312,13 +3857,15 @@ mod tests {
         let moon_c = g.insert_node(concept_t, moon_attrs);
         let agent = g.insert_node(i.intern("Agent"), FxHashMap::default());
         let knows = i.intern("knows_concept");
-        g.insert_edge(agent, knows, moon_c, FxHashMap::default()).unwrap();
+        g.insert_edge(agent, knows, moon_c, FxHashMap::default())
+            .unwrap();
         let mut mtn_attrs = FxHashMap::default();
         mtn_attrs.insert(text_key, Value::Str(unrelated_str));
         let mention_n = g.insert_node(mention_t, mtn_attrs);
         let m = g.insert_node(i.intern("Message"), FxHashMap::default());
         let has_mention = i.intern("has_mention");
-        g.insert_edge(m, has_mention, mention_n, FxHashMap::default()).unwrap();
+        g.insert_edge(m, has_mention, mention_n, FxHashMap::default())
+            .unwrap();
         g.declare_attr_index(concept_t, name_key);
 
         let hinted = build_join_rule(&mut i, &mut a, true);
@@ -3339,8 +3886,16 @@ mod tests {
         let knows = i.intern("knows_concept");
         let has_mention = i.intern("has_mention");
         let edges = vec![
-            MatchEdge { src_var: agent_v, edge_type: knows, tgt_var: c_v },
-            MatchEdge { src_var: m_v, edge_type: has_mention, tgt_var: mention_v },
+            MatchEdge {
+                src_var: agent_v,
+                edge_type: knows,
+                tgt_var: c_v,
+            },
+            MatchEdge {
+                src_var: m_v,
+                edge_type: has_mention,
+                tgt_var: mention_v,
+            },
         ];
         let hints = vec![IndexJoinHint {
             for_var: c_v,
@@ -3352,8 +3907,10 @@ mod tests {
         // Tie cardinality -- without hint-awareness the FIRST edge (index 0,
         // the c-edge) would win the tie and be scheduled first.
         let reordered = reorder_match_edges_with_hints(&edges, &hints, |_| 1);
-        assert_eq!(reordered[0].edge_type, has_mention,
-                   "the mention edge (which binds via_var) must be scheduled before the hinted c-edge");
+        assert_eq!(
+            reordered[0].edge_type, has_mention,
+            "the mention edge (which binds via_var) must be scheduled before the hinted c-edge"
+        );
         assert_eq!(reordered[1].edge_type, knows);
     }
 
@@ -3370,8 +3927,10 @@ mod tests {
         assert!(!s.graph.has_attr_index(concept_t, name_key));
         let rule = build_join_rule(&mut s.interner, &mut s.terms, true);
         s.add_rule(rule);
-        assert!(s.graph.has_attr_index(concept_t, name_key),
-                 "add_rule should have auto-declared the hint's attr index");
+        assert!(
+            s.graph.has_attr_index(concept_t, name_key),
+            "add_rule should have auto-declared the hint's attr index"
+        );
     }
 
     #[test]
@@ -3390,9 +3949,12 @@ mod tests {
         let old_val = g.insert_node(value_t, FxHashMap::default());
         let new_val = g.insert_node(value_t, FxHashMap::default());
         // inst1 uses old_val as op0; inst2 uses it as op1; inst3 as op0.
-        g.insert_edge(inst1, uses_op0, old_val, FxHashMap::default()).unwrap();
-        g.insert_edge(inst2, uses_op1, old_val, FxHashMap::default()).unwrap();
-        g.insert_edge(inst3, uses_op0, old_val, FxHashMap::default()).unwrap();
+        g.insert_edge(inst1, uses_op0, old_val, FxHashMap::default())
+            .unwrap();
+        g.insert_edge(inst2, uses_op1, old_val, FxHashMap::default())
+            .unwrap();
+        g.insert_edge(inst3, uses_op0, old_val, FxHashMap::default())
+            .unwrap();
 
         // Rule: match a Value node bound to ?old and ?new directly
         // (this test uses a 0-edge match driven by ad-hoc binding —
@@ -3414,8 +3976,15 @@ mod tests {
 
         let mut a = a;
         let outcome = apply_rule_full(
-            &rule, &binding, &mut a, &mut g, &mut interner,
-            None, None, None, true,
+            &rule,
+            &binding,
+            &mut a,
+            &mut g,
+            &mut interner,
+            None,
+            None,
+            None,
+            true,
         );
         assert!(outcome.progressed);
 
@@ -3457,8 +4026,15 @@ mod tests {
         binding.insert(interner.intern("x"), v);
         let mut a = a;
         let outcome = apply_rule_full(
-            &rule, &binding, &mut a, &mut g, &mut interner,
-            None, None, None, false,
+            &rule,
+            &binding,
+            &mut a,
+            &mut g,
+            &mut interner,
+            None,
+            None,
+            None,
+            false,
         );
         assert!(!outcome.progressed);
     }
@@ -3474,10 +4050,13 @@ mod tests {
         let unknown_t = i.intern("Unknown");
         let evid_e = i.intern("evidence_for");
         let unknown = g.insert_node(unknown_t, FxHashMap::default());
-        g.insert_edge(unknown, evid_e, unknown, FxHashMap::default()).unwrap();
+        g.insert_edge(unknown, evid_e, unknown, FxHashMap::default())
+            .unwrap();
         let surf_key = i.intern("surface");
         let dog_str = Value::Str(i.intern("dog"));
-        let lit_surface = a.add(crate::term::TermNode::Lit { value: dog_str.clone() });
+        let lit_surface = a.add(crate::term::TermNode::Lit {
+            value: dog_str.clone(),
+        });
         let rule = RewriteRule {
             name: i.intern("emit_once"),
             match_edges: vec![MatchEdge {
@@ -3497,8 +4076,15 @@ mod tests {
         let mut binding: Binding = FxHashMap::default();
         binding.insert(interner.intern("u"), unknown);
         let outcome = apply_rule_full(
-            &rule, &binding, &mut a, &mut g, &mut interner,
-            None, None, None, true,
+            &rule,
+            &binding,
+            &mut a,
+            &mut g,
+            &mut interner,
+            None,
+            None,
+            None,
+            true,
         );
         assert!(outcome.progressed, "first apply should progress");
         assert_eq!(g.nodes_of_type(cand_t).len(), 1);
@@ -3533,8 +4119,15 @@ mod tests {
         let mut interner = i;
         let binding: Binding = FxHashMap::default();
         let outcome = apply_rule_full(
-            &rule, &binding, &mut a, &mut g, &mut interner,
-            None, None, None, true,
+            &rule,
+            &binding,
+            &mut a,
+            &mut g,
+            &mut interner,
+            None,
+            None,
+            None,
+            true,
         );
         assert!(!outcome.progressed, "second apply should NOT progress");
         // Still only one CandidateMeaning.
@@ -3572,8 +4165,15 @@ mod tests {
         let mut interner = i;
         let binding: Binding = FxHashMap::default();
         let outcome = apply_rule_full(
-            &rule, &binding, &mut a, &mut g, &mut interner,
-            None, None, None, true,
+            &rule,
+            &binding,
+            &mut a,
+            &mut g,
+            &mut interner,
+            None,
+            None,
+            None,
+            true,
         );
         assert!(!outcome.progressed);
         assert_eq!(g.nodes_of_type(cand_t).len(), 1);
@@ -3588,7 +4188,9 @@ mod tests {
         let key = i.intern("weight");
         let nid = g.insert_node(t, FxHashMap::default());
         // First write: attr absent → must progress + record undo.
-        let lit_06 = a.add(crate::term::TermNode::Lit { value: Value::Float(0.6) });
+        let lit_06 = a.add(crate::term::TermNode::Lit {
+            value: Value::Float(0.6),
+        });
         let rule = RewriteRule {
             name: i.intern("delta"),
             match_edges: vec![],
@@ -3604,8 +4206,15 @@ mod tests {
         let mut binding: Binding = FxHashMap::default();
         binding.insert(interner.intern("n"), nid);
         let outcome = apply_rule_full(
-            &rule, &binding, &mut a, &mut g, &mut interner,
-            None, None, None, true,
+            &rule,
+            &binding,
+            &mut a,
+            &mut g,
+            &mut interner,
+            None,
+            None,
+            None,
+            true,
         );
         assert!(outcome.progressed, "first write should progress");
         assert_eq!(outcome.undo.len(), 1);
@@ -3613,10 +4222,20 @@ mod tests {
 
         // Re-apply with the same value: no progress, no undo.
         let outcome2 = apply_rule_full(
-            &rule, &binding, &mut a, &mut g, &mut interner,
-            None, None, None, true,
+            &rule,
+            &binding,
+            &mut a,
+            &mut g,
+            &mut interner,
+            None,
+            None,
+            None,
+            true,
         );
-        assert!(!outcome2.progressed, "same-value re-apply must NOT progress");
+        assert!(
+            !outcome2.progressed,
+            "same-value re-apply must NOT progress"
+        );
         assert!(outcome2.undo.is_empty(), "no UndoStep for skipped write");
     }
 
@@ -3628,7 +4247,9 @@ mod tests {
         let mut attrs = FxHashMap::default();
         attrs.insert(key, Value::Float(0.3));
         let nid = g.insert_node(t, attrs);
-        let lit_09 = a.add(crate::term::TermNode::Lit { value: Value::Float(0.9) });
+        let lit_09 = a.add(crate::term::TermNode::Lit {
+            value: Value::Float(0.9),
+        });
         let rule = RewriteRule {
             name: i.intern("delta"),
             match_edges: vec![],
@@ -3644,8 +4265,15 @@ mod tests {
         let mut binding: Binding = FxHashMap::default();
         binding.insert(interner.intern("n"), nid);
         let outcome = apply_rule_full(
-            &rule, &binding, &mut a, &mut g, &mut interner,
-            None, None, None, true,
+            &rule,
+            &binding,
+            &mut a,
+            &mut g,
+            &mut interner,
+            None,
+            None,
+            None,
+            true,
         );
         assert!(outcome.progressed);
         assert_eq!(g.node(nid).attrs.get(&key), Some(&Value::Float(0.9)));
@@ -3670,7 +4298,9 @@ mod tests {
         let path = format!("/dev/shm/{}", name.trim_start_matches('/'));
         use std::io::Write;
         let mut f = std::fs::OpenOptions::new()
-            .create(true).write(true).truncate(true)
+            .create(true)
+            .write(true)
+            .truncate(true)
             .open(&path)
             .expect("write /dev/shm test fb (skip if /dev/shm unavailable)");
         let mut buf = vec![0u8; crate::framebuffer::FB_HEADER_LEN + (height * stride) as usize];
@@ -3707,27 +4337,40 @@ mod tests {
         let mut game_attrs: FxHashMap<Sym, Value> = FxHashMap::default();
         game_attrs.insert(last_seq_key, Value::Int(3));
         let game = g.insert_node(game_t, game_attrs);
-        g.insert_edge(trigger, wants_look, game, FxHashMap::default()).unwrap();
+        g.insert_edge(trigger, wants_look, game, FxHashMap::default())
+            .unwrap();
 
         let t_var = i.intern("t");
         let g_var = i.intern("g");
         let g_ref = a.add(TermNode::Var { name: g_var });
-        let attr_term = a.add(TermNode::Attr { node: g_ref, key: last_seq_key });
-        let fb_id_lit = a.add(TermNode::Lit { value: Value::Int(9) });
+        let attr_term = a.add(TermNode::Attr {
+            node: g_ref,
+            key: last_seq_key,
+        });
+        let fb_id_lit = a.add(TermNode::Lit {
+            value: Value::Int(9),
+        });
         let fbseq = a.add(TermNode::FbFrameSeq { fb: fb_id_lit });
-        let where_term = a.add(TermNode::Gt { a: fbseq, b: attr_term });
+        let where_term = a.add(TermNode::Gt {
+            a: fbseq,
+            b: attr_term,
+        });
 
         let rule = RewriteRule {
             name: i.intern("look_when_frame_advances"),
-            match_edges: vec![MatchEdge { src_var: t_var, edge_type: wants_look, tgt_var: g_var }],
+            match_edges: vec![MatchEdge {
+                src_var: t_var,
+                edge_type: wants_look,
+                tgt_var: g_var,
+            }],
             where_: Some(where_term),
             effects: vec![],
             ..Default::default()
         };
 
         let (name, path) = write_fb_file("gate", 5);
-        let handle = crate::framebuffer::FbHandle::open(&name)
-            .expect("open the /dev/shm file just written");
+        let handle =
+            crate::framebuffer::FbHandle::open(&name).expect("open the /dev/shm file just written");
         let mut fbs: FxMap<u32, crate::framebuffer::FbHandle> = FxMap::default();
         fbs.insert(9, handle);
 
@@ -3773,9 +4416,15 @@ mod tests {
         // name must still land on graph.pending_rule_edits as a plain owned
         // String, exactly as a Value::Str literal name would.
         let (mut g, mut i, mut a) = setup_graph();
-        let prefix = a.add(TermNode::Lit { value: Value::Str(i.intern("prefix_")) });
-        let suffix = a.add(TermNode::Lit { value: Value::Str(i.intern("concat_test")) });
-        let concat = a.add(TermNode::StringConcat { parts: vec![prefix, suffix] });
+        let prefix = a.add(TermNode::Lit {
+            value: Value::Str(i.intern("prefix_")),
+        });
+        let suffix = a.add(TermNode::Lit {
+            value: Value::Str(i.intern("concat_test")),
+        });
+        let concat = a.add(TermNode::StringConcat {
+            parts: vec![prefix, suffix],
+        });
 
         let rule = RewriteRule {
             name: i.intern("mint_via_concat"),
@@ -3790,8 +4439,15 @@ mod tests {
         };
         let b: Binding = FxHashMap::default();
         let outcome = apply_rule_full(&rule, &b, &mut a, &mut g, &mut i, None, None, None, false);
-        assert!(outcome.progressed, "SetRuleClause with a Surface-typed name must still progress");
-        assert_eq!(g.pending_rule_edits.len(), 1, "the coerced name must be queued exactly once");
+        assert!(
+            outcome.progressed,
+            "SetRuleClause with a Surface-typed name must still progress"
+        );
+        assert_eq!(
+            g.pending_rule_edits.len(),
+            1,
+            "the coerced name must be queued exactly once"
+        );
         let (name_s, field_s, _term_v) = &g.pending_rule_edits[0];
         assert_eq!(name_s, "prefix_concat_test");
         assert_eq!(field_s, "where");
@@ -3823,8 +4479,14 @@ mod tests {
         };
         let b: Binding = FxHashMap::default();
         let outcome = apply_rule_full(&rule, &b, &mut a, &mut g, &mut i, None, None, None, false);
-        assert!(!outcome.progressed, "an untypeable name must not report progress");
-        assert!(g.pending_rule_edits.is_empty(), "an untypeable name must never be queued");
+        assert!(
+            !outcome.progressed,
+            "an untypeable name must not report progress"
+        );
+        assert!(
+            g.pending_rule_edits.is_empty(),
+            "an untypeable name must never be queued"
+        );
     }
 
     // --- PREDICATE PUSHDOWN (2026-07-17) --------------------------------
@@ -3842,8 +4504,11 @@ mod tests {
     /// `active_every` cells are `active` — the real retina is ~1.5% active,
     /// which is exactly why pushdown pays.
     fn build_propagate_shape(
-        i: &mut Interner, a: &mut TermArena, g: &mut TypedGraph,
-        side: usize, active_every: usize,
+        i: &mut Interner,
+        a: &mut TermArena,
+        g: &mut TypedGraph,
+        side: usize,
+        active_every: usize,
     ) -> RewriteRule {
         let retina_t = i.intern("Retina");
         let cell_t = i.intern("RetinaCell");
@@ -3875,15 +4540,31 @@ mod tests {
             let active = idx % active_every == 0;
             let refractory = !active && idx % active_every == 1;
             let stale = active && (idx / active_every) % 2 == 1;
-            let state = if active { "active" } else if refractory { "refractory" } else { "rested" };
+            let state = if active {
+                "active"
+            } else if refractory {
+                "refractory"
+            } else {
+                "rested"
+            };
             at.insert(state_k, Value::Str(i.intern(state)));
             // A `refractory` cell carries activated_at == step (it fired THIS
             // step and refracted — exactly what wv_refract leaves behind). So
             // conjunct 1 does NOT imply conjunct 0, and conjunct 0 bites too.
             // Without this, activated_at==step held only for active cells and
             // dropping conjunct 0 changed nothing (caught by this control).
-            at.insert(act_at_k, Value::Int(
-                if refractory { 7 } else if !active { -999 } else if stale { 3 } else { 7 }));
+            at.insert(
+                act_at_k,
+                Value::Int(if refractory {
+                    7
+                } else if !active {
+                    -999
+                } else if stale {
+                    3
+                } else {
+                    7
+                }),
+            );
             let n = g.insert_node(cell_t, at);
             g.insert_edge(retina, has_cell, n, FxHashMap::default());
             cells.push(n);
@@ -3893,7 +4574,9 @@ mod tests {
             let (r0, c0) = (idx / side, idx % side);
             for (dr, dc) in [(-1i64, 0i64), (1, 0), (0, -1), (0, 1)] {
                 let (nr, nc) = (r0 as i64 + dr, c0 as i64 + dc);
-                if nr < 0 || nc < 0 || nr >= side as i64 || nc >= side as i64 { continue; }
+                if nr < 0 || nc < 0 || nr >= side as i64 || nc >= side as i64 {
+                    continue;
+                }
                 let m = cells[(nr as usize) * side + nc as usize];
                 g.insert_edge(cells[idx], neighbour, m, FxHashMap::default());
             }
@@ -3903,28 +4586,63 @@ mod tests {
         let c_v = i.intern("c");
         let n_v = i.intern("n");
         let c_ref = a.add(TermNode::Var { name: c_v });
-        let c_state = a.add(TermNode::Attr { node: c_ref, key: state_k });
-        let active_lit = a.add(TermNode::Lit { value: Value::Str(i.intern("active")) });
-        let k0 = a.add(TermNode::Eq { a: c_state, b: active_lit });
+        let c_state = a.add(TermNode::Attr {
+            node: c_ref,
+            key: state_k,
+        });
+        let active_lit = a.add(TermNode::Lit {
+            value: Value::Str(i.intern("active")),
+        });
+        let k0 = a.add(TermNode::Eq {
+            a: c_state,
+            b: active_lit,
+        });
 
         let c_ref2 = a.add(TermNode::Var { name: c_v });
-        let c_act = a.add(TermNode::Attr { node: c_ref2, key: act_at_k });
+        let c_act = a.add(TermNode::Attr {
+            node: c_ref2,
+            key: act_at_k,
+        });
         let r_ref = a.add(TermNode::Var { name: r_v });
-        let r_step = a.add(TermNode::Attr { node: r_ref, key: step_k });
-        let k1 = a.add(TermNode::Eq { a: c_act, b: r_step });
+        let r_step = a.add(TermNode::Attr {
+            node: r_ref,
+            key: step_k,
+        });
+        let k1 = a.add(TermNode::Eq {
+            a: c_act,
+            b: r_step,
+        });
 
         let n_ref = a.add(TermNode::Var { name: n_v });
-        let n_state = a.add(TermNode::Attr { node: n_ref, key: state_k });
-        let rested_lit = a.add(TermNode::Lit { value: Value::Str(i.intern("rested")) });
-        let k2 = a.add(TermNode::Eq { a: n_state, b: rested_lit });
+        let n_state = a.add(TermNode::Attr {
+            node: n_ref,
+            key: state_k,
+        });
+        let rested_lit = a.add(TermNode::Lit {
+            value: Value::Str(i.intern("rested")),
+        });
+        let k2 = a.add(TermNode::Eq {
+            a: n_state,
+            b: rested_lit,
+        });
 
-        let w = a.add(TermNode::And { items: vec![k0, k1, k2] });
+        let w = a.add(TermNode::And {
+            items: vec![k0, k1, k2],
+        });
 
         let mut rule = RewriteRule {
             name: i.intern("wv_propagate_shape"),
             match_edges: vec![
-                MatchEdge { src_var: r_v, edge_type: has_cell, tgt_var: c_v },
-                MatchEdge { src_var: c_v, edge_type: neighbour, tgt_var: n_v },
+                MatchEdge {
+                    src_var: r_v,
+                    edge_type: has_cell,
+                    tgt_var: c_v,
+                },
+                MatchEdge {
+                    src_var: c_v,
+                    edge_type: neighbour,
+                    tgt_var: n_v,
+                },
             ],
             where_: Some(w),
             ..Default::default()
@@ -3934,12 +4652,17 @@ mod tests {
     }
 
     fn collect_bindings(
-        rule: &RewriteRule, a: &TermArena, g: &TypedGraph, i: &Interner,
+        rule: &RewriteRule,
+        a: &TermArena,
+        g: &TypedGraph,
+        i: &Interner,
     ) -> Vec<Vec<(String, u32)>> {
         let mut out = Vec::new();
         match_rule_each(rule, a, g, i, None, None, None, None, |b| {
-            let mut row: Vec<(String, u32)> =
-                b.iter().map(|(s, n)| (i.resolve(*s).to_string(), n.0)).collect();
+            let mut row: Vec<(String, u32)> = b
+                .iter()
+                .map(|(s, n)| (i.resolve(*s).to_string(), n.0))
+                .collect();
             row.sort();
             out.push(row);
             true
@@ -3958,10 +4681,15 @@ mod tests {
         // POSITIVE CONTROL on the gate itself: pushdown must actually be
         // armed, or this test proves nothing (§1's 4th clause, applied to a
         // guard: a gate that can only ever pass is not a gate).
-        assert_eq!(rule.where_conjuncts.len(), 3,
-                   "pushdown plan not derived — the comparison below would be vacuous");
-        assert!(rule.where_conjuncts.iter().any(|(_, v)| v.len() == 1),
-                "no single-var conjunct — nothing would ever be pushed down");
+        assert_eq!(
+            rule.where_conjuncts.len(),
+            3,
+            "pushdown plan not derived — the comparison below would be vacuous"
+        );
+        assert!(
+            rule.where_conjuncts.iter().any(|(_, v)| v.len() == 1),
+            "no single-var conjunct — nothing would ever be pushed down"
+        );
 
         let with_pushdown = collect_bindings(&rule, &a, &g, &i);
 
@@ -3971,10 +4699,14 @@ mod tests {
 
         // The arms must be ALIVE: an empty binding set is a perfect match
         // between two dead arms (§1.1 — "a dead arm scores a perfect floor").
-        assert!(!whole_where.is_empty(),
-                "no bindings admitted at all — both arms are dead, the equality is vacuous");
-        assert_eq!(with_pushdown, whole_where,
-                   "PUSHDOWN CHANGED THE BINDING SET — this is a bug, not an optimisation");
+        assert!(
+            !whole_where.is_empty(),
+            "no bindings admitted at all — both arms are dead, the equality is vacuous"
+        );
+        assert_eq!(
+            with_pushdown, whole_where,
+            "PUSHDOWN CHANGED THE BINDING SET — this is a bug, not an optimisation"
+        );
     }
 
     #[test]
@@ -3988,7 +4720,10 @@ mod tests {
         let rule = build_propagate_shape(&mut i, &mut a, &mut g, 12, 7);
 
         let correct = collect_bindings(&rule, &a, &g, &i);
-        assert!(!correct.is_empty(), "arm is dead — the divergence check below is vacuous");
+        assert!(
+            !correct.is_empty(),
+            "arm is dead — the divergence check below is vacuous"
+        );
         let _ = &mut a;
 
         // EVERY conjunct must be load-bearing: drop each one in turn and the
@@ -4005,9 +4740,12 @@ mod tests {
             let items: Vec<TermIdx> = broken.where_conjuncts.iter().map(|(t, _)| *t).collect();
             broken.where_ = Some(a.add(TermNode::And { items }));
             let wrong = collect_bindings(&broken, &a, &g, &i);
-            assert_ne!(correct, wrong,
-                       "dropping conjunct {} changed no binding — the fixture cannot \
-                        discriminate it, so the equality gate is vacuous for it", j);
+            assert_ne!(
+                correct, wrong,
+                "dropping conjunct {} changed no binding — the fixture cannot \
+                        discriminate it, so the equality gate is vacuous for it",
+                j
+            );
         }
     }
 
@@ -4023,18 +4761,28 @@ mod tests {
         let k = i.intern("state");
         let yr = a.add(TermNode::Var { name: y });
         let ys = a.add(TermNode::Attr { node: yr, key: k });
-        let lit = a.add(TermNode::Lit { value: Value::Str(i.intern("active")) });
+        let lit = a.add(TermNode::Lit {
+            value: Value::Str(i.intern("active")),
+        });
         let e0 = a.add(TermNode::Eq { a: ys, b: lit });
         let e1 = a.add(TermNode::Eq { a: ys, b: lit });
-        let w = a.add(TermNode::And { items: vec![e0, e1] });
+        let w = a.add(TermNode::And {
+            items: vec![e0, e1],
+        });
         let mut rule = RewriteRule {
             name: i.intern("one_edge"),
-            match_edges: vec![MatchEdge { src_var: x, edge_type: e, tgt_var: y }],
+            match_edges: vec![MatchEdge {
+                src_var: x,
+                edge_type: e,
+                tgt_var: y,
+            }],
             where_: Some(w),
             ..Default::default()
         };
         rule.derive_access(&a);
-        assert!(rule.where_conjuncts.is_empty(),
-                "a 1-edge rule must get NO pushdown plan (byte-identity scope guard)");
+        assert!(
+            rule.where_conjuncts.is_empty(),
+            "a 1-edge rule must get NO pushdown plan (byte-identity scope guard)"
+        );
     }
 }

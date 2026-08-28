@@ -56,8 +56,8 @@
 
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
-use std::sync::{Arc, Condvar, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Condvar, Mutex};
 use std::thread::{self, JoinHandle};
 use std::time::{Duration, Instant};
 
@@ -111,7 +111,9 @@ struct Queued {
 }
 
 impl PartialEq for Queued {
-    fn eq(&self, other: &Self) -> bool { self.deadline_rev == other.deadline_rev }
+    fn eq(&self, other: &Self) -> bool {
+        self.deadline_rev == other.deadline_rev
+    }
 }
 impl Eq for Queued {}
 impl PartialOrd for Queued {
@@ -165,9 +167,7 @@ impl Scheduler {
         // /sys/devices/system/cpu/cpu*/topology to be exact.
         let core_ids = core_affinity::get_core_ids();
         let pin_targets: Vec<Option<core_affinity::CoreId>> = match core_ids {
-            Some(ids) => (0..n_workers)
-                .map(|i| ids.get(i).copied())
-                .collect(),
+            Some(ids) => (0..n_workers).map(|i| ids.get(i).copied()).collect(),
             None => vec![None; n_workers],
         };
 
@@ -188,7 +188,11 @@ impl Scheduler {
             workers.push(handle);
         }
 
-        Self { queue, workers, shutdown_flag }
+        Self {
+            queue,
+            workers,
+            shutdown_flag,
+        }
     }
 
     /// Enqueue `task`. Returns immediately; the scheduler will run
@@ -251,10 +255,7 @@ impl Scheduler {
     }
 }
 
-fn worker_loop(
-    queue: Arc<(Mutex<QueueState>, Condvar)>,
-    _shutdown: Arc<AtomicBool>,
-) {
+fn worker_loop(queue: Arc<(Mutex<QueueState>, Condvar)>, _shutdown: Arc<AtomicBool>) {
     let (mutex, cvar) = &*queue;
     loop {
         let task: Task = {
@@ -277,8 +278,8 @@ fn worker_loop(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::Arc;
     use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrd};
+    use std::sync::Arc;
 
     /// Sanity — scheduler builds, runs a task, shuts down.
     #[test]
@@ -286,8 +287,13 @@ mod tests {
         let sched = Scheduler::new(2);
         let counter = Arc::new(AtomicUsize::new(0));
         let c = Arc::clone(&counter);
-        sched.submit(Task::in_micros(1000, PriorityClass::BestEffort,
-            move || { c.fetch_add(1, AtomicOrd::SeqCst); }));
+        sched.submit(Task::in_micros(
+            1000,
+            PriorityClass::BestEffort,
+            move || {
+                c.fetch_add(1, AtomicOrd::SeqCst);
+            },
+        ));
         // Tasks run asynchronously; give them time.
         std::thread::sleep(Duration::from_millis(20));
         assert_eq!(counter.load(AtomicOrd::SeqCst), 1);
@@ -326,7 +332,7 @@ mod tests {
         // Tasks pulled in deadline order: 0, 1, 2, ..., 9.
         // (Deadlines were set sm + 0ms, +10ms, +20ms, ...,
         // submitted in reverse; EDF reorders.)
-        assert_eq!(final_order, vec![0,1,2,3,4,5,6,7,8,9]);
+        assert_eq!(final_order, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     }
 
     /// Throughput — many tasks complete under sane wall-clock.
@@ -341,13 +347,13 @@ mod tests {
             sched.submit(Task::in_micros(
                 1_000_000, // 1 s deadline; not enforced here, just for EDF
                 PriorityClass::BestEffort,
-                move || { d.fetch_add(1, AtomicOrd::SeqCst); }
+                move || {
+                    d.fetch_add(1, AtomicOrd::SeqCst);
+                },
             ));
         }
         // Wait until all done or timeout.
-        while done.load(AtomicOrd::SeqCst) < n
-            && started.elapsed() < Duration::from_secs(5)
-        {
+        while done.load(AtomicOrd::SeqCst) < n && started.elapsed() < Duration::from_secs(5) {
             std::thread::sleep(Duration::from_millis(10));
         }
         let elapsed = started.elapsed();
@@ -356,8 +362,12 @@ mod tests {
         assert_eq!(count, n);
         // Loose sanity: 10K trivial tasks across 6 workers in well
         // under 5s. On Zen 5 this routinely runs in <50ms.
-        assert!(elapsed < Duration::from_secs(5),
-                "took {:?} for {} tasks", elapsed, n);
+        assert!(
+            elapsed < Duration::from_secs(5),
+            "took {:?} for {} tasks",
+            elapsed,
+            n
+        );
     }
 
     /// Shutdown drops queued tasks (doesn't run them) but completes
@@ -369,16 +379,24 @@ mod tests {
 
         // First task takes a while.
         let c = Arc::clone(&counter);
-        sched.submit(Task::in_micros(1_000_000, PriorityClass::BestEffort,
+        sched.submit(Task::in_micros(
+            1_000_000,
+            PriorityClass::BestEffort,
             move || {
                 std::thread::sleep(Duration::from_millis(50));
                 c.fetch_add(1, AtomicOrd::SeqCst);
-            }));
+            },
+        ));
 
         // Queue another that won't run before shutdown.
         let c = Arc::clone(&counter);
-        sched.submit(Task::in_micros(1_000_000, PriorityClass::BestEffort,
-            move || { c.fetch_add(100, AtomicOrd::SeqCst); }));
+        sched.submit(Task::in_micros(
+            1_000_000,
+            PriorityClass::BestEffort,
+            move || {
+                c.fetch_add(100, AtomicOrd::SeqCst);
+            },
+        ));
 
         // Let the first start, then shutdown.
         std::thread::sleep(Duration::from_millis(10));
@@ -387,7 +405,10 @@ mod tests {
         // First should have completed (we slept ~50ms inside it +
         // join waits). Second should NOT have run.
         let v = counter.load(AtomicOrd::SeqCst);
-        assert!(v == 1 || v == 0,
-                "in-flight task should complete; queued should drop. v={}", v);
+        assert!(
+            v == 1 || v == 0,
+            "in-flight task should complete; queued should drop. v={}",
+            v
+        );
     }
 }

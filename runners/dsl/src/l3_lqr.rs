@@ -80,8 +80,8 @@ impl Bf16PackedB {
                 let pair = self.paired[kkp * self.n_cols + j];
                 let lo = (pair & 0xFFFF) as u16;
                 let hi = ((pair >> 16) & 0xFFFF) as u16;
-                m.set(2*kkp,     j, bf16_to_fp64(lo));
-                m.set(2*kkp + 1, j, bf16_to_fp64(hi));
+                m.set(2 * kkp, j, bf16_to_fp64(lo));
+                m.set(2 * kkp + 1, j, bf16_to_fp64(hi));
             }
         }
         m
@@ -117,12 +117,18 @@ pub struct Mat {
 
 impl Mat {
     pub fn zeros(rows: usize, cols: usize) -> Self {
-        Self { rows, cols, data: vec![0.0; rows * cols] }
+        Self {
+            rows,
+            cols,
+            data: vec![0.0; rows * cols],
+        }
     }
 
     pub fn identity(n: usize) -> Self {
         let mut m = Self::zeros(n, n);
-        for i in 0..n { m.set(i, i, 1.0); }
+        for i in 0..n {
+            m.set(i, i, 1.0);
+        }
         m
     }
 
@@ -139,11 +145,19 @@ impl Mat {
             assert_eq!(r.len(), n_cols, "inconsistent row lengths");
             data.extend_from_slice(r);
         }
-        Self { rows: n_rows, cols: n_cols, data }
+        Self {
+            rows: n_rows,
+            cols: n_cols,
+            data,
+        }
     }
 
-    pub fn rows(&self) -> usize { self.rows }
-    pub fn cols(&self) -> usize { self.cols }
+    pub fn rows(&self) -> usize {
+        self.rows
+    }
+    pub fn cols(&self) -> usize {
+        self.cols
+    }
 
     #[inline]
     pub fn get(&self, i: usize, j: usize) -> f64 {
@@ -179,9 +193,11 @@ impl Mat {
 
     /// C = A · B. Inner dims must match (A.cols == B.rows).
     pub fn mul(&self, other: &Mat) -> Mat {
-        assert_eq!(self.cols, other.rows,
-                   "inner dims mismatch: {}x{} * {}x{}",
-                   self.rows, self.cols, other.rows, other.cols);
+        assert_eq!(
+            self.cols, other.rows,
+            "inner dims mismatch: {}x{} * {}x{}",
+            self.rows, self.cols, other.rows, other.cols
+        );
         // Dispatch to AVX-512 path when:
         //   · built with the `avx512` Cargo feature (default OFF — the
         //     intrinsics `mul_avx512` uses are unstable on this crate's
@@ -207,7 +223,9 @@ impl Mat {
         for i in 0..self.rows {
             for k in 0..self.cols {
                 let aik = self.get(i, k);
-                if aik == 0.0 { continue; }
+                if aik == 0.0 {
+                    continue;
+                }
                 for j in 0..other.cols {
                     let cur = out.get(i, j);
                     out.set(i, j, cur + aik * other.get(k, j));
@@ -246,16 +264,21 @@ impl Mat {
     /// than the BF16 path it replaces).
     #[cfg(target_arch = "x86_64")]
     pub fn mul_bf16(&self, other: &Mat) -> Mat {
-        assert_eq!(self.cols, other.rows,
-                   "inner dims mismatch: {}x{} * {}x{}",
-                   self.rows, self.cols, other.rows, other.cols);
+        assert_eq!(
+            self.cols, other.rows,
+            "inner dims mismatch: {}x{} * {}x{}",
+            self.rows, self.cols, other.rows, other.cols
+        );
         #[cfg(feature = "avx512")]
         {
             let k = self.cols;
             let n = other.cols;
             // Require K even (pair-reduction) and N a multiple of 16
             // (SIMD lane width). Otherwise scalar path.
-            if k >= 2 && n >= 16 && k % 2 == 0 && n % 16 == 0
+            if k >= 2
+                && n >= 16
+                && k % 2 == 0
+                && n % 16 == 0
                 && is_x86_feature_detected!("avx512f")
                 && is_x86_feature_detected!("avx512bf16")
             {
@@ -283,15 +306,14 @@ impl Mat {
         // bits are bf16(B[2*kp+1][j]). Loading 16 u32s as __m512bh
         // gives exactly the interleaved layout DPBF16PS expects.
 
-        let a_bf16: Vec<u16> = self.data.iter()
-            .map(|v| fp64_to_bf16(*v)).collect();
+        let a_bf16: Vec<u16> = self.data.iter().map(|v| fp64_to_bf16(*v)).collect();
 
         let kp = k / 2;
         let mut b_paired: Vec<u32> = Vec::with_capacity(kp * n);
         for kkp in 0..kp {
             for j in 0..n {
-                let lo = fp64_to_bf16(other.data[(2*kkp) * n + j]) as u32;
-                let hi = fp64_to_bf16(other.data[(2*kkp + 1) * n + j]) as u32;
+                let lo = fp64_to_bf16(other.data[(2 * kkp) * n + j]) as u32;
+                let hi = fp64_to_bf16(other.data[(2 * kkp + 1) * n + j]) as u32;
                 b_paired.push(lo | (hi << 16));
             }
         }
@@ -306,8 +328,8 @@ impl Mat {
                 for kkp in 0..kp {
                     // Pack A pair (bf16(a[i][2*kkp]), bf16(a[i][2*kkp+1]))
                     // as a single u32; broadcast to all 16 lanes.
-                    let a_lo = a_bf16[i * k + 2*kkp] as u32;
-                    let a_hi = a_bf16[i * k + 2*kkp + 1] as u32;
+                    let a_lo = a_bf16[i * k + 2 * kkp] as u32;
+                    let a_hi = a_bf16[i * k + 2 * kkp + 1] as u32;
                     let a_pair_bits = a_lo | (a_hi << 16);
                     let a_v_si = _mm512_set1_epi32(a_pair_bits as i32);
                     let a_v_bh: __m512bh = std::mem::transmute(a_v_si);
@@ -340,17 +362,23 @@ impl Mat {
     pub fn pack_for_bf16_b(&self) -> Option<Bf16PackedB> {
         let k = self.rows;
         let n = self.cols;
-        if k < 2 || n < 16 || k % 2 != 0 || n % 16 != 0 { return None; }
+        if k < 2 || n < 16 || k % 2 != 0 || n % 16 != 0 {
+            return None;
+        }
         let kp = k / 2;
         let mut paired = Vec::with_capacity(kp * n);
         for kkp in 0..kp {
             for j in 0..n {
-                let lo = fp64_to_bf16(self.data[(2*kkp) * n + j]) as u32;
-                let hi = fp64_to_bf16(self.data[(2*kkp + 1) * n + j]) as u32;
+                let lo = fp64_to_bf16(self.data[(2 * kkp) * n + j]) as u32;
+                let hi = fp64_to_bf16(self.data[(2 * kkp + 1) * n + j]) as u32;
                 paired.push(lo | (hi << 16));
             }
         }
-        Some(Bf16PackedB { paired, k_rows: k, n_cols: n })
+        Some(Bf16PackedB {
+            paired,
+            k_rows: k,
+            n_cols: n,
+        })
     }
 
     /// BF16 matmul using a pre-packed B. Caller must have ensured the
@@ -363,14 +391,14 @@ impl Mat {
     /// AVX512_PORTABILITY_FIX_RESULTS.md).
     #[cfg(target_arch = "x86_64")]
     pub fn mul_bf16_pre_b(&self, packed: &Bf16PackedB) -> Mat {
-        assert_eq!(self.cols, packed.k_rows,
-                   "inner dims mismatch: {}x{} * (packed K={})",
-                   self.rows, self.cols, packed.k_rows);
+        assert_eq!(
+            self.cols, packed.k_rows,
+            "inner dims mismatch: {}x{} * (packed K={})",
+            self.rows, self.cols, packed.k_rows
+        );
         #[cfg(feature = "avx512")]
         {
-            if is_x86_feature_detected!("avx512f")
-                && is_x86_feature_detected!("avx512bf16")
-            {
+            if is_x86_feature_detected!("avx512f") && is_x86_feature_detected!("avx512bf16") {
                 return unsafe { self.mul_bf16_pre_b_inner(packed) };
             }
         }
@@ -390,8 +418,7 @@ impl Mat {
         let n = packed.n_cols;
         // A is converted to BF16 row-major u16 on the fly. Conversion
         // is O(m*k) — cheap for typical Kalman dimensions.
-        let a_bf16: Vec<u16> = self.data.iter()
-            .map(|v| fp64_to_bf16(*v)).collect();
+        let a_bf16: Vec<u16> = self.data.iter().map(|v| fp64_to_bf16(*v)).collect();
 
         let mut out = Self::zeros(m, n);
         let c_ptr = out.data.as_mut_ptr();
@@ -402,8 +429,8 @@ impl Mat {
             for jb in 0..n_blocks {
                 let mut c_v = _mm512_setzero_ps();
                 for kkp in 0..kp {
-                    let a_lo = a_bf16[i * k + 2*kkp] as u32;
-                    let a_hi = a_bf16[i * k + 2*kkp + 1] as u32;
+                    let a_lo = a_bf16[i * k + 2 * kkp] as u32;
+                    let a_hi = a_bf16[i * k + 2 * kkp + 1] as u32;
                     let a_pair_bits = a_lo | (a_hi << 16);
                     let a_v_si = _mm512_set1_epi32(a_pair_bits as i32);
                     let a_v_bh: __m512bh = std::mem::transmute(a_v_si);
@@ -455,7 +482,9 @@ impl Mat {
         for i in 0..m {
             for k in 0..k_dim {
                 let aik = *a_ptr.add(i * k_dim + k);
-                if aik == 0.0 { continue; }
+                if aik == 0.0 {
+                    continue;
+                }
                 let aik_v = _mm512_set1_pd(aik);
                 let b_row = b_ptr.add(k * n);
                 let c_row = c_ptr.add(i * n);
@@ -508,10 +537,13 @@ impl Mat {
             let mut max_abs = aug[col * 2 * n + col].abs();
             for r in (col + 1)..n {
                 let v = aug[r * 2 * n + col].abs();
-                if v > max_abs { max_abs = v; pivot_row = r; }
+                if v > max_abs {
+                    max_abs = v;
+                    pivot_row = r;
+                }
             }
             if max_abs < eps {
-                return None;  // singular
+                return None; // singular
             }
             if pivot_row != col {
                 for j in 0..(2 * n) {
@@ -525,9 +557,13 @@ impl Mat {
             }
             // Eliminate other rows.
             for r in 0..n {
-                if r == col { continue; }
+                if r == col {
+                    continue;
+                }
                 let factor = aug[r * 2 * n + col];
-                if factor == 0.0 { continue; }
+                if factor == 0.0 {
+                    continue;
+                }
                 for j in 0..(2 * n) {
                     aug[r * 2 * n + j] -= factor * aug[col * 2 * n + j];
                 }
@@ -562,7 +598,10 @@ pub enum LqrError {
     SingularRplusBPB,
     /// DARE iteration didn't reach `tolerance` within `max_iter`.
     /// Contains the achieved residual for diagnostics.
-    DareDidNotConverge { iterations: usize, final_residual: f64 },
+    DareDidNotConverge {
+        iterations: usize,
+        final_residual: f64,
+    },
 }
 
 /// Solve the DARE iteratively. Returns the stabilising P.
@@ -574,8 +613,10 @@ pub enum LqrError {
 /// - `max_iter`: cap on iterations (suggest 500 for small systems)
 /// - `tolerance`: ||P_new - P||_F < tolerance terminates (e.g. 1e-9)
 pub fn solve_dare(
-    a: &Mat, b: &Mat,
-    q: &Mat, r: &Mat,
+    a: &Mat,
+    b: &Mat,
+    q: &Mat,
+    r: &Mat,
     max_iter: usize,
     tolerance: f64,
 ) -> Result<Mat, LqrError> {
@@ -583,22 +624,22 @@ pub fn solve_dare(
     let m = b.cols();
     if a.cols() != n {
         return Err(LqrError::DimensionMismatch {
-            what: format!("A must be square; got {}x{}", a.rows(), a.cols())
+            what: format!("A must be square; got {}x{}", a.rows(), a.cols()),
         });
     }
     if b.rows() != n {
         return Err(LqrError::DimensionMismatch {
-            what: format!("B rows ({}) must equal A rows ({})", b.rows(), n)
+            what: format!("B rows ({}) must equal A rows ({})", b.rows(), n),
         });
     }
     if q.rows() != n || q.cols() != n {
         return Err(LqrError::DimensionMismatch {
-            what: format!("Q must be {}x{}; got {}x{}", n, n, q.rows(), q.cols())
+            what: format!("Q must be {}x{}; got {}x{}", n, n, q.rows(), q.cols()),
         });
     }
     if r.rows() != m || r.cols() != m {
         return Err(LqrError::DimensionMismatch {
-            what: format!("R must be {}x{}; got {}x{}", m, m, r.rows(), r.cols())
+            what: format!("R must be {}x{}; got {}x{}", m, m, r.rows(), r.cols()),
         });
     }
 
@@ -620,8 +661,8 @@ pub fn solve_dare(
         };
 
         // K terms: B^T P A; ... in DARE we'll compute A^T P B (R+...)⁻¹ B^T P A.
-        let bt_p_a = bt_p.mul(a);             // m × n
-        let bt_p_a_t = bt_p_a.transpose();    // n × m  (== A^T P B)
+        let bt_p_a = bt_p.mul(a); // m × n
+        let bt_p_a_t = bt_p_a.transpose(); // n × m  (== A^T P B)
         let middle = r_plus_inv.mul(&bt_p_a); // m × n
         let subtracted = bt_p_a_t.mul(&middle); // n × n
 
@@ -653,14 +694,13 @@ pub fn solve_dare(
         p_new.sub(&p).frobenius_norm()
     };
     Err(LqrError::DareDidNotConverge {
-        iterations: max_iter, final_residual,
+        iterations: max_iter,
+        final_residual,
     })
 }
 
 /// Compute the LQR gain K = (R + B^T P B)^-1 B^T P A from a solved P.
-pub fn compute_lqr_gain(
-    a: &Mat, b: &Mat, r: &Mat, p: &Mat,
-) -> Result<Mat, LqrError> {
+pub fn compute_lqr_gain(a: &Mat, b: &Mat, r: &Mat, p: &Mat) -> Result<Mat, LqrError> {
     let b_t = b.transpose();
     let bt_p = b_t.mul(p);
     let bt_p_b = bt_p.mul(b);
@@ -683,15 +723,17 @@ pub struct LqrController {
 
 impl LqrController {
     /// Solve DARE + compute gain. Default tolerance 1e-9, max_iter 500.
-    pub fn from_system(
-        a: &Mat, b: &Mat, q: &Mat, r: &Mat,
-    ) -> Result<Self, LqrError> {
+    pub fn from_system(a: &Mat, b: &Mat, q: &Mat, r: &Mat) -> Result<Self, LqrError> {
         Self::from_system_with(a, b, q, r, 500, 1e-9)
     }
 
     pub fn from_system_with(
-        a: &Mat, b: &Mat, q: &Mat, r: &Mat,
-        max_iter: usize, tolerance: f64,
+        a: &Mat,
+        b: &Mat,
+        q: &Mat,
+        r: &Mat,
+        max_iter: usize,
+        tolerance: f64,
     ) -> Result<Self, LqrError> {
         let p = solve_dare(a, b, q, r, max_iter, tolerance)?;
         let k = compute_lqr_gain(a, b, r, &p)?;
@@ -745,7 +787,9 @@ impl ScalarLqrController {
         let qm = Mat::from_rows(&[&[q]]);
         let rm = Mat::from_rows(&[&[r]]);
         let lqr = LqrController::from_system(&am, &bm, &qm, &rm)?;
-        Ok(Self { gain: lqr.gain.get(0, 0) })
+        Ok(Self {
+            gain: lqr.gain.get(0, 0),
+        })
     }
 }
 
@@ -786,10 +830,10 @@ mod tests {
         // [[1, 2], [3, 4]] inverse = [[-2, 1], [1.5, -0.5]]
         let m = Mat::from_rows(&[&[1.0, 2.0], &[3.0, 4.0]]);
         let inv = m.inverse().unwrap();
-        assert!((inv.get(0,0) - (-2.0)).abs() < 1e-12);
-        assert!((inv.get(0,1) - 1.0).abs()    < 1e-12);
-        assert!((inv.get(1,0) - 1.5).abs()    < 1e-12);
-        assert!((inv.get(1,1) - (-0.5)).abs() < 1e-12);
+        assert!((inv.get(0, 0) - (-2.0)).abs() < 1e-12);
+        assert!((inv.get(0, 1) - 1.0).abs() < 1e-12);
+        assert!((inv.get(1, 0) - 1.5).abs() < 1e-12);
+        assert!((inv.get(1, 1) - (-0.5)).abs() < 1e-12);
     }
 
     #[test]
@@ -838,14 +882,22 @@ mod tests {
                 for j in 0..n {
                     let s = c_scalar.get(i, j);
                     let v = c_bf16.get(i, j);
-                    let rel = if s.abs() > 1e-9
-                        { (v - s).abs() / s.abs() } else { (v - s).abs() };
-                    if rel > max_rel { max_rel = rel; }
+                    let rel = if s.abs() > 1e-9 {
+                        (v - s).abs() / s.abs()
+                    } else {
+                        (v - s).abs()
+                    };
+                    if rel > max_rel {
+                        max_rel = rel;
+                    }
                 }
             }
-            assert!(max_rel < 0.02,
-                    "BF16 max relative error n={} = {} (must be < 2%)",
-                    n, max_rel);
+            assert!(
+                max_rel < 0.02,
+                "BF16 max relative error n={} = {} (must be < 2%)",
+                n,
+                max_rel
+            );
         }
     }
 
@@ -857,7 +909,9 @@ mod tests {
         // Skip if the `avx512` Cargo feature is off (default) or
         // hardware lacks AVX-512F.
         #[cfg(target_arch = "x86_64")]
-        if !cfg!(feature = "avx512") || !is_x86_feature_detected!("avx512f") { return; }
+        if !cfg!(feature = "avx512") || !is_x86_feature_detected!("avx512f") {
+            return;
+        }
         for n in [8, 9, 16, 17, 32, 64, 65] {
             // Pseudorandom but deterministic.
             let mut a = Mat::zeros(n, n);
@@ -869,16 +923,26 @@ mod tests {
                 }
             }
             let c_scalar = a.mul_scalar(&b);
-            let c_avx = a.mul(&b);  // dispatches to AVX
+            let c_avx = a.mul(&b); // dispatches to AVX
             for i in 0..n {
                 for j in 0..n {
                     let s = c_scalar.get(i, j);
                     let v = c_avx.get(i, j);
-                    let rel = if s.abs() > 1e-9
-                        { (v - s).abs() / s.abs() } else { (v - s).abs() };
-                    assert!(rel < 1e-12,
-                            "n={} c[{},{}]: scalar={}, avx={}, rel={}",
-                            n, i, j, s, v, rel);
+                    let rel = if s.abs() > 1e-9 {
+                        (v - s).abs() / s.abs()
+                    } else {
+                        (v - s).abs()
+                    };
+                    assert!(
+                        rel < 1e-12,
+                        "n={} c[{},{}]: scalar={}, avx={}, rel={}",
+                        n,
+                        i,
+                        j,
+                        s,
+                        v,
+                        rel
+                    );
                 }
             }
         }
@@ -901,8 +965,12 @@ mod tests {
         let r = Mat::from_rows(&[&[1.0]]);
         let p = solve_dare(&a, &b, &q, &r, 500, 1e-12).unwrap();
         let phi = (1.0 + 5.0_f64.sqrt()) / 2.0;
-        assert!(approx_eq(p.get(0,0), phi, 1e-9),
-                "P should converge to φ ≈ {}; got {}", phi, p.get(0,0));
+        assert!(
+            approx_eq(p.get(0, 0), phi, 1e-9),
+            "P should converge to φ ≈ {}; got {}",
+            phi,
+            p.get(0, 0)
+        );
     }
 
     /// And the gain K = b·P/(r + b²P) = φ/(1+φ) = φ/φ² = 1/φ ≈ 0.618.
@@ -910,8 +978,12 @@ mod tests {
     fn lqr_scalar_gain_is_one_over_phi() {
         let lqr = ScalarLqrController::from_scalar(1.0, 1.0, 1.0, 1.0).unwrap();
         let inv_phi = 1.0 / ((1.0 + 5.0_f64.sqrt()) / 2.0);
-        assert!(approx_eq(lqr.gain, inv_phi, 1e-9),
-                "K should be 1/φ ≈ {}; got {}", inv_phi, lqr.gain);
+        assert!(
+            approx_eq(lqr.gain, inv_phi, 1e-9),
+            "K should be 1/φ ≈ {}; got {}",
+            inv_phi,
+            lqr.gain
+        );
     }
 
     /// Standard LQR sanity: when state grows beyond setpoint, control
@@ -931,7 +1003,7 @@ mod tests {
     /// plant x[k+1] = a·x + b·u, with u = -K·x, drives x→0.
     #[test]
     fn lqr_closed_loop_drives_state_to_zero() {
-        let a = 1.05_f64;  // mildly unstable open-loop
+        let a = 1.05_f64; // mildly unstable open-loop
         let b = 1.0;
         let lqr_ctrl = ScalarLqrController::from_scalar(a, b, 1.0, 1.0).unwrap();
         let mut x: f64 = 10.0;
@@ -940,12 +1012,17 @@ mod tests {
             // for setpoint 0 regulation).
             // Going via step(): step takes error, returns K·error.
             // For setpoint 0: error = 0 - x = -x; u = K·(-x) = -K·x.
-            let mut c = ScalarLqrController { gain: lqr_ctrl.gain };
-            let u = c.step(-x, 0.01);  // u = K·error
+            let mut c = ScalarLqrController {
+                gain: lqr_ctrl.gain,
+            };
+            let u = c.step(-x, 0.01); // u = K·error
             x = a * x + b * u;
         }
-        assert!(x.abs() < 0.1,
-                "closed-loop state should decay to zero; got {}", x);
+        assert!(
+            x.abs() < 0.1,
+            "closed-loop state should decay to zero; got {}",
+            x
+        );
     }
 
     /// Higher r (input cost) → smaller gain (cheaper to let state
@@ -955,9 +1032,12 @@ mod tests {
     fn lqr_gain_decreases_with_higher_input_cost() {
         let lqr1 = ScalarLqrController::from_scalar(1.0, 1.0, 1.0, 1.0).unwrap();
         let lqr2 = ScalarLqrController::from_scalar(1.0, 1.0, 1.0, 100.0).unwrap();
-        assert!(lqr2.gain < lqr1.gain,
-                "higher R should yield smaller gain; got {} vs {}",
-                lqr2.gain, lqr1.gain);
+        assert!(
+            lqr2.gain < lqr1.gain,
+            "higher R should yield smaller gain; got {} vs {}",
+            lqr2.gain,
+            lqr1.gain
+        );
     }
 
     /// 2D system: double-integrator-like, well-posed LQR.
@@ -977,17 +1057,23 @@ mod tests {
         assert_eq!(lqr.input_dim, 1);
         // Gain entries should be positive (both states contribute to
         // requiring decelerating control).
-        assert!(lqr.gain.get(0, 0) > 0.0,
-                "gain[0,0] should be positive; got {}", lqr.gain.get(0, 0));
-        assert!(lqr.gain.get(0, 1) > 0.0,
-                "gain[0,1] should be positive; got {}", lqr.gain.get(0, 1));
+        assert!(
+            lqr.gain.get(0, 0) > 0.0,
+            "gain[0,0] should be positive; got {}",
+            lqr.gain.get(0, 0)
+        );
+        assert!(
+            lqr.gain.get(0, 1) > 0.0,
+            "gain[0,1] should be positive; got {}",
+            lqr.gain.get(0, 1)
+        );
     }
 
     /// Dimension mismatch reported.
     #[test]
     fn dare_dimension_mismatch_returns_error() {
-        let a = Mat::from_rows(&[&[1.0, 1.0], &[0.0, 1.0]]);  // 2x2
-        let b = Mat::from_rows(&[&[1.0]]);                     // 1x1
+        let a = Mat::from_rows(&[&[1.0, 1.0], &[0.0, 1.0]]); // 2x2
+        let b = Mat::from_rows(&[&[1.0]]); // 1x1
         let q = Mat::identity(2);
         let r = Mat::identity(1);
         let result = solve_dare(&a, &b, &q, &r, 100, 1e-9);

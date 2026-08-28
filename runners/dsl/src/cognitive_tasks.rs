@@ -10,7 +10,7 @@ use crate::sym::Sym;
 use crate::value::Value;
 use rustc_hash::FxHashMap;
 use std::collections::VecDeque;
-use std::sync::{Arc, Mutex, mpsc};
+use std::sync::{mpsc, Arc, Mutex};
 use std::time::Instant;
 
 #[derive(Clone, Debug)]
@@ -81,7 +81,10 @@ fn numeric_values(value: &Value) -> Result<Vec<f64>, String> {
     let (Value::Tuple(items) | Value::List(items)) = value else {
         return Err("payload must be a numeric tuple".into());
     };
-    items.iter().map(|v| number(v).ok_or_else(|| "payload contains non-number".into())).collect()
+    items
+        .iter()
+        .map(|v| number(v).ok_or_else(|| "payload contains non-number".into()))
+        .collect()
 }
 
 /// Mechanical foveated-aperture exposure. The entire receptor sheet crosses
@@ -102,28 +105,25 @@ pub(crate) fn sample_retinal_layout(
     fov_h: f64,
     fov_v: f64,
 ) -> Result<Vec<f64>, String> {
-    if source_height == 0 || source_width == 0
-        || luma.len() != source_height * source_width
-    {
+    if source_height == 0 || source_width == 0 || luma.len() != source_height * source_width {
         return Err("luma size does not match positive source dimensions".into());
     }
     let n = gaze_az.len();
-    if gaze_el.len() != n || angular_width.len() != n
-        || angular_height.len() != n
-    {
+    if gaze_el.len() != n || angular_width.len() != n || angular_height.len() != n {
         return Err("receptor geometry vectors must have equal length".into());
     }
-    if !(fov_h.is_finite() && fov_h > 0.0
-        && fov_v.is_finite() && fov_v > 0.0)
-    {
+    if !(fov_h.is_finite() && fov_h > 0.0 && fov_v.is_finite() && fov_v > 0.0) {
         return Err("field of view must be finite and positive".into());
     }
     let mut out = Vec::with_capacity(n);
     for i in 0..n {
-        let (az, el, aw, ah) =
-            (gaze_az[i], gaze_el[i], angular_width[i], angular_height[i]);
-        if !az.is_finite() || !el.is_finite() || !aw.is_finite()
-            || !ah.is_finite() || aw <= 0.0 || ah <= 0.0
+        let (az, el, aw, ah) = (gaze_az[i], gaze_el[i], angular_width[i], angular_height[i]);
+        if !az.is_finite()
+            || !el.is_finite()
+            || !aw.is_finite()
+            || !ah.is_finite()
+            || aw <= 0.0
+            || ah <= 0.0
         {
             return Err(format!("invalid receptor geometry at index {i}"));
         }
@@ -143,9 +143,11 @@ pub(crate) fn sample_retinal_layout(
         }
         if x1 <= x0 || y1 <= y0 {
             let x = (((az / fov_h) + 0.5) * source_width as f64)
-                .floor().clamp(0.0, (source_width - 1) as f64) as usize;
+                .floor()
+                .clamp(0.0, (source_width - 1) as f64) as usize;
             let y = (((el / fov_v) + 0.5) * source_height as f64)
-                .floor().clamp(0.0, (source_height - 1) as f64) as usize;
+                .floor()
+                .clamp(0.0, (source_height - 1) as f64) as usize;
             out.push(luma[y * source_width + x]);
             continue;
         }
@@ -194,7 +196,8 @@ pub(crate) fn project_allocentric_retina(
     receptor_height: &[f64],
 ) -> Result<(Vec<f64>, Vec<f64>, Vec<bool>, Vec<i64>), String> {
     let n_surface = surface_x.len();
-    if surface_y.len() != n_surface || surface_z.len() != n_surface
+    if surface_y.len() != n_surface
+        || surface_z.len() != n_surface
         || surface_radius.len() != n_surface
         || surface_value.len() != n_surface
         || surface_confidence.len() != n_surface
@@ -202,21 +205,30 @@ pub(crate) fn project_allocentric_retina(
         return Err("allocentric surface vectors must have equal length".into());
     }
     let n_receptor = receptor_az.len();
-    if receptor_el.len() != n_receptor || receptor_width.len() != n_receptor
+    if receptor_el.len() != n_receptor
+        || receptor_width.len() != n_receptor
         || receptor_height.len() != n_receptor
     {
         return Err("explicit receptor vectors must have equal length".into());
     }
     if ![pose_x, pose_y, pose_z, pose_yaw, pose_pitch]
-        .iter().all(|x| x.is_finite())
+        .iter()
+        .all(|x| x.is_finite())
     {
         return Err("pose must be finite".into());
     }
     for i in 0..n_surface {
         if ![
-            surface_x[i], surface_y[i], surface_z[i], surface_radius[i],
-            surface_value[i], surface_confidence[i],
-        ].iter().all(|x| x.is_finite()) || surface_radius[i] < 0.0
+            surface_x[i],
+            surface_y[i],
+            surface_z[i],
+            surface_radius[i],
+            surface_value[i],
+            surface_confidence[i],
+        ]
+        .iter()
+        .all(|x| x.is_finite())
+            || surface_radius[i] < 0.0
             || surface_confidence[i] < 0.0
         {
             return Err(format!("invalid allocentric surface at index {i}"));
@@ -224,19 +236,22 @@ pub(crate) fn project_allocentric_retina(
     }
     for i in 0..n_receptor {
         if ![
-            receptor_az[i], receptor_el[i], receptor_width[i],
+            receptor_az[i],
+            receptor_el[i],
+            receptor_width[i],
             receptor_height[i],
-        ].iter().all(|x| x.is_finite())
-            || receptor_width[i] <= 0.0 || receptor_height[i] <= 0.0
+        ]
+        .iter()
+        .all(|x| x.is_finite())
+            || receptor_width[i] <= 0.0
+            || receptor_height[i] <= 0.0
         {
             return Err(format!("invalid explicit receptor at index {i}"));
         }
     }
 
     let wrap = |angle: f64| {
-        (angle + std::f64::consts::PI)
-            .rem_euclid(std::f64::consts::TAU)
-            - std::f64::consts::PI
+        (angle + std::f64::consts::PI).rem_euclid(std::f64::consts::TAU) - std::f64::consts::PI
     };
     let mut values = vec![0.0; n_receptor];
     let mut confidences = vec![0.0; n_receptor];
@@ -260,7 +275,7 @@ pub(crate) fn project_allocentric_retina(
         let near_distance = (distance - surface_radius[surface]).max(0.0);
         for receptor in 0..n_receptor {
             if wrap(az - receptor_az[receptor]).abs()
-                    <= receptor_width[receptor] * 0.5 + angular_radius
+                <= receptor_width[receptor] * 0.5 + angular_radius
                 && (el - receptor_el[receptor]).abs()
                     <= receptor_height[receptor] * 0.5 + angular_radius
                 && near_distance < nearest[receptor]
@@ -289,22 +304,26 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
             let xs = numeric_values(payload)?;
             if xs.len() != 4 {
                 return Err(
-                    "default_mode_projection expects epoch, deadline, budget, uncertainty"
-                        .into(),
+                    "default_mode_projection expects epoch, deadline, budget, uncertainty".into(),
                 );
             }
             let horizon = (xs[1] - xs[0]).max(0.0);
             let passes = xs[2].max(0.0).min(horizon.max(1.0));
             let confidence = (1.0 - xs[3]).clamp(0.0, 1.0);
-            Ok(Value::Tuple(Arc::new(vec![
-                Value::Float(horizon),
-                Value::Float(passes),
-                Value::Float(confidence),
-            ].into())))
+            Ok(Value::Tuple(Arc::new(
+                vec![
+                    Value::Float(horizon),
+                    Value::Float(passes),
+                    Value::Float(confidence),
+                ]
+                .into(),
+            )))
         }
         "abs_diff_energy" => {
             let xs = numeric_values(payload)?;
-            Ok(Value::Float(xs.windows(2).map(|w| (w[1] - w[0]).abs()).sum()))
+            Ok(Value::Float(
+                xs.windows(2).map(|w| (w[1] - w[0]).abs()).sum(),
+            ))
         }
         "vision_convolve" => {
             let xs = numeric_values(payload)?;
@@ -322,10 +341,17 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
                 return Err("vision_convolve payload length mismatch".into());
             }
             let output = crate::vision_primitives::convolve(
-                &xs[5..5 + image_n], h, w,
-                &xs[5 + image_n..], kh, kw, stride);
+                &xs[5..5 + image_n],
+                h,
+                w,
+                &xs[5 + image_n..],
+                kh,
+                kw,
+                stride,
+            );
             Ok(Value::Tuple(Arc::new(
-                output.into_iter().map(Value::Float).collect())))
+                output.into_iter().map(Value::Float).collect(),
+            )))
         }
         "dft_energy" => {
             let xs = numeric_values(payload)?;
@@ -347,7 +373,8 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
             let xs = numeric_values(payload)?;
             if xs.len() < 6 || (xs.len() - 6) % 2 != 0 {
                 return Err(
-                    "photon_transduce expects receptor params + wavelength/count pairs".into());
+                    "photon_transduce expects receptor params + wavelength/count pairs".into(),
+                );
             }
             let center_nm = xs[0];
             let bandwidth_nm = xs[1].abs().max(1e-9);
@@ -365,13 +392,15 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
             // Naka-Rushton-shaped saturation with light adaptation carried
             // across observations as graph state.
             let response = caught / (caught + half_saturation + adaptation);
-            let next_adaptation =
-                adaptation + adapt_rate * (caught - adaptation);
-            Ok(Value::Tuple(Arc::new(vec![
-                Value::Float(response),
-                Value::Float(next_adaptation),
-                Value::Float(caught),
-            ].into())))
+            let next_adaptation = adaptation + adapt_rate * (caught - adaptation);
+            Ok(Value::Tuple(Arc::new(
+                vec![
+                    Value::Float(response),
+                    Value::Float(next_adaptation),
+                    Value::Float(caught),
+                ]
+                .into(),
+            )))
         }
         "photon_transduce_onset" => {
             // Onset-emitting PEER of `photon_transduce`. Its first three
@@ -392,7 +421,8 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
             if xs.len() < 6 || (xs.len() - 6) % 2 != 0 {
                 return Err(
                     "photon_transduce_onset expects receptor params + wavelength/count pairs"
-                        .into());
+                        .into(),
+                );
             }
             let center_nm = xs[0];
             let bandwidth_nm = xs[1].abs().max(1e-9);
@@ -416,14 +446,16 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
             // negative. Freeze the floor (adapt_rate = 0) and a sustained
             // bright input never silences — the adaptation-OFF control.
             let eps = 1e-10f64;
-            let onset_db =
-                20.0 * ((caught.max(0.0) + eps) / (adaptation + eps)).log10();
-            Ok(Value::Tuple(Arc::new(vec![
-                Value::Float(response),
-                Value::Float(next_adaptation),
-                Value::Float(caught),
-                Value::Float(onset_db),
-            ].into())))
+            let onset_db = 20.0 * ((caught.max(0.0) + eps) / (adaptation + eps)).log10();
+            Ok(Value::Tuple(Arc::new(
+                vec![
+                    Value::Float(response),
+                    Value::Float(next_adaptation),
+                    Value::Float(caught),
+                    Value::Float(onset_db),
+                ]
+                .into(),
+            )))
         }
         "retinal_flow_depth" => {
             let xs = numeric_values(payload)?;
@@ -496,10 +528,16 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
                 return Err("retinal_event_motion payload length mismatch".into());
             }
             if n < 2 {
-                return Ok(Value::Tuple(Arc::new(vec![
-                    Value::Float(0.0), Value::Float(0.0), Value::Float(0.0),
-                    Value::Float(0.0), Value::Float(n as f64),
-                ].into())));
+                return Ok(Value::Tuple(Arc::new(
+                    vec![
+                        Value::Float(0.0),
+                        Value::Float(0.0),
+                        Value::Float(0.0),
+                        Value::Float(0.0),
+                        Value::Float(n as f64),
+                    ]
+                    .into(),
+                )));
             }
             let mut sum_c = 0.0;
             let mut sum_e = 0.0;
@@ -522,23 +560,37 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
             // one instant, or a stationary flicker in one column — there is no
             // motion to recover.
             if s_ee <= 0.0 || s_cc <= 0.0 {
-                return Ok(Value::Tuple(Arc::new(vec![
-                    Value::Float(0.0), Value::Float(0.0), Value::Float(s_cc),
-                    Value::Float(0.0), Value::Float(n as f64),
-                ].into())));
+                return Ok(Value::Tuple(Arc::new(
+                    vec![
+                        Value::Float(0.0),
+                        Value::Float(0.0),
+                        Value::Float(s_cc),
+                        Value::Float(0.0),
+                        Value::Float(n as f64),
+                    ]
+                    .into(),
+                )));
             }
             let slope = s_ec / s_ee;
             let coherence = (s_ec / (s_ee * s_cc).sqrt()).abs();
             let residual = (s_cc - slope * s_ec).max(0.0);
-            let direction = if slope > 0.0 { 1.0 }
-                else if slope < 0.0 { -1.0 } else { 0.0 };
-            Ok(Value::Tuple(Arc::new(vec![
-                Value::Float(direction),
-                Value::Float(slope.abs()),
-                Value::Float(residual),
-                Value::Float(coherence),
-                Value::Float(n as f64),
-            ].into())))
+            let direction = if slope > 0.0 {
+                1.0
+            } else if slope < 0.0 {
+                -1.0
+            } else {
+                0.0
+            };
+            Ok(Value::Tuple(Arc::new(
+                vec![
+                    Value::Float(direction),
+                    Value::Float(slope.abs()),
+                    Value::Float(residual),
+                    Value::Float(coherence),
+                    Value::Float(n as f64),
+                ]
+                .into(),
+            )))
         }
         "retinal_event_motion_2d" => {
             // ASYNC 2-D MOTION FROM THE ONSET-EVENT STREAM — the 2-D expansion
@@ -579,11 +631,19 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
                 return Err("retinal_event_motion_2d payload length mismatch".into());
             }
             if n < 2 {
-                return Ok(Value::Tuple(Arc::new(vec![
-                    Value::Float(0.0), Value::Float(0.0), Value::Float(0.0),
-                    Value::Float(0.0), Value::Float(0.0), Value::Float(0.0),
-                    Value::Float(0.0), Value::Float(n as f64),
-                ].into())));
+                return Ok(Value::Tuple(Arc::new(
+                    vec![
+                        Value::Float(0.0),
+                        Value::Float(0.0),
+                        Value::Float(0.0),
+                        Value::Float(0.0),
+                        Value::Float(0.0),
+                        Value::Float(0.0),
+                        Value::Float(0.0),
+                        Value::Float(n as f64),
+                    ]
+                    .into(),
+                )));
             }
             let (mut sum_c, mut sum_r, mut sum_e) = (0.0, 0.0, 0.0);
             for i in 0..n {
@@ -594,8 +654,7 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
             let mean_c = sum_c / n as f64;
             let mean_r = sum_r / n as f64;
             let mean_e = sum_e / n as f64;
-            let (mut s_ee, mut s_cc, mut s_rr, mut s_ec, mut s_er) =
-                (0.0, 0.0, 0.0, 0.0, 0.0);
+            let (mut s_ee, mut s_cc, mut s_rr, mut s_ec, mut s_er) = (0.0, 0.0, 0.0, 0.0, 0.0);
             for i in 0..n {
                 let dc = xs[1 + 3 * i] - mean_c;
                 let dr = xs[2 + 3 * i] - mean_r;
@@ -609,18 +668,37 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
             // Motion needs a temporal spread (events across epochs) AND a
             // spatial spread on at least ONE axis. Absent either, no motion.
             if s_ee <= 0.0 || (s_cc <= 0.0 && s_rr <= 0.0) {
-                return Ok(Value::Tuple(Arc::new(vec![
-                    Value::Float(0.0), Value::Float(0.0), Value::Float(0.0),
-                    Value::Float(0.0), Value::Float(0.0),
-                    Value::Float((s_cc + s_rr).max(0.0)), Value::Float(0.0),
-                    Value::Float(n as f64),
-                ].into())));
+                return Ok(Value::Tuple(Arc::new(
+                    vec![
+                        Value::Float(0.0),
+                        Value::Float(0.0),
+                        Value::Float(0.0),
+                        Value::Float(0.0),
+                        Value::Float(0.0),
+                        Value::Float((s_cc + s_rr).max(0.0)),
+                        Value::Float(0.0),
+                        Value::Float(n as f64),
+                    ]
+                    .into(),
+                )));
             }
             let v_az = s_ec / s_ee;
             let v_el = s_er / s_ee;
             let speed = (v_az * v_az + v_el * v_el).sqrt();
-            let dir_az = if v_az > 0.0 { 1.0 } else if v_az < 0.0 { -1.0 } else { 0.0 };
-            let dir_el = if v_el > 0.0 { 1.0 } else if v_el < 0.0 { -1.0 } else { 0.0 };
+            let dir_az = if v_az > 0.0 {
+                1.0
+            } else if v_az < 0.0 {
+                -1.0
+            } else {
+                0.0
+            };
+            let dir_el = if v_el > 0.0 {
+                1.0
+            } else if v_el < 0.0 {
+                -1.0
+            } else {
+                0.0
+            };
             // Combined multiple-correlation over both axes; reduces to the 1-D
             // |Pearson r| when one axis has no spatial spread.
             let explained = (s_ec * s_ec + s_er * s_er) / s_ee;
@@ -632,16 +710,19 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
             };
             // Unexplained 2-D spatial variance (the settlement remainder).
             let residual = (total - explained).max(0.0);
-            Ok(Value::Tuple(Arc::new(vec![
-                Value::Float(v_az),
-                Value::Float(v_el),
-                Value::Float(dir_az),
-                Value::Float(dir_el),
-                Value::Float(speed),
-                Value::Float(residual),
-                Value::Float(coherence),
-                Value::Float(n as f64),
-            ].into())))
+            Ok(Value::Tuple(Arc::new(
+                vec![
+                    Value::Float(v_az),
+                    Value::Float(v_el),
+                    Value::Float(dir_az),
+                    Value::Float(dir_el),
+                    Value::Float(speed),
+                    Value::Float(residual),
+                    Value::Float(coherence),
+                    Value::Float(n as f64),
+                ]
+                .into(),
+            )))
         }
         "retinal_common_fate_carve" => {
             // ASYNC COMMON-FATE CARVE (Rung 3 of the photon-eye migration).
@@ -753,16 +834,20 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
                     s_cc += dc * dc;
                     s_ec += de * dc;
                 }
-                let (direction, speed, coherence) =
-                    if rn >= 2 && s_ee > 0.0 && s_cc > 0.0 {
-                        let slope = s_ec / s_ee;
-                        let coh = (s_ec / (s_ee * s_cc).sqrt()).abs();
-                        let dir = if slope > 0.0 { 1.0 }
-                            else if slope < 0.0 { -1.0 } else { 0.0 };
-                        (dir, slope.abs(), coh)
+                let (direction, speed, coherence) = if rn >= 2 && s_ee > 0.0 && s_cc > 0.0 {
+                    let slope = s_ec / s_ee;
+                    let coh = (s_ec / (s_ee * s_cc).sqrt()).abs();
+                    let dir = if slope > 0.0 {
+                        1.0
+                    } else if slope < 0.0 {
+                        -1.0
                     } else {
-                        (0.0, 0.0, 0.0)
+                        0.0
                     };
+                    (dir, slope.abs(), coh)
+                } else {
+                    (0.0, 0.0, 0.0)
+                };
                 let col_min = run.first().unwrap().0;
                 let col_max = run.last().unwrap().0;
                 let anchor = col_min as usize; // start column's index
@@ -777,7 +862,8 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
                 i += 1;
             }
             Ok(Value::Tuple(Arc::new(
-                out.into_iter().map(Value::Float).collect())))
+                out.into_iter().map(Value::Float).collect(),
+            )))
         }
         "retinal_residual_salience" => {
             // PER-AREA RESIDUAL SALIENCE ON THE EVENT STREAM (Rung 4 of the
@@ -860,9 +946,9 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
             // each run its velocity `v_run` plus its member column range and
             // event total, so the dominant run can be chosen.
             struct Run {
-                lo: usize,   // start index into cols
-                hi: usize,   // end index into cols (inclusive)
-                v: f64,      // fitted velocity (columns per epoch); 0 if degenerate
+                lo: usize, // start index into cols
+                hi: usize, // end index into cols (inclusive)
+                v: f64,    // fitted velocity (columns per epoch); 0 if degenerate
                 n_cols: usize,
                 n_events: f64,
             }
@@ -909,8 +995,18 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
                 }
                 // Velocity = least-squares slope Δc/Δe (columns per epoch); a
                 // single-column run or zero temporal spread has no velocity.
-                let v = if rn >= 2 && s_ee > 0.0 { s_ec / s_ee } else { 0.0 };
-                runs.push(Run { lo: start, hi: i, v, n_cols: rn, n_events: nev });
+                let v = if rn >= 2 && s_ee > 0.0 {
+                    s_ec / s_ee
+                } else {
+                    0.0
+                };
+                runs.push(Run {
+                    lo: start,
+                    hi: i,
+                    v,
+                    n_cols: rn,
+                    n_events: nev,
+                });
                 i += 1;
             }
             // DOMINANT run = the run spanning the MOST columns (ties → most total
@@ -943,7 +1039,8 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
                 }
             }
             Ok(Value::Tuple(Arc::new(
-                out.into_iter().map(Value::Float).collect())))
+                out.into_iter().map(Value::Float).collect(),
+            )))
         }
         "retinal_common_fate_carve_2d" => {
             // ASYNC COMMON-FATE CARVE ON A 2-D az×el RETINA (the 2-D expansion of
@@ -1057,8 +1154,7 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
                             }
                             let nr = rc + dr;
                             let nc = cc + dc;
-                            if nr < 0 || nr as usize >= n_el
-                                || nc < 0 || nc as usize >= n_az {
+                            if nr < 0 || nr as usize >= n_el || nc < 0 || nc as usize >= n_az {
                                 continue;
                             }
                             let nflat = nr * n_az as i64 + nc;
@@ -1076,8 +1172,7 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
             // Fit each component's 2-D motion and write its block at its anchor cell
             // (smallest flat index — row-major top-left member).
             for g in 0..n_comp {
-                let members: Vec<usize> =
-                    (0..m).filter(|&i| comp[i] == g).collect();
+                let members: Vec<usize> = (0..m).filter(|&i| comp[i] == g).collect();
                 let rn = members.len();
                 let (mut sc, mut sr, mut se) = (0.0, 0.0, 0.0);
                 let (mut col_min, mut col_max) = (f64::INFINITY, f64::NEG_INFINITY);
@@ -1095,8 +1190,7 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
                     anchor_flat = anchor_flat.min(flat);
                 }
                 let (mc, mr, me) = (sc / rn as f64, sr / rn as f64, se / rn as f64);
-                let (mut s_ee, mut s_cc, mut s_rr, mut s_ec, mut s_er) =
-                    (0.0, 0.0, 0.0, 0.0, 0.0);
+                let (mut s_ee, mut s_cc, mut s_rr, mut s_ec, mut s_er) = (0.0, 0.0, 0.0, 0.0, 0.0);
                 for &i in &members {
                     let (_flat, c, r, e) = cells[i];
                     let (dc, dr, de) = (c - mc, r - mr, e - me);
@@ -1112,12 +1206,21 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
                     let slope_c = s_ec / s_ee;
                     let slope_r = s_er / s_ee;
                     speed = (slope_c * slope_c + slope_r * slope_r).sqrt();
-                    dir = if slope_c > 0.0 { 1.0 }
-                        else if slope_c < 0.0 { -1.0 } else { 0.0 };
+                    dir = if slope_c > 0.0 {
+                        1.0
+                    } else if slope_c < 0.0 {
+                        -1.0
+                    } else {
+                        0.0
+                    };
                     // Coherence on the axis with the larger spatial spread — the
                     // dominant motion axis; noiseless sweeps give |r| = 1.
                     coherence = if s_cc >= s_rr {
-                        if s_cc > 0.0 { (s_ec / (s_ee * s_cc).sqrt()).abs() } else { 0.0 }
+                        if s_cc > 0.0 {
+                            (s_ec / (s_ee * s_cc).sqrt()).abs()
+                        } else {
+                            0.0
+                        }
                     } else if s_rr > 0.0 {
                         (s_er / (s_ee * s_rr).sqrt()).abs()
                     } else {
@@ -1137,7 +1240,8 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
                 out[base + 8] = rn as f64;
             }
             Ok(Value::Tuple(Arc::new(
-                out.into_iter().map(Value::Float).collect())))
+                out.into_iter().map(Value::Float).collect(),
+            )))
         }
         "retinal_residual_salience_2d" => {
             // PER-AREA RESIDUAL SALIENCE ON A 2-D az×el RETINA — the 2-D
@@ -1240,8 +1344,7 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
                             }
                             let nr = rc + dr;
                             let nc = cc + dc;
-                            if nr < 0 || nr as usize >= n_el
-                                || nc < 0 || nc as usize >= n_az {
+                            if nr < 0 || nr as usize >= n_el || nc < 0 || nc as usize >= n_az {
                                 continue;
                             }
                             let nflat = nr * n_az as i64 + nc;
@@ -1268,8 +1371,7 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
             }
             let mut comps: Vec<Comp> = Vec::with_capacity(n_comp);
             for g in 0..n_comp {
-                let members: Vec<usize> =
-                    (0..m).filter(|&i| comp[i] == g).collect();
+                let members: Vec<usize> = (0..m).filter(|&i| comp[i] == g).collect();
                 let rn = members.len();
                 let (mut sc, mut sr, mut se, mut nev) = (0.0, 0.0, 0.0, 0.0);
                 for &i in &members {
@@ -1293,7 +1395,13 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
                 } else {
                     (0.0, 0.0)
                 };
-                comps.push(Comp { members, v_az, v_el, n_cells: rn, n_events: nev });
+                comps.push(Comp {
+                    members,
+                    v_az,
+                    v_el,
+                    n_cells: rn,
+                    n_events: nev,
+                });
             }
             // DOMINANT component = the one spanning the MOST cells (ties → most
             // total events) — the coherent background. `v_dom = 0` when no
@@ -1331,7 +1439,8 @@ fn execute_kernel(kind: &str, payload: &Value) -> Result<Value, String> {
                 }
             }
             Ok(Value::Tuple(Arc::new(
-                out.into_iter().map(Value::Float).collect())))
+                out.into_iter().map(Value::Float).collect(),
+            )))
         }
         "multilook_superres" => {
             // MULTI-LOOK DE-ALIASING SUPER-RESOLUTION (Rung 5 of the photon-eye
@@ -1560,11 +1669,7 @@ fn snapshot_process_lease(
     let Some(Value::Int(renew_before)) = process_attrs.get(&renew_key) else {
         return Err(());
     };
-    let Some(Value::Int(task_generation)) = substrate
-        .graph
-        .node(task)
-        .attrs
-        .get(&generation_key)
+    let Some(Value::Int(task_generation)) = substrate.graph.node(task).attrs.get(&generation_key)
     else {
         return Err(());
     };
@@ -1572,9 +1677,7 @@ fn snapshot_process_lease(
         return Err(());
     }
     let held = *authority == 0 || *epoch >= *renew_before;
-    if (is_checkin && !held)
-        || (!is_checkin && (*authority != 1 || *epoch >= *renew_before))
-    {
+    if (is_checkin && !held) || (!is_checkin && (*authority != 1 || *epoch >= *renew_before)) {
         return Err(());
     }
     Ok(Some(ProcessLeaseSnapshot {
@@ -1606,16 +1709,27 @@ fn process_lease_is_current(
     let generation_key = substrate.interner.intern("lease_generation");
     let renew_key = substrate.interner.intern("renew_before_epoch");
 
-    if !substrate.graph.has_node(snapshot.process)
-        || !substrate.graph.has_node(snapshot.policy)
-    {
+    if !substrate.graph.has_node(snapshot.process) || !substrate.graph.has_node(snapshot.policy) {
         return false;
     }
-    let expected_edge = if snapshot.is_checkin { checks } else { continues };
-    let other_edge = if snapshot.is_checkin { continues } else { checks };
+    let expected_edge = if snapshot.is_checkin {
+        checks
+    } else {
+        continues
+    };
+    let other_edge = if snapshot.is_checkin {
+        continues
+    } else {
+        checks
+    };
     if substrate.graph.neighbours(task, Some(expected_edge)) != vec![snapshot.process]
-        || !substrate.graph.neighbours(task, Some(other_edge)).is_empty()
-        || substrate.graph.neighbours(snapshot.process, Some(governed_by))
+        || !substrate
+            .graph
+            .neighbours(task, Some(other_edge))
+            .is_empty()
+        || substrate
+            .graph
+            .neighbours(snapshot.process, Some(governed_by))
             != vec![snapshot.policy]
     {
         return false;
@@ -1693,21 +1807,30 @@ fn prepare_requested_matching(
             };
             let contexts = substrate.graph.neighbours(node, Some(about_context));
             let clocks = substrate.graph.neighbours(node, Some(validated_by_clock));
-            let has_provenance = !contexts.is_empty() || !clocks.is_empty()
-                || attrs.contains_key(&deadline_epoch_k);
+            let has_provenance =
+                !contexts.is_empty() || !clocks.is_empty() || attrs.contains_key(&deadline_epoch_k);
             (
                 kind.to_owned(),
                 attrs.get(&payload_k).cloned().unwrap_or(Value::None),
                 read_i64(attrs, input_epoch_k, 0),
-                attrs.get(&deadline_epoch_k)
+                attrs
+                    .get(&deadline_epoch_k)
                     .map(|_| read_i64(attrs, deadline_epoch_k, 0)),
                 read_i64(attrs, logical_time_k, 0),
                 match attrs.get(&area_k) {
                     Some(Value::Str(v)) => *v,
                     _ => global_s,
                 },
-                if contexts.len() == 1 { contexts.first().copied() } else { None },
-                if clocks.len() == 1 { clocks.first().copied() } else { None },
+                if contexts.len() == 1 {
+                    contexts.first().copied()
+                } else {
+                    None
+                },
+                if clocks.len() == 1 {
+                    clocks.first().copied()
+                } else {
+                    None
+                },
                 has_provenance
                     && (contexts.len() != 1 || (!clocks.is_empty() && clocks.len() != 1)),
             )
@@ -1733,12 +1856,16 @@ fn prepare_requested_matching(
     let area_t = substrate.interner.intern("CognitiveArea");
     let name_k = substrate.interner.intern("name");
     let desired_k = substrate.interner.intern("desired_workers");
-    let task_areas: rustc_hash::FxHashSet<Sym> =
-        tasks.iter().map(|task| task.area).collect();
-    let desired = substrate.graph.nodes_of_type(area_t).into_iter()
+    let task_areas: rustc_hash::FxHashSet<Sym> = tasks.iter().map(|task| task.area).collect();
+    let desired = substrate
+        .graph
+        .nodes_of_type(area_t)
+        .into_iter()
         .filter_map(|node| {
             let attrs = &substrate.graph.node(node).attrs;
-            let Some(Value::Str(name)) = attrs.get(&name_k) else { return None; };
+            let Some(Value::Str(name)) = attrs.get(&name_k) else {
+                return None;
+            };
             if !task_areas.contains(name) {
                 return None;
             }
@@ -1751,14 +1878,16 @@ fn prepare_requested_matching(
     for task in &tasks {
         substrate.set_attr(task.node, status_k, Value::Str(running_s));
     }
-    PreparedTaskBatch { tasks, workers_used, capacity, started }
+    PreparedTaskBatch {
+        tasks,
+        workers_used,
+        capacity,
+        started,
+    }
 }
 
 /// Snapshot every requested task. The autonomous runner uses this surface.
-pub(crate) fn prepare_requested(
-    substrate: &mut Substrate,
-    n_workers: usize,
-) -> PreparedTaskBatch {
+pub(crate) fn prepare_requested(substrate: &mut Substrate, n_workers: usize) -> PreparedTaskBatch {
     prepare_requested_matching(substrate, n_workers, None)
 }
 
@@ -1884,11 +2013,8 @@ pub(crate) fn fold_completed(
                     .graph
                     .neighbours(completion.spec.node, Some(about_context))
                     == vec![context]
-                && read_i64(
-                    &substrate.graph.node(context).attrs,
-                    epoch_k,
-                    i64::MIN,
-                ) == completion.spec.input_epoch
+                && read_i64(&substrate.graph.node(context).attrs, epoch_k, i64::MIN)
+                    == completion.spec.input_epoch
                 && !matches!(
                     substrate.graph.node(context).attrs.get(&status_k),
                     Some(Value::Str(status))
@@ -1907,11 +2033,7 @@ pub(crate) fn fold_completed(
                     .neighbours(completion.spec.node, Some(validated_by_clock))
                     == vec![clock]
                 && completion.spec.deadline_epoch.map_or(true, |deadline| {
-                    read_i64(
-                        &substrate.graph.node(clock).attrs,
-                        epoch_k,
-                        i64::MAX,
-                    ) <= deadline
+                    read_i64(&substrate.graph.node(clock).attrs, epoch_k, i64::MAX) <= deadline
                 })
         });
         let is_stale = epoch_now != completion.spec.input_epoch
@@ -1948,8 +2070,14 @@ pub(crate) fn fold_completed(
         let result = substrate.add_node(result_t, result_attrs);
         // Task schemas are core runtime vocabulary. If a caller omitted the
         // seed, the output still lives on the task; do not leak an orphan.
-        if substrate.add_edge(
-            completion.spec.node, has_result, result, FxHashMap::default()).is_err()
+        if substrate
+            .add_edge(
+                completion.spec.node,
+                has_result,
+                result,
+                FxHashMap::default(),
+            )
+            .is_err()
         {
             substrate.remove_node(result);
         }
@@ -1995,7 +2123,9 @@ fn publish_area_load(substrate: &mut Substrate, capacity: usize, wall_micros: u6
     let mut by_area: FxHashMap<Sym, Counts> = FxHashMap::default();
     for task in substrate.graph.nodes_of_type(task_t) {
         let attrs = &substrate.graph.node(task).attrs;
-        let Some(Value::Str(area)) = attrs.get(&area_k) else { continue; };
+        let Some(Value::Str(area)) = attrs.get(&area_k) else {
+            continue;
+        };
         let counts = by_area.entry(*area).or_default();
         match attrs.get(&status_k) {
             Some(Value::Str(s)) if *s == pending_s => counts.pending += 1,
@@ -2019,16 +2149,31 @@ fn publish_area_load(substrate: &mut Substrate, capacity: usize, wall_micros: u6
     let wall_k = substrate.interner.intern("service_wall_micros");
     let conflicts_k = substrate.interner.intern("fold_conflicts");
     for (area_sym, counts) in by_area {
-        let Some(area_node) = substrate.graph.nodes_of_type(area_t).into_iter().find(|node| {
-            substrate.graph.node(*node).attrs.get(&name_k) == Some(&Value::Str(area_sym))
-        }) else { continue; };
-        let load_node = substrate.graph.neighbours(area_node, Some(has_load)).first().copied()
+        let Some(area_node) = substrate
+            .graph
+            .nodes_of_type(area_t)
+            .into_iter()
+            .find(|node| {
+                substrate.graph.node(*node).attrs.get(&name_k) == Some(&Value::Str(area_sym))
+            })
+        else {
+            continue;
+        };
+        let load_node = substrate
+            .graph
+            .neighbours(area_node, Some(has_load))
+            .first()
+            .copied()
             .unwrap_or_else(|| {
                 let load = substrate.add_node(load_t, FxHashMap::default());
                 let _ = substrate.add_edge(area_node, has_load, load, FxHashMap::default());
                 load
             });
-        substrate.set_attr(load_node, queued_k, Value::Int(counts.pending + counts.requested));
+        substrate.set_attr(
+            load_node,
+            queued_k,
+            Value::Int(counts.pending + counts.requested),
+        );
         substrate.set_attr(load_node, running_k, Value::Int(counts.running));
         substrate.set_attr(load_node, completed_k, Value::Int(counts.completed));
         substrate.set_attr(load_node, failed_k, Value::Int(counts.failed));
@@ -2123,7 +2268,11 @@ pub(crate) fn retina_onset_batch(
     // than on a global submission. Off ⇒ `input_epoch`, stamped every tick,
     // byte-unchanged.
     let rod_epoch_k = substrate.interner.intern("rod_epoch");
-    let epoch_key = if per_sensor_epoch { rod_epoch_k } else { input_epoch_k };
+    let epoch_key = if per_sensor_epoch {
+        rod_epoch_k
+    } else {
+        input_epoch_k
+    };
     let column_epoch_k = substrate.interner.intern("column_epoch");
     let column_epoch_key = if per_sensor_epoch {
         column_epoch_k
@@ -2155,7 +2304,9 @@ pub(crate) fn retina_onset_batch(
             let a = &substrate.graph.node(rod).attrs;
             (
                 a.get(&activation_k).cloned().unwrap_or(Value::Float(0.0)),
-                a.get(&caught_quanta_k).cloned().unwrap_or(Value::Float(f64::NAN)),
+                a.get(&caught_quanta_k)
+                    .cloned()
+                    .unwrap_or(Value::Float(f64::NAN)),
                 true,
             )
         } else {
@@ -2181,7 +2332,8 @@ pub(crate) fn retina_onset_batch(
 
         // ---- COMPUTE (reuse the shared oracle kernel VERBATIM) ----
         let payload_tuple = Value::Tuple(Arc::new(
-            payloads[i].iter().map(|&x| Value::Float(x)).collect()));
+            payloads[i].iter().map(|&x| Value::Float(x)).collect(),
+        ));
         let out = match execute_kernel("photon_transduce_onset", &payload_tuple) {
             Ok(Value::Tuple(items) | Value::List(items)) if items.len() >= 4 => items,
             _ => {
@@ -2268,7 +2420,10 @@ pub(crate) fn retina_onset_batch(
             attrs.insert(epoch_k, Value::Int(epoch));
             attrs.insert(logical_time_k, Value::Int(epoch));
             let event = substrate.add_node(event_t, attrs);
-            if substrate.add_edge(col, has_onset_event, event, FxHashMap::default()).is_err() {
+            if substrate
+                .add_edge(col, has_onset_event, event, FxHashMap::default())
+                .is_err()
+            {
                 substrate.remove_node(event);
                 continue;
             }
@@ -2365,17 +2520,14 @@ pub(crate) fn retina_event_task_batch(
     let half_height_k = substrate.interner.intern("half_height");
     let source_epoch_k = substrate.interner.intern("source_epoch");
     let focus_event_count_k = substrate.interner.intern("focus_event_count");
-    let focus_total_event_count_k =
-        substrate.interner.intern("focus_total_event_count");
+    let focus_total_event_count_k = substrate.interner.intern("focus_total_event_count");
     let focus_source_epoch_k = substrate.interner.intern("focus_source_epoch");
     // Multi-resolution pathway allocation is graph data on the Retina.
     // Absent/"all" preserves the legacy event bytes exactly.
     let event_pathway_k = substrate.interner.intern("event_pathway");
     let fovea_receptors_k = substrate.interner.intern("fovea_receptors");
     let n_columns_k = substrate.interner.intern("n_columns");
-    let (event_pathway, fovea_receptors, n_columns) = if substrate
-        .graph
-        .has_node(NodeID(retina_id))
+    let (event_pathway, fovea_receptors, n_columns) = if substrate.graph.has_node(NodeID(retina_id))
     {
         let attrs = &substrate.graph.node(NodeID(retina_id)).attrs;
         let mode = match attrs.get(&event_pathway_k) {
@@ -2388,10 +2540,7 @@ pub(crate) fn retina_event_task_batch(
                 .get(&fovea_receptors_k)
                 .and_then(number)
                 .unwrap_or(0.0) as usize,
-            attrs
-                .get(&n_columns_k)
-                .and_then(number)
-                .unwrap_or(0.0) as usize,
+            attrs.get(&n_columns_k).and_then(number).unwrap_or(0.0) as usize,
         )
     } else {
         ("all".to_owned(), 0, 0)
@@ -2406,26 +2555,24 @@ pub(crate) fn retina_event_task_batch(
                 return None;
             }
             let attrs = &substrate.graph.node(node).attrs;
-            let active = attrs
-                .get(&focus_active_k)
-                .and_then(number)
-                .unwrap_or(0.0);
+            let active = attrs.get(&focus_active_k).and_then(number).unwrap_or(0.0);
             if active != 1.0 {
                 return None;
             }
             Some((
                 attrs.get(&center_col_k).and_then(number).unwrap_or(-1.0),
                 attrs.get(&center_row_k).and_then(number).unwrap_or(-1.0),
-                attrs.get(&half_width_k).and_then(number).unwrap_or(0.0).max(0.0),
+                attrs
+                    .get(&half_width_k)
+                    .and_then(number)
+                    .unwrap_or(0.0)
+                    .max(0.0),
                 attrs
                     .get(&half_height_k)
                     .and_then(number)
                     .unwrap_or(0.0)
                     .max(0.0),
-                attrs
-                    .get(&source_epoch_k)
-                    .and_then(number)
-                    .unwrap_or(-1.0),
+                attrs.get(&source_epoch_k).and_then(number).unwrap_or(-1.0),
             ))
         });
 
@@ -2536,10 +2683,7 @@ pub(crate) fn retina_event_task_batch(
             focus_total_event_count_k,
             Value::Int(total_event_count as i64),
         );
-        attrs.insert(
-            focus_source_epoch_k,
-            Value::Int(source_epoch as i64),
-        );
+        attrs.insert(focus_source_epoch_k, Value::Int(source_epoch as i64));
     }
     let task = substrate.add_node(cognitive_task_t, attrs);
     let _ = substrate.add_edge(NodeID(retina_id), edge_s, task, FxHashMap::default());
@@ -2561,9 +2705,17 @@ mod tests {
         let gaze_az = vec![-0.5, 0.0, 0.5, -0.5, 0.0, 0.5];
         let gaze_el = vec![-0.25, -0.25, -0.25, 0.25, 0.25, 0.25];
         let out = sample_retinal_layout(
-            &luma, 4, 6, &gaze_az, &gaze_el,
-            &vec![0.5; 6], &vec![0.5; 6], fov_h, fov_v,
-        ).unwrap();
+            &luma,
+            4,
+            6,
+            &gaze_az,
+            &gaze_el,
+            &vec![0.5; 6],
+            &vec![0.5; 6],
+            fov_h,
+            fov_v,
+        )
+        .unwrap();
         assert_eq!(out, vec![3.5, 5.5, 7.5, 15.5, 17.5, 19.5]);
     }
 
@@ -2571,8 +2723,7 @@ mod tests {
     fn retinal_layout_native_pixel_apertures_do_not_oversample() {
         let width = 320usize;
         let height = 240usize;
-        let luma: Vec<f64> =
-            (0..width * height).map(|v| v as f64).collect();
+        let luma: Vec<f64> = (0..width * height).map(|v| v as f64).collect();
         let fov_h = std::f64::consts::FRAC_PI_2;
         let fov_v = std::f64::consts::FRAC_PI_3;
         let px_w = fov_h / width as f64;
@@ -2582,21 +2733,40 @@ mod tests {
         let az = -fov_h * 0.5 + px_w * (x as f64 + 0.5);
         let el = -fov_v * 0.5 + px_h * (y as f64 + 0.5);
         let out = sample_retinal_layout(
-            &luma, height, width, &[az], &[el], &[px_w], &[px_h],
-            fov_h, fov_v,
-        ).unwrap();
+            &luma,
+            height,
+            width,
+            &[az],
+            &[el],
+            &[px_w],
+            &[px_h],
+            fov_h,
+            fov_v,
+        )
+        .unwrap();
         assert_eq!(out, vec![luma[y * width + x]]);
     }
 
     #[test]
     fn allocentric_projection_nearest_occludes_and_unknown_stays_absent() {
-        let (values, confidence, present, source) =
-            project_allocentric_retina(
-                &[10.0, 5.0], &[0.0, 0.0], &[0.0, 0.0], &[0.2, 0.2],
-                &[40.0, 90.0], &[12.0, 55.0],
-                0.0, 0.0, 0.0, 0.0, 0.0,
-                &[0.0, 1.0], &[0.0, 0.0], &[0.1, 0.1], &[0.1, 0.1],
-            ).unwrap();
+        let (values, confidence, present, source) = project_allocentric_retina(
+            &[10.0, 5.0],
+            &[0.0, 0.0],
+            &[0.0, 0.0],
+            &[0.2, 0.2],
+            &[40.0, 90.0],
+            &[12.0, 55.0],
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            &[0.0, 1.0],
+            &[0.0, 0.0],
+            &[0.1, 0.1],
+            &[0.1, 0.1],
+        )
+        .unwrap();
         assert_eq!(values, vec![90.0, 0.0]);
         assert_eq!(confidence, vec![55.0, 0.0]);
         assert_eq!(present, vec![true, false]);
@@ -2606,20 +2776,32 @@ mod tests {
     #[test]
     fn allocentric_projection_applies_pose_yaw_and_pitch() {
         let (values, _, present, _) = project_allocentric_retina(
-            &[0.0], &[10.0], &[10.0], &[0.1], &[77.0], &[1.0],
-            0.0, 0.0, 0.0, std::f64::consts::FRAC_PI_2,
+            &[0.0],
+            &[10.0],
+            &[10.0],
+            &[0.1],
+            &[77.0],
+            &[1.0],
+            0.0,
+            0.0,
+            0.0,
+            std::f64::consts::FRAC_PI_2,
             std::f64::consts::FRAC_PI_4,
-            &[0.0], &[0.0], &[0.05], &[0.05],
-        ).unwrap();
+            &[0.0],
+            &[0.0],
+            &[0.05],
+            &[0.05],
+        )
+        .unwrap();
         assert_eq!(values, vec![77.0]);
         assert_eq!(present, vec![true]);
     }
 
     #[test]
     fn pure_kernel_is_deterministic() {
-        let payload = Value::Tuple(Arc::new(vec![
-            Value::Int(1), Value::Int(4), Value::Int(2),
-        ].into()));
+        let payload = Value::Tuple(Arc::new(
+            vec![Value::Int(1), Value::Int(4), Value::Int(2)].into(),
+        ));
         assert_eq!(
             execute_kernel("abs_diff_energy", &payload).unwrap(),
             Value::Float(5.0),
@@ -2632,8 +2814,7 @@ mod tests {
         renew_value: Value,
         is_checkin: bool,
     ) -> (Substrate, NodeID, NodeID, NodeID) {
-        let mut substrate =
-            Substrate::new(ConsistencyChecker::new(Grammar::new()));
+        let mut substrate = Substrate::new(ConsistencyChecker::new(Grammar::new()));
         let status = substrate.interner.intern("status");
         let kind = substrate.interner.intern("kind");
         let payload = substrate.interner.intern("payload");
@@ -2687,8 +2868,7 @@ mod tests {
 
     #[test]
     fn legacy_unbound_task_is_unaffected_by_supervision_contract() {
-        let mut substrate =
-            Substrate::new(ConsistencyChecker::new(Grammar::new()));
+        let mut substrate = Substrate::new(ConsistencyChecker::new(Grammar::new()));
         let status = substrate.interner.intern("status");
         let kind = substrate.interner.intern("kind");
         let payload = substrate.interner.intern("payload");
@@ -2713,12 +2893,8 @@ mod tests {
 
     #[test]
     fn supervised_task_requires_strict_integer_lease_fields() {
-        let (mut substrate, task, _, _) = supervised_identity_task(
-            Value::Float(1.0),
-            Value::Int(4),
-            Value::Int(8),
-            false,
-        );
+        let (mut substrate, task, _, _) =
+            supervised_identity_task(Value::Float(1.0), Value::Int(4), Value::Int(8), false);
         let prepared = prepare_requested(&mut substrate, 1);
 
         assert!(prepared.tasks.is_empty());
@@ -2732,12 +2908,8 @@ mod tests {
 
     #[test]
     fn supervised_task_uses_its_process_local_policy_clock() {
-        let (mut substrate, task, _, _) = supervised_identity_task(
-            Value::Int(1),
-            Value::Int(4),
-            Value::Int(8),
-            false,
-        );
+        let (mut substrate, task, _, _) =
+            supervised_identity_task(Value::Int(1), Value::Int(4), Value::Int(8), false);
         let policy_t = substrate.interner.intern("CognitiveSupervisionPolicy");
         let enabled = substrate.interner.intern("enabled");
         let epoch = substrate.interner.intern("cognitive_epoch");
@@ -2760,12 +2932,8 @@ mod tests {
     #[test]
     fn asynchronous_fold_rejects_withdrawn_renewed_and_expired_leases() {
         for mutation in ["withdraw", "renew", "expire"] {
-            let (mut substrate, task, process, policy) = supervised_identity_task(
-                Value::Int(1),
-                Value::Int(4),
-                Value::Int(8),
-                false,
-            );
+            let (mut substrate, task, process, policy) =
+                supervised_identity_task(Value::Int(1), Value::Int(4), Value::Int(8), false);
             let prepared = prepare_requested(&mut substrate, 1);
             assert_eq!(prepared.tasks.len(), 1);
             let completed = execute_prepared(prepared);
@@ -2800,24 +2968,19 @@ mod tests {
 
     #[test]
     fn matching_checkin_task_runs_only_while_its_process_is_held() {
-        let (mut held, task, _, _) = supervised_identity_task(
-            Value::Int(0),
-            Value::Int(4),
-            Value::Int(8),
-            true,
-        );
+        let (mut held, task, _, _) =
+            supervised_identity_task(Value::Int(0), Value::Int(4), Value::Int(8), true);
         let summary = run_requested(&mut held, 1);
         assert_eq!(summary.completed, 1);
         let status = held.interner.intern("status");
         let done = held.interner.intern("done");
-        assert_eq!(held.graph.node(task).attrs.get(&status), Some(&Value::Str(done)));
-
-        let (mut active, active_task, _, _) = supervised_identity_task(
-            Value::Int(1),
-            Value::Int(4),
-            Value::Int(8),
-            true,
+        assert_eq!(
+            held.graph.node(task).attrs.get(&status),
+            Some(&Value::Str(done))
         );
+
+        let (mut active, active_task, _, _) =
+            supervised_identity_task(Value::Int(1), Value::Int(4), Value::Int(8), true);
         let prepared = prepare_requested(&mut active, 1);
         assert!(prepared.tasks.is_empty());
         let active_status = active.interner.intern("status");
@@ -2830,8 +2993,7 @@ mod tests {
 
     #[test]
     fn context_bound_completion_is_stale_after_its_graph_clock_deadline() {
-        let mut substrate =
-            Substrate::new(ConsistencyChecker::new(Grammar::new()));
+        let mut substrate = Substrate::new(ConsistencyChecker::new(Grammar::new()));
         let status = substrate.interner.intern("status");
         let epoch = substrate.interner.intern("epoch");
         let kind = substrate.interner.intern("kind");
@@ -2861,12 +3023,15 @@ mod tests {
         task_attrs.insert(kind, Value::Str(kernel));
         task_attrs.insert(
             payload,
-            Value::Tuple(Arc::new(vec![
-                Value::Int(1),
-                Value::Int(2),
-                Value::Int(1),
-                Value::Float(0.25),
-            ].into())),
+            Value::Tuple(Arc::new(
+                vec![
+                    Value::Int(1),
+                    Value::Int(2),
+                    Value::Int(1),
+                    Value::Float(0.25),
+                ]
+                .into(),
+            )),
         );
         task_attrs.insert(input_epoch, Value::Int(1));
         task_attrs.insert(deadline_epoch, Value::Int(2));
@@ -2882,16 +3047,10 @@ mod tests {
             .expect("task context edge");
         substrate
             .graph
-            .insert_edge(
-                task,
-                validated_by_clock,
-                clock,
-                FxHashMap::default(),
-            )
+            .insert_edge(task, validated_by_clock, clock, FxHashMap::default())
             .expect("task clock edge");
 
-        let prepared =
-            prepare_requested_class(&mut substrate, 1, "system_two");
+        let prepared = prepare_requested_class(&mut substrate, 1, "system_two");
         let completed = execute_prepared(prepared);
         substrate.set_attr(clock, epoch, Value::Int(3));
         let summary = fold_completed(&mut substrate, completed);
@@ -2910,18 +3069,23 @@ mod tests {
         // outputs must equal `photon_transduce` byte-for-byte (the shared
         // apply rule reads them by index), and the 4th is a LARGE positive dB
         // departure from the (near-zero) floor — an onset.
-        let payload = Value::Tuple(Arc::new(vec![
-            Value::Float(498.0), // center_nm
-            Value::Float(42.0),  // bandwidth_nm
-            Value::Float(0.0),   // adaptation (floor before this obs)
-            Value::Float(0.12),  // adapt_rate
-            Value::Float(1024.0),// half_saturation
-            Value::Float(0.15),  // dark_current
-            Value::Float(500.0), Value::Float(2000.0), // one bright packet
-        ].into()));
+        let payload = Value::Tuple(Arc::new(
+            vec![
+                Value::Float(498.0),  // center_nm
+                Value::Float(42.0),   // bandwidth_nm
+                Value::Float(0.0),    // adaptation (floor before this obs)
+                Value::Float(0.12),   // adapt_rate
+                Value::Float(1024.0), // half_saturation
+                Value::Float(0.15),   // dark_current
+                Value::Float(500.0),
+                Value::Float(2000.0), // one bright packet
+            ]
+            .into(),
+        ));
         let base = execute_kernel("photon_transduce", &payload).unwrap();
         let onset = execute_kernel("photon_transduce_onset", &payload).unwrap();
-        let (Value::Tuple(b) | Value::List(b), Value::Tuple(o) | Value::List(o)) = (&base, &onset) else {
+        let (Value::Tuple(b) | Value::List(b), Value::Tuple(o) | Value::List(o)) = (&base, &onset)
+        else {
             panic!("both kernels return tuples");
         };
         assert_eq!(o.len(), 4, "onset kernel appends the dB departure");
@@ -2929,8 +3093,13 @@ mod tests {
         for i in 0..3 {
             assert_eq!(b[i], o[i], "shared output {i} must be byte-identical");
         }
-        let Value::Float(db) = o[3] else { panic!("db is a float") };
-        assert!(db > 6.0, "a bright step off a zero floor is an onset (db={db})");
+        let Value::Float(db) = o[3] else {
+            panic!("db is a float")
+        };
+        assert!(
+            db > 6.0,
+            "a bright step off a zero floor is an onset (db={db})"
+        );
     }
 
     #[test]
@@ -2938,16 +3107,28 @@ mod tests {
         // Fully adapted: the floor equals the drive, so the dB departure is
         // ~0 — silence. This is the mechanism that makes a held bright scene
         // go quiet, and it is entirely the floor's doing.
-        let payload = Value::Tuple(Arc::new(vec![
-            Value::Float(498.0), Value::Float(42.0),
-            Value::Float(2000.0), // adaptation already == the drive
-            Value::Float(0.12), Value::Float(1024.0), Value::Float(0.0),
-            Value::Float(498.0), Value::Float(2000.0),
-        ].into()));
+        let payload = Value::Tuple(Arc::new(
+            vec![
+                Value::Float(498.0),
+                Value::Float(42.0),
+                Value::Float(2000.0), // adaptation already == the drive
+                Value::Float(0.12),
+                Value::Float(1024.0),
+                Value::Float(0.0),
+                Value::Float(498.0),
+                Value::Float(2000.0),
+            ]
+            .into(),
+        ));
         let out = execute_kernel("photon_transduce_onset", &payload).unwrap();
-        let (Value::Tuple(o) | Value::List(o)) = out else { panic!() };
+        let (Value::Tuple(o) | Value::List(o)) = out else {
+            panic!()
+        };
         let Value::Float(db) = o[3] else { panic!() };
-        assert!(db.abs() < 1.0, "an adapted floor silences the onset (db={db})");
+        assert!(
+            db.abs() < 1.0,
+            "an adapted floor silences the onset (db={db})"
+        );
     }
 
     #[test]
@@ -2956,56 +3137,91 @@ mod tests {
         // direction +1, speed 2, coherence 1, zero residual. The SAME columns
         // with epochs shuffled decorrelate (coherence < 1) — motion is the
         // space-time STRUCTURE of the events, not a static column bias.
-        let diag = Value::Tuple(Arc::new(vec![
-            Value::Float(4.0),
-            Value::Float(0.0), Value::Float(0.0),
-            Value::Float(2.0), Value::Float(1.0),
-            Value::Float(4.0), Value::Float(2.0),
-            Value::Float(6.0), Value::Float(3.0),
-        ].into()));
-        let (Value::Tuple(o) | Value::List(o)) = execute_kernel("retinal_event_motion", &diag).unwrap()
-        else { panic!("motion kernel returns a tuple") };
+        let diag = Value::Tuple(Arc::new(
+            vec![
+                Value::Float(4.0),
+                Value::Float(0.0),
+                Value::Float(0.0),
+                Value::Float(2.0),
+                Value::Float(1.0),
+                Value::Float(4.0),
+                Value::Float(2.0),
+                Value::Float(6.0),
+                Value::Float(3.0),
+            ]
+            .into(),
+        ));
+        let (Value::Tuple(o) | Value::List(o)) =
+            execute_kernel("retinal_event_motion", &diag).unwrap()
+        else {
+            panic!("motion kernel returns a tuple")
+        };
         assert_eq!(o[0], Value::Float(1.0), "L->R direction is +1");
         assert_eq!(o[1], Value::Float(2.0), "slope equals the step (2)");
         assert_eq!(o[3], Value::Float(1.0), "a clean diagonal is coherent");
 
         // Same columns (0,2,4,6), epochs permuted (0,2,1,3): slope shrinks and
         // coherence drops below 1 — the diagonal is broken.
-        let scrambled = Value::Tuple(Arc::new(vec![
-            Value::Float(4.0),
-            Value::Float(0.0), Value::Float(0.0),
-            Value::Float(2.0), Value::Float(2.0),
-            Value::Float(4.0), Value::Float(1.0),
-            Value::Float(6.0), Value::Float(3.0),
-        ].into()));
-        let (Value::Tuple(o2) | Value::List(o2)) = execute_kernel("retinal_event_motion", &scrambled).unwrap()
-        else { panic!() };
+        let scrambled = Value::Tuple(Arc::new(
+            vec![
+                Value::Float(4.0),
+                Value::Float(0.0),
+                Value::Float(0.0),
+                Value::Float(2.0),
+                Value::Float(2.0),
+                Value::Float(4.0),
+                Value::Float(1.0),
+                Value::Float(6.0),
+                Value::Float(3.0),
+            ]
+            .into(),
+        ));
+        let (Value::Tuple(o2) | Value::List(o2)) =
+            execute_kernel("retinal_event_motion", &scrambled).unwrap()
+        else {
+            panic!()
+        };
         let (Value::Float(c_clean), Value::Float(c_scr)) = (&o[3], &o2[3]) else {
             panic!()
         };
-        assert!(c_scr < c_clean, "scrambling the epochs must reduce coherence");
+        assert!(
+            c_scr < c_clean,
+            "scrambling the epochs must reduce coherence"
+        );
     }
 
     #[test]
     fn event_motion_is_silent_without_temporal_or_spatial_spread() {
         // All events at one epoch (a flash) — no temporal spread, no direction.
-        let flash = Value::Tuple(Arc::new(vec![
-            Value::Float(3.0),
-            Value::Float(0.0), Value::Float(5.0),
-            Value::Float(1.0), Value::Float(5.0),
-            Value::Float(2.0), Value::Float(5.0),
-        ].into()));
-        let (Value::Tuple(o) | Value::List(o)) = execute_kernel("retinal_event_motion", &flash).unwrap()
-        else { panic!() };
+        let flash = Value::Tuple(Arc::new(
+            vec![
+                Value::Float(3.0),
+                Value::Float(0.0),
+                Value::Float(5.0),
+                Value::Float(1.0),
+                Value::Float(5.0),
+                Value::Float(2.0),
+                Value::Float(5.0),
+            ]
+            .into(),
+        ));
+        let (Value::Tuple(o) | Value::List(o)) =
+            execute_kernel("retinal_event_motion", &flash).unwrap()
+        else {
+            panic!()
+        };
         assert_eq!(o[0], Value::Float(0.0), "a flash has no direction");
         assert_eq!(o[3], Value::Float(0.0), "a flash has no coherence");
 
         // Fewer than two events — nothing to fit.
-        let one = Value::Tuple(Arc::new(vec![
-            Value::Float(1.0), Value::Float(3.0), Value::Float(0.0),
-        ].into()));
-        let (Value::Tuple(o2) | Value::List(o2)) = execute_kernel("retinal_event_motion", &one).unwrap()
-        else { panic!() };
+        let one = Value::Tuple(Arc::new(
+            vec![Value::Float(1.0), Value::Float(3.0), Value::Float(0.0)].into(),
+        ));
+        let (Value::Tuple(o2) | Value::List(o2)) =
+            execute_kernel("retinal_event_motion", &one).unwrap()
+        else {
+            panic!()
+        };
         assert_eq!(o2[0], Value::Float(0.0));
         assert_eq!(o2[4], Value::Float(1.0), "the event count is reported");
     }

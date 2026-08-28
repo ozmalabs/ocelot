@@ -52,17 +52,13 @@ impl Rotor {
     }
 
     fn forward(&self, x: u8) -> u8 {
-        (self.forward[((x + self.position + 26 - self.ring) % 26) as usize]
-            + 26
-            - self.position
+        (self.forward[((x + self.position + 26 - self.ring) % 26) as usize] + 26 - self.position
             + self.ring)
             % 26
     }
 
     fn backward(&self, x: u8) -> u8 {
-        (self.inverse[((x + self.position + 26 - self.ring) % 26) as usize]
-            + 26
-            - self.position
+        (self.inverse[((x + self.position + 26 - self.ring) % 26) as usize] + 26 - self.position
             + self.ring)
             % 26
     }
@@ -141,7 +137,13 @@ fn rotor(name: &str, ring: u8, position: u8) -> Option<Rotor> {
     for (i, &v) in forward.iter().enumerate() {
         inverse[v as usize] = i as u8;
     }
-    Some(Rotor { forward, inverse, notch, ring, position })
+    Some(Rotor {
+        forward,
+        inverse,
+        notch,
+        ring,
+        position,
+    })
 }
 
 fn clean_letters(s: &str) -> Vec<u8> {
@@ -154,13 +156,17 @@ fn clean_letters(s: &str) -> Vec<u8> {
 fn value_text<'a>(value: &'a Value, interner: &'a Interner) -> Option<String> {
     match value {
         Value::Str(sym) => Some(interner.resolve(*sym).to_string()),
-        Value::Surface(SurfaceKind::Text, bytes) =>
-            String::from_utf8(bytes.to_vec()).ok(),
+        Value::Surface(SurfaceKind::Text, bytes) => String::from_utf8(bytes.to_vec()).ok(),
         _ => None,
     }
 }
 
-fn attr<'a>(graph: &'a TypedGraph, node: NodeID, key: &str, interner: &'a Interner) -> Option<&'a Value> {
+fn attr<'a>(
+    graph: &'a TypedGraph,
+    node: NodeID,
+    key: &str,
+    interner: &'a Interner,
+) -> Option<&'a Value> {
     let sym = interner.lookup(key)?;
     graph.node(node).attrs.get(&sym)
 }
@@ -254,7 +260,11 @@ fn build_machine(graph: &TypedGraph, node: NodeID, interner: &Interner) -> Optio
         return None;
     }
     let stationary = attr_int(graph, node, "stationary_rotors", interner).unwrap_or_else(|| {
-        if names.len() == 4 && matches!(names[0].as_str(), "BETA" | "GAMMA") { 1 } else { 0 }
+        if names.len() == 4 && matches!(names[0].as_str(), "BETA" | "GAMMA") {
+            1
+        } else {
+            0
+        }
     }) as usize;
     if stationary > names.len().saturating_sub(3) {
         return None;
@@ -265,15 +275,28 @@ fn build_machine(graph: &TypedGraph, node: NodeID, interner: &Interner) -> Optio
     }
     let reflector = reflector(&attr_text(graph, node, "reflector", interner)?)?;
     let plugboard = plugboard(&attr_text(graph, node, "plugboard", interner).unwrap_or_default())?;
-    Some(Machine { rotors, reflector, plugboard, stationary })
+    Some(Machine {
+        rotors,
+        reflector,
+        plugboard,
+        stationary,
+    })
 }
 
 /// Return true iff the candidate node's machine decrypts the crib at its
 /// offset. Invalid/incomplete candidates are inadmissible, never panics.
 pub fn crib_admissible(graph: &TypedGraph, node: NodeID, interner: &Interner) -> bool {
-    let Some(mut machine) = build_machine(graph, node, interner) else { return false };
-    let Some(ciphertext) = attr_text(graph, node, "ciphertext", interner).map(|s| clean_letters(&s)) else { return false };
-    let Some(crib) = attr_text(graph, node, "crib", interner).map(|s| clean_letters(&s)) else { return false };
+    let Some(mut machine) = build_machine(graph, node, interner) else {
+        return false;
+    };
+    let Some(ciphertext) =
+        attr_text(graph, node, "ciphertext", interner).map(|s| clean_letters(&s))
+    else {
+        return false;
+    };
+    let Some(crib) = attr_text(graph, node, "crib", interner).map(|s| clean_letters(&s)) else {
+        return false;
+    };
     let offset = attr_int(graph, node, "crib_offset", interner).unwrap_or(0);
     if offset < 0 || (offset as usize).saturating_add(crib.len()) > ciphertext.len() {
         return false;
@@ -315,11 +338,22 @@ pub fn bombe_admissible(graph: &TypedGraph, node: NodeID, interner: &Interner) -
 /// contradicts. The witness is intentionally only the forced pairs; the
 /// later completion stage owns soft language scoring.
 pub fn bombe_witness(graph: &TypedGraph, node: NodeID, interner: &Interner) -> Option<String> {
-        let Some(mut machine) = build_machine(graph, node, interner) else { return None };
-    let Some(ciphertext) = attr_text(graph, node, "ciphertext", interner).map(|s| clean_letters(&s)) else { return None };
-    let Some(crib) = attr_text(graph, node, "crib", interner).map(|s| clean_letters(&s)) else { return None };
+    let Some(mut machine) = build_machine(graph, node, interner) else {
+        return None;
+    };
+    let Some(ciphertext) =
+        attr_text(graph, node, "ciphertext", interner).map(|s| clean_letters(&s))
+    else {
+        return None;
+    };
+    let Some(crib) = attr_text(graph, node, "crib", interner).map(|s| clean_letters(&s)) else {
+        return None;
+    };
     let offset = attr_int(graph, node, "crib_offset", interner).unwrap_or(0);
-    if crib.is_empty() || offset < 0 || (offset as usize).saturating_add(crib.len()) > ciphertext.len() {
+    if crib.is_empty()
+        || offset < 0
+        || (offset as usize).saturating_add(crib.len()) > ciphertext.len()
+    {
         return None;
     }
     let offset = offset as usize;
@@ -380,10 +414,7 @@ pub fn bombe_witness(graph: &TypedGraph, node: NodeID, interner: &Interner) -> O
                 }
                 if mapping[cipher as usize] >= 0 {
                     let wanted = mapping[cipher as usize] as u8;
-                    let inverse = perms[i]
-                        .iter()
-                        .position(|&v| v == wanted)
-                        .map(|v| v as u8);
+                    let inverse = perms[i].iter().position(|&v| v == wanted).map(|v| v as u8);
                     let Some(inverse) = inverse else {
                         ok = false;
                         break;
@@ -409,7 +440,11 @@ pub fn bombe_witness(graph: &TypedGraph, node: NodeID, interner: &Interner) -> O
                 if partner >= 0 && partner as usize != letter && !seen[letter] {
                     let a = letter.min(partner as usize);
                     let b = letter.max(partner as usize);
-                    pairs.push(format!("{}{}", (b'A' + a as u8) as char, (b'A' + b as u8) as char));
+                    pairs.push(format!(
+                        "{}{}",
+                        (b'A' + a as u8) as char,
+                        (b'A' + b as u8) as char
+                    ));
                     seen[letter] = true;
                     seen[partner as usize] = true;
                 }

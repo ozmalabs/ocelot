@@ -43,57 +43,50 @@ pub struct MbDeblockInfo {
 /// α and β threshold tables, indexed by indexA / indexB (§8.7.2.2,
 /// Table 8-16). 52 entries (one per clipped QP-derived index).
 const ALPHA_TAB: [i32; 52] = [
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    4, 4, 5, 6, 7, 8, 9, 10, 12, 13, 15, 17, 20, 22, 25, 28,
-    32, 36, 40, 45, 50, 56, 63, 71, 80, 90, 101, 113, 127, 144, 162, 182,
-    203, 226, 255, 255,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 5, 6, 7, 8, 9, 10, 12, 13, 15, 17, 20,
+    22, 25, 28, 32, 36, 40, 45, 50, 56, 63, 71, 80, 90, 101, 113, 127, 144, 162, 182, 203, 226,
+    255, 255,
 ];
 const BETA_TAB: [i32; 52] = [
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 6, 6, 7, 7, 8, 8,
-    9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 16,
-    17, 17, 18, 18,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 6, 6, 7, 7, 8, 8,
+    9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 18,
 ];
 /// tC0 table (§8.7.2.3, Table 8-17), indexed by [bS-1][indexA].
 /// Only bS = 1,2,3 use it (bS = 4 has its own strong filter).
 const TC0_TAB: [[i32; 52]; 3] = [
     // bS = 1
     [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3,
-        3, 3, 4, 4,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4,
     ],
     // bS = 2
     [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-        1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 5, 6,
-        6, 7, 8, 9,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 5, 6, 6, 7, 8, 9,
     ],
     // bS = 3
     [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 6, 6, 7, 8,
-        9, 10, 11, 13,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 6, 6, 7, 8, 9, 10, 11, 13,
     ],
 ];
 
 #[inline]
-fn clip(v: i32, lo: i32, hi: i32) -> i32 { v.max(lo).min(hi) }
+fn clip(v: i32, lo: i32, hi: i32) -> i32 {
+    v.max(lo).min(hi)
+}
 
 #[inline]
-fn clip3(lo: i32, hi: i32, v: i32) -> i32 { v.max(lo).min(hi) }
+fn clip3(lo: i32, hi: i32, v: i32) -> i32 {
+    v.max(lo).min(hi)
+}
 
 /// Filter a single luma 4-sample line across an edge with bS < 4.
 /// `p` = [p3,p2,p1,p0], `q` = [q0,q1,q2,q3] are the samples on either
 /// side of the edge (p0/q0 adjacent to the edge). Returns the new
 /// (p1,p0,q0,q1[,p2,q2]) in place. §8.7.2.4.
 #[inline]
-fn filter_luma_normal(
-    p: &mut [i32; 4], q: &mut [i32; 4], alpha: i32, beta: i32, tc0: i32,
-) {
+fn filter_luma_normal(p: &mut [i32; 4], q: &mut [i32; 4], alpha: i32, beta: i32, tc0: i32) {
     let (p0, p1, p2) = (p[3], p[2], p[1]);
     let (q0, q1, q2) = (q[0], q[1], q[2]);
     // Activity check (§8.7.2.1 filterSamplesFlag already gated by caller,
@@ -101,8 +94,12 @@ fn filter_luma_normal(
     let ap = (p2 - p0).abs();
     let aq = (q2 - q0).abs();
     let mut tc = tc0;
-    if ap < beta { tc += 1; }
-    if aq < beta { tc += 1; }
+    if ap < beta {
+        tc += 1;
+    }
+    if aq < beta {
+        tc += 1;
+    }
     let delta = clip3(-tc, tc, ((q0 - p0) * 4 + (p1 - q1) + 4) >> 3);
     let new_p0 = clip(p0 + delta, 0, 255);
     let new_q0 = clip(q0 - delta, 0, 255);
@@ -121,27 +118,25 @@ fn filter_luma_normal(
 /// Filter a luma line across an edge with bS == 4 (strong filter).
 /// §8.7.2.4. Modifies up to p2,p1,p0,q0,q1,q2.
 #[inline]
-fn filter_luma_strong(
-    p: &mut [i32; 4], q: &mut [i32; 4], alpha: i32, beta: i32,
-) {
+fn filter_luma_strong(p: &mut [i32; 4], q: &mut [i32; 4], alpha: i32, beta: i32) {
     let (p0, p1, p2, p3) = (p[3], p[2], p[1], p[0]);
     let (q0, q1, q2, q3) = (q[0], q[1], q[2], q[3]);
     let ap = (p2 - p0).abs();
     let aq = (q2 - q0).abs();
     let small = (p0 - q0).abs() < ((alpha >> 2) + 2);
     if ap < beta && small {
-        p[3] = (p2 + 2 * p1 + 2 * p0 + 2 * q0 + q1 + 4) >> 3;           // p0'
-        p[2] = (p2 + p1 + p0 + q0 + 2) >> 2;                           // p1'
-        p[1] = (2 * p3 + 3 * p2 + p1 + p0 + q0 + 4) >> 3;              // p2'
+        p[3] = (p2 + 2 * p1 + 2 * p0 + 2 * q0 + q1 + 4) >> 3; // p0'
+        p[2] = (p2 + p1 + p0 + q0 + 2) >> 2; // p1'
+        p[1] = (2 * p3 + 3 * p2 + p1 + p0 + q0 + 4) >> 3; // p2'
     } else {
-        p[3] = (2 * p1 + p0 + q1 + 2) >> 2;                            // p0'
+        p[3] = (2 * p1 + p0 + q1 + 2) >> 2; // p0'
     }
     if aq < beta && small {
-        q[0] = (q2 + 2 * q1 + 2 * q0 + 2 * p0 + p1 + 4) >> 3;          // q0'
-        q[1] = (q2 + q1 + q0 + p0 + 2) >> 2;                          // q1'
-        q[2] = (2 * q3 + 3 * q2 + q1 + q0 + p0 + 4) >> 3;             // q2'
+        q[0] = (q2 + 2 * q1 + 2 * q0 + 2 * p0 + p1 + 4) >> 3; // q0'
+        q[1] = (q2 + q1 + q0 + p0 + 2) >> 2; // q1'
+        q[2] = (2 * q3 + 3 * q2 + q1 + q0 + p0 + 4) >> 3; // q2'
     } else {
-        q[0] = (2 * q1 + q0 + p1 + 2) >> 2;                           // q0'
+        q[0] = (2 * q1 + q0 + p1 + 2) >> 2; // q0'
     }
 }
 
@@ -149,9 +144,7 @@ fn filter_luma_strong(
 /// modifies p0,q0. bS==4 -> strong (averaging) form; bS<4 -> normal
 /// with tc = tc0 + 1.
 #[inline]
-fn filter_chroma(
-    p: &mut [i32; 2], q: &mut [i32; 2], _alpha: i32, _beta: i32, tc0: i32, bs4: bool,
-) {
+fn filter_chroma(p: &mut [i32; 2], q: &mut [i32; 2], _alpha: i32, _beta: i32, tc0: i32, bs4: bool) {
     let (p0, p1) = (p[1], p[0]);
     let (q0, q1) = (q[0], q[1]);
     if bs4 {
@@ -201,9 +194,13 @@ pub fn deblock_i_frame(
             // ---- LUMA vertical edges ----
             for e in 0..4 {
                 let x = mbx * 16 + e * 4;
-                if x == 0 { continue; } // picture left boundary
+                if x == 0 {
+                    continue;
+                } // picture left boundary
                 let is_mb_edge = e == 0;
-                if is_mb_edge && mbx == 0 { continue; }
+                if is_mb_edge && mbx == 0 {
+                    continue;
+                }
                 let bs = if is_mb_edge { 4 } else { 3 };
                 // QP averaged with the left neighbour for MB-boundary
                 // edges (§8.7.2.2 qPav). Internal edges use this MB's QP.
@@ -218,9 +215,13 @@ pub fn deblock_i_frame(
             // ---- LUMA horizontal edges ----
             for e in 0..4 {
                 let y = mby * 16 + e * 4;
-                if y == 0 { continue; }
+                if y == 0 {
+                    continue;
+                }
                 let is_mb_edge = e == 0;
-                if is_mb_edge && mby == 0 { continue; }
+                if is_mb_edge && mby == 0 {
+                    continue;
+                }
                 let bs = if is_mb_edge { 4 } else { 3 };
                 let qp = if is_mb_edge {
                     let t = mb_info[(mby - 1) * mb_w + mbx].qp_luma;
@@ -239,24 +240,36 @@ pub fn deblock_i_frame(
                 // vertical chroma edges at chroma-x 0 (MB edge) and 4 (internal)
                 for (cx_off, is_mb_edge) in [(0usize, true), (4usize, false)] {
                     let cx = mbx * 8 + cx_off;
-                    if cx == 0 { continue; }
-                    if is_mb_edge && mbx == 0 { continue; }
+                    if cx == 0 {
+                        continue;
+                    }
+                    if is_mb_edge && mbx == 0 {
+                        continue;
+                    }
                     let bs = if is_mb_edge { 4 } else { 3 };
                     let qp = if is_mb_edge {
                         let l = mb_info[mby * mb_w + (mbx - 1)].qp_chroma;
                         (info.qp_chroma + l + 1) >> 1
-                    } else { info.qp_chroma };
+                    } else {
+                        info.qp_chroma
+                    };
                     filter_vert_chroma(frame, cx, mby * 8, qp, bs, alpha_off, beta_off, is_cb);
                 }
                 for (cy_off, is_mb_edge) in [(0usize, true), (4usize, false)] {
                     let cy = mby * 8 + cy_off;
-                    if cy == 0 { continue; }
-                    if is_mb_edge && mby == 0 { continue; }
+                    if cy == 0 {
+                        continue;
+                    }
+                    if is_mb_edge && mby == 0 {
+                        continue;
+                    }
                     let bs = if is_mb_edge { 4 } else { 3 };
                     let qp = if is_mb_edge {
                         let t = mb_info[(mby - 1) * mb_w + mbx].qp_chroma;
                         (info.qp_chroma + t + 1) >> 1
-                    } else { info.qp_chroma };
+                    } else {
+                        info.qp_chroma
+                    };
                     filter_horiz_chroma(frame, mbx * 8, cy, qp, bs, alpha_off, beta_off, is_cb);
                 }
             }
@@ -270,33 +283,52 @@ fn alpha_beta_tc0(qp: i32, bs: i32, alpha_off: i32, beta_off: i32) -> (i32, i32,
     let idx_b = clip(qp + beta_off, 0, 51) as usize;
     let alpha = ALPHA_TAB[idx_a];
     let beta = BETA_TAB[idx_b];
-    let tc0 = if bs >= 1 && bs <= 3 { TC0_TAB[(bs - 1) as usize][idx_a] } else { 0 };
+    let tc0 = if bs >= 1 && bs <= 3 {
+        TC0_TAB[(bs - 1) as usize][idx_a]
+    } else {
+        0
+    };
     (alpha, beta, tc0)
 }
 
 /// Filter the 16 luma lines of a vertical edge at column `x`, rows
 /// `y0..y0+16`.
 fn filter_vert_luma(
-    frame: &mut YuvFrame, x: usize, y0: usize, qp: i32, bs: i32,
-    alpha_off: i32, beta_off: i32,
+    frame: &mut YuvFrame,
+    x: usize,
+    y0: usize,
+    qp: i32,
+    bs: i32,
+    alpha_off: i32,
+    beta_off: i32,
 ) {
     let (alpha, beta, tc0) = alpha_beta_tc0(qp, bs, alpha_off, beta_off);
-    if alpha == 0 { return; }
+    if alpha == 0 {
+        return;
+    }
     let w = frame.w;
     for r in 0..16 {
         let y = y0 + r;
-        if y >= frame.h { break; }
+        if y >= frame.h {
+            break;
+        }
         let base = y * w + x;
         // p3..p0 are at x-4,x-3,x-2,x-1; q0..q3 at x,x+1,x+2,x+3.
         let mut p = [
-            frame.y[base - 4] as i32, frame.y[base - 3] as i32,
-            frame.y[base - 2] as i32, frame.y[base - 1] as i32,
+            frame.y[base - 4] as i32,
+            frame.y[base - 3] as i32,
+            frame.y[base - 2] as i32,
+            frame.y[base - 1] as i32,
         ];
         let mut q = [
-            frame.y[base] as i32, frame.y[base + 1] as i32,
-            frame.y[base + 2] as i32, frame.y[base + 3] as i32,
+            frame.y[base] as i32,
+            frame.y[base + 1] as i32,
+            frame.y[base + 2] as i32,
+            frame.y[base + 3] as i32,
         ];
-        if !edge_active(p[3], p[2], q[0], q[1], alpha, beta) { continue; }
+        if !edge_active(p[3], p[2], q[0], q[1], alpha, beta) {
+            continue;
+        }
         if bs == 4 {
             filter_luma_strong(&mut p, &mut q, alpha, beta);
         } else {
@@ -305,32 +337,47 @@ fn filter_vert_luma(
         frame.y[base - 3] = p[1] as u8;
         frame.y[base - 2] = p[2] as u8;
         frame.y[base - 1] = p[3] as u8;
-        frame.y[base]     = q[0] as u8;
+        frame.y[base] = q[0] as u8;
         frame.y[base + 1] = q[1] as u8;
         frame.y[base + 2] = q[2] as u8;
     }
 }
 
 fn filter_horiz_luma(
-    frame: &mut YuvFrame, x0: usize, y: usize, qp: i32, bs: i32,
-    alpha_off: i32, beta_off: i32,
+    frame: &mut YuvFrame,
+    x0: usize,
+    y: usize,
+    qp: i32,
+    bs: i32,
+    alpha_off: i32,
+    beta_off: i32,
 ) {
     let (alpha, beta, tc0) = alpha_beta_tc0(qp, bs, alpha_off, beta_off);
-    if alpha == 0 { return; }
+    if alpha == 0 {
+        return;
+    }
     let w = frame.w;
     for c in 0..16 {
         let x = x0 + c;
-        if x >= w { break; }
+        if x >= w {
+            break;
+        }
         let base = y * w + x;
         let mut p = [
-            frame.y[base - 4 * w] as i32, frame.y[base - 3 * w] as i32,
-            frame.y[base - 2 * w] as i32, frame.y[base - 1 * w] as i32,
+            frame.y[base - 4 * w] as i32,
+            frame.y[base - 3 * w] as i32,
+            frame.y[base - 2 * w] as i32,
+            frame.y[base - 1 * w] as i32,
         ];
         let mut q = [
-            frame.y[base] as i32, frame.y[base + 1 * w] as i32,
-            frame.y[base + 2 * w] as i32, frame.y[base + 3 * w] as i32,
+            frame.y[base] as i32,
+            frame.y[base + 1 * w] as i32,
+            frame.y[base + 2 * w] as i32,
+            frame.y[base + 3 * w] as i32,
         ];
-        if !edge_active(p[3], p[2], q[0], q[1], alpha, beta) { continue; }
+        if !edge_active(p[3], p[2], q[0], q[1], alpha, beta) {
+            continue;
+        }
         if bs == 4 {
             filter_luma_strong(&mut p, &mut q, alpha, beta);
         } else {
@@ -339,51 +386,75 @@ fn filter_horiz_luma(
         frame.y[base - 3 * w] = p[1] as u8;
         frame.y[base - 2 * w] = p[2] as u8;
         frame.y[base - 1 * w] = p[3] as u8;
-        frame.y[base]         = q[0] as u8;
+        frame.y[base] = q[0] as u8;
         frame.y[base + 1 * w] = q[1] as u8;
         frame.y[base + 2 * w] = q[2] as u8;
     }
 }
 
 fn filter_vert_chroma(
-    frame: &mut YuvFrame, cx: usize, cy0: usize, qp: i32, bs: i32,
-    alpha_off: i32, beta_off: i32, is_cb: bool,
+    frame: &mut YuvFrame,
+    cx: usize,
+    cy0: usize,
+    qp: i32,
+    bs: i32,
+    alpha_off: i32,
+    beta_off: i32,
+    is_cb: bool,
 ) {
     let (alpha, beta, tc0) = alpha_beta_tc0(qp, bs, alpha_off, beta_off);
-    if alpha == 0 { return; }
+    if alpha == 0 {
+        return;
+    }
     let cw = frame.w / 2;
     let ch = frame.h / 2;
     let plane = if is_cb { &mut frame.u } else { &mut frame.v };
     for r in 0..8 {
         let y = cy0 + r;
-        if y >= ch { break; }
+        if y >= ch {
+            break;
+        }
         let base = y * cw + cx;
         let mut p = [plane[base - 2] as i32, plane[base - 1] as i32];
         let mut q = [plane[base] as i32, plane[base + 1] as i32];
-        if !edge_active(p[1], p[0], q[0], q[1], alpha, beta) { continue; }
+        if !edge_active(p[1], p[0], q[0], q[1], alpha, beta) {
+            continue;
+        }
         filter_chroma(&mut p, &mut q, alpha, beta, tc0, bs == 4);
         plane[base - 1] = p[1] as u8;
-        plane[base]     = q[0] as u8;
+        plane[base] = q[0] as u8;
     }
 }
 
 fn filter_horiz_chroma(
-    frame: &mut YuvFrame, cx0: usize, cy: usize, qp: i32, bs: i32,
-    alpha_off: i32, beta_off: i32, is_cb: bool,
+    frame: &mut YuvFrame,
+    cx0: usize,
+    cy: usize,
+    qp: i32,
+    bs: i32,
+    alpha_off: i32,
+    beta_off: i32,
+    is_cb: bool,
 ) {
     let (alpha, beta, tc0) = alpha_beta_tc0(qp, bs, alpha_off, beta_off);
-    if alpha == 0 { return; }
+    if alpha == 0 {
+        return;
+    }
     let cw = frame.w / 2;
     let plane = if is_cb { &mut frame.u } else { &mut frame.v };
     for c in 0..8 {
         let x = cx0 + c;
-        if x >= cw { break; }
+        if x >= cw {
+            break;
+        }
         let base = cy * cw + x;
         let mut p = [plane[base - 2 * cw] as i32, plane[base - 1 * cw] as i32];
         let mut q = [plane[base] as i32, plane[base + 1 * cw] as i32];
-        if !edge_active(p[1], p[0], q[0], q[1], alpha, beta) { continue; }
+        if !edge_active(p[1], p[0], q[0], q[1], alpha, beta) {
+            continue;
+        }
         filter_chroma(&mut p, &mut q, alpha, beta, tc0, bs == 4);
         plane[base - 1 * cw] = p[1] as u8;
-        plane[base]          = q[0] as u8;
+        plane[base] = q[0] as u8;
     }
 }

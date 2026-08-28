@@ -55,7 +55,7 @@
 //! Three of four invariants were already there; this module closes
 //! the fourth.
 
-use crate::graph::{NodeID, TypedGraph, Attrs};
+use crate::graph::{Attrs, NodeID, TypedGraph};
 use crate::sym::Sym;
 
 /// Hardware prefetch hint. Issues a T0 (all-cache-levels) prefetch
@@ -69,10 +69,7 @@ use crate::sym::Sym;
 fn prefetch_t0<T>(ptr: *const T) {
     #[cfg(target_arch = "x86_64")]
     unsafe {
-        std::arch::x86_64::_mm_prefetch(
-            ptr as *const i8,
-            std::arch::x86_64::_MM_HINT_T0,
-        );
+        std::arch::x86_64::_mm_prefetch(ptr as *const i8, std::arch::x86_64::_MM_HINT_T0);
     }
 }
 
@@ -94,11 +91,7 @@ pub trait L1HotPaths {
     /// PREFETCH_DISTANCE = 8 chosen for Zen 5: L1d 48 KiB / 64-byte
     /// lines = 768 lines; 8-ahead keeps the prefetch queue full
     /// without overflowing L1d on typical record sizes.
-    fn for_each_node_of_type_prefetched<F: FnMut(NodeID)>(
-        &self,
-        type_: Sym,
-        f: F,
-    );
+    fn for_each_node_of_type_prefetched<F: FnMut(NodeID)>(&self, type_: Sym, f: F);
 
     /// Find the index of `key` in `attrs.0`. Uses AVX-512 to compare
     /// up to 16 Sym(u32) values per cycle when the target supports
@@ -112,11 +105,7 @@ pub trait L1HotPaths {
 }
 
 impl L1HotPaths for TypedGraph {
-    fn for_each_node_of_type_prefetched<F: FnMut(NodeID)>(
-        &self,
-        type_: Sym,
-        mut f: F,
-    ) {
+    fn for_each_node_of_type_prefetched<F: FnMut(NodeID)>(&self, type_: Sym, mut f: F) {
         let nids = self.nodes_of_type(type_);
         let nids_slice = nids.as_slice();
         if nids_slice.is_empty() {
@@ -195,9 +184,7 @@ unsafe fn find_attr_sym_avx512(attrs: &Attrs, key: Sym) -> Option<usize> {
     // Index buffer — [0, stride, 2*stride, ..., 15*stride] / 4
     // (gather scale is 1/2/4/8 only; we use scale=1 and full byte
     // offsets in the index).
-    let indices_arr: [i32; 16] = std::array::from_fn(|i| {
-        (i as i32) * stride
-    });
+    let indices_arr: [i32; 16] = std::array::from_fn(|i| (i as i32) * stride);
     let indices_v = _mm512_loadu_si512(indices_arr.as_ptr() as *const _);
 
     let mut i = 0usize;
@@ -205,11 +192,7 @@ unsafe fn find_attr_sym_avx512(attrs: &Attrs, key: Sym) -> Option<usize> {
         let block_base = base.add(i * stride as usize);
         // VPGATHERDD with scale=1: gather 16 u32 starting at the
         // strided positions. Sym is at offset 0 within (Sym, Value).
-        let syms = _mm512_i32gather_epi32(
-            indices_v,
-            block_base as *const u8 as *const _,
-            1,
-        );
+        let syms = _mm512_i32gather_epi32(indices_v, block_base as *const u8 as *const _, 1);
         let mask = _mm512_cmpeq_epi32_mask(syms, key_v);
         if mask != 0 {
             // mask is __mmask16; trailing_zeros gives offset of

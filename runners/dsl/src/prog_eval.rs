@@ -88,10 +88,11 @@ use std::sync::Arc;
 use smallvec::SmallVec;
 
 use crate::sym::{Interner, Sym};
-use crate::term::{
-    children, evaluate, str_like_owned, Env, EvalCtx, TermArena, TermIdx, TermNode,
+use crate::term::{children, evaluate, str_like_owned, Env, EvalCtx, TermArena, TermIdx, TermNode};
+use crate::value::{
+    cmp_value, make_rational, rational_add, rational_div, rational_parts, rational_pow_int,
+    SurfaceKind, Value,
 };
-use crate::value::{cmp_value, make_rational, rational_add, rational_div, rational_parts, rational_pow_int, SurfaceKind, Value};
 
 const DEFAULT_FUEL: i64 = 10_000;
 const RANGE_CAP: i64 = 1_000_000;
@@ -101,7 +102,10 @@ fn surf(s: &str) -> Value {
 }
 
 fn surf_string(s: String) -> Value {
-    Value::Surface(SurfaceKind::Text, Arc::from(s.into_bytes().into_boxed_slice()))
+    Value::Surface(
+        SurfaceKind::Text,
+        Arc::from(s.into_bytes().into_boxed_slice()),
+    )
 }
 
 /// Non-value control flow escaping a statement/expression.
@@ -139,7 +143,11 @@ impl Machine {
     }
 
     fn get_var(&self, name: Sym) -> Option<&Value> {
-        self.vars.iter().rev().find(|(k, _)| *k == name).map(|(_, v)| v)
+        self.vars
+            .iter()
+            .rev()
+            .find(|(k, _)| *k == name)
+            .map(|(_, v)| v)
     }
 
     fn set_var(&mut self, name: Sym, value: Value) {
@@ -259,7 +267,11 @@ fn py_float_str(f: f64) -> String {
     if f.is_nan() {
         "nan".to_string()
     } else if f.is_infinite() {
-        if f > 0.0 { "inf".to_string() } else { "-inf".to_string() }
+        if f > 0.0 {
+            "inf".to_string()
+        } else {
+            "-inf".to_string()
+        }
     } else if f == f.trunc() && f.abs() < 1e16 {
         format!("{:.1}", f)
     } else {
@@ -387,7 +399,12 @@ fn value_kind(v: &Value) -> &'static str {
 /// CPython's `PySlice_AdjustIndices` algorithm: realise `[start:stop:step]`
 /// over a sequence of length `len` into the concrete list of indices to
 /// read, honestly (never OOB — Python slicing clamps, it never raises).
-pub(crate) fn slice_indices(len: i64, start: Option<i64>, stop: Option<i64>, step: i64) -> Vec<i64> {
+pub(crate) fn slice_indices(
+    len: i64,
+    start: Option<i64>,
+    stop: Option<i64>,
+    step: i64,
+) -> Vec<i64> {
     let (lower, upper) = if step > 0 { (0, len) } else { (-1, len - 1) };
     let clamp = |v: i64| v.clamp(lower, upper);
     let norm = |v: Option<i64>, default: i64| -> i64 {
@@ -539,9 +556,7 @@ fn exec_stmt(
             let (name, op, value) = (*name, *op, *value);
             let cur = match m.get_var(name) {
                 Some(v) => v.clone(),
-                None => {
-                    return Err(Flow::Trap(format!("name:{}", ctx.interner.resolve(name))))
-                }
+                None => return Err(Flow::Trap(format!("name:{}", ctx.interner.resolve(name)))),
             };
             let rhs = eval_expr(m, arena, value, env, ctx)?;
             let combined = aug_combine(&cur, ctx.interner.resolve(op), &rhs, env, ctx)?;
@@ -575,7 +590,12 @@ fn exec_stmt(
                 Ok(())
             }
         }
-        TermNode::ProgForEach { var, iter, body, orelse } => {
+        TermNode::ProgForEach {
+            var,
+            iter,
+            body,
+            orelse,
+        } => {
             m.charge()?;
             let (var, iter, body, orelse) = (*var, *iter, *body, *orelse);
             let it = eval_expr(m, arena, iter, env, ctx)?;
@@ -645,7 +665,11 @@ fn exec_stmt(
             };
             Err(Flow::Return(v))
         }
-        TermNode::ProgTryOr { body, exc_var, handler } => {
+        TermNode::ProgTryOr {
+            body,
+            exc_var,
+            handler,
+        } => {
             m.charge()?;
             let (body, exc_var, handler) = (*body, *exc_var, *handler);
             match exec_stmt(m, arena, body, env, ctx) {
@@ -726,17 +750,13 @@ fn exec_stmt(
 /// concat natively; everything numeric delegates to the matching DSL
 /// arithmetic Term over Lit children (so DSL semantics govern — same
 /// as ordinary expressions).
-fn aug_combine(
-    cur: &Value,
-    op: &str,
-    rhs: &Value,
-    env: &mut Env,
-    ctx: &mut EvalCtx,
-) -> ExprResult {
+fn aug_combine(cur: &Value, op: &str, rhs: &Value, env: &mut Env, ctx: &mut EvalCtx) -> ExprResult {
     if op == "add" {
         match (cur, rhs) {
-            (Value::Str(_) | Value::Surface(SurfaceKind::Text, _),
-             Value::Str(_) | Value::Surface(SurfaceKind::Text, _)) => {
+            (
+                Value::Str(_) | Value::Surface(SurfaceKind::Text, _),
+                Value::Str(_) | Value::Surface(SurfaceKind::Text, _),
+            ) => {
                 let a = str_like_owned(cur, ctx.interner).unwrap_or_default();
                 let b = str_like_owned(rhs, ctx.interner).unwrap_or_default();
                 return Ok(surf_string(a + &b));
@@ -800,14 +820,21 @@ fn container_with(
             let mut out: SmallVec<[Value; 4]> = items.iter().cloned().collect();
             out[real as usize] = value;
             let out = Arc::new(out);
-            Ok(if matches!(container, Value::List(_)) { Value::List(out) } else { Value::Tuple(out) })
+            Ok(if matches!(container, Value::List(_)) {
+                Value::List(out)
+            } else {
+                Value::Tuple(out)
+            })
         }
         Value::Dict(pairs) => {
             let mut out: Vec<(Value, Value)> = pairs.to_vec();
             let mut replaced = false;
             for slot in out.iter_mut() {
                 let hit = cmp_value(&slot.0, key) == std::cmp::Ordering::Equal
-                    || match (str_like_owned(&slot.0, interner), str_like_owned(key, interner)) {
+                    || match (
+                        str_like_owned(&slot.0, interner),
+                        str_like_owned(key, interner),
+                    ) {
                         (Some(a), Some(b)) => a == b,
                         _ => false,
                     };
@@ -1014,7 +1041,12 @@ fn eval_expr(
                 other => Err(Flow::Trap(format!("subscript:{}", value_kind(other)))),
             }
         }
-        TermNode::ProgSlice { obj, start, stop, step } => {
+        TermNode::ProgSlice {
+            obj,
+            start,
+            stop,
+            step,
+        } => {
             let (obj, start, stop, step) = (*obj, *start, *stop, *step);
             let container = eval_expr(m, arena, obj, env, ctx)?;
             let step_v = match step {
@@ -1040,7 +1072,11 @@ fn eval_expr(
                         idxs.iter().map(|&i| items[i as usize].clone()).collect();
                     // `l[1:]` is a list, `t[1:]` is a tuple — CPython.
                     let out = Arc::new(out);
-                    Ok(if matches!(&container, Value::List(_)) { Value::List(out) } else { Value::Tuple(out) })
+                    Ok(if matches!(&container, Value::List(_)) {
+                        Value::List(out)
+                    } else {
+                        Value::Tuple(out)
+                    })
                 }
                 Value::Str(_) | Value::Surface(SurfaceKind::Text, _) => {
                     let s = str_like_owned(&container, ctx.interner).unwrap_or_default();
@@ -1083,12 +1119,26 @@ fn eval_expr(
                         out.push(eval_expr(m, arena, it, env, ctx)?);
                     }
                     let out = Arc::new(out);
-                    Ok(if kind_str == "tuple" { Value::Tuple(out) } else { Value::List(out) })
+                    Ok(if kind_str == "tuple" {
+                        Value::Tuple(out)
+                    } else {
+                        Value::List(out)
+                    })
                 }
             }
         }
-        TermNode::ProgComprehensionList { var, source, expr, cond }
-        | TermNode::ProgComprehensionGen { var, source, expr, cond } => {
+        TermNode::ProgComprehensionList {
+            var,
+            source,
+            expr,
+            cond,
+        }
+        | TermNode::ProgComprehensionGen {
+            var,
+            source,
+            expr,
+            cond,
+        } => {
             let (var, source, expr, cond) = (*var, *source, *expr, *cond);
             let src = eval_expr(m, arena, source, env, ctx)?;
             let items = iter_items(&src, ctx.interner)?;
@@ -1188,9 +1238,7 @@ fn eval_expr(
             if let TermNode::Div { a, b } = &node {
                 let av = eval_expr(m, arena, *a, env, ctx)?;
                 let bv = eval_expr(m, arena, *b, env, ctx)?;
-                if let (Some(pa), Some(pb)) =
-                    (rational_parts(&av), rational_parts(&bv))
-                {
+                if let (Some(pa), Some(pb)) = (rational_parts(&av), rational_parts(&bv)) {
                     if pb.0 != 0 {
                         // Committed to the exact path: overflow here is
                         // a genuine trap, never a silent float degrade
@@ -1257,39 +1305,97 @@ fn eval_expr(
                 }};
             }
             let rebuilt = match node {
-                TermNode::Plus { items } => TermNode::Plus { items: lit_items!(items) },
-                TermNode::Times { items } => TermNode::Times { items: lit_items!(items) },
-                TermNode::Min { items } => TermNode::Min { items: lit_items!(items) },
-                TermNode::Max { items } => TermNode::Max { items: lit_items!(items) },
-                TermNode::Vec_ { items } => TermNode::Vec_ { items: lit_items!(items) },
-                TermNode::StringConcat { parts } => {
-                    TermNode::StringConcat { parts: lit_items!(parts) }
+                TermNode::Plus { items } => TermNode::Plus {
+                    items: lit_items!(items),
+                },
+                TermNode::Times { items } => TermNode::Times {
+                    items: lit_items!(items),
+                },
+                TermNode::Min { items } => TermNode::Min {
+                    items: lit_items!(items),
+                },
+                TermNode::Max { items } => TermNode::Max {
+                    items: lit_items!(items),
+                },
+                TermNode::Vec_ { items } => TermNode::Vec_ {
+                    items: lit_items!(items),
+                },
+                TermNode::StringConcat { parts } => TermNode::StringConcat {
+                    parts: lit_items!(parts),
+                },
+                TermNode::Minus { a, b } => {
+                    let (a, b) = lit2!(a, b);
+                    TermNode::Minus { a, b }
                 }
-                TermNode::Minus { a, b } => { let (a, b) = lit2!(a, b); TermNode::Minus { a, b } }
                 // Div / Pow are handled ABOVE (exact-rational
                 // interception with a rebuild-and-delegate fallback of
                 // their own) and always `return` before reaching this
                 // match — these two TermNode kinds are structurally
                 // unreachable here; no arm needed.
-                TermNode::Mod { a, b } => { let (a, b) = lit2!(a, b); TermNode::Mod { a, b } }
-                TermNode::IDiv { a, b } => { let (a, b) = lit2!(a, b); TermNode::IDiv { a, b } }
-                TermNode::IRem { a, b } => { let (a, b) = lit2!(a, b); TermNode::IRem { a, b } }
-                TermNode::BitAnd { a, b } => { let (a, b) = lit2!(a, b); TermNode::BitAnd { a, b } }
-                TermNode::BitOr { a, b } => { let (a, b) = lit2!(a, b); TermNode::BitOr { a, b } }
-                TermNode::BitXor { a, b } => { let (a, b) = lit2!(a, b); TermNode::BitXor { a, b } }
-                TermNode::Shl { a, b } => { let (a, b) = lit2!(a, b); TermNode::Shl { a, b } }
-                TermNode::Lshr { a, b } => { let (a, b) = lit2!(a, b); TermNode::Lshr { a, b } }
-                TermNode::Ashr { a, b } => { let (a, b) = lit2!(a, b); TermNode::Ashr { a, b } }
-                TermNode::Eq { a, b } => { let (a, b) = lit2!(a, b); TermNode::Eq { a, b } }
-                TermNode::Lt { a, b } => { let (a, b) = lit2!(a, b); TermNode::Lt { a, b } }
-                TermNode::Lte { a, b } => { let (a, b) = lit2!(a, b); TermNode::Lte { a, b } }
-                TermNode::Gt { a, b } => { let (a, b) = lit2!(a, b); TermNode::Gt { a, b } }
-                TermNode::Gte { a, b } => { let (a, b) = lit2!(a, b); TermNode::Gte { a, b } }
+                TermNode::Mod { a, b } => {
+                    let (a, b) = lit2!(a, b);
+                    TermNode::Mod { a, b }
+                }
+                TermNode::IDiv { a, b } => {
+                    let (a, b) = lit2!(a, b);
+                    TermNode::IDiv { a, b }
+                }
+                TermNode::IRem { a, b } => {
+                    let (a, b) = lit2!(a, b);
+                    TermNode::IRem { a, b }
+                }
+                TermNode::BitAnd { a, b } => {
+                    let (a, b) = lit2!(a, b);
+                    TermNode::BitAnd { a, b }
+                }
+                TermNode::BitOr { a, b } => {
+                    let (a, b) = lit2!(a, b);
+                    TermNode::BitOr { a, b }
+                }
+                TermNode::BitXor { a, b } => {
+                    let (a, b) = lit2!(a, b);
+                    TermNode::BitXor { a, b }
+                }
+                TermNode::Shl { a, b } => {
+                    let (a, b) = lit2!(a, b);
+                    TermNode::Shl { a, b }
+                }
+                TermNode::Lshr { a, b } => {
+                    let (a, b) = lit2!(a, b);
+                    TermNode::Lshr { a, b }
+                }
+                TermNode::Ashr { a, b } => {
+                    let (a, b) = lit2!(a, b);
+                    TermNode::Ashr { a, b }
+                }
+                TermNode::Eq { a, b } => {
+                    let (a, b) = lit2!(a, b);
+                    TermNode::Eq { a, b }
+                }
+                TermNode::Lt { a, b } => {
+                    let (a, b) = lit2!(a, b);
+                    TermNode::Lt { a, b }
+                }
+                TermNode::Lte { a, b } => {
+                    let (a, b) = lit2!(a, b);
+                    TermNode::Lte { a, b }
+                }
+                TermNode::Gt { a, b } => {
+                    let (a, b) = lit2!(a, b);
+                    TermNode::Gt { a, b }
+                }
+                TermNode::Gte { a, b } => {
+                    let (a, b) = lit2!(a, b);
+                    TermNode::Gte { a, b }
+                }
                 TermNode::In { member, container } => {
                     let (member, container) = lit2!(member, container);
                     TermNode::In { member, container }
                 }
-                TermNode::Union { a, b } => { let (a, b) = lit2!(a, b); TermNode::Union { a, b } }
+                TermNode::Union { a, b } => {
+                    let (a, b) = lit2!(a, b);
+                    TermNode::Union { a, b }
+                }
                 TermNode::Intersect { a, b } => {
                     let (a, b) = lit2!(a, b);
                     TermNode::Intersect { a, b }
@@ -1308,19 +1414,27 @@ fn eval_expr(
                 }
                 TermNode::Neg { arg } => {
                     let v = eval_expr(m, arena, arg, env, ctx)?;
-                    TermNode::Neg { arg: scratch.add(TermNode::Lit { value: v }) }
+                    TermNode::Neg {
+                        arg: scratch.add(TermNode::Lit { value: v }),
+                    }
                 }
                 TermNode::Abs { arg } => {
                     let v = eval_expr(m, arena, arg, env, ctx)?;
-                    TermNode::Abs { arg: scratch.add(TermNode::Lit { value: v }) }
+                    TermNode::Abs {
+                        arg: scratch.add(TermNode::Lit { value: v }),
+                    }
                 }
                 TermNode::Count { source } => {
                     let v = eval_expr(m, arena, source, env, ctx)?;
-                    TermNode::Count { source: scratch.add(TermNode::Lit { value: v }) }
+                    TermNode::Count {
+                        source: scratch.add(TermNode::Lit { value: v }),
+                    }
                 }
                 TermNode::Last { seq } => {
                     let v = eval_expr(m, arena, seq, env, ctx)?;
-                    TermNode::Last { seq: scratch.add(TermNode::Lit { value: v }) }
+                    TermNode::Last {
+                        seq: scratch.add(TermNode::Lit { value: v }),
+                    }
                 }
                 _ => return Err(Flow::Trap("expr:unsupported_over_prog".to_string())),
             };
@@ -1362,7 +1476,10 @@ fn call_native_oracle(
                 Value::Set(items) | Value::FrozenSet(items) => items.len(),
                 Value::Dict(pairs) => pairs.len(),
                 Value::Str(_) | Value::Surface(SurfaceKind::Text, _) => {
-                    str_like_owned(&v, interner).unwrap_or_default().chars().count()
+                    str_like_owned(&v, interner)
+                        .unwrap_or_default()
+                        .chars()
+                        .count()
                 }
                 other => return Err(Flow::Trap(format!("extern:len:{}", value_kind(other)))),
             };
@@ -1481,9 +1598,7 @@ fn call_native_oracle(
                             }
                         }
                     }
-                    other => {
-                        return Err(Flow::Trap(format!("extern:sum:{}", value_kind(&other))))
-                    }
+                    other => return Err(Flow::Trap(format!("extern:sum:{}", value_kind(&other)))),
                 }
             }
             if is_float {
@@ -1555,7 +1670,9 @@ fn call_native_oracle(
                 // type, so this is honestly approximate (round-half-
                 // even of the rendered double) the same way the
                 // Float arm already is — not a new precision concern.
-                Value::Rational(n, d) => Ok(Value::Int(round_half_even(*n as f64 / *d as f64) as i64)),
+                Value::Rational(n, d) => {
+                    Ok(Value::Int(round_half_even(*n as f64 / *d as f64) as i64))
+                }
                 other => Err(Flow::Trap(format!("extern:round:{}", value_kind(other)))),
             },
             2 => {
@@ -1573,9 +1690,10 @@ fn call_native_oracle(
                     // fraction-precision-rounding primitive, so it
                     // renders to float here (the boundary) rather than
                     // approximate a Rational round — honest, not exact.
-                    Value::Rational(n, d) => {
-                        Ok(Value::Float(round_half_even_digits(*n as f64 / *d as f64, nd)))
-                    }
+                    Value::Rational(n, d) => Ok(Value::Float(round_half_even_digits(
+                        *n as f64 / *d as f64,
+                        nd,
+                    ))),
                     other => Err(Flow::Trap(format!("extern:round:{}", value_kind(other)))),
                 }
             }
@@ -1606,7 +1724,10 @@ fn call_native_oracle(
                     }
                     let q = floor_div_i64(*a, *b);
                     let r = floor_mod_i64(*a, *b);
-                    Ok(Value::Tuple(Arc::new(smallvec::smallvec![Value::Int(q), Value::Int(r)])))
+                    Ok(Value::Tuple(Arc::new(smallvec::smallvec![
+                        Value::Int(q),
+                        Value::Int(r)
+                    ])))
                 }
                 (a, b) => {
                     let (af, bf) = (a.as_f64(), b.as_f64());
@@ -1615,14 +1736,16 @@ fn call_native_oracle(
                     }
                     let q = floor_div_f64(af, bf);
                     let r = af - q * bf;
-                    Ok(Value::Tuple(Arc::new(smallvec::smallvec![Value::Float(q), Value::Float(r)])))
+                    Ok(Value::Tuple(Arc::new(smallvec::smallvec![
+                        Value::Float(q),
+                        Value::Float(r)
+                    ])))
                 }
             }
         }
         "ord" => {
-            let s = str_like_owned(&one(args)?, interner).ok_or_else(|| {
-                Flow::Trap("extern:ord:type".to_string())
-            })?;
+            let s = str_like_owned(&one(args)?, interner)
+                .ok_or_else(|| Flow::Trap("extern:ord:type".to_string()))?;
             let mut chars = s.chars();
             match (chars.next(), chars.next()) {
                 (Some(c), None) => Ok(Value::Int(c as i64)),
@@ -1662,7 +1785,11 @@ fn call_native_oracle(
                 _ => return Err(Flow::Trap(format!("extern:{}:arity", name))),
             };
             let out = Arc::new(items.into_iter().collect());
-            Ok(if name == "tuple" { Value::Tuple(out) } else { Value::List(out) })
+            Ok(if name == "tuple" {
+                Value::Tuple(out)
+            } else {
+                Value::List(out)
+            })
         }
         "set" => {
             let items = match args.len() {
@@ -1733,7 +1860,10 @@ fn call_native_oracle(
                 // `isinstance(a / b, float)` would wrongly flip to
                 // False under this feature (a real regression).
                 "float" => matches!(&args[0], Value::Float(_) | Value::Rational(_, _)),
-                "str" => matches!(&args[0], Value::Str(_) | Value::Surface(SurfaceKind::Text, _)),
+                "str" => matches!(
+                    &args[0],
+                    Value::Str(_) | Value::Surface(SurfaceKind::Text, _)
+                ),
                 "bool" => matches!(&args[0], Value::Bool(_)),
                 // The type identity MBPP's asserts turn on. Before the
                 // ARC6 value layer these two were literally the same test.
@@ -1743,7 +1873,10 @@ fn call_native_oracle(
                 "set" | "frozenset" => matches!(&args[0], Value::Set(_) | Value::FrozenSet(_)),
                 "NoneType" | "none" => matches!(&args[0], Value::None),
                 other => {
-                    return Err(Flow::Trap(format!("extern:isinstance:unknown_type:{}", other)))
+                    return Err(Flow::Trap(format!(
+                        "extern:isinstance:unknown_type:{}",
+                        other
+                    )))
                 }
             };
             Ok(Value::Bool(matches))
@@ -1758,7 +1891,10 @@ fn call_native_oracle(
                 .into_iter()
                 .enumerate()
                 .map(|(i, v)| {
-                    Value::Tuple(Arc::new(smallvec::smallvec![Value::Int(start + i as i64), v]))
+                    Value::Tuple(Arc::new(smallvec::smallvec![
+                        Value::Int(start + i as i64),
+                        v
+                    ]))
                 })
                 .collect();
             Ok(Value::Tuple(Arc::new(out)))
@@ -1815,7 +1951,9 @@ fn call_recv_oracle(name: &str, recv: &Value, args: &[Value], interner: &Interne
                 return Ok(Value::Tuple(Arc::new(out)));
             }
             "get" => {
-                let key = args.first().ok_or_else(|| Flow::Trap("extern:get:arity".to_string()))?;
+                let key = args
+                    .first()
+                    .ok_or_else(|| Flow::Trap("extern:get:arity".to_string()))?;
                 let found = pairs.iter().find(|(k, _)| {
                     cmp_value(k, key) == std::cmp::Ordering::Equal
                         || matches!(
@@ -1840,9 +1978,7 @@ fn call_recv_oracle(name: &str, recv: &Value, args: &[Value], interner: &Interne
         "capitalize" => {
             let mut chars = s.chars();
             let out = match chars.next() {
-                Some(c) => {
-                    c.to_uppercase().collect::<String>() + &chars.as_str().to_lowercase()
-                }
+                Some(c) => c.to_uppercase().collect::<String>() + &chars.as_str().to_lowercase(),
                 None => String::new(),
             };
             Ok(surf_string(out))
@@ -1860,7 +1996,12 @@ fn call_recv_oracle(name: &str, recv: &Value, args: &[Value], interner: &Interne
                 "rstrip" => (false, true),
                 _ => (true, true),
             };
-            Ok(surf_string(strip_chars(&s, chars_arg.as_deref(), left, right)))
+            Ok(surf_string(strip_chars(
+                &s,
+                chars_arg.as_deref(),
+                left,
+                right,
+            )))
         }
         "split" => {
             let sep = match args.first() {
@@ -1886,7 +2027,11 @@ fn call_recv_oracle(name: &str, recv: &Value, args: &[Value], interner: &Interne
                     if sep.is_empty() {
                         return Err(Flow::Trap("extern:split:empty_sep".to_string()));
                     }
-                    let n = if n < 0 { usize::MAX } else { (n as usize).saturating_add(1) };
+                    let n = if n < 0 {
+                        usize::MAX
+                    } else {
+                        (n as usize).saturating_add(1)
+                    };
                     s.splitn(n, sep.as_str()).map(|p| p.to_string()).collect()
                 }
             };
@@ -1895,7 +2040,9 @@ fn call_recv_oracle(name: &str, recv: &Value, args: &[Value], interner: &Interne
             Ok(Value::List(Arc::new(out)))
         }
         "join" => {
-            let iterable = args.first().ok_or_else(|| Flow::Trap("extern:join:arity".to_string()))?;
+            let iterable = args
+                .first()
+                .ok_or_else(|| Flow::Trap("extern:join:arity".to_string()))?;
             let items = iter_items(iterable, interner)?;
             let mut parts = Vec::with_capacity(items.len());
             for it in items {
@@ -1928,7 +2075,9 @@ fn call_recv_oracle(name: &str, recv: &Value, args: &[Value], interner: &Interne
             Ok(surf_string(out))
         }
         "startswith" | "endswith" => {
-            let arg = args.first().ok_or_else(|| Flow::Trap(format!("extern:{}:arity", name)))?;
+            let arg = args
+                .first()
+                .ok_or_else(|| Flow::Trap(format!("extern:{}:arity", name)))?;
             let candidates: Vec<String> = match arg {
                 Value::Tuple(items) | Value::List(items) => items
                     .iter()
@@ -1947,16 +2096,20 @@ fn call_recv_oracle(name: &str, recv: &Value, args: &[Value], interner: &Interne
             Ok(Value::Bool(hit))
         }
         "find" => {
-            let needle = args.first().ok_or_else(|| Flow::Trap("extern:find:arity".to_string()))?;
-            let needle =
-                str_like_owned(needle, interner).ok_or_else(|| Flow::Trap("extern:find:argtype".to_string()))?;
+            let needle = args
+                .first()
+                .ok_or_else(|| Flow::Trap("extern:find:arity".to_string()))?;
+            let needle = str_like_owned(needle, interner)
+                .ok_or_else(|| Flow::Trap("extern:find:argtype".to_string()))?;
             Ok(Value::Int(match s.find(needle.as_str()) {
                 Some(byte_idx) => byte_to_char_idx(&s, byte_idx),
                 None => -1,
             }))
         }
         "count" => {
-            let needle = args.first().ok_or_else(|| Flow::Trap("extern:count:arity".to_string()))?;
+            let needle = args
+                .first()
+                .ok_or_else(|| Flow::Trap("extern:count:arity".to_string()))?;
             let needle = str_like_owned(needle, interner)
                 .ok_or_else(|| Flow::Trap("extern:count:argtype".to_string()))?;
             let n = if needle.is_empty() {
@@ -1966,15 +2119,23 @@ fn call_recv_oracle(name: &str, recv: &Value, args: &[Value], interner: &Interne
             };
             Ok(Value::Int(n))
         }
-        "isdigit" => Ok(Value::Bool(!s.is_empty() && s.chars().all(|c| c.is_ascii_digit()))),
-        "isalpha" => Ok(Value::Bool(!s.is_empty() && s.chars().all(|c| c.is_alphabetic()))),
+        "isdigit" => Ok(Value::Bool(
+            !s.is_empty() && s.chars().all(|c| c.is_ascii_digit()),
+        )),
+        "isalpha" => Ok(Value::Bool(
+            !s.is_empty() && s.chars().all(|c| c.is_alphabetic()),
+        )),
         "isupper" => {
             let cased: Vec<char> = s.chars().filter(|c| c.is_alphabetic()).collect();
-            Ok(Value::Bool(!cased.is_empty() && cased.iter().all(|c| c.is_uppercase())))
+            Ok(Value::Bool(
+                !cased.is_empty() && cased.iter().all(|c| c.is_uppercase()),
+            ))
         }
         "islower" => {
             let cased: Vec<char> = s.chars().filter(|c| c.is_alphabetic()).collect();
-            Ok(Value::Bool(!cased.is_empty() && cased.iter().all(|c| c.is_lowercase())))
+            Ok(Value::Bool(
+                !cased.is_empty() && cased.iter().all(|c| c.is_lowercase()),
+            ))
         }
         other => Err(Flow::Trap(format!("extern:unimplemented:{}", other))),
     }
@@ -2044,8 +2205,12 @@ pub(crate) fn eval_prog_eval(
         let pv = evaluate(arena, prog, env, ctx);
         match pv {
             Value::Node(nid) => {
-                match crate::reflect::term_from_subgraph(ctx.graph, ctx.interner, nid, &mut scratch_prog)
-                {
+                match crate::reflect::term_from_subgraph(
+                    ctx.graph,
+                    ctx.interner,
+                    nid,
+                    &mut scratch_prog,
+                ) {
                     Ok(sub) => {
                         if is_prog(scratch_prog.get(sub)) {
                             (&scratch_prog, sub)
@@ -2102,10 +2267,17 @@ pub(crate) fn eval_prog_eval(
 
     match outcome {
         Ok(result) => finish_result(&machine, result, true, None, field, ctx.interner),
-        Err(Flow::Fuel) => {
-            finish_result(&machine, Value::None, false, Some("fuel".to_string()), field, ctx.interner)
+        Err(Flow::Fuel) => finish_result(
+            &machine,
+            Value::None,
+            false,
+            Some("fuel".to_string()),
+            field,
+            ctx.interner,
+        ),
+        Err(Flow::Trap(t)) => {
+            finish_result(&machine, Value::None, false, Some(t), field, ctx.interner)
         }
-        Err(Flow::Trap(t)) => finish_result(&machine, Value::None, false, Some(t), field, ctx.interner),
         Err(Flow::Break) | Err(Flow::Continue) => finish_result(
             &machine,
             Value::None,
@@ -2270,18 +2442,33 @@ mod tests {
         let b_s = f.sym("b");
         let c_s = f.sym("c");
         let two = f.lit(Value::Int(2));
-        let s1 = f.arena.add(TermNode::ProgAssignVar { name: a_s, value: two });
+        let s1 = f.arena.add(TermNode::ProgAssignVar {
+            name: a_s,
+            value: two,
+        });
         let av = f.var("a");
         let three = f.lit(Value::Int(3));
-        let mul = f.arena.add(TermNode::Times { items: vec![av, three] });
+        let mul = f.arena.add(TermNode::Times {
+            items: vec![av, three],
+        });
         let four = f.lit(Value::Int(4));
-        let plus = f.arena.add(TermNode::Plus { items: vec![mul, four] });
-        let s2 = f.arena.add(TermNode::ProgAssignVar { name: b_s, value: plus });
+        let plus = f.arena.add(TermNode::Plus {
+            items: vec![mul, four],
+        });
+        let s2 = f.arena.add(TermNode::ProgAssignVar {
+            name: b_s,
+            value: plus,
+        });
         let bv = f.var("b");
         let av2 = f.var("a");
         let sub = f.arena.add(TermNode::Minus { a: bv, b: av2 });
-        let s3 = f.arena.add(TermNode::ProgAssignVar { name: c_s, value: sub });
-        let seq = f.arena.add(TermNode::ProgSeq { stmts: vec![s1, s2, s3] });
+        let s3 = f.arena.add(TermNode::ProgAssignVar {
+            name: c_s,
+            value: sub,
+        });
+        let seq = f.arena.add(TermNode::ProgSeq {
+            stmts: vec![s1, s2, s3],
+        });
         let out = f.run(seq, 100);
         assert_eq!(dget(&out, "halted"), Value::Bool(true));
         assert_eq!(dget(&out, "trap"), Value::None);
@@ -2298,16 +2485,31 @@ mod tests {
         let x_s = f.sym("x");
         let y_s = f.sym("y");
         let five = f.lit(Value::Int(5));
-        let s0 = f.arena.add(TermNode::ProgAssignVar { name: x_s, value: five });
+        let s0 = f.arena.add(TermNode::ProgAssignVar {
+            name: x_s,
+            value: five,
+        });
         let xv = f.var("x");
         let three = f.lit(Value::Int(3));
         let cond = f.arena.add(TermNode::Gt { a: xv, b: three });
         let one = f.lit(Value::Int(1));
-        let then = f.arena.add(TermNode::ProgAssignVar { name: y_s, value: one });
+        let then = f.arena.add(TermNode::ProgAssignVar {
+            name: y_s,
+            value: one,
+        });
         let zero = f.lit(Value::Int(0));
-        let els = f.arena.add(TermNode::ProgAssignVar { name: y_s, value: zero });
-        let ifs = f.arena.add(TermNode::ProgIfStmt { cond, then, orelse: Some(els) });
-        let seq = f.arena.add(TermNode::ProgSeq { stmts: vec![s0, ifs] });
+        let els = f.arena.add(TermNode::ProgAssignVar {
+            name: y_s,
+            value: zero,
+        });
+        let ifs = f.arena.add(TermNode::ProgIfStmt {
+            cond,
+            then,
+            orelse: Some(els),
+        });
+        let seq = f.arena.add(TermNode::ProgSeq {
+            stmts: vec![s0, ifs],
+        });
         let out = f.run(seq, 100);
         assert_eq!(env_var(&out, &f.interner, "y"), Value::Int(1));
         assert_eq!(dget(&out, "halted"), Value::Bool(true));
@@ -2322,13 +2524,31 @@ mod tests {
         let range_s = f.sym("range");
         let add_s = f.sym("add");
         let zero = f.lit(Value::Int(0));
-        let s0 = f.arena.add(TermNode::ProgAssignVar { name: total_s, value: zero });
+        let s0 = f.arena.add(TermNode::ProgAssignVar {
+            name: total_s,
+            value: zero,
+        });
         let five = f.lit(Value::Int(5));
-        let call = f.arena.add(TermNode::ProgCallExtern { name: range_s, recv: None, args: vec![five] });
+        let call = f.arena.add(TermNode::ProgCallExtern {
+            name: range_s,
+            recv: None,
+            args: vec![five],
+        });
         let iv = f.var("i");
-        let aug = f.arena.add(TermNode::ProgAugAssign { name: total_s, op: add_s, value: iv });
-        let fore = f.arena.add(TermNode::ProgForEach { var: i_s, iter: call, body: aug, orelse: None });
-        let seq = f.arena.add(TermNode::ProgSeq { stmts: vec![s0, fore] });
+        let aug = f.arena.add(TermNode::ProgAugAssign {
+            name: total_s,
+            op: add_s,
+            value: iv,
+        });
+        let fore = f.arena.add(TermNode::ProgForEach {
+            var: i_s,
+            iter: call,
+            body: aug,
+            orelse: None,
+        });
+        let seq = f.arena.add(TermNode::ProgSeq {
+            stmts: vec![s0, fore],
+        });
         let oracles = f.oracle_decl(&["range"]);
         let out = f.run_with(seq, 100, None, Some(oracles));
         assert_eq!(dget(&out, "trap"), Value::None);
@@ -2342,14 +2562,28 @@ mod tests {
         let mut f = Fixture::new();
         let i_s = f.sym("i");
         let zero = f.lit(Value::Int(0));
-        let s0 = f.arena.add(TermNode::ProgAssignVar { name: i_s, value: zero });
+        let s0 = f.arena.add(TermNode::ProgAssignVar {
+            name: i_s,
+            value: zero,
+        });
         let tru = f.lit(Value::Bool(true));
         let iv = f.var("i");
         let one = f.lit(Value::Int(1));
-        let plus = f.arena.add(TermNode::Plus { items: vec![iv, one] });
-        let body = f.arena.add(TermNode::ProgAssignVar { name: i_s, value: plus });
-        let wh = f.arena.add(TermNode::ProgWhile { cond: tru, body, orelse: None });
-        let seq = f.arena.add(TermNode::ProgSeq { stmts: vec![s0, wh] });
+        let plus = f.arena.add(TermNode::Plus {
+            items: vec![iv, one],
+        });
+        let body = f.arena.add(TermNode::ProgAssignVar {
+            name: i_s,
+            value: plus,
+        });
+        let wh = f.arena.add(TermNode::ProgWhile {
+            cond: tru,
+            body,
+            orelse: None,
+        });
+        let seq = f.arena.add(TermNode::ProgSeq {
+            stmts: vec![s0, wh],
+        });
         let out = f.run(seq, 7);
         assert_eq!(dget(&out, "halted"), Value::Bool(false));
         assert_eq!(dget(&out, "steps"), Value::Int(7));
@@ -2367,19 +2601,41 @@ mod tests {
         let s_s = f.sym("s");
         let add_s = f.sym("add");
         let zero1 = f.lit(Value::Int(0));
-        let a0 = f.arena.add(TermNode::ProgAssignVar { name: i_s, value: zero1 });
+        let a0 = f.arena.add(TermNode::ProgAssignVar {
+            name: i_s,
+            value: zero1,
+        });
         let zero2 = f.lit(Value::Int(0));
-        let a1 = f.arena.add(TermNode::ProgAssignVar { name: s_s, value: zero2 });
+        let a1 = f.arena.add(TermNode::ProgAssignVar {
+            name: s_s,
+            value: zero2,
+        });
         let iv = f.var("i");
         let five = f.lit(Value::Int(5));
         let cond = f.arena.add(TermNode::Lt { a: iv, b: five });
         let iv2 = f.var("i");
-        let aug1 = f.arena.add(TermNode::ProgAugAssign { name: s_s, op: add_s, value: iv2 });
+        let aug1 = f.arena.add(TermNode::ProgAugAssign {
+            name: s_s,
+            op: add_s,
+            value: iv2,
+        });
         let one = f.lit(Value::Int(1));
-        let aug2 = f.arena.add(TermNode::ProgAugAssign { name: i_s, op: add_s, value: one });
-        let body = f.arena.add(TermNode::ProgSeq { stmts: vec![aug1, aug2] });
-        let wh = f.arena.add(TermNode::ProgWhile { cond, body, orelse: None });
-        let seq = f.arena.add(TermNode::ProgSeq { stmts: vec![a0, a1, wh] });
+        let aug2 = f.arena.add(TermNode::ProgAugAssign {
+            name: i_s,
+            op: add_s,
+            value: one,
+        });
+        let body = f.arena.add(TermNode::ProgSeq {
+            stmts: vec![aug1, aug2],
+        });
+        let wh = f.arena.add(TermNode::ProgWhile {
+            cond,
+            body,
+            orelse: None,
+        });
+        let seq = f.arena.add(TermNode::ProgSeq {
+            stmts: vec![a0, a1, wh],
+        });
         let out = f.run(seq, 100);
         assert_eq!(dget(&out, "halted"), Value::Bool(true));
         assert_eq!(env_var(&out, &f.interner, "s"), Value::Int(10));
@@ -2396,8 +2652,15 @@ mod tests {
         let boom = f.lit(Value::Str(boom_sym__));
         let raise = f.arena.add(TermNode::ProgRaise { exc: Some(boom) });
         let one = f.lit(Value::Int(1));
-        let handler = f.arena.add(TermNode::ProgAssignVar { name: caught_s, value: one });
-        let tryo = f.arena.add(TermNode::ProgTryOr { body: raise, exc_var: e_s, handler: Some(handler) });
+        let handler = f.arena.add(TermNode::ProgAssignVar {
+            name: caught_s,
+            value: one,
+        });
+        let tryo = f.arena.add(TermNode::ProgTryOr {
+            body: raise,
+            exc_var: e_s,
+            handler: Some(handler),
+        });
         let out = f.run(tryo, 100);
         assert_eq!(dget(&out, "halted"), Value::Bool(true));
         assert_eq!(env_var(&out, &f.interner, "caught"), Value::Int(1));
@@ -2408,11 +2671,21 @@ mod tests {
         let tru = f2.lit(Value::Bool(true));
         let i_s = f2.sym("i");
         let one2 = f2.lit(Value::Int(1));
-        let body = f2.arena.add(TermNode::ProgAssignVar { name: i_s, value: one2 });
-        let wh = f2.arena.add(TermNode::ProgWhile { cond: tru, body, orelse: None });
+        let body = f2.arena.add(TermNode::ProgAssignVar {
+            name: i_s,
+            value: one2,
+        });
+        let wh = f2.arena.add(TermNode::ProgWhile {
+            cond: tru,
+            body,
+            orelse: None,
+        });
         let x_s = f2.sym("x");
         let nine = f2.lit(Value::Int(9));
-        let handler2 = f2.arena.add(TermNode::ProgAssignVar { name: x_s, value: nine });
+        let handler2 = f2.arena.add(TermNode::ProgAssignVar {
+            name: x_s,
+            value: nine,
+        });
         let tryo2 = f2.arena.add(TermNode::ProgTryOr {
             body: wh,
             exc_var: Sym::default(),
@@ -2445,7 +2718,10 @@ mod tests {
             Value::Int(3),
             Value::Int(4)
         ])));
-        let unp = f.arena.add(TermNode::ProgTupleUnpack { targets: vec![a_s, b_s], value: pair });
+        let unp = f.arena.add(TermNode::ProgTupleUnpack {
+            targets: vec![a_s, b_s],
+            value: pair,
+        });
         let out = f.run(unp, 100);
         assert_eq!(env_var(&out, &f.interner, "a"), Value::Int(3));
         assert_eq!(env_var(&out, &f.interner, "b"), Value::Int(4));
@@ -2458,8 +2734,10 @@ mod tests {
             Value::Int(1),
             Value::Int(2)
         ])));
-        let unp2 =
-            f2.arena.add(TermNode::ProgTupleUnpack { targets: vec![a2, b2, c2], value: pair2 });
+        let unp2 = f2.arena.add(TermNode::ProgTupleUnpack {
+            targets: vec![a2, b2, c2],
+            value: pair2,
+        });
         let out2 = f2.run(unp2, 100);
         assert_eq!(dget(&out2, "halted"), Value::Bool(false));
         assert_eq!(dget(&out2, "trap"), surf("unpack:arity"));
@@ -2478,7 +2756,9 @@ mod tests {
         ])));
         let xv = f.var("x");
         let xv2 = f.var("x");
-        let sq = f.arena.add(TermNode::Times { items: vec![xv, xv2] });
+        let sq = f.arena.add(TermNode::Times {
+            items: vec![xv, xv2],
+        });
         let xv3 = f.var("x");
         let one = f.lit(Value::Int(1));
         let cond = f.arena.add(TermNode::Gt { a: xv3, b: one });
@@ -2488,7 +2768,10 @@ mod tests {
             expr: sq,
             cond: Some(cond),
         });
-        let assign = f.arena.add(TermNode::ProgAssignVar { name: ys_s, value: comp });
+        let assign = f.arena.add(TermNode::ProgAssignVar {
+            name: ys_s,
+            value: comp,
+        });
         let out = f.run(assign, 100);
         let ys = env_var(&out, &f.interner, "ys");
         // 2026-08-02 (ARC6 value layer): a list comprehension now realises
@@ -2513,8 +2796,15 @@ mod tests {
             Value::Int(8),
             Value::Int(9)
         ])));
-        let call = f.arena.add(TermNode::ProgCallExtern { name: len_s, recv: None, args: vec![xs] });
-        let assign = f.arena.add(TermNode::ProgAssignVar { name: n_s, value: call });
+        let call = f.arena.add(TermNode::ProgCallExtern {
+            name: len_s,
+            recv: None,
+            args: vec![xs],
+        });
+        let assign = f.arena.add(TermNode::ProgAssignVar {
+            name: n_s,
+            value: call,
+        });
         let oracles = f.oracle_decl(&["len"]);
         let out = f.run_with(assign, 100, None, Some(oracles));
         assert_eq!(env_var(&out, &f.interner, "n"), Value::Int(3));
@@ -2524,8 +2814,15 @@ mod tests {
         let y_s = f2.sym("y");
         let foo_s = f2.sym("foo");
         let one = f2.lit(Value::Int(1));
-        let call2 = f2.arena.add(TermNode::ProgCallExtern { name: foo_s, recv: None, args: vec![one] });
-        let assign2 = f2.arena.add(TermNode::ProgAssignVar { name: y_s, value: call2 });
+        let call2 = f2.arena.add(TermNode::ProgCallExtern {
+            name: foo_s,
+            recv: None,
+            args: vec![one],
+        });
+        let assign2 = f2.arena.add(TermNode::ProgAssignVar {
+            name: y_s,
+            value: call2,
+        });
         let out2 = f2.run(assign2, 100);
         assert_eq!(dget(&out2, "halted"), Value::Bool(false));
         assert_eq!(dget(&out2, "trap"), surf("extern:foo"));
@@ -2547,24 +2844,52 @@ mod tests {
         let brk_s = f.sym("break");
         let cont_s = f.sym("continue");
         let zero = f.lit(Value::Int(0));
-        let s0 = f.arena.add(TermNode::ProgAssignVar { name: total_s, value: zero });
+        let s0 = f.arena.add(TermNode::ProgAssignVar {
+            name: total_s,
+            value: zero,
+        });
         let ten = f.lit(Value::Int(10));
-        let call = f.arena.add(TermNode::ProgCallExtern { name: range_s, recv: None, args: vec![ten] });
+        let call = f.arena.add(TermNode::ProgCallExtern {
+            name: range_s,
+            recv: None,
+            args: vec![ten],
+        });
         let iv1 = f.var("i");
         let three = f.lit(Value::Int(3));
         let is3 = f.arena.add(TermNode::Eq { a: iv1, b: three });
         let brk = f.arena.add(TermNode::ProgLoopCtl { kind: brk_s });
-        let if_break = f.arena.add(TermNode::ProgIfStmt { cond: is3, then: brk, orelse: None });
+        let if_break = f.arena.add(TermNode::ProgIfStmt {
+            cond: is3,
+            then: brk,
+            orelse: None,
+        });
         let iv2 = f.var("i");
         let one = f.lit(Value::Int(1));
         let is1 = f.arena.add(TermNode::Eq { a: iv2, b: one });
         let cont = f.arena.add(TermNode::ProgLoopCtl { kind: cont_s });
-        let if_cont = f.arena.add(TermNode::ProgIfStmt { cond: is1, then: cont, orelse: None });
+        let if_cont = f.arena.add(TermNode::ProgIfStmt {
+            cond: is1,
+            then: cont,
+            orelse: None,
+        });
         let iv3 = f.var("i");
-        let aug = f.arena.add(TermNode::ProgAugAssign { name: total_s, op: add_s, value: iv3 });
-        let body = f.arena.add(TermNode::ProgSeq { stmts: vec![if_break, if_cont, aug] });
-        let fore = f.arena.add(TermNode::ProgForEach { var: i_s, iter: call, body, orelse: None });
-        let seq = f.arena.add(TermNode::ProgSeq { stmts: vec![s0, fore] });
+        let aug = f.arena.add(TermNode::ProgAugAssign {
+            name: total_s,
+            op: add_s,
+            value: iv3,
+        });
+        let body = f.arena.add(TermNode::ProgSeq {
+            stmts: vec![if_break, if_cont, aug],
+        });
+        let fore = f.arena.add(TermNode::ProgForEach {
+            var: i_s,
+            iter: call,
+            body,
+            orelse: None,
+        });
+        let seq = f.arena.add(TermNode::ProgSeq {
+            stmts: vec![s0, fore],
+        });
         let oracles = f.oracle_decl(&["range"]);
         let out = f.run_with(seq, 200, None, Some(oracles));
         assert_eq!(dget(&out, "trap"), Value::None);
@@ -2577,14 +2902,24 @@ mod tests {
         let mut f = Fixture::new();
         let x_s = f.sym("x");
         let five = f.lit(Value::Int(5));
-        let s0 = f.arena.add(TermNode::ProgAssignVar { name: x_s, value: five });
+        let s0 = f.arena.add(TermNode::ProgAssignVar {
+            name: x_s,
+            value: five,
+        });
         let xv = f.var("x");
         let two = f.lit(Value::Int(2));
-        let mul = f.arena.add(TermNode::Times { items: vec![xv, two] });
+        let mul = f.arena.add(TermNode::Times {
+            items: vec![xv, two],
+        });
         let ret = f.arena.add(TermNode::ProgReturn { value: Some(mul) });
         let nine9 = f.lit(Value::Int(99));
-        let dead = f.arena.add(TermNode::ProgAssignVar { name: x_s, value: nine9 });
-        let seq = f.arena.add(TermNode::ProgSeq { stmts: vec![s0, ret, dead] });
+        let dead = f.arena.add(TermNode::ProgAssignVar {
+            name: x_s,
+            value: nine9,
+        });
+        let seq = f.arena.add(TermNode::ProgSeq {
+            stmts: vec![s0, ret, dead],
+        });
         let out = f.run(seq, 100);
         assert_eq!(dget(&out, "result"), Value::Int(10));
         assert_eq!(dget(&out, "halted"), Value::Bool(true));
@@ -2604,18 +2939,33 @@ mod tests {
             kind: f.interner.intern("dict"),
             items: vec![k_lit1, one],
         });
-        let s0 = f.arena.add(TermNode::ProgAssignVar { name: d_s, value: dict_lit });
+        let s0 = f.arena.add(TermNode::ProgAssignVar {
+            name: d_s,
+            value: dict_lit,
+        });
         let dv = f.var("d");
         let k_lit2_sym__ = f.interner.intern("k");
         let k_lit2 = f.lit(Value::Str(k_lit2_sym__));
         let five = f.lit(Value::Int(5));
-        let sset = f.arena.add(TermNode::ProgSubscriptSet { obj: dv, index: k_lit2, value: five });
+        let sset = f.arena.add(TermNode::ProgSubscriptSet {
+            obj: dv,
+            index: k_lit2,
+            value: five,
+        });
         let dv2 = f.var("d");
         let k_lit3_sym__ = f.interner.intern("k");
         let k_lit3 = f.lit(Value::Str(k_lit3_sym__));
-        let sub = f.arena.add(TermNode::ProgSubscript { obj: dv2, index: k_lit3 });
-        let s2 = f.arena.add(TermNode::ProgAssignVar { name: y_s, value: sub });
-        let seq = f.arena.add(TermNode::ProgSeq { stmts: vec![s0, sset, s2] });
+        let sub = f.arena.add(TermNode::ProgSubscript {
+            obj: dv2,
+            index: k_lit3,
+        });
+        let s2 = f.arena.add(TermNode::ProgAssignVar {
+            name: y_s,
+            value: sub,
+        });
+        let seq = f.arena.add(TermNode::ProgSeq {
+            stmts: vec![s0, sset, s2],
+        });
         let out = f.run(seq, 100);
         assert_eq!(dget(&out, "trap"), Value::None);
         assert_eq!(env_var(&out, &f.interner, "y"), Value::Int(5));
@@ -2629,16 +2979,33 @@ mod tests {
             kind: f2.interner.intern("dict"),
             items: vec![],
         });
-        let s0 = f2.arena.add(TermNode::ProgAssignVar { name: r_s, value: empty });
+        let s0 = f2.arena.add(TermNode::ProgAssignVar {
+            name: r_s,
+            value: empty,
+        });
         let rv = f2.var("r");
         let seven = f2.lit(Value::Int(7));
-        let aset = f2.arena.add(TermNode::ProgAttrSet { obj: rv, attr: x_attr, value: seven });
+        let aset = f2.arena.add(TermNode::ProgAttrSet {
+            obj: rv,
+            attr: x_attr,
+            value: seven,
+        });
         let rv2 = f2.var("r");
-        let aget = f2.arena.add(TermNode::ProgAttrGet { obj: rv2, attr: x_attr });
+        let aget = f2.arena.add(TermNode::ProgAttrGet {
+            obj: rv2,
+            attr: x_attr,
+        });
         let one2 = f2.lit(Value::Int(1));
-        let plus = f2.arena.add(TermNode::Plus { items: vec![aget, one2] });
-        let s2 = f2.arena.add(TermNode::ProgAssignVar { name: z_s, value: plus });
-        let seq2 = f2.arena.add(TermNode::ProgSeq { stmts: vec![s0, aset, s2] });
+        let plus = f2.arena.add(TermNode::Plus {
+            items: vec![aget, one2],
+        });
+        let s2 = f2.arena.add(TermNode::ProgAssignVar {
+            name: z_s,
+            value: plus,
+        });
+        let seq2 = f2.arena.add(TermNode::ProgSeq {
+            stmts: vec![s0, aset, s2],
+        });
         let out2 = f2.run(seq2, 100);
         assert_eq!(dget(&out2, "trap"), Value::None);
         assert_eq!(env_var(&out2, &f2.interner, "z"), Value::Int(8));
@@ -2650,8 +3017,15 @@ mod tests {
         let y_s = f.sym("y");
         let none = f.lit(Value::None);
         let none2 = f.lit(Value::None);
-        let is_op = f.arena.add(TermNode::ProgIsOp { a: none, b: none2, negated: false });
-        let assign = f.arena.add(TermNode::ProgAssignVar { name: y_s, value: is_op });
+        let is_op = f.arena.add(TermNode::ProgIsOp {
+            a: none,
+            b: none2,
+            negated: false,
+        });
+        let assign = f.arena.add(TermNode::ProgAssignVar {
+            name: y_s,
+            value: is_op,
+        });
         let out = f.run(assign, 100);
         assert_eq!(env_var(&out, &f.interner, "y"), Value::Bool(true));
 
@@ -2659,8 +3033,15 @@ mod tests {
         let y2 = f2.sym("y");
         let a = f2.lit(Value::Int(1));
         let b = f2.lit(Value::Int(1));
-        let is_op2 = f2.arena.add(TermNode::ProgIsOp { a, b, negated: false });
-        let assign2 = f2.arena.add(TermNode::ProgAssignVar { name: y2, value: is_op2 });
+        let is_op2 = f2.arena.add(TermNode::ProgIsOp {
+            a,
+            b,
+            negated: false,
+        });
+        let assign2 = f2.arena.add(TermNode::ProgAssignVar {
+            name: y2,
+            value: is_op2,
+        });
         let out2 = f2.run(assign2, 100);
         assert_eq!(dget(&out2, "halted"), Value::Bool(false));
         assert_eq!(dget(&out2, "trap"), surf("is_op:unsupported"));
@@ -2677,8 +3058,13 @@ mod tests {
         let xv = f.var("x");
         let bang_sym__ = f.interner.intern("!");
         let bang = f.lit(Value::Str(bang_sym__));
-        let fs = f.arena.add(TermNode::ProgFString { parts: vec![seg, xv, bang] });
-        let assign = f.arena.add(TermNode::ProgAssignVar { name: s_s, value: fs });
+        let fs = f.arena.add(TermNode::ProgFString {
+            parts: vec![seg, xv, bang],
+        });
+        let assign = f.arena.add(TermNode::ProgAssignVar {
+            name: s_s,
+            value: fs,
+        });
         let mut pairs: Vec<(Value, Value)> =
             vec![(Value::Str(f.interner.intern("x")), Value::Int(7))];
         pairs.sort_by(|a, b| cmp_value(&a.0, &b.0));
@@ -2696,11 +3082,19 @@ mod tests {
         let n_s = f.sym("n");
         let y_s = f.sym("y");
         let seven = f.lit(Value::Int(7));
-        let p = f.arena.add(TermNode::ProgDefFnParam { name: n_s, default: Some(seven) });
+        let p = f.arena.add(TermNode::ProgDefFnParam {
+            name: n_s,
+            default: Some(seven),
+        });
         let nv = f.var("n");
         let one = f.lit(Value::Int(1));
-        let plus = f.arena.add(TermNode::Plus { items: vec![nv, one] });
-        let a = f.arena.add(TermNode::ProgAssignVar { name: y_s, value: plus });
+        let plus = f.arena.add(TermNode::Plus {
+            items: vec![nv, one],
+        });
+        let a = f.arena.add(TermNode::ProgAssignVar {
+            name: y_s,
+            value: plus,
+        });
         let seq = f.arena.add(TermNode::ProgSeq { stmts: vec![p, a] });
         let out = f.run(seq, 100);
         assert_eq!(env_var(&out, &f.interner, "y"), Value::Int(8));
@@ -2708,7 +3102,10 @@ mod tests {
         // param q with NO default and no env → trap param:q
         let mut f2 = Fixture::new();
         let q_s = f2.sym("q");
-        let p2 = f2.arena.add(TermNode::ProgDefFnParam { name: q_s, default: None });
+        let p2 = f2.arena.add(TermNode::ProgDefFnParam {
+            name: q_s,
+            default: None,
+        });
         let out2 = f2.run(p2, 100);
         assert_eq!(dget(&out2, "halted"), Value::Bool(false));
         assert_eq!(dget(&out2, "trap"), surf("param:q"));
@@ -2720,7 +3117,10 @@ mod tests {
         let mut f = Fixture::new();
         let x_s = f.sym("x");
         let one = f.lit(Value::Int(1));
-        let assign = f.arena.add(TermNode::ProgAssignVar { name: x_s, value: one });
+        let assign = f.arena.add(TermNode::ProgAssignVar {
+            name: x_s,
+            value: one,
+        });
         let mut env: Env = SmallVec::new();
         let mut ctx = EvalCtx::new(&f.graph, &f.interner);
         assert_eq!(evaluate(&f.arena, assign, &mut env, &mut ctx), Value::None);
@@ -2736,19 +3136,28 @@ mod tests {
         let sc = f.arena.add(TermNode::SnakeCase { text: t });
         let mut env: Env = SmallVec::new();
         let mut ctx = EvalCtx::new(&f.graph, &f.interner);
-        assert_eq!(evaluate(&f.arena, sc, &mut env, &mut ctx), surf("total_cost_usd"));
+        assert_eq!(
+            evaluate(&f.arena, sc, &mut env, &mut ctx),
+            surf("total_cost_usd")
+        );
 
         let t2_sym__ = f.interner.intern("camelCaseName");
         let t2 = f.lit(Value::Str(t2_sym__));
         let sc2 = f.arena.add(TermNode::SnakeCase { text: t2 });
         let mut ctx2 = EvalCtx::new(&f.graph, &f.interner);
-        assert_eq!(evaluate(&f.arena, sc2, &mut env, &mut ctx2), surf("camel_case_name"));
+        assert_eq!(
+            evaluate(&f.arena, sc2, &mut env, &mut ctx2),
+            surf("camel_case_name")
+        );
 
         let t3_sym__ = f.interner.intern("MiXeD UP");
         let t3 = f.lit(Value::Str(t3_sym__));
         let cf = f.arena.add(TermNode::CaseFold { text: t3 });
         let mut ctx3 = EvalCtx::new(&f.graph, &f.interner);
-        assert_eq!(evaluate(&f.arena, cf, &mut env, &mut ctx3), surf("mixed up"));
+        assert_eq!(
+            evaluate(&f.arena, cf, &mut env, &mut ctx3),
+            surf("mixed up")
+        );
 
         // Non-string → honest None.
         let t4 = f.lit(Value::Int(3));
@@ -2765,12 +3174,22 @@ mod tests {
         let x_s = f.sym("x");
         let y_s = f.sym("y");
         let two = f.lit(Value::Int(2));
-        let s0 = f.arena.add(TermNode::ProgAssignVar { name: x_s, value: two });
+        let s0 = f.arena.add(TermNode::ProgAssignVar {
+            name: x_s,
+            value: two,
+        });
         let xv = f.var("x");
         let three = f.lit(Value::Int(3));
-        let plus = f.arena.add(TermNode::Plus { items: vec![xv, three] });
-        let s1 = f.arena.add(TermNode::ProgAssignVar { name: y_s, value: plus });
-        let seq = f.arena.add(TermNode::ProgSeq { stmts: vec![s0, s1] });
+        let plus = f.arena.add(TermNode::Plus {
+            items: vec![xv, three],
+        });
+        let s1 = f.arena.add(TermNode::ProgAssignVar {
+            name: y_s,
+            value: plus,
+        });
+        let seq = f.arena.add(TermNode::ProgSeq {
+            stmts: vec![s0, s1],
+        });
         let root_nid =
             crate::reflect::term_to_subgraph(&f.arena, seq, &mut f.graph, &mut f.interner);
         let node_lit = f.lit(Value::Node(root_nid));
@@ -2790,7 +3209,10 @@ mod tests {
             kind: f.interner.intern("dict"),
             items: vec![],
         });
-        let s0 = f.arena.add(TermNode::ProgAssignVar { name: d_s, value: empty });
+        let s0 = f.arena.add(TermNode::ProgAssignVar {
+            name: d_s,
+            value: empty,
+        });
         let zero = f.lit(Value::Int(0));
         let one = f.lit(Value::Int(1));
         let cmp = f.arena.add(TermNode::Gt { a: zero, b: one });
@@ -2798,9 +3220,16 @@ mod tests {
         let k_sym__ = f.interner.intern("missing");
         let k = f.lit(Value::Str(k_sym__));
         let sub = f.arena.add(TermNode::ProgSubscript { obj: dv, index: k });
-        let and = f.arena.add(TermNode::And { items: vec![cmp, sub] });
-        let s1 = f.arena.add(TermNode::ProgAssignVar { name: y_s, value: and });
-        let seq = f.arena.add(TermNode::ProgSeq { stmts: vec![s0, s1] });
+        let and = f.arena.add(TermNode::And {
+            items: vec![cmp, sub],
+        });
+        let s1 = f.arena.add(TermNode::ProgAssignVar {
+            name: y_s,
+            value: and,
+        });
+        let seq = f.arena.add(TermNode::ProgSeq {
+            stmts: vec![s0, s1],
+        });
         let out = f.run(seq, 100);
         assert_eq!(dget(&out, "trap"), Value::None);
         assert_eq!(env_var(&out, &f.interner, "y"), Value::Bool(false));
