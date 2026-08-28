@@ -140,10 +140,33 @@ just name.
 
 ### The technique's own hazard, which has to be stated
 
-A move that reliably makes criticism expensive deserves suspicion from the person using it --- though
-less than it would if the naming were a technique, which it is not. The strategic effect is a side
-effect of reporting provenance accurately, and one cannot be manipulating a reader by telling them
-truthfully where something came from. Three things still follow.
+A move that reliably makes criticism expensive deserves suspicion from the person using it, and an
+earlier version of this paragraph tried to buy an exemption that does not exist. It claimed one
+cannot manipulate a reader by telling them truthfully where something came from. That is false, and
+the substrate is what shows it false.
+
+Run the discriminator that was run on frames and dimensions: what does *manipulation* need to do that
+*communication* does not? Structurally, nothing. Both are deformation of another frame's fields ---
+altering what continuations cost for it --- and the substrate has no second primitive for the
+disreputable case. Persuading, teaching, explaining, selling and lying are one operation with
+different content and different beneficiaries. The framework keeps almost nothing, and it does not
+keep this distinction either, which by its own standard is evidence the distinction is not
+structural.
+
+Two axes fall out, and they are orthogonal, which is the part that matters:
+
+- **truth of the content** --- true or false;
+- **whose manifold the deformation serves** --- the reader's or the author's.
+
+Manipulation is not the false quadrant. It is the quadrant where the deformation serves the author's
+goals while presenting as serving the reader's --- and **truthful manipulation is the most effective
+kind**, precisely because nothing in it can be caught at the content level. Everything said was so.
+Which means truth buys no exemption here, and the whole of the ethical load sits on intent and on
+whose goals are being optimised. That is a sharper place to put it than pretending some
+communications are non-deforming, since none are: a statement that changes nothing was not
+communication.
+
+Three cautions follow, none of them dissolved by any of the above.
 
 It works for bad work exactly as well as for good. Pricing an objection is not answering it, and
 nothing about a well-defended flank makes the position behind it correct.
@@ -155,10 +178,13 @@ And it is frame-relative, like everything else here: a reader who does not hold 
 not experience a deformation at all, only an odd word. The manifold is constrained for readers who
 register the move and unchanged for those who do not.
 
-The mitigation is that the deformation is applied to the *reception* and never to the *falsifiers*.
-The commitments in each paper are stated flatly, without charm, and are the intended point of attack.
-If the naming ever makes those harder to aim at, it has stopped being a deformation and become a
-shield.
+The mitigation is therefore not *do not deform*, which is unavailable --- there is no non-deforming way
+to write. It is **deform toward the reader being able to attack you**. The same move, aimed the other
+way: the commitments in each paper are stated flatly and without charm, so that finding and hitting
+them is cheap, while the naming makes the lazy dismissals expensive. Both halves are deformations and
+both are deliberate. The test is not whether the fields have been altered but which continuations
+were made cheaper, and if the naming ever makes a falsifier harder to aim at, it has stopped serving
+the reader's manifold and become a shield.
 
 ### The honest limit
 
