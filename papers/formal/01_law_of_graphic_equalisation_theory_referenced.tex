@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 18}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 19}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r18}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r19}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r18}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r19}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-28.2 r18} (28 August 2026).
+\textbf{DRAFT --- draft-2026-08-28.2 r19} (28 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -276,10 +276,21 @@ The input face is named often enough in these papers to be worth defining rather
 \begin{definition}[Aperture]\label{def:aperture}
 A frame's \emph{aperture} is its input gate $\Gamma_a$ together with what that gate fixes: which
 dimensions it can separate along at all, how finely it separates within each (its resolution,
-per dimension), and how far along each it reaches. The three are properties of one edge --- existence,
+per dimension, for which this paper also uses \emph{grain}), and how far along each it reaches. The three are properties of one edge --- existence,
 grain, and extent --- and are named separately because they vary independently, not because they are
 different kinds of limit. What falls outside an aperture on any of the three is \emph{absent} to that
 frame rather than held-but-unresolved.
+\end{definition}
+
+The output face is the same kind of object and takes the same treatment.
+
+\begin{definition}[Change grammar]\label{def:change-grammar}
+A frame's \emph{change grammar} $\Gamma_c$ is its output gate: it determines which of the realised
+deltas its rules produce cohere into the containing frame and which do not. What it declines has
+entered the frame and been operated on, so it is \emph{residual} (Definition~\ref{def:residual})
+rather than absent, and it persists in place rather than being discarded. $\Gamma_a$ and $\Gamma_c$
+are the two faces of one grammar $\Gamma$ on one boundary edge, and the asymmetry between them is
+which direction they gate, not what kind of thing they are.
 \end{definition}
 
 This distinguishes two ways a candidate is excluded, with opposite consequences. What falls below the aperture grammar $\Gamma_a$ never enters and is therefore \emph{absent} --- it is simply absent to the frame --- there is nothing there for it to hold or to be disturbed by --- rather than residual. What $\Gamma_c$ does not admit has entered, been operated on, and cannot cohere; it is residual, and it persists in place, re-encountered on each merge (Corollary~\ref{cor:mint-is-grammar}). The first is a limit of perception, the second a limit of expression, and phenomena of the ``stuck, repeating'' kind belong exclusively to the second.
@@ -574,6 +585,14 @@ The reading of $c$ as a frame's own change-throughput unit, and the shapes that 
 \section{The rule runner and its coupling}\label{sec:rule-runner}
 
 The provenance of $r$ (Section~\ref{sec:scope}) records that operative transformation requires something that performs it: a construction that runs needs a rule runner. That runner is real, and the clarification here is about \emph{where} it is and what a frame can know of it.
+
+\begin{definition}[Rule runner]\label{def:runner}
+A graph's \emph{rule runner} is whatever performs its rules --- the thing that makes a rule's firing
+happen, as distinct from the rule, which is graph data. A runner is not a substance apart from graph
+(Proposition~\ref{prop:runner-recursion}): it is itself graph that runs, on a runner of its own. The
+term names a role in a coupling, not a layer of the world, and which structure occupies that role for
+a given graph is a contingent fact about how the graph is run.
+\end{definition}
 
 \begin{proposition}[The rule runner is separable from the graph, and need not be the same substrate]\label{prop:rule-runner}
 A graph is data --- nodes, relations, and rules --- and its rules are executed by a rule runner. The two are separable: the same graph may be run by different runners, and a runner need not be the substrate the graph describes or is ``in.'' Where the compute is done is therefore a fact about the \emph{coupling} between graph and runner, not about the graph alone.

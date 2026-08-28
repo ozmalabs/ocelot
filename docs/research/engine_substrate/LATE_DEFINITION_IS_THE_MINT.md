@@ -118,6 +118,32 @@ per-grounding falsifiability structure rest, defined nowhere in eight papers.
 Both now defined in paper 01: `def:aperture` in `sec:interface` (the three components as properties
 of one edge — existence, grain, extent) and `def:grounding` before `sec:discrete-sufficiency`.
 
+## Closed out, 2026-08-28
+
+A second sweep over multi-word emphasised phrases (a better detector than raw usage count, since
+`\emph{}` marks term introduction in this corpus) found the remaining gaps. All now defined in paper
+01:
+
+| term | uses | resolution |
+|---|---|---|
+| grounding | 130 | `def:grounding` |
+| runner | 84 | `def:runner` |
+| aperture | 60 | `def:aperture` |
+| well-formedness | 28 | `def:well-formed` |
+| change grammar | 12 | `def:change-grammar` — its counterpart $\Gamma_a$ had just been defined, and leaving one gate of a two-gate structure defined was the same asymmetry that produced the frame/dimension confusion |
+| grain | 25 | named as a synonym of resolution inside `def:aperture`; not a separate concept |
+
+Cleared as false positives on inspection: `quantum` (90 uses, but almost all *quantum mechanics /
+theory / gravity* — ordinary physics vocabulary, not a term of this framework); `internal coherence`
+and `supergraph node` (both resolve to the SELF/SUPERGRAPH identity definitions); `instantiat*`
+(covered by `def:represented-dimension`); `inertia principle`, `implied author`, `Planck scale` (all
+cited external terms).
+
+Worth recording that the first check's ranking was wrong in both directions: it missed `change
+grammar` entirely at 12 uses, and flagged `quantum` at 90. Frequency is the wrong axis. What
+identified `change grammar` was structural — one half of a named pair being defined while the other
+was not.
+
 ## Standing rule
 
 Run the count before circulating a draft. A term above ~50 uses with no definition is a defect
