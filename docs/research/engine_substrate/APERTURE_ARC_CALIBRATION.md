@@ -17,8 +17,16 @@ Everything the aperture arc reproduces is already well described:
 | keeping the frames under which one is never wrong | motivated reasoning |
 | a shared frame neither party can lift alone | folie à deux |
 | reasoning failing where regulation works | every clinical account of dysregulation |
+| a detector reporting incidence, read as authorship | the frame-up; and the con whose delivery mechanism is the mark's own competent investigation |
 
 No clinician would find any row surprising. **The contribution is not the phenomena.**
+
+The last row has a popular statement precise enough to be worth naming: *The Punisher* (2004), whose
+plot is §§7–9 in sequence. Howard Saint is not deceived at the content level and makes no error —
+evidence is arranged for him to find, he investigates competently, reasons correctly, and kills his
+own wife and closest friend. **The plan requires him to detect**; a Saint who noticed nothing would
+be safe. That a film can carry the mechanism is the calibration point rather than a decoration on
+it: the structure is common knowledge, and what the substrate adds is where in the pipeline it acts.
 
 ## What is actually being claimed
 
