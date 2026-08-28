@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 22}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 23}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r22}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r23}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r22}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r23}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-28.2 r22} (28 August 2026).
+\textbf{DRAFT --- draft-2026-08-28.2 r23} (28 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -332,16 +332,16 @@ the assumption that reading is passive \citep{kocher2019}.
 Evaluation is a write in that plain sense: a match outcome, a position in an ordering, and the fact
 of having tried are returned values, and returned values are structure. What does not follow is the
 price. A rule's cost is set by the substrate that runs it (Section~\ref{sec:rule-runner}), so a
-different runner is a different charge for the same rule, and Landauer's bound
+different supply is a different charge for the same rule, and Landauer's bound
 (Remark~\ref{rem:landauer-change}) is a floor in one substrate rather than the price in any --- it
-says what cannot be undercut, not what is paid, and those differ wherever a runner charges above the
+says what cannot be undercut, not what is paid, and those differ wherever a supply charges above the
 floor, which is every real one. This is also why continuation presents as free from inside: a
 well-formed runner does not expose itself (Proposition~\ref{prop:runner-opaque}), so its charge is
 below the frame's aperture and is not an in-frame event at all. In-frame nothing happened; in the
 running substrate something was paid; both hold, of different frames.
 
 Two things follow for the rest of these papers. Reversibility is a structural fact about a map and
-cost is a fact about a runner, and conflating them is what the earlier phrasing did --- separating
+cost is a fact about what supplies a primitive, and conflating them is what the earlier phrasing did --- separating
 them is what lets the physics companion recover unitarity, which needs only the first, since a
 no-write was never the right description of an evolution that plainly changes the state and is
 reversible because it is injective. And the residual named in Remark~\ref{rem:landauer-change}
@@ -558,26 +558,27 @@ A running program is a worked instance, carried by most people on earth. An inst
 The reading of $c$ as a frame's own change-throughput unit, and the shapes that follow from it --- the invariance of $c$ as a theorem, the reconciliation of special and general relativity as one change-budget spent on motion or on change-load, the dimensional constants as frame-units with the uncertainty principle and the Landauer floor among them, the Planck scale as the frontier, and the second law as no-copy accumulation --- are developed in the companion paper, \emph{Graphic Equalisation --- Physics Grounding}. They are information-level groundings in the sense of Section~\ref{sec:scope}, and are kept out of the present paper so that the substrate theory stands without them.
 \end{remark}
 
-\section{The rule runner and its coupling}\label{sec:rule-runner}
+\section{Primitives, and the closure of their provenance}\label{sec:rule-runner}
 
-The provenance of $r$ (Section~\ref{sec:scope}) records that operative transformation requires something that performs it: a construction that runs needs a rule runner. That runner is real, and the clarification here is about \emph{where} it is and what a frame can know of it.
+The provenance of $r$ (Section~\ref{sec:scope}) records that operative transformation requires something that performs it. What performs it is real; naming it as a thing is the error this section avoids, because a graph never meets it. What a graph meets is its \emph{primitives}.
 
-\begin{definition}[Rule runner]\label{def:runner}
-\emph{Runner} names a role, held \emph{per operator} rather than per graph: for each primitive a graph
-invokes, the runner of that operator is whatever performs it --- as distinct from the rule that
-invokes it, which is graph data. A runner is not a substance apart from graph
-(Proposition~\ref{prop:runner-recursion}); it is graph that runs, on runners of its own.
+\begin{definition}[Primitives]\label{def:runner}
+A graph's \emph{primitives} are the operations it invokes without performing: the operator set its
+rules bottom out in. Every level has them, and having them is what being a level consists of --- a
+graph with no primitives would have to perform everything it invokes, which is the regress this
+substrate does not contain.
 
-Nothing requires a graph to have \emph{one}. Its operators may be provided by different supergraphs,
-and a primitive may be \emph{passed through} an intervening structure that relays rather than
-performs it, so the provider of an operator need not be the level immediately beneath the graph that
-uses it. The provision relation is therefore a graph like everything else here, and the singular
-possessive --- \emph{its} runner --- is available only where a grounding happens to supply exactly
-one.
+The defining property is that \emph{their provenance is not exposed}. A graph invokes a primitive and
+receives its result; what supplied it, whether one structure supplied all of them or several supplied
+different ones, and whether the supplier performed the operation or relayed it from somewhere else
+again, are all outside what the invoking graph can determine. So the question is not \emph{where} a
+graph's execution happens but simply that its primitives are closed to it, and the language of a
+single performing thing standing behind them --- \emph{the} runner --- imports an assumption the
+substrate does not supply.
 \end{definition}
 
-\begin{proposition}[The rule runner is separable from the graph, and need not be the same substrate]\label{prop:rule-runner}
-A graph is data --- nodes, relations, and rules --- and its rules are executed by a rule runner. The two are separable: the same graph may be run by different runners, and a runner need not be the substrate the graph describes or is ``in.'' Where the compute is done is therefore a fact about the \emph{coupling} between graph and runner, not about the graph alone.
+\begin{proposition}[Primitives are supplied, not intrinsic]\label{prop:rule-runner}
+A graph is data --- nodes, relations, and rules --- and the operations its rules bottom out in are supplied to it rather than contained in it. The same graph may therefore be run against different supplies of the same operator set, and nothing supplying an operator need be the substrate the graph describes or is ``in.'' Where the work is done is a fact about that supply and not about the graph.
 \end{proposition}
 At one extreme the coupling is tight --- the graph is fused to its runner, as matter running its own change or a mind running on the tissue that is it --- and the compute is local, in the graph, inseparable. At the other it is loose --- the graph is data executed by a separate interpreter --- and the compute is done in the runner, elsewhere, while the graph becomes portable: copyable, relocatable, and run at whatever rate the runner supplies (Section~\ref{sec:time-not-primitive}). This separability is the condition for the copyable-generator and clock-independence results (Proposition~\ref{prop:copyable-generators}, and the Seldon paper's dependent-clock remark): a graph welded to its runner has none of them, a graph loosely coupled has all of them.
 
@@ -588,10 +589,10 @@ Two claims have to be separated here, and an earlier statement of this propositi
 
 What is not contingent is weaker and survives reflection: \emph{no level is self-transparent}. Reading is an operation whose product lands one level up (Remark~\ref{rem:evaluation-writes}), so a level cannot hold the reading of itself while being the level that is running. Reflection makes the levels explicit and pays for each; it does not terminate in a level transparent to itself. A frame may therefore be given sight of what runs it, and cannot be given sight of its own running. Since the rules are graph and a frame can read and rewrite them (Definition~\ref{def:frame}), while its own running is not graph it holds, the asymmetry is exact: a frame is transparent to itself in precisely one respect and opaque in precisely the other. \emph{It can know what it is and cannot observe its being it.} Self-modification is available; self-observation at the level of the modifying is not.
 \end{proposition}
-This is constructively demonstrable rather than merely argued. A computation realised inside another rule system --- a graph whose rules are implemented within the mechanics of a game or a universal cellular automaton \citep{berlekamp1982} --- is a blind subframe: from inside it computes at its own change-count and has no means to detect that its ``compute'' is the tokens of the host, or that the host may be advancing it by a single serial loop. Building one confirms the opacity directly, and puts the observer of any frame on the same footing. Consequently the question ``where is the universe's compute done'' has the precise form: it depends on the universe's coupling to its own rule runner --- self-running, or hosted on a substrate not itself --- and is undetermined from inside. The theory declines to decide it; it is a question about a coupling below the frontier, and the demonstrable opacity is why no internal observation settles it.
+This is constructively demonstrable rather than merely argued. A computation realised inside another rule system --- a graph whose rules are implemented within the mechanics of a game or a universal cellular automaton \citep{berlekamp1982} --- is a blind subframe: from inside it computes at its own change-count and has no means to detect that its ``compute'' is the tokens of the host, or that the host may be advancing it by a single serial loop. Building one confirms the opacity directly, and puts the observer of any frame on the same footing. Consequently the question ``where is the universe's compute done'' has the precise form: it asks after the provenance of the universe's own primitives --- self-supplied, or supplied from a substrate not itself --- and is undetermined from inside. The theory declines to decide it; it is a question about a coupling below the frontier, and the demonstrable opacity is why no internal observation settles it.
 
-\begin{proposition}[The runner is itself graph that runs; operators are its running]\label{prop:runner-recursion}
-A runner is not a substance apart from graph data. The operators a graph's rules invoke are provided by its runner, and the runner provides them because \emph{its} rules run on \emph{its} runner, and so on. A graph's ``primitives'' are therefore the observable running of other graphs, exposed as an operator set, with no primitive runner at the base. A single chain --- code over machine code over microcode over silicon over electromagnetism over quantum physics --- is one path through that provision, and a common one, but not its shape: a process takes arithmetic from its processor, file operations from a kernel that relays them to a device, and remote calls from a machine that is not beneath it in any sense. Fan-out and relay are ordinary, and the tower is the degenerate case in which provision happens to be a chain. The regress bottoms not at a floor but at the epistemic frontier of Section~\ref{sec:scope}: below the lowest measured level is the unclaimed pre-relational substrate.
+\begin{proposition}[A primitive is another graph's running, exposed]\label{prop:runner-recursion}
+Nothing supplying a primitive is a substance apart from graph data. An operator is the observable running of some other graph, which has primitives of its own, supplied in the same way. A graph's ``primitives'' are therefore the observable running of other graphs, exposed as an operator set, with no primitive runner at the base. A single chain --- code over machine code over microcode over silicon over electromagnetism over quantum physics --- is one path through that provision, and a common one, but not its shape: a process takes arithmetic from its processor, file operations from a kernel that relays them to a device, and remote calls from a machine that is not beneath it in any sense. Fan-out and relay are ordinary, and the tower is the degenerate case in which provision happens to be a chain. The regress bottoms not at a floor but at the epistemic frontier of Section~\ref{sec:scope}: below the lowest measured level is the unclaimed pre-relational substrate.
 \end{proposition}
 Two consequences, and the first is sharper than an earlier statement of it. Opacity is per \emph{operator} rather than per level (Proposition~\ref{prop:runner-opaque}): a graph uses its operators and cannot see beneath any of them, so its operator set is its frontier --- and since provision may fan out, it cannot tell which of its operators share a provider and which do not. Two primitives supplied by one supergraph and two supplied by different ones are in-frame indistinguishable, so a graph does not know how many runners it has, or that the number is one. And economics is inherited along provision: an operator costs what the runner of that operator charges, which costs what \emph{its} providers charge, down to whatever floors each route reaches (Remark~\ref{rem:landauer-change}). Where provision is a chain this is one bill passed upward, and the cost of a thought is the biological cost is the biochemical cost is the electromagnetic cost; where it is not, it is a sum over provenances whose routes may differ in length and may not all terminate at the same floor. The same form, graph data that runs, sits at every level: each level \emph{is} the structure, because a runner is the same kind of thing it runs.
 
@@ -764,7 +765,7 @@ being defended. That recovers no privileged carving, because there is none, and 
 The position is not new, and its nearest neighbour differs in grounding rather than in conclusion. A
 pluralism admitting many equally legitimate and equally real classifications, none of them the one
 nature intended, is argued at length \citep{dupre1993}; that argument rests on objective similarity
-structure, where this one rests on cost to a runner, which is the more deflationary footing and
+structure, where this one rests on what a cut costs to run, which is the more deflationary footing and
 reintroduces a ranking over cuts that ``equally legitimate'' was formulated to deny. The convergence
 is on the negative thesis; the divergence in grounding is real and is not smoothed over here.
 
@@ -859,7 +860,7 @@ The substrate claim remains
 \item \textbf{Minting is a rule.} Fails if grammar-extension (growth) requires a primitive operation beneath the rules rather than a reflective rule subject to the same economics, admissibility, and antecedent-state principle --- in particular, if a graph can mint its first distinctions without any seeded from its container.
 \item \textbf{Partial-order sufficiency.} Fails if realised dynamics require a total order over collapses in distinct frames --- a global simultaneity --- rather than only the boundary-induced partial order.
 \item \textbf{Globally-async/locally-sync.} Fails if coupling never induces local synchrony (boundary-related collapses remain unordered) or if synchrony is forced without coupling (a global instant exists independent of any boundary).
-\item \textbf{Rule-runner opacity.} Fails if a frame can determine by internal observation alone whether its rules are executed by its own substrate or by a separate runner --- if any in-frame test distinguishes self-running from hosted execution, or reveals whether a serial hidden runner underlies an apparently asynchronous frame.
+\item \textbf{Closure of provenance.} Fails if a frame can determine by internal observation alone where its primitives come from --- if any in-frame test distinguishes self-supplied from externally supplied operators, reveals whether a serial hidden supply underlies an apparently asynchronous frame, or establishes how many distinct structures supply its operator set.
 \end{enumerate}
 
 \section{Conclusion}
