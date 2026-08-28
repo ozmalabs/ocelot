@@ -21,6 +21,15 @@ paper at build time, so the two cannot drift.}}
 \end{center}
 \vspace{1em}
 
+\begin{center}
+\begin{minipage}{0.78\textwidth}
+\small\itshape
+In the beginning\ldots{} there was no time, so it wasn't really the beginning. Then, at some
+non-time, not-later, there was graph.
+\end{minipage}
+\end{center}
+\vspace{0.8em}
+
 \begin{abstract}
 One minimal structure is proposed as underlying phenomena usually studied apart. This short form
 gives the structure, the frame machinery through which anything reaches it, the single prohibition it
