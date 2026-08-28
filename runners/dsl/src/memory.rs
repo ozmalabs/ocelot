@@ -175,7 +175,11 @@ pub fn node_bytes(s: &Substrate, nid: NodeID) -> usize {
         return 0;
     }
     let n = s.graph.node(nid);
-    n.attrs.values().map(|v| str_attr_bytes(v, s)).sum::<usize>() + 32
+    n.attrs
+        .values()
+        .map(|v| str_attr_bytes(v, s))
+        .sum::<usize>()
+        + 32
 }
 
 /// Estimated total bytes for all nodes of a type. Samples up to `sample`
@@ -188,8 +192,12 @@ pub fn type_bytes(s: &Substrate, type_sym: Sym, sample: usize) -> usize {
         return 0;
     }
     let take = ids.len().min(sample);
-    let mean: f64 =
-        ids.iter().take(take).map(|&id| node_bytes(s, id) as f64).sum::<f64>() / take as f64;
+    let mean: f64 = ids
+        .iter()
+        .take(take)
+        .map(|&id| node_bytes(s, id) as f64)
+        .sum::<f64>()
+        / take as f64;
     (mean * n as f64) as usize
 }
 
@@ -222,7 +230,11 @@ fn salience(history: &[i64]) -> f64 {
         return 0.0;
     }
     let mean: f64 = history.iter().map(|&h| h as f64).sum::<f64>() / n as f64;
-    history.iter().map(|&h| (h as f64 - mean).powi(2)).sum::<f64>() / n as f64
+    history
+        .iter()
+        .map(|&h| (h as f64 - mean).powi(2))
+        .sum::<f64>()
+        / n as f64
 }
 
 /// The order-1 finite-difference (velocity) of the growth history — the
@@ -341,7 +353,11 @@ pub fn order_n_shape_salience(traj: &[f64]) -> f64 {
     // directedness in [0,1]: 1 = monotone (every step same way), ~0 =
     // random walk (steps cancel) or flat. This is what separates a
     // DIRECTED build from a random wander of the same magnitude.
-    let directedness = if total_move > 1e-12 { net_drift / total_move } else { 0.0 };
+    let directedness = if total_move > 1e-12 {
+        net_drift / total_move
+    } else {
+        0.0
+    };
 
     // resolution (relational_shape): does the trajectory BUILD to and
     // RESOLVE at an extreme? Measure how distinctive the peak-of-the-drift
@@ -351,9 +367,13 @@ pub fn order_n_shape_salience(traj: &[f64]) -> f64 {
     let rising = traj[n - 1] >= traj[0];
     // the resolution point = the global extreme in the drift direction.
     let res_idx = if rising {
-        (0..n).max_by(|&a, &b| traj[a].partial_cmp(&traj[b]).unwrap()).unwrap()
+        (0..n)
+            .max_by(|&a, &b| traj[a].partial_cmp(&traj[b]).unwrap())
+            .unwrap()
     } else {
-        (0..n).min_by(|&a, &b| traj[a].partial_cmp(&traj[b]).unwrap()).unwrap()
+        (0..n)
+            .min_by(|&a, &b| traj[a].partial_cmp(&traj[b]).unwrap())
+            .unwrap()
     };
     let rank = ordinal_rank(traj, res_idx) as f64; // 0..=n-1
     let res_rank = if rising { rank } else { (n - 1) as f64 - rank };
@@ -372,11 +392,8 @@ pub fn order_n_shape_salience(traj: &[f64]) -> f64 {
     } else {
         let drift_sign = if rising { 1.0 } else { -1.0 };
         // a decelerating approach has order-2 opposite the drift sign.
-        let agree = curv
-            .iter()
-            .filter(|&&c| c * drift_sign < 0.0)
-            .count() as f64
-            / curv.len() as f64;
+        let agree =
+            curv.iter().filter(|&&c| c * drift_sign < 0.0).count() as f64 / curv.len() as f64;
         agree // in [0,1]
     };
 
@@ -421,11 +438,7 @@ pub fn shape_key(vec: &[f64]) -> Vec<i64> {
         return vec.iter().map(|&x| x as i64).collect();
     }
     (0..n)
-        .map(|i| {
-            (0..n)
-                .filter(|&j| j != i && vec[i] > vec[j])
-                .count() as i64
-        })
+        .map(|i| (0..n).filter(|&j| j != i && vec[i] > vec[j]).count() as i64)
         .collect()
 }
 
@@ -608,7 +621,9 @@ pub struct ShapeIndex {
 
 impl ShapeIndex {
     pub fn new() -> Self {
-        Self { clusters: HashMap::new() }
+        Self {
+            clusters: HashMap::new(),
+        }
     }
 
     /// The drawer id a record belongs to = its coarse category SHAPE key.
@@ -633,15 +648,18 @@ impl ShapeIndex {
         let cid = Self::cluster_id(cat_vec);
         let cat_key = shape_key(cat_vec);
         let leaf_key = shape_key(leaf_vec);
-        let cl = self.clusters.entry(cid.clone()).or_insert_with(|| ClusterEntry {
-            cluster_id: cid.clone(),
-            cat_key: cat_key.clone(),
-            leaf_key: leaf_key.clone(),
-            paths: HashMap::new(),
-            node_ids: HashMap::new(),
-            resident: false,
-            last_round: round,
-        });
+        let cl = self
+            .clusters
+            .entry(cid.clone())
+            .or_insert_with(|| ClusterEntry {
+                cluster_id: cid.clone(),
+                cat_key: cat_key.clone(),
+                leaf_key: leaf_key.clone(),
+                paths: HashMap::new(),
+                node_ids: HashMap::new(),
+                resident: false,
+                last_round: round,
+            });
         cl.paths.insert(key.to_string(), path.to_string());
         cl.last_round = cl.last_round.max(round);
         // keep the cluster's leaf key as the most-recent member's shape.
@@ -798,7 +816,9 @@ impl MemoryFaculty {
         attrs.insert(s.interner.intern("of_type"), Value::Str(t));
         attrs.insert(s.interner.intern("n_forgotten"), Value::Int(n as i64));
         attrs.insert(s.interner.intern("round"), Value::Int(self.round));
-        let note = s.interner.intern("raw perceptual scratch forgotten; structure kept");
+        let note = s
+            .interner
+            .intern("raw perceptual scratch forgotten; structure kept");
         attrs.insert(s.interner.intern("note"), Value::Str(note));
         let _ = type_name;
         s.add_node(summary_t, attrs);
@@ -874,7 +894,13 @@ impl MemoryFaculty {
         let bytes_before = total_bytes(s);
         let forgot = self.forget_over_budget(s);
         self.last_census = self.census(s);
-        (nodes_before, bytes_before, s.graph.node_count(), total_bytes(s), forgot)
+        (
+            nodes_before,
+            bytes_before,
+            s.graph.node_count(),
+            total_bytes(s),
+            forgot,
+        )
     }
 
     /// Forget all nodes of a named type, leaving a compressed MemorySummary
@@ -1016,12 +1042,27 @@ impl MemoryFaculty {
             // use the recorded growth history if we have it, else treat the
             // current count as a single observation (same fallback the forget
             // path uses) so a report works even before any round boundary.
-            let hist = self.add_history.get(&t).cloned().unwrap_or_else(|| vec![c as i64]);
+            let hist = self
+                .add_history
+                .get(&t)
+                .cloned()
+                .unwrap_or_else(|| vec![c as i64]);
             let sat = is_saturating(&hist);
             let kv = keep_value(&hist, mp, nr);
             let bytes = type_bytes(s, t, 64);
             let kv_per_byte = kv / bytes.max(1) as f64;
-            rows.push((tname, c as usize, bytes, kv, kv_per_byte, mp, nr, never, sat, tier));
+            rows.push((
+                tname,
+                c as usize,
+                bytes,
+                kv,
+                kv_per_byte,
+                mp,
+                nr,
+                never,
+                sat,
+                tier,
+            ));
         }
         // ascending keep_value-per-byte == the agent's forget order: the head
         // of the list is what it would discard first (lowest value-for-compute).
@@ -1047,7 +1088,13 @@ impl MemoryFaculty {
         std::fs::create_dir_all(store_dir)?;
         let safe: String = key
             .chars()
-            .map(|c| if c.is_alphanumeric() || "-_.".contains(c) { c } else { '_' })
+            .map(|c| {
+                if c.is_alphanumeric() || "-_.".contains(c) {
+                    c
+                } else {
+                    '_'
+                }
+            })
             .collect();
         let path = format!("{}/{}.json", store_dir, safe);
         // Reuse the substrate's durable wire format: encode the node's attrs
@@ -1068,7 +1115,9 @@ impl MemoryFaculty {
             "attrs": serde_json::Value::Object(attrs_json),
         });
         std::fs::write(&path, serde_json::to_string(&rec)?)?;
-        let cid = self.index.put(key, cat_vec, leaf_vec, &path, round, Some(nid));
+        let cid = self
+            .index
+            .put(key, cat_vec, leaf_vec, &path, round, Some(nid));
         // reuse HotCounter as the hot/cold tracker: a consolidate is an access.
         let cid_sym = s.interner.intern(&cid);
         self.hot.record(cid_sym);
@@ -1115,11 +1164,16 @@ impl MemoryFaculty {
         };
         let mut paged = 0;
         for (key, path) in paths {
-            let Ok(text) = std::fs::read_to_string(&path) else { continue };
+            let Ok(text) = std::fs::read_to_string(&path) else {
+                continue;
+            };
             let Ok(rec): Result<serde_json::Value, _> = serde_json::from_str(&text) else {
                 continue;
             };
-            let type_str = rec.get("type").and_then(|t| t.as_str()).unwrap_or("MemoryRecord");
+            let type_str = rec
+                .get("type")
+                .and_then(|t| t.as_str())
+                .unwrap_or("MemoryRecord");
             let type_sym = s.interner.intern(type_str);
             let mut attrs = rustc_hash::FxHashMap::default();
             if let Some(amap) = rec.get("attrs").and_then(|a| a.as_object()) {
@@ -1219,7 +1273,12 @@ mod tests {
         let firehose = keep_value(&[1000, 1000, 1000], 1.0, 0.02);
         // lexicon: condensing growth, high miss-penalty, not rebuildable.
         let lexicon = keep_value(&[100, 40, 10, 2], 5.0, 1.0);
-        assert!(lexicon > firehose, "lexicon {} firehose {}", lexicon, firehose);
+        assert!(
+            lexicon > firehose,
+            "lexicon {} firehose {}",
+            lexicon,
+            firehose
+        );
     }
 
     #[test]
@@ -1234,8 +1293,22 @@ mod tests {
     #[test]
     fn shape_index_descent_finds_matching_cluster() {
         let mut idx = ShapeIndex::new();
-        idx.put("rec_a", &[1.0, 3.0, 2.0], &[1.0, 2.0, 3.0], "/tmp/a.json", 1, None);
-        idx.put("rec_b", &[5.0, 1.0, 2.0], &[3.0, 2.0, 1.0], "/tmp/b.json", 1, None);
+        idx.put(
+            "rec_a",
+            &[1.0, 3.0, 2.0],
+            &[1.0, 2.0, 3.0],
+            "/tmp/a.json",
+            1,
+            None,
+        );
+        idx.put(
+            "rec_b",
+            &[5.0, 1.0, 2.0],
+            &[3.0, 2.0, 1.0],
+            "/tmp/b.json",
+            1,
+            None,
+        );
         // query whose category shape matches rec_a's arrangement.
         let hit = idx.descent(&[2.0, 6.0, 4.0], &[1.0, 2.0, 3.0]).unwrap();
         assert_eq!(hit, ShapeIndex::cluster_id(&[1.0, 3.0, 2.0]));
@@ -1258,7 +1331,9 @@ mod tests {
 
         // A FLAT control + a non-monotone control are NOT shape-neighbours.
         let flat: Vec<f64> = vec![0.5; 12];
-        let zigzag: Vec<f64> = (0..12).map(|i| if i % 2 == 0 { 0.0 } else { 1.0 }).collect();
+        let zigzag: Vec<f64> = (0..12)
+            .map(|i| if i % 2 == 0 { 0.0 } else { 1.0 })
+            .collect();
         assert!(
             shape_distance(&sig_c, &shape_signature(&flat)) >= thr,
             "flat is not a build-neighbour"

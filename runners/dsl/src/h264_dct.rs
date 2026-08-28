@@ -57,40 +57,28 @@ use std::sync::OnceLock;
 /// MF[QP%6] flat 4×4 matrix per H.264 spec.
 const MF_TABLE: [[i32; 16]; 6] = [
     [
-        13107, 8066, 13107, 8066,
-        8066,  5243, 8066,  5243,
-        13107, 8066, 13107, 8066,
-        8066,  5243, 8066,  5243,
+        13107, 8066, 13107, 8066, 8066, 5243, 8066, 5243, 13107, 8066, 13107, 8066, 8066, 5243,
+        8066, 5243,
     ],
     [
-        11916, 7490, 11916, 7490,
-        7490,  4660, 7490,  4660,
-        11916, 7490, 11916, 7490,
-        7490,  4660, 7490,  4660,
+        11916, 7490, 11916, 7490, 7490, 4660, 7490, 4660, 11916, 7490, 11916, 7490, 7490, 4660,
+        7490, 4660,
     ],
     [
-        10082, 6554, 10082, 6554,
-        6554,  4194, 6554,  4194,
-        10082, 6554, 10082, 6554,
-        6554,  4194, 6554,  4194,
+        10082, 6554, 10082, 6554, 6554, 4194, 6554, 4194, 10082, 6554, 10082, 6554, 6554, 4194,
+        6554, 4194,
     ],
     [
-        9362, 5825, 9362, 5825,
-        5825, 3647, 5825, 3647,
-        9362, 5825, 9362, 5825,
-        5825, 3647, 5825, 3647,
+        9362, 5825, 9362, 5825, 5825, 3647, 5825, 3647, 9362, 5825, 9362, 5825, 5825, 3647, 5825,
+        3647,
     ],
     [
-        8192, 5243, 8192, 5243,
-        5243, 3355, 5243, 3355,
-        8192, 5243, 8192, 5243,
-        5243, 3355, 5243, 3355,
+        8192, 5243, 8192, 5243, 5243, 3355, 5243, 3355, 8192, 5243, 8192, 5243, 5243, 3355, 5243,
+        3355,
     ],
     [
-        7282, 4559, 7282, 4559,
-        4559, 2893, 4559, 2893,
-        7282, 4559, 7282, 4559,
-        4559, 2893, 4559, 2893,
+        7282, 4559, 7282, 4559, 4559, 2893, 4559, 2893, 7282, 4559, 7282, 4559, 4559, 2893, 4559,
+        2893,
     ],
 ];
 
@@ -119,40 +107,22 @@ pub fn quantize_intra_4x4(y: &[i32; 16], qp: i32) -> [i32; 16] {
 /// round-trip without leaving the substrate.
 const V_TABLE: [[i32; 16]; 6] = [
     [
-        10, 13, 10, 13,
-        13, 16, 13, 16,
-        10, 13, 10, 13,
-        13, 16, 13, 16,
+        10, 13, 10, 13, 13, 16, 13, 16, 10, 13, 10, 13, 13, 16, 13, 16,
     ],
     [
-        11, 14, 11, 14,
-        14, 18, 14, 18,
-        11, 14, 11, 14,
-        14, 18, 14, 18,
+        11, 14, 11, 14, 14, 18, 14, 18, 11, 14, 11, 14, 14, 18, 14, 18,
     ],
     [
-        13, 16, 13, 16,
-        16, 20, 16, 20,
-        13, 16, 13, 16,
-        16, 20, 16, 20,
+        13, 16, 13, 16, 16, 20, 16, 20, 13, 16, 13, 16, 16, 20, 16, 20,
     ],
     [
-        14, 18, 14, 18,
-        18, 23, 18, 23,
-        14, 18, 14, 18,
-        18, 23, 18, 23,
+        14, 18, 14, 18, 18, 23, 18, 23, 14, 18, 14, 18, 18, 23, 18, 23,
     ],
     [
-        16, 20, 16, 20,
-        20, 25, 20, 25,
-        16, 20, 16, 20,
-        20, 25, 20, 25,
+        16, 20, 16, 20, 20, 25, 20, 25, 16, 20, 16, 20, 20, 25, 20, 25,
     ],
     [
-        18, 23, 18, 23,
-        23, 29, 23, 29,
-        18, 23, 18, 23,
-        23, 29, 23, 29,
+        18, 23, 18, 23, 23, 29, 23, 29, 18, 23, 18, 23, 23, 29, 23, 29,
     ],
 ];
 
@@ -236,7 +206,9 @@ pub fn idct_add_4x4_h264_i32pred(block: &[i32; 16], pred: &[i32; 16]) -> [u8; 16
 
 pub fn idct_add_4x4_h264(block: &[i32; 16], pred: &[u8; 16]) -> [u8; 16] {
     let mut p32 = [0i32; 16];
-    for k in 0..16 { p32[k] = pred[k] as i32; }
+    for k in 0..16 {
+        p32[k] = pred[k] as i32;
+    }
     idct_add_4x4_h264_i32pred(block, &p32)
 }
 
@@ -252,11 +224,7 @@ pub fn idct_add_4x4_h264(block: &[i32; 16], pred: &[u8; 16]) -> [u8; 16] {
 /// Equivalent to the Python pipeline:
 ///   forward_dct(every 4×4 block) → fold each 2×2 group via matrix
 /// but done entirely on the Rust side.
-pub fn fold_luma_plane_to_coefs(
-    plane: &[u8],
-    in_w: usize,
-    in_h: usize,
-) -> Vec<i32> {
+pub fn fold_luma_plane_to_coefs(plane: &[u8], in_w: usize, in_h: usize) -> Vec<i32> {
     assert_eq!(plane.len(), in_w * in_h);
     assert_eq!(in_w & 7, 0, "in_w must be a multiple of 8");
     assert_eq!(in_h & 7, 0, "in_h must be a multiple of 8");
@@ -311,11 +279,7 @@ pub fn fold_luma_plane_to_coefs(
 /// math inverse and clamped to 0..=255.
 ///
 /// Output dimensions: `out_w = blocks_x * 4`, `out_h = blocks_y * 4`.
-pub fn coefs_to_luma_plane(
-    coefs: &[i32],
-    blocks_x: usize,
-    blocks_y: usize,
-) -> Vec<u8> {
+pub fn coefs_to_luma_plane(coefs: &[i32], blocks_x: usize, blocks_y: usize) -> Vec<u8> {
     assert_eq!(coefs.len(), blocks_x * blocks_y * 16);
     let out_w = blocks_x * 4;
     let out_h = blocks_y * 4;
@@ -367,7 +331,10 @@ pub fn coefs_to_luma_plane(
 #[cfg(target_arch = "x86_64")]
 #[target_feature(enable = "avx2")]
 unsafe fn area_average_2to1_avx2(
-    plane: &[u8], in_w: usize, out_w: usize, out_h: usize,
+    plane: &[u8],
+    in_w: usize,
+    out_w: usize,
+    out_h: usize,
     target: &mut [u8],
 ) {
     use core::arch::x86_64::*;
@@ -386,21 +353,17 @@ unsafe fn area_average_2to1_avx2(
         for k in 0..n_chunks {
             // Source: 64 bytes from each row, starting at 64k.
             let src_off = k * 64;
-            let r0_a = _mm256_loadu_si256(
-                row0.as_ptr().add(src_off) as *const __m256i);
-            let r0_b = _mm256_loadu_si256(
-                row0.as_ptr().add(src_off + 32) as *const __m256i);
-            let r1_a = _mm256_loadu_si256(
-                row1.as_ptr().add(src_off) as *const __m256i);
-            let r1_b = _mm256_loadu_si256(
-                row1.as_ptr().add(src_off + 32) as *const __m256i);
+            let r0_a = _mm256_loadu_si256(row0.as_ptr().add(src_off) as *const __m256i);
+            let r0_b = _mm256_loadu_si256(row0.as_ptr().add(src_off + 32) as *const __m256i);
+            let r1_a = _mm256_loadu_si256(row1.as_ptr().add(src_off) as *const __m256i);
+            let r1_b = _mm256_loadu_si256(row1.as_ptr().add(src_off + 32) as *const __m256i);
             // Vertical average per byte: (r0 + r1 + 1) >> 1
-            let v_a = _mm256_avg_epu8(r0_a, r1_a);   // bytes 0..31 vertically averaged
-            let v_b = _mm256_avg_epu8(r0_b, r1_b);   // bytes 32..63 vertically averaged
-            // Horizontal pair average: combine adjacent bytes.
-            // Use unpacklo/unpackhi to interleave then shuffle, or
-            // a simpler trick: pack to u16 with maddubs (multiply
-            // each byte by 1 + sum adjacent pairs in 16 bits).
+            let v_a = _mm256_avg_epu8(r0_a, r1_a); // bytes 0..31 vertically averaged
+            let v_b = _mm256_avg_epu8(r0_b, r1_b); // bytes 32..63 vertically averaged
+                                                   // Horizontal pair average: combine adjacent bytes.
+                                                   // Use unpacklo/unpackhi to interleave then shuffle, or
+                                                   // a simpler trick: pack to u16 with maddubs (multiply
+                                                   // each byte by 1 + sum adjacent pairs in 16 bits).
             let ones = _mm256_set1_epi8(1);
             // maddubs_epi16(a, b) = sum of adjacent (a[2k]*b[2k] +
             // a[2k+1]*b[2k+1]) packed into 16-bit lanes. With b=1,
@@ -419,17 +382,17 @@ unsafe fn area_average_2to1_avx2(
             // LANE — so the layout is [a_lo, b_lo, a_hi, b_hi]
             // instead of [a_lo, a_hi, b_lo, b_hi]. Permute to fix.
             let permuted = _mm256_permute4x64_epi64::<0b1101_1000>(packed);
-            _mm256_storeu_si256(
-                dst.as_mut_ptr().add(k * 32) as *mut __m256i,
-                permuted,
-            );
+            _mm256_storeu_si256(dst.as_mut_ptr().add(k * 32) as *mut __m256i, permuted);
         }
     }
 }
 
 /// Scalar fallback for the area-average path.
 fn area_average_2to1_scalar(
-    plane: &[u8], in_w: usize, out_w: usize, out_h: usize,
+    plane: &[u8],
+    in_w: usize,
+    out_w: usize,
+    out_h: usize,
     target: &mut [u8],
 ) {
     for oy in 0..out_h {
@@ -439,9 +402,9 @@ fn area_average_2to1_scalar(
         for ox in 0..out_w {
             let sx = ox * 2;
             let s = plane[row0_off + sx] as u32
-                  + plane[row0_off + sx + 1] as u32
-                  + plane[row1_off + sx] as u32
-                  + plane[row1_off + sx + 1] as u32;
+                + plane[row0_off + sx + 1] as u32
+                + plane[row1_off + sx] as u32
+                + plane[row1_off + sx + 1] as u32;
             target[dst_off + ox] = ((s + 2) >> 2) as u8;
         }
     }
@@ -449,17 +412,17 @@ fn area_average_2to1_scalar(
 
 /// Public wrapper for the diagnostic binding.
 pub fn area_average_2to1_pub(
-    plane: &[u8], in_w: usize, out_w: usize, out_h: usize,
+    plane: &[u8],
+    in_w: usize,
+    out_w: usize,
+    out_h: usize,
     target: &mut [u8],
 ) {
     area_average_2to1(plane, in_w, out_w, out_h, target);
 }
 
 /// Dispatch: AVX2 when available + sizes line up, else scalar.
-fn area_average_2to1(
-    plane: &[u8], in_w: usize, out_w: usize, out_h: usize,
-    target: &mut [u8],
-) {
+fn area_average_2to1(plane: &[u8], in_w: usize, out_w: usize, out_h: usize, target: &mut [u8]) {
     #[cfg(target_arch = "x86_64")]
     {
         if out_w % 32 == 0 && is_x86_feature_detected!("avx2") {
@@ -532,8 +495,7 @@ pub fn transcode_pyramid_multislice(
     assert_eq!(slices_per_level.len(), n_levels);
 
     // Phase 1: build the area-average pyramid (sequential; cheap).
-    let mut levels_pixels: Vec<(usize, usize, Vec<u8>, usize)> =
-        Vec::with_capacity(n_levels);
+    let mut levels_pixels: Vec<(usize, usize, Vec<u8>, usize)> = Vec::with_capacity(n_levels);
     let mut cur_w = in_w;
     let mut cur_h = in_h;
     let mut cur: Vec<u8> = plane.to_vec();
@@ -555,7 +517,7 @@ pub fn transcode_pyramid_multislice(
         level_idx: usize,
         slice_idx: usize,
         first_mb_row: usize,
-        last_mb_row: usize,   // exclusive
+        last_mb_row: usize, // exclusive
         first_mb_in_slice: usize,
         target: std::sync::Arc<Vec<u8>>,
         out_w: usize,
@@ -564,9 +526,7 @@ pub fn transcode_pyramid_multislice(
     }
     let mut jobs: Vec<Job> = Vec::new();
     let mut per_level_meta: Vec<(usize, usize, usize, usize)> = Vec::new();
-    for (level_idx, (out_w, out_h, target, n_slices)) in
-        levels_pixels.into_iter().enumerate()
-    {
+    for (level_idx, (out_w, out_h, target, n_slices)) in levels_pixels.into_iter().enumerate() {
         let mb_w = out_w / 16;
         let mb_h = out_h / 16;
         per_level_meta.push((out_w, out_h, mb_w, mb_h));
@@ -600,14 +560,23 @@ pub fn transcode_pyramid_multislice(
             .map(|job| {
                 s.spawn(move || {
                     let mb_luma = intra_predict_and_quantise_slice_range(
-                        &job.target, job.out_w, job.out_h,
-                        job.mb_w, job.first_mb_row, job.last_mb_row, qp,
+                        &job.target,
+                        job.out_w,
+                        job.out_h,
+                        job.mb_w,
+                        job.first_mb_row,
+                        job.last_mb_row,
+                        qp,
                     );
                     let n_mbs = (job.last_mb_row - job.first_mb_row) * job.mb_w;
                     let cbp = vec![0xF_u8; n_mbs];
                     let cabac_payload = crate::cabac::encode_i_slice_from_mb_luma(
-                        &mb_luma, &cbp, job.mb_w, job.last_mb_row - job.first_mb_row,
-                        0, qp,
+                        &mb_luma,
+                        &cbp,
+                        job.mb_w,
+                        job.last_mb_row - job.first_mb_row,
+                        0,
+                        qp,
                     );
                     (
                         job.level_idx,
@@ -627,7 +596,11 @@ pub fn transcode_pyramid_multislice(
     let mut out: Vec<PyramidLevelMultiSlice> = per_level_meta
         .iter()
         .map(|&(out_w, out_h, mb_w, mb_h)| PyramidLevelMultiSlice {
-            out_w, out_h, mb_w, mb_h, slices: Vec::new(),
+            out_w,
+            out_h,
+            mb_w,
+            mb_h,
+            slices: Vec::new(),
         })
         .collect();
     // Group results: per-level vector of (slice_idx, slice)
@@ -659,18 +632,25 @@ pub fn transcode_pyramid_full(
     assert_eq!(plane.len(), in_w * in_h);
 
     // Phase 1: build the area-average pyramid (sequential; cheap).
-    let mut levels_pixels: Vec<(usize, usize, Vec<u8>)> =
-        Vec::with_capacity(n_levels);
+    let mut levels_pixels: Vec<(usize, usize, Vec<u8>)> = Vec::with_capacity(n_levels);
     let mut cur_w = in_w;
     let mut cur_h = in_h;
     let mut cur: Vec<u8> = plane.to_vec();
     for _ in 0..n_levels {
         let out_w = cur_w / 2;
         let out_h = cur_h / 2;
-        assert_eq!(out_w & 15, 0,
-            "level output width {} not a multiple of 16", out_w);
-        assert_eq!(out_h & 15, 0,
-            "level output height {} not a multiple of 16", out_h);
+        assert_eq!(
+            out_w & 15,
+            0,
+            "level output width {} not a multiple of 16",
+            out_w
+        );
+        assert_eq!(
+            out_h & 15,
+            0,
+            "level output height {} not a multiple of 16",
+            out_h
+        );
         let mut target = vec![0u8; out_w * out_h];
         area_average_2to1(&cur, cur_w, out_w, out_h, &mut target);
         levels_pixels.push((out_w, out_h, target.clone()));
@@ -688,15 +668,18 @@ pub fn transcode_pyramid_full(
                     let mb_w = out_w / 16;
                     let mb_h = out_h / 16;
                     let n_mbs = mb_w * mb_h;
-                    let mb_luma = intra_predict_and_quantise_slice(
-                        &target, out_w, out_h, mb_w, mb_h, qp,
-                    );
+                    let mb_luma =
+                        intra_predict_and_quantise_slice(&target, out_w, out_h, mb_w, mb_h, qp);
                     let cbp = vec![0xF_u8; n_mbs];
                     let cabac_payload = crate::cabac::encode_i_slice_from_mb_luma(
                         &mb_luma, &cbp, mb_w, mb_h, 0, qp,
                     );
                     PyramidStream {
-                        out_w, out_h, mb_w, mb_h, cabac_payload,
+                        out_w,
+                        out_h,
+                        mb_w,
+                        mb_h,
+                        cabac_payload,
                     }
                 })
             })
@@ -745,10 +728,18 @@ pub fn transcode_pyramid_2to1(
     for _ in 0..n_levels {
         let out_w = cur_w / 2;
         let out_h = cur_h / 2;
-        assert_eq!(out_w & 15, 0,
-            "level output width {} not a multiple of 16", out_w);
-        assert_eq!(out_h & 15, 0,
-            "level output height {} not a multiple of 16", out_h);
+        assert_eq!(
+            out_w & 15,
+            0,
+            "level output width {} not a multiple of 16",
+            out_w
+        );
+        assert_eq!(
+            out_h & 15,
+            0,
+            "level output height {} not a multiple of 16",
+            out_h
+        );
         // Downscale this level's input by 2:1 area-average.
         let mut target = vec![0u8; out_w * out_h];
         area_average_2to1(&cur, cur_w, out_w, out_h, &mut target);
@@ -756,10 +747,14 @@ pub fn transcode_pyramid_2to1(
         // Encode this level.
         let mb_w = out_w / 16;
         let mb_h = out_h / 16;
-        let mb_luma = intra_predict_and_quantise_slice(
-            &target, out_w, out_h, mb_w, mb_h, qp,
-        );
-        levels.push(PyramidLevel { out_w, out_h, mb_w, mb_h, mb_luma });
+        let mb_luma = intra_predict_and_quantise_slice(&target, out_w, out_h, mb_w, mb_h, qp);
+        levels.push(PyramidLevel {
+            out_w,
+            out_h,
+            mb_w,
+            mb_h,
+            mb_luma,
+        });
 
         // Next iteration uses THIS level's pixels as input — that's
         // why the pyramid is cheap: each level's downscale operates
@@ -819,20 +814,27 @@ pub fn transcode_2to1_luma_plane(
 
 /// 4×4 block index → (row, col) within MB (in units of 4×4 blocks).
 const BLOCK_IDX_TO_RC: [(usize, usize); 16] = [
-    (0, 0), (0, 1), (1, 0), (1, 1),
-    (0, 2), (0, 3), (1, 2), (1, 3),
-    (2, 0), (2, 1), (3, 0), (3, 1),
-    (2, 2), (2, 3), (3, 2), (3, 3),
+    (0, 0),
+    (0, 1),
+    (1, 0),
+    (1, 1),
+    (0, 2),
+    (0, 3),
+    (1, 2),
+    (1, 3),
+    (2, 0),
+    (2, 1),
+    (3, 0),
+    (3, 1),
+    (2, 2),
+    (2, 3),
+    (3, 2),
+    (3, 3),
 ];
 
 /// MB-level block scan order: which 4×4 block_idx to process in
 /// which order. This is what libavcodec / x264 emit per §7.3.5.3.
-const SCAN_8X8: [[usize; 4]; 4] = [
-    [0, 1, 2, 3],
-    [4, 5, 6, 7],
-    [8, 9, 10, 11],
-    [12, 13, 14, 15],
-];
+const SCAN_8X8: [[usize; 4]; 4] = [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]];
 
 /// P-frame transcode for one slice, MV=(0,0) per MB.
 /// `target`: this frame's downscaled luma pixels.
@@ -881,21 +883,16 @@ pub fn transcode_p_frame_static_mv0(
     let mut skip_remaining: &mut [bool] = &mut skip_per_mb;
     let mut recon_remaining: &mut [u8] = &mut recon;
 
-    let mut chunks: Vec<(
-        usize, usize, &mut [i32], &mut [u8], &mut [bool], &mut [u8],
-    )> = Vec::with_capacity(n_threads);
+    let mut chunks: Vec<(usize, usize, &mut [i32], &mut [u8], &mut [bool], &mut [u8])> =
+        Vec::with_capacity(n_threads);
     let mut row = 0;
     while row < mb_h {
         let last = (row + rows_per_chunk).min(mb_h);
         let n_rows = last - row;
-        let (luma_chunk, luma_rest) =
-            luma_remaining.split_at_mut(n_rows * luma_per_row);
-        let (cbp_chunk, cbp_rest) =
-            cbp_remaining.split_at_mut(n_rows * mbs_per_row);
-        let (skip_chunk, skip_rest) =
-            skip_remaining.split_at_mut(n_rows * mbs_per_row);
-        let (recon_chunk, recon_rest) =
-            recon_remaining.split_at_mut(n_rows * recon_per_row);
+        let (luma_chunk, luma_rest) = luma_remaining.split_at_mut(n_rows * luma_per_row);
+        let (cbp_chunk, cbp_rest) = cbp_remaining.split_at_mut(n_rows * mbs_per_row);
+        let (skip_chunk, skip_rest) = skip_remaining.split_at_mut(n_rows * mbs_per_row);
+        let (recon_chunk, recon_rest) = recon_remaining.split_at_mut(n_rows * recon_per_row);
         luma_remaining = luma_rest;
         cbp_remaining = cbp_rest;
         skip_remaining = skip_rest;
@@ -905,14 +902,11 @@ pub fn transcode_p_frame_static_mv0(
     }
 
     std::thread::scope(|scope| {
-        for (start_row, end_row, luma_out, cbp_out, skip_out, recon_out)
-            in chunks
-        {
+        for (start_row, end_row, luma_out, cbp_out, skip_out, recon_out) in chunks {
             scope.spawn(move || {
                 transcode_p_frame_rows(
-                    target, reference, plane_w,
-                    mb_w, start_row, end_row, qp,
-                    luma_out, cbp_out, skip_out, recon_out,
+                    target, reference, plane_w, mb_w, start_row, end_row, qp, luma_out, cbp_out,
+                    skip_out, recon_out,
                 );
             });
         }
@@ -946,8 +940,8 @@ fn transcode_p_frame_rows(
             for r in 0..16 {
                 let row_off = (mb_r * 16 + r) * plane_w + mb_c * 16;
                 for c in 0..16 {
-                    residual_16x16[r][c] = target[row_off + c] as i32
-                                          - reference[row_off + c] as i32;
+                    residual_16x16[r][c] =
+                        target[row_off + c] as i32 - reference[row_off + c] as i32;
                 }
             }
             let mut any_nonzero_overall = false;
@@ -961,8 +955,7 @@ fn transcode_p_frame_rows(
                     let mut block_res = [0i32; 16];
                     for k in 0..4 {
                         for kk in 0..4 {
-                            block_res[k * 4 + kk] =
-                                residual_16x16[br * 4 + k][bc * 4 + kk];
+                            block_res[k * 4 + kk] = residual_16x16[br * 4 + k][bc * 4 + kk];
                         }
                     }
                     let y = forward_4x4(&block_res);
@@ -996,8 +989,7 @@ fn transcode_p_frame_rows(
                 let w = dequantize_intra_4x4(&z, qp);
                 let mut pred_block = [0u8; 16];
                 for k in 0..4 {
-                    let row_off = (mb_r * 16 + br * 4 + k) * plane_w
-                                + mb_c * 16 + bc * 4;
+                    let row_off = (mb_r * 16 + br * 4 + k) * plane_w + mb_c * 16 + bc * 4;
                     for kk in 0..4 {
                         pred_block[k * 4 + kk] = reference[row_off + kk];
                     }
@@ -1006,8 +998,7 @@ fn transcode_p_frame_rows(
                 // Write to the chunk's local slice. recon_chunk row offset
                 // is relative to start_row.
                 for k in 0..4 {
-                    let row_off = (local_r * 16 + br * 4 + k) * plane_w
-                                + mb_c * 16 + bc * 4;
+                    let row_off = (local_r * 16 + br * 4 + k) * plane_w + mb_c * 16 + bc * 4;
                     for kk in 0..4 {
                         recon_chunk[row_off + kk] = recon_block[k * 4 + kk];
                     }
@@ -1077,21 +1068,16 @@ pub fn transcode_p_frame_subpel_static(
     let mut cbp_remaining: &mut [u8] = &mut cbp_per_mb;
     let mut skip_remaining: &mut [bool] = &mut skip_per_mb;
     let mut recon_remaining: &mut [u8] = &mut recon;
-    let mut chunks: Vec<(
-        usize, usize, &mut [i32], &mut [u8], &mut [bool], &mut [u8],
-    )> = Vec::with_capacity(n_threads);
+    let mut chunks: Vec<(usize, usize, &mut [i32], &mut [u8], &mut [bool], &mut [u8])> =
+        Vec::with_capacity(n_threads);
     let mut row = 0;
     while row < mb_h {
         let last = (row + rows_per_chunk).min(mb_h);
         let n_rows = last - row;
-        let (luma_chunk, luma_rest) =
-            luma_remaining.split_at_mut(n_rows * luma_per_row);
-        let (cbp_chunk, cbp_rest) =
-            cbp_remaining.split_at_mut(n_rows * mbs_per_row);
-        let (skip_chunk, skip_rest) =
-            skip_remaining.split_at_mut(n_rows * mbs_per_row);
-        let (recon_chunk, recon_rest) =
-            recon_remaining.split_at_mut(n_rows * recon_per_row);
+        let (luma_chunk, luma_rest) = luma_remaining.split_at_mut(n_rows * luma_per_row);
+        let (cbp_chunk, cbp_rest) = cbp_remaining.split_at_mut(n_rows * mbs_per_row);
+        let (skip_chunk, skip_rest) = skip_remaining.split_at_mut(n_rows * mbs_per_row);
+        let (recon_chunk, recon_rest) = recon_remaining.split_at_mut(n_rows * recon_per_row);
         luma_remaining = luma_rest;
         cbp_remaining = cbp_rest;
         skip_remaining = skip_rest;
@@ -1102,15 +1088,23 @@ pub fn transcode_p_frame_subpel_static(
 
     let ref_i32_ref: &[i32] = &ref_i32;
     std::thread::scope(|scope| {
-        for (start_row, end_row, luma_out, cbp_out, skip_out, recon_out)
-            in chunks
-        {
+        for (start_row, end_row, luma_out, cbp_out, skip_out, recon_out) in chunks {
             scope.spawn(move || {
                 transcode_p_frame_subpel_rows(
-                    target, reference, ref_i32_ref, mvs_qp,
-                    plane_w, plane_h, mb_w,
-                    start_row, end_row, qp,
-                    luma_out, cbp_out, skip_out, recon_out,
+                    target,
+                    reference,
+                    ref_i32_ref,
+                    mvs_qp,
+                    plane_w,
+                    plane_h,
+                    mb_w,
+                    start_row,
+                    end_row,
+                    qp,
+                    luma_out,
+                    cbp_out,
+                    skip_out,
+                    recon_out,
                 );
             });
         }
@@ -1163,8 +1157,7 @@ fn transcode_p_frame_subpel_rows(
                     let ry = (int_y0 + yy as i32).clamp(0, h - 1);
                     for xx in 0..16 {
                         let rx = (int_x0 + xx as i32).clamp(0, w - 1);
-                        pred_i32[yy * 16 + xx] =
-                            reference_i32[(ry * w + rx) as usize];
+                        pred_i32[yy * 16 + xx] = reference_i32[(ry * w + rx) as usize];
                     }
                 }
             } else {
@@ -1172,11 +1165,21 @@ fn transcode_p_frame_subpel_rows(
                 // unclipped (i32) so the final recon clip after
                 // residual addition matches the decoder bit-exact.
                 crate::h264_inter_pred::interpolate_luma(
-                    reference_i32, plane_w, plane_w, plane_h,
-                    int_x0, int_y0, x_frac, y_frac,
-                    16, 16, /*bit_depth=*/8,
-                    &mut pred_i32, 16,
-                ).expect("interpolate_luma");
+                    reference_i32,
+                    plane_w,
+                    plane_w,
+                    plane_h,
+                    int_x0,
+                    int_y0,
+                    x_frac,
+                    y_frac,
+                    16,
+                    16,
+                    /*bit_depth=*/ 8,
+                    &mut pred_i32,
+                    16,
+                )
+                .expect("interpolate_luma");
             }
 
             // 16×16 residual = target - pred_i32. Target is u8, pred is
@@ -1188,8 +1191,7 @@ fn transcode_p_frame_subpel_rows(
             for r in 0..16 {
                 let row_off = (mb_r * 16 + r) * plane_w + mb_c * 16;
                 for c in 0..16 {
-                    residual_16x16[r][c] = target[row_off + c] as i32
-                                         - pred_i32[r * 16 + c];
+                    residual_16x16[r][c] = target[row_off + c] as i32 - pred_i32[r * 16 + c];
                 }
             }
             let _ = reference; // silence unused warning for parity with sibling
@@ -1205,8 +1207,7 @@ fn transcode_p_frame_subpel_rows(
                     let mut block_res = [0i32; 16];
                     for k in 0..4 {
                         for kk in 0..4 {
-                            block_res[k * 4 + kk] =
-                                residual_16x16[br * 4 + k][bc * 4 + kk];
+                            block_res[k * 4 + kk] = residual_16x16[br * 4 + k][bc * 4 + kk];
                         }
                     }
                     let y = forward_4x4(&block_res);
@@ -1245,14 +1246,12 @@ fn transcode_p_frame_subpel_rows(
                 let mut pred_block_i32 = [0i32; 16];
                 for k in 0..4 {
                     for kk in 0..4 {
-                        pred_block_i32[k * 4 + kk] =
-                            pred_i32[(br * 4 + k) * 16 + bc * 4 + kk];
+                        pred_block_i32[k * 4 + kk] = pred_i32[(br * 4 + k) * 16 + bc * 4 + kk];
                     }
                 }
                 let recon_block = idct_add_4x4_h264_i32pred(&dq, &pred_block_i32);
                 for k in 0..4 {
-                    let row_off = (local_r * 16 + br * 4 + k) * plane_w
-                                + mb_c * 16 + bc * 4;
+                    let row_off = (local_r * 16 + br * 4 + k) * plane_w + mb_c * 16 + bc * 4;
                     for kk in 0..4 {
                         recon_chunk[row_off + kk] = recon_block[k * 4 + kk];
                     }
@@ -1335,8 +1334,7 @@ pub fn intra_predict_and_quantise_slice_range(
                     for k in 0..4 {
                         let row_off = (py + k) * plane_w + px;
                         for kk in 0..4 {
-                            residual[k * 4 + kk] =
-                                target[row_off + kk] as i32 - pred;
+                            residual[k * 4 + kk] = target[row_off + kk] as i32 - pred;
                         }
                     }
                     let y = forward_4x4(&residual);
@@ -1446,8 +1444,7 @@ pub fn intra_predict_and_quantise_slice(
                     for k in 0..4 {
                         let row_off = (py + k) * plane_w + px;
                         for kk in 0..4 {
-                            residual[k * 4 + kk] =
-                                target[row_off + kk] as i32 - pred;
+                            residual[k * 4 + kk] = target[row_off + kk] as i32 - pred;
                         }
                     }
 
@@ -1528,14 +1525,20 @@ pub fn intra_predict_and_quantise_slice_with_recon(
                     if has_left {
                         for k in 0..4 {
                             let v = recon[(py + k) * plane_w + (px - 1)];
-                            if v < 0 { has_left = false; break; }
+                            if v < 0 {
+                                has_left = false;
+                                break;
+                            }
                             left_sum += v as i32;
                         }
                     }
                     if has_top {
                         for k in 0..4 {
                             let v = recon[(py - 1) * plane_w + (px + k)];
-                            if v < 0 { has_top = false; break; }
+                            if v < 0 {
+                                has_top = false;
+                                break;
+                            }
                             top_sum += v as i32;
                         }
                     }
@@ -1549,8 +1552,7 @@ pub fn intra_predict_and_quantise_slice_with_recon(
                     for k in 0..4 {
                         let row_off = (py + k) * plane_w + px;
                         for kk in 0..4 {
-                            residual[k * 4 + kk] =
-                                target[row_off + kk] as i32 - pred;
+                            residual[k * 4 + kk] = target[row_off + kk] as i32 - pred;
                         }
                     }
                     let y = forward_4x4(&residual);
@@ -1633,10 +1635,10 @@ pub fn dequantize_intra_4x4(z: &[i32; 16], qp: i32) -> [i32; 16] {
 }
 
 const CF: [[f64; 4]; 4] = [
-    [1.0,  1.0,  1.0,  1.0],
-    [2.0,  1.0, -1.0, -2.0],
-    [1.0, -1.0, -1.0,  1.0],
-    [1.0, -2.0,  2.0, -1.0],
+    [1.0, 1.0, 1.0, 1.0],
+    [2.0, 1.0, -1.0, -2.0],
+    [1.0, -1.0, -1.0, 1.0],
+    [1.0, -2.0, 2.0, -1.0],
 ];
 
 /// Cached numerical inverse of Cf. Built once.
@@ -1673,7 +1675,9 @@ fn invert_4x4(m: &[[f64; 4]; 4]) -> [[f64; 4]; 4] {
             a[col][j] /= p;
         }
         for r in 0..4 {
-            if r == col { continue; }
+            if r == col {
+                continue;
+            }
             let f = a[r][col];
             for j in 0..8 {
                 a[r][j] -= f * a[col][j];
@@ -1725,7 +1729,9 @@ pub fn inverse_4x4(y: &[i32; 16]) -> [i32; 16] {
 /// Float-precision inverse, returning the raw f64 values without
 /// rounding. Useful for the fold matrix construction.
 fn inverse_4x4_f<F>(y: &[i32; 16], finalise: F) -> [i32; 16]
-where F: Fn(f64) -> i32 {
+where
+    F: Fn(f64) -> i32,
+{
     let ci = cf_inv();
     let mut t = [0.0f64; 16];
     for i in 0..4 {
@@ -1805,8 +1811,10 @@ fn inverse_4x4_pure_f(y: &[f64; 16]) -> [f64; 16] {
 /// Reference 4-to-1 fold: go through pixel domain. Slow but
 /// correct. Pure float internally; rounded once at the end.
 pub fn fold_4to1_via_pixels(
-    tl: &[i32; 16], tr: &[i32; 16],
-    bl: &[i32; 16], br: &[i32; 16],
+    tl: &[i32; 16],
+    tr: &[i32; 16],
+    bl: &[i32; 16],
+    br: &[i32; 16],
 ) -> [i32; 16] {
     let f_tl = to_f(tl);
     let f_tr = to_f(tr);
@@ -1828,18 +1836,19 @@ pub fn fold_4to1_via_pixels(
 
 fn to_f(x: &[i32; 16]) -> [f64; 16] {
     let mut r = [0.0f64; 16];
-    for i in 0..16 { r[i] = x[i] as f64; }
+    for i in 0..16 {
+        r[i] = x[i] as f64;
+    }
     r
 }
 
-fn tile_2x2_to_8x8_f(tl: &[f64; 16], tr: &[f64; 16],
-                     bl: &[f64; 16], br: &[f64; 16]) -> [f64; 64] {
+fn tile_2x2_to_8x8_f(tl: &[f64; 16], tr: &[f64; 16], bl: &[f64; 16], br: &[f64; 16]) -> [f64; 64] {
     let mut out = [0.0f64; 64];
     for r in 0..4 {
         for c in 0..4 {
-            out[r * 8 + c]             = tl[r * 4 + c];
-            out[r * 8 + (c + 4)]       = tr[r * 4 + c];
-            out[(r + 4) * 8 + c]       = bl[r * 4 + c];
+            out[r * 8 + c] = tl[r * 4 + c];
+            out[r * 8 + (c + 4)] = tr[r * 4 + c];
+            out[(r + 4) * 8 + c] = bl[r * 4 + c];
             out[(r + 4) * 8 + (c + 4)] = br[r * 4 + c];
         }
     }
@@ -1851,9 +1860,9 @@ fn area_average_8x8_to_4x4_f(p: &[f64; 64]) -> [f64; 16] {
     for r in 0..4 {
         for c in 0..4 {
             let sum = p[(2 * r) * 8 + (2 * c)]
-                    + p[(2 * r) * 8 + (2 * c + 1)]
-                    + p[(2 * r + 1) * 8 + (2 * c)]
-                    + p[(2 * r + 1) * 8 + (2 * c + 1)];
+                + p[(2 * r) * 8 + (2 * c + 1)]
+                + p[(2 * r + 1) * 8 + (2 * c)]
+                + p[(2 * r + 1) * 8 + (2 * c + 1)];
             out[r * 4 + c] = sum * 0.25;
         }
     }
@@ -1881,7 +1890,7 @@ fn fold_matrix() -> &'static [[f64; 64]; 16] {
             let mut tr = [0.0f64; 16];
             let mut bl = [0.0f64; 16];
             let mut br = [0.0f64; 16];
-            tl.copy_from_slice(&input[ 0..16]);
+            tl.copy_from_slice(&input[0..16]);
             tr.copy_from_slice(&input[16..32]);
             bl.copy_from_slice(&input[32..48]);
             br.copy_from_slice(&input[48..64]);
@@ -1903,13 +1912,15 @@ fn fold_matrix() -> &'static [[f64; 64]; 16] {
 
 /// Fast 4-to-1 fold via the precomputed matrix.
 pub fn fold_4to1_via_matrix(
-    tl: &[i32; 16], tr: &[i32; 16],
-    bl: &[i32; 16], br: &[i32; 16],
+    tl: &[i32; 16],
+    tr: &[i32; 16],
+    bl: &[i32; 16],
+    br: &[i32; 16],
 ) -> [i32; 16] {
     let m = fold_matrix();
     let mut input = [0.0f64; 64];
     for i in 0..16 {
-        input[i]      = tl[i] as f64;
+        input[i] = tl[i] as f64;
         input[i + 16] = tr[i] as f64;
         input[i + 32] = bl[i] as f64;
         input[i + 48] = br[i] as f64;
@@ -1950,21 +1961,27 @@ mod tests {
         let x2 = inverse_4x4(&y);
         for i in 0..16 {
             let err = (x[i] - x2[i]).abs();
-            assert!(err <= 1, "round-trip err at {}: {} vs {}",
-                    i, x[i], x2[i]);
+            assert!(err <= 1, "round-trip err at {}: {} vs {}", i, x[i], x2[i]);
         }
     }
 
     #[test]
     fn forward_inverse_round_trip_ramp() {
         let mut x = [0i32; 16];
-        for i in 0..16 { x[i] = i as i32; }
+        for i in 0..16 {
+            x[i] = i as i32;
+        }
         let y = forward_4x4(&x);
         let x2 = inverse_4x4(&y);
         for i in 0..16 {
             let err = (x[i] - x2[i]).abs();
-            assert!(err <= 1, "ramp round-trip err at {}: {} vs {}",
-                    i, x[i], x2[i]);
+            assert!(
+                err <= 1,
+                "ramp round-trip err at {}: {} vs {}",
+                i,
+                x[i],
+                x2[i]
+            );
         }
     }
 
@@ -1976,26 +1993,35 @@ mod tests {
         let folded_pixels = inverse_4x4(&folded_coefs);
         for i in 0..16 {
             let err = (folded_pixels[i] - 80).abs();
-            assert!(err <= 1, "fold-constant err at {}: got {}",
-                    i, folded_pixels[i]);
+            assert!(
+                err <= 1,
+                "fold-constant err at {}: got {}",
+                i,
+                folded_pixels[i]
+            );
         }
     }
 
     #[test]
     fn fold_matrix_matches_pixel_reference() {
-        let tl: [i32; 16] = [120, -30,  5, 0,  -10, 8, 2, 0,  3, 1, 0, 0,  0, 0, 0, 0];
-        let tr: [i32; 16] = [115,  25,  4, 0,   12, 6, 1, 0,  2, 0, 0, 0,  0, 0, 0, 0];
-        let bl: [i32; 16] = [118, -20,  6, 0,   -8, 5, 3, 0,  4, 1, 0, 0,  0, 0, 0, 0];
-        let br: [i32; 16] = [122,  10,  3, 0,    5, 4, 2, 0,  1, 0, 0, 0,  0, 0, 0, 0];
+        let tl: [i32; 16] = [120, -30, 5, 0, -10, 8, 2, 0, 3, 1, 0, 0, 0, 0, 0, 0];
+        let tr: [i32; 16] = [115, 25, 4, 0, 12, 6, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0];
+        let bl: [i32; 16] = [118, -20, 6, 0, -8, 5, 3, 0, 4, 1, 0, 0, 0, 0, 0, 0];
+        let br: [i32; 16] = [122, 10, 3, 0, 5, 4, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0];
 
         let via_pixels = fold_4to1_via_pixels(&tl, &tr, &bl, &br);
         let via_matrix = fold_4to1_via_matrix(&tl, &tr, &bl, &br);
 
         for i in 0..16 {
             let err = (via_pixels[i] - via_matrix[i]).abs();
-            assert!(err <= 1,
+            assert!(
+                err <= 1,
                 "fold paths disagree at coef {}: pixels={}, matrix={}, err={}",
-                i, via_pixels[i], via_matrix[i], err);
+                i,
+                via_pixels[i],
+                via_matrix[i],
+                err
+            );
         }
     }
 
@@ -2026,14 +2052,30 @@ mod tests {
         // Float-precision expected: per column [0.5, 2.5, 4.5, 6.5]
         // rounded to nearest int = [0 or 1, 2 or 3, 4 or 5, 6 or 7].
         for r in 0..4 {
-            assert!((folded_px[r * 4 + 0] - 0).abs() <= 1,
-                    "row {} col 0: {}", r, folded_px[r * 4 + 0]);
-            assert!((folded_px[r * 4 + 1] - 3).abs() <= 1,
-                    "row {} col 1: {}", r, folded_px[r * 4 + 1]);
-            assert!((folded_px[r * 4 + 2] - 5).abs() <= 1,
-                    "row {} col 2: {}", r, folded_px[r * 4 + 2]);
-            assert!((folded_px[r * 4 + 3] - 7).abs() <= 1,
-                    "row {} col 3: {}", r, folded_px[r * 4 + 3]);
+            assert!(
+                (folded_px[r * 4 + 0] - 0).abs() <= 1,
+                "row {} col 0: {}",
+                r,
+                folded_px[r * 4 + 0]
+            );
+            assert!(
+                (folded_px[r * 4 + 1] - 3).abs() <= 1,
+                "row {} col 1: {}",
+                r,
+                folded_px[r * 4 + 1]
+            );
+            assert!(
+                (folded_px[r * 4 + 2] - 5).abs() <= 1,
+                "row {} col 2: {}",
+                r,
+                folded_px[r * 4 + 2]
+            );
+            assert!(
+                (folded_px[r * 4 + 3] - 7).abs() <= 1,
+                "row {} col 3: {}",
+                r,
+                folded_px[r * 4 + 3]
+            );
         }
     }
 }

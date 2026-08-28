@@ -70,7 +70,13 @@ pub fn boundary_strength(p: SideInfo, q: SideInfo) -> BoundaryStrength {
 /// deblocking + SAO. Compiler will optimise to CMOV.
 #[inline]
 fn clip(v: i32, lo: i32, hi: i32) -> i32 {
-    if v < lo { lo } else if v > hi { hi } else { v }
+    if v < lo {
+        lo
+    } else if v > hi {
+        hi
+    } else {
+        v
+    }
 }
 
 /// Apply a 4-pixel deblocking filter perpendicular to a vertical
@@ -81,8 +87,14 @@ fn clip(v: i32, lo: i32, hi: i32) -> i32 {
 /// Simplified strong/normal split per clause 8.7.2.5. Beta/tc clipping
 /// is applied per H.265 normalisation; this is the educational version.
 pub fn deblock_4_samples_vertical(
-    p3: i32, p2: i32, p1: i32, p0: i32,
-    q0: i32, q1: i32, q2: i32, q3: i32,
+    p3: i32,
+    p2: i32,
+    p1: i32,
+    p0: i32,
+    q0: i32,
+    q1: i32,
+    q2: i32,
+    q3: i32,
     bs: BoundaryStrength,
     tc: i32,
 ) -> (i32, i32, i32, i32, i32, i32) {
@@ -97,18 +109,28 @@ pub fn deblock_4_samples_vertical(
         }
         BoundaryStrength::Strong => {
             // Strong filter: 3-tap modifications on each side.
-            let new_p0 = clip((p2 + 2 * p1 + 2 * p0 + 2 * q0 + q1 + 4) >> 3,
-                              p0 - 2 * tc, p0 + 2 * tc);
-            let new_p1 = clip((p2 + p1 + p0 + q0 + 2) >> 2,
-                              p1 - 2 * tc, p1 + 2 * tc);
-            let new_p2 = clip((2 * p3 + 3 * p2 + p1 + p0 + q0 + 4) >> 3,
-                              p2 - 2 * tc, p2 + 2 * tc);
-            let new_q0 = clip((p1 + 2 * p0 + 2 * q0 + 2 * q1 + q2 + 4) >> 3,
-                              q0 - 2 * tc, q0 + 2 * tc);
-            let new_q1 = clip((p0 + q0 + q1 + q2 + 2) >> 2,
-                              q1 - 2 * tc, q1 + 2 * tc);
-            let new_q2 = clip((p0 + q0 + q1 + 3 * q2 + 2 * q3 + 4) >> 3,
-                              q2 - 2 * tc, q2 + 2 * tc);
+            let new_p0 = clip(
+                (p2 + 2 * p1 + 2 * p0 + 2 * q0 + q1 + 4) >> 3,
+                p0 - 2 * tc,
+                p0 + 2 * tc,
+            );
+            let new_p1 = clip((p2 + p1 + p0 + q0 + 2) >> 2, p1 - 2 * tc, p1 + 2 * tc);
+            let new_p2 = clip(
+                (2 * p3 + 3 * p2 + p1 + p0 + q0 + 4) >> 3,
+                p2 - 2 * tc,
+                p2 + 2 * tc,
+            );
+            let new_q0 = clip(
+                (p1 + 2 * p0 + 2 * q0 + 2 * q1 + q2 + 4) >> 3,
+                q0 - 2 * tc,
+                q0 + 2 * tc,
+            );
+            let new_q1 = clip((p0 + q0 + q1 + q2 + 2) >> 2, q1 - 2 * tc, q1 + 2 * tc);
+            let new_q2 = clip(
+                (p0 + q0 + q1 + 3 * q2 + 2 * q3 + 4) >> 3,
+                q2 - 2 * tc,
+                q2 + 2 * tc,
+            );
             (new_p2, new_p1, new_p0, new_q0, new_q1, new_q2)
         }
     }
@@ -123,7 +145,10 @@ pub enum SaoMode {
     BandOffset { band_start: u8, offsets: [i8; 4] },
     /// Edge offset: classify each pixel by its position on an edge in
     /// the chosen direction; offset by per-category amount.
-    EdgeOffset { direction: SaoEdgeDir, offsets: [i8; 4] },
+    EdgeOffset {
+        direction: SaoEdgeDir,
+        offsets: [i8; 4],
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -168,13 +193,17 @@ fn sao_edge_category(centre: i32, a: i32, b: i32) -> usize {
 /// `stride_sequential_pixel_access` — outer-loop rows, inner-loop cols,
 /// prefetcher streams pixels.
 pub fn apply_sao_band_offset(
-    plane: &mut [u8], width: usize, height: usize, stride: usize,
-    band_start: u8, offsets: [i8; 4],
+    plane: &mut [u8],
+    width: usize,
+    height: usize,
+    stride: usize,
+    band_start: u8,
+    offsets: [i8; 4],
 ) {
     for y in 0..height {
         for x in 0..width {
             let p = plane[y * stride + x] as i32;
-            let band = (p >> 3) as u8;  // 256 levels → 32 bands of 8 each
+            let band = (p >> 3) as u8; // 256 levels → 32 bands of 8 each
             let band_idx = band.wrapping_sub(band_start);
             if band_idx < 4 {
                 let new_p = p + offsets[band_idx as usize] as i32;
@@ -188,12 +217,18 @@ pub fn apply_sao_band_offset(
 /// (boundary rows/cols left alone; that's how H.265 handles them in
 /// the CTU-tile case).
 pub fn apply_sao_edge_offset(
-    plane: &mut [u8], width: usize, height: usize, stride: usize,
-    direction: SaoEdgeDir, offsets: [i8; 4],
+    plane: &mut [u8],
+    width: usize,
+    height: usize,
+    stride: usize,
+    direction: SaoEdgeDir,
+    offsets: [i8; 4],
 ) {
     let ((dx_a, dy_a), (dx_b, dy_b)) = direction.neighbours();
     // Need at least 3 rows + 3 cols to have an interior cell.
-    if width < 3 || height < 3 { return; }
+    if width < 3 || height < 3 {
+        return;
+    }
     for y in 1..height - 1 {
         for x in 1..width - 1 {
             let centre = plane[y * stride + x] as i32;
@@ -204,7 +239,9 @@ pub fn apply_sao_edge_offset(
             let a = plane[ya * stride + xa] as i32;
             let b = plane[yb * stride + xb] as i32;
             let cat = sao_edge_category(centre, a, b);
-            if cat == 0 { continue; }
+            if cat == 0 {
+                continue;
+            }
             let new_p = centre + offsets[cat - 1] as i32;
             plane[y * stride + x] = clip(new_p, 0, 255) as u8;
         }
@@ -216,57 +253,78 @@ mod tests {
     use super::*;
 
     fn intra() -> SideInfo {
-        SideInfo { is_intra: true, has_nonzero_coeffs: false,
-                    mv_x: 0, mv_y: 0, ref_pic_id: 0 }
+        SideInfo {
+            is_intra: true,
+            has_nonzero_coeffs: false,
+            mv_x: 0,
+            mv_y: 0,
+            ref_pic_id: 0,
+        }
     }
     fn inter_zero() -> SideInfo {
-        SideInfo { is_intra: false, has_nonzero_coeffs: false,
-                    mv_x: 0, mv_y: 0, ref_pic_id: 0 }
+        SideInfo {
+            is_intra: false,
+            has_nonzero_coeffs: false,
+            mv_x: 0,
+            mv_y: 0,
+            ref_pic_id: 0,
+        }
     }
 
     #[test]
     fn intra_boundary_is_strong() {
-        assert_eq!(boundary_strength(intra(), inter_zero()),
-                   BoundaryStrength::Strong);
-        assert_eq!(boundary_strength(inter_zero(), intra()),
-                   BoundaryStrength::Strong);
+        assert_eq!(
+            boundary_strength(intra(), inter_zero()),
+            BoundaryStrength::Strong
+        );
+        assert_eq!(
+            boundary_strength(inter_zero(), intra()),
+            BoundaryStrength::Strong
+        );
     }
 
     #[test]
     fn matching_inter_zero_boundary_is_none() {
-        assert_eq!(boundary_strength(inter_zero(), inter_zero()),
-                   BoundaryStrength::None);
+        assert_eq!(
+            boundary_strength(inter_zero(), inter_zero()),
+            BoundaryStrength::None
+        );
     }
 
     #[test]
     fn nonzero_coeffs_make_boundary_weak() {
         let mut q = inter_zero();
         q.has_nonzero_coeffs = true;
-        assert_eq!(boundary_strength(inter_zero(), q),
-                   BoundaryStrength::Weak);
+        assert_eq!(boundary_strength(inter_zero(), q), BoundaryStrength::Weak);
     }
 
     #[test]
     fn different_ref_pic_makes_boundary_weak() {
         let mut q = inter_zero();
         q.ref_pic_id = 1;
-        assert_eq!(boundary_strength(inter_zero(), q),
-                   BoundaryStrength::Weak);
+        assert_eq!(boundary_strength(inter_zero(), q), BoundaryStrength::Weak);
     }
 
     #[test]
     fn motion_difference_makes_boundary_weak() {
         let mut q = inter_zero();
         q.mv_x = 5;
-        assert_eq!(boundary_strength(inter_zero(), q),
-                   BoundaryStrength::Weak);
+        assert_eq!(boundary_strength(inter_zero(), q), BoundaryStrength::Weak);
     }
 
     #[test]
     fn deblock_no_strength_leaves_pixels_unchanged() {
         let result = deblock_4_samples_vertical(
-            100, 100, 100, 100, 100, 100, 100, 100,
-            BoundaryStrength::None, 4,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            BoundaryStrength::None,
+            4,
         );
         assert_eq!(result, (100, 100, 100, 100, 100, 100));
     }
@@ -275,8 +333,16 @@ mod tests {
     fn deblock_weak_smooths_boundary() {
         // Step from 100 to 150 across the boundary.
         let (_, _, p0, q0, _, _) = deblock_4_samples_vertical(
-            100, 100, 100, 100, 150, 150, 150, 150,
-            BoundaryStrength::Weak, 8,
+            100,
+            100,
+            100,
+            100,
+            150,
+            150,
+            150,
+            150,
+            BoundaryStrength::Weak,
+            8,
         );
         // After weak filter the boundary samples move toward each other.
         assert!(p0 > 100, "p0 should rise toward q0; got {}", p0);
@@ -286,20 +352,42 @@ mod tests {
     #[test]
     fn deblock_strong_smooths_more_than_weak() {
         let (_, _, p0_strong, q0_strong, _, _) = deblock_4_samples_vertical(
-            100, 100, 100, 100, 150, 150, 150, 150,
-            BoundaryStrength::Strong, 16,
+            100,
+            100,
+            100,
+            100,
+            150,
+            150,
+            150,
+            150,
+            BoundaryStrength::Strong,
+            16,
         );
         let (_, _, p0_weak, q0_weak, _, _) = deblock_4_samples_vertical(
-            100, 100, 100, 100, 150, 150, 150, 150,
-            BoundaryStrength::Weak, 16,
+            100,
+            100,
+            100,
+            100,
+            150,
+            150,
+            150,
+            150,
+            BoundaryStrength::Weak,
+            16,
         );
         // Strong filter pulls boundary further toward midline.
-        assert!((p0_strong - 100).abs() >= (p0_weak - 100).abs(),
-                "strong should change p0 more or equally: weak {}, strong {}",
-                p0_weak, p0_strong);
-        assert!((q0_strong - 150).abs() >= (q0_weak - 150).abs(),
-                "strong should change q0 more or equally: weak {}, strong {}",
-                q0_weak, q0_strong);
+        assert!(
+            (p0_strong - 100).abs() >= (p0_weak - 100).abs(),
+            "strong should change p0 more or equally: weak {}, strong {}",
+            p0_weak,
+            p0_strong
+        );
+        assert!(
+            (q0_strong - 150).abs() >= (q0_weak - 150).abs(),
+            "strong should change q0 more or equally: weak {}, strong {}",
+            q0_weak,
+            q0_strong
+        );
     }
 
     #[test]
@@ -307,8 +395,7 @@ mod tests {
         // 8×1 plane, pixels in 4 different bands.
         let mut plane = vec![10u8, 30, 50, 70, 90, 110, 130, 150];
         // band_start=2 means we offset bands 2, 3, 4, 5 (values 16..47).
-        apply_sao_band_offset(&mut plane, 8, 1, 8,
-                                2, [5, 5, 5, 5]);
+        apply_sao_band_offset(&mut plane, 8, 1, 8, 2, [5, 5, 5, 5]);
         // Only pixels whose band ∈ {2, 3, 4, 5} are shifted.
         // 30 / 8 = band 3 → shifted (+5 → 35)
         // 50 / 8 = band 6 → not shifted
@@ -335,16 +422,14 @@ mod tests {
     #[test]
     fn sao_edge_offset_shifts_local_extrema() {
         // 3×3 plane: centre is a local minimum.
-        let mut plane = vec![
-            100, 100, 100,
-            100,  50, 100,
-            100, 100, 100,
-        ];
+        let mut plane = vec![100, 100, 100, 100, 50, 100, 100, 100, 100];
         // Horizontal edge direction: neighbours of (1, 1) are (0, 1) and (2, 1) = 100, 100.
         // Centre 50 is local-min → category 1. Offset by +20.
-        apply_sao_edge_offset(&mut plane, 3, 3, 3,
-                                SaoEdgeDir::Horizontal, [20, 0, 0, 0]);
-        assert_eq!(plane[1 * 3 + 1], 70,
-                   "local min should be raised by category-1 offset");
+        apply_sao_edge_offset(&mut plane, 3, 3, 3, SaoEdgeDir::Horizontal, [20, 0, 0, 0]);
+        assert_eq!(
+            plane[1 * 3 + 1],
+            70,
+            "local min should be raised by category-1 offset"
+        );
     }
 }

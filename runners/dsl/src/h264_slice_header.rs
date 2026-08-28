@@ -57,7 +57,9 @@ impl<'a> BitReader<'a> {
         while self.u(1) == 0 && m < 32 {
             m += 1;
         }
-        if m == 0 { return 0; }
+        if m == 0 {
+            return 0;
+        }
         let suffix = self.u(m);
         (1u64 << m) - 1 + suffix
     }
@@ -130,9 +132,7 @@ pub fn walk_h264_slice_header(
     if sps_pps.pic_order_cnt_type == 0 {
         let poc_lsb = r.u(sps_pps.log2_max_poc_lsb as usize);
         out.insert("pic_order_cnt_lsb".into(), poc_lsb.into());
-        if sps_pps.bottom_field_pic_order_in_frame_present_flag == 1
-            && field_pic_flag == 0
-        {
+        if sps_pps.bottom_field_pic_order_in_frame_present_flag == 1 && field_pic_flag == 0 {
             out.insert("delta_pic_order_cnt_bottom".into(), r.se().into());
         }
     }
@@ -158,16 +158,10 @@ pub fn walk_h264_slice_header(
         );
         if override_flag == 1 {
             num_ref_l0 = r.ue() as u32;
-            out.insert(
-                "num_ref_idx_l0_active_minus1".into(),
-                num_ref_l0.into(),
-            );
+            out.insert("num_ref_idx_l0_active_minus1".into(), num_ref_l0.into());
             if is_b {
                 num_ref_l1 = r.ue() as u32;
-                out.insert(
-                    "num_ref_idx_l1_active_minus1".into(),
-                    num_ref_l1.into(),
-                );
+                out.insert("num_ref_idx_l1_active_minus1".into(), num_ref_l1.into());
             }
         }
     }
@@ -179,8 +173,10 @@ pub fn walk_h264_slice_header(
         if flag == 1 {
             loop {
                 let idc = r.ue();
-                if idc == 3 { break; }
-                r.ue();  // abs_diff_pic_num_minus1 or long_term_pic_num
+                if idc == 3 {
+                    break;
+                }
+                r.ue(); // abs_diff_pic_num_minus1 or long_term_pic_num
             }
         }
     }
@@ -190,7 +186,9 @@ pub fn walk_h264_slice_header(
         if flag == 1 {
             loop {
                 let idc = r.ue();
-                if idc == 3 { break; }
+                if idc == 3 {
+                    break;
+                }
                 r.ue();
             }
         }
@@ -198,21 +196,22 @@ pub fn walk_h264_slice_header(
 
     // pred_weight_table — present when weighted prediction is on
     // for the slice's type.
-    let weighted_p = sps_pps.weighted_pred_flag == 1
-        && slice_type_mod5 == 0;
+    let weighted_p = sps_pps.weighted_pred_flag == 1 && slice_type_mod5 == 0;
     let weighted_b = sps_pps.weighted_bipred_idc == 1 && is_b;
     if weighted_p || weighted_b {
-        r.ue();  // luma_log2_weight_denom
-        r.ue();  // chroma_log2_weight_denom (assume ChromaArrayType > 0)
+        r.ue(); // luma_log2_weight_denom
+        r.ue(); // chroma_log2_weight_denom (assume ChromaArrayType > 0)
         for _ in 0..=num_ref_l0 {
             let luma_wflag = r.u(1);
             if luma_wflag == 1 {
-                r.se(); r.se();
+                r.se();
+                r.se();
             }
             let chroma_wflag = r.u(1);
             if chroma_wflag == 1 {
                 for _ in 0..2 {
-                    r.se(); r.se();
+                    r.se();
+                    r.se();
                 }
             }
         }
@@ -220,12 +219,14 @@ pub fn walk_h264_slice_header(
             for _ in 0..=num_ref_l1 {
                 let luma_wflag = r.u(1);
                 if luma_wflag == 1 {
-                    r.se(); r.se();
+                    r.se();
+                    r.se();
                 }
                 let chroma_wflag = r.u(1);
                 if chroma_wflag == 1 {
                     for _ in 0..2 {
-                        r.se(); r.se();
+                        r.se();
+                        r.se();
                     }
                 }
             }
@@ -235,19 +236,29 @@ pub fn walk_h264_slice_header(
     // dec_ref_pic_marking — present when nal_ref_idc != 0.
     if nal_ref_idc != 0 {
         if is_idr {
-            r.u(1);  // no_output_of_prior_pics_flag
-            r.u(1);  // long_term_reference_flag
+            r.u(1); // no_output_of_prior_pics_flag
+            r.u(1); // long_term_reference_flag
         } else {
             let adaptive = r.u(1);
             if adaptive == 1 {
                 // Loop-until-terminator (op == 0).
                 loop {
                     let op = r.ue();
-                    if op == 0 { break; }
-                    if op == 1 || op == 3 { r.ue(); }
-                    if op == 2 { r.ue(); }
-                    if op == 3 || op == 6 { r.ue(); }
-                    if op == 4 { r.ue(); }
+                    if op == 0 {
+                        break;
+                    }
+                    if op == 1 || op == 3 {
+                        r.ue();
+                    }
+                    if op == 2 {
+                        r.ue();
+                    }
+                    if op == 3 || op == 6 {
+                        r.ue();
+                    }
+                    if op == 4 {
+                        r.ue();
+                    }
                     // op 5: no further fields
                 }
             }
@@ -255,10 +266,7 @@ pub fn walk_h264_slice_header(
     }
 
     // cabac_init_idc — CABAC and not I/SI slice.
-    if sps_pps.entropy_coding_mode_flag == 1
-        && slice_type_mod5 != 2
-        && slice_type_mod5 != 4
-    {
+    if sps_pps.entropy_coding_mode_flag == 1 && slice_type_mod5 != 2 && slice_type_mod5 != 4 {
         out.insert("cabac_init_idc".into(), r.ue().into());
     }
 
@@ -273,8 +281,8 @@ pub fn walk_h264_slice_header(
         let deblock_idc = r.ue();
         out.insert("disable_deblocking_filter_idc".into(), deblock_idc.into());
         if deblock_idc != 1 {
-            let alpha = r.se();  // slice_alpha_c0_offset_div2
-            let beta = r.se();   // slice_beta_offset_div2
+            let alpha = r.se(); // slice_alpha_c0_offset_div2
+            let beta = r.se(); // slice_beta_offset_div2
             out.insert("slice_alpha_c0_offset_div2".into(), alpha.into());
             out.insert("slice_beta_offset_div2".into(), beta.into());
         }

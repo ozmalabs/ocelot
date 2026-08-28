@@ -68,17 +68,24 @@ impl AshbyVarietyCheck {
     /// Declare that `regulator` covers `disturbance`. Used for the
     /// `unregulated_disturbances` diagnostic.
     pub fn register_coverage(&mut self, regulator: &str, disturbance: &str) {
-        self.coverage.push((regulator.to_string(), disturbance.to_string()));
+        self.coverage
+            .push((regulator.to_string(), disturbance.to_string()));
     }
 
-    pub fn regulator_variety(&self) -> usize { self.regulators.len() }
-    pub fn disturbance_variety(&self) -> usize { self.disturbances.len() }
+    pub fn regulator_variety(&self) -> usize {
+        self.regulators.len()
+    }
+    pub fn disturbance_variety(&self) -> usize {
+        self.disturbances.len()
+    }
 
     /// V(R) / V(D). When V(D) == 0, returns infinity (no disturbances
     /// → regulator-variety-match trivially holds).
     pub fn variety_ratio(&self) -> f64 {
         let d = self.disturbances.len();
-        if d == 0 { return f64::INFINITY; }
+        if d == 0 {
+            return f64::INFINITY;
+        }
         self.regulators.len() as f64 / d as f64
     }
 
@@ -97,9 +104,9 @@ impl AshbyVarietyCheck {
     /// — there exists no path from observation to correction for
     /// these disturbance classes.
     pub fn unregulated_disturbances(&self) -> Vec<String> {
-        let covered: HashSet<&str> = self.coverage.iter()
-            .map(|(_, d)| d.as_str()).collect();
-        self.disturbances.iter()
+        let covered: HashSet<&str> = self.coverage.iter().map(|(_, d)| d.as_str()).collect();
+        self.disturbances
+            .iter()
             .filter(|d| !covered.contains(d.as_str()))
             .cloned()
             .collect()
@@ -108,9 +115,9 @@ impl AshbyVarietyCheck {
     /// Regulators that aren't declared to cover any disturbance.
     /// May indicate dead code or misregistration.
     pub fn idle_regulators(&self) -> Vec<String> {
-        let active: HashSet<&str> = self.coverage.iter()
-            .map(|(r, _)| r.as_str()).collect();
-        self.regulators.iter()
+        let active: HashSet<&str> = self.coverage.iter().map(|(r, _)| r.as_str()).collect();
+        self.regulators
+            .iter()
             .filter(|r| !active.contains(r.as_str()))
             .cloned()
             .collect()
@@ -191,14 +198,18 @@ mod tests {
         for r in ["L2_dispatch", "L3_drives", "L5_codegen", "L6_feedback"] {
             c.register_regulator(r);
         }
-        for d in ["deadline_meet_rate", "working_set_fit",
-                   "gamma_epoch_coherence", "drive_starvation"] {
+        for d in [
+            "deadline_meet_rate",
+            "working_set_fit",
+            "gamma_epoch_coherence",
+            "drive_starvation",
+        ] {
             c.register_disturbance(d);
         }
         c.register_coverage("L2_dispatch", "deadline_meet_rate");
-        c.register_coverage("L5_codegen",  "working_set_fit");
+        c.register_coverage("L5_codegen", "working_set_fit");
         c.register_coverage("L2_dispatch", "gamma_epoch_coherence");
-        c.register_coverage("L3_drives",   "drive_starvation");
+        c.register_coverage("L3_drives", "drive_starvation");
         assert!(c.variety_match_holds());
         assert!(c.unregulated_disturbances().is_empty());
         // L6_feedback isn't declared to cover anything — it's the

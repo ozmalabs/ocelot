@@ -45,8 +45,8 @@
 
 use std::collections::HashMap;
 use std::collections::VecDeque;
-use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex};
 
 /// Where a variable sits relative to its viability envelope.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -81,7 +81,9 @@ pub trait EssentialVariable: Send + Sync {
     /// when preemptive warning on a specific approach matters
     /// (e.g. `WorkingSetFit` overrides to flag approach to the
     /// upper bound).
-    fn near_edge_margin(&self) -> f64 { 0.0 }
+    fn near_edge_margin(&self) -> f64 {
+        0.0
+    }
 
     /// Status based on bounds + margin.
     fn status(&self) -> ViabilityStatus {
@@ -90,19 +92,27 @@ pub trait EssentialVariable: Send + Sync {
         let hi = self.upper_bound();
         // Breach checks.
         if let Some(l) = lo {
-            if v < l { return ViabilityStatus::Breach; }
+            if v < l {
+                return ViabilityStatus::Breach;
+            }
         }
         if let Some(h) = hi {
-            if v > h { return ViabilityStatus::Breach; }
+            if v > h {
+                return ViabilityStatus::Breach;
+            }
         }
         // Near-edge checks (only if margin > 0).
         let margin = self.near_edge_margin();
         if margin > 0.0 {
             if let Some(l) = lo {
-                if v - l < margin { return ViabilityStatus::NearEdge; }
+                if v - l < margin {
+                    return ViabilityStatus::NearEdge;
+                }
             }
             if let Some(h) = hi {
-                if h - v < margin { return ViabilityStatus::NearEdge; }
+                if h - v < margin {
+                    return ViabilityStatus::NearEdge;
+                }
             }
         }
         ViabilityStatus::Nominal
@@ -124,8 +134,7 @@ pub struct DeadlineMeetRate {
 
 impl DeadlineMeetRate {
     /// `bound_low` is the minimum acceptable rate (e.g. 0.95).
-    pub fn new(name: impl Into<String>, window_size: usize,
-               bound_low: f64) -> Self {
+    pub fn new(name: impl Into<String>, window_size: usize, bound_low: f64) -> Self {
         Self {
             name: name.into(),
             window: Mutex::new(VecDeque::with_capacity(window_size)),
@@ -135,7 +144,9 @@ impl DeadlineMeetRate {
     }
     pub fn record(&self, met: bool) {
         let mut w = self.window.lock().unwrap();
-        if w.len() >= self.window_size { w.pop_front(); }
+        if w.len() >= self.window_size {
+            w.pop_front();
+        }
         w.push_back(met);
     }
     pub fn sample_count(&self) -> usize {
@@ -144,18 +155,26 @@ impl DeadlineMeetRate {
 }
 
 impl EssentialVariable for DeadlineMeetRate {
-    fn name(&self) -> &str { &self.name }
+    fn name(&self) -> &str {
+        &self.name
+    }
     fn current_value(&self) -> f64 {
         let w = self.window.lock().unwrap();
-        if w.is_empty() { return 1.0; }  // no samples ⇒ nominal
+        if w.is_empty() {
+            return 1.0;
+        } // no samples ⇒ nominal
         let met = w.iter().filter(|m| **m).count();
         met as f64 / w.len() as f64
     }
-    fn lower_bound(&self) -> Option<f64> { Some(self.bound_low) }
+    fn lower_bound(&self) -> Option<f64> {
+        Some(self.bound_low)
+    }
     /// No upper bound — high meet rate is always good. Setting an
     /// upper bound here (e.g. 1.0) would spuriously flag perfect
     /// performance as NearEdge.
-    fn upper_bound(&self) -> Option<f64> { None }
+    fn upper_bound(&self) -> Option<f64> {
+        None
+    }
 }
 
 // =======================================================================
@@ -175,8 +194,7 @@ pub struct WorkingSetFit {
 impl WorkingSetFit {
     /// `cache_bytes`: target architecture cache (e.g. 32 MiB for L3).
     /// `bound_high`: max fraction allowed (e.g. 0.90).
-    pub fn new(name: impl Into<String>, cache_bytes: usize,
-               bound_high: f64) -> Self {
+    pub fn new(name: impl Into<String>, cache_bytes: usize, bound_high: f64) -> Self {
         Self {
             name: name.into(),
             current_bytes: AtomicUsize::new(0),
@@ -193,16 +211,23 @@ impl WorkingSetFit {
 }
 
 impl EssentialVariable for WorkingSetFit {
-    fn name(&self) -> &str { &self.name }
+    fn name(&self) -> &str {
+        &self.name
+    }
     fn current_value(&self) -> f64 {
-        self.current_bytes.load(Ordering::Relaxed) as f64
-            / self.cache_bytes as f64
+        self.current_bytes.load(Ordering::Relaxed) as f64 / self.cache_bytes as f64
     }
     /// No lower bound — empty working set is fine, no issue.
-    fn lower_bound(&self) -> Option<f64> { None }
-    fn upper_bound(&self) -> Option<f64> { Some(self.bound_high) }
+    fn lower_bound(&self) -> Option<f64> {
+        None
+    }
+    fn upper_bound(&self) -> Option<f64> {
+        Some(self.bound_high)
+    }
     /// Near-edge zone just below the upper bound: 10% of bound.
-    fn near_edge_margin(&self) -> f64 { 0.1 * self.bound_high }
+    fn near_edge_margin(&self) -> f64 {
+        0.1 * self.bound_high
+    }
 }
 
 // =======================================================================
@@ -237,7 +262,10 @@ impl GammaEpochCoherence {
                 return;
             }
             match self.last_seen.compare_exchange_weak(
-                last, epoch, Ordering::Release, Ordering::Acquire,
+                last,
+                epoch,
+                Ordering::Release,
+                Ordering::Acquire,
             ) {
                 Ok(_) => return,
                 Err(prev) => last = prev,
@@ -250,15 +278,21 @@ impl GammaEpochCoherence {
 }
 
 impl EssentialVariable for GammaEpochCoherence {
-    fn name(&self) -> &str { &self.name }
+    fn name(&self) -> &str {
+        &self.name
+    }
     fn current_value(&self) -> f64 {
         self.retrograde_reads.load(Ordering::Relaxed) as f64
     }
     /// No lower bound — zero is ideal.
-    fn lower_bound(&self) -> Option<f64> { None }
+    fn lower_bound(&self) -> Option<f64> {
+        None
+    }
     /// Any nonzero count is a breach. `0.5` upper bound + integer
     /// counts means count ≥ 1 → Breach. No near-edge zone (default 0).
-    fn upper_bound(&self) -> Option<f64> { Some(0.5) }
+    fn upper_bound(&self) -> Option<f64> {
+        Some(0.5)
+    }
 }
 
 // =======================================================================
@@ -301,19 +335,30 @@ impl DriveStarvation {
     pub fn longest_starvation(&self) -> u64 {
         let t = self.current_tick.load(Ordering::Acquire);
         let map = self.last_fire.lock().unwrap();
-        if map.is_empty() { return 0; }
-        map.values().map(|last| t.saturating_sub(*last)).max().unwrap_or(0)
+        if map.is_empty() {
+            return 0;
+        }
+        map.values()
+            .map(|last| t.saturating_sub(*last))
+            .max()
+            .unwrap_or(0)
     }
 }
 
 impl EssentialVariable for DriveStarvation {
-    fn name(&self) -> &str { &self.name }
+    fn name(&self) -> &str {
+        &self.name
+    }
     fn current_value(&self) -> f64 {
         self.longest_starvation() as f64
     }
     /// No lower bound — zero starvation is ideal.
-    fn lower_bound(&self) -> Option<f64> { None }
-    fn upper_bound(&self) -> Option<f64> { Some(self.max_starvation_ticks as f64) }
+    fn lower_bound(&self) -> Option<f64> {
+        None
+    }
+    fn upper_bound(&self) -> Option<f64> {
+        Some(self.max_starvation_ticks as f64)
+    }
     /// Near-edge zone just below the max: 10% of max.
     fn near_edge_margin(&self) -> f64 {
         0.1 * self.max_starvation_ticks as f64
@@ -349,7 +394,9 @@ pub struct EssentialVariableMonitor {
 }
 
 impl Default for EssentialVariableMonitor {
-    fn default() -> Self { Self::new(0.1) }
+    fn default() -> Self {
+        Self::new(0.1)
+    }
 }
 
 impl EssentialVariableMonitor {
@@ -369,11 +416,14 @@ impl EssentialVariableMonitor {
     /// fire degraded-mode callbacks — use `tick_with_response` for
     /// that.
     pub fn tick(&self) -> Vec<VariableSnapshot> {
-        self.variables.iter().map(|v| VariableSnapshot {
-            name: v.name().to_string(),
-            value: v.current_value(),
-            status: v.status(),
-        }).collect()
+        self.variables
+            .iter()
+            .map(|v| VariableSnapshot {
+                name: v.name().to_string(),
+                value: v.current_value(),
+                status: v.status(),
+            })
+            .collect()
     }
     /// Sample every variable + fire `responder` callbacks on status
     /// transitions. Realises the
@@ -385,17 +435,16 @@ impl EssentialVariableMonitor {
         let snapshots = self.tick();
         let mut last_state = self.last_status.lock().unwrap();
         for snap in &snapshots {
-            let old = last_state.get(&snap.name).copied()
+            let old = last_state
+                .get(&snap.name)
+                .copied()
                 .unwrap_or(ViabilityStatus::Nominal);
             let new = snap.status;
             if old != new {
                 match new {
-                    ViabilityStatus::Breach =>
-                        responder.on_breach(&snap.name, snap.value),
-                    ViabilityStatus::NearEdge =>
-                        responder.on_near_edge(&snap.name, snap.value),
-                    ViabilityStatus::Nominal =>
-                        responder.on_recovery(&snap.name, snap.value),
+                    ViabilityStatus::Breach => responder.on_breach(&snap.name, snap.value),
+                    ViabilityStatus::NearEdge => responder.on_near_edge(&snap.name, snap.value),
+                    ViabilityStatus::Nominal => responder.on_recovery(&snap.name, snap.value),
                 }
                 last_state.insert(snap.name.clone(), new);
             }
@@ -404,18 +453,22 @@ impl EssentialVariableMonitor {
     }
     /// True iff any variable is currently in `Breach`.
     pub fn any_breach(&self) -> bool {
-        self.variables.iter().any(|v|
-            v.status()
-                == ViabilityStatus::Breach)
+        self.variables
+            .iter()
+            .any(|v| v.status() == ViabilityStatus::Breach)
     }
     /// True iff any variable is `NearEdge` or `Breach`.
     pub fn any_outside_nominal(&self) -> bool {
-        self.variables.iter().any(|v|
-            v.status()
-                != ViabilityStatus::Nominal)
+        self.variables
+            .iter()
+            .any(|v| v.status() != ViabilityStatus::Nominal)
     }
-    pub fn len(&self) -> usize { self.variables.len() }
-    pub fn is_empty(&self) -> bool { self.variables.is_empty() }
+    pub fn len(&self) -> usize {
+        self.variables.len()
+    }
+    pub fn is_empty(&self) -> bool {
+        self.variables.is_empty()
+    }
 }
 
 // =======================================================================
@@ -442,15 +495,15 @@ mod tests {
     fn deadline_meet_rate_empty_is_one() {
         let v = DeadlineMeetRate::new("dmr", 10, 0.95);
         assert_eq!(v.current_value(), 1.0);
-        assert_eq!(
-            v.status(),
-            ViabilityStatus::Nominal);
+        assert_eq!(v.status(), ViabilityStatus::Nominal);
     }
 
     #[test]
     fn deadline_meet_rate_window_slides() {
         let v = DeadlineMeetRate::new("dmr", 5, 0.95);
-        for _ in 0..5 { v.record(true); }
+        for _ in 0..5 {
+            v.record(true);
+        }
         assert_eq!(v.current_value(), 1.0);
         v.record(false);
         // Window now [true, true, true, true, false].
@@ -462,11 +515,9 @@ mod tests {
     fn deadline_meet_rate_breach_below_bound() {
         let v = DeadlineMeetRate::new("dmr", 10, 0.95);
         for i in 0..10 {
-            v.record(i < 5);  // 5 met, 5 missed → rate 0.5
+            v.record(i < 5); // 5 met, 5 missed → rate 0.5
         }
-        assert_eq!(
-            v.status(),
-            ViabilityStatus::Breach);
+        assert_eq!(v.status(), ViabilityStatus::Breach);
     }
 
     // ---------- WorkingSetFit ----------
@@ -480,18 +531,17 @@ mod tests {
         v.update(950);
         assert!((v.current_value() - 0.95).abs() < 1e-9);
         // 95% > 90% bound → breach.
-        assert_eq!(
-            v.status(),
-            ViabilityStatus::Breach);
+        assert_eq!(v.status(), ViabilityStatus::Breach);
     }
 
     #[test]
     fn working_set_fit_near_edge() {
         let v = WorkingSetFit::new("wsf", 1000, 0.9);
-        v.update(870);  // 87% — within 5% of 90% bound
+        v.update(870); // 87% — within 5% of 90% bound
         assert_eq!(
-            v.status(),  // 5% × 0.9 ≈ 0.045
-            ViabilityStatus::NearEdge);
+            v.status(), // 5% × 0.9 ≈ 0.045
+            ViabilityStatus::NearEdge
+        );
     }
 
     // ---------- GammaEpochCoherence ----------
@@ -499,11 +549,11 @@ mod tests {
     #[test]
     fn gamma_epoch_coherence_monotonic_is_clean() {
         let v = GammaEpochCoherence::new("gec");
-        for i in 0..100 { v.observe(i); }
+        for i in 0..100 {
+            v.observe(i);
+        }
         assert_eq!(v.retrograde_count(), 0);
-        assert_eq!(
-            v.status(),
-            ViabilityStatus::Nominal);
+        assert_eq!(v.status(), ViabilityStatus::Nominal);
     }
 
     #[test]
@@ -511,11 +561,9 @@ mod tests {
         let v = GammaEpochCoherence::new("gec");
         v.observe(10);
         v.observe(20);
-        v.observe(5);  // retrograde!
+        v.observe(5); // retrograde!
         assert_eq!(v.retrograde_count(), 1);
-        assert_eq!(
-            v.status(),
-            ViabilityStatus::Breach);
+        assert_eq!(v.status(), ViabilityStatus::Breach);
     }
 
     // ---------- DriveStarvation ----------
@@ -531,11 +579,15 @@ mod tests {
         let v = DriveStarvation::new("ds", 10);
         v.record_fire(1);
         v.record_fire(2);
-        for _ in 0..3 { v.advance_tick(); }
-        v.record_fire(1);  // drive 1 fired again at tick 3
-        // Drive 2 last fired at tick 0; current tick = 3.
-        // Drive 1 last fired at tick 3; current tick = 3.
-        for _ in 0..5 { v.advance_tick(); }
+        for _ in 0..3 {
+            v.advance_tick();
+        }
+        v.record_fire(1); // drive 1 fired again at tick 3
+                          // Drive 2 last fired at tick 0; current tick = 3.
+                          // Drive 1 last fired at tick 3; current tick = 3.
+        for _ in 0..5 {
+            v.advance_tick();
+        }
         // Now current = 8. Drive 2: 8 - 0 = 8. Drive 1: 8 - 3 = 5.
         assert_eq!(v.longest_starvation(), 8);
     }
@@ -544,10 +596,10 @@ mod tests {
     fn drive_starvation_breach_when_exceeded() {
         let v = DriveStarvation::new("ds", 5);
         v.record_fire(1);
-        for _ in 0..7 { v.advance_tick(); }  // gap of 7 > bound 5
-        assert_eq!(
-            v.status(),
-            ViabilityStatus::Breach);
+        for _ in 0..7 {
+            v.advance_tick();
+        } // gap of 7 > bound 5
+        assert_eq!(v.status(), ViabilityStatus::Breach);
     }
 
     // ---------- Monitor aggregate ----------
@@ -590,8 +642,7 @@ mod tests {
             }
         }
         let mut mon = EssentialVariableMonitor::new(0.05);
-        let wsf: Arc<WorkingSetFit> =
-            Arc::new(WorkingSetFit::new("wsf", 1000, 0.9));
+        let wsf: Arc<WorkingSetFit> = Arc::new(WorkingSetFit::new("wsf", 1000, 0.9));
         mon.add(Arc::clone(&wsf) as Arc<dyn EssentialVariable>);
         let mut r = CountingResponder {
             breaches: Vec::new(),
@@ -607,13 +658,13 @@ mod tests {
         // Push into breach by updating bytes through our retained
         // Arc handle. This is the realistic pattern: the mutator
         // (e.g. dispatcher) holds an Arc + the monitor holds its own.
-        wsf.update(950);  // 95% > 90% bound
+        wsf.update(950); // 95% > 90% bound
         mon.tick_with_response(&mut r);
         assert_eq!(r.breaches.len(), 1);
         assert_eq!(r.breaches[0].0, "wsf");
 
         // Push back to nominal.
-        wsf.update(500);  // 50%
+        wsf.update(500); // 50%
         mon.tick_with_response(&mut r);
         assert_eq!(r.recoveries.len(), 1);
         assert_eq!(r.recoveries[0].0, "wsf");
@@ -631,8 +682,11 @@ mod tests {
         }
         let snaps = mon.tick();
         for n in &names {
-            assert!(snaps.iter().any(|s| s.name == *n),
-                    "variable {} should be in snapshots", n);
+            assert!(
+                snaps.iter().any(|s| s.name == *n),
+                "variable {} should be in snapshots",
+                n
+            );
         }
     }
 
@@ -643,13 +697,17 @@ mod tests {
     fn monitor_holds_all_four_essential_variables() {
         let mut mon = EssentialVariableMonitor::new(0.1);
         mon.add(Arc::new(DeadlineMeetRate::new(
-            "deadline_meet_rate", 100, 0.95)));
+            "deadline_meet_rate",
+            100,
+            0.95,
+        )));
         mon.add(Arc::new(WorkingSetFit::new(
-            "working_set_fit", 32 * 1024 * 1024, 0.9)));
-        mon.add(Arc::new(GammaEpochCoherence::new(
-            "gamma_epoch_coherence")));
-        mon.add(Arc::new(DriveStarvation::new(
-            "drive_starvation", 50)));
+            "working_set_fit",
+            32 * 1024 * 1024,
+            0.9,
+        )));
+        mon.add(Arc::new(GammaEpochCoherence::new("gamma_epoch_coherence")));
+        mon.add(Arc::new(DriveStarvation::new("drive_starvation", 50)));
         assert_eq!(mon.len(), 4);
         let snaps = mon.tick();
         assert_eq!(snaps.len(), 4);

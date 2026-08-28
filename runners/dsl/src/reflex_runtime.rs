@@ -93,17 +93,18 @@ pub fn fire_autonomous(substrate: &mut Substrate) -> usize {
     let fired_edge = substrate.interner.intern("has_fired_reflex");
     let mut fired = 0usize;
     let mut excluded: FxHashSet<NodeID> = FxHashSet::default();
-    while let Some(dispatch) =
-        dispatch_next(substrate, agent, now, &candidates, &excluded, true)
-    {
+    while let Some(dispatch) = dispatch_next(substrate, agent, now, &candidates, &excluded, true) {
         let already = substrate
             .graph
             .neighbours(agent, Some(fired_edge))
             .contains(&dispatch.node);
         if !already {
             let _ = substrate.graph.insert_edge(
-                agent, fired_edge, dispatch.node,
-                rustc_hash::FxHashMap::default());
+                agent,
+                fired_edge,
+                dispatch.node,
+                rustc_hash::FxHashMap::default(),
+            );
             substrate.mark_edge_type_dirty(fired_edge);
         }
         excluded.insert(dispatch.node);
@@ -149,9 +150,7 @@ fn dispatch_next(
         ordered
     };
     for &reflex in reflexes {
-        if !substrate.graph.has_node(reflex)
-            || substrate.graph.node(reflex).type_ != reflex_t
-        {
+        if !substrate.graph.has_node(reflex) || substrate.graph.node(reflex).type_ != reflex_t {
             continue;
         }
         if excluded.contains(&reflex) {
@@ -168,7 +167,11 @@ fn dispatch_next(
         if now - last < refractory {
             continue;
         }
-        let Some(root) = substrate.graph.neighbours(reflex, Some(stimulus_edge)).first().copied()
+        let Some(root) = substrate
+            .graph
+            .neighbours(reflex, Some(stimulus_edge))
+            .first()
+            .copied()
         else {
             continue;
         };
@@ -182,16 +185,24 @@ fn dispatch_next(
         };
 
         let arena_len = substrate.terms.nodes.len();
-        let node_term = substrate.terms.add(TermNode::Lit { value: Value::Node(root) });
-        let eval_term = substrate.terms.add(TermNode::EvalSubgraph { node: node_term });
-        let mut env: Env = smallvec::smallvec![
-            (a_sym, Value::Node(agent)),
-            (agent_sym, Value::Node(agent)),
-        ];
+        let node_term = substrate.terms.add(TermNode::Lit {
+            value: Value::Node(root),
+        });
+        let eval_term = substrate
+            .terms
+            .add(TermNode::EvalSubgraph { node: node_term });
+        let mut env: Env =
+            smallvec::smallvec![(a_sym, Value::Node(agent)), (agent_sym, Value::Node(agent)),];
         let mut cache = EvalCache::default();
         let value = {
             let Substrate {
-                graph, interner, concepts, terms, counters, shape_cache, ..
+                graph,
+                interner,
+                concepts,
+                terms,
+                counters,
+                shape_cache,
+                ..
             } = substrate;
             let mut ctx = EvalCtx::new(graph, interner)
                 .with_cache(&mut cache)
@@ -209,7 +220,11 @@ fn dispatch_next(
         let count = int_attr(substrate.graph.node(reflex).attrs.get(&count_k), 0);
         substrate.set_attr(reflex, last_k, Value::Int(now));
         substrate.set_attr(reflex, count_k, Value::Int(count + 1));
-        return Some(ReflexDispatch { node: reflex, name, response });
+        return Some(ReflexDispatch {
+            node: reflex,
+            name,
+            response,
+        });
     }
     None
 }

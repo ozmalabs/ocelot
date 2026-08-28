@@ -18,12 +18,12 @@
 //! Adding a new op kind = one match arm here + one Operation kind
 //! the seed installer creates.
 
+use crate::audio_primitives::stft;
 use crate::audio_primitives::{
     bandpass, cross_band_coincidence, detect_onsets, detect_sonority_valleys, floor_dbs,
-    gammatone_band, hair_cell_envelope, patch_evaluate, rectified_lpf, schmitt_peaks,
-    BandedOnset, BroadbandCluster, PatchKernel, SonorityValley,
+    gammatone_band, hair_cell_envelope, patch_evaluate, rectified_lpf, schmitt_peaks, BandedOnset,
+    BroadbandCluster, PatchKernel, SonorityValley,
 };
-use crate::audio_primitives::stft;
 use crate::graph::NodeID;
 use crate::substrate::Substrate;
 use crate::sym::Sym;
@@ -98,9 +98,7 @@ pub fn attach_audio_buffer(
         .graph
         .neighbours(audio_stream_nid, Some(has_audio_e))
         .into_iter()
-        .find(|&n| {
-            substrate.graph.has_node(n) && substrate.graph.node(n).type_ == buffer_t
-        });
+        .find(|&n| substrate.graph.has_node(n) && substrate.graph.node(n).type_ == buffer_t);
 
     if let Some(buf_nid) = existing {
         substrate.set_attr(buf_nid, samples_sym, samples_val);
@@ -115,7 +113,10 @@ pub fn attach_audio_buffer(
         a.insert(ch_sym, Value::Int(1));
         let buf_nid = substrate.add_node(buffer_t, a);
         let _ = substrate.graph.insert_edge(
-            audio_stream_nid, has_audio_e, buf_nid, FxHashMap::default(),
+            audio_stream_nid,
+            has_audio_e,
+            buf_nid,
+            FxHashMap::default(),
         );
     }
 }
@@ -136,7 +137,10 @@ fn decode_audio_buffer(substrate: &Substrate, buf_nid: NodeID) -> Option<Vec<f32
             for i in 0..n {
                 let off = i * 4;
                 out.push(f32::from_le_bytes([
-                    bytes[off], bytes[off + 1], bytes[off + 2], bytes[off + 3],
+                    bytes[off],
+                    bytes[off + 1],
+                    bytes[off + 2],
+                    bytes[off + 3],
                 ]));
             }
             Some(out)
@@ -150,7 +154,10 @@ fn decode_audio_buffer(substrate: &Substrate, buf_nid: NodeID) -> Option<Vec<f32
 fn stream_audio_samples(substrate: &Substrate, audio_stream_nid: NodeID) -> Option<Vec<f32>> {
     let has_audio_e = substrate.interner.lookup("has_audio")?;
     let buffer_t = substrate.interner.lookup("AudioBuffer")?;
-    for n in substrate.graph.neighbours(audio_stream_nid, Some(has_audio_e)) {
+    for n in substrate
+        .graph
+        .neighbours(audio_stream_nid, Some(has_audio_e))
+    {
         if substrate.graph.has_node(n) && substrate.graph.node(n).type_ == buffer_t {
             if let Some(v) = decode_audio_buffer(substrate, n) {
                 return Some(v);
@@ -250,8 +257,7 @@ pub fn run_pipeline(
     // — populated when rectified_lpf mints a ModulationChannel,
     // consumed when downstream schmitt_peaks mints ModulationEvents
     // and wants to wire from_channel back.
-    let mut channel_by_band_rate: FxHashMap<(usize, i64), NodeID> =
-        FxHashMap::default();
+    let mut channel_by_band_rate: FxHashMap<(usize, i64), NodeID> = FxHashMap::default();
     // Patch_evaluate op NodeID → A1Response NodeID. Used by
     // downstream schmitt_peaks ops to wire `from_response` edges
     // on A1Events.
@@ -327,8 +333,7 @@ pub fn run_pipeline(
                     };
                     set_attr(&mut attrs, substrate, "peak", Value::Float(peak as f64));
                     set_attr(&mut attrs, substrate, "mean", Value::Float(mean as f64));
-                    let band_i_val =
-                        env_band_index(substrate, op_nid, &preds) as i64;
+                    let band_i_val = env_band_index(substrate, op_nid, &preds) as i64;
                     set_attr(&mut attrs, substrate, "band_index", Value::Int(band_i_val));
                     let nid = substrate.add_node(envelope_t, attrs);
                     let _ = substrate.graph.insert_edge(
@@ -348,18 +353,8 @@ pub fn run_pipeline(
                         let t_s = o.sample as f64 / sample_rate as f64;
                         let mut a = FxHashMap::default();
                         set_attr(&mut a, substrate, "time_s", Value::Float(t_s));
-                        set_attr(
-                            &mut a,
-                            substrate,
-                            "band_index",
-                            Value::Int(band_i as i64),
-                        );
-                        set_attr(
-                            &mut a,
-                            substrate,
-                            "centre_hz",
-                            Value::Float(fc as f64),
-                        );
+                        set_attr(&mut a, substrate, "band_index", Value::Int(band_i as i64));
+                        set_attr(&mut a, substrate, "centre_hz", Value::Float(fc as f64));
                         set_attr(
                             &mut a,
                             substrate,
@@ -391,14 +386,11 @@ pub fn run_pipeline(
                         let out_str = substrate.interner.resolve(out_sym).to_string();
                         if out_str == "ModulationChannel" {
                             let modch_t = substrate.interner.intern("ModulationChannel");
-                            let has_modch_e =
-                                substrate.interner.intern("has_modulation_channel");
-                            let band_i =
-                                attr_f32(&op_attrs, substrate, "band_index").unwrap_or(0.0)
-                                    as usize;
+                            let has_modch_e = substrate.interner.intern("has_modulation_channel");
+                            let band_i = attr_f32(&op_attrs, substrate, "band_index").unwrap_or(0.0)
+                                as usize;
                             let rate_hz =
-                                attr_f32(&op_attrs, substrate, "modulation_rate_hz")
-                                    .unwrap_or(0.0);
+                                attr_f32(&op_attrs, substrate, "modulation_rate_hz").unwrap_or(0.0);
                             let centre_hz =
                                 attr_f32(&op_attrs, substrate, "centre_hz").unwrap_or(0.0);
                             let peak = env.iter().cloned().fold(0.0f32, f32::max);
@@ -408,25 +400,36 @@ pub fn run_pipeline(
                                 env.iter().sum::<f32>() / env.len() as f32
                             };
                             let mut a = FxHashMap::default();
-                            set_attr(&mut a, substrate, "band_index",
-                                       Value::Int(band_i as i64));
-                            set_attr(&mut a, substrate, "centre_hz",
-                                       Value::Float(centre_hz as f64));
-                            set_attr(&mut a, substrate, "modulation_rate_hz",
-                                       Value::Float(rate_hz as f64));
-                            set_attr(&mut a, substrate, "sample_rate",
-                                       Value::Int(sample_rate as i64));
+                            set_attr(&mut a, substrate, "band_index", Value::Int(band_i as i64));
+                            set_attr(
+                                &mut a,
+                                substrate,
+                                "centre_hz",
+                                Value::Float(centre_hz as f64),
+                            );
+                            set_attr(
+                                &mut a,
+                                substrate,
+                                "modulation_rate_hz",
+                                Value::Float(rate_hz as f64),
+                            );
+                            set_attr(
+                                &mut a,
+                                substrate,
+                                "sample_rate",
+                                Value::Int(sample_rate as i64),
+                            );
                             set_attr(&mut a, substrate, "peak", Value::Float(peak as f64));
                             set_attr(&mut a, substrate, "mean", Value::Float(mean as f64));
                             let ch_nid = substrate.add_node(modch_t, a);
                             let _ = substrate.graph.insert_edge(
-                                audio_stream_nid, has_modch_e, ch_nid,
+                                audio_stream_nid,
+                                has_modch_e,
+                                ch_nid,
                                 FxHashMap::default(),
                             );
-                            channel_by_band_rate.insert(
-                                (band_i, (rate_hz * 1000.0).round() as i64),
-                                ch_nid,
-                            );
+                            channel_by_band_rate
+                                .insert((band_i, (rate_hz * 1000.0).round() as i64), ch_nid);
                         }
                     }
                 }
@@ -450,37 +453,41 @@ pub fn run_pipeline(
                             // is the patch_evaluate that produced
                             // the A1Response. Wire from_response.
                             let event_t = substrate.interner.intern("A1Event");
-                            let has_event_e =
-                                substrate.interner.intern("has_a1_event");
-                            let from_resp_e =
-                                substrate.interner.intern("from_response");
-                            let resp_nid_opt: Option<NodeID> = preds
-                                .iter()
-                                .find_map(|p| response_by_op.get(p).copied());
+                            let has_event_e = substrate.interner.intern("has_a1_event");
+                            let from_resp_e = substrate.interner.intern("from_response");
+                            let resp_nid_opt: Option<NodeID> =
+                                preds.iter().find_map(|p| response_by_op.get(p).copied());
                             let patch_name_sym_opt = op_attrs
                                 .get(&substrate.interner.intern("patch_name"))
                                 .cloned();
                             for o in ev {
                                 let t_s = o.sample as f64 / sample_rate as f64;
                                 let mut a = FxHashMap::default();
-                                set_attr(&mut a, substrate, "time_s",
-                                           Value::Float(t_s));
+                                set_attr(&mut a, substrate, "time_s", Value::Float(t_s));
                                 if let Some(Value::Str(s)) = &patch_name_sym_opt {
                                     a.insert(
                                         substrate.interner.intern("patch_name"),
                                         Value::Str(*s),
                                     );
                                 }
-                                set_attr(&mut a, substrate, "magnitude_db",
-                                           Value::Float(o.magnitude_db as f64));
+                                set_attr(
+                                    &mut a,
+                                    substrate,
+                                    "magnitude_db",
+                                    Value::Float(o.magnitude_db as f64),
+                                );
                                 let ev_nid = substrate.add_node(event_t, a);
                                 let _ = substrate.graph.insert_edge(
-                                    audio_stream_nid, has_event_e, ev_nid,
+                                    audio_stream_nid,
+                                    has_event_e,
+                                    ev_nid,
                                     FxHashMap::default(),
                                 );
                                 if let Some(resp_nid) = resp_nid_opt {
                                     let _ = substrate.graph.insert_edge(
-                                        ev_nid, from_resp_e, resp_nid,
+                                        ev_nid,
+                                        from_resp_e,
+                                        resp_nid,
                                         FxHashMap::default(),
                                     );
                                 }
@@ -489,29 +496,41 @@ pub fn run_pipeline(
                         }
                         if out_str == "ModulationEvent" {
                             let modev_t = substrate.interner.intern("ModulationEvent");
-                            let has_modev_e =
-                                substrate.interner.intern("has_modulation_event");
-                            let from_channel_e =
-                                substrate.interner.intern("from_channel");
+                            let has_modev_e = substrate.interner.intern("has_modulation_event");
+                            let from_channel_e = substrate.interner.intern("from_channel");
                             let rate_hz =
-                                attr_f32(&op_attrs, substrate, "modulation_rate_hz")
-                                    .unwrap_or(0.0);
+                                attr_f32(&op_attrs, substrate, "modulation_rate_hz").unwrap_or(0.0);
                             let centre_hz =
                                 attr_f32(&op_attrs, substrate, "centre_hz").unwrap_or(0.0);
                             let rate_key = (rate_hz * 1000.0).round() as i64;
                             for o in ev {
                                 let t_s = o.sample as f64 / sample_rate as f64;
                                 let mut a = FxHashMap::default();
-                                set_attr(&mut a, substrate, "time_s",
-                                           Value::Float(t_s));
-                                set_attr(&mut a, substrate, "band_index",
-                                           Value::Int(o.band_index as i64));
-                                set_attr(&mut a, substrate, "centre_hz",
-                                           Value::Float(centre_hz as f64));
-                                set_attr(&mut a, substrate, "modulation_rate_hz",
-                                           Value::Float(rate_hz as f64));
-                                set_attr(&mut a, substrate, "magnitude_db",
-                                           Value::Float(o.magnitude_db as f64));
+                                set_attr(&mut a, substrate, "time_s", Value::Float(t_s));
+                                set_attr(
+                                    &mut a,
+                                    substrate,
+                                    "band_index",
+                                    Value::Int(o.band_index as i64),
+                                );
+                                set_attr(
+                                    &mut a,
+                                    substrate,
+                                    "centre_hz",
+                                    Value::Float(centre_hz as f64),
+                                );
+                                set_attr(
+                                    &mut a,
+                                    substrate,
+                                    "modulation_rate_hz",
+                                    Value::Float(rate_hz as f64),
+                                );
+                                set_attr(
+                                    &mut a,
+                                    substrate,
+                                    "magnitude_db",
+                                    Value::Float(o.magnitude_db as f64),
+                                );
                                 let _ = substrate.add_node(modev_t, a);
                                 // For now skip the from_channel edge —
                                 // we don't have the channel NodeID in
@@ -520,7 +539,7 @@ pub fn run_pipeline(
                                 // attrs let agents reconstruct the
                                 // link by graph query.
                                 summary.onsets += 1; // tracked under "onsets"
-                                                       // count for now
+                                                     // count for now
                                 let stream_modev_t = has_modev_e;
                                 let last_modev_nid = substrate
                                     .graph
@@ -564,8 +583,7 @@ pub fn run_pipeline(
                     let patch_kind_sym_opt = op_attrs
                         .get(&substrate.interner.intern("patch_kind"))
                         .cloned();
-                    let centre_hz =
-                        attr_f32(&op_attrs, substrate, "centre_hz").unwrap_or(0.0);
+                    let centre_hz = attr_f32(&op_attrs, substrate, "centre_hz").unwrap_or(0.0);
                     let peak = resp.iter().cloned().fold(0.0f32, f32::max);
                     let mean = if resp.is_empty() {
                         0.0
@@ -579,17 +597,32 @@ pub fn run_pipeline(
                     if let Some(Value::Str(s)) = patch_kind_sym_opt {
                         a.insert(substrate.interner.intern("patch_kind"), Value::Str(s));
                     }
-                    set_attr(&mut a, substrate, "centre_hz",
-                               Value::Float(centre_hz as f64));
-                    set_attr(&mut a, substrate, "sample_rate",
-                               Value::Int(sample_rate as i64));
-                    set_attr(&mut a, substrate, "n_samples",
-                               Value::Int(resp.len() as i64));
+                    set_attr(
+                        &mut a,
+                        substrate,
+                        "centre_hz",
+                        Value::Float(centre_hz as f64),
+                    );
+                    set_attr(
+                        &mut a,
+                        substrate,
+                        "sample_rate",
+                        Value::Int(sample_rate as i64),
+                    );
+                    set_attr(
+                        &mut a,
+                        substrate,
+                        "n_samples",
+                        Value::Int(resp.len() as i64),
+                    );
                     set_attr(&mut a, substrate, "peak", Value::Float(peak as f64));
                     set_attr(&mut a, substrate, "mean", Value::Float(mean as f64));
                     let resp_nid = substrate.add_node(resp_t, a);
                     let _ = substrate.graph.insert_edge(
-                        audio_stream_nid, has_resp_e, resp_nid, FxHashMap::default(),
+                        audio_stream_nid,
+                        has_resp_e,
+                        resp_nid,
+                        FxHashMap::default(),
                     );
                     // Wire for_patch → the A1Patch this op evaluates.
                     // The op's `for_patch` edge points at the patch.
@@ -600,7 +633,9 @@ pub fn run_pipeline(
                         .collect();
                     for patch_nid in patches {
                         let _ = substrate.graph.insert_edge(
-                            resp_nid, for_patch_e, patch_nid,
+                            resp_nid,
+                            for_patch_e,
+                            patch_nid,
                             FxHashMap::default(),
                         );
                     }
@@ -609,9 +644,15 @@ pub fn run_pipeline(
             }
             "broadband_coincidence" | "syllable_coincidence" => {
                 run_coincidence_op(
-                    substrate, op_nid, &buffers, sample_rate,
-                    audio_stream_nid, broadband_t, has_broadband_e,
-                    contributed_by_e, &mut summary,
+                    substrate,
+                    op_nid,
+                    &buffers,
+                    sample_rate,
+                    audio_stream_nid,
+                    broadband_t,
+                    has_broadband_e,
+                    contributed_by_e,
+                    &mut summary,
                 );
             }
             _ => {}
@@ -782,10 +823,8 @@ fn dispatch_primitive(
             let Some(input) = input_audio else {
                 return BufferData::Nothing;
             };
-            let threshold_db =
-                attr_f32(&attrs, substrate, "threshold_db").unwrap_or(6.0);
-            let refractory_ms =
-                attr_f32(&attrs, substrate, "refractory_ms").unwrap_or(30.0);
+            let threshold_db = attr_f32(&attrs, substrate, "threshold_db").unwrap_or(6.0);
+            let refractory_ms = attr_f32(&attrs, substrate, "refractory_ms").unwrap_or(30.0);
             let band_i = env_band_index(substrate, op_nid, preds);
             let raw = detect_onsets(&input, sample_rate, threshold_db, refractory_ms);
             let banded: Vec<BandedOnset> = raw
@@ -817,10 +856,8 @@ fn dispatch_primitive(
             let Some(input) = input_audio else {
                 return BufferData::Nothing;
             };
-            let threshold_db =
-                attr_f32(&attrs, substrate, "threshold_db").unwrap_or(4.0);
-            let refractory_ms =
-                attr_f32(&attrs, substrate, "refractory_ms").unwrap_or(80.0);
+            let threshold_db = attr_f32(&attrs, substrate, "threshold_db").unwrap_or(4.0);
+            let refractory_ms = attr_f32(&attrs, substrate, "refractory_ms").unwrap_or(80.0);
             let band_i = attr_f32(&attrs, substrate, "band_index").unwrap_or(0.0) as usize;
             let db = floor_dbs(&input, sample_rate);
             let refractory_samples =
@@ -842,15 +879,18 @@ fn dispatch_primitive(
             // SonorityValley graph nodes at smoothed-minima points
             // whose relative drop from surrounding peaks exceeds
             // depth_threshold.
-            let smoothing_ms =
-                attr_f32(&attrs, substrate, "smoothing_ms").unwrap_or(30.0);
+            let smoothing_ms = attr_f32(&attrs, substrate, "smoothing_ms").unwrap_or(30.0);
             let min_separation_ms =
                 attr_f32(&attrs, substrate, "min_separation_ms").unwrap_or(80.0);
-            let depth_threshold =
-                attr_f32(&attrs, substrate, "depth_threshold").unwrap_or(0.30);
+            let depth_threshold = attr_f32(&attrs, substrate, "depth_threshold").unwrap_or(0.30);
             run_sonority_valley(
-                substrate, audio_stream_nid, preds, &buffers,
-                smoothing_ms, min_separation_ms, depth_threshold,
+                substrate,
+                audio_stream_nid,
+                preds,
+                &buffers,
+                smoothing_ms,
+                min_separation_ms,
+                depth_threshold,
                 sample_rate,
             );
             BufferData::Nothing
@@ -870,8 +910,7 @@ fn dispatch_primitive(
                     _ => "stt".to_string(),
                 }
             };
-            let gap_threshold_ms =
-                attr_f32(&attrs, substrate, "gap_threshold_ms").unwrap_or(80.0);
+            let gap_threshold_ms = attr_f32(&attrs, substrate, "gap_threshold_ms").unwrap_or(80.0);
             let distance_threshold =
                 attr_f32(&attrs, substrate, "distance_threshold").unwrap_or(0.15);
             let trajectory_samples =
@@ -887,12 +926,21 @@ fn dispatch_primitive(
             // `delta_order`: augment each trajectory frame with k
             // derivative channels (Δ, ΔΔ, …). Doubles/triples the
             // effective feature count per frame for DTW.
-            let delta_order =
-                attr_f32(&attrs, substrate, "delta_order").unwrap_or(0.0) as usize;
+            let delta_order = attr_f32(&attrs, substrate, "delta_order").unwrap_or(0.0) as usize;
             run_lexical_access(
-                substrate, audio_stream_nid, op_nid, preds, &buffers,
-                samples, &lexicon_name, gap_threshold_ms, distance_threshold,
-                trajectory_samples, sample_rate, frozen, delta_order,
+                substrate,
+                audio_stream_nid,
+                op_nid,
+                preds,
+                &buffers,
+                samples,
+                &lexicon_name,
+                gap_threshold_ms,
+                distance_threshold,
+                trajectory_samples,
+                sample_rate,
+                frozen,
+                delta_order,
             );
             BufferData::Nothing
         }
@@ -942,15 +990,12 @@ fn dispatch_primitive(
             // make each cluster-input less noisy (closer to a
             // phoneme-shaped average) at the cost of losing fast
             // transient detail.
-            let smoothing_ms =
-                attr_f32(&attrs, substrate, "feature_smoothing_ms").unwrap_or(60.0);
-            let smoothing_samples =
-                ((smoothing_ms * 0.001) * sample_rate as f32).max(1.0) as usize;
+            let smoothing_ms = attr_f32(&attrs, substrate, "feature_smoothing_ms").unwrap_or(60.0);
+            let smoothing_samples = ((smoothing_ms * 0.001) * sample_rate as f32).max(1.0) as usize;
             // Minimum feature-vector L2 norm before clustering —
             // skips quiet / silent samples that would otherwise
             // produce noisy centroids.
-            let min_magnitude =
-                attr_f32(&attrs, substrate, "min_magnitude").unwrap_or(0.001);
+            let min_magnitude = attr_f32(&attrs, substrate, "min_magnitude").unwrap_or(0.001);
             run_categorical_perception(
                 substrate,
                 audio_stream_nid,
@@ -994,8 +1039,10 @@ fn dispatch_primitive(
             bands_with_buffers
                 .sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
             let centres: Vec<f32> = bands_with_buffers.iter().map(|(c, _)| *c).collect();
-            let envs_refs: Vec<&[f32]> =
-                bands_with_buffers.iter().map(|(_, b)| b.as_slice()).collect();
+            let envs_refs: Vec<&[f32]> = bands_with_buffers
+                .iter()
+                .map(|(_, b)| b.as_slice())
+                .collect();
 
             let kind_str = {
                 let kind_attr_sym = substrate.interner.intern("patch_kind");
@@ -1007,11 +1054,9 @@ fn dispatch_primitive(
             };
             let patch = PatchKernel {
                 centre_hz: attr_f32(&attrs, substrate, "centre_hz").unwrap_or(1000.0),
-                freq_sigma_hz: attr_f32(&attrs, substrate, "freq_sigma_hz")
-                    .unwrap_or(500.0),
+                freq_sigma_hz: attr_f32(&attrs, substrate, "freq_sigma_hz").unwrap_or(500.0),
                 duration_ms: attr_f32(&attrs, substrate, "duration_ms").unwrap_or(50.0),
-                slope_hz_per_ms: attr_f32(&attrs, substrate, "slope_hz_per_ms")
-                    .unwrap_or(0.0),
+                slope_hz_per_ms: attr_f32(&attrs, substrate, "slope_hz_per_ms").unwrap_or(0.0),
                 kind: kind_str,
             };
             BufferData::Audio(patch_evaluate(&envs_refs, &centres, sample_rate, &patch))
@@ -1055,8 +1100,10 @@ fn run_categorical_perception(
 
     // Snapshot existing Phoneme nodes + their centroids.
     let dim_names: Vec<String> = named.iter().map(|(n, _)| n.clone()).collect();
-    let dim_name_syms: Vec<Sym> =
-        dim_names.iter().map(|n| substrate.interner.intern(n)).collect();
+    let dim_name_syms: Vec<Sym> = dim_names
+        .iter()
+        .map(|n| substrate.interner.intern(n))
+        .collect();
     let mut phoneme_centroids: Vec<(NodeID, Vec<f32>, u64)> = Vec::new();
     for pn in substrate.graph.nodes_of_type(phoneme_t) {
         let attrs = &substrate.graph.node(pn).attrs;
@@ -1185,13 +1232,19 @@ fn run_categorical_perception(
         a.insert(conf_sym, Value::Float(confidence as f64));
         let inst_nid = substrate.add_node(instance_t, a);
         let _ = substrate.graph.insert_edge(
-            audio_stream_nid, has_instance_e, inst_nid, FxHashMap::default(),
+            audio_stream_nid,
+            has_instance_e,
+            inst_nid,
+            FxHashMap::default(),
         );
+        let _ = substrate
+            .graph
+            .insert_edge(inst_nid, is_a_e, phon_nid, FxHashMap::default());
         let _ = substrate.graph.insert_edge(
-            inst_nid, is_a_e, phon_nid, FxHashMap::default(),
-        );
-        let _ = substrate.graph.insert_edge(
-            inst_nid, from_stream_e, audio_stream_nid, FxHashMap::default(),
+            inst_nid,
+            from_stream_e,
+            audio_stream_nid,
+            FxHashMap::default(),
         );
     }
 }
@@ -1334,9 +1387,16 @@ fn compute_band_means(
         for k in 0..n_raw_channels {
             let v = traj[base + k];
             let c = centre_hz[k];
-            if c <= 800.0 { lo_s += v; lo_n += 1; }
-            else if c <= 2500.0 { mi_s += v; mi_n += 1; }
-            else { hi_s += v; hi_n += 1; }
+            if c <= 800.0 {
+                lo_s += v;
+                lo_n += 1;
+            } else if c <= 2500.0 {
+                mi_s += v;
+                mi_n += 1;
+            } else {
+                hi_s += v;
+                hi_n += 1;
+            }
         }
     }
     let lo = if lo_n > 0 { lo_s / lo_n as f32 } else { 0.0 };
@@ -1370,8 +1430,7 @@ fn augment_with_deltas(traj: Vec<f32>, n_channels: usize, order: usize) -> Vec<f
             let tn = if t + 1 < n_frames { t + 1 } else { t };
             let tp = if t > 0 { t - 1 } else { t };
             for k in 0..n_channels {
-                next[t * n_channels + k] =
-                    prev[tn * n_channels + k] - prev[tp * n_channels + k];
+                next[t * n_channels + k] = prev[tn * n_channels + k] - prev[tp * n_channels + k];
             }
         }
         layers.push(next);
@@ -1517,7 +1576,11 @@ fn run_sonority_valley(
     }
 
     let valleys = detect_sonority_valleys(
-        &total, sample_rate, smoothing_ms, min_separation_ms, depth_threshold,
+        &total,
+        sample_rate,
+        smoothing_ms,
+        min_separation_ms,
+        depth_threshold,
     );
     if valleys.is_empty() {
         return;
@@ -1533,9 +1596,10 @@ fn run_sonority_valley(
         set_attr(&mut a, substrate, "valley", Value::Float(v.valley as f64));
         set_attr(&mut a, substrate, "peak", Value::Float(v.peak as f64));
         let nid = substrate.add_node(valley_t, a);
-        let _ = substrate.graph.insert_edge(
-            audio_stream_nid, has_valley_e, nid, FxHashMap::default(),
-        );
+        let _ =
+            substrate
+                .graph
+                .insert_edge(audio_stream_nid, has_valley_e, nid, FxHashMap::default());
     }
 }
 
@@ -1624,8 +1688,7 @@ fn run_lexical_access(
             _ => None,
         })
         .collect();
-    valley_times
-        .sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    valley_times.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
 
     let word_starts: Vec<f64> = if !valley_times.is_empty() {
         // Valley-based segmentation. The first word starts at 0;
@@ -1647,8 +1710,7 @@ fn run_lexical_access(
                 _ => None,
             })
             .collect();
-        broadband_raw
-            .sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+        broadband_raw.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
         let word_gap_s = (gap_threshold_ms as f64) * 0.001;
         let mut starts: Vec<f64> = Vec::new();
         let mut last_raw: Option<f64> = None;
@@ -1673,9 +1735,7 @@ fn run_lexical_access(
     if word_starts.is_empty() {
         windows.push((0, n_buf));
     } else {
-        let to_sample = |t: f64| -> usize {
-            (t * sample_rate as f64).round() as usize
-        };
+        let to_sample = |t: f64| -> usize { (t * sample_rate as f64).round() as usize };
         // Small lead so a word's attack ramp is included.
         let lead = (sample_rate as f64 * 0.02) as usize;
         for i in 0..word_starts.len() {
@@ -1803,8 +1863,7 @@ fn run_lexical_access(
     // gammatone running-mean owns `hearings`; we mirror its α here so
     // the two ears average in lock-step). We DON'T unit-normalise the
     // fft trajectory — formant cues read raw magnitude per bin.
-    let mut fft_existing: FxHashMap<NodeID, (Vec<f32>, u64)> =
-        FxHashMap::default();
+    let mut fft_existing: FxHashMap<NodeID, (Vec<f32>, u64)> = FxHashMap::default();
     for &(sign, _, _) in &existing {
         let attrs = &substrate.graph.node(sign).attrs;
         let ft: Vec<f32> = match attrs.get(&fft_traj_sym) {
@@ -1873,13 +1932,13 @@ fn run_lexical_access(
                         stored.iter().map(|x| Value::Float(*x as f64)).collect();
                     let sign_id = *sign;
                     substrate.set_attr(
-                        sign_id, traj_sym,
+                        sign_id,
+                        traj_sym,
                         Value::Tuple(std::sync::Arc::new(stored_tuple)),
                     );
                     substrate.set_attr(sign_id, hearings_sym, Value::Int(*hearings as i64));
-                    let (lo, mi, hi) = compute_band_means(
-                        stored, patches.len(), dtw_channels, &centre_hz,
-                    );
+                    let (lo, mi, hi) =
+                        compute_band_means(stored, patches.len(), dtw_channels, &centre_hz);
                     substrate.set_attr(sign_id, low_band_sym, Value::Float(lo as f64));
                     substrate.set_attr(sign_id, mid_band_sym, Value::Float(mi as f64));
                     substrate.set_attr(sign_id, high_band_sym, Value::Float(hi as f64));
@@ -1897,32 +1956,28 @@ fn run_lexical_access(
                 // summary attrs are written alongside so the phonology
                 // Mt's predicate Term-trees can read them without a
                 // separate post-pass.
-                let (lo, mi, hi) = compute_band_means(
-                    &traj, patches.len(), dtw_channels, &centre_hz,
-                );
+                let (lo, mi, hi) =
+                    compute_band_means(&traj, patches.len(), dtw_channels, &centre_hz);
                 let traj_tuple: smallvec::SmallVec<[Value; 4]> =
                     traj.iter().map(|x| Value::Float(*x as f64)).collect();
                 let mut a = FxHashMap::default();
-                a.insert(
-                    traj_sym,
-                    Value::Tuple(std::sync::Arc::new(traj_tuple)),
-                );
+                a.insert(traj_sym, Value::Tuple(std::sync::Arc::new(traj_tuple)));
                 a.insert(hearings_sym, Value::Int(1));
                 a.insert(low_band_sym, Value::Float(lo as f64));
                 a.insert(mid_band_sym, Value::Float(mi as f64));
                 a.insert(high_band_sym, Value::Float(hi as f64));
                 let new_sign = substrate.add_node(sign_t, a);
                 let _ = substrate.graph.insert_edge(
-                    lex_nid, has_entry_e, new_sign, FxHashMap::default(),
+                    lex_nid,
+                    has_entry_e,
+                    new_sign,
+                    FxHashMap::default(),
                 );
-                let n_before =
-                    match substrate.graph.node(lex_nid).attrs.get(&n_signs_sym) {
-                        Some(Value::Int(i)) => *i,
-                        _ => 0,
-                    };
-                substrate.set_attr(
-                    lex_nid, n_signs_sym, Value::Int(n_before + 1),
-                );
+                let n_before = match substrate.graph.node(lex_nid).attrs.get(&n_signs_sym) {
+                    Some(Value::Int(i)) => *i,
+                    _ => 0,
+                };
+                substrate.set_attr(lex_nid, n_signs_sym, Value::Int(n_before + 1));
                 existing.push((new_sign, traj.clone(), 1));
                 new_sign
             }
@@ -1938,9 +1993,8 @@ fn run_lexical_access(
             let e_a = e.min(raw_audio.len());
             if e_a > s_a {
                 let win = &raw_audio[s_a..e_a];
-                let mut ft = extract_fft_trajectory(
-                    win, FFT_WINDOW, FFT_HOP, FFT_N_FRAMES, FFT_N_BINS,
-                );
+                let mut ft =
+                    extract_fft_trajectory(win, FFT_WINDOW, FFT_HOP, FFT_N_FRAMES, FFT_N_BINS);
                 if !ft.is_empty() {
                     // Running-mean update keyed on the sign's gammatone
                     // hearing count (mirrors the gammatone α). For a
@@ -1966,18 +2020,15 @@ fn run_lexical_access(
                     let ft_tuple: smallvec::SmallVec<[Value; 4]> =
                         ft.iter().map(|x| Value::Float(*x as f64)).collect();
                     substrate.set_attr(
-                        sign_nid, fft_traj_sym,
+                        sign_nid,
+                        fft_traj_sym,
                         Value::Tuple(std::sync::Arc::new(ft_tuple)),
                     );
+                    substrate.set_attr(sign_nid, fft_n_frames_sym, Value::Int(FFT_N_FRAMES as i64));
+                    substrate.set_attr(sign_nid, fft_n_bins_sym, Value::Int(FFT_N_BINS as i64));
                     substrate.set_attr(
-                        sign_nid, fft_n_frames_sym,
-                        Value::Int(FFT_N_FRAMES as i64),
-                    );
-                    substrate.set_attr(
-                        sign_nid, fft_n_bins_sym, Value::Int(FFT_N_BINS as i64),
-                    );
-                    substrate.set_attr(
-                        sign_nid, fft_sample_rate_sym,
+                        sign_nid,
+                        fft_sample_rate_sym,
                         Value::Int(sample_rate as i64),
                     );
                 }
@@ -1992,15 +2043,18 @@ fn run_lexical_access(
         ua.insert(dur_sym, Value::Float(t_end - t_start));
         let utt_nid = substrate.add_node(utt_t, ua);
         let _ = substrate.graph.insert_edge(
-            utt_nid, from_stream_e, audio_stream_nid, FxHashMap::default(),
+            utt_nid,
+            from_stream_e,
+            audio_stream_nid,
+            FxHashMap::default(),
         );
-        let _ = substrate.graph.insert_edge(
-            utt_nid, heard_as_e, sign_nid, FxHashMap::default(),
-        );
+        let _ = substrate
+            .graph
+            .insert_edge(utt_nid, heard_as_e, sign_nid, FxHashMap::default());
         if let Some(prev) = prev_utt {
-            let _ = substrate.graph.insert_edge(
-                utt_nid, follows_e, prev, FxHashMap::default(),
-            );
+            let _ = substrate
+                .graph
+                .insert_edge(utt_nid, follows_e, prev, FxHashMap::default());
         }
         prev_utt = Some(utt_nid);
     }
@@ -2008,11 +2062,7 @@ fn run_lexical_access(
 
 // --- helpers -------------------------------------------------------------
 
-fn attr_f32(
-    attrs: &crate::graph::Attrs,
-    substrate: &mut Substrate,
-    key: &str,
-) -> Option<f32> {
+fn attr_f32(attrs: &crate::graph::Attrs, substrate: &mut Substrate, key: &str) -> Option<f32> {
     let k = substrate.interner.intern(key);
     match attrs.get(&k) {
         Some(Value::Float(f)) => Some(*f as f32),
@@ -2021,12 +2071,7 @@ fn attr_f32(
     }
 }
 
-fn set_attr(
-    attrs: &mut FxHashMap<Sym, Value>,
-    substrate: &mut Substrate,
-    key: &str,
-    v: Value,
-) {
+fn set_attr(attrs: &mut FxHashMap<Sym, Value>, substrate: &mut Substrate, key: &str, v: Value) {
     let k = substrate.interner.intern(key);
     attrs.insert(k, v);
 }

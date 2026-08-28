@@ -58,7 +58,10 @@ fn surf(s: &str) -> Value {
 }
 
 fn surf_string(s: String) -> Value {
-    Value::Surface(SurfaceKind::Text, Arc::from(s.into_bytes().into_boxed_slice()))
+    Value::Surface(
+        SurfaceKind::Text,
+        Arc::from(s.into_bytes().into_boxed_slice()),
+    )
 }
 
 fn wild_value(wild: Sym) -> Value {
@@ -73,7 +76,12 @@ fn wild_value(wild: Sym) -> Value {
 /// gets a placeholder Sym, unique within `extra` (scoped to one
 /// `ShapeDecode` call) — safe because parsed signatures never reach the
 /// output.
-fn local_sym(interner: &Interner, extra: &mut FxHashMap<String, Sym>, next_id: &mut u32, s: &str) -> Sym {
+fn local_sym(
+    interner: &Interner,
+    extra: &mut FxHashMap<String, Sym>,
+    next_id: &mut u32,
+    s: &str,
+) -> Sym {
     if let Some(sym) = interner.lookup(s) {
         return sym;
     }
@@ -213,7 +221,12 @@ fn str_shaped<'a>(v: &'a Value, interner: &'a Interner) -> Option<&'a str> {
 /// So on a well-formed graph every committed result is byte-identical
 /// (exactly `PickUnique`'s ≤1-candidate argument), and the malformed case
 /// that used to vanish now stops the run and names itself.
-fn string_attr_or_panic<'a>(v: &'a Value, interner: &'a Interner, attr: &str, node_type: &str) -> &'a str {
+fn string_attr_or_panic<'a>(
+    v: &'a Value,
+    interner: &'a Interner,
+    attr: &str,
+    node_type: &str,
+) -> &'a str {
     match str_shaped(v, interner) {
         Some(s) => s,
         None => panic!(
@@ -265,15 +278,23 @@ fn load_parts(
             }
         }
         // ABSENT name/signature -> not a part; skip (unchanged, legitimate).
-        let (Some(nv), Some(sv)) = (name_val, sig_val) else { continue };
+        let (Some(nv), Some(sv)) = (name_val, sig_val) else {
+            continue;
+        };
         // PRESENT name -> must be string-shaped. `Str` reads exactly as
         // before; `Surface(Text)` — a name a RULE built — now loads instead
         // of vanishing; any other type is malformed and panics.
         let name = string_attr_or_panic(
-            &nv, ctx.interner, "name",
-            &format!("codebook part (type {}, node {:?})",
-                     ctx.interner.resolve(codebook_type), nid),
-        ).to_string();
+            &nv,
+            ctx.interner,
+            "name",
+            &format!(
+                "codebook part (type {}, node {:?})",
+                ctx.interner.resolve(codebook_type),
+                nid
+            ),
+        )
+        .to_string();
         if name.is_empty() {
             continue;
         }
@@ -294,9 +315,15 @@ fn load_parts(
                 // checkpointed. The codebook type plus the node id names the
                 // minting rule directly.
                 let text = string_attr_or_panic(
-                    other, ctx.interner, "signature",
-                    &format!("codebook part (type {}, node {:?}, name {:?})",
-                             ctx.interner.resolve(codebook_type), nid, name),
+                    other,
+                    ctx.interner,
+                    "signature",
+                    &format!(
+                        "codebook part (type {}, node {:?}, name {:?})",
+                        ctx.interner.resolve(codebook_type),
+                        nid,
+                        name
+                    ),
                 );
                 match serde_json::from_str::<serde_json::Value>(text) {
                     Ok(serde_json::Value::Array(items)) => items
@@ -315,14 +342,29 @@ fn load_parts(
             Some(v) if v.truthy() => concept_val.unwrap(),
             _ => faculty_val.unwrap_or(Value::None),
         };
-        let dim_types = dim_types_val.as_ref().and_then(|v| parse_string_list(v, ctx.interner));
+        let dim_types = dim_types_val
+            .as_ref()
+            .and_then(|v| parse_string_list(v, ctx.interner));
         if !by_name.contains_key(&name) {
             order.push(name.clone());
         }
-        by_name.insert(name.clone(), Part { name, name_val: nv, kind_val, source_val, sig, dim_types });
+        by_name.insert(
+            name.clone(),
+            Part {
+                name,
+                name_val: nv,
+                kind_val,
+                source_val,
+                sig,
+                dim_types,
+            },
+        );
     }
 
-    order.into_iter().filter_map(|nm| by_name.remove(&nm)).collect()
+    order
+        .into_iter()
+        .filter_map(|nm| by_name.remove(&nm))
+        .collect()
 }
 
 /// Parse a `dim_types`/`coord_dims`/`params`-style list attr: a native
@@ -347,7 +389,10 @@ fn parse_string_list(v: &Value, interner: &Interner) -> Option<Vec<String>> {
             let text = str_shaped(other, interner)?;
             match serde_json::from_str::<serde_json::Value>(text) {
                 Ok(serde_json::Value::Array(items)) => Some(
-                    items.iter().filter_map(|it| it.as_str().map(|s| s.to_string())).collect(),
+                    items
+                        .iter()
+                        .filter_map(|it| it.as_str().map(|s| s.to_string()))
+                        .collect(),
                 ),
                 _ => None,
             }
@@ -377,9 +422,9 @@ fn parse_int_list(v: &Value, interner: &Interner) -> Option<Vec<i64>> {
         other => {
             let text = str_shaped(other, interner)?;
             match serde_json::from_str::<serde_json::Value>(text) {
-                Ok(serde_json::Value::Array(items)) => Some(
-                    items.iter().filter_map(|it| it.as_i64()).collect(),
-                ),
+                Ok(serde_json::Value::Array(items)) => {
+                    Some(items.iter().filter_map(|it| it.as_i64()).collect())
+                }
                 _ => None,
             }
         }
@@ -483,7 +528,8 @@ fn load_generators(ctx: &EvalCtx, generator_type: Sym) -> Vec<Generator> {
         // documented as graceful above). PRESENT but not string-shaped ->
         // malformed, and panics rather than vanishing.
         let Some(nv) = name_val else { continue };
-        let name = string_attr_or_panic(&nv, ctx.interner, "name", "DimensionGenerator").to_string();
+        let name =
+            string_attr_or_panic(&nv, ctx.interner, "name", "DimensionGenerator").to_string();
         if name.is_empty() {
             continue;
         }
@@ -493,11 +539,23 @@ fn load_generators(ctx: &EvalCtx, generator_type: Sym) -> Vec<Generator> {
         // `_` arm to the default silently, so a malformed `kind` masqueraded
         // as "kind attr absent" and dispatched on the wrong primitive.
         let kind = match &kind_val {
-            Some(v) => string_attr_or_panic(v, ctx.interner, "kind", "DimensionGenerator").to_string(),
+            Some(v) => {
+                string_attr_or_panic(v, ctx.interner, "kind", "DimensionGenerator").to_string()
+            }
             None => name.clone(),
         };
-        let Some(coord_dims) = coord_dims_val.as_ref().and_then(|v| parse_int_list(v, ctx.interner)) else { continue };
-        let Some(params) = params_val.as_ref().and_then(|v| parse_int_list(v, ctx.interner)) else { continue };
+        let Some(coord_dims) = coord_dims_val
+            .as_ref()
+            .and_then(|v| parse_int_list(v, ctx.interner))
+        else {
+            continue;
+        };
+        let Some(params) = params_val
+            .as_ref()
+            .and_then(|v| parse_int_list(v, ctx.interner))
+        else {
+            continue;
+        };
         if coord_dims.is_empty() || params.is_empty() {
             continue;
         }
@@ -540,10 +598,25 @@ fn load_generators(ctx: &EvalCtx, generator_type: Sym) -> Vec<Generator> {
         if !by_name.contains_key(&name) {
             order.push(name.clone());
         }
-        by_name.insert(name.clone(), Generator { name: name.clone(), name_val: nv, kind, coord_dims, params, modulus, matrix, offset });
+        by_name.insert(
+            name.clone(),
+            Generator {
+                name: name.clone(),
+                name_val: nv,
+                kind,
+                coord_dims,
+                params,
+                modulus,
+                matrix,
+                offset,
+            },
+        );
     }
 
-    order.into_iter().filter_map(|nm| by_name.remove(&nm)).collect()
+    order
+        .into_iter()
+        .filter_map(|nm| by_name.remove(&nm))
+        .collect()
 }
 
 /// Does `dim_types` type EVERY one of `coord_dims` as a coordinate slot
@@ -570,7 +643,9 @@ fn dims_are_coord(dim_types: &[String], coord_dims: &[i64]) -> bool {
 fn coord_ints(sig: &[Value], idx: usize) -> Option<Vec<i64>> {
     let mut out = Vec::with_capacity(sig.len());
     for rel in sig {
-        let (Value::Tuple(t) | Value::List(t)) = rel else { return None };
+        let (Value::Tuple(t) | Value::List(t)) = rel else {
+            return None;
+        };
         match t.get(idx) {
             Some(Value::Int(i)) => out.push(*i),
             _ => return None,
@@ -582,7 +657,9 @@ fn coord_ints(sig: &[Value], idx: usize) -> Option<Vec<i64>> {
 /// Copy `rel` with slot `idx` replaced by `val` — `rel` unchanged (cloned)
 /// if it isn't a `Tuple` (defensive; every relation is one in practice).
 fn set_coord(rel: &Value, idx: usize, val: i64) -> Value {
-    let (Value::Tuple(t) | Value::List(t)) = rel else { return rel.clone() };
+    let (Value::Tuple(t) | Value::List(t)) = rel else {
+        return rel.clone();
+    };
     let mut nt: SmallVec<[Value; 4]> = t.iter().cloned().collect();
     if idx < nt.len() {
         nt[idx] = Value::Int(val);
@@ -833,7 +910,14 @@ fn apply_translate_once(sig: &[Value], coord_dims: &[i64], offset: &[i64]) -> Op
 /// unrecognised `kind` is simply inapplicable (`None`), not an error — new
 /// primitives are added here, never in Python (per the project's
 /// Rust-primitive rule).
-fn apply_generator_once(kind: &str, coord_dims: &[i64], sig: &[Value], modulus: i64, matrix: &[i64], offset: &[i64]) -> Option<Vec<Value>> {
+fn apply_generator_once(
+    kind: &str,
+    coord_dims: &[i64],
+    sig: &[Value],
+    modulus: i64,
+    matrix: &[i64],
+    offset: &[i64],
+) -> Option<Vec<Value>> {
     match kind {
         "rotation90" => {
             if coord_dims.len() != 2 {
@@ -858,7 +942,15 @@ fn apply_generator_once(kind: &str, coord_dims: &[i64], sig: &[Value], modulus: 
 /// is the identity (`Some(sig.to_vec())`) rather than a failure — callers
 /// only ever pass `params` values (which should be positive), but this
 /// stays honest rather than panicking on a stray `0`.
-fn apply_generator_k(kind: &str, coord_dims: &[i64], sig: &[Value], modulus: i64, matrix: &[i64], offset: &[i64], k: i64) -> Option<Vec<Value>> {
+fn apply_generator_k(
+    kind: &str,
+    coord_dims: &[i64],
+    sig: &[Value],
+    modulus: i64,
+    matrix: &[i64],
+    offset: &[i64],
+    k: i64,
+) -> Option<Vec<Value>> {
     let mut cur = sig.to_vec();
     for _ in 0..k.max(0) {
         cur = apply_generator_once(kind, coord_dims, &cur, modulus, matrix, offset)?;
@@ -907,13 +999,12 @@ fn collect_part_names(
     which: &str,
 ) -> std::collections::HashSet<String> {
     let mut out: std::collections::HashSet<String> = std::collections::HashSet::new();
-    let mut push = |v: &Value| {
-        match str_shaped(v, ctx.interner) {
-            Some(s) => {
-                out.insert(s.to_lowercase());
-            }
-            None => panic!(
-                "ShapeDecode `{}`: element {:?} is not a string-shaped Value \
+    let mut push = |v: &Value| match str_shaped(v, ctx.interner) {
+        Some(s) => {
+            out.insert(s.to_lowercase());
+        }
+        None => panic!(
+            "ShapeDecode `{}`: element {:?} is not a string-shaped Value \
                  (expected Value::Str or Value::Surface(Text)). This reader used \
                  to DROP it silently, which does not fail closed: an all-dropped \
                  `codebook_scope` leaves the codebook UNRESTRICTED (a \
@@ -923,9 +1014,8 @@ fn collect_part_names(
                  Term-built string is Surface(Text), which is now accepted; a \
                  non-string element here means the graph or the Term is \
                  malformed, not that the entry is inapplicable.",
-                which, v
-            ),
-        }
+            which, v
+        ),
     };
     match val {
         Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => {
@@ -1077,7 +1167,9 @@ struct BeamState {
 /// un-anchored positional zip.
 fn load_relation_cue_index(ctx: &EvalCtx) -> FxHashMap<Vec<String>, String> {
     let mut idx = FxHashMap::default();
-    let Some(cue_type) = ctx.interner.lookup("RelationCue") else { return idx };
+    let Some(cue_type) = ctx.interner.lookup("RelationCue") else {
+        return idx;
+    };
     for nid in ctx.graph.nodes_of_type(cue_type) {
         let node = ctx.graph.node(nid);
         let mut name: Option<String> = None;
@@ -1089,17 +1181,22 @@ fn load_relation_cue_index(ctx: &EvalCtx) -> FxHashMap<Vec<String>, String> {
                 _ => {}
             }
         }
-        let (Some(name), Some(rel_val)) = (name, rel) else { continue };
+        let (Some(name), Some(rel_val)) = (name, rel) else {
+            continue;
+        };
         // `relation` is seeded as a JSON string (`relation_vocabulary.json`
         // stores it `json.dumps`'d); accept a native Tuple/List too, the same
         // native-or-JSON-string duality `load_parts` already accepts for
         // `signature`.
         let row: Vec<String> = match &rel_val {
-            Value::Tuple(t) | Value::List(t) => {
-                t.iter().filter_map(|v| td_val_to_string(v, ctx.interner)).collect()
-            }
+            Value::Tuple(t) | Value::List(t) => t
+                .iter()
+                .filter_map(|v| td_val_to_string(v, ctx.interner))
+                .collect(),
             other => {
-                let Some(text) = td_val_to_string(other, ctx.interner) else { continue };
+                let Some(text) = td_val_to_string(other, ctx.interner) else {
+                    continue;
+                };
                 match serde_json::from_str::<serde_json::Value>(&text) {
                     Ok(serde_json::Value::Array(items)) => items
                         .iter()
@@ -1125,13 +1222,19 @@ fn load_relation_cue_index(ctx: &EvalCtx) -> FxHashMap<Vec<String>, String> {
 /// `Interner::resolve` panics on a Sym it never issued. Check `extra_rev`
 /// FIRST (the placeholder's own text), THEN fall back to a real interner
 /// resolve — mirrors `resolve_scoped_output`'s own order exactly.
-fn shape_decode_val_to_string(v: &Value, interner: &Interner, extra_rev: &FxHashMap<Sym, String>) -> Option<String> {
+fn shape_decode_val_to_string(
+    v: &Value,
+    interner: &Interner,
+    extra_rev: &FxHashMap<Sym, String>,
+) -> Option<String> {
     match v {
         Value::Str(s) => match extra_rev.get(s) {
             Some(text) => Some(text.clone()),
             None => Some(interner.resolve(*s).to_string()),
         },
-        Value::Surface(SurfaceKind::Text, bytes) => std::str::from_utf8(bytes).ok().map(|s| s.to_string()),
+        Value::Surface(SurfaceKind::Text, bytes) => {
+            std::str::from_utf8(bytes).ok().map(|s| s.to_string())
+        }
         _ => None,
     }
 }
@@ -1140,8 +1243,14 @@ fn shape_decode_val_to_string(v: &Value, interner: &Interner, extra_rev: &FxHash
 /// `Vec<String>` key, for lookup against `load_relation_cue_index`'s index.
 /// `None` for a non-tuple row or a row with a non-string leaf (defensive;
 /// relation-systems are always flat string tuples in practice).
-fn shape_decode_row_key(row: &Value, interner: &Interner, extra_rev: &FxHashMap<Sym, String>) -> Option<Vec<String>> {
-    let (Value::Tuple(t) | Value::List(t)) = row else { return None };
+fn shape_decode_row_key(
+    row: &Value,
+    interner: &Interner,
+    extra_rev: &FxHashMap<Sym, String>,
+) -> Option<Vec<String>> {
+    let (Value::Tuple(t) | Value::List(t)) = row else {
+        return None;
+    };
     let mut out = Vec::with_capacity(t.len());
     for v in t.iter() {
         out.push(shape_decode_val_to_string(v, interner, extra_rev)?);
@@ -1189,9 +1298,14 @@ fn shape_decode_row_key(row: &Value, interner: &Interner, extra_rev: &FxHashMap<
 /// a rare hand-authored seed row that isn't an exact cue-template copy)
 /// contributes no axis and is excluded, honestly — never force-aligned by
 /// position.
-fn shape_fit(residual: &[Value], psig: &[Value], wild: &Value,
-             cue_of: &FxHashMap<Vec<String>, String>, interner: &Interner,
-             extra_rev: &FxHashMap<Sym, String>) -> i64 {
+fn shape_fit(
+    residual: &[Value],
+    psig: &[Value],
+    wild: &Value,
+    cue_of: &FxHashMap<Vec<String>, String>,
+    interner: &Interner,
+    extra_rev: &FxHashMap<Sym, String>,
+) -> i64 {
     use std::collections::BTreeMap;
     let mut by_name_a: BTreeMap<&str, &Value> = BTreeMap::new();
     for row in residual {
@@ -1223,14 +1337,16 @@ fn shape_fit(residual: &[Value], psig: &[Value], wild: &Value,
         let anti = anti_unify_values(&insts, wild);
         return fixed_count_value(&anti, wild);
     }
-    let a: SmallVec<[Value; 4]> = by_name_a.iter()
+    let a: SmallVec<[Value; 4]> = by_name_a
+        .iter()
         .filter(|(nm, _)| by_name_b.contains_key(*nm))
         .map(|(_, v)| (*v).clone())
         .collect();
     if a.is_empty() {
         return 0;
     }
-    let b: SmallVec<[Value; 4]> = by_name_b.iter()
+    let b: SmallVec<[Value; 4]> = by_name_b
+        .iter()
         .filter(|(nm, _)| by_name_a.contains_key(*nm))
         .map(|(_, v)| (*v).clone())
         .collect();
@@ -1260,8 +1376,15 @@ fn shape_fit(residual: &[Value], psig: &[Value], wild: &Value,
 /// wild that appears on the PATTERN (first) side — wildcarding the
 /// part's own relation only takes effect when it is passed there
 /// (exactly the pre-migration `_covers(agent, wpat, obs)` call order).
-fn covers_relation(part_sig: &[Value], goal_relation: &Value, wild: &Value, wild_objects: bool) -> bool {
-    let (Value::Tuple(goal_t) | Value::List(goal_t)) = goal_relation else { return false };
+fn covers_relation(
+    part_sig: &[Value],
+    goal_relation: &Value,
+    wild: &Value,
+    wild_objects: bool,
+) -> bool {
+    let (Value::Tuple(goal_t) | Value::List(goal_t)) = goal_relation else {
+        return false;
+    };
     if goal_t.is_empty() {
         return false;
     }
@@ -1275,7 +1398,9 @@ fn covers_relation(part_sig: &[Value], goal_relation: &Value, wild: &Value, wild
     let mut scanned: u64 = 0;
     for step in part_sig {
         scanned += 1;
-        let (Value::Tuple(step_t) | Value::List(step_t)) = step else { continue };
+        let (Value::Tuple(step_t) | Value::List(step_t)) = step else {
+            continue;
+        };
         if step_t.len() != goal_t.len() {
             continue;
         }
@@ -1303,11 +1428,18 @@ fn covers_relation(part_sig: &[Value], goal_relation: &Value, wild: &Value, wild
 /// `Covers` pattern/instance role inside `covers_relation` (see its doc)
 /// — `shape_fit`'s `AntiUnify` is symmetric, so the pre-transformed
 /// `psig` alone is enough there.
-fn score_part_for_residual(residual: &[Value], psig: &[Value], wild: &Value, wild_objects: bool,
-                            cue_of: &FxHashMap<Vec<String>, String>, interner: &Interner,
-                            extra_rev: &FxHashMap<Sym, String>) -> (i64, Vec<Value>) {
+fn score_part_for_residual(
+    residual: &[Value],
+    psig: &[Value],
+    wild: &Value,
+    wild_objects: bool,
+    cue_of: &FxHashMap<Vec<String>, String>,
+    interner: &Interner,
+    extra_rev: &FxHashMap<Sym, String>,
+) -> (i64, Vec<Value>) {
     let fit = shape_fit(residual, psig, wild, cue_of, interner, extra_rev);
-    let covered: Vec<Value> = residual.iter()
+    let covered: Vec<Value> = residual
+        .iter()
         .filter(|rel| covers_relation(psig, rel, wild, wild_objects))
         .cloned()
         .collect();
@@ -1329,7 +1461,7 @@ fn wildcard_signature(psig: &[Value], wild: &Value) -> Vec<Value> {
                 for _ in 1..t.len() {
                     out.push(wild.clone());
                 }
-                rel.reseq(out)   // KIND-PRESERVING (see `Value::reseq`)
+                rel.reseq(out) // KIND-PRESERVING (see `Value::reseq`)
             }
             other => other.clone(),
         })
@@ -1337,7 +1469,10 @@ fn wildcard_signature(psig: &[Value], wild: &Value) -> Vec<Value> {
 }
 
 fn wall(reason: &str) -> Value {
-    Value::Dict(Arc::from(vec![(surf("authored"), Value::Bool(false)), (surf("reason"), surf(reason))]))
+    Value::Dict(Arc::from(vec![
+        (surf("authored"), Value::Bool(false)),
+        (surf("reason"), surf(reason)),
+    ]))
 }
 
 /// Pull a single named key out of the result Dict — what a `field`
@@ -1381,7 +1516,9 @@ pub(crate) fn select_cached_field(dict: &Value, field: Sym, interner: &Interner)
     if !residual.is_empty() || plan.len() != 1 {
         return Value::None;
     }
-    let Some(first) = plan.iter().next() else { return Value::None };
+    let Some(first) = plan.iter().next() else {
+        return Value::None;
+    };
     select_field(first, "part", None)
 }
 
@@ -1494,18 +1631,30 @@ pub(crate) fn eval_shape_decode(
     apply_scope(&mut parts, scope_idx, arena, env, ctx);
 
     if parts.is_empty() {
-        return finish(wall("no held parts (shape-signatures) to compose from"), field, ctx.interner, None);
+        return finish(
+            wall("no held parts (shape-signatures) to compose from"),
+            field,
+            ctx.interner,
+            None,
+        );
     }
 
     // Goal: evaluated through the ordinary Term path — every Str leaf is
     // a REAL Sym, safe to place directly in the output.
     let goal_val = evaluate(arena, goal_idx, env, ctx);
     let goal: Vec<Value> = match &goal_val {
-        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => goal_val.iter().cloned().collect(),
+        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => {
+            goal_val.iter().cloned().collect()
+        }
         _ => Vec::new(),
     };
     if goal.is_empty() {
-        return finish(wall("no goal signature to compose toward"), field, ctx.interner, None);
+        return finish(
+            wall("no goal signature to compose toward"),
+            field,
+            ctx.interner,
+            None,
+        );
     }
     let n_goal = goal.len();
 
@@ -1515,7 +1664,10 @@ pub(crate) fn eval_shape_decode(
     // the ONLY place the scoring input differs, computed once (parts
     // don't change across beam steps).
     let scoring_sigs: Vec<Vec<Value>> = if wild_objects {
-        parts.iter().map(|p| wildcard_signature(&p.sig, &wild_val)).collect()
+        parts
+            .iter()
+            .map(|p| wildcard_signature(&p.sig, &wild_val))
+            .collect()
     } else {
         parts.iter().map(|p| p.sig.clone()).collect()
     };
@@ -1539,11 +1691,20 @@ pub(crate) fn eval_shape_decode(
     // that survives the per-state `cand_w` cap) — see `DEFAULT_SD_BUDGET`'s
     // doc. `beam` is deliberately NOT read here any more (see
     // `eval_shape_decode`'s doc): it is preserved on the wire/output only.
-    let sd_budget: u64 = if budget <= 0 { DEFAULT_SD_BUDGET as u64 } else { budget as u64 };
+    let sd_budget: u64 = if budget <= 0 {
+        DEFAULT_SD_BUDGET as u64
+    } else {
+        budget as u64
+    };
     let mut expansions: u64 = 0;
     let mut budget_exhausted = false;
 
-    let start = BeamState { plan: Vec::new(), used: std::collections::HashSet::new(), residual: goal.clone(), total_fit: 0 };
+    let start = BeamState {
+        plan: Vec::new(),
+        used: std::collections::HashSet::new(),
+        residual: goal.clone(),
+        total_fit: 0,
+    };
     let mut frontier: Vec<BeamState> = vec![start.clone()];
     let mut best: BeamState = start;
 
@@ -1561,8 +1722,15 @@ pub(crate) fn eval_shape_decode(
                 if state.used.contains(&part.name) {
                     continue;
                 }
-                let (fit, covered) = score_part_for_residual(&state.residual, sig, &wild_val, wild_objects,
-                                                               &cue_of, ctx.interner, &extra_rev);
+                let (fit, covered) = score_part_for_residual(
+                    &state.residual,
+                    sig,
+                    &wild_val,
+                    wild_objects,
+                    &cue_of,
+                    ctx.interner,
+                    &extra_rev,
+                );
                 if covered.is_empty() {
                     continue;
                 }
@@ -1599,10 +1767,20 @@ pub(crate) fn eval_shape_decode(
                     covers: covered.clone(),
                     why,
                 });
-                let nresid: Vec<Value> = state.residual.iter().filter(|rel| !covered.contains(rel)).cloned().collect();
+                let nresid: Vec<Value> = state
+                    .residual
+                    .iter()
+                    .filter(|rel| !covered.contains(rel))
+                    .cloned()
+                    .collect();
                 let mut nused = state.used.clone();
                 nused.insert(part.name.clone());
-                let nstate = BeamState { plan: nplan, used: nused, residual: nresid, total_fit: state.total_fit + fit };
+                let nstate = BeamState {
+                    plan: nplan,
+                    used: nused,
+                    residual: nresid,
+                    total_fit: state.total_fit + fit,
+                };
 
                 let cov_now = n_goal - nstate.residual.len();
                 let best_cov = n_goal - best.residual.len();
@@ -1625,7 +1803,8 @@ pub(crate) fn eval_shape_decode(
             let bcov = n_goal - b.residual.len();
             bcov.cmp(&acov).then(b.total_fit.cmp(&a.total_fit))
         });
-        let mut seen: std::collections::HashSet<(Vec<Value>, std::collections::BTreeSet<String>)> = std::collections::HashSet::new();
+        let mut seen: std::collections::HashSet<(Vec<Value>, std::collections::BTreeSet<String>)> =
+            std::collections::HashSet::new();
         let mut pruned: Vec<BeamState> = Vec::new();
         for st in nxt {
             let key = (st.residual.clone(), st.used.iter().cloned().collect());
@@ -1640,8 +1819,17 @@ pub(crate) fn eval_shape_decode(
         }
     }
 
-    let BeamState { plan, residual, total_fit, .. } = best;
-    let covered: Vec<Value> = goal.iter().filter(|rel| !residual.contains(rel)).cloned().collect();
+    let BeamState {
+        plan,
+        residual,
+        total_fit,
+        ..
+    } = best;
+    let covered: Vec<Value> = goal
+        .iter()
+        .filter(|rel| !residual.contains(rel))
+        .cloned()
+        .collect();
     // `induce_concern`'s covered-branch convenience form: the single part
     // that covered everything, only meaningful for a fully-covering
     // ONE-part plan.
@@ -1662,7 +1850,10 @@ pub(crate) fn eval_shape_decode(
         (surf("covered"), Value::Tuple(Arc::new(covered_tuple))),
         (surf("residual"), Value::Tuple(Arc::new(residual_tuple))),
         (surf("goal_relations"), Value::Int(n_goal as i64)),
-        (surf("covered_count"), Value::Int((n_goal - residual.len()) as i64)),
+        (
+            surf("covered_count"),
+            Value::Int((n_goal - residual.len()) as i64),
+        ),
         (surf("total_fit"), Value::Int(total_fit)),
         (surf("beam"), Value::Int(beam)),
         // GAMMA_SEARCH_COMPLETENESS_FIXES.md Bug 2 — the honesty signal:
@@ -1761,17 +1952,28 @@ fn resolve_scoped_output(v: &Value, extra_rev: &FxHashMap<Sym, String>) -> Value
             None => v.clone(),
         },
         Value::Tuple(t) | Value::List(t) => v.reseq(
-            t.iter().map(|x| resolve_scoped_output(x, extra_rev)).collect(),
-        ),   // KIND-PRESERVING (see `Value::reseq`)
+            t.iter()
+                .map(|x| resolve_scoped_output(x, extra_rev))
+                .collect(),
+        ), // KIND-PRESERVING (see `Value::reseq`)
         Value::Set(t) => Value::Set(Arc::from(
-            t.iter().map(|x| resolve_scoped_output(x, extra_rev)).collect::<Vec<_>>(),
+            t.iter()
+                .map(|x| resolve_scoped_output(x, extra_rev))
+                .collect::<Vec<_>>(),
         )),
         Value::FrozenSet(t) => Value::FrozenSet(Arc::from(
-            t.iter().map(|x| resolve_scoped_output(x, extra_rev)).collect::<Vec<_>>(),
+            t.iter()
+                .map(|x| resolve_scoped_output(x, extra_rev))
+                .collect::<Vec<_>>(),
         )),
         Value::Dict(d) => Value::Dict(Arc::from(
             d.iter()
-                .map(|(k, val)| (resolve_scoped_output(k, extra_rev), resolve_scoped_output(val, extra_rev)))
+                .map(|(k, val)| {
+                    (
+                        resolve_scoped_output(k, extra_rev),
+                        resolve_scoped_output(val, extra_rev),
+                    )
+                })
                 .collect::<Vec<_>>(),
         )),
         _ => v.clone(),
@@ -1828,7 +2030,8 @@ fn build_candidate(
     // with the SAME predicate (slot 0).
     for (h, o) in sorted_h.iter().zip(sorted_o.iter()) {
         pairs += 1;
-        let (Value::Tuple(ht) | Value::List(ht), Value::Tuple(ot) | Value::List(ot)) = (h, o) else {
+        let (Value::Tuple(ht) | Value::List(ht), Value::Tuple(ot) | Value::List(ot)) = (h, o)
+        else {
             crate::scale_audit::term_units(pairs);
             return None;
         };
@@ -1847,7 +2050,10 @@ fn build_candidate(
     // half of the same work (see the prefilter above).
     let mut slot_cmps: u64 = 0;
     for (h, o) in sorted_h.iter().zip(sorted_o.iter()) {
-        let (Value::Tuple(ht) | Value::List(ht), Value::Tuple(ot) | Value::List(ot)) = (h, o) else { continue };
+        let (Value::Tuple(ht) | Value::List(ht), Value::Tuple(ot) | Value::List(ot)) = (h, o)
+        else {
+            continue;
+        };
         let mut relation_mismatched = false;
         for k in 1..ht.len() {
             slot_cmps += 1;
@@ -1866,7 +2072,13 @@ fn build_candidate(
     if dims_needed.is_empty() {
         // Exact match under canonical sort — `identity`, not a transform
         // (nothing changed to explain).
-        return Some(Candidate { name, name_val, dims_needed, mismatches, transforms: Vec::new() });
+        return Some(Candidate {
+            name,
+            name_val,
+            dims_needed,
+            mismatches,
+            transforms: Vec::new(),
+        });
     }
 
     // --- Two-tier per-dimension consistency (predicate-aware pooling) ---
@@ -1915,16 +2127,22 @@ fn build_candidate(
             // held side may carry scoped placeholder Syms, see
             // `resolve_scoped_output`; the prefilter above guarantees
             // ht[0] == ot[0] so the tag is the shared predicate).
-            let pairs: Vec<(Value, Value, Value)> = sorted_h.iter().zip(sorted_o.iter())
+            let pairs: Vec<(Value, Value, Value)> = sorted_h
+                .iter()
+                .zip(sorted_o.iter())
                 .filter_map(|(h, o)| match (h, o) {
-                    (Value::Tuple(ht) | Value::List(ht), Value::Tuple(ot) | Value::List(ot)) if kk < ht.len() && kk < ot.len() =>
-                        Some((ot[0].clone(), ht[kk].clone(), ot[kk].clone())),
+                    (Value::Tuple(ht) | Value::List(ht), Value::Tuple(ot) | Value::List(ot))
+                        if kk < ht.len() && kk < ot.len() =>
+                    {
+                        Some((ot[0].clone(), ht[kk].clone(), ot[kk].clone()))
+                    }
                     _ => None,
                 })
                 .collect();
 
             let all_numeric = pairs.iter().all(|(_, h, o)| {
-                matches!(h, Value::Int(_) | Value::Float(_)) && matches!(o, Value::Int(_) | Value::Float(_))
+                matches!(h, Value::Int(_) | Value::Float(_))
+                    && matches!(o, Value::Int(_) | Value::Float(_))
             });
 
             if all_numeric {
@@ -1937,9 +2155,20 @@ fn build_candidate(
                 let mut iter = pairs.iter().map(|(_, h, o)| as_f64(o) - as_f64(h));
                 let first = iter.next().unwrap_or(0.0);
                 if iter.all(|d| (d - first).abs() < 1e-9) {
-                    let any_float = pairs.iter().any(|(_, h, o)| matches!(h, Value::Float(_)) || matches!(o, Value::Float(_)));
-                    let delta_val = if any_float { Value::Float(first) } else { Value::Int(first.round() as i64) };
-                    transforms.push(DimTransform { dim: k, kind: "shift", delta: delta_val, pred: None });
+                    let any_float = pairs.iter().any(|(_, h, o)| {
+                        matches!(h, Value::Float(_)) || matches!(o, Value::Float(_))
+                    });
+                    let delta_val = if any_float {
+                        Value::Float(first)
+                    } else {
+                        Value::Int(first.round() as i64)
+                    };
+                    transforms.push(DimTransform {
+                        dim: k,
+                        kind: "shift",
+                        delta: delta_val,
+                        pred: None,
+                    });
                     continue 'dims;
                 }
                 // TIER 2: per-(predicate, slot) groups, in canonical
@@ -1951,7 +2180,10 @@ fn build_candidate(
                     if !groups.contains_key(pred) {
                         group_order.push(pred.clone());
                     }
-                    groups.entry(pred.clone()).or_default().push((h.clone(), o.clone()));
+                    groups
+                        .entry(pred.clone())
+                        .or_default()
+                        .push((h.clone(), o.clone()));
                 }
                 for pred in &group_order {
                     let gp = &groups[pred];
@@ -1968,9 +2200,20 @@ fn build_candidate(
                         // transform, free of the max_dims budget.
                         continue;
                     }
-                    let any_float = gp.iter().any(|(h, o)| matches!(h, Value::Float(_)) || matches!(o, Value::Float(_)));
-                    let delta_val = if any_float { Value::Float(gfirst) } else { Value::Int(gfirst.round() as i64) };
-                    transforms.push(DimTransform { dim: k, kind: "shift", delta: delta_val, pred: Some(pred.clone()) });
+                    let any_float = gp
+                        .iter()
+                        .any(|(h, o)| matches!(h, Value::Float(_)) || matches!(o, Value::Float(_)));
+                    let delta_val = if any_float {
+                        Value::Float(gfirst)
+                    } else {
+                        Value::Int(gfirst.round() as i64)
+                    };
+                    transforms.push(DimTransform {
+                        dim: k,
+                        kind: "shift",
+                        delta: delta_val,
+                        pred: Some(pred.clone()),
+                    });
                 }
             } else {
                 // Symbolic slot: the held->observed mapping must be a
@@ -1999,7 +2242,8 @@ fn build_candidate(
                 if !consistent {
                     break 'dims;
                 }
-                let sub_pairs: SmallVec<[Value; 4]> = order.iter()
+                let sub_pairs: SmallVec<[Value; 4]> = order
+                    .iter()
                     .filter_map(|h| {
                         let o = map.get(h).expect("just inserted");
                         if o == h {
@@ -2016,7 +2260,12 @@ fn build_candidate(
                         }
                     })
                     .collect();
-                transforms.push(DimTransform { dim: k, kind: "subst", delta: Value::Tuple(Arc::new(sub_pairs)), pred: None });
+                transforms.push(DimTransform {
+                    dim: k,
+                    kind: "subst",
+                    delta: Value::Tuple(Arc::new(sub_pairs)),
+                    pred: None,
+                });
             }
         }
     }
@@ -2098,7 +2347,9 @@ pub(crate) fn eval_transform_decode(
 
     let goal_val = evaluate(arena, goal_idx, env, ctx);
     let goal: Vec<Value> = match &goal_val {
-        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => goal_val.iter().cloned().collect(),
+        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => {
+            goal_val.iter().cloned().collect()
+        }
         _ => Vec::new(),
     };
     let max_dims = max_dims.max(0) as usize;
@@ -2107,8 +2358,18 @@ pub(crate) fn eval_transform_decode(
     let mut sorted_o = goal.clone();
     sorted_o.sort_by(cmp_value);
 
-    let candidates: Vec<Candidate> = parts.iter()
-        .filter_map(|part| build_candidate(part.name.clone(), part.name_val.clone(), &part.sig, &sorted_o, max_dims, &extra_rev))
+    let candidates: Vec<Candidate> = parts
+        .iter()
+        .filter_map(|part| {
+            build_candidate(
+                part.name.clone(),
+                part.name_val.clone(),
+                &part.sig,
+                &sorted_o,
+                max_dims,
+                &extra_rev,
+            )
+        })
         .collect();
 
     let identity = candidates.iter().any(|c| c.dims_needed.is_empty());
@@ -2135,13 +2396,21 @@ pub(crate) fn eval_transform_decode(
                 // kept as a documented no-op tie key, per the design's
                 // Occam ranking; `name` (ascending) is what actually
                 // breaks ties.
-                if c_key < cur_key || (c_key == cur_key && c.name < cur.name) { c } else { cur }
+                if c_key < cur_key || (c_key == cur_key && c.name < cur.name) {
+                    c
+                } else {
+                    cur
+                }
             }
         });
     }
 
     let (explained, base_val, transforms_out, residual_out) = if let Some(winner) = best {
-        let transforms_vec: SmallVec<[Value; 4]> = winner.transforms.iter().map(DimTransform::to_value).collect();
+        let transforms_vec: SmallVec<[Value; 4]> = winner
+            .transforms
+            .iter()
+            .map(DimTransform::to_value)
+            .collect();
         (true, winner.name_val.clone(), transforms_vec, Vec::new())
     } else {
         // Nothing explains — pick the CLOSEST eligible candidate (fewest
@@ -2154,7 +2423,8 @@ pub(crate) fn eval_transform_decode(
                 None => c,
                 Some(cur) => {
                     if c.mismatches.len() < cur.mismatches.len()
-                        || (c.mismatches.len() == cur.mismatches.len() && c.name < cur.name) {
+                        || (c.mismatches.len() == cur.mismatches.len() && c.name < cur.name)
+                    {
                         c
                     } else {
                         cur
@@ -2163,15 +2433,22 @@ pub(crate) fn eval_transform_decode(
             });
         }
         match closest {
-            Some(c) => (false, c.name_val.clone(), SmallVec::new(), c.mismatches.clone()),
+            Some(c) => (
+                false,
+                c.name_val.clone(),
+                SmallVec::new(),
+                c.mismatches.clone(),
+            ),
             None => (false, Value::None, SmallVec::new(), Vec::new()),
         }
     };
 
-    let dims_val: SmallVec<[Value; 4]> = transforms_out.iter()
+    let dims_val: SmallVec<[Value; 4]> = transforms_out
+        .iter()
         .map(|t| select_field(t, "dim", None))
         .collect();
-    let deltas_val: SmallVec<[Value; 4]> = transforms_out.iter()
+    let deltas_val: SmallVec<[Value; 4]> = transforms_out
+        .iter()
         .map(|t| select_field(t, "delta", None))
         .collect();
     let residual_tuple: SmallVec<[Value; 4]> = residual_out.into_iter().collect();
@@ -2183,7 +2460,10 @@ pub(crate) fn eval_transform_decode(
         (surf("dims"), Value::Tuple(Arc::new(dims_val))),
         (surf("deltas"), Value::Tuple(Arc::new(deltas_val))),
         (surf("checked"), Value::Int(checked)),
-        (surf("residual_unexplained"), Value::Tuple(Arc::new(residual_tuple))),
+        (
+            surf("residual_unexplained"),
+            Value::Tuple(Arc::new(residual_tuple)),
+        ),
         (surf("identity"), Value::Bool(identity)),
     ]));
     finish(result, field, ctx.interner, None)
@@ -2222,7 +2502,15 @@ struct DimAttempt {
 fn enc_part(p: &Part) -> String {
     use std::fmt::Write;
     let mut s = String::new();
-    let _ = write!(s, "P|{}|{:?}|{:?}|{:?}|sig{}[", p.name, p.name_val, p.kind_val, p.source_val, p.sig.len());
+    let _ = write!(
+        s,
+        "P|{}|{:?}|{:?}|{:?}|sig{}[",
+        p.name,
+        p.name_val,
+        p.kind_val,
+        p.source_val,
+        p.sig.len()
+    );
     for v in &p.sig {
         let _ = write!(s, "{:?},", v);
     }
@@ -2323,7 +2611,9 @@ pub(crate) fn eval_dim_infer(
 
     let goal_val = evaluate(arena, goal_idx, env, ctx);
     let goal: Vec<Value> = match &goal_val {
-        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => goal_val.iter().cloned().collect(),
+        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => {
+            goal_val.iter().cloned().collect()
+        }
         _ => Vec::new(),
     };
     let max_dims_usize = max_dims.max(0) as usize;
@@ -2369,8 +2659,20 @@ pub(crate) fn eval_dim_infer(
     // dims_needed.len(), which is also `0 == 0` for the exact-match case
     // — see `build_candidate`'s doc). Shared by the length-1 and length-2
     // arms so both use the IDENTICAL rung-1 consistency contract, unchanged.
-    let mut try_candidate = |transformed: &[Value], part: &Part, steps: Vec<GenStep>, successes: &mut Vec<DimAttempt>| {
-        let Some(cand) = build_candidate(part.name.clone(), part.name_val.clone(), transformed, &sorted_o, max_dims_usize, &extra_rev) else { return };
+    let mut try_candidate = |transformed: &[Value],
+                             part: &Part,
+                             steps: Vec<GenStep>,
+                             successes: &mut Vec<DimAttempt>| {
+        let Some(cand) = build_candidate(
+            part.name.clone(),
+            part.name_val.clone(),
+            transformed,
+            &sorted_o,
+            max_dims_usize,
+            &extra_rev,
+        ) else {
+            return;
+        };
         if cand.transforms.len() == cand.dims_needed.len() {
             successes.push(DimAttempt {
                 base_val: cand.name_val.clone(),
@@ -2435,17 +2737,39 @@ pub(crate) fn eval_dim_infer(
     //     arm — every attempt it makes and the order it makes them are
     //     unchanged). ---
     for part in &parts {
-        let Some(dim_types) = &part.dim_types else { continue };
+        let Some(dim_types) = &part.dim_types else {
+            continue;
+        };
         // Generators applicable to THIS part (coord_dims all typed coord).
-        let eligible: Vec<&Generator> = generators.iter()
+        let eligible: Vec<&Generator> = generators
+            .iter()
             .filter(|g| dims_are_coord(dim_types, &g.coord_dims))
             .collect();
 
         for gen in &eligible {
             for &k in &gen.params {
                 checked += 1;
-                let Some(transformed) = apply_generator_k(&gen.kind, &gen.coord_dims, &part.sig, gen.modulus, &gen.matrix, &gen.offset, k) else { continue };
-                try_candidate(&transformed, part, vec![GenStep { name: gen.name.clone(), name_val: gen.name_val.clone(), k }], &mut successes);
+                let Some(transformed) = apply_generator_k(
+                    &gen.kind,
+                    &gen.coord_dims,
+                    &part.sig,
+                    gen.modulus,
+                    &gen.matrix,
+                    &gen.offset,
+                    k,
+                ) else {
+                    continue;
+                };
+                try_candidate(
+                    &transformed,
+                    part,
+                    vec![GenStep {
+                        name: gen.name.clone(),
+                        name_val: gen.name_val.clone(),
+                        k,
+                    }],
+                    &mut successes,
+                );
             }
         }
     }
@@ -2462,14 +2786,27 @@ pub(crate) fn eval_dim_infer(
     // exact. `transformed_a` is computed once per (gen_a, k_a) and
     // reused across every second step. ---
     for part in &parts {
-        let Some(dim_types) = &part.dim_types else { continue };
-        let eligible: Vec<&Generator> = generators.iter()
+        let Some(dim_types) = &part.dim_types else {
+            continue;
+        };
+        let eligible: Vec<&Generator> = generators
+            .iter()
             .filter(|g| dims_are_coord(dim_types, &g.coord_dims))
             .collect();
 
         for gen_a in &eligible {
             for &k_a in &gen_a.params {
-                let Some(transformed_a) = apply_generator_k(&gen_a.kind, &gen_a.coord_dims, &part.sig, gen_a.modulus, &gen_a.matrix, &gen_a.offset, k_a) else { continue };
+                let Some(transformed_a) = apply_generator_k(
+                    &gen_a.kind,
+                    &gen_a.coord_dims,
+                    &part.sig,
+                    gen_a.modulus,
+                    &gen_a.matrix,
+                    &gen_a.offset,
+                    k_a,
+                ) else {
+                    continue;
+                };
                 for gen_b in &eligible {
                     if gen_b.name == gen_a.name {
                         continue;
@@ -2482,11 +2819,34 @@ pub(crate) fn eval_dim_infer(
                         if explained_at_length_1 {
                             continue;
                         }
-                        let Some(transformed_ab) = apply_generator_k(&gen_b.kind, &gen_b.coord_dims, &transformed_a, gen_b.modulus, &gen_b.matrix, &gen_b.offset, k_b) else { continue };
-                        try_candidate(&transformed_ab, part, vec![
-                            GenStep { name: gen_a.name.clone(), name_val: gen_a.name_val.clone(), k: k_a },
-                            GenStep { name: gen_b.name.clone(), name_val: gen_b.name_val.clone(), k: k_b },
-                        ], &mut successes);
+                        let Some(transformed_ab) = apply_generator_k(
+                            &gen_b.kind,
+                            &gen_b.coord_dims,
+                            &transformed_a,
+                            gen_b.modulus,
+                            &gen_b.matrix,
+                            &gen_b.offset,
+                            k_b,
+                        ) else {
+                            continue;
+                        };
+                        try_candidate(
+                            &transformed_ab,
+                            part,
+                            vec![
+                                GenStep {
+                                    name: gen_a.name.clone(),
+                                    name_val: gen_a.name_val.clone(),
+                                    k: k_a,
+                                },
+                                GenStep {
+                                    name: gen_b.name.clone(),
+                                    name_val: gen_b.name_val.clone(),
+                                    k: k_b,
+                                },
+                            ],
+                            &mut successes,
+                        );
                     }
                 }
             }
@@ -2519,14 +2879,22 @@ pub(crate) fn eval_dim_infer(
     for att in &successes {
         best = Some(match best {
             None => att,
-            Some(cur) => if key(att) < key(cur) { att } else { cur },
+            Some(cur) => {
+                if key(att) < key(cur) {
+                    att
+                } else {
+                    cur
+                }
+            }
         });
     }
 
     let result = match best {
         Some(win) => {
-            let transforms_out: SmallVec<[Value; 4]> = win.transforms.iter().map(DimTransform::to_value).collect();
-            let dims_val: SmallVec<[Value; 4]> = transforms_out.iter()
+            let transforms_out: SmallVec<[Value; 4]> =
+                win.transforms.iter().map(DimTransform::to_value).collect();
+            let dims_val: SmallVec<[Value; 4]> = transforms_out
+                .iter()
                 .map(|t| select_field(t, "dim", None))
                 .collect();
             // The composite step sequence as parallel `generators` / `ks`
@@ -2534,9 +2902,15 @@ pub(crate) fn eval_dim_infer(
             // single name for length 1) the seed prefixes with `latent:`.
             // The scalar `generator` / `k` = the FIRST step, so every
             // length-1 read and committed test is byte-identical.
-            let generators_out: SmallVec<[Value; 4]> = win.steps.iter().map(|s| s.name_val.clone()).collect();
+            let generators_out: SmallVec<[Value; 4]> =
+                win.steps.iter().map(|s| s.name_val.clone()).collect();
             let ks_out: SmallVec<[Value; 4]> = win.steps.iter().map(|s| Value::Int(s.k)).collect();
-            let latent_name: String = win.steps.iter().map(|s| s.name.as_str()).collect::<Vec<_>>().join("+");
+            let latent_name: String = win
+                .steps
+                .iter()
+                .map(|s| s.name.as_str())
+                .collect::<Vec<_>>()
+                .join("+");
             let (gen0, k0) = match win.steps.first() {
                 Some(s) => (s.name_val.clone(), Value::Int(s.k)),
                 None => (Value::None, Value::None),
@@ -2640,7 +3014,9 @@ pub(crate) fn eval_gen_infer(
 
     let goal_val = evaluate(arena, goal_idx, env, ctx);
     let goal: Vec<Value> = match &goal_val {
-        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => goal_val.iter().cloned().collect(),
+        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => {
+            goal_val.iter().cloned().collect()
+        }
         _ => Vec::new(),
     };
     let max_dims_usize = max_dims.max(0) as usize;
@@ -2654,25 +3030,41 @@ pub(crate) fn eval_gen_infer(
         // Use the FIRST part's dim_types to learn which slots are coords;
         // all parts in a codebook share the frame. (If none has dim_types,
         // no inference is possible anyway.)
-        parts.iter()
+        parts
+            .iter()
             .find_map(|p| p.dim_types.as_ref())
-            .map(|dts| dts.iter().enumerate().filter(|(_, t)| t.starts_with("coord:")).map(|(i, _)| i).collect())
+            .map(|dts| {
+                dts.iter()
+                    .enumerate()
+                    .filter(|(_, t)| t.starts_with("coord:"))
+                    .map(|(i, _)| i)
+                    .collect()
+            })
             .unwrap_or_default()
     };
-    let goal_bound: i64 = goal_coord_slots.iter().filter_map(|&idx| {
-        let vs = coord_ints(&goal, idx)?;
-        let mn = *vs.iter().min()?;
-        vs.iter().map(|v| (v - mn).abs()).max()
-    }).max().unwrap_or(0);
+    let goal_bound: i64 = goal_coord_slots
+        .iter()
+        .filter_map(|&idx| {
+            let vs = coord_ints(&goal, idx)?;
+            let mn = *vs.iter().min()?;
+            vs.iter().map(|v| (v - mn).abs()).max()
+        })
+        .max()
+        .unwrap_or(0);
 
     let mut checked: i64 = 0;
     let mut best: Option<GenAttempt> = None;
 
     for part in &parts {
-        let Some(dim_types) = &part.dim_types else { continue };
-        let coord_dims: Vec<i64> = dim_types.iter().enumerate()
+        let Some(dim_types) = &part.dim_types else {
+            continue;
+        };
+        let coord_dims: Vec<i64> = dim_types
+            .iter()
+            .enumerate()
             .filter(|(_, t)| t.starts_with("coord:"))
-            .map(|(i, _)| i as i64).collect();
+            .map(|(i, _)| i as i64)
+            .collect();
         let n = coord_dims.len();
         if n != 2 {
             // Integer 2-D lattice only (tractability + the target frame);
@@ -2685,63 +3077,88 @@ pub(crate) fn eval_gen_infer(
         // than the goal (a contracting map) also bounds |entry| by the base
         // extent. Take the max of the two so the range is sound in both
         // directions and still purely data-derived.
-        let base_bound: i64 = coord_dims.iter().filter_map(|&d| {
-            let idx = usize::try_from(d).ok()?;
-            let vs = coord_ints(&part.sig, idx)?;
-            let mn = *vs.iter().min()?;
-            vs.iter().map(|v| (v - mn).abs()).max()
-        }).max().unwrap_or(0);
+        let base_bound: i64 = coord_dims
+            .iter()
+            .filter_map(|&d| {
+                let idx = usize::try_from(d).ok()?;
+                let vs = coord_ints(&part.sig, idx)?;
+                let mn = *vs.iter().min()?;
+                vs.iter().map(|v| (v - mn).abs()).max()
+            })
+            .max()
+            .unwrap_or(0);
         let b = goal_bound.max(base_bound);
-        if b <= 0 { continue; }
+        if b <= 0 {
+            continue;
+        }
 
         // Enumerate every integer 2×2 matrix with entries in [-b, b].
         for m00 in -b..=b {
-        for m01 in -b..=b {
-        for m10 in -b..=b {
-        for m11 in -b..=b {
-            // Exclude the identity (a genuinely-new generator is non-trivial;
-            // identity is rung-1's job, already run and failed).
-            if m00 == 1 && m01 == 0 && m10 == 0 && m11 == 1 {
-                continue;
-            }
-            let matrix = vec![m00, m01, m10, m11];
-            checked += 1;
-            let Some(transformed) = apply_linear_once(&part.sig, &coord_dims, &matrix) else { continue };
-            let Some(cand) = build_candidate(part.name.clone(), part.name_val.clone(), &transformed, &sorted_o, max_dims_usize, &extra_rev) else { continue };
-            if cand.transforms.len() != cand.dims_needed.len() {
-                continue;
-            }
-            let abs_sum = m00.abs() + m01.abs() + m10.abs() + m11.abs();
-            let att = GenAttempt {
-                base_val: cand.name_val.clone(),
-                base_name: cand.name.clone(),
-                coord_dims: coord_dims.clone(),
-                matrix,
-                transforms: cand.transforms,
-                residual_dims: cand.dims_needed.len(),
-                abs_sum,
-            };
-            let take = match &best {
-                None => true,
-                Some(cur) => {
-                    (att.residual_dims, att.abs_sum, &att.matrix, &att.base_name)
-                        < (cur.residual_dims, cur.abs_sum, &cur.matrix, &cur.base_name)
+            for m01 in -b..=b {
+                for m10 in -b..=b {
+                    for m11 in -b..=b {
+                        // Exclude the identity (a genuinely-new generator is non-trivial;
+                        // identity is rung-1's job, already run and failed).
+                        if m00 == 1 && m01 == 0 && m10 == 0 && m11 == 1 {
+                            continue;
+                        }
+                        let matrix = vec![m00, m01, m10, m11];
+                        checked += 1;
+                        let Some(transformed) = apply_linear_once(&part.sig, &coord_dims, &matrix)
+                        else {
+                            continue;
+                        };
+                        let Some(cand) = build_candidate(
+                            part.name.clone(),
+                            part.name_val.clone(),
+                            &transformed,
+                            &sorted_o,
+                            max_dims_usize,
+                            &extra_rev,
+                        ) else {
+                            continue;
+                        };
+                        if cand.transforms.len() != cand.dims_needed.len() {
+                            continue;
+                        }
+                        let abs_sum = m00.abs() + m01.abs() + m10.abs() + m11.abs();
+                        let att = GenAttempt {
+                            base_val: cand.name_val.clone(),
+                            base_name: cand.name.clone(),
+                            coord_dims: coord_dims.clone(),
+                            matrix,
+                            transforms: cand.transforms,
+                            residual_dims: cand.dims_needed.len(),
+                            abs_sum,
+                        };
+                        let take = match &best {
+                            None => true,
+                            Some(cur) => {
+                                (att.residual_dims, att.abs_sum, &att.matrix, &att.base_name)
+                                    < (cur.residual_dims, cur.abs_sum, &cur.matrix, &cur.base_name)
+                            }
+                        };
+                        if take {
+                            best = Some(att);
+                        }
+                    }
                 }
-            };
-            if take {
-                best = Some(att);
             }
-        }}}}
+        }
     }
 
     let result = match &best {
         Some(win) => {
-            let transforms_out: SmallVec<[Value; 4]> = win.transforms.iter().map(DimTransform::to_value).collect();
-            let dims_val: SmallVec<[Value; 4]> = transforms_out.iter()
+            let transforms_out: SmallVec<[Value; 4]> =
+                win.transforms.iter().map(DimTransform::to_value).collect();
+            let dims_val: SmallVec<[Value; 4]> = transforms_out
+                .iter()
                 .map(|t| select_field(t, "dim", None))
                 .collect();
-            let matrix_out: SmallVec<[Value; 4]> = win.matrix.iter().map(|m| Value::Int(*m)).collect();
-            let coord_dims_out: SmallVec<[Value; 4]> = win.coord_dims.iter().map(|d| Value::Int(*d)).collect();
+            let matrix_out: SmallVec<[Value; 4]> =
+                win.matrix.iter().map(|m| Value::Int(*m)).collect();
+            let coord_dims_out: SmallVec<[Value; 4]> =
+                win.coord_dims.iter().map(|d| Value::Int(*d)).collect();
             Value::Dict(Arc::from(vec![
                 (surf("explained"), Value::Bool(true)),
                 (surf("base"), win.base_val.clone()),
@@ -2788,13 +3205,18 @@ fn infer_translate_offset(f0: &[Value], f1: &[Value], coord_dims: &[i64]) -> Opt
     a.sort_by(cmp_value);
     b.sort_by(cmp_value);
     let n = coord_dims.len();
-    let idxs: Vec<usize> = coord_dims.iter().filter_map(|&d| usize::try_from(d).ok()).collect();
+    let idxs: Vec<usize> = coord_dims
+        .iter()
+        .filter_map(|&d| usize::try_from(d).ok())
+        .collect();
     if idxs.len() != n || n == 0 {
         return None;
     }
     // Offset from the FIRST paired cell; then verify it holds for all.
     let read = |rel: &Value, idx: usize| -> Option<i64> {
-        let (Value::Tuple(t) | Value::List(t)) = rel else { return None };
+        let (Value::Tuple(t) | Value::List(t)) = rel else {
+            return None;
+        };
         match t.get(idx) {
             Some(Value::Int(v)) => Some(*v),
             _ => None,
@@ -2812,7 +3234,10 @@ fn infer_translate_offset(f0: &[Value], f1: &[Value], coord_dims: &[i64]) -> Opt
             }
         }
         // non-coord slots byte-identical (same predicate, same colour, same arity)
-        let (Value::Tuple(ta) | Value::List(ta), Value::Tuple(tb) | Value::List(tb)) = (ra, rb) else { return None };
+        let (Value::Tuple(ta) | Value::List(ta), Value::Tuple(tb) | Value::List(tb)) = (ra, rb)
+        else {
+            return None;
+        };
         if ta.len() != tb.len() {
             return None;
         }
@@ -2837,7 +3262,9 @@ fn frames_equal(a: &[Value], b: &[Value]) -> bool {
     let mut sb = b.to_vec();
     sa.sort_by(cmp_value);
     sb.sort_by(cmp_value);
-    sa.iter().zip(sb.iter()).all(|(x, y)| cmp_value(x, y) == std::cmp::Ordering::Equal)
+    sa.iter()
+        .zip(sb.iter())
+        .all(|(x, y)| cmp_value(x, y) == std::cmp::Ordering::Equal)
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -2975,15 +3402,23 @@ fn vec_ibits(v: &[i64]) -> u64 {
 fn median_i64(mut xs: Vec<i64>) -> i64 {
     xs.sort_unstable();
     let n = xs.len();
-    if n == 0 { 0 } else { xs[n / 2] }
+    if n == 0 {
+        0
+    } else {
+        xs[n / 2]
+    }
 }
 
 /// Per-component median of a level (a slice of equal-length integer vectors) —
 /// the robust constant the level is modeled by.
 fn median_vec(level: &[Vec<i64>]) -> Vec<i64> {
-    if level.is_empty() { return Vec::new(); }
+    if level.is_empty() {
+        return Vec::new();
+    }
     let d = level[0].len();
-    (0..d).map(|j| median_i64(level.iter().map(|v| v[j]).collect())).collect()
+    (0..d)
+        .map(|j| median_i64(level.iter().map(|v| v[j]).collect()))
+        .collect()
 }
 
 /// The FULL finite-difference pyramid — like `diff_pyramid` but WITHOUT the
@@ -3026,12 +3461,12 @@ fn robust_order(stream: &[Vec<i64>]) -> Option<(usize, Vec<Vec<Vec<i64>>>)> {
 /// order 1 there would refuse to project the commonest real stream there is.
 /// The two callers ask different questions of the same MDL verdict; nothing
 /// about the verdict itself changes.
-fn robust_order_min(stream: &[Vec<i64>], min_order: usize)
-    -> Option<(usize, Vec<Vec<Vec<i64>>>)>
-{
+fn robust_order_min(stream: &[Vec<i64>], min_order: usize) -> Option<(usize, Vec<Vec<Vec<i64>>>)> {
     // Order-k needs a level-(k−1) of ≥ 3 elements (≥ 3 confirmations that the
     // fitted constant is one value, not a 2-point coincidence) ⇒ stream ≥ k+2.
-    if stream.len() < min_order + 2 { return None; }
+    if stream.len() < min_order + 2 {
+        return None;
+    }
     let pyr = full_pyramid(stream);
 
     // The null model: describe the raw stream with no structure at all.
@@ -3044,7 +3479,9 @@ fn robust_order_min(stream: &[Vec<i64>], min_order: usize)
     //   the shortest one is the best explanation — MDL, no threshold.
     let dl = |m: usize| -> Option<u64> {
         let lvl = &pyr[m];
-        if lvl.len() < 2 { return None; }
+        if lvl.len() < 2 {
+            return None;
+        }
         let cst = median_vec(lvl);
         let resid: u64 = lvl.iter().map(|v| vec_ibits(&vec_sub(v, &cst))).sum();
         let lead: u64 = (0..m).map(|i| vec_ibits(&pyr[i][0])).sum::<u64>() + vec_ibits(&cst);
@@ -3056,15 +3493,24 @@ fn robust_order_min(stream: &[Vec<i64>], min_order: usize)
     let mut best_dl = u64::MAX;
     for m in 0..pyr.len() {
         if let Some(d) = dl(m) {
-            if d < best_dl { best_dl = d; best_m = m; }
+            if d < best_dl {
+                best_dl = d;
+                best_m = m;
+            }
         }
     }
     // Must genuinely COMPRESS the raw stream — else it is not structure (floor).
-    if best_dl >= dl_null { return None; }
+    if best_dl >= dl_null {
+        return None;
+    }
     let order = best_m + 1;
-    if order < min_order { return None; }
+    if order < min_order {
+        return None;
+    }
     // Evidence guard: the winning level needs ≥ 3 samples to witness a constant.
-    if pyr[best_m].len() < 3 { return None; }
+    if pyr[best_m].len() < 3 {
+        return None;
+    }
 
     // Denoise the deepest (winning) level to its fitted constant for a clean
     // generator descriptor / extrapolation.
@@ -3101,9 +3547,7 @@ fn robust_order_min(stream: &[Vec<i64>], min_order: usize)
 /// deepest level constant, ready for `extrapolate_next` / `steps_to_origin`,
 /// or `None` when the stream is incompressible at every order (no structure ⇒
 /// no projection ⇒ the honest floor).
-fn project_stream(stream: &[Vec<i64>], robust: bool)
-    -> Option<(usize, Vec<Vec<Vec<i64>>>)>
-{
+fn project_stream(stream: &[Vec<i64>], robust: bool) -> Option<(usize, Vec<Vec<Vec<i64>>>)> {
     let levels = diff_pyramid(stream);
     if let Some(order) = pyramid_order(&levels) {
         return Some((order, levels));
@@ -3127,7 +3571,8 @@ fn steps_to_origin(levels: &[Vec<Vec<i64>>], max_steps: i64) -> i64 {
     if m == 0 || max_steps <= 0 {
         return max_steps.max(0);
     }
-    let mut cur: Vec<Vec<i64>> = match levels.iter()
+    let mut cur: Vec<Vec<i64>> = match levels
+        .iter()
         .map(|l| l.last().cloned())
         .collect::<Option<Vec<Vec<i64>>>>()
     {
@@ -3137,8 +3582,11 @@ fn steps_to_origin(levels: &[Vec<Vec<i64>>], max_steps: i64) -> i64 {
     for k in 1..=max_steps {
         let mut next = cur.clone();
         for l in (0..m.saturating_sub(1)).rev() {
-            next[l] = cur[l].iter().zip(next[l + 1].iter())
-                .map(|(a, c)| a.saturating_add(*c)).collect();
+            next[l] = cur[l]
+                .iter()
+                .zip(next[l + 1].iter())
+                .map(|(a, c)| a.saturating_add(*c))
+                .collect();
         }
         if next[0].iter().any(|&x| x <= 0) {
             return k;
@@ -3154,11 +3602,11 @@ fn steps_to_origin(levels: &[Vec<Vec<i64>>], max_steps: i64) -> i64 {
 /// anything). For a rigid translate every cell carries the same motion, so
 /// any one of them is the frame's coordinate; a single-relation frame — the
 /// shape a scalar sample stream takes — is the degenerate case.
-fn frame_value_stream(frames: &[Vec<Value>], coord_dims: &[i64])
-    -> Option<Vec<Vec<i64>>>
-{
-    let idxs: Vec<usize> = coord_dims.iter()
-        .filter_map(|&d| usize::try_from(d).ok()).collect();
+fn frame_value_stream(frames: &[Vec<Value>], coord_dims: &[i64]) -> Option<Vec<Vec<i64>>> {
+    let idxs: Vec<usize> = coord_dims
+        .iter()
+        .filter_map(|&d| usize::try_from(d).ok())
+        .collect();
     if idxs.len() != coord_dims.len() || idxs.is_empty() {
         return None;
     }
@@ -3167,7 +3615,9 @@ fn frame_value_stream(frames: &[Vec<Value>], coord_dims: &[i64])
         let mut f = frame.to_vec();
         f.sort_by(cmp_value);
         let first = f.first()?;
-        let (Value::Tuple(t) | Value::List(t)) = first else { return None };
+        let (Value::Tuple(t) | Value::List(t)) = first else {
+            return None;
+        };
         let mut row = Vec::with_capacity(idxs.len());
         for &i in &idxs {
             match t.get(i) {
@@ -3202,17 +3652,23 @@ fn project_frames(
     robust: bool,
     max_steps: i64,
 ) -> Projection {
-    let floor = Projection { order_fit: 0, crossing: max_steps.max(0) };
-    let Some(values) = frame_value_stream(frames, coord_dims) else { return floor };
+    let floor = Projection {
+        order_fit: 0,
+        crossing: max_steps.max(0),
+    };
+    let Some(values) = frame_value_stream(frames, coord_dims) else {
+        return floor;
+    };
     if values.len() < 3 {
         return floor;
     }
     // Fit the DIFFERENCE stream so `order_fit` reads in the same units as
     // `order` (order 1 = velocity), then put the value stream back on top so
     // the iteration walks the coordinate itself.
-    let diffs: Vec<Vec<i64>> = values.windows(2)
-        .map(|w| vec_sub(&w[1], &w[0])).collect();
-    let Some((order, mut levels)) = project_stream(&diffs, robust) else { return floor };
+    let diffs: Vec<Vec<i64>> = values.windows(2).map(|w| vec_sub(&w[1], &w[0])).collect();
+    let Some((order, mut levels)) = project_stream(&diffs, robust) else {
+        return floor;
+    };
     levels.insert(0, values);
     Projection {
         order_fit: order as i64,
@@ -3285,7 +3741,15 @@ fn order_n_translate_verdict(
                 return None;
             }
             let (order, fit_levels) = robust_order(&stream)?;
-            emit_order_n(frames, coord_dims, &fit_levels, order, field, projection, ctx)
+            emit_order_n(
+                frames,
+                coord_dims,
+                &fit_levels,
+                order,
+                field,
+                projection,
+                ctx,
+            )
         }
     }
 }
@@ -3317,30 +3781,39 @@ fn emit_order_n(
     let predicted_out: SmallVec<[Value; 4]> = predicted.into_iter().collect();
     // coeffs: leading finite difference of each level (Newton forward
     // coefficients) — the complete order-N generator descriptor.
-    let coeffs_out: SmallVec<[Value; 4]> = levels.iter().map(|lvl| {
-        let row: SmallVec<[Value; 4]> = lvl[0].iter().map(|x| Value::Int(*x)).collect();
-        Value::Tuple(Arc::new(row))
-    }).collect();
+    let coeffs_out: SmallVec<[Value; 4]> = levels
+        .iter()
+        .map(|lvl| {
+            let row: SmallVec<[Value; 4]> = lvl[0].iter().map(|x| Value::Int(*x)).collect();
+            Value::Tuple(Arc::new(row))
+        })
+        .collect();
 
-    finish(Value::Dict(Arc::from(vec![
-        (surf("explained"), Value::Bool(true)),
-        (surf("kind"), surf("translate")),
-        (surf("offset"), Value::Tuple(Arc::new(offset_out))),
-        (surf("matrix"), Value::Tuple(Arc::new(SmallVec::new()))),
-        (surf("coord_dims"), Value::Tuple(Arc::new(coord_out))),
-        (surf("window"), Value::Int(k)),
-        (surf("predicted"), Value::Tuple(Arc::new(predicted_out))),
-        (surf("checked"), Value::Int(0)),
-        (surf("order"), Value::Int(order as i64)),
-        (surf("coeffs"), Value::Tuple(Arc::new(coeffs_out))),
-        (surf("order_fit"), Value::Int(projection.order_fit)),
-        (surf("crossing"), Value::Int(projection.crossing)),
-    ])), field, ctx.interner, None).into()
+    finish(
+        Value::Dict(Arc::from(vec![
+            (surf("explained"), Value::Bool(true)),
+            (surf("kind"), surf("translate")),
+            (surf("offset"), Value::Tuple(Arc::new(offset_out))),
+            (surf("matrix"), Value::Tuple(Arc::new(SmallVec::new()))),
+            (surf("coord_dims"), Value::Tuple(Arc::new(coord_out))),
+            (surf("window"), Value::Int(k)),
+            (surf("predicted"), Value::Tuple(Arc::new(predicted_out))),
+            (surf("checked"), Value::Int(0)),
+            (surf("order"), Value::Int(order as i64)),
+            (surf("coeffs"), Value::Tuple(Arc::new(coeffs_out))),
+            (surf("order_fit"), Value::Int(projection.order_fit)),
+            (surf("crossing"), Value::Int(projection.crossing)),
+        ])),
+        field,
+        ctx.interner,
+        None,
+    )
+    .into()
 }
 
 #[cfg(test)]
 mod order_n_generic_tests {
-    use super::{diff_pyramid, pyramid_order, extrapolate_next, robust_order};
+    use super::{diff_pyramid, extrapolate_next, pyramid_order, robust_order};
 
     // The recursion is tested here on RAW integer-vector streams with NO
     // temporal (or any dimensional) meaning — the structural proof that
@@ -3409,10 +3882,18 @@ mod order_n_generic_tests {
         let vel = vec![2i64, 5, 9, 12, 14, 18, 20, 24, 27, 29];
         // d(vel) = [3,4,3,2,4,2,4,3,2] — clusters at 3, never all-equal.
         let s: Vec<Vec<i64>> = vel.iter().map(|&v| vec![v]).collect();
-        assert_eq!(diff_pyramid(&s).last().unwrap().len() < 2
-                   || !diff_pyramid(&s).last().unwrap().iter().all(|v| v == &diff_pyramid(&s).last().unwrap()[0]),
-                   true, "exact witness must NOT fire on the noisy stream");
-        let (order, _fit) = robust_order(&s).expect("robust witness should mint the noisy parabola");
+        assert_eq!(
+            diff_pyramid(&s).last().unwrap().len() < 2
+                || !diff_pyramid(&s)
+                    .last()
+                    .unwrap()
+                    .iter()
+                    .all(|v| v == &diff_pyramid(&s).last().unwrap()[0]),
+            true,
+            "exact witness must NOT fire on the noisy stream"
+        );
+        let (order, _fit) =
+            robust_order(&s).expect("robust witness should mint the noisy parabola");
         assert_eq!(order, 2);
     }
 
@@ -3424,7 +3905,9 @@ mod order_n_generic_tests {
         // accel d2 = [3,3,3,3,3,-11,3,9,3,3] around a clear constant 3.
         let d2 = [3i64, 3, 3, 3, 3, -11, 3, 9, 3, 3];
         let mut vel = vec![5i64];
-        for d in d2 { vel.push(vel.last().unwrap() + d); }
+        for d in d2 {
+            vel.push(vel.last().unwrap() + d);
+        }
         let s: Vec<Vec<i64>> = vel.iter().map(|&v| vec![v]).collect();
         let (order, _fit) = robust_order(&s).expect("median-robust witness mints through glitches");
         assert_eq!(order, 2);
@@ -3457,18 +3940,35 @@ mod order_n_generic_tests {
         // the same noise) -> no order-2 to find, it floors.
         let noise = [1i64, -1, 1, 0, -1, 1, 0, -1];
         // curvature present (accel ≈ 4 >> noise): compresses -> order-2.
-        let curved: Vec<i64> = noise.iter()
-            .scan(2i64, |v, &n| { let cur = *v; *v += 4 + n; Some(cur) }).collect();
+        let curved: Vec<i64> = noise
+            .iter()
+            .scan(2i64, |v, &n| {
+                let cur = *v;
+                *v += 4 + n;
+                Some(cur)
+            })
+            .collect();
         let s_curved: Vec<Vec<i64>> = curved.iter().map(|&v| vec![v]).collect();
-        assert_eq!(robust_order(&s_curved).map(|(o, _)| o), Some(2),
-                   "curvature above the noise -> order-2");
+        assert_eq!(
+            robust_order(&s_curved).map(|(o, _)| o),
+            Some(2),
+            "curvature above the noise -> order-2"
+        );
         // curvature absent (accel = 0, SAME noise): near-constant velocity, no
         // second-order structure -> the witness declines to mint order-2.
-        let flat: Vec<i64> = noise.iter()
-            .scan(2i64, |v, &n| { let cur = *v; *v += n; Some(cur) }).collect();
+        let flat: Vec<i64> = noise
+            .iter()
+            .scan(2i64, |v, &n| {
+                let cur = *v;
+                *v += n;
+                Some(cur)
+            })
+            .collect();
         let s_flat: Vec<Vec<i64>> = flat.iter().map(|&v| vec![v]).collect();
-        assert!(robust_order(&s_flat).is_none(),
-                "same noise, no curvature -> no order-2 (tolerance from the data)");
+        assert!(
+            robust_order(&s_flat).is_none(),
+            "same noise, no curvature -> no order-2 (tolerance from the data)"
+        );
     }
 
     // ─────────────── FORWARD PROJECTION AT THE MEASURED ORDER ───────────
@@ -3491,9 +3991,12 @@ mod order_n_generic_tests {
     #[test]
     fn order_1_crossing_is_the_linear_projection() {
         // margin 100, falling 10 per step: the schoolbook `margin / rate`.
-        let v: Vec<i64> = (0..6).map(|i| 100 - 10 * i).collect();  // 100..50
-        assert_eq!(project_to_origin(&v, false, 1000), Some((1, 5)),
-                   "50 left at 10 per step = 5 steps");
+        let v: Vec<i64> = (0..6).map(|i| 100 - 10 * i).collect(); // 100..50
+        assert_eq!(
+            project_to_origin(&v, false, 1000),
+            Some((1, 5)),
+            "50 left at 10 per step = 5 steps"
+        );
     }
 
     #[test]
@@ -3507,15 +4010,21 @@ mod order_n_generic_tests {
         assert_eq!(order, 2, "constant second difference -> order 2");
         // The order-1 reading from the same last instant (75 left, falling 9)
         // would be 9 steps. The measured order-2 reading is far shorter.
-        assert!(crossing < 9, "order-2 crossing {crossing} must beat the linear 9");
+        assert!(
+            crossing < 9,
+            "order-2 crossing {crossing} must beat the linear 9"
+        );
         assert_eq!(crossing, 5, "75, 64, 51, 36, 19, 0 — the origin on step 5");
     }
 
     #[test]
     fn a_rising_stream_never_crosses_and_reports_the_horizon() {
         let v: Vec<i64> = (0..6).map(|i| 100 + 10 * i).collect();
-        assert_eq!(project_to_origin(&v, false, 40), Some((1, 40)),
-                   "no crossing within the declared horizon -> the horizon");
+        assert_eq!(
+            project_to_origin(&v, false, 40),
+            Some((1, 40)),
+            "no crossing within the declared horizon -> the horizon"
+        );
     }
 
     #[test]
@@ -3525,12 +4034,20 @@ mod order_n_generic_tests {
         // integer generator carrying every pair); the cross-frame/robust
         // witness fits order 1 at the median rate and projects.
         let noise = [0i64, 1, -1, 0, 1, -1, 0, 1, -1, 0];
-        let v: Vec<i64> = noise.iter()
-            .scan(100i64, |a, &n| { let cur = *a; *a += -10 + n; Some(cur) }).collect();
-        assert!(project_to_origin(&v, false, 1000).is_none(),
-                "exact witness must floor on a noisy stream");
-        let (order, crossing) = project_to_origin(&v, true, 1000)
-            .expect("robust witness projects a noisy descent");
+        let v: Vec<i64> = noise
+            .iter()
+            .scan(100i64, |a, &n| {
+                let cur = *a;
+                *a += -10 + n;
+                Some(cur)
+            })
+            .collect();
+        assert!(
+            project_to_origin(&v, false, 1000).is_none(),
+            "exact witness must floor on a noisy stream"
+        );
+        let (order, crossing) =
+            project_to_origin(&v, true, 1000).expect("robust witness projects a noisy descent");
         assert_eq!(order, 1);
         // last value ~ 10; at ~10 per step it is about one step out.
         assert!((1..=3).contains(&crossing), "crossing {crossing}");
@@ -3597,17 +4114,29 @@ pub(crate) fn eval_time_infer(
     let mut next_id: u32 = u32::MAX;
     let parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
     // dim_types (coord slots) from the first part that declares them.
-    let coord_dims: Vec<i64> = parts.iter()
+    let coord_dims: Vec<i64> = parts
+        .iter()
         .find_map(|p| p.dim_types.as_ref())
-        .map(|dts| dts.iter().enumerate().filter(|(_, t)| t.starts_with("coord:")).map(|(i, _)| i as i64).collect())
+        .map(|dts| {
+            dts.iter()
+                .enumerate()
+                .filter(|(_, t)| t.starts_with("coord:"))
+                .map(|(i, _)| i as i64)
+                .collect()
+        })
         .unwrap_or_default();
 
     let seq_val = evaluate(arena, sequence_idx, env, ctx);
     let frames: Vec<Vec<Value>> = match &seq_val {
-        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => seq_val.iter().map(|f| match f {
-            Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => f.iter().cloned().collect(),
-            _ => Vec::new(),
-        }).collect(),
+        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => seq_val
+            .iter()
+            .map(|f| match f {
+                Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => {
+                    f.iter().cloned().collect()
+                }
+                _ => Vec::new(),
+            })
+            .collect(),
         _ => Vec::new(),
     };
 
@@ -3619,26 +4148,34 @@ pub(crate) fn eval_time_infer(
     let projection = if frames.len() >= 3 && !coord_dims.is_empty() {
         project_frames(&frames, &coord_dims, robust, max_steps)
     } else {
-        Projection { order_fit: 0, crossing: max_steps.max(0) }
+        Projection {
+            order_fit: 0,
+            crossing: max_steps.max(0),
+        }
     };
 
     let unexplained = |checked: i64, ctx: &mut EvalCtx| -> Value {
-        finish(Value::Dict(Arc::from(vec![
-            (surf("explained"), Value::Bool(false)),
-            (surf("kind"), Value::None),
-            (surf("offset"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("matrix"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("coord_dims"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("window"), Value::Int(0)),
-            (surf("predicted"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("checked"), Value::Int(checked)),
-            // order 0 = no regular generator at any order (schema-uniform with
-            // the explained paths; additive — no existing query reads `order`).
-            (surf("order"), Value::Int(0)),
-            (surf("coeffs"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("order_fit"), Value::Int(projection.order_fit)),
-            (surf("crossing"), Value::Int(projection.crossing)),
-        ])), field, ctx.interner, None)
+        finish(
+            Value::Dict(Arc::from(vec![
+                (surf("explained"), Value::Bool(false)),
+                (surf("kind"), Value::None),
+                (surf("offset"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("matrix"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("coord_dims"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("window"), Value::Int(0)),
+                (surf("predicted"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("checked"), Value::Int(checked)),
+                // order 0 = no regular generator at any order (schema-uniform with
+                // the explained paths; additive — no existing query reads `order`).
+                (surf("order"), Value::Int(0)),
+                (surf("coeffs"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("order_fit"), Value::Int(projection.order_fit)),
+                (surf("crossing"), Value::Int(projection.crossing)),
+            ])),
+            field,
+            ctx.interner,
+            None,
+        )
     };
 
     if frames.len() < 2 || coord_dims.is_empty() || frames.iter().any(|f| f.is_empty()) {
@@ -3650,36 +4187,65 @@ pub(crate) fn eval_time_infer(
     // Data-derived bound B for the linear search (max abs normalized coord),
     // capped by max_b (a caller-supplied safety cap, itself data-scaled).
     let mut checked: i64 = 0;
-    enum G { Translate(Vec<i64>), Linear(Vec<i64>) }
+    enum G {
+        Translate(Vec<i64>),
+        Linear(Vec<i64>),
+    }
     let g: Option<G> = if let Some(off) = infer_translate_offset(f0, f1, &coord_dims) {
-        if off.iter().all(|&x| x == 0) { None } else { Some(G::Translate(off)) }
+        if off.iter().all(|&x| x == 0) {
+            None
+        } else {
+            Some(G::Translate(off))
+        }
     } else if coord_dims.len() == 2 {
         // enumerate integer 2×2 M within the data bound; first EXACT carrier wins
-        let bound: i64 = coord_dims.iter().filter_map(|&d| {
-            let idx = usize::try_from(d).ok()?;
-            let vs = coord_ints(f0, idx)?;
-            let mn = *vs.iter().min()?;
-            vs.iter().map(|v| (v - mn).abs()).max()
-        }).max().unwrap_or(0)
-          .max(coord_dims.iter().filter_map(|&d| {
-            let idx = usize::try_from(d).ok()?;
-            let vs = coord_ints(f1, idx)?;
-            let mn = *vs.iter().min()?;
-            vs.iter().map(|v| (v - mn).abs()).max()
-          }).max().unwrap_or(0))
-          .min(max_b.max(0));
+        let bound: i64 = coord_dims
+            .iter()
+            .filter_map(|&d| {
+                let idx = usize::try_from(d).ok()?;
+                let vs = coord_ints(f0, idx)?;
+                let mn = *vs.iter().min()?;
+                vs.iter().map(|v| (v - mn).abs()).max()
+            })
+            .max()
+            .unwrap_or(0)
+            .max(
+                coord_dims
+                    .iter()
+                    .filter_map(|&d| {
+                        let idx = usize::try_from(d).ok()?;
+                        let vs = coord_ints(f1, idx)?;
+                        let mn = *vs.iter().min()?;
+                        vs.iter().map(|v| (v - mn).abs()).max()
+                    })
+                    .max()
+                    .unwrap_or(0),
+            )
+            .min(max_b.max(0));
         let mut found: Option<Vec<i64>> = None;
-        'search: for m00 in -bound..=bound { for m01 in -bound..=bound {
-        for m10 in -bound..=bound { for m11 in -bound..=bound {
-            if m00 == 1 && m01 == 0 && m10 == 0 && m11 == 1 { continue; }
-            checked += 1;
-            let matrix = vec![m00, m01, m10, m11];
-            if let Some(t) = apply_linear_once(f0, &coord_dims, &matrix) {
-                if frames_equal(&t, f1) { found = Some(matrix); break 'search; }
+        'search: for m00 in -bound..=bound {
+            for m01 in -bound..=bound {
+                for m10 in -bound..=bound {
+                    for m11 in -bound..=bound {
+                        if m00 == 1 && m01 == 0 && m10 == 0 && m11 == 1 {
+                            continue;
+                        }
+                        checked += 1;
+                        let matrix = vec![m00, m01, m10, m11];
+                        if let Some(t) = apply_linear_once(f0, &coord_dims, &matrix) {
+                            if frames_equal(&t, f1) {
+                                found = Some(matrix);
+                                break 'search;
+                            }
+                        }
+                    }
+                }
             }
-        }}}}
+        }
         found.map(G::Linear)
-    } else { None };
+    } else {
+        None
+    };
 
     // Order-1 inference gave up (no first-pair generator, e.g. an identity
     // f0->f1 whose stream is order-2+). BEFORE flooring, try DIMENSION-GENERIC
@@ -3718,30 +4284,35 @@ pub(crate) fn eval_time_infer(
         G::Translate(off) => ("translate", 0, Vec::new(), off.clone()),
         G::Linear(m) => ("linear", 0, m.clone(), Vec::new()),
     };
-    let predicted = apply_generator_k(kind, &coord_dims, f0, modulus, &matrix, &offset, k)
-        .unwrap_or_default();
+    let predicted =
+        apply_generator_k(kind, &coord_dims, f0, modulus, &matrix, &offset, k).unwrap_or_default();
 
     let offset_out: SmallVec<[Value; 4]> = offset.iter().map(|x| Value::Int(*x)).collect();
     let matrix_out: SmallVec<[Value; 4]> = matrix.iter().map(|x| Value::Int(*x)).collect();
     let coord_out: SmallVec<[Value; 4]> = coord_dims.iter().map(|d| Value::Int(*d)).collect();
     let predicted_out: SmallVec<[Value; 4]> = predicted.into_iter().collect();
-    finish(Value::Dict(Arc::from(vec![
-        (surf("explained"), Value::Bool(true)),
-        (surf("kind"), surf(kind)),
-        (surf("offset"), Value::Tuple(Arc::new(offset_out))),
-        (surf("matrix"), Value::Tuple(Arc::new(matrix_out))),
-        (surf("coord_dims"), Value::Tuple(Arc::new(coord_out))),
-        (surf("window"), Value::Int(k)),
-        (surf("predicted"), Value::Tuple(Arc::new(predicted_out))),
-        (surf("checked"), Value::Int(checked)),
-        // The exact-equality path is order 1 by definition (a constant
-        // generator). `coeffs` is empty here — the descriptor is already
-        // whole in offset/matrix. Additive: no existing query reads either.
-        (surf("order"), Value::Int(1)),
-        (surf("coeffs"), Value::Tuple(Arc::new(SmallVec::new()))),
-        (surf("order_fit"), Value::Int(projection.order_fit)),
-        (surf("crossing"), Value::Int(projection.crossing)),
-    ])), field, ctx.interner, None)
+    finish(
+        Value::Dict(Arc::from(vec![
+            (surf("explained"), Value::Bool(true)),
+            (surf("kind"), surf(kind)),
+            (surf("offset"), Value::Tuple(Arc::new(offset_out))),
+            (surf("matrix"), Value::Tuple(Arc::new(matrix_out))),
+            (surf("coord_dims"), Value::Tuple(Arc::new(coord_out))),
+            (surf("window"), Value::Int(k)),
+            (surf("predicted"), Value::Tuple(Arc::new(predicted_out))),
+            (surf("checked"), Value::Int(checked)),
+            // The exact-equality path is order 1 by definition (a constant
+            // generator). `coeffs` is empty here — the descriptor is already
+            // whole in offset/matrix. Additive: no existing query reads either.
+            (surf("order"), Value::Int(1)),
+            (surf("coeffs"), Value::Tuple(Arc::new(SmallVec::new()))),
+            (surf("order_fit"), Value::Int(projection.order_fit)),
+            (surf("crossing"), Value::Int(projection.crossing)),
+        ])),
+        field,
+        ctx.interner,
+        None,
+    )
 }
 
 /// Split a codebook's `dim_types` into (coord, predicate, appearance) slot
@@ -3773,15 +4344,22 @@ fn partition_dims(parts: &[Part]) -> (Vec<usize>, Vec<usize>, Vec<usize>) {
 /// appearance change: `infer_translate_offset` sorts by `cmp_value` over the
 /// WHOLE tuple, so a changed appearance slot SCRAMBLES the pairing before the
 /// coordinates are ever compared.
-fn cmp_support(a: &Value, b: &Value, coord_idxs: &[usize], pred_idxs: &[usize])
-    -> std::cmp::Ordering
-{
-    let (Value::Tuple(ta) | Value::List(ta), Value::Tuple(tb) | Value::List(tb)) = (a, b) else { return cmp_value(a, b) };
+fn cmp_support(
+    a: &Value,
+    b: &Value,
+    coord_idxs: &[usize],
+    pred_idxs: &[usize],
+) -> std::cmp::Ordering {
+    let (Value::Tuple(ta) | Value::List(ta), Value::Tuple(tb) | Value::List(tb)) = (a, b) else {
+        return cmp_value(a, b);
+    };
     for &i in pred_idxs {
         match (ta.get(i), tb.get(i)) {
             (Some(x), Some(y)) => {
                 let o = cmp_value(x, y);
-                if o != std::cmp::Ordering::Equal { return o; }
+                if o != std::cmp::Ordering::Equal {
+                    return o;
+                }
             }
             (x, y) => return x.is_some().cmp(&y.is_some()),
         }
@@ -3790,7 +4368,9 @@ fn cmp_support(a: &Value, b: &Value, coord_idxs: &[usize], pred_idxs: &[usize])
         match (ta.get(i), tb.get(i)) {
             (Some(x), Some(y)) => {
                 let o = cmp_value(x, y);
-                if o != std::cmp::Ordering::Equal { return o; }
+                if o != std::cmp::Ordering::Equal {
+                    return o;
+                }
             }
             (x, y) => return x.is_some().cmp(&y.is_some()),
         }
@@ -3810,15 +4390,21 @@ fn cmp_support(a: &Value, b: &Value, coord_idxs: &[usize], pred_idxs: &[usize])
 /// guard. `appearance_residual` is COUNTED AND RETURNED, never compared against
 /// anything: it is the second half of the PARTITION, not a tolerance.
 fn support_pair(
-    f0: &[Value], f1: &[Value], coord_idxs: &[usize], pred_idxs: &[usize],
-    app_idxs: &[usize], offset: &[i64],
+    f0: &[Value],
+    f1: &[Value],
+    coord_idxs: &[usize],
+    pred_idxs: &[usize],
+    app_idxs: &[usize],
+    offset: &[i64],
 ) -> (bool, i64, i64, &'static str) {
     let mut a = f0.to_vec();
     let mut b = f1.to_vec();
     a.sort_by(|x, y| cmp_support(x, y, coord_idxs, pred_idxs));
     b.sort_by(|x, y| cmp_support(x, y, coord_idxs, pred_idxs));
     let read = |rel: &Value, idx: usize| -> Option<i64> {
-        let (Value::Tuple(t) | Value::List(t)) = rel else { return None };
+        let (Value::Tuple(t) | Value::List(t)) = rel else {
+            return None;
+        };
         match t.get(idx) {
             Some(Value::Int(v)) => Some(*v),
             _ => None,
@@ -3836,7 +4422,8 @@ fn support_pair(
                 return (false, resid, compared, "offset");
             }
         }
-        let (Value::Tuple(ta) | Value::List(ta), Value::Tuple(tb) | Value::List(tb)) = (ra, rb) else {
+        let (Value::Tuple(ta) | Value::List(ta), Value::Tuple(tb) | Value::List(tb)) = (ra, rb)
+        else {
             return (false, resid, compared, "not_a_cell");
         };
         if ta.len() != tb.len() {
@@ -3854,7 +4441,10 @@ fn support_pair(
         for &idx in app_idxs {
             match (ta.get(idx), tb.get(idx)) {
                 (Some(x), Some(y)) if cmp_value(x, y) == std::cmp::Ordering::Equal => {}
-                _ => { resid += 1; break; }
+                _ => {
+                    resid += 1;
+                    break;
+                }
             }
         }
     }
@@ -3927,25 +4517,35 @@ pub(crate) fn eval_support_infer(
 
     let seq_val = evaluate(arena, sequence_idx, env, ctx);
     let frames: Vec<Vec<Value>> = match &seq_val {
-        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => seq_val.iter().map(|f| match f {
-            Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => f.iter().cloned().collect(),
-            _ => Vec::new(),
-        }).collect(),
+        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => seq_val
+            .iter()
+            .map(|f| match f {
+                Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => {
+                    f.iter().cloned().collect()
+                }
+                _ => Vec::new(),
+            })
+            .collect(),
         _ => Vec::new(),
     };
 
     let refused = |reason: &str, resid: i64, compared: i64, ctx: &mut EvalCtx| -> Value {
-        finish(Value::Dict(Arc::from(vec![
-            (surf("explained"), Value::Bool(false)),
-            (surf("kind"), Value::None),
-            (surf("offset"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("coord_dims"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("window"), Value::Int(0)),
-            (surf("appearance_residual"), Value::Int(resid)),
-            (surf("appearance_identical"), Value::Bool(resid == 0)),
-            (surf("compared"), Value::Int(compared)),
-            (surf("reason"), surf(reason)),
-        ])), field, ctx.interner, None)
+        finish(
+            Value::Dict(Arc::from(vec![
+                (surf("explained"), Value::Bool(false)),
+                (surf("kind"), Value::None),
+                (surf("offset"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("coord_dims"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("window"), Value::Int(0)),
+                (surf("appearance_residual"), Value::Int(resid)),
+                (surf("appearance_identical"), Value::Bool(resid == 0)),
+                (surf("compared"), Value::Int(compared)),
+                (surf("reason"), surf(reason)),
+            ])),
+            field,
+            ctx.interner,
+            None,
+        )
     };
 
     if frames.len() < 2 {
@@ -3968,7 +4568,9 @@ pub(crate) fn eval_support_infer(
     a0.sort_by(|x, y| cmp_support(x, y, &coord_idxs, &pred_idxs));
     b0.sort_by(|x, y| cmp_support(x, y, &coord_idxs, &pred_idxs));
     let read = |rel: &Value, idx: usize| -> Option<i64> {
-        let (Value::Tuple(t) | Value::List(t)) = rel else { return None };
+        let (Value::Tuple(t) | Value::List(t)) = rel else {
+            return None;
+        };
         match t.get(idx) {
             Some(Value::Int(v)) => Some(*v),
             _ => None,
@@ -3986,7 +4588,12 @@ pub(crate) fn eval_support_infer(
     let mut compared_total: i64 = 0;
     for i in 0..frames.len() - 1 {
         let (ok, resid, compared, reason) = support_pair(
-            &frames[i], &frames[i + 1], &coord_idxs, &pred_idxs, &app_idxs, &offset,
+            &frames[i],
+            &frames[i + 1],
+            &coord_idxs,
+            &pred_idxs,
+            &app_idxs,
+            &offset,
         );
         resid_total += resid;
         compared_total += compared;
@@ -4003,17 +4610,22 @@ pub(crate) fn eval_support_infer(
     let offset_out: SmallVec<[Value; 4]> = offset.iter().map(|x| Value::Int(*x)).collect();
     let coord_out: SmallVec<[Value; 4]> =
         coord_idxs.iter().map(|d| Value::Int(*d as i64)).collect();
-    finish(Value::Dict(Arc::from(vec![
-        (surf("explained"), Value::Bool(true)),
-        (surf("kind"), surf("translate")),
-        (surf("offset"), Value::Tuple(Arc::new(offset_out))),
-        (surf("coord_dims"), Value::Tuple(Arc::new(coord_out))),
-        (surf("window"), Value::Int(frames.len() as i64)),
-        (surf("appearance_residual"), Value::Int(resid_total)),
-        (surf("appearance_identical"), Value::Bool(resid_total == 0)),
-        (surf("compared"), Value::Int(compared_total)),
-        (surf("reason"), surf("ok")),
-    ])), field, ctx.interner, None)
+    finish(
+        Value::Dict(Arc::from(vec![
+            (surf("explained"), Value::Bool(true)),
+            (surf("kind"), surf("translate")),
+            (surf("offset"), Value::Tuple(Arc::new(offset_out))),
+            (surf("coord_dims"), Value::Tuple(Arc::new(coord_out))),
+            (surf("window"), Value::Int(frames.len() as i64)),
+            (surf("appearance_residual"), Value::Int(resid_total)),
+            (surf("appearance_identical"), Value::Bool(resid_total == 0)),
+            (surf("compared"), Value::Int(compared_total)),
+            (surf("reason"), surf("ok")),
+        ])),
+        field,
+        ctx.interner,
+        None,
+    )
 }
 
 /// Evaluate `BlinkBridge` — THE BLINK: a temporal hole bridged by grounding, the
@@ -4276,17 +4888,29 @@ pub(crate) fn eval_blink_bridge(
     let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
     let mut next_id: u32 = u32::MAX;
     let parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
-    let coord_dims: Vec<i64> = parts.iter()
+    let coord_dims: Vec<i64> = parts
+        .iter()
         .find_map(|p| p.dim_types.as_ref())
-        .map(|dts| dts.iter().enumerate().filter(|(_, t)| t.starts_with("coord:")).map(|(i, _)| i as i64).collect())
+        .map(|dts| {
+            dts.iter()
+                .enumerate()
+                .filter(|(_, t)| t.starts_with("coord:"))
+                .map(|(i, _)| i as i64)
+                .collect()
+        })
         .unwrap_or_default();
 
     let seq_val = evaluate(arena, sequence_idx, env, ctx);
     let frames: Vec<Vec<Value>> = match &seq_val {
-        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => seq_val.iter().map(|f| match f {
-            Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => f.iter().cloned().collect(),
-            _ => Vec::new(),
-        }).collect(),
+        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => seq_val
+            .iter()
+            .map(|f| match f {
+                Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => {
+                    f.iter().cloned().collect()
+                }
+                _ => Vec::new(),
+            })
+            .collect(),
         _ => Vec::new(),
     };
 
@@ -4302,9 +4926,13 @@ pub(crate) fn eval_blink_bridge(
 
     // --- structure: leading VISIBLE prefix, GAP (empty = blink), then resume ---
     let mut prefix_len = 0usize;
-    while prefix_len < frames.len() && !frames[prefix_len].is_empty() { prefix_len += 1; }
+    while prefix_len < frames.len() && !frames[prefix_len].is_empty() {
+        prefix_len += 1;
+    }
     let mut gap = 0usize;
-    while prefix_len + gap < frames.len() && frames[prefix_len + gap].is_empty() { gap += 1; }
+    while prefix_len + gap < frames.len() && frames[prefix_len + gap].is_empty() {
+        gap += 1;
+    }
     let resume_start = prefix_len + gap;
 
     let mut checked: i64 = 0;
@@ -4317,41 +4945,74 @@ pub(crate) fn eval_blink_bridge(
     // The FREEZE source: the last visible frame (persistence = the zero-velocity
     // best-guess). It is BOTH the persistence baseline `frozen` AND the
     // unconstrained confabulation the bridge falls back to when nothing pins it.
-    let last: Option<Vec<Value>> = if prefix_len >= 1 { Some(frames[prefix_len - 1].clone()) } else { None };
+    let last: Option<Vec<Value>> = if prefix_len >= 1 {
+        Some(frames[prefix_len - 1].clone())
+    } else {
+        None
+    };
 
     // --- infer + VERIFY G from the prefix (needs >=2 visible frames + coords) ---
     if prefix_len >= 2 && !coord_dims.is_empty() {
-        enum G { Translate(Vec<i64>), Linear(Vec<i64>) }
+        enum G {
+            Translate(Vec<i64>),
+            Linear(Vec<i64>),
+        }
         let f0 = &frames[0];
         let f1 = &frames[1];
         let g: Option<G> = if let Some(off) = infer_translate_offset(f0, f1, &coord_dims) {
-            if off.iter().all(|&x| x == 0) { None } else { Some(G::Translate(off)) }
+            if off.iter().all(|&x| x == 0) {
+                None
+            } else {
+                Some(G::Translate(off))
+            }
         } else if coord_dims.len() == 2 {
-            let bound: i64 = coord_dims.iter().filter_map(|&d| {
-                let idx = usize::try_from(d).ok()?;
-                let vs = coord_ints(f0, idx)?;
-                let mn = *vs.iter().min()?;
-                vs.iter().map(|v| (v - mn).abs()).max()
-            }).max().unwrap_or(0)
-              .max(coord_dims.iter().filter_map(|&d| {
-                let idx = usize::try_from(d).ok()?;
-                let vs = coord_ints(f1, idx)?;
-                let mn = *vs.iter().min()?;
-                vs.iter().map(|v| (v - mn).abs()).max()
-              }).max().unwrap_or(0))
-              .min(max_b.max(0));
+            let bound: i64 = coord_dims
+                .iter()
+                .filter_map(|&d| {
+                    let idx = usize::try_from(d).ok()?;
+                    let vs = coord_ints(f0, idx)?;
+                    let mn = *vs.iter().min()?;
+                    vs.iter().map(|v| (v - mn).abs()).max()
+                })
+                .max()
+                .unwrap_or(0)
+                .max(
+                    coord_dims
+                        .iter()
+                        .filter_map(|&d| {
+                            let idx = usize::try_from(d).ok()?;
+                            let vs = coord_ints(f1, idx)?;
+                            let mn = *vs.iter().min()?;
+                            vs.iter().map(|v| (v - mn).abs()).max()
+                        })
+                        .max()
+                        .unwrap_or(0),
+                )
+                .min(max_b.max(0));
             let mut found: Option<Vec<i64>> = None;
-            'search: for m00 in -bound..=bound { for m01 in -bound..=bound {
-            for m10 in -bound..=bound { for m11 in -bound..=bound {
-                if m00 == 1 && m01 == 0 && m10 == 0 && m11 == 1 { continue; }
-                checked += 1;
-                let m = vec![m00, m01, m10, m11];
-                if let Some(t) = apply_linear_once(f0, &coord_dims, &m) {
-                    if frames_equal(&t, f1) { found = Some(m); break 'search; }
+            'search: for m00 in -bound..=bound {
+                for m01 in -bound..=bound {
+                    for m10 in -bound..=bound {
+                        for m11 in -bound..=bound {
+                            if m00 == 1 && m01 == 0 && m10 == 0 && m11 == 1 {
+                                continue;
+                            }
+                            checked += 1;
+                            let m = vec![m00, m01, m10, m11];
+                            if let Some(t) = apply_linear_once(f0, &coord_dims, &m) {
+                                if frames_equal(&t, f1) {
+                                    found = Some(m);
+                                    break 'search;
+                                }
+                            }
+                        }
+                    }
                 }
-            }}}}
+            }
             found.map(G::Linear)
-        } else { None };
+        } else {
+            None
+        };
 
         if let Some(g) = &g {
             let step = |sig: &[Value]| -> Option<Vec<Value>> {
@@ -4364,20 +5025,37 @@ pub(crate) fn eval_blink_bridge(
             for i in 0..prefix_len - 1 {
                 match step(&frames[i]) {
                     Some(pred) if frames_equal(&pred, &frames[i + 1]) => confirm_run += 1,
-                    _ => { ok = false; break; }
+                    _ => {
+                        ok = false;
+                        break;
+                    }
                 }
             }
-            explained = ok;    // a SINGLE generator carried the WHOLE prefix
+            explained = ok; // a SINGLE generator carried the WHOLE prefix
             match g {
-                G::Translate(off) => { kind = "translate"; offset = off.clone(); }
-                G::Linear(m) => { kind = "linear"; matrix = m.clone(); }
+                G::Translate(off) => {
+                    kind = "translate";
+                    offset = off.clone();
+                }
+                G::Linear(m) => {
+                    kind = "linear";
+                    matrix = m.clone();
+                }
             }
         }
     }
     // Only a generator that carried the whole prefix earns its descriptor; an
     // unconstrained guess reports the freeze.
-    if !explained { kind = "freeze"; offset.clear(); matrix.clear(); }
-    let f0v: Vec<Value> = if prefix_len >= 1 { frames[0].clone() } else { Vec::new() };
+    if !explained {
+        kind = "freeze";
+        offset.clear();
+        matrix.clear();
+    }
+    let f0v: Vec<Value> = if prefix_len >= 1 {
+        frames[0].clone()
+    } else {
+        Vec::new()
+    };
 
     // --- the GUESS: continued generator if CONSTRAINED, else the freeze default ---
     let guess_at = |t: i64| -> Vec<Value> {
@@ -4405,7 +5083,11 @@ pub(crate) fn eval_blink_bridge(
     //     — no constant; it DECAYS with the gap (extrapolating further, blind). ---
     let support = if explained { confirm_run } else { 0 };
     let confidence: f64 = if gap == 0 {
-        if support > 0 { 1.0 } else { 0.0 }
+        if support > 0 {
+            1.0
+        } else {
+            0.0
+        }
     } else {
         support as f64 / (support as f64 + gap as f64)
     };
@@ -4417,7 +5099,9 @@ pub(crate) fn eval_blink_bridge(
     let mut correction: i64 = 0;
     let mut had_resume = false;
     for i in resume_start..frames.len() {
-        if frames[i].is_empty() { continue; }
+        if frames[i].is_empty() {
+            continue;
+        }
         had_resume = true;
         let guess = guess_at(i as i64);
         if !frames_equal(&guess, &frames[i]) {
@@ -4431,24 +5115,29 @@ pub(crate) fn eval_blink_bridge(
     let offset_out: SmallVec<[Value; 4]> = offset.iter().map(|x| Value::Int(*x)).collect();
     let matrix_out: SmallVec<[Value; 4]> = matrix.iter().map(|x| Value::Int(*x)).collect();
     let coord_out: SmallVec<[Value; 4]> = coord_dims.iter().map(|d| Value::Int(*d)).collect();
-    finish(Value::Dict(Arc::from(vec![
-        (surf("explained"), Value::Bool(explained)),
-        (surf("constrained"), Value::Bool(explained)),
-        (surf("confidence"), Value::Float(confidence)),
-        (surf("kind"), surf(kind)),
-        (surf("offset"), Value::Tuple(Arc::new(offset_out))),
-        (surf("matrix"), Value::Tuple(Arc::new(matrix_out))),
-        (surf("coord_dims"), Value::Tuple(Arc::new(coord_out))),
-        (surf("prefix_len"), Value::Int(prefix_len as i64)),
-        (surf("confirm_run"), Value::Int(confirm_run)),
-        (surf("gap"), Value::Int(gap as i64)),
-        (surf("bridged"), Value::Tuple(Arc::new(bridged))),
-        (surf("frozen"), Value::Tuple(Arc::new(frozen))),
-        (surf("diverged_at"), Value::Int(diverged_at)),
-        (surf("correction"), Value::Int(correction)),
-        (surf("resume_ok"), Value::Bool(resume_ok)),
-        (surf("checked"), Value::Int(checked)),
-    ])), field, ctx.interner, None)
+    finish(
+        Value::Dict(Arc::from(vec![
+            (surf("explained"), Value::Bool(explained)),
+            (surf("constrained"), Value::Bool(explained)),
+            (surf("confidence"), Value::Float(confidence)),
+            (surf("kind"), surf(kind)),
+            (surf("offset"), Value::Tuple(Arc::new(offset_out))),
+            (surf("matrix"), Value::Tuple(Arc::new(matrix_out))),
+            (surf("coord_dims"), Value::Tuple(Arc::new(coord_out))),
+            (surf("prefix_len"), Value::Int(prefix_len as i64)),
+            (surf("confirm_run"), Value::Int(confirm_run)),
+            (surf("gap"), Value::Int(gap as i64)),
+            (surf("bridged"), Value::Tuple(Arc::new(bridged))),
+            (surf("frozen"), Value::Tuple(Arc::new(frozen))),
+            (surf("diverged_at"), Value::Int(diverged_at)),
+            (surf("correction"), Value::Int(correction)),
+            (surf("resume_ok"), Value::Bool(resume_ok)),
+            (surf("checked"), Value::Int(checked)),
+        ])),
+        field,
+        ctx.interner,
+        None,
+    )
 }
 
 /// Multiset symmetric-difference cell count between two frames — the magnitude of
@@ -4461,9 +5150,18 @@ fn frames_symdiff(a: &[Value], b: &[Value]) -> i64 {
     let (mut i, mut j, mut d) = (0usize, 0usize, 0i64);
     while i < sa.len() && j < sb.len() {
         match cmp_value(&sa[i], &sb[j]) {
-            std::cmp::Ordering::Equal => { i += 1; j += 1; }
-            std::cmp::Ordering::Less => { d += 1; i += 1; }
-            std::cmp::Ordering::Greater => { d += 1; j += 1; }
+            std::cmp::Ordering::Equal => {
+                i += 1;
+                j += 1;
+            }
+            std::cmp::Ordering::Less => {
+                d += 1;
+                i += 1;
+            }
+            std::cmp::Ordering::Greater => {
+                d += 1;
+                j += 1;
+            }
         }
     }
     d + (sa.len() - i) as i64 + (sb.len() - j) as i64
@@ -4515,17 +5213,29 @@ pub(crate) fn eval_gap_abduce(
     let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
     let mut next_id: u32 = u32::MAX;
     let parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
-    let coord_dims: Vec<i64> = parts.iter()
+    let coord_dims: Vec<i64> = parts
+        .iter()
         .find_map(|p| p.dim_types.as_ref())
-        .map(|dts| dts.iter().enumerate().filter(|(_, t)| t.starts_with("coord:")).map(|(i, _)| i as i64).collect())
+        .map(|dts| {
+            dts.iter()
+                .enumerate()
+                .filter(|(_, t)| t.starts_with("coord:"))
+                .map(|(i, _)| i as i64)
+                .collect()
+        })
         .unwrap_or_default();
 
     let seq_val = evaluate(arena, sequence_idx, env, ctx);
     let frames: Vec<Vec<Value>> = match &seq_val {
-        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => seq_val.iter().map(|f| match f {
-            Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => f.iter().cloned().collect(),
-            _ => Vec::new(),
-        }).collect(),
+        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => seq_val
+            .iter()
+            .map(|f| match f {
+                Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => {
+                    f.iter().cloned().collect()
+                }
+                _ => Vec::new(),
+            })
+            .collect(),
         _ => Vec::new(),
     };
 
@@ -4535,35 +5245,50 @@ pub(crate) fn eval_gap_abduce(
     // in the Dict BEFORE it is called — patching afterwards silently does
     // nothing on every call that asks for `total`, which is exactly the bug the
     // mechanism test caught here.)
-    let refused = |reason: &str, gap: i64, steps: i64, prefix_len: i64,
-                   checked: i64, total: &[i64], ctx: &mut EvalCtx| -> Value {
+    let refused = |reason: &str,
+                   gap: i64,
+                   steps: i64,
+                   prefix_len: i64,
+                   checked: i64,
+                   total: &[i64],
+                   ctx: &mut EvalCtx|
+     -> Value {
         let total_out: SmallVec<[Value; 4]> = total.iter().map(|x| Value::Int(*x)).collect();
-        finish(Value::Dict(Arc::from(vec![
-            (surf("explained"), Value::Bool(false)),
-            (surf("kind"), Value::None),
-            (surf("offset"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("matrix"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("coord_dims"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("gap"), Value::Int(gap)),
-            (surf("steps"), Value::Int(steps)),
-            (surf("total"), Value::Tuple(Arc::new(total_out))),
-            (surf("divisible"), Value::Bool(false)),
-            (surf("reason"), surf(reason)),
-            (surf("bridged"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("closes"), Value::Bool(false)),
-            (surf("correction"), Value::Int(-1)),
-            (surf("prefix_len"), Value::Int(prefix_len)),
-            (surf("checked"), Value::Int(checked)),
-        ])), field, ctx.interner, None)
+        finish(
+            Value::Dict(Arc::from(vec![
+                (surf("explained"), Value::Bool(false)),
+                (surf("kind"), Value::None),
+                (surf("offset"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("matrix"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("coord_dims"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("gap"), Value::Int(gap)),
+                (surf("steps"), Value::Int(steps)),
+                (surf("total"), Value::Tuple(Arc::new(total_out))),
+                (surf("divisible"), Value::Bool(false)),
+                (surf("reason"), surf(reason)),
+                (surf("bridged"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("closes"), Value::Bool(false)),
+                (surf("correction"), Value::Int(-1)),
+                (surf("prefix_len"), Value::Int(prefix_len)),
+                (surf("checked"), Value::Int(checked)),
+            ])),
+            field,
+            ctx.interner,
+            None,
+        )
     };
 
     // --- structure: leading VISIBLE prefix, a run of EMPTY (the gap), resume ---
     // Identical to `BlinkBridge`'s split, so the two Terms consume the SAME
     // stimulus encoding and their verdicts are directly comparable.
     let mut prefix_len = 0usize;
-    while prefix_len < frames.len() && !frames[prefix_len].is_empty() { prefix_len += 1; }
+    while prefix_len < frames.len() && !frames[prefix_len].is_empty() {
+        prefix_len += 1;
+    }
     let mut gap = 0usize;
-    while prefix_len + gap < frames.len() && frames[prefix_len + gap].is_empty() { gap += 1; }
+    while prefix_len + gap < frames.len() && frames[prefix_len + gap].is_empty() {
+        gap += 1;
+    }
     let mut resume_start = prefix_len + gap;
 
     // `gap == 0` — an ALL-VISIBLE sequence, no EMPTY run — is ADMISSIBLE and is
@@ -4580,16 +5305,30 @@ pub(crate) fn eval_gap_abduce(
     }
 
     // Both banks must exist.
-    if prefix_len == 0 || resume_start >= frames.len() || frames[resume_start].is_empty()
-        || coord_dims.is_empty() {
-        return refused("no_gap_structure", gap as i64, gap as i64 + 1, prefix_len as i64, 0, &[], ctx);
+    if prefix_len == 0
+        || resume_start >= frames.len()
+        || frames[resume_start].is_empty()
+        || coord_dims.is_empty()
+    {
+        return refused(
+            "no_gap_structure",
+            gap as i64,
+            gap as i64 + 1,
+            prefix_len as i64,
+            0,
+            &[],
+            ctx,
+        );
     }
     let steps = gap as i64 + 1;
     let f_before = frames[prefix_len - 1].clone();
     let f_after = frames[resume_start].clone();
 
     let mut checked: i64 = 0;
-    enum G { Translate(Vec<i64>), Linear(Vec<i64>) }
+    enum G {
+        Translate(Vec<i64>),
+        Linear(Vec<i64>),
+    }
 
     // --- THE TRANSLATE ABDUCTION: read D, then DIVIDE. No threshold. ---
     let mut total: Vec<i64> = Vec::new();
@@ -4617,32 +5356,63 @@ pub(crate) fn eval_gap_abduce(
     //     data-derived bound, accepted only on EXACT equality after `steps`
     //     applications. Tried only where the translate abduction did not land. ---
     if g.is_none() && reason != "identity" && coord_dims.len() == 2 {
-        let bound: i64 = coord_dims.iter().filter_map(|&d| {
-            let idx = usize::try_from(d).ok()?;
-            let vs = coord_ints(&f_before, idx)?;
-            let mn = *vs.iter().min()?;
-            vs.iter().map(|v| (v - mn).abs()).max()
-        }).max().unwrap_or(0)
-          .max(coord_dims.iter().filter_map(|&d| {
-            let idx = usize::try_from(d).ok()?;
-            let vs = coord_ints(&f_after, idx)?;
-            let mn = *vs.iter().min()?;
-            vs.iter().map(|v| (v - mn).abs()).max()
-          }).max().unwrap_or(0))
-          .min(max_b.max(0));
-        'search: for m00 in -bound..=bound { for m01 in -bound..=bound {
-        for m10 in -bound..=bound { for m11 in -bound..=bound {
-            if m00 == 1 && m01 == 0 && m10 == 0 && m11 == 1 { continue; }
-            checked += 1;
-            let m = vec![m00, m01, m10, m11];
-            if let Some(t) = apply_generator_k("linear", &coord_dims, &f_before, 0, &m, &[], steps) {
-                if frames_equal(&t, &f_after) { g = Some(G::Linear(m)); reason = "ok"; break 'search; }
+        let bound: i64 = coord_dims
+            .iter()
+            .filter_map(|&d| {
+                let idx = usize::try_from(d).ok()?;
+                let vs = coord_ints(&f_before, idx)?;
+                let mn = *vs.iter().min()?;
+                vs.iter().map(|v| (v - mn).abs()).max()
+            })
+            .max()
+            .unwrap_or(0)
+            .max(
+                coord_dims
+                    .iter()
+                    .filter_map(|&d| {
+                        let idx = usize::try_from(d).ok()?;
+                        let vs = coord_ints(&f_after, idx)?;
+                        let mn = *vs.iter().min()?;
+                        vs.iter().map(|v| (v - mn).abs()).max()
+                    })
+                    .max()
+                    .unwrap_or(0),
+            )
+            .min(max_b.max(0));
+        'search: for m00 in -bound..=bound {
+            for m01 in -bound..=bound {
+                for m10 in -bound..=bound {
+                    for m11 in -bound..=bound {
+                        if m00 == 1 && m01 == 0 && m10 == 0 && m11 == 1 {
+                            continue;
+                        }
+                        checked += 1;
+                        let m = vec![m00, m01, m10, m11];
+                        if let Some(t) =
+                            apply_generator_k("linear", &coord_dims, &f_before, 0, &m, &[], steps)
+                        {
+                            if frames_equal(&t, &f_after) {
+                                g = Some(G::Linear(m));
+                                reason = "ok";
+                                break 'search;
+                            }
+                        }
+                    }
+                }
             }
-        }}}}
+        }
     }
 
     let Some(g) = g else {
-        return refused(reason, gap as i64, steps, prefix_len as i64, checked, &total, ctx);
+        return refused(
+            reason,
+            gap as i64,
+            steps,
+            prefix_len as i64,
+            checked,
+            &total,
+            ctx,
+        );
     };
 
     let (kind, matrix, offset): (&str, Vec<i64>, Vec<i64>) = match &g {
@@ -4671,23 +5441,28 @@ pub(crate) fn eval_gap_abduce(
     let matrix_out: SmallVec<[Value; 4]> = matrix.iter().map(|x| Value::Int(*x)).collect();
     let coord_out: SmallVec<[Value; 4]> = coord_dims.iter().map(|d| Value::Int(*d)).collect();
     let total_out: SmallVec<[Value; 4]> = total.iter().map(|x| Value::Int(*x)).collect();
-    finish(Value::Dict(Arc::from(vec![
-        (surf("explained"), Value::Bool(true)),
-        (surf("kind"), surf(kind)),
-        (surf("offset"), Value::Tuple(Arc::new(offset_out))),
-        (surf("matrix"), Value::Tuple(Arc::new(matrix_out))),
-        (surf("coord_dims"), Value::Tuple(Arc::new(coord_out))),
-        (surf("gap"), Value::Int(gap as i64)),
-        (surf("steps"), Value::Int(steps)),
-        (surf("total"), Value::Tuple(Arc::new(total_out))),
-        (surf("divisible"), Value::Bool(divisible)),
-        (surf("reason"), surf(reason)),
-        (surf("bridged"), Value::Tuple(Arc::new(bridged))),
-        (surf("closes"), Value::Bool(closes)),
-        (surf("correction"), Value::Int(correction)),
-        (surf("prefix_len"), Value::Int(prefix_len as i64)),
-        (surf("checked"), Value::Int(checked)),
-    ])), field, ctx.interner, None)
+    finish(
+        Value::Dict(Arc::from(vec![
+            (surf("explained"), Value::Bool(true)),
+            (surf("kind"), surf(kind)),
+            (surf("offset"), Value::Tuple(Arc::new(offset_out))),
+            (surf("matrix"), Value::Tuple(Arc::new(matrix_out))),
+            (surf("coord_dims"), Value::Tuple(Arc::new(coord_out))),
+            (surf("gap"), Value::Int(gap as i64)),
+            (surf("steps"), Value::Int(steps)),
+            (surf("total"), Value::Tuple(Arc::new(total_out))),
+            (surf("divisible"), Value::Bool(divisible)),
+            (surf("reason"), surf(reason)),
+            (surf("bridged"), Value::Tuple(Arc::new(bridged))),
+            (surf("closes"), Value::Bool(closes)),
+            (surf("correction"), Value::Int(correction)),
+            (surf("prefix_len"), Value::Int(prefix_len as i64)),
+            (surf("checked"), Value::Int(checked)),
+        ])),
+        field,
+        ctx.interner,
+        None,
+    )
 }
 
 /// The COORDINATE key of a signature cell: its coordinate slots alone, in slot
@@ -4697,11 +5472,16 @@ pub(crate) fn eval_gap_abduce(
 /// tolerance: a "close enough" radius would be a CROSS-frame quantity (a metric
 /// between frames) smuggled into a single frame's coordinates.
 fn coord_key(cell: &Value, coord_idxs: &[usize]) -> Option<Vec<Value>> {
-    let (Value::Tuple(t) | Value::List(t)) = cell else { return None };
-    Some(t.iter().enumerate()
-        .filter(|(k, _)| coord_idxs.contains(k))
-        .map(|(_, v)| v.clone())
-        .collect())
+    let (Value::Tuple(t) | Value::List(t)) = cell else {
+        return None;
+    };
+    Some(
+        t.iter()
+            .enumerate()
+            .filter(|(k, _)| coord_idxs.contains(k))
+            .map(|(_, v)| v.clone())
+            .collect(),
+    )
 }
 
 /// Evaluate `GapVerify` — THE ABDUCED INTERMEDIATES, CHECKED.
@@ -4730,18 +5510,33 @@ pub(crate) fn eval_gap_verify(
     let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
     let mut next_id: u32 = u32::MAX;
     let parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
-    let coord_dims: Vec<i64> = parts.iter()
+    let coord_dims: Vec<i64> = parts
+        .iter()
         .find_map(|p| p.dim_types.as_ref())
-        .map(|dts| dts.iter().enumerate().filter(|(_, t)| t.starts_with("coord:")).map(|(i, _)| i as i64).collect())
+        .map(|dts| {
+            dts.iter()
+                .enumerate()
+                .filter(|(_, t)| t.starts_with("coord:"))
+                .map(|(i, _)| i as i64)
+                .collect()
+        })
         .unwrap_or_default();
-    let coord_idxs: Vec<usize> = coord_dims.iter().filter_map(|&d| usize::try_from(d).ok()).collect();
+    let coord_idxs: Vec<usize> = coord_dims
+        .iter()
+        .filter_map(|&d| usize::try_from(d).ok())
+        .collect();
 
     let seq_val = evaluate(arena, sequence_idx, env, ctx);
     let frames: Vec<Vec<Value>> = match &seq_val {
-        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => seq_val.iter().map(|f| match f {
-            Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => f.iter().cloned().collect(),
-            _ => Vec::new(),
-        }).collect(),
+        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => seq_val
+            .iter()
+            .map(|f| match f {
+                Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => {
+                    f.iter().cloned().collect()
+                }
+                _ => Vec::new(),
+            })
+            .collect(),
         _ => Vec::new(),
     };
 
@@ -4754,39 +5549,70 @@ pub(crate) fn eval_gap_verify(
     // GUARD: `predicted == 0` on an `unverified` verdict would mean nothing was
     // ever compared.
     #[allow(clippy::too_many_arguments)]
-    fn refused(reason: &str, gap: i64, steps: i64, prefix_len: i64, checked: i64,
-               total: &[i64], ticks: i64, predicted: i64, covered: i64,
-               surfaces: i64, hidden: i64, field: Sym, ctx: &mut EvalCtx) -> Value {
+    fn refused(
+        reason: &str,
+        gap: i64,
+        steps: i64,
+        prefix_len: i64,
+        checked: i64,
+        total: &[i64],
+        ticks: i64,
+        predicted: i64,
+        covered: i64,
+        surfaces: i64,
+        hidden: i64,
+        field: Sym,
+        ctx: &mut EvalCtx,
+    ) -> Value {
         let total_out: SmallVec<[Value; 4]> = total.iter().map(|x| Value::Int(*x)).collect();
-        finish(Value::Dict(Arc::from(vec![
-            (surf("explained"), Value::Bool(false)),
-            (surf("abduced"), Value::Bool(false)),
-            (surf("verified"), Value::Bool(false)),
-            (surf("violations"), Value::Int(predicted - covered)),
-            (surf("ticks"), Value::Int(ticks)),
-            (surf("predicted"), Value::Int(predicted)),
-            (surf("covered"), Value::Int(covered)),
-            (surf("kind"), Value::None),
-            (surf("offset"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("matrix"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("coord_dims"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("gap"), Value::Int(gap)),
-            (surf("steps"), Value::Int(steps)),
-            (surf("total"), Value::Tuple(Arc::new(total_out))),
-            (surf("divisible"), Value::Bool(false)),
-            (surf("reason"), surf(reason)),
-            (surf("bridged"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("closes"), Value::Bool(false)),
-            (surf("correction"), Value::Int(-1)),
-            (surf("prefix_len"), Value::Int(prefix_len)),
-            (surf("checked"), Value::Int(checked)),
-            (surf("surfaces"), Value::Int(surfaces)),
-            (surf("hidden"), Value::Int(hidden)),
-        ])), field, ctx.interner, None)
+        finish(
+            Value::Dict(Arc::from(vec![
+                (surf("explained"), Value::Bool(false)),
+                (surf("abduced"), Value::Bool(false)),
+                (surf("verified"), Value::Bool(false)),
+                (surf("violations"), Value::Int(predicted - covered)),
+                (surf("ticks"), Value::Int(ticks)),
+                (surf("predicted"), Value::Int(predicted)),
+                (surf("covered"), Value::Int(covered)),
+                (surf("kind"), Value::None),
+                (surf("offset"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("matrix"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("coord_dims"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("gap"), Value::Int(gap)),
+                (surf("steps"), Value::Int(steps)),
+                (surf("total"), Value::Tuple(Arc::new(total_out))),
+                (surf("divisible"), Value::Bool(false)),
+                (surf("reason"), surf(reason)),
+                (surf("bridged"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("closes"), Value::Bool(false)),
+                (surf("correction"), Value::Int(-1)),
+                (surf("prefix_len"), Value::Int(prefix_len)),
+                (surf("checked"), Value::Int(checked)),
+                (surf("surfaces"), Value::Int(surfaces)),
+                (surf("hidden"), Value::Int(hidden)),
+            ])),
+            field,
+            ctx.interner,
+            None,
+        )
     }
 
     if frames.len() < 2 || coord_dims.is_empty() {
-        return refused("no_gap_structure", 0, 1, 0, 0, &[], 0, 0, 0, 0, 0, field, ctx);
+        return refused(
+            "no_gap_structure",
+            0,
+            1,
+            0,
+            0,
+            &[],
+            0,
+            0,
+            0,
+            0,
+            0,
+            field,
+            ctx,
+        );
     }
 
     // --- the SURFACE-SET split. An EMPTY frame's key set is `{}`, a strict
@@ -4796,22 +5622,43 @@ pub(crate) fn eval_gap_verify(
         let mut out: Vec<Vec<Value>> = Vec::new();
         for c in f {
             if let Some(k) = surface_key(c, &coord_idxs) {
-                if !out.contains(&k) { out.push(k); }
+                if !out.contains(&k) {
+                    out.push(k);
+                }
             }
         }
         out
     };
     let full = keys_of(&frames[0]);
     if full.is_empty() {
-        return refused("no_gap_structure", 0, 1, 0, 0, &[], 0, 0, 0, 0, 0, field, ctx);
+        return refused(
+            "no_gap_structure",
+            0,
+            1,
+            0,
+            0,
+            &[],
+            0,
+            0,
+            0,
+            0,
+            0,
+            field,
+            ctx,
+        );
     }
     let same = |ks: &[Vec<Value>]| ks.len() == full.len() && ks.iter().all(|k| full.contains(k));
-    let strict_subset = |ks: &[Vec<Value>]| ks.len() < full.len() && ks.iter().all(|k| full.contains(k));
+    let strict_subset =
+        |ks: &[Vec<Value>]| ks.len() < full.len() && ks.iter().all(|k| full.contains(k));
 
     let mut prefix_len = 0usize;
-    while prefix_len < frames.len() && same(&keys_of(&frames[prefix_len])) { prefix_len += 1; }
+    while prefix_len < frames.len() && same(&keys_of(&frames[prefix_len])) {
+        prefix_len += 1;
+    }
     let mut gap = 0usize;
-    while prefix_len + gap < frames.len() && strict_subset(&keys_of(&frames[prefix_len + gap])) { gap += 1; }
+    while prefix_len + gap < frames.len() && strict_subset(&keys_of(&frames[prefix_len + gap])) {
+        gap += 1;
+    }
     let mut resume_start = prefix_len + gap;
 
     // `gap == 0` — no vanish run at all — is the DEGENERATE case, handled on
@@ -4823,13 +5670,28 @@ pub(crate) fn eval_gap_verify(
         resume_start = frames.len() - 1;
     }
     if prefix_len == 0 || resume_start >= frames.len() || !same(&keys_of(&frames[resume_start])) {
-        return refused("no_gap_structure", gap as i64, gap as i64 + 1, prefix_len as i64,
-                       0, &[], 0, 0, 0, full.len() as i64, 0, field, ctx);
+        return refused(
+            "no_gap_structure",
+            gap as i64,
+            gap as i64 + 1,
+            prefix_len as i64,
+            0,
+            &[],
+            0,
+            0,
+            0,
+            full.len() as i64,
+            0,
+            field,
+            ctx,
+        );
     }
     let steps = gap as i64 + 1;
     let f_before = frames[prefix_len - 1].clone();
     let f_after = frames[resume_start].clone();
-    let gap_frames: Vec<Vec<Value>> = (prefix_len..prefix_len + gap).map(|i| frames[i].clone()).collect();
+    let gap_frames: Vec<Vec<Value>> = (prefix_len..prefix_len + gap)
+        .map(|i| frames[i].clone())
+        .collect();
 
     // --- HIDDEN: present at both banks, absent in EVERY gap frame, and the SAME
     //     set at every tick (a surface that vanishes and returns mid-gap is not
@@ -4837,13 +5699,30 @@ pub(crate) fn eval_gap_verify(
     let mut hidden: Vec<Vec<Value>> = Vec::new();
     if gap > 0 {
         let first = keys_of(&gap_frames[0]);
-        hidden = full.iter().filter(|k| !first.contains(k)).cloned().collect();
+        hidden = full
+            .iter()
+            .filter(|k| !first.contains(k))
+            .cloned()
+            .collect();
         for gf in &gap_frames {
             let ks = keys_of(gf);
             let h: Vec<Vec<Value>> = full.iter().filter(|k| !ks.contains(k)).cloned().collect();
             if h != hidden {
-                return refused("inconsistent_gap", gap as i64, steps, prefix_len as i64,
-                               0, &[], 0, 0, 0, full.len() as i64, hidden.len() as i64, field, ctx);
+                return refused(
+                    "inconsistent_gap",
+                    gap as i64,
+                    steps,
+                    prefix_len as i64,
+                    0,
+                    &[],
+                    0,
+                    0,
+                    0,
+                    full.len() as i64,
+                    hidden.len() as i64,
+                    field,
+                    ctx,
+                );
             }
         }
     }
@@ -4853,8 +5732,14 @@ pub(crate) fn eval_gap_verify(
     //     criterion `TimeInfer` applies); the MOVING ones are those with a
     //     non-zero displacement, and exactly one is admitted. ---
     let cells_of = |f: &[Value], ks: &[Vec<Value>]| -> Vec<Value> {
-        f.iter().filter(|c| surface_key(c, &coord_idxs).map(|k| ks.contains(&k)).unwrap_or(false))
-            .cloned().collect()
+        f.iter()
+            .filter(|c| {
+                surface_key(c, &coord_idxs)
+                    .map(|k| ks.contains(&k))
+                    .unwrap_or(false)
+            })
+            .cloned()
+            .collect()
     };
     let mut moving: Vec<Vec<Value>> = Vec::new();
     let mut total: Vec<i64> = Vec::new();
@@ -4863,23 +5748,82 @@ pub(crate) fn eval_gap_verify(
         let b = cells_of(&f_before, &one);
         let a = cells_of(&f_after, &one);
         match infer_translate_offset(&b, &a, &coord_dims) {
-            None => return refused("not_rigid", gap as i64, steps, prefix_len as i64,
-                                   0, &[], 0, 0, 0, full.len() as i64, hidden.len() as i64, field, ctx),
-            Some(d) => if d.iter().any(|&x| x != 0) { moving.push(k.clone()); total = d; },
+            None => {
+                return refused(
+                    "not_rigid",
+                    gap as i64,
+                    steps,
+                    prefix_len as i64,
+                    0,
+                    &[],
+                    0,
+                    0,
+                    0,
+                    full.len() as i64,
+                    hidden.len() as i64,
+                    field,
+                    ctx,
+                )
+            }
+            Some(d) => {
+                if d.iter().any(|&x| x != 0) {
+                    moving.push(k.clone());
+                    total = d;
+                }
+            }
         }
     }
     if moving.is_empty() {
-        return refused("identity", gap as i64, steps, prefix_len as i64,
-                       0, &[], 0, 0, 0, full.len() as i64, hidden.len() as i64, field, ctx);
+        return refused(
+            "identity",
+            gap as i64,
+            steps,
+            prefix_len as i64,
+            0,
+            &[],
+            0,
+            0,
+            0,
+            full.len() as i64,
+            hidden.len() as i64,
+            field,
+            ctx,
+        );
     }
     if moving.len() > 1 {
-        return refused("multi_motion", gap as i64, steps, prefix_len as i64,
-                       0, &[], 0, 0, 0, full.len() as i64, hidden.len() as i64, field, ctx);
+        return refused(
+            "multi_motion",
+            gap as i64,
+            steps,
+            prefix_len as i64,
+            0,
+            &[],
+            0,
+            0,
+            0,
+            full.len() as i64,
+            hidden.len() as i64,
+            field,
+            ctx,
+        );
     }
     // WHAT VANISHED MUST BE WHAT MOVED.
     if gap > 0 && !(hidden.len() == moving.len() && hidden.iter().all(|k| moving.contains(k))) {
-        return refused("hidden_mismatch", gap as i64, steps, prefix_len as i64,
-                       0, &[], 0, 0, 0, full.len() as i64, hidden.len() as i64, field, ctx);
+        return refused(
+            "hidden_mismatch",
+            gap as i64,
+            steps,
+            prefix_len as i64,
+            0,
+            &[],
+            0,
+            0,
+            0,
+            full.len() as i64,
+            hidden.len() as i64,
+            field,
+            ctx,
+        );
     }
 
     let fig_before = cells_of(&f_before, &moving);
@@ -4888,7 +5832,10 @@ pub(crate) fn eval_gap_verify(
     // --- THE DIVISIBILITY TEST, UNCHANGED FROM `GapAbduce`: read D, then
     //     DIVIDE. Exact integer arithmetic; no tolerance and nowhere to put one. ---
     let mut checked: i64 = 0;
-    enum G { Translate(Vec<i64>), Linear(Vec<i64>) }
+    enum G {
+        Translate(Vec<i64>),
+        Linear(Vec<i64>),
+    }
     let mut divisible = false;
     let mut reason = "not_rigid";
     let mut g: Option<G> = None;
@@ -4903,33 +5850,69 @@ pub(crate) fn eval_gap_verify(
     // The same `steps`-th-root enumeration in the integer 2x2 linear class, over
     // the same data-derived bound, accepted only on EXACT equality.
     if g.is_none() && coord_dims.len() == 2 {
-        let bound: i64 = coord_dims.iter().filter_map(|&d| {
-            let idx = usize::try_from(d).ok()?;
-            let vs = coord_ints(&fig_before, idx)?;
-            let mn = *vs.iter().min()?;
-            vs.iter().map(|v| (v - mn).abs()).max()
-        }).max().unwrap_or(0)
-          .max(coord_dims.iter().filter_map(|&d| {
-            let idx = usize::try_from(d).ok()?;
-            let vs = coord_ints(&fig_after, idx)?;
-            let mn = *vs.iter().min()?;
-            vs.iter().map(|v| (v - mn).abs()).max()
-          }).max().unwrap_or(0))
-          .min(max_b.max(0));
-        'search: for m00 in -bound..=bound { for m01 in -bound..=bound {
-        for m10 in -bound..=bound { for m11 in -bound..=bound {
-            if m00 == 1 && m01 == 0 && m10 == 0 && m11 == 1 { continue; }
-            checked += 1;
-            let m = vec![m00, m01, m10, m11];
-            if let Some(t) = apply_generator_k("linear", &coord_dims, &fig_before, 0, &m, &[], steps) {
-                if frames_equal(&t, &fig_after) { g = Some(G::Linear(m)); reason = "ok"; break 'search; }
+        let bound: i64 = coord_dims
+            .iter()
+            .filter_map(|&d| {
+                let idx = usize::try_from(d).ok()?;
+                let vs = coord_ints(&fig_before, idx)?;
+                let mn = *vs.iter().min()?;
+                vs.iter().map(|v| (v - mn).abs()).max()
+            })
+            .max()
+            .unwrap_or(0)
+            .max(
+                coord_dims
+                    .iter()
+                    .filter_map(|&d| {
+                        let idx = usize::try_from(d).ok()?;
+                        let vs = coord_ints(&fig_after, idx)?;
+                        let mn = *vs.iter().min()?;
+                        vs.iter().map(|v| (v - mn).abs()).max()
+                    })
+                    .max()
+                    .unwrap_or(0),
+            )
+            .min(max_b.max(0));
+        'search: for m00 in -bound..=bound {
+            for m01 in -bound..=bound {
+                for m10 in -bound..=bound {
+                    for m11 in -bound..=bound {
+                        if m00 == 1 && m01 == 0 && m10 == 0 && m11 == 1 {
+                            continue;
+                        }
+                        checked += 1;
+                        let m = vec![m00, m01, m10, m11];
+                        if let Some(t) =
+                            apply_generator_k("linear", &coord_dims, &fig_before, 0, &m, &[], steps)
+                        {
+                            if frames_equal(&t, &fig_after) {
+                                g = Some(G::Linear(m));
+                                reason = "ok";
+                                break 'search;
+                            }
+                        }
+                    }
+                }
             }
-        }}}}
+        }
     }
 
     let Some(g) = g else {
-        return refused(reason, gap as i64, steps, prefix_len as i64, checked, &total,
-                       0, 0, 0, full.len() as i64, hidden.len() as i64, field, ctx);
+        return refused(
+            reason,
+            gap as i64,
+            steps,
+            prefix_len as i64,
+            checked,
+            &total,
+            0,
+            0,
+            0,
+            full.len() as i64,
+            hidden.len() as i64,
+            field,
+            ctx,
+        );
     };
 
     let (kind, matrix, offset): (&str, Vec<i64>, Vec<i64>) = match &g {
@@ -4947,12 +5930,16 @@ pub(crate) fn eval_gap_verify(
     for t in 1..=gap as i64 {
         let f = apply_generator_k(kind, &coord_dims, &fig_before, 0, &matrix, &offset, t)
             .unwrap_or_default();
-        let observed: Vec<Vec<Value>> = gap_frames[(t - 1) as usize].iter()
-            .filter_map(|c| coord_key(c, &coord_idxs)).collect();
+        let observed: Vec<Vec<Value>> = gap_frames[(t - 1) as usize]
+            .iter()
+            .filter_map(|c| coord_key(c, &coord_idxs))
+            .collect();
         for cell in &f {
             predicted += 1;
             if let Some(ck) = coord_key(cell, &coord_idxs) {
-                if observed.contains(&ck) { covered += 1; }
+                if observed.contains(&ck) {
+                    covered += 1;
+                }
             }
         }
         ticks += 1;
@@ -4971,31 +5958,36 @@ pub(crate) fn eval_gap_verify(
     let matrix_out: SmallVec<[Value; 4]> = matrix.iter().map(|x| Value::Int(*x)).collect();
     let coord_out: SmallVec<[Value; 4]> = coord_dims.iter().map(|d| Value::Int(*d)).collect();
     let total_out: SmallVec<[Value; 4]> = total.iter().map(|x| Value::Int(*x)).collect();
-    finish(Value::Dict(Arc::from(vec![
-        (surf("explained"), Value::Bool(verified)),
-        (surf("abduced"), Value::Bool(true)),
-        (surf("verified"), Value::Bool(verified)),
-        (surf("violations"), Value::Int(violations)),
-        (surf("ticks"), Value::Int(ticks)),
-        (surf("predicted"), Value::Int(predicted)),
-        (surf("covered"), Value::Int(covered)),
-        (surf("kind"), surf(kind)),
-        (surf("offset"), Value::Tuple(Arc::new(offset_out))),
-        (surf("matrix"), Value::Tuple(Arc::new(matrix_out))),
-        (surf("coord_dims"), Value::Tuple(Arc::new(coord_out))),
-        (surf("gap"), Value::Int(gap as i64)),
-        (surf("steps"), Value::Int(steps)),
-        (surf("total"), Value::Tuple(Arc::new(total_out))),
-        (surf("divisible"), Value::Bool(divisible)),
-        (surf("reason"), surf(out_reason)),
-        (surf("bridged"), Value::Tuple(Arc::new(bridged))),
-        (surf("closes"), Value::Bool(closes)),
-        (surf("correction"), Value::Int(correction)),
-        (surf("prefix_len"), Value::Int(prefix_len as i64)),
-        (surf("checked"), Value::Int(checked)),
-        (surf("surfaces"), Value::Int(full.len() as i64)),
-        (surf("hidden"), Value::Int(hidden.len() as i64)),
-    ])), field, ctx.interner, None)
+    finish(
+        Value::Dict(Arc::from(vec![
+            (surf("explained"), Value::Bool(verified)),
+            (surf("abduced"), Value::Bool(true)),
+            (surf("verified"), Value::Bool(verified)),
+            (surf("violations"), Value::Int(violations)),
+            (surf("ticks"), Value::Int(ticks)),
+            (surf("predicted"), Value::Int(predicted)),
+            (surf("covered"), Value::Int(covered)),
+            (surf("kind"), surf(kind)),
+            (surf("offset"), Value::Tuple(Arc::new(offset_out))),
+            (surf("matrix"), Value::Tuple(Arc::new(matrix_out))),
+            (surf("coord_dims"), Value::Tuple(Arc::new(coord_out))),
+            (surf("gap"), Value::Int(gap as i64)),
+            (surf("steps"), Value::Int(steps)),
+            (surf("total"), Value::Tuple(Arc::new(total_out))),
+            (surf("divisible"), Value::Bool(divisible)),
+            (surf("reason"), surf(out_reason)),
+            (surf("bridged"), Value::Tuple(Arc::new(bridged))),
+            (surf("closes"), Value::Bool(closes)),
+            (surf("correction"), Value::Int(correction)),
+            (surf("prefix_len"), Value::Int(prefix_len as i64)),
+            (surf("checked"), Value::Int(checked)),
+            (surf("surfaces"), Value::Int(full.len() as i64)),
+            (surf("hidden"), Value::Int(hidden.len() as i64)),
+        ])),
+        field,
+        ctx.interner,
+        None,
+    )
 }
 
 /// The SURFACE key of a signature cell: its non-coordinate slots
@@ -5006,11 +5998,16 @@ pub(crate) fn eval_gap_verify(
 /// region; DEPTH is NOT read off it (appearance is observable) — depth is read
 /// off the surface's MOTION.
 fn surface_key(cell: &Value, coord_idxs: &[usize]) -> Option<Vec<Value>> {
-    let (Value::Tuple(t) | Value::List(t)) = cell else { return None };
-    Some(t.iter().enumerate()
-        .filter(|(k, _)| !coord_idxs.contains(k))
-        .map(|(_, v)| v.clone())
-        .collect())
+    let (Value::Tuple(t) | Value::List(t)) = cell else {
+        return None;
+    };
+    Some(
+        t.iter()
+            .enumerate()
+            .filter(|(k, _)| !coord_idxs.contains(k))
+            .map(|(_, v)| v.clone())
+            .collect(),
+    )
 }
 
 /// Partition a frame's cells into surfaces keyed by `surface_key`, preserving
@@ -5019,10 +6016,15 @@ fn partition_by_surface(frame: &[Value], coord_idxs: &[usize]) -> Vec<(Vec<Value
     let mut order: Vec<Vec<Value>> = Vec::new();
     let mut groups: Vec<Vec<Value>> = Vec::new();
     for cell in frame {
-        let Some(key) = surface_key(cell, coord_idxs) else { continue };
+        let Some(key) = surface_key(cell, coord_idxs) else {
+            continue;
+        };
         match order.iter().position(|k| k == &key) {
             Some(i) => groups[i].push(cell.clone()),
-            None => { order.push(key); groups.push(vec![cell.clone()]); }
+            None => {
+                order.push(key);
+                groups.push(vec![cell.clone()]);
+            }
         }
     }
     order.into_iter().zip(groups).collect()
@@ -5078,33 +6080,53 @@ pub(crate) fn eval_depth_infer(
     let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
     let mut next_id: u32 = u32::MAX;
     let parts = load_parts(ctx, codebook_type, &mut extra, &mut next_id);
-    let coord_dims: Vec<i64> = parts.iter()
+    let coord_dims: Vec<i64> = parts
+        .iter()
         .find_map(|p| p.dim_types.as_ref())
-        .map(|dts| dts.iter().enumerate().filter(|(_, t)| t.starts_with("coord:")).map(|(i, _)| i as i64).collect())
+        .map(|dts| {
+            dts.iter()
+                .enumerate()
+                .filter(|(_, t)| t.starts_with("coord:"))
+                .map(|(i, _)| i as i64)
+                .collect()
+        })
         .unwrap_or_default();
-    let coord_idxs: Vec<usize> = coord_dims.iter().filter_map(|&d| usize::try_from(d).ok()).collect();
+    let coord_idxs: Vec<usize> = coord_dims
+        .iter()
+        .filter_map(|&d| usize::try_from(d).ok())
+        .collect();
 
     let seq_val = evaluate(arena, sequence_idx, env, ctx);
     let frames: Vec<Vec<Value>> = match &seq_val {
-        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => seq_val.iter().map(|f| match f {
-            Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => f.iter().cloned().collect(),
-            _ => Vec::new(),
-        }).collect(),
+        Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => seq_val
+            .iter()
+            .map(|f| match f {
+                Value::Tuple(_) | Value::List(_) | Value::Set(_) | Value::FrozenSet(_) => {
+                    f.iter().cloned().collect()
+                }
+                _ => Vec::new(),
+            })
+            .collect(),
         _ => Vec::new(),
     };
 
     let unexplained = |reason: &str, checked: i64, ctx: &mut EvalCtx| -> Value {
-        finish(Value::Dict(Arc::from(vec![
-            (surf("explained"), Value::Bool(false)),
-            (surf("n_layers"), Value::Int(0)),
-            (surf("velocities"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("ordering"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("layers"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("predicted"), Value::Tuple(Arc::new(SmallVec::new()))),
-            (surf("window"), Value::Int(0)),
-            (surf("reason"), surf(reason)),
-            (surf("checked"), Value::Int(checked)),
-        ])), field, ctx.interner, None)
+        finish(
+            Value::Dict(Arc::from(vec![
+                (surf("explained"), Value::Bool(false)),
+                (surf("n_layers"), Value::Int(0)),
+                (surf("velocities"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("ordering"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("layers"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("predicted"), Value::Tuple(Arc::new(SmallVec::new()))),
+                (surf("window"), Value::Int(0)),
+                (surf("reason"), surf(reason)),
+                (surf("checked"), Value::Int(checked)),
+            ])),
+            field,
+            ctx.interner,
+            None,
+        )
     };
 
     if frames.len() < 2 || coord_idxs.is_empty() || frames.iter().any(|f| f.is_empty()) {
@@ -5131,9 +6153,11 @@ pub(crate) fn eval_depth_infer(
         // Extract this surface's cells in every frame.
         let mut sub: Vec<Vec<Value>> = Vec::with_capacity(frames.len());
         for f in &frames {
-            let cells: Vec<Value> = f.iter()
+            let cells: Vec<Value> = f
+                .iter()
                 .filter(|c| surface_key(c, &coord_idxs).as_ref() == Some(key))
-                .cloned().collect();
+                .cloned()
+                .collect();
             if cells.is_empty() {
                 return unexplained("surface_vanished", checked, ctx);
             }
@@ -5171,11 +6195,17 @@ pub(crate) fn eval_depth_infer(
     let l1 = |v: &[i64]| -> i64 { v.iter().map(|x| x.abs()).sum() };
     let mut idx: Vec<usize> = (0..keys.len()).collect();
     idx.sort_by(|&a, &b| {
-        l1(&vels[b]).cmp(&l1(&vels[a]))
+        l1(&vels[b])
+            .cmp(&l1(&vels[a]))
             .then_with(|| vels[a].cmp(&vels[b]))
-            .then_with(|| keys[a].iter().zip(keys[b].iter())
-                .map(|(x, y)| cmp_value(x, y)).find(|o| *o != std::cmp::Ordering::Equal)
-                .unwrap_or(std::cmp::Ordering::Equal))
+            .then_with(|| {
+                keys[a]
+                    .iter()
+                    .zip(keys[b].iter())
+                    .map(|(x, y)| cmp_value(x, y))
+                    .find(|o| *o != std::cmp::Ordering::Equal)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            })
     });
 
     // Distinct velocities ordered near→far (dedup after the ordering).
@@ -5194,10 +6224,14 @@ pub(crate) fn eval_depth_infer(
     let k = frames.len() as i64;
     let mut predicted: Vec<Value> = Vec::new();
     for (si, key) in keys.iter().enumerate() {
-        let cells0: Vec<Value> = frames[0].iter()
+        let cells0: Vec<Value> = frames[0]
+            .iter()
             .filter(|c| surface_key(c, &coord_idxs).as_ref() == Some(key))
-            .cloned().collect();
-        if let Some(adv) = apply_generator_k("translate", &coord_dims, &cells0, 0, &[], &vels[si], k) {
+            .cloned()
+            .collect();
+        if let Some(adv) =
+            apply_generator_k("translate", &coord_dims, &cells0, 0, &[], &vels[si], k)
+        {
             predicted.extend(adv);
         }
     }
@@ -5224,17 +6258,22 @@ pub(crate) fn eval_depth_infer(
     }
     let predicted_out: SmallVec<[Value; 4]> = predicted.into_iter().collect();
 
-    finish(Value::Dict(Arc::from(vec![
-        (surf("explained"), Value::Bool(true)),
-        (surf("n_layers"), Value::Int(n_layers)),
-        (surf("velocities"), Value::Tuple(Arc::new(velocities_out))),
-        (surf("ordering"), Value::Tuple(Arc::new(ordering_out))),
-        (surf("layers"), Value::Tuple(Arc::new(layers_out))),
-        (surf("predicted"), Value::Tuple(Arc::new(predicted_out))),
-        (surf("window"), Value::Int(k)),
-        (surf("reason"), surf("minted")),
-        (surf("checked"), Value::Int(checked)),
-    ])), field, ctx.interner, None)
+    finish(
+        Value::Dict(Arc::from(vec![
+            (surf("explained"), Value::Bool(true)),
+            (surf("n_layers"), Value::Int(n_layers)),
+            (surf("velocities"), Value::Tuple(Arc::new(velocities_out))),
+            (surf("ordering"), Value::Tuple(Arc::new(ordering_out))),
+            (surf("layers"), Value::Tuple(Arc::new(layers_out))),
+            (surf("predicted"), Value::Tuple(Arc::new(predicted_out))),
+            (surf("window"), Value::Int(k)),
+            (surf("reason"), surf("minted")),
+            (surf("checked"), Value::Int(checked)),
+        ])),
+        field,
+        ctx.interner,
+        None,
+    )
 }
 
 // ---------------------------------------------------------------------------
@@ -5264,8 +6303,8 @@ pub(crate) fn eval_depth_infer(
 /// The quantifier/determiner caps-tokens that are NOT domain fillers — the
 /// Rust twin of Python's `_TRANSFER_NON_NOUNS`.
 const TRANSFER_NON_NOUNS: &[&str] = &[
-    "EVERY", "ALL", "WHOLE", "EACH", "ANY", "THIS", "THE", "THAT", "THESE",
-    "THOSE", "SET", "ONLY", "CURRENT", "SOME", "NO", "A", "AN", "OF", "IN",
+    "EVERY", "ALL", "WHOLE", "EACH", "ANY", "THIS", "THE", "THAT", "THESE", "THOSE", "SET", "ONLY",
+    "CURRENT", "SOME", "NO", "A", "AN", "OF", "IN",
 ];
 
 /// Python `str.isupper()`: at least one cased character, and no lowercase (or
@@ -5303,7 +6342,11 @@ fn td_val_to_string(v: &Value, interner: &Interner) -> Option<String> {
 
 /// Look up a named key in a Dict's pair list (keys may be interned `Str`
 /// from `py_to_value` or `Surface(Text)` from a Rust-built fixture).
-fn td_dict_get<'a>(pairs: &'a [(Value, Value)], name: &str, interner: &Interner) -> Option<&'a Value> {
+fn td_dict_get<'a>(
+    pairs: &'a [(Value, Value)],
+    name: &str,
+    interner: &Interner,
+) -> Option<&'a Value> {
     for (k, v) in pairs.iter() {
         let hit = match k {
             Value::Str(s) => interner.resolve(*s) == name,
@@ -5321,7 +6364,10 @@ fn td_dict_get<'a>(pairs: &'a [(Value, Value)], name: &str, interner: &Interner)
 /// step). Non-string tokens are dropped (every real goal is all-string).
 fn td_str_list(v: &Value, interner: &Interner) -> Vec<String> {
     match v {
-        Value::Tuple(items) | Value::List(items) => items.iter().filter_map(|x| td_val_to_string(x, interner)).collect(),
+        Value::Tuple(items) | Value::List(items) => items
+            .iter()
+            .filter_map(|x| td_val_to_string(x, interner))
+            .collect(),
         _ => Vec::new(),
     }
 }
@@ -5338,9 +6384,17 @@ fn td_filler_after_cue(goal: &[Vec<String>], cue: &str, cue_kind: &str) -> Optio
     for step in goal {
         let low: Vec<String> = step.iter().map(|t| t.to_lowercase()).collect();
         let positions: Vec<usize> = if cue_kind == "verb" {
-            if !low.is_empty() && low[0] == cue { vec![0] } else { Vec::new() }
+            if !low.is_empty() && low[0] == cue {
+                vec![0]
+            } else {
+                Vec::new()
+            }
         } else {
-            low.iter().enumerate().filter(|(_, t)| t.as_str() == cue).map(|(i, _)| i).collect()
+            low.iter()
+                .enumerate()
+                .filter(|(_, t)| t.as_str() == cue)
+                .map(|(i, _)| i)
+                .collect()
         };
         for ci in positions {
             let mut run: Vec<String> = Vec::new();
@@ -5361,20 +6415,33 @@ fn td_filler_after_cue(goal: &[Vec<String>], cue: &str, cue_kind: &str) -> Optio
 
 /// TRANSFER one held mechanism into the goal's domain (the Rust twin of
 /// `transfer_mechanism`). Returns `(total_fit, transferred_dict)`.
-fn td_transfer_one(goal: &[Vec<String>], mech: &[(Value, Value)], interner: &Interner) -> (i64, Value) {
+fn td_transfer_one(
+    goal: &[Vec<String>],
+    mech: &[(Value, Value)],
+    interner: &Interner,
+) -> (i64, Value) {
     let name = td_dict_get(mech, "name", interner).and_then(|v| td_val_to_string(v, interner));
     let domain = td_dict_get(mech, "domain", interner).and_then(|v| td_val_to_string(v, interner));
-    let mshape = td_dict_get(mech, "meta_shape", interner).and_then(|v| td_val_to_string(v, interner));
+    let mshape =
+        td_dict_get(mech, "meta_shape", interner).and_then(|v| td_val_to_string(v, interner));
 
     let slots: Vec<&[(Value, Value)]> = match td_dict_get(mech, "slots", interner) {
         Some(Value::Tuple(items) | Value::List(items)) => items
             .iter()
-            .filter_map(|s| if let Value::Dict(p) = s { Some(p.as_ref()) } else { None })
+            .filter_map(|s| {
+                if let Value::Dict(p) = s {
+                    Some(p.as_ref())
+                } else {
+                    None
+                }
+            })
             .collect(),
         _ => Vec::new(),
     };
     let steps: Vec<Vec<String>> = match td_dict_get(mech, "steps", interner) {
-        Some(Value::Tuple(items) | Value::List(items)) => items.iter().map(|s| td_str_list(s, interner)).collect(),
+        Some(Value::Tuple(items) | Value::List(items)) => {
+            items.iter().map(|s| td_str_list(s, interner)).collect()
+        }
         _ => Vec::new(),
     };
 
@@ -5382,7 +6449,8 @@ fn td_transfer_one(goal: &[Vec<String>], mech: &[(Value, Value)], interner: &Int
     let mut slot_map: Vec<(String, Option<String>, String, Option<String>)> = Vec::new();
     for slot in &slots {
         let role = td_dict_get(slot, "role", interner).and_then(|v| td_val_to_string(v, interner));
-        let source = td_dict_get(slot, "source", interner).and_then(|v| td_val_to_string(v, interner));
+        let source =
+            td_dict_get(slot, "source", interner).and_then(|v| td_val_to_string(v, interner));
         let cue = td_dict_get(slot, "cue", interner).and_then(|v| td_val_to_string(v, interner));
         let cue_kind = td_dict_get(slot, "cue_kind", interner)
             .and_then(|v| td_val_to_string(v, interner))
@@ -5429,9 +6497,15 @@ fn td_transfer_one(goal: &[Vec<String>], mech: &[(Value, Value)], interner: &Int
         .iter()
         .map(|(role, source, target, cue)| {
             let inner = Value::Dict(Arc::from(vec![
-                (surf("source"), source.clone().map(surf_string).unwrap_or(Value::None)),
+                (
+                    surf("source"),
+                    source.clone().map(surf_string).unwrap_or(Value::None),
+                ),
                 (surf("target"), surf_string(target.clone())),
-                (surf("cue"), cue.clone().map(surf_string).unwrap_or(Value::None)),
+                (
+                    surf("cue"),
+                    cue.clone().map(surf_string).unwrap_or(Value::None),
+                ),
             ]));
             (surf_string(role.clone()), inner)
         })
@@ -5443,9 +6517,18 @@ fn td_transfer_one(goal: &[Vec<String>], mech: &[(Value, Value)], interner: &Int
         (surf("slot_map"), Value::Dict(Arc::from(slot_map_pairs))),
         (surf("total_fit"), Value::Int(total_fit)),
         (surf("unbound_roles"), Value::Tuple(Arc::new(unbound))),
-        (surf("mechanism"), name.map(surf_string).unwrap_or(Value::None)),
-        (surf("source_domain"), domain.map(surf_string).unwrap_or(Value::None)),
-        (surf("meta_shape"), mshape.map(surf_string).unwrap_or(Value::None)),
+        (
+            surf("mechanism"),
+            name.map(surf_string).unwrap_or(Value::None),
+        ),
+        (
+            surf("source_domain"),
+            domain.map(surf_string).unwrap_or(Value::None),
+        ),
+        (
+            surf("meta_shape"),
+            mshape.map(surf_string).unwrap_or(Value::None),
+        ),
     ]));
     (total_fit, transferred)
 }
@@ -5493,7 +6576,10 @@ fn load_mechanisms(ctx: &EvalCtx, mechanism_type: Sym) -> Vec<Value> {
             (surf("name"), name_val.unwrap()),
             (surf("meta_shape"), meta_shape_val.unwrap()),
             (surf("domain"), domain_val.unwrap_or(Value::None)),
-            (surf("slots"), slots_val.unwrap_or_else(|| Value::Tuple(Arc::new(SmallVec::new())))),
+            (
+                surf("slots"),
+                slots_val.unwrap_or_else(|| Value::Tuple(Arc::new(SmallVec::new()))),
+            ),
             (surf("steps"), steps_val.unwrap()),
         ])));
     }
@@ -5613,7 +6699,10 @@ fn ms_relations(v: &Value, interner: &Interner) -> Vec<MsRel> {
         Value::Set(s) | Value::FrozenSet(s) => s.to_vec(),
         other => {
             return match td_val_to_string(other, interner) {
-                Some(s) => vec![MsRel { predicate: None, args: vec![s] }],
+                Some(s) => vec![MsRel {
+                    predicate: None,
+                    args: vec![s],
+                }],
                 None => Vec::new(),
             }
         }
@@ -5636,7 +6725,10 @@ fn ms_relations(v: &Value, interner: &Interner) -> Vec<MsRel> {
             }
             other => {
                 if let Some(s) = td_val_to_string(other, interner) {
-                    out.push(MsRel { predicate: None, args: vec![s] });
+                    out.push(MsRel {
+                        predicate: None,
+                        args: vec![s],
+                    });
                 }
             }
         }
@@ -5650,7 +6742,9 @@ fn ms_relations(v: &Value, interner: &Interner) -> Vec<MsRel> {
 /// order for genuinely equal keys, exactly as the Python original did).
 fn ms_score_shapes(ctx: &EvalCtx, rels: &[MsRel]) -> Vec<(MsEvidence, String, Value)> {
     let mut scored: Vec<(MsEvidence, String, Value)> = Vec::new();
-    let Some(metashape_sym) = ctx.interner.lookup("MetaShape") else { return scored };
+    let Some(metashape_sym) = ctx.interner.lookup("MetaShape") else {
+        return scored;
+    };
     // If `has_principle` / `keywords` / `name` were never interned, no positive
     // score is possible (nothing to walk / read) — the honest empty.
     let (has_principle, keywords_key, name_key) = match (
@@ -5682,13 +6776,15 @@ fn ms_score_shapes(ctx: &EvalCtx, rels: &[MsRel]) -> Vec<(MsEvidence, String, Va
             let mut hit_any = false;
             let mut hit_pred = false;
             for kw in kws.iter() {
-                let Some(k) = td_val_to_string(kw, ctx.interner) else { continue };
+                let Some(k) = td_val_to_string(kw, ctx.interner) else {
+                    continue;
+                };
                 if k.is_empty() {
                     continue;
                 }
-                let in_pred = rels.iter().any(|r| {
-                    r.predicate.as_deref().map_or(false, |p| p.contains(&k))
-                });
+                let in_pred = rels
+                    .iter()
+                    .any(|r| r.predicate.as_deref().map_or(false, |p| p.contains(&k)));
                 let in_arg = rels.iter().any(|r| r.args.iter().any(|a| a.contains(&k)));
                 if in_pred {
                     hit_pred = true;
@@ -5760,7 +6856,10 @@ fn recognise_meta_shape(ctx: &EvalCtx, text: &str) -> Option<Value> {
     if text.is_empty() {
         return None;
     }
-    let rels = vec![MsRel { predicate: None, args: vec![text.to_string()] }];
+    let rels = vec![MsRel {
+        predicate: None,
+        args: vec![text.to_string()],
+    }];
     ms_pick(ms_score_shapes(ctx, &rels))
 }
 
@@ -5889,11 +6988,14 @@ pub(crate) fn eval_meta_shape_mint(
         ]));
         ms_field(d, field, ctx.interner)
     };
-    let Value::Node(obs_id) = obs_val else { return empty(ctx) };
+    let Value::Node(obs_id) = obs_val else {
+        return empty(ctx);
+    };
 
-    let (Some(sig_key), Some(status_key)) =
-        (ctx.interner.lookup("signature"), ctx.interner.lookup("status"))
-    else {
+    let (Some(sig_key), Some(status_key)) = (
+        ctx.interner.lookup("signature"),
+        ctx.interner.lookup("status"),
+    ) else {
         return empty(ctx);
     };
     let Some(my_sig) = ctx.graph.node(obs_id).attrs.get(&sig_key).cloned() else {
@@ -5919,7 +7021,9 @@ pub(crate) fn eval_meta_shape_mint(
         if !ok_status {
             continue;
         }
-        let Some(sig) = node.attrs.get(&sig_key) else { continue };
+        let Some(sig) = node.attrs.get(&sig_key) else {
+            continue;
+        };
         if ms_predicate_key(sig, ctx.interner) != key {
             continue;
         }
@@ -5960,7 +7064,9 @@ pub(crate) fn eval_meta_shape_mint(
     let mut all_obs = 0usize;
     let mut pred_doc_count: std::collections::BTreeMap<String, usize> = Default::default();
     for nid in ctx.graph.nodes_of_type(obs_type) {
-        let Some(sig) = ctx.graph.node(nid).attrs.get(&sig_key) else { continue };
+        let Some(sig) = ctx.graph.node(nid).attrs.get(&sig_key) else {
+            continue;
+        };
         all_obs += 1;
         for p in ms_predicate_key(sig, ctx.interner) {
             *pred_doc_count.entry(p).or_insert(0) += 1;
@@ -5973,7 +7079,10 @@ pub(crate) fn eval_meta_shape_mint(
 
     let name = format!("ms_{}", key.join("_"));
     let keys_val = Value::Tuple(Arc::new(
-        discriminative.iter().map(|k| surf(k)).collect::<SmallVec<[Value; 4]>>(),
+        discriminative
+            .iter()
+            .map(|k| surf(k))
+            .collect::<SmallVec<[Value; 4]>>(),
     ));
     let out = Value::Dict(Arc::from(vec![
         (surf("name"), surf_string(name)),
@@ -6003,7 +7112,9 @@ fn ms_field(d: Value, field: Sym, interner: &Interner) -> Value {
         return d;
     }
     match &d {
-        Value::Dict(pairs) => td_dict_get(pairs, f, interner).cloned().unwrap_or(Value::None),
+        Value::Dict(pairs) => td_dict_get(pairs, f, interner)
+            .cloned()
+            .unwrap_or(Value::None),
         _ => Value::None,
     }
 }
@@ -6042,7 +7153,9 @@ pub(crate) fn eval_transfer_decode(
     }
 
     let goal: Vec<Vec<String>> = match &goal_val {
-        Value::Tuple(steps) | Value::List(steps) => steps.iter().map(|s| td_str_list(s, ctx.interner)).collect(),
+        Value::Tuple(steps) | Value::List(steps) => {
+            steps.iter().map(|s| td_str_list(s, ctx.interner)).collect()
+        }
         _ => Vec::new(),
     };
     // DERIVE the goal's meta-shape via the SHARED recogniser (was the
@@ -6059,8 +7172,7 @@ pub(crate) fn eval_transfer_decode(
         .to_lowercase();
     let ms_val = recognise_meta_shape(ctx, &goal_text).unwrap_or(Value::None);
     let interner: &Interner = ctx.interner;
-    let meta_shape: Option<String> =
-        td_val_to_string(&ms_val, interner).filter(|s| !s.is_empty());
+    let meta_shape: Option<String> = td_val_to_string(&ms_val, interner).filter(|s| !s.is_empty());
 
     // No meta-shape recognised — mint remains the honest fallback.
     let ms = match meta_shape {
@@ -6071,7 +7183,9 @@ pub(crate) fn eval_transfer_decode(
                 (surf("transferred"), Value::None),
                 (
                     surf("note"),
-                    surf("no meta-shape recognised for the goal — mint remains the honest fallback"),
+                    surf(
+                        "no meta-shape recognised for the goal — mint remains the honest fallback",
+                    ),
                 ),
             ]));
         }
@@ -6081,12 +7195,19 @@ pub(crate) fn eval_transfer_decode(
     // Retrieve: every mechanism indexed under the recognised shape.
     let mechs: Vec<&[(Value, Value)]> = mechs_owned
         .iter()
-        .filter_map(|m| if let Value::Dict(p) = m { Some(p.as_ref()) } else { None })
+        .filter_map(|m| {
+            if let Value::Dict(p) = m {
+                Some(p.as_ref())
+            } else {
+                None
+            }
+        })
         .collect();
     let mut cands: Vec<&[(Value, Value)]> = Vec::new();
     let mut cand_names: SmallVec<[Value; 4]> = SmallVec::new();
     for m in &mechs {
-        let mshape = td_dict_get(m, "meta_shape", interner).and_then(|v| td_val_to_string(v, interner));
+        let mshape =
+            td_dict_get(m, "meta_shape", interner).and_then(|v| td_val_to_string(v, interner));
         if mshape.as_deref() == Some(ms.as_str()) {
             cands.push(*m);
             cand_names.push(
@@ -6192,7 +7313,11 @@ mod tests {
     ) -> TermIdx {
         let goal_t = a.add(TermNode::Lit { value: goal });
         let exclude_t = exclude.map(|e| a.add(TermNode::Lit { value: e }));
-        let field_sym = if field.is_empty() { Sym::default() } else { ir.intern(field) };
+        let field_sym = if field.is_empty() {
+            Sym::default()
+        } else {
+            ir.intern(field)
+        };
         a.add(TermNode::ShapeDecode {
             goal: goal_t,
             codebook_type,
@@ -6242,7 +7367,16 @@ mod tests {
         add_part(&mut g, &mut ir, t, "PartB", tuple_of(vec![r2.clone()]));
         add_part(&mut g, &mut ir, t, "PartC", tuple_of(vec![r3.clone()]));
         let goal = tuple_of(vec![r1.clone(), r2.clone(), r3.clone(), r4.clone()]);
-        Fixture { g, ir, codebook_type: t, goal, r1, r2, r3, r4 }
+        Fixture {
+            g,
+            ir,
+            codebook_type: t,
+            goal,
+            r1,
+            r2,
+            r3,
+            r4,
+        }
     }
 
     /// (1) Parity with a hand-computed example: 3 parts, 4-relation
@@ -6251,7 +7385,18 @@ mod tests {
     fn parity_hand_computed_example() {
         let mut fx = build_fixture();
         let mut a = TermArena::new();
-        let idx = build_decode_term(&mut a, &mut fx.ir, fx.goal.clone(), fx.codebook_type, None, 3, 8, 3, "", false);
+        let idx = build_decode_term(
+            &mut a,
+            &mut fx.ir,
+            fx.goal.clone(),
+            fx.codebook_type,
+            None,
+            3,
+            8,
+            3,
+            "",
+            false,
+        );
         let mut env: Env = Env::new();
         let result = {
             let mut ctx = EvalCtx::new(&fx.g, &fx.ir);
@@ -6264,7 +7409,10 @@ mod tests {
         assert_eq!(dict_get(&result, "total_fit"), Value::Int(9));
         assert_eq!(dict_get(&result, "beam"), Value::Int(3));
         assert_eq!(dict_get(&result, "residual"), tuple_of(vec![fx.r4.clone()]));
-        assert_eq!(dict_get(&result, "covered"), tuple_of(vec![fx.r1.clone(), fx.r2.clone(), fx.r3.clone()]));
+        assert_eq!(
+            dict_get(&result, "covered"),
+            tuple_of(vec![fx.r1.clone(), fx.r2.clone(), fx.r3.clone()])
+        );
 
         let ordered_parts = dict_get(&result, "ordered_parts");
         let expect_names = tuple_of(vec![
@@ -6274,14 +7422,18 @@ mod tests {
         ]);
         assert_eq!(ordered_parts, expect_names);
 
-        let (Value::Tuple(plan) | Value::List(plan)) = dict_get(&result, "plan") else { panic!("plan must be a Tuple") };
+        let (Value::Tuple(plan) | Value::List(plan)) = dict_get(&result, "plan") else {
+            panic!("plan must be a Tuple")
+        };
         assert_eq!(plan.len(), 3);
         let step1 = &plan[0];
         assert_eq!(dict_get(step1, "step"), Value::Int(1));
         assert_eq!(dict_get(step1, "part"), Value::Str(fx.ir.intern("PartA")));
         assert_eq!(dict_get(step1, "shape_fit"), Value::Int(3));
         assert_eq!(dict_get(step1, "covers"), tuple_of(vec![fx.r1.clone()]));
-        let Value::Surface(SurfaceKind::Text, why_bytes) = dict_get(step1, "why") else { panic!("why must be Surface text") };
+        let Value::Surface(SurfaceKind::Text, why_bytes) = dict_get(step1, "why") else {
+            panic!("why must be Surface text")
+        };
         let why = std::str::from_utf8(&why_bytes).unwrap().to_string();
         assert_eq!(
             why,
@@ -6299,7 +7451,18 @@ mod tests {
     fn greedy_degenerate_beam1_cand1_matches() {
         let mut fx = build_fixture();
         let mut a = TermArena::new();
-        let idx = build_decode_term(&mut a, &mut fx.ir, fx.goal.clone(), fx.codebook_type, None, 1, 8, 1, "", false);
+        let idx = build_decode_term(
+            &mut a,
+            &mut fx.ir,
+            fx.goal.clone(),
+            fx.codebook_type,
+            None,
+            1,
+            8,
+            1,
+            "",
+            false,
+        );
         let mut env: Env = Env::new();
         let result = {
             let mut ctx = EvalCtx::new(&fx.g, &fx.ir);
@@ -6327,8 +7490,21 @@ mod tests {
     fn exclude_is_honored() {
         let mut fx = build_fixture();
         let mut a = TermArena::new();
-        let excl = Value::Tuple(Arc::new(smallvec::smallvec![Value::Str(fx.ir.intern("PartB"))]));
-        let idx = build_decode_term(&mut a, &mut fx.ir, fx.goal.clone(), fx.codebook_type, Some(excl), 3, 8, 3, "", false);
+        let excl = Value::Tuple(Arc::new(smallvec::smallvec![Value::Str(
+            fx.ir.intern("PartB")
+        )]));
+        let idx = build_decode_term(
+            &mut a,
+            &mut fx.ir,
+            fx.goal.clone(),
+            fx.codebook_type,
+            Some(excl),
+            3,
+            8,
+            3,
+            "",
+            false,
+        );
         let mut env: Env = Env::new();
         let result = {
             let mut ctx = EvalCtx::new(&fx.g, &fx.ir);
@@ -6342,12 +7518,20 @@ mod tests {
             tuple_of(vec![fx.r2.clone(), fx.r4.clone()])
         );
         let ordered_parts = dict_get(&result, "ordered_parts");
-        let (Value::Tuple(names) | Value::List(names)) = &ordered_parts else { panic!("ordered_parts must be a Tuple") };
+        let (Value::Tuple(names) | Value::List(names)) = &ordered_parts else {
+            panic!("ordered_parts must be a Tuple")
+        };
         let part_b = Value::Str(fx.ir.intern("PartB"));
-        assert!(!names.iter().any(|v| *v == part_b), "excluded part must not appear in ordered_parts");
+        assert!(
+            !names.iter().any(|v| *v == part_b),
+            "excluded part must not appear in ordered_parts"
+        );
         assert_eq!(
             ordered_parts,
-            tuple_of(vec![Value::Str(fx.ir.intern("PartA")), Value::Str(fx.ir.intern("PartC"))])
+            tuple_of(vec![
+                Value::Str(fx.ir.intern("PartA")),
+                Value::Str(fx.ir.intern("PartC"))
+            ])
         );
     }
 
@@ -6375,7 +7559,18 @@ mod tests {
         {
             let mut fx = build_fixture();
             let mut a = TermArena::new();
-            let idx = build_decode_term(&mut a, &mut fx.ir, tuple_of(vec![]), fx.codebook_type, None, 3, 8, 3, "", false);
+            let idx = build_decode_term(
+                &mut a,
+                &mut fx.ir,
+                tuple_of(vec![]),
+                fx.codebook_type,
+                None,
+                3,
+                8,
+                3,
+                "",
+                false,
+            );
             let mut env: Env = Env::new();
             let result = {
                 let mut ctx = EvalCtx::new(&fx.g, &fx.ir);
@@ -6406,16 +7601,43 @@ mod tests {
 
         for (label, codebook_type) in [("json", t_json), ("native", t_native)] {
             let mut a = TermArena::new();
-            let idx = build_decode_term(&mut a, &mut ir, goal.clone(), codebook_type, None, 3, 8, 3, "", false);
+            let idx = build_decode_term(
+                &mut a,
+                &mut ir,
+                goal.clone(),
+                codebook_type,
+                None,
+                3,
+                8,
+                3,
+                "",
+                false,
+            );
             let mut env: Env = Env::new();
             let result = {
                 let mut ctx = EvalCtx::new(&g, &ir);
                 evaluate(&a, idx, &mut env, &mut ctx)
             };
-            assert_eq!(dict_get(&result, "authored"), Value::Bool(true), "{label} authored");
-            assert_eq!(dict_get(&result, "covered_count"), Value::Int(1), "{label} covered_count");
-            assert_eq!(dict_get(&result, "total_fit"), Value::Int(3), "{label} total_fit");
-            assert_eq!(dict_get(&result, "residual"), tuple_of(vec![]), "{label} residual");
+            assert_eq!(
+                dict_get(&result, "authored"),
+                Value::Bool(true),
+                "{label} authored"
+            );
+            assert_eq!(
+                dict_get(&result, "covered_count"),
+                Value::Int(1),
+                "{label} covered_count"
+            );
+            assert_eq!(
+                dict_get(&result, "total_fit"),
+                Value::Int(3),
+                "{label} total_fit"
+            );
+            assert_eq!(
+                dict_get(&result, "residual"),
+                tuple_of(vec![]),
+                "{label} residual"
+            );
         }
     }
 
@@ -6432,7 +7654,18 @@ mod tests {
         // Plain-key selection on the partial-cover fixture.
         {
             let mut a = TermArena::new();
-            let idx = build_decode_term(&mut a, &mut fx.ir, fx.goal.clone(), fx.codebook_type, None, 3, 8, 3, "residual", false);
+            let idx = build_decode_term(
+                &mut a,
+                &mut fx.ir,
+                fx.goal.clone(),
+                fx.codebook_type,
+                None,
+                3,
+                8,
+                3,
+                "residual",
+                false,
+            );
             let mut env: Env = Env::new();
             let result = {
                 let mut ctx = EvalCtx::new(&fx.g, &fx.ir);
@@ -6442,7 +7675,18 @@ mod tests {
         }
         {
             let mut a = TermArena::new();
-            let idx = build_decode_term(&mut a, &mut fx.ir, fx.goal.clone(), fx.codebook_type, None, 3, 8, 3, "covered_count", false);
+            let idx = build_decode_term(
+                &mut a,
+                &mut fx.ir,
+                fx.goal.clone(),
+                fx.codebook_type,
+                None,
+                3,
+                8,
+                3,
+                "covered_count",
+                false,
+            );
             let mut env: Env = Env::new();
             let result = {
                 let mut ctx = EvalCtx::new(&fx.g, &fx.ir);
@@ -6453,7 +7697,18 @@ mod tests {
         // Not fully covered -> covered_by is None even though a plan exists.
         {
             let mut a = TermArena::new();
-            let idx = build_decode_term(&mut a, &mut fx.ir, fx.goal.clone(), fx.codebook_type, None, 3, 8, 3, "covered_by", false);
+            let idx = build_decode_term(
+                &mut a,
+                &mut fx.ir,
+                fx.goal.clone(),
+                fx.codebook_type,
+                None,
+                3,
+                8,
+                3,
+                "covered_by",
+                false,
+            );
             let mut env: Env = Env::new();
             let result = {
                 let mut ctx = EvalCtx::new(&fx.g, &fx.ir);
@@ -6466,7 +7721,18 @@ mod tests {
         {
             let mut a = TermArena::new();
             let two_rel_goal = tuple_of(vec![fx.r1.clone(), fx.r2.clone()]);
-            let idx = build_decode_term(&mut a, &mut fx.ir, two_rel_goal, fx.codebook_type, None, 3, 8, 3, "covered_by", false);
+            let idx = build_decode_term(
+                &mut a,
+                &mut fx.ir,
+                two_rel_goal,
+                fx.codebook_type,
+                None,
+                3,
+                8,
+                3,
+                "covered_by",
+                false,
+            );
             let mut env: Env = Env::new();
             let result = {
                 let mut ctx = EvalCtx::new(&fx.g, &fx.ir);
@@ -6478,7 +7744,18 @@ mod tests {
         {
             let mut a = TermArena::new();
             let one_rel_goal = tuple_of(vec![fx.r1.clone()]);
-            let idx = build_decode_term(&mut a, &mut fx.ir, one_rel_goal, fx.codebook_type, None, 3, 8, 3, "covered_by", false);
+            let idx = build_decode_term(
+                &mut a,
+                &mut fx.ir,
+                one_rel_goal,
+                fx.codebook_type,
+                None,
+                3,
+                8,
+                3,
+                "covered_by",
+                false,
+            );
             let mut env: Env = Env::new();
             let result = {
                 let mut ctx = EvalCtx::new(&fx.g, &fx.ir);
@@ -6539,7 +7816,11 @@ mod tests {
                 evaluate(&a, idx, &mut env, &mut ctx)
             };
             assert_eq!(dict_get(&result, "authored"), Value::Bool(true));
-            assert_eq!(dict_get(&result, "residual"), tuple_of(vec![]), "wild_objects=true must fully cover");
+            assert_eq!(
+                dict_get(&result, "residual"),
+                tuple_of(vec![]),
+                "wild_objects=true must fully cover"
+            );
             assert_eq!(dict_get(&result, "covered_count"), Value::Int(1));
 
             // `covered_by` is a DERIVED field (see `select_field`) — only
@@ -6547,7 +7828,18 @@ mod tests {
             // `induce_concern`-covered-branch convenience form `sd_recognize`
             // reads.
             let mut a2 = TermArena::new();
-            let idx2 = build_decode_term(&mut a2, &mut ir, goal.clone(), t, None, 3, 8, 3, "covered_by", true);
+            let idx2 = build_decode_term(
+                &mut a2,
+                &mut ir,
+                goal.clone(),
+                t,
+                None,
+                3,
+                8,
+                3,
+                "covered_by",
+                true,
+            );
             let mut env2: Env = Env::new();
             let covered_by = {
                 let mut ctx = EvalCtx::new(&g, &ir);
@@ -6564,12 +7856,26 @@ mod tests {
                 let mut ctx = EvalCtx::new(&g, &ir);
                 evaluate(&a, idx, &mut env, &mut ctx)
             };
-            assert_eq!(dict_get(&result, "residual"), tuple_of(vec![goal_rel.clone()]),
-                       "wild_objects=false must NOT cover a literal-filler mismatch");
+            assert_eq!(
+                dict_get(&result, "residual"),
+                tuple_of(vec![goal_rel.clone()]),
+                "wild_objects=false must NOT cover a literal-filler mismatch"
+            );
             assert_eq!(dict_get(&result, "covered_count"), Value::Int(0));
 
             let mut a2 = TermArena::new();
-            let idx2 = build_decode_term(&mut a2, &mut ir, goal.clone(), t, None, 3, 8, 3, "covered_by", false);
+            let idx2 = build_decode_term(
+                &mut a2,
+                &mut ir,
+                goal.clone(),
+                t,
+                None,
+                3,
+                8,
+                3,
+                "covered_by",
+                false,
+            );
             let mut env2: Env = Env::new();
             let covered_by = {
                 let mut ctx = EvalCtx::new(&g, &ir);
@@ -6631,9 +7937,27 @@ mod tests {
         let g2 = rel(&mut ir, &["e", "2"]);
         let g3 = rel(&mut ir, &["e", "3"]);
         let g4 = rel(&mut ir, &["e", "4"]);
-        add_part(&mut g, &mut ir, t, "part_A", tuple_of(vec![g1.clone(), g2.clone()]));
-        add_part(&mut g, &mut ir, t, "part_B", tuple_of(vec![g3.clone(), g4.clone()]));
-        add_part(&mut g, &mut ir, t, "part_C", tuple_of(vec![g1.clone(), g3.clone()]));
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "part_A",
+            tuple_of(vec![g1.clone(), g2.clone()]),
+        );
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "part_B",
+            tuple_of(vec![g3.clone(), g4.clone()]),
+        );
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "part_C",
+            tuple_of(vec![g1.clone(), g3.clone()]),
+        );
         add_part(&mut g, &mut ir, t, "part_only2", tuple_of(vec![g2.clone()]));
         add_part(&mut g, &mut ir, t, "part_only4", tuple_of(vec![g4.clone()]));
         let goal = tuple_of(vec![g1, g3, g2, g4]);
@@ -6649,7 +7973,10 @@ mod tests {
     fn beam1_no_longer_loses_the_optimal_plan() {
         let (g, mut ir, t, goal) = build_beam_trap();
         let mut a = TermArena::new();
-        let idx = build_decode_term_budgeted(&mut a, &mut ir, goal, t, /*beam*/ 1, /*max_steps*/ 2, /*cand_k*/ 5, /*budget*/ 0);
+        let idx = build_decode_term_budgeted(
+            &mut a, &mut ir, goal, t, /*beam*/ 1, /*max_steps*/ 2, /*cand_k*/ 5,
+            /*budget*/ 0,
+        );
         let mut env: Env = Env::new();
         let result = {
             let mut ctx = EvalCtx::new(&g, &ir);
@@ -6657,12 +7984,18 @@ mod tests {
         };
         assert_eq!(dict_get(&result, "authored"), Value::Bool(true));
         assert_eq!(dict_get(&result, "goal_relations"), Value::Int(4));
-        assert_eq!(dict_get(&result, "covered_count"), Value::Int(4),
-                   "beam=1 must now reach FULL coverage (was 3/4 before the fix — \
-                    scripts/probe_beam_completeness.py's live-verified 'before' number)");
+        assert_eq!(
+            dict_get(&result, "covered_count"),
+            Value::Int(4),
+            "beam=1 must now reach FULL coverage (was 3/4 before the fix — \
+                    scripts/probe_beam_completeness.py's live-verified 'before' number)"
+        );
         assert_eq!(dict_get(&result, "residual"), tuple_of(vec![]));
-        assert_eq!(dict_get(&result, "budget_exhausted"), Value::Bool(false),
-                   "this tiny fixture must complete well inside the default budget");
+        assert_eq!(
+            dict_get(&result, "budget_exhausted"),
+            Value::Bool(false),
+            "this tiny fixture must complete well inside the default budget"
+        );
         // `beam` is still reported (back-compat) even though it no longer prunes.
         assert_eq!(dict_get(&result, "beam"), Value::Int(1));
     }
@@ -6724,9 +8057,12 @@ mod tests {
             evaluate(&a, idx, &mut env, &mut ctx)
         };
         assert_eq!(dict_get(&result, "budget_exhausted"), Value::Bool(true));
-        assert_eq!(dict_get(&result, "covered_count"), Value::Int(2),
-                   "budget=3 affords exactly the 3 step-1 candidates, all covering 2/4 -- \
-                    none has had a chance to spawn a step-2 child yet");
+        assert_eq!(
+            dict_get(&result, "covered_count"),
+            Value::Int(2),
+            "budget=3 affords exactly the 3 step-1 candidates, all covering 2/4 -- \
+                    none has had a chance to spawn a step-2 child yet"
+        );
     }
 }
 
@@ -6794,8 +8130,18 @@ mod transform_decode_tests {
     ) -> TermIdx {
         let goal_t = a.add(TermNode::Lit { value: goal });
         let exclude_t = exclude.map(|e| a.add(TermNode::Lit { value: e }));
-        let field_sym = if field.is_empty() { Sym::default() } else { ir.intern(field) };
-        a.add(TermNode::TransformDecode { goal: goal_t, codebook_type, exclude: exclude_t, max_dims, field: field_sym })
+        let field_sym = if field.is_empty() {
+            Sym::default()
+        } else {
+            ir.intern(field)
+        };
+        a.add(TermNode::TransformDecode {
+            goal: goal_t,
+            codebook_type,
+            exclude: exclude_t,
+            max_dims,
+            field: field_sym,
+        })
     }
 
     /// Evaluate a `TransformDecode` built by `build_transform_term` over
@@ -6825,9 +8171,15 @@ mod transform_decode_tests {
         let mut ir = Interner::new();
         let mut g = TypedGraph::new();
         let t = ir.intern("ShapeSignature");
-        let held = tuple_of(vec![rel(&mut ir, &["mark", "red", "a"]), rel(&mut ir, &["mark", "red", "b"])]);
+        let held = tuple_of(vec![
+            rel(&mut ir, &["mark", "red", "a"]),
+            rel(&mut ir, &["mark", "red", "b"]),
+        ]);
         add_part(&mut g, &mut ir, t, "Base", held);
-        let goal = tuple_of(vec![rel(&mut ir, &["mark", "blue", "a"]), rel(&mut ir, &["mark", "blue", "b"])]);
+        let goal = tuple_of(vec![
+            rel(&mut ir, &["mark", "blue", "a"]),
+            rel(&mut ir, &["mark", "blue", "b"]),
+        ]);
 
         let result = run(&g, &mut ir, goal, t, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
@@ -6836,12 +8188,21 @@ mod transform_decode_tests {
         assert_eq!(dict_get(&result, "dims"), tuple_of(vec![Value::Int(1)]));
         assert_eq!(dict_get(&result, "residual_unexplained"), tuple_of(vec![]));
 
-        let (Value::Tuple(transforms) | Value::List(transforms)) = dict_get(&result, "transforms") else { panic!("transforms must be a Tuple") };
+        let (Value::Tuple(transforms) | Value::List(transforms)) = dict_get(&result, "transforms")
+        else {
+            panic!("transforms must be a Tuple")
+        };
         assert_eq!(transforms.len(), 1);
         assert_eq!(dict_get(&transforms[0], "dim"), Value::Int(1));
         assert_eq!(dict_get(&transforms[0], "kind"), surf("subst"));
-        let expect_pair = Value::Tuple(Arc::new(smallvec::smallvec![Value::Str(ir.intern("red")), Value::Str(ir.intern("blue"))]));
-        assert_eq!(dict_get(&transforms[0], "delta"), tuple_of(vec![expect_pair]));
+        let expect_pair = Value::Tuple(Arc::new(smallvec::smallvec![
+            Value::Str(ir.intern("red")),
+            Value::Str(ir.intern("blue"))
+        ]));
+        assert_eq!(
+            dict_get(&transforms[0], "delta"),
+            tuple_of(vec![expect_pair])
+        );
     }
 
     /// (2) A uniform numeric shift (translate) is explained: every
@@ -6867,7 +8228,10 @@ mod transform_decode_tests {
         assert_eq!(dict_get(&result, "dims"), tuple_of(vec![Value::Int(1)]));
         assert_eq!(dict_get(&result, "deltas"), tuple_of(vec![Value::Int(3)]));
 
-        let (Value::Tuple(transforms) | Value::List(transforms)) = dict_get(&result, "transforms") else { panic!("transforms must be a Tuple") };
+        let (Value::Tuple(transforms) | Value::List(transforms)) = dict_get(&result, "transforms")
+        else {
+            panic!("transforms must be a Tuple")
+        };
         assert_eq!(transforms.len(), 1);
         assert_eq!(dict_get(&transforms[0], "kind"), surf("shift"));
         assert_eq!(dict_get(&transforms[0], "delta"), Value::Int(3));
@@ -6895,7 +8259,10 @@ mod transform_decode_tests {
 
         let result2 = run(&g, &mut ir, goal.clone(), t, 2, "");
         assert_eq!(dict_get(&result2, "explained"), Value::Bool(true));
-        assert_eq!(dict_get(&result2, "dims"), tuple_of(vec![Value::Int(1), Value::Int(2)]));
+        assert_eq!(
+            dict_get(&result2, "dims"),
+            tuple_of(vec![Value::Int(1), Value::Int(2)])
+        );
 
         let result1 = run(&g, &mut ir, goal, t, 1, "");
         assert_eq!(dict_get(&result1, "explained"), Value::Bool(false));
@@ -6973,12 +8340,21 @@ mod transform_decode_tests {
         let mut g = TypedGraph::new();
         let t = ir.intern("ShapeSignature");
         // Needs only the colour dim (slot 1): object ids already match.
-        let one_dim = tuple_of(vec![rel(&mut ir, &["mark", "red", "a"]), rel(&mut ir, &["mark", "red", "b"])]);
+        let one_dim = tuple_of(vec![
+            rel(&mut ir, &["mark", "red", "a"]),
+            rel(&mut ir, &["mark", "red", "b"]),
+        ]);
         add_part(&mut g, &mut ir, t, "OneDim", one_dim);
         // Needs BOTH the colour dim (1) and the object-id dim (2).
-        let two_dim = tuple_of(vec![rel(&mut ir, &["mark", "red", "x"]), rel(&mut ir, &["mark", "red", "y"])]);
+        let two_dim = tuple_of(vec![
+            rel(&mut ir, &["mark", "red", "x"]),
+            rel(&mut ir, &["mark", "red", "y"]),
+        ]);
         add_part(&mut g, &mut ir, t, "TwoDim", two_dim);
-        let goal = tuple_of(vec![rel(&mut ir, &["mark", "blue", "a"]), rel(&mut ir, &["mark", "blue", "b"])]);
+        let goal = tuple_of(vec![
+            rel(&mut ir, &["mark", "blue", "a"]),
+            rel(&mut ir, &["mark", "blue", "b"]),
+        ]);
 
         let result = run(&g, &mut ir, goal, t, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
@@ -6995,7 +8371,10 @@ mod transform_decode_tests {
         let t = ir.intern("ShapeSignature");
         let held = tuple_of(vec![rel(&mut ir, &["mark", "red", "a"])]);
         add_part(&mut g, &mut ir, t, "Base", held);
-        let goal = tuple_of(vec![rel(&mut ir, &["mark", "red", "a"]), rel(&mut ir, &["mark", "red", "b"])]);
+        let goal = tuple_of(vec![
+            rel(&mut ir, &["mark", "red", "a"]),
+            rel(&mut ir, &["mark", "red", "b"]),
+        ]);
 
         let result = run(&g, &mut ir, goal, t, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(false));
@@ -7010,13 +8389,28 @@ mod transform_decode_tests {
         let mut ir = Interner::new();
         let mut g = TypedGraph::new();
         let t = ir.intern("ShapeSignature");
-        let held = tuple_of(vec![rel(&mut ir, &["mark", "red", "a"]), rel(&mut ir, &["mark", "red", "b"])]);
+        let held = tuple_of(vec![
+            rel(&mut ir, &["mark", "red", "a"]),
+            rel(&mut ir, &["mark", "red", "b"]),
+        ]);
         add_part(&mut g, &mut ir, t, "Base", held);
-        let goal = tuple_of(vec![rel(&mut ir, &["mark", "blue", "a"]), rel(&mut ir, &["mark", "blue", "b"])]);
+        let goal = tuple_of(vec![
+            rel(&mut ir, &["mark", "blue", "a"]),
+            rel(&mut ir, &["mark", "blue", "b"]),
+        ]);
 
-        assert_eq!(run(&g, &mut ir, goal.clone(), t, 2, "explained"), Value::Bool(true));
-        assert_eq!(run(&g, &mut ir, goal.clone(), t, 2, "base"), Value::Str(ir.intern("Base")));
-        assert_eq!(run(&g, &mut ir, goal, t, 2, "dims"), tuple_of(vec![Value::Int(1)]));
+        assert_eq!(
+            run(&g, &mut ir, goal.clone(), t, 2, "explained"),
+            Value::Bool(true)
+        );
+        assert_eq!(
+            run(&g, &mut ir, goal.clone(), t, 2, "base"),
+            Value::Str(ir.intern("Base"))
+        );
+        assert_eq!(
+            run(&g, &mut ir, goal, t, 2, "dims"),
+            tuple_of(vec![Value::Int(1)])
+        );
     }
 
     /// (10) Grid-flavoured: cells-as-relations `["cell", r, c, v]` — a
@@ -7031,28 +8425,45 @@ mod transform_decode_tests {
         let t = ir.intern("ShapeSignature");
         let cell = |ir: &mut Interner, r: i64, c: i64, v: &str| {
             let v_sym = ir.intern(v);
-            rel_vals(ir, "cell", vec![Value::Int(r), Value::Int(c), Value::Str(v_sym)])
+            rel_vals(
+                ir,
+                "cell",
+                vec![Value::Int(r), Value::Int(c), Value::Str(v_sym)],
+            )
         };
         let held = tuple_of(vec![
-            cell(&mut ir, 1, 1, "red"), cell(&mut ir, 1, 2, "red"),
-            cell(&mut ir, 2, 1, "red"), cell(&mut ir, 2, 2, "red"),
+            cell(&mut ir, 1, 1, "red"),
+            cell(&mut ir, 1, 2, "red"),
+            cell(&mut ir, 2, 1, "red"),
+            cell(&mut ir, 2, 2, "red"),
         ]);
         add_part(&mut g, &mut ir, t, "Block", held);
         let goal = tuple_of(vec![
-            cell(&mut ir, 6, 1, "blue"), cell(&mut ir, 6, 2, "blue"),
-            cell(&mut ir, 7, 1, "blue"), cell(&mut ir, 7, 2, "blue"),
+            cell(&mut ir, 6, 1, "blue"),
+            cell(&mut ir, 6, 2, "blue"),
+            cell(&mut ir, 7, 1, "blue"),
+            cell(&mut ir, 7, 2, "blue"),
         ]);
 
         let result = run(&g, &mut ir, goal, t, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
         assert_eq!(dict_get(&result, "base"), Value::Str(ir.intern("Block")));
-        assert_eq!(dict_get(&result, "dims"), tuple_of(vec![Value::Int(1), Value::Int(3)]));
-        assert_eq!(dict_get(&result, "deltas"), tuple_of(vec![
-            Value::Int(5),
-            Value::Tuple(Arc::new(smallvec::smallvec![Value::Tuple(Arc::new(smallvec::smallvec![
-                Value::Str(ir.intern("red")), Value::Str(ir.intern("blue"))
-            ]))])),
-        ]));
+        assert_eq!(
+            dict_get(&result, "dims"),
+            tuple_of(vec![Value::Int(1), Value::Int(3)])
+        );
+        assert_eq!(
+            dict_get(&result, "deltas"),
+            tuple_of(vec![
+                Value::Int(5),
+                Value::Tuple(Arc::new(smallvec::smallvec![Value::Tuple(Arc::new(
+                    smallvec::smallvec![
+                        Value::Str(ir.intern("red")),
+                        Value::Str(ir.intern("blue"))
+                    ]
+                ))])),
+            ])
+        );
     }
 
     /// A `ShapeSignature` node whose `signature` is stored the way
@@ -7060,10 +8471,19 @@ mod transform_decode_tests {
     /// attr, parsed at decode time via `json_to_value_scoped` (NOT the
     /// native-`Value::Tuple` shortcut `add_part` uses above, which is why
     /// tests 1-10 never exercised the scoped-placeholder path at all).
-    fn add_part_json(g: &mut TypedGraph, ir: &mut Interner, t: Sym, name: &str, sig_json: &serde_json::Value) -> NodeID {
+    fn add_part_json(
+        g: &mut TypedGraph,
+        ir: &mut Interner,
+        t: Sym,
+        name: &str,
+        sig_json: &serde_json::Value,
+    ) -> NodeID {
         let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
         attrs.insert(ir.intern("name"), Value::Str(ir.intern(name)));
-        attrs.insert(ir.intern("signature"), Value::Str(ir.intern(&sig_json.to_string())));
+        attrs.insert(
+            ir.intern("signature"),
+            Value::Str(ir.intern(&sig_json.to_string())),
+        );
         attrs.insert(ir.intern("kind"), Value::Str(ir.intern("faculty")));
         g.insert_node(t, attrs)
     }
@@ -7088,10 +8508,7 @@ mod transform_decode_tests {
         let mut ir = Interner::new();
         let mut g = TypedGraph::new();
         let t = ir.intern("ShapeSignature");
-        let held_json = serde_json::json!([
-            ["move", "X", "by", "D"],
-            ["stop", "X"],
-        ]);
+        let held_json = serde_json::json!([["move", "X", "by", "D"], ["stop", "X"],]);
         add_part_json(&mut g, &mut ir, t, "MoveStop", &held_json);
         // "Y" stands in for "X"; "move"/"by"/"D"/"stop" are shared with
         // the held signature's JSON text so `local_sym` resolves them to
@@ -7107,13 +8524,22 @@ mod transform_decode_tests {
         assert_eq!(dict_get(&result, "base"), Value::Str(ir.intern("MoveStop")));
         assert_eq!(dict_get(&result, "dims"), tuple_of(vec![Value::Int(1)]));
 
-        let (Value::Tuple(transforms) | Value::List(transforms)) = dict_get(&result, "transforms") else { panic!("transforms must be a Tuple") };
+        let (Value::Tuple(transforms) | Value::List(transforms)) = dict_get(&result, "transforms")
+        else {
+            panic!("transforms must be a Tuple")
+        };
         assert_eq!(transforms.len(), 1);
         assert_eq!(dict_get(&transforms[0], "kind"), surf("subst"));
         // The "from" side must be a plain Surface string ("X"), NOT a
         // Value::Str Sym the interner never issued.
-        let expect_pair = Value::Tuple(Arc::new(smallvec::smallvec![surf("X"), Value::Str(ir.intern("Y"))]));
-        assert_eq!(dict_get(&transforms[0], "delta"), tuple_of(vec![expect_pair]));
+        let expect_pair = Value::Tuple(Arc::new(smallvec::smallvec![
+            surf("X"),
+            Value::Str(ir.intern("Y"))
+        ]));
+        assert_eq!(
+            dict_get(&transforms[0], "delta"),
+            tuple_of(vec![expect_pair])
+        );
 
         // The whole Dict must also survive an interner round-trip of
         // every Str it contains (the real-world failure mode: any caller
@@ -7124,7 +8550,9 @@ mod transform_decode_tests {
                     let _ = ir.resolve(*s); // panics on an unissued Sym
                 }
                 Value::Tuple(items) | Value::List(items) => {
-                    for it in items.iter() { assert_no_placeholder_syms(it, ir); }
+                    for it in items.iter() {
+                        assert_no_placeholder_syms(it, ir);
+                    }
                 }
                 Value::Dict(pairs) => {
                     for (k, val) in pairs.iter() {
@@ -7172,9 +8600,18 @@ mod transform_decode_tests {
         let result = run(&g, &mut ir, goal.clone(), t, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
         assert_eq!(dict_get(&result, "base"), Value::Str(ir.intern("Mixed")));
-        assert_eq!(dict_get(&result, "dims"), tuple_of(vec![Value::Int(1), Value::Int(1)]));
-        assert_eq!(dict_get(&result, "deltas"), tuple_of(vec![Value::Int(1), Value::Int(2)]));
-        let (Value::Tuple(transforms) | Value::List(transforms)) = dict_get(&result, "transforms") else { panic!("transforms must be a Tuple") };
+        assert_eq!(
+            dict_get(&result, "dims"),
+            tuple_of(vec![Value::Int(1), Value::Int(1)])
+        );
+        assert_eq!(
+            dict_get(&result, "deltas"),
+            tuple_of(vec![Value::Int(1), Value::Int(2)])
+        );
+        let (Value::Tuple(transforms) | Value::List(transforms)) = dict_get(&result, "transforms")
+        else {
+            panic!("transforms must be a Tuple")
+        };
         assert_eq!(transforms.len(), 2);
         assert_eq!(dict_get(&transforms[0], "pred"), Value::Str(ir.intern("p")));
         assert_eq!(dict_get(&transforms[0], "kind"), surf("shift"));
@@ -7213,9 +8650,16 @@ mod transform_decode_tests {
         let result = run(&g, &mut ir, goal, t, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
         assert_eq!(dict_get(&result, "dims"), tuple_of(vec![Value::Int(1)]));
-        let (Value::Tuple(transforms) | Value::List(transforms)) = dict_get(&result, "transforms") else { panic!("transforms must be a Tuple") };
+        let (Value::Tuple(transforms) | Value::List(transforms)) = dict_get(&result, "transforms")
+        else {
+            panic!("transforms must be a Tuple")
+        };
         assert_eq!(transforms.len(), 1);
-        assert_eq!(dict_get(&transforms[0], "pred"), Value::None, "tier-1 merged entry carries NO pred key");
+        assert_eq!(
+            dict_get(&transforms[0], "pred"),
+            Value::None,
+            "tier-1 merged entry carries NO pred key"
+        );
         assert_eq!(dict_get(&transforms[0], "delta"), Value::Int(2));
     }
 
@@ -7244,8 +8688,11 @@ mod transform_decode_tests {
         ]);
 
         let result = run(&g, &mut ir, goal, t, 2, "");
-        assert_eq!(dict_get(&result, "explained"), Value::Bool(false),
-            "a scrambled substitution must stay the null that lets sd_mint_quantum fire");
+        assert_eq!(
+            dict_get(&result, "explained"),
+            Value::Bool(false),
+            "a scrambled substitution must stay the null that lets sd_mint_quantum fire"
+        );
         assert_eq!(dict_get(&result, "identity"), Value::Bool(false));
     }
 
@@ -7272,8 +8719,11 @@ mod transform_decode_tests {
         ]);
 
         let result = run(&g, &mut ir, goal, t, 4, "");
-        assert_eq!(dict_get(&result, "explained"), Value::Bool(false),
-            "+1 and +3 within the SAME predicate at the same slot is not a transform");
+        assert_eq!(
+            dict_get(&result, "explained"),
+            Value::Bool(false),
+            "+1 and +3 within the SAME predicate at the same slot is not a transform"
+        );
     }
 }
 
@@ -7291,7 +8741,14 @@ mod dim_infer_tests {
     /// `dim_types` is a native `Value::Tuple` of `Str` — one entry per
     /// `sig`'s relation slots, e.g. `["pred","coord:r","coord:c","val"]`
     /// for a `("cell", r, c, colour)` relation family.
-    fn add_part(g: &mut TypedGraph, ir: &mut Interner, t: Sym, name: &str, sig: Value, dim_types: &[&str]) -> NodeID {
+    fn add_part(
+        g: &mut TypedGraph,
+        ir: &mut Interner,
+        t: Sym,
+        name: &str,
+        sig: Value,
+        dim_types: &[&str],
+    ) -> NodeID {
         let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
         attrs.insert(ir.intern("name"), Value::Str(ir.intern(name)));
         attrs.insert(ir.intern("signature"), sig);
@@ -7305,7 +8762,13 @@ mod dim_infer_tests {
     /// graceful-skip fixture (requirement 5: rung 2 must not crash, and
     /// must contribute zero `checked` attempts, when a candidate simply
     /// isn't dimension-typed).
-    fn add_part_untyped(g: &mut TypedGraph, ir: &mut Interner, t: Sym, name: &str, sig: Value) -> NodeID {
+    fn add_part_untyped(
+        g: &mut TypedGraph,
+        ir: &mut Interner,
+        t: Sym,
+        name: &str,
+        sig: Value,
+    ) -> NodeID {
         let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
         attrs.insert(ir.intern("name"), Value::Str(ir.intern(name)));
         attrs.insert(ir.intern("signature"), sig);
@@ -7319,10 +8782,20 @@ mod dim_infer_tests {
     /// `transform_decode_tests::scoped_local_placeholder_from_value_never_reaches_output`
     /// exercises for `TransformDecode`; `dim_infer_tests` exercises the
     /// SAME class through `DimInfer`'s own `build_candidate` reuse.
-    fn add_part_json(g: &mut TypedGraph, ir: &mut Interner, t: Sym, name: &str, sig_json: &serde_json::Value, dim_types: &[&str]) -> NodeID {
+    fn add_part_json(
+        g: &mut TypedGraph,
+        ir: &mut Interner,
+        t: Sym,
+        name: &str,
+        sig_json: &serde_json::Value,
+        dim_types: &[&str],
+    ) -> NodeID {
         let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
         attrs.insert(ir.intern("name"), Value::Str(ir.intern(name)));
-        attrs.insert(ir.intern("signature"), Value::Str(ir.intern(&sig_json.to_string())));
+        attrs.insert(
+            ir.intern("signature"),
+            Value::Str(ir.intern(&sig_json.to_string())),
+        );
         attrs.insert(ir.intern("kind"), Value::Str(ir.intern("faculty")));
         let dt: SmallVec<[Value; 4]> = dim_types.iter().map(|s| Value::Str(ir.intern(s))).collect();
         attrs.insert(ir.intern("dim_types"), Value::Tuple(Arc::new(dt)));
@@ -7331,7 +8804,15 @@ mod dim_infer_tests {
 
     /// `name`/`kind`/`coord_dims`/`params` `DimensionGenerator` node —
     /// `coord_dims`/`params` as native `Value::Tuple` of `Int`.
-    fn add_generator(g: &mut TypedGraph, ir: &mut Interner, gt: Sym, name: &str, kind: &str, coord_dims: &[i64], params: &[i64]) -> NodeID {
+    fn add_generator(
+        g: &mut TypedGraph,
+        ir: &mut Interner,
+        gt: Sym,
+        name: &str,
+        kind: &str,
+        coord_dims: &[i64],
+        params: &[i64],
+    ) -> NodeID {
         let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
         attrs.insert(ir.intern("name"), Value::Str(ir.intern(name)));
         attrs.insert(ir.intern("kind"), Value::Str(ir.intern(kind)));
@@ -7347,10 +8828,21 @@ mod dim_infer_tests {
     /// `modular_step_once`). Kept separate from `add_generator` so every
     /// existing non-modular fixture stays byte-identical (no `modulus`
     /// attr, `load_generators` defaults it to `0`).
-    fn add_generator_mod(g: &mut TypedGraph, ir: &mut Interner, gt: Sym, name: &str, kind: &str, coord_dims: &[i64], params: &[i64], modulus: i64) -> NodeID {
+    fn add_generator_mod(
+        g: &mut TypedGraph,
+        ir: &mut Interner,
+        gt: Sym,
+        name: &str,
+        kind: &str,
+        coord_dims: &[i64],
+        params: &[i64],
+        modulus: i64,
+    ) -> NodeID {
         let nid = add_generator(g, ir, gt, name, kind, coord_dims, params);
         let modulus_key = ir.intern("modulus");
-        g.node_mut(nid).attrs.insert(modulus_key, Value::Int(modulus));
+        g.node_mut(nid)
+            .attrs
+            .insert(modulus_key, Value::Int(modulus));
         nid
     }
 
@@ -7359,7 +8851,10 @@ mod dim_infer_tests {
     fn cell(ir: &mut Interner, r: i64, c: i64, colour: &str) -> Value {
         let colour_sym = ir.intern(colour);
         Value::Tuple(Arc::new(smallvec::smallvec![
-            Value::Str(ir.intern("cell")), Value::Int(r), Value::Int(c), Value::Str(colour_sym)
+            Value::Str(ir.intern("cell")),
+            Value::Int(r),
+            Value::Int(c),
+            Value::Str(colour_sym)
         ]))
     }
 
@@ -7393,9 +8888,18 @@ mod dim_infer_tests {
     ) -> Value {
         let mut a = TermArena::new();
         let goal_t = a.add(TermNode::Lit { value: goal });
-        let field_sym = if field.is_empty() { Sym::default() } else { ir.intern(field) };
+        let field_sym = if field.is_empty() {
+            Sym::default()
+        } else {
+            ir.intern(field)
+        };
         let idx = a.add(TermNode::DimInfer {
-            goal: goal_t, codebook_type, exclude: None, generator_type, max_dims, field: field_sym,
+            goal: goal_t,
+            codebook_type,
+            exclude: None,
+            generator_type,
+            max_dims,
+            field: field_sym,
         });
         let mut env: Env = Env::new();
         let mut ctx = EvalCtx::new(g, ir);
@@ -7418,9 +8922,18 @@ mod dim_infer_tests {
     ) -> Value {
         let mut a = TermArena::new();
         let goal_t = a.add(TermNode::Lit { value: goal });
-        let field_sym = if field.is_empty() { Sym::default() } else { ir.intern(field) };
+        let field_sym = if field.is_empty() {
+            Sym::default()
+        } else {
+            ir.intern(field)
+        };
         let idx = a.add(TermNode::DimInfer {
-            goal: goal_t, codebook_type, exclude: None, generator_type, max_dims, field: field_sym,
+            goal: goal_t,
+            codebook_type,
+            exclude: None,
+            generator_type,
+            max_dims,
+            field: field_sym,
         });
         let mut env: Env = Env::new();
         let mut ctx = EvalCtx::new(g, ir).with_dim_infer_witness(w);
@@ -7447,7 +8960,11 @@ mod dim_infer_tests {
         for i in 0..n {
             each(i, &mut w);
         }
-        (w.calls() as u64, w.distinct_ordered() as u64, w.distinct_unordered() as u64)
+        (
+            w.calls() as u64,
+            w.distinct_ordered() as u64,
+            w.distinct_unordered() as u64,
+        )
     }
 
     /// The shared asymmetric-tromino fixture: an "L" of 3 red cells at
@@ -7456,7 +8973,11 @@ mod dim_infer_tests {
     /// exactly what makes "the correct k is reported" a meaningful
     /// assertion rather than a coincidence.
     fn tromino(ir: &mut Interner) -> Value {
-        tuple_of(vec![cell(ir, 0, 0, "red"), cell(ir, 0, 1, "red"), cell(ir, 1, 0, "red")])
+        tuple_of(vec![
+            cell(ir, 0, 0, "red"),
+            cell(ir, 0, 1, "red"),
+            cell(ir, 1, 0, "red"),
+        ])
     }
 
     /// (1) A 90-degree-rotated (k=1) shape is recognized via `rotation90`
@@ -7470,16 +8991,38 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let tromino_sig = tromino(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", tromino_sig, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[1, 2, 3]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            tromino_sig,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "rotation90",
+            "rotation90",
+            &[1, 2],
+            &[1, 2, 3],
+        );
         // Hand-computed k=1 image of the tromino (see `rotate90_once`'s
         // doc / this module's design notes): {(0,0),(0,1),(1,1)}.
-        let goal = tuple_of(vec![cell(&mut ir, 0, 0, "red"), cell(&mut ir, 0, 1, "red"), cell(&mut ir, 1, 1, "red")]);
+        let goal = tuple_of(vec![
+            cell(&mut ir, 0, 0, "red"),
+            cell(&mut ir, 0, 1, "red"),
+            cell(&mut ir, 1, 1, "red"),
+        ]);
 
         let result = run(&g, &mut ir, goal, t, gt, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
         assert_eq!(dict_get(&result, "base"), Value::Str(ir.intern("Base")));
-        assert_eq!(dict_get(&result, "generator"), Value::Str(ir.intern("rotation90")));
+        assert_eq!(
+            dict_get(&result, "generator"),
+            Value::Str(ir.intern("rotation90"))
+        );
         assert_eq!(dict_get(&result, "k"), Value::Int(1));
         assert_eq!(dict_get(&result, "dims"), tuple_of(vec![]));
         assert_eq!(dict_get(&result, "transforms"), tuple_of(vec![]));
@@ -7503,15 +9046,29 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let tromino_sig = tromino(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", tromino_sig, &["pred", "coord:r", "coord:c", "val"]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            tromino_sig,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
         add_generator(&mut g, &mut ir, gt, "scale2", "scale2", &[1, 2], &[1, 2, 3]);
         // ×2 image of the tromino about its origin: {(0,0),(0,2),(2,0)}.
-        let goal = tuple_of(vec![cell(&mut ir, 0, 0, "red"), cell(&mut ir, 0, 2, "red"), cell(&mut ir, 2, 0, "red")]);
+        let goal = tuple_of(vec![
+            cell(&mut ir, 0, 0, "red"),
+            cell(&mut ir, 0, 2, "red"),
+            cell(&mut ir, 2, 0, "red"),
+        ]);
 
         let result = run(&g, &mut ir, goal, t, gt, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
         assert_eq!(dict_get(&result, "base"), Value::Str(ir.intern("Base")));
-        assert_eq!(dict_get(&result, "generator"), Value::Str(ir.intern("scale2")));
+        assert_eq!(
+            dict_get(&result, "generator"),
+            Value::Str(ir.intern("scale2"))
+        );
         assert_eq!(dict_get(&result, "k"), Value::Int(1));
         assert_eq!(dict_get(&result, "dims"), tuple_of(vec![]));
         assert_eq!(dict_get(&result, "transforms"), tuple_of(vec![]));
@@ -7529,14 +9086,28 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let tromino_sig = tromino(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", tromino_sig, &["pred", "coord:r", "coord:c", "val"]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            tromino_sig,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
         add_generator(&mut g, &mut ir, gt, "scale2", "scale2", &[1, 2], &[1, 2, 3]);
         // ×4 image of the tromino: {(0,0),(0,4),(4,0)}.
-        let goal = tuple_of(vec![cell(&mut ir, 0, 0, "red"), cell(&mut ir, 0, 4, "red"), cell(&mut ir, 4, 0, "red")]);
+        let goal = tuple_of(vec![
+            cell(&mut ir, 0, 0, "red"),
+            cell(&mut ir, 0, 4, "red"),
+            cell(&mut ir, 4, 0, "red"),
+        ]);
 
         let result = run(&g, &mut ir, goal, t, gt, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
-        assert_eq!(dict_get(&result, "generator"), Value::Str(ir.intern("scale2")));
+        assert_eq!(
+            dict_get(&result, "generator"),
+            Value::Str(ir.intern("scale2"))
+        );
         assert_eq!(dict_get(&result, "k"), Value::Int(2));
         assert_eq!(dict_get(&result, "identity"), Value::Bool(true));
     }
@@ -7572,8 +9143,24 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let base = cycle_pair(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", base, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator_mod(&mut g, &mut ir, gt, "cycle4", "modular", &[1], &[1, 2, 3], 4);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            base,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator_mod(
+            &mut g,
+            &mut ir,
+            gt,
+            "cycle4",
+            "modular",
+            &[1],
+            &[1, 2, 3],
+            4,
+        );
         // k=1 image of the pair under +1 mod 4 on the row slot:
         // (0,0)->(1,0), (3,1)->(0,1) (the row-3 cell WRAPS to 0).
         let goal = tuple_of(vec![cell(&mut ir, 1, 0, "red"), cell(&mut ir, 0, 1, "red")]);
@@ -7581,7 +9168,10 @@ mod dim_infer_tests {
         let result = run(&g, &mut ir, goal, t, gt, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
         assert_eq!(dict_get(&result, "base"), Value::Str(ir.intern("Base")));
-        assert_eq!(dict_get(&result, "generator"), Value::Str(ir.intern("cycle4")));
+        assert_eq!(
+            dict_get(&result, "generator"),
+            Value::Str(ir.intern("cycle4"))
+        );
         assert_eq!(dict_get(&result, "k"), Value::Int(1));
         assert_eq!(dict_get(&result, "dims"), tuple_of(vec![]));
         assert_eq!(dict_get(&result, "transforms"), tuple_of(vec![]));
@@ -7603,14 +9193,33 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let base = cycle_pair(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", base, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator_mod(&mut g, &mut ir, gt, "cycle4", "modular", &[1], &[1, 2, 3], 4);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            base,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator_mod(
+            &mut g,
+            &mut ir,
+            gt,
+            "cycle4",
+            "modular",
+            &[1],
+            &[1, 2, 3],
+            4,
+        );
         // k=2 image: (0,0)->(2,0), (3,1)->(1,1) (row 3 wraps: 5 mod 4 = 1).
         let goal = tuple_of(vec![cell(&mut ir, 2, 0, "red"), cell(&mut ir, 1, 1, "red")]);
 
         let result = run(&g, &mut ir, goal, t, gt, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
-        assert_eq!(dict_get(&result, "generator"), Value::Str(ir.intern("cycle4")));
+        assert_eq!(
+            dict_get(&result, "generator"),
+            Value::Str(ir.intern("cycle4"))
+        );
         assert_eq!(dict_get(&result, "k"), Value::Int(2));
         assert_eq!(dict_get(&result, "identity"), Value::Bool(true));
     }
@@ -7626,8 +9235,24 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let base = cycle_pair(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", base, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator_mod(&mut g, &mut ir, gt, "cycle_bad", "modular", &[1], &[1, 2, 3], 0);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            base,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator_mod(
+            &mut g,
+            &mut ir,
+            gt,
+            "cycle_bad",
+            "modular",
+            &[1],
+            &[1, 2, 3],
+            0,
+        );
         let goal = tuple_of(vec![cell(&mut ir, 1, 0, "red"), cell(&mut ir, 0, 1, "red")]);
 
         let result = run(&g, &mut ir, goal, t, gt, 2, "");
@@ -7649,29 +9274,61 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let tromino_sig = tromino(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", tromino_sig, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[1, 2, 3]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            tromino_sig,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "rotation90",
+            "rotation90",
+            &[1, 2],
+            &[1, 2, 3],
+        );
         // k=1 image {(0,0),(0,1),(1,1)}, then +5 rows, +2 cols, red->blue.
         let goal = tuple_of(vec![
-            cell(&mut ir, 5, 2, "blue"), cell(&mut ir, 5, 3, "blue"), cell(&mut ir, 6, 3, "blue"),
+            cell(&mut ir, 5, 2, "blue"),
+            cell(&mut ir, 5, 3, "blue"),
+            cell(&mut ir, 6, 3, "blue"),
         ]);
 
         let result = run(&g, &mut ir, goal, t, gt, 3, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
         assert_eq!(dict_get(&result, "base"), Value::Str(ir.intern("Base")));
-        assert_eq!(dict_get(&result, "generator"), Value::Str(ir.intern("rotation90")));
+        assert_eq!(
+            dict_get(&result, "generator"),
+            Value::Str(ir.intern("rotation90"))
+        );
         assert_eq!(dict_get(&result, "k"), Value::Int(1));
-        assert_eq!(dict_get(&result, "dims"), tuple_of(vec![Value::Int(1), Value::Int(2), Value::Int(3)]));
+        assert_eq!(
+            dict_get(&result, "dims"),
+            tuple_of(vec![Value::Int(1), Value::Int(2), Value::Int(3)])
+        );
 
-        let (Value::Tuple(transforms) | Value::List(transforms)) = dict_get(&result, "transforms") else { panic!("transforms must be a Tuple") };
+        let (Value::Tuple(transforms) | Value::List(transforms)) = dict_get(&result, "transforms")
+        else {
+            panic!("transforms must be a Tuple")
+        };
         assert_eq!(transforms.len(), 3);
         assert_eq!(dict_get(&transforms[0], "kind"), surf("shift"));
         assert_eq!(dict_get(&transforms[0], "delta"), Value::Int(5));
         assert_eq!(dict_get(&transforms[1], "kind"), surf("shift"));
         assert_eq!(dict_get(&transforms[1], "delta"), Value::Int(2));
         assert_eq!(dict_get(&transforms[2], "kind"), surf("subst"));
-        let expect_pair = Value::Tuple(Arc::new(smallvec::smallvec![Value::Str(ir.intern("red")), Value::Str(ir.intern("blue"))]));
-        assert_eq!(dict_get(&transforms[2], "delta"), tuple_of(vec![expect_pair]));
+        let expect_pair = Value::Tuple(Arc::new(smallvec::smallvec![
+            Value::Str(ir.intern("red")),
+            Value::Str(ir.intern("blue"))
+        ]));
+        assert_eq!(
+            dict_get(&transforms[2], "delta"),
+            tuple_of(vec![expect_pair])
+        );
     }
 
     /// (3) Scrambled: the held colour is UNIFORMLY "red", but the goal's
@@ -7687,10 +9344,27 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let tromino_sig = tromino(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", tromino_sig, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[1, 2, 3]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            tromino_sig,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "rotation90",
+            "rotation90",
+            &[1, 2],
+            &[1, 2, 3],
+        );
         let goal = tuple_of(vec![
-            cell(&mut ir, 0, 0, "blue"), cell(&mut ir, 0, 1, "green"), cell(&mut ir, 1, 0, "yellow"),
+            cell(&mut ir, 0, 0, "blue"),
+            cell(&mut ir, 0, 1, "green"),
+            cell(&mut ir, 1, 0, "yellow"),
         ]);
 
         let result = run(&g, &mut ir, goal, t, gt, 2, "");
@@ -7713,14 +9387,36 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let tromino_sig = tromino(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", tromino_sig, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator(&mut g, &mut ir, gt, "reflection_r", "reflection_r", &[1, 2], &[1, 2]);
-        let goal = tuple_of(vec![cell(&mut ir, 1, 0, "red"), cell(&mut ir, 1, 1, "red"), cell(&mut ir, 0, 0, "red")]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            tromino_sig,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "reflection_r",
+            "reflection_r",
+            &[1, 2],
+            &[1, 2],
+        );
+        let goal = tuple_of(vec![
+            cell(&mut ir, 1, 0, "red"),
+            cell(&mut ir, 1, 1, "red"),
+            cell(&mut ir, 0, 0, "red"),
+        ]);
 
         let result = run(&g, &mut ir, goal, t, gt, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
         assert_eq!(dict_get(&result, "base"), Value::Str(ir.intern("Base")));
-        assert_eq!(dict_get(&result, "generator"), Value::Str(ir.intern("reflection_r")));
+        assert_eq!(
+            dict_get(&result, "generator"),
+            Value::Str(ir.intern("reflection_r"))
+        );
         assert_eq!(dict_get(&result, "k"), Value::Int(1));
         assert_eq!(dict_get(&result, "transforms"), tuple_of(vec![]));
         assert_eq!(dict_get(&result, "identity"), Value::Bool(true));
@@ -7737,8 +9433,20 @@ mod dim_infer_tests {
         let gt = ir.intern("DimensionGenerator");
         let tromino_sig = tromino(&mut ir);
         add_part_untyped(&mut g, &mut ir, t, "Base", tromino_sig);
-        add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[1, 2, 3]);
-        let goal = tuple_of(vec![cell(&mut ir, 0, 0, "red"), cell(&mut ir, 0, 1, "red"), cell(&mut ir, 1, 1, "red")]);
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "rotation90",
+            "rotation90",
+            &[1, 2],
+            &[1, 2, 3],
+        );
+        let goal = tuple_of(vec![
+            cell(&mut ir, 0, 0, "red"),
+            cell(&mut ir, 0, 1, "red"),
+            cell(&mut ir, 1, 1, "red"),
+        ]);
 
         let result = run(&g, &mut ir, goal, t, gt, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(false));
@@ -7763,11 +9471,28 @@ mod dim_infer_tests {
             ["cell", 0, 1, "NOVELCOLOR"],
             ["cell", 1, 0, "NOVELCOLOR"],
         ]);
-        add_part_json(&mut g, &mut ir, t, "Base", &held_json, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[1, 2, 3]);
+        add_part_json(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            &held_json,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "rotation90",
+            "rotation90",
+            &[1, 2],
+            &[1, 2, 3],
+        );
         // k=1 image, recoloured to a REAL (goal-interned) colour.
         let goal = tuple_of(vec![
-            cell(&mut ir, 0, 0, "goalcolor"), cell(&mut ir, 0, 1, "goalcolor"), cell(&mut ir, 1, 1, "goalcolor"),
+            cell(&mut ir, 0, 0, "goalcolor"),
+            cell(&mut ir, 0, 1, "goalcolor"),
+            cell(&mut ir, 1, 1, "goalcolor"),
         ]);
 
         let result = run(&g, &mut ir, goal, t, gt, 2, "");
@@ -7776,15 +9501,30 @@ mod dim_infer_tests {
         assert_eq!(dict_get(&result, "k"), Value::Int(1));
         assert_eq!(dict_get(&result, "dims"), tuple_of(vec![Value::Int(3)]));
 
-        let (Value::Tuple(transforms) | Value::List(transforms)) = dict_get(&result, "transforms") else { panic!("transforms must be a Tuple") };
+        let (Value::Tuple(transforms) | Value::List(transforms)) = dict_get(&result, "transforms")
+        else {
+            panic!("transforms must be a Tuple")
+        };
         assert_eq!(transforms.len(), 1);
-        let expect_pair = Value::Tuple(Arc::new(smallvec::smallvec![surf("NOVELCOLOR"), Value::Str(ir.intern("goalcolor"))]));
-        assert_eq!(dict_get(&transforms[0], "delta"), tuple_of(vec![expect_pair]));
+        let expect_pair = Value::Tuple(Arc::new(smallvec::smallvec![
+            surf("NOVELCOLOR"),
+            Value::Str(ir.intern("goalcolor"))
+        ]));
+        assert_eq!(
+            dict_get(&transforms[0], "delta"),
+            tuple_of(vec![expect_pair])
+        );
 
         fn assert_no_placeholder_syms(v: &Value, ir: &Interner) {
             match v {
-                Value::Str(s) => { let _ = ir.resolve(*s); }
-                Value::Tuple(items) | Value::List(items) => { for it in items.iter() { assert_no_placeholder_syms(it, ir); } }
+                Value::Str(s) => {
+                    let _ = ir.resolve(*s);
+                }
+                Value::Tuple(items) | Value::List(items) => {
+                    for it in items.iter() {
+                        assert_no_placeholder_syms(it, ir);
+                    }
+                }
                 Value::Dict(pairs) => {
                     for (k, val) in pairs.iter() {
                         assert_no_placeholder_syms(k, ir);
@@ -7812,14 +9552,32 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let point = tuple_of(vec![cell(&mut ir, 0, 0, "red")]);
-        add_part(&mut g, &mut ir, t, "Point", point, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[3, 2, 1]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Point",
+            point,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "rotation90",
+            "rotation90",
+            &[1, 2],
+            &[3, 2, 1],
+        );
         let goal = tuple_of(vec![cell(&mut ir, 3, 2, "red")]);
 
         let result = run(&g, &mut ir, goal, t, gt, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
         assert_eq!(dict_get(&result, "k"), Value::Int(1));
-        assert_eq!(dict_get(&result, "dims"), tuple_of(vec![Value::Int(1), Value::Int(2)]));
+        assert_eq!(
+            dict_get(&result, "dims"),
+            tuple_of(vec![Value::Int(1), Value::Int(2)])
+        );
     }
 
     /// (8) `field` selection — same convention as `ShapeDecode`/
@@ -7831,13 +9589,41 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let tromino_sig = tromino(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", tromino_sig, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[1, 2, 3]);
-        let goal = tuple_of(vec![cell(&mut ir, 0, 0, "red"), cell(&mut ir, 0, 1, "red"), cell(&mut ir, 1, 1, "red")]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            tromino_sig,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "rotation90",
+            "rotation90",
+            &[1, 2],
+            &[1, 2, 3],
+        );
+        let goal = tuple_of(vec![
+            cell(&mut ir, 0, 0, "red"),
+            cell(&mut ir, 0, 1, "red"),
+            cell(&mut ir, 1, 1, "red"),
+        ]);
 
-        assert_eq!(run(&g, &mut ir, goal.clone(), t, gt, 2, "explained"), Value::Bool(true));
-        assert_eq!(run(&g, &mut ir, goal.clone(), t, gt, 2, "base"), Value::Str(ir.intern("Base")));
-        assert_eq!(run(&g, &mut ir, goal.clone(), t, gt, 2, "generator"), Value::Str(ir.intern("rotation90")));
+        assert_eq!(
+            run(&g, &mut ir, goal.clone(), t, gt, 2, "explained"),
+            Value::Bool(true)
+        );
+        assert_eq!(
+            run(&g, &mut ir, goal.clone(), t, gt, 2, "base"),
+            Value::Str(ir.intern("Base"))
+        );
+        assert_eq!(
+            run(&g, &mut ir, goal.clone(), t, gt, 2, "generator"),
+            Value::Str(ir.intern("rotation90"))
+        );
         assert_eq!(run(&g, &mut ir, goal, t, gt, 2, "k"), Value::Int(1));
     }
 
@@ -7861,11 +9647,30 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let tromino_sig = tromino(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", tromino_sig, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[1, 2, 3]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            tromino_sig,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "rotation90",
+            "rotation90",
+            &[1, 2],
+            &[1, 2, 3],
+        );
         add_generator(&mut g, &mut ir, gt, "scale2", "scale2", &[1, 2], &[1, 2, 3]);
         // rotate90 k=1 {(0,0),(0,1),(1,1)}, then scale2 k=1 -> {(0,0),(0,2),(2,2)}.
-        let goal = tuple_of(vec![cell(&mut ir, 0, 0, "red"), cell(&mut ir, 0, 2, "red"), cell(&mut ir, 2, 2, "red")]);
+        let goal = tuple_of(vec![
+            cell(&mut ir, 0, 0, "red"),
+            cell(&mut ir, 0, 2, "red"),
+            cell(&mut ir, 2, 2, "red"),
+        ]);
 
         let result = run(&g, &mut ir, goal, t, gt, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
@@ -7873,11 +9678,20 @@ mod dim_infer_tests {
         assert_eq!(dict_get(&result, "length"), Value::Int(2));
         assert_eq!(
             dict_get(&result, "generators"),
-            tuple_of(vec![Value::Str(ir.intern("rotation90")), Value::Str(ir.intern("scale2"))])
+            tuple_of(vec![
+                Value::Str(ir.intern("rotation90")),
+                Value::Str(ir.intern("scale2"))
+            ])
         );
-        assert_eq!(dict_get(&result, "ks"), tuple_of(vec![Value::Int(1), Value::Int(1)]));
+        assert_eq!(
+            dict_get(&result, "ks"),
+            tuple_of(vec![Value::Int(1), Value::Int(1)])
+        );
         assert_eq!(dict_get(&result, "latent_name"), surf("rotation90+scale2"));
-        assert_eq!(dict_get(&result, "generator"), Value::Str(ir.intern("rotation90")));
+        assert_eq!(
+            dict_get(&result, "generator"),
+            Value::Str(ir.intern("rotation90"))
+        );
         assert_eq!(dict_get(&result, "k"), Value::Int(1));
         assert_eq!(dict_get(&result, "dims"), tuple_of(vec![]));
         assert_eq!(dict_get(&result, "transforms"), tuple_of(vec![]));
@@ -7897,24 +9711,60 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let tromino_sig = tromino(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", tromino_sig, &["pred", "coord:r", "coord:c", "val"]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            tromino_sig,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
         // All three generators present — the pair inference must pick the
         // reflection, not the rotation, for THIS image.
-        add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[1, 2, 3]);
-        add_generator(&mut g, &mut ir, gt, "reflection_r", "reflection_r", &[1, 2], &[1, 2]);
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "rotation90",
+            "rotation90",
+            &[1, 2],
+            &[1, 2, 3],
+        );
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "reflection_r",
+            "reflection_r",
+            &[1, 2],
+            &[1, 2],
+        );
         add_generator(&mut g, &mut ir, gt, "scale2", "scale2", &[1, 2], &[1, 2, 3]);
         // reflect_r k=1 {(1,0),(1,1),(0,0)}, then scale2 k=1 -> {(0,0),(2,0),(2,2)}.
-        let goal = tuple_of(vec![cell(&mut ir, 0, 0, "red"), cell(&mut ir, 2, 0, "red"), cell(&mut ir, 2, 2, "red")]);
+        let goal = tuple_of(vec![
+            cell(&mut ir, 0, 0, "red"),
+            cell(&mut ir, 2, 0, "red"),
+            cell(&mut ir, 2, 2, "red"),
+        ]);
 
         let result = run(&g, &mut ir, goal, t, gt, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
         assert_eq!(dict_get(&result, "length"), Value::Int(2));
         assert_eq!(
             dict_get(&result, "generators"),
-            tuple_of(vec![Value::Str(ir.intern("reflection_r")), Value::Str(ir.intern("scale2"))])
+            tuple_of(vec![
+                Value::Str(ir.intern("reflection_r")),
+                Value::Str(ir.intern("scale2"))
+            ])
         );
-        assert_eq!(dict_get(&result, "ks"), tuple_of(vec![Value::Int(1), Value::Int(1)]));
-        assert_eq!(dict_get(&result, "latent_name"), surf("reflection_r+scale2"));
+        assert_eq!(
+            dict_get(&result, "ks"),
+            tuple_of(vec![Value::Int(1), Value::Int(1)])
+        );
+        assert_eq!(
+            dict_get(&result, "latent_name"),
+            surf("reflection_r+scale2")
+        );
         assert_eq!(dict_get(&result, "identity"), Value::Bool(true));
     }
 
@@ -7932,16 +9782,42 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let tromino_sig = tromino(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", tromino_sig, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[1, 2, 3]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            tromino_sig,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "rotation90",
+            "rotation90",
+            &[1, 2],
+            &[1, 2, 3],
+        );
         add_generator(&mut g, &mut ir, gt, "scale2", "scale2", &[1, 2], &[1, 2, 3]);
         // Pure ×2 image of the tromino about its origin: {(0,0),(0,2),(2,0)}.
-        let goal = tuple_of(vec![cell(&mut ir, 0, 0, "red"), cell(&mut ir, 0, 2, "red"), cell(&mut ir, 2, 0, "red")]);
+        let goal = tuple_of(vec![
+            cell(&mut ir, 0, 0, "red"),
+            cell(&mut ir, 0, 2, "red"),
+            cell(&mut ir, 2, 0, "red"),
+        ]);
 
         let result = run(&g, &mut ir, goal, t, gt, 2, "");
         assert_eq!(dict_get(&result, "explained"), Value::Bool(true));
-        assert_eq!(dict_get(&result, "length"), Value::Int(1), "a single-generator-explainable observation must stay length 1");
-        assert_eq!(dict_get(&result, "generator"), Value::Str(ir.intern("scale2")));
+        assert_eq!(
+            dict_get(&result, "length"),
+            Value::Int(1),
+            "a single-generator-explainable observation must stay length 1"
+        );
+        assert_eq!(
+            dict_get(&result, "generator"),
+            Value::Str(ir.intern("scale2"))
+        );
         assert_eq!(dict_get(&result, "k"), Value::Int(1));
         assert_eq!(
             dict_get(&result, "generators"),
@@ -7985,7 +9861,6 @@ mod dim_infer_tests {
         AUDIT_TESTS.lock().unwrap_or_else(|e| e.into_inner())
     }
 
-
     /// D-RED — the COLLAPSE DETECTOR. Seven evaluations of the same decode
     /// against an unchanged graph. Ground truth, declared in the prereg
     /// before this existed: **calls 7, distinct 1, EXACTLY.**
@@ -8002,17 +9877,37 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let sig = tromino(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", sig, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[1, 2, 3]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            sig,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "rotation90",
+            "rotation90",
+            &[1, 2],
+            &[1, 2, 3],
+        );
         let goal = tuple_of(vec![
-            cell(&mut ir, 0, 0, "red"), cell(&mut ir, 0, 1, "red"), cell(&mut ir, 1, 1, "red"),
+            cell(&mut ir, 0, 0, "red"),
+            cell(&mut ir, 0, 1, "red"),
+            cell(&mut ir, 1, 1, "red"),
         ]);
 
         let (calls, ord, unord) = witnessed(7, |_, w| {
             run_witnessed(&g, &mut ir, goal.clone(), t, gt, 2, "", w);
         });
         assert_eq!(calls, 7, "the recording site must see every invocation");
-        assert_eq!(ord, 1, "seven IDENTICAL argument sets are ONE distinct tuple");
+        assert_eq!(
+            ord, 1,
+            "seven IDENTICAL argument sets are ONE distinct tuple"
+        );
         assert_eq!(unord, 1);
     }
 
@@ -8029,8 +9924,23 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let sig = tromino(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", sig, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[1, 2, 3]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            sig,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "rotation90",
+            "rotation90",
+            &[1, 2],
+            &[1, 2, 3],
+        );
         let goals: Vec<Value> = (0..7)
             .map(|i| {
                 tuple_of(vec![
@@ -8068,10 +9978,27 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let sig = tromino(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", sig, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[1, 2, 3]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            sig,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "rotation90",
+            "rotation90",
+            &[1, 2],
+            &[1, 2, 3],
+        );
         let goal = tuple_of(vec![
-            cell(&mut ir, 0, 0, "red"), cell(&mut ir, 0, 1, "red"), cell(&mut ir, 1, 1, "red"),
+            cell(&mut ir, 0, 0, "red"),
+            cell(&mut ir, 0, 1, "red"),
+            cell(&mut ir, 1, 1, "red"),
         ]);
 
         // ONE witness across the seven growth steps: the codebook changes
@@ -8082,15 +10009,24 @@ mod dim_infer_tests {
             run_witnessed(&g, &mut ir, goal.clone(), t, gt, 2, "", &mut w);
             // grow the codebook by one part — the mint the sd loop performs
             let grown = tuple_of(vec![
-                cell(&mut ir, i + 10, 0, "blue"), cell(&mut ir, i + 10, 1, "blue"),
+                cell(&mut ir, i + 10, 0, "blue"),
+                cell(&mut ir, i + 10, 1, "blue"),
             ]);
             let name = format!("Grown{}", i);
-            add_part(&mut g, &mut ir, t, &name, grown, &["pred", "coord:r", "coord:c", "val"]);
+            add_part(
+                &mut g,
+                &mut ir,
+                t,
+                &name,
+                grown,
+                &["pred", "coord:r", "coord:c", "val"],
+            );
         }
 
         assert_eq!(w.calls(), 7);
         assert_eq!(
-            w.distinct_ordered(), 7,
+            w.distinct_ordered(),
+            7,
             "codebook growth MUST change the encoding — this is the mechanism the \
              irreducibility hypothesis rests on, and an encoder blind to it cannot rule"
         );
@@ -8109,8 +10045,23 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let sig = tromino(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", sig, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[1, 2, 3]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            sig,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "rotation90",
+            "rotation90",
+            &[1, 2],
+            &[1, 2, 3],
+        );
         let goals: Vec<Value> = (0..7)
             .map(|i| {
                 tuple_of(vec![
@@ -8154,8 +10105,23 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let sig = tromino(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", sig, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[1, 2, 3]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            sig,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "rotation90",
+            "rotation90",
+            &[1, 2],
+            &[1, 2, 3],
+        );
         let goal_a = tuple_of(vec![cell(&mut ir, 0, 0, "red"), cell(&mut ir, 0, 1, "red")]);
         let goal_b = tuple_of(vec![cell(&mut ir, 5, 0, "red"), cell(&mut ir, 0, 1, "red")]);
 
@@ -8171,17 +10137,35 @@ mod dim_infer_tests {
         let base = encode_dim_infer_args(&parts, &gens, &ga, 2, Sym::default(), false);
 
         // goal
-        assert_ne!(base, encode_dim_infer_args(&parts, &gens, &gb, 2, Sym::default(), false));
+        assert_ne!(
+            base,
+            encode_dim_infer_args(&parts, &gens, &gb, 2, Sym::default(), false)
+        );
         // max_dims
-        assert_ne!(base, encode_dim_infer_args(&parts, &gens, &ga, 3, Sym::default(), false));
+        assert_ne!(
+            base,
+            encode_dim_infer_args(&parts, &gens, &ga, 3, Sym::default(), false)
+        );
         // field
-        assert_ne!(base, encode_dim_infer_args(&parts, &gens, &ga, 2, fld, false));
+        assert_ne!(
+            base,
+            encode_dim_infer_args(&parts, &gens, &ga, 2, fld, false)
+        );
         // parts (the codebook)
-        assert_ne!(base, encode_dim_infer_args(&parts[..0], &gens, &ga, 2, Sym::default(), false));
+        assert_ne!(
+            base,
+            encode_dim_infer_args(&parts[..0], &gens, &ga, 2, Sym::default(), false)
+        );
         // generators
-        assert_ne!(base, encode_dim_infer_args(&parts, &gens[..0], &ga, 2, Sym::default(), false));
+        assert_ne!(
+            base,
+            encode_dim_infer_args(&parts, &gens[..0], &ga, 2, Sym::default(), false)
+        );
         // and identity: the same inputs encode identically, every time
-        assert_eq!(base, encode_dim_infer_args(&parts, &gens, &ga, 2, Sym::default(), false));
+        assert_eq!(
+            base,
+            encode_dim_infer_args(&parts, &gens, &ga, 2, Sym::default(), false)
+        );
     }
 
     /// §9 — the site is INERT while the audit is off. A recording site that
@@ -8195,8 +10179,23 @@ mod dim_infer_tests {
         let t = ir.intern("ShapeSignature");
         let gt = ir.intern("DimensionGenerator");
         let sig = tromino(&mut ir);
-        add_part(&mut g, &mut ir, t, "Base", sig, &["pred", "coord:r", "coord:c", "val"]);
-        add_generator(&mut g, &mut ir, gt, "rotation90", "rotation90", &[1, 2], &[1, 2, 3]);
+        add_part(
+            &mut g,
+            &mut ir,
+            t,
+            "Base",
+            sig,
+            &["pred", "coord:r", "coord:c", "val"],
+        );
+        add_generator(
+            &mut g,
+            &mut ir,
+            gt,
+            "rotation90",
+            "rotation90",
+            &[1, 2],
+            &[1, 2, 3],
+        );
         let goal = tuple_of(vec![cell(&mut ir, 0, 0, "red"), cell(&mut ir, 0, 1, "red")]);
 
         // Reads process-global counters, so it needs the instrument's
@@ -8250,12 +10249,20 @@ mod seed_json_shape_tests {
                 }
                 let mut arena = TermArena::new();
                 let mut ir = Interner::new();
-                let idx = term_from_json(&term_json, &mut arena, &mut ir)
-                    .unwrap_or_else(|e| panic!("field={field:?} wild_objects={wild_objects:?} failed to parse: {e:?}"));
-                let TermNode::ShapeDecode { wild_objects: got, .. } = arena.get(idx) else {
+                let idx = term_from_json(&term_json, &mut arena, &mut ir).unwrap_or_else(|e| {
+                    panic!("field={field:?} wild_objects={wild_objects:?} failed to parse: {e:?}")
+                });
+                let TermNode::ShapeDecode {
+                    wild_objects: got, ..
+                } = arena.get(idx)
+                else {
                     panic!("expected ShapeDecode")
                 };
-                assert_eq!(*got, wild_objects.unwrap_or(false), "field={field:?} wild_objects={wild_objects:?}");
+                assert_eq!(
+                    *got,
+                    wild_objects.unwrap_or(false),
+                    "field={field:?} wild_objects={wild_objects:?}"
+                );
             }
         }
     }
@@ -8283,27 +10290,40 @@ mod transfer_decode_tests {
         Value::Tuple(Arc::new(items.into_iter().collect()))
     }
     fn dic(pairs: Vec<(&str, Value)>, ir: &mut Interner) -> Value {
-        let p: Vec<(Value, Value)> = pairs.into_iter().map(|(k, v)| (Value::Str(ir.intern(k)), v)).collect();
+        let p: Vec<(Value, Value)> = pairs
+            .into_iter()
+            .map(|(k, v)| (Value::Str(ir.intern(k)), v))
+            .collect();
         Value::Dict(Arc::from(p))
     }
     fn step(toks: &[&str], ir: &mut Interner) -> Value {
         tup(toks.iter().map(|t| s(t, ir)).collect())
     }
     fn slot(role: &str, cue: &str, cue_kind: &str, source: &str, ir: &mut Interner) -> Value {
-        dic(vec![
-            ("role", s(role, ir)),
-            ("cue", s(cue, ir)),
-            ("cue_kind", s(cue_kind, ir)),
-            ("source", s(source, ir)),
-        ], ir)
+        dic(
+            vec![
+                ("role", s(role, ir)),
+                ("cue", s(cue, ir)),
+                ("cue_kind", s(cue_kind, ir)),
+                ("source", s(source, ir)),
+            ],
+            ir,
+        )
     }
 
     /// Insert one `Mechanism` node into the graph with `slots` (a Tuple-of-
     /// Dict) and `steps` (a Tuple-of-Tuple) attrs — mirroring one
     /// `seeds/mechanism_index.json` entry as it lands on boot. This is what the
     /// graph-native `load_mechanisms` reads (was a Lit-arg Tuple-of-Dicts).
-    fn add_mech(g: &mut TypedGraph, ir: &mut Interner, name: &str, meta_shape: &str,
-                domain: &str, slots: Value, steps: Value) {
+    fn add_mech(
+        g: &mut TypedGraph,
+        ir: &mut Interner,
+        name: &str,
+        meta_shape: &str,
+        domain: &str,
+        slots: Value,
+        steps: Value,
+    ) {
         let t = ir.intern("Mechanism");
         let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
         attrs.insert(ir.intern("name"), s(name, ir));
@@ -8375,7 +10395,15 @@ mod transfer_decode_tests {
             step(&["decode", "only", "FIELD", "in", "FOCUS"], ir),
             step(&["index", "FIELD", "by", "UNIT"], ir),
         ]);
-        add_mech(&mut g, ir, "spatial_foveation", "selective_gating", "space", fov_slots, fov_steps);
+        add_mech(
+            &mut g,
+            ir,
+            "spatial_foveation",
+            "selective_gating",
+            "space",
+            fov_slots,
+            fov_steps,
+        );
         let reg_slots = tup(vec![
             slot("MEASURED", "measure", "verb", "temperature", ir),
             slot("SETPOINT", "to", "prep", "target", ir),
@@ -8386,8 +10414,15 @@ mod transfer_decode_tests {
             step(&["compare", "MEASURED", "to", "SETPOINT"], ir),
             step(&["correct", "ACTUATOR", "toward", "SETPOINT"], ir),
         ]);
-        add_mech(&mut g, ir, "homeostatic_regulation", "feedback_control", "thermoregulation",
-                 reg_slots, reg_steps);
+        add_mech(
+            &mut g,
+            ir,
+            "homeostatic_regulation",
+            "feedback_control",
+            "thermoregulation",
+            reg_slots,
+            reg_steps,
+        );
         // The shape vocabulary the SHARED recogniser reads — `TransferDecode`
         // now DERIVES the goal's meta-shape from it (was a Term arg).
         add_shape_vocab(&mut g, ir);
@@ -8409,15 +10444,26 @@ mod transfer_decode_tests {
             step(&["match", "over", "the", "WHOLE", "FRAME", "SET"], ir),
             step(&["gate", "the", "SCAN", "to", "the", "FOCUS"], ir),
             step(&["index", "the", "RULES", "by", "EVENT", "TYPE"], ir),
-            step(&["decode", "only", "RULES", "in", "FOCUS", "for", "this", "TYPE"], ir),
+            step(
+                &[
+                    "decode", "only", "RULES", "in", "FOCUS", "for", "this", "TYPE",
+                ],
+                ir,
+            ),
         ])
     }
     fn regulation_goal(ir: &mut Interner) -> Value {
         tup(vec![
             step(&["measure", "the", "current", "FIRING", "RATE"], ir),
             step(&["compare", "RATE", "to", "the", "set_point", "BUDGET"], ir),
-            step(&["regulate", "by", "FEEDBACK", "toward", "the", "BUDGET"], ir),
-            step(&["correct", "the", "SCHEDULER", "toward", "the", "BUDGET"], ir),
+            step(
+                &["regulate", "by", "FEEDBACK", "toward", "the", "BUDGET"],
+                ir,
+            ),
+            step(
+                &["correct", "the", "SCHEDULER", "toward", "the", "BUDGET"],
+                ir,
+            ),
         ])
     }
 
@@ -8477,25 +10523,49 @@ mod transfer_decode_tests {
         let goal = foveation_goal(&mut ir);
         let r = run(&mut ir, &g, goal);
 
-        assert_eq!(as_str(&rd(&r, "meta_shape")).as_deref(), Some("selective_gating"));
-        assert_eq!(strvec(&rd(&r, "retrieved")), vec!["spatial_foveation".to_string()]);
+        assert_eq!(
+            as_str(&rd(&r, "meta_shape")).as_deref(),
+            Some("selective_gating")
+        );
+        assert_eq!(
+            strvec(&rd(&r, "retrieved")),
+            vec!["spatial_foveation".to_string()]
+        );
 
         let t = rd(&r, "transferred");
         assert_eq!(rd(&t, "total_fit"), Value::Int(3));
-        assert_eq!(as_str(&rd(&t, "mechanism")).as_deref(), Some("spatial_foveation"));
+        assert_eq!(
+            as_str(&rd(&t, "mechanism")).as_deref(),
+            Some("spatial_foveation")
+        );
         assert_eq!(as_str(&rd(&t, "source_domain")).as_deref(), Some("space"));
         let plan = plan_of(&rd(&t, "plan"));
-        assert_eq!(plan, vec![
-            vec!["quantize", "RULE", "into", "EVENT_TYPE"],
-            vec!["decode", "only", "RULE", "in", "FOCUS"],
-            vec!["index", "RULE", "by", "EVENT_TYPE"],
-        ]);
+        assert_eq!(
+            plan,
+            vec![
+                vec!["quantize", "RULE", "into", "EVENT_TYPE"],
+                vec!["decode", "only", "RULE", "in", "FOCUS"],
+                vec!["index", "RULE", "by", "EVENT_TYPE"],
+            ]
+        );
         // slot_map fillers derived from the goal, not the mechanism's source.
         let sm = rd(&t, "slot_map");
-        assert_eq!(as_str(&rd(&rd(&sm, "FIELD"), "target")).as_deref(), Some("RULE"));
-        assert_eq!(as_str(&rd(&rd(&sm, "FOCUS"), "target")).as_deref(), Some("FOCUS"));
-        assert_eq!(as_str(&rd(&rd(&sm, "UNIT"), "target")).as_deref(), Some("EVENT_TYPE"));
-        assert_eq!(as_str(&rd(&rd(&sm, "FIELD"), "cue")).as_deref(), Some("scan"));
+        assert_eq!(
+            as_str(&rd(&rd(&sm, "FIELD"), "target")).as_deref(),
+            Some("RULE")
+        );
+        assert_eq!(
+            as_str(&rd(&rd(&sm, "FOCUS"), "target")).as_deref(),
+            Some("FOCUS")
+        );
+        assert_eq!(
+            as_str(&rd(&rd(&sm, "UNIT"), "target")).as_deref(),
+            Some("EVENT_TYPE")
+        );
+        assert_eq!(
+            as_str(&rd(&rd(&sm, "FIELD"), "cue")).as_deref(),
+            Some("scan")
+        );
         assert_eq!(strvec(&rd(&t, "unbound_roles")), Vec::<String>::new());
     }
 
@@ -8508,16 +10578,25 @@ mod transfer_decode_tests {
         let goal = regulation_goal(&mut ir);
         let r = run(&mut ir, &g, goal);
 
-        assert_eq!(strvec(&rd(&r, "retrieved")), vec!["homeostatic_regulation".to_string()]);
+        assert_eq!(
+            strvec(&rd(&r, "retrieved")),
+            vec!["homeostatic_regulation".to_string()]
+        );
         let t = rd(&r, "transferred");
         assert_eq!(rd(&t, "total_fit"), Value::Int(3));
-        assert_eq!(as_str(&rd(&t, "mechanism")).as_deref(), Some("homeostatic_regulation"));
+        assert_eq!(
+            as_str(&rd(&t, "mechanism")).as_deref(),
+            Some("homeostatic_regulation")
+        );
         let plan = plan_of(&rd(&t, "plan"));
-        assert_eq!(plan, vec![
-            vec!["measure", "FIRING_RATE"],
-            vec!["compare", "FIRING_RATE", "to", "BUDGET"],
-            vec!["correct", "SCHEDULER", "toward", "BUDGET"],
-        ]);
+        assert_eq!(
+            plan,
+            vec![
+                vec!["measure", "FIRING_RATE"],
+                vec!["compare", "FIRING_RATE", "to", "BUDGET"],
+                vec!["correct", "SCHEDULER", "toward", "BUDGET"],
+            ]
+        );
     }
 
     /// (3) TRANSFER, NOT LOOKUP — a different goal of the SAME shape yields a
@@ -8555,8 +10634,14 @@ mod transfer_decode_tests {
         let r = run(&mut ir, &g, goal);
         assert_eq!(rd(&r, "transferred"), Value::None);
         assert_eq!(strvec(&rd(&r, "retrieved")), Vec::<String>::new());
-        assert_eq!(as_str(&rd(&r, "meta_shape")).as_deref(), Some("global_message_passing"));
-        assert!(matches!(rd(&r, "note"), Value::Surface(SurfaceKind::Text, _)));
+        assert_eq!(
+            as_str(&rd(&r, "meta_shape")).as_deref(),
+            Some("global_message_passing")
+        );
+        assert!(matches!(
+            rd(&r, "note"),
+            Value::Surface(SurfaceKind::Text, _)
+        ));
     }
 
     /// (5) NO SHAPE — a goal whose text matches NO shape keyword derives
@@ -8613,12 +10698,15 @@ mod transfer_decode_tests {
             p_attrs.insert(ir.intern("name"), s(pname, &mut ir));
             p_attrs.insert(ir.intern("keywords"), kws);
             let p_id = g.insert_node(p_t, p_attrs);
-            g.insert_edge(strong_id, hp, p_id, FxHashMap::<Sym, Value>::default()).unwrap();
+            g.insert_edge(strong_id, hp, p_id, FxHashMap::<Sym, Value>::default())
+                .unwrap();
         }
 
         let run_rec = |ir: &mut Interner, g: &TypedGraph, text: &str| -> Value {
             let mut a = TermArena::new();
-            let txt = a.add(TermNode::Lit { value: Value::Str(ir.intern(text)) });
+            let txt = a.add(TermNode::Lit {
+                value: Value::Str(ir.intern(text)),
+            });
             let idx = a.add(TermNode::RecogniseShape { text: txt });
             let mut env: Env = Env::new();
             let mut ctx = EvalCtx::new(g, ir);
@@ -8630,7 +10718,10 @@ mod transfer_decode_tests {
         // (which stubs interned Strs as "<interned>").
         // "feedback" only → feedback_control.
         let r1 = run_rec(&mut ir, &g, "regulate by feedback");
-        assert_eq!(td_val_to_string(&r1, &ir).as_deref(), Some("feedback_control"));
+        assert_eq!(
+            td_val_to_string(&r1, &ir).as_deref(),
+            Some("feedback_control")
+        );
         // "gate focus" → both selective_gating(1) and aa_strong(2) match; the
         // 2-principle aa_strong wins by overlap.
         let r2 = run_rec(&mut ir, &g, "gate the focus");
@@ -8669,8 +10760,11 @@ mod motion_energy_tests {
     #[test]
     fn rightward_continuous_motion_reads_opponent_positive() {
         let (h, w) = (6usize, 24usize);
-        let frames = vec![frame(h, w, Some(0)), frame(h, w, Some(4)),
-                          frame(h, w, Some(8))];
+        let frames = vec![
+            frame(h, w, Some(0)),
+            frame(h, w, Some(4)),
+            frame(h, w, Some(8)),
+        ];
         let r = motion_energy_spectrum(&frames, h, w, 3);
         assert!(get(&r, "opponent") > 0.0, "rightward => opponent>0");
         assert!(get(&r, "right") > get(&r, "left"));
@@ -8679,8 +10773,11 @@ mod motion_energy_tests {
     #[test]
     fn leftward_continuous_motion_flips_the_sign() {
         let (h, w) = (6usize, 24usize);
-        let frames = vec![frame(h, w, Some(8)), frame(h, w, Some(4)),
-                          frame(h, w, Some(0))];
+        let frames = vec![
+            frame(h, w, Some(8)),
+            frame(h, w, Some(4)),
+            frame(h, w, Some(0)),
+        ];
         let r = motion_energy_spectrum(&frames, h, w, 3);
         assert!(get(&r, "opponent") < 0.0, "leftward => opponent<0");
     }
@@ -8712,7 +10809,10 @@ mod motion_energy_tests {
     fn degenerate_inputs_are_all_zero_not_a_panic() {
         assert_eq!(get(&motion_energy_spectrum(&[], 6, 24, 0), "opponent"), 0.0);
         let one = vec![frame(6, 24, Some(0))];
-        assert_eq!(get(&motion_energy_spectrum(&one, 6, 24, 1), "total_ac"), 0.0);
+        assert_eq!(
+            get(&motion_energy_spectrum(&one, 6, 24, 1), "total_ac"),
+            0.0
+        );
     }
 }
 
@@ -8753,10 +10853,15 @@ mod meta_shape_first_class_tests {
     /// A `[predicate, value]` relation set, the shape `domains/meta_shape.py::
     /// item_signature` emits (sorted by predicate).
     fn sig(rels: &[(&str, &str)], ir: &mut Interner) -> Value {
-        let mut r: Vec<(String, String)> =
-            rels.iter().map(|(p, v)| (p.to_string(), v.to_string())).collect();
+        let mut r: Vec<(String, String)> = rels
+            .iter()
+            .map(|(p, v)| (p.to_string(), v.to_string()))
+            .collect();
         r.sort();
-        tup(r.iter().map(|(p, v)| tup(vec![s(p, ir), s(v, ir)])).collect())
+        tup(r
+            .iter()
+            .map(|(p, v)| tup(vec![s(p, ir), s(v, ir)]))
+            .collect())
     }
 
     fn recognise(ir: &mut Interner, g: &TypedGraph, input: Value) -> Value {
@@ -8797,8 +10902,10 @@ mod meta_shape_first_class_tests {
         add_shape(&mut g, &mut ir, "aardvark_shape", &["alpha"]);
         add_shape(&mut g, &mut ir, "zebra_shape", &["omega"]);
         let text = s("only omega here", &mut ir);
-        assert_eq!(name_of(&recognise(&mut ir, &g, text), &ir),
-                   Some("zebra_shape".to_string()));
+        assert_eq!(
+            name_of(&recognise(&mut ir, &g, text), &ir),
+            Some("zebra_shape".to_string())
+        );
     }
 
     /// DISTINCT KEYWORD HITS BREAK WHAT USED TO BREAK ALPHABETICALLY. Both
@@ -8813,8 +10920,10 @@ mod meta_shape_first_class_tests {
         add_shape(&mut g, &mut ir, "aardvark_shape", &["layer"]);
         add_shape(&mut g, &mut ir, "zebra_shape", &["gate", "policy"]);
         let text = s("gate the layer by policy", &mut ir);
-        assert_eq!(name_of(&recognise(&mut ir, &g, text), &ir),
-                   Some("zebra_shape".to_string()));
+        assert_eq!(
+            name_of(&recognise(&mut ir, &g, text), &ir),
+            Some("zebra_shape".to_string())
+        );
     }
 
     /// A TYPED SLOT OUTRANKS PROSE. `predict` appears as a relation PREDICATE
@@ -8828,9 +10937,14 @@ mod meta_shape_first_class_tests {
         let mut g = TypedGraph::new();
         add_shape(&mut g, &mut ir, "prose_shape", &["frame"]);
         add_shape(&mut g, &mut ir, "slot_shape", &["predict"]);
-        let obs = sig(&[("predict", "the next frame"), ("is_a", "belief")], &mut ir);
-        assert_eq!(name_of(&recognise(&mut ir, &g, obs), &ir),
-                   Some("slot_shape".to_string()));
+        let obs = sig(
+            &[("predict", "the next frame"), ("is_a", "belief")],
+            &mut ir,
+        );
+        assert_eq!(
+            name_of(&recognise(&mut ir, &g, obs), &ir),
+            Some("slot_shape".to_string())
+        );
     }
 
     /// The legacy FLAT-TEXT path is still reachable and still scores — the Term
@@ -8841,8 +10955,10 @@ mod meta_shape_first_class_tests {
         let mut g = TypedGraph::new();
         add_shape(&mut g, &mut ir, "feedback_control", &["feedback"]);
         let text = s("regulate by feedback toward the budget", &mut ir);
-        assert_eq!(name_of(&recognise(&mut ir, &g, text), &ir),
-                   Some("feedback_control".to_string()));
+        assert_eq!(
+            name_of(&recognise(&mut ir, &g, text), &ir),
+            Some("feedback_control".to_string())
+        );
     }
 
     // ---------------------------------------------------------------- AR3 --
@@ -8863,9 +10979,16 @@ mod meta_shape_first_class_tests {
         let wild = ir.intern("·?·");
         let f = ir.intern(field);
         let mut a = TermArena::new();
-        let ot = a.add(TermNode::Lit { value: Value::Node(obs) });
+        let ot = a.add(TermNode::Lit {
+            value: Value::Node(obs),
+        });
         let idx = a.add(TermNode::MetaShapeMint {
-            observation: ot, obs_type, status_value, wild, field: f });
+            observation: ot,
+            obs_type,
+            status_value,
+            wild,
+            field: f,
+        });
         let mut env: Env = Env::new();
         let mut ctx = EvalCtx::new(g, ir);
         evaluate(&a, idx, &mut env, &mut ctx)
@@ -8900,8 +11023,10 @@ mod meta_shape_first_class_tests {
         assert_eq!(mint_field(&mut ir, &g, 0, "mintable"), Value::Int(1));
         // the name is CONTENT-derived from the SORTED predicate set — never
         // positional, never truncated (contrast SHAPE_AUDIT.md §3.1).
-        assert_eq!(td_val_to_string(&mint_field(&mut ir, &g, 0, "name"), &ir),
-                   Some("ms_buyer_lot".to_string()));
+        assert_eq!(
+            td_val_to_string(&mint_field(&mut ir, &g, 0, "name"), &ir),
+            Some("ms_buyer_lot".to_string())
+        );
         // and the core still covers a NEVER-SEEN variant of the same skeleton.
         let core = mint_field(&mut ir, &g, 0, "signature");
         let variant = sig(&[("buyer", "erin"), ("lot", "11")], &mut ir);
@@ -8950,25 +11075,34 @@ mod meta_shape_first_class_tests {
     fn a_universal_predicate_is_dropped_from_the_minted_keywords() {
         let mut ir = Interner::new();
         let mut g = TypedGraph::new();
-        let a1 = sig(&[("is_a", "trade"), ("buyer", "alice"), ("lot", "7")], &mut ir);
-        let a2 = sig(&[("is_a", "trade"), ("buyer", "carol"), ("lot", "9")], &mut ir);
+        let a1 = sig(
+            &[("is_a", "trade"), ("buyer", "alice"), ("lot", "7")],
+            &mut ir,
+        );
+        let a2 = sig(
+            &[("is_a", "trade"), ("buyer", "carol"), ("lot", "9")],
+            &mut ir,
+        );
         let other = sig(&[("is_a", "note"), ("text", "unrelated")], &mut ir);
         add_obs(&mut g, &mut ir, "residual", a1);
         add_obs(&mut g, &mut ir, "residual", a2);
-        add_obs(&mut g, &mut ir, "recognized", other);   // outside the group
-        // identity keeps every predicate...
-        assert_eq!(td_val_to_string(&mint_field(&mut ir, &g, 0, "name"), &ir),
-                   Some("ms_buyer_is_a_lot".to_string()));
+        add_obs(&mut g, &mut ir, "recognized", other); // outside the group
+                                                       // identity keeps every predicate...
+        assert_eq!(
+            td_val_to_string(&mint_field(&mut ir, &g, 0, "name"), &ir),
+            Some("ms_buyer_is_a_lot".to_string())
+        );
         // ...the keywords keep only the discriminative ones.
         let keys = mint_field(&mut ir, &g, 0, "keys");
         let got: Vec<String> = match &keys {
-            Value::Tuple(items) | Value::List(items) =>
-                items.iter().filter_map(|v| td_val_to_string(v, &ir)).collect(),
+            Value::Tuple(items) | Value::List(items) => items
+                .iter()
+                .filter_map(|v| td_val_to_string(v, &ir))
+                .collect(),
             _ => Vec::new(),
         };
         assert_eq!(got, vec!["buyer".to_string(), "lot".to_string()]);
     }
-
 
     /// AN OBSERVER WHO KNOWS NOTHING MUST SEE NOTHING.
     ///
@@ -8987,14 +11121,21 @@ mod meta_shape_first_class_tests {
     fn an_empty_scope_is_a_declaration_but_a_none_scope_is_not() {
         use crate::value::Value;
 
-        assert!(!scope_is_declared(&Value::None),
-                "Value::None must leave the codebook unrestricted (reflex_net)");
+        assert!(
+            !scope_is_declared(&Value::None),
+            "Value::None must leave the codebook unrestricted (reflex_net)"
+        );
 
-        assert!(scope_is_declared(&Value::List(std::sync::Arc::new(Default::default()))),
-                "a PRESENT-BUT-EMPTY scope declares 'knows nothing' and must restrict");
+        assert!(
+            scope_is_declared(&Value::List(std::sync::Arc::new(Default::default()))),
+            "a PRESENT-BUT-EMPTY scope declares 'knows nothing' and must restrict"
+        );
 
-        assert!(scope_is_declared(&Value::List(std::sync::Arc::new(
-                    smallvec::smallvec![Value::Str(Sym::default())]))),
-                "a named scope declares a restriction");
+        assert!(
+            scope_is_declared(&Value::List(std::sync::Arc::new(smallvec::smallvec![
+                Value::Str(Sym::default())
+            ]))),
+            "a named scope declares a restriction"
+        );
     }
 }

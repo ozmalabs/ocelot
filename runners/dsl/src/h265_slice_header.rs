@@ -34,7 +34,9 @@ pub enum H265SliceType {
 }
 
 impl H265SliceType {
-    pub fn to_ue(self) -> u32 { self as u32 }
+    pub fn to_ue(self) -> u32 {
+        self as u32
+    }
     pub fn from_h264(h264_type: u8) -> Option<Self> {
         // H.264 slice types: 0=P, 1=B, 2=I, 3=SP, 4=SI, 5..9=same modulo 5.
         // Take modulo 5 to handle the "all-slice-types-are-this-type" variants.
@@ -42,7 +44,7 @@ impl H265SliceType {
             0 => Some(H265SliceType::P),
             1 => Some(H265SliceType::B),
             2 => Some(H265SliceType::I),
-            _ => None,  // SP/SI not in H.265
+            _ => None, // SP/SI not in H.265
         }
     }
 }
@@ -90,12 +92,18 @@ pub struct BitWriter {
 }
 
 impl Default for BitWriter {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl BitWriter {
     pub fn new() -> Self {
-        Self { bytes: Vec::new(), cur: 0, bits_in_cur: 0 }
+        Self {
+            bytes: Vec::new(),
+            cur: 0,
+            bits_in_cur: 0,
+        }
     }
 
     /// Write `n` bits of `value` MSB-first. `n` must be ≤ 32.
@@ -114,15 +122,17 @@ impl BitWriter {
     }
 
     /// Write a single flag bit.
-    pub fn write_flag(&mut self, b: bool) { self.write_u(b as u32, 1); }
+    pub fn write_flag(&mut self, b: bool) {
+        self.write_u(b as u32, 1);
+    }
 
     /// Unsigned Exp-Golomb code (ue(v)). Encodes `v` as:
     ///   M = floor(log2(v+1))
     ///   write M zeros, then (v+1) in M+1 bits.
     pub fn write_ue(&mut self, v: u32) {
         let x = v as u64 + 1;
-        let m = 63 - x.leading_zeros() as u8;  // floor(log2(x))
-        // M zeros + 1 bit + M info bits = (M+1) bits total carrying x.
+        let m = 63 - x.leading_zeros() as u8; // floor(log2(x))
+                                              // M zeros + 1 bit + M info bits = (M+1) bits total carrying x.
         self.write_u(0, m);
         self.write_u(x as u32, m + 1);
     }
@@ -164,14 +174,15 @@ impl std::fmt::Display for EmitError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             EmitError::UnsupportedSliceType => write!(f, "slice type not supported"),
-            EmitError::InvalidFieldWidth(field) =>
-                write!(f, "invalid field width for {}", field),
+            EmitError::InvalidFieldWidth(field) => write!(f, "invalid field width for {}", field),
         }
     }
 }
 impl std::error::Error for EmitError {}
 impl From<io::Error> for EmitError {
-    fn from(_: io::Error) -> Self { EmitError::UnsupportedSliceType }
+    fn from(_: io::Error) -> Self {
+        EmitError::UnsupportedSliceType
+    }
 }
 
 /// Emit an H.265 slice-segment header into a fresh RBSP byte sequence.
@@ -220,8 +231,10 @@ pub fn emit_h265_slice_header(h: &H265SliceHeader) -> Result<Vec<u8>, EmitError>
     w.write_flag(h.short_term_ref_pic_set_sps_flag);
     if h.short_term_ref_pic_set_sps_flag {
         if h.short_term_ref_pic_set_idx_bits > 0 {
-            w.write_u(h.short_term_ref_pic_set_idx,
-                       h.short_term_ref_pic_set_idx_bits);
+            w.write_u(
+                h.short_term_ref_pic_set_idx,
+                h.short_term_ref_pic_set_idx_bits,
+            );
         }
         // else: 0 RPSs in SPS, no index field emitted.
     }
@@ -355,8 +368,11 @@ mod tests {
         let bytes = emit_h265_slice_header(&h).expect("emit");
         // Length sanity: an I-slice header should be tiny.
         assert!(!bytes.is_empty());
-        assert!(bytes.len() < 16,
-                "I-slice header should be small; got {} bytes", bytes.len());
+        assert!(
+            bytes.len() < 16,
+            "I-slice header should be small; got {} bytes",
+            bytes.len()
+        );
     }
 
     #[test]
@@ -381,7 +397,10 @@ mod tests {
             qp_delta: 0,
             deblocking_filter_disabled_flag: false,
         };
-        let i = H265SliceHeader { slice_type: H265SliceType::I, ..p.clone() };
+        let i = H265SliceHeader {
+            slice_type: H265SliceType::I,
+            ..p.clone()
+        };
         let bytes_p = emit_h265_slice_header(&p).expect("emit P");
         let bytes_i = emit_h265_slice_header(&i).expect("emit I");
         // P-slice writes ref-idx fields; should be ≥ I-slice length.

@@ -49,12 +49,12 @@
 //!   deferred.
 
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
-use crate::l2_dispatch::{Scheduler, Task, PriorityClass};
 use crate::code_cache::{CodeCache, CodeCacheConfig, CodeSize};
+use crate::l2_dispatch::{PriorityClass, Scheduler, Task};
 use crate::sym::Sym;
 
 // =======================================================================
@@ -73,7 +73,11 @@ pub struct Epoch {
 }
 
 impl Epoch {
-    pub fn new() -> Self { Self { n: Arc::new(AtomicU64::new(0)) } }
+    pub fn new() -> Self {
+        Self {
+            n: Arc::new(AtomicU64::new(0)),
+        }
+    }
 
     /// Current epoch — Acquire so workers see the mutation that
     /// preceded the most recent bump.
@@ -90,7 +94,9 @@ impl Epoch {
 }
 
 impl Default for Epoch {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 // =======================================================================
@@ -106,7 +112,9 @@ pub struct HotCounter {
 
 impl HotCounter {
     pub fn new() -> Self {
-        Self { counts: Mutex::new(HashMap::new()) }
+        Self {
+            counts: Mutex::new(HashMap::new()),
+        }
     }
 
     /// Record a fire for `kind`; return the post-increment count.
@@ -122,7 +130,9 @@ impl HotCounter {
     }
 
     pub fn count(&self, kind: Sym) -> u64 {
-        self.counts.lock().unwrap()
+        self.counts
+            .lock()
+            .unwrap()
             .get(&kind)
             .map(|c| c.load(Ordering::Relaxed))
             .unwrap_or(0)
@@ -139,14 +149,19 @@ impl HotCounter {
 
     /// Snapshot (kind, count) pairs — for monitoring + cooling decisions.
     pub fn snapshot(&self) -> Vec<(Sym, u64)> {
-        self.counts.lock().unwrap().iter()
+        self.counts
+            .lock()
+            .unwrap()
+            .iter()
             .map(|(k, v)| (*k, v.load(Ordering::Relaxed)))
             .collect()
     }
 }
 
 impl Default for HotCounter {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 // =======================================================================
@@ -167,7 +182,10 @@ pub struct TierUpPolicy {
 
 impl Default for TierUpPolicy {
     fn default() -> Self {
-        Self { threshold: 100, cooling_threshold: 3 }
+        Self {
+            threshold: 100,
+            cooling_threshold: 3,
+        }
     }
 }
 
@@ -249,13 +267,8 @@ impl<T> AdaptiveDispatcher<T>
 where
     T: CodeSize + Send + Sync + 'static,
 {
-    pub fn new(
-        scheduler: Scheduler,
-        policy: TierUpPolicy,
-        cache_config: CodeCacheConfig,
-    ) -> Self {
-        Self::with_shared_epoch(
-            scheduler, policy, cache_config, Epoch::new())
+    pub fn new(scheduler: Scheduler, policy: TierUpPolicy, cache_config: CodeCacheConfig) -> Self {
+        Self::with_shared_epoch(scheduler, policy, cache_config, Epoch::new())
     }
 
     /// Construct the dispatcher using a pre-existing `Epoch`, e.g.
@@ -285,11 +298,8 @@ where
     /// the threshold from the atomic on every submit instead of from
     /// `policy.threshold`. Allows L6 cybernetic feedback to adjust
     /// the tier-up threshold at runtime via the knob's `store`.
-    pub fn install_threshold_knob(&mut self)
-        -> Arc<std::sync::atomic::AtomicU64>
-    {
-        let knob = Arc::new(std::sync::atomic::AtomicU64::new(
-            self.policy.threshold));
+    pub fn install_threshold_knob(&mut self) -> Arc<std::sync::atomic::AtomicU64> {
+        let knob = Arc::new(std::sync::atomic::AtomicU64::new(self.policy.threshold));
         self.threshold_knob = Some(Arc::clone(&knob));
         knob
     }
@@ -305,15 +315,21 @@ where
 
     /// Use the dispatcher's epoch (e.g. for sharing with the
     /// substrate's Γ-mutation surface).
-    pub fn epoch(&self) -> Epoch { self.epoch.clone() }
+    pub fn epoch(&self) -> Epoch {
+        self.epoch.clone()
+    }
 
-    pub fn hot_counter(&self) -> Arc<HotCounter> { Arc::clone(&self.hot) }
+    pub fn hot_counter(&self) -> Arc<HotCounter> {
+        Arc::clone(&self.hot)
+    }
 
     pub fn cache(&self) -> Arc<CodeCache<Sym, EpochStamped<T>>> {
         Arc::clone(&self.cache)
     }
 
-    pub fn policy(&self) -> TierUpPolicy { self.policy }
+    pub fn policy(&self) -> TierUpPolicy {
+        self.policy
+    }
 
     /// Submit a typed task. Records the fire, classifies the outcome,
     /// enqueues to the underlying EDF scheduler.
@@ -347,7 +363,8 @@ where
     /// the current epoch (not stale).
     pub fn has_fresh_cached(&self, kind: Sym) -> bool {
         let current = self.epoch.current();
-        self.cache.get(&kind)
+        self.cache
+            .get(&kind)
             .map(|arc| arc.epoch_at_compile == current)
             .unwrap_or(false)
     }
@@ -357,7 +374,8 @@ where
     /// safely across cache eviction (Arc reclamation semantics).
     pub fn get_compiled(&self, kind: Sym) -> Option<Arc<EpochStamped<T>>> {
         let current = self.epoch.current();
-        self.cache.get(&kind)
+        self.cache
+            .get(&kind)
             .filter(|arc| arc.epoch_at_compile == current)
     }
 
@@ -369,11 +387,7 @@ where
     ///
     /// Returns evicted artefacts (LRU bound) — their underlying
     /// memory frees when no clone holds them (Arc semantics).
-    pub fn install_compiled(
-        &self,
-        kind: Sym,
-        artefact: T,
-    ) -> Vec<Arc<EpochStamped<T>>> {
+    pub fn install_compiled(&self, kind: Sym, artefact: T) -> Vec<Arc<EpochStamped<T>>> {
         let stamped = EpochStamped {
             epoch_at_compile: self.epoch.current(),
             inner: artefact,
@@ -406,9 +420,15 @@ where
             drop(fails);
             self.hot.reset(kind);
             let _ = self.cache.remove(&kind);
-            GuardFailureOutcome::Cooled { kind, consecutive: count }
+            GuardFailureOutcome::Cooled {
+                kind,
+                consecutive: count,
+            }
         } else {
-            GuardFailureOutcome::Counted { kind, consecutive: count }
+            GuardFailureOutcome::Counted {
+                kind,
+                consecutive: count,
+            }
         }
     }
 
@@ -425,7 +445,7 @@ where
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GuardFailureOutcome {
     Counted { kind: Sym, consecutive: u32 },
-    Cooled  { kind: Sym, consecutive: u32 },
+    Cooled { kind: Sym, consecutive: u32 },
 }
 
 // =======================================================================
@@ -508,17 +528,22 @@ mod tests {
 
     use crate::sym::Interner;
 
-    struct FakeJit { size: usize }
+    struct FakeJit {
+        size: usize,
+    }
     impl CodeSize for FakeJit {
-        fn code_size_bytes(&self) -> usize { self.size }
+        fn code_size_bytes(&self) -> usize {
+            self.size
+        }
     }
 
-    fn dispatcher_with_threshold(t: u64)
-        -> AdaptiveDispatcher<FakeJit>
-    {
+    fn dispatcher_with_threshold(t: u64) -> AdaptiveDispatcher<FakeJit> {
         AdaptiveDispatcher::new(
             Scheduler::new(1),
-            TierUpPolicy { threshold: t, cooling_threshold: 3 },
+            TierUpPolicy {
+                threshold: t,
+                cooling_threshold: 3,
+            },
             CodeCacheConfig { max_bytes: 4096 },
         )
     }
@@ -665,10 +690,15 @@ mod tests {
         }
 
         // Effects of cooling.
-        assert_eq!(d.hot.count(kind), 0,
-                   "cooled kind's hot counter should be reset");
-        assert!(!d.has_fresh_cached(kind),
-                "cooled kind's compiled artefact should be evicted");
+        assert_eq!(
+            d.hot.count(kind),
+            0,
+            "cooled kind's hot counter should be reset"
+        );
+        assert!(
+            !d.has_fresh_cached(kind),
+            "cooled kind's compiled artefact should be evicted"
+        );
 
         d.shutdown();
     }
@@ -693,8 +723,10 @@ mod tests {
         let o = d.report_guard_failure(kind);
         match o {
             GuardFailureOutcome::Counted { consecutive, .. } => {
-                assert_eq!(consecutive, 1,
-                           "install should have reset guard failure count");
+                assert_eq!(
+                    consecutive, 1,
+                    "install should have reset guard failure count"
+                );
             }
             _ => panic!("expected Counted (1 of 3), got {:?}", o),
         }
@@ -718,8 +750,10 @@ mod tests {
         let external_epoch = d.epoch();
         external_epoch.bump();
 
-        assert!(!d.has_fresh_cached(kind),
-                "bumping shared Epoch externally invalidates dispatcher cache");
+        assert!(
+            !d.has_fresh_cached(kind),
+            "bumping shared Epoch externally invalidates dispatcher cache"
+        );
         d.shutdown();
     }
 }

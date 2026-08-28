@@ -301,7 +301,10 @@ fn read_belief(
                 }
             }
             _ if ndim == 2 => {
-                match (read_num(attrs.get(&syms.row)), read_num(attrs.get(&syms.col))) {
+                match (
+                    read_num(attrs.get(&syms.row)),
+                    read_num(attrs.get(&syms.col)),
+                ) {
                     (Some(r), Some(c)) => Some(vec![r, c]),
                     _ => None,
                 }
@@ -322,7 +325,9 @@ fn read_belief(
         if !in_focus {
             continue;
         }
-        let Some(v) = read_num(attrs.get(&syms.value)) else { continue };
+        let Some(v) = read_num(attrs.get(&syms.value)) else {
+            continue;
+        };
         let is_passable = passable.contains(&v);
         map.insert(pose, (v, is_passable));
     }
@@ -354,7 +359,11 @@ fn body_offsets(body: &BodySpec, ndim: usize) -> Vec<Vec<i64>> {
 
 /// Config-space admissibility: an anchor pose `p` is admissible for the
 /// body iff every offset cell `p + o` is a KNOWN, passable belief point.
-fn body_admissible(belief: &FxHashMap<Vec<i64>, (i64, bool)>, offsets: &[Vec<i64>], anchor: &[i64]) -> bool {
+fn body_admissible(
+    belief: &FxHashMap<Vec<i64>, (i64, bool)>,
+    offsets: &[Vec<i64>],
+    anchor: &[i64],
+) -> bool {
     for o in offsets {
         let mut p = anchor.to_vec();
         for d in 0..p.len() {
@@ -385,7 +394,11 @@ fn decompose_region(
 ) -> Vec<(Vec<i64>, Vec<i64>)> {
     let mut out = Vec::new();
     while !candidates.is_empty() {
-        let seed = candidates.iter().min().cloned().expect("non-empty checked above");
+        let seed = candidates
+            .iter()
+            .min()
+            .cloned()
+            .expect("non-empty checked above");
         let lo = seed.clone();
         let mut hi = seed.clone();
         for d in 0..ndim {
@@ -492,7 +505,11 @@ fn split_along_dim(
 /// != `dim`; the `dim`-th entry is the boundary coordinate on each side,
 /// informational only).
 fn face_adjacent(
-    a_lo: &[i64], a_hi: &[i64], b_lo: &[i64], b_hi: &[i64], ndim: usize,
+    a_lo: &[i64],
+    a_hi: &[i64],
+    b_lo: &[i64],
+    b_hi: &[i64],
+    ndim: usize,
 ) -> Option<(usize, i64, Vec<i64>, Vec<i64>)> {
     for d in 0..ndim {
         let mut span_lo = vec![0i64; ndim];
@@ -534,8 +551,14 @@ fn face_adjacent(
 /// if every adjacent pose is already known (no frontier needed there).
 fn unknown_faces(
     belief: &FxHashMap<Vec<i64>, (i64, bool)>,
-    lo: &[i64], hi: &[i64], dim: usize, dir: i64,
-    focus_lo: &[i64], focus_hi: &[i64], ndim: usize, min_extent: &[i64],
+    lo: &[i64],
+    hi: &[i64],
+    dim: usize,
+    dir: i64,
+    focus_lo: &[i64],
+    focus_hi: &[i64],
+    ndim: usize,
+    min_extent: &[i64],
 ) -> Vec<(Vec<i64>, Vec<i64>)> {
     let boundary = if dir > 0 { hi[dim] + 1 } else { lo[dim] - 1 };
     if boundary < focus_lo[dim] || boundary > focus_hi[dim] {
@@ -557,8 +580,15 @@ fn unknown_faces(
 // --- node/edge minting ---------------------------------------------------
 
 fn mint_quantum(
-    s: &mut Substrate, syms: &QSyms, game: NodeID, ndim: usize,
-    lo: &[i64], hi: &[i64], kind: &str, body_key: &str, epoch: i64,
+    s: &mut Substrate,
+    syms: &QSyms,
+    game: NodeID,
+    ndim: usize,
+    lo: &[i64],
+    hi: &[i64],
+    kind: &str,
+    body_key: &str,
+    epoch: i64,
 ) -> NodeID {
     let kind_sym = s.interner.intern(kind);
     let body_key_sym = s.interner.intern(body_key);
@@ -573,14 +603,23 @@ fn mint_quantum(
     attrs.insert(syms.visited, Value::Int(0));
     attrs.insert(syms.qdist, Value::Float(-1.0));
     let nid = s.add_node(syms.quantum, attrs);
-    let _ = s.graph.insert_edge(nid, syms.in_space, game, FxHashMap::default());
+    let _ = s
+        .graph
+        .insert_edge(nid, syms.in_space, game, FxHashMap::default());
     nid
 }
 
 #[allow(clippy::too_many_arguments)]
 fn insert_portal(
-    s: &mut Substrate, syms: &QSyms, src: NodeID, tgt: NodeID,
-    dim: usize, dir: i64, span_lo: &[i64], span_hi: &[i64], oneway_ok: i64,
+    s: &mut Substrate,
+    syms: &QSyms,
+    src: NodeID,
+    tgt: NodeID,
+    dim: usize,
+    dir: i64,
+    span_lo: &[i64],
+    span_hi: &[i64],
+    oneway_ok: i64,
 ) {
     let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
     attrs.insert(syms.dim, Value::Int(dim as i64));
@@ -624,10 +663,20 @@ pub fn space_quantize(s: &mut Substrate, p: QuantizeParams) -> Result<QuantizeSu
     let syms = QSyms::new(&mut s.interner);
     let passable: FxHashSet<i64> = p.passable_values.iter().copied().collect();
     let offsets = body_offsets(&p.body, ndim);
-    let min_extent: Vec<i64> = (0..ndim).map(|d| p.min_extent.get(d).copied().unwrap_or(1).max(1)).collect();
+    let min_extent: Vec<i64> = (0..ndim)
+        .map(|d| p.min_extent.get(d).copied().unwrap_or(1).max(1))
+        .collect();
 
     // 1. Belief, within focus only (foveation).
-    let belief = read_belief(&s.graph, &syms, p.game, ndim, &p.focus_lo, &p.focus_hi, &passable);
+    let belief = read_belief(
+        &s.graph,
+        &syms,
+        p.game,
+        ndim,
+        &p.focus_lo,
+        &p.focus_hi,
+        &passable,
+    );
 
     // 2. Body-conditional admissibility over every anchor pose in focus.
     let mut admissible: FxHashSet<Vec<i64>> = FxHashSet::default();
@@ -643,7 +692,10 @@ pub fn space_quantize(s: &mut Substrate, p: QuantizeParams) -> Result<QuantizeSu
         .in_neighbours(p.game, Some(syms.in_space))
         .into_iter()
         .filter(|&nid| s.graph.has_node(nid) && s.graph.node(nid).type_ == syms.quantum)
-        .filter(|&nid| read_str(&s.graph, &s.interner, nid, syms.body_key).as_deref() == Some(p.body_key.as_str()))
+        .filter(|&nid| {
+            read_str(&s.graph, &s.interner, nid, syms.body_key).as_deref()
+                == Some(p.body_key.as_str())
+        })
         .collect();
 
     let mut kept: Vec<(NodeID, Vec<i64>, Vec<i64>)> = Vec::new();
@@ -657,7 +709,10 @@ pub fn space_quantize(s: &mut Substrate, p: QuantizeParams) -> Result<QuantizeSu
             to_delete.push(nid);
             continue;
         }
-        let (lo, hi) = match (read_i64_list(&s.graph, nid, syms.lo), read_i64_list(&s.graph, nid, syms.hi)) {
+        let (lo, hi) = match (
+            read_i64_list(&s.graph, nid, syms.lo),
+            read_i64_list(&s.graph, nid, syms.hi),
+        ) {
             (Some(lo), Some(hi)) if lo.len() == ndim && hi.len() == ndim => (lo, hi),
             _ => {
                 to_delete.push(nid);
@@ -717,12 +772,32 @@ pub fn space_quantize(s: &mut Substrate, p: QuantizeParams) -> Result<QuantizeSu
         all_passable.push((nid, lo, hi, false));
     }
     for (lo, hi) in split_boxes {
-        let nid = mint_quantum(s, &syms, p.game, ndim, &lo, &hi, "passable", &p.body_key, p.epoch);
+        let nid = mint_quantum(
+            s,
+            &syms,
+            p.game,
+            ndim,
+            &lo,
+            &hi,
+            "passable",
+            &p.body_key,
+            p.epoch,
+        );
         summary.split += 1;
         all_passable.push((nid, lo, hi, true));
     }
     for (lo, hi) in decomposed {
-        let nid = mint_quantum(s, &syms, p.game, ndim, &lo, &hi, "passable", &p.body_key, p.epoch);
+        let nid = mint_quantum(
+            s,
+            &syms,
+            p.game,
+            ndim,
+            &lo,
+            &hi,
+            "passable",
+            &p.body_key,
+            p.epoch,
+        );
         all_passable.push((nid, lo, hi, true));
     }
     summary.quanta = all_passable.len();
@@ -738,7 +813,8 @@ pub fn space_quantize(s: &mut Substrate, p: QuantizeParams) -> Result<QuantizeSu
             if !*a_new && !*b_new {
                 continue;
             }
-            if let Some((dim, dir, span_lo, span_hi)) = face_adjacent(a_lo, a_hi, b_lo, b_hi, ndim) {
+            if let Some((dim, dir, span_lo, span_hi)) = face_adjacent(a_lo, a_hi, b_lo, b_hi, ndim)
+            {
                 insert_portal(s, &syms, *a_nid, *b_nid, dim, dir, &span_lo, &span_hi, 1);
                 insert_portal(s, &syms, *b_nid, *a_nid, dim, -dir, &span_lo, &span_hi, 1);
                 portal_count += 2;
@@ -752,9 +828,29 @@ pub fn space_quantize(s: &mut Substrate, p: QuantizeParams) -> Result<QuantizeSu
     for (nid, lo, hi, _) in &all_passable {
         for dim in 0..ndim {
             for dir in [-1i64, 1i64] {
-                let boxes = unknown_faces(&belief, lo, hi, dim, dir, &p.focus_lo, &p.focus_hi, ndim, &min_extent);
+                let boxes = unknown_faces(
+                    &belief,
+                    lo,
+                    hi,
+                    dim,
+                    dir,
+                    &p.focus_lo,
+                    &p.focus_hi,
+                    ndim,
+                    &min_extent,
+                );
                 for (flo, fhi) in boxes {
-                    let fnid = mint_quantum(s, &syms, p.game, ndim, &flo, &fhi, "frontier", &p.body_key, p.epoch);
+                    let fnid = mint_quantum(
+                        s,
+                        &syms,
+                        p.game,
+                        ndim,
+                        &flo,
+                        &fhi,
+                        "frontier",
+                        &p.body_key,
+                        p.epoch,
+                    );
                     insert_portal(s, &syms, *nid, fnid, dim, dir, &flo, &fhi, 1);
                     insert_portal(s, &syms, fnid, *nid, dim, -dir, &flo, &fhi, 1);
                     frontier_count += 1;
@@ -804,7 +900,9 @@ mod tests {
             }
             attrs.insert(value_k, Value::Int(*value));
             let cell = s.add_node(cell_t, attrs);
-            let _ = s.graph.insert_edge(game, has_cell, cell, FxHashMap::default());
+            let _ = s
+                .graph
+                .insert_edge(game, has_cell, cell, FxHashMap::default());
         }
         game
     }
@@ -826,7 +924,9 @@ mod tests {
             .in_neighbours(game, Some(in_space))
             .into_iter()
             .filter(|&nid| s.graph.node(nid).type_ == syms_quantum)
-            .filter(|&nid| read_str(&s.graph, &s.interner, nid, body_key_sym).as_deref() == Some(body_key))
+            .filter(|&nid| {
+                read_str(&s.graph, &s.interner, nid, body_key_sym).as_deref() == Some(body_key)
+            })
             .collect()
     }
 
@@ -890,15 +990,23 @@ mod tests {
         };
         let summary = space_quantize(&mut s, params).expect("quantize ok");
         assert_eq!(summary.quanta, 2, "corridor + room = 2 passable quanta");
-        assert_eq!(summary.frontiers, 0, "fully wall-enclosed — no unknown border");
+        assert_eq!(
+            summary.frontiers, 0,
+            "fully wall-enclosed — no unknown border"
+        );
         assert_eq!(summary.portals, 2, "one bidirectional portal pair");
 
         let quantum_t = s.interner.lookup("SpaceQuantum").unwrap();
         let quanta = quanta_of(&s, quantum_t, game, "b1");
         assert_eq!(quanta.len(), 2);
-        let mut boxes: Vec<(Vec<i64>, Vec<i64>)> = quanta.iter().map(|&n| lo_hi_of(&s, n)).collect();
+        let mut boxes: Vec<(Vec<i64>, Vec<i64>)> =
+            quanta.iter().map(|&n| lo_hi_of(&s, n)).collect();
         boxes.sort();
-        assert_eq!(boxes[0], (vec![1, 1], vec![1, 5]), "corridor: 1 row x 5 cols");
+        assert_eq!(
+            boxes[0],
+            (vec![1, 1], vec![1, 5]),
+            "corridor: 1 row x 5 cols"
+        );
         assert_eq!(boxes[1], (vec![2, 3], vec![3, 4]), "room: 2 rows x 2 cols");
     }
 
@@ -941,12 +1049,13 @@ mod tests {
 
         // route exists: BFS over portal edges from the quantum containing
         // (0,0,0) to the quantum containing (0,0,3).
-        let find_quantum_containing = |s: &Substrate, quanta: &[NodeID], pose: &[i64]| -> Option<NodeID> {
-            quanta.iter().copied().find(|&n| {
-                let (lo, hi) = lo_hi_of(s, n);
-                (0..3).all(|d| pose[d] >= lo[d] && pose[d] <= hi[d])
-            })
-        };
+        let find_quantum_containing =
+            |s: &Substrate, quanta: &[NodeID], pose: &[i64]| -> Option<NodeID> {
+                quanta.iter().copied().find(|&n| {
+                    let (lo, hi) = lo_hi_of(s, n);
+                    (0..3).all(|d| pose[d] >= lo[d] && pose[d] <= hi[d])
+                })
+            };
         let start = find_quantum_containing(&s, &quanta, &[0, 0, 0]).expect("start quantum exists");
         let goal = find_quantum_containing(&s, &quanta, &[0, 0, 3]).expect("goal quantum exists");
         let mut seen: FxHashSet<NodeID> = FxHashSet::default();
@@ -965,7 +1074,10 @@ mod tests {
                 }
             }
         }
-        assert!(reached, "z=0 layer must reach z=3 layer through the (2,2,1) hole");
+        assert!(
+            reached,
+            "z=0 layer must reach z=3 layer through the (2,2,1) hole"
+        );
     }
 
     #[test]
@@ -997,8 +1109,14 @@ mod tests {
         let quantum_t = s.interner.intern("SpaceQuantum");
 
         let p1x1 = QuantizeParams {
-            game, ndim: 2, body_key: "small".to_string(), body: BodySpec::Extents(vec![1, 1]),
-            passable_values: vec![0], focus_lo: vec![0, 0], focus_hi: vec![5, 8], epoch: 1,
+            game,
+            ndim: 2,
+            body_key: "small".to_string(),
+            body: BodySpec::Extents(vec![1, 1]),
+            passable_values: vec![0],
+            focus_lo: vec![0, 0],
+            focus_hi: vec![5, 8],
+            epoch: 1,
             min_extent: vec![1, 1],
         };
         space_quantize(&mut s, p1x1).expect("1x1 quantize ok");
@@ -1010,8 +1128,14 @@ mod tests {
         });
 
         let p2x2 = QuantizeParams {
-            game, ndim: 2, body_key: "big".to_string(), body: BodySpec::Extents(vec![2, 2]),
-            passable_values: vec![0], focus_lo: vec![0, 0], focus_hi: vec![5, 8], epoch: 1,
+            game,
+            ndim: 2,
+            body_key: "big".to_string(),
+            body: BodySpec::Extents(vec![2, 2]),
+            passable_values: vec![0],
+            focus_lo: vec![0, 0],
+            focus_hi: vec![5, 8],
+            epoch: 1,
             min_extent: vec![1, 1],
         };
         space_quantize(&mut s, p2x2).expect("2x2 quantize ok");
@@ -1035,8 +1159,14 @@ mod tests {
         let cells = rect_2d(0, 4, 0, 4, 0); // 5x5, all passable
         let game = build_world(&mut s, &cells);
         let params = QuantizeParams {
-            game, ndim: 2, body_key: "b1".to_string(), body: body1(),
-            passable_values: vec![0], focus_lo: vec![0, 0], focus_hi: vec![4, 4], epoch: 1,
+            game,
+            ndim: 2,
+            body_key: "b1".to_string(),
+            body: body1(),
+            passable_values: vec![0],
+            focus_lo: vec![0, 0],
+            focus_hi: vec![4, 4],
+            epoch: 1,
             min_extent: vec![1, 1],
         };
         let s1 = space_quantize(&mut s, params).expect("first decode ok");
@@ -1072,20 +1202,38 @@ mod tests {
         let _ = col_k;
 
         let params2 = QuantizeParams {
-            game, ndim: 2, body_key: "b1".to_string(), body: body1(),
-            passable_values: vec![0], focus_lo: vec![0, 0], focus_hi: vec![4, 4], epoch: 2,
+            game,
+            ndim: 2,
+            body_key: "b1".to_string(),
+            body: body1(),
+            passable_values: vec![0],
+            focus_lo: vec![0, 0],
+            focus_hi: vec![4, 4],
+            epoch: 2,
             min_extent: vec![1, 1],
         };
         let s2 = space_quantize(&mut s, params2).expect("second decode ok");
-        assert_eq!(s2.split, 2, "split into exactly 2 boxes (above/below the blocked row)");
+        assert_eq!(
+            s2.split, 2,
+            "split into exactly 2 boxes (above/below the blocked row)"
+        );
         assert_eq!(s2.reused, 0, "the stale quantum itself is not reused");
 
         let quanta2 = quanta_of(&s, quantum_t, game, "b1");
         assert_eq!(quanta2.len(), 2);
-        let mut boxes: Vec<(Vec<i64>, Vec<i64>)> = quanta2.iter().map(|&n| lo_hi_of(&s, n)).collect();
+        let mut boxes: Vec<(Vec<i64>, Vec<i64>)> =
+            quanta2.iter().map(|&n| lo_hi_of(&s, n)).collect();
         boxes.sort();
-        assert_eq!(boxes[0], (vec![0, 0], vec![1, 4]), "rows above the block, cols UNCHANGED");
-        assert_eq!(boxes[1], (vec![3, 0], vec![4, 4]), "rows below the block, cols UNCHANGED");
+        assert_eq!(
+            boxes[0],
+            (vec![0, 0], vec![1, 4]),
+            "rows above the block, cols UNCHANGED"
+        );
+        assert_eq!(
+            boxes[1],
+            (vec![3, 0], vec![4, 4]),
+            "rows below the block, cols UNCHANGED"
+        );
     }
 
     #[test]
@@ -1096,24 +1244,51 @@ mod tests {
         let cells = rect_2d(0, 2, 0, 2, 0);
         let game = build_world(&mut s, &cells);
         let params = QuantizeParams {
-            game, ndim: 2, body_key: "b1".to_string(), body: body1(),
-            passable_values: vec![0], focus_lo: vec![0, 0], focus_hi: vec![2, 4], epoch: 1,
+            game,
+            ndim: 2,
+            body_key: "b1".to_string(),
+            body: body1(),
+            passable_values: vec![0],
+            focus_lo: vec![0, 0],
+            focus_hi: vec![2, 4],
+            epoch: 1,
             min_extent: vec![1, 1],
         };
         let summary = space_quantize(&mut s, params).expect("quantize ok");
-        assert_eq!(summary.quanta, 1, "one passable quantum (the known 3x3 block)");
-        assert!(summary.frontiers >= 1, "must mint a frontier at the unknown col-3 border");
+        assert_eq!(
+            summary.quanta, 1,
+            "one passable quantum (the known 3x3 block)"
+        );
+        assert!(
+            summary.frontiers >= 1,
+            "must mint a frontier at the unknown col-3 border"
+        );
 
         let quantum_t = s.interner.lookup("SpaceQuantum").unwrap();
         let quanta = quanta_of(&s, quantum_t, game, "b1");
-        let frontier = quanta.iter().copied().find(|&n| kind_of(&s, n) == "frontier").expect("a frontier quantum exists");
+        let frontier = quanta
+            .iter()
+            .copied()
+            .find(|&n| kind_of(&s, n) == "frontier")
+            .expect("a frontier quantum exists");
         let (flo, fhi) = lo_hi_of(&s, frontier);
         assert_eq!(flo[1], 3, "frontier starts just past the known block");
-        assert_eq!(fhi[1], 3, "frontier is unit-depth along the adjacency dim (col)");
-        assert_eq!((flo[0], fhi[0]), (0, 2), "frontier spans the full known block's row range");
+        assert_eq!(
+            fhi[1], 3,
+            "frontier is unit-depth along the adjacency dim (col)"
+        );
+        assert_eq!(
+            (flo[0], fhi[0]),
+            (0, 2),
+            "frontier spans the full known block's row range"
+        );
 
         // a portal connects the passable block to the frontier.
-        let passable_q = quanta.iter().copied().find(|&n| kind_of(&s, n) == "passable").unwrap();
+        let passable_q = quanta
+            .iter()
+            .copied()
+            .find(|&n| kind_of(&s, n) == "passable")
+            .unwrap();
         assert!(portal_targets(&s, passable_q).contains(&frontier));
         assert!(portal_targets(&s, frontier).contains(&passable_q));
     }
@@ -1124,8 +1299,14 @@ mod tests {
         let cells = rect_2d(0, 3, 0, 3, 0);
         let game = build_world(&mut s, &cells);
         let params1 = QuantizeParams {
-            game, ndim: 2, body_key: "b1".to_string(), body: body1(),
-            passable_values: vec![0], focus_lo: vec![0, 0], focus_hi: vec![3, 3], epoch: 1,
+            game,
+            ndim: 2,
+            body_key: "b1".to_string(),
+            body: body1(),
+            passable_values: vec![0],
+            focus_lo: vec![0, 0],
+            focus_hi: vec![3, 3],
+            epoch: 1,
             min_extent: vec![1, 1],
         };
         let s1 = space_quantize(&mut s, params1).expect("first decode ok");
@@ -1135,8 +1316,14 @@ mod tests {
         assert_eq!(ids_before.len(), 1);
 
         let params2 = QuantizeParams {
-            game, ndim: 2, body_key: "b1".to_string(), body: body1(),
-            passable_values: vec![0], focus_lo: vec![0, 0], focus_hi: vec![3, 3], epoch: 2,
+            game,
+            ndim: 2,
+            body_key: "b1".to_string(),
+            body: body1(),
+            passable_values: vec![0],
+            focus_lo: vec![0, 0],
+            focus_hi: vec![3, 3],
+            epoch: 2,
             min_extent: vec![1, 1],
         };
         let s2 = space_quantize(&mut s, params2).expect("second decode ok");
@@ -1144,10 +1331,17 @@ mod tests {
         assert_eq!(s2.split, 0);
         assert_eq!(s2.quanta, 1);
         let ids_after: Vec<NodeID> = quanta_of(&s, quantum_t, game, "b1");
-        assert_eq!(ids_before, ids_after, "identical node id — genuinely reused, not recreated");
+        assert_eq!(
+            ids_before, ids_after,
+            "identical node id — genuinely reused, not recreated"
+        );
 
         let epoch_k = s.interner.lookup("epoch").unwrap();
-        assert_eq!(read_num(s.graph.node(ids_after[0]).attrs.get(&epoch_k)), Some(2), "epoch stamped fresh");
+        assert_eq!(
+            read_num(s.graph.node(ids_after[0]).attrs.get(&epoch_k)),
+            Some(2),
+            "epoch stamped fresh"
+        );
     }
 
     #[test]
@@ -1156,9 +1350,13 @@ mod tests {
         let cells = rect_2d(0, 5, 0, 5, 0); // 6x6, all passable
         let game = build_world(&mut s, &cells);
         let params = QuantizeParams {
-            game, ndim: 2, body_key: "b1".to_string(), body: body1(),
+            game,
+            ndim: 2,
+            body_key: "b1".to_string(),
+            body: body1(),
             passable_values: vec![0],
-            focus_lo: vec![0, 0], focus_hi: vec![2, 2], // smaller than the belief
+            focus_lo: vec![0, 0],
+            focus_hi: vec![2, 2], // smaller than the belief
             epoch: 1,
             min_extent: vec![1, 1],
         };
@@ -1168,7 +1366,12 @@ mod tests {
         for nid in quanta_of(&s, quantum_t, game, "b1") {
             let (lo, hi) = lo_hi_of(&s, nid);
             for d in 0..2 {
-                assert!(lo[d] >= 0 && hi[d] <= 2, "quantum {:?}-{:?} must stay within the focus box", lo, hi);
+                assert!(
+                    lo[d] >= 0 && hi[d] <= 2,
+                    "quantum {:?}-{:?} must stay within the focus box",
+                    lo,
+                    hi
+                );
             }
         }
     }

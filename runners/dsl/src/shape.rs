@@ -42,8 +42,8 @@
 use rustc_hash::FxHashMap;
 
 use crate::graph::NodeID;
-use crate::sym::{Interner, Sym};
 use crate::substrate::Substrate;
+use crate::sym::{Interner, Sym};
 use crate::term::{TermArena, TermIdx, TermNode};
 use crate::value::Value;
 
@@ -100,9 +100,16 @@ impl Shape {
     /// `function_identity_is_its_shape_not_its_return_value`: two
     /// Term-trees with the same shape are EQUIVALENT for substrate
     /// reasoning purposes, regardless of evaluation result.
-    pub const fn new(recursion: RecursionKind, order_n: OrderN,
-                      abstraction: AbstractionKind) -> Self {
-        Self { recursion, order_n, abstraction }
+    pub const fn new(
+        recursion: RecursionKind,
+        order_n: OrderN,
+        abstraction: AbstractionKind,
+    ) -> Self {
+        Self {
+            recursion,
+            order_n,
+            abstraction,
+        }
     }
 
     /// Encode this Shape as graph node attributes. The substrate's Rule
@@ -113,12 +120,18 @@ impl Shape {
     /// channel reads.)
     pub fn to_attrs(self, interner: &mut Interner) -> FxHashMap<Sym, Value> {
         let mut attrs = FxHashMap::default();
-        attrs.insert(interner.intern("recursion"),
-                     Value::Str(interner.intern(self.recursion.as_str())));
-        attrs.insert(interner.intern("order_n"),
-                     Value::Int(self.order_n.0 as i64));
-        attrs.insert(interner.intern("abstraction"),
-                     Value::Str(interner.intern(self.abstraction.as_str())));
+        attrs.insert(
+            interner.intern("recursion"),
+            Value::Str(interner.intern(self.recursion.as_str())),
+        );
+        attrs.insert(
+            interner.intern("order_n"),
+            Value::Int(self.order_n.0 as i64),
+        );
+        attrs.insert(
+            interner.intern("abstraction"),
+            Value::Str(interner.intern(self.abstraction.as_str())),
+        );
         attrs
     }
 
@@ -126,14 +139,19 @@ impl Shape {
     /// `to_attrs`. Returns None when any axis is missing or malformed
     /// — partial Shape nodes are rejected so downstream code can rely
     /// on every returned Shape being complete.
-    pub fn from_attrs(interner: &Interner,
-                       attrs: &crate::graph::Attrs) -> Option<Self> {
+    pub fn from_attrs(interner: &Interner, attrs: &crate::graph::Attrs) -> Option<Self> {
         let recursion_sym = interner.lookup("recursion")?;
         let order_sym = interner.lookup("order_n")?;
         let abstraction_sym = interner.lookup("abstraction")?;
-        let Value::Str(rec_str_sym) = attrs.get(&recursion_sym)? else { return None };
-        let Value::Int(order_i) = attrs.get(&order_sym)? else { return None };
-        let Value::Str(abs_str_sym) = attrs.get(&abstraction_sym)? else { return None };
+        let Value::Str(rec_str_sym) = attrs.get(&recursion_sym)? else {
+            return None;
+        };
+        let Value::Int(order_i) = attrs.get(&order_sym)? else {
+            return None;
+        };
+        let Value::Str(abs_str_sym) = attrs.get(&abstraction_sym)? else {
+            return None;
+        };
         Some(Self {
             recursion: RecursionKind::from_str(interner.resolve(*rec_str_sym))?,
             order_n: OrderN(u8::try_from(*order_i).ok()?),
@@ -189,7 +207,9 @@ pub fn add_shape_node(substrate: &mut Substrate, shape: Shape) -> NodeID {
 /// Look up the Shape encoded on an existing graph node. Returns None if
 /// the node attrs are incomplete or malformed.
 pub fn read_shape_node(substrate: &Substrate, nid: NodeID) -> Option<Shape> {
-    if !substrate.graph.has_node(nid) { return None; }
+    if !substrate.graph.has_node(nid) {
+        return None;
+    }
     let attrs = &substrate.graph.node(nid).attrs;
     Shape::from_attrs(&substrate.interner, attrs)
 }
@@ -205,7 +225,9 @@ pub struct ShapeCache {
 }
 
 impl ShapeCache {
-    pub fn new() -> Self { Self::default() }
+    pub fn new() -> Self {
+        Self::default()
+    }
 
     /// `shape_keyed_lookup_is_memo_function_cache_hit`: O(1) lookup,
     /// no Term-tree re-evaluation. None on miss; pair with
@@ -222,8 +244,7 @@ impl ShapeCache {
     /// instantly; else walk the arena, classify, cache, return. The
     /// caller's downstream cost is amortised across all uses of the
     /// same Term-tree.
-    pub fn assess_and_cache(&mut self, idx: TermIdx,
-                              arena: &TermArena) -> Shape {
+    pub fn assess_and_cache(&mut self, idx: TermIdx, arena: &TermArena) -> Shape {
         if let Some(s) = self.get(idx) {
             return s;
         }
@@ -232,8 +253,12 @@ impl ShapeCache {
         shape
     }
 
-    pub fn len(&self) -> usize { self.entries.len() }
-    pub fn is_empty(&self) -> bool { self.entries.is_empty() }
+    pub fn len(&self) -> usize {
+        self.entries.len()
+    }
+    pub fn is_empty(&self) -> bool {
+        self.entries.is_empty()
+    }
 }
 
 // --- The walker ---
@@ -271,7 +296,8 @@ pub fn prune_candidates_by_shape(
     target: &Shape,
     substrate: &mut Substrate,
 ) -> Vec<TermIdx> {
-    candidates.iter()
+    candidates
+        .iter()
         .copied()
         .filter(|idx| {
             let s = substrate.shape_of_term(*idx);
@@ -333,8 +359,12 @@ pub fn climb_tower(shape: Shape, rungs: u8) -> Shape {
 /// kind ⊆ candidate kind). Generalisable to a lattice order
 /// (Cousot 1977 + L6 Ashby variety match) when the axes get richer.
 pub fn shapes_compatible(candidate: &Shape, target: &Shape) -> bool {
-    if candidate.recursion != target.recursion { return false; }
-    if candidate.order_n.0 < target.order_n.0 { return false; }
+    if candidate.recursion != target.recursion {
+        return false;
+    }
+    if candidate.order_n.0 < target.order_n.0 {
+        return false;
+    }
     // abstraction: Parametric can satisfy Concrete (HOF specialised to
     // value), but Concrete cannot satisfy Parametric.
     match (candidate.abstraction, target.abstraction) {
@@ -407,8 +437,10 @@ fn walk(idx: TermIdx, arena: &TermArena, s: &mut WalkState, depth: u8) {
         // to multiple arguments. That's the substrate's syntactic
         // analogue of fold-body-uses-bound-var: the same function-tree
         // pattern recurs across the composition's children.
-        if !s.has_structural_recursion && struct_here > 0
-            && has_sibling_pattern_recurrence(node, arena) {
+        if !s.has_structural_recursion
+            && struct_here > 0
+            && has_sibling_pattern_recurrence(node, arena)
+        {
             s.has_structural_recursion = true;
         }
         for child in children(node) {
@@ -422,12 +454,19 @@ fn walk(idx: TermIdx, arena: &TermArena, s: &mut WalkState, depth: u8) {
 }
 
 fn depth_bump_for(node: &TermNode) -> u8 {
-    matches!(node,
-        TermNode::Fold { .. } | TermNode::Sum { .. } | TermNode::Prod { .. }
-        | TermNode::Argmax { .. } | TermNode::Argmin { .. } | TermNode::ArgminUnique { .. }
-        | TermNode::MaxOver { .. } | TermNode::MinOver { .. }
-        | TermNode::Count { .. } | TermNode::Filter { .. }
-        | TermNode::Exists { .. }
+    matches!(
+        node,
+        TermNode::Fold { .. }
+            | TermNode::Sum { .. }
+            | TermNode::Prod { .. }
+            | TermNode::Argmax { .. }
+            | TermNode::Argmin { .. }
+            | TermNode::ArgminUnique { .. }
+            | TermNode::MaxOver { .. }
+            | TermNode::MinOver { .. }
+            | TermNode::Count { .. }
+            | TermNode::Filter { .. }
+            | TermNode::Exists { .. }
     ) as u8
 }
 
@@ -439,21 +478,62 @@ fn depth_bump_for(node: &TermNode) -> u8 {
 /// donors from a flat Eq(Lit, Lit).
 fn structural_depth_bump_for(node: &TermNode) -> u8 {
     use TermNode::*;
-    matches!(node,
-        Eq { .. } | Lt { .. } | Lte { .. } | Gt { .. } | Gte { .. }
-        | Plus { .. } | Times { .. } | Minus { .. } | Div { .. } | Mod { .. }
-        | Pow { .. } | IDiv { .. } | IRem { .. }
-        | Abs { .. } | Neg { .. } | Sqrt { .. } | EnclosedCount { .. }
-        | Min { .. } | Max { .. } | ArgMax { .. }
-        | And { .. } | Or { .. } | Not { .. }
-        | Holds { .. } | IfThenElse { .. }
-        | BitAnd { .. } | BitOr { .. } | BitXor { .. }
-        | Shl { .. } | Lshr { .. } | Ashr { .. }
-        | DtwTo { .. } | PointSetDist { .. } | MahalLeaf { .. } | MahalFull { .. } | DeformGenMarginal { .. } | DeformGen { .. } | DeformDist { .. } | SmoothDeformDist { .. } | TpsDeformDist { .. } | SmoothDeformComponents { .. } | ShapeContextDist { .. } | ScTpsDist { .. } | XCorrPeak { .. } | EvalSubgraph { .. }
-        | Vec_ { .. } | SetT { .. } | In { .. }
-        | TypeOf { .. } | Attr { .. }
-        | Neighbours { .. } | InNeighbours { .. } | MapNeighbours { .. }
-        | Pick { .. }
+    matches!(
+        node,
+        Eq { .. }
+            | Lt { .. }
+            | Lte { .. }
+            | Gt { .. }
+            | Gte { .. }
+            | Plus { .. }
+            | Times { .. }
+            | Minus { .. }
+            | Div { .. }
+            | Mod { .. }
+            | Pow { .. }
+            | IDiv { .. }
+            | IRem { .. }
+            | Abs { .. }
+            | Neg { .. }
+            | Sqrt { .. }
+            | EnclosedCount { .. }
+            | Min { .. }
+            | Max { .. }
+            | ArgMax { .. }
+            | And { .. }
+            | Or { .. }
+            | Not { .. }
+            | Holds { .. }
+            | IfThenElse { .. }
+            | BitAnd { .. }
+            | BitOr { .. }
+            | BitXor { .. }
+            | Shl { .. }
+            | Lshr { .. }
+            | Ashr { .. }
+            | DtwTo { .. }
+            | PointSetDist { .. }
+            | MahalLeaf { .. }
+            | MahalFull { .. }
+            | DeformGenMarginal { .. }
+            | DeformGen { .. }
+            | DeformDist { .. }
+            | SmoothDeformDist { .. }
+            | TpsDeformDist { .. }
+            | SmoothDeformComponents { .. }
+            | ShapeContextDist { .. }
+            | ScTpsDist { .. }
+            | XCorrPeak { .. }
+            | EvalSubgraph { .. }
+            | Vec_ { .. }
+            | SetT { .. }
+            | In { .. }
+            | TypeOf { .. }
+            | Attr { .. }
+            | Neighbours { .. }
+            | InNeighbours { .. }
+            | MapNeighbours { .. }
+            | Pick { .. }
     ) as u8
 }
 
@@ -501,15 +581,21 @@ fn variant_tag(node: &TermNode) -> u8 {
 /// this: both children are Holds nodes.
 fn has_sibling_pattern_recurrence(node: &TermNode, arena: &TermArena) -> bool {
     let ch = children(node);
-    if ch.len() < 2 { return false; }
+    if ch.len() < 2 {
+        return false;
+    }
     let mut seen: Option<u8> = None;
     for c in ch {
         let tag = variant_tag(arena.get(c));
         // Leaves don't count as a recurring pattern — only structural
         // composition variants (Holds, Times, Eq, etc.) do.
-        if tag == 1 || tag == 2 || tag == 255 { continue; }
+        if tag == 1 || tag == 2 || tag == 255 {
+            continue;
+        }
         if let Some(prev) = seen {
-            if prev == tag { return true; }
+            if prev == tag {
+                return true;
+            }
         } else {
             seen = Some(tag);
         }
@@ -520,11 +606,18 @@ fn has_sibling_pattern_recurrence(node: &TermNode, arena: &TermArena) -> bool {
 fn is_parametric(node: &TermNode) -> bool {
     // every fold-like reducer that takes a body Term is parametric in
     // its body — the body composes over the bound variable.
-    matches!(node,
-        TermNode::Fold { .. } | TermNode::Sum { .. } | TermNode::Prod { .. }
-        | TermNode::Argmax { .. } | TermNode::Argmin { .. } | TermNode::ArgminUnique { .. }
-        | TermNode::MaxOver { .. } | TermNode::MinOver { .. }
-        | TermNode::Filter { .. } | TermNode::Exists { .. }
+    matches!(
+        node,
+        TermNode::Fold { .. }
+            | TermNode::Sum { .. }
+            | TermNode::Prod { .. }
+            | TermNode::Argmax { .. }
+            | TermNode::Argmin { .. }
+            | TermNode::ArgminUnique { .. }
+            | TermNode::MaxOver { .. }
+            | TermNode::MinOver { .. }
+            | TermNode::Filter { .. }
+            | TermNode::Exists { .. }
     )
 }
 
@@ -532,12 +625,14 @@ fn has_var_in_body(node: &TermNode, arena: &TermArena) -> bool {
     // any body TermIdx that contains a Var
     let body_idx = match node {
         TermNode::Fold { body, .. } => Some(*body),
-        TermNode::Sum { value, .. } | TermNode::Prod { value, .. }
-        | TermNode::Argmax { value, .. } | TermNode::Argmin { value, .. } | TermNode::ArgminUnique { value, .. }
-        | TermNode::MaxOver { value, .. } | TermNode::MinOver { value, .. }
-            => Some(*value),
-        TermNode::Filter { predicate, .. } | TermNode::Exists { predicate, .. }
-            => Some(*predicate),
+        TermNode::Sum { value, .. }
+        | TermNode::Prod { value, .. }
+        | TermNode::Argmax { value, .. }
+        | TermNode::Argmin { value, .. }
+        | TermNode::ArgminUnique { value, .. }
+        | TermNode::MaxOver { value, .. }
+        | TermNode::MinOver { value, .. } => Some(*value),
+        TermNode::Filter { predicate, .. } | TermNode::Exists { predicate, .. } => Some(*predicate),
         _ => None,
     };
     body_idx.is_some_and(|i| contains_var(i, arena))
@@ -549,15 +644,37 @@ fn uses_bound_var(node: &TermNode, arena: &TermArena) -> bool {
     // re-runs on each element.
     let (var_name, body_idx) = match node {
         TermNode::Fold { var_name, body, .. } => (*var_name, *body),
-        TermNode::Sum { var_name, value, .. }
-        | TermNode::Prod { var_name, value, .. }
-        | TermNode::Argmax { var_name, value, .. }
-        | TermNode::Argmin { var_name, value, .. }
-        | TermNode::ArgminUnique { var_name, value, .. }
-        | TermNode::MaxOver { var_name, value, .. }
-        | TermNode::MinOver { var_name, value, .. } => (*var_name, *value),
-        TermNode::Filter { var_name, predicate, .. }
-        | TermNode::Exists { var_name, predicate, .. } => (*var_name, *predicate),
+        TermNode::Sum {
+            var_name, value, ..
+        }
+        | TermNode::Prod {
+            var_name, value, ..
+        }
+        | TermNode::Argmax {
+            var_name, value, ..
+        }
+        | TermNode::Argmin {
+            var_name, value, ..
+        }
+        | TermNode::ArgminUnique {
+            var_name, value, ..
+        }
+        | TermNode::MaxOver {
+            var_name, value, ..
+        }
+        | TermNode::MinOver {
+            var_name, value, ..
+        } => (*var_name, *value),
+        TermNode::Filter {
+            var_name,
+            predicate,
+            ..
+        }
+        | TermNode::Exists {
+            var_name,
+            predicate,
+            ..
+        } => (*var_name, *predicate),
         _ => return false,
     };
     references_var(body_idx, arena, var_name)
@@ -565,17 +682,20 @@ fn uses_bound_var(node: &TermNode, arena: &TermArena) -> bool {
 
 fn contains_var(idx: TermIdx, arena: &TermArena) -> bool {
     let n = arena.get(idx);
-    if matches!(n, TermNode::Var { .. }) { return true; }
+    if matches!(n, TermNode::Var { .. }) {
+        return true;
+    }
     children(n).iter().any(|c| contains_var(*c, arena))
 }
 
-fn references_var(idx: TermIdx, arena: &TermArena,
-                    var_name: crate::sym::Sym) -> bool {
+fn references_var(idx: TermIdx, arena: &TermArena, var_name: crate::sym::Sym) -> bool {
     let n = arena.get(idx);
     if let TermNode::Var { name } = n {
         return *name == var_name;
     }
-    children(n).iter().any(|c| references_var(*c, arena, var_name))
+    children(n)
+        .iter()
+        .any(|c| references_var(*c, arena, var_name))
 }
 
 fn children(node: &TermNode) -> Vec<TermIdx> {
@@ -586,30 +706,64 @@ fn children(node: &TermNode) -> Vec<TermIdx> {
         Attr { node, .. } => vec![*node],
         SetT { items } => items.clone(),
         In { member, container } => vec![*member, *container],
-        Eq { a, b } | Lt { a, b } | Lte { a, b }
-        | Gt { a, b } | Gte { a, b } => vec![*a, *b],
-        Neighbours { node, .. } | InNeighbours { node, .. }
+        Eq { a, b } | Lt { a, b } | Lte { a, b } | Gt { a, b } | Gte { a, b } => vec![*a, *b],
+        Neighbours { node, .. }
+        | InNeighbours { node, .. }
         | MapNeighbours { source: node, .. } => vec![*node],
         Count { source } => vec![*source],
-        Filter { source, predicate, .. }
-        | Exists { source, predicate, .. } => vec![*source, *predicate],
-        Sum { source, value, .. } | Prod { source, value, .. }
-            => vec![*source, *value],
-        MinOver { source, value, default, .. }
-        | MaxOver { source, value, default, .. } => {
+        Filter {
+            source, predicate, ..
+        }
+        | Exists {
+            source, predicate, ..
+        } => vec![*source, *predicate],
+        Sum { source, value, .. } | Prod { source, value, .. } => vec![*source, *value],
+        MinOver {
+            source,
+            value,
+            default,
+            ..
+        }
+        | MaxOver {
+            source,
+            value,
+            default,
+            ..
+        } => {
             let mut v = vec![*source, *value];
-            if let Some(d) = default { v.push(*d); }
+            if let Some(d) = default {
+                v.push(*d);
+            }
             v
         }
-        Argmax { source, value, default, .. }
-        | ArgminUnique { source, value, default, .. }
-        | Argmin { source, value, default, .. } => {
+        Argmax {
+            source,
+            value,
+            default,
+            ..
+        }
+        | ArgminUnique {
+            source,
+            value,
+            default,
+            ..
+        }
+        | Argmin {
+            source,
+            value,
+            default,
+            ..
+        } => {
             let mut v = vec![*source, *value];
-            if let Some(d) = default { v.push(*d); }
+            if let Some(d) = default {
+                v.push(*d);
+            }
             v
         }
         Pick { source } => vec![*source],
-        Fold { source, init, body, .. } => vec![*source, *init, *body],
+        Fold {
+            source, init, body, ..
+        } => vec![*source, *init, *body],
         // --- arithmetic / Holds / boolean variants ---
         // jabberwock change 2: recurse into the grounded-equation Term
         // structure (Plus/Times/Minus/Div/Pow/Holds + And/Or/Not for
@@ -620,18 +774,33 @@ fn children(node: &TermNode) -> Vec<TermIdx> {
         // abstraction) collapse all 90 grounded donors to the same
         // {none, 0, concrete} bucket — the walker never sees what the
         // tree contains below the top Eq.
-        Plus { items } | Times { items } | Min { items } | Max { items }
-        | ArgMax { items } | And { items } | Or { items }
+        Plus { items }
+        | Times { items }
+        | Min { items }
+        | Max { items }
+        | ArgMax { items }
+        | And { items }
+        | Or { items }
         | Vec_ { items } => items.clone(),
         UseTool { args, .. } => args.clone(),
-        Minus { a, b } | Div { a, b } | Mod { a, b } | Pow { a, b }
-        | IDiv { a, b } | IRem { a, b }
-        | BitAnd { a, b } | BitOr { a, b } | BitXor { a, b }
-        | Shl { a, b } | Lshr { a, b } | Ashr { a, b }
+        Minus { a, b }
+        | Div { a, b }
+        | Mod { a, b }
+        | Pow { a, b }
+        | IDiv { a, b }
+        | IRem { a, b }
+        | BitAnd { a, b }
+        | BitOr { a, b }
+        | BitXor { a, b }
+        | Shl { a, b }
+        | Lshr { a, b }
+        | Ashr { a, b }
         | DtwTo { a, b }
         | PointSetDist { a, b }
         | MahalLeaf { a, b }
-        | MahalFull { a, b } | DeformGenMarginal { a, b } | DeformGen { a, b }
+        | MahalFull { a, b }
+        | DeformGenMarginal { a, b }
+        | DeformGen { a, b }
         | DeformDist { a, b }
         | SmoothDeformDist { a, b }
         | TpsDeformDist { a, b }
@@ -643,12 +812,18 @@ fn children(node: &TermNode) -> Vec<TermIdx> {
         | WhitenMany { a, b }
         | WithinScatter { a, b }
         | BetweenScatter { a, b } => vec![*a, *b],
-        Abs { arg } | Neg { arg } | Sqrt { arg } | Not { arg } | EnclosedCount { arg } => vec![*arg],
+        Abs { arg } | Neg { arg } | Sqrt { arg } | Not { arg } | EnclosedCount { arg } => {
+            vec![*arg]
+        }
         IfThenElse { cond, then, other } => vec![*cond, *then, *other],
         Holds { node, node2, .. } => {
             let mut v = Vec::with_capacity(2);
-            if let Some(n) = node { v.push(*n); }
-            if let Some(n) = node2 { v.push(*n); }
+            if let Some(n) = node {
+                v.push(*n);
+            }
+            if let Some(n) = node2 {
+                v.push(*n);
+            }
             v
         }
         EvalSubgraph { node } => vec![*node],
@@ -672,7 +847,9 @@ mod tests {
     #[test]
     fn empty_shape_compares_concrete_order_zero_none() {
         let mut arena = TermArena::new();
-        let idx = arena.add(TermNode::Lit { value: Value::Int(42) });
+        let idx = arena.add(TermNode::Lit {
+            value: Value::Int(42),
+        });
         let s = assess_shape(idx, &arena);
         assert_eq!(s.recursion, RecursionKind::None);
         assert_eq!(s.order_n, OrderN(0));
@@ -684,12 +861,18 @@ mod tests {
         let mut arena = TermArena::new();
         let mut sym = Interner::new();
         let src = arena.add(TermNode::Lit { value: Value::None });
-        let init = arena.add(TermNode::Lit { value: Value::Int(0) });
+        let init = arena.add(TermNode::Lit {
+            value: Value::Int(0),
+        });
         let x = sym.intern("x");
         let acc = sym.intern("a");
         let body = arena.add(TermNode::Var { name: x });
         let fold = arena.add(TermNode::Fold {
-            source: src, var_name: x, acc_name: acc, init, body,
+            source: src,
+            var_name: x,
+            acc_name: acc,
+            init,
+            body,
         });
         let s = assess_shape(fold, &arena);
         assert_eq!(s.order_n, OrderN(1));
@@ -703,16 +886,25 @@ mod tests {
         let mut arena = TermArena::new();
         let mut sym = Interner::new();
         let src = arena.add(TermNode::Lit { value: Value::None });
-        let init = arena.add(TermNode::Lit { value: Value::Int(0) });
+        let init = arena.add(TermNode::Lit {
+            value: Value::Int(0),
+        });
         let x = sym.intern("x");
         let y = sym.intern("y");
         let acc = sym.intern("a");
         let inner_body = arena.add(TermNode::Var { name: y });
         let inner_fold = arena.add(TermNode::Fold {
-            source: src, var_name: y, acc_name: acc, init, body: inner_body,
+            source: src,
+            var_name: y,
+            acc_name: acc,
+            init,
+            body: inner_body,
         });
         let outer_fold = arena.add(TermNode::Fold {
-            source: src, var_name: x, acc_name: acc, init,
+            source: src,
+            var_name: x,
+            acc_name: acc,
+            init,
             body: inner_fold,
         });
         let s = assess_shape(outer_fold, &arena);
@@ -722,7 +914,9 @@ mod tests {
     #[test]
     fn shape_cache_is_o1_on_hit() {
         let mut arena = TermArena::new();
-        let idx = arena.add(TermNode::Lit { value: Value::Int(1) });
+        let idx = arena.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
         let mut cache = ShapeCache::new();
         let first = cache.assess_and_cache(idx, &arena);
         assert!(cache.get(idx).is_some());
@@ -734,8 +928,12 @@ mod tests {
     #[test]
     fn shape_identity_is_structural_not_value() {
         let mut arena = TermArena::new();
-        let a = arena.add(TermNode::Lit { value: Value::Int(1) });
-        let b = arena.add(TermNode::Lit { value: Value::Int(999) });
+        let a = arena.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let b = arena.add(TermNode::Lit {
+            value: Value::Int(999),
+        });
         let sa = assess_shape(a, &arena);
         let sb = assess_shape(b, &arena);
         assert_eq!(sa, sb);
@@ -749,12 +947,18 @@ mod tests {
         // Build a Fold via the substrate's own arena so the cache is
         // exercised end-to-end.
         let src = substrate.terms.add(TermNode::Lit { value: Value::None });
-        let init = substrate.terms.add(TermNode::Lit { value: Value::Int(0) });
+        let init = substrate.terms.add(TermNode::Lit {
+            value: Value::Int(0),
+        });
         let x = substrate.interner.intern("x");
         let acc = substrate.interner.intern("a");
         let body = substrate.terms.add(TermNode::Var { name: x });
         let fold = substrate.terms.add(TermNode::Fold {
-            source: src, var_name: x, acc_name: acc, init, body,
+            source: src,
+            var_name: x,
+            acc_name: acc,
+            init,
+            body,
         });
         // First call: walks + caches.
         let s1 = substrate.shape_of_term(fold);
@@ -770,11 +974,14 @@ mod tests {
         use crate::checker::ConsistencyChecker;
         use crate::grammar::Grammar;
         let mut substrate = Substrate::new(ConsistencyChecker::new(Grammar::new()));
-        let shape = Shape::new(RecursionKind::Structural, OrderN(3),
-                                AbstractionKind::Parametric);
+        let shape = Shape::new(
+            RecursionKind::Structural,
+            OrderN(3),
+            AbstractionKind::Parametric,
+        );
         let nid = add_shape_node(&mut substrate, shape);
-        let recovered = read_shape_node(&substrate, nid)
-            .expect("Shape node round-trip must succeed");
+        let recovered =
+            read_shape_node(&substrate, nid).expect("Shape node round-trip must succeed");
         assert_eq!(shape, recovered);
     }
 
@@ -786,21 +993,37 @@ mod tests {
 
         // 3 candidates: a Lit (order-0 concrete), a single Fold (order-1
         // parametric), a nested Fold (order-2 parametric).
-        let lit = s.terms.add(TermNode::Lit { value: Value::Int(7) });
+        let lit = s.terms.add(TermNode::Lit {
+            value: Value::Int(7),
+        });
         let src1 = s.terms.add(TermNode::Lit { value: Value::None });
-        let init1 = s.terms.add(TermNode::Lit { value: Value::Int(0) });
+        let init1 = s.terms.add(TermNode::Lit {
+            value: Value::Int(0),
+        });
         let x = s.interner.intern("x");
         let acc = s.interner.intern("a");
         let body1 = s.terms.add(TermNode::Var { name: x });
         let fold1 = s.terms.add(TermNode::Fold {
-            source: src1, var_name: x, acc_name: acc, init: init1, body: body1,
+            source: src1,
+            var_name: x,
+            acc_name: acc,
+            init: init1,
+            body: body1,
         });
         let body2 = s.terms.add(TermNode::Var { name: x });
         let inner = s.terms.add(TermNode::Fold {
-            source: src1, var_name: x, acc_name: acc, init: init1, body: body2,
+            source: src1,
+            var_name: x,
+            acc_name: acc,
+            init: init1,
+            body: body2,
         });
         let fold2 = s.terms.add(TermNode::Fold {
-            source: src1, var_name: x, acc_name: acc, init: init1, body: inner,
+            source: src1,
+            var_name: x,
+            acc_name: acc,
+            init: init1,
+            body: inner,
         });
 
         let candidates = [lit, fold1, fold2];
@@ -808,8 +1031,11 @@ mod tests {
         // Target: structural recursion, order >= 1, parametric.
         // Compatible: fold1 (exact), fold2 (more structure OK).
         // Excluded: lit (recursion mismatch).
-        let target = Shape::new(RecursionKind::Structural, OrderN(1),
-                                  AbstractionKind::Parametric);
+        let target = Shape::new(
+            RecursionKind::Structural,
+            OrderN(1),
+            AbstractionKind::Parametric,
+        );
         let kept = prune_candidates_by_shape(&candidates, &target, &mut s);
         assert_eq!(kept.len(), 2);
         assert!(kept.contains(&fold1));
@@ -840,11 +1066,17 @@ mod tests {
         let idx_concrete = s.add_rule(rule_concrete);
 
         // Parametric rule (Fold where-clause — order 1 parametric).
-        let init = s.terms.add(TermNode::Lit { value: Value::Int(0) });
+        let init = s.terms.add(TermNode::Lit {
+            value: Value::Int(0),
+        });
         let src = s.terms.add(TermNode::Lit { value: Value::None });
         let body = s.terms.add(TermNode::Var { name: x });
         let parametric_where = s.terms.add(TermNode::Fold {
-            source: src, var_name: x, acc_name: x, init, body,
+            source: src,
+            var_name: x,
+            acc_name: x,
+            init,
+            body,
         });
         let parametric_name = s.interner.intern("parametric_rule");
         let rule_parametric = RewriteRule {
@@ -861,8 +1093,11 @@ mod tests {
         assert!(!s.rule_in_negative_space(idx_parametric));
 
         // Target requires parametric -> concrete is negative space.
-        let target = Shape::new(RecursionKind::Structural, OrderN(1),
-                                  AbstractionKind::Parametric);
+        let target = Shape::new(
+            RecursionKind::Structural,
+            OrderN(1),
+            AbstractionKind::Parametric,
+        );
         s.set_shape_target(Some(target));
         assert!(s.rule_in_negative_space(idx_concrete));
         assert!(!s.rule_in_negative_space(idx_parametric));
@@ -878,7 +1113,7 @@ mod tests {
     fn derivation_dispatch_shape_pruned_falls_back_to_native() {
         use crate::checker::ConsistencyChecker;
         use crate::grammar::Grammar;
-        use crate::term::{evaluate, DerivationRegistry, Derivation, EvalCtx, Env};
+        use crate::term::{evaluate, Derivation, DerivationRegistry, Env, EvalCtx};
         let mut s = Substrate::new(ConsistencyChecker::new(Grammar::new()));
         // Register a Lte derivation: Lte(a,b) = Not(Gt(a,b))) — but
         // for this test we use the trivially-derived form Lte(a,b) =
@@ -914,8 +1149,7 @@ mod tests {
         // with the target + call lookup_value_taker_def-equivalent
         // logic via dispatch.
 
-        let target = Shape::new(RecursionKind::None, OrderN(1),
-                                  AbstractionKind::Parametric);
+        let target = Shape::new(RecursionKind::None, OrderN(1), AbstractionKind::Parametric);
 
         // Construct an EvalCtx with target + counters + verify the
         // dispatch path skips the derivation. Build a simple Lit term
@@ -925,14 +1159,24 @@ mod tests {
         // ValueTaker. Without a target, the dispatch picks the
         // derivation; with an incompatible target, it falls back to
         // the kernel.
-        let lit_a = s.terms.add(TermNode::Lit { value: Value::Int(3) });
-        let lit_b = s.terms.add(TermNode::Lit { value: Value::Int(7) });
+        let lit_a = s.terms.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let lit_b = s.terms.add(TermNode::Lit {
+            value: Value::Int(7),
+        });
         let lte_call = s.terms.add(TermNode::Lte { a: lit_a, b: lit_b });
 
         // Phase 1: no target → derivation dispatch fires; counter doesn't bump.
         let counter_no_target;
         {
-            let Substrate { graph, interner, counters, terms, .. } = &mut s;
+            let Substrate {
+                graph,
+                interner,
+                counters,
+                terms,
+                ..
+            } = &mut s;
             let mut env = Env::new();
             let mut ctx = EvalCtx::new(graph, interner)
                 .with_counters(counters)
@@ -949,7 +1193,13 @@ mod tests {
         // (falls back to kernel); counter bumps.
         let counter_with_target;
         {
-            let Substrate { graph, interner, counters, terms, .. } = &mut s;
+            let Substrate {
+                graph,
+                interner,
+                counters,
+                terms,
+                ..
+            } = &mut s;
             let mut env = Env::new();
             let mut ctx = EvalCtx::new(graph, interner)
                 .with_counters(counters)
@@ -959,28 +1209,35 @@ mod tests {
             counter_with_target = ctx.counters.unwrap().derivation_shape_pruned;
         }
         // Pruning fired.
-        assert!(counter_with_target > counter_no_target,
-                 "shape_target should have pruned at least one derivation \
+        assert!(
+            counter_with_target > counter_no_target,
+            "shape_target should have pruned at least one derivation \
                   dispatch; before={} after={}",
-                 counter_no_target, counter_with_target);
+            counter_no_target,
+            counter_with_target
+        );
     }
 
     #[test]
     fn concept_dispatch_shape_pruned() {
         use crate::checker::ConsistencyChecker;
         use crate::grammar::Grammar;
-        use crate::term::{evaluate, ConceptResolver, EvalCtx, Env};
+        use crate::term::{evaluate, ConceptResolver, Env, EvalCtx};
         let mut s = Substrate::new(ConsistencyChecker::new(Grammar::new()));
 
         // Define a concept with a Lit definition (Shape: none, order 0,
         // concrete).
         let concept_sym = s.interner.intern("my_concept");
-        let def = s.terms.add(TermNode::Lit { value: Value::Bool(true) });
+        let def = s.terms.add(TermNode::Lit {
+            value: Value::Bool(true),
+        });
         let mut concepts = ConceptResolver::default();
         concepts.insert(concept_sym, def);
 
         // Build a Holds call.
-        let node = s.terms.add(TermNode::Lit { value: Value::Node(crate::graph::NodeID(0)) });
+        let node = s.terms.add(TermNode::Lit {
+            value: Value::Node(crate::graph::NodeID(0)),
+        });
         let holds = s.terms.add(TermNode::Holds {
             concept: concept_sym,
             node: Some(node),
@@ -989,7 +1246,13 @@ mod tests {
 
         // Phase 1: no target → concept resolves; counter stays at 0.
         let phase1 = {
-            let Substrate { graph, interner, counters, terms, .. } = &mut s;
+            let Substrate {
+                graph,
+                interner,
+                counters,
+                terms,
+                ..
+            } = &mut s;
             let mut env = Env::new();
             let mut ctx = EvalCtx::new(graph, interner)
                 .with_counters(counters)
@@ -1000,10 +1263,19 @@ mod tests {
         assert_eq!(phase1, 0);
 
         // Phase 2: incompatible target → concept pruned, counter bumps.
-        let target = Shape::new(RecursionKind::Structural, OrderN(2),
-                                  AbstractionKind::Parametric);
+        let target = Shape::new(
+            RecursionKind::Structural,
+            OrderN(2),
+            AbstractionKind::Parametric,
+        );
         let phase2 = {
-            let Substrate { graph, interner, counters, terms, .. } = &mut s;
+            let Substrate {
+                graph,
+                interner,
+                counters,
+                terms,
+                ..
+            } = &mut s;
             let mut env = Env::new();
             let mut ctx = EvalCtx::new(graph, interner)
                 .with_counters(counters)
@@ -1021,14 +1293,22 @@ mod tests {
         use crate::grammar::Grammar;
         let mut s = Substrate::new(ConsistencyChecker::new(Grammar::new()));
 
-        let lit = s.terms.add(TermNode::Lit { value: Value::Int(7) });
+        let lit = s.terms.add(TermNode::Lit {
+            value: Value::Int(7),
+        });
         let src = s.terms.add(TermNode::Lit { value: Value::None });
-        let init = s.terms.add(TermNode::Lit { value: Value::Int(0) });
+        let init = s.terms.add(TermNode::Lit {
+            value: Value::Int(0),
+        });
         let x = s.interner.intern("x");
         let acc = s.interner.intern("a");
         let body = s.terms.add(TermNode::Var { name: x });
         let fold = s.terms.add(TermNode::Fold {
-            source: src, var_name: x, acc_name: acc, init, body,
+            source: src,
+            var_name: x,
+            acc_name: acc,
+            init,
+            body,
         });
         let candidates = [lit, fold];
 
@@ -1037,8 +1317,11 @@ mod tests {
         assert_eq!(all.len(), 2);
 
         // With parametric target: only the Fold passes.
-        let target = Shape::new(RecursionKind::Structural, OrderN(1),
-                                  AbstractionKind::Parametric);
+        let target = Shape::new(
+            RecursionKind::Structural,
+            OrderN(1),
+            AbstractionKind::Parametric,
+        );
         s.set_shape_target(Some(target));
         let filtered = s.shape_filter_terms(&candidates);
         assert_eq!(filtered.len(), 1);
@@ -1053,7 +1336,7 @@ mod tests {
         // evaluate calls that exercise the shape check.
         use crate::checker::ConsistencyChecker;
         use crate::grammar::Grammar;
-        use crate::term::{evaluate, DerivationRegistry, Derivation, EvalCtx, Env};
+        use crate::term::{evaluate, Derivation, DerivationRegistry, Env, EvalCtx};
         let mut s = Substrate::new(ConsistencyChecker::new(Grammar::new()));
 
         // Set up a Lte derivation + active target so the shape check fires.
@@ -1066,17 +1349,31 @@ mod tests {
         let mut derivs: DerivationRegistry = rustc_hash::FxHashMap::default();
         derivs.insert(lte_sym, Derivation::ValueTaker(body));
 
-        let target = Shape::new(RecursionKind::Structural, OrderN(2),
-                                  AbstractionKind::Parametric);
-        let lit_a = s.terms.add(TermNode::Lit { value: Value::Int(3) });
-        let lit_b = s.terms.add(TermNode::Lit { value: Value::Int(7) });
+        let target = Shape::new(
+            RecursionKind::Structural,
+            OrderN(2),
+            AbstractionKind::Parametric,
+        );
+        let lit_a = s.terms.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let lit_b = s.terms.add(TermNode::Lit {
+            value: Value::Int(7),
+        });
         let call = s.terms.add(TermNode::Lte { a: lit_a, b: lit_b });
 
         // Cache empty before.
         assert_eq!(s.shape_cache.len(), 0);
 
         {
-            let Substrate { graph, interner, counters, terms, shape_cache, .. } = &mut s;
+            let Substrate {
+                graph,
+                interner,
+                counters,
+                terms,
+                shape_cache,
+                ..
+            } = &mut s;
             let mut env = Env::new();
             let mut ctx = EvalCtx::new(graph, interner)
                 .with_counters(counters)
@@ -1087,8 +1384,10 @@ mod tests {
         }
 
         // Cache populated.
-        assert!(s.shape_cache.len() >= 1,
-                 "shape_cache should have at least one entry after threaded dispatch");
+        assert!(
+            s.shape_cache.len() >= 1,
+            "shape_cache should have at least one entry after threaded dispatch"
+        );
     }
 
     #[test]
@@ -1120,8 +1419,7 @@ mod tests {
     fn meta_shape_climbs_one_rung() {
         // Order increments by 1; abstraction becomes parametric;
         // recursion preserved (Smith 1982 / Pearlmutter-Siskind D).
-        let s = Shape::new(RecursionKind::Direct, OrderN(2),
-                            AbstractionKind::Concrete);
+        let s = Shape::new(RecursionKind::Direct, OrderN(2), AbstractionKind::Concrete);
         let meta = meta_shape(s);
         assert_eq!(meta.recursion, RecursionKind::Direct);
         assert_eq!(meta.order_n, OrderN(3));
@@ -1131,8 +1429,7 @@ mod tests {
     #[test]
     fn tower_climb_composes() {
         // Climbing N rungs == applying meta_shape N times.
-        let s = Shape::new(RecursionKind::None, OrderN(0),
-                            AbstractionKind::Concrete);
+        let s = Shape::new(RecursionKind::None, OrderN(0), AbstractionKind::Concrete);
         let three = climb_tower(s, 3);
         assert_eq!(three.order_n, OrderN(3));
         let three_iter = meta_shape(meta_shape(meta_shape(s)));
@@ -1148,12 +1445,18 @@ mod tests {
         let mut arena = TermArena::new();
         let mut sym = Interner::new();
         let src = arena.add(TermNode::Lit { value: Value::None });
-        let init = arena.add(TermNode::Lit { value: Value::Int(0) });
+        let init = arena.add(TermNode::Lit {
+            value: Value::Int(0),
+        });
         let x = sym.intern("x");
         let acc = sym.intern("a");
         let body = arena.add(TermNode::Var { name: x });
         let assessment_fn = arena.add(TermNode::Fold {
-            source: src, var_name: x, acc_name: acc, init, body,
+            source: src,
+            var_name: x,
+            acc_name: acc,
+            init,
+            body,
         });
         let s = assess_shape(assessment_fn, &arena);
         assert_eq!(s.order_n, OrderN(1));
@@ -1168,17 +1471,13 @@ mod tests {
     fn shape_mismatch_prunes() {
         // shape_mismatch_prunes_negative_problem_space:
         // a concrete shape cannot satisfy a parametric target.
-        let concrete = Shape::new(RecursionKind::None, OrderN(0),
-                                    AbstractionKind::Concrete);
-        let parametric = Shape::new(RecursionKind::None, OrderN(1),
-                                      AbstractionKind::Parametric);
+        let concrete = Shape::new(RecursionKind::None, OrderN(0), AbstractionKind::Concrete);
+        let parametric = Shape::new(RecursionKind::None, OrderN(1), AbstractionKind::Parametric);
         assert!(!shapes_compatible(&concrete, &parametric));
         // and an order-1 candidate satisfies an order-0 target (more
         // structure is always permissible).
-        let order1 = Shape::new(RecursionKind::None, OrderN(1),
-                                  AbstractionKind::Parametric);
-        let order0 = Shape::new(RecursionKind::None, OrderN(0),
-                                  AbstractionKind::Concrete);
+        let order1 = Shape::new(RecursionKind::None, OrderN(1), AbstractionKind::Parametric);
+        let order0 = Shape::new(RecursionKind::None, OrderN(0), AbstractionKind::Concrete);
         assert!(shapes_compatible(&order1, &order0));
     }
 }

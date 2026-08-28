@@ -146,7 +146,9 @@ impl FbHeader {
             ));
         }
         if width == 0 || height == 0 {
-            return Err(format!("fb width/height must be nonzero (got {width}x{height})"));
+            return Err(format!(
+                "fb width/height must be nonzero (got {width}x{height})"
+            ));
         }
         if (stride as u64) < (width as u64) * 4 {
             return Err(format!(
@@ -154,7 +156,14 @@ impl FbHeader {
                 width * 4
             ));
         }
-        Ok(FbHeader { magic, version, width, height, stride, format })
+        Ok(FbHeader {
+            magic,
+            version,
+            width,
+            height,
+            stride,
+            format,
+        })
     }
 
     #[inline]
@@ -189,7 +198,10 @@ impl FbHeader {
 /// real page-aligned mmap does; byte reads need no such guarantee.
 #[inline]
 pub fn read_seq(buf: &[u8]) -> u64 {
-    debug_assert!(buf.len() >= 32, "read_seq: buffer shorter than the frame_seq field");
+    debug_assert!(
+        buf.len() >= 32,
+        "read_seq: buffer shorter than the frame_seq field"
+    );
     let mut bytes = [0u8; 8];
     for (i, b) in bytes.iter_mut().enumerate() {
         *b = unsafe { std::ptr::read_volatile(buf.as_ptr().add(24 + i)) };
@@ -479,14 +491,20 @@ mod tests {
         let mut buf = make_frame(2, 2, 0, (0, 0, 0, 0));
         buf[4..8].copy_from_slice(&99u32.to_le_bytes());
         let err = FbHeader::parse(&buf).unwrap_err();
-        assert!(err.contains("version"), "error should mention version: {err}");
+        assert!(
+            err.contains("version"),
+            "error should mention version: {err}"
+        );
     }
 
     #[test]
     fn header_parse_rejects_short_buffer() {
         let buf = vec![0u8; 10];
         let err = FbHeader::parse(&buf).unwrap_err();
-        assert!(err.contains("truncated"), "error should mention truncation: {err}");
+        assert!(
+            err.contains("truncated"),
+            "error should mention truncation: {err}"
+        );
     }
 
     #[test]
@@ -726,9 +744,14 @@ mod tests {
         stop.store(true, Ordering::Relaxed);
         writer.join().unwrap();
         // Reclaim the leaked allocation.
-        unsafe { drop(Vec::from_raw_parts(ptr as *mut u8, len, len)); }
+        unsafe {
+            drop(Vec::from_raw_parts(ptr as *mut u8, len, len));
+        }
 
-        assert!(consistent_checked > 0, "should observe at least some coherent (torn=false) reads");
+        assert!(
+            consistent_checked > 0,
+            "should observe at least some coherent (torn=false) reads"
+        );
         // Sanity check on the test itself: if the reader hadn't actually
         // spanned multiple writer generations, the honesty assertion
         // above would be vacuously easy to pass (nothing to race
@@ -753,9 +776,13 @@ mod tests {
         let buf = make_frame(8, 8, 1, (200, 100, 50, 255));
         let header = FbHeader::parse(&buf).unwrap();
         let payload = &buf[FB_HEADER_LEN..];
-        let grid = downsample_quantize(payload, header.width, header.height, header.stride, 2, 2, 4);
+        let grid =
+            downsample_quantize(payload, header.width, header.height, header.stride, 2, 2, 4);
         assert_eq!(grid.len(), 4);
-        assert!(grid.iter().all(|&v| v == grid[0]), "uniform frame should quantize uniformly: {grid:?}");
+        assert!(
+            grid.iter().all(|&v| v == grid[0]),
+            "uniform frame should quantize uniformly: {grid:?}"
+        );
     }
 
     #[test]
@@ -784,8 +811,12 @@ mod tests {
         }
         let header = FbHeader::parse(&buf).unwrap();
         let payload = &buf[FB_HEADER_LEN..];
-        let grid = downsample_quantize(payload, header.width, header.height, header.stride, 2, 1, 4);
+        let grid =
+            downsample_quantize(payload, header.width, header.height, header.stride, 2, 1, 4);
         assert_eq!(grid.len(), 2);
-        assert_ne!(grid[0], grid[1], "red half and blue half must quantize to different values: {grid:?}");
+        assert_ne!(
+            grid[0], grid[1],
+            "red half and blue half must quantize to different values: {grid:?}"
+        );
     }
 }

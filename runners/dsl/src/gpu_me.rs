@@ -145,88 +145,82 @@ impl GpuMeContext {
 
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("gpu-me-shader"),
-            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!(
-                "gpu_me.wgsl"
-            ))),
+            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("gpu_me.wgsl"))),
         });
 
-        let bind_group_layout = device.create_bind_group_layout(
-            &wgpu::BindGroupLayoutDescriptor {
-                label: Some("gpu-me-bgl"),
-                entries: &[
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::COMPUTE,
-                        ty: wgpu::BindingType::Buffer {
-                            ty: wgpu::BufferBindingType::Storage { read_only: true },
-                            has_dynamic_offset: false,
-                            min_binding_size: None,
-                        },
-                        count: None,
+        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("gpu-me-bgl"),
+            entries: &[
+                wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::COMPUTE,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Storage { read_only: true },
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
                     },
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 1,
-                        visibility: wgpu::ShaderStages::COMPUTE,
-                        ty: wgpu::BindingType::Buffer {
-                            ty: wgpu::BufferBindingType::Storage { read_only: true },
-                            has_dynamic_offset: false,
-                            min_binding_size: None,
-                        },
-                        count: None,
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: wgpu::ShaderStages::COMPUTE,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Storage { read_only: true },
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
                     },
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 2,
-                        visibility: wgpu::ShaderStages::COMPUTE,
-                        ty: wgpu::BindingType::Buffer {
-                            ty: wgpu::BufferBindingType::Uniform,
-                            has_dynamic_offset: false,
-                            min_binding_size: None,
-                        },
-                        count: None,
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 2,
+                    visibility: wgpu::ShaderStages::COMPUTE,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
                     },
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 3,
-                        visibility: wgpu::ShaderStages::COMPUTE,
-                        ty: wgpu::BindingType::Buffer {
-                            ty: wgpu::BufferBindingType::Storage { read_only: false },
-                            has_dynamic_offset: false,
-                            min_binding_size: None,
-                        },
-                        count: None,
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 3,
+                    visibility: wgpu::ShaderStages::COMPUTE,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Storage { read_only: false },
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
                     },
-                ],
-            },
-        );
+                    count: None,
+                },
+            ],
+        });
 
-        let pipeline_layout = device.create_pipeline_layout(
-            &wgpu::PipelineLayoutDescriptor {
-                label: Some("gpu-me-pll"),
-                bind_group_layouts: &[&bind_group_layout],
-                push_constant_ranges: &[],
-            },
-        );
+        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+            label: Some("gpu-me-pll"),
+            bind_group_layouts: &[&bind_group_layout],
+            push_constant_ranges: &[],
+        });
 
-        let pipeline_full = device.create_compute_pipeline(
-            &wgpu::ComputePipelineDescriptor {
-                label: Some("gpu-me-full"),
-                layout: Some(&pipeline_layout),
-                module: &shader,
-                entry_point: "me_main",
-                compilation_options: Default::default(),
-            },
-        );
-        let pipeline_hex = device.create_compute_pipeline(
-            &wgpu::ComputePipelineDescriptor {
-                label: Some("gpu-me-hex"),
-                layout: Some(&pipeline_layout),
-                module: &shader,
-                entry_point: "me_hex",
-                compilation_options: Default::default(),
-            },
-        );
+        let pipeline_full = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
+            label: Some("gpu-me-full"),
+            layout: Some(&pipeline_layout),
+            module: &shader,
+            entry_point: "me_main",
+            compilation_options: Default::default(),
+        });
+        let pipeline_hex = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
+            label: Some("gpu-me-hex"),
+            layout: Some(&pipeline_layout),
+            module: &shader,
+            entry_point: "me_hex",
+            compilation_options: Default::default(),
+        });
 
         Ok(GpuMeContext {
-            device, queue, pipeline_full, pipeline_hex, bind_group_layout,
+            device,
+            queue,
+            pipeline_full,
+            pipeline_hex,
+            bind_group_layout,
             inputs: Mutex::new(HashMap::new()),
         })
     }
@@ -239,7 +233,13 @@ impl GpuMeContext {
         plane_w: usize,
         plane_h: usize,
         n_mbs: usize,
-    ) -> (Arc<wgpu::Buffer>, Arc<wgpu::Buffer>, Arc<wgpu::Buffer>, u64, u64) {
+    ) -> (
+        Arc<wgpu::Buffer>,
+        Arc<wgpu::Buffer>,
+        Arc<wgpu::Buffer>,
+        u64,
+        u64,
+    ) {
         let mut guard = self.inputs.lock().unwrap();
         let key = (plane_w, plane_h, n_mbs);
         if !guard.contains_key(&key) {
@@ -264,9 +264,16 @@ impl GpuMeContext {
                 usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
                 mapped_at_creation: false,
             }));
-            guard.insert(key, ResInputs {
-                target_buf, ref_buf, params_buf, plane_padded_bytes, out_bytes,
-            });
+            guard.insert(
+                key,
+                ResInputs {
+                    target_buf,
+                    ref_buf,
+                    params_buf,
+                    plane_padded_bytes,
+                    out_bytes,
+                },
+            );
         }
         let entry = guard.get(&key).unwrap();
         (
@@ -294,7 +301,13 @@ impl GpuMeContext {
         search_radius: u32,
     ) -> Result<Vec<MvResult>, String> {
         self.estimate_with_mode(
-            target, reference, plane_w, plane_h, mb_w, mb_h, search_radius,
+            target,
+            reference,
+            plane_w,
+            plane_h,
+            mb_w,
+            mb_h,
+            search_radius,
             SearchMode::Full,
         )
     }
@@ -311,8 +324,14 @@ impl GpuMeContext {
         mode: SearchMode,
     ) -> Result<Vec<MvResult>, String> {
         let handle = self.submit_async(
-            target, reference, plane_w, plane_h, mb_w, mb_h,
-            search_radius, mode,
+            target,
+            reference,
+            plane_w,
+            plane_h,
+            mb_w,
+            mb_h,
+            search_radius,
+            mode,
         )?;
         handle.wait()
     }
@@ -366,10 +385,22 @@ impl GpuMeContext {
             label: Some("me-bg"),
             layout: &self.bind_group_layout,
             entries: &[
-                wgpu::BindGroupEntry { binding: 0, resource: target_buf.as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 1, resource: ref_buf.as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 2, resource: params_buf.as_entire_binding() },
-                wgpu::BindGroupEntry { binding: 3, resource: out_buf.as_entire_binding() },
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: target_buf.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: ref_buf.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 2,
+                    resource: params_buf.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 3,
+                    resource: out_buf.as_entire_binding(),
+                },
             ],
         });
 
@@ -395,18 +426,19 @@ impl GpuMeContext {
             search_radius,
             _pad: 0,
         };
-        self.queue.write_buffer(&params_buf, 0, bytemuck::cast_slice(&[params]));
+        self.queue
+            .write_buffer(&params_buf, 0, bytemuck::cast_slice(&[params]));
 
-        let mut encoder = self.device.create_command_encoder(
-            &wgpu::CommandEncoderDescriptor { label: Some("me-enc") },
-        );
+        let mut encoder = self
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                label: Some("me-enc"),
+            });
         {
-            let mut cpass = encoder.begin_compute_pass(
-                &wgpu::ComputePassDescriptor {
-                    label: Some("me-pass"),
-                    timestamp_writes: None,
-                },
-            );
+            let mut cpass = encoder.begin_compute_pass(&wgpu::ComputePassDescriptor {
+                label: Some("me-pass"),
+                timestamp_writes: None,
+            });
             cpass.set_pipeline(match mode {
                 SearchMode::Full => &self.pipeline_full,
                 SearchMode::Hex => &self.pipeline_hex,
@@ -437,9 +469,9 @@ impl MeHandle {
         // Step 1: wait for OUR submission specifically. Subsequent
         // submissions on the same queue stay in flight — that's
         // the whole point of pipelining.
-        self.ctx.device.poll(
-            wgpu::Maintain::WaitForSubmissionIndex(self.submission.clone()),
-        );
+        self.ctx.device.poll(wgpu::Maintain::WaitForSubmissionIndex(
+            self.submission.clone(),
+        ));
         // Step 2: now map_async — the buffer is already populated.
         // Use Poll (non-blocking) to drive the mapping callback so
         // later submissions on the queue keep running in the
@@ -585,9 +617,16 @@ mod tests {
         assert_eq!(gpu_mvs.len(), cpu_mvs.len());
         for (i, (g, c)) in gpu_mvs.iter().zip(cpu_mvs.iter()).enumerate() {
             assert_eq!(
-                (g.mv_x, g.mv_y), (c.mv_x, c.mv_y),
+                (g.mv_x, g.mv_y),
+                (c.mv_x, c.mv_y),
                 "MB {} disagreement: GPU=({},{}) sad={}, CPU=({},{}) sad={}",
-                i, g.mv_x, g.mv_y, g.sad, c.mv_x, c.mv_y, c.sad,
+                i,
+                g.mv_x,
+                g.mv_y,
+                g.sad,
+                c.mv_x,
+                c.mv_y,
+                c.sad,
             );
         }
     }

@@ -54,9 +54,9 @@
 
 use rustc_hash::FxHashMap;
 
-use crate::graph::NodeID;
 use crate::grammar::{NodePattern, Production};
-use crate::l2_adaptive::{DispatcherSnapshot, CachedEntrySummary};
+use crate::graph::NodeID;
+use crate::l2_adaptive::{CachedEntrySummary, DispatcherSnapshot};
 use crate::substrate::Substrate;
 use crate::sym::Sym;
 use crate::value::Value;
@@ -69,9 +69,18 @@ use crate::value::Value;
 /// grammar accepts duplicates). For tests this is fine; production
 /// code should call exactly once.
 pub fn register_dispatcher_schema(substrate: &mut Substrate) {
-    let (dispatcher_t, policy_t, hot_t, cached_t,
-         has_policy, has_hot, has_cached,
-         src_var, tgt_var, prov) = {
+    let (
+        dispatcher_t,
+        policy_t,
+        hot_t,
+        cached_t,
+        has_policy,
+        has_hot,
+        has_cached,
+        src_var,
+        tgt_var,
+        prov,
+    ) = {
         let i = &mut substrate.interner;
         (
             i.intern("Dispatcher"),
@@ -93,9 +102,15 @@ pub fn register_dispatcher_schema(substrate: &mut Substrate) {
         (has_cached, cached_t),
     ] {
         substrate.add_production(Production {
-            src: NodePattern { type_: dispatcher_t, var: src_var },
+            src: NodePattern {
+                type_: dispatcher_t,
+                var: src_var,
+            },
             edge_type: et,
-            tgt: NodePattern { type_: tgt_type, var: tgt_var },
+            tgt: NodePattern {
+                type_: tgt_type,
+                var: tgt_var,
+            },
             where_: None,
             weight: w,
             provenance: prov,
@@ -119,16 +134,12 @@ pub fn install_snapshot_into_graph(
     let epoch_sym = substrate.interner.intern("epoch");
     let total_bytes_sym = substrate.interner.intern("total_cache_bytes");
     let threshold_sym = substrate.interner.intern("threshold");
-    let cooling_threshold_sym =
-        substrate.interner.intern("cooling_threshold");
-    let cache_max_bytes_sym =
-        substrate.interner.intern("cache_max_bytes");
+    let cooling_threshold_sym = substrate.interner.intern("cooling_threshold");
+    let cache_max_bytes_sym = substrate.interner.intern("cache_max_bytes");
     let kind_sym = substrate.interner.intern("kind");
     let count_sym = substrate.interner.intern("count");
-    let epoch_at_compile_sym =
-        substrate.interner.intern("epoch_at_compile");
-    let code_size_bytes_sym =
-        substrate.interner.intern("code_size_bytes");
+    let epoch_at_compile_sym = substrate.interner.intern("epoch_at_compile");
+    let code_size_bytes_sym = substrate.interner.intern("code_size_bytes");
     let dispatcher_t = substrate.interner.intern("Dispatcher");
     let policy_t = substrate.interner.intern("DispatcherPolicy");
     let hot_t = substrate.interner.intern("HotCounterEntry");
@@ -148,26 +159,34 @@ pub fn install_snapshot_into_graph(
         let mut a = FxHashMap::default();
         a.insert(label_sym, Value::Str(label_value_sym));
         a.insert(epoch_sym, Value::Int(snapshot.epoch as i64));
-        a.insert(total_bytes_sym,
-                 Value::Int(snapshot.total_cache_bytes as i64));
+        a.insert(
+            total_bytes_sym,
+            Value::Int(snapshot.total_cache_bytes as i64),
+        );
         substrate.add_node(dispatcher_t, a)
     };
 
     // Policy.
     let policy_node = {
         let mut a = FxHashMap::default();
-        a.insert(threshold_sym,
-                 Value::Int(snapshot.policy.threshold as i64));
-        a.insert(cooling_threshold_sym,
-                 Value::Int(snapshot.policy.cooling_threshold as i64));
-        a.insert(cache_max_bytes_sym,
-                 Value::Int(snapshot.cache_max_bytes as i64));
+        a.insert(threshold_sym, Value::Int(snapshot.policy.threshold as i64));
+        a.insert(
+            cooling_threshold_sym,
+            Value::Int(snapshot.policy.cooling_threshold as i64),
+        );
+        a.insert(
+            cache_max_bytes_sym,
+            Value::Int(snapshot.cache_max_bytes as i64),
+        );
         substrate.add_node(policy_t, a)
     };
     let mut edge_attrs = FxHashMap::default();
     let _ = substrate.add_edge(
-        dispatcher_node, has_policy, policy_node,
-        std::mem::take(&mut edge_attrs));
+        dispatcher_node,
+        has_policy,
+        policy_node,
+        std::mem::take(&mut edge_attrs),
+    );
 
     // Hot counters. kind is stored AS the kind's Sym wrapped in
     // Value::Str — reflexes resolving the Sym get the rule name.
@@ -176,23 +195,28 @@ pub fn install_snapshot_into_graph(
         a.insert(kind_sym, Value::Str(*kind));
         a.insert(count_sym, Value::Int(*count as i64));
         let h = substrate.add_node(hot_t, a);
-        let _ = substrate.add_edge(
-            dispatcher_node, has_hot, h,
-            std::mem::take(&mut edge_attrs));
+        let _ = substrate.add_edge(dispatcher_node, has_hot, h, std::mem::take(&mut edge_attrs));
     }
 
     // Cached artefacts.
     for entry in &snapshot.cached {
         let mut a = FxHashMap::default();
         a.insert(kind_sym, Value::Str(entry.kind));
-        a.insert(epoch_at_compile_sym,
-                 Value::Int(entry.epoch_at_compile as i64));
-        a.insert(code_size_bytes_sym,
-                 Value::Int(entry.code_size_bytes as i64));
+        a.insert(
+            epoch_at_compile_sym,
+            Value::Int(entry.epoch_at_compile as i64),
+        );
+        a.insert(
+            code_size_bytes_sym,
+            Value::Int(entry.code_size_bytes as i64),
+        );
         let c = substrate.add_node(cached_t, a);
         let _ = substrate.add_edge(
-            dispatcher_node, has_cached, c,
-            std::mem::take(&mut edge_attrs));
+            dispatcher_node,
+            has_cached,
+            c,
+            std::mem::take(&mut edge_attrs),
+        );
     }
 
     let _ = prov_sym; // currently unused; reserved for provenance attr
@@ -205,17 +229,19 @@ mod tests {
     use crate::checker::ConsistencyChecker;
     use crate::code_cache::{CodeCacheConfig, CodeSize};
     use crate::grammar::Grammar;
-    use crate::l2_adaptive::{
-        AdaptiveDispatcher, TierUpPolicy, TypedTask,
-    };
+    use crate::l2_adaptive::{AdaptiveDispatcher, TierUpPolicy, TypedTask};
     use crate::l2_dispatch::{PriorityClass, Scheduler};
-    use std::sync::Arc;
     use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrd};
+    use std::sync::Arc;
     use std::time::{Duration, Instant};
 
-    struct FakeJit { size: usize }
+    struct FakeJit {
+        size: usize,
+    }
     impl CodeSize for FakeJit {
-        fn code_size_bytes(&self) -> usize { self.size }
+        fn code_size_bytes(&self) -> usize {
+            self.size
+        }
     }
 
     fn empty_substrate() -> Substrate {
@@ -226,17 +252,23 @@ mod tests {
     #[test]
     fn snapshot_captures_dispatcher_state() {
         let mut s = empty_substrate();
-        let dispatcher: AdaptiveDispatcher<FakeJit> =
-            AdaptiveDispatcher::with_shared_epoch(
-                Scheduler::new(1),
-                TierUpPolicy { threshold: 50, cooling_threshold: 4 },
-                CodeCacheConfig { max_bytes: 2048 },
-                s.gamma_epoch(),
-            );
+        let dispatcher: AdaptiveDispatcher<FakeJit> = AdaptiveDispatcher::with_shared_epoch(
+            Scheduler::new(1),
+            TierUpPolicy {
+                threshold: 50,
+                cooling_threshold: 4,
+            },
+            CodeCacheConfig { max_bytes: 2048 },
+            s.gamma_epoch(),
+        );
         let k1 = s.interner.intern("hot_rule");
         let k2 = s.interner.intern("cold_rule");
-        for _ in 0..10 { dispatcher.hot_counter().record(k1); }
-        for _ in 0..3  { dispatcher.hot_counter().record(k2); }
+        for _ in 0..10 {
+            dispatcher.hot_counter().record(k1);
+        }
+        for _ in 0..3 {
+            dispatcher.hot_counter().record(k2);
+        }
         dispatcher.install_compiled(k1, FakeJit { size: 256 });
 
         let snap = dispatcher.snapshot();
@@ -264,21 +296,22 @@ mod tests {
         let mut s = empty_substrate();
         register_dispatcher_schema(&mut s);
 
-        let dispatcher: AdaptiveDispatcher<FakeJit> =
-            AdaptiveDispatcher::with_shared_epoch(
-                Scheduler::new(1),
-                TierUpPolicy { threshold: 100, cooling_threshold: 3 },
-                CodeCacheConfig { max_bytes: 1024 },
-                s.gamma_epoch(),
-            );
+        let dispatcher: AdaptiveDispatcher<FakeJit> = AdaptiveDispatcher::with_shared_epoch(
+            Scheduler::new(1),
+            TierUpPolicy {
+                threshold: 100,
+                cooling_threshold: 3,
+            },
+            CodeCacheConfig { max_bytes: 1024 },
+            s.gamma_epoch(),
+        );
         let k = s.interner.intern("rule_a");
         dispatcher.hot_counter().record(k);
         dispatcher.hot_counter().record(k);
         dispatcher.install_compiled(k, FakeJit { size: 128 });
         let snap = dispatcher.snapshot();
 
-        let dispatcher_node = install_snapshot_into_graph(
-            &mut s, &snap, "test_dispatcher");
+        let dispatcher_node = install_snapshot_into_graph(&mut s, &snap, "test_dispatcher");
 
         // Verify the root Dispatcher node exists with correct attrs.
         assert!(s.graph.has_node(dispatcher_node));
@@ -298,21 +331,21 @@ mod tests {
 
         // Walk has_policy → exactly one DispatcherPolicy node.
         let has_policy = s.interner.lookup("has_policy").unwrap();
-        let policy_nodes: Vec<_> = s.graph
+        let policy_nodes: Vec<_> = s
+            .graph
             .out_edges_idx(dispatcher_node, Some(has_policy))
-            .into_iter().collect();
+            .into_iter()
+            .collect();
         assert_eq!(policy_nodes.len(), 1);
 
         // Walk has_hot → one HotCounterEntry per kind in the snapshot.
         let has_hot = s.interner.lookup("has_hot").unwrap();
-        let hot_edges = s.graph
-            .out_edges_idx(dispatcher_node, Some(has_hot));
+        let hot_edges = s.graph.out_edges_idx(dispatcher_node, Some(has_hot));
         assert_eq!(hot_edges.len(), snap.hot_counters.len());
 
         // Walk has_cached → one CachedArtefact per cached entry.
         let has_cached = s.interner.lookup("has_cached").unwrap();
-        let cached_edges = s.graph
-            .out_edges_idx(dispatcher_node, Some(has_cached));
+        let cached_edges = s.graph.out_edges_idx(dispatcher_node, Some(has_cached));
         assert_eq!(cached_edges.len(), snap.cached.len());
 
         dispatcher.shutdown();
@@ -327,17 +360,20 @@ mod tests {
         let mut s = empty_substrate();
         register_dispatcher_schema(&mut s);
 
-        let dispatcher: AdaptiveDispatcher<FakeJit> =
-            AdaptiveDispatcher::with_shared_epoch(
-                Scheduler::new(1),
-                TierUpPolicy::default(),
-                CodeCacheConfig::default(),
-                s.gamma_epoch(),
-            );
+        let dispatcher: AdaptiveDispatcher<FakeJit> = AdaptiveDispatcher::with_shared_epoch(
+            Scheduler::new(1),
+            TierUpPolicy::default(),
+            CodeCacheConfig::default(),
+            s.gamma_epoch(),
+        );
         let k_alpha = s.interner.intern("rule_alpha");
-        let k_beta  = s.interner.intern("rule_beta");
-        for _ in 0..7 { dispatcher.hot_counter().record(k_alpha); }
-        for _ in 0..2 { dispatcher.hot_counter().record(k_beta); }
+        let k_beta = s.interner.intern("rule_beta");
+        for _ in 0..7 {
+            dispatcher.hot_counter().record(k_alpha);
+        }
+        for _ in 0..2 {
+            dispatcher.hot_counter().record(k_beta);
+        }
         let snap = dispatcher.snapshot();
         let _ = install_snapshot_into_graph(&mut s, &snap, "d");
 
@@ -357,8 +393,11 @@ mod tests {
                 }
             }
         }
-        assert_eq!(alpha_count, Some(7),
-                   "reflex-style introspection should find rule_alpha's count");
+        assert_eq!(
+            alpha_count,
+            Some(7),
+            "reflex-style introspection should find rule_alpha's count"
+        );
         dispatcher.shutdown();
     }
 
@@ -370,13 +409,12 @@ mod tests {
     fn snapshot_after_submit_shows_updated_counts() {
         let mut s = empty_substrate();
         register_dispatcher_schema(&mut s);
-        let dispatcher: AdaptiveDispatcher<FakeJit> =
-            AdaptiveDispatcher::with_shared_epoch(
-                Scheduler::new(2),
-                TierUpPolicy::default(),
-                CodeCacheConfig::default(),
-                s.gamma_epoch(),
-            );
+        let dispatcher: AdaptiveDispatcher<FakeJit> = AdaptiveDispatcher::with_shared_epoch(
+            Scheduler::new(2),
+            TierUpPolicy::default(),
+            CodeCacheConfig::default(),
+            s.gamma_epoch(),
+        );
         let k = s.interner.intern("rule");
         let counter = Arc::new(AtomicUsize::new(0));
         for _ in 0..15 {
@@ -394,8 +432,11 @@ mod tests {
 
         let snap = dispatcher.snapshot();
         // 15 records on the hot counter for this kind.
-        let count = snap.hot_counters.iter()
-            .find(|(s, _)| *s == k).map(|(_, c)| *c);
+        let count = snap
+            .hot_counters
+            .iter()
+            .find(|(s, _)| *s == k)
+            .map(|(_, c)| *c);
         assert_eq!(count, Some(15));
         dispatcher.drain_and_shutdown();
     }

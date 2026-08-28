@@ -81,16 +81,24 @@ impl From<LqrError> for KalmanError {
 
 impl KalmanFilterND {
     /// State dimension.
-    pub fn state_dim(&self) -> usize { self.a.rows() }
+    pub fn state_dim(&self) -> usize {
+        self.a.rows()
+    }
     /// Measurement dimension.
-    pub fn measurement_dim(&self) -> usize { self.c.rows() }
+    pub fn measurement_dim(&self) -> usize {
+        self.c.rows()
+    }
 
     /// Construct with named matrices. `b` may be `None` for filters
     /// with no control input.
     pub fn new(
-        x0: Mat, p0: Mat,
-        a: Mat, b: Option<Mat>,
-        c: Mat, q: Mat, r: Mat,
+        x0: Mat,
+        p0: Mat,
+        a: Mat,
+        b: Option<Mat>,
+        c: Mat,
+        q: Mat,
+        r: Mat,
     ) -> Result<Self, KalmanError> {
         let n = a.rows();
         if a.cols() != n {
@@ -105,39 +113,40 @@ impl KalmanFilterND {
         }
         if p0.rows() != n || p0.cols() != n {
             return Err(KalmanError::DimensionMismatch {
-                what: format!("P0 must be {}x{}; got {}x{}",
-                              n, n, p0.rows(), p0.cols()),
+                what: format!("P0 must be {}x{}; got {}x{}", n, n, p0.rows(), p0.cols()),
             });
         }
         if let Some(bb) = &b {
             if bb.rows() != n {
                 return Err(KalmanError::DimensionMismatch {
-                    what: format!("B rows must equal state dim {}; got {}",
-                                  n, bb.rows()),
+                    what: format!("B rows must equal state dim {}; got {}", n, bb.rows()),
                 });
             }
         }
         let m = c.rows();
         if c.cols() != n {
             return Err(KalmanError::DimensionMismatch {
-                what: format!("C cols must equal state dim {}; got {}",
-                              n, c.cols()),
+                what: format!("C cols must equal state dim {}; got {}", n, c.cols()),
             });
         }
         if q.rows() != n || q.cols() != n {
             return Err(KalmanError::DimensionMismatch {
-                what: format!("Q must be {}x{}; got {}x{}",
-                              n, n, q.rows(), q.cols()),
+                what: format!("Q must be {}x{}; got {}x{}", n, n, q.rows(), q.cols()),
             });
         }
         if r.rows() != m || r.cols() != m {
             return Err(KalmanError::DimensionMismatch {
-                what: format!("R must be {}x{}; got {}x{}",
-                              m, m, r.rows(), r.cols()),
+                what: format!("R must be {}x{}; got {}x{}", m, m, r.rows(), r.cols()),
             });
         }
         Ok(Self {
-            x_hat: x0, p: p0, a, b, c, q, r,
+            x_hat: x0,
+            p: p0,
+            a,
+            b,
+            c,
+            q,
+            r,
             c_packed_bf16: None,
             ct_packed_bf16: None,
         })
@@ -180,8 +189,7 @@ impl KalmanFilterND {
         let m = self.c.rows();
         if y.rows() != m || y.cols() != 1 {
             return Err(KalmanError::DimensionMismatch {
-                what: format!("y must be {}x1; got {}x{}",
-                              m, y.rows(), y.cols()),
+                what: format!("y must be {}x1; got {}x{}", m, y.rows(), y.cols()),
             });
         }
         // innovation = y - C x_hat
@@ -193,7 +201,8 @@ impl KalmanFilterND {
         let cpct = cp.mul(&ct);
         let s = cpct.add(&self.r);
         // K = P C^T S^-1
-        let s_inv = s.inverse()
+        let s_inv = s
+            .inverse()
             .ok_or(KalmanError::SingularInnovationCovariance)?;
         let pct = self.p.mul(&ct);
         let k = pct.mul(&s_inv);
@@ -205,11 +214,16 @@ impl KalmanFilterND {
         let i = Mat::identity(self.state_dim());
         let i_minus_kc = i.sub(&kc);
         self.p = i_minus_kc.mul(&self.p);
-        Ok(InnovationND { innovation, kalman_gain: k })
+        Ok(InnovationND {
+            innovation,
+            kalman_gain: k,
+        })
     }
 
     /// Accessor for state estimate as a scalar (1D case).
-    pub fn x_hat_scalar(&self) -> f64 { self.x_hat.get(0, 0) }
+    pub fn x_hat_scalar(&self) -> f64 {
+        self.x_hat.get(0, 0)
+    }
 
     // ===================================================================
     // BF16-accelerated variants — use Mat::mul_bf16 for the heavy
@@ -255,13 +269,10 @@ impl KalmanFilterND {
     /// falls back to `update_bf16` (which itself falls back to
     /// scalar at small dimensions).
     #[cfg(target_arch = "x86_64")]
-    pub fn update_bf16_cached(&mut self, y: &Mat)
-        -> Result<InnovationND, KalmanError>
-    {
+    pub fn update_bf16_cached(&mut self, y: &Mat) -> Result<InnovationND, KalmanError> {
         // Require the C caches to exist; if not, fall back to the
         // un-cached BF16 path.
-        let (c_pkd, ct_pkd) = match (&self.c_packed_bf16,
-                                       &self.ct_packed_bf16) {
+        let (c_pkd, ct_pkd) = match (&self.c_packed_bf16, &self.ct_packed_bf16) {
             (Some(a), Some(b)) => (a.clone(), b.clone()),
             _ => return self.update_bf16(y),
         };
@@ -273,22 +284,22 @@ impl KalmanFilterND {
         let m = self.c.rows();
         if y.rows() != m || y.cols() != 1 {
             return Err(KalmanError::DimensionMismatch {
-                what: format!("y must be {}x1; got {}x{}",
-                              m, y.rows(), y.cols()),
+                what: format!("y must be {}x1; got {}x{}", m, y.rows(), y.cols()),
             });
         }
         // innovation = y - C x_hat
         let cx = self.c.mul(&self.x_hat);
         let innovation = y.sub(&cx);
         // S = C P C^T + R
-        let cp = self.c.mul_bf16_pre_b(&p_pkd);     // C·P (P cached)
-        let cpct = cp.mul_bf16_pre_b(&ct_pkd);      // CP·C^T (C^T cached)
+        let cp = self.c.mul_bf16_pre_b(&p_pkd); // C·P (P cached)
+        let cpct = cp.mul_bf16_pre_b(&ct_pkd); // CP·C^T (C^T cached)
         let s = cpct.add(&self.r);
-        let s_inv = s.inverse()
+        let s_inv = s
+            .inverse()
             .ok_or(KalmanError::SingularInnovationCovariance)?;
         // K = P C^T S^-1
-        let pct = self.p.mul_bf16_pre_b(&ct_pkd);   // P·C^T (C^T cached)
-        // S^-1 changes per update; pack it once here for the next mul.
+        let pct = self.p.mul_bf16_pre_b(&ct_pkd); // P·C^T (C^T cached)
+                                                  // S^-1 changes per update; pack it once here for the next mul.
         let s_inv_pkd = s_inv.pack_for_bf16_b();
         let k = match &s_inv_pkd {
             Some(pkd) => pct.mul_bf16_pre_b(pkd),
@@ -298,11 +309,14 @@ impl KalmanFilterND {
         let k_innov = k.mul(&innovation);
         self.x_hat = self.x_hat.add(&k_innov);
         // P = (I - K C) P  — K·C uses C cache, then ·P uses P cache.
-        let kc = k.mul_bf16_pre_b(&c_pkd);          // K·C (C cached)
+        let kc = k.mul_bf16_pre_b(&c_pkd); // K·C (C cached)
         let i = Mat::identity(self.state_dim());
         let i_minus_kc = i.sub(&kc);
         self.p = i_minus_kc.mul_bf16_pre_b(&p_pkd); // (I-KC)·P (P cached)
-        Ok(InnovationND { innovation, kalman_gain: k })
+        Ok(InnovationND {
+            innovation,
+            kalman_gain: k,
+        })
     }
 
     /// Update step using BF16 matmul for the heavy covariance + gain
@@ -313,8 +327,7 @@ impl KalmanFilterND {
         let m = self.c.rows();
         if y.rows() != m || y.cols() != 1 {
             return Err(KalmanError::DimensionMismatch {
-                what: format!("y must be {}x1; got {}x{}",
-                              m, y.rows(), y.cols()),
+                what: format!("y must be {}x1; got {}x{}", m, y.rows(), y.cols()),
             });
         }
         // innovation = y - C x_hat  (small; FP64)
@@ -327,7 +340,8 @@ impl KalmanFilterND {
         let s = cpct.add(&self.r);
         // K = P C^T S^-1  (S^-1 stays FP64 — precision-critical;
         //                   the matmuls go through BF16).
-        let s_inv = s.inverse()
+        let s_inv = s
+            .inverse()
             .ok_or(KalmanError::SingularInnovationCovariance)?;
         let pct = self.p.mul_bf16(&ct);
         let k = pct.mul_bf16(&s_inv);
@@ -339,7 +353,10 @@ impl KalmanFilterND {
         let i = Mat::identity(self.state_dim());
         let i_minus_kc = i.sub(&kc);
         self.p = i_minus_kc.mul_bf16(&self.p);
-        Ok(InnovationND { innovation, kalman_gain: k })
+        Ok(InnovationND {
+            innovation,
+            kalman_gain: k,
+        })
     }
 }
 
@@ -363,8 +380,11 @@ mod tests {
             kf.predict(None).unwrap();
             kf.update(&Mat::from_rows(&[&[m]])).unwrap();
         }
-        assert!((kf.x_hat_scalar() - 7.0).abs() < 0.1,
-                "1D KF should converge near 7.0; got {}", kf.x_hat_scalar());
+        assert!(
+            (kf.x_hat_scalar() - 7.0).abs() < 0.1,
+            "1D KF should converge near 7.0; got {}",
+            kf.x_hat_scalar()
+        );
     }
 
     /// 2D constant-position tracking: state = (x, y), measurement
@@ -372,10 +392,7 @@ mod tests {
     #[test]
     fn two_dim_constant_position_converges() {
         let x0 = Mat::from_rows(&[&[0.0], &[0.0]]);
-        let p0 = Mat::from_rows(&[
-            &[100.0, 0.0],
-            &[0.0, 100.0],
-        ]);
+        let p0 = Mat::from_rows(&[&[100.0, 0.0], &[0.0, 100.0]]);
         let a = Mat::identity(2);
         let c = Mat::identity(2);
         let q = Mat::from_rows(&[&[0.01, 0.0], &[0.0, 0.01]]);
@@ -389,10 +406,16 @@ mod tests {
             kf.predict(None).unwrap();
             kf.update(&m).unwrap();
         }
-        assert!((kf.x_hat.get(0, 0) - 5.0).abs() < 0.2,
-                "x_hat[0] should approach 5.0; got {}", kf.x_hat.get(0, 0));
-        assert!((kf.x_hat.get(1, 0) - 3.0).abs() < 0.2,
-                "x_hat[1] should approach 3.0; got {}", kf.x_hat.get(1, 0));
+        assert!(
+            (kf.x_hat.get(0, 0) - 5.0).abs() < 0.2,
+            "x_hat[0] should approach 5.0; got {}",
+            kf.x_hat.get(0, 0)
+        );
+        assert!(
+            (kf.x_hat.get(1, 0) - 3.0).abs() < 0.2,
+            "x_hat[1] should approach 3.0; got {}",
+            kf.x_hat.get(1, 0)
+        );
     }
 
     /// 4D constant-velocity tracking: state = (x, y, vx, vy);
@@ -404,7 +427,9 @@ mod tests {
         let x0 = Mat::from_rows(&[&[0.0], &[0.0], &[0.0], &[0.0]]);
         let p0 = {
             let mut p = Mat::identity(4);
-            for i in 0..4 { p.set(i, i, 100.0); }
+            for i in 0..4 {
+                p.set(i, i, 100.0);
+            }
             p
         };
         // A = [[1, 0, dt, 0],
@@ -417,13 +442,12 @@ mod tests {
             &[0.0, 0.0, 1.0, 0.0],
             &[0.0, 0.0, 0.0, 1.0],
         ]);
-        let c = Mat::from_rows(&[
-            &[1.0, 0.0, 0.0, 0.0],
-            &[0.0, 1.0, 0.0, 0.0],
-        ]);
+        let c = Mat::from_rows(&[&[1.0, 0.0, 0.0, 0.0], &[0.0, 1.0, 0.0, 0.0]]);
         let q = {
             let mut q = Mat::zeros(4, 4);
-            for i in 0..4 { q.set(i, i, 0.01); }
+            for i in 0..4 {
+                q.set(i, i, 0.01);
+            }
             q
         };
         let r = Mat::from_rows(&[&[0.5, 0.0], &[0.0, 0.5]]);
@@ -439,19 +463,25 @@ mod tests {
         // After 100 steps, velocity estimate should be near (2, 1).
         let vx_est = kf.x_hat.get(2, 0);
         let vy_est = kf.x_hat.get(3, 0);
-        assert!((vx_est - 2.0).abs() < 0.1,
-                "vx_est should be near 2.0; got {}", vx_est);
-        assert!((vy_est - 1.0).abs() < 0.1,
-                "vy_est should be near 1.0; got {}", vy_est);
+        assert!(
+            (vx_est - 2.0).abs() < 0.1,
+            "vx_est should be near 2.0; got {}",
+            vx_est
+        );
+        assert!(
+            (vy_est - 1.0).abs() < 0.1,
+            "vy_est should be near 1.0; got {}",
+            vy_est
+        );
     }
 
     /// Dimension mismatch produces an error rather than panic.
     #[test]
     fn dimension_mismatch_returns_error() {
-        let x0 = Mat::from_rows(&[&[0.0], &[0.0]]);  // 2x1
+        let x0 = Mat::from_rows(&[&[0.0], &[0.0]]); // 2x1
         let p0 = Mat::identity(2);
         let a = Mat::identity(2);
-        let c = Mat::from_rows(&[&[1.0]]);  // 1x1 — wrong cols
+        let c = Mat::from_rows(&[&[1.0]]); // 1x1 — wrong cols
         let q = Mat::identity(2);
         let r = Mat::from_rows(&[&[1.0]]);
         let result = KalmanFilterND::new(x0, p0, a, None, c, q, r);

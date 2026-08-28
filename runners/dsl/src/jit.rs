@@ -59,7 +59,9 @@ impl JitCtx {
     /// Construct from a borrowed `TypedGraph`. Caller's responsibility
     /// to ensure the ctx isn't outlived by the JIT call.
     pub fn from_graph(g: &TypedGraph) -> Self {
-        JitCtx { graph: g as *const TypedGraph }
+        JitCtx {
+            graph: g as *const TypedGraph,
+        }
     }
 }
 
@@ -98,12 +100,16 @@ impl CompiledWhere {
             // correctly. Let the interpreter handle the whole where (numeric coercion).
             return None;
         }
-        let var_indices: FxHashMap<Sym, u32> = binding_vars.iter()
+        let var_indices: FxHashMap<Sym, u32> = binding_vars
+            .iter()
             .enumerate()
             .map(|(i, s)| (*s, i as u32))
             .collect();
         let jit = compile(arena, where_idx, &var_indices)?;
-        Some(CompiledWhere { jit, var_order: binding_vars.to_vec() })
+        Some(CompiledWhere {
+            jit,
+            var_order: binding_vars.to_vec(),
+        })
     }
 }
 
@@ -112,8 +118,10 @@ impl JittedFn {
     /// any graph-access ops (panics otherwise — would dereference a
     /// null pointer at runtime).
     pub fn call_pure(&self, args: &[i64]) -> i64 {
-        assert!(!self.needs_ctx,
-                "JittedFn needs ctx; use call_with_ctx instead");
+        assert!(
+            !self.needs_ctx,
+            "JittedFn needs ctx; use call_with_ctx instead"
+        );
         self.call_with_ctx_raw(std::ptr::null(), args)
     }
 
@@ -124,7 +132,11 @@ impl JittedFn {
     }
 
     fn call_with_ctx_raw(&self, ctx: *const JitCtx, args: &[i64]) -> i64 {
-        assert!(args.len() <= 5, "JIT supports up to 5 var args; got {}", args.len());
+        assert!(
+            args.len() <= 5,
+            "JIT supports up to 5 var args; got {}",
+            args.len()
+        );
         let mut padded = [0i64; 5];
         for (i, v) in args.iter().enumerate() {
             padded[i] = *v;
@@ -133,21 +145,28 @@ impl JittedFn {
         // Safety: buffer alive for `&self`'s lifetime; bytes produced by
         // dynasm-rs are valid x86_64; signature matches our emit
         // convention (extern "sysv64" with one ctx ptr + five i64s).
-        let f: extern "sysv64" fn(
-            *const JitCtx, i64, i64, i64, i64, i64,
-        ) -> i64 = unsafe { std::mem::transmute(ptr) };
+        let f: extern "sysv64" fn(*const JitCtx, i64, i64, i64, i64, i64) -> i64 =
+            unsafe { std::mem::transmute(ptr) };
         f(ctx, padded[0], padded[1], padded[2], padded[3], padded[4])
     }
 
-    pub fn arity(&self) -> u32 { self.arity }
-    pub fn code_len(&self) -> usize { self.buf.len() }
-    pub fn needs_ctx(&self) -> bool { self.needs_ctx }
+    pub fn arity(&self) -> u32 {
+        self.arity
+    }
+    pub fn code_len(&self) -> usize {
+        self.buf.len()
+    }
+    pub fn needs_ctx(&self) -> bool {
+        self.needs_ctx
+    }
 }
 
 // Satisfy the code_cache::CodeSize trait so `JittedFn` can be a
 // cached payload in `CodeCache<Sym, EpochStamped<JittedFn>>`.
 impl crate::code_cache::CodeSize for JittedFn {
-    fn code_size_bytes(&self) -> usize { self.buf.len() }
+    fn code_size_bytes(&self) -> usize {
+        self.buf.len()
+    }
 }
 
 // Safety: JittedFn's executable buffer (dynasmrt::ExecutableBuffer)
@@ -220,14 +239,16 @@ fn scan_needs_ctx(arena: &TermArena, idx: TermIdx) -> bool {
             matches!(arena.get(*source), TermNode::Neighbours { .. })
                 || scan_needs_ctx(arena, *source)
         }
-        TermNode::Plus { items } | TermNode::Times { items }
-        | TermNode::And { items } | TermNode::Or { items } => {
-            items.iter().any(|i| scan_needs_ctx(arena, *i))
-        }
-        TermNode::Minus { a, b } | TermNode::Lt { a, b } | TermNode::Lte { a, b }
-        | TermNode::Gt { a, b } | TermNode::Gte { a, b } | TermNode::Eq { a, b } => {
-            scan_needs_ctx(arena, *a) || scan_needs_ctx(arena, *b)
-        }
+        TermNode::Plus { items }
+        | TermNode::Times { items }
+        | TermNode::And { items }
+        | TermNode::Or { items } => items.iter().any(|i| scan_needs_ctx(arena, *i)),
+        TermNode::Minus { a, b }
+        | TermNode::Lt { a, b }
+        | TermNode::Lte { a, b }
+        | TermNode::Gt { a, b }
+        | TermNode::Gte { a, b }
+        | TermNode::Eq { a, b } => scan_needs_ctx(arena, *a) || scan_needs_ctx(arena, *b),
         TermNode::Neg { arg } | TermNode::Abs { arg } | TermNode::Not { arg } => {
             scan_needs_ctx(arena, *arg)
         }
@@ -245,19 +266,22 @@ fn subtree_has_attr(arena: &TermArena, idx: TermIdx) -> bool {
     match arena.get(idx) {
         TermNode::Attr { .. } => true,
         TermNode::Count { source } => subtree_has_attr(arena, *source),
-        TermNode::Plus { items } | TermNode::Times { items }
-        | TermNode::And { items } | TermNode::Or { items } => {
-            items.iter().any(|i| subtree_has_attr(arena, *i))
-        }
-        TermNode::Minus { a, b } | TermNode::Lt { a, b } | TermNode::Lte { a, b }
-        | TermNode::Gt { a, b } | TermNode::Gte { a, b } | TermNode::Eq { a, b } => {
-            subtree_has_attr(arena, *a) || subtree_has_attr(arena, *b)
-        }
+        TermNode::Plus { items }
+        | TermNode::Times { items }
+        | TermNode::And { items }
+        | TermNode::Or { items } => items.iter().any(|i| subtree_has_attr(arena, *i)),
+        TermNode::Minus { a, b }
+        | TermNode::Lt { a, b }
+        | TermNode::Lte { a, b }
+        | TermNode::Gt { a, b }
+        | TermNode::Gte { a, b }
+        | TermNode::Eq { a, b } => subtree_has_attr(arena, *a) || subtree_has_attr(arena, *b),
         TermNode::Neg { arg } | TermNode::Abs { arg } | TermNode::Not { arg } => {
             subtree_has_attr(arena, *arg)
         }
         TermNode::IfThenElse { cond, then, other } => {
-            subtree_has_attr(arena, *cond) || subtree_has_attr(arena, *then)
+            subtree_has_attr(arena, *cond)
+                || subtree_has_attr(arena, *then)
                 || subtree_has_attr(arena, *other)
         }
         _ => false,
@@ -270,22 +294,28 @@ fn subtree_has_attr(arena: &TermArena, idx: TermIdx) -> bool {
 /// and let the interpreter — which compares numerically with int/float coercion — handle it.
 fn cmp_reads_attr(arena: &TermArena, idx: TermIdx) -> bool {
     match arena.get(idx) {
-        TermNode::Eq { a, b } | TermNode::Lt { a, b } | TermNode::Lte { a, b }
-        | TermNode::Gt { a, b } | TermNode::Gte { a, b } => {
-            subtree_has_attr(arena, *a) || subtree_has_attr(arena, *b)
-                || cmp_reads_attr(arena, *a) || cmp_reads_attr(arena, *b)
+        TermNode::Eq { a, b }
+        | TermNode::Lt { a, b }
+        | TermNode::Lte { a, b }
+        | TermNode::Gt { a, b }
+        | TermNode::Gte { a, b } => {
+            subtree_has_attr(arena, *a)
+                || subtree_has_attr(arena, *b)
+                || cmp_reads_attr(arena, *a)
+                || cmp_reads_attr(arena, *b)
         }
-        TermNode::And { items } | TermNode::Or { items }
-        | TermNode::Plus { items } | TermNode::Times { items } => {
-            items.iter().any(|i| cmp_reads_attr(arena, *i))
-        }
+        TermNode::And { items }
+        | TermNode::Or { items }
+        | TermNode::Plus { items }
+        | TermNode::Times { items } => items.iter().any(|i| cmp_reads_attr(arena, *i)),
         TermNode::Minus { a, b } => cmp_reads_attr(arena, *a) || cmp_reads_attr(arena, *b),
         TermNode::Neg { arg } | TermNode::Abs { arg } | TermNode::Not { arg } => {
             cmp_reads_attr(arena, *arg)
         }
         TermNode::Count { source } => cmp_reads_attr(arena, *source),
         TermNode::IfThenElse { cond, then, other } => {
-            cmp_reads_attr(arena, *cond) || cmp_reads_attr(arena, *then)
+            cmp_reads_attr(arena, *cond)
+                || cmp_reads_attr(arena, *then)
                 || cmp_reads_attr(arena, *other)
         }
         _ => false,
@@ -309,7 +339,9 @@ fn emit_term(
     vars: &FxHashMap<Sym, u32>,
     depth: i32,
 ) -> Option<()> {
-    if depth >= MAX_DEPTH { return None; }
+    if depth >= MAX_DEPTH {
+        return None;
+    }
     match arena.get(idx) {
         TermNode::Lit { value } => emit_lit(ops, value),
         TermNode::Var { name } => emit_var(ops, vars, *name),
@@ -368,8 +400,12 @@ fn emit_term(
             );
             Some(())
         }
-        TermNode::And { items } => emit_short_circuit(ops, arena, items, vars, depth, /*want_true=*/false),
-        TermNode::Or { items } => emit_short_circuit(ops, arena, items, vars, depth, /*want_true=*/true),
+        TermNode::And { items } => {
+            emit_short_circuit(ops, arena, items, vars, depth, /*want_true=*/ false)
+        }
+        TermNode::Or { items } => {
+            emit_short_circuit(ops, arena, items, vars, depth, /*want_true=*/ true)
+        }
 
         TermNode::IfThenElse { cond, then, other } => {
             emit_term(ops, arena, *cond, vars, depth)?;
@@ -417,7 +453,12 @@ fn emit_term(
         }
         // Fused pattern: Count(Neighbours(node, edge_type)).
         TermNode::Count { source } => {
-            if let TermNode::Neighbours { node, edge_type, any_type } = arena.get(*source) {
+            if let TermNode::Neighbours {
+                node,
+                edge_type,
+                any_type,
+            } = arena.get(*source)
+            {
                 emit_term(ops, arena, *node, vars, depth)?;
                 let et: i64 = if *any_type { 0 } else { edge_type.0 as i64 };
                 let thunk_addr = thunk_neighbour_count as usize as i64;
@@ -430,7 +471,7 @@ fn emit_term(
                 );
                 Some(())
             } else {
-                None  // unfused Count — let interpreter handle
+                None // unfused Count — let interpreter handle
             }
         }
 
@@ -494,13 +535,21 @@ fn emit_var(
     name: Sym,
 ) -> Option<()> {
     let arg_idx = *vars.get(&name)? as i32;
-    if arg_idx >= 5 { return None; }
+    if arg_idx >= 5 {
+        return None;
+    }
     let slot = ARG_SLOT_BASE - 8 * arg_idx;
     dynasm!(ops; .arch x64; mov rax, [rbp + slot]);
     Some(())
 }
 
-enum CmpKind { Lt, Lte, Gt, Gte, Eq }
+enum CmpKind {
+    Lt,
+    Lte,
+    Gt,
+    Gte,
+    Eq,
+}
 
 #[inline]
 fn emit_cmp(
@@ -574,26 +623,42 @@ fn emit_short_circuit(
 // keep state in caller-saved regs across emits (we use [rbp + slot]).
 
 unsafe extern "sysv64" fn thunk_type_of(ctx: *const JitCtx, node: i64) -> i64 {
-    if ctx.is_null() { return 0; }
+    if ctx.is_null() {
+        return 0;
+    }
     let graph = (*ctx).graph;
-    if graph.is_null() { return 0; }
+    if graph.is_null() {
+        return 0;
+    }
     let nid = NodeID(node as u32);
-    if !(*graph).has_node(nid) { return 0; }
+    if !(*graph).has_node(nid) {
+        return 0;
+    }
     (*graph).node(nid).type_.0 as i64
 }
 
-unsafe extern "sysv64" fn thunk_attr_int(
-    ctx: *const JitCtx, node: i64, key_sym: i64,
-) -> i64 {
-    if ctx.is_null() { return 0; }
+unsafe extern "sysv64" fn thunk_attr_int(ctx: *const JitCtx, node: i64, key_sym: i64) -> i64 {
+    if ctx.is_null() {
+        return 0;
+    }
     let graph = (*ctx).graph;
-    if graph.is_null() { return 0; }
+    if graph.is_null() {
+        return 0;
+    }
     let nid = NodeID(node as u32);
-    if !(*graph).has_node(nid) { return 0; }
+    if !(*graph).has_node(nid) {
+        return 0;
+    }
     let key = Sym(key_sym as u32);
     match (*graph).node(nid).attrs.get(&key) {
         Some(Value::Int(n)) => *n,
-        Some(Value::Bool(b)) => if *b { 1 } else { 0 },
+        Some(Value::Bool(b)) => {
+            if *b {
+                1
+            } else {
+                0
+            }
+        }
         // Float attrs: the JIT compares in i64, so read the integer part — a
         // flag stored as 1.0 must read as 1 (else `Eq(Attr,1)` silently fails).
         // JIT'd wheres only ever compare against INTEGER Lits (a Float Lit makes
@@ -611,11 +676,17 @@ unsafe extern "sysv64" fn thunk_attr_int(
 }
 
 unsafe extern "sysv64" fn thunk_neighbour_count(
-    ctx: *const JitCtx, node: i64, edge_type_sym: i64,
+    ctx: *const JitCtx,
+    node: i64,
+    edge_type_sym: i64,
 ) -> i64 {
-    if ctx.is_null() { return 0; }
+    if ctx.is_null() {
+        return 0;
+    }
     let graph = (*ctx).graph;
-    if graph.is_null() { return 0; }
+    if graph.is_null() {
+        return 0;
+    }
     let nid = NodeID(node as u32);
     let et = if edge_type_sym == 0 {
         None
@@ -639,7 +710,12 @@ mod tests {
         f.call_pure(args)
     }
 
-    fn compile_with(arena: &TermArena, root: TermIdx, vars: &FxHashMap<Sym, u32>, args: &[i64]) -> i64 {
+    fn compile_with(
+        arena: &TermArena,
+        root: TermIdx,
+        vars: &FxHashMap<Sym, u32>,
+        args: &[i64],
+    ) -> i64 {
         let f = compile(arena, root, vars).expect("compile");
         assert!(!f.needs_ctx());
         f.call_pure(args)
@@ -648,15 +724,21 @@ mod tests {
     #[test]
     fn jit_literal_int() {
         let mut a = TermArena::new();
-        let lit = a.add(TermNode::Lit { value: Value::Int(42) });
+        let lit = a.add(TermNode::Lit {
+            value: Value::Int(42),
+        });
         assert_eq!(compile_pure(&a, lit, &[]), 42);
     }
 
     #[test]
     fn jit_literal_bool() {
         let mut a = TermArena::new();
-        let t = a.add(TermNode::Lit { value: Value::Bool(true) });
-        let f = a.add(TermNode::Lit { value: Value::Bool(false) });
+        let t = a.add(TermNode::Lit {
+            value: Value::Bool(true),
+        });
+        let f = a.add(TermNode::Lit {
+            value: Value::Bool(false),
+        });
         assert_eq!(compile_pure(&a, t, &[]), 1);
         assert_eq!(compile_pure(&a, f, &[]), 0);
     }
@@ -664,18 +746,30 @@ mod tests {
     #[test]
     fn jit_plus_minus_times_neg_abs() {
         let mut a = TermArena::new();
-        let two = a.add(TermNode::Lit { value: Value::Int(2) });
-        let three = a.add(TermNode::Lit { value: Value::Int(3) });
-        let five = a.add(TermNode::Lit { value: Value::Int(5) });
-        let plus = a.add(TermNode::Plus { items: vec![two, three] });
+        let two = a.add(TermNode::Lit {
+            value: Value::Int(2),
+        });
+        let three = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let five = a.add(TermNode::Lit {
+            value: Value::Int(5),
+        });
+        let plus = a.add(TermNode::Plus {
+            items: vec![two, three],
+        });
         assert_eq!(compile_pure(&a, plus, &[]), 5);
         let minus = a.add(TermNode::Minus { a: five, b: two });
         assert_eq!(compile_pure(&a, minus, &[]), 3);
-        let times = a.add(TermNode::Times { items: vec![two, three] });
+        let times = a.add(TermNode::Times {
+            items: vec![two, three],
+        });
         assert_eq!(compile_pure(&a, times, &[]), 6);
         let neg = a.add(TermNode::Neg { arg: five });
         assert_eq!(compile_pure(&a, neg, &[]), -5);
-        let neg5 = a.add(TermNode::Lit { value: Value::Int(-5) });
+        let neg5 = a.add(TermNode::Lit {
+            value: Value::Int(-5),
+        });
         let abs = a.add(TermNode::Abs { arg: neg5 });
         assert_eq!(compile_pure(&a, abs, &[]), 5);
     }
@@ -683,8 +777,12 @@ mod tests {
     #[test]
     fn jit_comparisons_return_0_or_1() {
         let mut a = TermArena::new();
-        let three = a.add(TermNode::Lit { value: Value::Int(3) });
-        let five = a.add(TermNode::Lit { value: Value::Int(5) });
+        let three = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let five = a.add(TermNode::Lit {
+            value: Value::Int(5),
+        });
         let lt = a.add(TermNode::Lt { a: three, b: five });
         let lt_eq = a.add(TermNode::Lt { a: three, b: three });
         let lte = a.add(TermNode::Lte { a: three, b: three });
@@ -709,7 +807,9 @@ mod tests {
         let y = ir.intern("y");
         let x_var = a.add(TermNode::Var { name: x });
         let y_var = a.add(TermNode::Var { name: y });
-        let sum = a.add(TermNode::Plus { items: vec![x_var, y_var] });
+        let sum = a.add(TermNode::Plus {
+            items: vec![x_var, y_var],
+        });
         let mut vars: FxHashMap<Sym, u32> = FxHashMap::default();
         vars.insert(x, 0);
         vars.insert(y, 1);
@@ -723,12 +823,24 @@ mod tests {
         let mut ir = Interner::new();
         let x = ir.intern("x");
         let x_var = a.add(TermNode::Var { name: x });
-        let ten = a.add(TermNode::Lit { value: Value::Int(10) });
-        let hundred = a.add(TermNode::Lit { value: Value::Int(100) });
-        let two = a.add(TermNode::Lit { value: Value::Int(2) });
+        let ten = a.add(TermNode::Lit {
+            value: Value::Int(10),
+        });
+        let hundred = a.add(TermNode::Lit {
+            value: Value::Int(100),
+        });
+        let two = a.add(TermNode::Lit {
+            value: Value::Int(2),
+        });
         let lt = a.add(TermNode::Lt { a: x_var, b: ten });
-        let times2 = a.add(TermNode::Times { items: vec![x_var, two] });
-        let ite = a.add(TermNode::IfThenElse { cond: lt, then: hundred, other: times2 });
+        let times2 = a.add(TermNode::Times {
+            items: vec![x_var, two],
+        });
+        let ite = a.add(TermNode::IfThenElse {
+            cond: lt,
+            then: hundred,
+            other: times2,
+        });
         let mut vars: FxHashMap<Sym, u32> = FxHashMap::default();
         vars.insert(x, 0);
         assert_eq!(compile_with(&a, ite, &vars, &[5]), 100);
@@ -743,11 +855,17 @@ mod tests {
         let y = ir.intern("y");
         let x_var = a.add(TermNode::Var { name: x });
         let y_var = a.add(TermNode::Var { name: y });
-        let zero = a.add(TermNode::Lit { value: Value::Int(0) });
+        let zero = a.add(TermNode::Lit {
+            value: Value::Int(0),
+        });
         let gt_x = a.add(TermNode::Gt { a: x_var, b: zero });
         let gt_y = a.add(TermNode::Gt { a: y_var, b: zero });
-        let and = a.add(TermNode::And { items: vec![gt_x, gt_y] });
-        let or = a.add(TermNode::Or { items: vec![gt_x, gt_y] });
+        let and = a.add(TermNode::And {
+            items: vec![gt_x, gt_y],
+        });
+        let or = a.add(TermNode::Or {
+            items: vec![gt_x, gt_y],
+        });
         let mut vars: FxHashMap<Sym, u32> = FxHashMap::default();
         vars.insert(x, 0);
         vars.insert(y, 1);
@@ -762,7 +880,9 @@ mod tests {
     #[test]
     fn jit_returns_none_on_unsupported_term() {
         let mut a = TermArena::new();
-        let f = a.add(TermNode::Lit { value: Value::Float(3.14) });
+        let f = a.add(TermNode::Lit {
+            value: Value::Float(3.14),
+        });
         let vars = FxHashMap::default();
         assert!(compile(&a, f, &vars).is_none());
     }
@@ -770,7 +890,7 @@ mod tests {
     #[test]
     fn jit_matches_interpreter() {
         use crate::graph::TypedGraph;
-        use crate::term::{evaluate, EvalCtx, Env};
+        use crate::term::{evaluate, Env, EvalCtx};
         use smallvec::SmallVec;
 
         let mut a = TermArena::new();
@@ -780,17 +900,33 @@ mod tests {
         let g = TypedGraph::new();
         let x_var = a.add(TermNode::Var { name: x });
         let y_var = a.add(TermNode::Var { name: y });
-        let zero = a.add(TermNode::Lit { value: Value::Int(0) });
-        let ten = a.add(TermNode::Lit { value: Value::Int(10) });
-        let one = a.add(TermNode::Lit { value: Value::Int(1) });
-        let neg_one = a.add(TermNode::Lit { value: Value::Int(-1) });
+        let zero = a.add(TermNode::Lit {
+            value: Value::Int(0),
+        });
+        let ten = a.add(TermNode::Lit {
+            value: Value::Int(10),
+        });
+        let one = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let neg_one = a.add(TermNode::Lit {
+            value: Value::Int(-1),
+        });
         let gt = a.add(TermNode::Gt { a: x_var, b: zero });
         let lt = a.add(TermNode::Lt { a: y_var, b: ten });
-        let and = a.add(TermNode::And { items: vec![gt, lt] });
-        let prod = a.add(TermNode::Times { items: vec![x_var, y_var] });
-        let prod_plus = a.add(TermNode::Plus { items: vec![prod, one] });
+        let and = a.add(TermNode::And {
+            items: vec![gt, lt],
+        });
+        let prod = a.add(TermNode::Times {
+            items: vec![x_var, y_var],
+        });
+        let prod_plus = a.add(TermNode::Plus {
+            items: vec![prod, one],
+        });
         let ite = a.add(TermNode::IfThenElse {
-            cond: and, then: prod_plus, other: neg_one,
+            cond: and,
+            then: prod_plus,
+            other: neg_one,
         });
         let mut vars: FxHashMap<Sym, u32> = FxHashMap::default();
         vars.insert(x, 0);
@@ -804,11 +940,21 @@ mod tests {
             let mut ctx = EvalCtx::new(&g, &ir);
             let interp = match evaluate(&a, ite, &mut env, &mut ctx) {
                 Value::Int(n) => n,
-                Value::Bool(b) => if b { 1 } else { 0 },
+                Value::Bool(b) => {
+                    if b {
+                        1
+                    } else {
+                        0
+                    }
+                }
                 other => panic!("unexpected interp result: {:?}", other),
             };
             let jit = jit_fn.call_pure(&[xv, yv]);
-            assert_eq!(jit, interp, "x={}, y={}: jit={} interp={}", xv, yv, jit, interp);
+            assert_eq!(
+                jit, interp,
+                "x={}, y={}: jit={} interp={}",
+                xv, yv, jit, interp
+            );
         }
     }
 
@@ -849,7 +995,10 @@ mod tests {
         let mut arena = TermArena::new();
         let n_sym = ir.intern("n");
         let n_var = arena.add(TermNode::Var { name: n_sym });
-        let attr = arena.add(TermNode::Attr { node: n_var, key: count_key });
+        let attr = arena.add(TermNode::Attr {
+            node: n_var,
+            key: count_key,
+        });
         let mut vars: FxHashMap<Sym, u32> = FxHashMap::default();
         vars.insert(n_sym, 0);
         let f = compile(&arena, attr, &vars).expect("compile");
@@ -873,19 +1022,32 @@ mod tests {
         let mut arena = TermArena::new();
         let v_sym = ir.intern("o");
         let v = arena.add(TermNode::Var { name: v_sym });
-        let attr = arena.add(TermNode::Attr { node: v, key: composed });
-        let one = arena.add(TermNode::Lit { value: Value::Int(1) });
+        let attr = arena.add(TermNode::Attr {
+            node: v,
+            key: composed,
+        });
+        let one = arena.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
         let eq = arena.add(TermNode::Eq { a: attr, b: one });
         let mut vars: FxHashMap<Sym, u32> = FxHashMap::default();
         vars.insert(v_sym, 0);
         let f = compile(&arena, eq, &vars).expect("compile");
         let ctx = JitCtx::from_graph(&g);
-        assert_eq!(f.call_with_ctx(&ctx, &[n.0 as i64]), 1, "Eq(Float(1.0), 1) must be true under the JIT");
+        assert_eq!(
+            f.call_with_ctx(&ctx, &[n.0 as i64]),
+            1,
+            "Eq(Float(1.0), 1) must be true under the JIT"
+        );
         // and the integer part is read for a non-unit float flag
         let mut attrs2: rustc_hash::FxHashMap<Sym, Value> = Default::default();
         attrs2.insert(composed, Value::Float(2.0));
         let n2 = g.insert_node(op, attrs2);
-        assert_eq!(f.call_with_ctx(&ctx, &[n2.0 as i64]), 0, "Eq(Float(2.0), 1) must be false");
+        assert_eq!(
+            f.call_with_ctx(&ctx, &[n2.0 as i64]),
+            0,
+            "Eq(Float(2.0), 1) must be false"
+        );
     }
 
     #[test]
@@ -897,14 +1059,17 @@ mod tests {
         let a_node = g.insert_node(cell, rustc_hash::FxHashMap::default());
         for _ in 0..7 {
             let b = g.insert_node(cell, rustc_hash::FxHashMap::default());
-            g.insert_edge(a_node, adj, b, rustc_hash::FxHashMap::default()).unwrap();
+            g.insert_edge(a_node, adj, b, rustc_hash::FxHashMap::default())
+                .unwrap();
         }
 
         let mut arena = TermArena::new();
         let me = ir.intern("me");
         let me_var = arena.add(TermNode::Var { name: me });
         let nbrs = arena.add(TermNode::Neighbours {
-            node: me_var, edge_type: adj, any_type: false,
+            node: me_var,
+            edge_type: adj,
+            any_type: false,
         });
         let cnt = arena.add(TermNode::Count { source: nbrs });
         let mut vars: FxHashMap<Sym, u32> = FxHashMap::default();
@@ -928,8 +1093,13 @@ mod tests {
         let n_sym = ir.intern("n");
         let n_var = arena.add(TermNode::Var { name: n_sym });
         let tof = arena.add(TermNode::TypeOf { node: n_var });
-        let alive_lit = arena.add(TermNode::Lit { value: Value::Str(alive) });
-        let eq = arena.add(TermNode::Eq { a: tof, b: alive_lit });
+        let alive_lit = arena.add(TermNode::Lit {
+            value: Value::Str(alive),
+        });
+        let eq = arena.add(TermNode::Eq {
+            a: tof,
+            b: alive_lit,
+        });
         let mut vars: FxHashMap<Sym, u32> = FxHashMap::default();
         vars.insert(n_sym, 0);
         let f = compile(&arena, eq, &vars).expect("compile");
@@ -963,7 +1133,7 @@ mod tests {
     #[ignore]
     fn bench_jit_graph_access() {
         use crate::graph::TypedGraph;
-        use crate::term::{evaluate, EvalCtx, Env};
+        use crate::term::{evaluate, Env, EvalCtx};
         use smallvec::SmallVec;
         use std::time::Instant;
 
@@ -1001,15 +1171,26 @@ mod tests {
         let x_sym = ir.intern("x");
         let x_var = arena.add(TermNode::Var { name: x_sym });
         let tof = arena.add(TermNode::TypeOf { node: x_var });
-        let alive_lit = arena.add(TermNode::Lit { value: Value::Str(alive) });
-        let eq = arena.add(TermNode::Eq { a: tof, b: alive_lit });
+        let alive_lit = arena.add(TermNode::Lit {
+            value: Value::Str(alive),
+        });
+        let eq = arena.add(TermNode::Eq {
+            a: tof,
+            b: alive_lit,
+        });
         let nbrs = arena.add(TermNode::Neighbours {
-            node: x_var, edge_type: adj, any_type: false,
+            node: x_var,
+            edge_type: adj,
+            any_type: false,
         });
         let cnt = arena.add(TermNode::Count { source: nbrs });
-        let two = arena.add(TermNode::Lit { value: Value::Int(2) });
+        let two = arena.add(TermNode::Lit {
+            value: Value::Int(2),
+        });
         let ge = arena.add(TermNode::Gte { a: cnt, b: two });
-        let where_t = arena.add(TermNode::And { items: vec![eq, ge] });
+        let where_t = arena.add(TermNode::And {
+            items: vec![eq, ge],
+        });
 
         let mut vars: FxHashMap<Sym, u32> = FxHashMap::default();
         vars.insert(x_sym, 0);
@@ -1018,9 +1199,7 @@ mod tests {
         let dt_compile = t_compile.elapsed();
 
         let ctx = JitCtx::from_graph(&g);
-        let all_cells: Vec<NodeID> = (0..n*n)
-            .map(|i| NodeID(i as u32))
-            .collect();
+        let all_cells: Vec<NodeID> = (0..n * n).map(|i| NodeID(i as u32)).collect();
 
         // JIT loop: evaluate the where-clause on every cell, 10 times.
         let t_jit = Instant::now();
@@ -1047,15 +1226,29 @@ mod tests {
         }
         let dt_interp = t_interp.elapsed();
 
-        eprintln!("\n=== JIT (graph access) vs interpreter (10×{} cells = {} evals) ===",
-                  n*n, 10*n*n);
+        eprintln!(
+            "\n=== JIT (graph access) vs interpreter (10×{} cells = {} evals) ===",
+            n * n,
+            10 * n * n
+        );
         eprintln!("Compile once:       {:?}", dt_compile);
         eprintln!("JIT bytes:          {} bytes", jit_fn.code_len());
-        eprintln!("JIT total:          {:?} ({:?}/call)", dt_jit, dt_jit / (10*n*n) as u32);
-        eprintln!("Interpreter total:  {:?} ({:?}/call)", dt_interp, dt_interp / (10*n*n) as u32);
+        eprintln!(
+            "JIT total:          {:?} ({:?}/call)",
+            dt_jit,
+            dt_jit / (10 * n * n) as u32
+        );
+        eprintln!(
+            "Interpreter total:  {:?} ({:?}/call)",
+            dt_interp,
+            dt_interp / (10 * n * n) as u32
+        );
         let speedup = dt_interp.as_nanos() as f64 / dt_jit.as_nanos() as f64;
         eprintln!("JIT speedup:        {:.2}×", speedup);
-        eprintln!("Matches:            jit={} interp={}", jit_true, interp_true);
+        eprintln!(
+            "Matches:            jit={} interp={}",
+            jit_true, interp_true
+        );
         assert_eq!(jit_true, interp_true);
     }
 
@@ -1064,7 +1257,7 @@ mod tests {
     #[ignore]
     fn bench_jit_vs_interpret() {
         use crate::graph::TypedGraph;
-        use crate::term::{evaluate, EvalCtx, Env};
+        use crate::term::{evaluate, Env, EvalCtx};
         use smallvec::SmallVec;
         use std::time::Instant;
 
@@ -1075,17 +1268,33 @@ mod tests {
         let g = TypedGraph::new();
         let x_var = a.add(TermNode::Var { name: x });
         let y_var = a.add(TermNode::Var { name: y });
-        let zero = a.add(TermNode::Lit { value: Value::Int(0) });
-        let ten = a.add(TermNode::Lit { value: Value::Int(10) });
-        let one = a.add(TermNode::Lit { value: Value::Int(1) });
-        let neg_one = a.add(TermNode::Lit { value: Value::Int(-1) });
+        let zero = a.add(TermNode::Lit {
+            value: Value::Int(0),
+        });
+        let ten = a.add(TermNode::Lit {
+            value: Value::Int(10),
+        });
+        let one = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let neg_one = a.add(TermNode::Lit {
+            value: Value::Int(-1),
+        });
         let gt = a.add(TermNode::Gt { a: x_var, b: zero });
         let lt = a.add(TermNode::Lt { a: y_var, b: ten });
-        let and = a.add(TermNode::And { items: vec![gt, lt] });
-        let prod = a.add(TermNode::Times { items: vec![x_var, y_var] });
-        let prod_plus = a.add(TermNode::Plus { items: vec![prod, one] });
+        let and = a.add(TermNode::And {
+            items: vec![gt, lt],
+        });
+        let prod = a.add(TermNode::Times {
+            items: vec![x_var, y_var],
+        });
+        let prod_plus = a.add(TermNode::Plus {
+            items: vec![prod, one],
+        });
         let ite = a.add(TermNode::IfThenElse {
-            cond: and, then: prod_plus, other: neg_one,
+            cond: and,
+            then: prod_plus,
+            other: neg_one,
         });
 
         let mut vars: FxHashMap<Sym, u32> = FxHashMap::default();
@@ -1113,16 +1322,27 @@ mod tests {
             env.push((y, Value::Int((i % 7) as i64)));
             let mut ctx = EvalCtx::new(&g, &ir);
             let v = evaluate(&a, ite, &mut env, &mut ctx);
-            let n = match v { Value::Int(n) => n, Value::Bool(b) => b as i64, _ => 0 };
+            let n = match v {
+                Value::Int(n) => n,
+                Value::Bool(b) => b as i64,
+                _ => 0,
+            };
             acc2 = acc2.wrapping_add(n);
         }
         let dt_interp = t_interp.elapsed();
 
-        eprintln!("\n=== JIT (pure arith) vs interpreter ({} iterations) ===", N);
+        eprintln!(
+            "\n=== JIT (pure arith) vs interpreter ({} iterations) ===",
+            N
+        );
         eprintln!("Compile once:       {:?}", dt_compile);
         eprintln!("JIT bytes:          {} bytes", jit_fn.code_len());
         eprintln!("JIT total:          {:?} ({:?}/call)", dt_jit, dt_jit / N);
-        eprintln!("Interpreter total:  {:?} ({:?}/call)", dt_interp, dt_interp / N);
+        eprintln!(
+            "Interpreter total:  {:?} ({:?}/call)",
+            dt_interp,
+            dt_interp / N
+        );
         let speedup = dt_interp.as_nanos() as f64 / dt_jit.as_nanos() as f64;
         eprintln!("JIT speedup:        {:.2}×", speedup);
         assert_eq!(acc, acc2);

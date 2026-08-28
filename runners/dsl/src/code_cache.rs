@@ -75,7 +75,9 @@ pub struct CodeCacheConfig {
 
 impl Default for CodeCacheConfig {
     fn default() -> Self {
-        Self { max_bytes: 4 * 1024 * 1024 }
+        Self {
+            max_bytes: 4 * 1024 * 1024,
+        }
     }
 }
 
@@ -162,8 +164,7 @@ where
 
         // Replace existing entry for this key, if any.
         if let Some(old) = inner.map.remove(&key) {
-            inner.total_bytes = inner.total_bytes.saturating_sub(
-                old.code_size_bytes());
+            inner.total_bytes = inner.total_bytes.saturating_sub(old.code_size_bytes());
             inner.lru.retain(|k| k != &key);
             evicted.push(old);
         }
@@ -171,13 +172,10 @@ where
         // Evict LRU until the new entry fits. If the new entry
         // alone exceeds `max_bytes` we still insert it — caller's
         // responsibility for sane sizing. (HotSpot does the same.)
-        while inner.total_bytes + size > self.config.max_bytes
-            && !inner.lru.is_empty()
-        {
+        while inner.total_bytes + size > self.config.max_bytes && !inner.lru.is_empty() {
             let lru_key = inner.lru.remove(0);
             if let Some(old) = inner.map.remove(&lru_key) {
-                inner.total_bytes = inner.total_bytes.saturating_sub(
-                    old.code_size_bytes());
+                inner.total_bytes = inner.total_bytes.saturating_sub(old.code_size_bytes());
                 evicted.push(old);
             }
         }
@@ -196,8 +194,7 @@ where
     pub fn remove(&self, key: &K) -> Option<Arc<T>> {
         let mut inner = self.inner.lock().unwrap();
         let arc = inner.map.remove(key)?;
-        inner.total_bytes = inner.total_bytes.saturating_sub(
-            arc.code_size_bytes());
+        inner.total_bytes = inner.total_bytes.saturating_sub(arc.code_size_bytes());
         inner.lru.retain(|k| k != key);
         Some(arc)
     }
@@ -217,7 +214,9 @@ where
         self.inner.lock().unwrap().map.len()
     }
 
-    pub fn is_empty(&self) -> bool { self.len() == 0 }
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 
     /// Sum of `code_size_bytes` across cached entries. Always
     /// `<= config.max_bytes` after `insert()` returns
@@ -231,7 +230,9 @@ where
         self.inner.lock().unwrap().lru.clone()
     }
 
-    pub fn config(&self) -> CodeCacheConfig { self.config }
+    pub fn config(&self) -> CodeCacheConfig {
+        self.config
+    }
 }
 
 #[cfg(test)]
@@ -246,7 +247,9 @@ mod tests {
         drops: Arc<AtomicUsize>,
     }
     impl CodeSize for FakeArtefact {
-        fn code_size_bytes(&self) -> usize { self.size }
+        fn code_size_bytes(&self) -> usize {
+            self.size
+        }
     }
     impl Drop for FakeArtefact {
         fn drop(&mut self) {
@@ -255,7 +258,10 @@ mod tests {
     }
 
     fn make(size: usize, drops: &Arc<AtomicUsize>) -> FakeArtefact {
-        FakeArtefact { size, drops: Arc::clone(drops) }
+        FakeArtefact {
+            size,
+            drops: Arc::clone(drops),
+        }
     }
 
     /// Smoke: insert, get, remove. Hits the basic API paths.
@@ -289,14 +295,16 @@ mod tests {
     #[test]
     fn bounded_under_inserts() {
         let drops = Arc::new(AtomicUsize::new(0));
-        let c: CodeCache<u32, FakeArtefact> =
-            CodeCache::new(CodeCacheConfig { max_bytes: 1024 });
+        let c: CodeCache<u32, FakeArtefact> = CodeCache::new(CodeCacheConfig { max_bytes: 1024 });
         // Insert 20 entries of 100 bytes each. Cache holds 10 max.
         for i in 0..20 {
             c.insert(i, make(100, &drops));
-            assert!(c.total_bytes() <= 1024,
-                    "bound violated at iter {}: total={}",
-                    i, c.total_bytes());
+            assert!(
+                c.total_bytes() <= 1024,
+                "bound violated at iter {}: total={}",
+                i,
+                c.total_bytes()
+            );
         }
         assert!(c.len() <= 10);
         // 10 evicted; their Arcs were dropped by the insert call
@@ -345,8 +353,11 @@ mod tests {
         // Now simulate the dispatcher evicting due to Γ mutation
         // (clear + re-insert different content forcing displacement).
         c.clear();
-        assert_eq!(drops.load(AtomicOrd::SeqCst), 0,
-                   "drop must be deferred while worker holds Arc");
+        assert_eq!(
+            drops.load(AtomicOrd::SeqCst),
+            0,
+            "drop must be deferred while worker holds Arc"
+        );
 
         // Worker still has a valid handle.
         assert_eq!(worker_hold.code_size_bytes(), 100);
@@ -354,8 +365,11 @@ mod tests {
         // Worker finishes its "execution" — releases its Arc.
         drop(worker_hold);
         // NOW the artefact is freed.
-        assert_eq!(drops.load(AtomicOrd::SeqCst), 1,
-                   "drop happens when last Arc clone drops");
+        assert_eq!(
+            drops.load(AtomicOrd::SeqCst),
+            1,
+            "drop happens when last Arc clone drops"
+        );
     }
 
     /// Re-inserting the same key replaces — doesn't grow size,
@@ -378,8 +392,7 @@ mod tests {
     #[test]
     fn clear_evicts_all() {
         let drops = Arc::new(AtomicUsize::new(0));
-        let c: CodeCache<u32, FakeArtefact> =
-            CodeCache::new(CodeCacheConfig { max_bytes: 4096 });
+        let c: CodeCache<u32, FakeArtefact> = CodeCache::new(CodeCacheConfig { max_bytes: 4096 });
         for i in 0..10 {
             c.insert(i, make(100, &drops));
         }

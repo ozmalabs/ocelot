@@ -89,7 +89,12 @@ pub fn production_to_subgraph(
     let src_id = graph.insert_node(pattern_type, src_attrs);
     let pattern_src_edge = interner.intern(EDGE_PATTERN_SRC);
     graph
-        .insert_edge(prod_id, pattern_src_edge, src_id, rustc_hash::FxHashMap::default())
+        .insert_edge(
+            prod_id,
+            pattern_src_edge,
+            src_id,
+            rustc_hash::FxHashMap::default(),
+        )
         .expect("freshly-inserted GammaNodePattern node always connects");
 
     let mut tgt_attrs = rustc_hash::FxHashMap::default();
@@ -98,14 +103,24 @@ pub fn production_to_subgraph(
     let tgt_id = graph.insert_node(pattern_type, tgt_attrs);
     let pattern_tgt_edge = interner.intern(EDGE_PATTERN_TGT);
     graph
-        .insert_edge(prod_id, pattern_tgt_edge, tgt_id, rustc_hash::FxHashMap::default())
+        .insert_edge(
+            prod_id,
+            pattern_tgt_edge,
+            tgt_id,
+            rustc_hash::FxHashMap::default(),
+        )
         .expect("freshly-inserted GammaNodePattern node always connects");
 
     if let Some(where_idx) = p.where_ {
         let where_root = term_to_subgraph(arena, where_idx, graph, interner);
         let pattern_where_edge = interner.intern(EDGE_PATTERN_WHERE);
         graph
-            .insert_edge(prod_id, pattern_where_edge, where_root, rustc_hash::FxHashMap::default())
+            .insert_edge(
+                prod_id,
+                pattern_where_edge,
+                where_root,
+                rustc_hash::FxHashMap::default(),
+            )
             .expect("freshly-inserted Term subgraph root always connects");
     }
 
@@ -114,7 +129,12 @@ pub fn production_to_subgraph(
     let weight_root = term_to_subgraph(arena, p.weight, graph, interner);
     let pattern_weight_edge = interner.intern(EDGE_PATTERN_WEIGHT);
     graph
-        .insert_edge(prod_id, pattern_weight_edge, weight_root, rustc_hash::FxHashMap::default())
+        .insert_edge(
+            prod_id,
+            pattern_weight_edge,
+            weight_root,
+            rustc_hash::FxHashMap::default(),
+        )
         .expect("freshly-inserted Term subgraph root always connects");
 
     prod_id
@@ -128,11 +148,23 @@ pub fn production_to_subgraph(
 /// fixpoint discipline to fall back on the way `run_graph_rules_opts` does).
 #[derive(Debug, Clone)]
 pub enum GammaReflectError {
-    NotAGammaGrammar { type_name: String },
-    NotAGammaProduction { type_name: String },
-    NotAGammaNodePattern { type_name: String },
-    MissingAttr { node: NodeID, field: &'static str },
-    MissingEdge { node: NodeID, edge_type: &'static str },
+    NotAGammaGrammar {
+        type_name: String,
+    },
+    NotAGammaProduction {
+        type_name: String,
+    },
+    NotAGammaNodePattern {
+        type_name: String,
+    },
+    MissingAttr {
+        node: NodeID,
+        field: &'static str,
+    },
+    MissingEdge {
+        node: NodeID,
+        edge_type: &'static str,
+    },
     BadTerm(ReflectError),
 }
 
@@ -255,9 +287,13 @@ pub fn grammar_from_graph(
             type_name: type_name.to_string(),
         });
     }
-    let production_edge = interner
-        .lookup(EDGE_PRODUCTION)
-        .ok_or(GammaReflectError::MissingEdge { node: root, edge_type: EDGE_PRODUCTION })?;
+    let production_edge =
+        interner
+            .lookup(EDGE_PRODUCTION)
+            .ok_or(GammaReflectError::MissingEdge {
+                node: root,
+                edge_type: EDGE_PRODUCTION,
+            })?;
     let index_key = interner.lookup("index");
 
     let mut entries: Vec<(i64, NodeID)> = graph
@@ -306,7 +342,9 @@ mod tests {
         };
         let where_ = if with_where {
             let lhs = arena.add(TermNode::Var { name: src.var });
-            let rhs = arena.add(TermNode::Lit { value: Value::Int(7) });
+            let rhs = arena.add(TermNode::Lit {
+                value: Value::Int(7),
+            });
             Some(arena.add(TermNode::Eq { a: lhs, b: rhs }))
         } else {
             None
@@ -332,7 +370,14 @@ mod tests {
         let mut arena = TermArena::new();
         let mut graph = TypedGraph::new();
 
-        let p1 = mk_production(&mut interner, &mut arena, "AliveCell", "adjacent", "AliveCell", true);
+        let p1 = mk_production(
+            &mut interner,
+            &mut arena,
+            "AliveCell",
+            "adjacent",
+            "AliveCell",
+            true,
+        );
         let p2 = mk_production(&mut interner, &mut arena, "N", "tag", "N", false);
 
         let root_type = interner.intern(GAMMA_GRAMMAR_NODE);
@@ -354,8 +399,11 @@ mod tests {
         assert_eq!(interner.resolve(r1.tgt.type_), "AliveCell");
         assert_eq!(interner.resolve(r1.provenance), "test:mk_production");
         let orig_where_json = crate::jsonio::term_to_json(&arena, p1.where_.unwrap(), &interner);
-        let rebuilt_where_json =
-            crate::jsonio::term_to_json(&arena2, r1.where_.expect("where_ should round-trip"), &interner);
+        let rebuilt_where_json = crate::jsonio::term_to_json(
+            &arena2,
+            r1.where_.expect("where_ should round-trip"),
+            &interner,
+        );
         assert_eq!(orig_where_json, rebuilt_where_json);
 
         // p2: no where-clause — must round-trip to None, not an accidental Some.
@@ -383,6 +431,9 @@ mod tests {
         let nid = graph.insert_node(not_a_grammar, rustc_hash::FxHashMap::default());
         let mut arena = TermArena::new();
         let err = grammar_from_graph(&graph, nid, &mut arena, &interner);
-        assert!(matches!(err, Err(GammaReflectError::NotAGammaGrammar { .. })));
+        assert!(matches!(
+            err,
+            Err(GammaReflectError::NotAGammaGrammar { .. })
+        ));
     }
 }

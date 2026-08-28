@@ -345,13 +345,19 @@ static DIM_INFER_ARG_TRACE: Mutex<Vec<u32>> = Mutex::new(Vec::new());
 
 /// The call-order trace of distinct-tuple indices.
 pub fn dim_infer_arg_trace() -> Vec<u32> {
-    DIM_INFER_ARG_TRACE.lock().map(|t| t.clone()).unwrap_or_default()
+    DIM_INFER_ARG_TRACE
+        .lock()
+        .map(|t| t.clone())
+        .unwrap_or_default()
 }
 
 /// The distinct ORDERED encodings themselves, so a diagnostic can diff them
 /// and report WHICH determinant moved.
 pub fn dim_infer_arg_encodings() -> Vec<Vec<u8>> {
-    DIM_INFER_ARGS_ORDERED.lock().map(|s| s.clone()).unwrap_or_default()
+    DIM_INFER_ARGS_ORDERED
+        .lock()
+        .map(|s| s.clone())
+        .unwrap_or_default()
 }
 
 // ---------------------------------------------------------------------------
@@ -700,7 +706,10 @@ macro_rules! all_counters {
 /// failure in a new costume.
 fn dim_infer_arg_rows(out: &mut Vec<(String, u64)>) {
     let o = DIM_INFER_ARGS_ORDERED.lock().map(|s| s.len()).unwrap_or(0) as u64;
-    let u = DIM_INFER_ARGS_UNORDERED.lock().map(|s| s.len()).unwrap_or(0) as u64;
+    let u = DIM_INFER_ARGS_UNORDERED
+        .lock()
+        .map(|s| s.len())
+        .unwrap_or(0) as u64;
     out.push(("dim_infer_arg_distinct_ordered".to_string(), o));
     out.push(("dim_infer_arg_distinct_unordered".to_string(), u));
 }
@@ -841,7 +850,10 @@ mod tests {
         set_enabled(false);
         reset();
         let g = term_eval(0);
-        assert!(g.is_none(), "the guard must not be constructed when disabled");
+        assert!(
+            g.is_none(),
+            "the guard must not be constructed when disabled"
+        );
         term_units(1000);
         for (name, v) in snapshot() {
             assert_eq!(v, 0, "{name} moved while the audit was OFF");
@@ -868,7 +880,10 @@ mod tests {
         let m: std::collections::HashMap<String, u64> = snapshot().into_iter().collect();
         assert_eq!(m["term_eval:Var"], 1);
         assert_eq!(m["term_eval:Attr"], 1);
-        assert_eq!(m["term_unit:Var"], 7, "5 + 2 after the inner guard is dropped");
+        assert_eq!(
+            m["term_unit:Var"], 7,
+            "5 + 2 after the inner guard is dropped"
+        );
         assert_eq!(m["term_unit:Attr"], 7);
         assert_eq!(m["term_evals_total"], 2);
         assert_eq!(m["term_units_total"], 14);
@@ -906,7 +921,11 @@ mod tests {
         // Names are unique — two variants sharing a name would silently merge
         // two cost profiles into one row.
         let uniq: std::collections::HashSet<&str> = TERM_VARIANT_NAMES.iter().cloned().collect();
-        assert_eq!(uniq.len(), NUM_TERM_VARIANTS, "duplicate variant name in the table");
+        assert_eq!(
+            uniq.len(),
+            NUM_TERM_VARIANTS,
+            "duplicate variant name in the table"
+        );
         // Every index in range maps to a distinct, non-empty name.
         assert!(TERM_VARIANT_NAMES.iter().all(|n| !n.is_empty()));
     }
@@ -923,7 +942,10 @@ mod tests {
         let m: std::collections::HashMap<String, u64> = snapshot().into_iter().collect();
         assert_eq!(m["term_evals_total"], 0);
         assert_eq!(m["term_units_total"], 0);
-        assert!(!m.contains_key("term_eval:Var"), "zero cells are not emitted");
+        assert!(
+            !m.contains_key("term_eval:Var"),
+            "zero cells are not emitted"
+        );
         set_enabled_for_thread(false);
         reset();
     }

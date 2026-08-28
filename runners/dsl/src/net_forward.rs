@@ -78,10 +78,7 @@ fn vec_to_value(x: &[f64]) -> Value {
 
 /// Wrap a `Vec<Vec<f64>>` into a nested `Value::Tuple` (a weight matrix).
 fn mat_to_value(m: &[Vec<f64>]) -> Value {
-    let rows: SmallVec<[Value; 4]> = m
-        .iter()
-        .map(|row| vec_to_value(row))
-        .collect();
+    let rows: SmallVec<[Value; 4]> = m.iter().map(|row| vec_to_value(row)).collect();
     Value::Tuple(Arc::new(rows))
 }
 
@@ -171,14 +168,8 @@ fn load_steps(
                 _ => {}
             }
         }
-        let (
-            Some(w1),
-            Some(b1),
-            Some(w2),
-            Some(b2),
-            Some(w2_node),
-            Some(b2_node),
-        ) = (w1, b1, w2, b2, w2_node, b2_node)
+        let (Some(w1), Some(b1), Some(w2), Some(b2), Some(w2_node), Some(b2_node)) =
+            (w1, b1, w2, b2, w2_node, b2_node)
         else {
             continue;
         };
@@ -280,8 +271,7 @@ fn collapse_loaded_one(
                         *bias += scale * err;
                     }
                     for j in 0..step.w2[i].len() {
-                        step.w2[i][j] +=
-                            scale * err * hidden.get(j).copied().unwrap_or(0.0);
+                        step.w2[i][j] += scale * err * hidden.get(j).copied().unwrap_or(0.0);
                     }
                 }
             }
@@ -325,9 +315,7 @@ pub fn net_collapse_batch_ordered(
     let surprises = inputs
         .iter()
         .zip(targets)
-        .map(|(input, target)| {
-            collapse_loaded_one(&mut steps, last, input, target, eta)
-        })
+        .map(|(input, target)| collapse_loaded_one(&mut steps, last, input, target, eta))
         .collect();
     write_collapsed_readout(graph, interner, &steps, last);
     surprises
@@ -368,8 +356,14 @@ fn cascade_blocks(
     let order_k = interner.lookup("order");
     let mut blocks = graph.neighbours(cascade, Some(has_block));
     blocks.sort_by(|&a, &b| {
-        let oa = order_k.and_then(|k| graph.node(a).attrs.get(&k)).map(val_f64).unwrap_or(0.0);
-        let ob = order_k.and_then(|k| graph.node(b).attrs.get(&k)).map(val_f64).unwrap_or(0.0);
+        let oa = order_k
+            .and_then(|k| graph.node(a).attrs.get(&k))
+            .map(val_f64)
+            .unwrap_or(0.0);
+        let ob = order_k
+            .and_then(|k| graph.node(b).attrs.get(&k))
+            .map(val_f64)
+            .unwrap_or(0.0);
         oa.partial_cmp(&ob).unwrap_or(std::cmp::Ordering::Equal)
     });
     blocks
@@ -459,9 +453,10 @@ pub fn composite_forward(
     if !graph.has_node(composite) {
         return (Vec::new(), -1, 1.0);
     }
-    let (Some(has_component), Some(na)) =
-        (interner.lookup("has_component"), interner.lookup("net_assemblage"))
-    else {
+    let (Some(has_component), Some(na)) = (
+        interner.lookup("has_component"),
+        interner.lookup("net_assemblage"),
+    ) else {
         return (Vec::new(), -1, 1.0);
     };
     let bp_k = interner.lookup("basin_parts");
@@ -489,7 +484,11 @@ pub fn composite_forward(
 
     match best {
         Some((c, _, frac)) => match graph.neighbours(c, Some(na)).first().copied() {
-            Some(asm) => (net_forward_core(graph, interner, asm, input), c.0 as i64, frac),
+            Some(asm) => (
+                net_forward_core(graph, interner, asm, input),
+                c.0 as i64,
+                frac,
+            ),
             None => (Vec::new(), -1, 1.0),
         },
         None => (Vec::new(), -1, 1.0), // no component covers the shape — defer to cognition
@@ -597,10 +596,7 @@ mod tests {
             .unwrap();
 
         let tensors = [
-            (
-                w1_role,
-                mat_to_value(&[vec![1.0, 2.0], vec![-1.0, 1.0]]),
-            ),
+            (w1_role, mat_to_value(&[vec![1.0, 2.0], vec![-1.0, 1.0]])),
             (b1_role, vec_to_value(&[0.5, -0.25])),
             (w2_role, mat_to_value(&[vec![3.0, -2.0]])),
             (b2_role, vec_to_value(&[0.25])),
@@ -610,10 +606,7 @@ mod tests {
         for (role_value, tensor_data) in tensors {
             let node = graph.insert_node(
                 weight_t,
-                Attrs(vec![
-                    (role, Value::Str(role_value)),
-                    (data, tensor_data),
-                ]),
+                Attrs(vec![(role, Value::Str(role_value)), (data, tensor_data)]),
             );
             if role_value == w2_role {
                 w2 = Some(node);
@@ -645,17 +638,9 @@ mod tests {
         ];
         let scalar: Vec<Vec<f64>> = inputs
             .iter()
-            .map(|input| {
-                net_forward_core(
-                    &net.graph,
-                    &net.interner,
-                    net.net,
-                    input.clone(),
-                )
-            })
+            .map(|input| net_forward_core(&net.graph, &net.interner, net.net, input.clone()))
             .collect();
-        let batch =
-            net_forward_batch_core(&net.graph, &net.interner, net.net, &inputs);
+        let batch = net_forward_batch_core(&net.graph, &net.interner, net.net, &inputs);
         assert_eq!(batch, scalar);
     }
 
@@ -666,12 +651,7 @@ mod tests {
         let concept = net.graph.insert_node(concept_t, Attrs::new());
         let inputs = vec![vec![1.0, 2.0], vec![-3.0, 4.5]];
         assert_eq!(
-            net_forward_batch_core(
-                &net.graph,
-                &net.interner,
-                concept,
-                &inputs,
-            ),
+            net_forward_batch_core(&net.graph, &net.interner, concept, &inputs,),
             inputs,
         );
     }
@@ -726,18 +706,8 @@ mod tests {
 
         for input in &inputs {
             assert_eq!(
-                net_forward_core(
-                    &batch.graph,
-                    &batch.interner,
-                    batch.net,
-                    input.clone(),
-                ),
-                net_forward_core(
-                    &scalar.graph,
-                    &scalar.interner,
-                    scalar.net,
-                    input.clone(),
-                ),
+                net_forward_core(&batch.graph, &batch.interner, batch.net, input.clone(),),
+                net_forward_core(&scalar.graph, &scalar.interner, scalar.net, input.clone(),),
             );
         }
     }

@@ -121,7 +121,9 @@ impl EssentialVariableChannel {
 }
 
 impl FeedbackChannel for EssentialVariableChannel {
-    fn name(&self) -> &str { &self.name }
+    fn name(&self) -> &str {
+        &self.name
+    }
     fn tick(&self) -> Option<FeedbackRecommendation> {
         let status = self.variable.status();
         let scalar = match status {
@@ -149,7 +151,11 @@ pub struct CyberneticFeedbackLoop {
 }
 
 impl CyberneticFeedbackLoop {
-    pub fn new() -> Self { Self { channels: Vec::new() } }
+    pub fn new() -> Self {
+        Self {
+            channels: Vec::new(),
+        }
+    }
 
     pub fn add(&mut self, channel: Box<dyn FeedbackChannel>) {
         self.channels.push(channel);
@@ -161,16 +167,15 @@ impl CyberneticFeedbackLoop {
         self.channels.iter().filter_map(|c| c.tick()).collect()
     }
 
-    pub fn channel_count(&self) -> usize { self.channels.len() }
+    pub fn channel_count(&self) -> usize {
+        self.channels.len()
+    }
 
     /// Tick + route each recommendation to a consumer. The consumer's
     /// `consume` is called once per emitted recommendation; the
     /// consumer is free to apply the adjustment to whatever layer
     /// state it knows how to mutate.
-    pub fn tick_with_consumer<C: FeedbackConsumer>(
-        &self,
-        consumer: &mut C,
-    ) -> usize {
+    pub fn tick_with_consumer<C: FeedbackConsumer>(&self, consumer: &mut C) -> usize {
         let recs = self.tick();
         let n = recs.len();
         for r in &recs {
@@ -181,7 +186,9 @@ impl CyberneticFeedbackLoop {
 }
 
 impl Default for CyberneticFeedbackLoop {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 /// Consumer of feedback recommendations. The substrate's
@@ -220,7 +227,9 @@ pub struct RecommendationApplier {
 }
 
 impl RecommendationApplier {
-    pub fn new() -> Self { Self::default() }
+    pub fn new() -> Self {
+        Self::default()
+    }
 
     /// Register a knob handle for the (adjustment_name, target_layer)
     /// pair. The knob is typically obtained from a layer-side
@@ -233,12 +242,12 @@ impl RecommendationApplier {
     ) {
         self.knobs_u64.insert(
             (adjustment_name.to_string(), target_layer.to_string()),
-            knob);
+            knob,
+        );
     }
 
     /// Inspect the current value of a registered knob.
-    pub fn knob_value(&self, adjustment_name: &str,
-                       target_layer: &str) -> Option<u64> {
+    pub fn knob_value(&self, adjustment_name: &str, target_layer: &str) -> Option<u64> {
         self.knobs_u64
             .get(&(adjustment_name.to_string(), target_layer.to_string()))
             .map(|k| k.load(Ordering::Acquire))
@@ -263,19 +272,20 @@ impl FeedbackConsumer for RecommendationApplier {
 mod tests {
     use super::*;
     use crate::l6_essential_variables::{
-        DeadlineMeetRate, DriveStarvation, EssentialVariableMonitor,
-        WorkingSetFit,
+        DeadlineMeetRate, DriveStarvation, EssentialVariableMonitor, WorkingSetFit,
     };
 
     /// Nominal variable → no recommendation.
     #[test]
     fn channel_silent_when_variable_nominal() {
-        let wsf: Arc<WorkingSetFit> =
-            Arc::new(WorkingSetFit::new("wsf", 1000, 0.9));
+        let wsf: Arc<WorkingSetFit> = Arc::new(WorkingSetFit::new("wsf", 1000, 0.9));
         let ch = EssentialVariableChannel::new(
-            "wsf_to_cache", Arc::clone(&wsf) as _,
-            "L1_cache", "tighten_cache",
-            0.9, 0.5,
+            "wsf_to_cache",
+            Arc::clone(&wsf) as _,
+            "L1_cache",
+            "tighten_cache",
+            0.9,
+            0.5,
         );
         // wsf at 0 → Nominal → no recommendation.
         assert!(ch.tick().is_none());
@@ -284,12 +294,14 @@ mod tests {
     /// NearEdge → recommendation with near_edge_scalar.
     #[test]
     fn channel_emits_near_edge_scalar() {
-        let wsf: Arc<WorkingSetFit> =
-            Arc::new(WorkingSetFit::new("wsf", 1000, 0.9));
+        let wsf: Arc<WorkingSetFit> = Arc::new(WorkingSetFit::new("wsf", 1000, 0.9));
         let ch = EssentialVariableChannel::new(
-            "wsf_to_cache", Arc::clone(&wsf) as _,
-            "L1_cache", "tighten_cache",
-            0.9, 0.5,
+            "wsf_to_cache",
+            Arc::clone(&wsf) as _,
+            "L1_cache",
+            "tighten_cache",
+            0.9,
+            0.5,
         );
         // Near-edge zone: 0.9 - 0.09 = 0.81 → 0.9. Update to 0.85.
         wsf.update(850);
@@ -304,12 +316,14 @@ mod tests {
     /// Breach → recommendation with breach_scalar.
     #[test]
     fn channel_emits_breach_scalar() {
-        let wsf: Arc<WorkingSetFit> =
-            Arc::new(WorkingSetFit::new("wsf", 1000, 0.9));
+        let wsf: Arc<WorkingSetFit> = Arc::new(WorkingSetFit::new("wsf", 1000, 0.9));
         let ch = EssentialVariableChannel::new(
-            "wsf_to_cache", Arc::clone(&wsf) as _,
-            "L1_cache", "tighten_cache",
-            0.9, 0.5,
+            "wsf_to_cache",
+            Arc::clone(&wsf) as _,
+            "L1_cache",
+            "tighten_cache",
+            0.9,
+            0.5,
         );
         // Breach: > 0.9.
         wsf.update(950);
@@ -322,18 +336,24 @@ mod tests {
     /// back from one tick.
     #[test]
     fn loop_aggregates_channels() {
-        let wsf: Arc<WorkingSetFit> =
-            Arc::new(WorkingSetFit::new("wsf", 1000, 0.9));
-        let ds: Arc<DriveStarvation> =
-            Arc::new(DriveStarvation::new("ds", 100));
+        let wsf: Arc<WorkingSetFit> = Arc::new(WorkingSetFit::new("wsf", 1000, 0.9));
+        let ds: Arc<DriveStarvation> = Arc::new(DriveStarvation::new("ds", 100));
         let mut loop_ = CyberneticFeedbackLoop::new();
         loop_.add(Box::new(EssentialVariableChannel::new(
-            "wsf_ch", Arc::clone(&wsf) as _,
-            "L1_cache", "tighten_cache", 0.9, 0.5,
+            "wsf_ch",
+            Arc::clone(&wsf) as _,
+            "L1_cache",
+            "tighten_cache",
+            0.9,
+            0.5,
         )));
         loop_.add(Box::new(EssentialVariableChannel::new(
-            "ds_ch", Arc::clone(&ds) as _,
-            "L3_drives", "boost_starved", 1.2, 2.0,
+            "ds_ch",
+            Arc::clone(&ds) as _,
+            "L3_drives",
+            "boost_starved",
+            1.2,
+            2.0,
         )));
         // Both nominal → no recommendations.
         assert!(loop_.tick().is_empty());
@@ -341,11 +361,12 @@ mod tests {
         // Both breach.
         wsf.update(950);
         ds.record_fire(1);
-        for _ in 0..110 { ds.advance_tick(); }
+        for _ in 0..110 {
+            ds.advance_tick();
+        }
         let recs = loop_.tick();
         assert_eq!(recs.len(), 2);
-        let sources: Vec<&str> = recs.iter()
-            .map(|r| r.source_variable.as_str()).collect();
+        let sources: Vec<&str> = recs.iter().map(|r| r.source_variable.as_str()).collect();
         assert!(sources.contains(&"wsf"));
         assert!(sources.contains(&"ds"));
     }
@@ -365,21 +386,28 @@ mod tests {
             }
         }
 
-        let dmr: Arc<DeadlineMeetRate> =
-            Arc::new(DeadlineMeetRate::new("dmr", 10, 0.95));
+        let dmr: Arc<DeadlineMeetRate> = Arc::new(DeadlineMeetRate::new("dmr", 10, 0.95));
         let mut loop_ = CyberneticFeedbackLoop::new();
         loop_.add(Box::new(EssentialVariableChannel::new(
-            "dmr_ch", Arc::clone(&dmr) as _,
-            "L2_dispatch", "lower_threshold", 0.5, 0.1,
+            "dmr_ch",
+            Arc::clone(&dmr) as _,
+            "L2_dispatch",
+            "lower_threshold",
+            0.5,
+            0.1,
         )));
-        let mut consumer = CollectingConsumer { received: Vec::new() };
+        let mut consumer = CollectingConsumer {
+            received: Vec::new(),
+        };
 
         // Nominal — no callback fires.
         loop_.tick_with_consumer(&mut consumer);
         assert!(consumer.received.is_empty());
 
         // Push DMR to breach.
-        for _ in 0..10 { dmr.record(false); }
+        for _ in 0..10 {
+            dmr.record(false);
+        }
         let n = loop_.tick_with_consumer(&mut consumer);
         assert_eq!(n, 1);
         assert_eq!(consumer.received.len(), 1);
@@ -394,19 +422,20 @@ mod tests {
     /// applier writes knob → layer reads new value.
     #[test]
     fn applier_writes_to_registered_knob() {
-        let wsf: Arc<WorkingSetFit> =
-            Arc::new(WorkingSetFit::new("wsf", 1000, 0.9));
+        let wsf: Arc<WorkingSetFit> = Arc::new(WorkingSetFit::new("wsf", 1000, 0.9));
         let mut loop_ = CyberneticFeedbackLoop::new();
         loop_.add(Box::new(EssentialVariableChannel::new(
-            "wsf_to_cache", Arc::clone(&wsf) as _,
-            "L1_cache", "tighten_cache_bytes",
-            500.0, 100.0)));
+            "wsf_to_cache",
+            Arc::clone(&wsf) as _,
+            "L1_cache",
+            "tighten_cache_bytes",
+            500.0,
+            100.0,
+        )));
 
         let mut applier = RecommendationApplier::new();
         let cache_knob = Arc::new(AtomicU64::new(1000));
-        applier.register_knob_u64(
-            "tighten_cache_bytes", "L1_cache",
-            Arc::clone(&cache_knob));
+        applier.register_knob_u64("tighten_cache_bytes", "L1_cache", Arc::clone(&cache_knob));
 
         // Nominal: no change.
         loop_.tick_with_consumer(&mut applier);
@@ -424,12 +453,16 @@ mod tests {
     /// in `ignored` rather than silently dropping.
     #[test]
     fn applier_tracks_ignored_recommendations() {
-        let wsf: Arc<WorkingSetFit> =
-            Arc::new(WorkingSetFit::new("wsf", 1000, 0.9));
+        let wsf: Arc<WorkingSetFit> = Arc::new(WorkingSetFit::new("wsf", 1000, 0.9));
         let mut loop_ = CyberneticFeedbackLoop::new();
         loop_.add(Box::new(EssentialVariableChannel::new(
-            "wsf_ch", Arc::clone(&wsf) as _,
-            "L1_cache", "no_such_adjustment", 1.0, 1.0)));
+            "wsf_ch",
+            Arc::clone(&wsf) as _,
+            "L1_cache",
+            "no_such_adjustment",
+            1.0,
+            1.0,
+        )));
         let mut applier = RecommendationApplier::new();
         wsf.update(950);
         loop_.tick_with_consumer(&mut applier);
@@ -447,8 +480,7 @@ mod tests {
             Arc::new(DeadlineMeetRate::new("deadline_meet_rate", 100, 0.95));
         let wsf: Arc<WorkingSetFit> =
             Arc::new(WorkingSetFit::new("working_set_fit", 32 * 1024 * 1024, 0.9));
-        let ds: Arc<DriveStarvation> =
-            Arc::new(DriveStarvation::new("drive_starvation", 50));
+        let ds: Arc<DriveStarvation> = Arc::new(DriveStarvation::new("drive_starvation", 50));
 
         // Aggregate into one EssentialVariableMonitor too (composes).
         let mut mon = EssentialVariableMonitor::new(0.1);
@@ -458,16 +490,28 @@ mod tests {
 
         let mut loop_ = CyberneticFeedbackLoop::new();
         loop_.add(Box::new(EssentialVariableChannel::new(
-            "dmr_to_L2", Arc::clone(&dmr) as _,
-            "L2_dispatch", "lower_tier_up_threshold", 0.5, 0.1,
+            "dmr_to_L2",
+            Arc::clone(&dmr) as _,
+            "L2_dispatch",
+            "lower_tier_up_threshold",
+            0.5,
+            0.1,
         )));
         loop_.add(Box::new(EssentialVariableChannel::new(
-            "wsf_to_L1", Arc::clone(&wsf) as _,
-            "L1_cache", "tighten_cache_bytes", 0.9, 0.5,
+            "wsf_to_L1",
+            Arc::clone(&wsf) as _,
+            "L1_cache",
+            "tighten_cache_bytes",
+            0.9,
+            0.5,
         )));
         loop_.add(Box::new(EssentialVariableChannel::new(
-            "ds_to_L3", Arc::clone(&ds) as _,
-            "L3_drives", "boost_starved_drive_weight", 1.5, 3.0,
+            "ds_to_L3",
+            Arc::clone(&ds) as _,
+            "L3_drives",
+            "boost_starved_drive_weight",
+            1.5,
+            3.0,
         )));
 
         // Nominal start.
@@ -475,7 +519,9 @@ mod tests {
         assert!(!mon.any_breach());
 
         // Push DMR to breach (the substrate is missing deadlines).
-        for _ in 0..100 { dmr.record(false); }
+        for _ in 0..100 {
+            dmr.record(false);
+        }
         let recs = loop_.tick();
         assert_eq!(recs.len(), 1);
         assert_eq!(recs[0].target_layer, "L2_dispatch");

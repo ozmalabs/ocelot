@@ -33,22 +33,22 @@
 /// H.265 4×4 forward DCT-II matrix from clause 8.6.4.2.5.
 /// Rows are basis vectors; columns indexed 0..3 across input samples.
 pub const TRANS_4: [[i32; 4]; 4] = [
-    [64,  64,  64,  64],
-    [83,  36, -36, -83],
-    [64, -64, -64,  64],
-    [36, -83,  83, -36],
+    [64, 64, 64, 64],
+    [83, 36, -36, -83],
+    [64, -64, -64, 64],
+    [36, -83, 83, -36],
 ];
 
 /// H.265 8×8 forward DCT-II matrix from clause 8.6.4.2.5.
 pub const TRANS_8: [[i32; 8]; 8] = [
-    [64,  64,  64,  64,  64,  64,  64,  64],
-    [89,  75,  50,  18, -18, -50, -75, -89],
-    [83,  36, -36, -83, -83, -36,  36,  83],
-    [75, -18, -89, -50,  50,  89,  18, -75],
-    [64, -64, -64,  64,  64, -64, -64,  64],
-    [50, -89,  18,  75, -75, -18,  89, -50],
-    [36, -83,  83, -36, -36,  83, -83,  36],
-    [18, -50,  75, -89,  89, -75,  50, -18],
+    [64, 64, 64, 64, 64, 64, 64, 64],
+    [89, 75, 50, 18, -18, -50, -75, -89],
+    [83, 36, -36, -83, -83, -36, 36, 83],
+    [75, -18, -89, -50, 50, 89, 18, -75],
+    [64, -64, -64, 64, 64, -64, -64, 64],
+    [50, -89, 18, 75, -75, -18, 89, -50],
+    [36, -83, 83, -36, -36, 83, -83, 36],
+    [18, -50, 75, -89, 89, -75, 50, -18],
 ];
 
 /// Stage-1 / stage-2 shifts for the H.265 transform pipeline. From
@@ -169,9 +169,11 @@ mod tests {
         let out = forward_dct_4x4(&input);
         assert!(out[0] != 0, "DC coefficient should be nonzero");
         for k in 1..16 {
-            assert_eq!(out[k], 0,
-                       "non-DC coefficient at {} should be 0 for DC input; got {}",
-                       k, out[k]);
+            assert_eq!(
+                out[k], 0,
+                "non-DC coefficient at {} should be 0 for DC input; got {}",
+                k, out[k]
+            );
         }
     }
 
@@ -181,8 +183,11 @@ mod tests {
         let out = forward_dct_8x8(&input);
         assert!(out[0] != 0);
         for k in 1..64 {
-            assert_eq!(out[k], 0,
-                       "non-DC coefficient at {} should be 0; got {}", k, out[k]);
+            assert_eq!(
+                out[k], 0,
+                "non-DC coefficient at {} should be 0; got {}",
+                k, out[k]
+            );
         }
     }
 
@@ -201,28 +206,36 @@ mod tests {
     fn dct_4x4_vertical_edge_concentrates_vertical_freq() {
         // Vertical edge: top half +N, bottom half -N.
         let input = [
-            100, 100, 100, 100,
-            100, 100, 100, 100,
-           -100,-100,-100,-100,
-           -100,-100,-100,-100,
+            100, 100, 100, 100, 100, 100, 100, 100, -100, -100, -100, -100, -100, -100, -100, -100,
         ];
         let out = forward_dct_4x4(&input);
         // Row 0 (DC) should be zero — input is anti-symmetric vertically.
         for j in 0..4 {
-            assert_eq!(out[0 * 4 + j], 0,
-                       "DC row should be 0 for anti-symmetric input; col {} = {}",
-                       j, out[j]);
+            assert_eq!(
+                out[0 * 4 + j],
+                0,
+                "DC row should be 0 for anti-symmetric input; col {} = {}",
+                j,
+                out[j]
+            );
         }
         // First column (j=0) should have nonzero vertical-frequency
         // entries at rows 1 and 3 (the odd basis functions).
-        assert!(out[1 * 4 + 0] != 0,
-                "vertical-freq coefficient at (1,0) should be nonzero");
+        assert!(
+            out[1 * 4 + 0] != 0,
+            "vertical-freq coefficient at (1,0) should be nonzero"
+        );
         // Columns 1..3 should be zero (no horizontal frequency content).
         for i in 0..4 {
             for j in 1..4 {
-                assert_eq!(out[i * 4 + j], 0,
-                           "horizontal-freq coefficient at ({},{}) should be 0; got {}",
-                           i, j, out[i * 4 + j]);
+                assert_eq!(
+                    out[i * 4 + j],
+                    0,
+                    "horizontal-freq coefficient at ({},{}) should be 0; got {}",
+                    i,
+                    j,
+                    out[i * 4 + j]
+                );
             }
         }
     }
@@ -234,18 +247,24 @@ mod tests {
     fn dct_4x4_vertical_symmetric_zeros_odd_rows() {
         // Symmetric vertically.
         let input = [
-             50,  50,  50,  50,
-            100, 100, 100, 100,
-            100, 100, 100, 100,
-             50,  50,  50,  50,
+            50, 50, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 50, 50, 50, 50,
         ];
         let out = forward_dct_4x4(&input);
         for j in 0..4 {
-            assert_eq!(out[1 * 4 + j], 0,
-                       "row 1 col {} should be 0 for v-symmetric input; got {}",
-                       j, out[4 + j]);
-            assert_eq!(out[3 * 4 + j], 0,
-                       "row 3 col {} should be 0; got {}", j, out[12 + j]);
+            assert_eq!(
+                out[1 * 4 + j],
+                0,
+                "row 1 col {} should be 0 for v-symmetric input; got {}",
+                j,
+                out[4 + j]
+            );
+            assert_eq!(
+                out[3 * 4 + j],
+                0,
+                "row 3 col {} should be 0; got {}",
+                j,
+                out[12 + j]
+            );
         }
     }
 
@@ -255,7 +274,7 @@ mod tests {
         let input = vec![1i32; 16];
         let out = forward_dct(2, &input).expect("4x4 dispatch");
         match out {
-            DctOutput::Size4(_) => {},
+            DctOutput::Size4(_) => {}
             _ => panic!("expected Size4"),
         }
     }
@@ -265,7 +284,7 @@ mod tests {
         let input = vec![1i32; 64];
         let out = forward_dct(3, &input).expect("8x8 dispatch");
         match out {
-            DctOutput::Size8(_) => {},
+            DctOutput::Size8(_) => {}
             _ => panic!("expected Size8"),
         }
     }
@@ -273,13 +292,15 @@ mod tests {
     #[test]
     fn dispatch_unsupported_returns_none() {
         let input = vec![1i32; 256];
-        assert!(forward_dct(4, &input).is_none(),
-                "16x16 not in v1; should return None");
+        assert!(
+            forward_dct(4, &input).is_none(),
+            "16x16 not in v1; should return None"
+        );
     }
 
     #[test]
     fn dispatch_wrong_length_returns_none() {
-        let input = vec![1i32; 15];  // 4×4 wants 16
+        let input = vec![1i32; 15]; // 4×4 wants 16
         assert!(forward_dct(2, &input).is_none());
     }
 }

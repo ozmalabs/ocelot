@@ -65,11 +65,7 @@ impl PidController {
 
     /// Apply a scheduler's output: read scheduler.gains(hot),
     /// install on the controller. Idempotent + cheap.
-    pub fn apply_scheduled<S: GainScheduler>(
-        &mut self,
-        scheduler: &mut S,
-        hot: &HotCounter,
-    ) {
+    pub fn apply_scheduled<S: GainScheduler>(&mut self, scheduler: &mut S, hot: &HotCounter) {
         let g = scheduler.gains(hot);
         self.set_gains(g);
     }
@@ -95,7 +91,10 @@ pub struct TableLookupGainScheduler {
 
 impl TableLookupGainScheduler {
     pub fn new(default_gains: PidGains) -> Self {
-        Self { table: FxHashMap::default(), default_gains }
+        Self {
+            table: FxHashMap::default(),
+            default_gains,
+        }
     }
     pub fn insert(&mut self, kind: Sym, gains: PidGains) -> Option<PidGains> {
         self.table.insert(kind, gains)
@@ -105,12 +104,14 @@ impl TableLookupGainScheduler {
 impl GainScheduler for TableLookupGainScheduler {
     fn gains(&mut self, hot: &HotCounter) -> PidGains {
         let snap = hot.snapshot();
-        let dominant: Option<Sym> = snap.iter()
+        let dominant: Option<Sym> = snap
+            .iter()
             .filter(|(_, c)| *c > 0)
             .max_by_key(|(_, c)| *c)
             .map(|(k, _)| *k);
-        dominant.and_then(|k| self.table.get(&k).copied())
-                .unwrap_or(self.default_gains)
+        dominant
+            .and_then(|k| self.table.get(&k).copied())
+            .unwrap_or(self.default_gains)
     }
 }
 
@@ -133,7 +134,10 @@ pub struct InterpolatingGainScheduler {
 
 impl InterpolatingGainScheduler {
     pub fn new(default_gains: PidGains) -> Self {
-        Self { table: FxHashMap::default(), default_gains }
+        Self {
+            table: FxHashMap::default(),
+            default_gains,
+        }
     }
     pub fn insert(&mut self, kind: Sym, gains: PidGains) -> Option<PidGains> {
         self.table.insert(kind, gains)
@@ -152,9 +156,7 @@ impl GainScheduler for InterpolatingGainScheduler {
         let mut kd = 0.0_f64;
         for (kind, count) in &snap {
             let share = (*count as f64) / (total as f64);
-            let (k_kp, k_ki, k_kd) = self.table.get(kind)
-                .copied()
-                .unwrap_or(self.default_gains);
+            let (k_kp, k_ki, k_kd) = self.table.get(kind).copied().unwrap_or(self.default_gains);
             kp += share * k_kp;
             ki += share * k_ki;
             kd += share * k_kd;
@@ -169,7 +171,9 @@ mod tests {
     use crate::sym::Interner;
 
     fn populate(hot: &HotCounter, kind: Sym, n: u64) {
-        for _ in 0..n { hot.record(kind); }
+        for _ in 0..n {
+            hot.record(kind);
+        }
     }
 
     // ---------- TableLookupGainScheduler ----------
@@ -254,7 +258,11 @@ mod tests {
         populate(&hot, k_unknown, 50);
         let (kp, _, _) = sched.gains(&hot);
         // Expected: 0.5 * 5.0 + 0.5 * 1.0 = 3.0.
-        assert!((kp - 3.0).abs() < 1e-9, "kp blend with default wrong: {}", kp);
+        assert!(
+            (kp - 3.0).abs() < 1e-9,
+            "kp blend with default wrong: {}",
+            kp
+        );
     }
 
     // ---------- PidController::apply_scheduled ----------
@@ -287,8 +295,8 @@ mod tests {
         let k_volatile = i.intern("volatile");
         let mut pid = PidController::new(1.0, 0.5, 0.1);
         let mut sched = TableLookupGainScheduler::new((1.0, 0.5, 0.1));
-        sched.insert(k_calm,     (5.0,  0.5,  0.05));  // smooth
-        sched.insert(k_volatile, (1.0,  0.0,  0.5));   // fast-D, no-I
+        sched.insert(k_calm, (5.0, 0.5, 0.05)); // smooth
+        sched.insert(k_volatile, (1.0, 0.0, 0.5)); // fast-D, no-I
 
         let hot = HotCounter::new();
         // Phase 1: calm dominant.

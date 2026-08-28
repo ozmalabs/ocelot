@@ -50,8 +50,23 @@
 /// bar kernel it yields a V1-simple-cell-shaped edge response. Which
 /// kernel is "kept" is an agent decision (`keep_discriminative_kernel`,
 /// graph-native); this function is kernel-agnostic arithmetic.
-pub fn convolve(image: &[f64], h: usize, w: usize, kernel: &[f64], kh: usize, kw: usize, stride: usize) -> Vec<f64> {
-    if stride == 0 || kh == 0 || kw == 0 || h < kh || w < kw || kernel.len() != kh * kw || image.len() != h * w {
+pub fn convolve(
+    image: &[f64],
+    h: usize,
+    w: usize,
+    kernel: &[f64],
+    kh: usize,
+    kw: usize,
+    stride: usize,
+) -> Vec<f64> {
+    if stride == 0
+        || kh == 0
+        || kw == 0
+        || h < kh
+        || w < kw
+        || kernel.len() != kh * kw
+        || image.len() != h * w
+    {
         return Vec::new();
     }
     let out_h = (h - kh) / stride + 1;
@@ -115,12 +130,7 @@ pub fn foveate(image: &[f64], h: usize, w: usize, geometry: &[f64]) -> (Vec<f64>
         return (Vec::new(), 0, 0);
     }
     let fov_frac = geometry.get(0).copied().unwrap_or(0.2).clamp(0.0, 1.0);
-    let per_stride = geometry
-        .get(1)
-        .copied()
-        .unwrap_or(2.0)
-        .max(1.0)
-        .round() as usize;
+    let per_stride = geometry.get(1).copied().unwrap_or(2.0).max(1.0).round() as usize;
     let cy = (h as f64 - 1.0) / 2.0;
     let cx = (w as f64 - 1.0) / 2.0;
     let fov_r = fov_frac * (h.min(w) as f64) / 2.0;
@@ -194,9 +204,9 @@ mod tests {
         ];
         let out = convolve(&image, 4, 4, &kernel, 3, 3, 1);
         assert_eq!(out.len(), 4); // 2x2
-        // Top-left window (rows 0-2, cols 0-2): centre pixel (row1,col1)=5.0*8
-        // minus the ring (row1,col2)=5.0 and (row2,col1)=5.0 and (row2,col2)=5.0.
-        // window = [[0,0,0],[0,5,5],[0,5,5]]; centre=5 at (1,1).
+                                  // Top-left window (rows 0-2, cols 0-2): centre pixel (row1,col1)=5.0*8
+                                  // minus the ring (row1,col2)=5.0 and (row2,col1)=5.0 and (row2,col2)=5.0.
+                                  // window = [[0,0,0],[0,5,5],[0,5,5]]; centre=5 at (1,1).
         let expected_00 = 8.0 * 5.0 - (5.0 + 5.0 + 5.0);
         assert_eq!(out[0], expected_00);
     }
@@ -297,7 +307,7 @@ mod tests {
     #[test]
     fn foveate_rejects_length_mismatch() {
         let image = vec![1.0; 4]; // says 2x2 but len != 2*2*... here 4 == 2*2 ok
-        // 3x3 declared but image only has 4 values -> mismatch -> empty.
+                                  // 3x3 declared but image only has 4 values -> mismatch -> empty.
         let (out, out_h, out_w) = foveate(&image, 3, 3, &[1.0, 2.0]);
         assert!(out.is_empty());
         assert_eq!((out_h, out_w), (0, 0));

@@ -48,8 +48,14 @@ pub enum PredMode {
 /// size) or an internal quad split (4 children, NW, NE, SW, SE order).
 #[derive(Debug, Clone)]
 pub enum CuNode {
-    Leaf { mode: PredMode, log2_size: u8 },
-    Quad { log2_size: u8, children: Box<[CuNode; 4]> },
+    Leaf {
+        mode: PredMode,
+        log2_size: u8,
+    },
+    Quad {
+        log2_size: u8,
+        children: Box<[CuNode; 4]>,
+    },
 }
 
 impl CuNode {
@@ -60,14 +66,15 @@ impl CuNode {
             CuNode::Quad { log2_size, .. } => *log2_size,
         }
     }
-    pub fn side(&self) -> u32 { 1u32 << self.log2_size() }
+    pub fn side(&self) -> u32 {
+        1u32 << self.log2_size()
+    }
 
     /// Count leaf CUs in the subtree.
     pub fn leaf_count(&self) -> usize {
         match self {
             CuNode::Leaf { .. } => 1,
-            CuNode::Quad { children, .. } =>
-                children.iter().map(|c| c.leaf_count()).sum(),
+            CuNode::Quad { children, .. } => children.iter().map(|c| c.leaf_count()).sum(),
         }
     }
 
@@ -75,8 +82,9 @@ impl CuNode {
     pub fn max_depth(&self) -> u8 {
         match self {
             CuNode::Leaf { .. } => 0,
-            CuNode::Quad { children, .. } =>
-                1 + children.iter().map(|c| c.max_depth()).max().unwrap_or(0),
+            CuNode::Quad { children, .. } => {
+                1 + children.iter().map(|c| c.max_depth()).max().unwrap_or(0)
+            }
         }
     }
 }
@@ -84,12 +92,22 @@ impl CuNode {
 impl fmt::Display for CuNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            CuNode::Leaf { mode, log2_size } =>
-                write!(f, "Leaf({:?}, {}x{})", mode, 1u32 << log2_size, 1u32 << log2_size),
-            CuNode::Quad { log2_size, children } => {
+            CuNode::Leaf { mode, log2_size } => write!(
+                f,
+                "Leaf({:?}, {}x{})",
+                mode,
+                1u32 << log2_size,
+                1u32 << log2_size
+            ),
+            CuNode::Quad {
+                log2_size,
+                children,
+            } => {
                 write!(f, "Quad({}x{})[", 1u32 << log2_size, 1u32 << log2_size)?;
                 for (i, c) in children.iter().enumerate() {
-                    if i > 0 { write!(f, ", ")?; }
+                    if i > 0 {
+                        write!(f, ", ")?;
+                    }
                     c.fmt(f)?;
                 }
                 write!(f, "]")
@@ -106,21 +124,22 @@ impl fmt::Display for CuNode {
 /// Merge heuristic: if all 4 children share the same mode, emit a
 /// single leaf at the parent size. Otherwise emit a Quad with 4
 /// leaf children.
-pub fn build_cu_from_4_mbs(mbs: &[PredMode; 4], parent_log2_size: u8)
-    -> CuNode
-{
+pub fn build_cu_from_4_mbs(mbs: &[PredMode; 4], parent_log2_size: u8) -> CuNode {
     debug_assert!(parent_log2_size >= 1);
     // Same-mode merge: a key transcoder win.
     if mbs[0] == mbs[1] && mbs[1] == mbs[2] && mbs[2] == mbs[3] {
-        return CuNode::Leaf { mode: mbs[0], log2_size: parent_log2_size };
+        return CuNode::Leaf {
+            mode: mbs[0],
+            log2_size: parent_log2_size,
+        };
     }
     let leaf = |m: PredMode| CuNode::Leaf {
-        mode: m, log2_size: parent_log2_size - 1,
+        mode: m,
+        log2_size: parent_log2_size - 1,
     };
     CuNode::Quad {
         log2_size: parent_log2_size,
-        children: Box::new([leaf(mbs[0]), leaf(mbs[1]),
-                              leaf(mbs[2]), leaf(mbs[3])]),
+        children: Box::new([leaf(mbs[0]), leaf(mbs[1]), leaf(mbs[2]), leaf(mbs[3])]),
     }
 }
 
@@ -138,9 +157,9 @@ pub fn build_ctu_from_16_mbs(mbs: &[PredMode; 16]) -> CuNode {
     //   mb[ 8] mb[ 9] | mb[10] mb[11]
     //   mb[12] mb[13] | mb[14] mb[15]
     //
-    let nw = build_cu_from_4_mbs(&[mbs[0],  mbs[1],  mbs[4],  mbs[5]],  5);
-    let ne = build_cu_from_4_mbs(&[mbs[2],  mbs[3],  mbs[6],  mbs[7]],  5);
-    let sw = build_cu_from_4_mbs(&[mbs[8],  mbs[9],  mbs[12], mbs[13]], 5);
+    let nw = build_cu_from_4_mbs(&[mbs[0], mbs[1], mbs[4], mbs[5]], 5);
+    let ne = build_cu_from_4_mbs(&[mbs[2], mbs[3], mbs[6], mbs[7]], 5);
+    let sw = build_cu_from_4_mbs(&[mbs[8], mbs[9], mbs[12], mbs[13]], 5);
     let se = build_cu_from_4_mbs(&[mbs[10], mbs[11], mbs[14], mbs[15]], 5);
 
     // Top-level merge: if all four 32×32 quadrants are uniform leaves
@@ -149,10 +168,14 @@ pub fn build_ctu_from_16_mbs(mbs: &[PredMode; 16]) -> CuNode {
         CuNode::Leaf { mode: a, .. },
         CuNode::Leaf { mode: b, .. },
         CuNode::Leaf { mode: c, .. },
-        CuNode::Leaf { mode: d, .. }
-    ) = (&nw, &ne, &sw, &se) {
+        CuNode::Leaf { mode: d, .. },
+    ) = (&nw, &ne, &sw, &se)
+    {
         if a == b && b == c && c == d {
-            return CuNode::Leaf { mode: *a, log2_size: 6 };
+            return CuNode::Leaf {
+                mode: *a,
+                log2_size: 6,
+            };
         }
     }
     CuNode::Quad {
@@ -167,8 +190,11 @@ pub fn walk_leaves<F: FnMut(u8, PredMode)>(node: &CuNode, mut visit: F) {
     fn rec<F: FnMut(u8, PredMode)>(n: &CuNode, v: &mut F) {
         match n {
             CuNode::Leaf { mode, log2_size } => v(*log2_size, *mode),
-            CuNode::Quad { children, .. } =>
-                for c in children.iter() { rec(c, v); },
+            CuNode::Quad { children, .. } => {
+                for c in children.iter() {
+                    rec(c, v);
+                }
+            }
         }
     }
     rec(node, &mut visit);
@@ -181,13 +207,16 @@ mod tests {
     #[test]
     fn uniform_mbs_merge_to_one_ctu_leaf() {
         // 16 MBs all in the same intra mode → one 64×64 leaf.
-        let mode = PredMode::Intra(26);  // vertical
+        let mode = PredMode::Intra(26); // vertical
         let mbs = [mode; 16];
         let ctu = build_ctu_from_16_mbs(&mbs);
-        assert_eq!(ctu.leaf_count(), 1,
-                   "uniform MBs should merge to a single leaf; got {} leaves",
-                   ctu.leaf_count());
-        assert_eq!(ctu.log2_size(), 6);  // 64×64
+        assert_eq!(
+            ctu.leaf_count(),
+            1,
+            "uniform MBs should merge to a single leaf; got {} leaves",
+            ctu.leaf_count()
+        );
+        assert_eq!(ctu.log2_size(), 6); // 64×64
     }
 
     #[test]
@@ -195,18 +224,18 @@ mod tests {
         // 15 MBs intra, one inter → CTU splits into 4 32×32 quadrants,
         // 3 of which are uniform leaves; the 4th splits into 4 leaves.
         let mut mbs = [PredMode::Intra(1); 16];
-        mbs[5] = PredMode::Inter(0);  // NW quadrant, second row, first col
+        mbs[5] = PredMode::Inter(0); // NW quadrant, second row, first col
         let ctu = build_ctu_from_16_mbs(&mbs);
         // Total leaves: 3 (uniform quadrants) + 4 (NW split) = 7.
         assert_eq!(ctu.leaf_count(), 7);
-        assert_eq!(ctu.max_depth(), 2);  // CTU → quadrant → leaf
+        assert_eq!(ctu.max_depth(), 2); // CTU → quadrant → leaf
     }
 
     #[test]
     fn all_distinct_mbs_no_merges() {
         let mbs: [PredMode; 16] = std::array::from_fn(|i| PredMode::Inter(i as u32));
         let ctu = build_ctu_from_16_mbs(&mbs);
-        assert_eq!(ctu.leaf_count(), 16);  // no merging anywhere
+        assert_eq!(ctu.leaf_count(), 16); // no merging anywhere
         assert_eq!(ctu.max_depth(), 2);
     }
 
@@ -227,7 +256,7 @@ mod tests {
     #[test]
     fn walk_leaves_visits_all_in_pre_order() {
         let mbs = [PredMode::Intra(0); 16];
-        let ctu = build_ctu_from_16_mbs(&mbs);  // single 64×64 leaf
+        let ctu = build_ctu_from_16_mbs(&mbs); // single 64×64 leaf
         let mut visited = Vec::new();
         walk_leaves(&ctu, |sz, m| visited.push((sz, m)));
         assert_eq!(visited.len(), 1);

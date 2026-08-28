@@ -197,9 +197,7 @@ fn detect_onsets(
             }
             // Peak-pick within the window: walk while db rises.
             let mut peak = i;
-            while peak + 1 < db.len()
-                && db[peak + 1] > db[peak]
-                && (peak - i) < refractory_samples
+            while peak + 1 < db.len() && db[peak + 1] > db[peak] && (peak - i) < refractory_samples
             {
                 peak += 1;
             }
@@ -246,10 +244,30 @@ pub fn process_audio(
     // are recomputable from the audio + band centres.
     for (band_i, env) in envelopes.iter().enumerate() {
         let mut attrs = mk_attrs(substrate);
-        attr_set(&mut attrs, substrate, "band_index", Value::Int(band_i as i64));
-        attr_set(&mut attrs, substrate, "centre_hz", Value::Float(band_centres[band_i] as f64));
-        attr_set(&mut attrs, substrate, "sample_rate", Value::Int(sample_rate as i64));
-        attr_set(&mut attrs, substrate, "n_samples", Value::Int(env.len() as i64));
+        attr_set(
+            &mut attrs,
+            substrate,
+            "band_index",
+            Value::Int(band_i as i64),
+        );
+        attr_set(
+            &mut attrs,
+            substrate,
+            "centre_hz",
+            Value::Float(band_centres[band_i] as f64),
+        );
+        attr_set(
+            &mut attrs,
+            substrate,
+            "sample_rate",
+            Value::Int(sample_rate as i64),
+        );
+        attr_set(
+            &mut attrs,
+            substrate,
+            "n_samples",
+            Value::Int(env.len() as i64),
+        );
         let peak = env.iter().cloned().fold(0.0f32, f32::max);
         let mean = if env.is_empty() {
             0.0
@@ -288,16 +306,29 @@ pub fn process_audio(
         let t_s = sample as f64 / sample_rate as f64;
         let mut attrs = mk_attrs(substrate);
         attr_set(&mut attrs, substrate, "time_s", Value::Float(t_s));
-        attr_set(&mut attrs, substrate, "band_index", Value::Int(band_i as i64));
-        attr_set(&mut attrs, substrate, "centre_hz", Value::Float(band_centres[band_i] as f64));
-        attr_set(&mut attrs, substrate, "magnitude_db", Value::Float(mag as f64));
-        let nid = substrate.add_node(onset_t, attrs);
-        let _ = substrate.graph.insert_edge(
-            audio_stream_nid,
-            has_onset_e,
-            nid,
-            FxHashMap::default(),
+        attr_set(
+            &mut attrs,
+            substrate,
+            "band_index",
+            Value::Int(band_i as i64),
         );
+        attr_set(
+            &mut attrs,
+            substrate,
+            "centre_hz",
+            Value::Float(band_centres[band_i] as f64),
+        );
+        attr_set(
+            &mut attrs,
+            substrate,
+            "magnitude_db",
+            Value::Float(mag as f64),
+        );
+        let nid = substrate.add_node(onset_t, attrs);
+        let _ =
+            substrate
+                .graph
+                .insert_edge(audio_stream_nid, has_onset_e, nid, FxHashMap::default());
         onset_node_by_record.push(nid);
         summary.onsets += 1;
     }
@@ -314,8 +345,7 @@ pub fn process_audio(
         while i < all_onsets.len() {
             let start_sample = all_onsets[i].1 as i64;
             let mut j = i + 1;
-            while j < all_onsets.len()
-                && (all_onsets[j].1 as i64) - start_sample <= window_samples
+            while j < all_onsets.len() && (all_onsets[j].1 as i64) - start_sample <= window_samples
             {
                 j += 1;
             }
@@ -328,10 +358,8 @@ pub fn process_audio(
                 }
             }
             if bands_seen.len() >= min_bands {
-                let mean_sample: f64 = (i..j)
-                    .map(|k| all_onsets[k].1 as f64)
-                    .sum::<f64>()
-                    / (j - i) as f64;
+                let mean_sample: f64 =
+                    (i..j).map(|k| all_onsets[k].1 as f64).sum::<f64>() / (j - i) as f64;
                 let total_mag: f64 = (i..j).map(|k| all_onsets[k].2 as f64).sum();
                 let mut attrs = mk_attrs(substrate);
                 attr_set(
@@ -388,12 +416,7 @@ fn mk_attrs(_sub: &Substrate) -> FxHashMap<Sym, Value> {
     FxHashMap::default()
 }
 
-fn attr_set(
-    attrs: &mut FxHashMap<Sym, Value>,
-    substrate: &mut Substrate,
-    key: &str,
-    v: Value,
-) {
+fn attr_set(attrs: &mut FxHashMap<Sym, Value>, substrate: &mut Substrate, key: &str, v: Value) {
     let k = substrate.interner.intern(key);
     attrs.insert(k, v);
 }

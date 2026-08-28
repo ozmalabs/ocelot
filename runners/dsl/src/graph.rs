@@ -68,10 +68,22 @@ pub struct EdgeKey {
 pub struct Attrs(pub Vec<(Sym, Value)>);
 
 impl Attrs {
-    #[inline] pub fn new() -> Self { Self(Vec::new()) }
-    #[inline] pub fn with_capacity(c: usize) -> Self { Self(Vec::with_capacity(c)) }
-    #[inline] pub fn len(&self) -> usize { self.0.len() }
-    #[inline] pub fn is_empty(&self) -> bool { self.0.is_empty() }
+    #[inline]
+    pub fn new() -> Self {
+        Self(Vec::new())
+    }
+    #[inline]
+    pub fn with_capacity(c: usize) -> Self {
+        Self(Vec::with_capacity(c))
+    }
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
     pub fn get(&self, key: &Sym) -> Option<&Value> {
         self.0.iter().find(|(k, _)| k == key).map(|(_, v)| v)
     }
@@ -116,7 +128,9 @@ impl<'a> IntoIterator for &'a Attrs {
         fn(&'a (Sym, Value)) -> (&'a Sym, &'a Value),
     >;
     fn into_iter(self) -> Self::IntoIter {
-        fn pair<'b>(p: &'b (Sym, Value)) -> (&'b Sym, &'b Value) { (&p.0, &p.1) }
+        fn pair<'b>(p: &'b (Sym, Value)) -> (&'b Sym, &'b Value) {
+            (&p.0, &p.1)
+        }
         self.0.iter().map(pair)
     }
 }
@@ -151,7 +165,11 @@ impl EdgeData {
     /// Cheap — just packs three fields.
     #[inline]
     pub fn key(&self) -> EdgeKey {
-        EdgeKey { src: self.src, edge_type: self.edge_type, tgt: self.tgt }
+        EdgeKey {
+            src: self.src,
+            edge_type: self.edge_type,
+            tgt: self.tgt,
+        }
     }
 }
 
@@ -345,7 +363,10 @@ impl TypedGraph {
     /// 0 (a type never deleted). O(1) hash lookup; READ only by the incremental
     /// matcher when `Substrate::incremental_match` is on.
     pub fn edge_delete_version_by_type(&self, edge_type: Sym) -> u64 {
-        self.edge_delete_version_by_type.get(&edge_type).copied().unwrap_or(0)
+        self.edge_delete_version_by_type
+            .get(&edge_type)
+            .copied()
+            .unwrap_or(0)
     }
 
     pub fn edges_by_type(&self, edge_type: Sym) -> &[EdgeIdx] {
@@ -372,7 +393,8 @@ impl TypedGraph {
                 if let Some(slot) = self.nodes.get(nid.0 as usize) {
                     if let Some(node) = slot.as_ref() {
                         if let Some(v) = node.attrs.get(&attr_key) {
-                            bucket.entry(v.clone())
+                            bucket
+                                .entry(v.clone())
                                 .or_insert_with(RoaringBitmap::new)
                                 .insert(nid.0);
                         }
@@ -546,10 +568,7 @@ impl TypedGraph {
     /// don't invalidate iteration (matches Python's tuple-snapshot
     /// behaviour).
     pub fn nodes_of_type(&self, type_: Sym) -> Vec<NodeID> {
-        self.by_type
-            .get(&type_)
-            .cloned()
-            .unwrap_or_default()
+        self.by_type.get(&type_).cloned().unwrap_or_default()
     }
 
     pub fn all_nodes(&self) -> Vec<NodeID> {
@@ -583,11 +602,13 @@ impl TypedGraph {
     /// slice; paths that may mutate (rule effects) take the owned Vec.
     pub fn out_edges_slice(&self, nid: NodeID, edge_type: Option<Sym>) -> &[EdgeIdx] {
         match edge_type {
-            Some(et) => self.out_by_type
+            Some(et) => self
+                .out_by_type
                 .get(&(nid, et))
                 .map(|v| v.as_slice())
                 .unwrap_or(&[]),
-            None => self.out
+            None => self
+                .out
                 .get(nid.0 as usize)
                 .map(|v| v.as_slice())
                 .unwrap_or(&[]),
@@ -596,11 +617,13 @@ impl TypedGraph {
 
     pub fn in_edges_slice(&self, nid: NodeID, edge_type: Option<Sym>) -> &[EdgeIdx] {
         match edge_type {
-            Some(et) => self.in_by_type
+            Some(et) => self
+                .in_by_type
                 .get(&(nid, et))
                 .map(|v| v.as_slice())
                 .unwrap_or(&[]),
-            None => self.in_
+            None => self
+                .in_
                 .get(nid.0 as usize)
                 .map(|v| v.as_slice())
                 .unwrap_or(&[]),
@@ -682,11 +705,19 @@ impl TypedGraph {
         };
         if let Some(existing) = self.edge_idx(src, edge_type, tgt) {
             // Python's `_insert_edge` overwrites attrs silently; replicate.
-            self.edges[existing.0 as usize] = Some(EdgeData { src, edge_type, tgt });
+            self.edges[existing.0 as usize] = Some(EdgeData {
+                src,
+                edge_type,
+                tgt,
+            });
             store_attrs(existing, self, attrs);
             return Ok(existing);
         }
-        let data = EdgeData { src, edge_type, tgt };
+        let data = EdgeData {
+            src,
+            edge_type,
+            tgt,
+        };
         let idx = if let Some(slot) = self.edge_freelist.pop() {
             self.edges[slot as usize] = Some(data);
             EdgeIdx(slot)
@@ -736,7 +767,10 @@ impl TypedGraph {
         // Block 192000: the `edges_by_type[et]` array just shifted, so every
         // semi-naive cursor over `et` is now stale. Bump THIS type's delete
         // version (not a global counter) so only cursors reading `et` invalidate.
-        *self.edge_delete_version_by_type.entry(key.edge_type).or_insert(0) += 1;
+        *self
+            .edge_delete_version_by_type
+            .entry(key.edge_type)
+            .or_insert(0) += 1;
         self.edge_attrs.remove(&idx);
         self.edge_freelist.push(idx.0);
         Some(data)
@@ -747,7 +781,9 @@ impl TypedGraph {
     /// don't need to handle the "edge has zero attrs" path specially.
     /// O(1) — single hashmap lookup.
     pub fn edge_attrs(&self, idx: EdgeIdx) -> &Attrs {
-        self.edge_attrs.get(&idx).unwrap_or_else(|| empty_attrs_ref())
+        self.edge_attrs
+            .get(&idx)
+            .unwrap_or_else(|| empty_attrs_ref())
     }
 
     /// Mutable access to an edge's attributes. Creates an empty `Attrs`
@@ -964,12 +1000,7 @@ impl TypedGraph {
     /// callers must hand pre-existing ids back in monotonic order, and
     /// freed slots in between become tombstones (matches Python's
     /// `graph_from_dict` which keeps the original `_next_id` counter).
-    pub fn restore_node(
-        &mut self,
-        nid: NodeID,
-        type_: Sym,
-        attrs: impl Into<Attrs>,
-    ) {
+    pub fn restore_node(&mut self, nid: NodeID, type_: Sym, attrs: impl Into<Attrs>) {
         self.bump_mutation_version();
         let idx = nid.0 as usize;
         while self.nodes.len() <= idx {
@@ -977,7 +1008,10 @@ impl TypedGraph {
             self.out.push(SmallVec::new());
             self.in_.push(SmallVec::new());
         }
-        self.nodes[idx] = Some(NodeData { type_, attrs: attrs.into() });
+        self.nodes[idx] = Some(NodeData {
+            type_,
+            attrs: attrs.into(),
+        });
         self.by_type.entry(type_).or_default().push(nid);
     }
 
@@ -1196,8 +1230,12 @@ mod tests {
             attrs.insert(state, Value::Str(dead));
             g.insert_node(cell, attrs);
         }
-        let bm_alive = g.nodes_where_bitmap(cell, state, &Value::Str(alive)).unwrap();
-        let bm_dead = g.nodes_where_bitmap(cell, state, &Value::Str(dead)).unwrap();
+        let bm_alive = g
+            .nodes_where_bitmap(cell, state, &Value::Str(alive))
+            .unwrap();
+        let bm_dead = g
+            .nodes_where_bitmap(cell, state, &Value::Str(dead))
+            .unwrap();
         assert_eq!(bm_alive.len(), 100);
         assert_eq!(bm_dead.len(), 50);
         // No NodeID is both alive and dead.
@@ -1229,10 +1267,12 @@ mod tests {
         let _dr1 = mk(dead, r1, &mut g);
         let _dr2 = mk(dead, r2, &mut g);
         // Query: alive AND r1 → should be just ar1.
-        let result = g.intersect_attr_indexes(&[
-            (cell, state, &Value::Str(alive)),
-            (cell, region, &Value::Str(r1)),
-        ]).unwrap();
+        let result = g
+            .intersect_attr_indexes(&[
+                (cell, state, &Value::Str(alive)),
+                (cell, region, &Value::Str(r1)),
+            ])
+            .unwrap();
         assert_eq!(result.len(), 1);
         assert!(result.contains(ar1.0));
     }
@@ -1274,15 +1314,25 @@ mod tests {
         eprintln!("Option<NodeData>     {:>4}", size_of::<Option<NodeData>>());
         eprintln!("EdgeData             {:>4}", size_of::<EdgeData>());
         eprintln!("Option<EdgeData>     {:>4}", size_of::<Option<EdgeData>>());
-        eprintln!("FxHashMap<Sym,Value> {:>4} (empty header)",
-                  size_of::<FxHashMap<Sym, Value>>());
-        eprintln!("SmallVec<[EdgeIdx;8]>{:>4}", size_of::<SmallVec<[EdgeIdx; 4]>>());
-        eprintln!("SmallVec<[EdgeIdx;4]>{:>4}", size_of::<SmallVec<[EdgeIdx; 4]>>());
-        eprintln!("SmallVec<[NodeID;4]> {:>4}", size_of::<SmallVec<[NodeID; 4]>>());
+        eprintln!(
+            "FxHashMap<Sym,Value> {:>4} (empty header)",
+            size_of::<FxHashMap<Sym, Value>>()
+        );
+        eprintln!(
+            "SmallVec<[EdgeIdx;8]>{:>4}",
+            size_of::<SmallVec<[EdgeIdx; 4]>>()
+        );
+        eprintln!(
+            "SmallVec<[EdgeIdx;4]>{:>4}",
+            size_of::<SmallVec<[EdgeIdx; 4]>>()
+        );
+        eprintln!(
+            "SmallVec<[NodeID;4]> {:>4}",
+            size_of::<SmallVec<[NodeID; 4]>>()
+        );
 
         // Load relations.json — the biggest seed at 88K.
-        let path = concat!(env!("CARGO_MANIFEST_DIR"),
-                           "/../../seeds/relations.json");
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../seeds/relations.json");
         let Ok(text) = std::fs::read_to_string(path) else {
             eprintln!("\n(could not read {}; skipping seed measurement)", path);
             return;
@@ -1325,8 +1375,14 @@ mod tests {
                     }
                     None
                 };
-                let src = match e.get("src").and_then(resolve) { Some(s) => s, None => continue };
-                let tgt = match e.get("tgt").and_then(resolve) { Some(t) => t, None => continue };
+                let src = match e.get("src").and_then(resolve) {
+                    Some(s) => s,
+                    None => continue,
+                };
+                let tgt = match e.get("tgt").and_then(resolve) {
+                    Some(t) => t,
+                    None => continue,
+                };
                 let et_str = e.get("type").and_then(|v| v.as_str()).unwrap_or("?");
                 let et_sym = interner.intern(et_str);
                 let mut attrs: FxHashMap<Sym, Value> = Default::default();
@@ -1351,7 +1407,8 @@ mod tests {
         // Attr-count distribution + Value-variant distribution on nodes.
         let mut node_attr_hist: std::collections::BTreeMap<usize, usize> = Default::default();
         let mut total_node_attrs: usize = 0;
-        let mut value_variants: std::collections::BTreeMap<&'static str, usize> = Default::default();
+        let mut value_variants: std::collections::BTreeMap<&'static str, usize> =
+            Default::default();
         let mut str_byte_total: usize = 0;
         for slot in &g.nodes {
             if let Some(nd) = slot {
@@ -1394,20 +1451,35 @@ mod tests {
             eprintln!("  {:>2} attrs: {:>5} nodes", k, v);
         }
         eprintln!("total node attrs   {}", total_node_attrs);
-        eprintln!("avg attrs/node     {:.2}",
-                  if live_nodes > 0 { total_node_attrs as f64 / live_nodes as f64 } else { 0.0 });
+        eprintln!(
+            "avg attrs/node     {:.2}",
+            if live_nodes > 0 {
+                total_node_attrs as f64 / live_nodes as f64
+            } else {
+                0.0
+            }
+        );
         eprintln!("\n=== Value-variant distribution (node attrs only) ===");
         for (tag, n) in &value_variants {
             eprintln!("  {:>10}: {:>5}", tag, n);
         }
-        eprintln!("Str payload bytes (sum of interned lengths): {}", str_byte_total);
+        eprintln!(
+            "Str payload bytes (sum of interned lengths): {}",
+            str_byte_total
+        );
         eprintln!("\n=== edge attr-count histogram ===");
         for (k, v) in &edge_attr_hist {
             eprintln!("  {:>2} attrs: {:>5} edges", k, v);
         }
         eprintln!("total edge attrs   {}", total_edge_attrs);
-        eprintln!("avg attrs/edge     {:.2}",
-                  if live_edges > 0 { total_edge_attrs as f64 / live_edges as f64 } else { 0.0 });
+        eprintln!(
+            "avg attrs/edge     {:.2}",
+            if live_edges > 0 {
+                total_edge_attrs as f64 / live_edges as f64
+            } else {
+                0.0
+            }
+        );
 
         // Adjacency stats.
         let mut out_inline: usize = 0;
@@ -1415,10 +1487,17 @@ mod tests {
         let mut total_out_edges: usize = 0;
         for sv in &g.out {
             total_out_edges += sv.len();
-            if sv.spilled() { out_spilled += 1; } else { out_inline += 1; }
+            if sv.spilled() {
+                out_spilled += 1;
+            } else {
+                out_inline += 1;
+            }
         }
         eprintln!("\n=== adjacency ===");
-        eprintln!("out lists: {} (inline) + {} (heap)", out_inline, out_spilled);
+        eprintln!(
+            "out lists: {} (inline) + {} (heap)",
+            out_inline, out_spilled
+        );
         eprintln!("total out edges across lists: {}", total_out_edges);
 
         // Memory estimate.
@@ -1440,15 +1519,21 @@ mod tests {
         eprintln!("out Vec<SmallVec>   {:>10} bytes", out_vec_bytes);
         eprintln!("in_ Vec<SmallVec>   {:>10} bytes", in_vec_bytes);
         eprintln!("------");
-        let total = node_slab_bytes + edge_slab_bytes + attr_heap_estimate
-                    + out_vec_bytes + in_vec_bytes;
-        eprintln!("approx total        {:>10} bytes  ({:.1} KiB)",
-                  total, total as f64 / 1024.0);
+        let total =
+            node_slab_bytes + edge_slab_bytes + attr_heap_estimate + out_vec_bytes + in_vec_bytes;
+        eprintln!(
+            "approx total        {:>10} bytes  ({:.1} KiB)",
+            total,
+            total as f64 / 1024.0
+        );
 
         // Per-node + per-edge ratio.
         if live_nodes > 0 {
-            eprintln!("\nbytes per live node ({} live, total est): {:.1}",
-                      live_nodes, total as f64 / live_nodes as f64);
+            eprintln!(
+                "\nbytes per live node ({} live, total est): {:.1}",
+                live_nodes,
+                total as f64 / live_nodes as f64
+            );
         }
         eprintln!();
 
@@ -1489,7 +1574,9 @@ mod tests {
         let mut out_spilled2 = 0;
         let mut out_max2 = 0;
         for sv in &g2.out {
-            if sv.spilled() { out_spilled2 += 1; }
+            if sv.spilled() {
+                out_spilled2 += 1;
+            }
             out_max2 = out_max2.max(sv.len());
         }
         let node_slab2 = g2.nodes.len() * size_of::<Option<NodeData>>();
@@ -1499,9 +1586,8 @@ mod tests {
         let out_vec2 = g2.out.len() * size_of::<SmallVec<[EdgeIdx; 4]>>();
         let in_vec2 = g2.in_.len() * size_of::<SmallVec<[EdgeIdx; 4]>>();
         let hashmap_overhead2 = (g2.out_by_type.len() + g2.in_by_type.len())
-                                 * (size_of::<(NodeID, Sym)>() + size_of::<SmallVec<[EdgeIdx; 4]>>() + 16);
-        let total2 = node_slab2 + edge_slab2 + attr_heap2 + out_vec2 + in_vec2
-                     + hashmap_overhead2;
+            * (size_of::<(NodeID, Sym)>() + size_of::<SmallVec<[EdgeIdx; 4]>>() + 16);
+        let total2 = node_slab2 + edge_slab2 + attr_heap2 + out_vec2 + in_vec2 + hashmap_overhead2;
         eprintln!("nodes (live)        {}", nodes2);
         eprintln!("edges (live)        {}", edges2);
         eprintln!("out spilled         {} / {}", out_spilled2, g2.out.len());
@@ -1511,9 +1597,16 @@ mod tests {
         eprintln!("attr heap (est)     {:>10} bytes", attr_heap2);
         eprintln!("out Vec<SmallVec>   {:>10} bytes", out_vec2);
         eprintln!("in_ Vec<SmallVec>   {:>10} bytes", in_vec2);
-        eprintln!("out/in_by_type maps {:>10} bytes (estimate)", hashmap_overhead2);
-        eprintln!("approx total        {:>10} bytes  ({:.1} KiB, {:.2} MiB)",
-                  total2, total2 as f64 / 1024.0, total2 as f64 / (1024.0 * 1024.0));
+        eprintln!(
+            "out/in_by_type maps {:>10} bytes (estimate)",
+            hashmap_overhead2
+        );
+        eprintln!(
+            "approx total        {:>10} bytes  ({:.1} KiB, {:.2} MiB)",
+            total2,
+            total2 as f64 / 1024.0,
+            total2 as f64 / (1024.0 * 1024.0)
+        );
         eprintln!("bytes per live node {:.1}", total2 as f64 / nodes2 as f64);
         eprintln!("bytes per live edge {:.1}", total2 as f64 / edges2 as f64);
         eprintln!();

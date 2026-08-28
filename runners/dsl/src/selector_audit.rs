@@ -217,9 +217,6 @@ pub fn stats() -> (u64, u64, u64, u64, u64, Option<String>) {
         SKIPPED_EFFECTFUL.load(Ordering::Relaxed),
         DISAGREEMENTS.load(Ordering::Relaxed),
         EMPTY.load(Ordering::Relaxed),
-        FIRST_ROW
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .clone(),
+        FIRST_ROW.lock().unwrap_or_else(|e| e.into_inner()).clone(),
     )
 }

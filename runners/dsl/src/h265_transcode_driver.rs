@@ -58,18 +58,14 @@
 //! contract is the natural one a parser would feed.
 
 use crate::h265_cabac::CabacEncoder;
-use crate::h265_ctu_quadtree::{
-    build_ctu_from_16_mbs, walk_leaves, CuNode, PredMode,
-};
+use crate::h265_ctu_quadtree::{build_ctu_from_16_mbs, walk_leaves, CuNode, PredMode};
 use crate::h265_dct::{forward_dct, DctOutput};
 use crate::h265_in_loop_filter::{
-    apply_sao_band_offset, apply_sao_edge_offset, boundary_strength,
-    BoundaryStrength, SaoEdgeDir, SaoMode, SideInfo,
+    apply_sao_band_offset, apply_sao_edge_offset, boundary_strength, BoundaryStrength, SaoEdgeDir,
+    SaoMode, SideInfo,
 };
 use crate::h265_intra_mode::h264_to_h265_intra;
-use crate::h265_slice_header::{
-    emit_h265_slice_header, H265SliceHeader, H265SliceType,
-};
+use crate::h265_slice_header::{emit_h265_slice_header, H265SliceHeader, H265SliceType};
 
 /// One H.264 macroblock's worth of input to the transcoder.
 /// Upstream's H.264 parser fills this for each MB.
@@ -108,7 +104,7 @@ impl H264MbDescriptor {
         match self.mb_type {
             31 => PredMode::Skip,
             mt if mt >= 5 => {
-                let h264_mode = self.intra_mode.unwrap_or(2);  // DC default
+                let h264_mode = self.intra_mode.unwrap_or(2); // DC default
                 PredMode::Intra(h264_to_h265_intra(h264_mode).unwrap_or(1))
             }
             _ => {
@@ -158,7 +154,7 @@ impl H265TranscodeContext {
 pub mod ctx_idx {
     pub const CTU_SPLIT_FLAG: usize = 0;
     pub const CU_SKIP_FLAG: usize = 1;
-    pub const PRED_MODE_FLAG: usize = 2;  // intra vs inter
+    pub const PRED_MODE_FLAG: usize = 2; // intra vs inter
     pub const PART_MODE: usize = 3;
     pub const INTRA_LUMA_MPM_FLAG: usize = 4;
     pub const SIGNIFICANT_COEFF_FLAG: usize = 5;
@@ -174,10 +170,7 @@ pub mod ctx_idx {
 ///    in `to_pred_mode`)
 /// 3. For each CU, transform its residual (stage 3)
 /// 4. Encode CABAC bins for the CU's syntax (stage 4)
-fn encode_one_ctu(
-    ctx: &mut H265TranscodeContext,
-    mbs: &[H264MbDescriptor; 16],
-) -> usize {
+fn encode_one_ctu(ctx: &mut H265TranscodeContext, mbs: &[H264MbDescriptor; 16]) -> usize {
     // Stage 1: build CTU partition.
     let modes: [PredMode; 16] = std::array::from_fn(|i| mbs[i].to_pred_mode());
     let ctu: CuNode = build_ctu_from_16_mbs(&modes);
@@ -228,10 +221,14 @@ fn encode_one_ctu(
     // bins to the CABAC stream.
     let mut transforms_done = 0;
     for mb in mbs.iter() {
-        if !mb.has_nonzero_residual { continue; }
+        if !mb.has_nonzero_residual {
+            continue;
+        }
         for block in mb.residual_luma_4x4.iter() {
             let any_nonzero = block.iter().any(|c| *c != 0);
-            if !any_nonzero { continue; }
+            if !any_nonzero {
+                continue;
+            }
             if let Some(DctOutput::Size4(coeffs)) = forward_dct(2, block) {
                 for c in coeffs.iter() {
                     let sig = if *c != 0 { 1u8 } else { 0u8 };
@@ -256,8 +253,12 @@ fn encode_one_ctu(
 /// SAO is applied as a CTU-level operation on the plane if `sao_mode`
 /// is set.
 pub fn apply_in_loop_filter(
-    plane: &mut [u8], width: usize, height: usize, stride: usize,
-    mbs: &[H264MbDescriptor], sao_mode: SaoMode,
+    plane: &mut [u8],
+    width: usize,
+    height: usize,
+    stride: usize,
+    mbs: &[H264MbDescriptor],
+    sao_mode: SaoMode,
 ) -> InLoopFilterStats {
     let mut weak_boundaries = 0;
     let mut strong_boundaries = 0;
@@ -267,9 +268,7 @@ pub fn apply_in_loop_filter(
     for row in 0..4 {
         for col in 0..3 {
             let i = row * 4 + col;
-            let bs = boundary_strength(
-                mbs[i].to_side_info(), mbs[i + 1].to_side_info(),
-            );
+            let bs = boundary_strength(mbs[i].to_side_info(), mbs[i + 1].to_side_info());
             match bs {
                 BoundaryStrength::Weak => weak_boundaries += 1,
                 BoundaryStrength::Strong => strong_boundaries += 1,
@@ -280,9 +279,7 @@ pub fn apply_in_loop_filter(
     for row in 0..3 {
         for col in 0..4 {
             let i = row * 4 + col;
-            let bs = boundary_strength(
-                mbs[i].to_side_info(), mbs[i + 4].to_side_info(),
-            );
+            let bs = boundary_strength(mbs[i].to_side_info(), mbs[i + 4].to_side_info());
             match bs {
                 BoundaryStrength::Weak => weak_boundaries += 1,
                 BoundaryStrength::Strong => strong_boundaries += 1,
@@ -293,12 +290,13 @@ pub fn apply_in_loop_filter(
     // Apply SAO if requested.
     match sao_mode {
         SaoMode::Off => {}
-        SaoMode::BandOffset { band_start, offsets } =>
-            apply_sao_band_offset(plane, width, height, stride,
-                                    band_start, offsets),
-        SaoMode::EdgeOffset { direction, offsets } =>
-            apply_sao_edge_offset(plane, width, height, stride,
-                                    direction, offsets),
+        SaoMode::BandOffset {
+            band_start,
+            offsets,
+        } => apply_sao_band_offset(plane, width, height, stride, band_start, offsets),
+        SaoMode::EdgeOffset { direction, offsets } => {
+            apply_sao_edge_offset(plane, width, height, stride, direction, offsets)
+        }
     }
     InLoopFilterStats {
         weak_boundaries,
@@ -363,9 +361,11 @@ mod tests {
 
     fn intra_mb(intra_mode: u8) -> H264MbDescriptor {
         H264MbDescriptor {
-            mb_type: 7,  // I_4x4
+            mb_type: 7, // I_4x4
             intra_mode: Some(intra_mode),
-            mv_x: 0, mv_y: 0, ref_pic_id: 0,
+            mv_x: 0,
+            mv_y: 0,
+            ref_pic_id: 0,
             residual_luma_4x4: [[0; 16]; 16],
             has_nonzero_residual: false,
         }
@@ -374,7 +374,9 @@ mod tests {
         H264MbDescriptor {
             mb_type: 0,
             intra_mode: None,
-            mv_x, mv_y, ref_pic_id,
+            mv_x,
+            mv_y,
+            ref_pic_id,
             residual_luma_4x4: [[0; 16]; 16],
             has_nonzero_residual: false,
         }
@@ -397,25 +399,28 @@ mod tests {
         //   · 0 transforms (no nonzero residual)
         // = 4 bins. Plus terminate. Output should be small.
         assert!(bytes.len() >= 1);
-        assert!(bytes.len() < 8,
-                "uniform-intra CTU should emit < 8 bytes; got {}", bytes.len());
+        assert!(
+            bytes.len() < 8,
+            "uniform-intra CTU should emit < 8 bytes; got {}",
+            bytes.len()
+        );
         let _ = ctx_initial_bytes;
     }
 
     #[test]
     fn mixed_ctu_emits_more_bins_than_uniform() {
-        let mbs_uniform: [H264MbDescriptor; 16] =
-            std::array::from_fn(|_| intra_mb(0));
-        let mut mbs_mixed: [H264MbDescriptor; 16] =
-            std::array::from_fn(|i| if i % 2 == 0 {
+        let mbs_uniform: [H264MbDescriptor; 16] = std::array::from_fn(|_| intra_mb(0));
+        let mut mbs_mixed: [H264MbDescriptor; 16] = std::array::from_fn(|i| {
+            if i % 2 == 0 {
                 intra_mb(0)
             } else {
                 inter_mb(1, 0, 0)
-            });
+            }
+        });
         // Ensure no merging.
         for (i, mb) in mbs_mixed.iter_mut().enumerate() {
             if mb.mb_type == 0 {
-                mb.mv_x = i as i16;  // make MVs distinct → no merge
+                mb.mv_x = i as i16; // make MVs distinct → no merge
             }
         }
 
@@ -430,24 +435,25 @@ mod tests {
         let bytes_m = ctx_m.cabac.finalize();
 
         // Mixed CTU has more split_flag/pred_mode bins → bigger payload.
-        assert!(bytes_m.len() > bytes_u.len(),
-                "mixed CTU ({}b) should exceed uniform ({}b)",
-                bytes_m.len(), bytes_u.len());
+        assert!(
+            bytes_m.len() > bytes_u.len(),
+            "mixed CTU ({}b) should exceed uniform ({}b)",
+            bytes_m.len(),
+            bytes_u.len()
+        );
     }
 
     #[test]
     fn residual_bins_encoded_when_nonzero() {
         let mut ctx_no_residual = H265TranscodeContext::new(ctx_idx::TOTAL);
-        let mbs_no_res: [H264MbDescriptor; 16] =
-            std::array::from_fn(|_| intra_mb(0));
+        let mbs_no_res: [H264MbDescriptor; 16] = std::array::from_fn(|_| intra_mb(0));
         encode_one_ctu(&mut ctx_no_residual, &mbs_no_res);
         ctx_no_residual.cabac.encode_terminate(1);
         let bytes_no = ctx_no_residual.cabac.finalize();
 
         // Now with nonzero residual on every MB.
         let mut ctx_with_res = H265TranscodeContext::new(ctx_idx::TOTAL);
-        let mut mbs_with_res: [H264MbDescriptor; 16] =
-            std::array::from_fn(|_| intra_mb(0));
+        let mut mbs_with_res: [H264MbDescriptor; 16] = std::array::from_fn(|_| intra_mb(0));
         for mb in mbs_with_res.iter_mut() {
             mb.has_nonzero_residual = true;
             // Nonzero coefficients across all 16 4×4 blocks.
@@ -457,52 +463,64 @@ mod tests {
         ctx_with_res.cabac.encode_terminate(1);
         let bytes_yes = ctx_with_res.cabac.finalize();
 
-        assert!(bytes_yes.len() > bytes_no.len(),
-                "with-residual CTU ({}b) should exceed no-residual ({}b)",
-                bytes_yes.len(), bytes_no.len());
+        assert!(
+            bytes_yes.len() > bytes_no.len(),
+            "with-residual CTU ({}b) should exceed no-residual ({}b)",
+            bytes_yes.len(),
+            bytes_no.len()
+        );
     }
 
     #[test]
     fn full_slice_transcode_produces_output() {
-        let mbs: [H264MbDescriptor; 16] =
-            std::array::from_fn(|_| intra_mb(0));
+        let mbs: [H264MbDescriptor; 16] = std::array::from_fn(|_| intra_mb(0));
         let bytes = transcode_slice(H265SliceType::I, 0, &[mbs]);
         // Header + at least one CABAC byte.
-        assert!(bytes.len() > 2, "slice should have header + CABAC; got {} bytes",
-                bytes.len());
+        assert!(
+            bytes.len() > 2,
+            "slice should have header + CABAC; got {} bytes",
+            bytes.len()
+        );
     }
 
     #[test]
     fn intra_boundary_detected_by_in_loop_filter() {
-        let mbs: [H264MbDescriptor; 16] =
-            std::array::from_fn(|i| if i < 8 { intra_mb(0) } else { inter_mb(0, 0, 0) });
+        let mbs: [H264MbDescriptor; 16] = std::array::from_fn(|i| {
+            if i < 8 {
+                intra_mb(0)
+            } else {
+                inter_mb(0, 0, 0)
+            }
+        });
         let mut plane = vec![128u8; 64 * 64];
-        let stats = apply_in_loop_filter(
-            &mut plane, 64, 64, 64, &mbs, SaoMode::Off);
+        let stats = apply_in_loop_filter(&mut plane, 64, 64, 64, &mbs, SaoMode::Off);
         // Strong boundaries: where intra meets inter (some of the
         // internal vertical + horizontal pairings).
-        assert!(stats.strong_boundaries > 0,
-                "intra/inter boundary should be detected as Strong");
+        assert!(
+            stats.strong_boundaries > 0,
+            "intra/inter boundary should be detected as Strong"
+        );
     }
 
     #[test]
     fn p_slice_round_trip_does_not_panic() {
-        let mbs: [H264MbDescriptor; 16] =
-            std::array::from_fn(|_| inter_mb(1, 1, 0));
+        let mbs: [H264MbDescriptor; 16] = std::array::from_fn(|_| inter_mb(1, 1, 0));
         let bytes = transcode_slice(H265SliceType::P, 1, &[mbs]);
         assert!(!bytes.is_empty());
     }
 
     #[test]
     fn multiple_ctus_processed_sequentially() {
-        let mbs: [H264MbDescriptor; 16] =
-            std::array::from_fn(|_| intra_mb(0));
+        let mbs: [H264MbDescriptor; 16] = std::array::from_fn(|_| intra_mb(0));
         let ctus = [mbs.clone(), mbs.clone(), mbs.clone()];
         let single = transcode_slice(H265SliceType::I, 0, &[mbs]);
         let triple = transcode_slice(H265SliceType::I, 0, &ctus);
         // Three CTUs should produce more bytes than one.
-        assert!(triple.len() > single.len(),
-                "3 CTUs ({}b) should exceed 1 CTU ({}b)",
-                triple.len(), single.len());
+        assert!(
+            triple.len() > single.len(),
+            "3 CTUs ({}b) should exceed 1 CTU ({}b)",
+            triple.len(),
+            single.len()
+        );
     }
 }

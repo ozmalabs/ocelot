@@ -165,12 +165,7 @@ pub fn note_absence_branch() {
 
 /// Drain nothing; read the H1 tally as raw `(rule_sym, key_sym, count)`.
 pub fn defaulted_raw() -> Vec<(Sym, Sym, u64)> {
-    DEFAULTED.with(|m| {
-        m.borrow()
-            .iter()
-            .map(|((r, k), n)| (*r, *k, *n))
-            .collect()
-    })
+    DEFAULTED.with(|m| m.borrow().iter().map(|((r, k), n)| (*r, *k, *n)).collect())
 }
 
 /// Read the H2 tally as raw `(rule_sym, count)`.
@@ -182,10 +177,7 @@ pub fn absence_raw() -> Vec<(Sym, u64)> {
 /// was on for the whole run — a 0 denominator means "not measured", never
 /// "no reads", and the reader must not divide by it.
 pub fn attr_totals() -> (u64, u64) {
-    (
-        ATTR_TOTAL.with(|c| c.get()),
-        ATTR_DEFAULT.with(|c| c.get()),
-    )
+    (ATTR_TOTAL.with(|c| c.get()), ATTR_DEFAULT.with(|c| c.get()))
 }
 
 /// One worker thread's diagnostics, moved rather than copied so a caller can

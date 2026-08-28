@@ -149,11 +149,7 @@ fn floor_dbs(signal: &[f32], fs: u32) -> Vec<f32> {
     db
 }
 
-fn pick_peaks(
-    signal: &[f32],
-    threshold: f32,
-    refractory_samples: usize,
-) -> Vec<(usize, f32)> {
+fn pick_peaks(signal: &[f32], threshold: f32, refractory_samples: usize) -> Vec<(usize, f32)> {
     if signal.len() < 3 {
         return Vec::new();
     }
@@ -178,9 +174,7 @@ fn pick_peaks(
             }
             if v < release {
                 in_region = false;
-                if (peak_idx as isize - last_emit)
-                    >= refractory_samples as isize
-                {
+                if (peak_idx as isize - last_emit) >= refractory_samples as isize {
                     out.push((peak_idx, peak_val));
                     last_emit = peak_idx as isize;
                 }
@@ -231,8 +225,7 @@ fn evaluate_patch(
             let centre_t = patch.centre_hz + slope_per_sample * dt;
             let mut sum = 0.0f32;
             for (band_i, env) in envelopes.iter().enumerate() {
-                let w = freq_weight(band_centres[band_i], centre_t,
-                                      patch.freq_sigma_hz);
+                let w = freq_weight(band_centres[band_i], centre_t, patch.freq_sigma_hz);
                 sum += w * env[t];
             }
             combined[t] = sum;
@@ -302,29 +295,53 @@ pub fn process_audio(
     let mut summary = AcSummary::default();
 
     for patch in patches {
-        let (response, peak, mean) =
-            evaluate_patch(&envelopes, band_centres, sample_rate, patch);
+        let (response, peak, mean) = evaluate_patch(&envelopes, band_centres, sample_rate, patch);
 
         let mut attrs = FxHashMap::default();
         let patch_name_sym = substrate.interner.intern(&patch.name);
-        set_attr(&mut attrs, substrate, "patch_name", Value::Str(patch_name_sym));
+        set_attr(
+            &mut attrs,
+            substrate,
+            "patch_name",
+            Value::Str(patch_name_sym),
+        );
         let patch_kind_sym = substrate.interner.intern(&patch.kind);
-        set_attr(&mut attrs, substrate, "patch_kind", Value::Str(patch_kind_sym));
-        set_attr(&mut attrs, substrate, "centre_hz",
-                   Value::Float(patch.centre_hz as f64));
-        set_attr(&mut attrs, substrate, "sample_rate",
-                   Value::Int(sample_rate as i64));
-        set_attr(&mut attrs, substrate, "n_samples",
-                   Value::Int(response.len() as i64));
+        set_attr(
+            &mut attrs,
+            substrate,
+            "patch_kind",
+            Value::Str(patch_kind_sym),
+        );
+        set_attr(
+            &mut attrs,
+            substrate,
+            "centre_hz",
+            Value::Float(patch.centre_hz as f64),
+        );
+        set_attr(
+            &mut attrs,
+            substrate,
+            "sample_rate",
+            Value::Int(sample_rate as i64),
+        );
+        set_attr(
+            &mut attrs,
+            substrate,
+            "n_samples",
+            Value::Int(response.len() as i64),
+        );
         set_attr(&mut attrs, substrate, "peak", Value::Float(peak as f64));
         set_attr(&mut attrs, substrate, "mean", Value::Float(mean as f64));
         let resp_nid = substrate.add_node(resp_t, attrs);
         let _ = substrate.graph.insert_edge(
-            audio_stream_nid, has_resp_e, resp_nid, FxHashMap::default(),
+            audio_stream_nid,
+            has_resp_e,
+            resp_nid,
+            FxHashMap::default(),
         );
-        let _ = substrate.graph.insert_edge(
-            resp_nid, for_patch_e, patch.nid, FxHashMap::default(),
-        );
+        let _ = substrate
+            .graph
+            .insert_edge(resp_nid, for_patch_e, patch.nid, FxHashMap::default());
         summary.responses += 1;
 
         let db = floor_dbs(&response, sample_rate);
@@ -335,13 +352,24 @@ pub fn process_audio(
             set_attr(&mut ea, substrate, "time_s", Value::Float(t_s));
             let pn = substrate.interner.intern(&patch.name);
             set_attr(&mut ea, substrate, "patch_name", Value::Str(pn));
-            set_attr(&mut ea, substrate, "magnitude_db", Value::Float(db_val as f64));
+            set_attr(
+                &mut ea,
+                substrate,
+                "magnitude_db",
+                Value::Float(db_val as f64),
+            );
             let ev_nid = substrate.add_node(event_t, ea);
             let _ = substrate.graph.insert_edge(
-                audio_stream_nid, has_event_e, ev_nid, FxHashMap::default(),
+                audio_stream_nid,
+                has_event_e,
+                ev_nid,
+                FxHashMap::default(),
             );
             let _ = substrate.graph.insert_edge(
-                ev_nid, from_response_e, resp_nid, FxHashMap::default(),
+                ev_nid,
+                from_response_e,
+                resp_nid,
+                FxHashMap::default(),
             );
             summary.events += 1;
         }
@@ -350,12 +378,7 @@ pub fn process_audio(
     summary
 }
 
-fn set_attr(
-    attrs: &mut FxHashMap<Sym, Value>,
-    substrate: &mut Substrate,
-    key: &str,
-    v: Value,
-) {
+fn set_attr(attrs: &mut FxHashMap<Sym, Value>, substrate: &mut Substrate, key: &str, v: Value) {
     let k = substrate.interner.intern(key);
     attrs.insert(k, v);
 }

@@ -165,8 +165,16 @@ pub fn enclosed_count(v: &Value) -> (usize, usize, usize, f64, usize, bool, Vec<
         clamped = true;
     }
     // When clamped, the effective cell grows so the figure still fits — reported via `clamped`.
-    let cx = if w > 3 { (maxx - minx) / (w - 3) as f64 } else { cell };
-    let cy = if h > 3 { (maxy - miny) / (h - 3) as f64 } else { cell };
+    let cx = if w > 3 {
+        (maxx - minx) / (w - 3) as f64
+    } else {
+        cell
+    };
+    let cy = if h > 3 {
+        (maxy - miny) / (h - 3) as f64
+    } else {
+        cell
+    };
     let sx = if cx > 0.0 { cx } else { cell };
     let sy = if cy > 0.0 { cy } else { cell };
 
@@ -281,7 +289,10 @@ pub fn enclosed_count_value(v: &Value) -> Value {
         (surf("grid_h"), Value::Float(gh as f64)),
         (surf("cell"), Value::Float(cell)),
         (surf("n_samples"), Value::Float(n_samples as f64)),
-        (surf("clamped"), Value::Float(if clamped { 1.0 } else { 0.0 })),
+        (
+            surf("clamped"),
+            Value::Float(if clamped { 1.0 } else { 0.0 }),
+        ),
         (surf("hole_cells_max"), Value::Float(max_cells as f64)),
         (surf("hole_cells_sum"), Value::Float(sum_cells as f64)),
         (surf("holes_one_cell"), Value::Float(one_cell as f64)),
@@ -365,7 +376,10 @@ mod tests {
     #[test]
     fn resolution_is_sampling_derived_not_chosen() {
         for n in [40usize, 120, 400] {
-            assert_eq!(enclosed_count(&figure(vec![circle(0.0, 0.0, 10.0, n, 1.0)])).0, 1);
+            assert_eq!(
+                enclosed_count(&figure(vec![circle(0.0, 0.0, 10.0, n, 1.0)])).0,
+                1
+            );
         }
     }
 
@@ -374,7 +388,10 @@ mod tests {
     #[test]
     fn scale_invariant() {
         for r in [1.0f64, 10.0, 1000.0] {
-            assert_eq!(enclosed_count(&figure(vec![circle(0.0, 0.0, r, 120, 1.0)])).0, 1);
+            assert_eq!(
+                enclosed_count(&figure(vec![circle(0.0, 0.0, r, 120, 1.0)])).0,
+                1
+            );
         }
     }
 }

@@ -48,9 +48,12 @@ pub(crate) fn value_to_json(v: &Value, interner: &Interner) -> J {
         Value::Tuple(items) | Value::List(items) => {
             J::Array(items.iter().map(|x| value_to_json(x, interner)).collect())
         }
-        Value::Set(items) | Value::FrozenSet(items) => {
-            J::Array(items.iter().map(|x| value_to_json(x, interner)).collect::<Vec<_>>())
-        }
+        Value::Set(items) | Value::FrozenSet(items) => J::Array(
+            items
+                .iter()
+                .map(|x| value_to_json(x, interner))
+                .collect::<Vec<_>>(),
+        ),
         Value::Dict(pairs) => {
             let mut obj = serde_json::Map::new();
             for (k, val) in pairs.iter() {
@@ -195,11 +198,7 @@ fn parse_attrs_dict(
     Some(out)
 }
 
-fn parse_effect_op(
-    v: &Value,
-    arena: &mut TermArena,
-    interner: &mut Interner,
-) -> Option<Effect> {
+fn parse_effect_op(v: &Value, arena: &mut TermArena, interner: &mut Interner) -> Option<Effect> {
     let parts = as_sequence(v)?;
     if parts.is_empty() {
         return None;
@@ -398,21 +397,33 @@ pub fn rule_from_node(
         Some(Value::Int(n)) => Some(*n != 0),
         _ => None,
     };
-    let match_type: Option<Sym> = attrs
-        .get(&match_type_key)
-        .and_then(|v| if let Value::Str(s) = v { Some(*s) } else { None });
+    let match_type: Option<Sym> = attrs.get(&match_type_key).and_then(|v| {
+        if let Value::Str(s) = v {
+            Some(*s)
+        } else {
+            None
+        }
+    });
 
     let mut rule = RewriteRule {
         uid: crate::rewrite::RuleUid(
-            interner.lookup("rule_uid").and_then(|key| attrs.get(&key)).and_then(|v| match v {
-                Value::Int(n) if *n > 0 => Some(*n as u64),
-                _ => None,
-            }).unwrap_or(0),
+            interner
+                .lookup("rule_uid")
+                .and_then(|key| attrs.get(&key))
+                .and_then(|v| match v {
+                    Value::Int(n) if *n > 0 => Some(*n as u64),
+                    _ => None,
+                })
+                .unwrap_or(0),
         ),
-        revision: interner.lookup("revision").and_then(|key| attrs.get(&key)).and_then(|v| match v {
-            Value::Int(n) if *n >= 0 => Some(*n as u64),
-            _ => None,
-        }).unwrap_or(0),
+        revision: interner
+            .lookup("revision")
+            .and_then(|key| attrs.get(&key))
+            .and_then(|v| match v {
+                Value::Int(n) if *n >= 0 => Some(*n as u64),
+                _ => None,
+            })
+            .unwrap_or(0),
         name: name_sym,
         match_edges,
         where_,

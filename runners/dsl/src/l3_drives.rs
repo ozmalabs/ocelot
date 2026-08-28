@@ -79,9 +79,11 @@ pub struct PidController {
 impl PidController {
     pub fn new(kp: f64, ki: f64, kd: f64) -> Self {
         Self {
-            kp, ki, kd,
+            kp,
+            ki,
+            kd,
             integral_min: -1e6,
-            integral_max:  1e6,
+            integral_max: 1e6,
             integral: 0.0,
             last_error: None,
         }
@@ -91,7 +93,9 @@ impl PidController {
         self.integral_max = hi;
         self
     }
-    pub fn integral_value(&self) -> f64 { self.integral }
+    pub fn integral_value(&self) -> f64 {
+        self.integral
+    }
 }
 
 impl Controller for PidController {
@@ -155,8 +159,12 @@ pub struct KalmanFilter1D {
 }
 
 impl KalmanFilter1D {
-    pub fn new(initial_estimate: f64, initial_covariance: f64,
-                process_noise: f64, measurement_noise: f64) -> Self {
+    pub fn new(
+        initial_estimate: f64,
+        initial_covariance: f64,
+        process_noise: f64,
+        measurement_noise: f64,
+    ) -> Self {
         Self {
             x_hat: initial_estimate,
             p: initial_covariance,
@@ -177,7 +185,11 @@ impl KalmanFilter1D {
         let gain = self.p / (self.p + self.r);
         self.x_hat += gain * raw;
         self.p = (1.0 - gain) * self.p;
-        Innovation { raw, gain, post_x_hat: self.x_hat }
+        Innovation {
+            raw,
+            gain,
+            post_x_hat: self.x_hat,
+        }
     }
 }
 
@@ -200,8 +212,13 @@ impl Drive {
         estimator: KalmanFilter1D,
         controller: Box<dyn Controller>,
     ) -> Self {
-        Self { name: name.into(), setpoint, estimator,
-                controller, weight: 1.0 }
+        Self {
+            name: name.into(),
+            setpoint,
+            estimator,
+            controller,
+            weight: 1.0,
+        }
     }
     pub fn with_weight(mut self, w: f64) -> Self {
         self.weight = w;
@@ -209,10 +226,14 @@ impl Drive {
     }
 
     /// Current measurement-based estimate.
-    pub fn estimate(&self) -> f64 { self.estimator.x_hat }
+    pub fn estimate(&self) -> f64 {
+        self.estimator.x_hat
+    }
 
     /// Error = setpoint - estimate.
-    pub fn error(&self) -> f64 { self.setpoint - self.estimator.x_hat }
+    pub fn error(&self) -> f64 {
+        self.setpoint - self.estimator.x_hat
+    }
 
     /// Observe a fresh measurement, update the estimator. Returns
     /// the innovation so callers can monitor for bias.
@@ -244,14 +265,18 @@ pub struct MultiDriveSystem {
 }
 
 impl MultiDriveSystem {
-    pub fn new() -> Self { Self { drives: Vec::new() } }
+    pub fn new() -> Self {
+        Self { drives: Vec::new() }
+    }
 
     pub fn add(&mut self, drive: Drive) -> usize {
         self.drives.push(drive);
         self.drives.len() - 1
     }
 
-    pub fn drive(&self, idx: usize) -> &Drive { &self.drives[idx] }
+    pub fn drive(&self, idx: usize) -> &Drive {
+        &self.drives[idx]
+    }
     pub fn drive_mut(&mut self, idx: usize) -> &mut Drive {
         &mut self.drives[idx]
     }
@@ -276,12 +301,18 @@ impl MultiDriveSystem {
             acc += d.weight * d.step(dt);
             total_w += d.weight;
         }
-        if total_w == 0.0 { 0.0 } else { acc / total_w }
+        if total_w == 0.0 {
+            0.0
+        } else {
+            acc / total_w
+        }
     }
 }
 
 impl Default for MultiDriveSystem {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[cfg(test)]
@@ -308,9 +339,11 @@ mod tests {
             state += u * dt;
         }
         let final_error = (setpoint - state).abs();
-        assert!(final_error < 0.05,
-                "PID should converge near setpoint; got |error|={}",
-                final_error);
+        assert!(
+            final_error < 0.05,
+            "PID should converge near setpoint; got |error|={}",
+            final_error
+        );
     }
 
     // ---------- Anti-windup (integral_bounded_by_anti_windup) ----------
@@ -320,25 +353,25 @@ mod tests {
     /// Verifies the Mt's `integral_bounded_by_anti_windup` invariant.
     #[test]
     fn anti_windup_clamps_integral_under_saturation() {
-        let mut pid = PidController::new(1.0, 1.0, 0.0)
-            .with_windup_bounds(-5.0, 5.0);
+        let mut pid = PidController::new(1.0, 1.0, 0.0).with_windup_bounds(-5.0, 5.0);
         // Apply persistent large positive error; without anti-windup,
         // integral would grow unbounded.
         for _ in 0..1000 {
             pid.step(100.0, 0.01);
         }
         let i = pid.integral_value();
-        assert!(i <= 5.0 + 1e-9,
-                "integral exceeded upper bound: {}", i);
-        assert!(i >= -5.0 - 1e-9,
-                "integral exceeded lower bound: {}", i);
+        assert!(i <= 5.0 + 1e-9, "integral exceeded upper bound: {}", i);
+        assert!(i >= -5.0 - 1e-9, "integral exceeded lower bound: {}", i);
         // Symmetric: persistent negative error pegs at lower bound.
         for _ in 0..1000 {
             pid.step(-100.0, 0.01);
         }
         let i = pid.integral_value();
-        assert!(i >= -5.0 - 1e-9 && i <= 5.0 + 1e-9,
-                "integral exceeded bounds on negative side: {}", i);
+        assert!(
+            i >= -5.0 - 1e-9 && i <= 5.0 + 1e-9,
+            "integral exceeded bounds on negative side: {}",
+            i
+        );
     }
 
     /// PID reset zeros the integral + derivative-state.
@@ -372,13 +405,18 @@ mod tests {
             innovation_sum += inn.raw;
         }
         // Estimate close to true mean.
-        assert!((kf.x_hat - 7.0).abs() < 0.1,
-                "Kalman should converge to 7.0; got {}", kf.x_hat);
+        assert!(
+            (kf.x_hat - 7.0).abs() < 0.1,
+            "Kalman should converge to 7.0; got {}",
+            kf.x_hat
+        );
         // Innovation sum bounded (unbiased over symmetric perturbation).
         // Early innovations are large; we just check it's reasonable.
-        assert!(innovation_sum.abs() < 10.0,
-                "innovation sum should be small under symmetric perturbation; got {}",
-                innovation_sum);
+        assert!(
+            innovation_sum.abs() < 10.0,
+            "innovation sum should be small under symmetric perturbation; got {}",
+            innovation_sum
+        );
     }
 
     /// Kalman gain decreases monotonically as covariance shrinks
@@ -389,9 +427,13 @@ mod tests {
         let g1 = kf.update(5.0).gain;
         let g2 = kf.update(5.0).gain;
         let g3 = kf.update(5.0).gain;
-        assert!(g1 > g2 && g2 > g3,
-                "Kalman gain should decrease as covariance shrinks; got {} > {} > {}",
-                g1, g2, g3);
+        assert!(
+            g1 > g2 && g2 > g3,
+            "Kalman gain should decrease as covariance shrinks; got {} > {} > {}",
+            g1,
+            g2,
+            g3
+        );
     }
 
     // ---------- Drive composition ----------
@@ -420,18 +462,19 @@ mod tests {
         // Drive A: setpoint 10, weight 3.
         let kf_a = KalmanFilter1D::new(0.0, 10.0, 0.01, 1.0);
         let pid_a = PidController::new(1.0, 0.0, 0.0);
-        sys.add(Drive::new("a", 10.0, kf_a, Box::new(pid_a))
-                .with_weight(3.0));
+        sys.add(Drive::new("a", 10.0, kf_a, Box::new(pid_a)).with_weight(3.0));
         // Drive B: setpoint -10, weight 1.
         let kf_b = KalmanFilter1D::new(0.0, 10.0, 0.01, 1.0);
         let pid_b = PidController::new(1.0, 0.0, 0.0);
-        sys.add(Drive::new("b", -10.0, kf_b, Box::new(pid_b))
-                .with_weight(1.0));
+        sys.add(Drive::new("b", -10.0, kf_b, Box::new(pid_b)).with_weight(1.0));
         // Both drives observe state=0 → errors are +10 and -10.
         let u = sys.step_weighted_average(0.1);
         // Weighted avg: (3·10 + 1·(-10)) / (3+1) = 20/4 = 5.
-        assert!((u - 5.0).abs() < 1e-9,
-                "weighted average expected 5.0, got {}", u);
+        assert!(
+            (u - 5.0).abs() < 1e-9,
+            "weighted average expected 5.0, got {}",
+            u
+        );
     }
 
     /// A Drive's controller can be reset (e.g. on cooling).
@@ -448,10 +491,13 @@ mod tests {
         // After reset, no integral accumulation, derivative skipped.
         // Verifying via behaviour: step(0, dt) yields 0.
         let u = d.step(0.0); // dt=0 skips derivative + integral
-        // Actually with dt=0 + error=5, integral += 0, derivative
-        // skipped due to dt=0, so u = kp * e = 5.
-        assert!((u - 5.0).abs() < 1e-9,
-                "after reset, P term should dominate; got {}", u);
+                             // Actually with dt=0 + error=5, integral += 0, derivative
+                             // skipped due to dt=0, so u = kp * e = 5.
+        assert!(
+            (u - 5.0).abs() < 1e-9,
+            "after reset, P term should dominate; got {}",
+            u
+        );
     }
 
     // ---------- Mt rule: drive_must_have_setpoint_and_measurement --
@@ -467,7 +513,8 @@ mod tests {
         // Removing any breaks compilation. Documenting this in a
         // test so the invariant is visible.
         let _ = Drive::new(
-            "stub", 0.0,
+            "stub",
+            0.0,
             KalmanFilter1D::new(0.0, 1.0, 0.01, 1.0),
             Box::new(PidController::new(1.0, 0.0, 0.0)),
         );
