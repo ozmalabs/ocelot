@@ -19,7 +19,10 @@ complex, `r·e^{iθ}`. A **realisation** is a collapse: a local write that picks
 the admissible set, with a weight. Realisations are strictly ordered (no in-frame concurrency).
 Nothing is privileged: there is no god's-eye frame, and no privileged phase origin or
 measurement basis. When no rule fires, a frame's Narrative simply carries forward — **free
-continuation**, the reversible default; a rule (a write) is the only priced, irreversible step.
+continuation**, the reversible default. "Free" here means *information-preserving*, not *absent*:
+evaluating a rule is itself a write (the outcome and the ordering are state and have to go
+somewhere), and it is unpaid because it is injective — nothing is destroyed, so no Landauer floor is
+crossed. A collapse is the many-to-one step, and that is the priced, irreversible one.
 The invariant speed `c` is the frame's own change-throughput unit, `1` by construction. Frames
 compose by **nesting** (a subframe in a superframe); a correlation invisible in each subframe is
 a dimension of the superframe.
@@ -48,7 +51,7 @@ from and prior to the quantum superposition linearity. The substrate has it by c
 | states are well-defined equivalence classes | statistics depend only on the current Narrative (history-optional / present-structure-acts = Markov, no preparation-memory) | solid |
 | convex state space | mixing two preparations via a weighted coin-realisation | solid |
 | **affine effects** | total probability over the coin→prepare→measure branching: `e(λP+(1−λ)Q)=λe(P)+(1−λ)e(Q)` | solid |
-| transformations (monoid, reversibles) | rules compose (ordered); free continuation = reversible identity | solid |
+| transformations (monoid, reversibles) | rules compose (ordered); free continuation = the information-preserving, hence reversible, default | solid |
 | composition | subframe nesting (existence; the complex-specific tomography is the contingent layer, §5) | solid |
 | probabilities | realisation weights in `[0,1]`, normalised | solid |
 
@@ -64,7 +67,7 @@ Two independent reconstructions; the substrate supplies each one's **most-quantu
 natively, from a *different* principle.
 
 - **Continuity of reversible transformations** (Hardy's quantum-selecting axiom; classical
-  theory fails exactly this) ← **free continuation** is a no-write, hence reversible, and its
+  theory fails exactly this) ← **free continuation** is information-preserving, hence reversible, and its
   phase is a continuous `U(1)`, so it moves continuously between pure states. **SOLID.**
 - **Purification** (CDP's characteristically-quantum principle; fails classically) ← a mixed
   subframe state is the restriction of a pure superframe state — **entanglement as a larger-frame
@@ -83,7 +86,9 @@ averaging the combined modulus over the relative phase,
 surviving `⟨cos²⟩=½` term; the linear undershoots). That **selects** the square among the natural
 candidates; it does not prove it unique, and the uniqueness is exactly what Gleason supplies. Two supporting identifications: the **inner product** is the cross-frame
 projection (one frame's Narrative read in another's basis); **unitarity** is that a free
-continuation is a no-write (it preserves the Narrative and every projection of it).
+continuation destroys no distinction — an information-preserving write rather than the absence of
+one, which is the right shape, since unitary evolution plainly does change the state and is
+reversible for exactly that reason.
 
 ## 5. Complex over real — contingent, not forced
 
