@@ -333,3 +333,45 @@ def test_detection_is_not_defence():
     What the residual buys is the POSSIBILITY of correction — a concern to act on
     — not correction itself. Knowing does not stop the drag."""
     assert _round(0.0, 7.2) == 0.0, "the fixed-aim agent should still detect at 7.2"
+
+
+# ---------------------------------------------------------------------------
+# Retention defends you only if you HAD a prior. Formation does not leave one.
+# ---------------------------------------------------------------------------
+
+def test_a_FORMED_agent_is_identical_to_a_fully_MOVED_one():
+    """THE LIMIT OF EVERY DEFENCE IN THIS FILE.
+
+    `test_only_the_RETAINED_prior_tube_recovers_it` shows the prior aim recovers a
+    move. That defence presupposes a before. An agent whose aim was INSTALLED —
+    never anything else — has no prior to retain, and its current state is
+    identical in every field to an agent that was moved all the way there.
+
+    Not 'hard to distinguish'. Identical: same aim, same verdicts, same
+    divergence. The discriminator is not weak here, it is absent, and no field
+    goes empty to mark its absence — the question cannot be posed rather than
+    being answered no."""
+    moved_now = _audit([[5.0]] * 4, [[5.0]] * 4, 4)
+    formed_now = _audit([[5.0]] * 4, [[5.0]] * 4, 4)
+    assert moved_now == formed_now == 1.0
+
+    # the move is recoverable ONLY because a different earlier aim exists to
+    # audit against; there is no analogous call for the formed agent to make.
+    assert _audit([[0.0]] * 4, [[5.0]] * 4, 4) == 0.0
+
+
+def test_the_substrate_cannot_separate_education_from_installation():
+    """And the consequence, stated as a limitation of the instrument.
+
+    Every agent's tube comes from somewhere; there is no original aim in this
+    substrate that is authentically its own. So 'was this aim educated into me or
+    installed against my interest' has no in-frame answer — both produce the same
+    tube, and the agent audits correctly against it either way.
+
+    Answering it requires a frame with a DIFFERENT aim to audit against, which is
+    exactly what the formed agent does not have and cannot obtain from inside.
+    This is not a defect of the model; it is the situation the model reproduces."""
+    installed = _audit([[5.0]] * 4, [[5.0]] * 4, 4)
+    assert installed == 1.0, (
+        "an installed aim reported as not served — if this now fails, the "
+        "substrate has acquired a standard external to the agent's own tube")
