@@ -6,7 +6,7 @@
 
 \title{The Law of Graphic Equalisation\\\large Short Form}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ short form}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.3}\\[2pt]28 August 2026 \textbullet\ short form}
 
 \begin{document}
 \maketitle

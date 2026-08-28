@@ -1,6 +1,6 @@
 # Recovering the Born rule from an information substrate
 
-**An axiom-by-axiom note.** Matthew Parslow, 28 August 2026 (draft-2026-08-28.2 r2). Companion to *The Law of Graphic
+**An axiom-by-axiom note.** Matthew Parslow, 28 August 2026 (draft-2026-08-28.3 r2). Companion to *The Law of Graphic
 Equalisation* (Theory; Physics Grounding; Mind and Self Grounding).
 
 **Status: a draft attempt, not a peer-reviewed result.** Each step is rated (solid / plausible
