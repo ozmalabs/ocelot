@@ -220,11 +220,22 @@ graph with no primitives would have to perform everything it invokes, which is t
 substrate does not contain. That is the whole of the definition, and in particular it says nothing
 about what a graph can learn of where they come from.
 
-A \emph{well-formed} set of primitives does not leak its provenance: a graph invokes and receives a
-result, and nothing in the result discloses what supplied it, whether one structure supplied all of
-them or several supplied different ones, or whether the supplier performed the operation or relayed
-it. Leaking is not thereby forbidden, and an earlier statement of this definition made it definitional
-when it is a property some supplies have and others do not.
+Two different things can be meant by provenance being hidden, and an earlier version of this
+definition ran them together in the wrong direction.
+
+\emph{Deliberate exposure} --- state maintained so that what runs on it can read it, as reflection
+does --- is structure doing work for something other than the frame holding it, and is therefore
+excluded by well-formedness (Definition~\ref{def:well-formed}) in the ordinary way: it costs, and the
+frame supplying it gets nothing.
+
+\emph{Leakage} is the opposite case and is not excluded at all. A cache earns its retention many
+times over and leaks precisely \emph{because} it does work; an arithmetic fast enough to overflow at
+a word boundary discloses the boundary by being fast; a page-sized performance cliff exists because
+the page size is doing something. Every leak in Proposition~(long form) is a consequence of
+efficient design rather than of poor design, so well-formedness does not prevent leakage --- it
+\emph{produces} it, and a structure that leaked nothing would have given up the optimisations that
+distinguish it from a uniform one, which is what constant-time implementations do and what they pay
+for.
 \end{definition}
 \begin{proposition}[Primitives are supplied, not intrinsic]\label{prop:rule-runner}
 A graph is data --- nodes, relations, and rules --- and the operations its rules bottom out in are supplied to it rather than contained in it. The same graph may therefore be run against different supplies of the same operator set, and nothing supplying an operator need be the substrate the graph describes or is ``in.'' Where the work is done is a fact about that supply and not about the graph.
