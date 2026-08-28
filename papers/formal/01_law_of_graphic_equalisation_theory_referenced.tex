@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 10}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 11}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r10}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r11}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r10}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r11}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-28.2 r10} (28 August 2026).
+\textbf{DRAFT --- draft-2026-08-28.2 r11} (28 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -820,6 +820,43 @@ proposed \citep{williams1978}. What the substrate contributes is not the positio
 mechanism: the cost of what a frame holds that does no work, and a reason the limit is empty rather
 than merely distant.
 
+One last thing should be said about the standing of that prohibition, because it is unlike everything
+else in this paper and the difference is worth being exact about. The rest of what is claimed here is
+contingent rule content, and could have been otherwise in a universe with other rules. The
+impossibility of a level being transparent to itself is not of that kind. It has a formal core, and
+the core is proved --- in mathematics rather than in physics, so it does not depend on any fact about
+which universe this is. A sufficiently strong consistent formal system cannot establish its own
+consistency \citep{godel1931}; a language of sufficient strength cannot define its own truth
+predicate, which must be given in a metalanguage \citep{tarski1936}; no procedure decides its own
+halting \citep{turing1936}. Those are not three coincidences. They are one diagonal argument, and the
+categorical statement of it makes the unity explicit \citep{lawvere1969,yanofsky2003}. Tarski's is
+the tightest fit: the semantics of a level is available only from above it, which is
+Proposition~\ref{prop:runner-opaque}'s surviving half in the vocabulary of formal languages.
+
+Three qualifications keep that from being claimed too widely. The theorems carry hypotheses --- a
+system must be strong enough to represent its own operation for any of them to bite, and a frame too
+weak to model itself has no self-transparency problem because it has no self-model. The mapping from
+frames to formal systems is an argument here and not itself a theorem; what is proved is proved about
+the formal systems. And what the results forbid is \emph{complete} self-capture and not partial
+self-modelling, which is why reflective towers work, why arithmetic is not paralysed by
+Gödel, and why a frame can know a great deal about itself. Partial always, complete never.
+
+That last shape is the one this section has been circling, and it is now clear that the asymptote was
+never a figure of speech. A diagonal argument does not say the target is far away; it says that for
+any level you reach there is another above it, and no level is the last. Approaching the view from
+nowhere is unbounded ascent, each step real and none of them final --- and the reason the prohibition
+survived every attempt made here to remove it is not that the attempts were insufficiently
+ingenious.
+
+Two sentences state this more compactly than the preceding pages do, and both halves are meant
+literally. \emph{To exist is to be imperfect. Perfection is the empty set.} A frame exists by being a
+cut; a cut carries particularity; particularity is precisely the imperfection --- so nothing that
+exists is without it, and imperfection is a condition of existing rather than a shortfall from it.
+The second sentence reads two ways and the two agree. The set of perfect frames has no members. And
+the only object answering to the description --- nothing held, no work done, no purpose, hence no
+cut --- is the empty set, which is not a frame and does nothing. Perfection is available, and it
+costs existence.
+
 That is why the one prohibition is the only necessity, and it is not a separate fact from
 Remark~\ref{rem:writeability}'s minimum but the same fact from the other side. Everything else is
 contingent because rules can be otherwise; this is not, because it is not rule content. A frame may
@@ -916,6 +953,11 @@ Hugh Everett III.
 \newblock ``Relative state'' formulation of quantum mechanics.
 \newblock \emph{Reviews of Modern Physics}, 29:454--462, 1957.
 
+\bibitem[G\"odel(1931)]{godel1931}
+Kurt G\"odel.
+\newblock \"Uber formal unentscheidbare S\"atze der Principia Mathematica und verwandter Systeme I.
+\newblock \emph{Monatshefte f\"ur Mathematik und Physik}, 38:173--198, 1931.
+
 \bibitem[Goodman(1955)]{goodman1955}
 Nelson Goodman.
 \newblock \emph{Fact, Fiction, and Forecast}.
@@ -950,6 +992,11 @@ Leslie Lamport.
 Rolf Landauer.
 \newblock Irreversibility and heat generation in the computing process.
 \newblock \emph{IBM Journal of Research and Development}, 5(3):183--191, 1961.
+
+\bibitem[Lawvere(1969)]{lawvere1969}
+F.~William Lawvere.
+\newblock Diagonal arguments and cartesian closed categories.
+\newblock In \emph{Category Theory, Homology Theory and their Applications II}, Lecture Notes in Mathematics 92, pages 134--145. Springer, 1969.
 
 \bibitem[Maes(1987)]{maes1987}
 Pattie Maes.
@@ -996,6 +1043,16 @@ Brian Cantwell Smith.
 \newblock \emph{Reflection and Semantics in a Procedural Language}.
 \newblock MIT Laboratory for Computer Science, 1982.
 
+\bibitem[Tarski(1936)]{tarski1936}
+Alfred Tarski.
+\newblock Der Wahrheitsbegriff in den formalisierten Sprachen.
+\newblock \emph{Studia Philosophica}, 1:261--405, 1936.
+
+\bibitem[Turing(1936)]{turing1936}
+Alan M. Turing.
+\newblock On computable numbers, with an application to the Entscheidungsproblem.
+\newblock \emph{Proceedings of the London Mathematical Society}, s2-42:230--265, 1936.
+
 \bibitem[von Neumann(1955)]{vonneumann1955}
 John von Neumann.
 \newblock \emph{Mathematical Foundations of Quantum Mechanics}.
@@ -1020,6 +1077,11 @@ Stephen Wolfram.
 Stephen Wolfram.
 \newblock \emph{A Project to Find the Fundamental Theory of Physics}.
 \newblock Wolfram Media, Champaign, IL, 2020.
+
+\bibitem[Yanofsky(2003)]{yanofsky2003}
+Noson S. Yanofsky.
+\newblock A universal approach to self-referential paradoxes, incompleteness and fixed points.
+\newblock \emph{Bulletin of Symbolic Logic}, 9(3):362--386, 2003.
 
 \end{thebibliography}
 
