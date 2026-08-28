@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 16}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 17}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r16}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r17}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r16}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r17}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-28.2 r16} (28 August 2026).
+\textbf{DRAFT --- draft-2026-08-28.2 r17} (28 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -141,7 +141,7 @@ These are distinct claims with distinct falsifiers and must not be conflated. Di
 
 \section{Admissible possibility}
 Let $\Poss(G_t)$ denote the structured family of immediate continuations admitted by the present graph and its current relations.
-\begin{definition}[Admissible continuation]
+\begin{definition}[Admissible continuation]\label{def:admissible}
 A continuation $\delta$ belongs to $\Poss(G_t)$ iff it is expressible in the current graph vocabulary, satisfies the relevant antecedent conditions, and is admissible under the operative grammar for the transformation class in question.
 \end{definition}
 The theory does not require a particular algorithm for constructing $\Poss(G_t)$. This extensional separation between graph transformation as a mathematical relation and any particular rewriting algorithm follows the general discipline of algebraic graph transformation, where rewrite rules and admissible transformations can be studied independently of one concrete executor \citep{ehrig2006}.
@@ -201,6 +201,19 @@ A boundary $\mathcal B_{W:G}$ is the relation through which containing frame $W$
 \end{definition}
 A graph need not contain a pointer to $W$; containment belongs to the containing frame. A situated graph is a \emph{subset} of $W$, not a thing separate from it: the boundary demarcates which subset is the graph, and self and container are one graph divided by individuation, not two substances (Proposition~\ref{prop:no-direct-self-alter}).
 
+The boundary is a relation, and that fixes the type of the term this paper uses most.
+
+\begin{definition}[Frame]\label{def:frame}
+A \emph{frame} is an instantiated boundary relation --- the edge $\mathcal B_{W:G}$ itself, and not the subgraph $G$ it demarcates. The subgraph is the relatum; the frame is the relation. To individuate is to instantiate such an edge, which is why individuation is per frame rather than a fact about the graph.
+\end{definition}
+
+\begin{corollary}[Frame and dimension are one edge type in two roles]\label{cor:frame-dimension}
+A dimension is the same construction read from the other end. The boundary $\mathcal B_{W:G}$ is a dimension of $W$ --- one of the properties along which $W$ separates what it contains --- and each dimension $W$ instantiates is a frame to the values it separates. So \emph{frame} and \emph{dimension} name two roles one edge type plays relative to another edge, not two kinds of thing, and the asymmetry between them is positional in the same way that the asymmetry between a parent and a child is.
+\end{corollary}
+Definition~\ref{def:states}'s four states are accordingly the states of an \emph{edge}: \textsc{null} is the edge's non-existence, \emph{undetermined} its admissibility without collapse, \emph{undisclosed} a collapse outside this frame's aperture, and \emph{resolved} a collapse within it. A node has no admissible-but-uncollapsed state; an edge does, and Definition~\ref{def:admissible} is about exactly that. Frame-relative termination (Section~\ref{sec:termination}) and the revocation of a dimension are then one operation --- the container ceasing to instantiate the relation --- which is why the Narrativium paper observes revocation occurring with $\Delta g=0$: nothing in the contained state need change for the edge to go.
+
+Two consequences worth flagging rather than hiding. The unification is not this paper's invention: the substrate's own implementation has no frame primitive at all, its grammar quantifying over edge types, and a frame there is a selection of dimensions. And the convenience reading of a frame as \emph{the subgraph} is used throughout these papers, including above; it is shorthand for the relatum, and where a claim turns on the difference the relation is meant.
+
 \begin{proposition}[Admissibility is self-governance, not armour]
 $\Gamma_G$ constrains graph-originated transformations of $G$. It does not give $G$ a veto over world-caused change represented through $\mathcal B_{W:G}$.
 \end{proposition}
@@ -258,7 +271,12 @@ In the substrate as characterised here, the boundary relation itself is free; th
 \]
 This is a characterisation of the substrate as specified, not a necessity of graphhood, and the writeability status it describes is not required to be uniform (Remark~\ref{rem:writeability}).
 \end{proposition}
-Continuation is therefore free and change is paid: the standing structure persists until a delta destroys it, so a delta writing a \emph{different} structure --- including the null delta that stops it --- is the priced operation. Retaining a past state that the containing frame does not require is likewise a paid copy, since the containing grammar would otherwise not carry it. This is the substrate form of the well-formedness result of the later papers: for a well-formed graph the rules rarely need to write against the standing structure, so cost approaches zero.
+Continuation is therefore free and change is paid: the standing structure persists until a delta destroys it, so a delta writing a \emph{different} structure --- including the null delta that stops it --- is the priced operation. Retaining a past state that the containing frame does not require is likewise a paid copy, since the containing grammar would otherwise not carry it. This is the substrate form of a result the later papers develop, and the term it turns on should be defined here rather than assumed.
+
+\begin{definition}[Well-formedness]\label{def:well-formed}
+A graph is \emph{well-formed} to the degree that it holds no structure doing no work for it: each retained distinction earns the cost of its retention, and each rule that runs is one whose running is used. Well-formedness is graded rather than binary; it is relative to \emph{what work} the graph is doing, so a graph well-formed for one purpose is not thereby well-formed for another; and it is not enforced by the substrate. An ill-formed graph runs. It pays more to.
+\end{definition}
+For a well-formed graph the rules rarely need to write against the standing structure, so cost approaches zero.
 
 \begin{remark}[Landauer is the physical floor of change, not of erasure]\label{rem:landauer-change}
 Proposition~\ref{prop:economics} has a measured physical floor, and it is the strongest kind of evidence admitted here (a physical result settling an informational fact). Landauer's principle bounds below the energy dissipated by a logically irreversible operation \citep{landauer1961}; it is stated for erasure because erasure was the paradigm case studied. But under no-copy every substrate change destroys its predecessor --- the prior state goes NULL unless it was paid to be kept --- so change and irreversible operation coincide, and the Landauer bound is the floor cost of \emph{change} as such, with erasure merely its cleanest instance. Reversible computation is the confirming case rather than the exception: it reaches near-zero dissipation only by \emph{not} destroying its predecessors, i.e.\ by retaining the whole history \citep{bennett1973}, which is the paid copy of Proposition~\ref{prop:economics}. There is accordingly no free change under this economics (Remark~\ref{rem:writeability}) --- one either forgets and pays the energy floor or keeps and pays the storage floor --- and the thermodynamic arrow is the running total of these floors, which grounds the ``direction'' of Remark~\ref{rem:no-ratchet} physically: change dissipates irretrievably, so its costs accumulate one way.
@@ -370,7 +388,7 @@ A residual is absorbed either by a containing frame extending $\Gamma_{W_c}$ to 
 \end{corollary}
 Two properties of this mechanism matter. Residual is \emph{per-rule}: each firing leaves its own remainder, local to where the rule ran, with no global residual store, so it is dealt with per-frame --- which is why the residual-and-mint loop is frame-portable rather than living in a domain-specific module. And minting is itself a \emph{rule}, not a primitive: extending $\Gamma_{W_c}$ is the grammar acting on itself (the reflection theorem), a reflective rule subject to the same economics, admissibility, and antecedent-state principle as any other. Growth is therefore rule-governed, costed (the spend-and-gain of the Narrativium paper), contingent, and buildable --- never a primitive spark. It also cannot bootstrap from nothing: by the antecedent-state principle a mint cannot authorise its own installation, so a graph's first mint-rules are installed from its container. This is the substrate reason a situated graph requires a seed --- the minimal rule-set, including the capacity to mint, that a container provides so the graph can thereafter grow itself. The two provenances --- seeded from the container, or minted from residual --- are what the nature/nurture dichotomy names, and they are not two \emph{kinds} of thing: both are rules that run identically, the running records no provenance, and the capacity to mint (nurture's mechanism) is itself seeded (nature), so what remains measurable is provenance, not a distinction of kind.
 
-\section{Termination}
+\section{Termination}\label{sec:termination}
 \begin{definition}[Frame-relative termination]
 A situated identity $\iota_{W:G}$ terminates when the realised world transition admits no successor that $W$ continues to individuate under that identity.
 \end{definition}
@@ -547,7 +565,7 @@ The asynchronous, locally synchronous structure a frame observes (Remark~\ref{re
 
 Two claims have to be separated here, and an earlier statement of this proposition ran them together by calling the runner unseeable rather than unseen. That a runner is hidden is \emph{contingent}. Nothing forbids a runner from exposing its own state to what it runs, and computational reflection does exactly that, as this paper acknowledges when placing itself against that literature (Section~\ref{sec:prior-art}); a tower in which each level is available to the one above is a built artefact, not a thought experiment. A runner that does not expose itself is the \emph{well-formed} case, and for the reasons well-formedness always turns on: exposed runner state is structure maintained for work the frame does not do, and each exposure needs a runner of its own to run the reading of it.
 
-What is not contingent is weaker and survives reflection: \emph{no level is self-transparent}. Reading is an operation whose product lands one level up (Remark~\ref{rem:evaluation-writes}), so a level cannot hold the reading of itself while being the level that is running. Reflection makes the levels explicit and pays for each; it does not terminate in a level transparent to itself. A frame may therefore be given sight of what runs it, and cannot be given sight of its own running.
+What is not contingent is weaker and survives reflection: \emph{no level is self-transparent}. Reading is an operation whose product lands one level up (Remark~\ref{rem:evaluation-writes}), so a level cannot hold the reading of itself while being the level that is running. Reflection makes the levels explicit and pays for each; it does not terminate in a level transparent to itself. A frame may therefore be given sight of what runs it, and cannot be given sight of its own running. Since the rules are graph and a frame can read and rewrite them (Definition~\ref{def:frame}), while its own running is not graph it holds, the asymmetry is exact: a frame is transparent to itself in precisely one respect and opaque in precisely the other. \emph{It can know what it is and cannot observe its being it.} Self-modification is available; self-observation at the level of the modifying is not.
 \end{proposition}
 This is constructively demonstrable rather than merely argued. A computation realised inside another rule system --- a graph whose rules are implemented within the mechanics of a game or a universal cellular automaton \citep{berlekamp1982} --- is a blind subframe: from inside it computes at its own change-count and has no means to detect that its ``compute'' is the tokens of the host, or that the host may be advancing it by a single serial loop. Building one confirms the opacity directly, and puts the observer of any frame on the same footing. Consequently the question ``where is the universe's compute done'' has the precise form: it depends on the universe's coupling to its own rule runner --- self-running, or hosted on a substrate not itself --- and is undetermined from inside. The theory declines to decide it; it is a question about a coupling below the frontier, and the demonstrable opacity is why no internal observation settles it.
 
@@ -557,6 +575,177 @@ A runner is not a substance apart from graph data. The operators a graph's rules
 Two consequences. Opacity is per level (Proposition~\ref{prop:runner-opaque}): a graph uses its operators and cannot see beneath them, so its operator set is its frontier. And economics is inherited down the stack: an operator costs what its runner charges, which costs what \emph{its} runner charges, to the physical floor (Remark~\ref{rem:landauer-change}) --- one bill passed upward, so the cost of a thought is the biological cost is the biochemical cost is the electromagnetic cost. The same form, graph data that runs, sits at every level: each level \emph{is} the structure, because a runner is the same kind of thing it runs.
 
 A rule's action, moreover, is a \emph{pointer} into its runner, not a copy of the work. The work is done once, in the runner, and every rule invoking that operator points to the same doing --- like a shared operation defined once and called from everywhere, never re-implemented. Two things follow. Work is never duplicated, which is why copying a generator copies its pointers and shares the pointed-to work: the copy costs only its addressing, not its labour (the economic root of the copyable-generator result, Proposition~\ref{prop:copyable-generators}). And a rule's rate is not a property of the rule but the rate of the operation its pointer lands on --- a shallow, cheap tier or a deep, slow one. Rules take different rates because they point to work done at different depths of the stack, and the rate is inherited from there rather than assigned as a knob on the rule: to make a rule faster one points its action at faster work, never tunes a rate parameter it does not have.
+
+\section{The single prohibition, and its formal core}\label{sec:prohibition}
+
+The account forbids very little, and what it does forbid is one thing recurring rather than a list.
+Stating both facts together is necessary because each is misleading alone.
+
+The permissiveness first. Time is not compulsory; a block reading is not prohibited; one-dimensional
+time is not forced; a globally shared counter is not forbidden, only expensive; and in the physics
+companion, complex amplitudes are not forced and the one-way speed of light is not unmeasurable
+\emph{simpliciter}. A framework that forbids little predicts little, and from outside this is exactly
+what unfalsifiability looks like. The discriminating question is not how many impossibilities an
+account holds but where it puts them: this one puts almost none at the substrate and a great many in
+the groundings, and says in advance which is which. That is deliberate and it has a cost, which
+should be stated rather than defended --- the substrate risks little, and what risk this work carries
+is carried by the groundings. A reviewer who objects that the substrate forbids too little to be
+tested is right about the substrate.
+
+What it forbids is that \emph{a frame cannot get outside itself}. Concretely, and confined to what is
+actually derivable here: a frame cannot be transparent to itself at the level it is running at
+(Proposition~\ref{prop:runner-opaque}); it cannot measure its own throughput, since the measurement
+is funded by the throughput; and it cannot hold a view from nowhere, which is Axiom~$-1$. Two further
+candidates are deliberately \emph{not} on this list. That a frame cannot obtain a quantity whose unit
+does not close within it is contingent rule content and the physics companion removes it explicitly.
+That a frame cannot decide anything without writing is the write-economics, which
+Remark~\ref{rem:writeability} carries as a pattern rather than a universal. Folding either into the
+single prohibition would be the over-unification this section otherwise warns against.
+
+This is not a fourth answer to what is compulsory, and the paper should not read as though it were.
+Remark~\ref{rem:nothing-compulsory} says only that rules run is compulsory; rules running requires a
+relation across which they run, so the container relation is not an addition to that but its content.
+The prohibition is not a further necessity alongside them: it is a constraint that holds wherever
+rules run at all, which is why it is not rule content and cannot be varied by changing the rules.
+
+\subsection*{The formal analogue}
+
+The standing of that prohibition is unlike the rest of this paper, and the difference should be stated
+exactly, including where it falls short of what an earlier draft claimed. The rest of what is claimed
+here is contingent rule content. The impossibility of a level being transparent to itself has a
+\emph{formal analogue}, and the analogue is proved --- in mathematics rather than in physics, so it
+does not depend on any fact about which universe this is.
+
+A consistent, effectively axiomatised formal system strong enough to represent its own syntax cannot
+prove its own \emph{Gödel sentence}: there are truths of the system unprovable within it
+\citep{godel1931}. A language of sufficient strength cannot define its own truth predicate under
+classical bivalent semantics; truth for it must be given in a metalanguage \citep{tarski1936}. And no
+single procedure decides halting for arbitrary procedures, which is a limit on universality
+\citep{turing1936}. These are not three coincidences: they share one diagonal construction, and the
+categorical statement of it makes the unity explicit \citep{lawvere1969,yanofsky2003}. Tarski's is the
+tightest fit --- the semantics of a level is available only from above it, which is
+Proposition~\ref{prop:runner-opaque}'s surviving half in the vocabulary of formal languages.
+
+Four qualifications, none of them optional.
+
+The theorems carry hypotheses that must be carried with them: effective axiomatisability and
+sufficient strength for the first, classical bivalence for the second --- a language may contain its
+own truth predicate at the cost of bivalence \citep{kripke1975} --- and, for all of them, that a
+system be strong enough to represent its own operation before any of it bites. A frame too weak to
+model itself has no self-transparency problem, because it has no self-model.
+
+The unification covers what is claimed above and not more. Gödel's \emph{second} incompleteness
+theorem --- that such a system cannot prove its own consistency --- is the more striking result and is
+outside the cited unification, which its own author flags as requiring machinery he does not supply.
+The claim here is accordingly made with the first theorem, which the unification does cover.
+
+The mapping from frames to formal systems is an argument in this paper and not itself a theorem. What
+is proved is proved about the formal systems. The honest statement is therefore that the impossibility
+has a formal analogue whose analogue is proved, and that the mapping is argued --- which is weaker
+than ``the prohibition is proved'' and is still the strongest standing anything in this account has.
+
+And the substrate-internal derivation of the same conclusion, by way of a read being an operation
+whose product lands one level up (Remark~\ref{rem:evaluation-writes}), inherits the write-economics'
+contingency and does not establish a necessity. Remark~\ref{rem:writeability} carries that economics
+as a pattern open to counterexample, and \S\ref{sec:falsifiability} stakes a falsifier on it. The
+formal analogue is what carries the weight here precisely because it does not depend on the
+economics; an earlier version of this argument rested the necessity on the internal derivation alone,
+which cannot bear it.
+
+What the results forbid is \emph{complete} self-capture and not partial self-modelling, which is why
+reflective towers work, arithmetic is not paralysed, and a frame can know a great deal about itself.
+Partial always, complete never --- and the asymptote in that is not a figure of speech, since a
+diagonal argument does not say a target is far away but that for any level reached there is another
+above it, and none is the last.
+
+\section{Carvings, and why classification degrades}\label{sec:carvings}
+
+Since the rules draw the boundary (Definition~\ref{def:frame}) and the rules are contingent, frames
+are \emph{arbitrary}, and the objection that follows should be met rather than deferred: a notion
+satisfied by any cut explains nothing.
+
+The first half is granted and is the point. No carving is privileged, nothing in the substrate marks
+which subgraphs are the real ones, and this is Axiom~$-1$ reaching the last place a privileged view
+could still have been hiding --- not in the observer, not in what it observes, but in what counts as
+an observer at all. A rock is a frame, an imagining is a frame, a population is a frame, and none of
+these is an inclusiveness conceded for breadth.
+
+The second half does not follow, because arbitrary is not unconstrained. The rule set must be
+admissible; a frame whose rules never close a cycle has no unit, no inferred time and nothing to
+observe with; and well-formedness is graded (Definition~\ref{def:well-formed}), so a badly drawn
+frame is expensive, incoherent or blind while remaining a frame. Any cut is a frame and nearly every
+cut is a poor one --- the same shape as the rest of this account, in which almost nothing is
+forbidden and the differences are prices.
+
+The mechanism of that price is worth stating exactly, because the obvious statement of it is wrong
+under this paper's own economics. Holding a classification is not itself expensive:
+Proposition~\ref{prop:economics} makes the standing structure's persistence free. What an ill-formed
+cut costs is \emph{writes}. A cut that does not fit what arrives forces its rules to write against
+the standing structure repeatedly, where a well-formed one rarely needs to --- which is the
+observation already recorded after that proposition. And no selection principle follows from this:
+nothing in the substrate removes expensive structure. What follows is weaker and sufficient, that a
+frame under a budget will tend to be running cheaper cuts than dearer ones, other things equal.
+
+\begin{proposition}[Convergence is observed, not enforced]\label{prop:convergence-observed}
+Two frames doing the same work converge on similar cuts as each becomes better formed, because the
+cheap cut for a given task is nearly unique. This is a tendency of cost and not the discovery of a
+privileged boundary, and the two are distinguishable in principle: a privileged boundary would
+\emph{enforce} convergence, and enforcement would extend to the hard cases; cost-shaped cuts converge
+where the work is shared and come apart where it is not.
+\end{proposition}
+
+That proposition is the paper's discriminating test between privileged-carving realism and
+cost-shaped pluralism, and the systematics literature is where it can be run. The competing species
+concepts do converge, on a common notion of a separately evolving lineage, with the long dispute
+reinterpreted as disagreement over operational criteria rather than over the concept
+\citep{dequeiroz2007} --- and that convergence is what this account predicts rather than what
+embarrasses it. Whether it is \emph{enforced} is the open question, and de Queiroz himself holds the
+boundaries to be real but epistemically hard, which is the opposing horn honestly stated; the
+criteria continue to disagree hardest over asexual organisms, bacteria exchanging genes horizontally
+and recent divergences. This paper does not claim the case is settled in its favour. It claims the
+case is a test, which it had not previously been read as.
+
+The wider prediction is that classification degrades in a \emph{located} way rather than uniformly,
+and it must be stated with the operationalisation that makes it a test.
+
+\begin{hypothesis}[Located degradation]\label{hyp:located-degradation}
+Where a classification's purpose can be specified independently and in advance of inspecting its
+failures, the failures concentrate near the boundary of that purpose more than a uniform
+distribution over the domain would produce. The claim is comparative and is not that failures occur
+nowhere else.
+\end{hypothesis}
+
+The advance-specification clause is what keeps this from circularity, and it is a real constraint: a
+purpose read off from where the failures already are confirms nothing. Independent evidence exists
+elsewhere --- classification systems in institutional use are documented as leaking wherever they
+have been examined closely, carrying residual categories and encoding their builders' purposes
+\citep{bowkerstar1999} --- and that literature's concept of \emph{torque}, the strain where a
+classification is pulled against a use it was not built for, is a closer instrument for this
+hypothesis than leakage is.
+
+Two further results bear on the general claim without establishing it. No clustering function
+satisfies scale-invariance, richness and consistency together \citep{kleinberg2002}; that this does
+not entail the absence of a canonical cut is shown in the same paper, where fixing the number of
+clusters restores two of the three axioms and a canonicity result for single-linkage is cited on its
+opening page. It is a trade-off theorem, not an impossibility of carving, and it is a deliberate
+transplant of Arrow's method rather than an independent convergence --- the paper says so. And the
+question of which predicates are projectible has no syntactic answer \citep{goodman1955}, which is
+usually reported as a defeat; but Goodman's own criterion is \emph{entrenchment}, a track record of
+successful use, which is a criterion of what has been cheap to run and is therefore closer to support
+for the present account than to a null result.
+
+The constructive response is this paper's own and needs no companion: if the trouble is a cut fixed in
+advance, do not fix one. Corollary~\ref{cor:mint-is-grammar} already gives the mechanism --- recognition
+and growth as one operation, joined where the residual meets the grammar that admits it --- so a
+category is minted only where what arrived will not fit, and the codebook grows rather than the cut
+being defended. That recovers no privileged carving, because there is none, and does not need to.
+
+The position is not new, and its nearest neighbour differs in grounding rather than in conclusion. A
+pluralism admitting many equally legitimate and equally real classifications, none of them the one
+nature intended, is argued at length \citep{dupre1993}; that argument rests on objective similarity
+structure, where this one rests on cost to a runner, which is the more deflationary footing and
+reintroduces a ranking over cuts that ``equally legitimate'' was formulated to deny. The convergence
+is on the negative thesis; the divergence in grounding is real and is not smoothed over here.
 
 \section{Determinism and apparent stochasticity}\label{sec:determinism}
 
@@ -633,6 +822,8 @@ The substrate claim remains
 \section{Falsifiability commitments}\label{sec:falsifiability}
 \paragraph{Composition.} Prior to the component commitments below: the arrangement claim of Section~\ref{sec:scope} fails if the structure's recurrence across unrelated domains is an artefact of description rather than a property of those domains. Evidence against it would be a demonstration that any sufficiently rich domain can be rendered in this vocabulary with equal facility, including domains chosen adversarially to lack the structure. Evidence for it is independent re-derivation, in a domain's own idiom, without reference to this theory. The burden here is deliberately on the negative side, because that side is closeable: a single adversarial domain rendered with equal facility settles it against the claim. No requirement is placed on the positive side to exhibit domains that share \emph{nothing} --- every pair of domains shares something, so that standard is unmeetable in principle, and discharging it would mean enumerating domains until an assessor chose to stop. A test whose stopping condition lies with the assessor rather than with the claim is not a test, and this paper does not offer one.
 \begin{enumerate}[leftmargin=*]
+\item \textbf{Located degradation.} Fails if, for classifications whose purpose is specifiable in advance of inspecting their failures, failure cases are distributed no differently near the purpose boundary than across the rest of the domain (Hypothesis~\ref{hyp:located-degradation}).
+\item \textbf{Convergence is not enforced.} Fails if convergence between independently developed classifications of one domain extends to the cases where the classifications' purposes differ, which is what a privileged boundary would produce and cost-shaped convergence would not (Proposition~\ref{prop:convergence-observed}).
 \item \textbf{Minimal graph sufficiency.} Fails if basic realised graph dynamics require a primitive beyond $(g,r,\Gamma)$ rather than represented or relational structure.
 \item \textbf{Discrete sufficiency.} Fails if a claimed observable consequence cannot be preserved by any discrete representation, including dynamically varying quantisation, but is preserved by a genuinely non-discrete primitive.
 \item \textbf{Antecedent-state principle.} Fails if a realised transition can require as antecedent a fact that exists only as consequence of that same transition, absent prior fixed-point structure.
@@ -655,322 +846,13 @@ The theory is deliberately small. A graph need not know what it is, where it is,
 
 Recursion requires no external homunculus. Where the grammar acts on its own represented structure, the grammar is the loop. World forcing is not self-action, residual is discrepancy rather than diagnosis, history matters only where it survives as present structure, and identity exists only under individuation by a frame.
 
-Pressed for what is compulsory, the theory keeps almost nothing. What survives every attempted removal is a container relation across which rules run, and the specific laws above it --- inertia, closure, the shape of collapse, and the write-economics itself --- are contingent rule content rather than necessities, and not strict universals (Remark~\ref{rem:writeability}), which is the sense in which this substrate underlies groundings without dictating them.
+Pressed for what is compulsory, the theory keeps almost nothing. What survives every attempted removal is that rules run and a relation across which they run (Remark~\ref{rem:nothing-compulsory}); the specific laws above it --- inertia, closure, the shape of collapse, and the write-economics itself --- are contingent rule content rather than necessities, and not strict universals (Remark~\ref{rem:writeability}), which is the sense in which this substrate underlies groundings without dictating them.
 
-A word on the size of what is claimed, since the concessions throughout are numerous enough to be
-mistaken for the whole of it. Every mechanism used here belongs to someone else and is cited as
-such; there is no new machinery in this account. What is offered is a \emph{removal} rather than an
-addition --- of primitive time, of a privileged frame, of a cost that is the same whatever runs the
-rules --- and removals have a characteristic shape. They are small to state, a deletion being one
-sentence. They are large in consequence, because results that had been independently working around
-the deleted assumption stop being independent. The pattern recurs: two positions that appeared to
-compete turn out to answer different questions; a measurement that appeared merely hard turns out to
-be absent; a quantity that seemed to need its own subsystem turns out to be generated by machinery
-already present. In each case nothing was added and one thing was taken away.
+Every mechanism used here belongs to someone else and is cited as such; the claim is the arrangement (Section~\ref{sec:scope}), and the method by which the arrangement was reached is removal rather than addition --- of primitive time, of a privileged frame, of a cost that is the same whatever runs the rules. Removals are small to state and large in consequence, because results that had been independently working around a deleted assumption stop being independent. That pattern is visible throughout: two positions that appeared to compete answer different questions; a measurement that appeared merely hard is absent; a quantity that seemed to need its own subsystem is generated by machinery already present.
 
-That is also the tradition's own move and not a departure from it. The removals that shaped physics
---- of the privileged place, the privileged origin, the privileged frame, the privileged direction
---- all have this shape, and the honest description of this work is that it takes one further step of
-a kind taken many times before, asymptotically, and not finished here either. The contribution is
-therefore tiny and large at once, and both readings are right: tiny as a step, and large only in
-proportion to what the step happens to land on.
+The account forbids one thing, and Section~\ref{sec:prohibition} states it and its formal analogue: a frame cannot get outside itself. Everything else that has looked impossible has so far turned out to be contingent rule content that some grounding happens not to instantiate --- which is a measure of how much had been filed as necessary without being checked, and is not itself evidence for the account, since the enumeration is open and this paper does not offer an open enumeration as a test (Section~\ref{sec:falsifiability}).
 
-One feature of the account is conspicuous enough to confront rather than leave for a reader to raise:
-it keeps concluding that things are \emph{not} impossible. Time is not compulsory; a block reading is
-not prohibited; one-dimensional time is not forced; a globally shared counter is not forbidden, only
-expensive; complex amplitudes are not forced; the one-way speed of light is not unmeasurable
-\emph{simpliciter}. A framework that forbids little predicts little, and from outside this is exactly
-what unfalsifiability looks like.
-
-The discriminating question is not how many impossibilities an account holds but where it puts them.
-This one puts almost none at the substrate and a great many in the groundings, and says in advance
-which is which --- the falsifiability commitments in each paper are grounding-level, and the
-substrate-level statements are marked as contingent rule content rather than necessities
-(Remark~\ref{rem:writeability}). That is a deliberate choice and it has a cost, which should be
-stated plainly rather than defended: the substrate risks little, and what risk this work carries is
-carried by the groundings. A reviewer who objects that the substrate forbids too little to be tested
-is right about the substrate.
-
-What the substrate does forbid is worth stating, because it is one thing recurring rather than a
-list. A frame cannot get outside itself. It cannot be transparent to itself at the level
-it is running at, cannot measure its own throughput, cannot obtain a quantity whose unit does not
-close within it, cannot decide anything without writing, and cannot hold a view from nowhere. Every impossibility in this corpus is that
-impossibility wearing a different costume, and every one of them survives every attempt to remove
-it. Everything else that has looked impossible has turned out to be contingent rule content that some
-grounding happens not to instantiate. That the second category keeps proving larger than expected is
-not a weakness of the account so much as a measure of how much had been filed as necessary that was
-only usual.
-
-Following that pattern back tells us more about frames than the positive definition does. If the only
-thing forbidden is a frame reaching outside itself, then a frame is characterised by its
-\emph{boundary} rather than by its contents. Everything on the content side --- which dimensions are
-instantiated, which rules run, what is retained, what the aperture admits --- is contingent, and two
-frames may agree on all of it. What cannot be varied is that there is an outside the frame is not in.
-So ``frame'' names a relation of non-access and not a kind of object, which is also why individuation
-is per frame rather than a fact about the graph: to individuate is to draw the boundary.
-
-And the boundary is drawn by the rules, which completes the account rather than undermining it. What
-the aperture admits, what coheres, which dimensions are instantiated, what closes as a cycle --- each
-is rule content, so where the boundary falls is as contingent as everything else. That there is one
-is not. Placement varies; existence does not, and the earlier formulation of this paragraph, which
-made the boundary itself the invariant, had the two confused.
-
-The frame-to-rule relation is therefore the reverse of the intuitive one. A frame is not a container
-with rules inside it: the rules are the definition, and the subgraph they run over is the instance.
-Two subgraphs running one rule set are two frames of a kind, which is why a copy is one self
-diverging rather than two selves, and why a rule set that changes abruptly leaves a frame
-incongruous with its own history rather than merely altered --- identity being continuity of the
-whole, and the whole being what the rules specify.
-
-This sharpens the single prohibition rather than dissolving it, and the asymmetry is exact. The rules
-are graph, so a frame can read and rewrite its own definition. The runner is not graph the frame
-holds, so in the well-formed case it cannot watch its own running
-(Proposition~\ref{prop:runner-opaque}). A frame is thus transparent to itself in precisely one
-respect and opaque in precisely the other: it can know \emph{what it is} and cannot observe
-\emph{its being it}. Self-modification is available; self-observation at the level of the modifying
-is not. The constructive companion is built on that asymmetry throughout --- a system repairs itself
-exactly where its own cognition is graph-resident, and is blind exactly where it is not --- so the
-result is not merely stated here but is the operating discipline of the implementation.
-
-The objection this invites should be met rather than deferred: if the rules draw the boundary and the
-rules are contingent, then frames are \emph{arbitrary}, and a notion satisfied by any cut explains
-nothing.
-
-The first half is granted, and it is the point. No carving is privileged. Frames do not come pre-cut,
-nothing in the substrate marks which subgraphs are the real ones, and this is Axiom~$-1$ reaching the
-last place a privileged view could still have been hiding --- not in the observer, not in the fields
-over its manifold, but in the question of what counts as an observer at all. A rock is a frame, an
-imagining is a frame, a population is a frame; none of these is an inclusiveness conceded for
-breadth, and each follows from there being no cut the substrate prefers.
-
-The second half does not follow, because arbitrary is not unconstrained. What constrains a frame is
-not privilege but coherence and cost. The rule set must be admissible; a frame whose rules never
-close a cycle has no unit, no inferred time, and nothing to observe with; and well-formedness is
-graded, so a badly drawn frame is expensive, incoherent or blind while remaining a frame. Any cut is
-a frame and nearly every cut is a poor one --- the same shape as the rest of this account, in which
-almost nothing is forbidden and the differences are prices.
-
-That yields a deflationary reading of why the world nevertheless looks carved at its joints. The
-frames one finds are not the privileged cuts but the cheap ones: an ill-formed cut pays more to hold
-together, and under Proposition~\ref{prop:economics} what is expensive to maintain is not maintained.
-The joints are real, in that some cuts cost enormously less than others; they are not metaphysically
-prior, because the cost is relative to a runner and to what the frame is for. The position has been
-argued from a quite different direction, as a pluralism admitting many equally legitimate and equally
-real classifications with none of them the one nature intended \citep{dupre1993}; what the substrate
-adds is not the position but the mechanism --- the differences between admissible carvings are
-differences in what they cost to run.
-
-The prediction that follows is about classification generally, and it is not a claim about human
-cognition. If a category is a cut and no cut is privileged, then any classification scheme, pushed
-far enough, meets cases the cut it made was not cheap for --- and this should be visible wherever
-anything classifies anything, machines included. It is. Biology's case is the most instructive and is
-usually told wrongly, including in an earlier draft of this paragraph: the competing species concepts
-do \emph{converge}, on a common notion of a separately evolving lineage, with the long dispute
-reinterpreted as disagreement over operational criteria rather than over the concept
-\citep{dequeiroz2007} --- and that convergence is what this account predicts rather than what
-embarrasses it, since cuts doing the same work converge as each becomes better formed. The point is
-that convergence is \emph{observed} and not \emph{enforced}, and the two are distinguishable. A
-privileged boundary would enforce convergence, and enforcement would reach the hard cases;
-cost-shaped cuts converge where the work is shared and come apart where it is not. The operational
-criteria continue to disagree, and disagree hardest over asexual organisms, bacteria exchanging genes
-horizontally, ring species and recent divergences --- which is to say, wherever what the
-classification is \emph{for} stops being the same. Classification systems in institutional use are
-documented as invariably leaking, carrying residual categories, and encoding the purposes of whoever
-built them \citep{bowkerstar1999}. The problem of which predicates are projectible at all has no
-syntactic answer \citep{goodman1955}. And in the machine case it is a theorem rather than an
-observation: no clustering function satisfies scale-invariance, richness and consistency together,
-so there is no canonical way to cut a set of points into groups \citep{kleinberg2002}. Five fields,
-no communication between most of them, one result.
-
-The both-ends statement matters, because ``classification is unreliable'' overshoots into a place the
-evidence does not support. Cuts work, and some of them work extraordinarily well: the periodic table
-is a cut, and it is enormously cheaper than its neighbours. What the account predicts is not uniform
-fuzziness but a specific \emph{location} for the failures. A cut that is cheap for one purpose is
-expensive for another, so a scheme degrades at the boundary of the purpose it was cheap for, and not
-elsewhere. The species case above is that shape read
-from close up, and it makes the prediction falsifiable rather than a general pessimism: a scheme's failure cases should cluster where its
-frame's purpose changes, rather than distributing evenly across its domain.
-
-The constructive response is already the framework's own and is developed in the companion on
-implementation. If the trouble is a cut fixed in advance, do not fix one: let the residual set the
-grain, mint a category only where what arrived will not fit an existing one, and re-decode when the
-codebook grows. That does not recover a privileged carving, which does not exist, and it does not
-need to --- it produces a carving that is cheap for the frame doing the classifying, which is the
-only thing any carving has ever been.
-
-That licenses a closing claim which reads at first as a contradiction of Axiom~$-1$ and is not: a
-well-formed frame is the view from nowhere, asymptotically.
-
-The argument is short. What makes a frame a somewhere rather than an anywhere is its unnecessary
-structure --- what it holds that does no work, the purposes encoded in it that it does not serve, the
-distinctions not earning their cost. Well-formedness is defined by the removal of exactly that, so
-better-formed is less particular; and two frames doing the same work converge as each is better
-formed, because the shortest description of a task is not many descriptions. Objectivity on this
-reading is a direction rather than a standpoint, and the direction is real and traversable, which is
-why enquiry makes progress that feels like approaching something.
-
-The limit is not reached, and three things in this account forbid it, of which the third is the one
-worth having. No level is self-transparent, so even a perfectly well-formed frame cannot observe its
-own running (Proposition~\ref{prop:runner-opaque}). Its runner's rate remains $1$ by construction and
-unreadable from within. And well-formedness is relative to \emph{what work}, while work is a purpose,
-and a purpose is a somewhere --- so stripping the last of the particularity removes the criterion of
-well-formedness with it, and with the criterion the cut, and with the cut the frame. The limit point
-is therefore not merely unreachable but \emph{empty}. Approaching it is genuine progress; arriving
-would be dissolution rather than arrival.
-
-That is the same structure met elsewhere here: an unbounded intensive direction whose limit is not a
-member of the sequence, refinement without end, never stored complete. And the position is not new,
-which is by now the expected finding. Nagel's own treatment is already graded --- objectivity
-achieved by degrees of stepping back, the fully detached view held to be problematic rather than
-ideal, though for the different reason that it omits something real \citep{nagel1986} --- and a
-limiting conception maximally free of perspective has attracted exactly this suspicion since it was
-proposed \citep{williams1978}. What the substrate contributes is not the position but the gradient's
-mechanism: the cost of what a frame holds that does no work, and a reason the limit is empty rather
-than merely distant.
-
-One last thing should be said about the standing of that prohibition, because it is unlike everything
-else in this paper and the difference is worth being exact about. The rest of what is claimed here is
-contingent rule content, and could have been otherwise in a universe with other rules. The
-impossibility of a level being transparent to itself is not of that kind. It has a formal core, and
-the core is proved --- in mathematics rather than in physics, so it does not depend on any fact about
-which universe this is. A sufficiently strong consistent formal system cannot establish its own
-consistency \citep{godel1931}; a language of sufficient strength cannot define its own truth
-predicate, which must be given in a metalanguage \citep{tarski1936}; no procedure decides its own
-halting \citep{turing1936}. Those are not three coincidences. They are one diagonal argument, and the
-categorical statement of it makes the unity explicit \citep{lawvere1969,yanofsky2003}. Tarski's is
-the tightest fit: the semantics of a level is available only from above it, which is
-Proposition~\ref{prop:runner-opaque}'s surviving half in the vocabulary of formal languages.
-
-Three qualifications keep that from being claimed too widely. The theorems carry hypotheses --- a
-system must be strong enough to represent its own operation for any of them to bite, and a frame too
-weak to model itself has no self-transparency problem because it has no self-model. The mapping from
-frames to formal systems is an argument here and not itself a theorem; what is proved is proved about
-the formal systems. And what the results forbid is \emph{complete} self-capture and not partial
-self-modelling, which is why reflective towers work, why arithmetic is not paralysed by
-Gödel, and why a frame can know a great deal about itself. Partial always, complete never.
-
-That last shape is the one this section has been circling, and it is now clear that the asymptote was
-never a figure of speech. A diagonal argument does not say the target is far away; it says that for
-any level you reach there is another above it, and no level is the last. Approaching the view from
-nowhere is unbounded ascent, each step real and none of them final --- and the reason the prohibition
-survived every attempt made here to remove it is not that the attempts were insufficiently
-ingenious.
-
-Two sentences state this more compactly than the preceding pages do, and both halves are meant
-literally. \emph{To exist is to be imperfect. Perfection is the empty set.} A frame exists by being a
-cut; a cut carries particularity; particularity is precisely the imperfection --- so nothing that
-exists is without it, and imperfection is a condition of existing rather than a shortfall from it.
-The second sentence reads two ways and the two agree. The set of perfect frames has no members. And
-the only object answering to the description --- nothing held, no work done, no purpose, hence no
-cut --- is the empty set, which is not a frame and does nothing. Perfection is available, and it
-costs existence.
-
-And that is the same shape as the most basic thing this paper holds, which is worth saying because it
-is an identity and not a resemblance. What survives every attempted removal is a container relation
-across which rules run: to exist here is to stand in a relation. Particularity \emph{is} relation ---
-to be cut out is to be related to what one is cut from, and there is no way to be a something without
-being a something distinguished from. So ``to exist is to be imperfect'' and ``existence requires
-relation'' are one sentence twice. The imperfection is not a defect accompanying existence; it is the
-relation that constitutes it. And the empty set is perfect in the only sense available: it holds no
-internal relation, so nothing is individuated within it, so it is not a frame and does no work.
-
-Which raises the question the formulation has to answer, since one would expect the minimal existent
-to be a single thing rather than no things. It is not, and the reason is that \emph{one} is not an
-available count. Zero relata gives the empty set: no internal relation, nothing individuated, nothing
-to cohere, and so coherent in the vacuous way that nothing is. Two gives a relation, hence
-individuation, hence a possible frame. One gives neither --- it posits an individual while withholding
-the means of individuating it, so what is asserted cannot be held, which is incoherence in the
-substrate's own sense rather than in a rhetorical one. A single relatum is not a smaller case than
-two. It is a broken one.
-
-Three things make that more than a stipulation. Any attempt to write the one-relatum structure
-produces two: the mathematical singleton is a container and a member joined by membership, which is
-already a relation between two things, and stripping the container leaves not a singleton but
-nothing. The information-theoretic statement is exact and long-standing --- an alphabet of one symbol
-has zero entropy, so a system with a single available state transmits nothing and distinguishes
-nothing \citep{shannon1948}, which is the same fact in the vocabulary this account uses for
-apertures. And it is what the dimension discipline elsewhere in this paper already says: a dimension
-admitting one value is not a poorly resolved dimension but an uninstantiated one, and \textsc{null}
-is not zero. That a difference must make a difference to be a difference at all is the same point
-made earlier and independently \citep{bateson1972}.
-
-So the count runs zero, two, more --- and the gap at one is not a curiosity of the formalism. It is
-why the perfect object is the empty one rather than the simplest occupied one, and why existence
-begins where relation does rather than one step before it.
-
-The diagonal results of the preceding paragraphs then stop being an analogy and become instances. A
-system's consistency is establishable only relative to a stronger system; truth for a language is
-definable only in a metalanguage; halting is decidable only from outside the procedure. In each case
-the property that fails to exist is exactly the \emph{self-standing} one --- the one that would have
-to hold without relation to anything else. Self-standing is unrelated, and unrelated is empty. The
-theorems are existence-requires-relation stated for properties rather than for objects.
-
-None of which is new, and the age of it is part of the point. That nothing possesses intrinsic,
-independent existence is the oldest continuously argued version \citep{nagarjuna1995}; that relata are
-not separable from the relations constituting them is a live position in contemporary metaphysics of
-science \citep{ladymanross2007}; and the mathematical statement is a lemma, an object being determined
-up to isomorphism by its relations to every other object \citep{maclane1971}. This paper takes no
-position on the contested strong form --- whether relations are \emph{prior} to relata --- and the
-reason is stronger than not needing one. Under this framework the question is \emph{unknowable}, and
-not merely unsettled.
-
-To determine priority one would need a description of one side independent of the other, to set
-against it. There is none. An object is determined by its relations, so a relatum described
-independently of its relations is not underdescribed but undescribed --- and a self-standing
-description is a self-standing property, which is exactly what the diagonal results show does not
-exist. The discriminating observation would have to be made from outside all relation, which is the
-empty limit point of the paragraphs above. The question is therefore not awaiting evidence: the
-evidential position it requires has no members. This is the same finding as the one-way speed in the
-physics companion, at a different altitude --- not hard, absent.
-
-Three things that does not license. It does not make the question meaningless: it is well formed and
-may well have an answer, and what is shown is that no frame can determine which. It does not make the
-answers equivalent. And it does not settle the matter by stealth in favour of relations, since a
-relata-first metaphysics need not posit unrelated relata, only a grounding asymmetry, and nothing
-here excludes that.
-
-What can be said beyond the unknowability is what was said of the synchrony convention, and the
-parallel is worth noticing --- a metaphysical question receiving the same form of answer as a
-physical one. Relation-first is the better-formed hypothesis: it requires no posit this account does
-not already use, where relata-first requires a grounding claim that does no work here. Better-formed
-licenses assuming it and does not make it true. And the unknowability argument is itself in-frame
-reasoning about frames, which is admissible for the reason given above --- what is forbidden is
-complete self-capture, not partial self-modelling. What the substrate adds, here as everywhere in
-this account, is not the position but the mechanism: what a relation costs to hold, and what it
-buys.
-
-The familiar instance is worth naming, since it locates all of this at once and the account says
-something specific about it. Which came first, the chicken or the egg, has not survived several
-thousand years of attention by being hard. It is two questions wearing one costume, and each is
-unanswerable for a different reason already given here. Read as temporal priority, it presupposes a
-sharp boundary between chicken and not-chicken --- a privileged cut, where the systematics
-above supplies convergence on a lineage notion without any boundary sharp enough to have a first
-member, so there is no first chicken to have come before or after anything. Read as constitutive priority --- whether the kind is
-prior to its instances or the instances to the kind --- it is the relations-and-relata question of
-the paragraphs above, and the discriminating position has no members. What makes it feel paradoxical
-rather than merely difficult is the switching between the two: pressed on the temporal reading one
-retreats to the constitutive, and pressed on the constitutive one retreats to the temporal, so an
-answer seems always to be available somewhere other than where one is standing. Separated, neither
-has one --- and for reasons that can be stated rather than only felt, which is the whole of what this
-apparatus is for.
-
-That is why the one prohibition is the only necessity, and it is not a separate fact from
-Remark~\ref{rem:writeability}'s minimum but the same fact from the other side. Everything else is
-contingent because rules can be otherwise; this is not, because it is not rule content. A frame may
-by rule be given sight of what runs it --- reflection does precisely that, and is contingent rule
-content like everything else --- but no rule gives a level sight of its own running, because the
-seeing is itself run (Proposition~\ref{prop:runner-opaque}). The container relation across which
-rules run and the impossibility of stepping outside one's own frame are the same structure described
-positively and negatively.
-
-The regress that follows should be stated with both ends, because each half is easy to overstate. A
-superframe dissolves the frame below's limit --- holding both of two locations, it has units closing
-across them, and quantities the subframes could not obtain are ordinary in its terms. And a
-superframe is a frame, so it reproduces the same blindness about its own runner, its own throughput,
-its own closure. Going up a level therefore buys something real and never buys everything: the
-impossibility is dissolved locally at every step and terminated at none. That there is no last frame
-is the same unboundedness the rest of this account keeps meeting, and it is why no amount of ascent
-yields a view from nowhere --- what ascent yields is a different somewhere.
+The regress in that prohibition has both ends, and neither is safe to state alone. A superframe dissolves the frame below's limit: holding both of two locations it has units closing across them, and quantities the subframes could not obtain are ordinary in its terms. And a superframe is a frame, so it reproduces the same blindness about its own running. Ascent buys something real and never buys everything --- the limit is dissolved locally at every step and terminated at none, which is why no amount of it yields a view from nowhere. What ascent yields is a different somewhere.
 
 \begin{thebibliography}{99}
 
@@ -983,11 +865,6 @@ W.~Ross Ashby.
 Julian Barbour.
 \newblock \emph{The End of Time: The Next Revolution in Physics}.
 \newblock Oxford University Press, Oxford, 1999.
-
-\bibitem[Bateson(1972)]{bateson1972}
-Gregory Bateson.
-\newblock \emph{Steps to an Ecology of Mind}.
-\newblock Chandler, San Francisco, 1972.
 
 \bibitem[Bell(1964)]{bell1964}
 John S. Bell.
@@ -1085,10 +962,10 @@ Paul Kocher, Jann Horn, Anders Fogh, Daniel Genkin, Daniel Gruss, Werner Haas, M
 \newblock Spectre attacks: Exploiting speculative execution.
 \newblock In \emph{2019 IEEE Symposium on Security and Privacy}, pages 1--19, 2019.
 
-\bibitem[Ladyman and Ross(2007)]{ladymanross2007}
-James Ladyman and Don Ross.
-\newblock \emph{Every Thing Must Go: Metaphysics Naturalized}.
-\newblock Oxford University Press, Oxford, 2007.
+\bibitem[Kripke(1975)]{kripke1975}
+Saul Kripke.
+\newblock Outline of a theory of truth.
+\newblock \emph{Journal of Philosophy}, 72(19):690--716, 1975.
 
 \bibitem[Lamport(1978)]{lamport1978}
 Leslie Lamport.
@@ -1105,25 +982,10 @@ F.~William Lawvere.
 \newblock Diagonal arguments and cartesian closed categories.
 \newblock In \emph{Category Theory, Homology Theory and their Applications II}, Lecture Notes in Mathematics 92, pages 134--145. Springer, 1969.
 
-\bibitem[Mac Lane(1971)]{maclane1971}
-Saunders Mac Lane.
-\newblock \emph{Categories for the Working Mathematician}.
-\newblock Springer, New York, 1971.
-
 \bibitem[Maes(1987)]{maes1987}
 Pattie Maes.
 \newblock Concepts and experiments in computational reflection.
 \newblock In \emph{Proceedings of OOPSLA '87}, 1987.
-
-\bibitem[N\=ag\=arjuna(1995)]{nagarjuna1995}
-N\=ag\=arjuna.
-\newblock \emph{The Fundamental Wisdom of the Middle Way: N\=ag\=arjuna's M\=ulamadhyamakak\=arik\=a}.
-\newblock Translated by Jay L. Garfield. Oxford University Press, New York, 1995.
-
-\bibitem[Nagel(1986)]{nagel1986}
-Thomas Nagel.
-\newblock \emph{The View from Nowhere}.
-\newblock Oxford University Press, New York, 1986.
 
 \bibitem[Osvik et al.(2006)]{osvik2006}
 Dag Arne Osvik, Adi Shamir, and Eran Tromer.
@@ -1179,11 +1041,6 @@ John von Neumann.
 Norbert Wiener.
 \newblock \emph{Cybernetics: Or Control and Communication in the Animal and the Machine}.
 \newblock MIT Press, Cambridge, MA, 1948.
-
-\bibitem[Williams(1978)]{williams1978}
-Bernard Williams.
-\newblock \emph{Descartes: The Project of Pure Enquiry}.
-\newblock Penguin, Harmondsworth, 1978.
 
 \bibitem[Wolfram(2002)]{wolfram2002}
 Stephen Wolfram.
