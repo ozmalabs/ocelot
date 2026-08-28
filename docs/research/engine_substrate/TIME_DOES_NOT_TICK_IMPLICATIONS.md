@@ -109,16 +109,37 @@ unit.
 The honest status of the horizon derivation reverts to what `AROUSAL_HORIZON_RESULTS.md` already
 claimed: **correct in the term it derives (window → horizon)**, with no missing eventfulness term.
 
-### One consequence that does survive, pointing the other way
+### The Stage A cost consequence — twice superseded, and the second version is not mine either
 
-The same remark bears on `STAGE_A_COUPLING_RESULTS.md`'s cost argument, and softens it. I wrote that
-Stage A's speculation on a contended drain *"pays N speculative applies plus N undos… strictly more
-writing than not speculating"*. Apply-then-undo is **injective** — the prior state is recoverable by
-construction, that being what an undo log is for — so by this remark's own criterion it *"destroys
-nothing and crosses no floor."* The speculation is not floor-cost.
+**First pass (wrong).** `STAGE_A_COUPLING_RESULTS.md` argued Stage A's speculation *"pays N applies
+plus N undos… strictly more writing than not speculating"*.
 
-What it does incur is exactly what the remark says: **retention.** The undo log *is* the preserved
-history, and *"discarding that history is the priced step whenever it falls due."* So the cost of
-speculating is real but is a retention cost, not a write-floor cost — which is a smaller and more
-precise claim than the one I made, and it does not change the verdict on Stage A, which rests on the
-domain being empty rather than on the cost.
+**Second pass (also superseded).** I then refined that to: apply-then-undo is *injective*, so it
+*"destroys nothing and crosses no floor"*, hence not floor-cost but **retention** cost. That leaned
+on the Landauer/injectivity framing — **which `efc3e42` removed from the remark entirely.**
+
+**What the remark says now**, having replaced the physical argument with a computational one:
+
+> *"`read()` is an operation, and it returns data… in a substrate that is graph all the way down
+> there is no somewhere else — no return channel outside the structure — so the value materialises as
+> structure. A read therefore writes, not by analogy with a write but by being one, and the write is
+> the return."*
+
+with the free case pinned precisely — *"the free case exists and is exactly the empty one… an
+operation whose return is never used has read nothing, and a compiler will delete it"* — and then the
+part that settles my question by refusing it:
+
+> *"**There is no universal cost of running a rule** … A rule's cost is set by the substrate that
+> runs it: the rule runner is separable from the graph… so what evaluation costs is what that runner
+> charges, and a different runner is a different charge for the same rule. Landauer's bound is
+> accordingly **a floor in one substrate — the physical one — and not the price in any.** It says
+> what cannot be undercut where it applies; it does not say what is paid."*
+
+**So the theory declines to price Stage A's speculation, and says the question belongs to the
+runner.** For this runner that is an empirical question, and it has already been answered:
+`STAGE_A_RESULTS.md` §6 measured the runtime overhead **at nothing**.
+
+Both of my cost arguments were therefore attempts to derive from the theory a number the theory
+explicitly refuses to supply. The verdict on Stage A is unmoved and was never resting on this — it
+rests on the batchable domain being empty. And Stage A's speculation is *not* the free case either,
+by the new criterion: its reads are used, since `conflicts` consumes them to decide the fallback.
