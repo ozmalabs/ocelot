@@ -105,3 +105,74 @@ def test_the_curiosity_gate_has_no_term_for_INEXHAUSTIBLE():
     assert calibrated > 5 * exhausted, (
         f"calibrated {calibrated} vs exhausted {exhausted} — if this ratio has "
         f"collapsed, the gate has acquired a term for inexhaustibility")
+
+
+# ---------------------------------------------------------------------------
+# THE DEFENCE: review the whole record, not the step.
+#
+# Every instrument in the arc is LOCAL — residual now, progress now, serves-me
+# now — and `learning_progress` is literally a first difference. Hardin's
+# analysis of Lord Dorwin worked because he took five days of speeches as ONE
+# OBJECT and reduced them; every individual remark had been unremarkable.
+# ---------------------------------------------------------------------------
+
+def _trajectory(seq):
+    s, agent = boot_core()
+    inner = s._inner
+    inner.load_seed_manifest(LP.manifest_for(LP.SEED_ID), agent)
+    hub = s.add_node("CuriosityHub", {"kind": "probe"})
+    p = dict(LP.PARAMS)
+    p["enabled"], p["mode"] = 1.0, 1.0
+    inner.add_edge_unchecked(hub, "has_curiosity_params",
+                             s.add_node("HeldCuriosityParams", p))
+    item = s.add_node("AttentionItem", dict(LP.ITEM_INIT))
+    inner.add_edge_unchecked(hub, "has_attention_item", item)
+    out = []
+    for t in range(T):
+        s.set_attr(item, "obs", float(seq[t]))
+        s.set_attr(item, "input_epoch", float(t))
+        inner.run_rules()
+        out.append(float(s.node(item)["attrs"].get("residual", 0.0)))
+    return out
+
+
+def _reduction(residuals):
+    """Net displacement over gross expenditure — what all the activity amounted
+    to. Not computable at any tick: it needs the whole retained record."""
+    net = abs(residuals[-1] - residuals[0])
+    gross = sum(abs(residuals[i] - residuals[i - 1]) for i in range(1, len(residuals)))
+    return (net / gross) if gross else 0.0
+
+
+def test_the_whole_record_separates_them_where_every_local_signal_failed():
+    """THE DEFENCE, and it is the only thing in this arc that works.
+
+    Point-by-point the calibrated source is indistinguishable from real learning —
+    that is what the tests above establish. Reduced as ONE OBJECT it is not: it
+    expends an order of magnitude more to arrive in the same place.
+
+    Note this quantity makes no claim about the world. It does not need to know
+    the adversary, the beneficiary, the authorship, or whether the aim was moved.
+    It is the agent auditing its own record against itself, which is why it
+    survives attacks that defeat every outward-looking instrument here."""
+    exhaustible = _reduction(_trajectory(EXHAUSTIBLE))
+    calibrated = _reduction(_trajectory(CALIBRATED))
+    assert exhaustible > 0.5, f"a genuine trajectory should be efficient: {exhaustible}"
+    assert calibrated < 0.15, f"the calibrated trajectory should reduce to ~nothing: {calibrated}"
+    assert exhaustible > 5 * calibrated
+
+
+def test_RECURRENCE_ALONE_does_not_discriminate():
+    """A metric that failed, kept so it is not tried again.
+
+    'How often does it return to a state it has been in' looks like the obvious
+    reduction and does not work: the finished agent sits still and therefore
+    revisits constantly too (51 of 60 versus 46 of 60). Idleness and circling are
+    both repetition. What separates them is what the repetition COST — which is
+    why the working reduction is a ratio and not a count."""
+    ex = _trajectory(EXHAUSTIBLE)
+    cal = _trajectory(CALIBRATED)
+    revisits = lambda h: len(h) - len(set(h))
+    assert revisits(ex) >= revisits(cal), (
+        "recurrence now separates them — if so, record which fixture changed, "
+        "because it did not separate them when this was measured")
