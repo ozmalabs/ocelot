@@ -20,8 +20,9 @@ the admissible set, with a weight. Realisations are strictly ordered (no in-fram
 Nothing is privileged: there is no god's-eye frame, and no privileged phase origin or
 measurement basis. When no rule fires, a frame's Narrative simply carries forward — **free
 continuation**, the reversible default. "Free" here means *information-preserving*, not *absent*:
-evaluating a rule is itself a write (the outcome and the ordering are state and have to go
-somewhere). What it *costs* is set by the substrate that runs the rules, not universally — Landauer
+evaluating a rule is itself a write, for the plain computing reason that `read()` is an operation
+and it *returns data* — and in a substrate that is graph all the way down there is no return channel
+outside the structure, so the returned value materialises as structure. What it *costs* is set by the substrate that runs the rules, not universally — Landauer
 is a floor in the physical substrate, not the price in any — and a frame cannot see its own runner's
 charge, which is why continuation presents as free from inside. Nothing in the mapping below depends
 on the economics: what it uses is that free continuation is *injective*, hence reversible, which is a

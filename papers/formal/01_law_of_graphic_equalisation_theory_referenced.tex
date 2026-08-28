@@ -273,9 +273,26 @@ determines what happens next has left its outcome somewhere. Either it does noth
 it does something and is a write. There is no third operation that costs nothing and decides
 something.
 
-The objection is correct, and what it corrects is the classification rather than the economics.
-Evaluation \emph{is} a write. The outcome of a match, the position in whatever ordering is applied,
-and the fact of having tried are all state, and state is written.
+The objection is correct, and computing answers it cleanly, without any appeal to physics.
+\texttt{read()} is an operation, and it returns data. That is the whole of it. The returned datum has
+to be somewhere in order to be used, and in a substrate that is graph all the way down there is no
+somewhere else --- no return channel outside the structure --- so the value materialises as
+structure. A read therefore writes, not by analogy with a write but by being one, and the write is
+the return. An operation that returns nothing is not a read of anything.
+
+The free case exists and is exactly the empty one, which is what keeps this from being a claim that
+everything costs. An operation whose return is never used has read nothing, and a compiler will
+delete it; that reads with no consequence are precisely the ones that can be removed without changing
+the program is the cleanest available demonstration that they were not doing anything. The engineering
+runs the other way too, and expensively. A read leaves traces in a real machine --- caches, predictors,
+translation state --- and those traces are measurable, which is why cache-timing attacks recover
+secrets from victims that only ever read \citep{osvik2006}, and why an entire class of speculative
+attacks was available to a decade of designs built on the assumption that reading is passive
+\citep{kocher2019}. Hardware whose reads were free would not have had that problem.
+
+Evaluation is accordingly a write in the same plain sense. The outcome of a match, the position in
+whatever ordering is applied, and the fact of having tried are all returned values, and returned
+values are structure.
 
 What the objection does not settle, and what must not be smuggled in behind it, is the price. There
 is no universal cost of running a rule, and the temptation to name one should be resisted here for
@@ -709,6 +726,11 @@ Simon Kochen and Ernst P. Specker.
 \newblock The problem of hidden variables in quantum mechanics.
 \newblock \emph{Journal of Mathematics and Mechanics}, 17:59--87, 1967.
 
+\bibitem[Kocher et al.(2019)]{kocher2019}
+Paul Kocher, Jann Horn, Anders Fogh, Daniel Genkin, Daniel Gruss, Werner Haas, Mike Hamburg, Moritz Lipp, Stefan Mangard, Thomas Prescher, Michael Schwarz, and Yuval Yarom.
+\newblock Spectre attacks: Exploiting speculative execution.
+\newblock In \emph{2019 IEEE Symposium on Security and Privacy}, pages 1--19, 2019.
+
 \bibitem[Lamport(1978)]{lamport1978}
 Leslie Lamport.
 \newblock Time, clocks, and the ordering of events in a distributed system.
@@ -723,6 +745,11 @@ Rolf Landauer.
 Pattie Maes.
 \newblock Concepts and experiments in computational reflection.
 \newblock In \emph{Proceedings of OOPSLA '87}, 1987.
+
+\bibitem[Osvik et al.(2006)]{osvik2006}
+Dag Arne Osvik, Adi Shamir, and Eran Tromer.
+\newblock Cache attacks and countermeasures: The case of AES.
+\newblock In \emph{Topics in Cryptology --- CT-RSA 2006}, pages 1--20. Springer, 2006.
 
 \bibitem[Page and Wootters(1983)]{pagewootters1983}
 Don N. Page and William K. Wootters.
