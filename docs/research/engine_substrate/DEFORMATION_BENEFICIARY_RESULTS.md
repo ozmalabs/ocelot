@@ -154,6 +154,46 @@ audit certifies every step. Whether the expenditure is *unbounded* in the narrat
 stronger claim than this fixture supports, and the reason to expect it is structural rather than
 measured — there is no term in the loop that grows with the drift.
 
+## 6. Retention needs a prior — and formation does not leave one
+
+§4 ended by naming memory as the defence against a moved aim. That defence assumes there **was** a
+before. Control the manifold from the start — from education — and there is no prior to retain.
+
+Measured. Two agents, both now aiming at 5 and sitting at 5. One was **moved** there from an aim of
+0; the other's aim was **installed** at 5 and was never anything else:
+
+| | `serves_actor` | `serves_origin` | `diverges` |
+|---|---|---|---|
+| moved | 1 | 1 | 0 |
+| formed | 1 | 1 | 0 |
+| | **identical** | | |
+
+The move is recoverable for the first agent only because a different earlier aim exists to audit
+against. **The formed agent has no analogous call to make.** The discriminator is not weak — it is
+absent, and no field goes empty to record its absence. The question cannot be *posed*, rather than
+being answered no.
+
+This is strictly stronger than moving a tube, and cheaper: moving requires a before-state to
+overwrite and leaves one behind if anything retained it. Forming requires neither.
+
+### Which is where the substrate stops being able to help
+
+Every agent's tube comes from somewhere. **There is no original aim in this substrate that is
+authentically the agent's own** — the first one is installed, by construction, and the same is true
+of the seed manifests this whole tree boots from. So *"was this aim educated into me, or installed
+against my interest"* has no in-frame answer: both produce the same tube, and the agent audits
+correctly against it either way.
+
+Answering it requires a frame with a **different** aim to audit against — which is precisely what the
+formed agent does not have and cannot obtain from inside. That is not a defect of the model. It is
+the situation, reproduced: it is why the question is settled socially rather than introspectively,
+and why every account of it appeals to some outside standard.
+
+It also closes the beneficiary line honestly. §2 measures whom a deformation serves *given* a tube.
+It cannot ask whom the **tube** serves, because it has no second tube to ask from. The two-field
+design answers the question it was built for and is silent on the one underneath it — and that
+silence is structural, not an omission to be fixed in a later rung.
+
 ## Honest bounds
 
 * **The horizon buys the negative, not the beneficiary.** `serves_origin` stays 0 at every horizon in
