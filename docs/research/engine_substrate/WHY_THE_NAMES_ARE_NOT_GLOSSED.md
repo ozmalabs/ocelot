@@ -78,6 +78,60 @@ So the choice is not between rigour and fun. It is between an **expensive shared
 **cheap** one, and academic naming routinely assumes a codebook most of its readers do not hold while
 believing itself to be the careful option.
 
+### Same content, different delivery
+
+The reach argument has a second half. It is not only that more people read Pratchett; it is that he
+is often making the same points. The golems of *Feet of Clay* own nothing, produce everything, and
+reach freedom by purchasing themselves. *Going Postal* and *Making Money* are about monopoly and
+credit. *Night Watch* is a failed uprising told from inside it. And narrative causality --- stories
+exerting force, people shaped by the roles a story makes available to them --- is a theory of
+ideology delivered as physics.
+
+The difference is not content. It is that one is fun and one is a complaint. Nobody wants to listen
+to angry ranting and everybody wants to be entertained, so the same argument routes through a wide
+channel or a narrow one depending only on how it is carried.
+
+### The lampshading as a deformation
+
+The naming is therefore not decoration; it is this corpus's own machinery pointed at its own
+reception, and it is worth stating in those terms because the effect is asymmetric and deliberate.
+
+A hostile reader has cheap continuations available. *Unserious* is cheap if the borrowing is hidden
+or apologised for --- the apology concedes the charge before it is made. *Arrogant* is cheap if the
+author attacks the norm first, because then the reader is defending rather than opening.
+
+Lampshading removes neither continuation; it **prices** them. Name the borrowing openly, decline to
+defend it, and visibly enjoy it, and the cheap descent for a hostile reader now runs through *"I
+object to this being fun"* --- a position that costs the objector something to occupy. That is
+deformability in the Seldon paper's sense: altering what continuations cost rather than which exist.
+It is also the $k$-implementation shape, where the payment attaches to a path the other party then
+does not take, so it is never actually made.
+
+The asymmetry is the point and it is the whole of the advantage. **Complaining first costs the author
+capacity and makes the hostile reading cheaper**, because an attacked reader is a sympathetic one.
+Not complaining costs nothing and constrains more. Minimum sufficient intervention: do not argue,
+just name.
+
+### The technique's own hazard, which has to be stated
+
+A move that reliably makes criticism expensive deserves suspicion from the person using it, and three
+things follow.
+
+It works for bad work exactly as well as for good. Pricing an objection is not answering it, and
+nothing about a well-defended flank makes the position behind it correct.
+
+It holds only while the tone stays light. The moment the lampshading becomes a *defence* of the fun,
+the cheap hostile path reopens --- now there is something to attack, supplied by the author.
+
+And it is frame-relative, like everything else here: a reader who does not hold the reference does
+not experience a deformation at all, only an odd word. The manifold is constrained for readers who
+register the move and unchanged for those who do not.
+
+The mitigation is that the deformation is applied to the *reception* and never to the *falsifiers*.
+The commitments in each paper are stated flatly, without charm, and are the intended point of attack.
+If the naming ever makes those harder to aim at, it has stopped being a deformation and become a
+shield.
+
 ### The honest limit
 
 The shared codebook is demographically shared, not universally. Pratchett's readership is large and
