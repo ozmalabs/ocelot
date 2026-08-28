@@ -16,20 +16,20 @@
 \newcommand{\Hist}{\mathcal{H}}
 \title{The Law of Graphic Equalisation --- Theory\\\large Minimal Recursive Dynamics, Collapse, Frame-Relative Identity, and Residual}
 \author{Matthew Parslow\\Independent Researcher}
-\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 19}
+\date{\textbf{Draft \textemdash\ draft-2026-08-28.2}\\[2pt]28 August 2026 \textbullet\ document revision 20}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyfoot[C]{\thepage}
-\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r19}}
+\fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r20}}
 \renewcommand{\headrulewidth}{0pt}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}%
-  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r19}}\renewcommand{\headrulewidth}{0pt}}
+  \fancyfoot[R]{\scriptsize\textsc{draft-2026-08-28.2\,r20}}\renewcommand{\headrulewidth}{0pt}}
 \begin{document}
 \maketitle
 \begin{center}
 \fbox{\parbox{0.92\textwidth}{\small
-\textbf{DRAFT --- draft-2026-08-28.2 r19} (28 August 2026).
+\textbf{DRAFT --- draft-2026-08-28.2 r20} (28 August 2026).
 This document is under active revision and is circulated for comment, not as a
 finished result. Definitions, numbering and claims may change between drafts;
 cite the version string above if referring to it. Sections marked as
@@ -315,65 +315,41 @@ Proposition~\ref{prop:economics} has a measured physical floor, and it is the st
 
 \begin{remark}[Evaluation is a write, and that is why it is free]\label{rem:evaluation-writes}
 The economics above can be stated in a way that does not survive contact with the machinery, and the
-objection is worth answering directly rather than by rewording. If running a rule that does not fire
-is a read, and reads are free, then where does the check go, and how does the substrate know to run
-the next one? A check whose outcome leaves no trace cannot determine what happens next; a check that
-determines what happens next has left its outcome somewhere. Either it does nothing and is free, or
-it does something and is a write. There is no third operation that costs nothing and decides
-something.
+objection is worth answering rather than rewording. If running a rule that does not fire is a read,
+and reads are free, where does the check go, and how does the substrate know to run the next one?
 
-The objection is correct, and computing answers it cleanly, without any appeal to physics.
-\texttt{read()} is an operation, and it returns data. That is the whole of it. The returned datum has
-to be somewhere in order to be used, and in a substrate that is graph all the way down there is no
-somewhere else --- no return channel outside the structure --- so the value materialises as
-structure. A read therefore writes, not by analogy with a write but by being one, and the write is
-the return. An operation that returns nothing is not a read of anything.
+Computing answers it without any appeal to physics. \texttt{read()} is an operation, and it returns
+data; the returned datum has to be somewhere to be used, and in a substrate that is graph all the way
+down there is no return channel outside the structure, so the value materialises as structure. A read
+therefore writes by being a write, and the write is the return. An operation that returns nothing is
+not a read of anything, which is why the free case exists and is exactly the empty one: a read whose
+return is never used has read nothing, and a compiler will delete it. Real machines make the same
+point expensively --- a read leaves traces in caches, predictors and translation state, and those
+traces are measurable, which is why timing attacks recover secrets from victims that only ever read
+\citep{osvik2006} and why an entire class of speculative attacks was available to designs built on
+the assumption that reading is passive \citep{kocher2019}.
 
-The free case exists and is exactly the empty one, which is what keeps this from being a claim that
-everything costs. An operation whose return is never used has read nothing, and a compiler will
-delete it; that reads with no consequence are precisely the ones that can be removed without changing
-the program is the cleanest available demonstration that they were not doing anything. The engineering
-runs the other way too, and expensively. A read leaves traces in a real machine --- caches, predictors,
-translation state --- and those traces are measurable, which is why cache-timing attacks recover
-secrets from victims that only ever read \citep{osvik2006}, and why an entire class of speculative
-attacks was available to a decade of designs built on the assumption that reading is passive
-\citep{kocher2019}. Hardware whose reads were free would not have had that problem.
+Evaluation is a write in that plain sense: a match outcome, a position in an ordering, and the fact
+of having tried are returned values, and returned values are structure. What does not follow is the
+price. A rule's cost is set by the substrate that runs it (Section~\ref{sec:rule-runner}), so a
+different runner is a different charge for the same rule, and Landauer's bound
+(Remark~\ref{rem:landauer-change}) is a floor in one substrate rather than the price in any --- it
+says what cannot be undercut, not what is paid, and those differ wherever a runner charges above the
+floor, which is every real one. This is also why continuation presents as free from inside: a
+well-formed runner does not expose itself (Proposition~\ref{prop:runner-opaque}), so its charge is
+below the frame's aperture and is not an in-frame event at all. In-frame nothing happened; in the
+running substrate something was paid; both hold, of different frames.
 
-Evaluation is accordingly a write in the same plain sense. The outcome of a match, the position in
-whatever ordering is applied, and the fact of having tried are all returned values, and returned
-values are structure.
-
-What the objection does not settle, and what must not be smuggled in behind it, is the price. There
-is no universal cost of running a rule, and the temptation to name one should be resisted here for
-the same reason it is resisted everywhere else in this account. A rule's cost is set by the substrate
-that runs it (Section~\ref{sec:rule-runner}): the rule runner is separable from the graph and need
-not be the same kind of thing as it, so what evaluation costs is what that runner charges, and a
-different runner is a different charge for the same rule. Landauer's bound
-(Remark~\ref{rem:landauer-change}) is accordingly a \emph{floor in one substrate} --- the physical
-one --- and not the price in any. It says what cannot be undercut where it applies; it does not say
-what is paid, and the two are different numbers wherever a runner charges more than the floor, which
-is every real one. A logically reversible branch still costs a physical machine something to take.
-
-This is also why continuation presents as free from inside. A frame cannot determine its rule runner
-from within (Proposition~\ref{prop:runner-opaque}), so whatever the runner charges is below that
-frame's aperture and is not an in-frame event at all. In-frame, nothing happened; in the running
-substrate, something was paid. Both hold, of different frames, and neither is the correction of the
-other. The economics is inherited down the stack rather than fixed at any level, and like the other
-regresses here it is operationally truncated and not definitionally terminated: each level's charge
-is defined whether or not the level above can see it.
-
-Two things follow for the rest of these papers. \emph{Reversibility} is a structural fact about a map
-and \emph{cost} is a fact about a runner, and the two were conflated in the earlier phrasing;
-separating them strengthens the physics companion's recovery of unitarity, which needs only the
-first --- a no-write was never the right description, since unitary evolution plainly does change the
-state and is reversible because it is injective. And the residual that
-Remark~\ref{rem:landauer-change} already names now attaches here: an information-preserving
-evaluation accumulates the history it preserves. A frame that runs a long time without collapsing has
-not escaped a cost; it has deferred it into retention, and discarding that history is priced whenever
-it falls due --- at whatever its runner charges for the discarding. What is free is not the running.
-It is only the not-yet-forgetting, and it is free only relative to a frame that cannot see the bill.
+Two things follow for the rest of these papers. Reversibility is a structural fact about a map and
+cost is a fact about a runner, and conflating them is what the earlier phrasing did --- separating
+them is what lets the physics companion recover unitarity, which needs only the first, since a
+no-write was never the right description of an evolution that plainly changes the state and is
+reversible because it is injective. And the residual named in Remark~\ref{rem:landauer-change}
+attaches here: information-preserving evaluation accumulates the history it preserves, so a frame
+running a long time without collapsing has deferred a cost into retention rather than escaping one.
+What is free is not the running, only the not-yet-forgetting --- and free only relative to a frame
+that cannot see the bill.
 \end{remark}
-
 
 \begin{remark}[The Red Queen is the floor cost of change, per substrate]\label{rem:red-queen}
 A recurring puzzle across biology, culture, and competition --- that a system must change continuously merely to hold its position --- follows immediately and needs no arms-race machinery of its own. Holding a relation to a containing frame that is itself changing requires continuous change, and by Remark~\ref{rem:landauer-change} every change pays the floor; standing still is not a zero-cost option because the leaky real holding of a state is itself the paid correction of unwanted change. The cultural form is the same floor with no-copy attached: a generator is structure built by a large accumulated pile of changes, its floor was paid once by whoever built it, and because change does not cross a substrate boundary --- only its cheap results, symbols, do --- that floor is paid afresh in every substrate that wants the generator. Van Valen's evolutionary Red Queen, the cultural treadmill of relearning, and coordination arms races are then one object: continuous paid change to hold position against a changing container, floored by Landauer.
