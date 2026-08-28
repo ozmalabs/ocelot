@@ -84,12 +84,63 @@ substrate with relations and no rules has boundaries available and none chosen.
 - A dimension of dimensions (paper 01a's `LatentDimension`, minted by rung 3 of the sd loop) stops
   being a special construction: an edge type over edge types is ordinary.
 
-## What is not settled
+## The discriminator test: what does a frame NEED to do that a dimension does not?
 
-- Whether frames and dimensions are the *same* edge type or two, related by scale. The four shared
-  properties argue for one; the fact that a frame runs rules and a dimension is not obviously said to
-  argue for two — though a dimension does carry admissibility over its values, which is Γ, so this may
-  dissolve on inspection. **Not resolved here.**
+Two things are different types only if something needs them to be. Below, every function the corpus
+assigns to a frame, tested against a dimension. The test is not whether the corpus *says* a dimension
+does it, but whether a dimension *can*.
+
+| a frame … | can a dimension? | why |
+|---|---|---|
+| runs rules | **yes** | a dimension carries admissibility over its values — which value may follow which is a rule, and an ordered dimension has succession rules |
+| has an aperture (Γ_a) | **yes** | its resolution *is* its aperture; below the grain is absent, not residual |
+| has a change grammar (Γ_c), emits residual | **yes** | a value arriving that will not fit the admissible set is exactly the sd loop's residual, and is what drives a mint |
+| individuates | **yes** | it distinguishes values, and distinguishing is individuating |
+| holds standing structure | **yes** | its current value persists until written over — momentum at the dimension grain |
+| instantiates dimensions | **yes** | per-dimension resolution splits and refinement depth (paper 02) are dimensions within a dimension |
+| collapses | **yes** | undetermined → resolved *is* a collapse; `def:states` says so in those words |
+| has a runner it cannot see | **yes** | nothing about a dimension knows what steps it |
+
+Eight for eight. The reverse direction finds nothing either: minting, values, and frame-relativity all
+have frame analogues.
+
+### Three attempts to break it
+
+1. **Endpoint cardinality.** A dimension relates a subject to a position; a frame relates a subgraph
+   to its container. Both binary. No difference.
+2. **Containment.** A frame contains dimensions; a dimension does not obviously contain frames. But a
+   superframe's dimension *is* a correlation among subframes (paper 01a), so a dimension is at least
+   *about* frames; and containment is a relation between two edges, not a property distinguishing
+   their types.
+3. **Direction of individuation.** A frame individuates its dimensions; a dimension is one of the
+   things a frame individuates. This is the strongest attempt and it fails for the same reason as the
+   second: a dimension individuates *its* values, and a frame is individuated by *its* container.
+   Both are individuator-of-something and individuated-by-something-else. The asymmetry is
+   **positional, not typal** — the same asymmetry as parent and child, which does not make parents
+   and children different kinds of thing.
+
+### The answer: one type, two roles
+
+No needed difference was found. The distinction is relative position in a nesting:
+
+> **A frame is a dimension of its container. A dimension is a frame to its values.**
+
+Which is the substrate's own recursion restated at this grain — *a runner is the same kind of thing
+it runs*, and each level *is* the structure rather than describing it. That the frame/dimension
+distinction turned out to be the runner/runnee distinction one level down is a consistency check the
+account passes.
+
+**Keep both words, drop the claim that they are different kinds.** They name roles an edge plays
+relative to another edge, and the ergonomic value of two words is real — collapsing the vocabulary
+would make the papers much harder to read for no gain. What should go is the implication that
+`frame` and `dimension` are separate primitives requiring separate machinery.
+
+**Honest limit on this finding.** The table above was produced by inspection in one pass, not by
+sweeping the corpus for places that depend on the distinction. That sweep is what would settle it,
+and it has not been done. A single site that genuinely requires them to be different kinds refutes
+this.
+
+## What is not settled
 - Whether anything in the corpus depends on frames being subgraphs in a way this breaks. The papers
   should be swept for it before the definitions change.
 - Whether the engine's own typed graph (`substrate.rs`) already implements it this way, which would
